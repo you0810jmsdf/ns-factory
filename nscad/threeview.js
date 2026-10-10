@@ -193,17 +193,20 @@ export function threeViewCursorLines(p, layout = THREE_VIEW_LAYOUT) {
   return { area, lines, depth };
 }
 
-/** 描こうとしている点を、他の枠から伸ばした線にぴったり合わせる。
- *  tol(mm) 以内に線があれば、その向き（横 or 縦）だけ置き換える。合う線が無ければ null。
- *  返り値：{ point, snappedX, snappedY, area } */
-export function threeViewSnap(p, marks, tol, layout = THREE_VIEW_LAYOUT) {
+/** 点を縦横の線にぴったり合わせる（共通）：tol(mm) 以内に線があれば、その向き（横 or 縦）だけ置き換える。合う線が無ければ null。 */
+export function threeViewSnapToLines(p, xs, ys, tol) {
   if (!(tol > 0)) return null;
-  const area = threeViewAreaAt(p, layout); if (!area) return null;
-  const { xs, ys } = threeViewTargets(area, marks, layout);
-  const nearest = (v, list) => { let best = null, bd = tol; for (const c of list) { const d = Math.abs(c - v); if (d < bd) { bd = d; best = c; } } return best; };
+  const nearest = (v, list) => { let best = null, bd = tol; for (const c of list || []) { const d = Math.abs(c - v); if (d < bd) { bd = d; best = c; } } return best; };
   const sx = nearest(p.x, xs), sy = nearest(p.y, ys);
   if (sx === null && sy === null) return null;
-  return { point: { x: sx ?? p.x, y: sy ?? p.y }, snappedX: sx !== null, snappedY: sy !== null, area };
+  return { point: { x: sx ?? p.x, y: sy ?? p.y }, snappedX: sx !== null, snappedY: sy !== null };
+}
+/** 描こうとしている点を、他の枠から伸ばした線にぴったり合わせる（枠方式）。返り値：{ point, snappedX, snappedY, area } */
+export function threeViewSnap(p, marks, tol, layout = THREE_VIEW_LAYOUT) {
+  const area = threeViewAreaAt(p, layout); if (!area) return null;
+  const { xs, ys } = threeViewTargets(area, marks, layout);
+  const hit = threeViewSnapToLines(p, xs, ys, tol);
+  return hit ? { ...hit, area } : null;
 }
 
 /** 正面の枠にある図形をぜんぶ囲む四角（いちばん外側）と奥行きから、上から見た図と右から見た図の外形（四角）を作る。
@@ -235,6 +238,34 @@ export function threeViewSameRect(a, b, eps = 1e-6) {
   return pa.every((p, i) => Math.abs(p.x - pb[i].x) < eps && Math.abs(p.y - pb[i].y) < eps);
 }
 
+// ---- 紙を分けた三面図（4分割）----
+// 正面の紙 (x, y)。上の紙 (x, y)：手前の線が y=0 で、奥へ行くほど y が負（画面の上）→ 奥行き = −y。右の紙 (x, y)：手前の線が x=0 で、奥へ行くほど x が正 → 奥行き = x。
+/** 3 枚の紙の図形から「合わせたい位置」を集める。front:{xs,ys} top:{xs,depths} side:{ys,depths}（小さい順・重複なし） */
+export function threeViewSheetMarks(frontShapes, topShapes, sideShapes) {
+  const front = { xs: new Set(), ys: new Set() }, top = { xs: new Set(), depths: new Set() }, side = { ys: new Set(), depths: new Set() };
+  const ok = p => Number.isFinite(p.x) && Number.isFinite(p.y);
+  for (const s of frontShapes || []) for (const p of threeViewGuidePoints(s)) if (ok(p)) { front.xs.add(keyOf(p.x)); front.ys.add(keyOf(p.y)); }
+  for (const s of topShapes || []) for (const p of threeViewGuidePoints(s)) if (ok(p)) { top.xs.add(keyOf(p.x)); top.depths.add(keyOf(-p.y)); }
+  for (const s of sideShapes || []) for (const p of threeViewGuidePoints(s)) if (ok(p)) { side.ys.add(keyOf(p.y)); side.depths.add(keyOf(p.x)); }
+  const arr = set => [...set].sort((a, b) => a - b);
+  return { front: { xs: arr(front.xs), ys: arr(front.ys) }, top: { xs: arr(top.xs), depths: arr(top.depths) }, side: { ys: arr(side.ys), depths: arr(side.depths) } };
+}
+/** ある紙（role）で合わせたい線 {xs, ys}（その紙の座標）。正面：横は上の紙の x・高さは右の紙の y。上：横は正面の x・縦は右の紙の奥行き（y = −奥行き）。右：横は上の紙の奥行き（x = 奥行き）・高さは正面の y。 */
+export function threeViewSheetTargets(role, marks) {
+  if (!marks) return { xs: [], ys: [] };
+  if (role === 'front') return { xs: marks.top.xs.slice(), ys: marks.side.ys.slice() };
+  if (role === 'top') return { xs: marks.front.xs.slice(), ys: marks.side.depths.map(d => -d) };
+  if (role === 'side') return { xs: marks.top.depths.slice(), ys: marks.front.ys.slice() };
+  return { xs: [], ys: [] };
+}
+/** いま描いている紙（role）のカーソル p に対応する、ほかの紙の線。{ top:{x}|{y}, front:{...}, side:{...} } */
+export function threeViewSheetCursor(role, p) {
+  if (role === 'front') return { top: { x: p.x }, side: { y: p.y } };
+  if (role === 'top') return { front: { x: p.x }, side: { x: -p.y } };
+  if (role === 'side') return { front: { y: p.y }, top: { y: -p.x } };
+  return {};
+}
+
 // ---- 三面図から立体を組み立てる（3D 表示用） ----
 /** 閉じた図形（折れ線・なめらかな線・円）を点の列にする。閉じていなければ null。 */
 function closedPolygon(s, tol) {
@@ -261,21 +292,8 @@ export function threeViewClipToRect(poly, x0, x1, y0, y1) {
   p = clip(p, q => q.y <= y1, (a, b) => lerp(a, b, (y1 - a.y) / (b.y - a.y)));
   return p.filter((q, i) => i === 0 || Math.hypot(q.x - p[i - 1].x, q.y - p[i - 1].y) > 1e-9);
 }
-/** 三面図から立体を組み立てる。
- *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
- *  高さを薄い輪切りにし、各輪切りで「正面の横幅 × 右の奥行き」の長方形で上の輪郭を切り取った形を、輪切りの厚みぶん積み上げる。
- *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
- *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
- *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
-export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
-  const groups = { front: [], top: [], side: [] };
-  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; const poly = closedPolygon(s, tolerance); if (poly) groups[area].push(poly); }
-  const biggest = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
-  const F = biggest(groups.front); if (!F) return null;
-  const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
-  const topPoly = biggest(groups.top), sidePoly = biggest(groups.side);
-  const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
-  const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
+/** 輪郭 3 つ（F：正面 (x,y)・T：上 (x,奥行き)・S：右 (奥行き,y)、T と S は無くてもよい）から立体を組み立てる共通部分。 */
+function solidFromPolys(F, T, S, { depthDefault = 30, maxSlices = 80 } = {}) {
   const fy = F.map(p => p.y), minY = Math.min(...fy), maxY = Math.max(...fy);
   const depthMax = T ? Math.max(...T.map(p => p.y)) : S ? Math.max(...S.map(p => p.x)) : depthDefault;
   if (!(maxY - minY > 1e-9) || !(depthMax > 1e-9)) return null;
@@ -300,4 +318,30 @@ export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefaul
   if (!slabs) return null;
   const xs = F.map(p => p.x);
   return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, hasTop: !!T, hasSide: !!S };
+}
+const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
+/** 三面図（枠方式）から立体を組み立てる。
+ *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
+ *  高さを薄い輪切りにし、各輪切りで「正面の横幅 × 右の奥行き」の長方形で上の輪郭を切り取った形を、輪切りの厚みぶん積み上げる。
+ *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
+ *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
+ *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
+export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+  const groups = { front: [], top: [], side: [] };
+  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; const poly = closedPolygon(s, tolerance); if (poly) groups[area].push(poly); }
+  const F = biggestPoly(groups.front); if (!F) return null;
+  const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
+  const topPoly = biggestPoly(groups.top), sidePoly = biggestPoly(groups.side);
+  const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
+  const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
+  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
+}
+/** 紙を分けた三面図（4分割）から立体を組み立てる。上の紙は y=−奥行き、右の紙は x=奥行き（手前の線が 0）。 */
+export function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+  const polys = list => (list || []).map(s => closedPolygon(s, tolerance)).filter(Boolean);
+  const F = biggestPoly(polys(frontShapes)); if (!F) return null;
+  const tp = biggestPoly(polys(topShapes)), sp = biggestPoly(polys(sideShapes));
+  const T = tp ? tp.map(p => ({ x: p.x, y: -p.y })) : null;
+  const S = sp ? sp.map(p => ({ x: p.x, y: p.y })) : null;
+  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
 }
