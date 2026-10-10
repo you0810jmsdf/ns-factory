@@ -1323,8 +1323,8 @@ function applyLeather(hex) {
 }
 /* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
 const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
-/** 1枚の画像が実物で何 mm 四方か（文書の設定・無ければ既定） */
-function textureMm() { const v = Number(doc.textureMm); return v > 0 ? v : DATA_TEXTURES.tileMm; }
+/** 1枚の画像が実物で何 mm 四方か：文書の設定（数値）があれば全部それ、無ければ写真ごとの実寸（データの mm）、それも無ければ既定 */
+function textureMm(id) { const v = Number(doc.textureMm); if (v > 0) return v; const x = id ? textureById(id) : null; return x && Number(x.mm) > 0 ? Number(x.mm) : DATA_TEXTURES.tileMm; }
 /** 部品の板の色（3D）：質感が付いていれば写真の平均色、無ければ革色 */
 const partPanelColor = p => (p.texture && textureById(p.texture)?.avg) || p.color || null;
 /** 図形に貼る質感の id：図形自身の指定が優先、無ければ部品の指定 */
@@ -1338,14 +1338,14 @@ function texImage(id) {
 /** 画面の塗り：画像が読めていれば繰り返し模様（図面の mm に合わせて拡大縮小し、図面の原点に固定）、まだなら平均色 */
 function textureFill(id) {
   const x = textureById(id), img = texImage(id), pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
-  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm() / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
+  if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = scale * textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, origin.x, origin.y])); return pat; }
   return x ? x.avg : '#d9c7a0';
 }
 /** SVG 書き出し用：使っている質感の画像を埋め込む（読み込めていないものは平均色で塗られる） */
 function svgTextures() {
   const used = new Set([...doc.parts.map(p => p.texture), ...doc.shapes.map(s => s.texture)].filter(Boolean)), out = {};
   for (const id of used) {
-    const x = textureById(id); if (!x) continue; out[id] = { avg: x.avg };
+    const x = textureById(id); if (!x) continue; out[id] = { avg: x.avg, mm: textureMm(id) };
     const img = texImage(id); if (!img) continue;
     try { const c = document.createElement('canvas'); if (typeof c.getContext !== 'function') continue; c.width = img.width; c.height = img.height; c.getContext('2d').drawImage(img, 0, 0); out[id].href = c.toDataURL('image/jpeg', 0.85); } catch { /* 画像を取り出せないときは平均色 */ }
   }
@@ -1358,7 +1358,7 @@ function renderTextures() {
   fillSel($('textureSel'), textureList());
   for (const id of ['patchTexA', 'patchTexB']) fillSel($(id), TEXTURES);
   const cur = textureById($('textureSel').value), pv = $('texturePreview'); pv.style.background = cur ? `${cur.avg} url("${cur.file}") center / 48px` : 'transparent'; pv.title = cur ? cur.name + (cur.sub ? ' / ' + cur.sub : '') : '';
-  $('textureMm').value = String(textureMm());
+  $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; /* 空欄＝写真ごとの実寸 */
 }
 /** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
 function applyTexture(id) {
@@ -1395,7 +1395,11 @@ function initColors() {
   $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
-  $('textureMm').addEventListener('change', () => { const v = Number($('textureMm').value); if (v > 0) commit(() => { doc.textureMm = v; }); else $('textureMm').value = String(textureMm()); });
+  $('textureMm').addEventListener('change', () => { /* 数値＝全部その大きさ・空欄＝写真ごとの実寸に戻す・数でなければ元の表示に戻す */
+    const raw = String($('textureMm').value ?? '').trim(), v = Number(raw);
+    if (raw !== '' && !(v > 0)) { $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; return; }
+    if (v > 0 ? doc.textureMm !== v : doc.textureMm !== undefined) commit(() => { if (v > 0) doc.textureMm = v; else delete doc.textureMm; });
+  });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
   $('exportSvgFill').onclick = () => { download('leather-pattern-color.svg', docToSvg(doc, { includeHoles: true, fill: true }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
 }
