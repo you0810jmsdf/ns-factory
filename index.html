@@ -914,6 +914,8 @@ h1,h2,h3{
 .hero--staffnet .hero-actions .btn{font-size:14px;padding:11px 18px}
 .hero--staffnet .staff-cta-secondary{margin:18px 0 0;text-align:left;color:#e3c987;text-decoration-color:rgba(227,201,135,.45)}
 .hero--staffnet .staff-cta-secondary:hover{text-decoration-color:#e3c987}
+/* 2026-10-11 事業主指示: スマホ用に網へ飛ぶ文字リンク。PC は網がカードの隣に見えているので出さない（600px 以下だけ表示） */
+.hero--staffnet .staff-net-jump{display:none}
 /* 網: 枠を外して背景に溶かす（canvas は不透明な黒なので screen 合成で背景の光を通す） */
 .hero--staffnet .staff-net{
   background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;min-height:600px;
@@ -944,7 +946,9 @@ h1,h2,h3{
   .hero--staffnet .staff-commander > .hero-content,
   .hero--staffnet .staff-commander > .staff-cta-secondary{grid-column:1}
   .hero--staffnet .staff-cta-secondary{text-align:center}
-  .hero--staffnet .staff-net{min-height:440px}
+  .hero--staffnet .staff-net-jump{display:block}
+  /* scroll-margin-top: 「幕僚ネットワークを見る ↓」で飛んだとき、上に張り付くナビ（64px）の下に網が隠れないように */
+  .hero--staffnet .staff-net{min-height:440px;scroll-margin-top:64px}
 }
 @media (prefers-reduced-motion: reduce){
   .hero--staffnet::before,.hero--staffnet::after,
@@ -1810,6 +1814,9 @@ html[lang="en"] .staff-tasks .duty::after{content:" (internal)"}
       <a href="./profile.html" class="staff-cta-secondary" data-i18n="staff.profileLink">作家のプロフィールを見る →</a>
       <!-- 2026-09-25 事業主決定A: 講座をファーストビューに入れる。⛔ ボタンではなく文字リンク（オーダー相談の主導線を弱めないため。hero-actions の2つは無変更）-->
       <a href="./ai-course/" class="staff-cta-secondary" data-i18n="staff.courseLink">作家向けAI講座を見る →</a>
+      <!-- 2026-10-11 事業主指示: スマホでは網がカードの下（約1画面下）にあるので、網へ飛ぶ文字リンクを置く。
+           PC は網がカードの隣に見えているので出さない（CSS .staff-net-jump で 600px 以下だけ表示） -->
+      <a href="#staffNet" class="staff-cta-secondary staff-net-jump" data-i18n="staff.netJump">幕僚ネットワークを見る ↓</a>
     </div>
   </div>
   <div class="staff-net-panel">
@@ -2366,6 +2373,7 @@ window.NSF_I18N_DICT = {
   'staff.noteCta': "Commander's Office (AI management chronicle) →",
   'staff.profileLink': 'About the maker →',
   'staff.courseLink': 'AI course for makers →',
+  'staff.netJump': 'See the staff network ↓',
   'staff.netHint': "Hover a sphere to see each officer’s duties; click to enter their office. Drag to rotate, pinch to zoom, and grab the Chief of Staff in the center to move the network. “Show all” shows the whole network; double-click returns to the initial close-up. The particles show how many notes each officer keeps.",
   'staff.netFit': 'Show all',
   'staff.netZoom': 'Zoom in',
