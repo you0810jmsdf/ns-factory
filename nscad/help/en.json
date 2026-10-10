@@ -13,7 +13,7 @@
     {
       "id": "pen",
       "title": "Pen (continuous Bézier)",
-      "body": "Bezier tool: click the start, click midpoints (any number), then double-click the end (Enter also finishes). A smooth curve passes through every clicked point, and you can edit nodes and handles afterwards.\nClick for corner nodes, drag for smooth nodes with handles, as many as you like. Enter or double-click finishes; clicking the first node closes the path. Esc removes the last node.\nSelect a single pen shape with the Select tool to show its nodes. Drag nodes or handles (Alt/⌥ breaks one side of a handle). Double-click on the curve to add a node, Delete removes the chosen node. Use “Smooth / corner” in the Info card to switch. Lines, Béziers and polylines can be converted with “To pen path”."
+      "body": "Bezier tool: click the start, click midpoints (any number), then double-click the end (Enter also finishes). A smooth curve passes through every clicked point, and you can edit nodes and handles afterwards. Right-click also edits via points (on the curve: add one there; on a via point: remove it).\nClick for corner nodes, drag for smooth nodes with handles, as many as you like. Enter or double-click finishes; clicking the first node closes the path. Esc removes the last node.\nSelect a single pen shape with the Select tool to show its nodes. Drag nodes or handles (Alt/⌥ breaks one side of a handle). Double-click on the curve to add a node, Delete removes the chosen node. Use “Smooth / corner” in the Info card to switch. Lines, Béziers and polylines can be converted with “To pen path”."
     },
     {
       "id": "text-dimension",
