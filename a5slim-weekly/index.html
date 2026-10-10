@@ -151,8 +151,54 @@ body.panel-open #preview { margin-left: 280px; }
 .ls-rot .day-block:last-child { border-bottom: 0.15mm solid #ddd; }
 .ls-rot .memo-area { border-top: none; }
 
+/* === MODULE: 管理型（試作・時間軸バーチカル＋下段ウィジェット） ===
+   STORES「with my Planner」A5スリム横向き週間バーチカル[管理型]の試作。
+   上（紙の裏）＝月名チェック欄＋月〜日7列の時間軸バーチカル。下（次の紙の表）＝WEEKLY TASKS・支出メモ・習慣トラッカー。
+   寸法・幅・位置はすべてCSS変数／JS状態で持ち、左パネルのスライダーで変更できる（ハードコーディング禁止・2026-10-10 事業主指示）。
+   .ls-rot（上下見開きと同じ回転枠）をそのまま使う。 */
+.mg-upper-wrap { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.mg-timeaxis { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.mg-day-heads { display: flex; flex-shrink: 0; height: var(--mg-head-h, 6mm); }
+.mg-time-label-col-spacer { width: var(--mg-label-w, 7mm); flex-shrink: 0; }
+.mg-day-head { flex: 1; text-align: center; font-weight: 700; border-left: var(--mg-col-border-w, 0.15mm) solid #ddd; padding: 0.3mm 0; line-height: 1.3; overflow: hidden; }
+.mg-day-head:first-child { border-left: none; }
+.mg-day-head.is-sat { color: #3377cc; }
+.mg-day-head.is-sun { color: #cc3333; }
+.mg-day-wd { font-size: var(--mg-head-wd-font, 2mm); }
+.mg-day-date { font-size: var(--mg-head-date-font, 2.6mm); }
+.mg-grid-wrap { flex: 1; display: flex; position: relative; }
+.mg-hour-labels { width: var(--mg-label-w, 7mm); flex-shrink: 0; position: relative; }
+.mg-hour-label { position: absolute; left: 0; right: 0.6mm; transform: translateY(-50%); font-size: var(--mg-hour-font, 1.5mm); color: #999; text-align: right; }
+.mg-day-cols { flex: 1; display: flex; position: relative; }
+.mg-day-col { flex: 1; position: relative; border-left: var(--mg-col-border-w, 0.15mm) solid #e5e5e5; }
+.mg-day-col:first-child { border-left: calc(var(--mg-col-border-w, 0.15mm) * 2) solid #999; }
+.mg-day-col.is-sat { background-color: rgba(230,240,255,0.35); }
+.mg-day-col.is-sun { background-color: rgba(255,235,235,0.35); }
+
+/* === MODULE: 管理型（試作）月名チェック欄 ===
+   時間軸の上に重ねる絶対配置。既定位置（下寄り・不透明な帯）は下の罫線を隠して読みやすくしている。
+   位置はスライダーで自由に動かせる（時間軸と重ねたくない場合はX/Y位置で調整）。 */
+.mg-monthcheck { position: absolute; display: flex; background: rgba(255,255,255,0.94); border-top: 0.2mm solid #ccc; box-sizing: border-box; padding-top: 0.8mm; }
+.mg-mc-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.mg-mc-label { font-weight: 700; line-height: 1.3; }
+.mg-mc-mark { border: 0.2mm solid #999; border-radius: 50%; margin-top: 0.4mm; box-sizing: border-box; }
+
+/* === MODULE: 管理型（試作）下段ウィジェット（WEEKLY TASKS／支出メモ／習慣トラッカー） === */
+.mg-lower-wrap { position: relative; flex: 1; }
+.mg-widget { position: absolute; }
+.mg-widget-title { font-weight: 700; border-bottom: 0.2mm solid #555; padding-bottom: 0.3mm; margin-bottom: 0.8mm; white-space: nowrap; }
+.mg-tasks-grid { display: flex; flex-wrap: wrap; gap: 1.5mm; }
+.mg-task-note { border: 0.2mm dashed #bbb; box-sizing: border-box; }
+.mg-expense-line { border-bottom: 0.15mm solid #ddd; height: 0; }
+.mg-habit-row { display: flex; align-items: stretch; border-bottom: 0.15mm solid #eee; box-sizing: border-box; }
+.mg-habit-label { width: 14mm; flex-shrink: 0; font-size: 1.8mm; color: #666; display: flex; align-items: center; }
+.mg-habit-cell { flex: 1; border-left: 0.15mm solid #eee; display: flex; align-items: center; justify-content: center; }
+.mg-habit-check { width: 1.6mm; height: 1.6mm; border: 0.2mm solid #999; box-sizing: border-box; }
+
 /* === MODULE: CSS Variables === */
 :root {
+  --mg-label-w: 7mm; --mg-line-w: 0.12mm; --mg-col-border-w: 0.15mm; --mg-head-h: 6mm;
+  --mg-head-wd-font: 2mm; --mg-head-date-font: 2.6mm; --mg-hour-font: 1.5mm;
   --day-label-w: 15mm; --day-num-font: 6mm; --day-wd-font: 2.2mm; --day-block-h: 20mm;
   --text-wm-size: 6mm; --text-wm-angle: -30deg; --text-wm-x: 0mm; --text-wm-y: 0mm;
   --month-cal-top: 10mm; --month-cal-right: 0mm;
@@ -246,10 +292,11 @@ body.panel-open #preview { margin-left: 280px; }
     </div>
     <div class="ctrl-row">
       <label>使う向き</label>
-      <button class="btn-toggle on" id="btnPortrait" onclick="setOrient(false)">左右見開き</button>
-      <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
+      <button class="btn-toggle on" id="btnPortrait" onclick="setOrient('portrait')">左右見開き</button>
+      <button class="btn-toggle" id="btnLandscape" onclick="setOrient('landscape')">上下見開き</button>
+      <button class="btn-toggle" id="btnManagement" onclick="setOrient('management')">管理型（試作）</button>
     </div>
-    <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1週間（上：前半4日＋週の見出し／下：後半3日＋メモ）。上下見開きでは「各日の高さ」は使いません</div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1週間（上：前半4日＋週の見出し／下：後半3日＋メモ）。管理型（試作）＝リングが上・見開き1面に1週間（上：月名チェック欄＋時間軸バーチカル／下：WEEKLY TASKS欄＋支出メモ欄＋習慣トラッカー欄）。各欄の位置・サイズ・行数は左パネルの「管理型（試作）」設定で自由に調整できます。上下見開き・管理型では「各日の高さ」は使いません</div>
     <div class="btn-row dated-only">
       <button class="btn-primary" onclick="renderSingle()">作成（期間の全週）</button>
     </div>
@@ -322,6 +369,59 @@ body.panel-open #preview { margin-left: 280px; }
       <input type="range" id="lineCount" min="0" max="8" step="1" value="3" oninput="updateLineCount(this.value)"><span class="val" id="lineCountVal">3</span>本</div>
     <div class="ctrl-row"><label>メモ行数</label>
       <input type="range" id="memoLineCount" min="0" max="12" step="1" value="6" oninput="updateMemoCount(this.value)"><span class="val" id="memoCountVal">6</span>行</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>管理型（試作）: 時間軸</h3>
+    <div class="ctrl-row"><label>開始時刻</label><input type="range" id="mgStartHour" min="0" max="6" step="1" value="1" oninput="updateMgStartHour(this.value)"><span class="val" id="mgStartHourVal">1</span>時</div>
+    <div class="ctrl-row"><label>表示時間数</label><input type="range" id="mgHourSpan" min="12" max="24" step="1" value="24" oninput="updateMgHourSpan(this.value)"><span class="val" id="mgHourSpanVal">24</span>時間</div>
+    <div class="ctrl-row"><label>時刻ラベル幅</label><input type="range" id="mgLabelW" min="4" max="15" step="0.5" value="7" oninput="setCSSVar('--mg-label-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">7</span>mm</div>
+    <div class="ctrl-row"><label>時刻ラベル文字</label><input type="range" id="mgHourFont" min="1" max="3" step="0.1" value="1.5" oninput="setCSSVar('--mg-hour-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">1.5</span>mm</div>
+    <div class="ctrl-row"><label>時刻罫線の太さ</label><input type="range" id="mgLineW" min="0.05" max="0.4" step="0.01" value="0.12" oninput="setCSSVar('--mg-line-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0.12</span>mm</div>
+    <div class="ctrl-row"><label>曜日列の仕切線</label><input type="range" id="mgColBorderW" min="0.05" max="0.4" step="0.01" value="0.15" oninput="setCSSVar('--mg-col-border-w', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">0.15</span>mm</div>
+    <div class="ctrl-row"><label>見出し欄の高さ</label><input type="range" id="mgHeadH" min="3" max="12" step="0.5" value="6" oninput="setCSSVar('--mg-head-h', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">6</span>mm</div>
+    <div class="ctrl-row"><label>見出し曜日文字</label><input type="range" id="mgHeadWdFont" min="1" max="4" step="0.1" value="2" oninput="setCSSVar('--mg-head-wd-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2</span>mm</div>
+    <div class="ctrl-row"><label>見出し日付文字</label><input type="range" id="mgHeadDateFont" min="1" max="5" step="0.1" value="2.6" oninput="setCSSVar('--mg-head-date-font', this.value+'mm'); this.nextElementSibling.textContent=this.value"><span class="val">2.6</span>mm</div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">「管理型（試作）」モードだけで使う設定です。寸法・幅・位置は全てここで自由に変えられます（2026-10-10 事業主指示）。他のモードには影響しません。</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>管理型（試作）: 月名チェック欄</h3>
+    <div class="btn-row"><button class="btn-toggle on" id="btnMgMc" onclick="toggleMgWidget('mc','btnMgMc')">表示</button></div>
+    <div class="ctrl-row"><label>X位置</label><input type="range" id="mgMcX" min="0" max="190" step="0.5" value="24" oninput="mgWidgets.mc.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">24</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgMcY" min="0" max="92" step="0.5" value="80" oninput="mgWidgets.mc.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">80</span>mm</div>
+    <div class="ctrl-row"><label>幅</label><input type="range" id="mgMcW" min="30" max="198" step="1" value="150" oninput="mgWidgets.mc.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">150</span>mm</div>
+    <div class="ctrl-row"><label>文字サイズ</label><input type="range" id="mgMcFont" min="1" max="4" step="0.1" value="1.4" oninput="mgWidgets.mc.font=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">1.4</span>mm</div>
+    <div style="font-size:9px;color:#888;line-height:1.5;margin-top:4px;">JAN〜DECが横並びになります。既定位置は時間軸の下寄りに白い帯で重ねて表示します（下の罫線が透けないようにしています）。好きな位置へX/Y位置で動かせます。</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>管理型（試作）: WEEKLY TASKS欄</h3>
+    <div class="btn-row"><button class="btn-toggle on" id="btnMgTasks" onclick="toggleMgWidget('tasks','btnMgTasks')">表示</button></div>
+    <div class="ctrl-row"><label>X位置</label><input type="range" id="mgTkX" min="0" max="190" step="0.5" value="2" oninput="mgWidgets.tasks.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">2</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgTkY" min="0" max="92" step="0.5" value="2" oninput="mgWidgets.tasks.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">2</span>mm</div>
+    <div class="ctrl-row"><label>欄の幅</label><input type="range" id="mgTkW" min="30" max="198" step="1" value="190" oninput="mgWidgets.tasks.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">190</span>mm</div>
+    <div class="ctrl-row"><label>1枠のサイズ（付箋）</label><input type="range" id="mgTkSize" min="20" max="70" step="1" value="50" oninput="mgWidgets.tasks.size=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">50</span>mm</div>
+    <div class="ctrl-row"><label>枠の数</label><input type="range" id="mgTkCount" min="1" max="9" step="1" value="3" oninput="mgWidgets.tasks.count=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">3</span>枚</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>管理型（試作）: 支出メモ欄</h3>
+    <div class="btn-row"><button class="btn-toggle on" id="btnMgEx" onclick="toggleMgWidget('expense','btnMgEx')">表示</button></div>
+    <div class="ctrl-row"><label>X位置</label><input type="range" id="mgExX" min="0" max="190" step="0.5" value="2" oninput="mgWidgets.expense.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">2</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgExY" min="0" max="92" step="0.5" value="58" oninput="mgWidgets.expense.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">58</span>mm</div>
+    <div class="ctrl-row"><label>幅</label><input type="range" id="mgExW" min="30" max="198" step="1" value="90" oninput="mgWidgets.expense.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">90</span>mm</div>
+    <div class="ctrl-row"><label>行数</label><input type="range" id="mgExRows" min="1" max="15" step="1" value="6" oninput="mgWidgets.expense.rows=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">6</span>行</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>管理型（試作）: 習慣トラッカー欄</h3>
+    <div class="btn-row"><button class="btn-toggle on" id="btnMgHb" onclick="toggleMgWidget('habit','btnMgHb')">表示</button></div>
+    <div class="ctrl-row"><label>X位置</label><input type="range" id="mgHbX" min="0" max="190" step="0.5" value="100" oninput="mgWidgets.habit.x=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">100</span>mm</div>
+    <div class="ctrl-row"><label>Y位置</label><input type="range" id="mgHbY" min="0" max="92" step="0.5" value="58" oninput="mgWidgets.habit.y=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">58</span>mm</div>
+    <div class="ctrl-row"><label>幅</label><input type="range" id="mgHbW" min="30" max="198" step="1" value="94" oninput="mgWidgets.habit.w=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">94</span>mm</div>
+    <div class="ctrl-row"><label>行数（習慣の数）</label><input type="range" id="mgHbRows" min="1" max="10" step="1" value="5" oninput="mgWidgets.habit.rows=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">5</span>行</div>
+    <div class="ctrl-row"><label>1行の高さ</label><input type="range" id="mgHbRowH" min="2" max="10" step="0.5" value="4" oninput="mgWidgets.habit.rowH=parseFloat(this.value); this.nextElementSibling.textContent=this.value; rerender()"><span class="val">4</span>mm</div>
   </div>
 
   <div class="ctrl-section">
@@ -539,12 +639,26 @@ let opts = {
   showLogo: true, showMonthAbbr: true, showMonthCal: true, showTextWm: true,
   showImgWm: false, showHoliday: true,
   showDateNum: true, showDayWd: true, showWeekMeta: true,
-  undated: false, ghostStyle: 'seg', landscape: false
+  undated: false, ghostStyle: 'seg', landscape: false, management: false
 };
 let lineCount = 3;
 let memoLineCount = 6;
 let lastRenderMode = 'single';
 let customImgDataUrl = null;
+
+// === MODULE: 管理型（試作）State ===
+// 寸法・幅・位置は全てここに持ち、左パネルのスライダーで自由に変更できる（固定値のハードコーディング禁止・2026-10-10 事業主指示）
+let mgStartHour = 1;   // 時間軸の開始時刻（例:1=AM1:00）
+let mgHourSpan = 24;   // 表示する時間数（コマ数）
+const mgWidgets = {
+  mc:      { show: true, x: 24,  y: 80, w: 150, font: 1.4 },                 // 月名チェック欄（JAN〜DEC横並び）
+  tasks:   { show: true, x: 2,   y: 2,  w: 190, size: 50, count: 3 },        // WEEKLY TASKS欄（付箋サイズの枠）
+  expense: { show: true, x: 2,   y: 58, w: 90,  rows: 6 },                   // 支出メモ欄
+  habit:   { show: true, x: 100, y: 58, w: 94,  rows: 5, rowH: 4 }           // 習慣トラッカー欄
+};
+function updateMgStartHour(v) { mgStartHour = parseInt(v); document.getElementById('mgStartHourVal').textContent = v; rerender(); }
+function updateMgHourSpan(v) { mgHourSpan = parseInt(v); document.getElementById('mgHourSpanVal').textContent = v; rerender(); }
+function toggleMgWidget(key, btnId) { mgWidgets[key].show = !mgWidgets[key].show; document.getElementById(btnId).classList.toggle('on', mgWidgets[key].show); rerender(); }
 
 // === MODULE: Utility ===
 function pad(n) { return String(n).padStart(2,'0'); }
@@ -624,7 +738,14 @@ function togglePageSide(side) {
   rerender();
 }
 function setLang(en) { isEN = en; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); rerender(); }
-function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); rerender(); }
+function setOrient(mode) {
+  opts.landscape = (mode === 'landscape');
+  opts.management = (mode === 'management');
+  document.getElementById('btnPortrait').classList.toggle('on', mode === 'portrait');
+  document.getElementById('btnLandscape').classList.toggle('on', mode === 'landscape');
+  document.getElementById('btnManagement').classList.toggle('on', mode === 'management');
+  rerender();
+}
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; document.getElementById(btnId).classList.toggle('on', opts[key]); rerender(); }
 function rerender() { if (lastRenderMode === 'monthly' && !opts.undated) renderMonthly(); else renderSingle(); }
 function updateMemoCount(v) { memoLineCount = parseInt(v); document.getElementById('memoCountVal').textContent = v; rerender(); }
@@ -811,6 +932,131 @@ function landscapePages(weeks) {
   return out;
 }
 
+// === MODULE: 管理型（試作）Page Builder ===
+// STORES「with my Planner」A5スリム横向き週間バーチカル[管理型]の試作。
+// item: { mg: 'upper' | 'lower' | 'memo', week }。上（紙の裏）＝月名チェック欄＋時間軸バーチカル、下（次の紙の表）＝WEEKLY TASKS・支出メモ・習慣トラッカー。
+// 寸法・幅・位置は mgStartHour/mgHourSpan/mgWidgets（状態）とCSS変数で持ち、左パネルのスライダーで自由に変更できる（2026-10-10 事業主指示）。
+// 回転の仕組みは上下見開き（.ls-rot）と同じものを使う。
+function buildHourLabelsHTML() {
+  let html = '';
+  const n = Math.max(1, Math.round(mgHourSpan));
+  for (let i = 0; i <= n; i++) {
+    const hour = mgStartHour + i;
+    html += `<div class="mg-hour-label" style="top:${(i / n * 100).toFixed(4)}%">${hour}</div>`;
+  }
+  return html;
+}
+function buildMgDayHead(date, wd, U) {
+  const wdLabel = isEN ? WD_EN_SHORT[wd] : WD_JA[wd];
+  const wdClass = wd === 0 ? 'is-sun' : (wd === 6 ? 'is-sat' : '');
+  const dateHTML = (!U && opts.showDateNum) ? `<div class="mg-day-date">${date.getDate()}</div>` : '';
+  const wdHTML = opts.showDayWd ? `<div class="mg-day-wd">${wdLabel}</div>` : '';
+  return `<div class="mg-day-head ${wdClass}">${wdHTML}${dateHTML}</div>`;
+}
+function buildMgDayCol(wd) {
+  const wdClass = wd === 0 ? 'is-sun' : (wd === 6 ? 'is-sat' : '');
+  const n = Math.max(1, Math.round(mgHourSpan));
+  const grad = `repeating-linear-gradient(to bottom, #ccc 0, #ccc var(--mg-line-w,0.12mm), transparent var(--mg-line-w,0.12mm), transparent calc(100%/${n}))`;
+  return `<div class="mg-day-col ${wdClass}" style="background-image:${grad}"></div>`;
+}
+// === MODULE: 管理型（試作）月名チェック欄 Builder ===
+function buildMgMonthCheckHTML() {
+  const mc = mgWidgets.mc;
+  if (!mc.show) return '';
+  const markSize = (mc.font * 1.1).toFixed(2);
+  const items = MONTH_EN_ABB.map(m => `<div class="mg-mc-item"><div class="mg-mc-label">${m}</div><div class="mg-mc-mark" style="width:${markSize}mm;height:${markSize}mm;"></div></div>`).join('');
+  return `<div class="mg-monthcheck" style="left:${mc.x}mm;top:${mc.y}mm;width:${mc.w}mm;font-size:${mc.font}mm;">${items}</div>`;
+}
+// === MODULE: 管理型（試作）下段ウィジェット Builder（WEEKLY TASKS／支出メモ／習慣トラッカー） ===
+function buildMgTasksHTML() {
+  const t = mgWidgets.tasks;
+  if (!t.show) return '';
+  const notes = Array.from({ length: Math.round(t.count) }, () => `<div class="mg-task-note" style="width:${t.size}mm;height:${t.size}mm;"></div>`).join('');
+  return `<div class="mg-widget" style="left:${t.x}mm;top:${t.y}mm;width:${t.w}mm;"><div class="mg-widget-title" style="font-size:2.4mm;">WEEKLY TASKS</div><div class="mg-tasks-grid">${notes}</div></div>`;
+}
+function buildMgExpenseHTML() {
+  const e = mgWidgets.expense;
+  if (!e.show) return '';
+  const lines = Array.from({ length: Math.round(e.rows) }, () => `<div class="mg-expense-line" style="margin-top:4mm;"></div>`).join('');
+  return `<div class="mg-widget" style="left:${e.x}mm;top:${e.y}mm;width:${e.w}mm;"><div class="mg-widget-title" style="font-size:2.2mm;">支出メモ</div>${lines}</div>`;
+}
+function buildMgHabitHTML() {
+  const h = mgWidgets.habit;
+  if (!h.show) return '';
+  const rows = Array.from({ length: Math.round(h.rows) }, () => {
+    const cells = Array.from({ length: 7 }, () => `<div class="mg-habit-cell"><span class="mg-habit-check"></span></div>`).join('');
+    return `<div class="mg-habit-row" style="height:${h.rowH}mm;"><div class="mg-habit-label"></div>${cells}</div>`;
+  }).join('');
+  return `<div class="mg-widget" style="left:${h.x}mm;top:${h.y}mm;width:${h.w}mm;"><div class="mg-widget-title" style="font-size:2.2mm;">習慣トラッカー</div>${rows}</div>`;
+}
+function buildLowerManagementHTML() {
+  return `<div class="mg-lower-wrap">${buildMgTasksHTML()}${buildMgExpenseHTML()}${buildMgHabitHTML()}</div>`;
+}
+// weekStart: Date（日付あり）または null（日付なし）
+function buildTimeAxisHTML(weekStart, startDay, U) {
+  let heads = '', cols = '';
+  for (let i = 0; i < 7; i++) {
+    const wd = (startDay + i) % 7;
+    const d = U ? null : addDays(weekStart, i);
+    heads += buildMgDayHead(d, wd, U);
+    cols += buildMgDayCol(wd);
+  }
+  let metaHTML = '', monthAbbr = '';
+  if (U) {
+    if (opts.showMonthAbbr && opts.ghostStyle === 'seg') monthAbbr = `<div class="week-month-abbr">${segGhostHTML(2)}</div>`;
+  } else {
+    const we = addDays(weekStart, 6);
+    const rangeStr = (weekStart.getMonth() === we.getMonth()) ? `${weekStart.getMonth()+1}/${weekStart.getDate()} – ${we.getDate()}` : `${weekStart.getMonth()+1}/${weekStart.getDate()} – ${we.getMonth()+1}/${we.getDate()}`;
+    if (opts.showWeekMeta) metaHTML = `<div class="week-meta"><div class="week-range">${rangeStr}</div><div class="week-num">W${pad(getWeekNumber(weekStart))} · ${weekStart.getFullYear()}</div></div>`;
+    if (opts.showMonthAbbr) monthAbbr = `<div class="week-month-abbr">${isEN ? MONTH_EN_ABB[weekStart.getMonth()] : `${weekStart.getMonth()+1}月`}</div>`;
+  }
+  return `<div class="mg-upper-wrap">
+    <div class="week-header">${metaHTML}<div class="week-brand">N's factory</div>${monthAbbr}</div>
+    <div class="mg-timeaxis">
+      <div class="mg-day-heads"><div class="mg-time-label-col-spacer"></div>${heads}</div>
+      <div class="mg-grid-wrap">
+        <div class="mg-hour-labels">${buildHourLabelsHTML()}</div>
+        <div class="mg-day-cols">${cols}</div>
+      </div>
+    </div>
+    ${buildMgMonthCheckHTML()}
+  </div>`;
+}
+function buildManagementPage(item, pageNum, holeSide) {
+  const U = opts.undated;
+  const startDay = parseInt(document.getElementById('weekStartDay').value);
+  const holeStripLeft = holeSide === 'left';
+  const holeItems = opts.showHoles ? HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm"></div>`).join('') : '';
+  const borderStyle = opts.showHoleLine ? (holeStripLeft ? 'border-right:0.2mm solid #ddd;' : 'border-left:0.2mm solid #ddd;') : '';
+  const punchGuideHTML = opts.showHoleBisect ? `<div class="punch-guide"></div>` : '';
+  const holesHTML = `<div class="hole-strip ${holeStripLeft?'':'right'}" style="${borderStyle}">${holeItems}${punchGuideHTML}</div>`;
+  const logoHTML = opts.showLogo ? `<div class="logo-wm"><img src="../assets/logo-wm.png" alt=""></div>` : '';
+  const textWmContent = escapeHTML(document.getElementById('textWmContent').value);
+  const textWmHTML = opts.showTextWm && textWmContent ? `<div class="text-wm">${textWmContent}</div>` : '';
+  const imgWmHTML = opts.showImgWm && customImgDataUrl ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
+
+  let inner = '';
+  if (item.mg === 'memo') {
+    inner = `<div class="memo-area"><div class="memo-label">MEMO</div>${Array(14).fill('<div class="memo-line"></div>').join('')}</div>`;
+  } else if (item.mg === 'upper') {
+    inner = buildTimeAxisHTML(item.week, startDay, U);
+  } else { // lower：WEEKLY TASKS・支出メモ・習慣トラッカー（位置・サイズ・行数は左パネルで調整）
+    inner = buildLowerManagementHTML();
+  }
+  return `<div class="slot" data-pos="__POS__">
+    ${holeStripLeft ? holesHTML : ''}
+    <div class="page-body"><div class="ls-rot" data-mg="${item.mg}">${logoHTML}${textWmHTML}${imgWmHTML}${buildChecklistsHTML()}${inner}<div class="page-num-bar"><span>${pageNum}</span></div></div></div>
+    ${!holeStripLeft ? holesHTML : ''}
+  </div>`;
+}
+// 管理型: 週ごとに [上＝紙の裏（時間軸）, 下＝次の紙の表（仮メモ）] を並べる。先頭・末尾は罫線メモ
+function managementPages(weeks) {
+  const out = [{ mg: 'memo' }];
+  weeks.forEach(w => out.push({ mg: 'upper', week: w }, { mg: 'lower', week: w }));
+  out.push({ mg: 'memo' });
+  return out;
+}
+
 // === MODULE: A4横 Sheet Builder ===
 function makeA4HTML(weekStartDates, pageNums, sideKey) {
   const map = SLOT_MAP[sideKey];
@@ -824,7 +1070,9 @@ function makeA4HTML(weekStartDates, pageNums, sideKey) {
     // null/undefined だけを空き枠にする（日付なしの週番号 0 は有効）
     if (idx >= weekStartDates.length || weekStartDates[idx] == null) return `<div class="slot empty" data-pos="${pos}"${dl}></div>`;
     const item = weekStartDates[idx];
-    const pageHTML = (item && item.ls) ? buildLandscapePage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]) : buildWeeklyPage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]);
+    const pageHTML = (item && item.ls) ? buildLandscapePage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey])
+      : (item && item.mg) ? buildManagementPage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey])
+      : buildWeeklyPage(item, pageNums[idx], HOLE_SIDE_BY_FACE[sideKey]);
     return pageHTML.replace('data-pos="__POS__"', 'data-pos="' + pos + '"' + dl);
   });
   return `<div class="a4-sheet">${cuts}${slots.join('')}</div>`;
@@ -854,7 +1102,8 @@ function renderSingle() {
     const n = Math.min(60, Math.max(1, parseInt(document.getElementById('undatedCount').value) || 4));
     const weeks = Array.from({ length: n }, (_, i) => i);
     html = opts.landscape ? renderSets(landscapePages(weeks), s => `日付なし ${n}週（上下見開き） · Sheet ${s + 1}`)
-                          : renderSets(weeks, s => `日付なし ${s * PER_SHEET + 1}〜${Math.min(n, s * PER_SHEET + PER_SHEET)}週目`);
+      : opts.management ? renderSets(managementPages(weeks), s => `日付なし ${n}週（管理型試作） · Sheet ${s + 1}`)
+      : renderSets(weeks, s => `日付なし ${s * PER_SHEET + 1}〜${Math.min(n, s * PER_SHEET + PER_SHEET)}週目`);
   } else {
     const startDay = parseInt(document.getElementById('weekStartDay').value);
     const rawDate = document.getElementById('startDate').value || toDateVal(new Date());
@@ -866,10 +1115,11 @@ function renderSingle() {
     for (let cur = baseWeek; cur <= endD && weeks.length < 60; cur = addWeeks(cur, 1)) weeks.push(cur);
     if (!weeks.length) weeks.push(baseWeek);
     html = opts.landscape ? renderSets(landscapePages(weeks), s => `${toDateVal(weeks[0])}〜 ${weeks.length}週（上下見開き） · Sheet ${s + 1}`)
-                          : renderSets(weeks, s => `${toDateVal(weeks[0])}〜 ${weeks.length}週 · Sheet ${s + 1}`);
+      : opts.management ? renderSets(managementPages(weeks), s => `${toDateVal(weeks[0])}〜 ${weeks.length}週（管理型試作） · Sheet ${s + 1}`)
+      : renderSets(weeks, s => `${toDateVal(weeks[0])}〜 ${weeks.length}週 · Sheet ${s + 1}`);
   }
   // 綴じ後プレビュー（flip-sim.js）はこれを見て、上下見開き（リングが上）で表示する
-  document.getElementById('preview').dataset.orient = opts.landscape ? 'landscape' : 'portrait';
+  document.getElementById('preview').dataset.orient = (opts.landscape || opts.management) ? 'landscape' : 'portrait';
   document.getElementById('preview').innerHTML = html;
   saveSettings();
 }
@@ -975,11 +1225,12 @@ function loadSettings() {
       document.body.classList.toggle('undated', opts.undated);
       document.getElementById('undatedSection').style.display = opts.undated ? '' : 'none';
     }
-    if (s.opts.landscape != null) {
-      opts.landscape = !!s.opts.landscape;
-      document.getElementById('btnPortrait').classList.toggle('on', !opts.landscape);
-      document.getElementById('btnLandscape').classList.toggle('on', opts.landscape);
-    }
+    if (s.opts.landscape != null) opts.landscape = !!s.opts.landscape;
+    if (s.opts.management != null) opts.management = !!s.opts.management;
+    const curMode = opts.management ? 'management' : (opts.landscape ? 'landscape' : 'portrait');
+    document.getElementById('btnPortrait').classList.toggle('on', curMode === 'portrait');
+    document.getElementById('btnLandscape').classList.toggle('on', curMode === 'landscape');
+    document.getElementById('btnManagement').classList.toggle('on', curMode === 'management');
   }
   if (s.isEN != null) { isEN = s.isEN; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); }
   showFront = true; showBack = true; // 保存値に関わらず常に両面（表裏選択は廃止）
@@ -1014,6 +1265,12 @@ const HISTORY_ENTRIES = [
     detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
   { date: '2026-09-17', type: 'improve', title: 'ロゴ透かしの既定を10%に',
     detail: 'ロゴ透かしの既定の濃さを 4%→10% にしました（印刷で薄すぎて胸のNや文字が出なかったため）。「ロゴ透かし」の不透明度で従来どおり調整できます。保存済みの設定がある方はそのままです。' },
+  { date: '2026-10-10', type: 'feat', title: '「管理型（試作）」モードを追加（時間軸バーチカルのみ・試作中）',
+    detail: '「使う向き」に3つ目の選択肢「管理型（試作）」を追加しました。他社の人気リフィルにある、1週間を時間の縦じまで区切る形（月〜日の7列・AM1:00から25:00まで1時間刻み）を試作したものです。まだ時間軸の部分だけで、タスク欄・支出メモ・習慣トラッカーは入っていません（下のページは仮のメモ欄のままです）。既存の「左右見開き」「上下見開き」には影響しません。' },
+  { date: '2026-10-10', type: 'feat', title: '「管理型（試作）」に残りの欄（月名チェック・WEEKLY TASKS・支出メモ・習慣トラッカー）を追加し、全部スライダーで自由に調整できるように',
+    detail: '左パネルに「管理型（試作）」専用の設定を追加しました。時間軸（開始時刻・表示時間数・ラベルの幅や文字サイズ・罫線の太さなど）、月名チェック欄（JAN〜DECが横並び・位置と文字サイズ）、WEEKLY TASKS欄（付箋のサイズと枚数・位置・幅）、支出メモ欄（行数・位置・幅）、習慣トラッカー欄（行数・1行の高さ・位置・幅）を、それぞれスライダーで動かすとその場で絵が変わります。固定の決め打ちレイアウトではありません。初期配置はまだ調整しきれていないので、重なって見える場合はX・Y位置のスライダーで動かしてください。' },
+  { date: '2026-10-10', type: 'fix', title: '「管理型（試作）」の月名チェック欄の初期位置と、向きの説明文を修正',
+    detail: '月名チェック欄の最初に表示される位置が時間軸の罫線と重なって見づらかったのを、下寄りに白い帯を敷いた位置へ変更しました（場所はこれまでどおりX・Y位置のスライダーで動かせます）。また「使う向き」の説明文が古いままで、月名チェック・WEEKLY TASKS・支出メモ・習慣トラッカーが未実装のように書かれていたのを、実装済みであることが伝わる文言に直しました。' },
 ];
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
