@@ -7,7 +7,7 @@
 //   右から見た図   … 高さ（y）は正面と同じ。横（x）が「奥行き」。枠の左の辺が手前、右に行くほど奥。
 // 上から見た図の奥行きを右から見た図へ移すときは、2つの枠の「手前どうし」が出会う角から
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
-import { bboxOf, flattenShape } from './geometry.js';
+import { bboxOf, flattenShape, chainShapes } from './geometry.js';
 import { v3, faceNormal } from './sim3d.js';
 
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
@@ -281,6 +281,18 @@ function closedPolygon(s, tol) {
   if (pts.length > 1 && Math.hypot(pts[0].x - pts.at(-1).x, pts[0].y - pts.at(-1).y) < 1e-9) pts = pts.slice(0, -1);
   return pts.length >= 3 ? pts : null;
 }
+/** 図形の列から閉じた輪郭（点の列）をすべて取り出す。閉じた1図形のほか、丸め・面取りなどで直線や円弧に分かれていても、端がつながって輪になっていれば1つの輪郭にする。 */
+function closedPolygons(shapes, tol) {
+  const out = [], open = [];
+  for (const s of shapes || []) { const p = closedPolygon(s, tol); if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
+  if (open.length) for (const c of chainShapes(open, Math.max(tol / 10, 0.01))) {
+    if (!c.closed) continue;
+    let pts = []; try { for (const it of c.items) { const ps = flattenShape(it.shape, tol); if (it.reversed) ps.reverse(); pts.push(...(pts.length ? ps.slice(1) : ps)); } } catch { continue; }
+    if (pts.length > 1 && Math.hypot(pts[0].x - pts.at(-1).x, pts[0].y - pts.at(-1).y) < 1e-6) pts = pts.slice(0, -1);
+    if (pts.length >= 3) out.push(pts);
+  }
+  return out;
+}
 const polyArea = pts => Math.abs(pts.reduce((a, p, i) => { const q = pts[(i + 1) % pts.length]; return a + p.x * q.y - q.x * p.y; }, 0) / 2);
 /** 高さ y の横線が多角形と交わる区間（[x0, x1] の列・小さい順）。 */
 export function threeViewSpansAt(poly, y) {
@@ -343,7 +355,9 @@ const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > po
  *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
 export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
   const groups = { front: [], top: [], side: [] };
-  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; const poly = closedPolygon(s, tolerance); if (poly) groups[area].push(poly); }
+  const byArea = { front: [], top: [], side: [] };
+  for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (area) byArea[area].push(s); }
+  for (const area of Object.keys(groups)) groups[area] = closedPolygons(byArea[area], tolerance);
   const F = biggestPoly(groups.front); if (!F) return null;
   const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
   const topPoly = biggestPoly(groups.top), sidePoly = biggestPoly(groups.side);
@@ -353,7 +367,7 @@ export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefaul
 }
 /** 紙を分けた三面図（4分割）から立体を組み立てる。上の紙は y=−奥行き、右の紙は x=奥行き（手前の線が 0）。 */
 export function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
-  const polys = list => (list || []).map(s => closedPolygon(s, tolerance)).filter(Boolean);
+  const polys = list => closedPolygons(list, tolerance);
   const F = biggestPoly(polys(frontShapes)); if (!F) return null;
   const tp = biggestPoly(polys(topShapes)), sp = biggestPoly(polys(sideShapes));
   const T = tp ? tp.map(p => ({ x: p.x, y: -p.y })) : null;
