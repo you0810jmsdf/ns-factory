@@ -1972,6 +1972,7 @@ function anchor() {
   if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
   if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
+  if (stage?.kind === 'cmd' && mode === 'line') return stage.start; /* クリックで続けて引く直線：直前の点を基準に、Shift で水平・垂直へ固定する */
   if (stage?.kind === 'bezier') return stage.c1 ? stage.end : stage.start;
   if (stage?.kind === 'bzpts') return stage.points.at(-1);
   return null;
