@@ -32,6 +32,8 @@
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; } .ctx button { height: 30px; text-align: left; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
+    #threeViewTools { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; } #threeViewTools input { width: 64px; }
+    #threeViewNotice { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 5px 12px; background: #3a2a10e6; border: 1px solid #e0a93f; border-radius: 6px; font-size: 12px; color: #ffd27f; pointer-events: none; white-space: nowrap; } #threeViewNotice[hidden] { display: none; }
     #side { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); background: #181818; }
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 1px 3px #0006; }
     .card > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-weight: 600; color: var(--accent); user-select: none; }
@@ -78,7 +80,7 @@
 <body data-prototype="1">
 <header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
-<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label>
+<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button></span>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
@@ -109,7 +111,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy" data-i18n="copy"></button><button id="mirrorX" data-i18n="mirrorX"></button><button id="mirrorY" data-i18n="mirrorY"></button><button id="rotate" data-i18n="rotate"></button><button id="toPath" data-i18n="toPath"></button><button id="delete" data-i18n="delete"></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><output id="status"></output></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -431,8 +433,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=c47a2497","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=cc49fc2e","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=b05b7ad1","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=fc36b3ac","./help/ja.js":"./help/ja.js?v=184a0f56","./i18n.js":"./i18n.js?v=0471e907","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=c47a2497"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./app.js":"./app.js?v=8bde7421","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./design.js":"./design.js?v=8c660613","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=d7ad3b4c","./geometry.js":"./geometry.js?v=9530cecc","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=b4b30924","./help/ja.js":"./help/ja.js?v=c9efec02","./i18n.js":"./i18n.js?v=d45f025f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=3c689f20","./threeview.js":"./threeview.js?v=3e47dc68","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=8bde7421"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1257,6 +1259,19 @@ const MESSAGES = {
     "spacing": "間隔",
     "snap": "スナップ",
     "printOverlay": "印刷割付を表示",
+    "threeView": "三面図（正面・上・横）",
+    "threeViewNotice": "ためしに作っている途中の機能です。正面の枠に形を描くと、上と右の枠に合わせるための点線が出ます",
+    "threeViewFront": "正面から見た図",
+    "threeViewTop": "上から見た図",
+    "threeViewSide": "右から見た図",
+    "threeViewMiter": "45°の線（奥行きを右の図へ移す）",
+    "threeViewDepth": "奥行き {d} mm",
+    "threeViewDepthIn": "奥行き",
+    "threeViewMake": "上と右の図を作る",
+    "threeViewMakeBadDepth": "奥行きは 0 より大きい数（mm）にしてください",
+    "threeViewMakeNoFront": "先に「正面から見た図」の枠の中に、幅と高さのある形を描いてください",
+    "threeViewMakeExists": "同じ外形がもうあります",
+    "threeViewMakeDone": "上と右の図の外形を作りました（幅 {w}・高さ {h}・奥行き {d} mm）。細かい形はこの四角の上に、点線に合わせて描き足してください",
     "zoomOut": "縮小",
     "zoomIn": "拡大",
     "fit": "全体表示",
@@ -1981,6 +1996,19 @@ const MESSAGES = {
     "spacing": "Spacing",
     "snap": "Snap",
     "printOverlay": "Show print layout",
+    "threeView": "3 views (front / top / right)",
+    "threeViewNotice": "Still being built. Draw the front shape in its box, and dotted guide lines appear in the top and right boxes",
+    "threeViewFront": "Front view",
+    "threeViewTop": "Top view",
+    "threeViewSide": "Right view",
+    "threeViewMiter": "45° line (carries the depth to the right view)",
+    "threeViewDepth": "Depth {d} mm",
+    "threeViewDepthIn": "Depth",
+    "threeViewMake": "Make top & right views",
+    "threeViewMakeBadDepth": "Depth must be a number larger than 0 (mm)",
+    "threeViewMakeNoFront": "First draw a shape with width and height inside the Front view box",
+    "threeViewMakeExists": "Those outlines already exist",
+    "threeViewMakeDone": "Made the top and right outlines (width {w}, height {h}, depth {d} mm). Draw the details on these boxes, following the dotted lines",
     "zoomOut": "Zoom out",
     "zoomIn": "Zoom in",
     "fit": "Fit all",
@@ -3743,6 +3771,206 @@ function unfold(panels, folds, { allowanceMm = 0 } = {}) {
 function edgeNormal(a, b, sign) { const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1; return { x: -dy / l * sign, y: dx / l * sign }; }
 
 return {v3, add3, sub3, scale3, dot3, cross3, len3, norm3, identity, multiply, translation, rotationAxis, transformPoint, rotationAbout, splitPolygon, buildPanels, pointInPolygon, panelFaces, triangulate, faceNormal, foldMatrices, applyFolds, viewMatrix, project, collisions, orthoViews, viewsToSvg, defaultCamera, unfold};
+})();
+__mods['threeview'] = (function(){
+// 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
+// ここは計算だけ（画面に描くのは app.js）。依存は geometry.js の bboxOf だけ。
+//
+// 3つの枠の置き方：上から見た図は正面の真上、右から見た図は正面の真右。
+//   正面から見た図 … 横の位置（x）と 高さ（y）
+//   上から見た図   … 横の位置（x）は正面と同じ。縦（y）が「奥行き」。枠の下の辺が手前、上に行くほど奥。
+//   右から見た図   … 高さ（y）は正面と同じ。横（x）が「奥行き」。枠の左の辺が手前、右に行くほど奥。
+// 上から見た図の奥行きを右から見た図へ移すときは、2つの枠の「手前どうし」が出会う角から
+// 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
+const { bboxOf } = __mods['geometry'];
+/** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
+const THREE_VIEW_LAYOUT = {
+  top: { x: 0, y: 0, w: 300, h: 220 },
+  front: { x: 0, y: 250, w: 300, h: 220 },
+  side: { x: 330, y: 250, w: 220, h: 220 },
+};
+/** 枠を広げるときの余白(mm)と、枠と枠のすき間(mm)。 */
+const THREE_VIEW_MARGIN = 10, THREE_VIEW_GAP = 30;
+
+const keyOf = v => Math.round(v * 1e6) / 1e6; /* 同じ位置の点をひとつにまとめるための丸め */
+
+/** 点がどの枠のものか：'front' | 'top' | 'side' | null。
+ *  枠と枠のすき間の真ん中に縦横の境目を引き、左下＝正面・左上＝上から見た図・右下＝右から見た図。右上（45°の線のあたり）だけ null。
+ *  枠からどれだけ離れていても、その方向にあれば同じ枠とみなす（枠は描いた形に合わせて広がるため）。 */
+function threeViewAreaAt(p, layout = THREE_VIEW_LAYOUT) {
+  const divX = (layout.front.x + layout.front.w + layout.side.x) / 2, divY = (layout.top.y + layout.top.h + layout.front.y) / 2;
+  const left = p.x < divX, lower = p.y >= divY;
+  if (left && lower) return 'front';
+  if (left) return 'top';
+  if (lower) return 'side';
+  return null;
+}
+
+/** 図形がどの枠のものか：図形を囲む四角の真ん中の点で決める（1 つの図形は 1 つの枠に属する。枠の境目をまたいで描いても割れない）。 */
+function threeViewShapeArea(s, layout = THREE_VIEW_LAYOUT) {
+  let b = null; try { b = bboxOf(s); } catch { b = null; }
+  if (!b || ![b.minX, b.minY, b.maxX, b.maxY].every(Number.isFinite)) {
+    const pts = threeViewGuidePoints(s).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y)); if (!pts.length) return null;
+    b = { minX: Math.min(...pts.map(p => p.x)), maxX: Math.max(...pts.map(p => p.x)), minY: Math.min(...pts.map(p => p.y)), maxY: Math.max(...pts.map(p => p.y)) };
+  }
+  return threeViewAreaAt({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }, layout);
+}
+
+/** 描いた形に合わせて 3 つの枠を広げる（最初の枠より小さくはしない）。
+ *  正面の枠：正面と上の図の点を横に、正面と右の図の点を縦に、余白つきで含める。上の枠は正面と同じ横幅、右の枠は正面と同じ高さ。
+ *  奥行き：上の図の点の奥行きと右の図の点の奥行きのいちばん深いところ＋余白を、上の枠の高さと右の枠の幅にする（両方同じ）。
+ *  手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右に大きく広がらない限り動かない。 */
+function threeViewFitLayout(shapes, base = THREE_VIEW_LAYOUT, margin = THREE_VIEW_MARGIN, gap = THREE_VIEW_GAP) {
+  const same = (a, b) => ['top', 'front', 'side'].every(k => ['x', 'y', 'w', 'h'].every(f => Math.abs(a[k][f] - b[k][f]) < 1e-9));
+  let layout = base;
+  for (let round = 0; round < 5; round++) {
+    const pts = { front: [], top: [], side: [] };
+    for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (!area) continue; for (const p of threeViewGuidePoints(s)) if (Number.isFinite(p.x) && Number.isFinite(p.y)) pts[area].push(p); }
+    let x0 = base.front.x, x1 = base.front.x + base.front.w, y0 = base.front.y, y1 = base.front.y + base.front.h, depth = Math.max(base.top.h, base.side.w);
+    for (const p of [...pts.front, ...pts.top]) { x0 = Math.min(x0, p.x - margin); x1 = Math.max(x1, p.x + margin); }
+    for (const p of [...pts.front, ...pts.side]) { y0 = Math.min(y0, p.y - margin); y1 = Math.max(y1, p.y + margin); }
+    for (const p of pts.top) depth = Math.max(depth, threeViewDepthOfTopY(p.y, layout) + margin);
+    for (const p of pts.side) depth = Math.max(depth, threeViewDepthOfSideX(p.x, layout) + margin);
+    const bottomOfTop = Math.min(base.top.y + base.top.h, y0 - gap), leftOfSide = Math.max(base.side.x, x1 + gap);
+    const next = { top: { x: x0, y: bottomOfTop - depth, w: x1 - x0, h: depth }, front: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, side: { x: leftOfSide, y: y0, w: depth, h: y1 - y0 } };
+    if (same(next, layout)) break;
+    layout = next;
+  }
+  return layout;
+}
+
+/** 上から見た図の y ↔ 奥行き（枠の下の辺＝手前からの距離）。 */
+function threeViewDepthOfTopY(y, layout = THREE_VIEW_LAYOUT) { return layout.top.y + layout.top.h - y; }
+function threeViewTopYOfDepth(d, layout = THREE_VIEW_LAYOUT) { return layout.top.y + layout.top.h - d; }
+/** 右から見た図の x ↔ 奥行き（枠の左の辺＝手前からの距離）。 */
+function threeViewDepthOfSideX(x, layout = THREE_VIEW_LAYOUT) { return x - layout.side.x; }
+function threeViewSideXOfDepth(d, layout = THREE_VIEW_LAYOUT) { return layout.side.x + d; }
+
+/** 45° の線。手前どうしが出会う角 (side.x, top.y+top.h) から右上へ、奥行きの最大値ぶん伸ばす。 */
+function threeViewMiter(layout = THREE_VIEW_LAYOUT) {
+  const x0 = layout.side.x, y0 = layout.top.y + layout.top.h, len = Math.max(layout.top.h, layout.side.w);
+  return { x1: x0, y1: y0, x2: x0 + len, y2: y0 - len };
+}
+
+/** 図形の目印になる点：線の両はし・折れ線の角・なめらかな線の節・円の上下左右・円弧を囲む四角の角。曲線を細かくは刻まない。 */
+function threeViewGuidePoints(s) {
+  if (!s) return [];
+  if (s.type === 'line' || s.type === 'fold' || s.type === 'bezier' || s.type === 'dimension') return [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }];
+  if (s.type === 'polyline') return Array.isArray(s.points) ? s.points.map(p => ({ x: p.x, y: p.y })) : [];
+  if (s.type === 'path') return Array.isArray(s.nodes) ? s.nodes.map(n => ({ x: n.x, y: n.y })) : [];
+  if (s.type === 'circle') return [{ x: s.cx, y: s.cy - s.r }, { x: s.cx, y: s.cy + s.r }, { x: s.cx - s.r, y: s.cy }, { x: s.cx + s.r, y: s.cy }];
+  if (s.type === 'arc') { const b = bboxOf(s); return b ? [{ x: b.minX, y: b.minY }, { x: b.maxX, y: b.maxY }] : []; }
+  return [];
+}
+
+/** 各枠にある図形（図形ごとに枠を決める）から「合わせたい位置」を集める。
+ *  front: {xs 横の位置, ys 高さ}　top: {xs 横の位置, depths 奥行き}　side: {ys 高さ, depths 奥行き}（それぞれ小さい順・重複なし） */
+function threeViewMarks(shapes, layout = THREE_VIEW_LAYOUT) {
+  const sets = { front: { xs: new Set(), ys: new Set() }, top: { xs: new Set(), depths: new Set() }, side: { ys: new Set(), depths: new Set() } };
+  for (const s of shapes || []) for (const p of threeViewGuidePoints(s)) {
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
+    const area = threeViewShapeArea(s, layout); if (!area) continue;
+    if (area === 'front') { sets.front.xs.add(keyOf(p.x)); sets.front.ys.add(keyOf(p.y)); }
+    else if (area === 'top') { sets.top.xs.add(keyOf(p.x)); sets.top.depths.add(keyOf(threeViewDepthOfTopY(p.y, layout))); }
+    else { sets.side.ys.add(keyOf(p.y)); sets.side.depths.add(keyOf(threeViewDepthOfSideX(p.x, layout))); }
+  }
+  const sorted = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, [...v].sort((a, b) => a - b)]));
+  return { front: sorted(sets.front), top: sorted(sets.top), side: sorted(sets.side) };
+}
+
+/** ある枠で描くときに合わせたい位置 {xs, ys}（文書座標）。
+ *  front：横は上から見た図の横の位置、高さは右から見た図の高さ。
+ *  top：横は正面の横の位置、縦は右から見た図の奥行きを移したもの。
+ *  side：高さは正面の高さ、横は上から見た図の奥行きを移したもの。 */
+function threeViewTargets(area, marks, layout = THREE_VIEW_LAYOUT) {
+  if (!marks) return { xs: [], ys: [] };
+  if (area === 'front') return { xs: marks.top.xs.slice(), ys: marks.side.ys.slice() };
+  if (area === 'top') return { xs: marks.front.xs.slice(), ys: marks.side.depths.map(d => threeViewTopYOfDepth(d, layout)) };
+  if (area === 'side') return { xs: marks.top.depths.map(d => threeViewSideXOfDepth(d, layout)), ys: marks.front.ys.slice() };
+  return { xs: [], ys: [] };
+}
+
+/** 描いてある図形から他の枠へ伸ばす点線（いつも表示）。{x1,y1,x2,y2, from:元の枠, to:行き先の枠} の配列。
+ *  奥行きを移す線は 45° の線との交点まで伸ばす（上の図の横線 → 45°線 → 右の図の縦線、の形になる）。 */
+function threeViewGuideLines(marks, layout = THREE_VIEW_LAYOUT) {
+  const { front, top, side } = layout, out = [];
+  const tf = threeViewTargets('front', marks, layout), tt = threeViewTargets('top', marks, layout), ts = threeViewTargets('side', marks, layout);
+  const bottomOfTop = top.y + top.h;
+  for (const x of tf.xs) out.push({ x1: x, y1: bottomOfTop, x2: x, y2: front.y + front.h, from: 'top', to: 'front' });            /* 上の図 → 正面（縦線） */
+  for (const y of tf.ys) out.push({ x1: side.x, y1: y, x2: front.x, y2: y, from: 'side', to: 'front' });                           /* 右の図 → 正面（横線） */
+  for (const x of tt.xs) out.push({ x1: x, y1: front.y, x2: x, y2: top.y, from: 'front', to: 'top' });                           /* 正面 → 上の図（縦線） */
+  for (const y of tt.ys) out.push({ x1: top.x, y1: y, x2: threeViewSideXOfDepth(threeViewDepthOfTopY(y, layout), layout), y2: y, from: 'side', to: 'top' }); /* 右の図の奥行き → 45°線 → 上の図（横線） */
+  for (const y of ts.ys) out.push({ x1: front.x + front.w, y1: y, x2: side.x + side.w, y2: y, from: 'front', to: 'side' });       /* 正面 → 右の図（横線） */
+  for (const x of ts.xs) out.push({ x1: x, y1: threeViewTopYOfDepth(threeViewDepthOfSideX(x, layout), layout), x2: x, y2: side.y + side.h, from: 'top', to: 'side' }); /* 上の図の奥行き → 45°線 → 右の図（縦線） */
+  return out;
+}
+
+/** カーソルの位置から他の 2 つの枠へ伸ばす線と、奥行きの読み。{area, lines, depth}。枠の外なら null。 */
+function threeViewCursorLines(p, layout = THREE_VIEW_LAYOUT) {
+  const area = threeViewAreaAt(p, layout); if (!area) return null;
+  const { front, top, side } = layout, lines = [];
+  if (area === 'front') {
+    lines.push({ x1: p.x, y1: p.y, x2: p.x, y2: top.y });                 /* 上へ */
+    lines.push({ x1: p.x, y1: p.y, x2: side.x + side.w, y2: p.y });       /* 右へ */
+    return { area, lines, depth: null };
+  }
+  if (area === 'top') {
+    const depth = threeViewDepthOfTopY(p.y, layout), mx = threeViewSideXOfDepth(depth, layout), my = p.y;
+    lines.push({ x1: p.x, y1: p.y, x2: p.x, y2: front.y + front.h });     /* 下へ（正面） */
+    lines.push({ x1: p.x, y1: p.y, x2: mx, y2: my });                     /* 右へ、45°の線まで */
+    lines.push({ x1: mx, y1: my, x2: mx, y2: side.y + side.h });          /* 45°の線から下へ（右から見た図） */
+    return { area, lines, depth };
+  }
+  const depth = threeViewDepthOfSideX(p.x, layout), mx = p.x, my = threeViewTopYOfDepth(depth, layout);
+  lines.push({ x1: p.x, y1: p.y, x2: front.x, y2: p.y });                 /* 左へ（正面） */
+  lines.push({ x1: p.x, y1: p.y, x2: mx, y2: my });                       /* 上へ、45°の線まで */
+  lines.push({ x1: mx, y1: my, x2: top.x, y2: my });                      /* 45°の線から左へ（上から見た図） */
+  return { area, lines, depth };
+}
+
+/** 描こうとしている点を、他の枠から伸ばした線にぴったり合わせる。
+ *  tol(mm) 以内に線があれば、その向き（横 or 縦）だけ置き換える。合う線が無ければ null。
+ *  返り値：{ point, snappedX, snappedY, area } */
+function threeViewSnap(p, marks, tol, layout = THREE_VIEW_LAYOUT) {
+  if (!(tol > 0)) return null;
+  const area = threeViewAreaAt(p, layout); if (!area) return null;
+  const { xs, ys } = threeViewTargets(area, marks, layout);
+  const nearest = (v, list) => { let best = null, bd = tol; for (const c of list) { const d = Math.abs(c - v); if (d < bd) { bd = d; best = c; } } return best; };
+  const sx = nearest(p.x, xs), sy = nearest(p.y, ys);
+  if (sx === null && sy === null) return null;
+  return { point: { x: sx ?? p.x, y: sy ?? p.y }, snappedX: sx !== null, snappedY: sy !== null, area };
+}
+
+/** 正面の枠にある図形をぜんぶ囲む四角（いちばん外側）と奥行きから、上から見た図と右から見た図の外形（四角）を作る。
+ *  上の図：横は正面と同じ、縦は枠の下の辺（手前）から depth ぶん上へ。右の図：高さは正面と同じ、横は枠の左の辺（手前）から depth ぶん右へ。
+ *  文字・寸法・折り線・下絵は数えない。正面に形が無い（幅か高さが 0）・奥行きが 0 以下なら null。
+ *  返り値：{ top: 折れ線, side: 折れ線, width, height, depth } */
+function threeViewOutlines(shapes, depth, layout = THREE_VIEW_LAYOUT) {
+  if (!(depth > 0)) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const s of shapes || []) {
+    if (!s || ['text', 'dimension', 'fold', 'image'].includes(s.type)) continue;
+    let b = null; try { b = bboxOf(s); } catch { b = null; }
+    if (!b || ![b.minX, b.minY, b.maxX, b.maxY].every(Number.isFinite)) continue;
+    if (threeViewShapeArea(s, layout) !== 'front') continue;
+    minX = Math.min(minX, b.minX); minY = Math.min(minY, b.minY); maxX = Math.max(maxX, b.maxX); maxY = Math.max(maxY, b.maxY);
+  }
+  if (!(maxX - minX > 1e-9) || !(maxY - minY > 1e-9)) return null;
+  const rect = (x1, y1, x2, y2) => ({ type: 'polyline', closed: true, points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
+  const bottomOfTop = layout.top.y + layout.top.h, leftOfSide = layout.side.x;
+  return { top: rect(minX, bottomOfTop - depth, maxX, bottomOfTop), side: rect(leftOfSide, minY, leftOfSide + depth, maxY), width: maxX - minX, height: maxY - minY, depth };
+}
+
+/** 2 つの図形が同じ四角（閉じた折れ線・4 点・並び順は問わない）かどうか。重ねて作らないための判定。 */
+function threeViewSameRect(a, b, eps = 1e-6) {
+  if (!a || !b || a.type !== 'polyline' || b.type !== 'polyline' || !a.closed || !b.closed) return false;
+  if (!Array.isArray(a.points) || !Array.isArray(b.points) || a.points.length !== 4 || b.points.length !== 4) return false;
+  const key = p => [...p].sort((u, v) => u.x - v.x || u.y - v.y);
+  const pa = key(a.points), pb = key(b.points);
+  return pa.every((p, i) => Math.abs(p.x - pb[i].x) < eps && Math.abs(p.y - pb[i].y) < eps);
+}
+
+return {THREE_VIEW_LAYOUT, THREE_VIEW_MARGIN, threeViewAreaAt, threeViewShapeArea, threeViewFitLayout, threeViewDepthOfTopY, threeViewTopYOfDepth, threeViewDepthOfSideX, threeViewSideXOfDepth, threeViewMiter, threeViewGuidePoints, threeViewMarks, threeViewTargets, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -9945,6 +10173,11 @@ const HELP_JA = {
       "body": "上の「3D」ボタンで切り替えます。部品（厚み付き）の閉図形を板にして、折り線で分け、スライダー（開く 0% → 閉じる 100%）で折り線の角度ぶん回します。「再生」で開閉を繰り返します。折る向きは折り線の「折って内側」（表面どうしが向き合う）で決まります。重ね順の高い部品は下の部品の厚みぶん上に積まれます。\n左ドラッグで回転、右ドラッグ（または Shift+ドラッグ）で移動、ホイールでズーム。「4分割」は正面・上面・右側面（平行投影）と自由視点を同時に表示します。\n閉じたときに板どうしが重なる箇所は赤く表示し、件数を出します（折り線で繋がる隣どうしは除外）。「三面図 SVG」は第三角法で正面・上面・側面を mm 単位で書き出し、「三面図を印刷」で印刷できます。WebGL が使えない環境では簡易描画に切り替わります。"
     },
     {
+      "id": "three-view",
+      "title": "三面図を描く手伝い（正面・上・右から見た図）",
+      "body": "上の「三面図（正面・上・横）」にチェックを入れると、画面に 3 つの枠が出ます。左下が「正面から見た図」、その真上が「上から見た図」、その真右が「右から見た図」です。\nまず、正面から見た図の枠に、正面の形を描きます。すると、形の角や端から、上の枠には縦の点線、右の枠には横の点線が伸びます。点線は「正面の図とそろう場所」です。\n上から見た図は、横の長さが正面と同じなので、縦の点線に合わせて描きます。この枠の縦の方向が「奥行き」です（枠の下の辺が手前・上に行くほど奥）。奥行きは自分で決めて描きます。描いている間、カーソルのそばに奥行きの数字（mm）が出ます。\n右から見た図は、高さが正面と同じなので、横の点線に合わせて描きます。奥行きは、上から見た図で描いた奥行きが、右上の 45° の線を通って右の枠へ移ってくるので、その点線に合わせます（枠の左の辺が手前・右に行くほど奥）。\n手早く始めるには、「奥行き」の数字（mm）を入れて「上と右の図を作る」を押します。正面の枠に描いた形をぜんぶ囲む四角と奥行きから、上の図と右の図の外形（四角）が自動で描かれます。細かい形は、その四角の上に点線に合わせて描き足してください。同じ四角がもうあるときは作りません。「元に戻す」で取り消せます。\n点線の近くでクリックすると、横か縦の位置が点線にぴったり合います（上の「スナップ」が切でも働きます）。合わせたくないときは「三面図」のチェックを外してください。\n枠は目安で、図形ではありません。枠と点線は保存や書き出しには入りません。枠は描いた形に合わせて自動で広がります（正面が大きければ、上と右の枠も同じ幅・高さに。奥行きが深ければ、上の枠の高さと右の枠の幅が同じだけ伸びます）。手前の線（上の枠の下の辺・右の枠の左の辺）は、正面の図が上や右へ大きく広がらない限り動きません。\nまだ作っている途中の機能です。"
+    },
+    {
       "id": "hardware",
       "title": "金具ライブラリとバインダー金具",
       "body": "金具カードで分類と金具を選び、寸法パラメータ（代表値・「要実測」のものは現物で確認）と向きを決めて「図面に置く」→位置をクリック。外形の記号は目印レイヤー、カシメ穴・ホックの足穴・ネジ穴などの取り付け穴は「金具穴」レイヤーに入ります。置いた金具は 3D でも板の上に立体（箱・円柱）として現れ、折りたたみに追従し、干渉判定に含まれます。\nバインダー金具は規格（Micro5・Mini6・A6・バイブル・A5・A5 Slim・A4・Franklin 各種）を選び、リング径を選んで置きます。穴ピッチ・1番〜最終穴・リフィル寸法は N's factory の規格表を正本にした data/binder/*.json、台座やリベットの寸法は推定値（JSON を実測で上書きできます）。「平面図・側面図・正面図」は JSON から自動生成した図面、「寸法データ」は JSON そのもの。必要な背幅＝リング径＋台座厚＋革厚×2＋遊び 2mm を表示します。\n背幅シミュレーション：バインダー節の「背幅シミュレーション」で、リング内径・線径・台座厚・表紙の革厚・サポータ厚・すき間・曲げ内半径から、閉じた断面（輪の外径＋すき間＝内幅、両端 90° の折り代）を計算して背幅を出します。断面図が下に出ます。これまで現物合わせで決めた背幅があれば「実測からすき間を逆算」に入れると、同じ条件で次の判型にも使えるすき間に直せます。「レシピの背幅に反映」で自動設計の手帳に使われます。"
@@ -10084,6 +10317,11 @@ const HELP_EN = {
       "body": "Toggle with the 3D button. Closed shapes of parts become panels with thickness, split by fold lines, and rotate by the fold angle as the slider goes from 0% (open) to 100% (closed). Play loops the motion. The fold direction follows the fold line's inner-side setting (grain faces meet). Parts with a higher stack order sit on top of the lower ones.\nLeft drag rotates, right drag (or Shift) pans, wheel zooms. Quad view shows front, top and right orthographic views plus the free view.\nPanels overlapping when closed are drawn red and counted (neighbors joined by a fold are excluded). Views SVG exports third-angle front/top/right views in mm; Print views prints them. Without WebGL a simple painter renderer is used."
     },
     {
+      "id": "three-view",
+      "title": "Help for drawing three views (front / top / right)",
+      "body": "Tick “3 views (front / top / right)” at the top and three boxes appear: the front view at the lower left, the top view right above it, and the right view to its right.\nDraw the front shape in the front box first. Dotted lines then run from its corners and ends: vertical lines into the top box and horizontal lines into the right box. They mark where the other views line up with the front view.\nThe top view has the same width as the front view, so draw it along the vertical dotted lines. The up-and-down direction in that box is the depth (the bottom edge is the near side; higher is further back). You choose the depth yourself. While drawing, the depth in mm is shown next to the cursor.\nThe right view has the same height as the front view, so draw it along the horizontal dotted lines. Its depth comes from the top view: the depth you drew there travels along the 45° line at the upper right into the right box (the left edge is the near side; further right is further back), so follow that dotted line.\nFor a quick start, type the depth (mm) into “Depth” and press “Make top & right views”. From the box that encloses everything drawn in the Front view and that depth, the outlines (rectangles) of the top and right views are drawn for you. Then draw the details on those rectangles, following the dotted lines. Nothing is made if the same rectangles already exist. Undo removes them.\nClicking near a dotted line pulls the point exactly onto it, sideways or up-and-down (this works even when Snap is off). Untick “3 views” when you do not want that.\nThe boxes are only guides, not shapes. Boxes and dotted lines are not saved or exported. The boxes grow automatically to fit what you draw (a bigger front view makes the top and right boxes the same width and height; a deeper depth makes the top box taller and the right box wider by the same amount). The near-side lines (bottom edge of the top box, left edge of the right box) stay put unless the front view grows far upward or to the right.\nThis feature is still being built."
+    },
+    {
       "id": "hardware",
       "title": "Hardware library and binder mechanisms",
       "body": "Choose a category and an item in the Hardware card, adjust the size parameters (typical values; verify the ones marked) and the angle, press Place and click on the drawing. The outline symbol goes to the Marks layer; mounting holes (rivets, snap posts, screws) go to the Hardware holes layer. Placed hardware also appears in 3D as a box or cylinder on its panel, follows folding and is included in collision checks.\nFor binder mechanisms pick a standard (Micro5, Mini6, A6, Bible, A5, A5 Slim, A4, Franklin...) and a ring diameter. Hole pitches, first-to-last span and refill sizes come from N's factory's standards table (data/binder/*.json); plate and rivet sizes are estimates you can overwrite. Plan/side/front drawings are generated from the JSON. The required spine width = ring diameter + plate thickness + 2 × leather thickness + 2 mm play.\nSpine simulation: in the binder section, enter ring ID, wire, plate thickness, cover leather, supporter thickness, clearance and bend radius; the closed section (ring OD + clearance = inner width, 90° fold allowances both ends) gives the spine width with a section drawing. Enter a spine you measured by wrapping real leather to derive the clearance, then reuse it for other sizes. \"Apply to recipe spine\" feeds the notebook recipe."
@@ -10164,6 +10402,7 @@ const { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibra
 const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
+const { THREE_VIEW_LAYOUT, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect } = __mods['threeview'];
 const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
@@ -10220,6 +10459,51 @@ function applyLanguage(lang) {
 }
 const world = p => ({ x: (p.x - origin.x) / scale, y: (p.y - origin.y) / scale });
 const local = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+/* 三面図（正面・上・右から見た図）の手伝い。計算は threeview.js。ここでは枠・45°の線・点線・奥行きの読みを描く。枠は目安で図形ではなく、描いた形に合わせて広がる。 */
+let threeViewLayout = THREE_VIEW_LAYOUT, threeViewMarksCache = threeViewMarks([]);
+const threeViewOn = () => $('threeView').checked;
+/** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); }
+function strokeGuideLines(lines) { ctx.beginPath(); for (const l of lines) { ctx.moveTo(l.x1, l.y1); ctx.lineTo(l.x2, l.y2); } ctx.stroke(); }
+function drawThreeViewFrames() {
+  const labels = { front: t('threeViewFront'), top: t('threeViewTop'), side: t('threeViewSide') }, m = threeViewMiter(threeViewLayout);
+  ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.strokeStyle = '#4a4a3a'; ctx.lineWidth = 1 / scale;
+  for (const key of ['front', 'top', 'side']) { const a = threeViewLayout[key]; ctx.strokeRect(a.x, a.y, a.w, a.h); }
+  ctx.strokeStyle = '#7a6a38'; strokeGuideLines([m]); /* 45°の線：上の図の奥行きを右の図へ移すための線 */
+  ctx.setLineDash([]); ctx.fillStyle = '#8a7a50'; ctx.font = `${12 / scale}px sans-serif`;
+  for (const key of ['front', 'top', 'side']) { const a = threeViewLayout[key]; ctx.fillText(labels[key], a.x + 2 / scale, a.y - 3 / scale); }
+  ctx.fillText(t('threeViewMiter'), m.x2 + 3 / scale, m.y2 + 12 / scale);
+  ctx.restore();
+}
+/** 描いてある図形の角や端から、他の枠へ伸ばした点線（いつも表示・淡い色）。描いた線の高さ・横の位置・奥行きに合わせやすくする。 */
+function drawThreeViewStaticGuides() {
+  ctx.save(); ctx.setLineDash([3 / scale, 3 / scale]); ctx.strokeStyle = '#3f8aa0'; ctx.lineWidth = 0.9 / scale;
+  strokeGuideLines(threeViewGuideLines(threeViewMarksCache, threeViewLayout)); ctx.restore();
+}
+/** 「上と右の図を作る」：正面の枠にある図形をぜんぶ囲む四角と「奥行き」の数字から、上から見た図と右から見た図の外形（四角）を描き足す。
+ *  同じ四角が既にあれば作らない。元に戻すで取り消せる。細かい形は、この四角の上に点線に合わせて描き足してもらう。 */
+function makeThreeViewOutlines() {
+  const depth = Number($('threeViewDepthIn').value);
+  if (!(depth > 0)) { $('hint').textContent = t('threeViewMakeBadDepth'); return; }
+  const r = threeViewOutlines(doc.shapes.filter(s => visible(s)), depth, threeViewLayout);
+  if (!r) { $('hint').textContent = t('threeViewMakeNoFront'); return; }
+  const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
+  if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visible(s) && threeViewSameRect(s, rect)));
+  if (!fresh.length) { $('hint').textContent = t('threeViewMakeExists'); return; }
+  cancel();
+  commit(() => { const ids = []; for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })) }); ids.push(id); } selected = new Set(ids); });
+  updateUI();
+  const fmt = v => String(+v.toFixed(2));
+  $('hint').textContent = t('threeViewMakeDone', { w: fmt(r.width), h: fmt(r.height), d: fmt(r.depth) });
+}
+/** カーソルから他の 2 つの枠へ伸ばす線（水色）。上・右の図では 45°の線を通って奥行きを移し、奥行きの数字も出す。 */
+function drawThreeViewGuides() {
+  const g = threeViewCursorLines(cursor, threeViewLayout); if (!g) return;
+  ctx.save(); ctx.setLineDash([3 / scale, 3 / scale]); ctx.strokeStyle = '#4fd0ff'; ctx.lineWidth = 1 / scale; strokeGuideLines(g.lines);
+  if (g.depth !== null) { ctx.setLineDash([]); ctx.fillStyle = '#4fd0ff'; ctx.font = `${11 / scale}px sans-serif`; ctx.fillText(t('threeViewDepth', { d: g.depth.toFixed(1) }), cursor.x + 8 / scale, cursor.y - 8 / scale); }
+  ctx.restore();
+}
 const visible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const editable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
@@ -11728,6 +12012,7 @@ function drawCenterMarks() {
   ctx.stroke(); ctx.restore();
 }
 function rebuildSnaps() {
+  rebuildThreeViewMarks();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   snapCache = shapes.flatMap(snapPoints);
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
@@ -11971,8 +12256,13 @@ function snapped(p, shift, anchor) {
   if ($('snap').checked && !snap) {
     let best = 9 / scale;
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
-    if (!snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   }
+  /* 三面図：他の枠から伸ばした点線に、横か縦だけぴったり合わせる。合わなかった向きは、スナップが入のときだけ目盛りに丸める */
+  if (!snap && threeViewOn()) {
+    const hit = threeViewSnap(p, threeViewMarksCache, 9 / scale, threeViewLayout);
+    if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
+  }
+  if ($('snap').checked && !snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
@@ -12119,6 +12409,7 @@ function draw() {
     ctx.strokeStyle = '#242424'; ctx.stroke();
   }
   if ($('printOverlay').checked) drawPrintOverlay();
+  if ($('threeView').checked) { drawThreeViewFrames(); drawThreeViewStaticGuides(); }
   ctx.beginPath(); ctx.moveTo(lo.x, 0); ctx.lineTo(hi.x, 0); ctx.moveTo(0, lo.y); ctx.lineTo(0, hi.y); ctx.strokeStyle = '#454039'; ctx.stroke();
   ctx.lineWidth = 1.5 / scale;
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
@@ -12169,6 +12460,7 @@ function draw() {
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (tracePreviewShapes.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.2 / scale; for (const s of tracePreviewShapes) strokeShape(s, '#ff4040'); ctx.restore(); }
+  if ($('threeView').checked) drawThreeViewGuides();
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
   if (doc.seams.length) { ctx.save(); ctx.setLineDash([2 / scale, 2 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#ff9f43'; ctx.beginPath();
     for (const m of doc.seams) { const pts = [m.a, m.b].map(side => { const saved = doc.paths.find(p => p.id === side.pathId); const route = saved && resolvePath(doc, saved); return route ? pointAtLength(route, (side.from + side.to) / 2) : null; }); if (pts[0] && pts[1]) { ctx.moveTo(pts[0].x, pts[0].y); ctx.lineTo(pts[1].x, pts[1].y); } }
@@ -12372,7 +12664,10 @@ $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
-for (const id of ['printOverlay', 'paper', 'outHoles']) $(id).addEventListener('change', () => draw());
+for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
+$('threeView').addEventListener('change', () => { $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildThreeViewMarks(); });
+$('threeViewMake').onclick = makeThreeViewOutlines;
+$('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {
   const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = (tabs[activeTab]?.name ? tabs[activeTab].name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
