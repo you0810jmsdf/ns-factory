@@ -31,7 +31,7 @@
 <div class="wrap">
 <h1>N's CAD 図解ガイド</h1>
 <p class="lead">ヘルプを読んでも分かりにくいところを、絵で説明します。最初は「レイヤー」。そのあと主な機能を順番に。</p>
-<nav class="toc"><a href="#layer">1 レイヤー</a><a href="#screen">2 画面の見かた</a><a href="#stitch">3 目打ちと目印</a><a href="#offset">4 オフセット</a><a href="#ruler">5 定規</a><a href="#patch">6 柄（パッチワーク）</a><a href="#refill">7 リフィルの型紙</a><a href="#views">8 手帳の3面図</a><a href="#save">9 保存と書き出し</a></nav>
+<nav class="toc"><a href="#layer">1 レイヤー</a><a href="#screen">2 画面の見かた</a><a href="#stitch">3 目打ちと目印</a><a href="#offset">4 オフセット</a><a href="#ruler">5 定規</a><a href="#patch">6 柄（パッチワーク）</a><a href="#refill">7 リフィルの型紙</a><a href="#views">8 手帳の3面図</a><a href="#save">9 保存と書き出し</a><a href="#threeview">10 三面図から立体へ</a></nav>
 
 <h2 id="layer">1 レイヤーとは</h2>
 <p class="lead">一言でいうと、<b>「透明なシートを何枚か重ねて描く」</b>仕組みです。シートごとに「見せる・隠す」「触れないようにする」ができます。</p>
@@ -241,6 +241,65 @@
 <tr><td>型紙を配る・印刷する（実寸）</td><td>保存 → <b>PDF（型紙の配布用）</b></td></tr>
 <tr><td>ほかの人に図面を渡す</td><td>保存 → <b>DXF（他の人へ図面を渡す用）</b></td></tr></table>
 <p class="note">用紙、穴を入れるか、校正などの設定は、右の「出力」カードにあります。</p>
+
+<h2 id="threeview">10 三面図から立体へ</h2>
+<p class="lead">上の<b>「三面図（正面・上・横）」</b>にチェックを入れると、3つの枠が出ます。<b>正面の形を描くだけ</b>で上と右の枠に点線が伸び、点線に合わせて描けます。最後に<b>「3D」</b>で立体にして確かめます。</p>
+<div class="card">
+<svg viewBox="0 0 760 340" role="img" aria-label="三面図の枠の並びと点線、45°の線、できる立体">
+  <rect x="14" y="12" width="732" height="316" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <!-- 上から見た図 -->
+  <g transform="translate(70,36)">
+    <rect width="200" height="100" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="6 4"/>
+    <text x="0" y="-6" class="s" font-size="13">上から見た図</text>
+    <rect x="40" y="52" width="110" height="48" fill="none" stroke="var(--pat)" stroke-width="2.4"/>
+    <text x="158" y="80" class="s" font-size="12">奥行き</text>
+    <path d="M165 100 v-48" stroke="var(--guide)" stroke-width="1.6" fill="none" marker-start="url(#tv-dot)" marker-end="url(#tv-ar)"/>
+  </g>
+  <!-- 正面から見た図 -->
+  <g transform="translate(70,166)">
+    <rect width="200" height="130" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="6 4"/>
+    <text x="0" y="-6" class="s" font-size="13">正面から見た図</text>
+    <rect x="40" y="30" width="110" height="80" fill="var(--card)" stroke="var(--pat)" stroke-width="2.6"/>
+    <text x="62" y="76" class="a" font-size="13">まずここに描く</text>
+  </g>
+  <!-- 右から見た図 -->
+  <g transform="translate(300,166)">
+    <rect width="100" height="130" fill="none" stroke="var(--line)" stroke-width="1.6" stroke-dasharray="6 4"/>
+    <text x="0" y="-6" class="s" font-size="13">右から見た図</text>
+    <rect x="0" y="30" width="48" height="80" fill="none" stroke="var(--pat)" stroke-width="2.4"/>
+  </g>
+  <!-- 点線：正面の横の位置 → 上の図、正面の高さ → 右の図 -->
+  <g stroke="var(--guide)" stroke-width="1.4" stroke-dasharray="3 4" fill="none">
+    <line x1="110" y1="196" x2="110" y2="36"/><line x1="220" y1="196" x2="220" y2="36"/>
+    <line x1="220" y1="196" x2="400" y2="196"/><line x1="220" y1="276" x2="400" y2="276"/>
+    <line x1="235" y1="88" x2="300" y2="88"/><line x1="348" y1="88" x2="348" y2="296"/>
+  </g>
+  <!-- 45°の線 -->
+  <line x1="300" y1="136" x2="420" y2="16" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="330" y="60" class="a" font-size="12">45°の線</text>
+  <text x="330" y="76" class="s" font-size="11">上の図の奥行きを</text><text x="330" y="90" class="s" font-size="11">右の図へ移す</text>
+  <!-- 矢印の定義 -->
+  <defs><marker id="tv-ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="var(--guide)"/></marker><marker id="tv-dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2.2" fill="var(--guide)"/></marker></defs>
+  <!-- 3D の箱 -->
+  <g transform="translate(470,40)">
+    <text x="0" y="0" class="s" font-size="13">「3D」を押すと</text>
+    <g transform="translate(40,30)">
+      <polygon points="0,60 110,60 110,140 0,140" fill="#d6c3a1" stroke="var(--pat)" stroke-width="2"/>
+      <polygon points="0,60 40,30 150,30 110,60" fill="#ece0c6" stroke="var(--pat)" stroke-width="2"/>
+      <polygon points="110,60 150,30 150,110 110,140" fill="#b89e76" stroke="var(--pat)" stroke-width="2"/>
+      <text x="20" y="108" font-size="12" fill="#2a2622">正面</text><text x="70" y="52" font-size="12" fill="#2a2622">上</text><text x="118" y="96" font-size="12" fill="#2a2622">右</text>
+    </g>
+    <text x="0" y="200" class="s" font-size="12">正面の形を薄い輪切りにして、</text>
+    <text x="0" y="216" class="s" font-size="12">上の形と右の形で切り取って積む</text>
+    <text x="0" y="244" class="s" font-size="12">「4分割」で三面図と並べて比べられる</text>
+  </g>
+</svg>
+</div>
+<div class="step"><b class="n">1</b><div>上の<b>「三面図（正面・上・横）」</b>にチェック → <b>「正面から見た図」</b>の枠の中に正面の形を描く（四角・円など、閉じた形）。角や端から、上の枠へ縦の点線、右の枠へ横の点線が伸びます。</div></div>
+<div class="step"><b class="n">2</b><div><b>「奥行き」</b>に手前から奥までの長さ（mm）を入れて<b>「上と右の図を作る」</b>を押す。上の図と右の図の外形（四角）が自動で描かれます。</div></div>
+<div class="step"><b class="n">3</b><div>上の図・右の図の枠で、点線に合わせて細かい形を描き足す。点線の近くでクリックすると横か縦の位置がぴったり合います。上の図の奥行きは、右上の<b>45°の線</b>を通って右の図へ移ります（上の図は枠の下の辺が手前、右の図は枠の左の辺が手前）。</div></div>
+<div class="step"><b class="n">4</b><div>上の<b>「3D」</b>を押す。三面図から組み立てた立体が出ます。左ドラッグで回転。右の「3D（折りたたみ）」カードで<b>「4分割」</b>にすると、正面・上・右から見た図と並べて比べられます。</div></div>
+<p class="note">枠は目安で図形ではなく、保存や書き出しには入りません。枠は描いた形に合わせて自動で広がります。細かいくぼみ・穴・複数の部品は、まだ立体にできません（作っている途中の機能です）。</p>
 
 <hr style="border:0;border-top:1px solid var(--line);margin:40px 0 14px">
 <p class="note">このガイドは N's CAD の画面と同じ言葉で書いています。分からない点があれば、画面のスクリーンショットを添えて教えてください。説明を足します。</p>
