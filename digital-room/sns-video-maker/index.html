@@ -3150,8 +3150,16 @@ function isValidWorksData(data){
   return Array.isArray(data) && data.length > 0;
 }
 
+// 作品番号（NF2026_123 の年＋通し番号）が大きい方＝新しい方を先頭にする。
+// 一覧は毎回ここを通るので、選ぶときに最新の作品を探して下までスクロールしなくて済む（2026-10-10 事業主指摘）。
+function workSortKeyForNewestFirst(id){
+  const m = /^NF(\d{4})_(\d+)$/.exec(String(id || ''));
+  return m ? Number(m[1]) * 1000000 + Number(m[2]) : -1;
+}
+
 function adoptWorksCatalog(data){
   worksCatalog = data.map(normalizeWorkItem).filter(work => work.id && work.title);
+  worksCatalog.sort((a, b) => workSortKeyForNewestFirst(b.id) - workSortKeyForNewestFirst(a.id));
   populateProductNamePresets();
   populateDriveWorkPicker();
   return worksCatalog;
