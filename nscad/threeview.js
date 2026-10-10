@@ -9,6 +9,7 @@
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 import { bboxOf, flattenShape, chainShapes } from './geometry.js';
 import { v3, faceNormal } from './sim3d.js';
+import { binderSolid } from './hardware.js';
 
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 export const THREE_VIEW_LAYOUT = {
@@ -344,8 +345,25 @@ function solidFromPolys(F, T, S, { depthDefault = 30, maxSlices = 80 } = {}) {
   }
   if (!slabs) return null;
   const xs = F.map(p => p.x);
-  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, hasTop: !!T, hasSide: !!S };
+  return { faces, slabs, width: Math.max(...xs) - Math.min(...xs), height: maxY - minY, depth: depthMax, base, hasTop: !!T, hasSide: !!S };
 }
+/** 正面に置いたバインダー金具（hw.id が binder- で始まる図形）の3Dを、立体の奥行きの中央に重ねた面の配列で返す。
+ *  金具の平面（x, y）が正面図の（x, y）、金具の厚み・リングの立ち上がり（z）が奥行き方向（手前向き）。specOf(specId) が null を返す金具は飛ばす。 */
+export function threeViewHardwareFaces(solid, hwShapes, specOf) {
+  const out = [], base = solid.base, dc = solid.depth / 2;
+  for (const s of hwShapes || []) {
+    const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
+    const spec = specOf(hw.params?.spec); if (!spec) continue;
+    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], at = hw.at || { x: 0, y: 0 }, a = (Number(hw.angleDeg) || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
+    const local = binderSolid(spec, ringD, 0), zs = local.flatMap(f => f.points.map(p => p.z)), zmid = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
+    const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
+    const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));
+    for (const f of faces) { let pts = f.points, n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } out.push({ ...f, points: pts, normal: n, center: c }); }
+  }
+  return out;
+}
+const withHardware = (solid, hwShapes, specOf) => { if (!solid || !specOf) return solid; const extra = threeViewHardwareFaces(solid, hwShapes, specOf); return extra.length ? { ...solid, faces: [...solid.faces, ...extra], hardware: extra.length } : solid; };
 const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > polyArea(a) ? b : a) : null;
 /** 三面図（枠方式）から立体を組み立てる。
  *  正面の枠の閉じた形（いちばん大きいもの）＝正面の輪郭、上の枠の閉じた形＝上の輪郭（横 x × 奥行き）、右の枠の閉じた形＝右の輪郭（奥行き × 高さ）。
@@ -353,7 +371,7 @@ const biggestPoly = list => list.length ? list.reduce((a, b) => polyArea(b) > po
  *  上の輪郭が無ければ長方形（奥行きは右の輪郭から・それも無ければ depthDefault）。右の輪郭が無ければ奥行きいっぱい。正面に閉じた形が無ければ null。
  *  3D の置き方（sim3d と同じ座標）：x はそのまま、高さは正面の下端を z=0 として上へ（z = 下端 − y）、奥行きは正面の下端の y を手前として奥へ y が小さくなる（y = 下端 − 奥行き）。
  *  返り値：{ faces（sim3d.applyFolds と同じ形）, slabs, width, height, depth, hasTop, hasSide } */
-export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefault = 30, tolerance = 0.3, maxSlices = 80, specOf = null } = {}) {
   const groups = { front: [], top: [], side: [] };
   const byArea = { front: [], top: [], side: [] };
   for (const s of shapes || []) { const area = threeViewShapeArea(s, layout); if (area) byArea[area].push(s); }
@@ -363,14 +381,14 @@ export function threeViewSolid(shapes, layout = THREE_VIEW_LAYOUT, { depthDefaul
   const topPoly = biggestPoly(groups.top), sidePoly = biggestPoly(groups.side);
   const T = topPoly ? topPoly.map(p => ({ x: p.x, y: bottomOfTop - p.y })) : null;      /* (x, 奥行き) */
   const S = sidePoly ? sidePoly.map(p => ({ x: p.x - leftOfSide, y: p.y })) : null;    /* (奥行き, 高さ y) */
-  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
+  return withHardware(solidFromPolys(F, T, S, { depthDefault, maxSlices }), byArea.front, specOf);
 }
 /** 紙を分けた三面図（4分割）から立体を組み立てる。上の紙は y=−奥行き、右の紙は x=奥行き（手前の線が 0）。 */
-export function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80 } = {}) {
+export function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { depthDefault = 30, tolerance = 0.3, maxSlices = 80, specOf = null } = {}) {
   const polys = list => closedPolygons(list, tolerance);
   const F = biggestPoly(polys(frontShapes)); if (!F) return null;
   const tp = biggestPoly(polys(topShapes)), sp = biggestPoly(polys(sideShapes));
   const T = tp ? tp.map(p => ({ x: p.x, y: -p.y })) : null;
   const S = sp ? sp.map(p => ({ x: p.x, y: p.y })) : null;
-  return solidFromPolys(F, T, S, { depthDefault, maxSlices });
+  return withHardware(solidFromPolys(F, T, S, { depthDefault, maxSlices }), frontShapes, specOf);
 }
