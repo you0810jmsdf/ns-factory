@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>神社巡りノート｜夜の日本列島</title>
+<meta name="description" content="全国の神社を、夜の日本列島の光として辿る特集ページ。光を選ぶと、その神社と祭神、古事記とのつながりを記録として読めます。">
+<meta name="theme-color" content="#10130f">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="map.css">
+</head>
+<body>
+<canvas id="gl" aria-label="夜の日本列島の立体地図。神社の位置が光っています。"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<header class="bar">
+  <div class="brand">
+    <span class="eyebrow">SHRINE NOTE</span>
+    <h1>神社巡りノート <small>特集｜夜の日本列島</small></h1>
+  </div>
+  <div class="acts">
+    <button id="btnGps" class="ghost" type="button">現在地から光の筋</button>
+    <button id="btnTree" class="ghost" type="button">神々の系譜図</button>
+  </div>
+</header>
+
+<div id="labels" aria-hidden="true"></div>
+
+<div id="hint" class="hint">光をタップすると、その神社へ近づきます</div>
+
+<nav id="chips" class="chips" aria-label="神社の一覧"></nav>
+
+<button id="btnBack" class="back" type="button" hidden>← 日本列島の全体へ戻る</button>
+
+<figure id="photo" class="photo" hidden></figure>
+
+<section id="sheet" class="sheet" aria-live="polite" hidden>
+  <div class="grab" aria-hidden="true"></div>
+  <div id="sheetBody"></div>
+</section>
+
+<section id="tree" class="tree" hidden aria-label="神々の系譜図">
+  <div class="tree-head">
+    <h2>神々の系譜図 <small>古事記を基準に作成</small></h2>
+    <button id="btnTreeClose" class="ghost" type="button">閉じる</button>
+  </div>
+  <p class="tree-note">金色の枠は、特集した神社の御祭神です。タップすると神様のページへ移ります。実線は親子、点線は夫婦です。</p>
+  <div id="treeBody" class="tree-body"></div>
+</section>
+
+<footer class="credit">
+  <span>標高：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院 標高タイル</a>を加工して作成（高さを強調・近景の細かな起伏は演出用の加工）</span>
+  <span>3D表示：three.js（MIT）</span>
+</footer>
+
+<noscript><p class="noscript">この特集は JavaScript を使います。一覧は <a href="../registry.json">registry.json</a> をご覧ください。</p></noscript>
+<script type="module" src="map.js"></script>
+</body>
+</html>
