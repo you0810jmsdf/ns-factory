@@ -176,3 +176,57 @@ body.running .hint, body.running .chips { display: none; }
 body.hasroute .photo.compact { top: calc(168px + env(safe-area-inset-top, 0px)); }
 @media (min-width: 880px) { .hud { top: 22px; } body.hasroute .photo.compact { top: auto; } }
 @media (max-width: 420px) { .hud { font-size: 13.5px; padding: 7px 12px; } }
+
+/* ---- 章めくりの神社カード ---- */
+.sheet.book #sheetBody { padding: 0; overflow: hidden; position: relative; display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.chapters { flex: 1; min-height: 0; overflow-y: auto; scroll-snap-type: y proximity; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scroll-behavior: auto; }
+.ch { min-height: var(--chh, 420px); scroll-snap-align: start; padding: 22px 46px 30px 20px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+.ch + .ch::before { content: ""; position: absolute; left: 20px; right: 46px; top: 0; height: 1px; background: linear-gradient(90deg, var(--line-strong), transparent); }
+.ch p, .ch li { font-size: 15.5px; line-height: 1.95; }
+.chh { font: 600 13px var(--sans); letter-spacing: .3em; color: var(--gold); margin: 0 0 14px; border: 0; padding: 0; }
+.chh.sub { margin-top: 24px; letter-spacing: .14em; }
+/* 出現の動き */
+.rv { opacity: 0; transform: translateY(20px); transition: opacity .75s ease, transform .9s cubic-bezier(.2,.7,.2,1); transition-delay: calc(var(--i, 0) * 110ms + 120ms); }
+.ch.in .rv { opacity: 1; transform: none; }
+/* 1 はじまり */
+.nm { margin: 0 0 6px; font: 600 clamp(34px, 9.5vw, 46px)/1.25 var(--serif); letter-spacing: .08em; }
+.nm span { display: inline-block; opacity: 0; transform: translateY(14px) scale(1.06); filter: blur(7px); transition: opacity .8s ease, transform 1s cubic-bezier(.2,.7,.2,1), filter .9s ease; transition-delay: calc(var(--k) * 90ms + 80ms); }
+.ch.in .nm span { opacity: 1; transform: none; filter: none; }
+.rd { color: var(--muted); font-size: 13px !important; letter-spacing: .1em; margin: 0 0 18px; }
+.lead p { font: 500 19px/1.9 var(--serif) !important; color: var(--ink); }
+.hintnext { margin-top: 26px !important; font-size: 12px !important; color: var(--muted); letter-spacing: .14em; display: flex; align-items: center; gap: 8px; }
+.arw { display: inline-block; font-size: 18px; color: var(--gold); animation: arw 1.6s ease-in-out infinite; }
+@keyframes arw { 0%, 100% { transform: translateY(2px); opacity: .5; } 50% { transform: translateY(-5px); opacity: 1; } }
+/* 2 御祭神 */
+.dcard { display: block; width: 100%; text-align: left; padding: 16px 18px; margin: 0 0 12px; border-radius: 12px; border: 1px solid var(--line-strong); background: linear-gradient(135deg, rgba(49,67,50,.75), rgba(24,36,27,.85)); cursor: pointer; position: relative; overflow: hidden; }
+.dcard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(216,183,102,.16) 50%, transparent 70%); transform: translateX(-120%); transition: transform 1.4s ease; }
+.ch.in .dcard::after { transform: translateX(120%); transition-delay: .7s; }
+.dcard b { display: block; font: 600 25px/1.3 var(--serif); letter-spacing: .06em; }
+.dcard small { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.dcard em { display: block; margin-top: 8px; font-style: normal; font-size: 13px; color: var(--gold); }
+/* 3 由緒（時間の線） */
+.tl { position: relative; padding-left: 26px; }
+.tl::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--gold), rgba(216,183,102,.15)); transform: scaleY(0); transform-origin: top; transition: transform 1.6s cubic-bezier(.3,.7,.2,1) .2s; }
+.ch.in .tl::before { transform: scaleY(1); }
+.tli { position: relative; margin: 0 0 18px; }
+.tli::before { content: ""; position: absolute; left: -26px; top: 9px; width: 14px; height: 14px; border-radius: 50%; background: var(--night); border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(216,183,102,.5); }
+.tli.tradition::before { border-color: var(--amber); }
+.tli p { margin: 0; }
+/* 4 見どころ */
+.spot { padding: 14px 16px; margin: 0 0 12px; border-radius: 12px; background: rgba(49,67,50,.4); border: 1px solid var(--line); }
+.spot p { margin: 0; }
+/* 5 行き方 */
+.bignum { display: flex; gap: 28px; margin: 6px 0 12px; }
+.bignum b { font: 700 clamp(44px, 14vw, 64px)/1 var(--serif); color: var(--gold); letter-spacing: .02em; text-shadow: 0 0 22px rgba(216,183,102,.35); }
+.bignum small { margin-left: 6px; font-size: 14px; color: var(--ink-soft); }
+/* 章の目印（右） */
+.dots { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; z-index: 3; }
+.dots button { width: 32px; height: 32px; padding: 0; border: 0; background: none; cursor: pointer; position: relative; }
+.dots button::before { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px; border-radius: 50%; border: 1.5px solid var(--gold); transition: all .4s; }
+.dots button.on::before { background: var(--gold); box-shadow: 0 0 10px 2px rgba(216,183,102,.6); transform: scale(1.35); }
+.dots button span { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); font-size: 11px; letter-spacing: .1em; white-space: nowrap; color: var(--ink); background: rgba(16,19,15,.85); padding: 3px 8px; border-radius: 4px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.dots button.on span { opacity: .9; }
+@media (max-width: 879px) { .sheet { height: 64vh; height: 64dvh; } }
+@media (min-width: 880px) { .ch { padding: 40px 64px 40px 32px; } .ch + .ch::before { left: 32px; right: 64px; } .dots { right: 14px; } }
+@media (prefers-reduced-motion: reduce) { .rv, .nm span { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; } .tl::before { transform: none !important; transition: none !important; } .arw { animation: none; } }
+@media (max-width: 879px) { .dots button span { display: none; } }
