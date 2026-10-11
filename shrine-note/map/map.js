@@ -337,7 +337,21 @@ userLbl.className = 'lbl you'; userLbl.textContent = '現在地'; userLbl.style.
 labelsEl.appendChild(userLbl);
 let user = null;
 
+const hudEl = document.getElementById('hud');
+let hudKey = '';
+function showHud(text) {
+  if (text === hudKey) return;
+  hudKey = text;
+  if (!text) { hudEl.hidden = true; document.body.classList.remove('hasroute'); return; }
+  hudEl.textContent = text; hudEl.hidden = false; document.body.classList.add('hasroute');
+}
+const fmtKm = (km) => (km < 10 ? km.toFixed(1) : String(Math.round(km)));
+function hudFull(r) {
+  const s = shrines.find((x) => x.id === r.shrineId);
+  return `${s ? s.name : ''}まで　道路 ${fmtKm(r.km)} km　約${Math.max(1, Math.round(r.min))}分`;
+}
 function clearRoute() {
+  showHud('');
   if (!route) return;
   scene.remove(route.points); route.points.geometry.dispose(); route = null;
 }
@@ -416,6 +430,7 @@ async function buildRoute(s) {
   routeMat.uniforms.uLen.value = total;
   route = { points, pos, N, total, km, min, fastestMin: r.fastestMin, alts: r.alts, shrineId: s.id, mid: { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 }, len: Math.hypot(maxX - minX, maxZ - minZ) };
   refreshRouteBox();
+  showHud(hudFull(route));
   return route;
 }
 const toastEl = document.createElement('div');
@@ -456,6 +471,8 @@ function frameRoute(r) {
 }
 // 光の先頭を、カメラが後ろから追いかけて走る
 let run = null;
+let runZoom = 1;                       // 走行中の寄り引き（1=標準）
+const runDistBase = () => (isNarrow() ? 0.34 : 0.26);
 const angDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 function routePoint(r, f) {          // f: 0..N の小数。位置を線形補間
   const i = Math.min(r.N - 1, Math.max(0, Math.floor(f))), k = Math.min(1, Math.max(0, f - i));
@@ -474,13 +491,15 @@ function startRun() {
   $('btnStop').hidden = false;
   const D = Math.min(30, Math.max(9, 6 + r.km * 0.12));
   const az0 = headingAt(r, 0), p0 = routePoint(r, 0);
-  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: isNarrow() ? 0.5 : 0.4, el: 0.58, az: az0 }, 2.4, () => {
+  runZoom = 1;
+  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: runDistBase(), el: 0.6, az: az0 }, 2.4, () => {
     run = { t0: performance.now(), D, r };
   });
 }
 function endRun(userStopped) {
   const had = !!run || document.body.classList.contains('running');
   run = null; flight = null; clearTrail();
+  if (route) showHud(hudFull(route));
   document.body.classList.remove('running');
   $('btnStop').hidden = true;
   if (!had) return;
@@ -500,12 +519,13 @@ function stepRun(now) {
   const h = routePoint(r, f);
   cam.tx += (h.x - cam.tx) * 0.14; cam.tz += (h.z - cam.tz) * 0.14; cam.ty += (h.y - cam.ty) * 0.14;
   cam.az += angDiff(cam.az, headingAt(r, f)) * 0.045;
-  cam.el += (0.58 - cam.el) * 0.05;
-  cam.dist += ((isNarrow() ? 0.5 : 0.4) - cam.dist) * 0.05;
+  cam.el += (0.6 - cam.el) * 0.05;
+  cam.dist += (runDistBase() * runZoom - cam.dist) * 0.08;
   // 光が通った周辺（先頭→後ろ）を記録。道路はこの周辺だけ浮かび上がる
   const stepN = r.N * 0.02;
   for (let i = 0; i < TRAIL_N; i++) { const ff = f - i * stepN; if (ff < 0) { trailU[i].set(0, 0, 0, 0); continue; } const q = routePoint(r, ff); trailU[i].set(q.x, q.z, Math.pow(1 - i / TRAIL_N, 1.3), 0); }
   roadAhead = routePoint(r, Math.min(r.N, f + r.N * 0.08));
+  showHud(`${shrines.find((x) => x.id === r.shrineId)?.name ?? ''}まで　残り ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km　（全 ${fmtKm(r.km)} km）`);
   if (p >= 1) endRun(false);
   return f / r.N;
 }
@@ -797,7 +817,11 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
   if (!ptrs.has(e.pointerId)) { hoverCheck(e); return; }
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (flight || run) return;
+  if (flight) return;
+  if (run) {                                   // 走行中は、ピンチで寄り引きだけ
+    if (ptrs.size === 2 && gesture) { const g = gestureOf(); runZoom = Math.min(3, Math.max(0.35, runZoom * (gesture.d / g.d))); gesture = g; }
+    return;
+  }
   if (ptrs.size === 1 && drag) {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (tapCandidate && Math.hypot(e.clientX - tapCandidate.x, e.clientY - tapCandidate.y) > 8) tapCandidate = null;
@@ -826,9 +850,14 @@ const endPtr = (e) => {
 };
 canvas.addEventListener('pointerup', endPtr);
 canvas.addEventListener('pointercancel', endPtr);
-canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (!flight && !run) zoomBy(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const k = Math.exp(e.deltaY * (e.ctrlKey ? 0.01 : 0.0012));      // ctrl付き=タッチパッドのピンチ
+  if (run) runZoom = Math.min(3, Math.max(0.35, runZoom * k));
+  else if (!flight) zoomBy(k);
+}, { passive: false });
 function zoomBy(k) {
-  const lim = selected ? [0.35, Math.max(3.2, HOME.dist * 1.1)] : [4.5, HOME.dist * 1.15];
+  const lim = selected ? [0.15, Math.max(3.2, HOME.dist * 1.1)] : [0.2, HOME.dist * 1.15];
   cam.dist = Math.min(lim[1], Math.max(lim[0], cam.dist * k));
   touched = true;
 }
