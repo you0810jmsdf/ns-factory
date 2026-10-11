@@ -1,181 +1,2122 @@
 {
-  "updated": "2026-10-11",
+  "updated": "2026-10-12",
   "policy": "古事記を基準に系譜（relations）を組む。日本書紀・古語拾遺・風土記で異なる点は note に区別して書く。日月神示・カタカムナとは混ぜない。『神徳』は『と信じられている』ものだけを、出典を付けて書く（未確認は空欄＝画面に『要確認』）。古事記本文は原文（太安万侶・パブリックドメイン）の短い引用のみ。現代語訳・注釈書の文章は引用しない。",
   "sources": [
-    { "id": "k", "label": "古事記", "title": "古事記 上巻（太安万侶 撰・712）校訂本文", "publisher": "中文維基文庫（PD-old表示）", "url": "https://zh.wikisource.org/wiki/古事記/上卷", "accessed": "2026-10-11" },
-    { "id": "ns1", "label": "紀1", "title": "日本書紀 巻第一 神代上（舎人親王ら 撰・720）", "publisher": "中文維基文庫", "url": "https://zh.wikisource.org/wiki/日本書紀/卷第一", "accessed": "2026-10-11" },
-    { "id": "ns2", "label": "紀2", "title": "日本書紀 巻第二 神代下", "publisher": "中文維基文庫", "url": "https://zh.wikisource.org/wiki/日本書紀/卷第二", "accessed": "2026-10-11" },
-    { "id": "kg", "label": "拾遺", "title": "古語拾遺（斎部広成・807）", "publisher": "中文維基文庫", "url": "https://zh.wikisource.org/wiki/古語拾遺", "accessed": "2026-10-11" },
-    { "id": "ed", "label": "版", "title": "段名は便宜上の通称。章立ての確認先：岩波文庫『古事記』『日本書紀』（版名のみ記す。文章は引用していない）", "publisher": "", "url": "", "accessed": "2026-10-11" },
-    { "id": "mk-g", "label": "麻賀多", "title": "麻賀多神社（佐倉市鏑木町）公式「御祭神・由緒」", "publisher": "麻賀多神社", "url": "http://www.makata.jp/gosaishin.html", "accessed": "2026-10-11" },
-    { "id": "ik", "label": "息栖", "title": "息栖神社 公式「御由緒・御祭神」", "publisher": "息栖神社", "url": "https://ikisujinja.com/about/", "accessed": "2026-10-11" },
-    { "id": "aw", "label": "安房", "title": "安房神社 公式「御祭神」", "publisher": "安房神社", "url": "http://www.awajinjya.org/gosaijin.htm", "accessed": "2026-10-11" },
-    { "id": "ka", "label": "香取", "title": "香取神宮 公式「御由緒」", "publisher": "香取神宮", "url": "https://katori-jingu.or.jp/about/history/", "accessed": "2026-10-11" },
-    { "id": "su", "label": "洲崎", "title": "洲崎神社（館山市の案内・事典の整理）", "publisher": "館山市／事典", "url": "https://www.city.tateyama.chiba.jp/syougaigaku/page100263.html", "accessed": "2026-10-11" }
+    {
+      "id": "k",
+      "label": "古事記",
+      "title": "古事記 上巻（太安万侶 撰・712）校訂本文",
+      "publisher": "中文維基文庫（PD-old表示）",
+      "url": "https://zh.wikisource.org/wiki/古事記/上卷",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ns1",
+      "label": "紀1",
+      "title": "日本書紀 巻第一 神代上（舎人親王ら 撰・720）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第一",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ns2",
+      "label": "紀2",
+      "title": "日本書紀 巻第二 神代下",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第二",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "kg",
+      "label": "拾遺",
+      "title": "古語拾遺（斎部広成・807）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/古語拾遺",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ed",
+      "label": "版",
+      "title": "段名は便宜上の通称。章立ての確認先：岩波文庫『古事記』『日本書紀』（版名のみ記す。文章は引用していない）",
+      "publisher": "",
+      "url": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "mk-g",
+      "label": "麻賀多",
+      "title": "麻賀多神社（佐倉市鏑木町）公式「御祭神・由緒」",
+      "publisher": "麻賀多神社",
+      "url": "http://www.makata.jp/gosaishin.html",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ik",
+      "label": "息栖",
+      "title": "息栖神社 公式「御由緒・御祭神」",
+      "publisher": "息栖神社",
+      "url": "https://ikisujinja.com/about/",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "aw",
+      "label": "安房",
+      "title": "安房神社 公式「御祭神」",
+      "publisher": "安房神社",
+      "url": "http://www.awajinjya.org/gosaijin.htm",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ka",
+      "label": "香取",
+      "title": "香取神宮 公式「御由緒」",
+      "publisher": "香取神宮",
+      "url": "https://katori-jingu.or.jp/about/history/",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "su",
+      "label": "洲崎",
+      "title": "洲崎神社（館山市の案内・事典の整理）",
+      "publisher": "館山市／事典",
+      "url": "https://www.city.tateyama.chiba.jp/syougaigaku/page100263.html",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": "ns3",
+      "title": "日本書紀 巻第三",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第三",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "atd1",
+      "title": "古事記 中卷",
+      "publisher": "中文維基文庫（校訂本文）",
+      "url": "https://zh.wikisource.org/wiki/古事記/中卷",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "atd2",
+      "title": "日本書紀 卷第七（景行天皇）",
+      "publisher": "中文維基文庫（校訂本文）",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第七",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "atd3",
+      "title": "熱田神宮 御祭神",
+      "publisher": "熱田神宮",
+      "url": "https://www.atsutajingu.or.jp/jingu/about/enshrined.html",
+      "accessed": "2026-10-12",
+      "label": "熱田神宮"
+    },
+    {
+      "id": "sud1",
+      "title": "諏訪大社 御参拝のご案内（御祭神）",
+      "publisher": "諏訪大社",
+      "url": "https://suwataisha.or.jp/visiting/",
+      "accessed": "2026-10-12",
+      "label": "諏訪大社"
+    },
+    {
+      "id": "sud2",
+      "title": "諏訪大社とは（御神徳）",
+      "publisher": "諏訪大社",
+      "url": "https://suwataisha.or.jp/about/",
+      "accessed": "2026-10-12",
+      "label": "諏訪大社"
+    },
+    {
+      "id": "omd1",
+      "title": "古事記 中卷",
+      "publisher": "中文維基文庫（校訂本文）",
+      "url": "https://zh.wikisource.org/wiki/古事記/中卷",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "omd2",
+      "title": "大神神社 ご由緒",
+      "publisher": "大神神社",
+      "url": "https://oomiwa.or.jp/jinja/goyuisho/",
+      "accessed": "2026-10-12",
+      "label": "大神神社"
+    },
+    {
+      "id": "omd3",
+      "title": "大神神社 ご祭神",
+      "publisher": "大神神社",
+      "url": "https://oomiwa.or.jp/jinja/gosaijin/",
+      "accessed": "2026-10-12",
+      "label": "大神神社"
+    },
+    {
+      "id": "omd4",
+      "title": "大神神社 三輪山",
+      "publisher": "大神神社",
+      "url": "https://oomiwa.or.jp/jinja/miwayama/",
+      "accessed": "2026-10-12",
+      "label": "大神神社"
+    },
+    {
+      "id": "ka2-km",
+      "title": "古事記 中巻（中文維基文庫の校訂本文）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/古事記",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "usns9",
+      "title": "日本書紀 巻第九（気長足姫尊 神功皇后）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第九",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "usns10",
+      "title": "日本書紀 巻第十（誉田天皇 応神天皇）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第十",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "tkns3",
+      "title": "日本書紀 巻第三（神日本磐余彦天皇 神武天皇）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第三",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    }
   ],
   "deities": [
     {
-      "id": "izanagi", "name": "伊邪那岐命", "reading": "いざなぎのみこと", "aliases": ["伊弉諾尊（紀）"],
-      "kojiki_name": "伊邪那岐命", "kojiki_where": "上巻 通称「神生み」「黄泉国」「禊祓」", "nihonshoki_name": "伊弉諾尊", "nihonshoki_where": "巻第一 神代上 第四〜五段",
-      "relations": { "parents": [], "spouses": ["izanami"], "children": ["amaterasu", "susanoo", "takemikazuchi", "kunado", "sumiyoshi3"] },
-      "scenes": [
-        { "title": "禊と三貴子の誕生", "where": "古事記 上巻 通称「禊祓」", "text": "黄泉の国から戻った伊邪那岐命が水で禊をすると、住吉三神・天照大御神・須佐之男命などの神々が次々に成った。", "src": ["k"] }
+      "id": "izanagi",
+      "name": "伊邪那岐命",
+      "reading": "いざなぎのみこと",
+      "aliases": [
+        "伊弉諾尊（紀）"
       ],
-      "virtues": [], "note": "本稿では、このあと登場する神々の親として置いた『つなぎ』の神です。", "src": ["k", "ns1"], "context": true
-    },
-    {
-      "id": "izanami", "name": "伊邪那美命", "reading": "いざなみのみこと", "aliases": ["伊弉冉尊（紀）"],
-      "kojiki_name": "伊邪那美命", "kojiki_where": "上巻 通称「神生み」「黄泉国」", "nihonshoki_name": "伊弉冉尊", "nihonshoki_where": "巻第一 神代上 第四〜五段",
-      "relations": { "parents": [], "spouses": ["izanagi"], "children": ["wakumusubi", "amenotorifune"] },
+      "kojiki_name": "伊邪那岐命",
+      "kojiki_where": "上巻 通称「神生み」「黄泉国」「禊祓」",
+      "nihonshoki_name": "伊弉諾尊",
+      "nihonshoki_where": "巻第一 神代上 第四〜五段",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "izanami"
+        ],
+        "children": [
+          "amaterasu",
+          "susanoo",
+          "takemikazuchi",
+          "kunado",
+          "sumiyoshi3",
+          "hayatamano"
+        ]
+      },
       "scenes": [
-        { "title": "神生みと火の神", "where": "古事記 上巻 通称「神生み」", "text": "多くの神を生んだ伊邪那美命は、火の神を生んで苦しんだ。そのとき、尿などから食物や水に関わる神々が成った。", "src": ["k"] }
+        {
+          "title": "禊と三貴子の誕生",
+          "where": "古事記 上巻 通称「禊祓」",
+          "text": "黄泉の国から戻った伊邪那岐命が水で禊をすると、住吉三神・天照大御神・須佐之男命などの神々が次々に成った。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "『つなぎ』の神です。", "src": ["k", "ns1"], "context": true
+      "virtues": [],
+      "note": "本稿では、このあと登場する神々の親として置いた『つなぎ』の神です。",
+      "src": [
+        "k",
+        "ns1"
+      ],
+      "context": true
     },
     {
-      "id": "wakumusubi", "name": "和久産巣日神", "reading": "わくむすひのかみ", "aliases": ["稚産霊命（紀）", "和久産巢日神"],
-      "kojiki_name": "和久産巣日神", "kojiki_where": "上巻 通称「神生み」", "nihonshoki_name": "稚産霊", "nihonshoki_where": "巻第一 神代上 第五段の一書",
-      "relations": { "parents": ["izanami"], "spouses": [], "children": ["toyouke"] },
+      "id": "izanami",
+      "name": "伊邪那美命",
+      "reading": "いざなみのみこと",
+      "aliases": [
+        "伊弉冉尊（紀）"
+      ],
+      "kojiki_name": "伊邪那美命",
+      "kojiki_where": "上巻 通称「神生み」「黄泉国」",
+      "nihonshoki_name": "伊弉冉尊",
+      "nihonshoki_where": "巻第一 神代上 第四〜五段",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "izanagi"
+        ],
+        "children": [
+          "wakumusubi",
+          "amenotorifune"
+        ]
+      },
       "scenes": [
-        { "title": "食物と生産の神として成る", "where": "古事記 上巻 通称「神生み」", "text": "火の神を生んで苦しむ伊邪那美命の尿から成った、食物・生産に関わる神。子は豊宇気毗売神（外宮の神）とされる。", "quote": "次，和久産巢日神。此神之子謂豊宇氣毗賣神", "src": ["k"] },
-        { "title": "蚕と五穀の起源（日本書紀）", "where": "日本書紀 巻第一 第五段の一書", "text": "日本書紀の一書では、軻遇突智と埴山姫の子として稚産霊が生まれ、頭に蚕と桑、へそに五穀が生じたと語られる。古事記とは親の記述が異なる。", "src": ["ns1"], "disputed": true }
+        {
+          "title": "神生みと火の神",
+          "where": "古事記 上巻 通称「神生み」",
+          "text": "多くの神を生んだ伊邪那美命は、火の神を生んで苦しんだ。そのとき、尿などから食物や水に関わる神々が成った。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "麻賀多神社（佐倉市鏑木町）公式は『古事記の和久産巣日神＝日本書紀の稚産霊命』と説明しており、記紀の本文（神名・親子関係）と矛盾しない。成田市の麻賀多神社・奥宮の『稚日霊命』は日本書紀の稚日女尊系で、別の神として扱われる（事典の記述・要確認）。", "src": ["k", "ns1", "mk-g"]
+      "virtues": [],
+      "note": "『つなぎ』の神です。",
+      "src": [
+        "k",
+        "ns1"
+      ],
+      "context": true
     },
     {
-      "id": "toyouke", "name": "豊受大御神", "reading": "とようけのおおみかみ", "aliases": ["豊宇気毗売神（記）", "登由宇気神（記）"],
-      "kojiki_name": "豊宇気毗売神／登由宇気神", "kojiki_where": "上巻 通称「神生み」「天孫降臨」", "nihonshoki_name": "（取得した巻では確認できず・要確認）", "nihonshoki_where": "",
-      "relations": { "parents": ["wakumusubi"], "spouses": [], "children": [] },
+      "id": "wakumusubi",
+      "name": "和久産巣日神",
+      "reading": "わくむすひのかみ",
+      "aliases": [
+        "稚産霊命（紀）",
+        "和久産巢日神"
+      ],
+      "kojiki_name": "和久産巣日神",
+      "kojiki_where": "上巻 通称「神生み」",
+      "nihonshoki_name": "稚産霊",
+      "nihonshoki_where": "巻第一 神代上 第五段の一書",
+      "relations": {
+        "parents": [
+          "izanami"
+        ],
+        "spouses": [],
+        "children": [
+          "toyouke"
+        ]
+      },
       "scenes": [
-        { "title": "外宮に坐す神", "where": "古事記 上巻 通称「天孫降臨」", "text": "天孫降臨の段で、鏡を祀る神々に続いて『外宮の度相に坐す神』として挙げられる。食物を司る神の子として生まれた神である。", "quote": "登由宇氣神，此者坐外宫之度相神者也", "src": ["k"] }
+        {
+          "title": "食物と生産の神として成る",
+          "where": "古事記 上巻 通称「神生み」",
+          "text": "火の神を生んで苦しむ伊邪那美命の尿から成った、食物・生産に関わる神。子は豊宇気毗売神（外宮の神）とされる。",
+          "quote": "次，和久産巢日神。此神之子謂豊宇氣毗賣神",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "蚕と五穀の起源（日本書紀）",
+          "where": "日本書紀 巻第一 第五段の一書",
+          "text": "日本書紀の一書では、軻遇突智と埴山姫の子として稚産霊が生まれ、頭に蚕と桑、へそに五穀が生じたと語られる。古事記とは親の記述が異なる。",
+          "src": [
+            "ns1"
+          ],
+          "disputed": true
+        }
       ],
-      "virtues": [], "note": "外宮の成り立ちは、記紀以外の神宮の伝承に拠る部分が大きい（要確認）。日本書紀は、確認した巻（巻第一〜三）では見当たらず、全巻の確認は未了。", "src": ["k"]
+      "virtues": [],
+      "note": "麻賀多神社（佐倉市鏑木町）公式は『古事記の和久産巣日神＝日本書紀の稚産霊命』と説明しており、記紀の本文（神名・親子関係）と矛盾しない。成田市の麻賀多神社・奥宮の『稚日霊命』は日本書紀の稚日女尊系で、別の神として扱われる（事典の記述・要確認）。",
+      "src": [
+        "k",
+        "ns1",
+        "mk-g"
+      ]
     },
     {
-      "id": "amaterasu", "name": "天照大御神", "reading": "あまてらすおおみかみ", "aliases": ["大日孁貴（紀・本文）", "天照大神（紀）"],
-      "kojiki_name": "天照大御神", "kojiki_where": "上巻 通称「禊祓」「天の岩屋戸」「誓約」「国譲り」「天孫降臨」", "nihonshoki_name": "大日孁貴（本文）／天照大神（一書）", "nihonshoki_where": "巻第一 神代上 第五段",
-      "relations": { "parents": ["izanagi"], "spouses": [], "children": ["oshihomimi"] },
+      "id": "toyouke",
+      "name": "豊受大御神",
+      "reading": "とようけのおおみかみ",
+      "aliases": [
+        "豊宇気毗売神（記）",
+        "登由宇気神（記）"
+      ],
+      "kojiki_name": "豊宇気毗売神／登由宇気神",
+      "kojiki_where": "上巻 通称「神生み」「天孫降臨」",
+      "nihonshoki_name": "（取得した巻では確認できず・要確認）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [
+          "wakumusubi"
+        ],
+        "spouses": [],
+        "children": []
+      },
       "scenes": [
-        { "title": "禊で生まれる", "where": "古事記 上巻 通称「禊祓」", "text": "伊邪那岐命が左の目を洗ったときに成った、高天原を治める神。", "quote": "洗左御目時，所成神名，天照大御神", "src": ["k"] },
-        { "title": "天の岩屋戸", "where": "古事記 上巻 通称「天の岩屋戸」", "text": "弟の須佐之男命の乱暴に怒って岩屋に隠れ、世界が暗くなった。神々の祭りによって再び姿を現した。", "src": ["k"] }
+        {
+          "title": "外宮に坐す神",
+          "where": "古事記 上巻 通称「天孫降臨」",
+          "text": "天孫降臨の段で、鏡を祀る神々に続いて『外宮の度相に坐す神』として挙げられる。食物を司る神の子として生まれた神である。",
+          "quote": "登由宇氣神，此者坐外宫之度相神者也",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "伊勢神宮（内宮）の御祭神。", "src": ["k", "ns1"]
+      "virtues": [],
+      "note": "外宮の成り立ちは、記紀以外の神宮の伝承に拠る部分が大きい（要確認）。日本書紀は、確認した巻（巻第一〜三）では見当たらず、全巻の確認は未了。",
+      "src": [
+        "k"
+      ]
     },
     {
-      "id": "oshihomimi", "name": "天之忍穂耳命", "reading": "あめのおしほみみのみこと", "aliases": [],
-      "kojiki_name": "正勝吾勝勝速日天忍穂耳命", "kojiki_where": "上巻 通称「誓約」", "nihonshoki_name": "正哉吾勝勝速日天忍穂耳尊", "nihonshoki_where": "巻第二 第九段",
-      "relations": { "parents": ["amaterasu"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "天照大御神の子", "where": "古事記 上巻 通称「誓約」", "text": "天照大御神と須佐之男命の誓約で生まれた神の一柱。子孫に天孫がつながる。", "src": ["k"] }],
-      "virtues": [], "note": "『つなぎ』の神です。", "src": ["k"], "context": true
-    },
-    {
-      "id": "susanoo", "name": "須佐之男命", "reading": "すさのおのみこと", "aliases": ["素戔嗚尊（紀）"],
-      "kojiki_name": "須佐之男命", "kojiki_where": "上巻 通称「禊祓」「天の岩屋戸」「八俣大蛇」", "nihonshoki_name": "素戔嗚尊", "nihonshoki_where": "巻第一 神代上",
-      "relations": { "parents": ["izanagi"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "三貴子の一柱", "where": "古事記 上巻 通称「禊祓」", "text": "伊邪那岐命の禊で、天照大御神・月読命に続いて成った神。大国主神の祖先とされる（大国主は須佐之男命の六世の孫と記す）。", "src": ["k"] }],
-      "virtues": [], "note": "『つなぎ』の神です。大国主神との間の世代は、図では省いています。", "src": ["k"], "context": true
-    },
-    {
-      "id": "takemikazuchi", "name": "武甕槌大神", "reading": "たけみかづちのおおかみ", "aliases": ["建御雷神（記）", "建御雷之男神", "建布都神", "豊布都神"],
-      "kojiki_name": "建御雷之男神／建御雷神", "kojiki_where": "上巻 通称「神生み」「国譲り」", "nihonshoki_name": "武甕槌神", "nihonshoki_where": "巻第二 神代下 第九段（国譲り）",
-      "relations": { "parents": ["izanagi"], "spouses": [], "children": [] },
+      "id": "amaterasu",
+      "name": "天照大御神",
+      "reading": "あまてらすおおみかみ",
+      "aliases": [
+        "大日孁貴（紀・本文）",
+        "天照大神（紀）"
+      ],
+      "kojiki_name": "天照大御神",
+      "kojiki_where": "上巻 通称「禊祓」「天の岩屋戸」「誓約」「国譲り」「天孫降臨」",
+      "nihonshoki_name": "大日孁貴（本文）／天照大神（一書）",
+      "nihonshoki_where": "巻第一 神代上 第五段",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [],
+        "children": [
+          "oshihomimi"
+        ]
+      },
       "scenes": [
-        { "title": "刀の血から成る", "where": "古事記 上巻 通称「神生み」", "text": "伊邪那岐命が火の神を斬った刀の先の血から成った神の一柱。", "quote": "建御雷之男神，亦名建布都神，亦名豊布都神", "src": ["k"] },
-        { "title": "国譲り", "where": "古事記 上巻 通称「国譲り」", "text": "天鳥船神を副えて出雲に遣わされ、浜に剣を逆さに立ててその上に座り、大国主神に国の明け渡しを迫った。事代主神は同意し、建御名方神は力比べに敗れ、大国主神は国を献上して、壮大な宮に住まうことを求めたと語られる。", "src": ["k"] }
+        {
+          "title": "禊で生まれる",
+          "where": "古事記 上巻 通称「禊祓」",
+          "text": "伊邪那岐命が左の目を洗ったときに成った、高天原を治める神。",
+          "quote": "洗左御目時，所成神名，天照大御神",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "天の岩屋戸",
+          "where": "古事記 上巻 通称「天の岩屋戸」",
+          "text": "弟の須佐之男命の乱暴に怒って岩屋に隠れ、世界が暗くなった。神々の祭りによって再び姿を現した。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "古事記は国譲りの段で天尾羽張神（伊都之尾羽張神）の子とも記す。日本書紀は『甕速日神→熯速日神→武甕槌神』の系譜を記す（本文か一書かは要確認）。古語拾遺は『甕速日神の子。今の常陸国鹿嶋神』と記す。", "src": ["k", "ns2", "kg"]
+      "virtues": [],
+      "note": "伊勢神宮（内宮）の御祭神。",
+      "src": [
+        "k",
+        "ns1"
+      ]
     },
     {
-      "id": "futsunushi", "name": "経津主大神", "reading": "ふつぬしのおおかみ", "aliases": ["伊波比主命（香取神宮公式）"],
-      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）", "kojiki_where": "", "nihonshoki_name": "経津主神", "nihonshoki_where": "巻第二 神代下 第九段（国譲り）の本文と一書",
-      "relations": { "parents": [], "spouses": [], "children": [] },
+      "id": "oshihomimi",
+      "name": "天之忍穂耳命",
+      "reading": "あめのおしほみみのみこと",
+      "aliases": [],
+      "kojiki_name": "正勝吾勝勝速日天忍穂耳命",
+      "kojiki_where": "上巻 通称「誓約」",
+      "nihonshoki_name": "正哉吾勝勝速日天忍穂耳尊",
+      "nihonshoki_where": "巻第二 第九段",
+      "relations": {
+        "parents": [
+          "amaterasu"
+        ],
+        "spouses": [],
+        "children": [
+          "ninigi"
+        ]
+      },
       "scenes": [
-        { "title": "国譲りの使者（日本書紀）", "where": "日本書紀 巻第二 第九段", "text": "武甕槌神と並ぶ使者として出雲に遣わされ、従わない神々を平定した。岐神（久那斗神にあたるとされる神）が道案内をしたと記す一書がある。武人・刀剣の神としての性格が強い。", "quote": "故經津主神、以岐神。爲郷導周流削平", "src": ["ns2"] }
+        {
+          "title": "天照大御神の子",
+          "where": "古事記 上巻 通称「誓約」",
+          "text": "天照大御神と須佐之男命の誓約で生まれた神の一柱。子孫に天孫がつながる。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "日本書紀（第五段の一書）と古語拾遺は、磐筒女神の子とする。古事記には、国譲りの使者として建御雷神が語られ、この神は見当たらない。香取神宮公式は別名を『伊波比主命』とするが、記紀の本文上では確認していない。", "src": ["ns2", "kg", "ka"]
+      "virtues": [],
+      "note": "『つなぎ』の神です。",
+      "src": [
+        "k"
+      ],
+      "context": true
     },
     {
-      "id": "kunado", "name": "久那斗神", "reading": "くなどのかみ", "aliases": ["衝立船戸神（記）", "岐神（紀）", "来名戸祖神"],
-      "kojiki_name": "衝立船戸神", "kojiki_where": "上巻 通称「禊祓」", "nihonshoki_name": "岐神（ふなとのかみ）", "nihonshoki_where": "巻第一 第五段の一書／巻第二 第九段の一書",
-      "relations": { "parents": ["izanagi"], "spouses": [], "children": [] },
+      "id": "susanoo",
+      "name": "須佐之男命",
+      "reading": "すさのおのみこと",
+      "aliases": [
+        "素戔嗚尊（紀）"
+      ],
+      "kojiki_name": "須佐之男命",
+      "kojiki_where": "上巻 通称「禊祓」「天の岩屋戸」「八俣大蛇」",
+      "nihonshoki_name": "素戔嗚尊",
+      "nihonshoki_where": "巻第一 神代上",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [
+          "inadahime"
+        ],
+        "children": [
+          "munakata3"
+        ]
+      },
       "scenes": [
-        { "title": "投げた杖から成る", "where": "古事記 上巻 通称「禊祓」", "text": "黄泉から戻った伊邪那岐命が投げ棄てた杖から成った神。道の境を守り、悪いものの侵入を塞ぐ神とされる。", "quote": "於投棄御杖所成神名，衝立船戶神", "src": ["k"] },
-        { "title": "国譲りの道案内（日本書紀）", "where": "日本書紀 巻第二 第九段の一書", "text": "大己貴神が二神に推薦した岐神が先導役となって、各地の平定が進んだと記す。", "src": ["ns2"] }
+        {
+          "title": "三貴子の一柱",
+          "where": "古事記 上巻 通称「禊祓」",
+          "text": "伊邪那岐命の禊で、天照大御神・月読命に続いて成った神。大国主神の祖先とされる（大国主は須佐之男命の六世の孫と記す）。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "息栖神社公式の『久那斗神』が記の『衝立船戸神』・紀の『岐神』にあたる、という対応は事典・社伝上の理解。記紀本文が『久那斗』の表記を使うわけではない（要確認）。", "src": ["k", "ns1", "ns2", "ik"]
+      "virtues": [],
+      "note": "『つなぎ』の神です。大国主神との間の世代は、図では省いています。",
+      "src": [
+        "k"
+      ],
+      "context": true
     },
     {
-      "id": "amenotorifune", "name": "天鳥船神", "reading": "あめのとりふねのかみ", "aliases": ["鳥之石楠船神（記）"],
-      "kojiki_name": "鳥之石楠船神（亦の名 天鳥船神）", "kojiki_where": "上巻 通称「神生み」「国譲り」", "nihonshoki_name": "（神名としては確認できず・要確認）", "nihonshoki_where": "",
-      "relations": { "parents": ["izanami"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "国譲りの副使", "where": "古事記 上巻 通称「国譲り」", "text": "船の神として生まれ、国譲りでは建御雷神の副使として出雲へ同行し、事代主神を呼びに行く使者もつとめた。", "src": ["k"] }],
-      "virtues": [], "note": "日本書紀では『天鳥船』の語は船の名として出るが、神名としての登場は確認できていない。", "src": ["k"]
-    },
-    {
-      "id": "sumiyoshi3", "name": "住吉三神", "reading": "すみのえのみはしらのおおかみ", "aliases": ["底筒之男命・中筒之男命・上筒之男命（記）", "底筒男命・中筒男命・表筒男命（紀）"],
-      "kojiki_name": "墨江之三前大神", "kojiki_where": "上巻 通称「禊祓」", "nihonshoki_name": "住吉大神", "nihonshoki_where": "巻第一 第五段の一書",
-      "relations": { "parents": ["izanagi"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "禊の水の底・中・表で成る", "where": "古事記 上巻 通称「禊祓」", "text": "伊邪那岐命が黄泉の穢れを洗う禊をしたとき、海の底・中・表で生まれた三柱。海と航海の守り神として祀られる。", "src": ["k", "ns1"] }],
-      "virtues": [], "note": "息栖神社公式は『住吉三神』とのみ記す。内訳（上筒・中筒・底筒）は事典の記述（要確認）。", "src": ["k", "ns1", "ik"]
-    },
-    {
-      "id": "futotama", "name": "天太玉命", "reading": "あめのふとだまのみこと", "aliases": ["布刀玉命（記）", "太玉命（紀）"],
-      "kojiki_name": "布刀玉命", "kojiki_where": "上巻 通称「天の岩屋戸」「天孫降臨」", "nihonshoki_name": "太玉命", "nihonshoki_where": "巻第一 第七段（天石窟）の一書など",
-      "relations": { "parents": [], "spouses": [], "children": [] },
+      "id": "takemikazuchi",
+      "name": "武甕槌大神",
+      "reading": "たけみかづちのおおかみ",
+      "aliases": [
+        "建御雷神（記）",
+        "建御雷之男神",
+        "建布都神",
+        "豊布都神"
+      ],
+      "kojiki_name": "建御雷之男神／建御雷神",
+      "kojiki_where": "上巻 通称「神生み」「国譲り」",
+      "nihonshoki_name": "武甕槌神",
+      "nihonshoki_where": "巻第二 神代下 第九段（国譲り）",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [],
+        "children": []
+      },
       "scenes": [
-        { "title": "天の岩屋戸の祭り", "where": "古事記 上巻 通称「天の岩屋戸」", "text": "天照大御神が隠れた岩屋の前で、鏡や御幣を整えて祭祀を取り仕切った忌部氏の祖神。", "src": ["k"] },
-        { "title": "天孫降臨に従う", "where": "古事記 上巻 通称「天孫降臨」", "text": "天孫に従う五伴緒の一人として降る。『布刀玉命者忌部首等之祖』と注記される。", "quote": "布刀玉命者忌部首等之祖", "src": ["k"] }
+        {
+          "title": "刀の血から成る",
+          "where": "古事記 上巻 通称「神生み」",
+          "text": "伊邪那岐命が火の神を斬った刀の先の血から成った神の一柱。",
+          "quote": "建御雷之男神，亦名建布都神，亦名豊布都神",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "国譲り",
+          "where": "古事記 上巻 通称「国譲り」",
+          "text": "天鳥船神を副えて出雲に遣わされ、浜に剣を逆さに立ててその上に座り、大国主神に国の明け渡しを迫った。事代主神は同意し、建御名方神は力比べに敗れ、大国主神は国を献上して、壮大な宮に住まうことを求めたと語られる。",
+          "src": [
+            "k"
+          ]
+        }
       ],
-      "virtues": [], "note": "古語拾遺は高皇産霊神の子とする。記紀では親の明記を確認できていない（要確認）。安房神社公式は妃神を天比理刀咩命とするが、記紀には見えない。", "src": ["k", "ns1", "kg", "aw"]
+      "virtues": [],
+      "note": "古事記は国譲りの段で天尾羽張神（伊都之尾羽張神）の子とも記す。日本書紀は『甕速日神→熯速日神→武甕槌神』の系譜を記す（本文か一書かは要確認）。古語拾遺は『甕速日神の子。今の常陸国鹿嶋神』と記す。",
+      "src": [
+        "k",
+        "ns2",
+        "kg"
+      ]
     },
     {
-      "id": "amenohiri", "name": "天比理乃咩命", "reading": "あめのひりのめのみこと", "aliases": ["天比理刀咩命（六国史・安房神社）"],
-      "kojiki_name": "（記紀・古語拾遺の取得範囲では確認できず・要確認）", "kojiki_where": "", "nihonshoki_name": "（同上）", "nihonshoki_where": "",
-      "relations": { "parents": [], "spouses": [], "children": [] },
-      "scenes": [{ "title": "記紀には神話がない", "where": "洲崎神社の社伝", "text": "記紀に神話は確認できない。社伝では、天富命が祖母神・天比理乃咩命の鏡を神体として祀ったと伝わる（伝承）。", "src": ["su"], "disputed": true }],
-      "virtues": [], "note": "延喜式神名帳に『后神天比理乃咩命神社（大）元名洲神』、六国史に『天比理刀咩命』の記事があると事典はまとめるが、原文は未確認。『記紀に無い』と断定せず『要確認』とする。表記は『乃』『刀』の2系統がある。", "src": ["su", "aw"]
-    },
-    {
-      "id": "ookuninushi", "name": "大国主大神", "reading": "おおくにぬしのおおかみ", "aliases": ["大穴牟遅神", "葦原色許男神", "八千矛神", "宇都志国玉神", "大己貴神（紀）"],
-      "kojiki_name": "大国主神", "kojiki_where": "上巻 通称「大国主神の系譜」「稲羽の素兎」「根の堅州国」「国作り」「国譲り」", "nihonshoki_name": "大己貴神（別名 大国主神・大物主神）", "nihonshoki_where": "巻第一 第八段／巻第二 第九段",
-      "relations": { "parents": ["amenofuyuginu", "sashikuniwakahime"], "spouses": [], "children": ["kotoshironushi", "takeminakata"] },
+      "id": "futsunushi",
+      "name": "経津主大神",
+      "reading": "ふつぬしのおおかみ",
+      "aliases": [
+        "伊波比主命（香取神宮公式）"
+      ],
+      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "経津主神",
+      "nihonshoki_where": "巻第二 神代下 第九段（国譲り）の本文と一書",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
       "scenes": [
-        { "title": "国づくりと国譲り", "where": "古事記 上巻 通称「国作り」「国譲り」", "text": "兄神たちの迫害や須佐之男命の試練を越えて国の主となり、少名毘古那神と国づくりを進めた。のち高天原の使者の求めに応じ、子の事代主神・建御名方神の対応を経て国を譲り、天津神の御子の宮のような壮大な社に住まうことを求めて隠退した。この社の造営が出雲大社の起源譚とされる。", "src": ["k"] }
+        {
+          "title": "国譲りの使者（日本書紀）",
+          "where": "日本書紀 巻第二 第九段",
+          "text": "武甕槌神と並ぶ使者として出雲に遣わされ、従わない神々を平定した。岐神（久那斗神にあたるとされる神）が道案内をしたと記す一書がある。武人・刀剣の神としての性格が強い。",
+          "quote": "故經津主神、以岐神。爲郷導周流削平",
+          "src": [
+            "ns2"
+          ]
+        }
       ],
-      "virtues": [], "note": "古事記は、父を天之冬衣神、母を刺国若比売とし、須佐之男命の六世の孫と記す（図には両親のみ）。日本書紀は、本文で素戔嗚尊と奇稲田姫の子、一書で六世孫とするなど、異なる記述を併記する。", "src": ["k", "ns1", "ns2"]
+      "virtues": [],
+      "note": "日本書紀（第五段の一書）と古語拾遺は、磐筒女神の子とする。古事記には、国譲りの使者として建御雷神が語られ、この神は見当たらない。香取神宮公式は別名を『伊波比主命』とするが、記紀の本文上では確認していない。",
+      "src": [
+        "ns2",
+        "kg",
+        "ka"
+      ]
     },
     {
-      "id": "amenofuyuginu", "name": "天之冬衣神", "reading": "あめのふゆきぬのかみ", "aliases": [],
-      "kojiki_name": "天之冬衣神", "kojiki_where": "上巻 通称「大国主神の系譜」", "nihonshoki_name": "", "nihonshoki_where": "",
-      "relations": { "parents": [], "spouses": ["sashikuniwakahime"], "children": ["ookuninushi"] },
-      "scenes": [], "virtues": [], "note": "古事記が大国主神の父とする神。『つなぎ』として置いた。", "src": ["k"], "context": true
+      "id": "kunado",
+      "name": "久那斗神",
+      "reading": "くなどのかみ",
+      "aliases": [
+        "衝立船戸神（記）",
+        "岐神（紀）",
+        "来名戸祖神"
+      ],
+      "kojiki_name": "衝立船戸神",
+      "kojiki_where": "上巻 通称「禊祓」",
+      "nihonshoki_name": "岐神（ふなとのかみ）",
+      "nihonshoki_where": "巻第一 第五段の一書／巻第二 第九段の一書",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "投げた杖から成る",
+          "where": "古事記 上巻 通称「禊祓」",
+          "text": "黄泉から戻った伊邪那岐命が投げ棄てた杖から成った神。道の境を守り、悪いものの侵入を塞ぐ神とされる。",
+          "quote": "於投棄御杖所成神名，衝立船戶神",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "国譲りの道案内（日本書紀）",
+          "where": "日本書紀 巻第二 第九段の一書",
+          "text": "大己貴神が二神に推薦した岐神が先導役となって、各地の平定が進んだと記す。",
+          "src": [
+            "ns2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "息栖神社公式の『久那斗神』が記の『衝立船戸神』・紀の『岐神』にあたる、という対応は事典・社伝上の理解。記紀本文が『久那斗』の表記を使うわけではない（要確認）。",
+      "src": [
+        "k",
+        "ns1",
+        "ns2",
+        "ik"
+      ]
     },
     {
-      "id": "sashikuniwakahime", "name": "刺国若比売", "reading": "さしくにわかひめ", "aliases": [],
-      "kojiki_name": "刺国若比売", "kojiki_where": "上巻 通称「大国主神の系譜」", "nihonshoki_name": "", "nihonshoki_where": "",
-      "relations": { "parents": [], "spouses": ["amenofuyuginu"], "children": ["ookuninushi"] },
-      "scenes": [], "virtues": [], "note": "古事記が大国主神の母とする神。『つなぎ』として置いた。", "src": ["k"], "context": true
+      "id": "amenotorifune",
+      "name": "天鳥船神",
+      "reading": "あめのとりふねのかみ",
+      "aliases": [
+        "鳥之石楠船神（記）"
+      ],
+      "kojiki_name": "鳥之石楠船神（亦の名 天鳥船神）",
+      "kojiki_where": "上巻 通称「神生み」「国譲り」",
+      "nihonshoki_name": "（神名としては確認できず・要確認）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [
+          "izanami"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "国譲りの副使",
+          "where": "古事記 上巻 通称「国譲り」",
+          "text": "船の神として生まれ、国譲りでは建御雷神の副使として出雲へ同行し、事代主神を呼びに行く使者もつとめた。",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "日本書紀では『天鳥船』の語は船の名として出るが、神名としての登場は確認できていない。",
+      "src": [
+        "k"
+      ]
     },
     {
-      "id": "kotoshironushi", "name": "事代主神", "reading": "ことしろぬしのかみ", "aliases": [],
-      "kojiki_name": "事代主神", "kojiki_where": "上巻 通称「国譲り」", "nihonshoki_name": "事代主神", "nihonshoki_where": "巻第二 第九段",
-      "relations": { "parents": ["ookuninushi"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "国譲りに同意する", "where": "古事記 上巻 通称「国譲り」", "text": "大国主神の子。天鳥船神に呼ばれて、国を譲ることに同意した。", "src": ["k"] }],
-      "virtues": [], "note": "『つなぎ』として置いた。", "src": ["k"], "context": true
+      "id": "sumiyoshi3",
+      "name": "住吉三神",
+      "reading": "すみのえのみはしらのおおかみ",
+      "aliases": [
+        "底筒之男命・中筒之男命・上筒之男命（記）",
+        "底筒男命・中筒男命・表筒男命（紀）"
+      ],
+      "kojiki_name": "墨江之三前大神",
+      "kojiki_where": "上巻 通称「禊祓」",
+      "nihonshoki_name": "住吉大神",
+      "nihonshoki_where": "巻第一 第五段の一書",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "禊の水の底・中・表で成る",
+          "where": "古事記 上巻 通称「禊祓」",
+          "text": "伊邪那岐命が黄泉の穢れを洗う禊をしたとき、海の底・中・表で生まれた三柱。海と航海の守り神として祀られる。",
+          "src": [
+            "k",
+            "ns1"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "息栖神社公式は『住吉三神』とのみ記す。内訳（上筒・中筒・底筒）は事典の記述（要確認）。",
+      "src": [
+        "k",
+        "ns1",
+        "ik"
+      ]
     },
     {
-      "id": "takeminakata", "name": "建御名方神", "reading": "たけみなかたのかみ", "aliases": [],
-      "kojiki_name": "建御名方神", "kojiki_where": "上巻 通称「国譲り」", "nihonshoki_name": "", "nihonshoki_where": "",
-      "relations": { "parents": ["ookuninushi"], "spouses": [], "children": [] },
-      "scenes": [{ "title": "力比べに敗れる", "where": "古事記 上巻 通称「国譲り」", "text": "大国主神の子。建御雷神と力比べをして敗れたと語られる。", "src": ["k"] }],
-      "virtues": [], "note": "『つなぎ』として置いた。母神は古事記に明記が見当たらない（要確認）。", "src": ["k"], "context": true
+      "id": "futotama",
+      "name": "天太玉命",
+      "reading": "あめのふとだまのみこと",
+      "aliases": [
+        "布刀玉命（記）",
+        "太玉命（紀）"
+      ],
+      "kojiki_name": "布刀玉命",
+      "kojiki_where": "上巻 通称「天の岩屋戸」「天孫降臨」",
+      "nihonshoki_name": "太玉命",
+      "nihonshoki_where": "巻第一 第七段（天石窟）の一書など",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "天の岩屋戸の祭り",
+          "where": "古事記 上巻 通称「天の岩屋戸」",
+          "text": "天照大御神が隠れた岩屋の前で、鏡や御幣を整えて祭祀を取り仕切った忌部氏の祖神。",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "天孫降臨に従う",
+          "where": "古事記 上巻 通称「天孫降臨」",
+          "text": "天孫に従う五伴緒の一人として降る。『布刀玉命者忌部首等之祖』と注記される。",
+          "quote": "布刀玉命者忌部首等之祖",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "古語拾遺は高皇産霊神の子とする。記紀では親の明記を確認できていない（要確認）。安房神社公式は妃神を天比理刀咩命とするが、記紀には見えない。",
+      "src": [
+        "k",
+        "ns1",
+        "kg",
+        "aw"
+      ]
     },
     {
-      "id": "amenotomi", "name": "天富命", "reading": "あめのとみのみこと", "aliases": [],
-      "kojiki_name": "（記紀には登場しない・検索による確認／要確認）", "kojiki_where": "", "nihonshoki_name": "（同上）", "nihonshoki_where": "",
-      "relations": { "parents": [], "spouses": [], "children": [] },
-      "scenes": [{ "title": "房総の開拓（古語拾遺）", "where": "古語拾遺", "text": "太玉命の孫とされる。神武天皇の世に阿波の忌部を率いて東へ移り、房総で麻などを植えて開拓し、太玉命の社（安房社）を立てたと語られる。史実の裏付けは別の検討が要る。", "src": ["kg"], "disputed": true }],
-      "virtues": [], "note": "安房神社の下の宮の御祭神。古語拾遺は807年成立の氏族伝承書で、記紀とは性格が異なる。", "src": ["kg", "aw"]
+      "id": "amenohiri",
+      "name": "天比理乃咩命",
+      "reading": "あめのひりのめのみこと",
+      "aliases": [
+        "天比理刀咩命（六国史・安房神社）"
+      ],
+      "kojiki_name": "（記紀・古語拾遺の取得範囲では確認できず・要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（同上）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "記紀には神話がない",
+          "where": "洲崎神社の社伝",
+          "text": "記紀に神話は確認できない。社伝では、天富命が祖母神・天比理乃咩命の鏡を神体として祀ったと伝わる（伝承）。",
+          "src": [
+            "su"
+          ],
+          "disputed": true
+        }
+      ],
+      "virtues": [],
+      "note": "延喜式神名帳に『后神天比理乃咩命神社（大）元名洲神』、六国史に『天比理刀咩命』の記事があると事典はまとめるが、原文は未確認。『記紀に無い』と断定せず『要確認』とする。表記は『乃』『刀』の2系統がある。",
+      "src": [
+        "su",
+        "aw"
+      ]
+    },
+    {
+      "id": "ookuninushi",
+      "name": "大国主大神",
+      "reading": "おおくにぬしのおおかみ",
+      "aliases": [
+        "大穴牟遅神",
+        "葦原色許男神",
+        "八千矛神",
+        "宇都志国玉神",
+        "大己貴神（紀）"
+      ],
+      "kojiki_name": "大国主神",
+      "kojiki_where": "上巻 通称「大国主神の系譜」「稲羽の素兎」「根の堅州国」「国作り」「国譲り」",
+      "nihonshoki_name": "大己貴神（別名 大国主神・大物主神）",
+      "nihonshoki_where": "巻第一 第八段／巻第二 第九段",
+      "relations": {
+        "parents": [
+          "amenofuyuginu",
+          "sashikuniwakahime"
+        ],
+        "spouses": [],
+        "children": [
+          "kotoshironushi",
+          "takeminakata"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "国づくりと国譲り",
+          "where": "古事記 上巻 通称「国作り」「国譲り」",
+          "text": "兄神たちの迫害や須佐之男命の試練を越えて国の主となり、少名毘古那神と国づくりを進めた。のち高天原の使者の求めに応じ、子の事代主神・建御名方神の対応を経て国を譲り、天津神の御子の宮のような壮大な社に住まうことを求めて隠退した。この社の造営が出雲大社の起源譚とされる。",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "古事記は、父を天之冬衣神、母を刺国若比売とし、須佐之男命の六世の孫と記す（図には両親のみ）。日本書紀は、本文で素戔嗚尊と奇稲田姫の子、一書で六世孫とするなど、異なる記述を併記する。",
+      "src": [
+        "k",
+        "ns1",
+        "ns2"
+      ]
+    },
+    {
+      "id": "amenofuyuginu",
+      "name": "天之冬衣神",
+      "reading": "あめのふゆきぬのかみ",
+      "aliases": [],
+      "kojiki_name": "天之冬衣神",
+      "kojiki_where": "上巻 通称「大国主神の系譜」",
+      "nihonshoki_name": "",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "sashikuniwakahime"
+        ],
+        "children": [
+          "ookuninushi"
+        ]
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "古事記が大国主神の父とする神。『つなぎ』として置いた。",
+      "src": [
+        "k"
+      ],
+      "context": true
+    },
+    {
+      "id": "sashikuniwakahime",
+      "name": "刺国若比売",
+      "reading": "さしくにわかひめ",
+      "aliases": [],
+      "kojiki_name": "刺国若比売",
+      "kojiki_where": "上巻 通称「大国主神の系譜」",
+      "nihonshoki_name": "",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "amenofuyuginu"
+        ],
+        "children": [
+          "ookuninushi"
+        ]
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "古事記が大国主神の母とする神。『つなぎ』として置いた。",
+      "src": [
+        "k"
+      ],
+      "context": true
+    },
+    {
+      "id": "kotoshironushi",
+      "name": "事代主神",
+      "reading": "ことしろぬしのかみ",
+      "aliases": [],
+      "kojiki_name": "事代主神",
+      "kojiki_where": "上巻 通称「国譲り」",
+      "nihonshoki_name": "事代主神",
+      "nihonshoki_where": "巻第二 第九段",
+      "relations": {
+        "parents": [
+          "ookuninushi"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "国譲りに同意する",
+          "where": "古事記 上巻 通称「国譲り」",
+          "text": "大国主神の子。天鳥船神に呼ばれて、国を譲ることに同意した。",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "『つなぎ』として置いた。",
+      "src": [
+        "k"
+      ],
+      "context": true
+    },
+    {
+      "id": "takeminakata",
+      "name": "建御名方神",
+      "reading": "たけみなかたのかみ",
+      "aliases": [],
+      "kojiki_name": "建御名方神",
+      "kojiki_where": "上巻 通称「国譲り」",
+      "nihonshoki_name": "",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [
+          "ookuninushi"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "力比べに敗れる",
+          "where": "古事記 上巻 通称「国譲り」",
+          "text": "大国主神の子。建御雷神と力比べをして敗れたと語られる。",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "『つなぎ』として置いた。母神は古事記に明記が見当たらない（要確認）。",
+      "src": [
+        "k"
+      ],
+      "context": true
+    },
+    {
+      "id": "amenotomi",
+      "name": "天富命",
+      "reading": "あめのとみのみこと",
+      "aliases": [],
+      "kojiki_name": "（記紀には登場しない・検索による確認／要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（同上）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "房総の開拓（古語拾遺）",
+          "where": "古語拾遺",
+          "text": "太玉命の孫とされる。神武天皇の世に阿波の忌部を率いて東へ移り、房総で麻などを植えて開拓し、太玉命の社（安房社）を立てたと語られる。史実の裏付けは別の検討が要る。",
+          "src": [
+            "kg"
+          ],
+          "disputed": true
+        }
+      ],
+      "virtues": [],
+      "note": "安房神社の下の宮の御祭神。古語拾遺は807年成立の氏族伝承書で、記紀とは性格が異なる。",
+      "src": [
+        "kg",
+        "aw"
+      ]
+    },
+    {
+      "id": "tamayori",
+      "name": "玉依姫命",
+      "reading": "たまよりひめのみこと",
+      "aliases": [
+        "玉依毘売命（記）",
+        "玉依姫（紀）"
+      ],
+      "kojiki_name": "玉依毘売命（原文は「玉依毗賣」）",
+      "kojiki_where": "上巻 通称「海幸山幸」",
+      "nihonshoki_name": "玉依姫",
+      "nihonshoki_where": "巻第二 神代下 第十段（海幸・山幸）。巻第三 神武天皇即位前紀にも「母曰玉依姫」",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "ugayafukiaezu"
+        ],
+        "children": [
+          "mikenu"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "姉の産んだ御子を養う",
+          "where": "古事記 上巻 通称「海幸山幸」",
+          "text": "海の神の娘・豊玉毘売は御子を産んで海へ帰り、その御子を育てるために妹の玉依毘売をさし向ける。",
+          "quote": "因治養其御子之緣，附其弟玉依毗賣而獻歌之",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "養い子と結ばれ、神武天皇の母となる",
+          "where": "古事記 上巻 通称「海幸山幸」の末尾",
+          "text": "成長した鵜葺草葺不合命は叔母の玉依毘売を娶り、五瀬命・稲氷命・御毛沼命・若御毛沼命（のちの神倭伊波礼毘古命）の四柱が生まれた。",
+          "quote": "娶其姨，玉依毗卖命，生御子",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "日本書紀での記述",
+          "where": "日本書紀 巻第二 神代下 第十段",
+          "text": "日本書紀本文も、鵜葺草葺不合尊が叔母の玉依姫を妃にして四男が生まれたと記す。巻第三では、神日本磐余彦（神武天皇）の母を玉依姫とし、海神（海童）の小女とする。",
+          "quote": "以其姨玉依姫爲妃",
+          "src": [
+            "ns2",
+            "ns3"
+          ]
+        },
+        {
+          "title": "姉に代わり御子を養う",
+          "where": "日本書紀 巻第二 神代下 第十段 一書",
+          "text": "姉の豊玉姫が海へ帰ったあと、妹の玉依姫が残って御子を養った。",
+          "quote": "留其女弟玉依姫持養兒焉",
+          "src": [
+            "ns2"
+          ]
+        },
+        {
+          "title": "歌を届ける",
+          "where": "古事記 上巻 末尾",
+          "text": "豊玉毘売が、御子を養う縁として妹の玉依毘売に歌を託して夫に献じた。",
+          "quote": "附其弟玉依毗賣而獻歌之",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "記紀とも「御子を養い、のちに結ばれる妹」として描かれる。玉前神社の公式は祭神を玉依姫命とするが、鵜茅葺不合命との関係は考証中とする。玉依姫命の親（海の神）・子（神武天皇ら）に当たる神のIDは今回の調査では作っていない。 ／ 古事記では豊玉毘売の「弟（妹）」、書紀の一書では「女弟」とされる。",
+      "src": [
+        "k",
+        "ns2",
+        "ns3"
+      ]
+    },
+    {
+      "id": "ugayafukiaezu",
+      "name": "鵜葺草葺不合命",
+      "reading": "うがやふきあえずのみこと",
+      "aliases": [
+        "天津日高日子波限建鵜葺草葺不合命（記）",
+        "彦波瀲武鸕鷀草葺不合尊（紀）",
+        "鵜茅葺不合命（神社表記）",
+        "波瀲武鸕鷀草葺不合尊（紀）"
+      ],
+      "kojiki_name": "天津日高日子波限建鵜葺草葺不合命",
+      "kojiki_where": "上巻 通称「海幸山幸」",
+      "nihonshoki_name": "彦波瀲武鸕鷀草葺不合尊",
+      "nihonshoki_where": "巻第二 神代下 第十段（海幸・山幸）",
+      "relations": {
+        "parents": [
+          "hikohohodemi",
+          "toyotama"
+        ],
+        "spouses": [
+          "tamayori"
+        ],
+        "children": [
+          "mikenu"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "産殿の屋根が葺き終わらぬうちに生まれる",
+          "where": "古事記 上巻 通称「海幸山幸」",
+          "text": "母の豊玉毘売は海辺に鵜の羽で産殿の屋根を葺き始めるが、葺き終わらないうちに御子が生まれたため、この名が付いた。",
+          "quote": "以鵜羽為葺草，造産殿",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "叔母の玉依毘売を娶る",
+          "where": "古事記 上巻 通称「海幸山幸」の末尾",
+          "text": "鵜葺草葺不合命は叔母の玉依毘売を娶り、四柱の御子をもうけた。末の子が神倭伊波礼毘古命。",
+          "quote": "娶其姨，玉依毗卖命，生御子",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "海辺の産屋で生まれる",
+          "where": "古事記 上巻 末尾 通称「鵜葺草葺不合命の誕生」",
+          "text": "産屋の屋根を鵜の羽でふき終えないうちに生まれたため、この名がついたという名の由来を述べる。",
+          "quote": "天津日高日子波限建鵜（葺）草葺不合命",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "父は火遠理命（山幸彦）、母は豊玉毘売命（記）。それぞれのIDは今回作っていない。玉前神社の公式は祭神としては玉依姫命のみを挙げ、この神名は古社記に併記されると注記する。 ／ 子の五瀬命・稲氷命・神倭伊波礼毘古命（神武天皇）は今回作っていない（children には三毛入野命のみ入れた）。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "inadahime",
+      "name": "稲田姫命",
+      "reading": "いなだひめのみこと",
+      "aliases": [
+        "櫛名田比売（記）",
+        "奇稲田姫（紀）"
+      ],
+      "kojiki_name": "櫛名田比売（原文は「櫛名田比賣」）",
+      "kojiki_where": "上巻 通称「八俣遠呂智」",
+      "nihonshoki_name": "奇稲田姫（原文は「奇稻田姬」）",
+      "nihonshoki_where": "巻第一 神代上 第八段（八岐大蛇）",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "susanoo"
+        ],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "八俣の大蛇に呑まれそうな娘",
+          "where": "古事記 上巻 通称「八俣遠呂智」",
+          "text": "出雲の肥河の上で、足名椎・手名椎の老夫婦が泣いていた。八人の娘が毎年大蛇に食われ、末の娘の櫛名田比売が呑まれる番だったからである。",
+          "quote": "女名謂櫛名田比賣",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "須佐之男命の妻となる",
+          "where": "古事記 上巻 通称「八俣遠呂智」",
+          "text": "須佐之男命は大蛇を退治して櫛名田比売を妻とし、須賀に宮を造った。二人から八嶋士奴美神が生まれ、その子孫が大国主神へつながる。",
+          "quote": "其櫛名田比賣以，久美度迩起而所生（神）名，謂八嶋士奴美神",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "日本書紀での記述",
+          "where": "日本書紀 巻第一 神代上 第八段",
+          "text": "日本書紀本文では、脚摩乳・手摩乳の娘「奇稲田姫」として現れる。須佐之男命は彼女を櫛に変えて髪に挿し、大蛇と戦う。",
+          "quote": "此童女是吾兒也。號奇稻田姬",
+          "src": [
+            "ns1"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "稲田姫の表記は日本書紀の「奇稲田姫」によるところが大きく、古事記は「櫛名田比売」と書く。八嶋士奴美神と足名椎・手名椎のIDは今回作っていない。",
+      "src": [
+        "k",
+        "ns1"
+      ]
+    },
+    {
+      "id": "konohanasakuya",
+      "name": "木花之佐久夜毘売命",
+      "reading": "このはなのさくやひめのみこと",
+      "aliases": [
+        "神阿多都比売（記）",
+        "木花開耶姫（紀）",
+        "鹿葦津姫（紀）",
+        "浅間大神（神社での称）",
+        "木花之佐久夜毘売（記）",
+        "鹿葦津姫・神吾田津姫（紀）"
+      ],
+      "kojiki_name": "木花之佐久夜毘売（原文は「木花之佐久夜毗賣」）、またの名 神阿多都比売",
+      "kojiki_where": "上巻 通称「天孫降臨」の後段（邇邇藝命と木花之佐久夜毘売）",
+      "nihonshoki_name": "鹿葦津姫（別名 木花開耶姫）",
+      "nihonshoki_where": "巻第二 神代下 第九段 本文および一書",
+      "relations": {
+        "parents": [
+          "ooyamatsumi"
+        ],
+        "spouses": [
+          "ninigi"
+        ],
+        "children": [
+          "hikohohodemi"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "邇邇藝命との出会い",
+          "where": "古事記 上巻 通称「天孫降臨」の後段",
+          "text": "笠沙の岬で美しい娘に出会った邇邇藝命が名を尋ねると、大山津見神の娘と答えた。姉に石長比売がいた。",
+          "quote": "大山津見神之女，名神阿多都比賣，亦名謂木花之佐久夜毗賣",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "火の中での出産",
+          "where": "古事記 上巻 通称「天孫降臨」の後段",
+          "text": "一夜で身ごもったことを疑われた佐久夜毘売は、戸のない殿を造って火をつけ、その中で火照命・火須勢理命・火遠理命を産んだ。",
+          "quote": "以火著其殿而産也",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "日本書紀での記述",
+          "where": "日本書紀 巻第二 神代下 第九段 一書第二",
+          "text": "日本書紀の一書では、大山祇神の子の神吾田鹿葦津姫で、別名が木花開耶姫とされる。",
+          "quote": "名神吾田鹿葦津姫。亦名木花開耶姫",
+          "src": [
+            "ns2"
+          ]
+        },
+        {
+          "title": "邇邇芸命と一夜の婚",
+          "where": "古事記 上巻 通称「木花之佐久夜毘売と石長比売」",
+          "text": "大山津見神の娘。姉の石長比売は返され、妹の木花之佐久夜毘売だけが邇邇芸命と一夜の婚をした。",
+          "quote": "唯留其弟木花之佐久夜毗賣以一宿為婚",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "一夜で身ごもる",
+          "where": "日本書紀 巻第二 神代下 第九段",
+          "text": "皇孫に召された鹿葦津姫が一夜で身ごもる。皇孫が疑うと、姫は戸のない室に入って火をかけ、無事に子を産んだと記す。",
+          "quote": "即一夜而有娠",
+          "src": [
+            "ns2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "古事記では、姉の石長比売を返したため天皇の寿命が花のように短くなった、という物語が付く。浅間神社での「浅間大神」との同一視は神社側の伝承で、記紀に直接の記述は無い。神徳（安産・火難除け等）は公式の要約でしか確認できておらず、virtues には入れていない。 ／ 父の大山津見神（紀は大山祇神）は既存IDになく、親は空にしてある。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "ooyamatsumi",
+      "name": "大山津見神",
+      "reading": "おおやまつみのかみ",
+      "aliases": [
+        "大山祇神（紀）"
+      ],
+      "kojiki_name": "大山津見神",
+      "kojiki_where": "上巻 通称「天孫降臨」の後段、「八俣遠呂智」",
+      "nihonshoki_name": "大山祇神",
+      "nihonshoki_where": "巻第二 神代下 第九段",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": [
+          "konohanasakuya"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "娘二人を邇邇藝命に差し出す",
+          "where": "古事記 上巻 通称「天孫降臨」の後段",
+          "text": "邇邇藝命の求婚に、大山津見神は大いに喜び、姉の石長比売を添えて木花之佐久夜毘売と共に差し出した。",
+          "quote": "大歡喜而副其姉石長比賣",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "古事記は、須佐之男命の妻・櫛名田比売の父・足名椎も「大山津見神之子」と記す。親神（伊耶那岐・伊耶那美の子とされる点）は今回本文を確認しておらず relations に入れていない。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "ninigi",
+      "name": "邇邇藝命",
+      "reading": "ににぎのみこと",
+      "aliases": [
+        "天津日高日子番能邇邇藝能命（記）",
+        "天津火瓊瓊杵尊（紀）",
+        "瓊瓊杵尊",
+        "天津彦彦火瓊瓊杵尊・天津火瓊瓊杵尊（紀）",
+        "天迩岐志国迩岐志天津日高日子番能迩迩芸命（記）",
+        "日子番能迩迩芸命"
+      ],
+      "kojiki_name": "天津日高日子番能邇邇藝能命",
+      "kojiki_where": "上巻 通称「天孫降臨」",
+      "nihonshoki_name": "天津火瓊瓊杵尊",
+      "nihonshoki_where": "巻第二 神代下 第九段（天孫降臨）",
+      "relations": {
+        "parents": [
+          "oshihomimi"
+        ],
+        "spouses": [
+          "konohanasakuya"
+        ],
+        "children": [
+          "hikohohodemi"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "日向の笠沙で木花之佐久夜毘売に出会う",
+          "where": "古事記 上巻 通称「天孫降臨」の後段",
+          "text": "天降った邇邇藝命は、笠沙の岬で美しい乙女に出会い、結婚を望んだ。",
+          "quote": "天津日高日子番能迩迩藝能命，於笠紗御前，遇麗美人",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "葦原中国の主となるよう降される",
+          "where": "日本書紀 巻第二 神代下 第九段",
+          "text": "日本書紀本文では、高皇産霊尊が孫の瓊瓊杵尊を葦原中国の主にしようとして降らせる。",
+          "quote": "欲立皇孫天津火瓊瓊杵尊以爲葦原中國之主",
+          "src": [
+            "ns2"
+          ]
+        },
+        {
+          "title": "高千穂に天降る",
+          "where": "古事記 上巻 通称「天孫降臨」",
+          "text": "天照大御神らの命を受け、邇邇芸命が天の浮橋から竺紫の日向の高千穂のくじふる嶽に天降った。",
+          "quote": "天降坐于竺紫日向之高千穗之久士布流多氣",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "日向の高千穂峯に降る",
+          "where": "日本書紀 巻第二 神代下 第九段（天孫降臨）",
+          "text": "書紀では、高皇産霊尊が真床追衾で皇孫を覆って降らせ、皇孫は日向の襲の高千穂峯に降った。",
+          "quote": "天降於日向襲之高千穗峯矣",
+          "src": [
+            "ns2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "木花之佐久夜毘売命の夫。天照大御神の孫（天忍穂耳命の子）。子の火遠理命のIDは今回作っていない。 ／ 高千穂の降臨地は、古事記が「竺紫日向の高千穂のくじふる嶽」、書紀が「日向の襲の高千穂峯」「筑紫日向の高千穂槵触之峯」と書く。高千穂神社の公式が降臨地についてどう述べるかは確認できていない。古事記では兄に天火明命がいる（火照命・火須勢理命は子として別に記される）。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "yamatotakeru",
+      "name": "日本武尊",
+      "reading": "やまとたけるのみこと",
+      "aliases": [
+        "倭建命（記）",
+        "小碓命・倭男具那命（記）",
+        "小碓尊・日本童男（紀）"
+      ],
+      "kojiki_name": "倭建命（初名 小碓命、亦名 倭男具那命）",
+      "kojiki_where": "中巻 景行天皇 通称「倭建命の東征」",
+      "nihonshoki_name": "日本武尊（初名 小碓尊、亦名 日本童男）",
+      "nihonshoki_where": "巻第七 景行天皇 日本武尊の東征（40年条〜、51年条）",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "miyazuhime"
+        ],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "倭比売命から草那藝剣を授かる",
+          "where": "古事記 中巻 通称「倭建命の東征」",
+          "text": "東国の平定を命じられて嘆く倭建命に、叔母の倭比売命が草那藝剣と袋を授ける。",
+          "quote": "倭比賣命。賜草那藝劍",
+          "src": [
+            "atd1"
+          ]
+        },
+        {
+          "title": "野火の難と草を払う剣",
+          "where": "古事記 中巻 通称「倭建命の東征」",
+          "text": "火を放たれた倭建命は、剣で周りの草を刈り払い、袋の火打ちで向かい火を付けて難を逃れた。その地は今も焼津と呼ばれると古事記は記す。",
+          "quote": "以其御刀苅撥草",
+          "src": [
+            "atd1"
+          ]
+        },
+        {
+          "title": "草薙の名の由来",
+          "where": "日本書紀 巻第七 景行天皇 日本武尊の東征",
+          "text": "駿河で野に火を放たれたとき、剣が自ら抜けて傍らの草を薙ぎ払って難を免れたので、その剣を草薙と呼ぶようになったという。",
+          "quote": "因是得免。故號其釼曰草薙也",
+          "src": [
+            "atd2"
+          ]
+        },
+        {
+          "title": "剣を美夜受比売のもとに置く",
+          "where": "古事記 中巻 通称「倭建命の東征」",
+          "text": "帰途に尾張で美夜受比売と結ばれた倭建命は、草那藝剣を比売のもとに置いて伊服岐能山の神のところへ向かった。",
+          "quote": "以其御刀之草那藝劔置其美夜受比賣之許",
+          "src": [
+            "atd1"
+          ]
+        },
+        {
+          "title": "草薙剣は熱田社にある",
+          "where": "日本書紀 巻第七 景行天皇51年8月",
+          "text": "日本武尊が帯びた草薙の横刀は、書紀編纂のころ尾張国年魚市郡の熱田社にあると記される。",
+          "quote": "是今在尾張國年魚市郡熱田社也",
+          "src": [
+            "atd2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "景行天皇の皇子。記では倭建命、紀では日本武尊と表記される。熱田神宮の相殿神（公式）。",
+      "src": [
+        "k",
+        "atd1",
+        "atd2",
+        "atd3"
+      ]
+    },
+    {
+      "id": "miyazuhime",
+      "name": "宮簀媛命",
+      "reading": "みやずひめのみこと",
+      "aliases": [
+        "美夜受比売（記）",
+        "宮簀媛（紀）"
+      ],
+      "kojiki_name": "美夜受比賣（尾張国造の祖）",
+      "kojiki_where": "中巻 景行天皇 通称「倭建命の東征」",
+      "nihonshoki_name": "宮簀媛（尾張氏の女）",
+      "nihonshoki_where": "巻第七 景行天皇 日本武尊の東征（40年条〜）",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "yamatotakeru"
+        ],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "倭建命が尾張の家に入る",
+          "where": "古事記 中巻 通称「倭建命の東征」",
+          "text": "東国へ向かう倭建命は、尾張国造の祖である美夜受比売の家に入った。帰りに結婚する約束を残して東へ向かい、帰還後に再び訪れる。",
+          "quote": "尾張國造之祖。美夜受比賣之家",
+          "src": [
+            "atd1"
+          ]
+        },
+        {
+          "title": "尾張氏の女を娶り、剣を家に置く",
+          "where": "日本書紀 巻第七 景行天皇 日本武尊の東征",
+          "text": "尾張に戻った日本武尊は尾張氏の女、宮簀媛を娶って月を越えて滞在し、膽吹山へ向かうとき剣を媛の家に置いて徒歩で出かけた。",
+          "quote": "即娶尾張氏之女宮簀媛",
+          "src": [
+            "atd2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "記の美夜受比売と紀の宮簀媛は同一人物とされる（通説）。熱田神宮の公式は、尾張国造・乎止與命（おとよのみこと）の女で日本武尊の妃、尊の没後に神剣を熱田の地に祀った、と説明する（記紀に乎止與命の名は確認していない）。",
+      "src": [
+        "atd1",
+        "atd2",
+        "atd3"
+      ]
+    },
+    {
+      "id": "takeinadane",
+      "name": "建稲種命",
+      "reading": "たけいなだねのみこと",
+      "aliases": [],
+      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（日本書紀には登場しない・検索による確認／要確認）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "熱田神宮の公式は、乎止與命の御子で宮簀媛命の兄、日本武尊に従って東国平定に赴き途中でなくなった神、尾張氏の遠祖として仰がれる神と説明する。古事記（上・中巻）と日本書紀（巻一〜三・七・十四）の取得テキストを検索したが名は見えない。古事記下巻は未確認。古事記の「建伊那陀宿禰」は別の人物とされるため同一視していない。",
+      "src": [
+        "atd3"
+      ]
+    },
+    {
+      "id": "yasakatome",
+      "name": "八坂刀売神",
+      "reading": "やさかとめのかみ",
+      "aliases": [],
+      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（日本書紀には登場しない・検索による確認／要確認）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "諏訪大社の公式は、前宮の御祭神を八坂刀売神、下社春宮・秋宮の御祭神を建御名方神・八坂刀売神・八重事代主神とし、「信濃國を妃神、兄神や御子神と開拓された」と記す。記紀（取得済みの古事記上・中巻、日本書紀巻一〜三・十四）に名は見えず、建御名方神との夫婦関係も記紀では確認できない（諏訪の伝承。古事記下巻は未確認）。",
+      "src": [
+        "sud1",
+        "sud2"
+      ]
+    },
+    {
+      "id": "omonushi",
+      "name": "大物主神",
+      "reading": "おおものぬしのかみ",
+      "aliases": [
+        "大物主大神（公式・記）",
+        "美和之大物主神（記）",
+        "大三輪之神（紀）"
+      ],
+      "kojiki_name": "大物主神（神武記「美和之大物主神」）／大物主大神（崇神記）。上巻の国作りの段では神名を書かず「坐御諸山上神」とだけ記す",
+      "kojiki_where": "上巻 通称「大国主神の国作り」／中巻 神武天皇 通称「皇后選定」／中巻 崇神天皇 通称「意富多多泥古」",
+      "nihonshoki_name": "大物主神（第八段の一書で大国主神の別名とされ、同じ一書で幸魂奇魂が「大三輪之神」になる）",
+      "nihonshoki_where": "巻第一 神代上 第八段 一書（第六）／巻第二 神代下 第九段 一書（第二）",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "国作りを助ける神、御諸山に祀られる",
+          "where": "古事記 上巻 通称「大国主神の国作り」",
+          "text": "少名毘古那神が去って困る大国主神のもとに、海を照らして寄り来る神が現れ、「私を倭の青垣の東の山の上に祀れ」と告げる。古事記はこの神を「御諸山の上に坐す神」と書き、神名は大物主と記していない。",
+          "quote": "伊都岐奉于倭之青垣東山上",
+          "src": [
+            "k"
+          ],
+          "disputed": true
+        },
+        {
+          "title": "幸魂奇魂として三諸山に住む",
+          "where": "日本書紀 巻第一 第八段 一書（第六）",
+          "text": "大己貴神の前に現れた神が「私はあなたの幸魂奇魂だ」と名乗り、日本国の三諸山に住みたいと望む。書紀の一書はこれを大三輪の神とし、大国主神を大物主神の別名とも記す。",
+          "quote": "吾是汝之幸魂奇魂也",
+          "src": [
+            "ns1"
+          ],
+          "disputed": true
+        },
+        {
+          "title": "丹塗矢と伊須気余理比売の誕生",
+          "where": "古事記 中巻 通称「皇后選定」",
+          "text": "大物主神が丹塗りの矢に姿を変えて三島湟咋の娘、勢夜陀多良比売のもとを訪れ、その子が神武天皇の皇后となる富登多多良伊須須岐比売命（比売多多良伊須気余理比売）だと古事記は語る。",
+          "quote": "美和之大物主神",
+          "src": [
+            "omd1"
+          ]
+        },
+        {
+          "title": "疫病と意富多多泥古",
+          "where": "古事記 中巻 通称「意富多多泥古」",
+          "text": "崇神天皇の世に疫病が広がると、天皇の夢に大物主大神が現れ、意富多多泥古に自分を祀らせるよう告げる。泥古が御諸山で祀ると天下は平らぎ、民は栄えたという。",
+          "quote": "大物主大神。顯於御夢曰",
+          "src": [
+            "omd1"
+          ]
+        },
+        {
+          "title": "国譲りで最初に帰順する",
+          "where": "日本書紀 巻第二 第九段 一書（第二）",
+          "text": "経津主神と武甕槌神の平定に、大物主神と事代主神がまず帰順し、八十万神を率いて天に上って誠意を示したと書紀の一書は記す。",
+          "quote": "歸順之首渠者。大物主神及事代主神",
+          "src": [
+            "ns2"
+          ]
+        }
+      ],
+      "virtues": [
+        "国造り・産業開発・方除・治病・造酒・製薬・禁厭・交通・航海・縁結びなどの守護神として敬われている（大神神社公式の説明）"
+      ],
+      "note": "大国主神との関係は資料で異なる。古事記は国作りの協力神を大国主神とは別の神として描き、日本書紀の一書は大国主神の別名・幸魂奇魂とする。古語拾遺は「大己貴神、一名は大物主神、一名は大国主神、一名は大国魂神、今の大和国城上郡の大三輪神がこれである」と記す。大神神社公式は、大物主大神を大国主神の別の御魂（幸魂・奇魂）として顕現した神とも説明する。同一視の度合いは諸説ある。",
+      "src": [
+        "k",
+        "ns1",
+        "ns2",
+        "kg",
+        "omd1",
+        "omd2",
+        "omd3"
+      ]
+    },
+    {
+      "id": "amenokoyane",
+      "name": "天児屋命",
+      "reading": "あめのこやねのみこと",
+      "aliases": [
+        "天児屋根命（春日大社の表記）",
+        "天兒屋命（原文表記）"
+      ],
+      "kojiki_name": "天兒屋命",
+      "kojiki_where": "上巻 通称「天の岩屋戸」「天孫降臨」",
+      "nihonshoki_name": "天兒屋命",
+      "nihonshoki_where": "巻第一 神代上 第七段（天石窟）／巻第二 神代下 第九段（天孫降臨）",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "天の岩屋戸で祈る",
+          "where": "古事記 上巻 通称「天の岩屋戸」",
+          "text": "天照大御神が天の岩屋に籠ったとき、布刀玉命とともに占いや祝詞に関わる役を担った。",
+          "quote": "而召天兒屋命、布刀玉命",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "鏡を差し出す",
+          "where": "古事記 上巻 通称「天の岩屋戸」",
+          "text": "布刀玉命とともに鏡を差し出して天照大御神に示した場面に出る。",
+          "quote": "天兒屋命、布刀玉命指出其鏡",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "天孫に従って降る",
+          "where": "古事記 上巻 通称「天孫降臨」",
+          "text": "邇邇藝命の天降りに、五伴緒の一柱として従った。",
+          "quote": "尒天兒屋命、布刀玉命、天宇受賣命、伊斯許理度賣命、玉祖命，并五伴緒",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "神籬を持って降る",
+          "where": "日本書紀 巻第二 神代下 第九段（一書）",
+          "text": "天津神籬を持って葦原中国に降るよう命じられる。",
+          "quote": "汝天兒屋命。太玉命宜持天津神籬",
+          "src": [
+            "ns2"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "古事記は中臣連らの祖と注記する。春日大社の公式表記は天児屋根命。紀の表記は天兒屋命で、日本書紀の岩屋戸の場面は一書により記述が異なる。",
+      "src": [
+        "k",
+        "ns1",
+        "ns2"
+      ]
+    },
+    {
+      "id": "himegami",
+      "name": "比売神",
+      "reading": "ひめがみ",
+      "aliases": [
+        "姫神"
+      ],
+      "kojiki_name": "（古事記には特定の神として登場しない・検索による確認／要確認）",
+      "kojiki_where": "—",
+      "nihonshoki_name": "（日本書紀には特定の神として登場しない・検索による確認／要確認）",
+      "nihonshoki_where": "—",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "春日大社第四殿の祭神。公式は神名を『比売神』と記すのみで、どの神に当たるかは公式で確認できていない。記紀の特定の神との同一視はここでは行わない。",
+      "src": []
+    },
+    {
+      "id": "jingu",
+      "name": "神功皇后",
+      "reading": "じんぐうこうごう",
+      "aliases": [
+        "息長帶日賣命（古事記）",
+        "息長足姫命（住吉大社の表記・要確認）",
+        "気長足姫尊（紀）",
+        "息長帯日売命・息長帯比売命（記）"
+      ],
+      "kojiki_name": "息長帶日賣命",
+      "kojiki_where": "中巻 仲哀天皇",
+      "nihonshoki_name": "（巻第九 神功皇后紀。今回は原文を取得していないため未確認）",
+      "nihonshoki_where": "巻第九（未確認・要確認）",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": [
+          "ojin"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "神懸かりして三柱の大神の名を知る",
+          "where": "古事記 中巻 仲哀天皇",
+          "text": "大后の息長帶日賣命に神が懸かり、託宣の神が底筒男・中筒男・上筒男の三柱の大神であることが明らかになる。",
+          "quote": "底筒男。中筒男。上筒男。三柱大神者也",
+          "src": [
+            "ka2-km"
+          ]
+        },
+        {
+          "title": "墨江大神の荒御魂を国守の神とする",
+          "where": "古事記 中巻 仲哀天皇",
+          "text": "新羅の国主の門に杖を立て、墨江大神の荒御魂を国を守る神として祭り鎮めた。",
+          "quote": "以墨江大神之荒御魂。爲國守神而。祭鎭",
+          "src": [
+            "ka2-km"
+          ]
+        },
+        {
+          "title": "大后が神がかりして託宣を受ける",
+          "where": "古事記 中巻 通称「仲哀天皇」",
+          "text": "仲哀天皇が筑紫の訶志比宮で熊曽を討とうとしたとき、大后の息長帯日売命に神が憑いて、西方の国を授けるという神意を告げた。",
+          "quote": "其大后息長帶日賣命者。當時歸神。",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "斎宮に入り自ら神主となる",
+          "where": "日本書紀 巻第九 神功皇后摂政前紀",
+          "text": "夫の崩御ののち、皇后は吉日を選んで斎宮に入り自ら神主となり、武内宿禰に琴を弾かせて神の名を問うた。",
+          "quote": "皇后選吉日、入齋宮、親爲神主。",
+          "src": [
+            "usns9"
+          ]
+        },
+        {
+          "title": "出自を記す",
+          "where": "日本書紀 巻第九 神功皇后",
+          "text": "気長宿禰王の女で、稚日本根子彦大日日天皇の曾孫と記す。",
+          "quote": "氣長足姬尊、稚日本根子彦大日々天皇之曾孫、氣長宿禰王之女也",
+          "src": [
+            "usns9"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "仲哀天皇の后。住吉大社では第四本宮に祀られる（観光サイトでの確認・公式の該当ページは要確認）。 ／ 古事記では神功皇后の事績は独立した巻でなく仲哀天皇条に含まれる。書紀では巻第九が神功皇后の巻。宇佐神宮は神功皇后を三之御殿に祀るとする（us1）。",
+      "src": [
+        "ka2-km",
+        "k",
+        "usns9",
+        "us1"
+      ]
+    },
+    {
+      "id": "ketsumiko",
+      "name": "家都美御子大神",
+      "reading": "けつみこのおおかみ",
+      "aliases": [
+        "家津美御子大神",
+        "家津御子大神"
+      ],
+      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）",
+      "kojiki_where": "—",
+      "nihonshoki_name": "（日本書紀には登場しない・検索による確認／要確認）",
+      "nihonshoki_where": "—",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "熊野本宮大社の主祭神。公式は素戔嗚尊と同一視している（公式の記述）。古事記・日本書紀には『家都美御子』の名は無く、同一視は記紀の記述ではない。公式は造船術の伝承者として船玉大明神とも称されたと記す。",
+      "src": []
+    },
+    {
+      "id": "hayatamano",
+      "name": "速玉之男神",
+      "reading": "はやたまのおのかみ",
+      "aliases": [
+        "速玉男命"
+      ],
+      "kojiki_name": "（古事記には登場しない・検索による確認／要確認）",
+      "kojiki_where": "—",
+      "nihonshoki_name": "速玉之男",
+      "nihonshoki_where": "巻第一 神代上 第五段（一書・黄泉の国の場面。一書の番号は要確認）",
+      "relations": {
+        "parents": [
+          "izanagi"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "伊奘諾尊の唾から成る",
+          "where": "日本書紀 巻第一 神代上 第五段（一書）",
+          "text": "伊奘諾尊が黄泉の国で妹と別れを告げる場面で、唾から速玉之男が、掃うことから泉津事解之男が成った。",
+          "quote": "乃所唾之神號曰速玉之男",
+          "src": [
+            "ns1"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "熊野本宮大社の第二殿の祭神（公式）。記紀の速玉之男と公式の速玉之男神が同じ神か、公式の見解は確認できていない（要確認）。",
+      "src": [
+        "ns1"
+      ]
+    },
+    {
+      "id": "munakata3",
+      "name": "宗像三女神",
+      "reading": "むなかたさんじょしん",
+      "aliases": [
+        "田心姫・湍津姫・市杵嶋姫（紀 本文の表記）",
+        "多紀理毘売命・市寸島比売命・多岐都比売命（記）",
+        "胸形の三前大神（記）",
+        "宗像大神",
+        "比売大神（宇佐神宮での呼称）"
+      ],
+      "kojiki_name": "多紀理毗賣命（亦の名 奥津嶋比売命）・市寸嶋比売命（亦の名 狭依毘売命）・多岐都比売命（別の箇所では田寸津比売命）",
+      "kojiki_where": "上巻 通称「天の安の河の誓約（うけひ）」",
+      "nihonshoki_name": "田心姫・湍津姫・市杵嶋姫（本文）／瀛津嶋姫（亦の名 市杵嶋姫）・湍津姫・田霧姫（一書）",
+      "nihonshoki_where": "巻第一 神代上 第六段（誓約）",
+      "relations": {
+        "parents": [
+          "susanoo"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "誓約で生まれる三柱",
+          "where": "古事記 上巻 通称「天の安の河の誓約（うけひ）」",
+          "text": "天照大御神が須佐之男命の十拳剣を三つに折り、天の真名井ですすいで噛み砕いて吹き出した霧から、三柱の女神が生まれた。",
+          "quote": "於吹棄氣吹之狹霧所成神御名：多紀理毗賣命",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "胸形に鎮座する三前大神",
+          "where": "古事記 上巻 通称「天の安の河の誓約（うけひ）」",
+          "text": "三柱は奥津宮・中津宮・辺津宮に坐し、胸形君らが斎き祀る三前の大神とされる。古事記では奥津宮が多紀理毘売命、中津宮が市寸島比売命、辺津宮が田寸津比売命と書かれる。",
+          "quote": "此三柱神者，胸形君等之以伊都久三前大神者也",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "三女神は須佐之男命の子",
+          "where": "日本書紀 巻第一 神代上 第六段（誓約）本文",
+          "text": "天照大神が須佐之男命の剣から三女神を生み、「この剣は素戔嗚尊の物だから三女神はあなたの子」と言って素戔嗚尊に授けた。これが筑紫胸肩君らの祭る神だと記す。",
+          "quote": "其十握劒者，是素戔鳴尊物也，故此三女神悉是爾兒",
+          "src": [
+            "ns1"
+          ]
+        },
+        {
+          "title": "宇佐嶋に降り居る（一書）",
+          "where": "日本書紀 巻第一 神代上 第六段 一書（第三）",
+          "text": "一書では、日神の所生とした三女神が葦原中国の宇佐嶋に降り居り、いまは海北道中にあって「道主貴」と呼ばれる、と伝える。宇佐神宮の比売大神との結びつきを考える手がかりになる記事。",
+          "quote": "今在海北道中。號曰道主貴",
+          "src": [
+            "ns1"
+          ],
+          "disputed": true
+        },
+        {
+          "title": "大国主神の妻となる多紀理毘売",
+          "where": "古事記 上巻 通称「大国主神の系譜」",
+          "text": "大国主神が、胸形の奥津宮に坐す神、多紀理毘売命を娶って子を生んだ。三柱のうち一柱の婚姻の記事。",
+          "quote": "娶坐胸形奧津宫神，多紀理毗賣命",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "応神天皇の代、胸形大神に工女を奉る",
+          "where": "日本書紀 巻第十 応神天皇四十一年",
+          "text": "呉から筑紫に着いた阿知使主らが、胸形大神が工女を望んだので、兄媛を胸形大神に奉ったと記す。宗像の神が応神天皇の時代の記事に現れる例。",
+          "quote": "時胸形大神有乞工女等",
+          "src": [
+            "usns10"
+          ]
+        }
+      ],
+      "virtues": [
+        "海上守護・国家鎮護・皇室安泰（嚴島神社公式 it1 が、これらの神として信仰されてきたと記す）"
+      ],
+      "note": "記紀とも三柱の名は一定せず、書紀では本文・一書で呼び名と順が異なる。古事記は奥津宮＝多紀理、中津宮＝市寸島、辺津宮＝田寸津（多岐都）とするが、現在の宗像大社は沖津宮＝田心姫、中津宮＝湍津姫、辺津宮＝市杵島姫とし（mu3 mu4 mu5）、中津・辺津の割り当てが古事記と入れ替わって見える。親は古事記・書紀本文では須佐之男命の子（剣の持ち主）と扱われるが、宗像大社公式は「天照大神の三女神」と説明し、書紀一書には日神の所生とする記述もある。宇佐神宮の比売大神と嚴島神社の祭神は、公式によればこの三女神と同じ名。",
+      "src": [
+        "k",
+        "ns1",
+        "usns10",
+        "mu2",
+        "mu3",
+        "mu4",
+        "mu5",
+        "it1",
+        "us2"
+      ]
+    },
+    {
+      "id": "ojin",
+      "name": "応神天皇",
+      "reading": "おうじんてんのう",
+      "aliases": [
+        "誉田天皇・誉田別尊（紀）",
+        "品陀和気命・大鞆和気命（記）",
+        "八幡大神（宇佐神宮の公式が応神天皇の御神霊とする神号）"
+      ],
+      "kojiki_name": "品陀和気命（大鞆和気命とも）",
+      "kojiki_where": "中巻 通称「仲哀天皇」（御子の誕生）・通称「応神天皇」",
+      "nihonshoki_name": "誉田天皇（誉田別尊）",
+      "nihonshoki_where": "巻第十 誉田天皇（応神天皇）",
+      "relations": {
+        "parents": [
+          "jingu"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "仲哀天皇と大后の御子として生まれる",
+          "where": "古事記 中巻 通称「仲哀天皇」",
+          "text": "仲哀天皇と大后（息長帯日売命）の間に生まれた御子。生まれたとき腕に鞆（弓具）のような肉がついていたので大鞆和気と名づけられた、と記す。",
+          "quote": "次大鞆和氣命。亦名品陀和氣命",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "軽島の明宮で天下を治める",
+          "where": "古事記 中巻 通称「応神天皇」",
+          "text": "品陀和気命が軽島の明宮に坐して天下を治めた、という応神天皇条の書き出し。",
+          "quote": "品陀和氣命。坐輕嶋之明宮治天下也",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "母は気長足姫尊",
+          "where": "日本書紀 巻第十 応神天皇",
+          "text": "足仲彦天皇（仲哀天皇）の第四子で母は気長足姫尊。母が新羅を討った年の冬に筑紫で生まれたと記す。",
+          "quote": "譽田天皇，足仲彦天皇第四子也。母曰氣長足姫尊。",
+          "src": [
+            "usns10"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "宇佐神宮の公式は、八幡大神は応神天皇の御神霊とする（us1 us2）。取得済みの記紀本文（古事記 中巻・日本書紀 巻第九・十）を「八幡」で検索したが該当はなく、八幡神としての記述は記紀本文には見当たらない（確認範囲は取得した本文のみ）。",
+      "src": [
+        "k",
+        "usns10",
+        "us1",
+        "us2"
+      ]
+    },
+    {
+      "id": "hikohohodemi",
+      "name": "彦火火出見尊",
+      "reading": "ひこほほでみのみこと",
+      "aliases": [
+        "火火出見尊（紀）",
+        "火遠理命・天津日高日子穂穂手見命（記）",
+        "山幸彦"
+      ],
+      "kojiki_name": "火遠理命（亦の名 天津日高日子穂穂手見命）",
+      "kojiki_where": "上巻 通称「海幸彦と山幸彦」",
+      "nihonshoki_name": "火火出見尊",
+      "nihonshoki_where": "巻第二 神代下 第十段（海幸・山幸）",
+      "relations": {
+        "parents": [
+          "ninigi",
+          "konohanasakuya"
+        ],
+        "spouses": [
+          "toyotama"
+        ],
+        "children": [
+          "ugayafukiaezu"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "山の獲物を取る弟",
+          "where": "古事記 上巻 通称「海幸彦と山幸彦」",
+          "text": "兄の火照命が海の幸、弟の火遠理命が山の幸を取る係で、のちに道具を取り替えたことから海神の宮へ行く物語になる。",
+          "quote": "火遠理命者，為山佐知毗古而取毛麁物、毛柔物",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "海神の娘を娶る",
+          "where": "日本書紀 巻第二 神代下 第十段（海幸・山幸）",
+          "text": "失った釣針を見つけ出したのち、火火出見尊は海神の娘の豊玉姫を娶った。",
+          "quote": "火火出見尊因娶海神女豐玉姫",
+          "src": [
+            "ns2"
+          ]
+        },
+        {
+          "title": "高千穂宮に坐す",
+          "where": "古事記 上巻 末尾（鵜葺草葺不合命の系譜）",
+          "text": "日子穂穂手見命は高千穂宮に坐し、その陵も高千穂山の西にあると記す。",
+          "quote": "日子穗穗手見命者，坐高千穗宫，伍佰捌拾嵗",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "書紀本文では兄は火闌降命、一書では火酢芹命と書かれる。書紀では火火出見尊は崩後、日向の高屋山上陵に葬られたとする。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "toyotama",
+      "name": "豊玉姫",
+      "reading": "とよたまひめ",
+      "aliases": [
+        "豊玉毘売命（記）",
+        "豊玉姫（紀）"
+      ],
+      "kojiki_name": "豊玉毗売命",
+      "kojiki_where": "上巻 通称「海幸彦と山幸彦」",
+      "nihonshoki_name": "豊玉姫",
+      "nihonshoki_where": "巻第二 神代下 第十段（海幸・山幸）",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "hikohohodemi"
+        ],
+        "children": [
+          "ugayafukiaezu"
+        ]
+      },
+      "scenes": [
+        {
+          "title": "海辺で御子を産む",
+          "where": "日本書紀 巻第二 神代下 第十段",
+          "text": "出産のとき、豊玉姫は夫に「見ないで」と頼んだが、のぞかれて龍の姿を見られ、恥じて海の国へ帰った。",
+          "quote": "豐玉姫方產化爲龍",
+          "src": [
+            "ns2"
+          ]
+        },
+        {
+          "title": "海神の娘",
+          "where": "古事記 上巻 通称「海幸彦と山幸彦」",
+          "text": "海神の宮の井戸のそばの木に登った火遠理命を、海神の娘豊玉毘売の侍女が見つけたことから出会いが始まる。",
+          "quote": "海神之女豊玉毗賣之從婢",
+          "src": [
+            "k"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "父は海神（既存IDなし）。妹に玉依姫。",
+      "src": [
+        "k",
+        "ns2"
+      ]
+    },
+    {
+      "id": "mikenu",
+      "name": "三毛入野命",
+      "reading": "みけいりののみこと",
+      "aliases": [
+        "御毛沼命（記）"
+      ],
+      "kojiki_name": "御毛沼命",
+      "kojiki_where": "上巻 末尾 通称「鵜葺草葺不合命の誕生」",
+      "nihonshoki_name": "三毛入野命",
+      "nihonshoki_where": "巻第三 神日本磐余彦天皇（神武天皇）東征",
+      "relations": {
+        "parents": [
+          "ugayafukiaezu",
+          "tamayori"
+        ],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "常世国へ渡る",
+          "where": "古事記 上巻 末尾 通称「鵜葺草葺不合命の誕生」",
+          "text": "神武天皇の兄の御毛沼命は、波を跳んで常世の国へ渡って行ったと記す。",
+          "quote": "故御毛沼命者，跳浪穗渡坐于常世国",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "東征の途中の暴風",
+          "where": "日本書紀 巻第三 神武天皇東征",
+          "text": "熊野への航海中の暴風で、三毛入野命は母と叔母が海神なのになぜ波を起こすのかと恨み、波を踏んで常世郷へ去ったと記す。",
+          "quote": "三毛入野命亦恨之曰。我母及姨並是海神。",
+          "src": [
+            "tkns3"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "高千穂神社の十社大明神は、三毛入野命と妻の鵜目姫命および八柱の御子とされる（tk4 tk5）。鵜目姫命・御子神の名は、取得済みの記紀本文（古事記 上巻・中巻、書紀 巻第二・三）の検索範囲では見当たらず、記紀では確認できない。記紀の三毛入野命の記事（常世へ渡る）と、高千穂での祭祀の関係は確認できていない。",
+      "src": [
+        "k",
+        "tkns3",
+        "tk4",
+        "tk5"
+      ]
     }
   ]
 }
