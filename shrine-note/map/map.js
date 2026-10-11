@@ -1182,28 +1182,28 @@ function svgTreeLR(ids, focusId) {
   }
   const maxN = Math.max(...keys.map((k) => cols[k].length));
   const pos = {};
-  keys.forEach((k, ci) => { cols[k].forEach((id, i) => { pos[id] = { x: 10 + ci * (NW + GX), y: 10 + i * (NH + GY) }; }); });
+  keys.forEach((k, ci) => { cols[k].forEach((id, i) => { pos[id] = { x: 10 + ci * (NW + GX), y: 10 + i * (NH + GY), c: ci }; }); });
   const W = 20 + keys.length * (NW + GX) - GX, Hh = 20 + maxN * (NH + GY) - GY;
   let edges = '', nodes = '';
   ids.forEach((id) => {
     childrenOf(id).forEach((c) => {
       const a = pos[id], b = pos[c];
       const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2, mx = (x1 + x2) / 2;
-      edges += `<path class="ed" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/>`;
+      edges += `<path class="ed" pathLength="1" style="--c:${a.c}" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/>`;
     });
     spousesOf(id).forEach((sp) => {
       if (sp < id) return;
       const a = pos[id], b = pos[sp];
       if (a.x !== b.x) return;
       const [u, l] = a.y < b.y ? [a, b] : [b, a];
-      edges += `<path class="ed sp" d="M${u.x + NW / 2} ${u.y + NH} V${l.y}"/>`;
+      edges += `<path class="ed sp" style="--c:${a.c}" d="M${u.x + NW / 2} ${u.y + NH} V${l.y}"/>`;
     });
   });
   const enshrined = new Set(shrines.flatMap((s) => s.deity_ids));
   ids.forEach((id) => {
     const p = pos[id], d = map[id];
     const cls = ['nd', enshrined.has(id) ? 'en' : '', id === focusId ? 'me' : ''].join(' ');
-    nodes += `<g class="${cls}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
+    nodes += `<g class="${cls}" style="--c:${p.c};--r:${Math.round(p.y / (NH + GY))}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
       <text x="${p.x + NW / 2}" y="${p.y + 19}" text-anchor="middle" font-size="12.5">${esc(d.name.length > 8 ? d.name.slice(0, 8) + '…' : d.name)}</text>
       <text x="${p.x + NW / 2}" y="${p.y + 34}" text-anchor="middle" font-size="8.5" style="fill:#a9aa93">${esc(d.reading.length > 13 ? d.reading.slice(0, 13) + '…' : d.reading)}</text></g>`;
   });
@@ -1368,6 +1368,7 @@ function renderTree() {
   $('treeBody').innerHTML = svgTreeLR(ids, treeFocus);
   const sv = $('treeBody').querySelector('svg');
   sv.style.width = sv.viewBox.baseVal.width + 'px'; sv.style.minWidth = '0';   // 原寸で、縦にスクロール
+  if (!reduce) sv.classList.add('anim');
   $('treeBody').scrollTop = 0; $('treeBody').scrollLeft = 0;
   $('btnTreeFocus').classList.toggle('on', treeFocusMode);
   $('btnTreeFocus').textContent = treeFocusMode ? 'しぼりこみ：入' : 'しぼりこみ';
