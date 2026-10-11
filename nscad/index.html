@@ -46,6 +46,7 @@
     .card label > span { color: #bbb; }
     .card select, .card input[type=number], .card input[type=text] { width: 118px; max-width: 100%; }
     .row { display: flex; gap: 6px; flex-wrap: wrap; } .row > button { flex: 1 1 auto; justify-content: center; }
+    #vertexRows .row { display: grid; grid-template-columns: 2em minmax(0, 1fr) minmax(0, 1fr); align-items: center; margin-bottom: 6px; } #vertexRows label { align-items: center; min-width: 0; } #vertexRows input[type=number] { width: 100%; min-width: 0; }
     .sub { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 2px; }
     .sub > summary { cursor: pointer; color: #aaa; font-size: 12px; }
     .note { margin: 4px 0; color: #999; font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
@@ -109,7 +110,7 @@
 <button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button>
 <button data-tool="patchfill"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9zM12 3v18M3 12h18"/></svg><span data-i18n="patchTool"></span></button>
 <div class="group" data-i18n="selection"></div>
-<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
+<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side">
@@ -139,6 +140,48 @@
 <label id="l-thickness"><span data-i18n="thickness"></span><input id="info-thickness" type="number" step="0.1" min="0"></label>
 <label id="l-partOrder"><span data-i18n="partOrder"></span><input id="info-partOrder" type="number" step="1"></label>
 <label id="l-layer"><span data-i18n="layer"></span><select id="info-layer"></select></label>
+</div></details>
+<details class="card" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body">
+<label id="l-hwSpec"><span data-i18n="hwEditSpec"></span><select id="hwEditSpec"></select></label>
+<label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"></label>
+<label><span data-i18n="hwEditAngle"></span><input id="hwEditAngle" type="number" step="1"></label>
+<div class="row"><button id="hwEditApply" data-i18n="hwEditApply"></button></div>
+<div class="hint" id="hwEditNote"></div>
+</div></details>
+<details class="card" id="moveCard" open hidden><summary data-i18n="moveTitle"></summary><div class="body">
+<label><span data-i18n="moveDx"></span><input id="moveDx" type="number" step="0.1" value="0"></label>
+<label><span data-i18n="moveDy"></span><input id="moveDy" type="number" step="0.1" value="0"></label>
+<div class="row"><button id="moveApply" data-i18n="moveApply"></button></div>
+<div class="hint" data-i18n="moveNote"></div>
+</div></details>
+<details class="card" id="scaleCard" open hidden><summary data-i18n="scaleTitle"></summary><div class="body">
+<div class="hint" id="scaleSize"></div>
+<label><span data-i18n="scaleAnchor"></span><select id="scaleAnchor"><option value="center" data-i18n="scaleCenter"></option><option value="topLeft" data-i18n="scaleTL"></option><option value="topRight" data-i18n="scaleTR"></option><option value="bottomLeft" data-i18n="scaleBL"></option><option value="bottomRight" data-i18n="scaleBR"></option></select></label>
+<label><span data-i18n="scaleX"></span><input id="scaleX" type="number" step="1" min="1" value="100"></label>
+<label><span data-i18n="scaleY"></span><input id="scaleY" type="number" step="1" min="1" value="100"></label>
+<label><span data-i18n="scaleW"></span><input id="scaleW" type="number" step="0.01" min="0" value="0"></label>
+<label><span data-i18n="scaleH"></span><input id="scaleH" type="number" step="0.01" min="0" value="0"></label>
+<label><input id="scaleKeep" type="checkbox" checked><span data-i18n="scaleKeep"></span></label>
+<div class="row"><button id="scaleApply" data-i18n="scaleApply"></button></div>
+<div class="hint" data-i18n="scaleNote"></div>
+</div></details>
+<details class="card" id="vertexCard" open hidden><summary data-i18n="vertexTitle"></summary><div class="body">
+<div class="hint" data-i18n="vertexUnit"></div><div id="vertexRows"></div>
+<div class="hint" id="vertexNote" hidden></div>
+</div></details>
+<details class="card" id="arrayCard" open hidden><summary data-i18n="arrayTitle"></summary><div class="body">
+<label><span data-i18n="arrayNx"></span><input id="arrayNx" type="number" min="1" max="200" step="1" value="2"></label>
+<label><span data-i18n="arrayNy"></span><input id="arrayNy" type="number" min="1" max="200" step="1" value="1"></label>
+<label><span data-i18n="arrayDx"></span><input id="arrayDx" type="number" step="any" value="10"></label>
+<label><span data-i18n="arrayDy"></span><input id="arrayDy" type="number" step="any" value="10"></label>
+<div class="hint" data-i18n="arrayNote"></div>
+<div class="row"><button id="arrayApply" data-i18n="arrayApply"></button></div>
+</div></details>
+<details class="card" id="alignCard" open hidden><summary data-i18n="alignTitle"></summary><div class="body">
+<div class="row"><button id="alignLeft" data-i18n="alignLeft"></button><button id="alignCenterX" data-i18n="alignCenterX"></button><button id="alignRight" data-i18n="alignRight"></button></div>
+<div class="row"><button id="alignTop" data-i18n="alignTop"></button><button id="alignCenterY" data-i18n="alignCenterY"></button><button id="alignBottom" data-i18n="alignBottom"></button></div>
+<div class="row"><button id="distributeX" data-i18n="distributeX" disabled></button><button id="distributeY" data-i18n="distributeY" disabled></button></div>
+<div class="hint" data-i18n="alignNote"></div>
 </div></details>
 <details class="card" id="layerCard"><summary data-i18n="layers"></summary><div class="body">
 <label><span data-i18n="activeLayer"></span><select id="layerList"></select></label>
@@ -444,11 +487,91 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=429cce61","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=ce484b7d","./hardware.js":"./hardware.js?v=1e98de4f","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=0a4bad26","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=db52aee5","./shortcuts.js":"./shortcuts.js?v=c022a493","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=676a6191","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=429cce61"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ef5e0b90","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=f251d65c","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=a0f0450e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=676a6191","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=ef5e0b90"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
+__mods['array'] = (function(){
+/** 元の位置を除き、左端・上端から次の左端・上端への移動量を返す。個数は元を含む。 */
+function arrayOffsets(nx, ny, dx, dy) {
+  if (!Number.isInteger(nx) || !Number.isInteger(ny) || nx < 1 || ny < 1 || nx * ny > 200 || !Number.isFinite(dx) || !Number.isFinite(dy)) throw new RangeError('個数は1以上の整数で合計200個まで、間隔は有限の数にしてください');
+  const offsets = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (i || j) offsets.push({ dx: i ? i * dx : 0, dy: j ? j * dy : 0 });
+  return offsets;
+}
+
+return {arrayOffsets};
+})();
+__mods['align'] = (function(){
+/** 図形を囲む四角から、全体の端・中央に揃える移動量を返す。入力は変えない。 */
+function alignOffsets(boxes, kind) {
+  if (!boxes.length) return [];
+  const axis = ['left', 'centerX', 'right'].includes(kind) ? 'X' : 'Y', min = 'min' + axis, max = 'max' + axis;
+  const edge = ['left', 'top'].includes(kind) ? 0 : ['right', 'bottom'].includes(kind) ? 1 : 0.5;
+  const target = Math.min(...boxes.map(b => b[min])) * (1 - edge) + Math.max(...boxes.map(b => b[max])) * edge;
+  return boxes.map(b => { const delta = target - (b[min] * (1 - edge) + b[max] * edge); return { dx: axis === 'X' ? delta : 0, dy: axis === 'Y' ? delta : 0 }; });
+}
+
+/** 両端を動かさず、位置順に隙間を等しくする。戻り値は入力と同じ順番。 */
+function distributeOffsets(boxes, axis) {
+  const offsets = boxes.map(() => ({ dx: 0, dy: 0 })); if (boxes.length < 3) return offsets;
+  const min = axis === 'x' ? 'minX' : 'minY', max = axis === 'x' ? 'maxX' : 'maxY', delta = axis === 'x' ? 'dx' : 'dy';
+  const order = boxes.map((b, i) => i).sort((a, b) => boxes[a][min] - boxes[b][min]), first = boxes[order[0]], last = boxes[order[order.length - 1]];
+  const middle = order.slice(1, -1), gap = (last[min] - first[max] - middle.reduce((sum, i) => sum + boxes[i][max] - boxes[i][min], 0)) / (boxes.length - 1);
+  let pos = first[max] + gap;
+  for (const i of middle) { offsets[i][delta] = pos - boxes[i][min]; pos += boxes[i][max] - boxes[i][min] + gap; }
+  return offsets;
+}
+
+return {alignOffsets, distributeOffsets};
+})();
+__mods['grouping'] = (function(){
+// グループ化：図形の `groupId`（同じ値の図形が1つのグループ）を扱う純関数。入力は変えない。
+// 選ぶ・動かす・変形するときは、グループ全体が1つの図形のように扱われる（中の1つを直すときはダブルクリックで選ぶ）。
+
+/** 図形の groupId。無ければ null。 */
+const groupIdOf = s => (typeof s?.groupId === 'string' && s.groupId ? s.groupId : null);
+
+/** 選んだ id の集合に、同じグループの図形をすべて足した新しい集合を返す。 */
+function expandToGroups(shapes, ids) {
+  const groups = new Set();
+  for (const s of shapes) if (ids.has(s.id)) { const g = groupIdOf(s); if (g) groups.add(g); }
+  const out = new Set(ids);
+  if (groups.size) for (const s of shapes) if (groups.has(groupIdOf(s))) out.add(s.id);
+  return out;
+}
+
+/** 選んだ図形（すでにグループなら、そのグループ全体）を、新しい groupId でまとめる。2つ未満なら何もしない。 */
+function groupShapes(shapes, ids, groupId) {
+  const all = expandToGroups(shapes, ids);
+  if (all.size < 2) return { shapes, changed: false, groupId: null };
+  return { shapes: shapes.map(s => all.has(s.id) ? { ...s, groupId } : s), changed: true, groupId };
+}
+
+/** 選んだ図形が属するグループを、すべて解除する。 */
+function ungroupShapes(shapes, ids) {
+  const all = expandToGroups(shapes, ids);
+  let changed = false;
+  const out = shapes.map(s => { if (!all.has(s.id) || !groupIdOf(s)) return s; changed = true; const { groupId, ...rest } = s; return rest; });
+  return { shapes: changed ? out : shapes, changed };
+}
+
+/** 複製・貼り付けで増やした図形の groupId を、グループごとに新しい値へ振り替える（元のグループとつながらないように）。newId() は新しい groupId を返す関数。 */
+function remapGroupIds(shapes, newId) {
+  const map = new Map();
+  return shapes.map(s => { const g = groupIdOf(s); if (!g) return s; if (!map.has(g)) map.set(g, newId()); return { ...s, groupId: map.get(g) }; });
+}
+
+/** まだ使われていない新しい groupId（grp1, grp2, …）を返す。 */
+function nextGroupId(shapes) {
+  const used = new Set(shapes.map(groupIdOf).filter(Boolean));
+  let n = 1; while (used.has('grp' + n)) n++;
+  return 'grp' + n;
+}
+
+return {groupIdOf, expandToGroups, groupShapes, ungroupShapes, remapGroupIds, nextGroupId};
+})();
 __mods['analytics'] = (function(){
 // アクセス計測（GA4）：公開版（https の GitHub Pages）でだけ動く。本体サイトと同じ測定 ID・同じ「作家の端末では計測しない」設定を使う。
 // 送るのは「ページを開いた」と「機能を使った回数（イベント名＋短い英数字の kind）」だけ。図形・文字・ファイル名・寸法は送らない。
@@ -520,6 +643,22 @@ function transformGeometry(s, point, angle = a => a, reflected = false) {
 }
 /** 図形／点／穴と mm の移動量から新しい同型データを返す。 */
 function translate(s, dx, dy) { return transformGeometry(s, p => ({ x: p.x + dx, y: p.y + dy })); }
+/** 図形／点／穴を、基準点 origin を動かさずに横 sx 倍・縦 sy 倍へ伸縮した新データを返す（倍率は正の数。そうでなければ RangeError）。
+ *  縦横が同じ倍率なら円・円弧は半径が変わるだけ。縦横が違うと円・円弧は折れ線（円は閉じた形・円弧は開いた線）になる。文字の大きさは同じ倍率（縦横が違えば幾何平均）、画像は幅と高さ、寸法はずらし量も伸縮する。 */
+function scaleGeometry(s, sx, sy, origin) {
+  if (!(Number.isFinite(sx) && sx > 0 && Number.isFinite(sy) && sy > 0)) throw new RangeError('scale');
+  const point = p => ({ x: origin.x + (p.x - origin.x) * sx, y: origin.y + (p.y - origin.y) * sy }), uniform = Math.abs(sx - sy) < 1e-12, mean = uniform ? sx : Math.sqrt(sx * sy);
+  if (!uniform && (s.type === 'circle' || s.type === 'arc')) {
+    let pts = flattenShape(s, 0.05); if (s.type === 'circle' && pts.length > 1 && distance(pts[0], pts.at(-1)) < 1e-9) pts = pts.slice(0, -1);
+    const { cx, cy, r, startDeg, endDeg, ...rest } = s; return { ...rest, type: 'polyline', closed: s.type === 'circle', points: pts.map(point) };
+  }
+  const out = transformGeometry(s, point);
+  if (s.type === 'circle' || s.type === 'arc') out.r = s.r * sx;
+  else if (s.type === 'text') out.sizeMm = s.sizeMm * mean;
+  else if (s.type === 'image') { out.wMm = s.wMm * sx; out.hMm = s.hMm * sy; }
+  else if (s.type === 'dimension') out.offset = s.offset * mean;
+  return out;
+}
 /** 図形／点／穴を垂直線 x=c で左右反転した新データを返す。 */
 function mirrorX(s, c = 0) { return transformGeometry(s, p => ({ x: 2 * c - p.x, y: p.y }), a => 180 - a, true); }
 /** 図形／点／穴を水平線 y=c で上下反転した新データを返す。 */
@@ -792,6 +931,7 @@ function validateDoc(d) {
   if (!d.seams.every(m => obj(m.a) && obj(m.b) && ['butt', 'overlap', 'felled'].includes(m.style) && typeof m.reversed === 'boolean' && [m.a, m.b].every(side => d.paths.some(p => p.id === side.pathId) && nums(side, ['from', 'to']) && side.from >= 0 && side.to >= side.from))) return false;
   if (!d.layers.every(l => typeof l.name === 'string' && typeof l.visible === 'boolean' && typeof l.locked === 'boolean')) return false;
   const texOk = x => x.texture === undefined || x.texture === null || (typeof x.texture === 'string' && x.texture.length > 0 && x.texture.length <= 40); /* 革の質感（テクスチャ）の id。部品にも図形にも付けられる（図形の指定が優先） */
+  if (!d.shapes.every(x => x.groupId === undefined || (typeof x.groupId === 'string' && x.groupId.length > 0 && x.groupId.length <= 40))) return false; /* グループ（同じ groupId の図形をまとめて扱う） */
   if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
@@ -1169,7 +1309,34 @@ function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   return keep ? [hit] : parts.filter(part => part !== hit);
 }
 
-return {distance, dot, rotate, translate, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, reflectAcross, splitShapeAt, allIntersections, trimAt};
+return {distance, dot, rotate, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, reflectAcross, splitShapeAt, allIntersections, trimAt};
+})();
+__mods['scale_input'] = (function(){
+/** いまの大きさをもとに、寸法と倍率を丸めずに求める。使えない入力は null。 */
+function scaleInput(value, current, isSize = false) {
+  const n = Number(value); if (!(n > 0) || !Number.isFinite(n) || !Number.isFinite(current) || current < 0 || (isSize && current === 0)) return null;
+  const percent = isSize ? n / current * 100 : n, size = isSize ? n : current * (n / 100);
+  return Number.isFinite(percent) && percent > 0 && Number.isFinite(size) ? { percent, size } : null;
+}
+
+return {scaleInput};
+})();
+__mods['vertex'] = (function(){
+/** 頂点の座標だけを変更する。ペンのつまみは同じ分だけ動かし、不正な入力は null を返す。 */
+function editVertex(shape, index, axis, value) {
+  const field = shape.type === 'polyline' ? 'points' : shape.type === 'path' ? 'nodes' : null, v = Number(value);
+  if (!field || !Number.isInteger(index) || !['x', 'y'].includes(axis) || String(value).trim() === '' || !Number.isFinite(v)) return null;
+  const points = shape[field], p = points?.[index]; if (!p) return null;
+  const next = { ...p, [axis]: v };
+  if (field === 'nodes') {
+    const d = v - p[axis], suffix = axis.toUpperCase();
+    next['in' + suffix] = p['in' + suffix] + d; next['out' + suffix] = p['out' + suffix] + d;
+    if (![next['in' + suffix], next['out' + suffix]].every(Number.isFinite)) return null;
+  }
+  return { ...shape, [field]: points.map((p, i) => i === index ? next : p) };
+}
+
+return {editVertex};
 })();
 __mods['i18n'] = (function(){
 const MESSAGES = {
@@ -1644,6 +1811,67 @@ const MESSAGES = {
     "pause": "停止",
     "resetCam": "視点を戻す",
     "viewMode": "表示",
+    "group": "グループ化",
+    "ungroup": "解除",
+    "grouped": "{n} 個の図形を1つのグループにしました。クリックで全体が選ばれ、ダブルクリックで中の1つを選べます",
+    "ungrouped": "グループを解除しました",
+    "groupNeedTwo": "グループ化するには、2 個以上の図形を選んでください",
+    "hwEditTitle": "金具の編集",
+    "hwEditSpec": "規格",
+    "hwEditRing": "リング径 (mm)",
+    "hwEditAngle": "角度（度）",
+    "hwEditApply": "この設定で作り直す",
+    "hwEditNote": "位置はそのままで、金具を作り直します（元に戻せます）。手で直した図形が混じっているときは、先に確認します",
+    "hwEditWarn": "手で直した図形があります。もう一度押すと、直した形を捨てて作り直します",
+    "hwEdited": "金具を作り直しました",
+    "moveTitle": "選んだ図形を動かす",
+    "moveDx": "右へ (mm)",
+    "moveDy": "下へ (mm)",
+    "moveApply": "動かす",
+    "moveNote": "マイナスの数で左・上へ動きます。矢印キーでも動かせます（1mm・Shift で 10mm・Ctrl で 0.1mm）",
+    "alignTitle": "整列",
+    "alignLeft": "左揃え",
+    "alignCenterX": "横の中央揃え",
+    "alignRight": "右揃え",
+    "alignTop": "上揃え",
+    "alignCenterY": "縦の中央揃え",
+    "alignBottom": "下揃え",
+    "alignNote": "選んだ図形全体を囲む四角に合わせて揃えます。グループはひとまとまりで動きます。",
+    "aligned": "整列しました",
+    "distributeX": "横に等間隔",
+    "distributeY": "縦に等間隔",
+    "distributed": "等間隔に並べました",
+    "arrayTitle": "並べて複製",
+    "arrayNx": "横の個数",
+    "arrayNy": "縦の個数",
+    "arrayDx": "横の間隔（mm・左端から次の左端）",
+    "arrayDy": "縦の間隔（mm・上端から次の上端）",
+    "arrayNote": "選んだ図形全体の左端・上端を基準に並べます。マイナスで反対向き。個数は元を含め、横×縦で200個まで。",
+    "arrayApply": "並べて複製する",
+    "arrayInvalid": "個数は1以上の整数で、横×縦が200個以内になるようにしてください。間隔は数で入力してください。",
+    "arrayDone": "並べて複製しました",
+    "moved": "右へ {x}・下へ {y} mm 動かしました",
+    "vertexTitle": "頂点の編集",
+    "vertexUnit": "座標（mm）",
+    "vertexMore": "ほかの頂点は図形をドラッグで直してください",
+    "scaleTitle": "選んだ図形を拡大縮小",
+    "scaleNow": "いまの大きさ：幅 {w} × 高さ {h} mm",
+    "scaleAnchor": "基準点（ここは動きません）",
+    "scaleCenter": "中心",
+    "scaleTL": "左上",
+    "scaleTR": "右上",
+    "scaleBL": "左下",
+    "scaleBR": "右下",
+    "scaleW": "幅 (mm)",
+    "scaleH": "高さ (mm)",
+    "scaleX": "横 (%)",
+    "scaleY": "縦 (%)",
+    "scaleKeep": "縦横比を保つ",
+    "scaleApply": "拡大縮小する",
+    "scaleNote": "100% で変わりません。円・円弧は、縦横の倍率が違うと折れ線に変わります（元に戻せます）",
+    "scaleInvalid": "倍率・寸法は 0 より大きい数で入れてください",
+    "scaled": "拡大縮小しました（横 {x}%・縦 {y}%）",
+    "scaleToPoly": "拡大縮小しました。円・円弧は折れ線に変わりました（横 {x}%・縦 {y}%）",
     "ghost3d": "革を透かして見る",
     "viewFree": "自由視点",
     "viewQuad": "4分割（正面・上面・側面・自由）",
@@ -2439,6 +2667,67 @@ const MESSAGES = {
     "pause": "Pause",
     "resetCam": "Reset view",
     "viewMode": "View",
+    "group": "Group",
+    "ungroup": "Ungroup",
+    "grouped": "Grouped {n} shapes. Click selects the whole group; double-click picks one inside",
+    "ungrouped": "Ungrouped",
+    "groupNeedTwo": "Select two or more shapes to group",
+    "hwEditTitle": "Edit hardware",
+    "hwEditSpec": "Standard",
+    "hwEditRing": "Ring diameter (mm)",
+    "hwEditAngle": "Angle (deg)",
+    "hwEditApply": "Rebuild with these settings",
+    "hwEditNote": "Rebuilds the hardware in place (undoable). If you edited any shape by hand, you will be asked to confirm first",
+    "hwEditWarn": "Some shapes were edited by hand. Press again to discard them and rebuild",
+    "hwEdited": "Hardware rebuilt",
+    "moveTitle": "Move selection",
+    "moveDx": "Right (mm)",
+    "moveDy": "Down (mm)",
+    "moveApply": "Move",
+    "moveNote": "Use negative numbers to move left / up. Arrow keys also move (1 mm, Shift 10 mm, Ctrl 0.1 mm)",
+    "alignTitle": "Align",
+    "alignLeft": "Align left",
+    "alignCenterX": "Center horizontally",
+    "alignRight": "Align right",
+    "alignTop": "Align top",
+    "alignCenterY": "Center vertically",
+    "alignBottom": "Align bottom",
+    "alignNote": "Align to the bounds of the whole selection. Groups move together.",
+    "aligned": "Aligned",
+    "distributeX": "Distribute horizontally",
+    "distributeY": "Distribute vertically",
+    "distributed": "Distributed evenly",
+    "arrayTitle": "Array copies",
+    "arrayNx": "Columns",
+    "arrayNy": "Rows",
+    "arrayDx": "Horizontal spacing (mm, left edge to left edge)",
+    "arrayDy": "Vertical spacing (mm, top edge to top edge)",
+    "arrayNote": "Spacing uses the left and top edges of the whole selection. Negative values reverse direction. Columns times rows includes the original and must be at most 200.",
+    "arrayApply": "Create array copies",
+    "arrayInvalid": "Enter whole counts of at least 1 with columns times rows at most 200. Enter finite numbers for spacing.",
+    "arrayDone": "Array copies created",
+    "moved": "Moved right {x}, down {y} mm",
+    "vertexTitle": "Edit vertices",
+    "vertexUnit": "Coordinates (mm)",
+    "vertexMore": "Drag the shape to edit the other vertices.",
+    "scaleTitle": "Scale selection",
+    "scaleNow": "Current size: {w} × {h} mm",
+    "scaleAnchor": "Fixed point (does not move)",
+    "scaleCenter": "Center",
+    "scaleTL": "Top left",
+    "scaleTR": "Top right",
+    "scaleBL": "Bottom left",
+    "scaleBR": "Bottom right",
+    "scaleW": "Width (mm)",
+    "scaleH": "Height (mm)",
+    "scaleX": "Width (%)",
+    "scaleY": "Height (%)",
+    "scaleKeep": "Keep aspect ratio",
+    "scaleApply": "Scale",
+    "scaleNote": "100% leaves it unchanged. Circles and arcs become polylines when width and height differ (undoable)",
+    "scaleInvalid": "Enter a scale or size greater than 0",
+    "scaled": "Scaled (width {x}%, height {y}%)",
+    "scaleToPoly": "Scaled. Circles and arcs became polylines (width {x}%, height {y}%)",
     "ghost3d": "See through the leather",
     "viewFree": "Free",
     "viewQuad": "Quad (front, top, right, free)",
@@ -2780,8 +3069,15 @@ function isCopy(e) { return isShortcut(e, 'd'); }
 function isSelectAll(e) { return isShortcut(e, 'a') && !e.shiftKey; }
 /** KeyboardEvent 相当から Delete / Mac Backspace を判定する。 */
 function isDelete(e) { return !e.ctrlKey && !e.metaKey && !e.altKey && ['Delete', 'Backspace'].includes(e.key); }
+/** 矢印キーの移動量（mm）。既定 1・Shift 10・Ctrl 0.1。上矢印は y が減る（画面の上）。Alt（ブラウザの戻る・進む）・⌘ つきと矢印以外は null。 */
+function arrowNudge(e) {
+  if (e.altKey || e.metaKey) return null;
+  const dir = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] }[e.key]; if (!dir) return null;
+  const step = e.shiftKey ? 10 : e.ctrlKey ? 0.1 : 1;
+  return { dx: dir[0] * step, dy: dir[1] * step };
+}
 
-return {isShortcut, isUndo, isRedo, isCopy, isSelectAll, isDelete};
+return {isShortcut, isUndo, isRedo, isCopy, isSelectAll, isDelete, arrowNudge};
 })();
 __mods['formats'] = (function(){
 // 書き出し形式（SVG・DXF R12）・分割印刷・印刷補正。純粋関数のみ（DOM 禁止）。
@@ -4122,7 +4418,8 @@ function binderPlanSvg(spec, ringD = null) {
   let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
   const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
   const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(spec.plate.cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
-  for (const hx of xs) parts.push(`<circle cx="${f(hx)}" cy="0" r="${f(D / 2)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
+  /* リングは台座の長手方向に直角に立っている：真上から見ると、線径（2mm）×リング径の細い棒になる */
+  for (const hx of xs) parts.push(`<rect x="${f(hx - 1)}" y="${f(-D / 2)}" width="2" height="${f(D)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
   const dy = Math.max(W, D) / 2 + 5;
   for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
@@ -4149,7 +4446,28 @@ function checkBinderSpec(spec) {
   return out;
 }
 
-return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec};
+/** 置いた金具の外形（折れ線）から、中心 at と角度（度・時計回り・-90〜90）を割り出す。長いほうの軸の向きを角度とする（手で動かした・回した後でも使える）。 */
+function hwPoseOfOutline(shape) {
+  const pts = shape?.points || [];
+  if (pts.length < 3) return { at: { x: 0, y: 0 }, angleDeg: 0 };
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  let sxx = 0, syy = 0, sxy = 0; for (const p of pts) { const dx = p.x - cx, dy = p.y - cy; sxx += dx * dx; syy += dy * dy; sxy += dx * dy; }
+  let deg = 0.5 * Math.atan2(2 * sxy, sxx - syy) * 180 / Math.PI;
+  if (deg > 90) deg -= 180; if (deg <= -90) deg += 180;
+  return { at: { x: cx, y: cy }, angleDeg: deg };
+}
+const NUM_KEYS = ['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'c1x', 'c1y', 'c2x', 'c2y', 'startDeg', 'endDeg'];
+const sameShape = (a, b, tol) => a.type === b.type && NUM_KEYS.every(k => (k in a) === (k in b) && (!(k in a) || Math.abs(a[k] - b[k]) <= tol))
+  && ((a.points || []).length === (b.points || []).length) && (a.points || []).every((p, i) => Math.abs(p.x - b.points[i].x) <= tol && Math.abs(p.y - b.points[i].y) <= tol);
+/** 2つの図形の並びが（順番を問わず）同じ形か。数値は tol(mm) 以内の違いなら同じとみなす。手で直したかの判定に使う。 */
+function sameShapes(a, b, tol = 0.05) {
+  if (a.length !== b.length) return false;
+  const left = [...b];
+  for (const s of a) { const i = left.findIndex(t => sameShape(s, t, tol)); if (i < 0) return false; left.splice(i, 1); }
+  return true;
+}
+
+return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes};
 })();
 __mods['threeview'] = (function(){
 // 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
@@ -4553,6 +4871,7 @@ __mods['library'] = (function(){
 const { evalExpr } = __mods['hardware'];
 const { bboxOfDoc, resolvePath, projectOnPath, arcLength } = __mods['geometry'];
 const { makeNextId } = __mods['interop'];
+const { nextGroupId, groupIdOf } = __mods['grouping'];
 /* ---- 部品ライブラリのファイル保存・読み込み・バックアップ（登録した部品はブラウザの中に保存されるので、ファイルとバックアップで守る） ---- */
 const LIBRARY_FILE_APP = "N's CAD parts library";
 /** 登録した部品をファイル用の文字列にする。 */
@@ -4642,7 +4961,9 @@ function mergePayload(doc, payload, { at = { x: 0, y: 0 }, scale = 1, freshId, s
   const moved = transformPayload(payload, at, scale), shapeMap = new Map(), pathMap = new Map(), toolMap = new Map(), ids = [];
   for (const l of payload.layers || []) if (!doc.layers.some(x => x.id === l.id)) doc.layers.push({ id: l.id, name: l.name || l.id, visible: true, locked: false });
   for (const t of payload.tools || []) { const same = doc.tools.find(x => x.id === t.id && x.pitch === t.pitch && x.kind === t.kind); if (same) { toolMap.set(t.id, same.id); continue; } const id = doc.tools.some(x => x.id === t.id) ? next(doc.tools, 'tool') : t.id; doc.tools.push({ ...t, id }); toolMap.set(t.id, id); }
-  for (const s of moved.shapes) { const id = next(doc.shapes, 's'); shapeMap.set(s.id, id); doc.shapes.push({ ...s, id, layer: doc.layers.some(l => l.id === s.layer) ? s.layer : doc.layers[0].id }); ids.push(id); }
+  const groupMap = new Map(); /* 元のグループ → 貼り付け先での新しいグループ（元の文書のグループとはつなげない） */
+  const pasteGroup = g => { if (!groupMap.has(g)) groupMap.set(g, nextGroupId([...doc.shapes, ...[...groupMap.values()].map(groupId => ({ groupId }))])); return groupMap.get(g); };
+  for (const s of moved.shapes) { const id = next(doc.shapes, 's'); shapeMap.set(s.id, id); const g = groupIdOf(s), { groupId, ...rest } = s; doc.shapes.push({ ...rest, ...(g ? { groupId: pasteGroup(g) } : {}), id, layer: doc.layers.some(l => l.id === s.layer) ? s.layer : doc.layers[0].id }); ids.push(id); }
   for (const p of moved.paths) { const id = next(doc.paths, 'p'); pathMap.set(p.id, id); doc.paths.push({ ...p, id, shapeIds: p.shapeIds.map(x => shapeMap.get(x)).filter(Boolean), segments: (p.segments || []).map(sg => ({ ...sg, toolId: toolMap.get(sg.toolId) || sg.toolId })) }); }
   for (const h of moved.holes) { if (!pathMap.has(h.pathId)) continue; const id = next(doc.holes, 'h'); doc.holes.push({ ...h, id, pathId: pathMap.get(h.pathId), toolId: toolMap.get(h.toolId) || h.toolId }); }
   for (const part of moved.parts || []) { const sids = part.shapeIds.map(x => shapeMap.get(x)).filter(Boolean); if (!sids.length) continue; doc.parts.push({ ...part, id: next(doc.parts, 'part'), shapeIds: sids }); }
@@ -14853,13 +15174,17 @@ const HELP_EN = {
 return {HELP_EN};
 })();
 __mods['app'] = (function(){
-const { smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } = __mods['geometry'];
+const { arrayOffsets } = __mods['array'];
+const { alignOffsets, distributeOffsets } = __mods['align'];
+const { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } = __mods['geometry'];
+const { scaleInput } = __mods['scale_input'];
+const { editVertex } = __mods['vertex'];
 const { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } = __mods['formats'];
 const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
 const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
-const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
+const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
 const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
@@ -14883,9 +15208,10 @@ const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
 const { track } = __mods['analytics'];
+const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
 const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
-const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } = __mods['shortcuts'];
+const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
 const { HELP_EN } = __mods['help/en'];
 if (globalThis.__LC_BOOTED) { /* file 互換ブロックが起動済み */ } else {
@@ -16696,19 +17022,174 @@ function renderSpineSim() { const p = spineParams(), r = spineSim(p); if (!r) { 
 function initSpineSim() { for (const id of ['spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderSpineSim); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderTopSection); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
 function hwParams() { const out = {}; for (const input of ($('hwParams').children || [])) { const el = input.querySelector ? input.querySelector('input') : null; if (el && el.dataset?.param) out[el.dataset.param] = Number(el.value); } return out; }
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
+/** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
+function hardwareDrafts(it, overrides, spec, at, angleDeg) {
+  const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, out = [];
+  fp.outline.forEach((s, i) => out.push({ ...s, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }));
+  for (const s of fp.holes) out.push({ ...s, layer: 'hwholes' });
+  if (fp.ringCenters) for (const c of fp.ringCenters) for (const [dx, dy] of [[1, 0], [0, 1]]) out.push({ layer: marks, type: 'line', x1: c.x - 2 * dx, y1: c.y - 2 * dy, x2: c.x + 2 * dx, y2: c.y + 2 * dy });
+  return out;
+}
+/** 下書きを文書に加える（新しい id を付け、1つのグループにする）。加えた図形の id の配列を返す。 */
+function addHardwareDrafts(drafts, groupId) {
+  if (!doc.layers.some(l => l.id === 'hwholes')) doc.layers.push({ id: 'hwholes', name: 'hwholes', visible: true, locked: false });
+  const ids = []; for (const d of drafts) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...d, id, groupId }); ids.push(id); }
+  return ids;
+}
+/** 頂点の入力欄は行数や選択が変わったときだけ作り直し、入力中の値と移動先の欄を保つ。 */
+let vertexLayoutKey = '', vertexValueKey = '';
+function vertexShape() {
+  const s = infoShape(); return s && ['polyline', 'path'].includes(s.type) && selectedShapeIds().size <= 1 ? s : null;
+}
+function refreshVertexCard() {
+  const s = vertexShape(); $('vertexCard').hidden = !s;
+  if (!s) { vertexLayoutKey = vertexValueKey = ''; return; }
+  const points = s.type === 'polyline' ? s.points : s.nodes, count = Math.min(40, points.length), layout = JSON.stringify([s.id, s.type, count]);
+  if (layout !== vertexLayoutKey) {
+    $('vertexRows').innerHTML = points.slice(0, count).map((p, i) => `<div class="row"><span>${i + 1}</span>${['x', 'y'].map(axis => `<label><span>${axis.toUpperCase()}</span><input id="vertex-${i}-${axis}" type="number" step="any" aria-label="${i + 1} ${axis.toUpperCase()} (mm)"></label>`).join('')}</div>`).join('');
+    for (let i = 0; i < count; i++) for (const axis of ['x', 'y']) $(`vertex-${i}-${axis}`).addEventListener('change', () => applyVertex(s.id, i, axis));
+    vertexLayoutKey = layout; vertexValueKey = '';
+  }
+  const key = JSON.stringify([layout, points.slice(0, count), editable(s)]);
+  if (key !== vertexValueKey) for (let i = 0; i < count; i++) for (const axis of ['x', 'y']) {
+    const input = $(`vertex-${i}-${axis}`); input.value = String(points[i][axis]); input.disabled = !editable(s);
+  }
+  vertexValueKey = key; $('vertexNote').hidden = points.length <= 40; $('vertexNote').textContent = t('vertexMore');
+}
+function applyVertex(id, index, axis) {
+  const s = vertexShape(); if (!s || s.id !== id) { refreshVertexCard(); return; }
+  const points = s.type === 'polyline' ? s.points : s.nodes, input = $(`vertex-${index}-${axis}`), next = editVertex(s, index, axis, input.value);
+  if (!editable(s) || !next || !validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === id ? next : x) })) { input.value = String(points[index][axis]); return; }
+  if (Number(input.value) === points[index][axis]) { input.value = String(points[index][axis]); return; }
+  transformSelectedTo(next);
+}
+/** 「選んだ図形を動かす」カード：何か選んでいるときだけ出す。右へ・下へ（mm・マイナスで左・上）を入れて動かす。 */
+function refreshArrayCard() { $('arrayCard').hidden = !selectedShapeIds().size; }
+function applyArray() {
+  const raw = ['arrayNx', 'arrayNy', 'arrayDx', 'arrayDy'].map(id => $(id).value.trim()); let offsets;
+  try { if (raw.some(v => !v)) throw new RangeError(); offsets = arrayOffsets(...raw.map(Number)); }
+  catch { $('hint').textContent = t('arrayInvalid'); return; }
+  if (!offsets.length || !selectedShapeIds().size) return;
+  copySelectedOffsets(offsets); $('hint').textContent = t('arrayDone');
+}
+$('arrayApply').onclick = applyArray;
+function refreshMoveCard() { $('moveCard').hidden = !selectedShapeIds().size; }
+function applyMove() {
+  const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (!selectedShapeIds().size || (dx === 0 && dy === 0)) return;
+  transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
+}
+$('moveApply').onclick = applyMove;
+/** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
+function selectedAlignUnits() {
+  const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
+  const root = id => { while (parent.get(id) !== id) id = parent.get(id); return id; };
+  const join = list => { const members = list.filter(id => ids.has(id)); if (members.length) for (const id of members) parent.set(root(id), root(members[0])); };
+  const groups = new Map(); for (const s of shapes) { const g = groupIdOf(s); if (g) { if (!groups.has(g)) groups.set(g, []); groups.get(g).push(s.id); } }
+  for (const members of groups.values()) join(members); for (const p of doc.paths) join(p.shapeIds);
+  const units = new Map();
+  for (const s of shapes) { const key = root(s.id); if (!units.has(key)) units.set(key, { ids: [], box: { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity } }); const u = units.get(key), b = bboxOf(s); u.ids.push(s.id); for (const k of ['minX', 'minY']) u.box[k] = Math.min(u.box[k], b[k]); for (const k of ['maxX', 'maxY']) u.box[k] = Math.max(u.box[k], b[k]); }
+  return [...units.values()];
+}
+function refreshAlignCard() { const n = selectedAlignUnits().length; $('alignCard').hidden = n < 2; $('distributeX').disabled = $('distributeY').disabled = n < 3; }
+function applyAlign(kind) {
+  const units = selectedAlignUnits(); if (units.length < 2) return;
+  applyAlignOffsets(units, alignOffsets(units.map(u => u.box), kind), 'aligned');
+}
+function applyDistribute(axis) {
+  const units = selectedAlignUnits(); if (units.length < 3) return;
+  applyAlignOffsets(units, distributeOffsets(units.map(u => u.box), axis), 'distributed');
+}
+function applyAlignOffsets(units, offsets, message) {
+  if (!offsets.some(o => o.dx || o.dy)) return;
+  const byShape = new Map(); units.forEach((u, i) => u.ids.forEach(id => byShape.set(id, offsets[i])));
+  const byPath = new Map(doc.paths.map(p => [p.id, byShape.get(p.shapeIds[0])]));
+  transformSelected((s, path) => { const o = path ? byPath.get(path.id) : s.pathId ? byPath.get(s.pathId) : byShape.get(s.id); return o ? translate(s, o.dx, o.dy) : s; });
+  $('hint').textContent = t(message);
+}
+$('distributeX').onclick = () => applyDistribute('x'); $('distributeY').onclick = () => applyDistribute('y');
+for (const kind of ['left', 'centerX', 'right', 'top', 'centerY', 'bottom']) $('align' + kind[0].toUpperCase() + kind.slice(1)).onclick = () => applyAlign(kind);
+/** 「選んだ図形を拡大縮小」カード：何か選んでいるときだけ出す。基準点を動かさずに、横・縦の倍率（%）で伸縮する。 */
+function selectionBox() {
+  const ids = selectedShapeIds(), list = doc.shapes.filter(s => ids.has(s.id)).map(bboxOf); if (!list.length) return null;
+  return { minX: Math.min(...list.map(b => b.minX)), minY: Math.min(...list.map(b => b.minY)), maxX: Math.max(...list.map(b => b.maxX)), maxY: Math.max(...list.map(b => b.maxY)) };
+}
+let scaleCardKey = '', scaleBadInputs = new Set();
+function refreshScaleCard(reset = false) {
+  const b = selectionBox(); $('scaleCard').hidden = !b; if (!b) { scaleCardKey = ''; scaleBadInputs.clear(); return; }
+  const w = b.maxX - b.minX, h = b.maxY - b.minY, key = JSON.stringify([[...selectedShapeIds()].sort(), w, h]);
+  $('scaleSize').textContent = t('scaleNow', { w: w.toFixed(2), h: h.toFixed(2) });
+  $('scaleW').disabled = w === 0; $('scaleH').disabled = h === 0;
+  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
+  scaleCardKey = key;
+}
+/** 入れた方向をもとに寸法と倍率をそろえる。大きさ0の方向の寸法入力は無視する。 */
+function syncScaleInput(id) {
+  const b = selectionBox(); if (!b) return;
+  const horizontal = id === 'scaleX' || id === 'scaleW', isSize = id === 'scaleW' || id === 'scaleH', w = b.maxX - b.minX, h = b.maxY - b.minY, current = horizontal ? w : h;
+  if (isSize && current === 0) return;
+  const value = scaleInput($(id).value, current, isSize), other = value && scaleInput(value.percent, horizontal ? h : w);
+  if (!value || ($('scaleKeep').checked && !other)) { scaleBadInputs.add(id); $('hint').textContent = t('scaleInvalid'); return; }
+  const percentId = horizontal ? 'scaleX' : 'scaleY', sizeId = horizontal ? 'scaleW' : 'scaleH';
+  $(percentId).value = String(value.percent); if (!isSize) $(sizeId).value = value.size.toFixed(2);
+  scaleBadInputs.delete(percentId); scaleBadInputs.delete(sizeId);
+  if ($('scaleKeep').checked) {
+    const otherPercent = horizontal ? 'scaleY' : 'scaleX', otherSize = horizontal ? 'scaleH' : 'scaleW';
+    $(otherPercent).value = String(value.percent); $(otherSize).value = other.size.toFixed(2); scaleBadInputs.delete(otherPercent); scaleBadInputs.delete(otherSize);
+  }
+}
+function applyScale() {
+  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value);
+  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
+  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1) return;
+  const a = $('scaleAnchor').value, o = { x: /Right$/.test(a) ? b.maxX : /Left$/.test(a) ? b.minX : (b.minX + b.maxX) / 2, y: /^bottom/.test(a) ? b.maxY : /^top/.test(a) ? b.minY : (b.minY + b.maxY) / 2 };
+  const ids = selectedShapeIds(), curved = Math.abs(sx - sy) > 1e-12 && doc.shapes.some(s => ids.has(s.id) && (s.type === 'circle' || s.type === 'arc'));
+  transformSelected(s => scaleGeometry(s, sx, sy, o));
+  $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
+}
+$('scaleApply').onclick = applyScale;
+for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
+/** 金具の編集カード：金具（外形に hw を持つ図形のグループ）を全体まで選んでいるときだけ出す。規格・リング径・角度を変えて「作り直す」と、位置はそのままで金具を作り直す。 */
+let hwEditKey = '', hwEditArmed = 0;
+function selectedHardware() {
+  const plate = doc.shapes.find(s => selected.has(s.id) && s.hw?.id); if (!plate) return null;
+  const g = groupIdOf(plate), members = g ? doc.shapes.filter(s => groupIdOf(s) === g) : [plate];
+  return members.every(m => selected.has(m.id)) ? { plate, members } : null;
+}
+const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate.hw.params?.spec;
+function refreshHwEdit() {
+  const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
+  const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
+  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = !isBinder;
+  if (isBinder) {
+    const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
+    sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? '');
+  }
+  $('hwEditAngle').value = String(+hwPoseOfOutline(hw.plate).angleDeg.toFixed(2)); $('hwEditNote').textContent = t('hwEditNote');
+}
+function applyHwEdit() {
+  const hw = selectedHardware(); if (!hw) return;
+  const old = hw.plate.hw, isBinder = hwIsBinder(hw.plate), pose = hwPoseOfOutline(hw.plate);
+  const specId = isBinder ? $('hwEditSpec').value : null, ringD = isBinder ? Number($('hwEditRing').value) : undefined, angle = Number($('hwEditAngle').value);
+  if (!Number.isFinite(angle) || (isBinder && !(ringD > 0))) { $('hint').textContent = t('invalidNumber'); return; }
+  const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + specId : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
+  const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest; let same = true;   /* 手で直したかの判定：今の設定で作り直した形と比べる */
+  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
+  if (!same && Date.now() - hwEditArmed > 6000) { hwEditArmed = Date.now(); $('hint').textContent = t('hwEditWarn'); return; }  /* 埋め込みブラウザでは confirm が出ないので 2 段押し */
+  hwEditArmed = 0;
+  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  const gid = groupIdOf(hw.plate) || nextGroupId(doc.shapes), gone = new Set(hw.members.map(m => m.id));
+  cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !gone.has(s.id)); selected = new Set(addHardwareDrafts(drafts, gid)); });
+  hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
+}
+$('hwEditApply').onclick = applyHwEdit;
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
-  let fp; try { fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, Number($('hwAngle').value) || 0); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, Number($('hwAngle').value) || 0); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
-  commit(() => {
-    if (!doc.layers.some(l => l.id === 'hwholes')) doc.layers.push({ id: 'hwholes', name: 'hwholes', visible: true, locked: false });
-    const marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, ids = [];
-    fp.outline.forEach((s, i) => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg: Number($('hwAngle').value) || 0, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }); ids.push(id); });
-    for (const s of fp.holes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: 'hwholes' }); ids.push(id); }
-    if (fp.ringCenters) for (const c of fp.ringCenters) for (const [dx, dy] of [[1, 0], [0, 1]]) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: marks, type: 'line', x1: c.x - 2 * dx, y1: c.y - 2 * dy, x2: c.x + 2 * dx, y2: c.y + 2 * dy }); ids.push(id); }
-    selected = new Set(ids);
-  });
+  commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
   renderLayers(); $('hint').textContent = t('hwPlaced', { name: document.documentElement.lang === 'en' ? it.name_en : it.name_ja });
 }
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
@@ -16915,11 +17396,12 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
+  $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && groupIdOf(s));
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.length, selected: selected.size });
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo();
+  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
 }
 function commit(fn) {
   const before = JSON.stringify(doc);
@@ -16976,11 +17458,11 @@ function transformSelected(fn) {
     for(const h of doc.holes.filter(h=>paths.has(h.pathId))){const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));if(route)h.s=projectOnPath(route,h).s;}
     for(const saved of doc.paths.filter(p=>paths.has(p.id))){
       const old=before.get(saved.id),route=resolvePath(doc,saved),len=arcLength(route);
-      const mapped=s=>projectOnPath(route,fn(pointAtLength(old,s))).s;
+      const mapped=s=>projectOnPath(route,fn(pointAtLength(old,s),saved)).s;
       saved.segments=saved.segments.flatMap(segment=>{
         if(!saved.closed){const a=mapped(segment.from),b=mapped(segment.to);return [{...segment,from:Math.min(a,b),to:Math.max(a,b)}];}
         const span=segment.to-segment.from;if(span>=len-1e-6)return [{...segment,from:0,to:len}];
-        const original=pointAtLength(old,segment.from),transformed=fn(original),start=mapped(segment.from),tangent=pointAtLength(route,start).angleDeg;
+        const original=pointAtLength(old,segment.from),transformed=fn(original,saved),start=mapped(segment.from),tangent=pointAtLength(route,start).angleDeg;
         const reversed=Math.cos((transformed.angleDeg-tangent)*Math.PI/180)<0;
         const from=((start-(reversed?span:0))%len+len)%len,to=from+span;
         return to<=len+1e-6?[{...segment,from,to:Math.min(to,len)}]:[{...segment,from,to:len},{...segment,from:0,to:to-len}];
@@ -16989,16 +17471,21 @@ function transformSelected(fn) {
     manualNext=null;
   });
 }
-function copySelected() {
+function copySelected() { copySelectedOffsets([{ dx: 5, dy: 5 }]); }
+function copySelectedOffsets(offsets) {
   const sourceIds=selectedShapeIds(); const sources=doc.shapes.filter(s=>sourceIds.has(s.id));
   if (!sources.length) return;
   cancel();
   commit(() => {
-    const ids = new Set(), map=new Map(), paths=[...doc.paths], holes=[...doc.holes];
-    for (const s of sources) { const id=freshId(doc.shapes,'s'); doc.shapes.push({...translate(s,5,5),id});ids.add(id);map.set(s.id,id); }
-    for(const p of paths.filter(p=>p.shapeIds.every(id=>map.has(id)))){
-      const id=freshId(doc.paths,'p');doc.paths.push({...JSON.parse(JSON.stringify(p)),id,shapeIds:p.shapeIds.map(id=>map.get(id))});
-      for(const h of holes.filter(h=>h.pathId===p.id))doc.holes.push({...translate(h,5,5),id:freshId(doc.holes,'h'),pathId:id});
+    const ids = new Set(), paths=[...doc.paths], holes=[...doc.holes];
+    for (const { dx, dy } of offsets) {
+      const map = new Map();
+      const copyGroups = new Map(); /* 複製したグループは元とは別のグループにする */
+      for (const s of sources) { const id=freshId(doc.shapes,'s'), g=groupIdOf(s); let c={...translate(s,dx,dy),id}; if(g){ if(!copyGroups.has(g)) copyGroups.set(g,nextGroupId([...doc.shapes,...[...copyGroups.values()].map(groupId=>({groupId}))])); c={...c,groupId:copyGroups.get(g)}; } doc.shapes.push(c);ids.add(id);map.set(s.id,id); }
+      for(const p of paths.filter(p=>p.shapeIds.every(id=>map.has(id)))){
+        const id=freshId(doc.paths,'p');doc.paths.push({...JSON.parse(JSON.stringify(p)),id,shapeIds:p.shapeIds.map(id=>map.get(id))});
+        for(const h of holes.filter(h=>h.pathId===p.id))doc.holes.push({...translate(h,dx,dy),id:freshId(doc.holes,'h'),pathId:id});
+      }
     }
     selected = ids;
   });
@@ -17461,7 +17948,7 @@ canvas.addEventListener('pointerdown', e => {
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
     if (hit && !e.shiftKey) {
-      if (!selected.has(hit.id)) { selected = new Set([hit.id]); nodeSel = null; }
+      if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), insertId: pathShape?.id === hit.id ? hit.id : null };
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
@@ -17507,6 +17994,8 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'offset') { offsetClick(w, true); return; } /* ダブルクリック＝つながった図形全体を選ぶ */
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
+    const inGroup = doc.shapes.filter(x => visible(x) && editable(x)).reverse().find(x => groupIdOf(x) && selected.has(x.id) && distToShape(x, w) <= 7 / scale);
+    if (inGroup && selected.size > 1) { selected = new Set([inGroup.id]); nodeSel = null; draw(); return; } /* グループ全体を選んでいるときのダブルクリック＝中の1つだけを選ぶ */
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distToShape(x, w) <= 7 / scale);
     const chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x))).find(c => c.shapeIds.includes(hit.id)) : null;
@@ -17538,10 +18027,11 @@ canvas.addEventListener('pointerup', e => {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
       const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
-      if (hit) { if (g.additive && selected.has(hit.id)) selected.delete(hit.id); else selected.add(hit.id); }
+      if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
+      selected = expandToGroups(doc.shapes, selected); /* 囲んだ図形がグループなら全体を選ぶ */
     }
   } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
     stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
@@ -17588,6 +18078,10 @@ canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: fals
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
 $('delete').onclick = removeSelected;
 $('copy').onclick = copySelected;
+/** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
+function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
+function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) return; cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
+$('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
@@ -17629,9 +18123,11 @@ window.addEventListener('keydown', e => {
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save() : $('file').click(); return; }
   if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
+  const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
+  else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
   else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }

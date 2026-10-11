@@ -29,6 +29,22 @@ function transformGeometry(s, point, angle = a => a, reflected = false) {
 }
 /** 図形／点／穴と mm の移動量から新しい同型データを返す。 */
 export function translate(s, dx, dy) { return transformGeometry(s, p => ({ x: p.x + dx, y: p.y + dy })); }
+/** 図形／点／穴を、基準点 origin を動かさずに横 sx 倍・縦 sy 倍へ伸縮した新データを返す（倍率は正の数。そうでなければ RangeError）。
+ *  縦横が同じ倍率なら円・円弧は半径が変わるだけ。縦横が違うと円・円弧は折れ線（円は閉じた形・円弧は開いた線）になる。文字の大きさは同じ倍率（縦横が違えば幾何平均）、画像は幅と高さ、寸法はずらし量も伸縮する。 */
+export function scaleGeometry(s, sx, sy, origin) {
+  if (!(Number.isFinite(sx) && sx > 0 && Number.isFinite(sy) && sy > 0)) throw new RangeError('scale');
+  const point = p => ({ x: origin.x + (p.x - origin.x) * sx, y: origin.y + (p.y - origin.y) * sy }), uniform = Math.abs(sx - sy) < 1e-12, mean = uniform ? sx : Math.sqrt(sx * sy);
+  if (!uniform && (s.type === 'circle' || s.type === 'arc')) {
+    let pts = flattenShape(s, 0.05); if (s.type === 'circle' && pts.length > 1 && distance(pts[0], pts.at(-1)) < 1e-9) pts = pts.slice(0, -1);
+    const { cx, cy, r, startDeg, endDeg, ...rest } = s; return { ...rest, type: 'polyline', closed: s.type === 'circle', points: pts.map(point) };
+  }
+  const out = transformGeometry(s, point);
+  if (s.type === 'circle' || s.type === 'arc') out.r = s.r * sx;
+  else if (s.type === 'text') out.sizeMm = s.sizeMm * mean;
+  else if (s.type === 'image') { out.wMm = s.wMm * sx; out.hMm = s.hMm * sy; }
+  else if (s.type === 'dimension') out.offset = s.offset * mean;
+  return out;
+}
 /** 図形／点／穴を垂直線 x=c で左右反転した新データを返す。 */
 export function mirrorX(s, c = 0) { return transformGeometry(s, p => ({ x: 2 * c - p.x, y: p.y }), a => 180 - a, true); }
 /** 図形／点／穴を水平線 y=c で上下反転した新データを返す。 */
@@ -301,6 +317,7 @@ export function validateDoc(d) {
   if (!d.seams.every(m => obj(m.a) && obj(m.b) && ['butt', 'overlap', 'felled'].includes(m.style) && typeof m.reversed === 'boolean' && [m.a, m.b].every(side => d.paths.some(p => p.id === side.pathId) && nums(side, ['from', 'to']) && side.from >= 0 && side.to >= side.from))) return false;
   if (!d.layers.every(l => typeof l.name === 'string' && typeof l.visible === 'boolean' && typeof l.locked === 'boolean')) return false;
   const texOk = x => x.texture === undefined || x.texture === null || (typeof x.texture === 'string' && x.texture.length > 0 && x.texture.length <= 40); /* 革の質感（テクスチャ）の id。部品にも図形にも付けられる（図形の指定が優先） */
+  if (!d.shapes.every(x => x.groupId === undefined || (typeof x.groupId === 'string' && x.groupId.length > 0 && x.groupId.length <= 40))) return false; /* グループ（同じ groupId の図形をまとめて扱う） */
   if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
