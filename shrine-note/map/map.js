@@ -1490,17 +1490,18 @@ function openDeityFromTree(id) {
 }
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
-const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track2', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）
+const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track3', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）
 const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
   { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
-  { file: 'audio/bgm_fantasy07.mp3', label: '深層で見た太陽', title: '（ファンタジー07「深層で見た太陽」）', url: 'https://maou.audio/bgm_fantasy07/' },
-  { file: 'audio/bgm_fantasy06.mp3', label: '新世界へ', title: '（ファンタジー06「新世界へ」）', url: 'https://maou.audio/bgm_fantasy06/' },
-  { file: 'audio/bgm_fantasy14.mp3', label: 'やすらぎの丘', title: '（ファンタジー14「やすらぎの丘」）', url: 'https://maou.audio/bgm_fantasy14/' },
   { file: 'audio/bgm_healing08.mp3', label: 'ハープの静けさ', title: '（ヒーリング08）', url: 'https://maou.audio/bgm_healing08/' },
   { file: 'audio/bgm_healing01.mp3', label: 'ヒーリング01', title: '（ヒーリング01）', url: 'https://maou.audio/bgm_healing01/' },
   { file: 'audio/bgm_healing02.mp3', label: 'ヒーリング02', title: '（ヒーリング02）', url: 'https://maou.audio/bgm_healing02/' },
+  { file: 'audio/bgm_healing04.mp3', label: 'ヒーリング04', title: '（ヒーリング04）', url: 'https://maou.audio/bgm_healing04/' },
+  { file: 'audio/bgm_healing09.mp3', label: 'ヒーリング09', title: '（ヒーリング09）', url: 'https://maou.audio/bgm_healing09/' },
   { file: 'audio/bgm_healing10.mp3', label: 'ヒーリング10', title: '（ヒーリング10）', url: 'https://maou.audio/bgm_healing10/' },
-  { file: 'audio/bgm_fantasy05.mp3', label: 'ファンタジー05', title: '（ファンタジー05）', url: 'https://maou.audio/bgm_fantasy05/' },
+  { file: 'audio/bgm_healing11.mp3', label: 'ヒーリング11', title: '（ヒーリング11）', url: 'https://maou.audio/bgm_healing11/' },
+  { file: 'audio/bgm_healing14.mp3', label: 'ヒーリング14', title: '（ヒーリング14）', url: 'https://maou.audio/bgm_healing14/' },
+  { file: 'audio/bgm_healing16.mp3', label: 'ヒーリング16', title: '（ヒーリング16）', url: 'https://maou.audio/bgm_healing16/' }
 ];
 let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
 try {
