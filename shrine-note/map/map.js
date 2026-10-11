@@ -1497,6 +1497,10 @@ const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレ
   { file: 'audio/bgm_fantasy06.mp3', label: '新世界へ', title: '（ファンタジー06「新世界へ」）', url: 'https://maou.audio/bgm_fantasy06/' },
   { file: 'audio/bgm_fantasy14.mp3', label: 'やすらぎの丘', title: '（ファンタジー14「やすらぎの丘」）', url: 'https://maou.audio/bgm_fantasy14/' },
   { file: 'audio/bgm_healing08.mp3', label: 'ハープの静けさ', title: '（ヒーリング08）', url: 'https://maou.audio/bgm_healing08/' },
+  { file: 'audio/bgm_healing01.mp3', label: 'ヒーリング01', title: '（ヒーリング01）', url: 'https://maou.audio/bgm_healing01/' },
+  { file: 'audio/bgm_healing02.mp3', label: 'ヒーリング02', title: '（ヒーリング02）', url: 'https://maou.audio/bgm_healing02/' },
+  { file: 'audio/bgm_healing10.mp3', label: 'ヒーリング10', title: '（ヒーリング10）', url: 'https://maou.audio/bgm_healing10/' },
+  { file: 'audio/bgm_fantasy05.mp3', label: 'ファンタジー05', title: '（ファンタジー05）', url: 'https://maou.audio/bgm_fantasy05/' },
 ];
 let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
 try {
