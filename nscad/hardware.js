@@ -42,7 +42,7 @@ export function hardwareFootprint(item, overrides = {}, binderSpec = null) {
     if (!binderSpec) throw new Error('binderSpec');
     const base = binderBase(binderSpec), L = base.lengthMm, W = base.sectionWidthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
     outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, base.cornerRMm || 0) });
-    for (const r of v.plan.rings) outline.push({ type: 'polyline', closed: true, points: [{ x: r.minX, y: r.minY }, { x: r.maxX, y: r.minY }, { x: r.maxX, y: r.maxY }, { x: r.minX, y: r.maxY }] }); /* リングは真上から見た細い棒（線径×外径）。寝た円ではない */
+    for (const r of v.plan.rings) { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; outline.push({ type: 'polyline', closed: true, points: roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })) }); } /* リングは真上から見た細い棒（線径×外径）。両端は線径の半分の半径で丸める（線径に自動で追従） */
     for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
     return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: v.D + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
   }
