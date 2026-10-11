@@ -85,6 +85,46 @@ hmTex.minFilter = THREE.LinearFilter; hmTex.magFilter = THREE.LinearFilter;
 hmTex.wrapS = hmTex.wrapT = THREE.ClampToEdgeWrapping;
 hmTex.generateMipmaps = false;
 
+// ---------- 昼夜：時刻から太陽と月の位置を求める（低精度の式。見た目用で、誤差は1度ほど） ----------
+const dn = (x) => ((x % 360) + 360) % 360;
+function astro(date) {
+  const d = date.getTime() / 86400000 + 2440587.5 - 2451545.0;   // 2000年1月1日12時（J2000）からの日数
+  const gmst = dn(280.46061837 + 360.98564736629 * d);
+  const R = Math.PI / 180;
+  const eps = (23.4393 - 0.0000004 * d) * R;
+  const L = dn(280.460 + 0.9856474 * d), g = dn(357.528 + 0.9856003 * d) * R;
+  const lamS = dn(L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * R;
+  const raS = Math.atan2(Math.cos(eps) * Math.sin(lamS), Math.cos(lamS)), decS = Math.asin(Math.sin(eps) * Math.sin(lamS));
+  const lamM = dn(218.316 + 13.176396 * d + 6.289 * Math.sin(dn(134.963 + 13.064993 * d) * R)) * R;
+  const betM = 5.128 * Math.sin(dn(93.272 + 13.229350 * d) * R) * R;
+  const decM = Math.asin(Math.sin(betM) * Math.cos(eps) + Math.cos(betM) * Math.sin(eps) * Math.sin(lamM));
+  const raM = Math.atan2(Math.sin(lamM) * Math.cos(eps) * Math.cos(betM) - Math.sin(betM) * Math.sin(eps), Math.cos(lamM) * Math.cos(betM));
+  const wrap = (x) => ((x + 540) % 360) - 180;
+  return {
+    sunLon: wrap(raS / R - gmst), sunDec: decS,               // 太陽が真上に来る経度と、赤緯
+    moonLon: wrap(raM / R - gmst), moonDec: decM,
+    illum: (1 - Math.cos(lamM - lamS)) / 2,                    // 月の満ち具合（0=新月 1=満月）
+  };
+}
+const sky = { override: null };      // override: スライダーで選んだ時刻（分。null=いまの時刻）
+function skyDate() {
+  if (sky.override == null) return new Date();
+  const d = new Date(); d.setHours(Math.floor(sky.override / 60), sky.override % 60, 0, 0); return d;
+}
+const skyU = { uSunLon: { value: 0 }, uSunDec: { value: 0 }, uMoonLon: { value: 0 }, uMoonDec: { value: 0 }, uIllum: { value: 0.5 }, uDay: { value: 0 } };
+function updateSky() {
+  const date = skyDate(), A = astro(date), R = Math.PI / 180;
+  skyU.uSunLon.value = A.sunLon; skyU.uSunDec.value = A.sunDec; skyU.uMoonLon.value = A.moonLon; skyU.uMoonDec.value = A.moonDec; skyU.uIllum.value = A.illum;
+  const la = 36 * R, H = (137 - A.sunLon) * R;                // 列島の中ほどの太陽の高さで、全体の昼の度合いを決める
+  const e = Math.sin(la) * Math.sin(A.sunDec) + Math.cos(la) * Math.cos(A.sunDec) * Math.cos(H);
+  const t = Math.min(1, Math.max(0, (e + 0.08) / 0.36)), k = t * t * (3 - 2 * t);
+  skyU.uDay.value = k;
+  renderer.setClearColor(new THREE.Color().setRGB(0.031 + (0.62 - 0.031) * k, 0.039 + (0.78 - 0.039) * k, 0.031 + (0.88 - 0.031) * k), 1);
+  document.body.classList.toggle('day', k > 0.45);
+  document.documentElement.style.setProperty('--day', k.toFixed(3));
+  return { A, k, date, elev: e };
+}
+
 const NOISE = `
 float h21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
 float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
@@ -100,7 +140,9 @@ const terrainMat = new THREE.ShaderMaterial({
     uWorld: { value: new THREE.Vector2(W, H) },
     uDetail: { value: 0 },
     uTime: { value: 0 },
-    uMist: { value: reduce ? 0 : 1 },   // 谷にたまる霧（動きを減らす設定・最低画質では0）
+    uMist: { value: reduce ? 0 : 1 },
+    uSunLon: skyU.uSunLon, uSunDec: skyU.uSunDec, uMoonLon: skyU.uMoonLon, uMoonDec: skyU.uMoonDec, uIllum: skyU.uIllum, uDayK: skyU.uDay,
+    uGeo: { value: new THREE.Vector4(LON0, LON1 - LON0, MY1, MY1 - MY0) },   // 谷にたまる霧（動きを減らす設定・最低画質では0）
     uSel: { value: new THREE.Vector3(0, 0, 0) },
   },
   vertexShader: `
@@ -118,7 +160,7 @@ const terrainMat = new THREE.ShaderMaterial({
     }`,
   fragmentShader: `
     precision highp float;
-    uniform sampler2D uH; uniform float uScale, uDetail, uTime, uMist; uniform vec2 uTexel, uWorld; uniform vec3 uSel;
+    uniform sampler2D uH; uniform float uScale, uDetail, uTime, uMist, uSunLon, uSunDec, uMoonLon, uMoonDec, uIllum, uDayK; uniform vec2 uTexel, uWorld; uniform vec3 uSel; uniform vec4 uGeo;
     varying vec2 vUv; varying float vH; varying vec3 vPos; varying float vDist;
     ${NOISE}
     float hs(vec2 uv){ float v=texture2D(uH,uv).r; return v*v; }
@@ -137,38 +179,60 @@ const terrainMat = new THREE.ShaderMaterial({
       float amp = uDetail*land*(0.25+sqrt(vH)*2.2)*0.9;
       gx += (dX-d0)/e*amp*0.02; gz += (dZ-d0)/e*amp*0.02;
       vec3 n = normalize(vec3(-gx, 1.0, -gz));
-      vec3 L = normalize(vec3(-0.55, 0.62, 0.45));        // 月明かり（北西の高み）
+      // この場所の緯度・経度から、太陽と月の高さと向きを求める（東=+x、北=-z）
+      float lonD = uGeo.x + (vPos.x/uWorld.x + 0.5)*uGeo.y;
+      float myv = uGeo.z - (vPos.z/uWorld.y + 0.5)*uGeo.w;
+      float latR = atan((exp(myv)-exp(-myv))*0.5);
+      float Hs = radians(lonD - uSunLon), Hm = radians(lonD - uMoonLon);
+      float sinS = sin(latR)*sin(uSunDec) + cos(latR)*cos(uSunDec)*cos(Hs);
+      float sinM = sin(latR)*sin(uMoonDec) + cos(latR)*cos(uMoonDec)*cos(Hm);
+      vec3 sunDir = vec3(-cos(uSunDec)*sin(Hs), max(sinS, 0.0), -(sin(uSunDec)*cos(latR) - cos(uSunDec)*sin(latR)*cos(Hs)));
+      vec3 moonDir = vec3(-cos(uMoonDec)*sin(Hm), max(sinM, 0.0), -(sin(uMoonDec)*cos(latR) - cos(uMoonDec)*sin(latR)*cos(Hm)));
+      float dayF = smoothstep(-0.07, 0.26, sinS);                    // この場所の昼の度合い（日の出・日没の境目が場所で少しずれる）
+      float tw = exp(-pow((sinS-0.02)/0.10, 2.0));                   // 朝焼け・夕焼けの帯
+      float mUp = smoothstep(-0.05, 0.22, sinM);
+      vec3 L = normalize(mix(vec3(-0.55, 0.62, 0.45), moonDir + vec3(0.0,0.05,0.0), mUp));   // 夜は、月のある向きから（月が出ていなければ北西の高み）
       float dif = max(dot(n,L),0.0);
-      float shade = 0.18 + dif*1.05;
+      float moonK = 0.55 + 0.45*uIllum*(0.35 + 0.65*mUp);          // 月が満ちて高いほど明るい
+      float shade = 0.15 + dif*1.05*moonK;
+      float difD = max(dot(n, normalize(sunDir + vec3(0.0,0.03,0.0))), 0.0);
       // 色: 低地=暗い緑青 → 高地=冷えた灰青
       float hh = clamp(sqrt(vH)*1.15, 0.0, 1.0);
       vec3 lowC = vec3(0.045,0.085,0.07), midC=vec3(0.10,0.16,0.14), hiC=vec3(0.36,0.42,0.47);
       vec3 landC = mix(mix(lowC,midC,smoothstep(0.0,0.35,hh)), hiC, smoothstep(0.45,1.0,hh));
       landC *= (0.85 + 0.3*d0*uDetail);
       vec3 col = landC*shade*1.35;
+      // 昼の地図：明るい緑と山の灰色
+      vec3 lowD=vec3(0.30,0.45,0.26), midD=vec3(0.44,0.55,0.31), hiD=vec3(0.72,0.70,0.63);
+      vec3 landD = mix(mix(lowD,midD,smoothstep(0.0,0.35,hh)), hiD, smoothstep(0.45,1.0,hh));
+      landD *= (0.92 + 0.2*d0*uDetail);
+      vec3 colD = landD*(0.52 + difD*0.80) + tw*vec3(1.0,0.50,0.28)*(0.10 + difD*0.22);
+      col = mix(col, colD, dayF);
       // 海: 深い紺＋月明かりのゆらぎ
       vec3 seaC = vec3(0.016,0.035,0.065);
       float rip = fbm(w*3.2 + vec2(uTime*0.02, -uTime*0.015));
       seaC += vec3(0.03,0.05,0.08)*smoothstep(0.55,0.9,rip)*0.7;
+      vec3 seaD = mix(vec3(0.09,0.28,0.45), vec3(0.14,0.37,0.55), smoothstep(0.30,0.95,rip)) * (0.62 + 0.38*clamp(sinS,0.0,1.0)) + tw*vec3(0.30,0.14,0.10)*0.5;
+      seaC = mix(seaC, seaD, dayF);
       // 海岸の薄い光
       float sea = 0.0;
       for (int i=0;i<4;i++){ float a=float(i)*1.5708; vec2 o=vec2(cos(a),sin(a))*uTexel*3.0; sea += step(hs(vUv+o),0.0001); }
       float coast = land*(sea>0.5?1.0:0.0);
       float seaNearLand = (1.0-land)*step(0.0001, hs(vUv+uTexel*vec2(3.,0.))+hs(vUv-uTexel*vec2(3.,0.))+hs(vUv+uTexel*vec2(0.,3.))+hs(vUv-uTexel*vec2(0.,3.)));
-      vec3 foam = vec3(0.30,0.46,0.55)*(coast*0.30 + seaNearLand*0.16);
+      vec3 foam = vec3(0.30,0.46,0.55)*(coast*0.30 + seaNearLand*0.16)*(1.0 - 0.45*dayF);
       col = mix(seaC, col, land) + foam;
       // 選んだ神社のまわりを、ごくわずかに照らす
       float dd = distance(vPos.xz, uSel.xz);
-      col += vec3(0.20,0.15,0.07)*uSel.y*exp(-dd*dd*(0.9+uDetail*6.0))*0.45;
+      col += vec3(0.20,0.15,0.07)*uSel.y*exp(-dd*dd*(0.9+uDetail*6.0))*0.45*(1.0 - dayF);
       // 谷や低い土地にたまる、うすい霧（ゆっくり流れる。近づくほど薄い）
       float mf = fbm(w*1.7 + vec2(uTime*0.010, uTime*0.004));
       float mist = smoothstep(0.46, 0.80, mf) * land * (1.0 - smoothstep(0.12, 0.65, hh)) * uMist * (1.0 - uDetail*0.65);
-      col = mix(col, vec3(0.17,0.24,0.27), mist*0.42);
+      col = mix(col, mix(vec3(0.17,0.24,0.27), vec3(0.86,0.91,0.93), dayF), mist*0.42);
       // 距離霧
       float fog = 1.0-exp(-vDist*0.012);
-      col = mix(col, vec3(0.03,0.04,0.045), fog*0.55);
+      col = mix(col, mix(vec3(0.03,0.04,0.045), vec3(0.62,0.78,0.88), uDayK), fog*0.55);
       float edge = smoothstep(0.0, 0.07, min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y)));
-      col = mix(vec3(0.031,0.039,0.031), col, edge);
+      col = mix(mix(vec3(0.031,0.039,0.031), vec3(0.62,0.78,0.88), uDayK), col, edge);
       gl_FragColor = vec4(col,1.0);
     }`,
 });
@@ -198,9 +262,9 @@ scene.add(terrain);
   g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
   const m = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false,
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `attribute float aPh; uniform float uTime; varying float vA;
-      void main(){ vA = 0.25+0.2*sin(uTime*0.7+aPh); vec4 mv=modelViewMatrix*vec4(position,1.); gl_PointSize=1.6; gl_Position=projectionMatrix*mv; }`,
+    uniforms: { uTime: { value: 0 }, uDay: skyU.uDay },
+    vertexShader: `attribute float aPh; uniform float uTime, uDay; varying float vA;
+      void main(){ vA = (0.25+0.2*sin(uTime*0.7+aPh))*(1.0-uDay); vec4 mv=modelViewMatrix*vec4(position,1.); gl_PointSize=1.6; gl_Position=projectionMatrix*mv; }`,
     fragmentShader: `varying float vA; void main(){ gl_FragColor=vec4(0.85,0.88,1.0,vA); }`,
   });
   const stars = new THREE.Points(g, m);
@@ -222,7 +286,7 @@ mGeo.setAttribute('aPh', new THREE.BufferAttribute(mPh, 1));
 mGeo.setAttribute('aSel', new THREE.BufferAttribute(mSel, 1));
 const markerMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-  uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 } },
+  uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uDay: skyU.uDay },
   vertexShader: `
     attribute float aPh, aSel; uniform float uTime, uPx, uK; varying float vP, vS;
     void main(){
@@ -233,13 +297,14 @@ const markerMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix*mv;
     }`,
   fragmentShader: `
-    varying float vP, vS;
+    uniform float uDay; varying float vP, vS;
     void main(){
       vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0;
       float core = exp(-r*r*34.0);
       float halo = exp(-r*3.2)*0.85;
       float a = (core*1.1 + halo)*vP*(0.85+vS*0.5);
       vec3 col = mix(vec3(1.0,0.82,0.46), vec3(1.0,0.95,0.78), core);
+      col = mix(col, vec3(1.0,0.30,0.14), uDay*0.7);   // 昼は、明るい地図の上で見えるよう朱色寄りに
       gl_FragColor = vec4(col*a, a);
     }`,
 });
@@ -270,9 +335,9 @@ if (!reduce) {
   g.setAttribute('aRad', new THREE.BufferAttribute(rad, 1));
   moteMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-    uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uSel: { value: new THREE.Vector2(1e9, 1e9) } },
+    uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uSel: { value: new THREE.Vector2(1e9, 1e9) }, uDay: skyU.uDay },
     vertexShader: `
-      attribute float aPh, aAng, aRad; uniform float uTime, uPx, uK; uniform vec2 uSel; varying float vA;
+      attribute float aPh, aAng, aRad; uniform float uTime, uPx, uK, uDay; uniform vec2 uSel; varying float vA;
       void main(){
         float t = fract(uTime*0.07 + aPh);                       // 0→1 でのぼって消える（約14秒）
         float sel = step(length(position.xz - uSel), 0.002);     // 選んだ神社は少し強く
@@ -281,7 +346,7 @@ if (!reduce) {
         float w = 0.006 + 0.012*t;
         p.x += cos(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
         p.z += sin(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
-        vA = sin(3.14159*t) * (0.8 + sel*0.4);
+        vA = sin(3.14159*t) * (0.8 + sel*0.4) * (1.0 - 0.6*uDay);
         vec4 mv = modelViewMatrix*vec4(p,1.);
         gl_PointSize = clamp(7.0 * uK / (-mv.z) * 12.0, 3.0, 12.0) * uPx;
         gl_Position = projectionMatrix*mv;
@@ -1565,6 +1630,23 @@ addEventListener('keydown', bgmFirstGesture, true);
 document.addEventListener('visibilitychange', () => { if (document.hidden) { if (bgmEl) bgmEl.pause(); } else if (bgmOn && bgmEl && bgmEl.paused && bgmEl.currentTime > 0) bgmPlay(); });
 bgmButton();
 
+// ---------- 時刻の操作：スライダーで昼夜の移り変わりを見る（「いま」で端末の時刻に戻る） ----------
+{
+  const range = $('skyRange'), out = $('skyOut'), panel = $('skyPanel'), btn = $('btnSky');
+  const fmt = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const label = () => {
+    const d = skyDate(), m = d.getHours() * 60 + d.getMinutes();
+    range.value = String(m); out.textContent = (sky.override == null ? 'いま ' : '') + fmt(m);
+    btn.textContent = '時刻：' + (sky.override == null ? 'いま' : fmt(m));
+    btn.classList.toggle('on', sky.override != null);
+  };
+  range.addEventListener('input', () => { sky.override = +range.value; updateSky(); label(); });
+  $('skyNow').addEventListener('click', () => { sky.override = null; updateSky(); label(); });
+  btn.addEventListener('click', (e) => { e.stopPropagation(); panel.hidden = !panel.hidden; btn.setAttribute('aria-expanded', String(!panel.hidden)); });
+  setInterval(() => { if (sky.override == null) label(); }, 30000);
+  label();
+}
+
 // ---------- 描画ループ ----------
 resize();
 applyCamera();
@@ -1591,6 +1673,8 @@ function watchFrame(now) {
   accDt += dt; nDt++;
   if (nDt >= 50) { if (accDt / nDt > 40 && qual > 0) setQuality(qual - 1); accDt = 0; nDt = 0; }
 }
+updateSky();
+setInterval(() => { if (sky.override == null) updateSky(); }, 60000);   // いまの時刻のときは、1分ごとに空を更新
 function loop(now) {
   if (!visible) return;
   requestAnimationFrame(loop);
@@ -1611,7 +1695,7 @@ function loop(now) {
   { const rp = stepRun(now); routeMat.uniforms.uHead.value = rp != null ? rp : (t * 0.3) % 1; }
   scene.userData.starMat.uniforms.uTime.value = t;
   if (selected) { terrainMat.uniforms.uSel.value.set(selected._p.x, 1, selected._p.z); }
-  scene.userData.beamMat.uniforms.uOp.value = selected ? 0.5 : 1;
+  scene.userData.beamMat.uniforms.uOp.value = (selected ? 0.5 : 1) * (1 - 0.35 * skyU.uDay.value);
   // 選択中は、写真・リストに隠れない側へ見どころをずらす（PC=左へ／スマホ=上へ）
   const vt = (!selected || run || document.body.classList.contains('running')) ? { x: 0, y: 0 } : isNarrow() ? { x: 0, y: 0.2 } : { x: 0.19, y: 0 };
   vo.x += (vt.x - vo.x) * 0.05; vo.y += (vt.y - vo.y) * 0.05;
@@ -1645,7 +1729,7 @@ function loop(now) {
 requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
-window.__shrineMap = { cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
+window.__shrineMap = { setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
   // 1フレームの描画時間(ms)を、GPUの完了まで待って測る（確認用）
   benchmark: (n = 40) => { const gl = renderer.getContext(); applyCamera(); camera.updateMatrixWorld(); renderer.render(scene, camera); gl.finish(); const t0 = performance.now(); for (let i = 0; i < n; i++) { renderer.render(scene, camera); gl.finish(); } return (performance.now() - t0) / n; } };
 // ?s=katori のように開くと、その神社へ直接飛ぶ
