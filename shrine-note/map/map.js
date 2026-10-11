@@ -1411,9 +1411,17 @@ function openDeityFromTree(id) {
 }
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
-const BGM_KEY = 'shrine-note-bgm', BGM_VOL = 0.35;
-let bgmOn = true, bgmEl = null, bgmFade = 0;
-try { if (localStorage.getItem(BGM_KEY) === 'off') bgmOn = false; } catch (_) { /* 保存できない環境では毎回「入」 */ }
+const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track', BGM_VOL = 0.35;
+const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
+  { file: 'audio/bgm_hatsumode.mp3', label: '初詣', title: '（民族32「初詣」）', url: 'https://maou.audio/bgm_ethnic32/' },
+  { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
+  { file: 'audio/bgm_fantasy07.mp3', label: '深層で見た太陽', title: '（ファンタジー07「深層で見た太陽」）', url: 'https://maou.audio/bgm_fantasy07/' },
+];
+let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
+try {
+  if (localStorage.getItem(BGM_KEY) === 'off') bgmOn = false;   // 保存できない環境では毎回「入」
+  const t = +localStorage.getItem(BGM_TRACK_KEY); if (t >= 0 && t < BGM_TRACKS.length) bgmTrack = t;
+} catch (_) { /* 保存できなくても動く */ }
 function bgmFadeTo(v, done) {
   if (!bgmEl) return;
   cancelAnimationFrame(bgmFade);
@@ -1427,7 +1435,7 @@ function bgmFadeTo(v, done) {
 }
 function bgmPlay() {
   if (!bgmOn || document.hidden) return;
-  if (!bgmEl) { bgmEl = new Audio('audio/bgm_hatsumode.mp3'); bgmEl.loop = true; bgmEl.preload = 'auto'; bgmEl.volume = 0; }
+  if (!bgmEl) { bgmEl = new Audio(BGM_TRACKS[bgmTrack].file); bgmEl.loop = true; bgmEl.preload = 'auto'; bgmEl.volume = 0; }
   const p = bgmEl.play();
   if (p && p.then) p.then(() => bgmFadeTo(BGM_VOL)).catch(() => { /* 再生が許されなかった：次のタップでもう一度 */ });
 }
@@ -1437,7 +1445,18 @@ function bgmButton() {
   b.textContent = bgmOn ? '♪ BGM：入' : '♪ BGM：切';
   b.setAttribute('aria-pressed', String(bgmOn));
   b.classList.toggle('on', bgmOn);
+  const tr = BGM_TRACKS[bgmTrack];
+  $('btnBgmNext').textContent = '曲：' + tr.label;
+  $('bgmCredit').href = tr.url; $('bgmTitle').textContent = tr.title;
 }
+$('btnBgmNext').addEventListener('click', (e) => {
+  e.stopPropagation();
+  bgmTrack = (bgmTrack + 1) % BGM_TRACKS.length;
+  try { localStorage.setItem(BGM_TRACK_KEY, String(bgmTrack)); } catch (_) { /* 保存できなくても動く */ }
+  bgmButton();
+  if (bgmEl) { cancelAnimationFrame(bgmFade); bgmEl.pause(); bgmEl.src = BGM_TRACKS[bgmTrack].file; bgmEl.volume = 0; bgmEl.currentTime = 0; }
+  if (bgmOn) bgmPlay();   // 切のときは、曲だけ選んでおく
+});
 $('btnBgm').addEventListener('click', (e) => {
   e.stopPropagation();
   bgmOn = !bgmOn;
@@ -1446,7 +1465,7 @@ $('btnBgm').addEventListener('click', (e) => {
   if (bgmOn) bgmPlay(); else bgmPause();
 });
 const bgmFirstGesture = (e) => {
-  if (e.target.closest && e.target.closest('#btnBgm')) return;   // ボタン自体の操作は、上の処理に任せる
+  if (e.target.closest && e.target.closest('#btnBgm, #btnBgmNext')) return;   // ボタン自体の操作は、上の処理に任せる
   if (bgmOn) bgmPlay();
   if (bgmEl && !bgmEl.paused) { removeEventListener('pointerdown', bgmFirstGesture, true); removeEventListener('keydown', bgmFirstGesture, true); }
 };
