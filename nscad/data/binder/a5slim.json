@@ -36,34 +36,37 @@
   "firstOffsetMm": null,
   "options": [
    {
-    "outerDiameterMm": null,
+    "outerDiameterMm": 20,
     "innerDiameterMm": 16,
-    "wireDiameterMm": null,
+    "wireDiameterMm": 2,
     "baseSpanMm": null,
     "embedDepthMm": null,
     "openGapMm": null,
     "confidence": null,
-    "sourceNote": null
+    "sourceNote": null,
+    "wireSource": "assumed"
    },
    {
-    "outerDiameterMm": null,
+    "outerDiameterMm": 24,
     "innerDiameterMm": 20,
-    "wireDiameterMm": null,
+    "wireDiameterMm": 2,
     "baseSpanMm": null,
     "embedDepthMm": null,
     "openGapMm": null,
     "confidence": null,
-    "sourceNote": null
+    "sourceNote": null,
+    "wireSource": "assumed"
    },
    {
-    "outerDiameterMm": null,
+    "outerDiameterMm": 29,
     "innerDiameterMm": 25,
-    "wireDiameterMm": null,
+    "wireDiameterMm": 2,
     "baseSpanMm": null,
     "embedDepthMm": null,
     "openGapMm": null,
     "confidence": null,
-    "sourceNote": null
+    "sourceNote": null,
+    "wireSource": "assumed"
    }
   ]
  },

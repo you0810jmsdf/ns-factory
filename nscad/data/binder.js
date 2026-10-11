@@ -35,44 +35,48 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 39,
      "innerDiameterMm": 35,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 44,
      "innerDiameterMm": 40,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -192,54 +196,59 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 39,
      "innerDiameterMm": 35,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 44,
      "innerDiameterMm": 40,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -359,34 +368,37 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 20,
      "innerDiameterMm": 16,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -506,34 +518,37 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -655,64 +670,70 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 23,
      "innerDiameterMm": 19,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 27,
      "innerDiameterMm": 23,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -832,44 +853,48 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 44,
      "innerDiameterMm": 40,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -988,44 +1013,48 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -1144,34 +1173,37 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 34,
      "innerDiameterMm": 30,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 44,
      "innerDiameterMm": 40,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -1289,34 +1321,37 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 29,
      "innerDiameterMm": 25,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -1436,44 +1471,48 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 12,
      "innerDiameterMm": 8,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 15,
      "innerDiameterMm": 11,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 17,
      "innerDiameterMm": 13,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -1500,7 +1539,29 @@ export const BINDER_SPECS = [
    "heightClosedMm": null,
    "heightOpenMm": null,
    "leverPos": "end",
-   "confidence": "estimated"
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": 46,
+     "yMm": 0,
+     "widthMm": 8,
+     "lengthMm": 16,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "叩き台（推定）：実測で置き換える"
+    },
+    {
+     "xMm": -46,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": 4,
+     "diameterMm": 7,
+     "kind": "button",
+     "note": "叩き台（推定）：実測で置き換える"
+    }
+   ]
   },
   "drawings": {
    "plan": "binder/m5.plan.svg",
@@ -1595,54 +1656,59 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 15,
      "innerDiameterMm": 11,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 17,
      "innerDiameterMm": 13,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 23,
      "innerDiameterMm": 19,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": null,
+     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
-     "wireDiameterMm": null,
+     "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
      "confidence": null,
-     "sourceNote": null
+     "sourceNote": null,
+     "wireSource": "assumed"
     }
    ]
   },
@@ -1669,7 +1735,29 @@ export const BINDER_SPECS = [
    "heightClosedMm": null,
    "heightOpenMm": null,
    "leverPos": "end",
-   "confidence": "estimated"
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": 56,
+     "yMm": 0,
+     "widthMm": 8,
+     "lengthMm": 16,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "叩き台（推定）：実測で置き換える"
+    },
+    {
+     "xMm": -56,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": 4,
+     "diameterMm": 7,
+     "kind": "button",
+     "note": "叩き台（推定）：実測で置き換える"
+    }
+   ]
   },
   "drawings": {
    "plan": "binder/mini6.plan.svg",

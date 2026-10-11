@@ -267,6 +267,14 @@ export function threeViewFollowDelta(role, dx, dy) {
   if (role === 'side') return { front: { x: 0, y: dy }, top: { x: 0, y: -dx } };
   return {};
 }
+/** 紙 role の図形を原点 o を基準に (sx, sy) 倍したとき、ほかの紙が共有する軸の分だけ伸縮する量。{ 紙: { sx, sy, ox, oy } }（その紙の座標での倍率と基準点）。
+    正面=(x,高さ)・上=(x,−奥行き)・右=(奥行き,高さ)。共有しない向きの倍率は 1。 */
+export function threeViewFollowScale(role, sx, sy, o) {
+  if (role === 'front') return { top: { sx, sy: 1, ox: o.x, oy: 0 }, side: { sx: 1, sy, ox: 0, oy: o.y } };
+  if (role === 'top') return { front: { sx, sy: 1, ox: o.x, oy: 0 }, side: { sx: sy, sy: 1, ox: -o.y, oy: 0 } };
+  if (role === 'side') return { front: { sx: 1, sy, ox: 0, oy: o.y }, top: { sx: 1, sy: sx, ox: 0, oy: -o.x } };
+  return {};
+}
 /** いま描いている紙（role）のカーソル p に対応する、ほかの紙の線。{ top:{x}|{y}, front:{...}, side:{...} } */
 export function threeViewSheetCursor(role, p) {
   if (role === 'front') return { top: { x: p.x }, side: { y: p.y } };

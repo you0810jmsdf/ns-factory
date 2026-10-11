@@ -8,7 +8,7 @@ import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibr
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
-import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
+import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } from './threeview.js';
 import { binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
@@ -182,6 +182,22 @@ function quadFollowMove(dx, dy) {
     tb.undo = tb.undo || []; tb.undo.push(before); if (tb.undo.length > 100) tb.undo.shift(); tb.redo = []; tb.dirty = true; moved++;
   }
   if (moved) { renderTabs(); draw(); }
+}
+/** 全選択で伸縮したとき、残り2枚の紙の図形（ロックされた層を除く）も共有する軸の分だけ同じ倍率で伸縮する。quadFollowMove と同じく、それぞれの紙の「元に戻す」に積む。 */
+function quadFollowScale(sx, sy, o) {
+  const follow = threeViewFollowScale(sheetRole(), sx, sy, o), sheets = quadSheets(); let scaled = 0;
+  for (const [role, f] of Object.entries(follow)) {
+    const tb = sheets[role]; if (!tb || tb === tabs[activeTab] || (f.sx === 1 && f.sy === 1)) continue;
+    const td = tb.doc, free = s => { const l = td.layers.find(x => x.id === s.layer || x.name === s.layer); return !l || !l.locked; };
+    const before = JSON.stringify(td), ids = new Set(td.shapes.filter(free).map(s => s.id));
+    if (!ids.size) continue;
+    const org = { x: f.ox, y: f.oy };
+    td.shapes = td.shapes.map(s => ids.has(s.id) ? scaleGeometry(s, f.sx, f.sy, org) : s);
+    const paths = new Set(td.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id));
+    td.holes = td.holes.map(h => paths.has(h.pathId) ? scaleGeometry(h, f.sx, f.sy, org) : h);
+    tb.undo = tb.undo || []; tb.undo.push(before); if (tb.undo.length > 100) tb.undo.shift(); tb.redo = []; tb.dirty = true; scaled++;
+  }
+  if (scaled) { renderTabs(); draw(); }
 }
 function sheetDoc(role) { const tb = quadSheets()[role]; return tb ? (tb === tabs[activeTab] ? doc : tb.doc) : null; }
 /** 4分割を入れたとき：いまのタブを正面の紙にし、上の紙・右の紙のタブを作る（既にあればそのまま）。 */
@@ -2012,7 +2028,9 @@ function applyScale() {
   const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1) return;
   const a = $('scaleAnchor').value, o = { x: /Right$/.test(a) ? b.maxX : /Left$/.test(a) ? b.minX : (b.minX + b.maxX) / 2, y: /^bottom/.test(a) ? b.maxY : /^top/.test(a) ? b.minY : (b.minY + b.maxY) / 2 };
   const ids = selectedShapeIds(), curved = Math.abs(sx - sy) > 1e-12 && doc.shapes.some(s => ids.has(s.id) && (s.type === 'circle' || s.type === 'arc'));
+  const all = quadAllSelected();
   transformSelected(s => scaleGeometry(s, sx, sy, o));
+  if (all) quadFollowScale(sx, sy, o);
   $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
 }
 $('scaleApply').onclick = applyScale;
