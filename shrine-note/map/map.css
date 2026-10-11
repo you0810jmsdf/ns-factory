@@ -269,3 +269,13 @@ body.emaki-open .sheet, body.emaki-open .photo { visibility: hidden; }
 .tree-btns .ghost.on { border-color: var(--gold); color: var(--gold); }
 .tree-focus { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0 0 8px; font-size: 12.5px; color: var(--ink-soft); }
 .tree-focus span { flex: 1 1 100%; }
+
+/* 系譜図の動き：左の世代から順に、線が伸び、神様の枠が浮かぶ（動きを減らす設定では何もしない） */
+svg.gene.anim .ed { stroke-dasharray: 1; stroke-dashoffset: 1; animation: geneLine .9s cubic-bezier(.3,.6,.2,1) forwards; animation-delay: calc(var(--c, 0) * 130ms + 220ms); }
+svg.gene.anim .ed.sp { stroke-dasharray: 4 3; stroke-dashoffset: 0; opacity: 0; animation: geneFade .6s ease forwards; animation-delay: calc(var(--c, 0) * 130ms + 220ms); }
+svg.gene.anim .nd { opacity: 0; animation: geneNode .7s cubic-bezier(.2,.7,.2,1) forwards; animation-delay: calc(var(--c, 0) * 130ms + var(--r, 0) * 18ms); transform-box: fill-box; transform-origin: center; }
+svg.gene.anim .nd.me rect { animation: geneGlow 2.6s ease-in-out 1.2s infinite; }
+@keyframes geneLine { to { stroke-dashoffset: 0; } }
+@keyframes geneFade { to { opacity: 1; } }
+@keyframes geneNode { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes geneGlow { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 6px rgba(216,183,102,.75)); } }
