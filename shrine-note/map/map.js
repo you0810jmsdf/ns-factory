@@ -100,6 +100,7 @@ const terrainMat = new THREE.ShaderMaterial({
     uWorld: { value: new THREE.Vector2(W, H) },
     uDetail: { value: 0 },
     uTime: { value: 0 },
+    uMist: { value: reduce ? 0 : 1 },   // 谷にたまる霧（動きを減らす設定・最低画質では0）
     uSel: { value: new THREE.Vector3(0, 0, 0) },
   },
   vertexShader: `
@@ -117,7 +118,7 @@ const terrainMat = new THREE.ShaderMaterial({
     }`,
   fragmentShader: `
     precision highp float;
-    uniform sampler2D uH; uniform float uScale, uDetail, uTime; uniform vec2 uTexel, uWorld; uniform vec3 uSel;
+    uniform sampler2D uH; uniform float uScale, uDetail, uTime, uMist; uniform vec2 uTexel, uWorld; uniform vec3 uSel;
     varying vec2 vUv; varying float vH; varying vec3 vPos; varying float vDist;
     ${NOISE}
     float hs(vec2 uv){ float v=texture2D(uH,uv).r; return v*v; }
@@ -159,6 +160,10 @@ const terrainMat = new THREE.ShaderMaterial({
       // 選んだ神社のまわりを、ごくわずかに照らす
       float dd = distance(vPos.xz, uSel.xz);
       col += vec3(0.20,0.15,0.07)*uSel.y*exp(-dd*dd*(0.9+uDetail*6.0))*0.45;
+      // 谷や低い土地にたまる、うすい霧（ゆっくり流れる。近づくほど薄い）
+      float mf = fbm(w*1.7 + vec2(uTime*0.010, uTime*0.004));
+      float mist = smoothstep(0.46, 0.80, mf) * land * (1.0 - smoothstep(0.12, 0.65, hh)) * uMist * (1.0 - uDetail*0.65);
+      col = mix(col, vec3(0.17,0.24,0.27), mist*0.42);
       // 距離霧
       float fog = 1.0-exp(-vDist*0.012);
       col = mix(col, vec3(0.03,0.04,0.045), fog*0.55);
@@ -369,19 +374,19 @@ function greatCircle(la1, lo1, la2, lo2, n) {
 }
 const routeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-  uniforms: { uHead: { value: 0 }, uLen: { value: 1 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR } },
+  uniforms: { uHead: { value: 0 }, uLen: { value: 1 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR }, uTailL: { value: reduce ? 0.07 : 0.12 }, uAfter: { value: reduce ? new THREE.Vector2(0.35, 0) : new THREE.Vector2(0.12, 0.30) } },
   vertexShader: `
-    attribute float aT; uniform float uHead, uLen, uSp, uPxK, uPx; varying float vA, vH;
+    attribute float aT; uniform float uHead, uLen, uSp, uPxK, uPx, uTailL; uniform vec2 uAfter; varying float vA, vH;
     void main(){
       vec4 mv = modelViewMatrix*vec4(position,1.);
       float pxu = uPxK/(-mv.z);
       float size = clamp(max(0.0042*pxu, uSp*pxu*2.3), 3.0, 16.0);   // 細く保ちつつ、点どうしが途切れない大きさにする
       float e = clamp(uSp*pxu/size*2.2, 0.0, 1.0);           // 点の密度によらず、筋全体の明るさを一定にする
       float dw = fract(uHead - aT)*uLen;                     // 先頭からの距離（世界の長さ）
-      float tail = exp(-dw/0.07);                            // 先頭の後ろに流れる尾（約6km）
+      float tail = exp(-dw/uTailL);                          // 先頭の後ろに流れる尾
       float head = exp(-dw*dw/0.00008);                      // 先頭の光
       float lit = step(aT, uHead + 0.0001);                  // 先頭が通った所だけ、うっすら残る
-      vA = e*(0.35*lit + 0.9*tail + 1.7*head);
+      vA = e*(lit*(uAfter.x + uAfter.y*exp(-dw/0.6)) + 0.9*tail + 1.7*head);   // 通った道は、ゆっくり薄れる余韻
       vH = head;
       gl_PointSize = size*uPx*(1.0 + 0.9*head);
       gl_Position = projectionMatrix*mv;
@@ -600,7 +605,7 @@ function stepRun(now) {
   cam.el += (RUN_EL - cam.el) * 0.05;
   cam.dist += (runDistBase() * runZoom - cam.dist) * 0.08;
   // 光が通った周辺（先頭→後ろ）を記録。道路はこの周辺だけ浮かび上がる
-  const stepN = r.N * 0.02;
+  const stepN = r.N * 0.026;
   for (let i = 0; i < TRAIL_N; i++) { const ff = f - i * stepN; if (ff < 0) { trailU[i].set(0, 0, 0, 0); continue; } const q = routePoint(r, ff); trailU[i].set(q.x, q.z, Math.pow(1 - i / TRAIL_N, 1.3), 0); }
   roadAhead = [0.08, 0.16, 0.24].map((k) => routePoint(r, Math.min(r.N, f + r.N * k)));
   showHud(`${shrines.find((x) => x.id === r.shrineId)?.name ?? ''}まで　残り ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km　（全 ${fmtKm(r.km)} km）`);
@@ -1573,6 +1578,7 @@ const vo = { x: 0, y: 0 };
 let qual = 2, accDt = 0, nDt = 0, prevT = 0;
 function setQuality(q) {
   qual = q;
+  if (!reduce) terrainMat.uniforms.uMist.value = q > 0 ? 1 : 0;
   const pr = q >= 2 ? DPR : q === 1 ? Math.min(DPR, 1.25) : 1;
   renderer.setPixelRatio(pr);
   [markerMat, routeMat, userMat, moteMat].forEach((m) => { if (m) m.uniforms.uPx.value = pr; });
