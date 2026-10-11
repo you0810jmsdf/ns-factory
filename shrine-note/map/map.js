@@ -1416,6 +1416,9 @@ const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track2', BGM
 const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
   { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
   { file: 'audio/bgm_fantasy07.mp3', label: '深層で見た太陽', title: '（ファンタジー07「深層で見た太陽」）', url: 'https://maou.audio/bgm_fantasy07/' },
+  { file: 'audio/bgm_fantasy06.mp3', label: '新世界へ', title: '（ファンタジー06「新世界へ」）', url: 'https://maou.audio/bgm_fantasy06/' },
+  { file: 'audio/bgm_fantasy14.mp3', label: 'やすらぎの丘', title: '（ファンタジー14「やすらぎの丘」）', url: 'https://maou.audio/bgm_fantasy14/' },
+  { file: 'audio/bgm_healing08.mp3', label: 'ハープの静けさ', title: '（ヒーリング08）', url: 'https://maou.audio/bgm_healing08/' },
 ];
 let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
 try {
