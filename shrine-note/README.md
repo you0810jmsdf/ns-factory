@@ -86,6 +86,11 @@
 4. 写真は権利が確認できるものだけ。`photo` を `{ "kind": "photo", "src", "credit", "license", "source_url" }` にする。無ければ `{ "kind": "placeholder" }` のまま。
 5. ローカルで `py -m http.server` などを立て、`map/index.html?s=<id>` で確認 → push。
 
+### SNS用の画像
+
+- `assets/sns/shrine-map-both.jpg`（2画面を並べた1枚）・`shrine-map-run.jpg`（道路を光が走る）・`shrine-map-card.jpg`（神社の由緒の章）。公開版をスマホ幅で撮影し、タイトルと出典（国土地理院）を付けた 1080×1350 の JPEG。
+- 画面に写っているのは、地理院の地図データ（出典表示つき）と、自作の文字・図形だけ。第三者の写真は使っていない。現在地は、個人の場所が写らないよう東京駅の擬似値で撮影。
+
 ### 出典・権利
 
 - 標高: 国土地理院「標高タイル」（https://maps.gsi.go.jp/development/ichiran.html ）を加工して作成。高さは強調し、近景の細かな起伏は演出用のノイズ（実際の地形ではない）。画面右下に出典を表示。
