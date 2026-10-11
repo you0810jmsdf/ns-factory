@@ -473,7 +473,8 @@ function frameRoute(r) {
 // 光の先頭を、カメラが後ろから追いかけて走る
 let run = null;
 let runZoom = 1;                       // 走行中の寄り引き（1=標準）
-const runDistBase = () => (isNarrow() ? 0.34 : 0.26);
+const runDistBase = () => (isNarrow() ? 0.72 : 0.58);   // 走行中の標準の距離（以前は 0.34／0.26。遠くから見渡す）
+const RUN_EL = 0.78;                   // 走行中の見下ろしの角度（以前は 0.6）
 const angDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
 function routePoint(r, f) {          // f: 0..N の小数。位置を線形補間
   const i = Math.min(r.N - 1, Math.max(0, Math.floor(f))), k = Math.min(1, Math.max(0, f - i));
@@ -493,7 +494,7 @@ function startRun() {
   const D = Math.min(40, Math.max(10, 8 + r.km * 0.18));   // 長い道ほど、ゆっくり走って読み込みが追いつくようにする
   const az0 = headingAt(r, 0), p0 = routePoint(r, 0);
   runZoom = 1;
-  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: runDistBase(), el: 0.6, az: az0 }, 2.4, () => {
+  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: runDistBase(), el: RUN_EL, az: az0 }, 2.4, () => {
     run = { t0: performance.now(), D, r };
   });
 }
@@ -520,7 +521,7 @@ function stepRun(now) {
   const h = routePoint(r, f);
   cam.tx += (h.x - cam.tx) * 0.14; cam.tz += (h.z - cam.tz) * 0.14; cam.ty += (h.y - cam.ty) * 0.14;
   cam.az += angDiff(cam.az, headingAt(r, f)) * 0.045;
-  cam.el += (0.6 - cam.el) * 0.05;
+  cam.el += (RUN_EL - cam.el) * 0.05;
   cam.dist += (runDistBase() * runZoom - cam.dist) * 0.08;
   // 光が通った周辺（先頭→後ろ）を記録。道路はこの周辺だけ浮かび上がる
   const stepN = r.N * 0.02;
