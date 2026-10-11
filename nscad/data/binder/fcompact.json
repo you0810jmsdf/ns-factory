@@ -35,8 +35,8 @@
   "firstOffsetMm": null,
   "options": [
    {
-    "outerDiameterMm": 15,
-    "innerDiameterMm": null,
+    "outerDiameterMm": null,
+    "innerDiameterMm": 15,
     "wireDiameterMm": null,
     "baseSpanMm": null,
     "embedDepthMm": null,
@@ -45,8 +45,8 @@
     "sourceNote": null
    },
    {
-    "outerDiameterMm": 20,
-    "innerDiameterMm": null,
+    "outerDiameterMm": null,
+    "innerDiameterMm": 20,
     "wireDiameterMm": null,
     "baseSpanMm": null,
     "embedDepthMm": null,
@@ -55,8 +55,8 @@
     "sourceNote": null
    },
    {
-    "outerDiameterMm": 25,
-    "innerDiameterMm": null,
+    "outerDiameterMm": null,
+    "innerDiameterMm": 25,
     "wireDiameterMm": null,
     "baseSpanMm": null,
     "embedDepthMm": null,
@@ -65,8 +65,8 @@
     "sourceNote": null
    },
    {
-    "outerDiameterMm": 30,
-    "innerDiameterMm": null,
+    "outerDiameterMm": null,
+    "innerDiameterMm": 30,
     "wireDiameterMm": null,
     "baseSpanMm": null,
     "embedDepthMm": null,

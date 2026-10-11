@@ -51,6 +51,7 @@
     .sub > summary { cursor: pointer; color: #aaa; font-size: 12px; }
     .note { margin: 4px 0; color: #999; font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
     footer { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 7px 14px; font-size: 12px; border-top: 1px solid var(--line); background: #181818; }
+    .sp-compare-scroll { overflow-x: auto; } #spCompare { border-collapse: collapse; font-size: 11px; width: 100%; } #spCompare th, #spCompare td { border: 1px solid var(--line); padding: 4px; text-align: right; } #spCompare caption { text-align: left; padding: 6px 0; } #spCompare tr[aria-current="true"] { background: var(--accent); color: #111; font-weight: 700; }
     #hint { color: var(--accent); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #count { white-space: nowrap; color: #888; }
     #cmd { width: 190px; font-family: ui-monospace, Menlo, monospace; }
     dialog { max-width: 720px; max-height: 80vh; background: var(--card); color: #ddd; border: 1px solid var(--line); border-radius: 12px; } pre { white-space: pre-wrap; font: inherit; }
@@ -144,7 +145,7 @@
 </div></details>
 <details class="card" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body"><div id="hwEditMain">
 <label id="l-hwSpec"><span data-i18n="hwEditSpec"></span><select id="hwEditSpec"></select></label>
-<label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"></label>
+<label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"><small id="hwEditOuter"></small></label>
 <label><span data-i18n="hwEditAngle"></span><input id="hwEditAngle" type="number" step="1"></label>
 <div class="row"><button id="hwEditApply" data-i18n="hwEditApply"></button></div>
 <div class="row" id="hwViewsRow"><button id="hwViewsApply" data-i18n="hwViewsApply"></button></div>
@@ -373,16 +374,10 @@
 <textarea id="pasteBox" rows="2" style="width:100%;background:#111;color:#ccc;border:1px solid #3a3a3c;border-radius:6px;font-size:11px"></textarea>
 </details>
 </div></details>
-<details class="card" id="hwCard"><summary data-i18n="hardware"></summary><div class="body">
-<label><span data-i18n="hwCategory"></span><select id="hwCategory"></select></label>
-<label id="l-hwItem"><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
-<div id="hwParams" class="body" style="padding:0"></div>
-<output id="hwConfidence" class="note"></output>
-<label><span data-i18n="hwAngle"></span><input id="hwAngle" type="number" step="1" value="0"></label>
-<button id="hwPlace" data-i18n="hwPlace"></button>
-<details class="sub" id="binderSub"><summary data-i18n="binderSection"></summary>
+<details class="card" id="binderCard"><summary data-i18n="binderCard"></summary><div class="body">
 <label><span data-i18n="binderSpec"></span><select id="binderSpecSel"></select></label>
 <label><span data-i18n="ringD"></span><select id="ringD"></select></label>
+<label><span data-i18n="hwAngle"></span><input id="binderAngle" type="number" step="1" value="0"></label>
 <output id="binderInfo" class="note"></output>
 <div class="row"><button id="binderPlace" data-i18n="binderPlace"></button><button id="binderPlan" data-i18n="binderPlan"></button><button id="binderData" data-i18n="binderData"></button></div>
 <details class="sub" id="spineSimSection"><summary data-i18n="spineSim"></summary>
@@ -395,11 +390,19 @@
 <label><span data-i18n="spStack"></span><input id="spStack" type="number" step="0.5" min="0" value="6"></label>
 <label><span data-i18n="spCoverW"></span><input id="spCoverW" type="number" step="1" min="0" placeholder="auto"></label>
 <output id="spTopInfo" class="note"></output><div id="spTopSvg" class="svgbody"></div>
+<div class="sp-compare-scroll"><table id="spCompare"></table></div><p class="note" data-i18n="spCompareHelp"></p>
 <div class="row"><button id="spTopDraw" data-i18n="spTopDraw"></button></div>
 <label><span data-i18n="measuredSpine"></span><input id="spMeasured" type="number" step="0.1" min="0" placeholder="75"></label>
 <div class="row"><button id="spCalib" data-i18n="spCalib"></button><button id="spApply" data-i18n="spApply"></button></div>
 </details>
-</details>
+</div></details>
+<details class="card" id="hwCard"><summary data-i18n="hardware"></summary><div class="body">
+<label><span data-i18n="hwCategory"></span><select id="hwCategory"></select></label>
+<label id="l-hwItem"><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
+<div id="hwParams" class="body" style="padding:0"></div>
+<output id="hwConfidence" class="note"></output>
+<label><span data-i18n="hwAngle"></span><input id="hwAngle" type="number" step="1" value="0"></label>
+<button id="hwPlace" data-i18n="hwPlace"></button>
 </div></details>
 <details class="card" id="designCard"><summary data-i18n="design"></summary><div class="body">
 <label><span data-i18n="thickness"></span><input id="partThickness" type="number" step="0.1" min="0" value="1.5"></label>
@@ -491,8 +494,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=1e4e31c0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=f7e87241","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a9c13df3","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=dd66ef0b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=d31326ad","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=1e4e31c0"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=c144d5ff","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=c7672de8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=7d369bca","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=9512625b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=d31326ad","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=c144d5ff"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1846,7 +1849,7 @@ const MESSAGES = {
     "groupNeedTwo": "グループ化するには、2 個以上の図形を選んでください",
     "hwEditTitle": "金具の編集",
     "hwEditSpec": "規格",
-    "hwEditRing": "リング径 (mm)",
+    "hwEditRing": "リング内径 (mm)",
     "hwEditAngle": "角度（度）",
     "hwEditApply": "この設定で作り直す",
     "hwEditNote": "位置はそのままで、金具を作り直します（元に戻せます）。手で直した図形が混じっているときは、先に確認します",
@@ -1929,7 +1932,8 @@ const MESSAGES = {
     "hint3d": "左ドラッグ：回転／右ドラッグ・Shift：移動／ホイール：ズーム。スライダーで折りたたみ。",
     "collisionCount": "干渉 {n} 箇所（赤）",
     "noCollision": "干渉なし",
-    "hardware": "金具",
+    "hardware": "その他の金具（ホック・ファスナーなど）",
+    "binderCard": "リングバインダー",
     "hwCategory": "分類",
     "hwItem": "金具",
     "hwAngle": "向き (°)",
@@ -1945,6 +1949,9 @@ const MESSAGES = {
     "binderSection": "バインダー金具",
     "binderSpec": "規格",
     "ringD": "リング径",
+    "ringSizeLabel": "内径 {inner} mm（{outer}）",
+    "ringOuterLabel": "外径 {outer} mm",
+    "ringAssumed": "・仮",
     "binderPlace": "図面に置く",
     "binderPlan": "平面図・側面図・正面図",
     "binderData": "寸法データ",
@@ -2222,6 +2229,15 @@ const MESSAGES = {
     "toolReassign": "この工具の穴を全部付け替え",
     "toolReassignSel": "選択中の穴だけ付け替え",
     "toolReassigned": "{n} 個の穴を付け替えました。",
+    "spCompareTitle": "リング径ごとの比較（mm）",
+    "spCompareRing": "リング径（内径）",
+    "spCompareOuter": "外径",
+    "spCompareSpine": "背幅（型紙）",
+    "spCompareThickness": "閉じた厚み",
+    "spCompareOpen": "見開きの幅",
+    "spCompareDifference": "小さいリングとの差",
+    "spCompareDelta": "背幅 +{spine}／見開き +{open}",
+    "spCompareHelp": "見開きの幅＝背の型紙幅＋表紙の長さ×2（広げたときの幅）",
     "spineSim": "背幅シミュレーション（断面）",
     "wireD": "リングの線径 (mm)",
     "leatherT": "表紙の革厚 (mm)",
@@ -2722,7 +2738,7 @@ const MESSAGES = {
     "groupNeedTwo": "Select two or more shapes to group",
     "hwEditTitle": "Edit hardware",
     "hwEditSpec": "Standard",
-    "hwEditRing": "Ring diameter (mm)",
+    "hwEditRing": "Ring inner diameter (mm)",
     "hwEditAngle": "Angle (deg)",
     "hwEditApply": "Rebuild with these settings",
     "hwEditNote": "Rebuilds the hardware in place (undoable). If you edited any shape by hand, you will be asked to confirm first",
@@ -2805,7 +2821,8 @@ const MESSAGES = {
     "hint3d": "Left drag: rotate / right drag or Shift: pan / wheel: zoom. Slider folds the pattern.",
     "collisionCount": "{n} collision(s) (red)",
     "noCollision": "No collisions",
-    "hardware": "Hardware",
+    "hardware": "Other hardware (snaps, zippers…)",
+    "binderCard": "Ring binder",
     "hwCategory": "Category",
     "hwItem": "Item",
     "hwAngle": "Angle (°)",
@@ -2821,6 +2838,9 @@ const MESSAGES = {
     "binderSection": "Binder mechanisms",
     "binderSpec": "Standard",
     "ringD": "Ring diameter",
+    "ringSizeLabel": "Inner {inner} mm ({outer})",
+    "ringOuterLabel": "Outer {outer} mm",
+    "ringAssumed": " (assumed)",
     "binderPlace": "Place on drawing",
     "binderPlan": "Plan / side / front",
     "binderData": "Spec data",
@@ -3098,6 +3118,15 @@ const MESSAGES = {
     "toolReassign": "Reassign all holes of this tool",
     "toolReassignSel": "Reassign selected holes only",
     "toolReassigned": "Reassigned {n} holes.",
+    "spCompareTitle": "Ring diameter comparison (mm)",
+    "spCompareRing": "Ring inner diameter",
+    "spCompareOuter": "Outer diameter",
+    "spCompareSpine": "Spine width (pattern)",
+    "spCompareThickness": "Closed thickness",
+    "spCompareOpen": "Open width",
+    "spCompareDifference": "Difference from smallest ring",
+    "spCompareDelta": "Spine +{spine} / open +{open}",
+    "spCompareHelp": "Open width = spine pattern width + cover length × 2 (width when spread out)",
     "spineSim": "Spine width simulation (section)",
     "wireD": "Ring wire (mm)",
     "leatherT": "Cover leather (mm)",
@@ -4371,6 +4400,17 @@ function evalExpr(expr, params = {}) {
 }
 /** リングの線径（mm）。平面・正面の棒の幅・側面の輪の太さ・3D のワイヤの太さがこれ。 */
 const BINDER_WIRE_MM = 2;
+/** 内径・外径のどちらからでも寸法をそろえる。両方あれば、その差を優先する。 */
+function ringSizeOf(spec, entry) {
+  const o = typeof entry === 'number' ? spec?.rings?.options?.find(o => o.innerDiameterMm === entry || Math.round(ringSizeOf(null, o).inner * 10) / 10 === entry) || { innerDiameterMm: entry } : entry || {};
+  const hasI = Number.isFinite(o.innerDiameterMm), hasO = Number.isFinite(o.outerDiameterMm), hasW = Number.isFinite(o.wireDiameterMm), source = hasI && hasO ? 'both' : hasO ? 'outer' : 'inner';
+  const wire = hasI && hasO ? (o.outerDiameterMm - o.innerDiameterMm) / 2 : hasW ? o.wireDiameterMm : BINDER_WIRE_MM;
+  const inner = hasI ? o.innerDiameterMm : hasO ? o.outerDiameterMm - wire * 2 : NaN, outer = hasO ? o.outerDiameterMm : inner + wire * 2;
+  const wireSource = o.wireSource === 'assumed' ? 'assumed' : (hasI && hasO) || hasW ? 'measured' : 'assumed';
+  return { inner, outer, wire, source, wireSource, ...(hasI && hasO && hasW && Math.abs(wire - o.wireDiameterMm) > 0.2 + 1e-9 ? { mismatch: true } : {}) };
+}
+/** 内径に合う線径。図も立体も同じ寸法を使う。 */
+function wireOf(spec, I) { return ringSizeOf(spec, I).wire; }
 /** 古い台座も同じ断面の寸法へ読み替える。 */
 function binderBase(spec) { const p = spec.plate || {}, b = spec.base || {}; return { ...b, lengthMm: b.lengthMm ?? p.lengthMm, sectionWidthMm: b.sectionWidthMm ?? p.widthMm, crownHeightMm: b.crownHeightMm ?? p.thicknessMm, thicknessMm: b.thicknessMm ?? p.thicknessMm, cornerRMm: b.cornerRMm ?? p.cornerRMm, crownRadiusMm: b.crownRadiusMm ?? 0, edgeRadiusMm: b.edgeRadiusMm ?? 0 }; }
 /** 台座の頂上で測った、左右のリングの根元どうしの距離。 */
@@ -4387,9 +4427,9 @@ function hardwareFootprint(item, overrides = {}, binderSpec = null) {
     if (!binderSpec) throw new Error('binderSpec');
     const base = binderBase(binderSpec), L = base.lengthMm, W = base.sectionWidthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
     outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, base.cornerRMm || 0) });
-    for (const r of v.plan.rings) outline.push({ type: 'polyline', closed: true, points: [{ x: r.minX, y: r.minY }, { x: r.maxX, y: r.minY }, { x: r.maxX, y: r.maxY }, { x: r.minX, y: r.maxY }] }); /* リングは真上から見た細い棒（線径×リング径）。寝た円ではない */
+    for (const r of v.plan.rings) outline.push({ type: 'polyline', closed: true, points: [{ x: r.minX, y: r.minY }, { x: r.maxX, y: r.minY }, { x: r.maxX, y: r.maxY }, { x: r.minX, y: r.maxY }] }); /* リングは真上から見た細い棒（線径×外径）。寝た円ではない */
     for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
-    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: ringD + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
+    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: v.D + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
   }
   for (const h of item.holes || []) {
     const x = E(h.x), y = E(h.y);
@@ -4416,12 +4456,12 @@ function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, 
     for (let i = 0; i < section.length; i++) { const a = section[i], b = section[(i + 1) % section.length]; faces.push({ kind: 'side', points: [point(a, -L / 2), point(a, L / 2), point(b, L / 2), point(b, -L / 2)] }); }
   }
   let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
-  const R = ringD / 2, wire = 2, open = openAngle * Math.PI / 180;
+  const size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), I = size.inner, wire = size.wire, R = (I + wire) / 2, O = size.outer, open = openAngle * Math.PI / 180;
   for (const hx of xs) for (const side of [-1, 1]) {
     // 半リング：台座中心から y 方向 side に開く。開くときは上端で ±open だけ離れる
-    // 輪は台座の上に立つ直径 ringD の円。片側ずつ下端（−90°）から上端（+90°）へ。開くときは上端ほど外へ離す
-    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push({ x: at.x + hx, y: at.y + side * (R * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + R + R * Math.sin(a) - embed }); }
-    for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; faces.push({ kind: 'side', points: [{ x: a.x - wire / 2, y: a.y, z: a.z }, { x: a.x + wire / 2, y: a.y, z: a.z }, { x: b.x + wire / 2, y: b.y, z: b.z }, { x: b.x - wire / 2, y: b.y, z: b.z }] }); }
+    // 中心線の半径は（内径＋線径）/2。内外の面と左右の面で針金の厚みを表す。
+    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push([-1, 1].flatMap(radial => [-1, 1].map(axial => ({ x: at.x + hx + axial * wire / 2, y: at.y + side * ((R + radial * wire / 2) * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + O / 2 + (R + radial * wire / 2) * Math.sin(a) - embed })))); }
+    for (let k = 0; k < pts.length - 1; k++) for (const [i, j] of [[0, 1], [1, 3], [3, 2], [2, 0]]) faces.push({ kind: 'side', points: [pts[k][i], pts[k][j], pts[k + 1][j], pts[k + 1][i]] });
   }
   for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
   return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: '#c8b060' }));
@@ -4430,15 +4470,16 @@ function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, 
 function spineWidth(ringD, baseThickness = 2, leatherThickness = 1.5, playMm = 2) { return ringD + baseThickness + 2 * leatherThickness + playMm; }
 /** 背幅の断面シミュレーション（純関数）。閉じた手帳の断面：台座（厚さ plateT）の上に外径 ringD+2*wireD の輪が立ち、表紙は背の両端で 90° 折れて輪の両脇を通る。
  *  内幅 = 輪の外径 + 2*遊び（輪と表紙内面のすき間）。背の型紙幅 = 内幅 + 2*折り代（θ(r + K t)・θ=90°）。輪の高さが表紙の張り出し（サポータ厚＋台座厚）を超える分は干渉として返す。
- *  params: {ringD（内径）, wireD（線径）, plateT, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
-function spineSim({ ringD = 20, wireD = 2, plateT = 2, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5 } = {}) {
+ *  params: {ringD（内径）, wireD（線径）, plateT, baseH（台座の全高・省略時は板厚）, embedMm（輪の食い込み深さ）, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
+function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, embedMm = 0, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5 } = {}) {
   const num = v => Number.isFinite(v) && v >= 0;
-  if (![ringD, wireD, plateT, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
-  const outerRingD = ringD + 2 * wireD, innerW = outerRingD + 2 * playMm, foldEach = (Math.PI / 2) * (foldR + k * leatherT), spineW = innerW + 2 * foldEach;
-  const ringTop = supporterT + plateT + outerRingD; // 背の内面からの輪の天井高さ
+  if (![ringD, wireD, plateT, baseH, embedMm, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
+  const outerRingD = ringSizeOf(null, { innerDiameterMm: ringD, wireDiameterMm: wireD }).outer, innerW = outerRingD + 2 * playMm, foldEach = (Math.PI / 2) * (foldR + k * leatherT), spineW = innerW + 2 * foldEach;
+  const ringTop = supporterT + baseH + outerRingD - embedMm; // 背の内面からの輪の天井高さ
   const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
     plate: { x: -12, y: supporterT, w: 24, h: plateT }, supporter: supporterT > 0 ? { x: -innerW / 2, y: 0, w: innerW, h: supporterT } : null,
-    ring: { cx: 0, cy: supporterT + plateT + outerRingD / 2, rOuter: outerRingD / 2, rInner: ringD / 2 },
+    ring: { cx: 0, cy: supporterT + baseH + outerRingD / 2 - embedMm, rOuter: outerRingD / 2, rInner: ringD / 2 },
+    fold: { r: foldR, t: leatherT }, /* 背の革の曲げ（内側の半径・革厚）。断面の絵で角を丸く描く */
     coverL: { x: -innerW / 2 - leatherT, y: 0, w: leatherT, h: ringTop + 10 }, coverR: { x: innerW / 2, y: 0, w: leatherT, h: ringTop + 10 }, spine: { x: -innerW / 2 - leatherT, y: -leatherT, w: innerW + 2 * leatherT, h: leatherT },
   };
   return { innerW: spineRound(innerW), outerRingD: spineRound(outerRingD), foldEach: spineRound(foldEach), spineW: spineRound(spineW), ringTop: spineRound(ringTop), section };
@@ -4453,7 +4494,10 @@ function spineSectionSvg(result, { label = '' } = {}) {
   if (!result) return ''; const s = result.section, f = n => (Math.round(n * 100) / 100).toString();
   const minX = s.coverL.x - 6, maxX = s.coverR.x + s.coverR.w + 6, minY = -s.spine.h - 6, maxY = result.ringTop + 14, W = maxX - minX, H = maxY - minY;
   const rect = (r, fill) => `<rect x="${f(r.x)}" y="${f(-(r.y + r.h))}" width="${f(r.w)}" height="${f(r.h)}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
-  const body = [rect(s.spine, '#d9c7a0'), rect(s.coverL, '#d9c7a0'), rect(s.coverR, '#d9c7a0'), s.supporter ? rect(s.supporter, '#c4ad7f') : '', rect(s.plate, '#9a9a9a'),
+  /* 背の革は1枚のU字：内側の角は曲げの内半径 r・外側の角は r＋革厚 t（内半径は内幅の半分まで）。y は上向き正→SVG は上下逆（Y＝−y） */
+  const iw = result.innerW, t = s.fold?.t ?? s.spine.h, r = Math.min(Math.max(s.fold?.r ?? 0, 0), iw / 2), top = s.coverL.h, R = r + t, xo = iw / 2 + t, xi = iw / 2;
+  const leather = `<path id="spine-leather" d="M${f(-xo)} ${f(-top)}L${f(-xo)} ${f(-r)}A${f(R)} ${f(R)} 0 0 0 ${f(-xi + r)} ${f(t)}L${f(xi - r)} ${f(t)}A${f(R)} ${f(R)} 0 0 0 ${f(xo)} ${f(-r)}L${f(xo)} ${f(-top)}L${f(xi)} ${f(-top)}L${f(xi)} ${f(-r)}A${f(r)} ${f(r)} 0 0 1 ${f(xi - r)} 0L${f(-xi + r)} 0A${f(r)} ${f(r)} 0 0 1 ${f(-xi)} ${f(-r)}L${f(-xi)} ${f(-top)}Z" fill="#d9c7a0" stroke="#000" stroke-width="0.2"/>`;
+  const body = [leather, s.supporter ? rect(s.supporter, '#c4ad7f') : '', rect(s.plate, '#9a9a9a'),
     `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
     `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
     `<text x="0" y="${f(-(result.ringTop + 8))}" font-size="3" text-anchor="middle" font-family="sans-serif">${label || ''} inner ${f(result.innerW)} / spine ${f(result.spineW)} mm</text>`].join('');
@@ -4467,7 +4511,7 @@ function closedBinderTop(p = {}) {
   const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, plateW = Math.min(p.plateW ?? 24, sim.innerW);
   if (![stackT, refillW, holeEdge, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
   const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, xc = t + rIn; /* 背は半円：中心 (xc, mid)・内半径 rIn・外半径 rIn+t。表裏の表紙は xc から右へ接続する */
-  const plateLeft = xc - Math.sqrt(Math.max(0, rIn * rIn - (plateW / 2) ** 2)), ringX = plateLeft + supporterT + plateT + sim.outerRingD / 2, tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
+  const plateLeft = xc - Math.sqrt(Math.max(0, rIn * rIn - (plateW / 2) ** 2)), ringX = plateLeft + supporterT + (p.baseH ?? plateT) + sim.outerRingD / 2 - (p.embedMm ?? 0), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
   const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
   const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
   const arc = (r, a0, a1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return { x: xc + r * Math.cos(a), y: mid + r * Math.sin(a) }; }), segs = 36;
@@ -4510,21 +4554,31 @@ function closedBinderViewsSvg(res) {
   const body = res.shapes.filter(s => s.type !== 'dimension').map(s => { const dash = s.hidden ? ' stroke-dasharray="2 1.5"' : ''; return s.type === 'circle' ? `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="none" stroke="#b08d2a" stroke-width="0.4"/>` : s.type === 'line' ? `<line x1="${f(s.x1)}" y1="${f(s.y1)}" x2="${f(s.x2)}" y2="${f(s.y2)}" stroke="#000" stroke-width="0.2"/>` : `<polygon points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="${s.hidden ? 'none' : fill[s.role] || 'none'}" stroke="#000" stroke-width="0.2"${dash}/>`; }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="-4 ${f(minY)} ${f(W)} ${f(H)}">${body}</svg>`;
 }
+/** 同じ入力条件で内径だけを変え、最小の内径との差を比べる。計算できない入力は空の表にする。 */
+function binderRingCompare(spec, params = {}) {
+  const rows = [];
+  for (const ringD of spec.rings.diameterOptionsMm) {
+    const size = ringSizeOf(spec, ringD), p = { ...params, ringD: size.inner, wireD: spec.rings.options ? size.wire : params.wireD }, sim = spineSim(p), top = closedBinderTop(p); if (!sim || !top) return [];
+    rows.push({ ringD, outerD: sim.outerRingD, wire: p.wireD ?? 2, innerW: sim.innerW, spineW: sim.spineW, thickness: top.thickness, coverW: top.coverW, openWidth: spineRound(sim.spineW + 2 * top.coverW), ringTop: sim.ringTop });
+  }
+  const min = rows.reduce((a, b) => !a || b.ringD < a.ringD ? b : a, null);
+  return rows.map(r => ({ ...r, deltaSpine: spineRound(r.spineW - min.spineW), deltaOpen: spineRound(r.openWidth - min.openWidth) }));
+}
 function spineRound(n) { return Math.round(n * 100) / 100; }
 /** バインダー金具の3つの見え方を、1か所の寸法から作る（平面＝真上から・正面＝台座の長手方向の横から・側面＝台座の端から）。置いた外形・3つの図・3D は、どれもここから／ここと同じ寸法で作り、食い違わないようにする。
- *  座標は mm。平面は（長さ方向 x・台座の幅方向 y）、正面は（x・高さ y＝上がマイナス・台座の上面が 0）、側面は（幅方向 x・高さ y）。リングは台座の上面に立つ丸い輪（外径＝リング径）で、真上からは線径×リング径の細い棒、横からは棒、端からは輪に見える。 */
+ *  座標は mm。平面は（長さ方向 x・台座の幅方向 y）、正面は（x・高さ y＝上がマイナス・台座の上面が 0）、側面は（幅方向 x・高さ y）。リングは台座の上面に立つ丸い輪（内径＝リング径）で、真上からは線径×外径の細い棒、横からは棒、端からは輪に見える。 */
 function binderViews(spec, ringD = null) {
-  const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, D = ringD || spec.rings.diameterOptionsMm[0], wire = BINDER_WIRE_MM, embed = spec.rings.embedMm ?? 0;
+  const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), I = size.inner, wire = size.wire, D = size.outer, embed = spec.rings.embedMm ?? 0;
   let x = -spec.holes.span1toLastMm / 2; const ringXs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; ringXs.push(x); }
   const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY });
   return {
-    L, W, T, D, wire, ringXs,
+    L, W, T, D, I, wire, ringXs,
     plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)) },
     front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)) },
-    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: D / 2 - wire }, ...(spec.base ? { section: binderSection(base) } : {}) },
+    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: I / 2 }, ...(spec.base ? { section: binderSection(base) } : {}) },
   };
 }
-/** 平面図（真上から）。リングは台座に直角に立つので、線径×リング径の細い棒が並ぶ。 */
+/** 平面図（真上から）。リングは台座に直角に立つので、線径×外径の細い棒が並ぶ。 */
 function binderPlanSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { L, W, D, plan } = v, f = n => (Math.round(n * 100) / 100).toString(), xs = v.ringXs;
   const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
@@ -4533,15 +4587,15 @@ function binderPlanSvg(spec, ringD = null) {
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
   const dy = Math.max(W, D) / 2 + 5;
   for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
-  parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(D)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
+  parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(v.I)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h / 2)} ${f(w)} ${f(h)}"><g id="plan">${parts.join('')}</g></svg>`;
 }
-/** 側面図（台座の端から）。リングは台座の上面に立つ丸い輪（外径＝リング径・太さ＝線径）。 */
+/** 側面図（台座の端から）。リングは台座の上面に立つ丸い輪（内径＝リング径・太さ＝線径）。 */
 function binderSideSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { W, T, D, side } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, embed = spec.rings.embedMm ?? 0, h = D - embed + Math.max(T, embed) + 2 * pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(D)}mm</text></g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(v.I)}mm</text></g></svg>`;
 }
-/** 正面図（台座の長手方向の横から）。リングは台座の上面に立つ細い棒（線径×リング径）。 */
+/** 正面図（台座の長手方向の横から）。リングは台座の上面に立つ細い棒（線径×外径）。 */
 function binderFrontSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { L, T, D, front } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D - (spec.rings.embedMm ?? 0) + T + 2 * pad;
   const rings = front.rings.map(r => `<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/>`).join('');
@@ -4589,7 +4643,7 @@ function binderZRange(spec, ringD = null) {
 function binderViewShapes(spec, ringD, at, angleDeg, dc) {
   const rad = angleDeg * Math.PI / 180, eps = Math.sin(0.5 * Math.PI / 180), cs = Math.cos(rad), sn = Math.sin(rad);
   const quarter = Math.abs(sn) < eps ? 0 : Math.abs(cs) < eps ? 90 : null; if (quarter === null) return null;
-  const v = binderViews(spec, ringD), { T, D, wire, W, L } = v, z = binderZRange(spec, v.D), zmid = (z.min + z.max) / 2, dOf = zz => dc - (zz - zmid);
+  const v = binderViews(spec, ringD), { T, D, wire, W, L } = v, z = binderZRange(spec, v.I), zmid = (z.min + z.max) / 2, dOf = zz => dc - (zz - zmid);
   const plateD = [dOf(T), dOf(0)], ringDepth = [dOf(T + D - (spec.rings.embedMm ?? 0)), dOf(T)], ringCenterD = dOf(T + D / 2 - (spec.rings.embedMm ?? 0)), halfX = quarter === 0 ? L / 2 : W / 2, halfY = quarter === 0 ? W / 2 : L / 2;
   const rect = (x0, x1, y0, y1, role) => ({ type: 'polyline', closed: true, role, points: [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }] });
   const rings = (cx, cy) => [{ type: 'circle', role: 'ring', cx, cy, r: D / 2 }, { type: 'circle', role: 'ring', cx, cy, r: D / 2 - wire }];
@@ -4647,7 +4701,7 @@ function binderSection(base) {
   return [...clean.slice(first), ...clean.slice(0, first)];
 }
 
-return {evalExpr, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection};
+return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection};
 })();
 __mods['threeview'] = (function(){
 const { binderSpecWithSection } = __mods['binder_section_edit'];
@@ -12806,8 +12860,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12816,8 +12870,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12826,8 +12880,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 35,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 35,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12836,8 +12890,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 40,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 40,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12963,8 +13017,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12973,8 +13027,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12983,8 +13037,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -12993,8 +13047,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 35,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 35,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13003,8 +13057,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 40,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 40,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13130,8 +13184,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 16,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 16,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13140,8 +13194,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13150,8 +13204,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13277,8 +13331,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13287,8 +13341,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13297,8 +13351,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13426,8 +13480,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 15,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 15,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13436,8 +13490,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 19,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 19,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13446,8 +13500,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13456,8 +13510,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 23,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 23,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13466,8 +13520,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13476,8 +13530,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13603,8 +13657,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13613,8 +13667,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13623,8 +13677,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13633,8 +13687,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 40,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 40,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13759,8 +13813,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 15,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 15,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13769,8 +13823,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13779,8 +13833,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13789,8 +13843,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13915,8 +13969,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13925,8 +13979,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 30,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 30,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -13935,8 +13989,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 40,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 40,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14060,8 +14114,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 15,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 15,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14070,8 +14124,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14080,8 +14134,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 25,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 25,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14207,8 +14261,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 8,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 8,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14217,8 +14271,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 11,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 11,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14227,8 +14281,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 13,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 13,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14237,8 +14291,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 15,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 15,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14366,8 +14420,8 @@ const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 11,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 11,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14376,8 +14430,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 13,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 13,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14386,8 +14440,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 15,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 15,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14396,8 +14450,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 19,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 19,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -14406,8 +14460,8 @@ const BINDER_SPECS = [
      "sourceNote": null
     },
     {
-     "outerDiameterMm": 20,
-     "innerDiameterMm": null,
+     "outerDiameterMm": null,
+     "innerDiameterMm": 20,
      "wireDiameterMm": null,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -16349,7 +16403,7 @@ const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
 const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
-const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
+const { binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
 const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
@@ -18169,9 +18223,12 @@ function initLibrary() {
 }
 
 // ---- 金具ライブラリ・バインダー金具 ----
-const HW_CATEGORIES = ['binder', 'fastener', 'link', 'closure', 'notebook'];
+const HW_CATEGORIES = ['fastener', 'link', 'closure', 'notebook'];   /* 「その他の金具」の分類。リングバインダーは専用のカード */
+let hwPlaceKind = 'other';   /* 図面に置く金具：'binder'（リングバインダーのカード）か 'other'（その他の金具のカード） */
 function hwItems() { return DATA_HARDWARE.items.filter(i => i.category === $('hwCategory').value); }
-function hwCurrent() { return DATA_HARDWARE.items.find(i => i.id === $('hwItem').value) || hwItems()[0] || null; }
+const binderItem = () => DATA_HARDWARE.items.find(i => i.id === 'binder-' + $('binderSpecSel').value) || null;
+function hwCurrent() { return hwPlaceKind === 'binder' ? binderItem() : (DATA_HARDWARE.items.find(i => i.id === $('hwItem').value) || hwItems()[0] || null); }
+const hwAngleValue = () => Number($(hwPlaceKind === 'binder' ? 'binderAngle' : 'hwAngle').value) || 0;
 function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
@@ -18182,29 +18239,22 @@ function renderHardware() {
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
   $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : '';
   const bs = $('binderSpecSel'); if (!bs.textContent) for (const s of BINDER_SPECS) { const o = document.createElement('option'); o.value = s.id; o.textContent = document.documentElement.lang === 'en' ? s.names.en : s.names.ja; bs.appendChild(o); }
-  renderBinder(); syncHwBinderMode();
-}
-/** 分類が「リング・バインダー」のときは、バインダーの操作を下の「バインダー金具」の1か所にそろえる（上の機種の選択・パラメータ欄・置くボタンは隠す。向きは共通）。 */
-function syncHwBinderMode() {
-  const binder = $('hwCategory').value === 'binder';
-  for (const id of ['l-hwItem', 'hwParams', 'hwConfidence', 'hwPlace']) $(id).hidden = binder;
-  if (binder) $('binderSub').open = true;
+  renderBinder();
 }
 function renderBinder() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
-  if ($('hwCategory').value === 'binder' && DATA_HARDWARE.items.some(i => i.id === 'binder-' + spec.id)) $('hwItem').value = 'binder-' + spec.id;   /* 下の規格と内部の機種をそろえる（別の規格のリング径で置かれないように） */
   const rd = $('ringD'), keep = Number(rd.value); rd.textContent = '';
-  for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); o.textContent = d + ' mm'; rd.appendChild(o); }
+  for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); const size = ringSizeOf(spec, d); o.textContent = t('ringSizeLabel', { inner: size.inner, outer: ringOuterLabel(size) }); rd.appendChild(o); }
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
   const leather = Number($('partThickness').value) || 1.5;
-  $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, spec.plate.thicknessMm, leather).toFixed(1) });
+  $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
 }
-function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; return { ringD: Number($('ringD').value) || 20, wireD: Number($('spWire').value) || 2, plateT: spec?.plate?.thicknessMm ?? 2, leatherT: Number($('spLeather').value) || 1.5, supporterT: Number($('spSupporter').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0 }; }
+function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: Number($('spWire').value) || wireOf(spec, ringD), plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: Number($('spSupporter').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0 }; }
 /** 閉じた手帳の3面図の入力値（背幅の入力に、束の厚み・表紙の長さ・規格のリフィル寸法・台座・リング位置を足す）。 */
 function topParams() {
-  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], p = spineParams(), cw = Number($('spCoverW').value), hp = spec?.holes?.pitchMm || [], span = spec?.holes?.span1toLastMm || 0, H = (spec?.refill?.hMm ?? 210) + 6;
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], p = spineParams(), base = binderBase(spec), cw = Number($('spCoverW').value), hp = spec?.holes?.pitchMm || [], span = spec?.holes?.span1toLastMm || 0, H = (spec?.refill?.hMm ?? 210) + 6;
   let y = H / 2 - span / 2; const ringPos = hp.length ? [y, ...hp.map(d => (y += d))] : undefined;
-  return { ...p, stackT: $('spStack').value === '' ? 6 : Number($('spStack').value), refillW: spec?.refill?.wMm ?? 110, refillH: spec?.refill?.hMm ?? 210, plateW: spec?.plate?.widthMm ?? 24, plateL: spec?.plate?.lengthMm ?? 170, ringPos, coverW: cw > 0 ? cw : undefined };
+  return { ...p, stackT: $('spStack').value === '' ? 6 : Number($('spStack').value), refillW: spec?.refill?.wMm ?? 110, refillH: spec?.refill?.hMm ?? 210, plateW: base.sectionWidthMm ?? 24, plateL: base.lengthMm ?? 170, ringPos, coverW: cw > 0 ? cw : undefined };
 }
 function renderTopSection() {
   const p = topParams(), res = closedBinderViews(p); if (!res) { $('spTopInfo').textContent = t('invalidNumber'); $('spTopSvg').innerHTML = ''; return null; }
@@ -18221,8 +18271,14 @@ function drawTopSection() {
     doc.shapes.push({ id, layer, ...o, ...(hidden ? { lineStyle: 'dashed' } : {}) }); } selected = new Set(ids); });
   $('hint').textContent = t('spTopDrawn');
 }
-function renderSpineSim() { const p = spineParams(), r = spineSim(p); if (!r) { $('spResult').textContent = t('invalidNumber'); return null; } $('spResult').textContent = t('spineResult', { ring: r.outerRingD, inner: r.innerW, fold: r.foldEach, spine: r.spineW, top: r.ringTop }); $('spSection').innerHTML = spineSectionSvg(r, { label: `${p.ringD}mm` }); return r; }
-function initSpineSim() { for (const id of ['spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderSpineSim); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderTopSection); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
+// 表の行は文字列で作り、画面を使わずに表示内容を確かめられるようにする。
+function ringOuterLabel(size) { return t('ringOuterLabel', { outer: +size.outer.toFixed(2) }) + (size.wireSource === 'assumed' ? t('ringAssumed') : ''); }
+function spCompareRows(rows, ringD) { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; return rows.map(r => `<tr data-ring-d="${r.ringD}"${r.ringD === ringD ? ' aria-current="true"' : ''}><td>${r.ringD.toFixed(2)}</td><td>${r.outerD.toFixed(2)}${ringSizeOf(spec, r.ringD).wireSource === 'assumed' ? t('ringAssumed') : ''}</td>${[r.spineW, r.thickness, r.openWidth].map(v => `<td>${v.toFixed(2)}</td>`).join('')}<td>${t('spCompareDelta', { spine: r.deltaSpine.toFixed(2), open: r.deltaOpen.toFixed(2) })}</td></tr>`).join(''); }
+function spCompareTable(rows, ringD) { return `<caption>${t('spCompareTitle')}</caption><thead><tr>${['spCompareRing', 'spCompareOuter', 'spCompareSpine', 'spCompareThickness', 'spCompareOpen', 'spCompareDifference'].map(key => `<th scope="col">${t(key)}</th>`).join('')}</tr></thead><tbody>${spCompareRows(rows, ringD)}</tbody>`; }
+function renderSpCompare() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], p = topParams(); $('spCompare').innerHTML = spCompareTable(binderRingCompare(spec, p), p.ringD); }
+function renderSpineSim() { renderSpCompare(); const p = spineParams(), r = spineSim(p); if (!r) { $('spResult').textContent = t('invalidNumber'); return null; } $('spResult').textContent = t('spineResult', { ring: r.outerRingD, inner: r.innerW, fold: r.foldEach, spine: r.spineW, top: r.ringTop }); $('spSection').innerHTML = spineSectionSvg(r, { label: `${p.ringD}mm` }); return r; }
+function resetSpineWire() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; $('spWire').value = String(wireOf(spec, Number($('ringD').value) || 20)); }
+function initSpineSim() { resetSpineWire(); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR']) $(id).addEventListener('change', () => { renderSpineSim(); renderTopSection(); }); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
 function hwParams() { const out = {}; for (const input of ($('hwParams').children || [])) { const el = input.querySelector ? input.querySelector('input') : null; if (el && el.dataset?.param) out[el.dataset.param] = Number(el.value); } return out; }
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
 /** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
@@ -18368,10 +18424,13 @@ function refreshHwEdit() {
   const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
     const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
-    sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? '');
+    sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? ''); refreshHwEditOuter();
   }
   $('hwEditAngle').value = String(+hwPoseOfOutline(hw.plate).angleDeg.toFixed(2)); $('hwEditNote').textContent = t('hwEditNote');
 }
+function refreshHwEditOuter() { const spec = binderSpec($('hwEditSpec').value), inner = Number($('hwEditRing').value); $('hwEditOuter').textContent = spec && Number.isFinite(inner) && inner > 0 ? ringOuterLabel(ringSizeOf(spec, inner)) : ''; }
+$('hwEditRing').oninput = refreshHwEditOuter;
+$('hwEditSpec').onchange = refreshHwEditOuter;
 function applyHwEdit() {
   const hw = selectedHardware(); if (!hw) return;
   const old = hw.plate.hw, isBinder = hwIsBinder(hw.plate), pose = hwPoseOfOutline(hw.plate);
@@ -18454,7 +18513,7 @@ $('hwSectionMake').onclick = makeBinderSection; $('hwSectionApply').onclick = ap
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
-  let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, Number($('hwAngle').value) || 0); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
   renderLayers(); $('hint').textContent = t('hwPlaced', { name: document.documentElement.lang === 'en' ? it.name_en : it.name_ja });
@@ -18463,9 +18522,9 @@ function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle')
 function initHardware() {
   renderHardware();
   $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware);
-  $('binderSpecSel').addEventListener('change', renderBinder); $('ringD').addEventListener('change', renderBinder); $('partThickness').addEventListener('change', renderBinder);
-  $('hwPlace').onclick = () => setMode('hardware');
-  $('binderPlace').onclick = () => { $('hwCategory').value = 'binder'; renderHardware(); $('hwItem').value = 'binder-' + $('binderSpecSel').value; setMode('hardware'); };
+  for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', () => { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); }); $('partThickness').addEventListener('change', renderBinder);
+  $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
+  $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { $('helpBody').textContent = JSON.stringify(spec, null, 2); $('helpDialog').showModal(); } };
   $('closeSvg').onclick = () => $('svgDialog').close();
