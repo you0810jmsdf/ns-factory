@@ -1159,7 +1159,7 @@ function svgTree(ids, meId, opts = {}) {
   return `<svg class="gene" viewBox="0 0 ${wTot} ${hTot + NH}" role="img" aria-label="系譜図">${edges}${nodes}</svg>`;
 }
 // 全体の系譜図: 世代を左→右の列にし、各列は縦に並べる（横に長くならないように）
-function svgTreeLR(ids) {
+function svgTreeLR(ids, focusId) {
   const map = deities;
   const { gen, levels } = layout(ids, map);
   const keys = Object.keys(levels).map(Number).sort((a, b) => a - b);
@@ -1202,7 +1202,7 @@ function svgTreeLR(ids) {
   const enshrined = new Set(shrines.flatMap((s) => s.deity_ids));
   ids.forEach((id) => {
     const p = pos[id], d = map[id];
-    const cls = ['nd', enshrined.has(id) ? 'en' : ''].join(' ');
+    const cls = ['nd', enshrined.has(id) ? 'en' : '', id === focusId ? 'me' : ''].join(' ');
     nodes += `<g class="${cls}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
       <text x="${p.x + NW / 2}" y="${p.y + 19}" text-anchor="middle" font-size="12.5">${esc(d.name.length > 8 ? d.name.slice(0, 8) + '…' : d.name)}</text>
       <text x="${p.x + NW / 2}" y="${p.y + 34}" text-anchor="middle" font-size="8.5" style="fill:#a9aa93">${esc(d.reading.length > 13 ? d.reading.slice(0, 13) + '…' : d.reading)}</text></g>`;
@@ -1354,16 +1354,41 @@ emakiEl.addEventListener('click', (e) => { if (e.target.closest('[data-emakiclos
 addEventListener('resize', () => { if (!emakiEl.hidden) layoutEmaki(); });
 
 // 神々の系譜図（全体）
+let treeFocusMode = false, treeFocus = null;
+function kinOf(id) {   // 選んだ神様の祖先・子孫・夫婦
+  const keep = new Set([id]);
+  const walk = (x, key) => (deities[x]?.relations?.[key] || []).forEach((y) => { if (deities[y] && !keep.has(y)) { keep.add(y); walk(y, key); } });
+  walk(id, 'parents'); walk(id, 'children');
+  (deities[id]?.relations?.spouses || []).forEach((y) => deities[y] && keep.add(y));
+  return [...keep];
+}
+function renderTree() {
+  const all = deityData.deities.map((d) => d.id);
+  const ids = treeFocus ? kinOf(treeFocus) : all;
+  $('treeBody').innerHTML = svgTreeLR(ids, treeFocus);
+  const sv = $('treeBody').querySelector('svg');
+  sv.style.width = sv.viewBox.baseVal.width + 'px'; sv.style.minWidth = '0';   // 原寸で、縦にスクロール
+  $('treeBody').scrollTop = 0; $('treeBody').scrollLeft = 0;
+  $('btnTreeFocus').classList.toggle('on', treeFocusMode);
+  $('btnTreeFocus').textContent = treeFocusMode ? 'しぼりこみ：入' : 'しぼりこみ';
+  const bar = $('treeFocusBar');
+  bar.hidden = !treeFocus;
+  if (treeFocus) {
+    $('treeFocusName').textContent = deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
+  }
+}
 function openTree(show) {
   const el = $('tree');
-  if (show) {
-    const ids = deityData.deities.map((d) => d.id);
-    $('treeBody').innerHTML = svgTreeLR(ids);
-    const sv = $('treeBody').querySelector('svg');
-    sv.style.width = sv.viewBox.baseVal.width + 'px'; sv.style.minWidth = '0';   // 原寸で、縦にスクロール
-  }
+  if (show) { treeFocusMode = false; treeFocus = null; renderTree(); }
   el.hidden = !show;
 }
+$('btnTreeFocus').addEventListener('click', () => {
+  treeFocusMode = !treeFocusMode;
+  if (!treeFocusMode) treeFocus = null;
+  renderTree();
+});
+$('btnTreeAll').addEventListener('click', () => { treeFocus = null; renderTree(); });
+$('btnTreeOpen').addEventListener('click', () => { if (treeFocus) openDeityFromTree(treeFocus); });
 $('btnTree').addEventListener('click', () => openTree(true));
 $('btnGps').addEventListener('click', () => routeAction('locate'));
 $('btnStop').addEventListener('click', () => endRun(true));
@@ -1372,13 +1397,17 @@ $('tree').addEventListener('click', (e) => {
   const t = e.target.closest('[data-deity]');
   if (!t) return;
   e.preventDefault();
+  if (treeFocusMode) { e.stopPropagation(); treeFocus = t.dataset.deity; renderTree(); return; }   // しぼりこみ中は、タップで選び直す
+  openDeityFromTree(t.dataset.deity);
+});
+function openDeityFromTree(id) {
   if (!selected) { /* 神社未選択のときは神様ページだけ開く */
     current = { shrine: null };
     sheetEl.hidden = false; document.body.classList.add('open'); $('btnBack').hidden = false;
     requestAnimationFrame(() => sheetEl.classList.add('show'));
   }
-  showDeity(t.dataset.deity);
-});
+  showDeity(id);
+}
 
 // ---------- 描画ループ ----------
 resize();
