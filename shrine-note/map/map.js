@@ -1158,6 +1158,57 @@ function svgTree(ids, meId, opts = {}) {
   });
   return `<svg class="gene" viewBox="0 0 ${wTot} ${hTot + NH}" role="img" aria-label="系譜図">${edges}${nodes}</svg>`;
 }
+// 全体の系譜図: 世代を左→右の列にし、各列は縦に並べる（横に長くならないように）
+function svgTreeLR(ids) {
+  const map = deities;
+  const { gen, levels } = layout(ids, map);
+  const keys = Object.keys(levels).map(Number).sort((a, b) => a - b);
+  const NW = 112, NH = 44, GX = 44, GY = 12;
+  const parentsOf = (id) => (map[id].relations?.parents || []).filter((p) => ids.includes(p));
+  const childrenOf = (id) => (map[id].relations?.children || []).filter((c) => ids.includes(c));
+  const spousesOf = (id) => (map[id].relations?.spouses || []).filter((s) => ids.includes(s));
+  const order = {};   // id -> 列内の順番（小数）
+  const cols = {};
+  keys.forEach((k) => { cols[k] = levels[k].slice(); cols[k].forEach((id, i) => { order[id] = i; }); });
+  const place = (k) => {   // 夫婦を隣り合わせにして、順番を振り直す
+    const arr = [];
+    cols[k].forEach((id) => { if (arr.includes(id)) return; arr.push(id); spousesOf(id).forEach((sp) => { if (cols[k].includes(sp) && !arr.includes(sp)) arr.push(sp); }); });
+    cols[k] = arr; arr.forEach((id, i) => { order[id] = i; });
+  };
+  const bary = (id, f) => { const v = f(id).map((x) => order[x]).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  for (let it = 0; it < 4; it++) {          // 親の位置の平均／子の位置の平均で並べ替えて、線の交差を減らす
+    keys.slice(1).forEach((k) => { cols[k].sort((a, b) => (bary(a, parentsOf) ?? order[a]) - (bary(b, parentsOf) ?? order[b])); place(k); });
+    keys.slice().reverse().slice(1).forEach((k) => { cols[k].sort((a, b) => (bary(a, childrenOf) ?? order[a]) - (bary(b, childrenOf) ?? order[b])); place(k); });
+  }
+  const maxN = Math.max(...keys.map((k) => cols[k].length));
+  const pos = {};
+  keys.forEach((k, ci) => { cols[k].forEach((id, i) => { pos[id] = { x: 10 + ci * (NW + GX), y: 10 + i * (NH + GY) }; }); });
+  const W = 20 + keys.length * (NW + GX) - GX, Hh = 20 + maxN * (NH + GY) - GY;
+  let edges = '', nodes = '';
+  ids.forEach((id) => {
+    childrenOf(id).forEach((c) => {
+      const a = pos[id], b = pos[c];
+      const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2, mx = (x1 + x2) / 2;
+      edges += `<path class="ed" d="M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}"/>`;
+    });
+    spousesOf(id).forEach((sp) => {
+      if (sp < id) return;
+      const a = pos[id], b = pos[sp];
+      if (a.x !== b.x) return;
+      const [u, l] = a.y < b.y ? [a, b] : [b, a];
+      edges += `<path class="ed sp" d="M${u.x + NW / 2} ${u.y + NH} V${l.y}"/>`;
+    });
+  });
+  const enshrined = new Set(shrines.flatMap((s) => s.deity_ids));
+  ids.forEach((id) => {
+    const p = pos[id], d = map[id];
+    const cls = ['nd', enshrined.has(id) ? 'en' : ''].join(' ');
+    nodes += `<g class="${cls}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
+      <text x="${p.x + NW / 2}" y="${p.y + 19}" text-anchor="middle" font-size="12.5">${esc(d.name.length > 8 ? d.name.slice(0, 8) + '…' : d.name)}</text>
+      <text x="${p.x + NW / 2}" y="${p.y + 34}" text-anchor="middle" font-size="8.5" style="fill:#a9aa93">${esc(d.reading.length > 13 ? d.reading.slice(0, 13) + '…' : d.reading)}</text></g>`;
+  });
+  return `<svg class="gene" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="神々の系譜図">${edges}${nodes}</svg>`;
+}
 function geneSVG(d) {
   const rel = d.relations || {};
   const set = new Set([d.id]);
@@ -1307,9 +1358,9 @@ function openTree(show) {
   const el = $('tree');
   if (show) {
     const ids = deityData.deities.map((d) => d.id);
-    $('treeBody').innerHTML = svgTree(ids, null, { nw: 128, minW: 760 });
+    $('treeBody').innerHTML = svgTreeLR(ids);
     const sv = $('treeBody').querySelector('svg');
-    sv.style.minWidth = sv.viewBox.baseVal.width + 'px';
+    sv.style.width = sv.viewBox.baseVal.width + 'px'; sv.style.minWidth = '0';   // 原寸で、縦にスクロール
   }
   el.hidden = !show;
 }
