@@ -125,12 +125,14 @@ export function closedBinderTop(p = {}) {
   const sim = spineSim(p); if (!sim) return null;
   const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, plateW = Math.min(p.plateW ?? 24, sim.innerW);
   if (![stackT, refillW, holeEdge, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
-  const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, xc = t + rIn; /* 背は半円：中心 (xc, mid)・内半径 rIn・外半径 rIn+t。表裏の表紙は xc から右へ接続する */
-  const plateLeft = xc - Math.sqrt(Math.max(0, rIn * rIn - (plateW / 2) ** 2)), ringX = plateLeft + supporterT + (p.baseH ?? plateT) + sim.outerRingD / 2 - (p.embedMm ?? 0), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
+  /* 背は、曲げの内半径 r で角を丸めたU字：内側の角の半径 r・外側の角の半径 r＋革厚（r は内幅の半分まで。それ以上は半円）。表裏の表紙は xc＝革厚＋r から右へ接続する。曲げの内半径 foldR を指定しない古い呼び出しは、今までどおり半円（r＝内幅の半分） */
+  const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, r = p.foldR === undefined ? rIn : Math.min(Math.max(Number(p.foldR) || 0, 0), rIn), xc = t + r;
+  const dyc = plateW / 2 - (rIn - r), plateLeft = dyc <= 0 ? t : xc - Math.sqrt(Math.max(0, r * r - dyc * dyc)), /* 台座は、背の内面の平らな部分に当たるか、角の丸みに両端で当たる位置 */
+ ringX = plateLeft + supporterT + (p.baseH ?? plateT) + sim.outerRingD / 2 - (p.embedMm ?? 0), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
   const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
   const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
-  const arc = (r, a0, a1, n) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return { x: xc + r * Math.cos(a), y: mid + r * Math.sin(a) }; }), segs = 36;
-  const spine = { type: 'polyline', closed: true, role: 'spine', points: [...arc(rIn + t, -Math.PI / 2, -3 * Math.PI / 2, segs), ...arc(rIn, -3 * Math.PI / 2, -Math.PI / 2, segs)] }; /* 外周を上→左→下、内周を下→左→上 */
+  const arc = (cy, rad, a0, a1) => rad > 0 ? Array.from({ length: 19 }, (_, i) => { const a = a0 + (a1 - a0) * i / 18; return { x: xc + rad * Math.cos(a), y: cy + rad * Math.sin(a) }; }) : [{ x: xc, y: cy }], R = r + t, cyTop = t + r, cyBottom = T - t - r;
+  const spine = { type: 'polyline', closed: true, role: 'spine', points: [...arc(cyTop, R, -Math.PI / 2, -Math.PI), ...arc(cyBottom, R, -Math.PI, -3 * Math.PI / 2), ...arc(cyBottom, r, Math.PI / 2, Math.PI), ...arc(cyTop, r, Math.PI, 3 * Math.PI / 2)] }; /* 外周（上→左→下）、内周（下→左→上）。角の円弧の間は直線 */
   const shapes = [spine, rect(xc, 0, xc + coverW, t, 'back-cover'), rect(xc, T - t, xc + coverW, T, 'front-cover')];
   if (supporterT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + supporterT, mid + plateW / 2, 'supporter'));
   shapes.push(rect(plateLeft + supporterT, mid - plateW / 2, plateLeft + supporterT + plateT, mid + plateW / 2, 'plate'),
