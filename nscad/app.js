@@ -27,6 +27,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
+import { track } from './analytics.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
@@ -1130,6 +1131,13 @@ function initOutput() {
 // ---- 3D（折りたたみ・三面図）----
 const canvas3d = $('canvas3d');
 let view3d = false, cam = null, foldT = 0, playing = null, gl = null, glProg = null, ctx3 = null, lastStats = { faces: 0, collisions: 0 };
+/** アクセス計測：ボタンの押下と切り替えを1か所で数える（回数と kind だけ。送る中身は analytics.js が絞る。公開版以外では何もしない）。 */
+const COUNT_CLICKS = { exportSvg: ['ncad_export', 'svg'], exportDxf: ['ncad_export', 'dxf'], exportPdf: ['ncad_export', 'pdf'], exportPng: ['ncad_export', 'png'], print: ['ncad_print'], aiSend: ['ncad_ai'], view3d: ['ncad_view3d'] };
+function initCounting() {
+  track.pageview();
+  document.addEventListener?.('click', e => { const id = e?.target?.closest?.('button')?.id; if (id === 'binderPlace') track.event('ncad_hw_place', { kind: $('binderSpecSel')?.value }); else if (COUNT_CLICKS[id]) track.event(COUNT_CLICKS[id][0], COUNT_CLICKS[id][1] ? { kind: COUNT_CLICKS[id][1] } : {}); });
+  document.addEventListener?.('change', e => { const el = e?.target; if (!el) return; if (el.id === 'ghost3d') track.event('ncad_ghost', { kind: el.checked ? 'on' : 'off' }); else if ((el.id === 'threeView' || el.id === 'quadView') && el.checked) track.event('ncad_three_view', { kind: el.id === 'quadView' ? 'quad' : 'frame' }); });
+}
 /** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
 const GHOST_ALPHA = 0.3;
 const ghostFace = (f, solid) => !!solid && f.partId !== 'binder' && !!$('ghost3d')?.checked;
@@ -2791,5 +2799,6 @@ doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); 
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
+initCounting();
 showTour();
 }
