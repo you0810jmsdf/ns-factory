@@ -31,7 +31,50 @@ export const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 4
+   "countPerSide": 4,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 35,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 264,
@@ -76,7 +119,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。80mm 等間隔。A4＝必ず 4 穴ではない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -126,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 126,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a5",
@@ -112,7 +188,60 @@ export const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 35,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 170,
@@ -157,7 +286,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。上端から 32/51/70/140/159/178mm が理論上の穴中心（全メーカー共通とは断定できない）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a5slim",
@@ -193,7 +355,40 @@ export const BINDER_SPECS = [
     25
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 16,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 170,
@@ -238,7 +433,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。高さは A5 と同じ・幅 110mm。KRAUSE 210-6-16 が候補"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a6",
@@ -274,7 +502,40 @@ export const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 138,
@@ -319,7 +580,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央だけ 38mm。当工房在庫 20mm・30mm（KRAUSE）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -63,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 63,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "bible",
@@ -357,7 +651,70 @@ export const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 23,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 151,
@@ -402,7 +759,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央 2 インチ（50.8mm）。Filofax 資料では 50/51mm とするものあり"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fclassic",
@@ -438,7 +828,50 @@ export const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 7
+   "countPerSide": 7,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 163.7,
@@ -483,7 +916,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。7穴・A5 6穴とは互換しない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -75.85,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 75.85,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fcompact",
@@ -518,7 +984,50 @@ export const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 151,
@@ -563,7 +1072,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。穴位置はバイブルと互換。リフィル幅は 108mm"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fmonarch",
@@ -598,7 +1140,40 @@ export const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 7
+   "countPerSide": 7,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 239.9,
@@ -643,7 +1218,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。最大級の 7 穴"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -113.95,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 113.95,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fpocket",
@@ -677,7 +1285,40 @@ export const BINDER_SPECS = [
     25
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 138.3,
@@ -722,7 +1363,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。公式 0.75\"/0.75\"/1.5\"/0.75\"/0.75\"。A6 6穴とは公式互換ではない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -63.150000000000006,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 63.150000000000006,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "m5",
@@ -758,7 +1432,50 @@ export const BINDER_SPECS = [
     15
    ],
    "shape": "round",
-   "countPerSide": 5
+   "countPerSide": 5,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 8,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 11,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 13,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 100,
@@ -803,7 +1520,40 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準: 62×105mm・5穴（上端から 15/34/53/72/91mm・綴じ側端から 6mm）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -44,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 44,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "mini6",
@@ -841,7 +1591,60 @@ export const BINDER_SPECS = [
     20
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 11,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 13,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 120,
@@ -886,6 +1689,39 @@ export const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準データ: 80×128mm・6穴（上端から 16.3/35.5/54.7/73.9/93.1/112.3mm・綴じ側端から 6.3mm）。Filofax Pocket は 81×120mm・19mm 間隔"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  }
 ];

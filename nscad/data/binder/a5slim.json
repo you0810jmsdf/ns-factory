@@ -32,7 +32,40 @@
    25
   ],
   "shape": "round",
-  "countPerSide": 6
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 16,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 20,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 25,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   }
+  ]
  },
  "plate": {
   "lengthMm": 170,
@@ -43,12 +76,12 @@
  },
  "rivets": [
   {
-   "xMm": -79.0,
+   "xMm": -79,
    "yMm": 0,
    "dMm": 3.5
   },
   {
-   "xMm": 79.0,
+   "xMm": 79,
    "yMm": 0,
    "dMm": 3.5
   }
@@ -77,5 +110,38 @@
    "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。高さは A5 と同じ・幅 110mm。KRAUSE 210-6-16 が候補"
   }
  ],
- "confidence": "spec"
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -79,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 79,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": null
 }

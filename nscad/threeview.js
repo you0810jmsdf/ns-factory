@@ -1,3 +1,4 @@
+import { binderSpecWithSection } from './binder_section_edit.js';
 // 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
 // ここは計算だけ（画面に描くのは app.js）。依存は geometry.js の bboxOf だけ。
 //
@@ -285,7 +286,7 @@ function closedPolygon(s, tol) {
 /** 図形の列から閉じた輪郭（点の列）をすべて取り出す。閉じた1図形のほか、丸め・面取りなどで直線や円弧に分かれていても、端がつながって輪になっていれば1つの輪郭にする。 */
 function closedPolygons(shapes, tol) {
   const out = [], open = [];
-  for (const s of shapes || []) { if (s?.hwFor) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
+  for (const s of shapes || []) { if (s?.hwFor || s?.hwSection) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
     if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
   if (open.length) for (const c of chainShapes(open, Math.max(tol / 10, 0.01))) {
     if (!c.closed) continue;
@@ -354,7 +355,7 @@ export function threeViewHardwareFaces(solid, hwShapes, specOf) {
   const out = [], base = solid.base, dc = solid.depth / 2;
   for (const s of hwShapes || []) {
     const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
-    const spec = specOf(hw.params?.spec); if (!spec) continue;
+    const spec = binderSpecWithSection(specOf(hw.params?.spec), hw.params); if (!spec) continue;
     const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 };   /* 置いたあとに動かした・回した金具でも、いまの外形から位置と角度を割り出す */
     const at = pose.at, a = pose.angleDeg * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
     const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;

@@ -214,11 +214,11 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 62,
         "H": 105,
-        "T": 15,
+        "Y": 0.5,
         "E": 6,
         "D": 5,
         "R": 0
@@ -226,7 +226,7 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -274,35 +274,35 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+57",
+          "cy": "H/2+Y+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76",
+          "cy": "H/2+Y+38",
           "r": "D/2"
         }
       ]
@@ -315,11 +315,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（サイトの規格表どおり）。",
+      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 80,
         "H": 128,
-        "T": 16.3,
+        "C": 19.2,
+        "Y": 0.3,
         "E": 6,
         "D": 5,
         "R": 0
@@ -327,7 +328,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -375,42 +377,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.4",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.2",
+          "cy": "H/2+Y-C/2-19.2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.4",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+57.6",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76.8",
+          "cy": "H/2+Y+C/2+19.2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+96",
+          "cy": "H/2+Y+C/2+38.4",
           "r": "D/2"
         }
       ]
@@ -423,11 +425,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A6 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A6 6穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 105,
         "H": 148,
-        "T": 17,
+        "C": 38,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -435,7 +438,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -483,42 +487,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+95",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -531,11 +535,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 95,
         "H": 171,
-        "T": 22,
+        "C": 50.8,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -543,7 +548,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -591,42 +597,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -639,11 +645,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A5 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A5 6穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 148,
         "H": 210,
-        "T": 32,
+        "C": 70,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -651,7 +658,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -699,42 +707,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+108",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+146",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -747,11 +755,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A5 Slim のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A5 Slim のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 110,
         "H": 210,
-        "T": 32,
+        "C": 70,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -759,7 +768,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -807,42 +817,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+108",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+146",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -855,11 +865,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A4 4穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 4 個・間隔 80 / 80 / 80 mm（サイトの規格表どおり）。",
+      "desc": "A4 4穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 4 個・間隔 80 / 80 / 80 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 210,
         "H": 297,
-        "T": 28.5,
+        "C": 80,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -867,7 +878,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -915,28 +927,157 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-80",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+80",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+160",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+240",
+          "cy": "H/2+Y+C/2+80",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-deskfax",
+      "name": "リフィル型紙 Deskfax / B5系（176×250）",
+      "name_en": "Refill pattern Deskfax / B5系 (176×250)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Deskfax / B5系 のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 9 個・間隔 19 / 19 / 19 / 19 / 19 / 19 / 19 / 19 mm（規格表に間隔が無いため 19mm と仮置き）。",
+      "vars": {
+        "W": 176,
+        "H": 250,
+        "Y": 0,
+        "E": 6,
+        "D": 5,
+        "R": 0
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "Y": 0.1,
+        "E": 0.1,
+        "D": 0.1,
+        "R": 0.5
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ],
+        "R": [
+          0,
+          15
+        ]
+      },
+      "outlineRect": {
+        "w": "W",
+        "h": "H",
+        "r": "R"
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-76",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-57",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+57",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+76",
           "r": "D/2"
         }
       ]
@@ -949,11 +1090,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 89,
         "H": 153,
-        "T": 19.35,
+        "C": 38.1,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -961,7 +1103,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -1009,42 +1152,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76.2",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+95.25",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114.3",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -1057,11 +1200,12 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Compact のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Compact のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 108,
         "H": 172,
-        "T": 22.5,
+        "C": 50.8,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -1069,7 +1213,8 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -1117,42 +1262,42 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -1165,11 +1310,11 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Classic のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Classic のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 140,
         "H": 216,
-        "T": 38.15,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -1177,7 +1322,7 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -1225,49 +1370,49 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-69.85",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+25.4",
+          "cy": "H/2+Y-44.45",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+50.8",
+          "cy": "H/2+Y-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+69.85",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114.3",
+          "cy": "H/2+Y+44.45",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+139.7",
+          "cy": "H/2+Y+69.85",
           "r": "D/2"
         }
       ]
@@ -1280,11 +1425,11 @@ export const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 216,
         "H": 280,
-        "T": 32.05,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -1292,7 +1437,7 @@ export const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -1340,49 +1485,49 @@ export const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-107.95",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+25.4",
+          "cy": "H/2+Y-82.55",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+50.8",
+          "cy": "H/2+Y-57.15",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+165.1",
+          "cy": "H/2+Y+57.15",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+190.5",
+          "cy": "H/2+Y+82.55",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+215.9",
+          "cy": "H/2+Y+107.95",
           "r": "D/2"
         }
       ]
