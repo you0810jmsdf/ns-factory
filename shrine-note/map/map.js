@@ -431,6 +431,7 @@ async function buildRoute(s) {
   route = { points, pos, N, total, km, min, fastestMin: r.fastestMin, alts: r.alts, shrineId: s.id, mid: { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 }, len: Math.hypot(maxX - minX, maxZ - minZ) };
   refreshRouteBox();
   showHud(hudFull(route));
+  countUps();
   return route;
 }
 const toastEl = document.createElement('div');
@@ -542,7 +543,8 @@ function refreshRouteBox() {
   const s = selected;
   const has = user && route && route.shrineId === s.id;
   const pending = user && !has && routeConsent === 'road' && !routeErr;
-  box.innerHTML = `<h3>現在地から</h3>
+  const big = has ? `<div class="bignum"><div><b data-count="${route.km < 10 ? route.km.toFixed(1) : Math.round(route.km)}" data-dec="${route.km < 10 ? 1 : 0}">0</b><small>km</small></div><div><b data-count="${Math.max(1, Math.round(route.min))}">0</b><small>分（車）</small></div></div>` : '';
+  box.innerHTML = `<h3>現在地から</h3>${big}
     <p>${has ? routeText(s) : pending ? '道路の経路を調べています…' : routeErr ? esc(routeErr) : '現在地を取ると、ここまでの道路の経路（近道の最短距離）を光の筋で描きます。'}</p>
     <p class="meta">現在地は、この端末の画面の中で使います。道路の経路を調べるときだけ、同意のうえで外部へ送ります（保存はしません）。</p>
     ${has ? `<button class="btn" type="button" data-route="run">光で走る</button><button class="btn" type="button" data-route="frame">経路の全体を見る</button><button class="btn" type="button" data-route="near">神社の近くへ寄る</button>`
@@ -954,8 +956,14 @@ function toriiSVG() {
     <rect x="136" y="136" width="14" height="110"/><rect x="250" y="136" width="14" height="110"/></g></svg>`;
 }
 
-function setSheet(html) { bodyEl.innerHTML = html; bodyEl.scrollTop = 0; }
+function setSheet(html, book = false) {
+  sheetEl.classList.toggle('book', book);
+  bodyEl.innerHTML = html; bodyEl.scrollTop = 0;
+  if (book) initBook();
+}
 
+const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
+const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function shrineHTML(s) {
   const used = [];
   const take = (...fs) => fs.forEach((f) => f && f.src && used.push(...f.src));
@@ -963,35 +971,101 @@ function shrineHTML(s) {
   (s.highlights || []).forEach((h) => take(h));
   take(s.summary, s.address, s.access, s.hours, s.parking, s.goshuin);
   (s.deity_refs || []).forEach((r) => used.push(...(r.src || [])));
-  const dch = s.deity_ids.map((id) => deities[id]).filter(Boolean).map((d) =>
-    `<button class="dchip" type="button" data-deity="${esc(d.id)}">${esc(d.name)}<small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small></button>`).join('');
+  const ds = s.deity_ids.map((id) => deities[id]).filter(Boolean);
+  // 1 はじまり
+  const nameSpans = [...s.name].map((ch, k) => `<span style="--k:${k}">${esc(ch)}</span>`).join('');
+  const c1 = `<h2 class="nm" aria-label="${esc(s.name)}">${nameSpans}</h2>
+    ${rvs(`<p class="rd">${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</p>`, 5)}
+    ${rvs(`<div class="lead">${item(s.summary)}</div>`, 7)}
+    ${rvs(`<p class="hintnext">上へなぞって、続きを読む<span class="arw" aria-hidden="true">⌃</span></p>`, 10)}`;
+  // 2 御祭神
+  const c2 = `<h3 class="chh">御祭神</h3>` + ds.map((d, k) => {
+    const sc = (d.scenes || [])[0];
+    return rvs(`<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(d.name)}</b><small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small>${sc ? `<em>神話の場面：${esc(sc.title)} ›</em>` : '<em>神様のページへ ›</em>'}</button>`, k + 1);
+  }).join('') + (s.deity_note ? rvs(`<p class="meta">${esc(s.deity_note.text)}${refs(s.deity_note.src)}</p>`, ds.length + 2) : '');
+  // 3 由緒（時間の線）
+  const hist = (s.history || []);
+  const c3 = `<h3 class="chh">由緒</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
+    const ty = h.type && TYPE[h.type] ? h.type : 'fact';
+    return rvs(`<div class="tli ${ty}">${item(h)}</div>`, k + 1);
+  }).join('') : rvs(item(null), 1)) + `</div>`;
+  // 4 見どころ
+  const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
-  const sameHTML = same.length ? `<h3>同じ神様を祀る社</h3><ul class="linklist">` + same.map(([o, id]) =>
-    `<li><button type="button" data-shrine="${esc(o.id)}">${esc(o.name)}<small>${esc(deities[id]?.name || '')}を祀る</small></button></li>`).join('') + `</ul>` : '';
+  const c4 = `<h3 class="chh">見どころ</h3>` + (hl.length ? hl.map((h, k) => rvs(`<div class="spot">${item(h)}</div>`, k + 1)).join('') : rvs('<div class="spot"><p>見どころの記録は準備中です。<span class="badge todo">要確認</span></p></div>', 1))
+    + (same.length ? rvs(`<h3 class="chh sub">同じ神様を祀る社へ</h3><ul class="linklist">` + same.map(([o, id]) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(o.name)}<small>${esc(deities[id]?.name || '')}を祀る</small></button></li>`).join('') + `</ul>`, hl.length + 2) : '');
+  // 5 行き方
   const row = (k, f) => f ? `<dt>${k}</dt><dd>${typeof f === 'string' ? esc(f) : esc(f.text) + refs(f.src) + stBadge(f.status)}</dd>` : `<dt>${k}</dt><dd><span class="badge todo">要確認</span></dd>`;
-  return `
-    <h2>${esc(s.name)}<small>${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</small></h2>
-    ${item(s.summary)}
-    <h3>御祭神</h3>
-    <div class="deities">${dch}</div>
-    ${(s.deity_note ? `<p class="meta">${esc(s.deity_note.text)}${refs(s.deity_note.src)}</p>` : '')}
-    <h3>由緒</h3>
-    ${(s.history || []).map(item).join('') || item(null)}
-    <h3>見どころ</h3>
-    ${(s.highlights || []).map(item).join('') || item(null)}
+  const c5 = `<h3 class="chh">行き方・参拝</h3>
     <div id="routeBox" class="routebox"></div>
-    <h3>アクセス・参拝</h3>
     ${s.note_geo ? `<p class="meta">位置：${esc(s.note_geo)}</p>` : ''}
     <dl class="row">${row('所在地', s.address)}${row('アクセス', s.access)}${row('参拝時間', s.hours)}${row('駐車場', s.parking)}${row('御朱印', s.goshuin)}</dl>
-    <h3>食 <span class="badge pr">PR枠</span></h3>
+    <h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
     <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>
-    <h3>宿 <span class="badge pr">PR枠</span></h3>
+    <h3 class="chh sub">宿 <span class="badge pr">PR枠</span></h3>
     <div class="prbox">宿の候補は、同じく準備中です。未訪問の宿は「候補」として表記します。</div>
-    <h3>note 記事</h3>
+    <h3 class="chh sub">note 記事</h3>
     ${s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
-    ${sameHTML}
     ${sourceList(used)}
     <p class="meta">情報確認日：${esc(s.checked || '未確認')}／神社への敬意をもって、境内では現地の表示と作法に従ってください。</p>`;
+  const cs = [c1, c2, c3, c4, c5];
+  return `<div class="chapters" id="chapters">${cs.map((c, i) => `<section class="ch" data-ch="${i}" aria-label="${CHAPTERS[i]}">${c}</section>`).join('')}</div>
+    <nav class="dots" aria-label="章">${CHAPTERS.map((n, i) => `<button type="button" data-goto="${i}" aria-label="${n}"><span>${n}</span></button>`).join('')}</nav>`;
+}
+
+// 章めくり: 入った章の行が順に現れる／数字が増える／背景の地図のカメラが動く
+let bookObs = null, lastCh = -1;
+function initBook() {
+  const box = document.getElementById('chapters');
+  if (!box) return;
+  if (bookObs) bookObs.disconnect();
+  lastCh = -1;
+  const secs = [...box.querySelectorAll('.ch')];
+  const fit = () => box.style.setProperty('--chh', box.clientHeight + 'px');
+  fit(); addEventListener('resize', fit);
+  new ResizeObserver(fit).observe(box);
+  const dots = [...bodyEl.querySelectorAll('.dots button')];
+  const setActive = (i) => {
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    if (i !== lastCh) { const first = lastCh < 0; lastCh = i; if (!first) chapterCam(i); }
+  };
+  bookObs = new IntersectionObserver((es) => {
+    es.forEach((e) => { e.target.classList.toggle('in', e.isIntersecting); });
+    countUps();
+  }, { root: box, threshold: 0.2 });
+  secs.forEach((el) => bookObs.observe(el));
+  let raf = 0;
+  box.addEventListener('scroll', () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const top = box.scrollTop + box.clientHeight * 0.35;
+      let idx = 0;
+      secs.forEach((el, i) => { if (el.offsetTop <= top) idx = i; });
+      setActive(idx);
+    });
+  }, { passive: true });
+  dots.forEach((d) => d.addEventListener('click', () => secs[+d.dataset.goto].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })));
+  setActive(0);
+  requestAnimationFrame(() => secs[0].classList.add('in'));
+}
+// 章に合わせて、背景の地図のカメラを動かす（神社に寄ったまま、向き・高さ・寄りを変える）
+function chapterCam(i) {
+  const s = selected;
+  if (!s || run || flight || !sheetEl.classList.contains('show')) return;
+  const base = s._p.x > 0 ? -0.35 : 0.35;
+  const P = [{ d: 0.95, e: 0.46, a: 0 }, { d: 0.7, e: 0.52, a: 0.35 }, { d: 0.5, e: 0.34, a: 0.7 }, { d: 0.85, e: 0.62, a: 0.25 }, { d: 1.5, e: 0.8, a: 0 }][i];
+  flyTo({ tx: s._p.x, tz: s._p.z, ty: s._y, dist: (isNarrow() ? 1.3 : 1) * P.d, el: P.e, az: base + P.a }, 1.8);
+}
+// 大きな数字のカウントアップ
+function countUps() {
+  bodyEl.querySelectorAll('.ch.in [data-count]:not(.done)').forEach((el) => {
+    el.classList.add('done');
+    const to = parseFloat(el.dataset.count), dec = +el.dataset.dec || 0, t0 = performance.now();
+    if (reduce) { el.textContent = to.toFixed(dec); return; }
+    const tick = (now) => { const p = Math.min(1, (now - t0) / 1100), e = 1 - Math.pow(1 - p, 3); el.textContent = (to * e).toFixed(dec); if (p < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
 }
 
 function deityHTML(d, fromShrine) {
@@ -1121,7 +1195,7 @@ function selectShrine(id) {
 function arrive(s, my) {
   photoEl.innerHTML = photoHTML(s);
   photoEl.hidden = false;
-  setSheet(shrineHTML(s));
+  setSheet(shrineHTML(s), true);
   refreshRouteBox();
   sheetEl.hidden = false;
   const d1 = reduce ? 0 : 250, d2 = reduce ? 0 : 2600;
@@ -1136,7 +1210,7 @@ function showDeity(id) {
   openTree(false);
 }
 function backToShrine() {
-  if (current && current.shrine) { setSheet(shrineHTML(current.shrine)); refreshRouteBox(); }
+  if (current && current.shrine) { setSheet(shrineHTML(current.shrine), true); refreshRouteBox(); }
 }
 function goHome() {
   seq++;
