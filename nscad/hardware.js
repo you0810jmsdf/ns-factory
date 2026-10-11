@@ -43,6 +43,7 @@ export function hardwareFootprint(item, overrides = {}, binderSpec = null) {
     const base = binderBase(binderSpec), L = base.lengthMm, W = base.sectionWidthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
     outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, base.cornerRMm || 0) });
     for (const r of v.plan.rings) { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; outline.push({ type: 'polyline', closed: true, points: roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })) }); } /* リングは真上から見た細い棒（線径×外径）。両端は線径の半分の半径で丸める（線径に自動で追従） */
+    for (const q of v.plan.parts) { const b = q.box; outline.push(q.shape === 'circle' ? { type: 'circle', cx: (b.minX + b.maxX) / 2, cy: (b.minY + b.maxY) / 2, r: q.r } : { type: 'polyline', closed: true, points: [{ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, { x: b.maxX, y: b.maxY }, { x: b.minX, y: b.maxY }] }); } /* 開閉機構の部品：レバーは四角・ボタンは円 */
     for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
     return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: v.D + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
   }
@@ -77,6 +78,15 @@ export function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z
     // 中心線の半径は（内径＋線径）/2。内外の面と左右の面で針金の厚みを表す。
     const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push([-1, 1].flatMap(radial => [-1, 1].map(axial => ({ x: at.x + hx + axial * wire / 2, y: at.y + side * ((R + radial * wire / 2) * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + O / 2 + (R + radial * wire / 2) * Math.sin(a) - embed })))); }
     for (let k = 0; k < pts.length - 1; k++) for (const [i, j] of [[0, 1], [1, 3], [3, 2], [2, 0]]) faces.push({ kind: 'side', points: [pts[k][i], pts[k][j], pts[k + 1][j], pts[k + 1][i]] });
+  }
+  for (const q of binderMechParts(spec)) {   /* 開閉機構：台座の頂上に立つ箱（ボタンは多角柱） */
+    const zb = z0 + T, zt = zb + q.h;
+    if (q.shape === 'rect') box(at.x + q.x, at.y + q.y, q.w, q.l, zb, zt);
+    else {
+      const n = 12, ring = Array.from({ length: n }, (_, k) => ({ x: at.x + q.x + q.r * Math.cos(2 * Math.PI * k / n), y: at.y + q.y + q.r * Math.sin(2 * Math.PI * k / n) }));
+      faces.push({ kind: 'top', points: ring.map(p => ({ ...p, z: zt })) }, { kind: 'bottom', points: [...ring].reverse().map(p => ({ ...p, z: zb })) });
+      for (let k = 0; k < n; k++) { const a = ring[k], b = ring[(k + 1) % n]; faces.push({ kind: 'side', points: [{ ...a, z: zb }, { ...b, z: zb }, { ...b, z: zt }, { ...a, z: zt }] }); }
+    }
   }
   for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
   return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: '#c8b060' }));
@@ -184,17 +194,32 @@ export function binderRingCompare(spec, params = {}) {
 function spineRound(n) { return Math.round(n * 100) / 100; }
 /** バインダー金具の3つの見え方を、1か所の寸法から作る（平面＝真上から・正面＝台座の長手方向の横から・側面＝台座の端から）。置いた外形・3つの図・3D は、どれもここから／ここと同じ寸法で作り、食い違わないようにする。
  *  座標は mm。平面は（長さ方向 x・台座の幅方向 y）、正面は（x・高さ y＝上がマイナス・台座の上面が 0）、側面は（幅方向 x・高さ y）。リングは台座の上面に立つ丸い輪（内径＝リング径）で、真上からは線径×外径の細い棒、横からは棒、端からは輪に見える。 */
+/** 開閉機構の部品（レバー・ボタン）を、描きやすい形に整える。spec.mechanism.parts の各項目：{ kind: 'lever'|'button', xMm, yMm（台座の中心から・平面の座標）, widthMm（長さ方向）, lengthMm（台座の幅方向）, heightMm（台座の頂上から上へ）, diameterMm（ボタンなど円のとき） }。
+ *  位置・高さが無い・大きさが無い項目は飛ばす。部品が無い規格は []。戻り値の各項目：{ kind, shape: 'rect'|'circle', x, y, w, l, h, r? }（円は w＝l＝直径）。 */
+export function binderMechParts(spec) {
+  const out = [], num = v => (v == null ? NaN : Number(v));
+  for (const q of spec?.mechanism?.parts || []) {
+    const x = num(q.xMm), y = num(q.yMm), h = num(q.heightMm), d = num(q.diameterMm), w = num(q.widthMm), l = num(q.lengthMm), kind = q.kind === 'button' ? 'button' : 'lever';
+    if (!(Number.isFinite(x) && Number.isFinite(y) && h > 0)) continue;
+    if (d > 0) out.push({ kind, shape: 'circle', x, y, w: d, l: d, h, r: d / 2 }); else if (w > 0 && l > 0) out.push({ kind, shape: 'rect', x, y, w, l, h });
+  }
+  return out;
+}
 export function binderViews(spec, ringD = null) {
   const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), I = size.inner, wire = size.wire, D = size.outer, embed = spec.rings.embedMm ?? 0;
   let x = -spec.holes.span1toLastMm / 2; const ringXs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; ringXs.push(x); }
-  const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY });
+  const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY }), mech = binderMechParts(spec), part = (p, b) => ({ kind: p.kind, shape: p.shape, ...(p.r ? { r: p.r } : {}), box: b });
   return {
     L, W, T, D, I, wire, ringXs,
-    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)) },
-    front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)) },
-    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: I / 2 }, ...(spec.base ? { section: binderSection(base) } : {}) },
+    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2))) },
+    front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, -p.h, 0))) },
+    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: I / 2 }, ...(spec.base ? { section: binderSection(base) } : {}), parts: mech.map(p => part(p, box(p.y - p.l / 2, p.y + p.l / 2, -p.h, 0))) },
   };
 }
+/** 開閉機構の部品1つの SVG（四角は rect・円は circle）。class="mech"。 */
+const mechSvg = q => { const b = q.box, f = n => (Math.round(n * 100) / 100).toString(); return q.shape === 'circle' ? `<circle class="mech" cx="${f((b.minX + b.maxX) / 2)}" cy="${f((b.minY + b.maxY) / 2)}" r="${f(q.r)}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect class="mech" x="${f(b.minX)}" y="${f(b.minY)}" width="${f(b.maxX - b.minX)}" height="${f(b.maxY - b.minY)}" fill="none" stroke="#000" stroke-width="0.2"/>`; };
+/** 部品が、リングより高いときだけ、絵の上を広げる（部品が無い規格の図は変わらない）。 */
+const liftSvg = (svg, lift) => lift > 0 ? svg.replace(/height="([\d.]+)mm" viewBox="(\S+) (\S+) (\S+) (\S+)"/, (_, h, a, b, c, d) => `height="${Math.round((Number(h) + lift) * 100) / 100}mm" viewBox="${a} ${Math.round((Number(b) - lift) * 100) / 100} ${c} ${Math.round((Number(d) + lift) * 100) / 100}"`) : svg;
 /** 平面図（真上から）。リングは台座に直角に立つので、線径×外径の細い棒が並ぶ。 */
 export function binderPlanSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { L, W, D, plan } = v, f = n => (Math.round(n * 100) / 100).toString(), xs = v.ringXs;
@@ -202,6 +227,7 @@ export function binderPlanSvg(spec, ringD = null) {
   const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(binderBase(spec).cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
   for (const r of plan.rings) parts.push(`<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f((r.minX + r.maxX) / 2)}" cy="0" r="0.6" fill="#000"/>`);
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
+  for (const q of plan.parts) parts.push(mechSvg(q));
   const dy = Math.max(W, D) / 2 + 5;
   for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
   parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(v.I)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
@@ -210,13 +236,17 @@ export function binderPlanSvg(spec, ringD = null) {
 /** 側面図（台座の端から）。リングは台座の上面に立つ丸い輪（内径＝リング径・太さ＝線径）。 */
 export function binderSideSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { W, T, D, side } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, embed = spec.rings.embedMm ?? 0, h = D - embed + Math.max(T, embed) + 2 * pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(v.I)}mm</text></g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(v.I)}mm</text></g></svg>`;
+  const mech = side.parts.map(mechSvg).join(''), top = Math.max(0, ...side.parts.map(q => -q.box.minY)), lift = Math.max(0, top - (D - (spec.rings.embedMm ?? 0)));
+  return liftSvg(mech ? svg.replace('</g></svg>', mech + '</g></svg>') : svg, lift);
 }
 /** 正面図（台座の長手方向の横から）。リングは台座の上面に立つ細い棒（線径×外径）。 */
 export function binderFrontSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { L, T, D, front } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D - (spec.rings.embedMm ?? 0) + T + 2 * pad;
   const rings = front.rings.map(r => `<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/>`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
+  const mech = front.parts.map(mechSvg).join(''), top = Math.max(0, ...front.parts.map(q => -q.box.minY)), lift = Math.max(0, top - (D - (spec.rings.embedMm ?? 0)));
+  return liftSvg(mech ? svg.replace('</g></svg>', mech + '</g></svg>') : svg, lift);
 }
 /** 規格 JSON の整合検査：必須キー・ピッチの合計＝span。問題を文字列配列で返す（空＝OK）。 */
 export function checkBinderSpec(spec) {
@@ -271,6 +301,10 @@ export function binderViewShapes(spec, ringD, at, angleDeg, dc) {
   }
   if (quarter === 0) { for (const hx of v.ringXs) top.push(rect(at.x + hx * cs - wire / 2, at.x + hx * cs + wire / 2, ringDepth[0], ringDepth[1], 'ring')); side.push(...rings(ringCenterD, at.y)); }
   else { top.push(...rings(at.x, ringCenterD)); for (const hx of v.ringXs) side.push(rect(ringDepth[0], ringDepth[1], at.y + hx * sn - wire / 2, at.y + hx * sn + wire / 2, 'ring')); }
+  for (const q of binderMechParts(spec)) {   /* 開閉機構の部品：手前へ頂上から高さぶん立つ。円は、棒と同じく、直径の四角として描く */
+    const cx = at.x + q.x * cs - q.y * sn, cy = at.y + q.x * sn + q.y * cs, wx = quarter === 0 ? q.w : q.l, ly = quarter === 0 ? q.l : q.w, dep = [dOf(T + q.h), dOf(T)];
+    top.push(rect(cx - wx / 2, cx + wx / 2, dep[0], dep[1], 'part')); side.push(rect(dep[0], dep[1], cy - ly / 2, cy + ly / 2, 'part'));
+  }
   return { top, side };
 }
 
