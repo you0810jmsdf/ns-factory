@@ -150,7 +150,8 @@ export function binderPlanSvg(spec, ringD = null) {
   let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
   const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
   const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(spec.plate.cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
-  for (const hx of xs) parts.push(`<circle cx="${f(hx)}" cy="0" r="${f(D / 2)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
+  /* リングは台座の長手方向に直角に立っている：真上から見ると、線径（2mm）×リング径の細い棒になる */
+  for (const hx of xs) parts.push(`<rect x="${f(hx - 1)}" y="${f(-D / 2)}" width="2" height="${f(D)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(hx)}" cy="0" r="0.6" fill="#000"/>`);
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
   const dy = Math.max(W, D) / 2 + 5;
   for (let i = 0; i + 1 < xs.length; i++) parts.push(`<line x1="${f(xs[i])}" y1="${f(dy)}" x2="${f(xs[i + 1])}" y2="${f(dy)}" stroke="#000" stroke-width="0.15"/><text x="${f((xs[i] + xs[i + 1]) / 2)}" y="${f(dy - 1)}" font-size="2.5" text-anchor="middle" font-family="sans-serif">${f(spec.holes.pitchMm[i])}</text>`);
@@ -175,4 +176,25 @@ export function checkBinderSpec(spec) {
   if (spec.holes) { if (spec.holes.pitchMm.length !== spec.holes.count - 1) out.push('pitch-count'); const sum = spec.holes.pitchMm.reduce((a, b) => a + b, 0); if (Math.abs(sum - spec.holes.span1toLastMm) > 0.1) out.push('span-mismatch'); }
   if (spec.rings && !spec.rings.diameterOptionsMm?.length) out.push('rings-empty');
   return out;
+}
+
+/** 置いた金具の外形（折れ線）から、中心 at と角度（度・時計回り・-90〜90）を割り出す。長いほうの軸の向きを角度とする（手で動かした・回した後でも使える）。 */
+export function hwPoseOfOutline(shape) {
+  const pts = shape?.points || [];
+  if (pts.length < 3) return { at: { x: 0, y: 0 }, angleDeg: 0 };
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  let sxx = 0, syy = 0, sxy = 0; for (const p of pts) { const dx = p.x - cx, dy = p.y - cy; sxx += dx * dx; syy += dy * dy; sxy += dx * dy; }
+  let deg = 0.5 * Math.atan2(2 * sxy, sxx - syy) * 180 / Math.PI;
+  if (deg > 90) deg -= 180; if (deg <= -90) deg += 180;
+  return { at: { x: cx, y: cy }, angleDeg: deg };
+}
+const NUM_KEYS = ['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'c1x', 'c1y', 'c2x', 'c2y', 'startDeg', 'endDeg'];
+const sameShape = (a, b, tol) => a.type === b.type && NUM_KEYS.every(k => (k in a) === (k in b) && (!(k in a) || Math.abs(a[k] - b[k]) <= tol))
+  && ((a.points || []).length === (b.points || []).length) && (a.points || []).every((p, i) => Math.abs(p.x - b.points[i].x) <= tol && Math.abs(p.y - b.points[i].y) <= tol);
+/** 2つの図形の並びが（順番を問わず）同じ形か。数値は tol(mm) 以内の違いなら同じとみなす。手で直したかの判定に使う。 */
+export function sameShapes(a, b, tol = 0.05) {
+  if (a.length !== b.length) return false;
+  const left = [...b];
+  for (const s of a) { const i = left.findIndex(t => sameShape(s, t, tol)); if (i < 0) return false; left.splice(i, 1); }
+  return true;
 }

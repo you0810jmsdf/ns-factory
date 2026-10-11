@@ -1,10 +1,14 @@
-import { smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
+import { arrayOffsets } from './array.js';
+import { alignOffsets, distributeOffsets } from './align.js';
+import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
+import { scaleInput } from './scale_input.js';
+import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
-import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
+import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -28,9 +32,10 @@ import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { track } from './analytics.js';
+import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
 import { t, setLang } from './i18n.js';
-import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll } from './shortcuts.js';
+import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
 import { HELP_EN } from './help/en.js';
 
@@ -1842,19 +1847,174 @@ function renderSpineSim() { const p = spineParams(), r = spineSim(p); if (!r) { 
 function initSpineSim() { for (const id of ['spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderSpineSim); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'ringD', 'binderSpecSel']) $(id).addEventListener('change', renderTopSection); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
 function hwParams() { const out = {}; for (const input of ($('hwParams').children || [])) { const el = input.querySelector ? input.querySelector('input') : null; if (el && el.dataset?.param) out[el.dataset.param] = Number(el.value); } return out; }
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
+/** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
+function hardwareDrafts(it, overrides, spec, at, angleDeg) {
+  const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, out = [];
+  fp.outline.forEach((s, i) => out.push({ ...s, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }));
+  for (const s of fp.holes) out.push({ ...s, layer: 'hwholes' });
+  if (fp.ringCenters) for (const c of fp.ringCenters) for (const [dx, dy] of [[1, 0], [0, 1]]) out.push({ layer: marks, type: 'line', x1: c.x - 2 * dx, y1: c.y - 2 * dy, x2: c.x + 2 * dx, y2: c.y + 2 * dy });
+  return out;
+}
+/** 下書きを文書に加える（新しい id を付け、1つのグループにする）。加えた図形の id の配列を返す。 */
+function addHardwareDrafts(drafts, groupId) {
+  if (!doc.layers.some(l => l.id === 'hwholes')) doc.layers.push({ id: 'hwholes', name: 'hwholes', visible: true, locked: false });
+  const ids = []; for (const d of drafts) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...d, id, groupId }); ids.push(id); }
+  return ids;
+}
+/** 頂点の入力欄は行数や選択が変わったときだけ作り直し、入力中の値と移動先の欄を保つ。 */
+let vertexLayoutKey = '', vertexValueKey = '';
+function vertexShape() {
+  const s = infoShape(); return s && ['polyline', 'path'].includes(s.type) && selectedShapeIds().size <= 1 ? s : null;
+}
+function refreshVertexCard() {
+  const s = vertexShape(); $('vertexCard').hidden = !s;
+  if (!s) { vertexLayoutKey = vertexValueKey = ''; return; }
+  const points = s.type === 'polyline' ? s.points : s.nodes, count = Math.min(40, points.length), layout = JSON.stringify([s.id, s.type, count]);
+  if (layout !== vertexLayoutKey) {
+    $('vertexRows').innerHTML = points.slice(0, count).map((p, i) => `<div class="row"><span>${i + 1}</span>${['x', 'y'].map(axis => `<label><span>${axis.toUpperCase()}</span><input id="vertex-${i}-${axis}" type="number" step="any" aria-label="${i + 1} ${axis.toUpperCase()} (mm)"></label>`).join('')}</div>`).join('');
+    for (let i = 0; i < count; i++) for (const axis of ['x', 'y']) $(`vertex-${i}-${axis}`).addEventListener('change', () => applyVertex(s.id, i, axis));
+    vertexLayoutKey = layout; vertexValueKey = '';
+  }
+  const key = JSON.stringify([layout, points.slice(0, count), editable(s)]);
+  if (key !== vertexValueKey) for (let i = 0; i < count; i++) for (const axis of ['x', 'y']) {
+    const input = $(`vertex-${i}-${axis}`); input.value = String(points[i][axis]); input.disabled = !editable(s);
+  }
+  vertexValueKey = key; $('vertexNote').hidden = points.length <= 40; $('vertexNote').textContent = t('vertexMore');
+}
+function applyVertex(id, index, axis) {
+  const s = vertexShape(); if (!s || s.id !== id) { refreshVertexCard(); return; }
+  const points = s.type === 'polyline' ? s.points : s.nodes, input = $(`vertex-${index}-${axis}`), next = editVertex(s, index, axis, input.value);
+  if (!editable(s) || !next || !validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === id ? next : x) })) { input.value = String(points[index][axis]); return; }
+  if (Number(input.value) === points[index][axis]) { input.value = String(points[index][axis]); return; }
+  transformSelectedTo(next);
+}
+/** 「選んだ図形を動かす」カード：何か選んでいるときだけ出す。右へ・下へ（mm・マイナスで左・上）を入れて動かす。 */
+function refreshArrayCard() { $('arrayCard').hidden = !selectedShapeIds().size; }
+function applyArray() {
+  const raw = ['arrayNx', 'arrayNy', 'arrayDx', 'arrayDy'].map(id => $(id).value.trim()); let offsets;
+  try { if (raw.some(v => !v)) throw new RangeError(); offsets = arrayOffsets(...raw.map(Number)); }
+  catch { $('hint').textContent = t('arrayInvalid'); return; }
+  if (!offsets.length || !selectedShapeIds().size) return;
+  copySelectedOffsets(offsets); $('hint').textContent = t('arrayDone');
+}
+$('arrayApply').onclick = applyArray;
+function refreshMoveCard() { $('moveCard').hidden = !selectedShapeIds().size; }
+function applyMove() {
+  const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (!selectedShapeIds().size || (dx === 0 && dy === 0)) return;
+  transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
+}
+$('moveApply').onclick = applyMove;
+/** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
+function selectedAlignUnits() {
+  const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
+  const root = id => { while (parent.get(id) !== id) id = parent.get(id); return id; };
+  const join = list => { const members = list.filter(id => ids.has(id)); if (members.length) for (const id of members) parent.set(root(id), root(members[0])); };
+  const groups = new Map(); for (const s of shapes) { const g = groupIdOf(s); if (g) { if (!groups.has(g)) groups.set(g, []); groups.get(g).push(s.id); } }
+  for (const members of groups.values()) join(members); for (const p of doc.paths) join(p.shapeIds);
+  const units = new Map();
+  for (const s of shapes) { const key = root(s.id); if (!units.has(key)) units.set(key, { ids: [], box: { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity } }); const u = units.get(key), b = bboxOf(s); u.ids.push(s.id); for (const k of ['minX', 'minY']) u.box[k] = Math.min(u.box[k], b[k]); for (const k of ['maxX', 'maxY']) u.box[k] = Math.max(u.box[k], b[k]); }
+  return [...units.values()];
+}
+function refreshAlignCard() { const n = selectedAlignUnits().length; $('alignCard').hidden = n < 2; $('distributeX').disabled = $('distributeY').disabled = n < 3; }
+function applyAlign(kind) {
+  const units = selectedAlignUnits(); if (units.length < 2) return;
+  applyAlignOffsets(units, alignOffsets(units.map(u => u.box), kind), 'aligned');
+}
+function applyDistribute(axis) {
+  const units = selectedAlignUnits(); if (units.length < 3) return;
+  applyAlignOffsets(units, distributeOffsets(units.map(u => u.box), axis), 'distributed');
+}
+function applyAlignOffsets(units, offsets, message) {
+  if (!offsets.some(o => o.dx || o.dy)) return;
+  const byShape = new Map(); units.forEach((u, i) => u.ids.forEach(id => byShape.set(id, offsets[i])));
+  const byPath = new Map(doc.paths.map(p => [p.id, byShape.get(p.shapeIds[0])]));
+  transformSelected((s, path) => { const o = path ? byPath.get(path.id) : s.pathId ? byPath.get(s.pathId) : byShape.get(s.id); return o ? translate(s, o.dx, o.dy) : s; });
+  $('hint').textContent = t(message);
+}
+$('distributeX').onclick = () => applyDistribute('x'); $('distributeY').onclick = () => applyDistribute('y');
+for (const kind of ['left', 'centerX', 'right', 'top', 'centerY', 'bottom']) $('align' + kind[0].toUpperCase() + kind.slice(1)).onclick = () => applyAlign(kind);
+/** 「選んだ図形を拡大縮小」カード：何か選んでいるときだけ出す。基準点を動かさずに、横・縦の倍率（%）で伸縮する。 */
+function selectionBox() {
+  const ids = selectedShapeIds(), list = doc.shapes.filter(s => ids.has(s.id)).map(bboxOf); if (!list.length) return null;
+  return { minX: Math.min(...list.map(b => b.minX)), minY: Math.min(...list.map(b => b.minY)), maxX: Math.max(...list.map(b => b.maxX)), maxY: Math.max(...list.map(b => b.maxY)) };
+}
+let scaleCardKey = '', scaleBadInputs = new Set();
+function refreshScaleCard(reset = false) {
+  const b = selectionBox(); $('scaleCard').hidden = !b; if (!b) { scaleCardKey = ''; scaleBadInputs.clear(); return; }
+  const w = b.maxX - b.minX, h = b.maxY - b.minY, key = JSON.stringify([[...selectedShapeIds()].sort(), w, h]);
+  $('scaleSize').textContent = t('scaleNow', { w: w.toFixed(2), h: h.toFixed(2) });
+  $('scaleW').disabled = w === 0; $('scaleH').disabled = h === 0;
+  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
+  scaleCardKey = key;
+}
+/** 入れた方向をもとに寸法と倍率をそろえる。大きさ0の方向の寸法入力は無視する。 */
+function syncScaleInput(id) {
+  const b = selectionBox(); if (!b) return;
+  const horizontal = id === 'scaleX' || id === 'scaleW', isSize = id === 'scaleW' || id === 'scaleH', w = b.maxX - b.minX, h = b.maxY - b.minY, current = horizontal ? w : h;
+  if (isSize && current === 0) return;
+  const value = scaleInput($(id).value, current, isSize), other = value && scaleInput(value.percent, horizontal ? h : w);
+  if (!value || ($('scaleKeep').checked && !other)) { scaleBadInputs.add(id); $('hint').textContent = t('scaleInvalid'); return; }
+  const percentId = horizontal ? 'scaleX' : 'scaleY', sizeId = horizontal ? 'scaleW' : 'scaleH';
+  $(percentId).value = String(value.percent); if (!isSize) $(sizeId).value = value.size.toFixed(2);
+  scaleBadInputs.delete(percentId); scaleBadInputs.delete(sizeId);
+  if ($('scaleKeep').checked) {
+    const otherPercent = horizontal ? 'scaleY' : 'scaleX', otherSize = horizontal ? 'scaleH' : 'scaleW';
+    $(otherPercent).value = String(value.percent); $(otherSize).value = other.size.toFixed(2); scaleBadInputs.delete(otherPercent); scaleBadInputs.delete(otherSize);
+  }
+}
+function applyScale() {
+  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value);
+  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
+  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1) return;
+  const a = $('scaleAnchor').value, o = { x: /Right$/.test(a) ? b.maxX : /Left$/.test(a) ? b.minX : (b.minX + b.maxX) / 2, y: /^bottom/.test(a) ? b.maxY : /^top/.test(a) ? b.minY : (b.minY + b.maxY) / 2 };
+  const ids = selectedShapeIds(), curved = Math.abs(sx - sy) > 1e-12 && doc.shapes.some(s => ids.has(s.id) && (s.type === 'circle' || s.type === 'arc'));
+  transformSelected(s => scaleGeometry(s, sx, sy, o));
+  $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
+}
+$('scaleApply').onclick = applyScale;
+for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
+/** 金具の編集カード：金具（外形に hw を持つ図形のグループ）を全体まで選んでいるときだけ出す。規格・リング径・角度を変えて「作り直す」と、位置はそのままで金具を作り直す。 */
+let hwEditKey = '', hwEditArmed = 0;
+function selectedHardware() {
+  const plate = doc.shapes.find(s => selected.has(s.id) && s.hw?.id); if (!plate) return null;
+  const g = groupIdOf(plate), members = g ? doc.shapes.filter(s => groupIdOf(s) === g) : [plate];
+  return members.every(m => selected.has(m.id)) ? { plate, members } : null;
+}
+const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate.hw.params?.spec;
+function refreshHwEdit() {
+  const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
+  const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
+  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = !isBinder;
+  if (isBinder) {
+    const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
+    sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? '');
+  }
+  $('hwEditAngle').value = String(+hwPoseOfOutline(hw.plate).angleDeg.toFixed(2)); $('hwEditNote').textContent = t('hwEditNote');
+}
+function applyHwEdit() {
+  const hw = selectedHardware(); if (!hw) return;
+  const old = hw.plate.hw, isBinder = hwIsBinder(hw.plate), pose = hwPoseOfOutline(hw.plate);
+  const specId = isBinder ? $('hwEditSpec').value : null, ringD = isBinder ? Number($('hwEditRing').value) : undefined, angle = Number($('hwEditAngle').value);
+  if (!Number.isFinite(angle) || (isBinder && !(ringD > 0))) { $('hint').textContent = t('invalidNumber'); return; }
+  const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + specId : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
+  const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest; let same = true;   /* 手で直したかの判定：今の設定で作り直した形と比べる */
+  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
+  if (!same && Date.now() - hwEditArmed > 6000) { hwEditArmed = Date.now(); $('hint').textContent = t('hwEditWarn'); return; }  /* 埋め込みブラウザでは confirm が出ないので 2 段押し */
+  hwEditArmed = 0;
+  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  const gid = groupIdOf(hw.plate) || nextGroupId(doc.shapes), gone = new Set(hw.members.map(m => m.id));
+  cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !gone.has(s.id)); selected = new Set(addHardwareDrafts(drafts, gid)); });
+  hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
+}
+$('hwEditApply').onclick = applyHwEdit;
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
-  let fp; try { fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, Number($('hwAngle').value) || 0); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, Number($('hwAngle').value) || 0); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
-  commit(() => {
-    if (!doc.layers.some(l => l.id === 'hwholes')) doc.layers.push({ id: 'hwholes', name: 'hwholes', visible: true, locked: false });
-    const marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, ids = [];
-    fp.outline.forEach((s, i) => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg: Number($('hwAngle').value) || 0, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }); ids.push(id); });
-    for (const s of fp.holes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: 'hwholes' }); ids.push(id); }
-    if (fp.ringCenters) for (const c of fp.ringCenters) for (const [dx, dy] of [[1, 0], [0, 1]]) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: marks, type: 'line', x1: c.x - 2 * dx, y1: c.y - 2 * dy, x2: c.x + 2 * dx, y2: c.y + 2 * dy }); ids.push(id); }
-    selected = new Set(ids);
-  });
+  commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
   renderLayers(); $('hint').textContent = t('hwPlaced', { name: document.documentElement.lang === 'en' ? it.name_en : it.name_ja });
 }
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
@@ -2061,11 +2221,12 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
+  $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && groupIdOf(s));
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.length, selected: selected.size });
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo();
+  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
 }
 function commit(fn) {
   const before = JSON.stringify(doc);
@@ -2122,11 +2283,11 @@ function transformSelected(fn) {
     for(const h of doc.holes.filter(h=>paths.has(h.pathId))){const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));if(route)h.s=projectOnPath(route,h).s;}
     for(const saved of doc.paths.filter(p=>paths.has(p.id))){
       const old=before.get(saved.id),route=resolvePath(doc,saved),len=arcLength(route);
-      const mapped=s=>projectOnPath(route,fn(pointAtLength(old,s))).s;
+      const mapped=s=>projectOnPath(route,fn(pointAtLength(old,s),saved)).s;
       saved.segments=saved.segments.flatMap(segment=>{
         if(!saved.closed){const a=mapped(segment.from),b=mapped(segment.to);return [{...segment,from:Math.min(a,b),to:Math.max(a,b)}];}
         const span=segment.to-segment.from;if(span>=len-1e-6)return [{...segment,from:0,to:len}];
-        const original=pointAtLength(old,segment.from),transformed=fn(original),start=mapped(segment.from),tangent=pointAtLength(route,start).angleDeg;
+        const original=pointAtLength(old,segment.from),transformed=fn(original,saved),start=mapped(segment.from),tangent=pointAtLength(route,start).angleDeg;
         const reversed=Math.cos((transformed.angleDeg-tangent)*Math.PI/180)<0;
         const from=((start-(reversed?span:0))%len+len)%len,to=from+span;
         return to<=len+1e-6?[{...segment,from,to:Math.min(to,len)}]:[{...segment,from,to:len},{...segment,from:0,to:to-len}];
@@ -2135,16 +2296,21 @@ function transformSelected(fn) {
     manualNext=null;
   });
 }
-function copySelected() {
+function copySelected() { copySelectedOffsets([{ dx: 5, dy: 5 }]); }
+function copySelectedOffsets(offsets) {
   const sourceIds=selectedShapeIds(); const sources=doc.shapes.filter(s=>sourceIds.has(s.id));
   if (!sources.length) return;
   cancel();
   commit(() => {
-    const ids = new Set(), map=new Map(), paths=[...doc.paths], holes=[...doc.holes];
-    for (const s of sources) { const id=freshId(doc.shapes,'s'); doc.shapes.push({...translate(s,5,5),id});ids.add(id);map.set(s.id,id); }
-    for(const p of paths.filter(p=>p.shapeIds.every(id=>map.has(id)))){
-      const id=freshId(doc.paths,'p');doc.paths.push({...JSON.parse(JSON.stringify(p)),id,shapeIds:p.shapeIds.map(id=>map.get(id))});
-      for(const h of holes.filter(h=>h.pathId===p.id))doc.holes.push({...translate(h,5,5),id:freshId(doc.holes,'h'),pathId:id});
+    const ids = new Set(), paths=[...doc.paths], holes=[...doc.holes];
+    for (const { dx, dy } of offsets) {
+      const map = new Map();
+      const copyGroups = new Map(); /* 複製したグループは元とは別のグループにする */
+      for (const s of sources) { const id=freshId(doc.shapes,'s'), g=groupIdOf(s); let c={...translate(s,dx,dy),id}; if(g){ if(!copyGroups.has(g)) copyGroups.set(g,nextGroupId([...doc.shapes,...[...copyGroups.values()].map(groupId=>({groupId}))])); c={...c,groupId:copyGroups.get(g)}; } doc.shapes.push(c);ids.add(id);map.set(s.id,id); }
+      for(const p of paths.filter(p=>p.shapeIds.every(id=>map.has(id)))){
+        const id=freshId(doc.paths,'p');doc.paths.push({...JSON.parse(JSON.stringify(p)),id,shapeIds:p.shapeIds.map(id=>map.get(id))});
+        for(const h of holes.filter(h=>h.pathId===p.id))doc.holes.push({...translate(h,dx,dy),id:freshId(doc.holes,'h'),pathId:id});
+      }
     }
     selected = ids;
   });
@@ -2607,7 +2773,7 @@ canvas.addEventListener('pointerdown', e => {
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
     if (hit && !e.shiftKey) {
-      if (!selected.has(hit.id)) { selected = new Set([hit.id]); nodeSel = null; }
+      if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), insertId: pathShape?.id === hit.id ? hit.id : null };
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
@@ -2653,6 +2819,8 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'offset') { offsetClick(w, true); return; } /* ダブルクリック＝つながった図形全体を選ぶ */
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
+    const inGroup = doc.shapes.filter(x => visible(x) && editable(x)).reverse().find(x => groupIdOf(x) && selected.has(x.id) && distToShape(x, w) <= 7 / scale);
+    if (inGroup && selected.size > 1) { selected = new Set([inGroup.id]); nodeSel = null; draw(); return; } /* グループ全体を選んでいるときのダブルクリック＝中の1つだけを選ぶ */
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distToShape(x, w) <= 7 / scale);
     const chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x))).find(c => c.shapeIds.includes(hit.id)) : null;
@@ -2684,10 +2852,11 @@ canvas.addEventListener('pointerup', e => {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
       const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
-      if (hit) { if (g.additive && selected.has(hit.id)) selected.delete(hit.id); else selected.add(hit.id); }
+      if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
+      selected = expandToGroups(doc.shapes, selected); /* 囲んだ図形がグループなら全体を選ぶ */
     }
   } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
     stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
@@ -2734,6 +2903,10 @@ canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: fals
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
 $('delete').onclick = removeSelected;
 $('copy').onclick = copySelected;
+/** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
+function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
+function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) return; cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
+$('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
@@ -2775,9 +2948,11 @@ window.addEventListener('keydown', e => {
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save() : $('file').click(); return; }
   if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
+  const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
+  else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
   else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }

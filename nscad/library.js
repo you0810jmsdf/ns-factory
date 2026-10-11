@@ -2,6 +2,7 @@
 import { evalExpr } from './hardware.js';
 import { bboxOfDoc, resolvePath, projectOnPath, arcLength } from './geometry.js';
 import { makeNextId } from './interop.js';
+import { nextGroupId, groupIdOf } from './grouping.js';
 
 /* ---- 部品ライブラリのファイル保存・読み込み・バックアップ（登録した部品はブラウザの中に保存されるので、ファイルとバックアップで守る） ---- */
 export const LIBRARY_FILE_APP = "N's CAD parts library";
@@ -92,7 +93,9 @@ export function mergePayload(doc, payload, { at = { x: 0, y: 0 }, scale = 1, fre
   const moved = transformPayload(payload, at, scale), shapeMap = new Map(), pathMap = new Map(), toolMap = new Map(), ids = [];
   for (const l of payload.layers || []) if (!doc.layers.some(x => x.id === l.id)) doc.layers.push({ id: l.id, name: l.name || l.id, visible: true, locked: false });
   for (const t of payload.tools || []) { const same = doc.tools.find(x => x.id === t.id && x.pitch === t.pitch && x.kind === t.kind); if (same) { toolMap.set(t.id, same.id); continue; } const id = doc.tools.some(x => x.id === t.id) ? next(doc.tools, 'tool') : t.id; doc.tools.push({ ...t, id }); toolMap.set(t.id, id); }
-  for (const s of moved.shapes) { const id = next(doc.shapes, 's'); shapeMap.set(s.id, id); doc.shapes.push({ ...s, id, layer: doc.layers.some(l => l.id === s.layer) ? s.layer : doc.layers[0].id }); ids.push(id); }
+  const groupMap = new Map(); /* 元のグループ → 貼り付け先での新しいグループ（元の文書のグループとはつなげない） */
+  const pasteGroup = g => { if (!groupMap.has(g)) groupMap.set(g, nextGroupId([...doc.shapes, ...[...groupMap.values()].map(groupId => ({ groupId }))])); return groupMap.get(g); };
+  for (const s of moved.shapes) { const id = next(doc.shapes, 's'); shapeMap.set(s.id, id); const g = groupIdOf(s), { groupId, ...rest } = s; doc.shapes.push({ ...rest, ...(g ? { groupId: pasteGroup(g) } : {}), id, layer: doc.layers.some(l => l.id === s.layer) ? s.layer : doc.layers[0].id }); ids.push(id); }
   for (const p of moved.paths) { const id = next(doc.paths, 'p'); pathMap.set(p.id, id); doc.paths.push({ ...p, id, shapeIds: p.shapeIds.map(x => shapeMap.get(x)).filter(Boolean), segments: (p.segments || []).map(sg => ({ ...sg, toolId: toolMap.get(sg.toolId) || sg.toolId })) }); }
   for (const h of moved.holes) { if (!pathMap.has(h.pathId)) continue; const id = next(doc.holes, 'h'); doc.holes.push({ ...h, id, pathId: pathMap.get(h.pathId), toolId: toolMap.get(h.toolId) || h.toolId }); }
   for (const part of moved.parts || []) { const sids = part.shapeIds.map(x => shapeMap.get(x)).filter(Boolean); if (!sids.length) continue; doc.parts.push({ ...part, id: next(doc.parts, 'part'), shapeIds: sids }); }
