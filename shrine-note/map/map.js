@@ -399,7 +399,7 @@ async function buildRoute(s) {
   const raw = ll.map(([la, lo]) => { const p = toWorld(lo, la); return { x: p.x, z: p.z, u: p.u, vv: p.vv }; });
   let total = 0;
   const cum = raw.map((p, i) => (i ? (total += Math.hypot(p.x - raw[i - 1].x, p.z - raw[i - 1].z)) : 0));
-  const N = Math.min(2600, Math.max(300, Math.round(total / 0.004)));
+  const N = Math.min(6000, Math.max(300, Math.round(total / 0.0012)));   // 近づいても、点が途切れない密度
   const pts = [];
   let k = 0;
   for (let i = 0; i <= N; i++) {
@@ -490,7 +490,7 @@ function startRun() {
   run = null;
   document.body.classList.add('running');
   $('btnStop').hidden = false;
-  const D = Math.min(30, Math.max(9, 6 + r.km * 0.12));
+  const D = Math.min(40, Math.max(10, 8 + r.km * 0.18));   // 長い道ほど、ゆっくり走って読み込みが追いつくようにする
   const az0 = headingAt(r, 0), p0 = routePoint(r, 0);
   runZoom = 1;
   flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: runDistBase(), el: 0.6, az: az0 }, 2.4, () => {
@@ -525,7 +525,7 @@ function stepRun(now) {
   // 光が通った周辺（先頭→後ろ）を記録。道路はこの周辺だけ浮かび上がる
   const stepN = r.N * 0.02;
   for (let i = 0; i < TRAIL_N; i++) { const ff = f - i * stepN; if (ff < 0) { trailU[i].set(0, 0, 0, 0); continue; } const q = routePoint(r, ff); trailU[i].set(q.x, q.z, Math.pow(1 - i / TRAIL_N, 1.3), 0); }
-  roadAhead = routePoint(r, Math.min(r.N, f + r.N * 0.08));
+  roadAhead = [0.08, 0.16, 0.24].map((k) => routePoint(r, Math.min(r.N, f + r.N * k)));
   showHud(`${shrines.find((x) => x.id === r.shrineId)?.name ?? ''}まで　残り ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km　（全 ${fmtKm(r.km)} km）`);
   if (p >= 1) endRun(false);
   return f / r.N;
@@ -711,12 +711,12 @@ function updateRoads(now) {
   const op = Math.min(1, Math.max(0, (3.2 - cam.dist) / 1.4));
   roadMat.uniforms.uOp.value = op * (running ? 0.035 : 0.22);
   roadMat.uniforms.uRev.value = running ? 1.0 : 0;
-  if (op <= 0 || now - roadCheckAt < 200 || roadBusy >= 4) return;
+  if (op <= 0 || now - roadCheckAt < 200 || roadBusy >= 8) return;
   roadCheckAt = now;
   const foci = [tileOfWorld(cam.tx, cam.tz)];
-  if (running && roadAhead) foci.push(tileOfWorld(roadAhead.x, roadAhead.z));
+  if (running && roadAhead) roadAhead.forEach((q) => foci.push(tileOfWorld(q.x, q.z)));   // 先の道のタイルを先読み
   const R = running ? 1 : cam.dist < 1.2 ? 2 : 1;
-  for (const [cx, cy] of foci) for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { if (roadBusy < 4) loadRoadTile(cx + dx, cy + dy); }
+  for (const [cx, cy] of foci) for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { if (roadBusy < 8) loadRoadTile(cx + dx, cy + dy); }
   // 離れたタイルは捨てる
   if (roadTiles.size > 70) {
     const [cx, cy] = foci[0];
@@ -748,6 +748,8 @@ let HOME = homeState();
 Object.assign(cam, HOME);
 
 function applyCamera() {
+  // 何かの拍子に数値が壊れたら、全景の位置へ戻す（地図が真っ黒のまま動かなくなるのを防ぐ）
+  if (![cam.tx, cam.ty, cam.tz, cam.dist, cam.az, cam.el].every(Number.isFinite)) { flight = null; run = null; Object.assign(cam, homeState()); }
   const ce = Math.cos(cam.el), se = Math.sin(cam.el);
   camera.position.set(
     cam.tx + cam.dist * ce * Math.sin(cam.az),
@@ -758,6 +760,7 @@ function applyCamera() {
 
 function resize() {
   const w = innerWidth, h = innerHeight;
+  if (!w || !h) return;                       // 画面の大きさが一瞬0になるときは、何もしない
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
   camera.fov = w / h < 0.8 ? 50 : 42;
@@ -821,7 +824,7 @@ canvas.addEventListener('pointermove', (e) => {
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (flight) return;
   if (run) {                                   // 走行中は、ピンチで寄り引きだけ
-    if (ptrs.size === 2 && gesture) { const g = gestureOf(); runZoom = Math.min(3, Math.max(0.35, runZoom * (gesture.d / g.d))); gesture = g; }
+    if (ptrs.size === 2 && gesture) { const g = gestureOf(); if (g.d > 1 && gesture.d > 1) runZoom = Math.min(3, Math.max(0.35, runZoom * (gesture.d / g.d))); gesture = g; }
     return;
   }
   if (ptrs.size === 1 && drag) {
@@ -834,7 +837,7 @@ canvas.addEventListener('pointermove', (e) => {
     drag = { x: e.clientX, y: e.clientY };
   } else if (ptrs.size === 2 && gesture) {
     const g = gestureOf();
-    zoomBy(gesture.d / g.d);
+    if (g.d > 1 && gesture.d > 1) zoomBy(gesture.d / g.d);
     let da = g.ang - gesture.ang; da = Math.atan2(Math.sin(da), Math.cos(da));
     cam.az += da;
     panBy(g.cx - gesture.cx, g.cy - gesture.cy);
