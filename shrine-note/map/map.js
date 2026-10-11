@@ -243,6 +243,82 @@ markers.frustumCulled = false;
 markers.renderOrder = 10;
 scene.add(markers);
 
+// 神社の光から、金色の粒がゆっくり立ちのぼる／神社を選ぶと波紋が1度ひろがる（控えめ。動きを減らす設定では出さない）
+const MOTE_N = 7;
+let moteMat = null, motes = null;
+const ripples = [];
+if (!reduce) {
+  const cnt = n * MOTE_N, base = new Float32Array(cnt * 3), ph = new Float32Array(cnt), ang = new Float32Array(cnt), rad = new Float32Array(cnt);
+  shrines.forEach((s, i) => {
+    for (let k = 0; k < MOTE_N; k++) {
+      const j = i * MOTE_N + k;
+      base.set([s._p.x, s._y + 0.02, s._p.z], j * 3);
+      ph[j] = (k + ((i * 0.37) % 1)) / MOTE_N;          // 粒ごとに出発をずらす
+      ang[j] = (i * 2.4 + k * 2.399) % (Math.PI * 2);   // ばらけ方の向き
+      rad[j] = 0.4 + ((k * 0.618 + i * 0.13) % 1) * 0.6;
+    }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(base, 3));
+  g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
+  g.setAttribute('aAng', new THREE.BufferAttribute(ang, 1));
+  g.setAttribute('aRad', new THREE.BufferAttribute(rad, 1));
+  moteMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uSel: { value: new THREE.Vector2(1e9, 1e9) } },
+    vertexShader: `
+      attribute float aPh, aAng, aRad; uniform float uTime, uPx, uK; uniform vec2 uSel; varying float vA;
+      void main(){
+        float t = fract(uTime*0.07 + aPh);                       // 0→1 でのぼって消える（約14秒）
+        float sel = step(length(position.xz - uSel), 0.002);     // 選んだ神社は少し強く
+        vec3 p = position;
+        p.y += t*(0.26 + sel*0.1);
+        float w = 0.006 + 0.012*t;
+        p.x += cos(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
+        p.z += sin(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
+        vA = sin(3.14159*t) * (0.8 + sel*0.4);
+        vec4 mv = modelViewMatrix*vec4(p,1.);
+        gl_PointSize = clamp(7.0 * uK / (-mv.z) * 12.0, 3.0, 12.0) * uPx;
+        gl_Position = projectionMatrix*mv;
+      }`,
+    fragmentShader: `
+      varying float vA;
+      void main(){
+        float r = length(gl_PointCoord-0.5)*2.0;
+        float a = exp(-r*r*3.2) * vA * 1.25;
+        gl_FragColor = vec4(vec3(1.0,0.84,0.5)*a, a);
+      }`,
+  });
+  motes = new THREE.Points(g, moteMat);
+  motes.frustumCulled = false;
+  motes.renderOrder = 9;
+  scene.add(motes);
+}
+const rippleGeo = reduce ? null : new THREE.RingGeometry(0.94, 1, 72);
+function startRipple(sh) {
+  if (reduce) return;
+  [0, 0.45].forEach((delay, k) => {
+    const m = new THREE.MeshBasicMaterial({ color: 0xffd98a, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(rippleGeo, m);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(sh._p.x, sh._y + 0.03, sh._p.z);
+    mesh.scale.setScalar(0.001);
+    mesh.renderOrder = 8;
+    scene.add(mesh);
+    ripples.push({ mesh, t0: performance.now() + delay * 1000, D: 2.6, max: 0.11 - k * 0.03 });
+  });
+}
+function stepRipples(now) {
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i], p = (now - r.t0) / (r.D * 1000);
+    if (p < 0) continue;
+    if (p >= 1) { scene.remove(r.mesh); r.mesh.material.dispose(); ripples.splice(i, 1); continue; }
+    const e = 1 - Math.pow(1 - p, 2.2);
+    r.mesh.scale.setScalar(Math.max(0.001, r.max * e));
+    r.mesh.material.opacity = 0.5 * Math.pow(1 - p, 1.6);
+  }
+}
+
 // 細い光の柱（控えめ）
 {
   const seg = [], al = [];
@@ -767,6 +843,7 @@ function resize() {
   camera.fov = w / h < 0.8 ? 50 : 42;
   camera.updateProjectionMatrix();
   markerMat.uniforms.uK.value = Math.max(0.8, Math.min(1.4, h / 800));
+  if (moteMat) moteMat.uniforms.uK.value = markerMat.uniforms.uK.value;
   userMat.uniforms.uK.value = markerMat.uniforms.uK.value;
   routeMat.uniforms.uPxK.value = h / (2 * Math.tan((camera.fov * Math.PI) / 360));
   if (!selected && !flight) { HOME = homeState(); Object.assign(cam, HOME); }
@@ -1248,6 +1325,7 @@ function selectShrine(id) {
   // 到着の少し前から、光の柱をやわらげる
 }
 function arrive(s, my) {
+  startRipple(s);
   photoEl.innerHTML = photoHTML(s);
   photoEl.hidden = false;
   setSheet(shrineHTML(s), true);
@@ -1492,7 +1570,7 @@ function setQuality(q) {
   qual = q;
   const pr = q >= 2 ? DPR : q === 1 ? Math.min(DPR, 1.25) : 1;
   renderer.setPixelRatio(pr);
-  [markerMat, routeMat, userMat].forEach((m) => { m.uniforms.uPx.value = pr; });
+  [markerMat, routeMat, userMat, moteMat].forEach((m) => { if (m) m.uniforms.uPx.value = pr; });
   resize();
 }
 function watchFrame(now) {
@@ -1517,6 +1595,8 @@ function loop(now) {
   terrainMat.uniforms.uTime.value = t;
   markerMat.uniforms.uTime.value = t;
   userMat.uniforms.uTime.value = t;
+  if (moteMat) { moteMat.uniforms.uTime.value = t; motes.visible = qual > 0; moteMat.uniforms.uSel.value.set(selected ? selected._p.x : 1e9, selected ? selected._p.z : 1e9); }
+  stepRipples(now);
   { const rp = stepRun(now); routeMat.uniforms.uHead.value = rp != null ? rp : (t * 0.3) % 1; }
   scene.userData.starMat.uniforms.uTime.value = t;
   if (selected) { terrainMat.uniforms.uSel.value.set(selected._p.x, 1, selected._p.z); }
