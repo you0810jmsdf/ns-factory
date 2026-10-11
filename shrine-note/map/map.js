@@ -285,26 +285,27 @@ function greatCircle(la1, lo1, la2, lo2, n) {
 }
 const routeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-  uniforms: { uTime: { value: 0 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR }, uSpeed: { value: 0.3 } },
+  uniforms: { uHead: { value: 0 }, uLen: { value: 1 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR } },
   vertexShader: `
-    attribute float aT; uniform float uTime, uSp, uPxK, uPx, uSpeed; varying float vA, vH;
+    attribute float aT; uniform float uHead, uLen, uSp, uPxK, uPx; varying float vA, vH;
     void main(){
       vec4 mv = modelViewMatrix*vec4(position,1.);
       float pxu = uPxK/(-mv.z);
-      float size = clamp(0.06*pxu, 6.0, 24.0);
-      float e = clamp(uSp*pxu/size*2.2, 0.0, 1.0);          // 点の密度によらず、筋全体の明るさを一定にする
-      float d = fract(fract(uTime*uSpeed) - aT);             // 0=先頭、後ろほど大きい
-      float tail = exp(-d*16.0);                             // 先頭の後ろに流れる尾
-      float head = exp(-d*d*9000.0);                         // 先頭の光
-      vA = e*(0.95 + 2.6*tail + 3.0*head);
+      float size = clamp(max(0.0042*pxu, uSp*pxu*1.3), 3.0, 14.0);   // 細く保ちつつ、点どうしが途切れない大きさにする
+      float e = clamp(uSp*pxu/size*2.2, 0.0, 1.0);           // 点の密度によらず、筋全体の明るさを一定にする
+      float dw = fract(uHead - aT)*uLen;                     // 先頭からの距離（世界の長さ）
+      float tail = exp(-dw/0.07);                            // 先頭の後ろに流れる尾（約6km）
+      float head = exp(-dw*dw/0.00012);                      // 先頭の光
+      float lit = step(aT, uHead + 0.0001);                  // 先頭が通った所だけ、うっすら残る
+      vA = e*(0.35*lit + 0.9*tail + 3.2*head);
       vH = head;
-      gl_PointSize = size*uPx*(1.0 + 0.8*head);
+      gl_PointSize = size*uPx*(1.0 + 1.6*head);
       gl_Position = projectionMatrix*mv;
     }`,
   fragmentShader: `
     varying float vA, vH;
     void main(){ vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0; float a = exp(-r*r*3.2)*vA;
-      vec3 col = mix(vec3(1.0,0.90,0.66), vec3(1.0,0.99,0.92), clamp(vH*1.5,0.0,1.0));
+      vec3 col = mix(vec3(1.0,0.88,0.62), vec3(1.0,0.99,0.92), clamp(vH*1.6,0.0,1.0));
       gl_FragColor = vec4(col*a, a); }`,
 });
 let route = null;
@@ -351,6 +352,7 @@ async function fetchRoad(s) {
 async function buildRoute(s) {
   const tok = ++routeTok;
   clearRoute();
+  run = null;
   if (!user) return null;
   let mode = 'line', ll = null, km = haversineKm(user.lat, user.lon, s.lat, s.lon), min = 0, why = '';
   if (routeConsent === 'road') {
@@ -402,8 +404,8 @@ async function buildRoute(s) {
   points.frustumCulled = false; points.renderOrder = 9;
   scene.add(points);
   routeMat.uniforms.uSp.value = total / N;
-  routeMat.uniforms.uSpeed.value = mode === 'road' ? 0.34 : 0.22;
-  route = { points, km, min, mode, why, shrineId: s.id, mid: { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 }, len: Math.hypot(maxX - minX, maxZ - minZ) };
+  routeMat.uniforms.uLen.value = total;
+  route = { points, pos, N, total, km, min, mode, why, shrineId: s.id, mid: { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 }, len: Math.hypot(maxX - minX, maxZ - minZ) };
   refreshRouteBox();
   return route;
 }
@@ -443,6 +445,57 @@ function frameRoute(r) {
   const dist = Math.min(HOME.dist * 1.05, Math.max(2.4, r.len * 1.45 + 1.2));
   flyTo({ tx: r.mid.x, tz: r.mid.z, ty: 0, dist, el: 0.95, az: cam.az }, 4.2);
 }
+// 光の先頭を、カメラが後ろから追いかけて走る
+let run = null;
+const angDiff = (a, b) => Math.atan2(Math.sin(b - a), Math.cos(b - a));
+function routePoint(r, f) {          // f: 0..N の小数。位置を線形補間
+  const i = Math.min(r.N - 1, Math.max(0, Math.floor(f))), k = Math.min(1, Math.max(0, f - i));
+  const a = i * 3, b = (i + 1) * 3, P = r.pos;
+  return { x: P[a] + (P[b] - P[a]) * k, y: P[a + 1] + (P[b + 1] - P[a + 1]) * k, z: P[a + 2] + (P[b + 2] - P[a + 2]) * k };
+}
+function headingAt(r, f) {
+  const a = routePoint(r, Math.max(0, f - r.N * 0.02)), b = routePoint(r, Math.min(r.N, f + r.N * 0.025));
+  return Math.atan2(-(b.x - a.x), -(b.z - a.z));
+}
+function startRun() {
+  if (!route) return;
+  const r = route;
+  run = null;
+  document.body.classList.add('running');
+  $('btnStop').hidden = false;
+  const D = Math.min(30, Math.max(9, 6 + r.km * 0.12));
+  const az0 = headingAt(r, 0), p0 = routePoint(r, 0);
+  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: isNarrow() ? 0.8 : 0.62, el: 0.55, az: az0 }, 2.4, () => {
+    run = { t0: performance.now(), D, r };
+  });
+}
+function endRun(userStopped) {
+  const had = !!run || document.body.classList.contains('running');
+  run = null; flight = null;
+  document.body.classList.remove('running');
+  $('btnStop').hidden = true;
+  if (!had) return;
+  const s = selected || (route && shrines.find((x) => x.id === route.shrineId));
+  if (!s) return;
+  if (selected && selected === s) {
+    sheetEl.classList.add('show'); photoEl.classList.add('show', 'compact');
+    flyTo({ tx: s._p.x, tz: s._p.z, ty: s._y, dist: isNarrow() ? 1.25 : 0.95, el: isNarrow() ? 0.5 : 0.46, az: cam.az }, 3.2);
+  } else { selectShrine(s.id); }
+  if (!userStopped) toast(`${s.name}に着きました。`, 3000);
+}
+function stepRun(now) {
+  if (!run) return null;
+  const r = run.r;
+  const p = Math.min(1, (now - run.t0) / (run.D * 1000));
+  const f = Math.min(r.N, Math.max(0, p * r.N));
+  const h = routePoint(r, f);
+  cam.tx += (h.x - cam.tx) * 0.14; cam.tz += (h.z - cam.tz) * 0.14; cam.ty += (h.y - cam.ty) * 0.14;
+  cam.az += angDiff(cam.az, headingAt(r, f)) * 0.045;
+  cam.el += (0.55 - cam.el) * 0.05;
+  cam.dist += ((isNarrow() ? 0.8 : 0.62) - cam.dist) * 0.05;
+  if (p >= 1) endRun(false);
+  return f / r.N;
+}
 function routeText(s) {
   if (!user || !route || route.shrineId !== s.id) return '';
   const km = route.km, kmS = km < 10 ? km.toFixed(1) : Math.round(km);
@@ -458,7 +511,7 @@ function refreshRouteBox() {
   box.innerHTML = `<h3>現在地から</h3>
     <p>${has ? routeText(s) : pending ? '道路の経路を調べています…' : '現在地を取ると、ここまでの道路の経路を光の筋で描きます。'}</p>
     <p class="meta">現在地は、この端末の画面の中で使います。道路の経路を調べるときだけ、同意のうえで外部へ送ります（保存はしません）。</p>
-    ${has ? `<button class="btn" type="button" data-route="frame">経路の全体を見る</button><button class="btn" type="button" data-route="near">神社の近くへ寄る</button>${route.mode !== 'road' ? '<button class="btn" type="button" data-route="road">道路の経路にする</button>' : ''}`
+    ${has ? `<button class="btn" type="button" data-route="run">光で走る</button><button class="btn" type="button" data-route="frame">経路の全体を見る</button><button class="btn" type="button" data-route="near">神社の近くへ寄る</button>${route.mode !== 'road' ? '<button class="btn" type="button" data-route="road">道路の経路にする</button>' : ''}`
           : `<button class="btn" type="button" data-route="${user ? 'road' : 'locate'}">${user ? '道路の経路を調べる' : '現在地から光の筋をひく'}</button>`}`;
 }
 // 外部へ送る前の同意
@@ -485,16 +538,17 @@ async function routeAction(kind) {
       const target = s || nearestShrine();
       const r = await buildRoute(target);
       if (!r) return;
-      frameRoute(r);
-      if (!s) toast(`いちばん近い神社は${target.name}（${r.mode === 'road' ? '道路で' : '直線で'}約${Math.round(r.km)} km）です。光をタップすると、近づけます。`, 7000);
+      toast(`${target.name}まで、${r.mode === 'road' ? '道路で' : '直線で'}約${Math.round(r.km)} km。光が走ります。`, 3200);
+      startRun();
     });
   } else if (kind === 'road' && user) {
     routeConsent = null;                    // 直線を選んでいた人が、あとから道路にするとき
     if (!(await ensureConsent())) return;
     const target = s || nearestShrine();
     const r = await buildRoute(target);
-    if (r) frameRoute(r);
-  } else if (kind === 'frame' && s && route) { frameRoute(route); }
+    if (r) startRun();
+  } else if (kind === 'run' && route) { startRun(); }
+  else if (kind === 'frame' && s && route) { frameRoute(route); }
   else if (kind === 'near' && s) { flyTo({ tx: s._p.x, tz: s._p.z, ty: s._y, dist: isNarrow() ? 1.25 : 0.95, el: isNarrow() ? 0.5 : 0.46, az: cam.az }, 3.2); }
 }
 
@@ -590,7 +644,7 @@ canvas.addEventListener('pointerdown', (e) => {
 canvas.addEventListener('pointermove', (e) => {
   if (!ptrs.has(e.pointerId)) { hoverCheck(e); return; }
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (flight) return;
+  if (flight || run) return;
   if (ptrs.size === 1 && drag) {
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (tapCandidate && Math.hypot(e.clientX - tapCandidate.x, e.clientY - tapCandidate.y) > 8) tapCandidate = null;
@@ -619,7 +673,7 @@ const endPtr = (e) => {
 };
 canvas.addEventListener('pointerup', endPtr);
 canvas.addEventListener('pointercancel', endPtr);
-canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (!flight) zoomBy(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (!flight && !run) zoomBy(Math.exp(e.deltaY * 0.0012)); }, { passive: false });
 function zoomBy(k) {
   const lim = selected ? [0.35, Math.max(3.2, HOME.dist * 1.1)] : [4.5, HOME.dist * 1.15];
   cam.dist = Math.min(lim[1], Math.max(lim[0], cam.dist * k));
@@ -905,6 +959,7 @@ function backToShrine() {
 function goHome() {
   seq++;
   touched = false;
+  run = null; document.body.classList.remove('running'); $('btnStop').hidden = true;
   clearRoute();
   selected = null; current = null;
   photoEl.classList.remove('show', 'compact'); sheetEl.classList.remove('show');
@@ -944,6 +999,7 @@ function openTree(show) {
 }
 $('btnTree').addEventListener('click', () => openTree(true));
 $('btnGps').addEventListener('click', () => routeAction('locate'));
+$('btnStop').addEventListener('click', () => endRun(true));
 $('btnTreeClose').addEventListener('click', () => openTree(false));
 $('tree').addEventListener('click', (e) => {
   const t = e.target.closest('[data-deity]');
@@ -989,18 +1045,19 @@ function loop(now) {
   const t = (now - clock0) / 1000;
   stepFlight(now);
   // 待機中は、全景をゆっくり漂わせる
-  if (!selected && !flight && !drag && !touched) { driftT += 0.0006; cam.az = HOME.az + Math.sin(driftT * 6) * 0.07; }
+  if (!selected && !flight && !run && !drag && !touched) { driftT += 0.0006; cam.az = HOME.az + Math.sin(driftT * 6) * 0.07; }
   // ズームの深さに応じて、近景の細かな起伏を効かせる
   const dTarget = Math.min(1, Math.max(0, 1 - (cam.dist - 0.8) / 7));
   terrainMat.uniforms.uDetail.value = qual > 0 ? dTarget : 0;
   terrainMat.uniforms.uTime.value = t;
   markerMat.uniforms.uTime.value = t;
-  routeMat.uniforms.uTime.value = t; userMat.uniforms.uTime.value = t;
+  userMat.uniforms.uTime.value = t;
+  { const rp = stepRun(now); routeMat.uniforms.uHead.value = rp != null ? rp : (t * 0.3) % 1; }
   scene.userData.starMat.uniforms.uTime.value = t;
   if (selected) { terrainMat.uniforms.uSel.value.set(selected._p.x, 1, selected._p.z); }
   scene.userData.beamMat.uniforms.uOp.value = selected ? 0.5 : 1;
   // 選択中は、写真・リストに隠れない側へ見どころをずらす（PC=左へ／スマホ=上へ）
-  const vt = !selected ? { x: 0, y: 0 } : isNarrow() ? { x: 0, y: 0.2 } : { x: 0.19, y: 0 };
+  const vt = (!selected || run || document.body.classList.contains('running')) ? { x: 0, y: 0 } : isNarrow() ? { x: 0, y: 0.2 } : { x: 0.19, y: 0 };
   vo.x += (vt.x - vo.x) * 0.05; vo.y += (vt.y - vo.y) * 0.05;
   if (Math.abs(vo.x) + Math.abs(vo.y) > 0.002) camera.setViewOffset(innerWidth, innerHeight, vo.x * innerWidth, vo.y * innerHeight, innerWidth, innerHeight);
   else if (camera.view && camera.view.enabled) camera.clearViewOffset();
@@ -1032,7 +1089,7 @@ function loop(now) {
 requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
-window.__shrineMap = { cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat,
+window.__shrineMap = { cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
   // 1フレームの描画時間(ms)を、GPUの完了まで待って測る（確認用）
   benchmark: (n = 40) => { const gl = renderer.getContext(); applyCamera(); camera.updateMatrixWorld(); renderer.render(scene, camera); gl.finish(); const t0 = performance.now(); for (let i = 0; i < n; i++) { renderer.render(scene, camera); gl.finish(); } return (performance.now() - t0) / n; } };
 // ?s=katori のように開くと、その神社へ直接飛ぶ
