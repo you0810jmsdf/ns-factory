@@ -57,16 +57,15 @@
     <ul>
       <li>この特集では、送った位置を保存しません。</li>
       <li>サービス側での扱いは、そのサービスの規約によります。</li>
-      <li>道路（車）の経路です。電車・バスは含みません。</li>
+      <li>道路（車）の経路で、複数の候補から<b>距離がいちばん短い近道</b>を選びます。電車・バスは含みません。</li>
     </ul>
     <button class="btn" type="button" data-c="road">同意して道路の経路を調べる</button>
-    <button class="btn" type="button" data-c="line">送らずに直線で見る</button>
     <button class="btn off" type="button" data-c="cancel">やめる</button>
   </div>
 </div>
 
 <footer class="credit">
-  <span>標高：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院 標高タイル</a>を加工して作成（高さを強調・近景の細かな起伏は演出用の加工）</span>
+  <span>標高・道路：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>（標高タイル・最適化ベクトルタイル）を加工して作成。高さは強調、近景の細かな起伏は演出用</span>
   <span>3D表示：three.js（MIT）</span>
 </footer>
 
