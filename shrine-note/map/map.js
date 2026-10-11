@@ -1412,9 +1412,8 @@ function openDeityFromTree(id) {
 }
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
-const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track', BGM_VOL = 0.35;
+const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track2', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）
 const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
-  { file: 'audio/bgm_hatsumode.mp3', label: '初詣', title: '（民族32「初詣」）', url: 'https://maou.audio/bgm_ethnic32/' },
   { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
   { file: 'audio/bgm_fantasy07.mp3', label: '深層で見た太陽', title: '（ファンタジー07「深層で見た太陽」）', url: 'https://maou.audio/bgm_fantasy07/' },
 ];
