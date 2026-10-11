@@ -23,6 +23,7 @@
     <button id="btnTree" class="ghost" type="button">神々の系譜図</button>
     <button id="btnBgm" class="ghost" type="button" aria-pressed="true">♪ BGM：入</button>
     <button id="btnBgmNext" class="ghost" type="button">曲：人魚の目覚め</button>
+    <button id="btnSky" class="ghost" type="button" aria-expanded="false">時刻：いま</button>
   </div>
 </header>
 
@@ -73,6 +74,8 @@
     <button class="btn off" type="button" data-c="cancel">やめる</button>
   </div>
 </div>
+
+<div id="skyPanel" class="skybar" hidden><label for="skyRange">時刻</label><input id="skyRange" type="range" min="0" max="1439" step="5"><output id="skyOut"></output><button id="skyNow" class="ghost" type="button">いま</button></div>
 
 <footer class="credit">
   <span>標高・道路：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>（標高タイル・最適化ベクトルタイル）を加工して作成。高さは強調、近景の細かな起伏は演出用</span>
