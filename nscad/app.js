@@ -1,3 +1,4 @@
+import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
@@ -8,7 +9,7 @@ import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
-import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
+import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -1842,10 +1843,17 @@ function renderHardware() {
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
   $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : '';
   const bs = $('binderSpecSel'); if (!bs.textContent) for (const s of BINDER_SPECS) { const o = document.createElement('option'); o.value = s.id; o.textContent = document.documentElement.lang === 'en' ? s.names.en : s.names.ja; bs.appendChild(o); }
-  renderBinder();
+  renderBinder(); syncHwBinderMode();
+}
+/** 分類が「リング・バインダー」のときは、バインダーの操作を下の「バインダー金具」の1か所にそろえる（上の機種の選択・パラメータ欄・置くボタンは隠す。向きは共通）。 */
+function syncHwBinderMode() {
+  const binder = $('hwCategory').value === 'binder';
+  for (const id of ['l-hwItem', 'hwParams', 'hwConfidence', 'hwPlace']) $(id).hidden = binder;
+  if (binder) $('binderSub').open = true;
 }
 function renderBinder() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
+  if ($('hwCategory').value === 'binder' && DATA_HARDWARE.items.some(i => i.id === 'binder-' + spec.id)) $('hwItem').value = 'binder-' + spec.id;   /* 下の規格と内部の機種をそろえる（別の規格のリング径で置かれないように） */
   const rd = $('ringD'), keep = Number(rd.value); rd.textContent = '';
   for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); o.textContent = d + ' mm'; rd.appendChild(o); }
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
@@ -1880,6 +1888,7 @@ function hwParams() { const out = {}; for (const input of ($('hwParams').childre
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
 /** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
 function hardwareDrafts(it, overrides, spec, at, angleDeg) {
+  spec = binderSpecWithSection(spec, overrides);
   const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, out = [];
   fp.outline.forEach((s, i) => out.push({ ...s, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }));
   for (const s of fp.holes) out.push({ ...s, layer: 'hwholes' });
@@ -2015,7 +2024,7 @@ function selectedHardware() {
 }
 const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate.hw.params?.spec;
 function refreshHwEdit() {
-  const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
+  const hw = selectedHardware(), section = selectedBinderSection(); $('hwEditCard').hidden = !hw && !section; $('hwEditMain').hidden = !hw; $('hwSectionRow').hidden = !(section || (hw && hwIsBinder(hw.plate))); if (!hw) { hwEditKey = ''; return; }
   const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
   const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
@@ -2031,10 +2040,10 @@ function applyHwEdit() {
   if (!Number.isFinite(angle) || (isBinder && !(ringD > 0))) { $('hint').textContent = t('invalidNumber'); return; }
   const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + specId : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
   const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest; let same = true;   /* 手で直したかの判定：今の設定で作り直した形と比べる */
-  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
+  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ...old.params, ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
   if (!same && Date.now() - hwEditArmed > 6000) { hwEditArmed = Date.now(); $('hint').textContent = t('hwEditWarn'); return; }  /* 埋め込みブラウザでは confirm が出ないので 2 段押し */
   hwEditArmed = 0;
-  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ...old.params, spec: specId, ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   const gid = groupIdOf(hw.plate) || nextGroupId(doc.shapes), gone = new Set(hw.members.map(m => m.id));
   cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !gone.has(s.id)); selected = new Set(addHardwareDrafts(drafts, gid)); });
   hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
@@ -2044,8 +2053,8 @@ $('hwEditApply').onclick = applyHwEdit;
 function makeBinderViews() {
   const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
   const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
-  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpec(p.spec), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
-  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor) : [];
+  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpecWithSection(binderSpec(p.spec), p), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
   if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
   const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
@@ -2064,6 +2073,45 @@ function makeBinderViews() {
   renderTabs(); draw(); $('hint').textContent = t('hwViewsDone', { n: topShapes.length + sideShapes.length });
 }
 $('hwViewsApply').onclick = makeBinderViews;
+/** 断面の図を選んだときは、同じ組の紙から元の金具を探す。 */
+function selectedBinderSection() {
+  const shape = doc.shapes.find(s => selected.has(s.id) && s.type === 'polyline' && s.hwSection); if (!shape) return null;
+  const docs = [doc, ...Object.values(quadSheets()).map(tb => tb.doc)];
+  for (const owner of docs) { const plate = owner.shapes.find(s => s.hw && hwIsBinder(s) && (groupIdOf(s) || s.id) === shape.hwSection); if (plate) return { plate, owner, shape }; }
+  return null;
+}
+function binderSectionContext() {
+  const section = selectedBinderSection(); if (section) return section;
+  const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) return null;
+  const gid = groupIdOf(hw.plate) || hw.plate.id, target = quadOn() ? quadSheets().side?.doc : doc;
+  return { plate: hw.plate, owner: doc, shape: target?.shapes.find(s => s.hwSection === gid && s.type === 'polyline') };
+}
+function changeSectionDoc(target, fn) {
+  if (target === doc) commit(fn);
+  else { const tb = tabs.find(tb => tb.doc === target); if (!tb) return; const before = JSON.stringify(target); fn(); pushTabUndo(tb, before); rebuildSnaps(); if (view3d) render3d(); scheduleAutosave(); renderTabs(); draw(); }
+}
+function makeBinderSection() {
+  const c = binderSectionContext(); if (!c) return;
+  const gid = groupIdOf(c.plate) || c.plate.id, pose = hwPoseOfOutline(c.plate), spec = binderSpecWithSection(binderSpec(c.plate.hw.params.spec), c.plate.hw.params), points = binderSection(binderBase(spec));
+  const target = quadOn() ? quadSheets().side?.doc : doc; if (!target) return;
+  // 横軸は台座の幅、縦軸は高さ。右の投影図の奥行き軸とは分けて置く。
+  const at = { x: pose.at.y + (threeViewOn() ? threeViewLayout.side.x - threeViewLayout.front.y : 0), y: pose.at.y };
+  changeSectionDoc(target, () => { target.shapes = target.shapes.filter(s => s.hwSection !== gid); target.shapes.push({ id: freshId(target.shapes, 's'), type: 'polyline', closed: true, layer: target.layers.find(l => l.id === 'marks')?.id || target.layers[0].id, hwSection: gid, points: points.map(p => ({ x: at.x + p.x, y: at.y + p.y })) }); });
+  $('hint').textContent = t('hwSectionMade');
+}
+function applyBinderSection() {
+  const c = binderSectionContext(); if (!c?.shape) { $('hint').textContent = t('hwSectionMissing'); return; }
+  let points; try { points = normalizeSectionPoints(c.shape.points); } catch { $('hint').textContent = t('hwSectionInvalid'); return; }
+  changeSectionDoc(c.owner, () => { c.plate.hw.params.sectionPoints = points; });
+  hwEditKey = ''; refreshHwEdit(); $('hint').textContent = t('hwSectionApplied');
+}
+async function copyBinderSection() {
+  const c = binderSectionContext(); if (!c) return;
+  const spec = binderSpecWithSection(binderSpec(c.plate.hw.params.spec), c.plate.hw.params), text = sectionPointsText(binderSection(binderBase(spec)));
+  try { const clipboard = globalThis.navigator?.clipboard; if (!clipboard?.writeText) throw new Error(); await clipboard.writeText(text); $('hint').textContent = t('hwSectionCopied'); } catch { $('hint').textContent = text; }
+}
+$('hwSectionMake').onclick = makeBinderSection; $('hwSectionApply').onclick = applyBinderSection; $('hwSectionCopy').onclick = copyBinderSection;
+
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();

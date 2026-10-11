@@ -34,7 +34,70 @@
    30
   ],
   "shape": "round",
-  "countPerSide": 6
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 15,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 19,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 20,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 23,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 25,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 30,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   }
+  ]
  },
  "plate": {
   "lengthMm": 151,
@@ -79,5 +142,38 @@
    "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央 2 インチ（50.8mm）。Filofax 資料では 50/51mm とするものあり"
   }
  ],
- "confidence": "spec"
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -69.5,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 69.5,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": null
 }

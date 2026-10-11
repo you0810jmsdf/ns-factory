@@ -142,13 +142,14 @@
 <label id="l-partOrder"><span data-i18n="partOrder"></span><input id="info-partOrder" type="number" step="1"></label>
 <label id="l-layer"><span data-i18n="layer"></span><select id="info-layer"></select></label>
 </div></details>
-<details class="card" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body">
+<details class="card" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body"><div id="hwEditMain">
 <label id="l-hwSpec"><span data-i18n="hwEditSpec"></span><select id="hwEditSpec"></select></label>
 <label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"></label>
 <label><span data-i18n="hwEditAngle"></span><input id="hwEditAngle" type="number" step="1"></label>
 <div class="row"><button id="hwEditApply" data-i18n="hwEditApply"></button></div>
 <div class="row" id="hwViewsRow"><button id="hwViewsApply" data-i18n="hwViewsApply"></button></div>
-<div class="hint" data-i18n="hwViewsNote"></div>
+<div class="hint" data-i18n="hwViewsNote"></div></div>
+<div id="hwSectionRow" hidden><div class="row"><button id="hwSectionMake" data-i18n="hwSectionMake"></button><button id="hwSectionApply" data-i18n="hwSectionApply"></button><button id="hwSectionCopy" data-i18n="hwSectionCopy"></button></div><div class="hint" data-i18n="hwSectionNote"></div></div>
 <div class="hint" id="hwEditNote"></div>
 </div></details>
 <details class="card" id="moveCard" open hidden><summary data-i18n="moveTitle"></summary><div class="body">
@@ -374,12 +375,12 @@
 </div></details>
 <details class="card" id="hwCard"><summary data-i18n="hardware"></summary><div class="body">
 <label><span data-i18n="hwCategory"></span><select id="hwCategory"></select></label>
-<label><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
+<label id="l-hwItem"><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
 <div id="hwParams" class="body" style="padding:0"></div>
 <output id="hwConfidence" class="note"></output>
 <label><span data-i18n="hwAngle"></span><input id="hwAngle" type="number" step="1" value="0"></label>
 <button id="hwPlace" data-i18n="hwPlace"></button>
-<details class="sub"><summary data-i18n="binderSection"></summary>
+<details class="sub" id="binderSub"><summary data-i18n="binderSection"></summary>
 <label><span data-i18n="binderSpec"></span><select id="binderSpecSel"></select></label>
 <label><span data-i18n="ringD"></span><select id="ringD"></select></label>
 <output id="binderInfo" class="note"></output>
@@ -490,8 +491,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5d8696ee","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=23392857","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=b045228c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=69d3fa29","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=5d8696ee"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=1e4e31c0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=f7e87241","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a9c13df3","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=dd66ef0b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=d31326ad","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=1e4e31c0"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1856,6 +1857,15 @@ const MESSAGES = {
     "restoreDiscard": "捨てる",
     "restored": "前回の続きを開きました。まだファイルには保存していません（Ctrl+S で保存できます）",
     "autosaveTooLarge": "図面が大きすぎて自動保存できません。ファイルに保存してください（Ctrl+S）",
+    "hwSectionMake": "断面を図にする",
+    "hwSectionApply": "この断面を金具に反映",
+    "hwSectionCopy": "断面の座標をコピー",
+    "hwSectionNote": "断面の横は台座の幅、縦は高さです。図を選ぶと頂点を数値で直せます。反映すると中央と頂上が基準になります。4分割では金具の紙で反映を元に戻せます。",
+    "hwSectionMade": "断面の図を置きました。頂点を直してから反映してください",
+    "hwSectionMissing": "先に断面を図にしてください",
+    "hwSectionInvalid": "断面の頂点・幅・高さを確認してください",
+    "hwSectionApplied": "断面を金具に反映しました。上と右の図はもう一度作ると更新されます",
+    "hwSectionCopied": "断面の座標をコピーしました",
     "hwViewsApply": "上と右の図を作る",
     "hwViewsNote": "正面に置いた金具から、上の紙・右の紙（枠方式なら上の枠・右の枠）に金具の図を置きます。金具を動かしたあとは、もう一度押すと置き直します。角度が 0度か 90度のときだけ使えます",
     "hwViewsDone": "上と右の図を作りました（{n} 個の図形）",
@@ -2723,6 +2733,15 @@ const MESSAGES = {
     "restoreDiscard": "Discard",
     "restored": "Opened previous work. Not saved to a file yet (Ctrl+S to save)",
     "autosaveTooLarge": "The drawing is too large to autosave. Please save it to a file (Ctrl+S)",
+    "hwSectionMake": "Draw base section",
+    "hwSectionApply": "Apply section to hardware",
+    "hwSectionCopy": "Copy section coordinates",
+    "hwSectionNote": "Horizontal is base width; vertical is height. Select the drawing to edit vertices. Applying uses the centre and top as the origin. In four panes, undo the application in the hardware sheet.",
+    "hwSectionMade": "Section drawn. Edit its vertices, then apply",
+    "hwSectionMissing": "Draw the section first",
+    "hwSectionInvalid": "Check the section vertices, width and height",
+    "hwSectionApplied": "Section applied. Make the top and right views again to update them",
+    "hwSectionCopied": "Section coordinates copied",
     "hwViewsApply": "Make top and right views",
     "hwViewsNote": "Places the hardware drawing in the top and right sheets (or frames) from the binder in the front. After moving the hardware, press again to redo. Works only at 0 or 90 degrees",
     "hwViewsDone": "Made the top and right views ({n} shapes)",
@@ -4315,6 +4334,26 @@ function edgeNormal(a, b, sign) { const dx = b.x - a.x, dy = b.y - a.y, l = Math
 
 return {v3, add3, sub3, scale3, dot3, cross3, len3, norm3, identity, multiply, translation, rotationAxis, transformPoint, rotationAbout, splitPolygon, buildPanels, pointInPolygon, panelFaces, triangulate, faceNormal, foldMatrices, applyFolds, viewMatrix, project, collisions, orthoViews, viewsToSvg, defaultCamera, unfold};
 })();
+__mods['binder_section_edit'] = (function(){
+﻿// 断面の座標を、紙の位置から独立した形で保存する。
+function normalizeSectionPoints(points) {
+  if (!Array.isArray(points) || points.length < 3 || !points.every(p => Number.isFinite(p.x) && Number.isFinite(p.y))) throw new Error('断面には3つ以上の正しい頂点が必要です');
+  const xs = points.map(p => p.x), ys = points.map(p => p.y), x = (Math.min(...xs) + Math.max(...xs)) / 2, y = Math.min(...ys);
+  if (Math.max(...xs) === Math.min(...xs) || Math.max(...ys) === y) throw new Error('断面の幅と高さを確認してください');
+  return points.map(p => ({ x: p.x - x, y: p.y - y }));
+}
+function sectionPointsText(points) { return points.map(p => `${p.x}:${p.y}`).join(';'); }
+function parseSectionPoints(text) {
+  if (!text.trim()) return undefined;
+  const number = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
+  const points = text.split(';').map(pair => { const a = pair.split(':'); if (a.length !== 2 || !a.every(n => number.test(n.trim()) && Number.isFinite(Number(n)))) throw new Error('座標は x:y;x:y の形で入力してください'); return { x: Number(a[0]), y: Number(a[1]) }; });
+  normalizeSectionPoints(points); return points;
+}
+// 元の規格は書き換えず、この金具だけの断面を重ねる。
+function binderSpecWithSection(spec, params = {}) { return spec && params.sectionPoints ? { ...spec, base: { ...spec.base, sectionPoints: params.sectionPoints } } : spec; }
+
+return {normalizeSectionPoints, sectionPointsText, parseSectionPoints, binderSpecWithSection};
+})();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
 // 式（"innerW+2*wireD" など）は params を使った四則だけを許す安全な評価器で解く。
@@ -4332,6 +4371,10 @@ function evalExpr(expr, params = {}) {
 }
 /** リングの線径（mm）。平面・正面の棒の幅・側面の輪の太さ・3D のワイヤの太さがこれ。 */
 const BINDER_WIRE_MM = 2;
+/** 古い台座も同じ断面の寸法へ読み替える。 */
+function binderBase(spec) { const p = spec.plate || {}, b = spec.base || {}; return { ...b, lengthMm: b.lengthMm ?? p.lengthMm, sectionWidthMm: b.sectionWidthMm ?? p.widthMm, crownHeightMm: b.crownHeightMm ?? p.thicknessMm, thicknessMm: b.thicknessMm ?? p.thicknessMm, cornerRMm: b.cornerRMm ?? p.cornerRMm, crownRadiusMm: b.crownRadiusMm ?? 0, edgeRadiusMm: b.edgeRadiusMm ?? 0 }; }
+/** 台座の頂上で測った、左右のリングの根元どうしの距離。 */
+function binderRingBaseSpan(R, e) { return e <= 0 ? 0 : e >= R ? 2 * R : 2 * Math.sqrt(2 * R * e - e * e); }
 const roundRect = (w, h, r) => { const pts = [], n = 4, R = Math.min(r || 0, w / 2, h / 2); if (R <= 0) return [{ x: -w / 2, y: -h / 2 }, { x: w / 2, y: -h / 2 }, { x: w / 2, y: h / 2 }, { x: -w / 2, y: h / 2 }]; const corners = [[w / 2 - R, h / 2 - R, 0], [-w / 2 + R, h / 2 - R, 90], [-w / 2 + R, -h / 2 + R, 180], [w / 2 - R, -h / 2 + R, 270]]; for (const [cx, cy, a0] of corners) for (let k = 0; k <= n; k++) { const a = (a0 + 90 * k / n) * Math.PI / 180; pts.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }); } return pts; };
 /** 金具 1 件と上書きパラメータから、ローカル座標（中心 0,0）の {outline:[shape], holes:[shape], solid} を返す。binder は spec（data/binder）が要る。 */
 function hardwareFootprint(item, overrides = {}, binderSpec = null) {
@@ -4342,11 +4385,11 @@ function hardwareFootprint(item, overrides = {}, binderSpec = null) {
   else if (fp.kind === 'zipper') { const L = E(fp.len), tw = E(fp.tapeW), ew = E(fp.elementW); outline.push({ type: 'polyline', closed: true, points: roundRect(L, tw, 0) }, { type: 'line', x1: -L / 2, y1: -ew / 2, x2: L / 2, y2: -ew / 2 }, { type: 'line', x1: -L / 2, y1: ew / 2, x2: L / 2, y2: ew / 2 }); }
   else if (fp.kind === 'binder') {
     if (!binderSpec) throw new Error('binderSpec');
-    const L = binderSpec.plate.lengthMm, W = binderSpec.plate.widthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
-    outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, binderSpec.plate.cornerRMm || 0) });
+    const base = binderBase(binderSpec), L = base.lengthMm, W = base.sectionWidthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
+    outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, base.cornerRMm || 0) });
     for (const r of v.plan.rings) outline.push({ type: 'polyline', closed: true, points: [{ x: r.minX, y: r.minY }, { x: r.maxX, y: r.minY }, { x: r.maxX, y: r.maxY }, { x: r.minX, y: r.maxY }] }); /* リングは真上から見た細い棒（線径×リング径）。寝た円ではない */
     for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
-    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: ringD + binderSpec.plate.thicknessMm }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
+    return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: ringD + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
   }
   for (const h of item.holes || []) {
     const x = E(h.x), y = E(h.y);
@@ -4363,15 +4406,21 @@ function placeFootprint(fp, at, angleDeg = 0) {
 }
 /** バインダー金具の立体（台座の箱＋リングの輪＋リベット）を面の配列で返す（sim3d の面形式）。openAngle は 0〜90°。 */
 function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, segments = 16 } = {}) {
-  const L = spec.plate.lengthMm, W = spec.plate.widthMm, T = spec.plate.thicknessMm, faces = [];
+  const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, embed = spec.rings.embedMm ?? 0, faces = [];
   const box = (cx, cy, w, h, zb, zt) => { const c = [{ x: cx - w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy + h / 2 }, { x: cx - w / 2, y: cy + h / 2 }]; faces.push({ kind: 'top', points: c.map(p => ({ x: p.x, y: p.y, z: zt })) }, { kind: 'bottom', points: [...c].reverse().map(p => ({ x: p.x, y: p.y, z: zb })) }); for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; faces.push({ kind: 'side', points: [{ x: a.x, y: a.y, z: zt }, { x: b.x, y: b.y, z: zt }, { x: b.x, y: b.y, z: zb }, { x: a.x, y: a.y, z: zb }] }); } };
-  box(at.x, at.y, L, W, z0, z0 + T);
+  if (!spec.base) box(at.x, at.y, L, W, z0, z0 + T);
+  else {
+    // 断面を長さ方向へ伸ばす。両端の蓋と、各辺の面で閉じる。
+    const section = binderSection(base), point = (p, x) => ({ x: at.x + x, y: at.y + p.x, z: z0 + T - p.y });
+    faces.push({ kind: 'side', points: section.map(p => point(p, -L / 2)) }, { kind: 'side', points: [...section].reverse().map(p => point(p, L / 2)) });
+    for (let i = 0; i < section.length; i++) { const a = section[i], b = section[(i + 1) % section.length]; faces.push({ kind: 'side', points: [point(a, -L / 2), point(a, L / 2), point(b, L / 2), point(b, -L / 2)] }); }
+  }
   let x = -spec.holes.span1toLastMm / 2; const xs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; xs.push(x); }
   const R = ringD / 2, wire = 2, open = openAngle * Math.PI / 180;
   for (const hx of xs) for (const side of [-1, 1]) {
     // 半リング：台座中心から y 方向 side に開く。開くときは上端で ±open だけ離れる
     // 輪は台座の上に立つ直径 ringD の円。片側ずつ下端（−90°）から上端（+90°）へ。開くときは上端ほど外へ離す
-    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push({ x: at.x + hx, y: at.y + side * (R * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + R + R * Math.sin(a) }); }
+    const pts = []; for (let k = 0; k <= segments; k++) { const a = -Math.PI / 2 + Math.PI * k / segments, lift = (Math.sin(a) + 1) / 2; pts.push({ x: at.x + hx, y: at.y + side * (R * Math.cos(a) + Math.sin(open) * R * lift), z: z0 + T + R + R * Math.sin(a) - embed }); }
     for (let k = 0; k < pts.length - 1; k++) { const a = pts[k], b = pts[k + 1]; faces.push({ kind: 'side', points: [{ x: a.x - wire / 2, y: a.y, z: a.z }, { x: a.x + wire / 2, y: a.y, z: a.z }, { x: b.x + wire / 2, y: b.y, z: b.z }, { x: b.x - wire / 2, y: b.y, z: b.z }] }); }
   }
   for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
@@ -4465,21 +4514,21 @@ function spineRound(n) { return Math.round(n * 100) / 100; }
 /** バインダー金具の3つの見え方を、1か所の寸法から作る（平面＝真上から・正面＝台座の長手方向の横から・側面＝台座の端から）。置いた外形・3つの図・3D は、どれもここから／ここと同じ寸法で作り、食い違わないようにする。
  *  座標は mm。平面は（長さ方向 x・台座の幅方向 y）、正面は（x・高さ y＝上がマイナス・台座の上面が 0）、側面は（幅方向 x・高さ y）。リングは台座の上面に立つ丸い輪（外径＝リング径）で、真上からは線径×リング径の細い棒、横からは棒、端からは輪に見える。 */
 function binderViews(spec, ringD = null) {
-  const L = spec.plate.lengthMm, W = spec.plate.widthMm, T = spec.plate.thicknessMm, D = ringD || spec.rings.diameterOptionsMm[0], wire = BINDER_WIRE_MM;
+  const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, D = ringD || spec.rings.diameterOptionsMm[0], wire = BINDER_WIRE_MM, embed = spec.rings.embedMm ?? 0;
   let x = -spec.holes.span1toLastMm / 2; const ringXs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; ringXs.push(x); }
   const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY });
   return {
     L, W, T, D, wire, ringXs,
     plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)) },
-    front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D, 0)) },
-    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2, rOuter: D / 2, rInner: D / 2 - wire } },
+    front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)) },
+    side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: D / 2 - wire }, ...(spec.base ? { section: binderSection(base) } : {}) },
   };
 }
 /** 平面図（真上から）。リングは台座に直角に立つので、線径×リング径の細い棒が並ぶ。 */
 function binderPlanSvg(spec, ringD = null) {
   const v = binderViews(spec, ringD), { L, W, D, plan } = v, f = n => (Math.round(n * 100) / 100).toString(), xs = v.ringXs;
   const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
-  const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(spec.plate.cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
+  const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(binderBase(spec).cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
   for (const r of plan.rings) parts.push(`<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f((r.minX + r.maxX) / 2)}" cy="0" r="0.6" fill="#000"/>`);
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
   const dy = Math.max(W, D) / 2 + 5;
@@ -4489,14 +4538,14 @@ function binderPlanSvg(spec, ringD = null) {
 }
 /** 側面図（台座の端から）。リングは台座の上面に立つ丸い輪（外径＝リング径・太さ＝線径）。 */
 function binderSideSvg(spec, ringD = null) {
-  const v = binderViews(spec, ringD), { W, T, D, side } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, h = D + T + 2 * pad;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="side"><rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(D)}mm</text></g></svg>`;
+  const v = binderViews(spec, ringD), { W, T, D, side } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, embed = spec.rings.embedMm ?? 0, h = D - embed + Math.max(T, embed) + 2 * pad;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(D)}mm</text></g></svg>`;
 }
 /** 正面図（台座の長手方向の横から）。リングは台座の上面に立つ細い棒（線径×リング径）。 */
 function binderFrontSvg(spec, ringD = null) {
-  const v = binderViews(spec, ringD), { L, T, D, front } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D + T + 2 * pad;
+  const v = binderViews(spec, ringD), { L, T, D, front } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = L + 2 * pad, h = D - (spec.rings.embedMm ?? 0) + T + 2 * pad;
   const rings = front.rings.map(r => `<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/>`).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="front"><rect x="${f(-L / 2)}" y="0" width="${f(L)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>${rings}</g></svg>`;
 }
 /** 規格 JSON の整合検査：必須キー・ピッチの合計＝span。問題を文字列配列で返す（空＝OK）。 */
 function checkBinderSpec(spec) {
@@ -4541,18 +4590,67 @@ function binderViewShapes(spec, ringD, at, angleDeg, dc) {
   const rad = angleDeg * Math.PI / 180, eps = Math.sin(0.5 * Math.PI / 180), cs = Math.cos(rad), sn = Math.sin(rad);
   const quarter = Math.abs(sn) < eps ? 0 : Math.abs(cs) < eps ? 90 : null; if (quarter === null) return null;
   const v = binderViews(spec, ringD), { T, D, wire, W, L } = v, z = binderZRange(spec, v.D), zmid = (z.min + z.max) / 2, dOf = zz => dc - (zz - zmid);
-  const plateD = [dOf(T), dOf(0)], ringDepth = [dOf(T + D), dOf(T)], ringCenterD = dOf(T + D / 2), halfX = quarter === 0 ? L / 2 : W / 2, halfY = quarter === 0 ? W / 2 : L / 2;
+  const plateD = [dOf(T), dOf(0)], ringDepth = [dOf(T + D - (spec.rings.embedMm ?? 0)), dOf(T)], ringCenterD = dOf(T + D / 2 - (spec.rings.embedMm ?? 0)), halfX = quarter === 0 ? L / 2 : W / 2, halfY = quarter === 0 ? W / 2 : L / 2;
   const rect = (x0, x1, y0, y1, role) => ({ type: 'polyline', closed: true, role, points: [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }] });
   const rings = (cx, cy) => [{ type: 'circle', role: 'ring', cx, cy, r: D / 2 }, { type: 'circle', role: 'ring', cx, cy, r: D / 2 - wire }];
   const top = [rect(at.x - halfX, at.x + halfX, plateD[0], plateD[1], 'plate')], side = [rect(plateD[0], plateD[1], at.y - halfY, at.y + halfY, 'plate')];
+  if (v.side.section) {
+    const points = v.side.section.map(p => quarter === 0 ? { x: dOf(T - p.y), y: at.y + p.x * cs } : { x: at.x - p.x * sn, y: dOf(T - p.y) });
+    (quarter === 0 ? side : top)[0] = { type: 'polyline', closed: true, role: 'plate', points };
+  }
   if (quarter === 0) { for (const hx of v.ringXs) top.push(rect(at.x + hx * cs - wire / 2, at.x + hx * cs + wire / 2, ringDepth[0], ringDepth[1], 'ring')); side.push(...rings(ringCenterD, at.y)); }
   else { top.push(...rings(at.x, ringCenterD)); for (const hx of v.ringXs) side.push(rect(ringDepth[0], ringDepth[1], at.y + hx * sn - wire / 2, at.y + hx * sn + wire / 2, 'ring')); }
   return { top, side };
 }
 
-return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes};
+/** 台座の断面（mm・Y下向き）。時計回りの点列で、末尾から先頭へ結んで閉じる。
+ *  手で直した点列はそのまま優先。丸みは寸法内に収め、円弧のずれは0.025mm以内。
+ *  上下面は直角方向に板厚だけ離す。鋭い山の内側は、平行な面の交点でつなぐ。 */
+function binderSection(base) {
+  if (base.sectionPoints !== undefined) return base.sectionPoints;
+  const { sectionWidthMm: W, crownHeightMm: H, thicknessMm: t, crownRadiusMm: Rc = 0, edgeRadiusMm: Re = 0 } = base;
+  if (![W, H, t, Rc, Re].every(Number.isFinite) || W <= 0 || t <= 0 || H < t || Rc < 0 || Re < 0) throw new RangeError('台座の幅・高さ・厚さ・丸みを確認してください');
+  const a = W / 2;
+  if (H === t) return [{ x: -a, y: 0 }, { x: a, y: 0 }, { x: a, y: t }, { x: -a, y: t }];
+  // 両端の上下の丸みが重ならず、背の高い断面でも端の直線を残せる半径。
+  const e = Math.min(Re, t / 2, a / 2, t * (a / H) / 2);
+  const radius = angle => Math.min(Rc, (a - e * (1 - Math.sin(angle))) / Math.sin(angle));
+  const height = angle => { const s = Math.sin(angle), c = Math.cos(angle), r = radius(angle); return (a * s + t - r - e * (1 + s)) / c + r + e; };
+  // 山の傾きを求める。端を丸めて減る高さも含め、下面の最下端をHに合わせる。
+  let lo = 0, hi = Math.PI / 2;
+  for (let i = 0; i < 70; i++) { const mid = (lo + hi) / 2; if (height(mid) < H) lo = mid; else hi = mid; }
+  const angle = (lo + hi) / 2, s = Math.sin(angle), c = Math.cos(angle), r = radius(angle), y = a * Math.tan(angle) - r * (1 / c - 1);
+  const arc = (cx, cy, R, start, end) => {
+    const pts = [], step = 4 * Math.asin(Math.sqrt(Math.min(1, 0.025 / (2 * R)))), n = Math.max(1, Math.ceil(Math.abs(end - start) / step));
+    const angles = Array.from({ length: n + 1 }, (_, i) => start + (end - start) * i / n);
+    // 幅・高さの極値は必ず点にする（折れ線にしても寸法が変わらない）。
+    for (let k = -2; k <= 2; k++) { const v = k * Math.PI / 2; if (v > Math.min(start, end) && v < Math.max(start, end)) angles.push(v); }
+    angles.sort((u, v) => (end > start ? u - v : v - u));
+    for (const v of angles) pts.push({ x: cx + R * Math.cos(v), y: cy + R * Math.sin(v) });
+    return pts;
+  };
+  // 右半分を頂上から下面へたどり、左半分は鏡写しで戻る。
+  const right = r > 0 ? arc(0, r, r, -Math.PI / 2, -Math.PI / 2 + angle) : [{ x: 0, y: 0 }];
+  right[0] = { x: 0, y: 0 };
+  if (e > 0) {
+    right.push(...arc(a - e, y + e * c / (1 + s), e, -Math.PI / 2 + angle, 0));
+    right.push(...arc(a - e, H - e, e, 0, Math.PI / 2 + angle));
+  } else right.push({ x: a, y }, { x: a, y: H });
+  if (r > t) {
+    right.push(...arc(0, r, r - t, -Math.PI / 2 + angle, -Math.PI / 2));
+    right[right.length - 1] = { x: 0, y: t };
+  } else right.push({ x: 0, y: r + (t - r) / c });
+  const points = [...right, ...right.slice(1, -1).reverse().map(p => ({ x: -p.x, y: p.y }))];
+  // 円弧と直線のつなぎ目が一致する場合だけ、重なった点を除く。
+  const clean = points.filter((p, i) => { const q = points[(i + points.length - 1) % points.length]; return Math.hypot(p.x - q.x, p.y - q.y) > 1e-12; });
+  const first = clean.reduce((best, p, i) => p.x < clean[best].x || (p.x === clean[best].x && p.y < clean[best].y) ? i : best, 0);
+  return [...clean.slice(first), ...clean.slice(0, first)];
+}
+
+return {evalExpr, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection};
 })();
 __mods['threeview'] = (function(){
+const { binderSpecWithSection } = __mods['binder_section_edit'];
 // 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
 // ここは計算だけ（画面に描くのは app.js）。依存は geometry.js の bboxOf だけ。
 //
@@ -4839,7 +4937,7 @@ function closedPolygon(s, tol) {
 /** 図形の列から閉じた輪郭（点の列）をすべて取り出す。閉じた1図形のほか、丸め・面取りなどで直線や円弧に分かれていても、端がつながって輪になっていれば1つの輪郭にする。 */
 function closedPolygons(shapes, tol) {
   const out = [], open = [];
-  for (const s of shapes || []) { if (s?.hwFor) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
+  for (const s of shapes || []) { if (s?.hwFor || s?.hwSection) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
     if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
   if (open.length) for (const c of chainShapes(open, Math.max(tol / 10, 0.01))) {
     if (!c.closed) continue;
@@ -4908,7 +5006,7 @@ function threeViewHardwareFaces(solid, hwShapes, specOf) {
   const out = [], base = solid.base, dc = solid.depth / 2;
   for (const s of hwShapes || []) {
     const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
-    const spec = specOf(hw.params?.spec); if (!spec) continue;
+    const spec = binderSpecWithSection(specOf(hw.params?.spec), hw.params); if (!spec) continue;
     const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 };   /* 置いたあとに動かした・回した金具でも、いまの外形から位置と角度を割り出す */
     const at = pose.at, a = pose.angleDeg * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
     const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;
@@ -12704,7 +12802,50 @@ const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 4
+   "countPerSide": 4,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 35,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 264,
@@ -12749,7 +12890,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。80mm 等間隔。A4＝必ず 4 穴ではない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -126,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 126,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a5",
@@ -12785,7 +12959,60 @@ const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 35,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 170,
@@ -12830,7 +13057,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。上端から 32/51/70/140/159/178mm が理論上の穴中心（全メーカー共通とは断定できない）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a5slim",
@@ -12866,7 +13126,40 @@ const BINDER_SPECS = [
     25
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 16,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 170,
@@ -12911,7 +13204,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。高さは A5 と同じ・幅 110mm。KRAUSE 210-6-16 が候補"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 79,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "a6",
@@ -12947,7 +13273,40 @@ const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 138,
@@ -12992,7 +13351,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央だけ 38mm。当工房在庫 20mm・30mm（KRAUSE）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -63,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 63,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "bible",
@@ -13030,7 +13422,70 @@ const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 23,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 151,
@@ -13075,7 +13530,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。中央 2 インチ（50.8mm）。Filofax 資料では 50/51mm とするものあり"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fclassic",
@@ -13111,7 +13599,50 @@ const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 7
+   "countPerSide": 7,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 163.7,
@@ -13156,7 +13687,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。7穴・A5 6穴とは互換しない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -75.85,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 75.85,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fcompact",
@@ -13191,7 +13755,50 @@ const BINDER_SPECS = [
     30
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 151,
@@ -13236,7 +13843,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。穴位置はバイブルと互換。リフィル幅は 108mm"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 69.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fmonarch",
@@ -13271,7 +13911,40 @@ const BINDER_SPECS = [
     40
    ],
    "shape": "round",
-   "countPerSide": 7
+   "countPerSide": 7,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 30,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 40,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 239.9,
@@ -13316,7 +13989,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。最大級の 7 穴"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -113.95,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 113.95,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "fpocket",
@@ -13350,7 +14056,40 @@ const BINDER_SPECS = [
     25
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 25,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 138.3,
@@ -13395,7 +14134,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。公式 0.75\"/0.75\"/1.5\"/0.75\"/0.75\"。A6 6穴とは公式互換ではない"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -63.150000000000006,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 63.150000000000006,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "m5",
@@ -13431,7 +14203,50 @@ const BINDER_SPECS = [
     15
    ],
    "shape": "round",
-   "countPerSide": 5
+   "countPerSide": 5,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 8,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 11,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 13,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 100,
@@ -13476,7 +14291,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準: 62×105mm・5穴（上端から 15/34/53/72/91mm・綴じ側端から 6mm）"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -44,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 44,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  },
  {
   "id": "mini6",
@@ -13514,7 +14362,60 @@ const BINDER_SPECS = [
     20
    ],
    "shape": "round",
-   "countPerSide": 6
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 11,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 13,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    },
+    {
+     "outerDiameterMm": 20,
+     "innerDiameterMm": null,
+     "wireDiameterMm": null,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null
+    }
+   ]
   },
   "plate": {
    "lengthMm": 120,
@@ -13559,7 +14460,40 @@ const BINDER_SPECS = [
     "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準データ: 80×128mm・6穴（上端から 16.3/35.5/54.7/73.9/93.1/112.3mm・綴じ側端から 6.3mm）。Filofax Pocket は 81×120mm・19mm 間隔"
    }
   ],
-  "confidence": "spec"
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    },
+    {
+     "xMm": 54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": null
  }
 ];
 
@@ -13782,11 +14716,11 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "Micro5 / M5 のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 5 個・間隔 19 / 19 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 62,
         "H": 105,
-        "T": 15,
+        "Y": 0.5,
         "E": 6,
         "D": 5,
         "R": 0
@@ -13794,7 +14728,7 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -13842,35 +14776,35 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+57",
+          "cy": "H/2+Y+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76",
+          "cy": "H/2+Y+38",
           "r": "D/2"
         }
       ]
@@ -13883,11 +14817,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（サイトの規格表どおり）。",
+      "desc": "Mini6 / M6 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.2 / 19.2 / 19.2 / 19.2 / 19.2 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 80,
         "H": 128,
-        "T": 16.3,
+        "C": 19.2,
+        "Y": 0.3,
         "E": 6,
         "D": 5,
         "R": 0
@@ -13895,7 +14830,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -13943,42 +14879,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.4",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.2",
+          "cy": "H/2+Y-C/2-19.2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.4",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+57.6",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76.8",
+          "cy": "H/2+Y+C/2+19.2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+96",
+          "cy": "H/2+Y+C/2+38.4",
           "r": "D/2"
         }
       ]
@@ -13991,11 +14927,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A6 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A6 6穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 38 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 105,
         "H": 148,
-        "T": 17,
+        "C": 38,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14003,7 +14940,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14051,42 +14989,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+95",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -14099,11 +15037,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Personal / バイブル のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 95,
         "H": 171,
-        "T": 22,
+        "C": 50.8,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14111,7 +15050,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14159,42 +15099,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -14207,11 +15147,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A5 6穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A5 6穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 148,
         "H": 210,
-        "T": 32,
+        "C": 70,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14219,7 +15160,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14267,42 +15209,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+108",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+146",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -14315,11 +15257,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A5 Slim のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
+      "desc": "A5 Slim のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19 / 19 / 70 / 19 / 19 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 110,
         "H": 210,
-        "T": 32,
+        "C": 70,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14327,7 +15270,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14375,42 +15319,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19",
+          "cy": "H/2+Y-C/2-19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+108",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+19",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+146",
+          "cy": "H/2+Y+C/2+38",
           "r": "D/2"
         }
       ]
@@ -14423,11 +15367,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "A4 4穴 のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 4 個・間隔 80 / 80 / 80 mm（サイトの規格表どおり）。",
+      "desc": "A4 4穴 のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 4 個・間隔 80 / 80 / 80 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 210,
         "H": 297,
-        "T": 28.5,
+        "C": 80,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14435,7 +15380,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14483,28 +15429,157 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-80",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+80",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+160",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+240",
+          "cy": "H/2+Y+C/2+80",
+          "r": "D/2"
+        }
+      ]
+    },
+    {
+      "id": "refill-deskfax",
+      "name": "リフィル型紙 Deskfax / B5系（176×250）",
+      "name_en": "Refill pattern Deskfax / B5系 (176×250)",
+      "tags": [
+        "refill",
+        "binder"
+      ],
+      "desc": "Deskfax / B5系 のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 9 個・間隔 19 / 19 / 19 / 19 / 19 / 19 / 19 / 19 mm（規格表に間隔が無いため 19mm と仮置き）。",
+      "vars": {
+        "W": 176,
+        "H": 250,
+        "Y": 0,
+        "E": 6,
+        "D": 5,
+        "R": 0
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "Y": 0.1,
+        "E": 0.1,
+        "D": 0.1,
+        "R": 0.5
+      },
+      "varLimits": {
+        "E": [
+          3,
+          9
+        ],
+        "R": [
+          0,
+          15
+        ]
+      },
+      "outlineRect": {
+        "w": "W",
+        "h": "H",
+        "r": "R"
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "pattern",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-76",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-57",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+19",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+38",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+57",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+76",
           "r": "D/2"
         }
       ]
@@ -14517,11 +15592,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Pocket のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 38.1 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 89,
         "H": 153,
-        "T": 19.35,
+        "C": 38.1,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14529,7 +15605,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14577,42 +15654,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+76.2",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+95.25",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114.3",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -14625,11 +15702,12 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Compact のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Compact のリフィル。W=幅 H=高さ C=中央の2つの穴の中心どうしの間隔 Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 6 個・間隔 19.05 / 19.05 / 50.8 / 19.05 / 19.05 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 108,
         "H": 172,
-        "T": 22.5,
+        "C": 50.8,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14637,7 +15715,8 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "C": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14685,42 +15764,42 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-C/2-38.1",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+19.05",
+          "cy": "H/2+Y-C/2-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+38.1",
+          "cy": "H/2+Y-C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+C/2",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y+C/2+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+127",
+          "cy": "H/2+Y+C/2+38.1",
           "r": "D/2"
         }
       ]
@@ -14733,11 +15812,11 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Classic のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Classic のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 19.05 / 19.05 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 140,
         "H": 216,
-        "T": 38.15,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14745,7 +15824,7 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14793,49 +15872,49 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-69.85",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+25.4",
+          "cy": "H/2+Y-44.45",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+50.8",
+          "cy": "H/2+Y-19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+69.85",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+88.9",
+          "cy": "H/2+Y+19.05",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+114.3",
+          "cy": "H/2+Y+44.45",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+139.7",
+          "cy": "H/2+Y+69.85",
           "r": "D/2"
         }
       ]
@@ -14848,11 +15927,11 @@ const DATA_LIBRARY = {
         "refill",
         "binder"
       ],
-      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ T=上端から1番穴まで E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
+      "desc": "Franklin Monarch のリフィル。W=幅 H=高さ （穴が奇数なので中央の穴が中心の線の上に乗ります） Y=穴の列を中心の線から下へずらす量（0＝上下対称・マイナスで上へ） E=穴中心から左端（3〜9mm） D=穴径 R=角の丸み（0＝直角・15mmまで）。穴は 7 個・間隔 25.4 / 25.4 / 57.15 / 57.15 / 25.4 / 25.4 mm（サイトの規格表どおり）。",
       "vars": {
         "W": 216,
         "H": 280,
-        "T": 32.05,
+        "Y": 0,
         "E": 6,
         "D": 5,
         "R": 0
@@ -14860,7 +15939,7 @@ const DATA_LIBRARY = {
       "varSteps": {
         "W": 1,
         "H": 1,
-        "T": 0.1,
+        "Y": 0.1,
         "E": 0.1,
         "D": 0.1,
         "R": 0.5
@@ -14908,49 +15987,49 @@ const DATA_LIBRARY = {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+0",
+          "cy": "H/2+Y-107.95",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+25.4",
+          "cy": "H/2+Y-82.55",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+50.8",
+          "cy": "H/2+Y-57.15",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+107.95",
+          "cy": "H/2+Y",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+165.1",
+          "cy": "H/2+Y+57.15",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+190.5",
+          "cy": "H/2+Y+82.55",
           "r": "D/2"
         },
         {
           "type": "circle",
           "layer": "pattern",
           "cx": "E",
-          "cy": "T+215.9",
+          "cy": "H/2+Y+107.95",
           "r": "D/2"
         }
       ]
@@ -15259,6 +16338,7 @@ const HELP_EN = {
 return {HELP_EN};
 })();
 __mods['app'] = (function(){
+const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __mods['binder_section_edit'];
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } = __mods['geometry'];
@@ -15269,7 +16349,7 @@ const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
 const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
-const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
+const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
 const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
@@ -17102,10 +18182,17 @@ function renderHardware() {
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
   $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : '';
   const bs = $('binderSpecSel'); if (!bs.textContent) for (const s of BINDER_SPECS) { const o = document.createElement('option'); o.value = s.id; o.textContent = document.documentElement.lang === 'en' ? s.names.en : s.names.ja; bs.appendChild(o); }
-  renderBinder();
+  renderBinder(); syncHwBinderMode();
+}
+/** 分類が「リング・バインダー」のときは、バインダーの操作を下の「バインダー金具」の1か所にそろえる（上の機種の選択・パラメータ欄・置くボタンは隠す。向きは共通）。 */
+function syncHwBinderMode() {
+  const binder = $('hwCategory').value === 'binder';
+  for (const id of ['l-hwItem', 'hwParams', 'hwConfidence', 'hwPlace']) $(id).hidden = binder;
+  if (binder) $('binderSub').open = true;
 }
 function renderBinder() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
+  if ($('hwCategory').value === 'binder' && DATA_HARDWARE.items.some(i => i.id === 'binder-' + spec.id)) $('hwItem').value = 'binder-' + spec.id;   /* 下の規格と内部の機種をそろえる（別の規格のリング径で置かれないように） */
   const rd = $('ringD'), keep = Number(rd.value); rd.textContent = '';
   for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); o.textContent = d + ' mm'; rd.appendChild(o); }
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
@@ -17140,6 +18227,7 @@ function hwParams() { const out = {}; for (const input of ($('hwParams').childre
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
 /** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
 function hardwareDrafts(it, overrides, spec, at, angleDeg) {
+  spec = binderSpecWithSection(spec, overrides);
   const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, out = [];
   fp.outline.forEach((s, i) => out.push({ ...s, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }));
   for (const s of fp.holes) out.push({ ...s, layer: 'hwholes' });
@@ -17275,7 +18363,7 @@ function selectedHardware() {
 }
 const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate.hw.params?.spec;
 function refreshHwEdit() {
-  const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
+  const hw = selectedHardware(), section = selectedBinderSection(); $('hwEditCard').hidden = !hw && !section; $('hwEditMain').hidden = !hw; $('hwSectionRow').hidden = !(section || (hw && hwIsBinder(hw.plate))); if (!hw) { hwEditKey = ''; return; }
   const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
   const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
@@ -17291,10 +18379,10 @@ function applyHwEdit() {
   if (!Number.isFinite(angle) || (isBinder && !(ringD > 0))) { $('hint').textContent = t('invalidNumber'); return; }
   const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + specId : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
   const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest; let same = true;   /* 手で直したかの判定：今の設定で作り直した形と比べる */
-  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
+  try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ...old.params, ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
   if (!same && Date.now() - hwEditArmed > 6000) { hwEditArmed = Date.now(); $('hint').textContent = t('hwEditWarn'); return; }  /* 埋め込みブラウザでは confirm が出ないので 2 段押し */
   hwEditArmed = 0;
-  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  let drafts; try { drafts = hardwareDrafts(it, isBinder ? { ...old.params, spec: specId, ringD } : old.params, isBinder ? binderSpec(specId) : null, pose.at, angle); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   const gid = groupIdOf(hw.plate) || nextGroupId(doc.shapes), gone = new Set(hw.members.map(m => m.id));
   cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !gone.has(s.id)); selected = new Set(addHardwareDrafts(drafts, gid)); });
   hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
@@ -17304,8 +18392,8 @@ $('hwEditApply').onclick = applyHwEdit;
 function makeBinderViews() {
   const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
   const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
-  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpec(p.spec), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
-  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor) : [];
+  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpecWithSection(binderSpec(p.spec), p), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
   if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
   const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
@@ -17324,6 +18412,45 @@ function makeBinderViews() {
   renderTabs(); draw(); $('hint').textContent = t('hwViewsDone', { n: topShapes.length + sideShapes.length });
 }
 $('hwViewsApply').onclick = makeBinderViews;
+/** 断面の図を選んだときは、同じ組の紙から元の金具を探す。 */
+function selectedBinderSection() {
+  const shape = doc.shapes.find(s => selected.has(s.id) && s.type === 'polyline' && s.hwSection); if (!shape) return null;
+  const docs = [doc, ...Object.values(quadSheets()).map(tb => tb.doc)];
+  for (const owner of docs) { const plate = owner.shapes.find(s => s.hw && hwIsBinder(s) && (groupIdOf(s) || s.id) === shape.hwSection); if (plate) return { plate, owner, shape }; }
+  return null;
+}
+function binderSectionContext() {
+  const section = selectedBinderSection(); if (section) return section;
+  const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) return null;
+  const gid = groupIdOf(hw.plate) || hw.plate.id, target = quadOn() ? quadSheets().side?.doc : doc;
+  return { plate: hw.plate, owner: doc, shape: target?.shapes.find(s => s.hwSection === gid && s.type === 'polyline') };
+}
+function changeSectionDoc(target, fn) {
+  if (target === doc) commit(fn);
+  else { const tb = tabs.find(tb => tb.doc === target); if (!tb) return; const before = JSON.stringify(target); fn(); pushTabUndo(tb, before); rebuildSnaps(); if (view3d) render3d(); scheduleAutosave(); renderTabs(); draw(); }
+}
+function makeBinderSection() {
+  const c = binderSectionContext(); if (!c) return;
+  const gid = groupIdOf(c.plate) || c.plate.id, pose = hwPoseOfOutline(c.plate), spec = binderSpecWithSection(binderSpec(c.plate.hw.params.spec), c.plate.hw.params), points = binderSection(binderBase(spec));
+  const target = quadOn() ? quadSheets().side?.doc : doc; if (!target) return;
+  // 横軸は台座の幅、縦軸は高さ。右の投影図の奥行き軸とは分けて置く。
+  const at = { x: pose.at.y + (threeViewOn() ? threeViewLayout.side.x - threeViewLayout.front.y : 0), y: pose.at.y };
+  changeSectionDoc(target, () => { target.shapes = target.shapes.filter(s => s.hwSection !== gid); target.shapes.push({ id: freshId(target.shapes, 's'), type: 'polyline', closed: true, layer: target.layers.find(l => l.id === 'marks')?.id || target.layers[0].id, hwSection: gid, points: points.map(p => ({ x: at.x + p.x, y: at.y + p.y })) }); });
+  $('hint').textContent = t('hwSectionMade');
+}
+function applyBinderSection() {
+  const c = binderSectionContext(); if (!c?.shape) { $('hint').textContent = t('hwSectionMissing'); return; }
+  let points; try { points = normalizeSectionPoints(c.shape.points); } catch { $('hint').textContent = t('hwSectionInvalid'); return; }
+  changeSectionDoc(c.owner, () => { c.plate.hw.params.sectionPoints = points; });
+  hwEditKey = ''; refreshHwEdit(); $('hint').textContent = t('hwSectionApplied');
+}
+async function copyBinderSection() {
+  const c = binderSectionContext(); if (!c) return;
+  const spec = binderSpecWithSection(binderSpec(c.plate.hw.params.spec), c.plate.hw.params), text = sectionPointsText(binderSection(binderBase(spec)));
+  try { const clipboard = globalThis.navigator?.clipboard; if (!clipboard?.writeText) throw new Error(); await clipboard.writeText(text); $('hint').textContent = t('hwSectionCopied'); } catch { $('hint').textContent = text; }
+}
+$('hwSectionMake').onclick = makeBinderSection; $('hwSectionApply').onclick = applyBinderSection; $('hwSectionCopy').onclick = copyBinderSection;
+
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();

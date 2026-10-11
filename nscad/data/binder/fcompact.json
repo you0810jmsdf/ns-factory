@@ -17,7 +17,7 @@
    19.05
   ],
   "centerPitchMm": 50.8,
-  "span1toLastMm": 127.0
+  "span1toLastMm": 127
  },
  "refill": {
   "wMm": 108,
@@ -31,10 +31,53 @@
    30
   ],
   "shape": "round",
-  "countPerSide": 6
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 15,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 20,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 25,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 30,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   }
+  ]
  },
  "plate": {
-  "lengthMm": 151.0,
+  "lengthMm": 151,
   "widthMm": 24,
   "thicknessMm": 2,
   "cornerRMm": 3,
@@ -66,7 +109,7 @@
  "solid": {
   "type": "binder",
   "params": {
-   "plateLengthMm": 151.0,
+   "plateLengthMm": 151,
    "plateWidthMm": 24,
    "plateThicknessMm": 2
   }
@@ -76,5 +119,38 @@
    "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。穴位置はバイブルと互換。リフィル幅は 108mm"
   }
  ],
- "confidence": "spec"
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -69.5,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 69.5,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": null
 }

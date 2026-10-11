@@ -34,7 +34,60 @@
    20
   ],
   "shape": "round",
-  "countPerSide": 6
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 11,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 13,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 15,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 19,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 20,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   }
+  ]
  },
  "plate": {
   "lengthMm": 120,
@@ -45,12 +98,12 @@
  },
  "rivets": [
   {
-   "xMm": -54.0,
+   "xMm": -54,
    "yMm": 0,
    "dMm": 3.5
   },
   {
-   "xMm": 54.0,
+   "xMm": 54,
    "yMm": 0,
    "dMm": 3.5
   }
@@ -79,5 +132,38 @@
    "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。N's factory 基準データ: 80×128mm・6穴（上端から 16.3/35.5/54.7/73.9/93.1/112.3mm・綴じ側端から 6.3mm）。Filofax Pocket は 81×120mm・19mm 間隔"
   }
  ],
- "confidence": "spec"
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -54,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 54,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": null
 }

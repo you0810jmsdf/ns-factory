@@ -29,7 +29,50 @@
    40
   ],
   "shape": "round",
-  "countPerSide": 4
+  "countPerSide": 4,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 25,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 30,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 35,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   },
+   {
+    "outerDiameterMm": 40,
+    "innerDiameterMm": null,
+    "wireDiameterMm": null,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null
+   }
+  ]
  },
  "plate": {
   "lengthMm": 264,
@@ -40,12 +83,12 @@
  },
  "rivets": [
   {
-   "xMm": -126.0,
+   "xMm": -126,
    "yMm": 0,
    "dMm": 3.5
   },
   {
-   "xMm": 126.0,
+   "xMm": 126,
    "yMm": 0,
    "dMm": 3.5
   }
@@ -74,5 +117,38 @@
    "note": "docs/ref/ring-standards.html（N's factory 規格表）の FORMATS を写し。80mm 等間隔。A4＝必ず 4 穴ではない"
   }
  ],
- "confidence": "spec"
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -126,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 126,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": null
 }
