@@ -171,3 +171,8 @@ body.running .sheet.show { transform: translateY(100%); }
 body.running .photo { opacity: 0 !important; }
 body.running .hint, body.running .chips { display: none; }
 @media (min-width: 880px) { body.running .sheet.show { transform: translateX(100%); } }
+
+.hud { position: fixed; z-index: 8; left: 50%; top: calc(112px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); max-width: min(92vw, 560px); padding: 8px 18px; border-radius: 999px; background: rgba(16,19,15,0.84); border: 1px solid var(--line-strong); font: 600 15px/1.4 var(--serif); letter-spacing: .06em; color: var(--ink); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; backdrop-filter: blur(6px); box-shadow: 0 0 18px rgba(216,183,102,0.18); pointer-events: none; }
+body.hasroute .photo.compact { top: calc(168px + env(safe-area-inset-top, 0px)); }
+@media (min-width: 880px) { .hud { top: 22px; } body.hasroute .photo.compact { top: auto; } }
+@media (max-width: 420px) { .hud { font-size: 13.5px; padding: 7px 12px; } }
