@@ -988,7 +988,7 @@ function shrineHTML(s) {
   const c3 = `<h3 class="chh">由緒</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
     const ty = h.type && TYPE[h.type] ? h.type : 'fact';
     return rvs(`<div class="tli ${ty}">${item(h)}</div>`, k + 1);
-  }).join('') : rvs(item(null), 1)) + `</div>`;
+  }).join('') : rvs(item(null), 1)) + `</div>` + rvs(`<button class="btn" type="button" data-emaki="1">絵巻で見る ›</button>`, hist.length + 2);
   // 4 見どころ
   const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
@@ -1230,17 +1230,74 @@ $('btnBack').addEventListener('click', goHome);
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route]');
+  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki]');
   if (!t) return;
   if (t.dataset.deity) { e.preventDefault(); if (!selected) { current = { shrine: null }; sheetEl.hidden = false; sheetEl.classList.add('show'); } showDeity(t.dataset.deity); }
   else if (t.dataset.shrine) { selectShrine(t.dataset.shrine); }
   else if (t.dataset.back) { backToShrine(); }
   else if (t.dataset.route) { routeAction(t.dataset.route); }
+  else if (t.dataset.emaki) { openEmaki(selected); }
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
-  if (e.key === 'Escape') { if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
+  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
 });
+
+
+// ---------- 絵巻（年表）: 横になぞる。時代の言葉が大きく現れ、金の墨線が伸びていく ----------
+const emakiEl = document.getElementById('emaki'), emakiTrack = document.getElementById('emakiTrack');
+function emakiHTML(s) {
+  const ds = s.deity_ids.map((id) => deities[id]).filter(Boolean);
+  const head = `<article class="sp sp0"><h2 class="vt">${esc(s.name)}</h2><p class="vr">${esc(s.reading)}</p><p class="vh">横になぞって、時をたどる <span aria-hidden="true">›››</span></p></article>`;
+  const mid = (s.history || []).map((h, i) => {
+    const ty = h.type && TYPE[h.type] ? h.type : 'fact';
+    return `<article class="sp ${ty}"><div class="when rv2" style="--i:0">${esc(h.when || '')}</div><div class="rv2 body" style="--i:2">${item(h)}</div></article>`;
+  }).join('');
+  const km = user && route && route.shrineId === s.id ? route : null;
+  const tail = `<article class="sp spE"><div class="rv2" style="--i:0"><p class="when s">御祭神</p><p class="gods">${ds.map((d) => esc(d.name)).join('<br>')}</p></div>
+    ${km ? `<div class="rv2 bignum" style="--i:3"><div><b>${km.km < 10 ? km.km.toFixed(1) : Math.round(km.km)}</b><small>km</small></div><div><b>${Math.max(1, Math.round(km.min))}</b><small>分（車）</small></div></div>` : ''}
+    <button class="btn rv2" style="--i:4" type="button" data-emakiclose="1">神社へもどる</button></article>`;
+  return head + mid + tail;
+}
+let emakiRaf = 0;
+function openEmaki(s) {
+  if (!s) return;
+  emakiTrack.innerHTML = `<svg class="ink" aria-hidden="true"><path id="inkPath" /><circle id="inkDot" r="6" /></svg>` + emakiHTML(s);
+  emakiEl.hidden = false;
+  document.body.classList.add('emaki-open');
+  emakiTrack.scrollLeft = 0;
+  requestAnimationFrame(layoutEmaki);
+  emakiTrack.onscroll = () => { if (!emakiRaf) emakiRaf = requestAnimationFrame(() => { emakiRaf = 0; updateEmaki(); }); };
+}
+function closeEmaki() { emakiEl.hidden = true; document.body.classList.remove('emaki-open'); emakiTrack.onscroll = null; }
+function layoutEmaki() {
+  const svg = emakiTrack.querySelector('.ink');
+  const w = emakiTrack.scrollWidth, h = emakiTrack.clientHeight;
+  svg.setAttribute('width', w); svg.setAttribute('height', h); svg.style.width = w + 'px'; svg.style.height = h + 'px';
+  // 波打つ墨線（パネルごとにゆるくうねる）
+  const n = emakiTrack.querySelectorAll('.sp').length, step = w / n;
+  let d = `M 0 ${h * 0.5}`;
+  for (let i = 0; i < n; i++) { const x0 = i * step, y = h * (0.5 + (i % 2 ? 0.07 : -0.07)); d += ` C ${x0 + step * 0.35} ${h * 0.5 + (i % 2 ? -0.1 : 0.1) * h}, ${x0 + step * 0.65} ${y}, ${x0 + step} ${h * 0.5}`; }
+  const path = svg.querySelector('#inkPath');
+  path.setAttribute('d', d);
+  const len = path.getTotalLength();
+  path.style.strokeDasharray = len; path.dataset.len = len;
+  updateEmaki();
+}
+function updateEmaki() {
+  const svg = emakiTrack.querySelector('.ink'); if (!svg) return;
+  const path = svg.querySelector('#inkPath'), dot = svg.querySelector('#inkDot'), len = +path.dataset.len || 1;
+  const prog = Math.min(1, (emakiTrack.scrollLeft + emakiTrack.clientWidth * 0.78) / emakiTrack.scrollWidth);
+  path.style.strokeDashoffset = reduce ? 0 : len * (1 - prog);
+  const pt = path.getPointAtLength(len * (reduce ? 1 : prog));
+  dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+  // 画面に入ったパネルの文字を現す
+  const L = emakiTrack.scrollLeft, R = L + emakiTrack.clientWidth;
+  emakiTrack.querySelectorAll('.sp').forEach((el) => { const x0 = el.offsetLeft, x1 = x0 + el.offsetWidth; el.classList.toggle('in', x1 > L + 40 && x0 < R - 60); });
+}
+$('emakiClose').addEventListener('click', closeEmaki);
+emakiEl.addEventListener('click', (e) => { if (e.target.closest('[data-emakiclose]')) closeEmaki(); });
+addEventListener('resize', () => { if (!emakiEl.hidden) layoutEmaki(); });
 
 // 神々の系譜図（全体）
 function openTree(show) {
