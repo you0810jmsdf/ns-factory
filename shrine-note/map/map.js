@@ -1561,17 +1561,10 @@ function openDeityFromTree(id) {
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
 const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track3', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）
+// 曲の一覧。2曲以上にすると、画面に「曲：」の切り替えボタンが自動で出る。今は1曲だけ（事業主の指示・2026-10-12）。
+// 他の曲を戻すときの手順と曲の一覧は、shrine-note/HANDOVER.md の「BGMを増やすとき」を見る。
 const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
   { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
-  { file: 'audio/bgm_healing08.mp3', label: 'ハープの静けさ', title: '（ヒーリング08）', url: 'https://maou.audio/bgm_healing08/' },
-  { file: 'audio/bgm_healing01.mp3', label: 'ヒーリング01', title: '（ヒーリング01）', url: 'https://maou.audio/bgm_healing01/' },
-  { file: 'audio/bgm_healing02.mp3', label: 'ヒーリング02', title: '（ヒーリング02）', url: 'https://maou.audio/bgm_healing02/' },
-  { file: 'audio/bgm_healing04.mp3', label: 'ヒーリング04', title: '（ヒーリング04）', url: 'https://maou.audio/bgm_healing04/' },
-  { file: 'audio/bgm_healing09.mp3', label: 'ヒーリング09', title: '（ヒーリング09）', url: 'https://maou.audio/bgm_healing09/' },
-  { file: 'audio/bgm_healing10.mp3', label: 'ヒーリング10', title: '（ヒーリング10）', url: 'https://maou.audio/bgm_healing10/' },
-  { file: 'audio/bgm_healing11.mp3', label: 'ヒーリング11', title: '（ヒーリング11）', url: 'https://maou.audio/bgm_healing11/' },
-  { file: 'audio/bgm_healing14.mp3', label: 'ヒーリング14', title: '（ヒーリング14）', url: 'https://maou.audio/bgm_healing14/' },
-  { file: 'audio/bgm_healing16.mp3', label: 'ヒーリング16', title: '（ヒーリング16）', url: 'https://maou.audio/bgm_healing16/' }
 ];
 let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
 try {
@@ -1603,6 +1596,7 @@ function bgmButton() {
   b.classList.toggle('on', bgmOn);
   const tr = BGM_TRACKS[bgmTrack];
   $('btnBgmNext').textContent = '曲：' + tr.label;
+  $('btnBgmNext').hidden = BGM_TRACKS.length < 2;   // 曲が1つだけのときは、切り替えボタンを出さない
   $('bgmCredit').href = tr.url; $('bgmTitle').textContent = tr.title;
 }
 $('btnBgmNext').addEventListener('click', (e) => {
