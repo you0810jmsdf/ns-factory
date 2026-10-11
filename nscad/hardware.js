@@ -210,3 +210,25 @@ export function sameShapes(a, b, tol = 0.05) {
   for (const s of a) { const i = left.findIndex(t => sameShape(s, t, tol)); if (i < 0) return false; left.splice(i, 1); }
   return true;
 }
+
+/** バインダーの3D（binderSolid）の高さ方向（z）の範囲。リベットの出っ張りから、リングの上端まで。三面図の立体で金具を奥行きの中央に置くときの基準。 */
+export function binderZRange(spec, ringD = null) {
+  const zs = binderSolid(spec, ringD || spec.rings.diameterOptionsMm[0], 0).flatMap(f => f.points.map(p => p.z));
+  return { min: Math.min(...zs), max: Math.max(...zs) };
+}
+/** 正面の紙（真上から見た平面図）に置いた金具から、三面図の「上の紙」と「右の紙」に置く図形を作る。角度は 0度か 90度（±0.5度）だけ。それ以外は null。
+ *  at は金具の中心（正面の紙の x・y）、dc は立体の奥行きの中央（mm）。上の図は（x, 奥行き）、右の図は（奥行き, y）の座標で、奥行きは手前が 0・奥が大きい。
+ *  奥行きは 3D の金具（threeViewHardwareFaces）と同じ式：手前から数えて dc −（z − zmid）。z は金具の高さ（台座の上面が T、リングの上端が T+D）。
+ *  図形は { type: 'polyline'（閉じた四角）| 'circle', role: 'plate' | 'ring' }。リングは長手方向に直角に立つので、台座の向きが 0度なら上の図で棒・右の図で円、90度なら逆になる（円は全部のリングが重なるので外径と内径の2つだけ）。 */
+export function binderViewShapes(spec, ringD, at, angleDeg, dc) {
+  const rad = angleDeg * Math.PI / 180, eps = Math.sin(0.5 * Math.PI / 180), cs = Math.cos(rad), sn = Math.sin(rad);
+  const quarter = Math.abs(sn) < eps ? 0 : Math.abs(cs) < eps ? 90 : null; if (quarter === null) return null;
+  const v = binderViews(spec, ringD), { T, D, wire, W, L } = v, z = binderZRange(spec, v.D), zmid = (z.min + z.max) / 2, dOf = zz => dc - (zz - zmid);
+  const plateD = [dOf(T), dOf(0)], ringDepth = [dOf(T + D), dOf(T)], ringCenterD = dOf(T + D / 2), halfX = quarter === 0 ? L / 2 : W / 2, halfY = quarter === 0 ? W / 2 : L / 2;
+  const rect = (x0, x1, y0, y1, role) => ({ type: 'polyline', closed: true, role, points: [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }] });
+  const rings = (cx, cy) => [{ type: 'circle', role: 'ring', cx, cy, r: D / 2 }, { type: 'circle', role: 'ring', cx, cy, r: D / 2 - wire }];
+  const top = [rect(at.x - halfX, at.x + halfX, plateD[0], plateD[1], 'plate')], side = [rect(plateD[0], plateD[1], at.y - halfY, at.y + halfY, 'plate')];
+  if (quarter === 0) { for (const hx of v.ringXs) top.push(rect(at.x + hx * cs - wire / 2, at.x + hx * cs + wire / 2, ringDepth[0], ringDepth[1], 'ring')); side.push(...rings(ringCenterD, at.y)); }
+  else { top.push(...rings(at.x, ringCenterD)); for (const hx of v.ringXs) side.push(rect(ringDepth[0], ringDepth[1], at.y + hx * sn - wire / 2, at.y + hx * sn + wire / 2, 'ring')); }
+  return { top, side };
+}

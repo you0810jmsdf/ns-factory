@@ -28,7 +28,7 @@
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #canvas3d { position: absolute; inset: 0; background: #101010; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
-    #rulerBar, #rectBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
+    #rulerBar, #rectBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; } .ctx button { height: 30px; text-align: left; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
@@ -112,7 +112,8 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div>
+<div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side">
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -146,6 +147,8 @@
 <label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"></label>
 <label><span data-i18n="hwEditAngle"></span><input id="hwEditAngle" type="number" step="1"></label>
 <div class="row"><button id="hwEditApply" data-i18n="hwEditApply"></button></div>
+<div class="row" id="hwViewsRow"><button id="hwViewsApply" data-i18n="hwViewsApply"></button></div>
+<div class="hint" data-i18n="hwViewsNote"></div>
 <div class="hint" id="hwEditNote"></div>
 </div></details>
 <details class="card" id="moveCard" open hidden><summary data-i18n="moveTitle"></summary><div class="body">
@@ -487,11 +490,35 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ef5e0b90","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=148fea68","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=a0f0450e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=676a6191","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=ef5e0b90"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5d8696ee","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./data/binder.js":"./data/binder.js?v=bfff37bc","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=a8f1299b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=23392857","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=b045228c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=69d3fa29","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=5d8696ee"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
+__mods['autosave'] = (function(){
+// 自動保存：開いている全タブの図面を localStorage に入れ、次に開いたときに「前回の続き」として復元する。画像は imgstore（IndexedDB）に別にあるので、ここは図面の JSON だけ。
+const AUTOSAVE_KEY = 'leather-cad.autosave';
+/** localStorage は 5MB 前後が上限（文字数）。余裕を見てこの文字数まで。超えたら保存しない（ほかの設定を巻き込んで壊さない）。 */
+const AUTOSAVE_MAX_CHARS = 3_500_000;
+
+/** タブ（{ name, doc } の配列）と開いているタブの番号から保存用の文字列を作る。{ status: 'ok', text } / { status: 'empty' }（図形が1つも無い）/ { status: 'tooLarge' }。 */
+function packAutosave(tabs, active, now = new Date()) {
+  if (!tabs.some(t => t.doc.shapes.length)) return { status: 'empty' };
+  const text = JSON.stringify({ v: 1, savedAt: now.toISOString(), active, tabs: tabs.map(t => ({ name: t.name, doc: t.doc })) });
+  return text.length > AUTOSAVE_MAX_CHARS ? { status: 'tooLarge' } : { status: 'ok', text };
+}
+
+/** 保存の文字列を読み戻す。壊れている・版が違う・図面が不正・空のときは null。validate(doc) は図面の検査（validateDoc）。 */
+function unpackAutosave(text, validate) {
+  let j; try { j = JSON.parse(text); } catch { return null; }
+  if (!j || j.v !== 1 || !Array.isArray(j.tabs) || !j.tabs.length || !Number.isInteger(j.active) || j.active < 0 || j.active >= j.tabs.length || typeof j.savedAt !== 'string') return null;
+  if (!j.tabs.every(t => t && typeof t.name === 'string' && t.doc && validate(t.doc))) return null;
+  const shapes = j.tabs.reduce((n, t) => n + t.doc.shapes.length, 0); if (!shapes) return null;
+  return { tabs: j.tabs.map(t => ({ name: t.name, doc: t.doc })), active: j.active, savedAt: j.savedAt, shapes };
+}
+
+return {AUTOSAVE_KEY, AUTOSAVE_MAX_CHARS, packAutosave, unpackAutosave};
+})();
 __mods['array'] = (function(){
 /** 元の位置を除き、左端・上端から次の左端・上端への移動量を返す。個数は元を含む。 */
 function arrayOffsets(nx, ny, dx, dy) {
@@ -1824,6 +1851,17 @@ const MESSAGES = {
     "hwEditNote": "位置はそのままで、金具を作り直します（元に戻せます）。手で直した図形が混じっているときは、先に確認します",
     "hwEditWarn": "手で直した図形があります。もう一度押すと、直した形を捨てて作り直します",
     "hwEdited": "金具を作り直しました",
+    "restoreInfo": "前回の続きがあります（{when}・{n} 個の図形・{tabs} 枚の図面）",
+    "restoreApply": "前回の続きを開く",
+    "restoreDiscard": "捨てる",
+    "restored": "前回の続きを開きました。まだファイルには保存していません（Ctrl+S で保存できます）",
+    "autosaveTooLarge": "図面が大きすぎて自動保存できません。ファイルに保存してください（Ctrl+S）",
+    "hwViewsApply": "上と右の図を作る",
+    "hwViewsNote": "正面に置いた金具から、上の紙・右の紙（枠方式なら上の枠・右の枠）に金具の図を置きます。金具を動かしたあとは、もう一度押すと置き直します。角度が 0度か 90度のときだけ使えます",
+    "hwViewsDone": "上と右の図を作りました（{n} 個の図形）",
+    "hwViewsAngle": "角度が 0度か 90度のときだけ作れます。金具を回して合わせてください",
+    "hwViewsNeedMode": "三面図（正面・上・横、または4分割）を入れてから押してください",
+    "hwViewsNeedBinder": "バインダー金具を全体まで選んでください",
     "moveTitle": "選んだ図形を動かす",
     "moveDx": "右へ (mm)",
     "moveDy": "下へ (mm)",
@@ -2680,6 +2718,17 @@ const MESSAGES = {
     "hwEditNote": "Rebuilds the hardware in place (undoable). If you edited any shape by hand, you will be asked to confirm first",
     "hwEditWarn": "Some shapes were edited by hand. Press again to discard them and rebuild",
     "hwEdited": "Hardware rebuilt",
+    "restoreInfo": "Previous work found ({when} · {n} shapes · {tabs} drawings)",
+    "restoreApply": "Open previous work",
+    "restoreDiscard": "Discard",
+    "restored": "Opened previous work. Not saved to a file yet (Ctrl+S to save)",
+    "autosaveTooLarge": "The drawing is too large to autosave. Please save it to a file (Ctrl+S)",
+    "hwViewsApply": "Make top and right views",
+    "hwViewsNote": "Places the hardware drawing in the top and right sheets (or frames) from the binder in the front. After moving the hardware, press again to redo. Works only at 0 or 90 degrees",
+    "hwViewsDone": "Made the top and right views ({n} shapes)",
+    "hwViewsAngle": "Works only at 0 or 90 degrees. Rotate the hardware to fit",
+    "hwViewsNeedMode": "Turn on the three-view mode (front/top/side, or 4 panes) first",
+    "hwViewsNeedBinder": "Select the whole binder hardware first",
     "moveTitle": "Move selection",
     "moveDx": "Right (mm)",
     "moveDy": "Down (mm)",
@@ -4479,7 +4528,29 @@ function sameShapes(a, b, tol = 0.05) {
   return true;
 }
 
-return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes};
+/** バインダーの3D（binderSolid）の高さ方向（z）の範囲。リベットの出っ張りから、リングの上端まで。三面図の立体で金具を奥行きの中央に置くときの基準。 */
+function binderZRange(spec, ringD = null) {
+  const zs = binderSolid(spec, ringD || spec.rings.diameterOptionsMm[0], 0).flatMap(f => f.points.map(p => p.z));
+  return { min: Math.min(...zs), max: Math.max(...zs) };
+}
+/** 正面の紙（真上から見た平面図）に置いた金具から、三面図の「上の紙」と「右の紙」に置く図形を作る。角度は 0度か 90度（±0.5度）だけ。それ以外は null。
+ *  at は金具の中心（正面の紙の x・y）、dc は立体の奥行きの中央（mm）。上の図は（x, 奥行き）、右の図は（奥行き, y）の座標で、奥行きは手前が 0・奥が大きい。
+ *  奥行きは 3D の金具（threeViewHardwareFaces）と同じ式：手前から数えて dc −（z − zmid）。z は金具の高さ（台座の上面が T、リングの上端が T+D）。
+ *  図形は { type: 'polyline'（閉じた四角）| 'circle', role: 'plate' | 'ring' }。リングは長手方向に直角に立つので、台座の向きが 0度なら上の図で棒・右の図で円、90度なら逆になる（円は全部のリングが重なるので外径と内径の2つだけ）。 */
+function binderViewShapes(spec, ringD, at, angleDeg, dc) {
+  const rad = angleDeg * Math.PI / 180, eps = Math.sin(0.5 * Math.PI / 180), cs = Math.cos(rad), sn = Math.sin(rad);
+  const quarter = Math.abs(sn) < eps ? 0 : Math.abs(cs) < eps ? 90 : null; if (quarter === null) return null;
+  const v = binderViews(spec, ringD), { T, D, wire, W, L } = v, z = binderZRange(spec, v.D), zmid = (z.min + z.max) / 2, dOf = zz => dc - (zz - zmid);
+  const plateD = [dOf(T), dOf(0)], ringDepth = [dOf(T + D), dOf(T)], ringCenterD = dOf(T + D / 2), halfX = quarter === 0 ? L / 2 : W / 2, halfY = quarter === 0 ? W / 2 : L / 2;
+  const rect = (x0, x1, y0, y1, role) => ({ type: 'polyline', closed: true, role, points: [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }] });
+  const rings = (cx, cy) => [{ type: 'circle', role: 'ring', cx, cy, r: D / 2 }, { type: 'circle', role: 'ring', cx, cy, r: D / 2 - wire }];
+  const top = [rect(at.x - halfX, at.x + halfX, plateD[0], plateD[1], 'plate')], side = [rect(plateD[0], plateD[1], at.y - halfY, at.y + halfY, 'plate')];
+  if (quarter === 0) { for (const hx of v.ringXs) top.push(rect(at.x + hx * cs - wire / 2, at.x + hx * cs + wire / 2, ringDepth[0], ringDepth[1], 'ring')); side.push(...rings(ringCenterD, at.y)); }
+  else { top.push(...rings(at.x, ringCenterD)); for (const hx of v.ringXs) side.push(rect(ringDepth[0], ringDepth[1], at.y + hx * sn - wire / 2, at.y + hx * sn + wire / 2, 'ring')); }
+  return { top, side };
+}
+
+return {evalExpr, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes};
 })();
 __mods['threeview'] = (function(){
 // 三面図（正面から見た図・上から見た図・右から見た図）を描くときの手伝い。
@@ -4493,7 +4564,7 @@ __mods['threeview'] = (function(){
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 const { bboxOf, flattenShape, chainShapes } = __mods['geometry'];
 const { v3, faceNormal } = __mods['sim3d'];
-const { binderSolid } = __mods['hardware'];
+const { binderSolid, binderZRange, hwPoseOfOutline } = __mods['hardware'];
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 const THREE_VIEW_LAYOUT = {
   top: { x: 0, y: 0, w: 300, h: 220 },
@@ -4768,7 +4839,8 @@ function closedPolygon(s, tol) {
 /** 図形の列から閉じた輪郭（点の列）をすべて取り出す。閉じた1図形のほか、丸め・面取りなどで直線や円弧に分かれていても、端がつながって輪になっていれば1つの輪郭にする。 */
 function closedPolygons(shapes, tol) {
   const out = [], open = [];
-  for (const s of shapes || []) { const p = closedPolygon(s, tol); if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
+  for (const s of shapes || []) { if (s?.hwFor) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
+    if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
   if (open.length) for (const c of chainShapes(open, Math.max(tol / 10, 0.01))) {
     if (!c.closed) continue;
     let pts = []; try { for (const it of c.items) { const ps = flattenShape(it.shape, tol); if (it.reversed) ps.reverse(); pts.push(...(pts.length ? ps.slice(1) : ps)); } } catch { continue; }
@@ -4837,8 +4909,9 @@ function threeViewHardwareFaces(solid, hwShapes, specOf) {
   for (const s of hwShapes || []) {
     const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
     const spec = specOf(hw.params?.spec); if (!spec) continue;
-    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], at = hw.at || { x: 0, y: 0 }, a = (Number(hw.angleDeg) || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
-    const local = binderSolid(spec, ringD, 0), zs = local.flatMap(f => f.points.map(p => p.z)), zmid = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 };   /* 置いたあとに動かした・回した金具でも、いまの外形から位置と角度を割り出す */
+    const at = pose.at, a = pose.angleDeg * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
+    const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;
     const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
     const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
     const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));
@@ -15196,7 +15269,7 @@ const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
 const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } = __mods['threeview'];
-const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
+const { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
 const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
@@ -15220,6 +15293,7 @@ const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
 const { track } = __mods['analytics'];
+const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
 const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
@@ -15233,6 +15307,7 @@ const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
+let autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
@@ -15665,6 +15740,34 @@ function showHelp(shortcuts = false, pageId = null) {
   $('helpBody').textContent = pages.length ? pages.map(p => p.title + '\n' + p.body).join('\n\n') : t('helpNoMatch');
   $('helpDialog').showModal();
 }
+/** 自動保存：変更の1.5秒後に、全タブの図面を localStorage へ入れる。復元するか決める前は、前回の保存を上書きしない。 */
+function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
+function flushAutosave() {
+  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
+  snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc })), activeTab);
+  try {
+    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; }
+    else if (r.status === 'empty') localStorage.removeItem(AUTOSAVE_KEY);
+    else if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); }
+  } catch { if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
+}
+/** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
+function offerRestore() {
+  let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
+  const info = text ? unpackAutosave(text, validateDoc) : null;
+  if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
+  const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
+}
+function restoreAutosave() {
+  const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
+  const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: tb.doc, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
+  if (info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
+  activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
+}
+function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
+$('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
   if (done) return; let i = 0;
@@ -16944,6 +17047,7 @@ function pasteText(text, at = null) {
 // タブ：文書ごとに undo/redo/選択を持つ
 function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { doc, undo, redo, selected, activeLayer, scale, origin }); }
 function renderTabs() {
+  scheduleAutosave();
   const bar = $('tabBar'); bar.textContent = '';
   tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); bar.appendChild(b); });
   $('tabName').value = tabs[activeTab]?.name || '';
@@ -17173,7 +17277,7 @@ const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate
 function refreshHwEdit() {
   const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
   const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
-  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = !isBinder;
+  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
     const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
     sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? '');
@@ -17196,6 +17300,30 @@ function applyHwEdit() {
   hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
 }
 $('hwEditApply').onclick = applyHwEdit;
+/** 「上と右の図を作る」：正面の紙に置いた金具から、上の紙・右の紙（枠方式なら上の枠・右の枠）に金具の図を置く。前に作った図（hwFor が同じ）は消してから置き直す。金具を動かしたあとは、もう一度押して置き直す。 */
+function makeBinderViews() {
+  const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
+  const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
+  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpec(p.spec), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor) : [];
+  if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
+  const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
+  const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
+  if (!views) { $('hint').textContent = t('hwViewsAngle'); return; }
+  const bottomOfTop = threeViewLayout.top.y + threeViewLayout.top.h, leftOfSide = threeViewLayout.side.x;
+  const toTop = quad ? (x, d) => ({ x, y: -d }) : (x, d) => ({ x, y: bottomOfTop - d }), toSide = quad ? (d, y) => ({ x: d, y }) : (d, y) => ({ x: leftOfSide + d, y });
+  const conv = (s, f) => { const { role, ...rest } = s; return s.type === 'circle' ? { ...rest, role, ...(({ x, y }) => ({ cx: x, cy: y }))(f(s.cx, s.cy)) } : { ...rest, role, points: s.points.map(q => f(q.x, q.y)) }; };
+  const put = (td, lists) => {   /* 前に作った図（hwFor が同じ）を全部消してから、図ごとに1つのグループとして置く */
+    const gone = new Set(td.shapes.filter(s => s.hwFor === gid).map(s => s.id)); td.shapes = td.shapes.filter(s => !gone.has(s.id));
+    const layer = td.layers.find(l => l.id === 'marks') ? 'marks' : td.layers[0].id;
+    for (const shapes of lists) { const group = nextGroupId(td.shapes); for (const s of shapes) td.shapes.push({ ...s, id: freshId(td.shapes, 's'), layer, hwFor: gid, groupId: group }); }
+  };
+  const topShapes = views.top.map(s => conv(s, toTop)), sideShapes = views.side.map(s => conv(s, toSide));
+  if (frame) commit(() => put(doc, [topShapes, sideShapes]));
+  else for (const [role, shapes] of [['top', topShapes], ['side', sideShapes]]) { const tb = sheets[role], before = JSON.stringify(tb.doc); put(tb.doc, [shapes]); pushTabUndo(tb, before); }
+  renderTabs(); draw(); $('hint').textContent = t('hwViewsDone', { n: topShapes.length + sideShapes.length });
+}
+$('hwViewsApply').onclick = makeBinderViews;
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
@@ -17419,6 +17547,7 @@ function commit(fn) {
   const before = JSON.stringify(doc);
   fn();
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
+  scheduleAutosave();
   draw();
 }
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
@@ -17436,7 +17565,7 @@ function setMode(next) {
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
 function history(from, to) {
-  if (!from.length) return;
+  if (!from.length) return; scheduleAutosave();
   to.push(JSON.stringify(doc)); doc = JSON.parse(from.pop()); selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw();
 }
 function removeSelected() {
@@ -18162,6 +18291,7 @@ let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en'
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
 initCounting();
+offerRestore(); autosaveReady = true;
 showTour();
 }
 
