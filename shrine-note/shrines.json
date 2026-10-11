@@ -1,0 +1,208 @@
+{
+  "updated": "2026-10-11",
+  "policy": "事実・伝承・推測は type で分ける（fact / tradition / guess）。出典(src)の無い項目、観光サイトや事典のみの項目は status を『要確認』にする（画面に『要確認』が出る）。緯度経度は国土地理院の住所検索または事典の値で、地図での目視確認は未実施（鹿島・息栖・成田・伊勢外宮は差があるため要確認）。photo.kind は placeholder / photo（権利確認済みの写真）/ ai（AIによるイメージ図）。food・stay は PR 枠のみ（リンクは提携先決定後）。",
+  "sources": [
+    { "id": "m1", "label": "1", "title": "麻賀多神社 公式「御祭神・由緒」", "publisher": "麻賀多神社", "url": "http://www.makata.jp/gosaishin.html", "accessed": "2026-10-11" },
+    { "id": "m2", "label": "2", "title": "麻賀多神社 公式「境内」", "publisher": "麻賀多神社", "url": "http://www.makata.jp/keidai.html", "accessed": "2026-10-11" },
+    { "id": "m3", "label": "3", "title": "麻賀多神社 公式「交通」", "publisher": "麻賀多神社", "url": "http://www.makata.jp/kotsu.html", "accessed": "2026-10-11" },
+    { "id": "m4", "label": "4", "title": "まるごとちば「麻賀多神社」（観光サイト）", "publisher": "千葉県観光物産協会", "url": "https://maruchiba.jp/spot/detail_10134.html", "accessed": "2026-10-11" },
+    { "id": "m5", "label": "5", "title": "千葉県「佐倉市の宗教法人一覧」", "publisher": "千葉県", "url": "https://www.pref.chiba.lg.jp/gakuji/shuukyou/houjin/sakura.html", "accessed": "2026-10-11" },
+    { "id": "k1", "label": "6", "title": "香取神宮 公式「御由緒」", "publisher": "香取神宮", "url": "https://katori-jingu.or.jp/about/history/", "accessed": "2026-10-11" },
+    { "id": "k2", "label": "7", "title": "香取神宮 公式トップ（授与所の時間）", "publisher": "香取神宮", "url": "https://katori-jingu.or.jp/", "accessed": "2026-10-11" },
+    { "id": "k3", "label": "8", "title": "香取神宮 公式「アクセス」", "publisher": "香取神宮", "url": "https://katori-jingu.or.jp/access/", "accessed": "2026-10-11" },
+    { "id": "k4", "label": "9", "title": "香取神宮 公式「お車でお越しの方へ」", "publisher": "香取神宮", "url": "https://katori-jingu.or.jp/2019/12/27/%E3%81%8A%E8%BB%8A%E3%81%A7%E3%81%8A%E8%B6%8A%E3%81%97%E3%81%AE%E6%96%B9%E3%81%B8/", "accessed": "2026-10-11" },
+    { "id": "s1", "label": "10", "title": "鹿島神宮 公式「御由緒・御祭神」", "publisher": "鹿島神宮", "url": "https://kashimajingu.jp/about/%e5%be%a1%e7%94%b1%e7%b7%92%e3%83%bb%e5%be%a1%e7%a5%ad%e7%a5%9e/", "accessed": "2026-10-11" },
+    { "id": "s2", "label": "11", "title": "鹿島神宮 公式「よくあるご質問」", "publisher": "鹿島神宮", "url": "https://kashimajingu.jp/info/%E3%82%88%E3%81%8F%E3%81%82%E3%82%8B%E3%81%94%E8%B3%AA%E5%95%8F/", "accessed": "2026-10-11" },
+    { "id": "s3", "label": "12", "title": "鹿島神宮 公式「アクセス・駐車場」", "publisher": "鹿島神宮", "url": "https://kashimajingu.jp/info/%e3%82%a2%e3%82%af%e3%82%bb%e3%82%b9%e3%83%bb%e9%a7%90%e8%bb%8a%e5%a0%b4/", "accessed": "2026-10-11" },
+    { "id": "i1", "label": "13", "title": "息栖神社 公式「御由緒・御祭神」", "publisher": "息栖神社", "url": "https://ikisujinja.com/about/", "accessed": "2026-10-11" },
+    { "id": "i2", "label": "14", "title": "息栖神社 公式「アクセス」", "publisher": "息栖神社", "url": "https://ikisujinja.com/access/", "accessed": "2026-10-11" },
+    { "id": "i3", "label": "15", "title": "神栖市「息栖の森駐車場」", "publisher": "神栖市", "url": "https://www.city.kamisu.ibaraki.jp/shisei/machi/1006717/1008777.html", "accessed": "2026-10-11" },
+    { "id": "a1", "label": "16", "title": "安房神社 公式「御祭神」", "publisher": "安房神社", "url": "http://www.awajinjya.org/gosaijin.htm", "accessed": "2026-10-11" },
+    { "id": "a2", "label": "17", "title": "安房神社 公式「交通案内」", "publisher": "安房神社", "url": "http://www.awajinjya.org/koutuu.htm", "accessed": "2026-10-11" },
+    { "id": "a3", "label": "18", "title": "安房神社 公式「館山の神社」（洲崎神社の紹介）", "publisher": "安房神社", "url": "http://www.awajinjya.org/tateyama.htm", "accessed": "2026-10-11" },
+    { "id": "u1", "label": "19", "title": "館山市「洲崎神社」", "publisher": "館山市", "url": "https://www.city.tateyama.chiba.jp/syougaigaku/page100263.html", "accessed": "2026-10-11" },
+    { "id": "u2", "label": "20", "title": "館山市「洲崎神社本殿」（市指定文化財）", "publisher": "館山市", "url": "https://www.city.tateyama.chiba.jp/syougaigaku/page100208.html", "accessed": "2026-10-11" },
+    { "id": "w1", "label": "21", "title": "洲崎神社（事典）", "publisher": "Wikipedia", "url": "https://ja.wikipedia.org/wiki/洲崎神社", "accessed": "2026-10-11" },
+    { "id": "e1", "label": "22", "title": "伊勢神宮 公式「内宮」", "publisher": "神宮司庁", "url": "https://www.isejingu.or.jp/about/naiku/", "accessed": "2026-10-11" },
+    { "id": "e2", "label": "23", "title": "伊勢神宮 公式「外宮」", "publisher": "神宮司庁", "url": "https://www.isejingu.or.jp/about/geku/", "accessed": "2026-10-11" },
+    { "id": "e3", "label": "24", "title": "伊勢神宮 公式「アクセス」", "publisher": "神宮司庁", "url": "https://www.isejingu.or.jp/access/", "accessed": "2026-10-11" },
+    { "id": "e4", "label": "25", "title": "伊勢神宮 公式トップ（参拝時間）", "publisher": "神宮司庁", "url": "https://www.isejingu.or.jp/", "accessed": "2026-10-11" },
+    { "id": "z1", "label": "26", "title": "出雲大社 公式「御由緒」", "publisher": "出雲大社", "url": "https://izumooyashiro.or.jp/history/", "accessed": "2026-10-11" },
+    { "id": "z2", "label": "27", "title": "出雲大社 公式お知らせ（参拝時間・令和6年10月14日付）", "publisher": "出雲大社", "url": "https://izumooyashiro.or.jp/archives/news/11053", "accessed": "2026-10-11" },
+    { "id": "z3", "label": "28", "title": "出雲大社 公式「アクセス」", "publisher": "出雲大社", "url": "https://izumooyashiro.or.jp/access", "accessed": "2026-10-11" },
+    { "id": "g1", "label": "29", "title": "国土地理院「住所検索API」（緯度経度）", "publisher": "国土地理院", "url": "https://msearch.gsi.go.jp/address-search/AddressSearch", "accessed": "2026-10-11" },
+    { "id": "t1", "label": "30", "title": "麻賀多神社（事典）", "publisher": "Wikipedia", "url": "https://ja.wikipedia.org/wiki/麻賀多神社", "accessed": "2026-10-11" }
+  ],
+  "shrines": [
+    {
+      "id": "makata", "name": "麻賀多神社", "reading": "まかたじんじゃ", "pref": "千葉県", "city": "佐倉市鏑木町",
+      "lat": 35.7200, "lon": 140.2260, "deity_ids": ["wakumusubi"],
+      "summary": { "text": "印旛沼の周りに同名の社が多い麻賀多神社のうち、佐倉市鏑木町の社。佐倉藩の総鎮守として知られる。", "status": "verified", "src": ["m1", "m4"] },
+      "deity_note": { "text": "御祭神は稚産霊命（公式の表記）。公式は『古事記の和久産巣日神、日本書紀の稚産霊命』と説明する。記紀の位置づけは神様のページに整理した。成田市（台方・船形）にも別法人の麻賀多神社があり、祭神の記述が異なる（事典のみ・要確認）。", "src": ["m1", "t1"] },
+      "history": [
+        { "type": "tradition", "text": "創建は『佐倉地方開闢の頃と云われ定かでない』（公式）。", "src": ["m1"] },
+        { "type": "tradition", "text": "社名の由来は口伝として『麻の国で多氏が賀す神の社』と訓める、と公式が説明する。印旛国造に多氏の伊都許利命が就いたことは『先代旧事本紀』にあると公式は記す。", "src": ["m1"] },
+        { "type": "fact", "text": "江戸時代は佐倉城の城地鎮護・佐倉藩総鎮守。現社殿は天保14年（1843）に藩主堀田正睦が建て替え、平成15年（2003）に大修営（公式）。", "src": ["m1"] },
+        { "type": "fact", "text": "公式は、延喜式（巻第九 下総国）に社名が見えると記す。式内社の格付けの明言は公式に無い。旧郷社は事典のみで要確認。", "src": ["m1"], "status": "要確認" }
+      ],
+      "highlights": [
+        { "type": "fact", "text": "境内に摂社の三峯神社（伊弉諾尊・伊弉冉尊）、稲荷神社（豊受姫命）、末社の疱瘡神社（少彦名命）がある。", "src": ["m2"] }
+      ],
+      "address": { "text": "千葉県佐倉市鏑木町933番地1", "src": ["m3", "m5"] },
+      "access": { "text": "JR佐倉駅・京成佐倉駅から徒歩約15分。車は佐倉IC・四街道ICから約10分（公式）。", "src": ["m3"] },
+      "hours": { "text": "公式に記載が見つからない", "status": "要確認", "src": ["m4"] },
+      "parking": { "text": "無料・乗用車20台、大型バス不可（観光サイトの情報）", "status": "要確認", "src": ["m4"] },
+      "goshuin": { "text": "未確認", "status": "要確認" },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "katori", "name": "香取神宮", "reading": "かとりじんぐう", "pref": "千葉県", "city": "香取市",
+      "lat": 35.8863, "lon": 140.5277, "deity_ids": ["futsunushi"],
+      "summary": { "text": "下総国一之宮。経津主大神を祀る。明治以前に『神宮』を称したのは、伊勢・香取・鹿島のみとされる（公式）。", "status": "verified", "src": ["k1"] },
+      "deity_note": { "text": "経津主神は日本書紀・古語拾遺に見え、古事記には見当たらない（検索による確認・要確認）。香取神宮公式は別名を『伊波比主命』とする。", "src": ["k1"] },
+      "history": [
+        { "type": "tradition", "text": "神武天皇18年の創建と云われる（公式が『古老の伝え』として記す）。", "src": ["k1"] },
+        { "type": "fact", "text": "旧官幣大社。昭和17年に勅祭社となった（公式）。", "src": ["k1"] },
+        { "type": "fact", "text": "式内名神大社・別表神社の格付けは事典のみ。", "status": "要確認" }
+      ],
+      "highlights": [],
+      "address": { "text": "〒287-0017 千葉県香取市香取1697-1", "src": ["k2"] },
+      "access": { "text": "JR香取駅から徒歩約30分（約2km）。JR佐原駅からタクシー約10分。東京駅から高速バス『香取神宮前』下車徒歩5分。佐原香取ICから約1.5km（公式）。", "src": ["k3"] },
+      "hours": { "text": "授与所・御朱印 8:30〜17:00、祈祷受付〜16:30、宝物受付〜16:00（公式）。境内そのものの開閉時間は公式で確認できていない。", "status": "要確認", "src": ["k2"] },
+      "parking": { "text": "無料の第1駐車場（約100台）・第3駐車場（約100台）。行事日は利用制限の告知あり（公式）。", "src": ["k4"] },
+      "goshuin": { "text": "あり（授与所 8:30〜17:00）", "src": ["k2"] },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "kashima", "name": "鹿島神宮", "reading": "かしまじんぐう", "pref": "茨城県", "city": "鹿嶋市",
+      "lat": 35.9689, "lon": 140.6315, "deity_ids": ["takemikazuchi"],
+      "summary": { "text": "常陸国一之宮。武甕槌大神を祀る、東国三社の一つ。", "status": "verified", "src": ["s1"] },
+      "deity_note": { "text": "建御雷神は古事記の神生み・国譲りに登場する。日本書紀では武甕槌神。", "src": ["s1"] },
+      "history": [
+        { "type": "tradition", "text": "神武天皇元年の創祀と伝わる。公式は、神武天皇が東征中に武甕槌神の剣の霊力に救われた報恩として神を祀ったという伝承を記す。", "src": ["s1"] },
+        { "type": "fact", "text": "奈良・平安期に勅使が度々遣わされ、20年ごとの造替が行われた（公式）。勅祭社・名神大社（公式）。", "src": ["s1"] }
+      ],
+      "highlights": [],
+      "address": { "text": "〒314-0031 茨城県鹿嶋市宮中2306-1", "src": ["s2"] },
+      "access": { "text": "JR鹿島線・鹿島臨海鉄道 鹿島神宮駅から徒歩7分（公式）。", "src": ["s2"] },
+      "hours": { "text": "境内は門・柵が無く365日24時間参拝可。授与所・御祈祷受付は 8:30〜16:30（公式）。", "src": ["s2"] },
+      "parking": { "text": "第一駐車場60台（有料）、第二駐車場55台（徒歩5分）、宮中地区駐車場150台（徒歩3分・土日祝は有料）ほか。料金は公式で確認を。", "src": ["s3"] },
+      "goshuin": { "text": "未確認", "status": "要確認" },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "note_geo": "緯度経度は事典の値を暫定採用（国土地理院の町丁目点とは約1km差）。要確認。",
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "ikisu", "name": "息栖神社", "reading": "いきすじんじゃ", "pref": "茨城県", "city": "神栖市",
+      "lat": 35.8858, "lon": 140.6251, "deity_ids": ["kunado", "amenotorifune", "sumiyoshi3"],
+      "summary": { "text": "香取・鹿島とともに東国三社の一つ。久那斗神を主神とし、天乃鳥船神と住吉三神を相殿に祀る。", "status": "verified", "src": ["i1"] },
+      "deity_note": { "text": "久那斗神は、古事記の『衝立船戸神』、日本書紀の『岐神』にあたるとされる（事典・社伝の理解で要確認）。天鳥船神は、古事記で建御雷神の副使として国譲りに同行する。", "src": ["i1"] },
+      "history": [
+        { "type": "tradition", "text": "応神天皇の御代の創祀と伝わり、大同2年（807）に平城天皇の勅命により藤原内麻呂が現在地へ遷座したと伝承される（公式）。", "src": ["i1"] },
+        { "type": "fact", "text": "現社殿は昭和38年（1963）完成（公式）。", "src": ["i1"] },
+        { "type": "fact", "text": "社格（国史見在社・旧県社）は事典のみ。延喜式神名帳には載らないとされる。", "status": "要確認" }
+      ],
+      "highlights": [
+        { "type": "fact", "text": "一の鳥居脇に、忍潮井（おしおい）と呼ばれる2つの井戸がある（公式）。", "src": ["i1"] }
+      ],
+      "address": { "text": "〒314-0133 茨城県神栖市息栖2882", "src": ["i1"] },
+      "access": { "text": "鉄道駅から直結しない。小見川駅からタクシー約15分、鹿島神宮駅・潮来駅からタクシー約20分。鹿島神宮駅からコミュニティバス、東京駅八重洲南口から『かしま号』（公式）。", "src": ["i2"] },
+      "hours": { "text": "社務所 8:30〜16:00、御朱印 9:00〜16:00、御祈祷の最終受付 15:30（公式）。境内の開閉は要確認。", "status": "要確認", "src": ["i2"] },
+      "parking": { "text": "神栖市は『息栖の森駐車場』を普通車82台・大型バス4台・無料と案内。", "src": ["i3"] },
+      "goshuin": { "text": "あり（9:00〜16:00）", "src": ["i2"] },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "note_geo": "緯度経度は住所・事典の値（国土地理院の施設点は約250m北）。要確認。",
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "awa", "name": "安房神社", "reading": "あわじんじゃ", "pref": "千葉県", "city": "館山市",
+      "lat": 34.9223, "lon": 139.8367, "deity_ids": ["futotama", "amenohiri", "amenotomi"],
+      "summary": { "text": "安房国一之宮。忌部氏の祖神である天太玉命を祀り、下の宮には孫神とされる天富命を祀る。", "status": "verified", "src": ["a1"] },
+      "deity_note": { "text": "天太玉命は古事記の天の岩屋戸・天孫降臨に登場する。天富命は記紀に登場せず、古語拾遺にのみ見える。天比理刀咩命は妃神とされるが、記紀には見えない。", "src": ["a1", "a3"] },
+      "history": [
+        { "type": "tradition", "text": "公式は、創始は皇紀元年（紀元前660年）と伝えられると記す。", "src": ["a1"] },
+        { "type": "tradition", "text": "天富命が阿波の忌部を率いて黒潮に乗り房総南端に上陸し、布良浜の男神山・女神山に祖神を祀ったのが起源とされ、養老元年（717）に現在地へ遷座したと伝わる。天富命の房総開拓は古語拾遺に記載があるが、史実の裏付けは別の検討が要る。", "src": ["a1"] },
+        { "type": "fact", "text": "延喜式名神大社。明治期に官幣大社、昭和21年に別表神社（公式）。", "src": ["a1"] }
+      ],
+      "highlights": [
+        { "type": "fact", "text": "上の宮（本宮）と下の宮（摂社）があり、末社に厳島社・琴平社がある（公式）。", "src": ["a1"] }
+      ],
+      "address": { "text": "〒294-0233 千葉県館山市大神宮589番地", "src": ["a2"] },
+      "access": { "text": "最寄り駅・所要時間は公式のテキストで確認できていない。", "status": "要確認", "src": ["a2"] },
+      "hours": { "text": "神符守札授与・御朱印 8:30〜16:30、ご祈祷 9:00〜16:00（公式）。境内の拝観時間は要確認。", "status": "要確認", "src": ["a2"] },
+      "parking": { "text": "無料・約50台（観光サイトのみ）", "status": "要確認" },
+      "goshuin": { "text": "あり（授与所 8:30〜16:30）", "src": ["a2"] },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "susaki", "name": "洲崎神社", "reading": "すさきじんじゃ", "pref": "千葉県", "city": "館山市洲崎",
+      "lat": 34.9679, "lon": 139.7582, "deity_ids": ["amenohiri"],
+      "summary": { "text": "安房神社の祭神・天太玉命の后神とされる天比理乃咩命を祀る社。延喜式の論社で、江戸時代には安房国一宮とされた。", "status": "要確認", "src": ["w1", "a3"] },
+      "deity_note": { "text": "祭神は記紀・古語拾遺の取得範囲に見当たらず、『記紀に無い』と断定せず『要確認』としている。延喜式神名帳や六国史の記事は事典の記述で、原文は未確認。", "src": ["w1"] },
+      "history": [
+        { "type": "tradition", "text": "社伝『洲崎大明神由緒旧記』（宝暦3年・1753）では、神武天皇の世に天富命が祖母神・天比理乃咩命の鏡を神体として御手洗山に祀ったのが始まりと伝わる。", "src": ["u1", "w1"] },
+        { "type": "tradition", "text": "源頼朝が石橋山の戦いの後に参詣し社領を寄進したと『吾妻鏡』にある、と事典は記す（吾妻鏡の原文は未確認）。", "src": ["w1"], "status": "要確認" },
+        { "type": "fact", "text": "本殿は館山市指定有形文化財（延宝年間・1673〜81年の建立と伝わる。指定は1967年）。", "src": ["u2"] },
+        { "type": "fact", "text": "式内社（『后神天比理乃咩命神社』）の論社の一つ。もう一つの論社は洲宮神社。確定はしていない。", "src": ["w1", "a3"], "status": "要確認" }
+      ],
+      "highlights": [
+        { "type": "fact", "text": "拝殿へは148段の石段がある（千葉県の案内として事典が引用）。", "src": ["w1"], "status": "要確認" }
+      ],
+      "address": { "text": "千葉県館山市洲崎1344（館山市・事典）。安房神社公式の紹介は1334と表記しており食い違う。", "status": "要確認", "src": ["u1", "a3"] },
+      "access": { "text": "公式情報を確認できていない。", "status": "要確認" },
+      "hours": { "text": "公式情報を確認できていない。", "status": "要確認" },
+      "parking": { "text": "あり・無料（観光サイトのみ）", "status": "要確認" },
+      "goshuin": { "text": "未確認", "status": "要確認" },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "ise", "name": "伊勢神宮（内宮）", "reading": "いせじんぐう（ないくう）", "pref": "三重県", "city": "伊勢市",
+      "lat": 34.4550, "lon": 136.7253, "deity_ids": ["amaterasu", "toyouke"],
+      "summary": { "text": "正式には『神宮』。内宮（皇大神宮）に天照大御神、外宮（豊受大神宮）に豊受大御神を祀る。地図の光は内宮の位置。", "status": "verified", "src": ["e1", "e2"] },
+      "deity_note": { "text": "天照大御神は古事記の禊祓・天の岩屋戸などに登場する。豊受大御神は、古事記の『豊宇気毗売神／登由宇気神』にあたり、外宮の神とされる。", "src": ["e1", "e2"] },
+      "history": [
+        { "type": "tradition", "text": "内宮は、約2000年前に垂仁天皇の御代に五十鈴川のほとりに鎮まったと伝わる（公式）。", "src": ["e1"] },
+        { "type": "tradition", "text": "外宮の鎮座は雄略天皇22年と伝わる（事典のみ）。", "status": "要確認" }
+      ],
+      "highlights": [],
+      "address": { "text": "内宮：三重県伊勢市宇治館町1／外宮：三重県伊勢市豊川町279", "src": ["e3"] },
+      "access": { "text": "外宮は伊勢市駅から徒歩約5分。外宮〜内宮はバス・タクシーで約10分（公式）。内宮の駅からの所要時間は公式で確認できていない。", "status": "要確認", "src": ["e3"] },
+      "hours": { "text": "1〜4月・9月 5:00〜18:00、5〜8月 5:00〜19:00、10〜12月 5:00〜17:00（公式）。", "src": ["e4"] },
+      "parking": { "text": "混雑期はパークアンドライド等を公式が案内。個別の台数・料金は要確認。", "status": "要確認", "src": ["e3"] },
+      "goshuin": { "text": "未確認", "status": "要確認" },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "note_geo": "外宮の緯度経度は事典と国土地理院で約300m差。内宮の値を使用。",
+      "checked": "2026-10-11"
+    },
+    {
+      "id": "izumo", "name": "出雲大社", "reading": "いずもおおやしろ", "pref": "島根県", "city": "出雲市",
+      "lat": 35.4073, "lon": 132.6872, "deity_ids": ["ookuninushi"],
+      "summary": { "text": "大国主大神を祀る。国づくりののち国土を天照大御神へ奉還し、目に見えない世界の主宰神として壮大な御神殿に鎮まったと伝える（公式）。", "status": "verified", "src": ["z1"] },
+      "deity_note": { "text": "古事記の『国作り』『国譲り』の主役。日本書紀では大己貴神、別名として大国主神・大物主神などを記す。", "src": ["z1"] },
+      "history": [
+        { "type": "tradition", "text": "公式は、古事記・日本書紀に御神殿の壮大さの記載があり、出雲国風土記（733年）は大神を『天の下造らしし大神』と称え、地名をキヅキとしたと説明する。", "src": ["z1"] },
+        { "type": "fact", "text": "社格（式内名神大社・出雲国一宮・旧官幣大社・勅祭社）は事典のみ。公式ページで確認できていない。", "status": "要確認" }
+      ],
+      "highlights": [],
+      "address": { "text": "〒699-0701 島根県出雲市大社町杵築東195", "src": ["z1", "g1"] },
+      "access": { "text": "一畑電車 出雲大社前駅。JR出雲市駅から一畑バス（出雲大社行き）約25分（公式）。", "src": ["z3"] },
+      "hours": { "text": "6:00〜19:00。時間外は銅鳥居前で参拝。素鵞社は 6:00〜16:30（令和6年10月14日付のお知らせ）。", "src": ["z2"] },
+      "parking": { "text": "大駐車場385台・駐車場360台・駐車場20台（公式）。料金・利用時間は未確認。", "status": "要確認", "src": ["z3"] },
+      "goshuin": { "text": "未確認", "status": "要確認" },
+      "article_url": "",
+      "photo": { "kind": "placeholder" },
+      "checked": "2026-10-11"
+    }
+  ]
+}
