@@ -1410,6 +1410,51 @@ function openDeityFromTree(id) {
   showDeity(id);
 }
 
+// ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
+const BGM_KEY = 'shrine-note-bgm', BGM_VOL = 0.35;
+let bgmOn = true, bgmEl = null, bgmFade = 0;
+try { if (localStorage.getItem(BGM_KEY) === 'off') bgmOn = false; } catch (_) { /* 保存できない環境では毎回「入」 */ }
+function bgmFadeTo(v, done) {
+  if (!bgmEl) return;
+  cancelAnimationFrame(bgmFade);
+  const from = bgmEl.volume, t0 = performance.now(), D = reduce ? 1 : 900;
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / D);
+    bgmEl.volume = Math.max(0, Math.min(1, from + (v - from) * k));
+    if (k < 1) bgmFade = requestAnimationFrame(step); else if (done) done();
+  };
+  bgmFade = requestAnimationFrame(step);
+}
+function bgmPlay() {
+  if (!bgmOn || document.hidden) return;
+  if (!bgmEl) { bgmEl = new Audio('audio/bgm_hatsumode.mp3'); bgmEl.loop = true; bgmEl.preload = 'auto'; bgmEl.volume = 0; }
+  const p = bgmEl.play();
+  if (p && p.then) p.then(() => bgmFadeTo(BGM_VOL)).catch(() => { /* 再生が許されなかった：次のタップでもう一度 */ });
+}
+function bgmPause() { if (bgmEl && !bgmEl.paused) bgmFadeTo(0, () => bgmEl.pause()); }
+function bgmButton() {
+  const b = $('btnBgm');
+  b.textContent = bgmOn ? '♪ BGM：入' : '♪ BGM：切';
+  b.setAttribute('aria-pressed', String(bgmOn));
+  b.classList.toggle('on', bgmOn);
+}
+$('btnBgm').addEventListener('click', (e) => {
+  e.stopPropagation();
+  bgmOn = !bgmOn;
+  try { localStorage.setItem(BGM_KEY, bgmOn ? 'on' : 'off'); } catch (_) { /* 保存できなくても動く */ }
+  bgmButton();
+  if (bgmOn) bgmPlay(); else bgmPause();
+});
+const bgmFirstGesture = (e) => {
+  if (e.target.closest && e.target.closest('#btnBgm')) return;   // ボタン自体の操作は、上の処理に任せる
+  if (bgmOn) bgmPlay();
+  if (bgmEl && !bgmEl.paused) { removeEventListener('pointerdown', bgmFirstGesture, true); removeEventListener('keydown', bgmFirstGesture, true); }
+};
+addEventListener('pointerdown', bgmFirstGesture, true);
+addEventListener('keydown', bgmFirstGesture, true);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (bgmEl) bgmEl.pause(); } else if (bgmOn && bgmEl && bgmEl.paused && bgmEl.currentTime > 0) bgmPlay(); });
+bgmButton();
+
 // ---------- 描画ループ ----------
 resize();
 applyCamera();
