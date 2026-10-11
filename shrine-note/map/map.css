@@ -279,3 +279,4 @@ svg.gene.anim .nd.me rect { animation: geneGlow 2.6s ease-in-out 1.2s infinite; 
 @keyframes geneFade { to { opacity: 1; } }
 @keyframes geneNode { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; transform: none; } }
 @keyframes geneGlow { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 6px rgba(216,183,102,.75)); } }
+.acts .ghost.on { border-color: var(--gold); color: var(--gold); }
