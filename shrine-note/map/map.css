@@ -165,3 +165,9 @@ body:not(.open) .credit span:nth-child(2) { display: none; }
 .consent-box p, .consent-box li { font-size: 13.5px; line-height: 1.75; color: var(--ink-soft); }
 .consent-box ul { margin: 6px 0 12px; padding-left: 1.2em; }
 .consent-box .btn { display: flex; width: 100%; justify-content: center; margin: 8px 0 0; }
+
+.stop { position: fixed; z-index: 8; left: 50%; bottom: calc(22px + var(--safe-b)); transform: translateX(-50%); min-height: 46px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--gold); background: rgba(16,19,15,0.82); font-size: 14px; letter-spacing: .08em; cursor: pointer; backdrop-filter: blur(6px); }
+body.running .sheet.show { transform: translateY(100%); }
+body.running .photo { opacity: 0 !important; }
+body.running .hint, body.running .chips { display: none; }
+@media (min-width: 880px) { body.running .sheet.show { transform: translateX(100%); } }
