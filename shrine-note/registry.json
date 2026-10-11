@@ -1,0 +1,26 @@
+{
+  "updated": "2026-10-11",
+  "status_values": [
+    "candidate",
+    "researching",
+    "drafted",
+    "published"
+  ],
+  "items": [
+    {
+      "id": "001",
+      "title": "麻賀多神社 ―同名の社が複数あることをどう読むか(千葉)",
+      "region": "千葉",
+      "status": "drafted",
+      "file": "articles/001-magata-jinja.md",
+      "note_url": ""
+    }
+  ],
+  "candidates": [
+    "千葉: 香取神宮(下総国一宮)",
+    "千葉: 鹿島神宮(茨城・東国三社)",
+    "千葉: 息栖神社(茨城・東国三社)",
+    "千葉: 洲崎神社・安房神社(安房)",
+    "全国: 各国一宮(順次)"
+  ]
+}
