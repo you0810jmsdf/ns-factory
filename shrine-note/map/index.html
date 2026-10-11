@@ -48,6 +48,21 @@
   <div id="treeBody" class="tree-body"></div>
 </section>
 
+<div id="consent" class="consent" role="dialog" aria-modal="true" aria-labelledby="consentTitle" hidden>
+  <div class="consent-box">
+    <h2 id="consentTitle">道路の経路を調べますか？</h2>
+    <p>実際の道路をたどる光の筋を描くため、<b>現在地と神社の位置（座標）</b>を、外部の経路サービス <b>OSRM</b>（router.project-osrm.org・無料の公開サーバー）へ送ります。</p>
+    <ul>
+      <li>この特集では、送った位置を保存しません。</li>
+      <li>サービス側での扱いは、そのサービスの規約によります。</li>
+      <li>道路（車）の経路です。電車・バスは含みません。</li>
+    </ul>
+    <button class="btn" type="button" data-c="road">同意して道路の経路を調べる</button>
+    <button class="btn" type="button" data-c="line">送らずに直線で見る</button>
+    <button class="btn off" type="button" data-c="cancel">やめる</button>
+  </div>
+</div>
+
 <footer class="credit">
   <span>標高：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院 標高タイル</a>を加工して作成（高さを強調・近景の細かな起伏は演出用の加工）</span>
   <span>3D表示：three.js（MIT）</span>

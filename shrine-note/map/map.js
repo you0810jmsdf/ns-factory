@@ -285,23 +285,27 @@ function greatCircle(la1, lo1, la2, lo2, n) {
 }
 const routeMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-  uniforms: { uTime: { value: 0 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR } },
+  uniforms: { uTime: { value: 0 }, uSp: { value: 0.01 }, uPxK: { value: 600 }, uPx: { value: DPR }, uSpeed: { value: 0.3 } },
   vertexShader: `
-    attribute float aT; uniform float uTime, uSp, uPxK, uPx; varying float vA;
+    attribute float aT; uniform float uTime, uSp, uPxK, uPx, uSpeed; varying float vA, vH;
     void main(){
       vec4 mv = modelViewMatrix*vec4(position,1.);
       float pxu = uPxK/(-mv.z);
       float size = clamp(0.06*pxu, 6.0, 24.0);
       float e = clamp(uSp*pxu/size*2.2, 0.0, 1.0);          // 点の密度によらず、筋全体の明るさを一定にする
-      float d = abs(aT - fract(uTime*0.09)); d = min(d, 1.0-d);
-      vA = e*(1.1 + 2.2*exp(-d*d*900.0));
-      gl_PointSize = size*uPx;
+      float d = fract(fract(uTime*uSpeed) - aT);             // 0=先頭、後ろほど大きい
+      float tail = exp(-d*16.0);                             // 先頭の後ろに流れる尾
+      float head = exp(-d*d*9000.0);                         // 先頭の光
+      vA = e*(0.95 + 2.6*tail + 3.0*head);
+      vH = head;
+      gl_PointSize = size*uPx*(1.0 + 0.8*head);
       gl_Position = projectionMatrix*mv;
     }`,
   fragmentShader: `
-    varying float vA;
+    varying float vA, vH;
     void main(){ vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0; float a = exp(-r*r*3.2)*vA;
-      gl_FragColor = vec4(vec3(1.0,0.93,0.74)*a, a); }`,
+      vec3 col = mix(vec3(1.0,0.90,0.66), vec3(1.0,0.99,0.92), clamp(vH*1.5,0.0,1.0));
+      gl_FragColor = vec4(col*a, a); }`,
 });
 let route = null;
 const userMat = new THREE.ShaderMaterial({
@@ -328,24 +332,68 @@ function clearRoute() {
   if (!route) return;
   scene.remove(route.points); route.points.geometry.dispose(); route = null;
 }
-function buildRoute(s) {
+// 道路の経路: OSRM 公開サーバー（無料・デモ用）。同意を得たときだけ、現在地と神社の座標を送る
+let routeConsent = null;     // null=未回答 / 'road' / 'line'
+let routeTok = 0;
+async function fetchRoad(s) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${user.lon.toFixed(5)},${user.lat.toFixed(5)};${s.lon.toFixed(5)},${s.lat.toFixed(5)}?overview=full&geometries=geojson`;
+    const r = await fetch(url, { signal: ctl.signal, referrerPolicy: 'no-referrer' });
+    if (!r.ok) throw new Error('http ' + r.status);
+    const d = await r.json();
+    if (d.code !== 'Ok' || !d.routes || !d.routes[0]) throw new Error(d.code || 'noroute');
+    const rt = d.routes[0];
+    return { ll: rt.geometry.coordinates.map(([lo, la]) => [la, lo]), km: rt.distance / 1000, min: rt.duration / 60 };
+  } finally { clearTimeout(timer); }
+}
+async function buildRoute(s) {
+  const tok = ++routeTok;
   clearRoute();
   if (!user) return null;
-  const km = haversineKm(user.lat, user.lon, s.lat, s.lon);
-  const n = Math.min(2400, Math.max(500, Math.round(km * 3.2)));
-  const ll = greatCircle(user.lat, user.lon, s.lat, s.lon, n);
-  const pts = ll.map(([la, lo]) => { const p = toWorld(lo, la); return { x: p.x, z: p.z, y: heightAt(p.u, p.vv) }; });
-  // 山の上を越えるよう、近くの最大値でならしてから、ゆるいアーチを足す
-  const w = Math.max(2, Math.round(n / 70));
-  const ys = pts.map((_, i) => { let m = 0; for (let j = Math.max(0, i - w); j <= Math.min(n, i + w); j++) m = Math.max(m, pts[j].y); return m; });
-  const sm = ys.map((_, i) => { let a = 0, c = 0; for (let j = Math.max(0, i - w); j <= Math.min(n, i + w); j++) { a += ys[j]; c++; } return a / c; });
-  const arc = Math.min(0.4, km * 0.0004);
-  const pos = new Float32Array((n + 1) * 3), aT = new Float32Array(n + 1);
-  let len = 0;
+  let mode = 'line', ll = null, km = haversineKm(user.lat, user.lon, s.lat, s.lon), min = 0, why = '';
+  if (routeConsent === 'road') {
+    try {
+      toast('道路の経路を調べています…', 12000);
+      const r = await fetchRoad(s);
+      if (tok !== routeTok) return null;
+      ll = r.ll; km = r.km; min = r.min; mode = 'road';
+      toast('道路の経路が見つかりました。', 2200);
+    } catch (e) {
+      if (tok !== routeTok) return null;
+      why = '道路の経路を取得できなかったため（混雑・通信の失敗、または道路でつながらない場所）、直線で表示しています。';
+      toast(why, 7000);
+    }
+  } else if (routeConsent === 'line') why = '直線を選んだため、地図上の最短（大圏）で表示しています。';
+  if (!ll) ll = greatCircle(user.lat, user.lon, s.lat, s.lon, Math.min(2400, Math.max(500, Math.round(km * 3.2))));
+  // 世界座標へ。道路の線は点が粗いので、一定の間隔で打ち直す
+  const raw = ll.map(([la, lo]) => { const p = toWorld(lo, la); return { x: p.x, z: p.z, u: p.u, vv: p.vv }; });
+  let total = 0;
+  const cum = raw.map((p, i) => (i ? (total += Math.hypot(p.x - raw[i - 1].x, p.z - raw[i - 1].z)) : 0));
+  const N = Math.min(2600, Math.max(300, Math.round(total / 0.004)));
+  const pts = [];
+  let k = 0;
+  for (let i = 0; i <= N; i++) {
+    const d = (total * i) / N;
+    while (k < raw.length - 2 && cum[k + 1] < d) k++;
+    const span = cum[k + 1] - cum[k] || 1, f = Math.min(1, Math.max(0, (d - cum[k]) / span));
+    const a = raw[k], b = raw[k + 1];
+    const x = a.x + (b.x - a.x) * f, z = a.z + (b.z - a.z) * f, u = a.u + (b.u - a.u) * f, vv = a.vv + (b.vv - a.vv) * f;
+    pts.push({ x, z, y: heightAt(u, vv) });
+  }
+  // 山を越えるよう、近くの最大値でならす。直線は、ゆるいアーチを足して見やすくする
+  const w = Math.max(2, Math.round(N / 90));
+  const ys = pts.map((_, i) => { let m = 0; for (let j = Math.max(0, i - w); j <= Math.min(N, i + w); j++) m = Math.max(m, pts[j].y); return m; });
+  const sm = ys.map((_, i) => { let a = 0, c = 0; for (let j = Math.max(0, i - w); j <= Math.min(N, i + w); j++) { a += ys[j]; c++; } return a / c; });
+  const arc = mode === 'line' ? Math.min(0.4, km * 0.0004) : 0;
+  const lift = mode === 'road' ? 0.03 : 0.04;
+  const pos = new Float32Array((N + 1) * 3), aT = new Float32Array(N + 1);
+  let minX = 1e9, maxX = -1e9, minZ = 1e9, maxZ = -1e9;
   pts.forEach((p, i) => {
-    pos.set([p.x, sm[i] + 0.04 + arc * Math.sin((Math.PI * i) / n), p.z], i * 3);
-    aT[i] = i / n;
-    if (i) len += Math.hypot(p.x - pts[i - 1].x, p.z - pts[i - 1].z);
+    pos.set([p.x, sm[i] + lift + arc * Math.sin((Math.PI * i) / N), p.z], i * 3);
+    aT[i] = i / N;
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z);
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -353,8 +401,10 @@ function buildRoute(s) {
   const points = new THREE.Points(g, routeMat);
   points.frustumCulled = false; points.renderOrder = 9;
   scene.add(points);
-  routeMat.uniforms.uSp.value = len / n;
-  route = { points, km, shrineId: s.id, mid: { x: (user._p.x + s._p.x) / 2, z: (user._p.z + s._p.z) / 2 }, len };
+  routeMat.uniforms.uSp.value = total / N;
+  routeMat.uniforms.uSpeed.value = mode === 'road' ? 0.34 : 0.22;
+  route = { points, km, min, mode, why, shrineId: s.id, mid: { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 }, len: Math.hypot(maxX - minX, maxZ - minZ) };
+  refreshRouteBox();
   return route;
 }
 const toastEl = document.createElement('div');
@@ -395,31 +445,55 @@ function frameRoute(r) {
 }
 function routeText(s) {
   if (!user || !route || route.shrineId !== s.id) return '';
-  const km = route.km;
-  return `現在地から${esc(s.name)}まで、直線の最短経路で約 ${km < 10 ? km.toFixed(1) : Math.round(km)} km。地図上の最短（大圏）で、道路や鉄道の経路ではありません。`;
+  const km = route.km, kmS = km < 10 ? km.toFixed(1) : Math.round(km);
+  if (route.mode === 'road') return `現在地から${esc(s.name)}まで、道路（車）で約 ${kmS} km・約 ${Math.max(1, Math.round(route.min))} 分（渋滞は含みません）。光は実際の道路をたどります。`;
+  return `現在地から${esc(s.name)}まで、直線の最短経路で約 ${kmS} km。${esc(route.why || '')}道路や鉄道の経路ではありません。`;
 }
 function refreshRouteBox() {
   const box = document.getElementById('routeBox');
   if (!box || !selected) return;
   const s = selected;
   const has = user && route && route.shrineId === s.id;
+  const pending = user && !has && routeConsent === 'road';
   box.innerHTML = `<h3>現在地から</h3>
-    <p>${has ? routeText(s) : '現在地を取ると、ここまでの最短経路を光の筋で描きます。'}</p>
-    <p class="meta">現在地は、この端末の画面の中だけで使い、送信も保存もしません。</p>
-    <button class="btn" type="button" data-route="${has ? 'frame' : 'locate'}">${has ? '経路の全体を見る' : '現在地から光の筋をひく'}</button>
-    ${has ? '<button class="btn" type="button" data-route="near">神社の近くへ寄る</button>' : ''}`;
+    <p>${has ? routeText(s) : pending ? '道路の経路を調べています…' : '現在地を取ると、ここまでの道路の経路を光の筋で描きます。'}</p>
+    <p class="meta">現在地は、この端末の画面の中で使います。道路の経路を調べるときだけ、同意のうえで外部へ送ります（保存はしません）。</p>
+    ${has ? `<button class="btn" type="button" data-route="frame">経路の全体を見る</button><button class="btn" type="button" data-route="near">神社の近くへ寄る</button>${route.mode !== 'road' ? '<button class="btn" type="button" data-route="road">道路の経路にする</button>' : ''}`
+          : `<button class="btn" type="button" data-route="${user ? 'road' : 'locate'}">${user ? '道路の経路を調べる' : '現在地から光の筋をひく'}</button>`}`;
 }
-function routeAction(kind) {
+// 外部へ送る前の同意
+function askConsent() {
+  return new Promise((resolve) => {
+    const m = $('consent');
+    m.hidden = false;
+    const done = (v) => { m.hidden = true; m.onclick = null; resolve(v); };
+    m.onclick = (e) => { const b = e.target.closest('[data-c]'); if (b) done(b.dataset.c); };
+  });
+}
+async function ensureConsent() {
+  if (routeConsent === 'road') return true;
+  const v = await askConsent();
+  if (v === 'road') { routeConsent = 'road'; return true; }
+  if (v === 'line') { routeConsent = 'line'; return true; }
+  return false;      // やめる
+}
+async function routeAction(kind) {
   const s = selected;
   if (kind === 'locate') {
-    locate(() => {
+    locate(async () => {
+      if (!(await ensureConsent())) return;
       const target = s || nearestShrine();
-      const r = buildRoute(target);
+      const r = await buildRoute(target);
       if (!r) return;
       frameRoute(r);
-      refreshRouteBox();
-      if (!s) toast(`いちばん近い神社は${target.name}（直線で約${Math.round(r.km)} km）です。光をタップすると、近づけます。`, 7000);
+      if (!s) toast(`いちばん近い神社は${target.name}（${r.mode === 'road' ? '道路で' : '直線で'}約${Math.round(r.km)} km）です。光をタップすると、近づけます。`, 7000);
     });
+  } else if (kind === 'road' && user) {
+    routeConsent = null;                    // 直線を選んでいた人が、あとから道路にするとき
+    if (!(await ensureConsent())) return;
+    const target = s || nearestShrine();
+    const r = await buildRoute(target);
+    if (r) frameRoute(r);
   } else if (kind === 'frame' && s && route) { frameRoute(route); }
   else if (kind === 'near' && s) { flyTo({ tx: s._p.x, tz: s._p.z, ty: s._y, dist: isNarrow() ? 1.25 : 0.95, el: isNarrow() ? 0.5 : 0.46, az: cam.az }, 3.2); }
 }
@@ -802,7 +876,7 @@ function selectShrine(id) {
   setMarkerSel(id);
   // 写真・リストをいったん下げる
   photoEl.classList.remove('show', 'compact'); sheetEl.classList.remove('show');
-  if (user) buildRoute(s);
+  if (user && routeConsent) buildRoute(s);
   const goal = { tx: s._p.x, tz: s._p.z, ty: s._y, dist: isNarrow() ? 1.25 : 0.95, el: isNarrow() ? 0.5 : 0.46, az: (s._p.x > 0 ? -0.35 : 0.35) };
   const dur = wasOpen ? 3.2 : 5.6;
   flyTo(goal, dur, () => { if (my === seq) arrive(s, my); });
