@@ -9,7 +9,7 @@
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 import { bboxOf, flattenShape, chainShapes } from './geometry.js';
 import { v3, faceNormal } from './sim3d.js';
-import { binderSolid } from './hardware.js';
+import { binderSolid, binderZRange, hwPoseOfOutline } from './hardware.js';
 
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 export const THREE_VIEW_LAYOUT = {
@@ -285,7 +285,8 @@ function closedPolygon(s, tol) {
 /** 図形の列から閉じた輪郭（点の列）をすべて取り出す。閉じた1図形のほか、丸め・面取りなどで直線や円弧に分かれていても、端がつながって輪になっていれば1つの輪郭にする。 */
 function closedPolygons(shapes, tol) {
   const out = [], open = [];
-  for (const s of shapes || []) { const p = closedPolygon(s, tol); if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
+  for (const s of shapes || []) { if (s?.hwFor) continue; const p = closedPolygon(s, tol);   /* 金具の図（上と右の図を作る）は、革の立体の輪郭に混ぜない */
+    if (p) out.push(p); else if (['line', 'arc', 'bezier', 'polyline', 'path'].includes(s?.type)) open.push(s); }
   if (open.length) for (const c of chainShapes(open, Math.max(tol / 10, 0.01))) {
     if (!c.closed) continue;
     let pts = []; try { for (const it of c.items) { const ps = flattenShape(it.shape, tol); if (it.reversed) ps.reverse(); pts.push(...(pts.length ? ps.slice(1) : ps)); } } catch { continue; }
@@ -354,8 +355,9 @@ export function threeViewHardwareFaces(solid, hwShapes, specOf) {
   for (const s of hwShapes || []) {
     const hw = s?.hw; if (!hw || !String(hw.id).startsWith('binder') || !specOf) continue;
     const spec = specOf(hw.params?.spec); if (!spec) continue;
-    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], at = hw.at || { x: 0, y: 0 }, a = (Number(hw.angleDeg) || 0) * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
-    const local = binderSolid(spec, ringD, 0), zs = local.flatMap(f => f.points.map(p => p.z)), zmid = (Math.min(...zs) + Math.max(...zs)) / 2;
+    const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 };   /* 置いたあとに動かした・回した金具でも、いまの外形から位置と角度を割り出す */
+    const at = pose.at, a = pose.angleDeg * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
+    const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;
     const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
     const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
     const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));

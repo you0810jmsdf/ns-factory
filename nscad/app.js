@@ -8,7 +8,7 @@ import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta } from './threeview.js';
-import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
+import { closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -32,6 +32,7 @@ import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { track } from './analytics.js';
+import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
 import { t, setLang } from './i18n.js';
@@ -46,6 +47,7 @@ const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
+let autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
@@ -478,6 +480,34 @@ function showHelp(shortcuts = false, pageId = null) {
   $('helpBody').textContent = pages.length ? pages.map(p => p.title + '\n' + p.body).join('\n\n') : t('helpNoMatch');
   $('helpDialog').showModal();
 }
+/** 自動保存：変更の1.5秒後に、全タブの図面を localStorage へ入れる。復元するか決める前は、前回の保存を上書きしない。 */
+function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
+function flushAutosave() {
+  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
+  snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc })), activeTab);
+  try {
+    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; }
+    else if (r.status === 'empty') localStorage.removeItem(AUTOSAVE_KEY);
+    else if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); }
+  } catch { if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
+}
+/** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
+function offerRestore() {
+  let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
+  const info = text ? unpackAutosave(text, validateDoc) : null;
+  if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
+  const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
+}
+function restoreAutosave() {
+  const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
+  const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: tb.doc, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
+  if (info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
+  activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
+}
+function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
+$('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
   if (done) return; let i = 0;
@@ -1757,6 +1787,7 @@ function pasteText(text, at = null) {
 // タブ：文書ごとに undo/redo/選択を持つ
 function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { doc, undo, redo, selected, activeLayer, scale, origin }); }
 function renderTabs() {
+  scheduleAutosave();
   const bar = $('tabBar'); bar.textContent = '';
   tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); bar.appendChild(b); });
   $('tabName').value = tabs[activeTab]?.name || '';
@@ -1986,7 +2017,7 @@ const hwIsBinder = plate => String(plate.hw.id).startsWith('binder-') && !!plate
 function refreshHwEdit() {
   const hw = selectedHardware(); $('hwEditCard').hidden = !hw; if (!hw) { hwEditKey = ''; return; }
   const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
-  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = !isBinder;
+  const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
     const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
     sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? '');
@@ -2009,6 +2040,30 @@ function applyHwEdit() {
   hwEditKey = ''; refreshHwEdit(); renderLayers(); $('hint').textContent = t('hwEdited'); draw();
 }
 $('hwEditApply').onclick = applyHwEdit;
+/** 「上と右の図を作る」：正面の紙に置いた金具から、上の紙・右の紙（枠方式なら上の枠・右の枠）に金具の図を置く。前に作った図（hwFor が同じ）は消してから置き直す。金具を動かしたあとは、もう一度押して置き直す。 */
+function makeBinderViews() {
+  const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
+  const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
+  const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpec(p.spec), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor) : [];
+  if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
+  const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
+  const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
+  if (!views) { $('hint').textContent = t('hwViewsAngle'); return; }
+  const bottomOfTop = threeViewLayout.top.y + threeViewLayout.top.h, leftOfSide = threeViewLayout.side.x;
+  const toTop = quad ? (x, d) => ({ x, y: -d }) : (x, d) => ({ x, y: bottomOfTop - d }), toSide = quad ? (d, y) => ({ x: d, y }) : (d, y) => ({ x: leftOfSide + d, y });
+  const conv = (s, f) => { const { role, ...rest } = s; return s.type === 'circle' ? { ...rest, role, ...(({ x, y }) => ({ cx: x, cy: y }))(f(s.cx, s.cy)) } : { ...rest, role, points: s.points.map(q => f(q.x, q.y)) }; };
+  const put = (td, lists) => {   /* 前に作った図（hwFor が同じ）を全部消してから、図ごとに1つのグループとして置く */
+    const gone = new Set(td.shapes.filter(s => s.hwFor === gid).map(s => s.id)); td.shapes = td.shapes.filter(s => !gone.has(s.id));
+    const layer = td.layers.find(l => l.id === 'marks') ? 'marks' : td.layers[0].id;
+    for (const shapes of lists) { const group = nextGroupId(td.shapes); for (const s of shapes) td.shapes.push({ ...s, id: freshId(td.shapes, 's'), layer, hwFor: gid, groupId: group }); }
+  };
+  const topShapes = views.top.map(s => conv(s, toTop)), sideShapes = views.side.map(s => conv(s, toSide));
+  if (frame) commit(() => put(doc, [topShapes, sideShapes]));
+  else for (const [role, shapes] of [['top', topShapes], ['side', sideShapes]]) { const tb = sheets[role], before = JSON.stringify(tb.doc); put(tb.doc, [shapes]); pushTabUndo(tb, before); }
+  renderTabs(); draw(); $('hint').textContent = t('hwViewsDone', { n: topShapes.length + sideShapes.length });
+}
+$('hwViewsApply').onclick = makeBinderViews;
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
   const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
@@ -2232,6 +2287,7 @@ function commit(fn) {
   const before = JSON.stringify(doc);
   fn();
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
+  scheduleAutosave();
   draw();
 }
 function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
@@ -2249,7 +2305,7 @@ function setMode(next) {
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
 function history(from, to) {
-  if (!from.length) return;
+  if (!from.length) return; scheduleAutosave();
   to.push(JSON.stringify(doc)); doc = JSON.parse(from.pop()); selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw();
 }
 function removeSelected() {
@@ -2975,5 +3031,6 @@ let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en'
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
 initCounting();
+offerRestore(); autosaveReady = true;
 showTour();
 }
