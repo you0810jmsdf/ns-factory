@@ -303,11 +303,11 @@ const routeMat = new THREE.ShaderMaterial({
       float e = clamp(uSp*pxu/size*2.2, 0.0, 1.0);           // 点の密度によらず、筋全体の明るさを一定にする
       float dw = fract(uHead - aT)*uLen;                     // 先頭からの距離（世界の長さ）
       float tail = exp(-dw/0.07);                            // 先頭の後ろに流れる尾（約6km）
-      float head = exp(-dw*dw/0.00012);                      // 先頭の光
+      float head = exp(-dw*dw/0.00008);                      // 先頭の光
       float lit = step(aT, uHead + 0.0001);                  // 先頭が通った所だけ、うっすら残る
-      vA = e*(0.35*lit + 0.9*tail + 3.2*head);
+      vA = e*(0.35*lit + 0.9*tail + 1.7*head);
       vH = head;
-      gl_PointSize = size*uPx*(1.0 + 1.6*head);
+      gl_PointSize = size*uPx*(1.0 + 0.9*head);
       gl_Position = projectionMatrix*mv;
     }`,
   fragmentShader: `
@@ -474,13 +474,13 @@ function startRun() {
   $('btnStop').hidden = false;
   const D = Math.min(30, Math.max(9, 6 + r.km * 0.12));
   const az0 = headingAt(r, 0), p0 = routePoint(r, 0);
-  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: isNarrow() ? 0.8 : 0.62, el: 0.55, az: az0 }, 2.4, () => {
+  flyTo({ tx: p0.x, tz: p0.z, ty: p0.y, dist: isNarrow() ? 0.5 : 0.4, el: 0.58, az: az0 }, 2.4, () => {
     run = { t0: performance.now(), D, r };
   });
 }
 function endRun(userStopped) {
   const had = !!run || document.body.classList.contains('running');
-  run = null; flight = null;
+  run = null; flight = null; clearTrail();
   document.body.classList.remove('running');
   $('btnStop').hidden = true;
   if (!had) return;
@@ -500,8 +500,12 @@ function stepRun(now) {
   const h = routePoint(r, f);
   cam.tx += (h.x - cam.tx) * 0.14; cam.tz += (h.z - cam.tz) * 0.14; cam.ty += (h.y - cam.ty) * 0.14;
   cam.az += angDiff(cam.az, headingAt(r, f)) * 0.045;
-  cam.el += (0.55 - cam.el) * 0.05;
-  cam.dist += ((isNarrow() ? 0.8 : 0.62) - cam.dist) * 0.05;
+  cam.el += (0.58 - cam.el) * 0.05;
+  cam.dist += ((isNarrow() ? 0.5 : 0.4) - cam.dist) * 0.05;
+  // 光が通った周辺（先頭→後ろ）を記録。道路はこの周辺だけ浮かび上がる
+  const stepN = r.N * 0.02;
+  for (let i = 0; i < TRAIL_N; i++) { const ff = f - i * stepN; if (ff < 0) { trailU[i].set(0, 0, 0, 0); continue; } const q = routePoint(r, ff); trailU[i].set(q.x, q.z, Math.pow(1 - i / TRAIL_N, 1.3), 0); }
+  roadAhead = routePoint(r, Math.min(r.N, f + r.N * 0.08));
   if (p >= 1) endRun(false);
   return f / r.N;
 }
@@ -615,11 +619,21 @@ function parseMVTRoads(buf) {
   });
   return out;
 }
+const TRAIL_N = 12;
+const trailU = Array.from({ length: TRAIL_N }, () => new THREE.Vector4(0, 0, 0, 0));   // 光の通った場所（先頭→後ろ）x, z, 強さ
 const roadMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending,
-  uniforms: { uOp: { value: 0 } },
-  vertexShader: `attribute float aA; uniform float uOp; varying float vA; void main(){ vA = aA*uOp; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-  fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(vec3(0.58,0.76,0.95)*vA, vA); }`,
+  uniforms: { uOp: { value: 0 }, uRev: { value: 0 }, uR: { value: 0.046 }, uTrail: { value: trailU } },
+  vertexShader: `
+    attribute float aA; uniform float uOp, uRev, uR; uniform vec4 uTrail[${TRAIL_N}]; varying float vA;
+    void main(){
+      float rv = 0.0;
+      for (int i = 0; i < ${TRAIL_N}; i++) { vec2 d = position.xz - uTrail[i].xy; rv = max(rv, exp(-dot(d,d)/(uR*uR))*uTrail[i].z); }
+      vA = aA*(uOp + rv*uRev);
+      vec3 p = position; p.y += rv*0.012;                    // 浮かび上がる
+      gl_Position = projectionMatrix*modelViewMatrix*vec4(p,1.);
+    }`,
+  fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(vec3(0.62,0.80,0.98)*vA, vA); }`,
 });
 const roadTiles = new Map();         // "x,y" → { mesh } か 読み込み中(null)
 let roadBusy = 0, roadCheckAt = 0;
@@ -627,7 +641,7 @@ function buildRoadTile(x, y, roads) {
   const n2 = 2 ** ROAD_Z, pos = [], al = [];
   for (const rd of roads) {
     if (rd.rank < 1) continue;                                   // 幅3m未満の小道は省く（見やすさ優先）
-    const a = rd.motorway !== 9 ? 0.5 : [0, 0.12, 0.2, 0.3, 0.42][Math.min(4, rd.rank)];
+    const a = rd.motorway !== 9 ? 0.85 : [0, 0.3, 0.42, 0.56, 0.7][Math.min(4, rd.rank)];
     for (const ln of rd.lines) {
       let prev = null;
       for (const [px, py] of ln) {
@@ -662,21 +676,31 @@ async function loadRoadTile(x, y) {
   } catch (_) { roadTiles.set(key, { mesh: null, failedAt: performance.now() }); }
   finally { roadBusy--; }
 }
+let roadAhead = null;           // 走行中の「少し先」の位置（先読み用）
+function tileOfWorld(x, z) {
+  const lon = LON0 + (x / W + 0.5) * (LON1 - LON0), vv = z / H + 0.5, my = MY1 - vv * (MY1 - MY0);
+  const n2 = 2 ** ROAD_Z;
+  return [Math.floor(((lon + 180) / 360) * n2), Math.floor(((1 - my / Math.PI) / 2) * n2)];
+}
+function clearTrail() { trailU.forEach((v) => v.set(0, 0, 0, 0)); roadAhead = null; roadMat.uniforms.uRev.value = 0; }
 function updateRoads(now) {
-  // 近づくほど濃く（遠いときは見せない）
+  const running = !!run;
+  // 近づくほど見える（遠いときは見せない）。普段はごく薄く、光が通る周辺だけ強く浮かび上がる
   const op = Math.min(1, Math.max(0, (3.2 - cam.dist) / 1.4));
-  roadMat.uniforms.uOp.value = op * 0.8;
-  if (op <= 0 || now - roadCheckAt < 250 || roadBusy >= 4) return;
+  roadMat.uniforms.uOp.value = op * (running ? 0.035 : 0.22);
+  roadMat.uniforms.uRev.value = running ? 1.0 : 0;
+  if (op <= 0 || now - roadCheckAt < 200 || roadBusy >= 4) return;
   roadCheckAt = now;
-  const lon = LON0 + (cam.tx / W + 0.5) * (LON1 - LON0), vv = cam.tz / H + 0.5, my = MY1 - vv * (MY1 - MY0);
-  const n2 = 2 ** ROAD_Z, cx = Math.floor(((lon + 180) / 360) * n2), cy = Math.floor(((1 - my / Math.PI) / 2) * n2);
-  const R = cam.dist < 1.2 ? 2 : 1;
-  for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { if (roadBusy < 4) loadRoadTile(cx + dx, cy + dy); }
+  const foci = [tileOfWorld(cam.tx, cam.tz)];
+  if (running && roadAhead) foci.push(tileOfWorld(roadAhead.x, roadAhead.z));
+  const R = running ? 1 : cam.dist < 1.2 ? 2 : 1;
+  for (const [cx, cy] of foci) for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { if (roadBusy < 4) loadRoadTile(cx + dx, cy + dy); }
   // 離れたタイルは捨てる
-  if (roadTiles.size > 40) {
+  if (roadTiles.size > 70) {
+    const [cx, cy] = foci[0];
     for (const [key, v] of roadTiles) {
       const [kx, ky] = key.split(',').map(Number);
-      if (v && Math.max(Math.abs(kx - cx), Math.abs(ky - cy)) > 4) { if (v.mesh) { scene.remove(v.mesh); v.mesh.geometry.dispose(); } roadTiles.delete(key); }
+      if (v && Math.max(Math.abs(kx - cx), Math.abs(ky - cy)) > 5) { if (v.mesh) { scene.remove(v.mesh); v.mesh.geometry.dispose(); } roadTiles.delete(key); }
     }
   }
 }
@@ -1088,7 +1112,7 @@ function backToShrine() {
 function goHome() {
   seq++;
   touched = false;
-  run = null; document.body.classList.remove('running'); $('btnStop').hidden = true;
+  run = null; clearTrail(); document.body.classList.remove('running'); $('btnStop').hidden = true;
   clearRoute();
   selected = null; current = null;
   photoEl.classList.remove('show', 'compact'); sheetEl.classList.remove('show');
