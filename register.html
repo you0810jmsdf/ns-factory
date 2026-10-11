@@ -329,6 +329,7 @@ textarea{min-height:80px;resize:vertical}
       <span style="font-weight:700;color:#5a3a20;font-size:13px">既存商品を編集:</span>
       <input type="text" id="editProductId" placeholder="例: 2026-001" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;width:140px;font-size:13px">
       <!-- 新しい順に選べるドロップリスト（works-data.jsonから作成・2026-09-29）。選ぶとeditProductIdへ値を入れてloadProduct()を呼ぶだけで、読み込み自体は既存のまま -->
+      <input type="search" id="editProductSearch" placeholder="🔍 キーワードで絞り込み（例: Mini6 alaska）" autocomplete="off" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;width:240px;max-width:100%;font-size:13px">
       <select id="editProductSelect" style="padding:6px 10px;border:1px solid #d8b888;border-radius:6px;font-size:13px;max-width:100%">
         <option value="">▼ 既存商品を選ぶ</option>
       </select>
@@ -1483,15 +1484,26 @@ async function loadEditProductOptions() {
     // 新しい順（IDの数値降順）。形式に合わないIDは末尾へ
     items.sort((a, b) => editProductIdKey(b.id) - editProductIdKey(a.id));
 
-    sel.innerHTML = '<option value="">▼ 既存商品を選ぶ</option>' + items.map(it => {
-      let label = it.id;
-      if (it.name) {
-        const name = it.name.length > 30 ? it.name.slice(0, 30) + '…' : it.name;
-        label = it.id + ' — ' + name;
-      }
-      const esc = label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-      return `<option value="${it.id.replace(/"/g, '&quot;')}">${esc}</option>`;
-    }).join('');
+    // キーワード検索（スペース区切りはAND・大文字小文字は区別しない・IDと商品名の全文が対象）
+    const searchBox = document.getElementById('editProductSearch');
+    const renderOptions = () => {
+      const terms = ((searchBox && searchBox.value) || '').toLowerCase().split(/\s+/).filter(Boolean);
+      const shown = terms.length
+        ? items.filter(it => { const hay = (it.id + ' ' + it.name).toLowerCase(); return terms.every(t => hay.includes(t)); })
+        : items;
+      const head = terms.length ? `▼ 該当 ${shown.length}件（全${items.length}件）` : '▼ 既存商品を選ぶ';
+      sel.innerHTML = `<option value="">${head}</option>` + shown.map(it => {
+        let label = it.id;
+        if (it.name) {
+          const name = it.name.length > 30 ? it.name.slice(0, 30) + '…' : it.name;
+          label = it.id + ' — ' + name;
+        }
+        const esc = label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+        return `<option value="${it.id.replace(/"/g, '&quot;')}">${esc}</option>`;
+      }).join('');
+    };
+    renderOptions();
+    if (searchBox) searchBox.addEventListener('input', renderOptions);
   } catch (e) {
     // 取得失敗時は手入力・読み込みボタンは従来どおり使える。例外は外に投げない
     sel.innerHTML = '<option value="">（一覧を読めませんでした・番号を手入力してください）</option>';
