@@ -1958,7 +1958,7 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": "N's factory 実測：台座の長さ・幅・角R（2026-10-12）。断面は実物を見ながらの作図（2026-10-12・幅20・縁の厚み1.33・頂上から底の最下点まで7.25・上面の盛り上がり2.25・下の膨らみ3.66）。リングサポータ厚は膨らみの下の突起の高さ＝2.3〜2.5mm程度の中央値2.4。リング内径25の食い込みは binder_rings.csv。リング位置・機構は規格の値のまま",
+  "sourceNote": "N's factory 実測：台座の長さ・幅・角R（2026-10-12）。断面は実物を見ながらの作図（2026-10-12・幅20・縁の厚み1.33・頂上から底の最下点まで7.25・上面の盛り上がり2.25・下の膨らみ3.66）。リングサポータ＝台座の下の膨らみに沿って外側へ2.4mm（2.3〜2.5mm程度の中央値）オフセットした帯を、ビス穴の突起（直径10・穴5）の円で切り抜いた形。リング内径25の食い込みは binder_rings.csv。リング位置・機構は規格の値のまま",
   "base": {
    "lengthMm": 135,
    "sectionWidthMm": 20,
@@ -1968,6 +1968,7 @@ export const BINDER_SPECS = [
    "edgeRadiusMm": null,
    "cornerRMm": 4,
    "supporterThicknessMm": 2.4,
+   "supporterDiameterMm": 10,
    "confidence": "measured",
    "sectionPoints": [
     {
