@@ -438,6 +438,7 @@ const labelsEl = $('labels');
 shrines.forEach((s) => {
   const el = document.createElement('div');
   el.className = 'lbl';
+  el.style.opacity = '0';   // 最初は隠す。重なりを避ける判定を終えた名前だけを、あとから出す
   el.textContent = s.name;
   labelsEl.appendChild(el);
   s._lbl = el;
@@ -1753,6 +1754,9 @@ function loop(now) {
   camera.updateMatrixWorld();
   // 名札（重なるものは隠す）
   const taken = [];
+  // 全景（カメラが遠い）では、名前を出す数を絞る。近づくほど増える（配列の先頭＝よく知られた社を優先）
+  const lblMax = selected ? 99 : cam.dist > 6 ? 18 : cam.dist > 3.5 ? 34 : cam.dist > 1.8 ? 60 : 999;
+  let lblShown = 0;
   for (const s of shrines) {
     lblPos.set(s._p.x, s._y + 0.02, s._p.z).project(camera);
     const x = (lblPos.x * 0.5 + 0.5) * innerWidth, y = (-lblPos.y * 0.5 + 0.5) * innerHeight;
@@ -1760,8 +1764,8 @@ function loop(now) {
     const w = s.name.length * 13 + 14;
     if (show) {
       const r = { x0: x + 8, x1: x + 8 + w, y0: y - 10, y1: y + 6 };
-      if (selected !== s && taken.some((q) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0)) show = false;
-      else taken.push(r);
+      if (selected !== s && (lblShown >= lblMax || taken.some((q) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0))) show = false;
+      else { taken.push(r); lblShown++; }
     }
     s._lbl.style.opacity = show ? (selected === s ? 0.95 : 0.8) : 0;
     s._lbl.style.transform = `translate3d(${(x + 10).toFixed(1)}px, ${(y - 8).toFixed(1)}px, 0)`;
