@@ -68,7 +68,7 @@
     .ailog .ai-user { align-self: flex-end; background: #2a2a2e; border-radius: 10px 10px 2px 10px; padding: 6px 9px; max-width: 90%; white-space: pre-wrap; }
     .ailog .ai-assistant { align-self: flex-start; background: #1f2a1f; border-radius: 10px 10px 10px 2px; padding: 6px 9px; max-width: 95%; } .ailog p { margin: 2px 0; } .ailog h4 { margin: 4px 0 2px; font-size: 12px; color: var(--accent); } .ailog li { margin-left: 14px; } .ailog small { display: block; color: #777; font-size: 10px; text-align: right; }
     .svgbody svg { max-width: 100%; height: auto; background: #fff; border-radius: 6px; margin: 4px 0; display: block; }
-    .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; }
+    .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
     #printArea { display: none; }
     @media print {
       @page { size: A4 portrait; margin: 10mm; }
@@ -380,7 +380,7 @@
 <label><span data-i18n="ringD"></span><select id="ringD"></select></label>
 <label><span data-i18n="hwAngle"></span><input id="binderAngle" type="number" step="1" value="0"></label>
 <output id="binderInfo" class="note"></output>
-<div class="row"><button id="binderPlace" data-i18n="binderPlace"></button><button id="binderPlan" data-i18n="binderPlan"></button><button id="binderData" data-i18n="binderData"></button></div>
+<div class="row"><button id="binderPlace" data-i18n="binderPlace"></button><button id="binderPlan" data-i18n="binderPlan"></button><button id="binderData" data-i18n="binderData"></button><button id="binderEditData" data-i18n="binderEditData"></button></div>
 <details class="sub" id="spineSimSection"><summary data-i18n="spineSim"></summary>
 <label><span data-i18n="wireD"></span><output id="spWire"></output></label>
 <label><span data-i18n="leatherT"></span><input id="spLeather" type="number" step="0.1" min="0.3" value="1.5"></label>
@@ -492,11 +492,19 @@
 </main>
 <div id="printArea" data-pages="0"></div>
 <dialog id="svgDialog"><h3 id="svgTitle"></h3><div id="svgBody" class="svgbody"></div><button id="closeSvg" data-i18n="closeHelp"></button></dialog>
+<dialog id="bdEditDialog"><h3 id="bdEditTitle"></h3>
+<div class="row"><label><input id="bdeAsNew" type="checkbox"> <span id="bdeAsNewLabel"></span></label></div>
+<div class="row"><label><span data-i18n="bdeName"></span><input id="bdeNameJa" type="text"></label><label><span data-i18n="bdeNameEn"></span><input id="bdeNameEn" type="text"></label></div>
+<h4 data-i18n="bdePlate"></h4><div class="row"><label><span data-i18n="bdeL"></span><input id="bdePlateL" type="number" step="0.1"></label><label><span data-i18n="bdeW"></span><input id="bdePlateW" type="number" step="0.1"></label><label><span data-i18n="bdeT"></span><input id="bdePlateT" type="number" step="0.1"></label><label><span data-i18n="bdeR"></span><input id="bdePlateR" type="number" step="0.1"></label><label><span data-i18n="bdeConf"></span><select id="bdePlateConf"></select></label></div>
+<h4 data-i18n="bdeRings"></h4><div id="bdeRingRows"></div><button id="bdeAddRing" data-i18n="bdeAddRing"></button>
+<h4 data-i18n="bdeMounts"></h4><div id="bdeMountRows"></div><button id="bdeAddMount" data-i18n="bdeAddMount"></button>
+<p class="bd-note" data-i18n="bdeNote"></p>
+<div class="row"><button id="bdEditSave" data-i18n="bdeSave"></button><button id="bdEditReset" data-i18n="bdeReset"></button><button id="bdEditCsv" data-i18n="bdeCsv"></button><button id="bdEditClose" data-i18n="closeHelp"></button></div></dialog>
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=9f77146d","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=91dbd16c","./help/ja.js":"./help/ja.js?v=d9fcd1dd","./i18n.js":"./i18n.js?v=56bc7bad","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=9f77146d"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=8b17525d","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=b5ccf254","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=972d7a73","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=a0576cc8","./help/ja.js":"./help/ja.js?v=fda0c753","./i18n.js":"./i18n.js?v=3ca8424b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=57e10109","./lcc.js":"./lcc.js?v=b399088c","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=8b17525d"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1987,6 +1995,42 @@ const MESSAGES = {
     "bdCopy": "この表をコピー",
     "bdCopied": "コピーしました",
     "hwPlaced": "{name} を置きました。",
+    "binderEditData": "寸法を直す",
+    "bdeTitle": "{name} の寸法を直す（この PC に保存）",
+    "bdeEdited": "※この PC で直した値が入っています",
+    "bdeNewProduct": "「{parent}」の新しい製品として保存する（名前を入れる）",
+    "bdeName": "製品名",
+    "bdeNameEn": "英語名（空欄なら同じ）",
+    "bdePlate": "台座",
+    "bdeL": "長さ (mm)",
+    "bdeW": "幅 (mm)",
+    "bdeT": "板厚 (mm)",
+    "bdeR": "角R (mm)",
+    "bdeConf": "確かさ",
+    "bdeRings": "リング（径ごと。内径か外径のどちらかは必須）",
+    "bdeInner": "内径 (mm)",
+    "bdeOuter": "外径 (mm)",
+    "bdeWire": "線径 (mm・空欄＝仮 2)",
+    "bdeEmbed": "食い込み (mm)",
+    "bdeAddRing": "リング径を足す",
+    "bdeRemove": "削除",
+    "bdeMounts": "取り付け穴（台座の中心が (0,0)・x は長さ方向・mm）",
+    "bdeDia": "径 (mm)",
+    "bdeAddMount": "穴を足す",
+    "bdeSave": "保存（すぐ反映）",
+    "bdeReset": "元の値に戻す",
+    "bdeCsv": "CSV に書き出す",
+    "bdeNote": "保存先はこのブラウザです（開き直しても残ります。他の PC には引き継がれません）。公開データに入れるときは「CSV に書き出す」で出た3つのファイルを渡してください。穴の数と間隔は規格のものを使います。",
+    "bdeSaved": "保存しました（この PC のブラウザに残ります）。公開データに入れるときは「CSV に書き出す」を。",
+    "bdeResetDone": "元の値に戻しました。",
+    "bdeCsvNone": "この PC で直した値はありません。",
+    "bdeCsvDone": "CSV を3つ保存しました（binder_specs / rings / parts）。",
+    "bde.plate": "台座の長さ・幅・板厚は正の数、角R は 0 以上で入れてください。",
+    "bde.name": "新しい製品の名前を入れてください。",
+    "bde.rings": "リングを1つ以上入れてください。",
+    "bde.ring": "リングの内径・外径・線径は正の数、外径は内径より大きく、食い込みは 0 以上で入れてください。",
+    "bde.dup": "同じ内径のリングが2つあります。",
+    "bde.mount": "取り付け穴の径は正の数で入れてください。",
     "layer.hwholes": "金具穴",
     "library": "部品ライブラリ",
     "libSearch": "検索（名前・タグ）",
@@ -2907,6 +2951,42 @@ const MESSAGES = {
     "bdCopy": "Copy this table",
     "bdCopied": "Copied",
     "hwPlaced": "Placed {name}.",
+    "binderEditData": "Edit sizes",
+    "bdeTitle": "Edit sizes of {name} (saved on this PC)",
+    "bdeEdited": "(values edited on this PC)",
+    "bdeNewProduct": "Save as a new product of \"{parent}\" (enter a name)",
+    "bdeName": "Product name",
+    "bdeNameEn": "English name (blank = same)",
+    "bdePlate": "Base plate",
+    "bdeL": "Length (mm)",
+    "bdeW": "Width (mm)",
+    "bdeT": "Thickness (mm)",
+    "bdeR": "Corner R (mm)",
+    "bdeConf": "Confidence",
+    "bdeRings": "Rings (per size; inner or outer required)",
+    "bdeInner": "Inner (mm)",
+    "bdeOuter": "Outer (mm)",
+    "bdeWire": "Wire (mm; blank = assumed 2)",
+    "bdeEmbed": "Embed (mm)",
+    "bdeAddRing": "Add ring size",
+    "bdeRemove": "Remove",
+    "bdeMounts": "Mounting holes (plate center = (0,0), x along length, mm)",
+    "bdeDia": "Dia (mm)",
+    "bdeAddMount": "Add hole",
+    "bdeSave": "Save (applies now)",
+    "bdeReset": "Restore original",
+    "bdeCsv": "Export CSV",
+    "bdeNote": "Saved in this browser only (kept after reload; not shared with other PCs). To put it in the public data, export the three CSV files and send them. Hole count and pitch come from the standard.",
+    "bdeSaved": "Saved in this browser. Use \"Export CSV\" to send it for the public data.",
+    "bdeResetDone": "Restored the original values.",
+    "bdeCsvNone": "Nothing edited on this PC.",
+    "bdeCsvDone": "Saved three CSV files (binder_specs / rings / parts).",
+    "bde.plate": "Plate length, width and thickness must be positive; corner R 0 or more.",
+    "bde.name": "Enter a name for the new product.",
+    "bde.rings": "Enter at least one ring.",
+    "bde.ring": "Ring inner/outer/wire must be positive, outer larger than inner, embed 0 or more.",
+    "bde.dup": "Two rings have the same inner size.",
+    "bde.mount": "Mounting hole diameter must be positive.",
     "layer.hwholes": "Hardware holes",
     "library": "Part library",
     "libSearch": "Search (name, tags)",
@@ -4802,6 +4882,99 @@ function binderSection(base) {
 }
 
 return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection};
+})();
+__mods['binder_edits'] = (function(){
+// 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
+// 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, rings?: { options: [...] }, rivets? } } }
+//   既にある規格・製品の id なら上書き、無い id は「新しい製品」（parent の写しから始める）。
+const { ringSizeOf } = __mods['hardware'];
+const BINDER_EDITS_KEY = 'leather-cad.binderEdits';
+const clone = v => JSON.parse(JSON.stringify(v));
+const round1 = v => Math.round(v * 10) / 10;
+
+function emptyEdits() { return { v: 1, specs: {} }; }
+
+/** 保存文字列を読み戻す。壊れていれば null。 */
+function parseEdits(text) {
+  let j; try { j = JSON.parse(text); } catch { return null; }
+  if (!j || j.v !== 1 || !j.specs || typeof j.specs !== 'object' || Array.isArray(j.specs)) return null;
+  for (const [id, e] of Object.entries(j.specs)) if (!/^[a-zA-Z0-9_-]+$/.test(id) || !e || typeof e !== 'object') return null;
+  return j;
+}
+function serializeEdits(edits) { return JSON.stringify(edits); }
+
+/** 元の金具データ（配列）に、直した値を重ねた新しい配列を返す。元は変えない。直した規格・製品には edited: true が付く。 */
+function applyBinderEdits(specs, edits) {
+  const out = specs.map(clone);
+  for (const [id, e] of Object.entries(edits?.specs || {})) {
+    let s = out.find(x => x.id === id);
+    if (!s) {
+      const parent = out.find(x => x.id === e.parent && !x.parent); if (!parent) continue;   // 親が無い製品は無視（データが消えたとき）
+      s = clone(parent); s.id = id; s.parent = parent.id; s.names = { ja: id, en: id, aliases: [] }; s.sourceNote = null; s.sources = []; delete s.drawings; out.push(s);
+    }
+    if (e.names) s.names = { ...s.names, ...e.names };
+    if (e.plate) {
+      s.plate = { ...s.plate, ...e.plate };
+      if (s.base) { const m = { lengthMm: 'lengthMm', widthMm: 'sectionWidthMm', thicknessMm: 'thicknessMm', cornerRMm: 'cornerRMm' }; for (const [k, b] of Object.entries(m)) if (e.plate[k] != null) s.base[b] = e.plate[k]; }
+    }
+    if (e.rings?.options) {
+      const options = e.rings.options.map(clone);
+      s.rings = { ...s.rings, options, diameterOptionsMm: options.map(o => round1(ringSizeOf(null, o).inner)) };
+    }
+    if (e.rivets) s.rivets = clone(e.rivets);
+    s.edited = true;
+  }
+  return out;
+}
+
+/** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / dup / mount）。
+ *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }] } */
+function editFromForm(form) {
+  const num = v => (v === '' || v == null) ? null : Number(v), pos = v => Number.isFinite(v) && v > 0, fin = v => Number.isFinite(v);
+  const p = form.plate || {}, plate = { lengthMm: num(p.lengthMm), widthMm: num(p.widthMm), thicknessMm: num(p.thicknessMm), cornerRMm: num(p.cornerRMm) ?? 0 };
+  if (!pos(plate.lengthMm) || !pos(plate.widthMm) || !pos(plate.thicknessMm) || !(fin(plate.cornerRMm) && plate.cornerRMm >= 0)) throw new Error('plate');
+  if (['measured', 'spec', 'estimated'].includes(p.confidence)) plate.confidence = p.confidence;
+  const out = { plate };
+  if (form.parent) { out.parent = form.parent; const ja = String(form.names?.ja || '').trim(); if (!ja) throw new Error('name'); out.names = { ja, en: String(form.names?.en || '').trim() || ja }; }
+  else if (form.names?.ja) out.names = { ja: String(form.names.ja).trim(), en: String(form.names.en || form.names.ja).trim() };
+  const rings = (form.rings || []).filter(r => r && !(r.innerDiameterMm === '' && (r.outerDiameterMm ?? '') === '')), seen = new Set();
+  if (!rings.length) throw new Error('rings');
+  out.rings = { options: rings.map(r => {
+    const o = {}; const i = num(r.innerDiameterMm), oo = num(r.outerDiameterMm), w = num(r.wireDiameterMm), em = num(r.embedDepthMm);
+    if (i != null) { if (!pos(i)) throw new Error('ring'); o.innerDiameterMm = i; }
+    if (oo != null) { if (!pos(oo) || (i != null && oo <= i)) throw new Error('ring'); o.outerDiameterMm = oo; }
+    if (w != null) { if (!pos(w)) throw new Error('ring'); o.wireDiameterMm = w; }
+    if (i == null && oo == null) throw new Error('ring');
+    if (em != null) { if (!(fin(em) && em >= 0)) throw new Error('ring'); o.embedDepthMm = em; }
+    if (['measured', 'spec', 'estimated'].includes(r.confidence)) o.confidence = r.confidence;
+    const size = ringSizeOf(null, o), key = round1(size.inner); if (seen.has(key)) throw new Error('dup'); seen.add(key);
+    return o;
+  }) };
+  out.rivets = (form.rivets || []).filter(m => m && !(m.xMm === '' && m.yMm === '' && m.dMm === '')).map(m => { const x = num(m.xMm) ?? 0, y = num(m.yMm) ?? 0, d = num(m.dMm); if (!fin(x) || !fin(y) || !pos(d)) throw new Error('mount'); return { xMm: x, yMm: y, dMm: d }; });
+  return out;
+}
+
+/** 直した値だけを CSV の行にする（tools/import_binder_csv.js で取り込める列名）。製品の親の行（id だけ）も入れる。 */
+function editsToCsv(applied, edits) {
+  const ids = Object.keys(edits?.specs || {}).filter(id => applied.some(s => s.id === id)); if (!ids.length) return null;
+  const enc = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }, row = a => a.map(enc).join(',');
+  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind'];
+  const parents = new Set();
+  for (const id of ids) {
+    const s = applied.find(x => x.id === id), p = s.plate || {};
+    if (s.parent && !ids.includes(s.parent)) parents.add(s.parent);
+    specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '']));
+    for (const o of s.rings.options || []) { const size = ringSizeOf(s, o); rings.push(row([s.id, size.inner, size.outer, size.wire, size.wireSource, o.embedDepthMm ?? '', o.confidence || ''])); }
+    for (const r of s.rivets || []) parts.push(row([s.id, 'mount', r.xMm, r.yMm, r.dMm, 'rivet']));
+  }
+  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
+  return { 'binder_specs.csv': specs.join('\n') + '\n', 'binder_rings.csv': rings.join('\n') + '\n', 'binder_parts.csv': parts.join('\n') + '\n' };
+}
+
+/** 新しい製品の id：親の id + "-p" + 番号（使われていないもの）。 */
+function newProductId(specs, parentId) { let n = 1; while (specs.some(s => s.id === `${parentId}-p${n}`)) n++; return `${parentId}-p${n}`; }
+
+return {BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId};
 })();
 __mods['threeview'] = (function(){
 const { binderSpecWithSection } = __mods['binder_section_edit'];
@@ -16698,7 +16871,7 @@ const HELP_JA = {
     {
       "id": "hardware",
       "title": "金具ライブラリとバインダー金具",
-      "body": "金具カードで分類と金具を選び、寸法パラメータ（代表値・「要実測」のものは現物で確認）と向きを決めて「図面に置く」→位置をクリック。外形の記号は目印レイヤー、カシメ穴・ホックの足穴・ネジ穴などの取り付け穴は「金具穴」レイヤーに入ります。置いた金具は 3D でも板の上に立体（箱・円柱）として現れ、折りたたみに追従し、干渉判定に含まれます。\nバインダー金具は規格（Micro5・Mini6・A6・バイブル・A5・A5 Slim・A4・Franklin 各種）を選び、リング径を選んで置きます。穴ピッチ・1番〜最終穴・リフィル寸法は N's factory の規格表を正本にした data/binder/*.json、台座やリベットの寸法は推定値（JSON を実測で上書きできます）。「平面図・側面図・正面図」は JSON から自動生成した図面、「寸法データ」は JSON そのもの。必要な背幅＝リング径＋台座厚＋革厚×2＋遊び 2mm を表示します。\n背幅シミュレーション：バインダー節の「背幅シミュレーション」で、リング内径・線径・台座厚・表紙の革厚・サポータ厚・すき間・曲げ内半径から、閉じた断面（輪の外径＋すき間＝内幅、両端 90° の折り代）を計算して背幅を出します。断面図が下に出ます。これまで現物合わせで決めた背幅があれば「実測からすき間を逆算」に入れると、同じ条件で次の判型にも使えるすき間に直せます。「レシピの背幅に反映」で自動設計の手帳に使われます。"
+      "body": "金具カードで分類と金具を選び、寸法パラメータ（代表値・「要実測」のものは現物で確認）と向きを決めて「図面に置く」→位置をクリック。外形の記号は目印レイヤー、カシメ穴・ホックの足穴・ネジ穴などの取り付け穴は「金具穴」レイヤーに入ります。置いた金具は 3D でも板の上に立体（箱・円柱）として現れ、折りたたみに追従し、干渉判定に含まれます。\nバインダー金具は規格（Micro5・Mini6・A6・バイブル・A5・A5 Slim・A4・Franklin 各種）を選び、リング径を選んで置きます。穴ピッチ・1番〜最終穴・リフィル寸法は N's factory の規格表を正本にした data/binder/*.json、台座やリベットの寸法は推定値（JSON を実測で上書きできます）。「平面図・側面図・正面図」は JSON から自動生成した図面、「寸法データ」は JSON そのもの。必要な背幅＝リング径＋台座厚＋革厚×2＋遊び 2mm を表示します。\n背幅シミュレーション：バインダー節の「背幅シミュレーション」で、リング内径・線径・台座厚・表紙の革厚・サポータ厚・すき間・曲げ内半径から、閉じた断面（輪の外径＋すき間＝内幅、両端 90° の折り代）を計算して背幅を出します。断面図が下に出ます。これまで現物合わせで決めた背幅があれば「実測からすき間を逆算」に入れると、同じ条件で次の判型にも使えるすき間に直せます。「レシピの背幅に反映」で自動設計の手帳に使われます。\n「寸法を直す」で、台座・リング（径ごとの内径・外径・線径・食い込み）・取り付け穴を自分で入れて保存できます。保存先はこの PC のブラウザで、すぐ図・3D・背幅に反映されます。「新しい製品として保存」で、同じ規格の別メーカー品を名前付きで足せます。公開データに入れるときは「CSV に書き出す」で出た3つのファイルを渡してください。"
     },
     {
       "id": "library",
@@ -16847,7 +17020,7 @@ const HELP_EN = {
     {
       "id": "hardware",
       "title": "Hardware library and binder mechanisms",
-      "body": "Choose a category and an item in the Hardware card, adjust the size parameters (typical values; verify the ones marked) and the angle, press Place and click on the drawing. The outline symbol goes to the Marks layer; mounting holes (rivets, snap posts, screws) go to the Hardware holes layer. Placed hardware also appears in 3D as a box or cylinder on its panel, follows folding and is included in collision checks.\nFor binder mechanisms pick a standard (Micro5, Mini6, A6, Bible, A5, A5 Slim, A4, Franklin...) and a ring diameter. Hole pitches, first-to-last span and refill sizes come from N's factory's standards table (data/binder/*.json); plate and rivet sizes are estimates you can overwrite. Plan/side/front drawings are generated from the JSON. The required spine width = ring diameter + plate thickness + 2 × leather thickness + 2 mm play.\nSpine simulation: in the binder section, enter ring ID, wire, plate thickness, cover leather, supporter thickness, clearance and bend radius; the closed section (ring OD + clearance = inner width, 90° fold allowances both ends) gives the spine width with a section drawing. Enter a spine you measured by wrapping real leather to derive the clearance, then reuse it for other sizes. \"Apply to recipe spine\" feeds the notebook recipe."
+      "body": "Choose a category and an item in the Hardware card, adjust the size parameters (typical values; verify the ones marked) and the angle, press Place and click on the drawing. The outline symbol goes to the Marks layer; mounting holes (rivets, snap posts, screws) go to the Hardware holes layer. Placed hardware also appears in 3D as a box or cylinder on its panel, follows folding and is included in collision checks.\nFor binder mechanisms pick a standard (Micro5, Mini6, A6, Bible, A5, A5 Slim, A4, Franklin...) and a ring diameter. Hole pitches, first-to-last span and refill sizes come from N's factory's standards table (data/binder/*.json); plate and rivet sizes are estimates you can overwrite. Plan/side/front drawings are generated from the JSON. The required spine width = ring diameter + plate thickness + 2 × leather thickness + 2 mm play.\nSpine simulation: in the binder section, enter ring ID, wire, plate thickness, cover leather, supporter thickness, clearance and bend radius; the closed section (ring OD + clearance = inner width, 90° fold allowances both ends) gives the spine width with a section drawing. Enter a spine you measured by wrapping real leather to derive the clearance, then reuse it for other sizes. \"Apply to recipe spine\" feeds the notebook recipe.\nWith \"Edit sizes\" you can enter the base plate, rings (inner/outer/wire/embed per size) and mounting holes yourself; they are saved in this browser and applied at once to drawings, 3D and the spine simulation. \"Save as a new product\" adds a named maker variant of the same standard. To put them in the public data, export the three CSV files and send them."
     },
     {
       "id": "library",
@@ -16954,6 +17127,10 @@ const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
+const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } = __mods['binder_edits'];
+/** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
+const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
+let binderEdits = emptyEdits();
 const { track } = __mods['analytics'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
@@ -19100,6 +19277,58 @@ function showBinderData(spec) {
   const btn = $('svgBody').querySelector?.('#bdCopy');
   if (btn) btn.onclick = () => { const text = [...$('svgBody').querySelectorAll('tr')].map(r => r.children[0].textContent + '：' + r.children[1].textContent).join('\n'); const clipboard = globalThis.navigator?.clipboard; clipboard?.writeText?.(text)?.then?.(() => { btn.textContent = t('bdCopied'); }); }; /* copyBinderSection と同じ呼び方（Mac 検査の決まり） */
 }
+/** 「寸法を直す」：この PC のブラウザに保存し、すぐ金具データへ重ねる。公開データに入れるときは「CSV に書き出す」で渡す。 */
+function loadBinderEdits() { try { const e = parseEdits(localStorage.getItem(BINDER_EDITS_KEY) || ''); if (e) binderEdits = e; } catch { /* 保存が使えない環境でも動かす */ } rebuildBinderSpecs(); }
+function rebuildBinderSpecs() { BINDER_SPECS.splice(0, BINDER_SPECS.length, ...applyBinderEdits(BINDER_ORIGINALS, binderEdits)); }
+function persistBinderEdits() { try { localStorage.setItem(BINDER_EDITS_KEY, serializeEdits(binderEdits)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+const BDE_CONF = ['measured', 'spec', 'estimated'];
+const bdeConfOptions = () => ['', ...BDE_CONF].map(c => `<option value="${c}">${c ? t('conf' + c[0].toUpperCase() + c.slice(1)) : t('confNone')}</option>`).join('');
+const bdeConfSelect = id => `<select id="${id}">${bdeConfOptions()}</select>`;
+const bdeField = (id, label, step = '0.1') => `<label><span>${label}</span><input id="${id}" type="number" step="${step}"></label>`;
+const bdeSet = (id, v) => { const el = $(id); el.value = v == null ? '' : String(v); };
+let bdeRingCount = 0, bdeMountCount = 0, bdeSpecId = null;
+const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
+const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
+function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
+function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
+function openBinderEdit() {
+  const spec = binderSpec($('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id;
+  const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
+  bdeRingCount = opts.length; bdeMountCount = rivets.length;
+  $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '');
+  $('bdeAsNewLabel').textContent = t('bdeNewProduct', { parent: nameOf(spec.parent ? binderSpec(spec.parent) || spec : spec) });
+  $('bdePlateConf').innerHTML = bdeConfOptions(); $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); $('bdeMountRows').innerHTML = rivets.map((r, i) => bdeMountRow(i)).join('');
+  $('bdeAsNew').checked = false; bdeSet('bdeNameJa', spec.names.ja); bdeSet('bdeNameEn', spec.names.en);
+  bdeSet('bdePlateL', base.lengthMm); bdeSet('bdePlateW', base.sectionWidthMm); bdeSet('bdePlateT', base.thicknessMm); bdeSet('bdePlateR', base.cornerRMm ?? 0); bdeSet('bdePlateConf', base.confidence ?? spec.plate?.confidence ?? '');
+  opts.forEach((o, i) => bdeWireRing(i, o)); rivets.forEach((r, i) => bdeWireMount(i, r));
+  $('bdEditDialog').showModal();
+}
+function readBinderEditForm() {
+  const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
+  for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value }); }
+  for (let i = 0; i < bdeMountCount; i++) { if ($('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
+  const asNew = !!$('bdeAsNew').checked;
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets };
+}
+function refreshBinderSelects(id) {
+  for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel); }
+  $('binderSpecSel').value = id; renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection();
+}
+function saveBinderEdit() {
+  let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { $('hint').textContent = t('bde.' + err.message); return; }
+  const spec = binderSpec(bdeSpecId); let id = bdeSpecId;
+  if (edit.parent) id = newProductId(BINDER_SPECS, edit.parent); else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
+  binderEdits.specs[id] = edit; if (!persistBinderEdits()) return;
+  rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved');
+}
+function resetBinderEdit() {
+  delete binderEdits.specs[bdeSpecId]; if (!persistBinderEdits()) return;
+  rebuildBinderSpecs(); refreshBinderSelects(binderSpec(bdeSpecId) ? bdeSpecId : BINDER_SPECS[0].id); $('bdEditDialog').close(); $('hint').textContent = t('bdeResetDone');
+}
+function exportBinderEditsCsv() {
+  const files = editsToCsv(BINDER_SPECS, binderEdits); if (!files) { $('hint').textContent = t('bdeCsvNone'); return; }
+  for (const [name, text] of Object.entries(files)) download(name, text, 'text/csv'); $('hint').textContent = t('bdeCsvDone');
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -19110,6 +19339,9 @@ function initHardware() {
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
+  $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
+  $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
+  $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
 
 // ---- ペン（連続ベジェ）・テキスト・寸法・トリム・線対称 ----
@@ -20054,7 +20286,7 @@ $('cmd').addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
 window.addEventListener('resize', resize);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
