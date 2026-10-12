@@ -90,7 +90,6 @@ body.open .hint { display: none; }
 .row dt { color: var(--muted); font-size: 12.5px; }
 .row dd { margin: 0; color: var(--ink-soft); }
 .prbox.stays { border-style: solid; }
-.prnote { margin: 0 0 6px; font-size: 12px; color: var(--gold); }
 .staylist { list-style: none; padding: 0; margin: 6px 0; }
 .staylist li { margin: 6px 0; padding: 8px 10px; background: rgba(49,67,50,0.4); border: 1px solid var(--line); border-radius: 8px; }
 .staylist a { display: block; min-height: 24px; font: 14px var(--serif); }
