@@ -1275,14 +1275,14 @@ function shrineHTML(s0) {
   // 2 御祭神
   const c2 = `<h3 class="chh">${U('enshrined', '御祭神')}</h3>` + ds.map((d, k) => {
     const sc = (d.scenes || [])[0];
-    return rvs(EN ? `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(dName(d))}</b><small>${esc(d.name)}</small><em>${sc ? esc(U('mythScene', '神話の場面')) + ': ' + esc(sc.title) + ' ›' : esc(U('deityPage', '神様のページへ ›'))}</em></button>` : `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(d.name)}</b><small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small>${sc ? `<em>神話の場面：${esc(sc.title)} ›</em>` : '<em>神様のページへ ›</em>'}</button>`, k + 1);
+    return rvs(EN ? `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(dName(d))}</b><small>${esc(d.name)}</small><em>${sc ? esc(U('mythScene', '神話の場面')) + ' ›' : esc(U('deityPage', '神様のページへ ›'))}</em></button>` : `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(d.name)}</b><small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small>${sc ? `<em>神話の場面：${esc(sc.title)} ›</em>` : '<em>神様のページへ ›</em>'}</button>`, k + 1);
   }).join('') + (s.deity_note ? rvs(`<p class="meta">${esc(s.deity_note.text)}${refs(s.deity_note.src)}</p>`, ds.length + 2) : '');
   // 3 由緒（時間の線）
   const hist = (s.history || []);
   const c3 = `<h3 class="chh">${U('history', '由緒')}</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
     const ty = h.type && TYPE[h.type] ? h.type : 'fact';
     return rvs(`<div class="tli ${ty}">${item(h)}</div>`, k + 1);
-  }).join('') : rvs(item(null), 1)) + `</div>` + rvs(`<button class="btn" type="button" data-emaki="1">${U('emaki', '絵巻で見る ›')}</button>`, hist.length + 2);
+  }).join('') : rvs(item(null), 1)) + `</div>` + (EN ? '' : rvs(`<button class="btn" type="button" data-emaki="1">${U('emaki', '絵巻で見る ›')}</button>`, hist.length + 2));
   // 4 見どころ
   const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
