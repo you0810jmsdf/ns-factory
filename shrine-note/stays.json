@@ -89,6 +89,1699 @@
           "status": "candidate"
         }
       ]
+    },
+    {
+      "shrine_id": "ikisu",
+      "shrine_name": "息栖神社",
+      "hotels": [
+        {
+          "name": "アトンパレスホテル 茶寮砂の栖",
+          "area": "茨城県神栖市大野原1-12-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D68285",
+          "review_average": 4.49,
+          "review_count": 144,
+          "status": "candidate"
+        },
+        {
+          "name": "たびのホテル鹿島",
+          "area": "茨城県神栖市平泉東一丁目64番地36",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D178910",
+          "review_average": 4.39,
+          "review_count": 1165,
+          "status": "candidate"
+        },
+        {
+          "name": "アートホテル鹿島セントラル",
+          "area": "茨城県神栖市大野原4-7-11",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D193067",
+          "review_average": 4.24,
+          "review_count": 657,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "awa",
+      "shrine_name": "安房神社",
+      "hotels": [
+        {
+          "name": "波音日和",
+          "area": "千葉県南房総市白浜町根本1626-4",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D158328",
+          "review_average": 4.88,
+          "review_count": 24,
+          "status": "candidate"
+        },
+        {
+          "name": "ペンション ケイコ(KEIKO)",
+          "area": "千葉県館山市犬石1687-6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D5800",
+          "review_average": 4.86,
+          "review_count": 163,
+          "status": "candidate"
+        },
+        {
+          "name": "AIHAMA TERRACE",
+          "area": "千葉県館山市相浜170-17",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D188371",
+          "review_average": 4.86,
+          "review_count": 20,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "susaki",
+      "shrine_name": "洲崎神社",
+      "hotels": [
+        {
+          "name": "サンゴの湯 やどかり",
+          "area": "千葉県館山市波左間230",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D29469",
+          "review_average": 5.0,
+          "review_count": 32,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテル洲の崎 風の抄",
+          "area": "千葉県館山市洲崎198-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D108269",
+          "review_average": 4.62,
+          "review_count": 193,
+          "status": "candidate"
+        },
+        {
+          "name": "シーサイドガーデン DAY OFF(デイオフ)",
+          "area": "千葉県館山市伊戸1759-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D5751",
+          "review_average": 4.5,
+          "review_count": 56,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ise",
+      "shrine_name": "伊勢神宮（内宮）",
+      "hotels": [
+        {
+          "name": "参宮の宿 宿屋五十鈴",
+          "area": "三重県伊勢市宇治浦田1-4-10",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D147038",
+          "review_average": 5.0,
+          "review_count": 209,
+          "status": "candidate"
+        },
+        {
+          "name": "神宮会館",
+          "area": "三重県伊勢市宇治中之切町152",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D140958",
+          "review_average": 4.68,
+          "review_count": 577,
+          "status": "candidate"
+        },
+        {
+          "name": "いにしえの宿 伊久(共立リゾート)(2026年4月1日リニューアルオープン)",
+          "area": "三重県伊勢市宇治館町岩井田山679-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D142809",
+          "review_average": 4.65,
+          "review_count": 1287,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "izumo",
+      "shrine_name": "出雲大社",
+      "hotels": [
+        {
+          "name": "manai7.stay",
+          "area": "島根県出雲市大社町杵築東7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D191960",
+          "review_average": 4.94,
+          "review_count": 20,
+          "status": "candidate"
+        },
+        {
+          "name": "時空間 〜縁〜",
+          "area": "島根県出雲市大社町修理免729-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D180350",
+          "review_average": 4.78,
+          "review_count": 20,
+          "status": "candidate"
+        },
+        {
+          "name": "Rakuten STAY 出雲",
+          "area": "島根県出雲市大社町杵築東宮内300",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D189830",
+          "review_average": 4.74,
+          "review_count": 86,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tamasaki",
+      "shrine_name": "玉前神社",
+      "hotels": [
+        {
+          "name": "KandoStay 九十九里パークガーデン(旧:九十九里PARKGARDENー寛道ー)",
+          "area": "千葉県長生郡一宮町新地丙4433-34",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D191621",
+          "review_average": 4.55,
+          "review_count": 22,
+          "status": "candidate"
+        },
+        {
+          "name": "BUB RESORT",
+          "area": "千葉県長生郡長生村金田2811",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177773",
+          "review_average": 4.53,
+          "review_count": 224,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテル一宮シーサイドオーツカ",
+          "area": "千葉県長生郡一宮町一宮10000",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D28045",
+          "review_average": 4.52,
+          "review_count": 602,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "hikawa",
+      "shrine_name": "氷川神社（大宮）",
+      "hotels": [
+        {
+          "name": "ホテルメトロポリタンさいたま新都心",
+          "area": "埼玉県さいたま市中央区新都心11-1 JRさいたま新都心ビル 5~10F",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D161189",
+          "review_average": 4.66,
+          "review_count": 1480,
+          "status": "candidate"
+        },
+        {
+          "name": "レフ大宮 by ベッセルホテルズ|REF大宮|サウナ付大浴場(大宮駅東口)",
+          "area": "埼玉県さいたま市大宮区大門町二丁目116番地6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179148",
+          "review_average": 4.61,
+          "review_count": 1302,
+          "status": "candidate"
+        },
+        {
+          "name": "ダイワロイネットホテル大宮西口",
+          "area": "埼玉県さいたま市大宮区桜木町1丁目398番1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D188736",
+          "review_average": 4.57,
+          "review_count": 1395,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "sengen",
+      "shrine_name": "富士山本宮浅間大社",
+      "hotels": [
+        {
+          "name": "ゲストハウス ときわ",
+          "area": "静岡県富士宮市中央町14-15",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D146860",
+          "review_average": 5.0,
+          "review_count": 40,
+          "status": "candidate"
+        },
+        {
+          "name": "スーパーホテル富士宮",
+          "area": "静岡県富士宮市ひばりが丘695",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D149353",
+          "review_average": 4.31,
+          "review_count": 621,
+          "status": "candidate"
+        },
+        {
+          "name": "割烹旅館小川荘",
+          "area": "静岡県富士宮市大宮町10-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D195996",
+          "review_average": 4.21,
+          "review_count": 15,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "atsuta",
+      "shrine_name": "熱田神宮",
+      "hotels": [
+        {
+          "name": "N HOTEL",
+          "area": "愛知県名古屋市中川区山王1-2-20",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D166547",
+          "review_average": 4.51,
+          "review_count": 477,
+          "status": "candidate"
+        },
+        {
+          "name": "ANAクラウンプラザホテルグランコート名古屋 by IHG",
+          "area": "愛知県名古屋市中区金山町1-1-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D1659",
+          "review_average": 4.49,
+          "review_count": 4580,
+          "status": "candidate"
+        },
+        {
+          "name": "コンフォートホテル名古屋金山",
+          "area": "愛知県名古屋市熱田区波寄町24-14",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182852",
+          "review_average": 4.31,
+          "review_count": 1518,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "suwa",
+      "shrine_name": "諏訪大社 上社本宮",
+      "hotels": [
+        {
+          "name": "blue quad hotel 諏訪",
+          "area": "長野県諏訪市沖田町5-77",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D198690",
+          "review_average": 4.39,
+          "review_count": 162,
+          "status": "candidate"
+        },
+        {
+          "name": "CANDEO HOTELS(カンデオホテルズ)茅野(2026年3月リニューアル)",
+          "area": "長野県茅野市中沖2-7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D70796",
+          "review_average": 4.14,
+          "review_count": 1221,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルルートイン第2諏訪インター【全館禁煙】",
+          "area": "長野県諏訪市中州2940-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D67484",
+          "review_average": 4.11,
+          "review_count": 793,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "omiwa",
+      "shrine_name": "大神神社",
+      "hotels": [
+        {
+          "name": "町家ゲストハウス三輪",
+          "area": "奈良県桜井市三輪400",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D141236",
+          "review_average": 4.92,
+          "review_count": 139,
+          "status": "candidate"
+        },
+        {
+          "name": "皆花楼",
+          "area": "奈良県桜井市桜井202",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D53419",
+          "review_average": 4.81,
+          "review_count": 323,
+          "status": "candidate"
+        },
+        {
+          "name": "町家ゲストハウス みもろ",
+          "area": "奈良県桜井市三輪499-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D149235",
+          "review_average": 4.8,
+          "review_count": 62,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kasuga",
+      "shrine_name": "春日大社",
+      "hotels": [
+        {
+          "name": "古都奈良の宿 飛鳥荘",
+          "area": "奈良県奈良市高畑町1113-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D5550",
+          "review_average": 4.82,
+          "review_count": 554,
+          "status": "candidate"
+        },
+        {
+          "name": "Mountain Home Lodge in Deer Park",
+          "area": "奈良県奈良市春日野町158-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179920",
+          "review_average": 4.73,
+          "review_count": 53,
+          "status": "candidate"
+        },
+        {
+          "name": "奈良ホテル",
+          "area": "奈良県奈良市高畑町1096",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D1148",
+          "review_average": 4.67,
+          "review_count": 1736,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "sumiyoshi",
+      "shrine_name": "住吉大社",
+      "hotels": [
+        {
+          "name": "SAYA Suite岸里",
+          "area": "大阪府大阪市西成区岸里2-7-17",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182299",
+          "review_average": 4.71,
+          "review_count": 14,
+          "status": "candidate"
+        },
+        {
+          "name": "バンデホテル大阪",
+          "area": "大阪府大阪市西成区玉出中2-1-24",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D166085",
+          "review_average": 4.5,
+          "review_count": 295,
+          "status": "candidate"
+        },
+        {
+          "name": "R HOTEL RE.OSAKA NAGAI PARK",
+          "area": "大阪府大阪市住吉区長居2-13-13",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D198898",
+          "review_average": 4.41,
+          "review_count": 61,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kumano",
+      "shrine_name": "熊野本宮大社",
+      "hotels": [
+        {
+          "name": "よしのや旅館 <和歌山県>",
+          "area": "和歌山県田辺市本宮町湯ノ峰359",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D106190",
+          "review_average": 4.8,
+          "review_count": 97,
+          "status": "candidate"
+        },
+        {
+          "name": "ジェイホッパーズ熊野湯峰ゲストハウス",
+          "area": "和歌山県田辺市本宮町湯峯161",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D164972",
+          "review_average": 4.75,
+          "review_count": 55,
+          "status": "candidate"
+        },
+        {
+          "name": "わたらせ温泉 ホテルささゆり",
+          "area": "和歌山県田辺市本宮町渡瀬45-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D18768",
+          "review_average": 4.6,
+          "review_count": 303,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "munakata",
+      "shrine_name": "宗像大社",
+      "hotels": [
+        {
+          "name": "御宿 はなわらび",
+          "area": "福岡県宗像市江口518-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D139901",
+          "review_average": 4.64,
+          "review_count": 198,
+          "status": "candidate"
+        },
+        {
+          "name": "玄界灘を望む”食”の宿 魚屋別館",
+          "area": "福岡県宗像市神湊643",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182435",
+          "review_average": 4.56,
+          "review_count": 32,
+          "status": "candidate"
+        },
+        {
+          "name": "玄海旅館",
+          "area": "福岡県宗像市神湊485-7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D109125",
+          "review_average": 4.4,
+          "review_count": 98,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "usa",
+      "shrine_name": "宇佐神宮",
+      "hotels": [
+        {
+          "name": "宇佐ホテルリバーサイド",
+          "area": "大分県宇佐市別府6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D138111",
+          "review_average": 4.07,
+          "review_count": 234,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "itsukushima",
+      "shrine_name": "嚴島神社",
+      "hotels": [
+        {
+          "name": "北之町 厳妹屋",
+          "area": "広島県廿日市市宮島町580",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D80828",
+          "review_average": 5.0,
+          "review_count": 24,
+          "status": "candidate"
+        },
+        {
+          "name": "旅荘かわぐち",
+          "area": "広島県廿日市市宮島町469",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D18132",
+          "review_average": 5.0,
+          "review_count": 23,
+          "status": "candidate"
+        },
+        {
+          "name": "お宿 月うさぎ",
+          "area": "広島県廿日市市宮島町860-7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D181728",
+          "review_average": 4.75,
+          "review_count": 13,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "takachiho",
+      "shrine_name": "高千穂神社",
+      "hotels": [
+        {
+          "name": "オートキャンプ場in高千穂",
+          "area": "宮崎県西臼杵郡高千穂町三田井3121-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179307",
+          "review_average": 4.82,
+          "review_count": 33,
+          "status": "candidate"
+        },
+        {
+          "name": "欧風宿 ぶどうの樹",
+          "area": "宮崎県西臼杵郡高千穂町押方1222",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D28914",
+          "review_average": 4.8,
+          "review_count": 306,
+          "status": "candidate"
+        },
+        {
+          "name": "高千穂 旅館 神仙",
+          "area": "宮崎県西臼杵郡高千穂町三田井1127-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D30082",
+          "review_average": 4.8,
+          "review_count": 250,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "hokkaido",
+      "shrine_name": "北海道神宮",
+      "hotels": [
+        {
+          "name": "VILLA KOSHIDO KOTONI",
+          "area": "北海道札幌市西区琴似2条5丁目2-10",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179324",
+          "review_average": 4.72,
+          "review_count": 220,
+          "status": "candidate"
+        },
+        {
+          "name": "VILLA KOSHIDO ODORI",
+          "area": "北海道札幌市中央区大通西14丁目3-18",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D181962",
+          "review_average": 4.64,
+          "review_count": 31,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルコトニ札幌",
+          "area": "北海道札幌市西区琴似二条5-4-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D27785",
+          "review_average": 4.17,
+          "review_count": 815,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "shiogama",
+      "shrine_name": "鹽竈神社",
+      "hotels": [
+        {
+          "name": "ホテルグランドパレス塩釜",
+          "area": "宮城県塩釜市尾島町3-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D51699",
+          "review_average": 4.03,
+          "review_count": 999,
+          "status": "candidate"
+        },
+        {
+          "name": "スマイルホテル塩釜",
+          "area": "宮城県塩竈市新富町18-31",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D15104",
+          "review_average": 3.96,
+          "review_count": 2571,
+          "status": "candidate"
+        },
+        {
+          "name": "Tabist ホテル塩釜&松島",
+          "area": "宮城県塩釜市北浜1-1-12",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D176947",
+          "review_average": 3.96,
+          "review_count": 126,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "dewa",
+      "shrine_name": "出羽三山神社",
+      "hotels": [
+        {
+          "name": "宿坊 神林勝金",
+          "area": "山形県鶴岡市羽黒町手向字手向3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D139768",
+          "review_average": 4.58,
+          "review_count": 51,
+          "status": "candidate"
+        },
+        {
+          "name": "羽黒山 三光院",
+          "area": "山形県鶴岡市羽黒町手向92",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D44069",
+          "review_average": 4.56,
+          "review_count": 96,
+          "status": "candidate"
+        },
+        {
+          "name": "旅館 羽黒館",
+          "area": "山形県鶴岡市羽黒町手向字手向111",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D14581",
+          "review_average": 4.31,
+          "review_count": 70,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "hakusan",
+      "shrine_name": "白山比咩神社",
+      "hotels": [
+        {
+          "name": "獅子吼荘",
+          "area": "石川県白山市八幡町リ149",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D164600",
+          "review_average": 5.0,
+          "review_count": 17,
+          "status": "candidate"
+        },
+        {
+          "name": "萬寿荘さわだ旅館",
+          "area": "石川県白山市鶴来日詰町カ135",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D7794",
+          "review_average": 4.8,
+          "review_count": 57,
+          "status": "candidate"
+        },
+        {
+          "name": "花月荘 <石川県>",
+          "area": "石川県白山市鶴来日詰町カ193",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D163134",
+          "review_average": 3.75,
+          "review_count": 18,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "keta",
+      "shrine_name": "氣多大社",
+      "hotels": [
+        {
+          "name": "料理旅館 大社庵",
+          "area": "石川県羽咋市柴垣町8-35",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D14030",
+          "review_average": 4.29,
+          "review_count": 88,
+          "status": "candidate"
+        },
+        {
+          "name": "休暇村 能登千里浜",
+          "area": "石川県羽咋市羽咋町オ70",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D8579",
+          "review_average": 4.26,
+          "review_count": 414,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "yahiko",
+      "shrine_name": "彌彦神社",
+      "hotels": [
+        {
+          "name": "冥加屋ハウス",
+          "area": "新潟県西蒲原郡弥彦村弥彦1043-48",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D44978",
+          "review_average": 5.0,
+          "review_count": 66,
+          "status": "candidate"
+        },
+        {
+          "name": "弥彦温泉 四季の宿 みのや",
+          "area": "新潟県西蒲原郡弥彦村弥彦2927-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D5284",
+          "review_average": 4.38,
+          "review_count": 1446,
+          "status": "candidate"
+        },
+        {
+          "name": "わんこと泊まる宿 弥彦の奥湯 上州苑",
+          "area": "新潟県西蒲原郡弥彦村観音寺494",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D1979",
+          "review_average": 4.34,
+          "review_count": 284,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "togakushi",
+      "shrine_name": "戸隠神社 奥社",
+      "hotels": [
+        {
+          "name": "中谷旅館",
+          "area": "長野県長野市戸隠3503(戸隠中社)",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D30674",
+          "review_average": 5.0,
+          "review_count": 14,
+          "status": "candidate"
+        },
+        {
+          "name": "山の庭 タンネ",
+          "area": "長野県長野市戸隠3684-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D43711",
+          "review_average": 4.89,
+          "review_count": 29,
+          "status": "candidate"
+        },
+        {
+          "name": "鷹明亭 辻旅館",
+          "area": "長野県長野市戸隠3360",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D2166",
+          "review_average": 4.82,
+          "review_count": 165,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tsurugaoka",
+      "shrine_name": "鶴岡八幡宮",
+      "hotels": [
+        {
+          "name": "ゲストハウス彩(イロドリ)鎌倉",
+          "area": "神奈川県鎌倉市由比ガ浜2-4-23",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167331",
+          "review_average": 5.0,
+          "review_count": 10,
+          "status": "candidate"
+        },
+        {
+          "name": "一棟貸の町宿 ランタン鎌倉",
+          "area": "神奈川県鎌倉市由比ヶ浜2-2-36",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D165763",
+          "review_average": 4.83,
+          "review_count": 131,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルメトロポリタン鎌倉",
+          "area": "神奈川県鎌倉市小町1-8-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177689",
+          "review_average": 4.67,
+          "review_count": 1641,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "futarasan",
+      "shrine_name": "日光二荒山神社",
+      "hotels": [
+        {
+          "name": "ふふ 日光",
+          "area": "栃木県日光市本町1573-8",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182643",
+          "review_average": 5.0,
+          "review_count": 74,
+          "status": "candidate"
+        },
+        {
+          "name": "旅館 上州屋",
+          "area": "栃木県日光市中鉢石町911",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D52854",
+          "review_average": 5.0,
+          "review_count": 51,
+          "status": "candidate"
+        },
+        {
+          "name": "日光西町倶楽部あらとうと",
+          "area": "栃木県日光市安川町10-9",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D165811",
+          "review_average": 5.0,
+          "review_count": 24,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kashihara",
+      "shrine_name": "橿原神宮",
+      "hotels": [
+        {
+          "name": "あすか癒俚の里 森羅塾",
+          "area": "奈良県高市郡明日香村雷35",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D136286",
+          "review_average": 5.0,
+          "review_count": 18,
+          "status": "candidate"
+        },
+        {
+          "name": "CANDEO HOTELS(カンデオホテルズ)奈良橿原",
+          "area": "奈良県橿原市内膳町1-1-50",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D165797",
+          "review_average": 4.48,
+          "review_count": 1903,
+          "status": "candidate"
+        },
+        {
+          "name": "ゲストハウス大和路",
+          "area": "奈良県橿原市内膳町2-10-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167181",
+          "review_average": 4.43,
+          "review_count": 97,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "fushimi",
+      "shrine_name": "伏見稲荷大社",
+      "hotels": [
+        {
+          "name": "Stay SAKURA Kyoto 風雅",
+          "area": "京都府京都市南区東九条柳下町56",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D176568",
+          "review_average": 5.0,
+          "review_count": 12,
+          "status": "candidate"
+        },
+        {
+          "name": "民泊 稲荷山 ドッグフレンドリー/民泊",
+          "area": "京都府京都市伏見区深草坊山町35-7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D173716",
+          "review_average": 4.86,
+          "review_count": 20,
+          "status": "candidate"
+        },
+        {
+          "name": "京都ユウベルホテル",
+          "area": "京都府京都市南区東九条石田町41-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D168604",
+          "review_average": 4.52,
+          "review_count": 924,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kotohira",
+      "shrine_name": "金刀比羅宮",
+      "hotels": [
+        {
+          "name": "つながるカフェ&ゲストハウス ZouZu",
+          "area": "香川県仲多度郡琴平町榎井791-20",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167580",
+          "review_average": 5.0,
+          "review_count": 36,
+          "status": "candidate"
+        },
+        {
+          "name": "ことぶき旅館",
+          "area": "香川県仲多度郡琴平町245-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D129438",
+          "review_average": 4.9,
+          "review_count": 185,
+          "status": "candidate"
+        },
+        {
+          "name": "KOTOVilla",
+          "area": "香川県仲多度郡琴平町榎井791-20",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D198320",
+          "review_average": 4.77,
+          "review_count": 13,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "oomishima",
+      "shrine_name": "大山祇神社",
+      "hotels": [
+        {
+          "name": "旅館さわき",
+          "area": "愛媛県今治市大三島町宮浦5460",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D109177",
+          "review_average": 4.69,
+          "review_count": 219,
+          "status": "candidate"
+        },
+        {
+          "name": "旅館 茶梅(Ryokan Chaume)",
+          "area": "愛媛県今治市大三島町宮浦5467",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D14166",
+          "review_average": 4.5,
+          "review_count": 271,
+          "status": "candidate"
+        },
+        {
+          "name": "Co-living&Cafe SANDO",
+          "area": "愛媛県今治市大三島町宮浦5495",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184103",
+          "review_average": 4.22,
+          "review_count": 15,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "miho",
+      "shrine_name": "美保神社",
+      "hotels": [
+        {
+          "name": "朝日館<島根県>",
+          "area": "島根県松江市美保関町美保関554",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D78141",
+          "review_average": 4.75,
+          "review_count": 41,
+          "status": "candidate"
+        },
+        {
+          "name": "美保関温泉 旅館 美保館 国文化財の宿",
+          "area": "島根県松江市美保関町美保関570",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D13811",
+          "review_average": 4.58,
+          "review_count": 375,
+          "status": "candidate"
+        },
+        {
+          "name": "福間館",
+          "area": "島根県松江市美保関町美保関586",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D9187",
+          "review_average": 4.51,
+          "review_count": 265,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kirishima",
+      "shrine_name": "霧島神宮",
+      "hotels": [
+        {
+          "name": "霧島 四季彩の郷 万遊",
+          "area": "鹿児島県霧島市霧島田口1966-4",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D49332",
+          "review_average": 5.0,
+          "review_count": 123,
+          "status": "candidate"
+        },
+        {
+          "name": "天からの贈り物 Villa Montpetre(ヴィラ モンペトル)",
+          "area": "鹿児島県霧島市霧島田口2594-107",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D19121",
+          "review_average": 4.8,
+          "review_count": 281,
+          "status": "candidate"
+        },
+        {
+          "name": "霧島温泉 料亭旅館 竹千代 霧島別邸",
+          "area": "鹿児島県霧島市霧島田口2465",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D128413",
+          "review_average": 4.78,
+          "review_count": 141,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "udo",
+      "shrine_name": "鵜戸神宮",
+      "hotels": []
+    },
+    {
+      "shrine_id": "shimogamo",
+      "shrine_name": "賀茂御祖神社（下鴨神社）",
+      "hotels": [
+        {
+          "name": "西陣 ならひ庵",
+          "area": "京都府京都市上京区幸在町692",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D160867",
+          "review_average": 5.0,
+          "review_count": 33,
+          "status": "candidate"
+        },
+        {
+          "name": "ゲストハウス鯉屋",
+          "area": "京都府京都市上京区天神北町29-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D158333",
+          "review_average": 5.0,
+          "review_count": 22,
+          "status": "candidate"
+        },
+        {
+          "name": "リヴェルト京都鴨川",
+          "area": "京都府京都市上京区青龍町202",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177841",
+          "review_average": 4.89,
+          "review_count": 58,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "iwakiyama",
+      "shrine_name": "岩木山神社",
+      "hotels": [
+        {
+          "name": "百沢温泉 和みの宿 富士見荘",
+          "area": "青森県弘前市百沢高田81",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D137813",
+          "review_average": 4.33,
+          "review_count": 65,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "nukisaki",
+      "shrine_name": "一之宮貫前神社",
+      "hotels": [
+        {
+          "name": "HOTEL R9 The Yard 富岡七日市",
+          "area": "群馬県富岡市七日市832-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D196638",
+          "review_average": 4.24,
+          "review_count": 100,
+          "status": "candidate"
+        },
+        {
+          "name": "HOTEL R9 The Yard 富岡",
+          "area": "群馬県富岡市黒川644-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D187646",
+          "review_average": 4.11,
+          "review_count": 111,
+          "status": "candidate"
+        },
+        {
+          "name": "民宿ゆきふみ",
+          "area": "群馬県富岡市下丹生457-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D196136",
+          "review_average": 3.82,
+          "review_count": 11,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kehi",
+      "shrine_name": "氣比神宮",
+      "hotels": [
+        {
+          "name": "ビジネス 竹野旅館",
+          "area": "福井県敦賀市中央町2-12-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D135463",
+          "review_average": 4.6,
+          "review_count": 20,
+          "status": "candidate"
+        },
+        {
+          "name": "天然温泉 若狭の湯 ドーミーイン敦賀",
+          "area": "福井県敦賀市本町2-8-17",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D196431",
+          "review_average": 4.56,
+          "review_count": 788,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルグランビナリオTSURUGA",
+          "area": "福井県敦賀市鉄輪町1-3-46",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184200",
+          "review_average": 4.45,
+          "review_count": 957,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "nangu",
+      "shrine_name": "南宮大社",
+      "hotels": [
+        {
+          "name": "いのしし亭(桐山荘)",
+          "area": "岐阜県不破郡垂井町表佐693",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D145412",
+          "review_average": 4.53,
+          "review_count": 75,
+          "status": "candidate"
+        },
+        {
+          "name": "HOTEL R9 The Yard 垂井",
+          "area": "岐阜県不破郡垂井町宮代3046-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184011",
+          "review_average": 4.21,
+          "review_count": 159,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "izanagijingu",
+      "shrine_name": "伊弉諾神宮",
+      "hotels": [
+        {
+          "name": "まほろばの家<淡路島>",
+          "area": "兵庫県淡路市柳沢甲546",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D178177",
+          "review_average": 5.0,
+          "review_count": 83,
+          "status": "candidate"
+        },
+        {
+          "name": "音羽旅館 <淡路島>",
+          "area": "兵庫県淡路市江井2787-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D147776",
+          "review_average": 4.58,
+          "review_count": 37,
+          "status": "candidate"
+        },
+        {
+          "name": "KAMOME SLOW HOTEL<淡路島>",
+          "area": "兵庫県淡路市郡家大谷北1111",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D180709",
+          "review_average": 4.37,
+          "review_count": 99,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tagataisha",
+      "shrine_name": "多賀大社",
+      "hotels": [
+        {
+          "name": "ホテル ルートイン彦根",
+          "area": "滋賀県彦根市東沼波町111-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D76388",
+          "review_average": 4.17,
+          "review_count": 1326,
+          "status": "candidate"
+        },
+        {
+          "name": "レストイン多賀",
+          "area": "滋賀県犬上郡多賀町敏満寺字西谷66-36 名神高速道路 エクスパーサ多賀下り線 南館2階",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D153605",
+          "review_average": 4.03,
+          "review_count": 515,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kibitsu",
+      "shrine_name": "吉備津神社",
+      "hotels": [
+        {
+          "name": "ファミリーロッジ旅籠屋・岡山店",
+          "area": "岡山県岡山市北区高松252-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D149300",
+          "review_average": 4.06,
+          "review_count": 51,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ube",
+      "shrine_name": "宇倍神社",
+      "hotels": []
+    },
+    {
+      "shrine_id": "aso",
+      "shrine_name": "阿蘇神社",
+      "hotels": [
+        {
+          "name": "野の花の宿 阿蘇の四季",
+          "area": "熊本県阿蘇市一の宮町坂梨3030-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D43717",
+          "review_average": 5.0,
+          "review_count": 128,
+          "status": "candidate"
+        },
+        {
+          "name": "ペンション グリーンカルデラ",
+          "area": "熊本県阿蘇市一の宮町宮地6232",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D38636",
+          "review_average": 4.44,
+          "review_count": 99,
+          "status": "candidate"
+        },
+        {
+          "name": "亀の井ホテル 阿蘇",
+          "area": "熊本県阿蘇市一の宮町宮地5936",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D41854",
+          "review_average": 4.39,
+          "review_count": 882,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ooasahiko",
+      "shrine_name": "大麻比古神社",
+      "hotels": [
+        {
+          "name": "料理・旅館大鳥居苑",
+          "area": "徳島県鳴門市大麻町板東西山田33-4",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D178232",
+          "review_average": 4.56,
+          "review_count": 164,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tosa",
+      "shrine_name": "土佐神社",
+      "hotels": [
+        {
+          "name": "かつおゲストハウス",
+          "area": "高知県高知市比島町4丁目7-28",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D181338",
+          "review_average": 5.0,
+          "review_count": 18,
+          "status": "candidate"
+        },
+        {
+          "name": "ファミリーロッジ旅籠屋・高知店",
+          "area": "高知県高知市比島町2-8-28",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179610",
+          "review_average": 4.5,
+          "review_count": 59,
+          "status": "candidate"
+        },
+        {
+          "name": "コンフォートホテル高知",
+          "area": "高知県高知市北本町2-2-12",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167682",
+          "review_average": 4.39,
+          "review_count": 1392,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "meiji",
+      "shrine_name": "明治神宮",
+      "hotels": [
+        {
+          "name": "キンプトン新宿東京 by IHG",
+          "area": "東京都新宿区西新宿3-4-7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D178884",
+          "review_average": 4.6,
+          "review_count": 40,
+          "status": "candidate"
+        },
+        {
+          "name": "景雲荘",
+          "area": "東京都渋谷区代々木2-4-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D31557",
+          "review_average": 4.51,
+          "review_count": 861,
+          "status": "candidate"
+        },
+        {
+          "name": "全理連 代々木の宿(旧 全理連宿泊部)",
+          "area": "東京都渋谷区代々木1-36-4全理連ビル7階",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D70277",
+          "review_average": 4.43,
+          "review_count": 1210,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "chichibu",
+      "shrine_name": "秩父神社",
+      "hotels": [
+        {
+          "name": "一棟貸切ホテルteihaku秩父 曽沢川邸",
+          "area": "埼玉県秩父郡横瀬町横瀬7271-22",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D192705",
+          "review_average": 5.0,
+          "review_count": 11,
+          "status": "candidate"
+        },
+        {
+          "name": "クラッシック&モダン セルフスタイルホテル 番場おおそね",
+          "area": "埼玉県秩父市番場19-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184475",
+          "review_average": 4.86,
+          "review_count": 78,
+          "status": "candidate"
+        },
+        {
+          "name": "旅館 比与志",
+          "area": "埼玉県秩父市野坂町2-8-34",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D31646",
+          "review_average": 4.77,
+          "review_count": 290,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "mishima",
+      "shrine_name": "三嶋大社",
+      "hotels": [
+        {
+          "name": "富士山三島東急ホテル",
+          "area": "静岡県三島市一番町17-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179020",
+          "review_average": 4.53,
+          "review_count": 736,
+          "status": "candidate"
+        },
+        {
+          "name": "天然温泉 富嶽の湯 ドーミーイン三島",
+          "area": "静岡県三島市大宮町3-18-33",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D128491",
+          "review_average": 4.42,
+          "review_count": 3167,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテル昭明館",
+          "area": "静岡県三島市一番町11-4",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D161032",
+          "review_average": 4.27,
+          "review_count": 1617,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "oyama",
+      "shrine_name": "雄山神社",
+      "hotels": [
+        {
+          "name": "立山吉峰温泉 立山グリーンパーク吉峰",
+          "area": "富山県中新川郡立山町吉峰野開12",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D137363",
+          "review_average": 3.92,
+          "review_count": 18,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "isonokami",
+      "shrine_name": "石上神宮",
+      "hotels": [
+        {
+          "name": "フェアフィールド・バイ・マリオット・奈良天理山の辺の道",
+          "area": "奈良県天理市杣之内町元山口方438番7",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D183743",
+          "review_average": 4.45,
+          "review_count": 143,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテル いこい<奈良県>",
+          "area": "奈良県天理市川原城町297",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D8706",
+          "review_average": 4.42,
+          "review_count": 283,
+          "status": "candidate"
+        },
+        {
+          "name": "森のゲストハウス",
+          "area": "奈良県天理市川原城町73-6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167801",
+          "review_average": 4.33,
+          "review_count": 33,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "hiyoshi",
+      "shrine_name": "日吉大社",
+      "hotels": [
+        {
+          "name": "おごと温泉 びわこ緑水亭",
+          "area": "滋賀県大津市雄琴6-1-6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D3165",
+          "review_average": 4.66,
+          "review_count": 2533,
+          "status": "candidate"
+        },
+        {
+          "name": "おごと温泉 びわ湖花街道",
+          "area": "滋賀県大津市雄琴1-1-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D8798",
+          "review_average": 4.6,
+          "review_count": 695,
+          "status": "candidate"
+        },
+        {
+          "name": "KKRホテルびわこ(国家公務員共済組合連合会びわこ保養所)",
+          "area": "滋賀県大津市下阪本1-1-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D16166",
+          "review_average": 4.57,
+          "review_count": 281,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "niutsuhime",
+      "shrine_name": "丹生都比売神社",
+      "hotels": [
+        {
+          "name": "山荘 天の里",
+          "area": "和歌山県伊都郡かつらぎ町下天野1620",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D146125",
+          "review_average": 5.0,
+          "review_count": 132,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "miyazaki",
+      "shrine_name": "宮﨑神宮",
+      "hotels": [
+        {
+          "name": "THE MEIBIA MIYAZAKI(ザ・メイビア宮崎)",
+          "area": "宮崎県宮崎市下原町247-18",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D138067",
+          "review_average": 4.67,
+          "review_count": 163,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルJALシティ宮崎",
+          "area": "宮崎県宮崎市橘通西4-2-30",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D16137",
+          "review_average": 4.44,
+          "review_count": 3396,
+          "status": "candidate"
+        },
+        {
+          "name": "天然温泉 ひなたの湯 スーパーホテルPremier宮崎一番街",
+          "area": "宮崎県宮崎市中央通7-18",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177729",
+          "review_average": 4.44,
+          "review_count": 1153,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "naminoue",
+      "shrine_name": "波上宮",
+      "hotels": [
+        {
+          "name": "ホテルシーバーグ波之上",
+          "area": "沖縄県那覇市若狭1-21-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184684",
+          "review_average": 5.0,
+          "review_count": 16,
+          "status": "candidate"
+        },
+        {
+          "name": "New Normal Hotel in NAMINOUE(ニューノーマルホテルイン波の上)",
+          "area": "沖縄県那覇市辻2-9-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D183143",
+          "review_average": 4.69,
+          "review_count": 51,
+          "status": "candidate"
+        },
+        {
+          "name": "CONDOMINIUM HOTEL Riyuka in KUME",
+          "area": "沖縄県那覇市久米1-23-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D197652",
+          "review_average": 4.55,
+          "review_count": 29,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "isasumi",
+      "shrine_name": "伊佐須美神社",
+      "hotels": []
+    },
+    {
+      "shrine_id": "kitaguchi",
+      "shrine_name": "北口本宮冨士浅間神社",
+      "hotels": [
+        {
+          "name": "貸別荘 プライベートリゾートパインツリー",
+          "area": "山梨県富士吉田市松山1229",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D4862",
+          "review_average": 4.82,
+          "review_count": 483,
+          "status": "candidate"
+        },
+        {
+          "name": "富士山リゾートログハウス ふようの宿",
+          "area": "山梨県富士吉田市松山1394",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167579",
+          "review_average": 4.65,
+          "review_count": 285,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテル富士トリイゲート",
+          "area": "山梨県富士吉田市上吉田2-6-18",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D198743",
+          "review_average": 4.51,
+          "review_count": 142,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tsubaki",
+      "shrine_name": "椿大神社",
+      "hotels": [
+        {
+          "name": "Tabist みや 四日市水沢",
+          "area": "三重県四日市市水沢町372-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D139894",
+          "review_average": 4.64,
+          "review_count": 89,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ikuta",
+      "shrine_name": "生田神社",
+      "hotels": [
+        {
+          "name": "神戸北野ホテル",
+          "area": "兵庫県神戸市中央区山本通3-3-20",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D5506",
+          "review_average": 4.68,
+          "review_count": 816,
+          "status": "candidate"
+        },
+        {
+          "name": "神戸サウナ&スパ(ホテルカプセルイン神戸)",
+          "area": "兵庫県神戸市中央区下山手通2-2-10",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D20516",
+          "review_average": 4.51,
+          "review_count": 3292,
+          "status": "candidate"
+        },
+        {
+          "name": "ダイワロイネットホテル神戸三宮 PREMIER",
+          "area": "兵庫県神戸市中央区三宮町1丁目2番2号",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D183491",
+          "review_average": 4.46,
+          "review_count": 881,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kamigamo",
+      "shrine_name": "賀茂別雷神社（上賀茂神社）",
+      "hotels": [
+        {
+          "name": "ゲストハウス鯉屋",
+          "area": "京都府京都市上京区天神北町29-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D158333",
+          "review_average": 5.0,
+          "review_count": 22,
+          "status": "candidate"
+        },
+        {
+          "name": "金魚家",
+          "area": "京都府京都市上京区歓喜町243",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D106148",
+          "review_average": 4.86,
+          "review_count": 48,
+          "status": "candidate"
+        },
+        {
+          "name": "GUEST HOUSE 桜こまち",
+          "area": "京都府京都市北区衣笠街道町10-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D136905",
+          "review_average": 4.75,
+          "review_count": 65,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kumanoizumo",
+      "shrine_name": "熊野大社（出雲國一之宮）",
+      "hotels": [
+        {
+          "name": "八雲温泉ゆうあい熊野館",
+          "area": "島根県松江市八雲町熊野773-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D147568",
+          "review_average": 4.15,
+          "review_count": 180,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "iminomiya",
+      "shrine_name": "忌宮神社",
+      "hotels": [
+        {
+          "name": "下関温泉 風の海",
+          "area": "山口県下関市長府外浦町2-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D165855",
+          "review_average": 4.75,
+          "review_count": 266,
+          "status": "candidate"
+        },
+        {
+          "name": "すどまり",
+          "area": "山口県下関市長府松小田本町2-16",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D195916",
+          "review_average": 4.57,
+          "review_count": 49,
+          "status": "candidate"
+        },
+        {
+          "name": "HOTEL AZ 山口下関店",
+          "area": "山口県下関市長府八幡町2-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D80664",
+          "review_average": 3.82,
+          "review_count": 892,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "sumiyoshihakata",
+      "shrine_name": "住吉神社（博多）",
+      "hotels": [
+        {
+          "name": "9HOTEL Tenjin",
+          "area": "福岡県福岡市中央区春吉2-2-32",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D191620",
+          "review_average": 4.77,
+          "review_count": 15,
+          "status": "candidate"
+        },
+        {
+          "name": "グランドベース博多プレミアム",
+          "area": "福岡県福岡市博多区住吉4-9-12",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182327",
+          "review_average": 4.5,
+          "review_count": 26,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルトラッド博多",
+          "area": "福岡県福岡市博多区住吉3-12-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177601",
+          "review_average": 4.34,
+          "review_count": 1021,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "suwanagasaki",
+      "shrine_name": "諏訪神社（長崎）",
+      "hotels": [
+        {
+          "name": "乃宿-NOYADO-長崎",
+          "area": "長崎県長崎市魚の町6-29",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D192981",
+          "review_average": 4.71,
+          "review_count": 86,
+          "status": "candidate"
+        },
+        {
+          "name": "グランドベース長崎シティ",
+          "area": "長崎県長崎市玉園町2-39",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179276",
+          "review_average": 4.67,
+          "review_count": 28,
+          "status": "candidate"
+        },
+        {
+          "name": "Coruscant Hotel 長崎駅3",
+          "area": "長崎県長崎市筑後町1-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182770",
+          "review_average": 4.5,
+          "review_count": 139,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }

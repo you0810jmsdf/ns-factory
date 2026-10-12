@@ -16,6 +16,8 @@ SHOW = 3          # 載せる件数
 MIN_REVIEWS = 10  # 口コミがこの件数以上
 MIN_AVG = 3.5     # 評価がこの値以上
 RADIUS_KM = 3     # 神社からの検索半径（最大3）
+MAX_PAGES = 6     # 条件に合う宿が足りないときに読むページ数の上限
+ENOUGH = 6        # 条件に合う宿がこの数そろったら、それ以上のページは読まない
 
 
 def load_env():
@@ -27,12 +29,12 @@ def load_env():
     return env
 
 
-def search(env, lat, lon):
+def search(env, lat, lon, page=1):
     q = {
         "applicationId": env["RAKUTEN_APP_ID"], "accessKey": env["RAKUTEN_ACCESS_KEY"],
         "affiliateId": env["RAKUTEN_AFFILIATE_ID"], "format": "json", "formatVersion": 2,
         "latitude": lat, "longitude": lon, "searchRadius": RADIUS_KM, "datumType": 1,
-        "hits": HITS, "sort": "standard",
+        "hits": HITS, "sort": "standard", "page": page,
     }
     req = urllib.request.Request(API + "?" + urllib.parse.urlencode(q))
     req.add_header("Origin", ORIGIN)
@@ -77,21 +79,26 @@ def main():
     now = datetime.datetime.now().strftime("%Y-%m-%d")
     stays = []
     for s in pick:
-        d = search(env, s["lat"], s["lon"])
         cand = []
-        for h in d.get("hotels", []):
-            b = flat(h["hotel"] if isinstance(h, dict) else h)
-            avg, cnt = b.get("reviewAverage"), b.get("reviewCount")
-            if avg is None or cnt is None or cnt < MIN_REVIEWS or avg < MIN_AVG:
-                continue
-            cand.append({
-                "name": tidy(b.get("hotelName")),
-                "area": tidy(b.get("address1", "") + b.get("address2", "")),
-                "url": b.get("hotelInformationUrl"),
-                "review_average": avg,
-                "review_count": cnt,
-                "status": "candidate",
-            })
+        for page in range(1, MAX_PAGES + 1):
+            d = search(env, s["lat"], s["lon"], page)
+            for h in d.get("hotels", []):
+                b = flat(h["hotel"] if isinstance(h, dict) else h)
+                avg, cnt = b.get("reviewAverage"), b.get("reviewCount")
+                if avg is None or cnt is None or cnt < MIN_REVIEWS or avg < MIN_AVG:
+                    continue
+                cand.append({
+                    "name": tidy(b.get("hotelName")),
+                    "area": tidy(b.get("address1", "") + b.get("address2", "")),
+                    "url": b.get("hotelInformationUrl"),
+                    "review_average": avg,
+                    "review_count": cnt,
+                    "status": "candidate",
+                })
+            pages = (d.get("pagingInfo") or {}).get("pageCount") or 1
+            if len(cand) >= ENOUGH or page >= pages:
+                break
+            time.sleep(1.2)
         cand.sort(key=lambda x: (-x["review_average"], -x["review_count"]))
         hotels = cand[:SHOW]
         stays.append({"shrine_id": s["id"], "shrine_name": s["name"], "hotels": hotels})
