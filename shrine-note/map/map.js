@@ -146,11 +146,11 @@ const terrainMat = new THREE.ShaderMaterial({
     uSel: { value: new THREE.Vector3(0, 0, 0) },
   },
   vertexShader: `
-    uniform sampler2D uH; uniform float uScale;
+    uniform sampler2D uH; uniform float uScale; uniform vec2 uWorld;
     varying vec2 vUv; varying float vH; varying vec3 vPos; varying float vDist;
     void main(){
-      vUv = uv;
-      float v = texture2D(uH, uv).r;
+      vUv = vec2(position.x/uWorld.x + 0.5, 0.5 - position.z/uWorld.y);   // 地図の外側は 0〜1 の外（高さ画像の端＝海が続く）
+      float v = texture2D(uH, vUv).r;
       vH = v*v;
       vec3 p = position; p.y += vH*uScale;
       vPos = p;
@@ -231,8 +231,11 @@ const terrainMat = new THREE.ShaderMaterial({
       // 距離霧
       float fog = 1.0-exp(-vDist*0.012);
       col = mix(col, mix(vec3(0.03,0.04,0.045), vec3(0.62,0.78,0.88), uDayK), fog*0.55);
-      float edge = smoothstep(0.0, 0.07, min(min(vUv.x, 1.0-vUv.x), min(vUv.y, 1.0-vUv.y)));
-      col = mix(mix(vec3(0.031,0.039,0.031), vec3(0.62,0.78,0.88), uDayK), col, edge);
+      // 地図の外側は海が続く。遠くへ行くほど、背景の色（夜は暗い緑、昼は空色）へなじませて、境目を見せない
+      vec2 outv = max(abs(vPos.xz) - uWorld*0.5, 0.0);
+      float dOut = length(outv);
+      float far = smoothstep(2.0, 46.0, dOut);
+      col = mix(col, mix(vec3(0.031,0.039,0.031), vec3(0.62,0.78,0.88), uDayK), far);
       gl_FragColor = vec4(col,1.0);
     }`,
 });
@@ -244,6 +247,17 @@ geo.rotateX(-Math.PI / 2);
 const terrain = new THREE.Mesh(geo, terrainMat);
 terrain.frustumCulled = false;
 scene.add(terrain);
+// 地図の外側にも海を続ける（四辺に平らな面。高さ画像の外は端の値＝海になる）。遠くは背景になじむので、切れ目が見えない
+{
+  const M = 70, hw = W / 2, hh = H / 2;
+  [[-hw - M, hw + M, -hh - M, -hh], [-hw - M, hw + M, hh, hh + M], [-hw - M, -hw, -hh, hh], [hw, hw + M, -hh, hh]].forEach(([x0, x1, z0, z1]) => {
+    const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0, 6, 6);
+    g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, 0, (z0 + z1) / 2);
+    const m = new THREE.Mesh(g, terrainMat);
+    m.frustumCulled = false;
+    scene.add(m);
+  });
+}
 
 // 星（ごく控えめ）
 {
