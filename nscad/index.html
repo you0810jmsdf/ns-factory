@@ -68,7 +68,7 @@
     .ailog .ai-user { align-self: flex-end; background: #2a2a2e; border-radius: 10px 10px 2px 10px; padding: 6px 9px; max-width: 90%; white-space: pre-wrap; }
     .ailog .ai-assistant { align-self: flex-start; background: #1f2a1f; border-radius: 10px 10px 10px 2px; padding: 6px 9px; max-width: 95%; } .ailog p { margin: 2px 0; } .ailog h4 { margin: 4px 0 2px; font-size: 12px; color: var(--accent); } .ailog li { margin-left: 14px; } .ailog small { display: block; color: #777; font-size: 10px; text-align: right; }
     .svgbody svg { max-width: 100%; height: auto; background: #fff; border-radius: 6px; margin: 4px 0; display: block; }
-    .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
+    .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #phraseText { width: 100%; box-sizing: border-box; font: inherit; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
     #printArea { display: none; }
     @media print {
       @page { size: A4 portrait; margin: 10mm; }
@@ -341,6 +341,13 @@
 <button id="aiSaveSettings" data-i18n="aiSave"></button>
 </details>
 </div></details>
+<details class="card" id="phraseCard"><summary data-i18n="phraseCard"></summary><div class="body">
+<label><span data-i18n="phraseSavedList"></span><select id="phraseSel"></select></label>
+<label><span data-i18n="phraseName"></span><input id="phraseName" type="text"></label>
+<textarea id="phraseText" rows="6" data-i18n-placeholder="phrasePlaceholder"></textarea>
+<label><span data-i18n="sizeMm"></span><input id="phraseSize" type="number" step="0.5" value="4"></label>
+<div class="row"><button id="phraseSave" data-i18n="phraseSave"></button><button id="phraseDelete" data-i18n="phraseDelete"></button><button id="phrasePlace" data-i18n="phrasePlace"></button></div>
+<output class="note" data-i18n="phraseNote"></output></div></details>
 <details class="card" id="libCard"><summary data-i18n="library"></summary><div class="body">
 <input id="libSearch" type="text" data-i18n-placeholder="libSearch" autocomplete="off">
 <label><span data-i18n="libItem"></span><select id="libItem"></select></label>
@@ -503,8 +510,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=184aefcf","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=2fa3711f","./help/ja.js":"./help/ja.js?v=93521ed1","./i18n.js":"./i18n.js?v=e8c9ff31","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=184aefcf"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ffbd8ec0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=a751670f","./help/ja.js":"./help/ja.js?v=120fd619","./i18n.js":"./i18n.js?v=cf709103","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=7d5b6c39","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=ffbd8ec0"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1957,7 +1964,7 @@ const MESSAGES = {
     "hwItem": "金具",
     "hwAngle": "向き (°)",
     "hwPlace": "図面に置く（クリック）",
-    "hint.hardware": "置きたい位置をクリック。外形は目印、取り付け穴は「金具穴」レイヤーに入ります。",
+    "hint.hardware": "置きたい位置をクリック。外形と取り付け穴は「金具」の層に入ります。",
     "hwcat.binder": "リング・バインダー",
     "hwcat.fastener": "留め具",
     "hwcat.link": "連結・カシメ・ハトメ",
@@ -2005,6 +2012,19 @@ const MESSAGES = {
     "bdCopy": "この表をコピー",
     "bdCopied": "コピーしました",
     "hwPlaced": "{name} を置きました。",
+    "phraseCard": "定型句（よく使う文）",
+    "phraseSavedList": "保存した句",
+    "phraseName": "名前",
+    "phrasePlaceholder": "ここに文を書く（5〜6行でも可。1行ずつ文字として置かれます）",
+    "phraseSave": "保存",
+    "phraseDelete": "削除",
+    "phrasePlace": "図面に置く（クリック）",
+    "phraseNote": "保存先はこの PC のブラウザです。置いた文字は「ガイド」の層に入り、行ごとに別の文字なので、あとで1行だけ直せます。",
+    "phraseSaved": "「{name}」を保存しました。",
+    "phraseDeleted": "「{name}」を削除しました。",
+    "phraseEmpty": "文を書いてください。",
+    "phrasePlaced": "{n} 行の文字を置きました。",
+    "hint.phrase": "置きたい位置（1行目の左下）をクリック。",
     "binderEditData": "寸法を直す",
     "bdeTitle": "{name} の寸法を直す（この PC に保存）",
     "bdeEdited": "※この PC で直した値が入っています",
@@ -2912,7 +2932,7 @@ const MESSAGES = {
     "hwItem": "Item",
     "hwAngle": "Angle (°)",
     "hwPlace": "Place on drawing (click)",
-    "hint.hardware": "Click where it goes. Outline on Marks, mounting holes on the Hardware holes layer.",
+    "hint.hardware": "Click where it goes. Outline and mounting holes go to the Hardware layer.",
     "hwcat.binder": "Ring binders",
     "hwcat.fastener": "Fasteners",
     "hwcat.link": "Rings, rivets, eyelets",
@@ -2960,6 +2980,19 @@ const MESSAGES = {
     "bdCopy": "Copy this table",
     "bdCopied": "Copied",
     "hwPlaced": "Placed {name}.",
+    "phraseCard": "Phrases (reusable text)",
+    "phraseSavedList": "Saved phrases",
+    "phraseName": "Name",
+    "phrasePlaceholder": "Write the text here (5–6 lines are fine; each line becomes a text shape)",
+    "phraseSave": "Save",
+    "phraseDelete": "Delete",
+    "phrasePlace": "Place on drawing (click)",
+    "phraseNote": "Saved in this browser. Placed text goes to the Guide layer, one text shape per line, so a single line can be edited later.",
+    "phraseSaved": "Saved \"{name}\".",
+    "phraseDeleted": "Deleted \"{name}\".",
+    "phraseEmpty": "Write some text first.",
+    "phrasePlaced": "Placed {n} lines of text.",
+    "hint.phrase": "Click where the first line goes (its lower-left).",
     "binderEditData": "Edit sizes",
     "bdeTitle": "Edit sizes of {name} (saved on this PC)",
     "bdeEdited": "(values edited on this PC)",
@@ -4983,6 +5016,46 @@ function editsToCsv(applied, edits) {
 function newProductId(specs, parentId) { let n = 1; while (specs.some(s => s.id === `${parentId}-p${n}`)) n++; return `${parentId}-p${n}`; }
 
 return {BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId};
+})();
+__mods['phrases'] = (function(){
+// 定型句：よく使う文（複数行）を名前付きでこの PC のブラウザに保存し、クリックした位置に 1 行ずつ文字図形として置く。純粋関数。画面は app.js。
+const PHRASES_KEY = 'leather-cad.phrases';
+const PHRASE_MAX_LINES = 20;
+const PHRASE_LINE_GAP = 1.4;   /* 行間 ＝ 文字サイズ × 1.4 */
+
+/** 保存文字列を読み戻す。壊れていれば空の一覧。 */
+function parsePhrases(text) {
+  let j; try { j = JSON.parse(text); } catch { return []; }
+  if (!j || j.v !== 1 || !Array.isArray(j.items)) return [];
+  return j.items.filter(p => p && typeof p.name === 'string' && p.name.trim() && typeof p.text === 'string').map(p => ({ name: p.name.trim(), text: p.text }));
+}
+function serializePhrases(items) { return JSON.stringify({ v: 1, items: items.map(p => ({ name: p.name, text: p.text })) }); }
+
+/** 名前が同じものは置き換え、無ければ末尾に足す。名前が空なら本文の 1 行目を名前にする。入力は変えない。 */
+function upsertPhrase(items, name, text) {
+  const lines = phraseLines(text); if (!lines.some(Boolean)) throw new Error('empty');
+  const n = String(name || '').trim() || lines.find(Boolean).slice(0, 20);
+  const out = items.map(p => ({ ...p })), i = out.findIndex(p => p.name === n);
+  if (i >= 0) out[i] = { name: n, text }; else out.push({ name: n, text });
+  return { items: out, name: n };
+}
+function removePhrase(items, name) { return items.filter(p => p.name !== name); }
+
+/** 本文を行に分ける（右端の空白を落とし、末尾の空行は捨てる。途中の空行は残して行間だけ空ける）。上限 20 行。 */
+function phraseLines(text) {
+  const lines = String(text ?? '').replace(/\r\n?/g, '\n').split('\n').map(l => l.replace(/\s+$/, ''));
+  while (lines.length && !lines[lines.length - 1]) lines.pop();
+  return lines.slice(0, PHRASE_MAX_LINES);
+}
+
+/** クリックした位置 at（1 行目の左下）から下へ、1 行ずつ文字図形を作る。空行は図形を作らず行間だけ空ける。 */
+function phraseShapes(lines, at, sizeMm, layer, gap = PHRASE_LINE_GAP) {
+  const out = [];
+  lines.forEach((text, i) => { if (!text) return; out.push({ type: 'text', layer, x: at.x, y: at.y + i * sizeMm * gap, text, sizeMm, angleDeg: 0 }); });
+  return out;
+}
+
+return {PHRASES_KEY, PHRASE_MAX_LINES, PHRASE_LINE_GAP, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes};
 })();
 __mods['threeview'] = (function(){
 const { binderSpecWithSection } = __mods['binder_section_edit'];
@@ -16824,7 +16897,7 @@ const HELP_JA = {
     {
       "id": "text-dimension",
       "title": "文字と寸法",
-      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。"
+      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。\n「定型句」カードに、よく使う文（屋号・作品名・サイズ・日付など。複数行可）を名前付きで保存できます（保存先はこの PC のブラウザ）。「図面に置く（クリック）」で、クリックした位置に 1 行ずつ文字として置きます（ガイドの層）。"
     },
     {
       "id": "numeric",
@@ -16973,7 +17046,7 @@ const HELP_EN = {
     {
       "id": "text-dimension",
       "title": "Text and dimensions",
-      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing."
+      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing.\nThe \"Phrases\" card stores reusable text (brand, item name, size, date; multi-line) by name in this browser. \"Place on drawing (click)\" puts it at the clicked point, one text shape per line, on the Guide layer."
     },
     {
       "id": "numeric",
@@ -17135,6 +17208,7 @@ const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
+const { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes } = __mods['phrases'];
 const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } = __mods['binder_edits'];
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
@@ -19339,6 +19413,34 @@ function exportBinderEditsCsv() {
   const files = editsToCsv(BINDER_SPECS, binderEdits); if (!files) { $('hint').textContent = t('bdeCsvNone'); return; }
   for (const [name, text] of Object.entries(files)) download(name, text, 'text/csv'); $('hint').textContent = t('bdeCsvDone');
 }
+/** 定型句：名前付きの文（複数行）をこの PC のブラウザに保存し、クリックした位置に 1 行ずつ文字図形として置く。 */
+let phrases = [];
+function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); }
+function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+function renderPhraseList(selectName) {
+  const sel = $('phraseSel'), keep = selectName ?? sel.value; sel.textContent = '';
+  for (const p of phrases) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); }
+  sel.value = phrases.some(p => p.name === keep) ? keep : (phrases[0]?.name || '');
+  const cur = phrases.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; }
+}
+function savePhrase() {
+  let r; try { r = upsertPhrase(phrases, $('phraseName').value, $('phraseText').value); } catch { $('hint').textContent = t('phraseEmpty'); return; }
+  phrases = r.items; if (!persistPhrases()) return; renderPhraseList(r.name); $('hint').textContent = t('phraseSaved', { name: r.name });
+}
+function deletePhrase() { const name = $('phraseSel').value; if (!name) return; phrases = removePhrase(phrases, name); if (!persistPhrases()) return; $('phraseName').value = ''; $('phraseText').value = ''; renderPhraseList(''); $('hint').textContent = t('phraseDeleted', { name }); }
+function placePhrase(at) {
+  const lines = phraseLines($('phraseText').value); if (!lines.some(Boolean)) { $('hint').textContent = t('phraseEmpty'); return; }
+  const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
+  if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer);
+  cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); });
+  renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length });
+}
+function initPhrases() {
+  loadPhrases();
+  $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
+  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -20069,6 +20171,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }
+  if (mode === 'phrase') { placePhrase(cursor); return; }
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
@@ -20296,7 +20399,7 @@ $('cmd').addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
 window.addEventListener('resize', resize);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
