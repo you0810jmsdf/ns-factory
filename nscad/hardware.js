@@ -352,3 +352,10 @@ export function binderSection(base) {
   const first = clean.reduce((best, p, i) => p.x < clean[best].x || (p.x === clean[best].x && p.y < clean[best].y) ? i : best, 0);
   return [...clean.slice(first), ...clean.slice(0, first)];
 }
+
+/** 背幅シミュレーションの背幅から、表紙の展開図の寸法を決める（事業主決定A・2026-10-12）。
+  横幅＝2×(リフィル幅＋小口の余白)＋背幅、高さ＝リフィル高＋上下の余白×2。折り線は背の両端（x）。金具は背の中央。 */
+export function coverLayout({ refillW, refillH, spineW, marginTB = 5, marginEdge = 5 }) {
+  const r2 = v => Math.round(v * 100) / 100, panel = r2(refillW + marginEdge), W = r2(2 * panel + spineW), H = r2(refillH + 2 * marginTB);
+  return { W, H, panel, spineW: r2(spineW), folds: [panel, r2(panel + spineW)], center: { x: r2(panel + spineW / 2), y: r2(H / 2) } };
+}

@@ -33,6 +33,7 @@ import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases } from './phrases.js';
+import { coverLayout } from './hardware.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
@@ -2274,6 +2275,27 @@ function initPhrases() {
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
 }
+/** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
+function drawCoverFromSpine() {
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
+  const r = renderSpineSim(); if (!r) return;
+  const p = spineParams(), tm = Number($('spMarginTB').value), em = Number($('spMarginEdge').value), rw = spec.refill?.wMm, rh = spec.refill?.hMm;
+  if (!(tm >= 0) || !(em >= 0) || !(rw > 0) || !(rh > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  const c = coverLayout({ refillW: rw, refillH: rh, spineW: r.spineW, marginTB: tm, marginEdge: em }), nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
+  const it = DATA_HARDWARE.items.find(i => i.id === 'binder-' + (spec.parent || spec.id));
+  newTab(t('spineCoverTab', { name: nameOf(spec) }));
+  cancel(); commit(() => {
+    const d = newDoc(); d.tools = loadTools();
+    d.shapes.push({ id: 's1', layer: 'pattern', type: 'polyline', closed: true, points: [{ x: 0, y: 0 }, { x: c.W, y: 0 }, { x: c.W, y: c.H }, { x: 0, y: c.H }] });
+    for (const x of c.folds) d.shapes.push({ id: freshId(d.shapes, 's'), layer: 'pattern', type: 'fold', x1: x, y1: 0, x2: x, y2: c.H, angleDeg: 90, partId: 'cover', inner: true });
+    d.parts.push({ id: 'cover', name: t('part.cover'), thickness: p.leatherT, shapeIds: ['s1'], color: null, order: 0, role: 'cover' });
+    d.provenance = [{ source: 'spineCover', at: new Date().toISOString() }];
+    doc = d; selected.clear(); manualNext = null; nodeSel = null; refreshTools();
+    if (it) { const overrides = { ringD: p.ringD, ...(spec.id !== it.params.spec ? { spec: spec.id } : {}) }; try { selected = new Set(addHardwareDrafts(hardwareDrafts(it, overrides, spec, c.center, 90), nextGroupId(doc.shapes))); } catch { /* 金具が置けなくても表紙は残す */ } }
+  });
+  tabs[activeTab].doc = doc; pairLines = []; renderLayers(); renderSeams(); fit();
+  $('hint').textContent = t('spineCoverDone', { w: c.W, h: c.H, spine: c.spineW });
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -2285,6 +2307,7 @@ function initHardware() {
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
   $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
+  $('spCoverDraw').onclick = drawCoverFromSpine;
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
