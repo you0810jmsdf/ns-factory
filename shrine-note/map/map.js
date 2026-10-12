@@ -314,18 +314,20 @@ markers.renderOrder = 10;
 scene.add(markers);
 
 // 神社の光から、金色の粒がゆっくり立ちのぼる／神社を選ぶと波紋が1度ひろがる（控えめ。動きを減らす設定では出さない）
-const MOTE_N = 7;
+const MOTE_N = isNarrow() ? 80 : 150;            // 1社あたりの粒の数（多くて細かいほど、煙に見える）
 let moteMat = null, motes = null;
 const ripples = [];
 if (!reduce) {
-  const cnt = n * MOTE_N, base = new Float32Array(cnt * 3), ph = new Float32Array(cnt), ang = new Float32Array(cnt), rad = new Float32Array(cnt);
+  const cnt = n * MOTE_N, base = new Float32Array(cnt * 3), ph = new Float32Array(cnt), ang = new Float32Array(cnt), rad = new Float32Array(cnt), spd = new Float32Array(cnt);
+  const fr = (x) => x - Math.floor(x);
   shrines.forEach((s, i) => {
     for (let k = 0; k < MOTE_N; k++) {
       const j = i * MOTE_N + k;
       base.set([s._p.x, s._y + 0.02, s._p.z], j * 3);
-      ph[j] = (k + ((i * 0.37) % 1)) / MOTE_N;          // 粒ごとに出発をずらす
-      ang[j] = (i * 2.4 + k * 2.399) % (Math.PI * 2);   // ばらけ方の向き
-      rad[j] = 0.4 + ((k * 0.618 + i * 0.13) % 1) * 0.6;
+      ph[j] = fr(k * 0.618034 + i * 0.37);                       // 出発の時刻をばらす（途切れず、煙が続いて見える）
+      ang[j] = fr(k * 0.7548776 + i * 0.113) * Math.PI * 2;      // 揺れの向き
+      rad[j] = 0.35 + fr(k * 0.5698403 + i * 0.29) * 0.9;        // 広がり方
+      spd[j] = 0.045 + fr(k * 0.3247 + i * 0.61) * 0.07;         // 上がる速さ（約9〜22秒で1周）
     }
   });
   const g = new THREE.BufferGeometry();
@@ -333,30 +335,33 @@ if (!reduce) {
   g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
   g.setAttribute('aAng', new THREE.BufferAttribute(ang, 1));
   g.setAttribute('aRad', new THREE.BufferAttribute(rad, 1));
+  g.setAttribute('aSpd', new THREE.BufferAttribute(spd, 1));
   moteMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
     uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uSel: { value: new THREE.Vector2(1e9, 1e9) }, uDay: skyU.uDay },
     vertexShader: `
-      attribute float aPh, aAng, aRad; uniform float uTime, uPx, uK, uDay; uniform vec2 uSel; varying float vA;
+      attribute float aPh, aAng, aRad, aSpd; uniform float uTime, uPx, uK, uDay; uniform vec2 uSel; varying float vA;
       void main(){
-        float t = fract(uTime*0.07 + aPh);                       // 0→1 でのぼって消える（約14秒）
+        float t = fract(uTime*aSpd + aPh);                       // 0→1：のぼって消える
         float sel = step(length(position.xz - uSel), 0.002);     // 選んだ神社は少し強く
         vec3 p = position;
-        p.y += t*(0.26 + sel*0.1);
-        float w = 0.006 + 0.012*t;
-        p.x += cos(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
-        p.z += sin(aAng + uTime*0.25 + t*2.0) * w * aRad * (1.0 + sel);
-        vA = sin(3.14159*t) * (0.8 + sel*0.4) * (1.0 - 0.6*uDay);
+        float rise = 1.0 - pow(1.0 - t, 1.6);                    // はじめは速く、上ほどゆっくり
+        p.y += rise*(0.42 + sel*0.12);
+        float w = (0.012 + 0.105*t) * aRad * (1.0 + sel*0.6);    // 上ほど横に広がる
+        float a1 = aAng + uTime*0.35*(0.6 + aRad*0.5) + t*3.2;   // うねるように揺れる
+        p.x += 0.07*t*t + cos(a1) * w + sin(uTime*0.5 + aAng*3.0 + t*5.0) * 0.004 * t;
+        p.z += sin(a1) * w + cos(uTime*0.45 + aAng*2.0 + t*4.0) * 0.004 * t;
+        vA = smoothstep(0.0, 0.12, t) * pow(1.0 - t, 1.3) * (0.50 + sel*0.30) * (1.0 - 0.6*uDay);
         vec4 mv = modelViewMatrix*vec4(p,1.);
-        gl_PointSize = clamp(7.0 * uK / (-mv.z) * 12.0, 3.0, 12.0) * uPx;
+        gl_PointSize = clamp((2.6 + 4.2*t) * uK / (-mv.z) * 12.0, 1.4, 8.0) * uPx;   // 細かい粒が、上がるほどわずかに大きく
         gl_Position = projectionMatrix*mv;
       }`,
     fragmentShader: `
       varying float vA;
       void main(){
         float r = length(gl_PointCoord-0.5)*2.0;
-        float a = exp(-r*r*3.2) * vA * 1.25;
-        gl_FragColor = vec4(vec3(1.0,0.84,0.5)*a, a);
+        float a = exp(-r*r*3.0) * vA;
+        gl_FragColor = vec4(vec3(1.0,0.86,0.58)*a, a);
       }`,
   });
   motes = new THREE.Points(g, moteMat);
@@ -1723,7 +1728,7 @@ function loop(now) {
 requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
-window.__shrineMap = { setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
+window.__shrineMap = { getQual: () => qual, setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
   // 1フレームの描画時間(ms)を、GPUの完了まで待って測る（確認用）
   benchmark: (n = 40) => { const gl = renderer.getContext(); applyCamera(); camera.updateMatrixWorld(); renderer.render(scene, camera); gl.finish(); const t0 = performance.now(); for (let i = 0; i < n; i++) { renderer.render(scene, camera); gl.finish(); } return (performance.now() - t0) / n; } };
 // ?s=katori のように開くと、その神社へ直接飛ぶ
