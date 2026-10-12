@@ -70,6 +70,7 @@
     .svgbody svg { max-width: 100%; height: auto; background: #fff; border-radius: 6px; margin: 4px 0; display: block; }
     .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #phraseText { width: 100%; box-sizing: border-box; font: inherit; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
     #printArea { display: none; }
+    .hdr-more { display: none; } /* shown only on phones (rule inside the media block below) */
     /* Phone layout (width <= 760px): tools in one scrollable row, drawing in the middle, cards below the drawing (40% height, scrollable). 2026-10-12 */
     @media (max-width: 760px) {
       body { height: 100dvh; font-size: 14px; }
@@ -88,7 +89,6 @@
       .hdr-more { display: inline-flex; }
       header:not(.hdr-open) :is(label:has(#grid), #spacing, label:has(#snap), label:has(#printOverlay), label:has(#threeView), #threeViewTools, label:has(#quadView), #language, #guideBtn) { display: none; }
     }
-    .hdr-more { display: none; }
     @media print {
       @page { size: A4 portrait; margin: 10mm; }
       body { display: block; height: auto; overflow: visible; background: #fff; }
