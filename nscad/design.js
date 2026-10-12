@@ -387,3 +387,50 @@ export function offsetSpanResult(sel, d, { join = 'miter' } = {}) {
   const points = offsetPolyline(sel.points, d, sel.closed, { join });
   return points.length >= (sel.closed ? 3 : 2) ? { type: 'polyline', points, closed: sel.closed } : null;
 }
+
+/* ── 回避：出っ張った図形を、すき間をあけて滑らかによける線 ───────────────────────────────── */
+const polyLen = pts => pts.reduce((n, p, i) => i ? n + distance(p, pts[i - 1]) : 0, 0);
+/** 線分 a-b と c-d の交点（端を含む）。{ x, y, t（a-b 上の位置 0〜1）, u（c-d 上の位置 0〜1） } か null。 */
+function segCross(a, b, c, d) {
+  const r = { x: b.x - a.x, y: b.y - a.y }, q = { x: d.x - c.x, y: d.y - c.y }, den = r.x * q.y - r.y * q.x; if (Math.abs(den) < 1e-12) return null;
+  const t = ((c.x - a.x) * q.y - (c.y - a.y) * q.x) / den, u = ((c.x - a.x) * r.y - (c.y - a.y) * r.x) / den; if (t < -1e-9 || t > 1 + 1e-9 || u < -1e-9 || u > 1 + 1e-9) return null;
+  return { x: a.x + r.x * t, y: a.y + r.y * t, t, u };
+}
+/** 点列 pts の頂点 k（端以外）を、半径 R の円弧でなめらかに丸める。半径は、隣の辺の長さに収まる大きさまで自動で小さくする。使った半径も返す。 */
+export function filletAt(pts, k, R) {
+  const V = pts[k], A0 = pts[k - 1], B0 = pts[k + 1], u = { x: A0.x - V.x, y: A0.y - V.y }, w = { x: B0.x - V.x, y: B0.y - V.y }, lu = Math.hypot(u.x, u.y), lw = Math.hypot(w.x, w.y);
+  if (!(R > 1e-9) || lu < 1e-9 || lw < 1e-9) return { points: pts.slice(), used: 0 };
+  u.x /= lu; u.y /= lu; w.x /= lw; w.y /= lw; const cos = Math.max(-1, Math.min(1, u.x * w.x + u.y * w.y)), phi = Math.acos(cos); /* 2辺のはさむ角 */
+  if (phi < 1e-3 || Math.PI - phi < 1e-3) return { points: pts.slice(), used: 0 }; /* ほぼ一直線・折り返しは丸めない */
+  const tmax = Math.min(lu, lw) * 0.98, t = Math.min(R / Math.tan(phi / 2), tmax), r = t * Math.tan(phi / 2); /* 丸める長さ t・使う半径 r */
+  const A = { x: V.x + u.x * t, y: V.y + u.y * t }, B = { x: V.x + w.x * t, y: V.y + w.y * t }, bis = { x: u.x + w.x, y: u.y + w.y }, lb = Math.hypot(bis.x, bis.y), dc = r / Math.sin(phi / 2), C = { x: V.x + bis.x / lb * dc, y: V.y + bis.y / lb * dc };
+  const a0 = Math.atan2(A.y - C.y, A.x - C.x); let da = Math.atan2(B.y - C.y, B.x - C.x) - a0; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+  const n = Math.max(2, Math.ceil(Math.abs(da) / (Math.PI / 36))), arc = Array.from({ length: n + 1 }, (_, i) => ({ x: C.x + r * Math.cos(a0 + da * i / n), y: C.y + r * Math.sin(a0 + da * i / n) }));
+  return { points: [...pts.slice(0, k), ...arc, ...pts.slice(k + 1)], used: r };
+}
+/** 基準の線 base（開いた点列）が、出っ張った図形 obstacle（閉じた点列）にぶつかるとき、図形のまわりに clearance だけすき間をあけて迂回する線を作る。
+ *  迂回は、図形の重心がある側を回る。基準の線との継ぎ目（2か所）は、半径 radius の円弧で丸める。戻り値 { points, baseLength, length, extra（追加で必要な長さ）, radius（使った半径） }、ぶつからなければ null。 */
+export function detourPath(base, obstacle, { clearance = 3, radius = 2 } = {}) {
+  if (!Array.isArray(base) || base.length < 2 || !Array.isArray(obstacle) || obstacle.length < 3 || !(clearance >= 0)) return null;
+  const P = clearance > 0 ? offsetPolyline(obstacle, clearance, true, { join: 'round' }) : obstacle.map(p => ({ ...p })); if (P.length < 3) return null;
+  if (P.length > 1 && distance(P[0], P.at(-1)) < 1e-9) P.pop();
+  const hits = []; /* 基準の線と、すき間の輪郭の交点（基準の線の通し距離 s・輪郭上の位置 pos） */
+  let acc = 0; for (let i = 0; i < base.length - 1; i++) { const a = base[i], b = base[i + 1], L = distance(a, b);
+    for (let j = 0; j < P.length; j++) { const c = P[j], d = P[(j + 1) % P.length], x = segCross(a, b, c, d); if (x) hits.push({ x: x.x, y: x.y, seg: i, s: acc + L * x.t, j, u: x.u }); }
+    acc += L; }
+  if (hits.length < 2) return null;
+  hits.sort((m, n) => m.s - n.s); const E = hits[0], X = hits.at(-1); if (X.s - E.s < 1e-6) return null;
+  const ring = (from, to, dir) => { const pts = [{ x: from.x, y: from.y }]; let j = from.j; if (dir > 0) { while (true) { const nj = (j + 1) % P.length; pts.push({ ...P[nj] }); j = nj; if (j === to.j) break; } } else { while (true) { pts.push({ ...P[j] }); if (j === to.j) break; j = (j - 1 + P.length) % P.length; } } pts.push({ x: to.x, y: to.y }); return pts; }; /* 輪郭を、E から X まで一方向にたどる */
+  const fwd = ring(E, X, 1), bwd = ring(E, X, -1), cen = obstacle.reduce((m, p) => ({ x: m.x + p.x / obstacle.length, y: m.y + p.y / obstacle.length }), { x: 0, y: 0 });
+  const side = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x), mid = pts => { const half = polyLen(pts) / 2; let acc2 = 0; for (let i = 1; i < pts.length; i++) { const l = distance(pts[i - 1], pts[i]); if (acc2 + l >= half) { const t = l ? (half - acc2) / l : 0; return { x: pts[i - 1].x + (pts[i].x - pts[i - 1].x) * t, y: pts[i - 1].y + (pts[i].y - pts[i - 1].y) * t }; } acc2 += l; } return pts.at(-1); };
+  const sc = side(E, X, cen), sf = side(E, X, mid(fwd)), sb = side(E, X, mid(bwd)); let around;
+  if (Math.abs(sc) > 1e-9 && Math.sign(sf) !== Math.sign(sb)) around = Math.sign(sf) === Math.sign(sc) ? fwd : bwd; else around = polyLen(fwd) <= polyLen(bwd) ? fwd : bwd; /* 重心がある側。判定できなければ短い方 */
+  const before = [...base.slice(0, E.seg + 1)], after = base.slice(X.seg + 1); /* E の手前・X の先の、基準の線の頂点 */
+  let pts = [...before, ...around, ...after].filter((p, i, a) => !i || distance(p, a[i - 1]) > 1e-9); /* 同じ位置に重なった点を除く（丸める位置の隣が長さ0にならないように） */
+  const kE = pts.findIndex(p => distance(p, E) < 1e-7), kX = pts.length - 1 - [...pts].reverse().findIndex(p => distance(p, X) < 1e-7); /* 継ぎ目 E・X の位置 */
+  let used = 0;
+  const f1 = kX > 0 && kX < pts.length - 1 && kX > kE ? filletAt(pts, kX, radius) : { points: pts, used: 0 }; pts = f1.points; used = Math.max(used, f1.used);
+  const f0 = kE > 0 && kE < pts.length - 1 && kX > kE ? filletAt(pts, kE, radius) : { points: pts, used: 0 }; pts = f0.points; used = Math.max(used, f0.used);
+  const dedup = pts.filter((p, i) => !i || distance(p, pts[i - 1]) > 1e-9), baseLength = polyLen(base), length = polyLen(dedup);
+  return { points: dedup, baseLength, length, extra: length - baseLength, radius: used };
+}

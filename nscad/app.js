@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt } from './geometry.js';
+import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -41,7 +41,7 @@ let binderEdits = emptyEdits();
 import { track } from './analytics.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -509,7 +509,7 @@ function affectedHoles(all=false) {
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -1057,6 +1057,7 @@ function initDesign() {
   for (const id of ['of-dist', 'of-side']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('of-run').onclick = () => runOffset();
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
+  $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
@@ -2554,7 +2555,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; $('offsetFloat').hidden = true; }
+function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
@@ -2742,6 +2743,38 @@ function offsetClick(p, whole) {
   $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
 }
 /** 選んだ範囲のそばに、距離・内側/外側・実行の小さな入力欄を出す（選んだ範囲が無ければ隠す）。画面の端では見切れないように寄せる。 */
+/* ── 回避：出っ張った図形を、すき間をあけて滑らかによける線を作り、追加で必要な革の長さを出す ── */
+let detourState = null; /* { baseId, obstId }：基準の線・よけたい図形 */
+const detourClosed = s => s.type === 'circle' || ((s.type === 'polyline' || s.type === 'path') && !!s.closed);
+function detourCompute() {
+  if (!detourState?.baseId || !detourState?.obstId) return null;
+  const b = doc.shapes.find(s => s.id === detourState.baseId), o = doc.shapes.find(s => s.id === detourState.obstId); if (!b || !o) return null;
+  const clearance = Number($('df-clear').value), radius = Number($('df-radius').value); if (!(clearance >= 0) || !(radius >= 0)) return { error: 'invalidNumber' };
+  const bp = flattenShape(b, 0.01), op = flattenShape(o, 0.01); if (!bp || bp.length < 2 || !op || op.length < 3) return { error: 'impossible' };
+  const res = detourPath(bp, op, { clearance, radius }); return res || { error: 'detourNoHit' };
+}
+function detourClick(p) {
+  const hit = pickShapeAt(p); if (!hit) { $('hint').textContent = t('detourNone'); return; }
+  if (!detourState || detourState.obstId) { detourState = { baseId: hit.id }; $('hint').textContent = t('detourPickObstacle'); draw(); return; } /* 1回目（または選び直し）：基準の線 */
+  if (hit.id === detourState.baseId) { $('hint').textContent = t('detourPickObstacle'); return; }
+  if (!detourClosed(hit)) { $('hint').textContent = t('detourNeedClosed'); return; }
+  detourState.obstId = hit.id; const r = detourCompute(); $('hint').textContent = r?.error ? t(r.error) : t('detourOut', { len: r.length.toFixed(2), base: r.baseLength.toFixed(2), extra: r.extra.toFixed(2) }); draw();
+}
+function runDetour() {
+  const r = detourCompute(); if (!r) { $('hint').textContent = t('detourPickObstacle'); return; } if (r.error) { $('hint').textContent = t(r.error); return; }
+  const base = doc.shapes.find(s => s.id === detourState.baseId), dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || base?.layer; /* 点線はガイドの層へ */
+  detourState = null; commit(() => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: dest, type: 'polyline', closed: false, points: r.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed' }); selected = new Set([id]); });
+  $('hint').textContent = t('detourDone', { len: r.length.toFixed(2), base: r.baseLength.toFixed(2), extra: r.extra.toFixed(2) }); draw();
+}
+/** 回避の入力欄：よける図形を選んだら、その図形のそばに出し、結果（迂回路・まっすぐ・追加の長さ）を更新する。 */
+function placeDetourFloat() {
+  const box = $('detourFloat'); if (mode !== 'detour' || !detourState?.obstId) { box.hidden = true; return; }
+  const o = doc.shapes.find(s => s.id === detourState.obstId); if (!o) { box.hidden = true; return; }
+  const bb = bboxOf(o), w = box.offsetWidth || 330, h = box.offsetHeight || 40, po = paneOff(); let x = po.x + origin.x + bb.maxX * scale + 12, y = po.y + origin.y + bb.minY * scale - 4;
+  if (x + w > width - 8) x = origin.x + bb.minX * scale - w - 12; x = Math.max(8, Math.min(width - w - 8, x)); y = Math.max(36, Math.min(height - h - 8, y));
+  box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; box.hidden = false;
+  const r = detourCompute(); $('df-out').textContent = r?.error ? t(r.error) : r ? t('detourOut', { len: r.length.toFixed(2), base: r.baseLength.toFixed(2), extra: r.extra.toFixed(2) }) : '';
+}
 function placeOffsetFloat() {
   const box = $('offsetFloat'), sel = offsetSelection;
   if (!sel || mode !== 'offset') { box.hidden = true; return; }
@@ -3097,7 +3130,11 @@ function drawSheetBody(lo, hi) {
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
   drawCenterMarks(); drawJunctions();
-  placeOffsetFloat(); syncRulerBar();
+  placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
+  if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
+    ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
+    const r = detourCompute(); if (r && !r.error) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape({ type: 'polyline', points: r.points, closed: false }, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); }
+  }
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   if (offsetSelection && mode === 'offset' && $('offsetSide').value === 'cursor') { const ch = offsetCursorChoice(offsetSelection, offsetCursor, Number($('offsetDist').value)); if (ch) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape(ch.r, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); } } /* 向き「カーソルの側」：ずらした結果を、カーソルのある側にプレビュー */
   ctx.setLineDash([5 / scale, 4 / scale]);
@@ -3171,6 +3208,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
+  if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
@@ -3406,6 +3444,7 @@ window.addEventListener('keydown', e => {
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
+  else if (e.key === 'Enter' && mode === 'detour' && detourState?.obstId) { e.preventDefault(); runDetour(); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
   else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); finishPolyline(); }
   else if (e.key === 'Enter' && stage?.kind === 'bzpts') { e.preventDefault(); finishBezier(); }
