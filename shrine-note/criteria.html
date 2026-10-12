@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>神社の掲載基準｜神社巡りノート</title>
+<meta name="description" content="神社巡りノートに載せる神社を、どんな基準で選んでいるか。総数・確認の状況・出典の考え方をまとめたページ。">
+<meta name="theme-color" content="#10130f">
+<meta name="robots" content="noindex">
+<style>
+:root { --bg: #0d100d; --panel: #161b15; --ink: #e9e7dc; --soft: #b9b8a8; --muted: #8b8c7c; --gold: #c9a96e; --line: rgba(201,169,110,.28); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #f6f3ea; --panel: #ffffff; --ink: #1f2420; --soft: #4a5048; --muted: #6d7167; --gold: #8a6a2f; --line: rgba(138,106,47,.35); } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.9 "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; }
+main { max-width: 720px; margin: 0 auto; padding: 28px 16px 64px; }
+.eyebrow { font: 600 11px/1 system-ui, sans-serif; letter-spacing: .3em; color: var(--gold); }
+h1 { margin: 10px 0 6px; font-size: 26px; line-height: 1.4; }
+.lead { color: var(--soft); margin: 0 0 22px; }
+h2 { margin: 30px 0 8px; font-size: 18px; color: var(--gold); letter-spacing: .06em; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 10px 0; }
+.card b { color: var(--gold); }
+.card p { margin: 4px 0 0; color: var(--soft); font-size: 15px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; margin: 10px 0; }
+summary { cursor: pointer; font-weight: 600; }
+details p, details li { color: var(--soft); font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font: 14px/1.7 system-ui, sans-serif; margin: 8px 0; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; }
+a { color: var(--gold); }
+nav { margin: 0 0 18px; font: 13px system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="map/">← 神社巡りノートへ戻る</a></nav>
+  <div class="eyebrow">SHRINE NOTE</div>
+  <h1>神社の掲載基準</h1>
+  <p class="lead">全国に約8万社ある神社のうち、ここに載せる神社をどう選んでいるかの説明です。参拝に出かける前の下調べとして、安心して使えることを大事にしています。</p>
+
+  <h2>載せる神社の3つの基準</h2>
+  <div class="card"><b>① 参拝の体制が、公式に示されている</b>
+    <p>社務所や授与所の受付時間、御朱印の案内などが、公式サイトか神社庁のページに載っていること。神社の名前だけでは「神職が常駐しているか」を見分けられないため、この公式の案内を目印にしています。</p></div>
+  <div class="card"><b>② 公的な裏づけのある由緒がある</b>
+    <p>一宮・式内社・別表神社・勅祭社など、歴史や制度の上で位置づけが確かめられる神社。社格は目安であり、神社の優劣を示すものではありません。</p></div>
+  <div class="card"><b>③ 古事記・日本書紀の神とつながる</b>
+    <p>記紀に登場する神を祀るか、その神とのつながりを説明できること。記紀に登場しない神（例：明治神宮の明治天皇）を祀る社も載せますが、「記紀に無い」と明記します。</p></div>
+
+  <h2>いまの確認状況</h2>
+  <div id="stat" class="card"><p>数えています…</p></div>
+  <p class="note">「確認済み」は、公式の情報で確かめられた項目です。確かめられなかった項目は、神社のページに「要確認」と表示し、後から確認できたら直します。</p>
+
+  <details>
+    <summary>全国の神社は、どれくらいある？</summary>
+    <p>約8万社です（文化庁『宗教年鑑』令和5年版：80,709社）。神社本庁の傘下は約79,000社、神職は約20,000人とされ、1人の宮司が複数の神社を兼ねる地域も多くあります。そのため、掲載にあたっては「参拝の体制が示されていること」を重く見ています。</p>
+  </details>
+  <details>
+    <summary>なぜ100社に絞るの？</summary>
+    <p>すべてを載せるのではなく、出典を確かめながら、少しずつ確かな情報を積み上げるためです。数を増やすより、載せた神社の情報が正しいことを優先します。</p>
+  </details>
+  <details>
+    <summary>情報はどう調べている？</summary>
+    <p>神社の公式サイト、神社庁・自治体・文化庁、古典（古事記・日本書紀・古語拾遺）、事典、観光サイトの順に信頼して調べます。古典の引用は原文と一字一句照合し、一致しないものは載せません。座標は国土地理院の地図の注記と突き合わせています。</p>
+  </details>
+  <details>
+    <summary>この基準で足りないところ</summary>
+    <ul>
+      <li>「神職の常駐」は、公式の案内から推し量るもので、実際の体制を保証するものではありません。参拝の前に、公式の最新情報をご確認ください。</li>
+      <li>地元で大切にされている小さな神社は、公式の情報が少ないため、いまは載せにくい状況です。</li>
+    </ul>
+  </details>
+</main>
+<script>
+fetch('shrines.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+  var L = d.shrines || d, n = L.length;
+  function ok(f) { return L.filter(function (s) { var v = s[f]; return v && typeof v === 'object' && v.status !== '要確認'; }).length; }
+  var rows = [['参拝時間', 'hours'], ['御朱印', 'goshuin'], ['駐車場', 'parking'], ['行き方', 'access']];
+  var html = '<p>掲載中：<b>' + n + '社</b></p><table><tr><th>項目</th><th class="n">公式で確認済み</th><th class="n">要確認</th></tr>';
+  rows.forEach(function (r) { var a = ok(r[1]); html += '<tr><td>' + r[0] + '</td><td class="n">' + a + '社</td><td class="n">' + (n - a) + '社</td></tr>'; });
+  document.getElementById('stat').innerHTML = html + '</table>';
+}).catch(function () { document.getElementById('stat').innerHTML = '<p>数を読み込めませんでした。</p>'; });
+</script>
+</body>
+</html>
