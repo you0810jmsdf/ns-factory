@@ -1898,3 +1898,4 @@ window.__shrineMap = { stamps, getQual: () => qual, setSkyMinutes: (m) => { $('s
 // ?s=katori のように開くと、その神社へ直接飛ぶ
 const q = new URLSearchParams(location.search).get('s');
 if (q) setTimeout(() => selectShrine(q), 600);
+if (new URLSearchParams(location.search).get('book') === '1') openBook(true);
