@@ -2671,6 +2671,34 @@
           "review_count": 30
         }
       ]
+    },
+    {
+      "shrine_id": "oyamaafuri",
+      "pref": "神奈川県",
+      "fetched_at": "2026-10-12",
+      "items": [
+        {
+          "name": "かかんの麻婆ソース3個セット/6個セット | 麻婆豆腐 麻婆 ソース 麻婆ソース 惣菜…",
+          "shop": "神奈川県鎌倉市",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00u1xm8.0r79k2f5.g00u1xm8.0r79l7b2/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Ff142042-kamakura%2Ffw01%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Ff142042-kamakura%2Fi%2F10000711%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.83,
+          "review_count": 41
+        },
+        {
+          "name": "豚ロース6枚入 神奈川名産100選にも出品、「世界にも通用する究極のお土産」にもノミネー…",
+          "shop": "美味しいお肉をお届け!大久保商店",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00ry728.0r79k344.g00ry728.0r79l2e9/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Ftonchan5%2F001-6%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Ftonchan5%2Fi%2F10000004%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 5.0,
+          "review_count": 17
+        },
+        {
+          "name": "A-1.はんぺん、さつま揚げの詰め合わせ【 神奈川県 大磯町 お惣菜 手作り 大磯名産品…",
+          "shop": "神奈川県大磯町",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00u6bh8.0r79k3a3.g00u6bh8.0r79l143/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Ff143413-oiso%2F159-2013-01%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Ff143413-oiso%2Fi%2F10000013%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.91,
+          "review_count": 11
+        }
+      ]
     }
   ]
 }

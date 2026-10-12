@@ -2716,6 +2716,37 @@
       "shrine_name": "出石神社",
       "fetched_at": "2026-10-12",
       "hotels": []
+    },
+    {
+      "shrine_id": "oyamaafuri",
+      "shrine_name": "大山阿夫利神社",
+      "fetched_at": "2026-10-13",
+      "hotels": [
+        {
+          "name": "獅子山荘",
+          "area": "神奈川県伊勢原市大山325",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D136924",
+          "review_average": 5.0,
+          "review_count": 16,
+          "status": "candidate"
+        },
+        {
+          "name": "蓬生亭 逸見",
+          "area": "神奈川県伊勢原市大山413",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D141289",
+          "review_average": 4.8,
+          "review_count": 43,
+          "status": "candidate"
+        },
+        {
+          "name": "宿坊 いわ江",
+          "area": "神奈川県伊勢原市大山239",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D135502",
+          "review_average": 4.78,
+          "review_count": 136,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }
