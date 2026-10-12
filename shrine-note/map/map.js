@@ -1,4 +1,4 @@
-// 神社巡りノート｜夜の日本列島（three.js・標高は国土地理院タイル由来の heightmap.png）
+// 神社巡りノート｜日本列島の神社めぐり（three.js・標高は国土地理院タイル由来の heightmap.png）
 import * as THREE from './vendor/three.module.min.js';
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
