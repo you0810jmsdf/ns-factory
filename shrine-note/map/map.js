@@ -1591,7 +1591,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
-  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
+  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('finder').hidden) openFinder(false); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
 });
 
 
@@ -1675,6 +1675,65 @@ function renderTree() {
     $('treeFocusName').textContent = deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
   }
 }
+// ---- 神社を探す ----
+// 比べる前に、全角半角・大文字小文字・カタカナ／ひらがなをそろえる
+const normQ = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/[\s・･\-ー—–‐'’.,、。]/g, '');
+// 読み（ひらがな）→ ローマ字。英語の人が、訳のない社も打って探せるようにする（長音は区別しない）
+const KANA = { 'あ':'a','い':'i','う':'u','え':'e','お':'o','か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko','さ':'sa','し':'shi','す':'su','せ':'se','そ':'so','た':'ta','ち':'chi','つ':'tsu','て':'te','と':'to','な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no','は':'ha','ひ':'hi','ふ':'fu','へ':'he','ほ':'ho','ま':'ma','み':'mi','む':'mu','め':'me','も':'mo','や':'ya','ゆ':'yu','よ':'yo','ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro','わ':'wa','を':'o','ん':'n','が':'ga','ぎ':'gi','ぐ':'gu','げ':'ge','ご':'go','ざ':'za','じ':'ji','ず':'zu','ぜ':'ze','ぞ':'zo','だ':'da','ぢ':'ji','づ':'zu','で':'de','ど':'do','ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo','ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po','ゔ':'vu' };
+const SMALL = { 'ゃ':'a','ゅ':'u','ょ':'o' };
+function toRomaji(reading) {
+  const k = String(reading || '').normalize('NFKC').replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+  let out = '';
+  for (let i = 0; i < k.length; i++) {
+    const c = k[i], n = k[i + 1];
+    if (c === 'っ') { const r = KANA[n] || ''; out += r ? r[0] : ''; continue; }
+    if (SMALL[n] && KANA[c]) { const b = KANA[c].replace(/i$/, ''); const v = SMALL[n]; out += (b === 'sh' || b === 'ch' || b === 'j') ? b + v : b + 'y' + v; i++; continue; }
+    out += KANA[c] || '';
+  }
+  return out;
+}
+// ローマ字どうしは、長音の書き方の違い（ou/oo/o）を無視して比べる
+const collapseRomaji = (s) => String(s).replace(/ou/g, 'o').replace(/([aiueo])\1+/g, '$1');
+const finderIdx = shrines.map((s) => {
+  const en = enData && enData.shrines[s.id] ? enData.shrines[s.id] : null;
+  const dn = (s.deity_ids || []).map((id) => (deities[id] ? deities[id].name + ' ' + (deities[id].reading || '') + ' ' + ((enData && enData.deities[id] && enData.deities[id].name) || '') : '')).join(' ');
+  const ro = toRomaji(s.reading);
+  return { s, key: normQ([s.name, s.reading, s.pref, s.city, dn, en ? en.name + ' ' + en.place : '', ro].join(' ')), nameKey: normQ([s.name, s.reading, en ? en.name : '', ro].join(' ')), roKey: collapseRomaji(ro) };
+});
+function finderMatch(q) {
+  const nq = normQ(q);
+  if (!nq) return finderIdx.map((x) => x.s);
+  const parts = String(q).normalize('NFKC').split(/\s+/).map(normQ).filter(Boolean);
+  const hit = finderIdx.filter((x) => parts.every((p) => x.key.includes(p) || (/^[a-z]+$/.test(p) && x.roKey.includes(collapseRomaji(p)))));
+  // 名前に当たったものを先に、そのあとは名前の前方一致を優先
+  return hit.sort((a, b) => (b.nameKey.startsWith(nq) - a.nameKey.startsWith(nq)) || (b.nameKey.includes(nq) - a.nameKey.includes(nq))).map((x) => x.s);
+}
+function renderFinder() {
+  const q = $('finderIn').value;
+  const list = finderMatch(q);
+  const visited = new Set(stamps.all().map((v) => v.shrineId));
+  const nm = (s) => shName(s);
+  $('finderCount').textContent = EN ? `${list.length} of ${shrines.length} shrines` : `${list.length}／${shrines.length}社`;
+  $('finderList').innerHTML = list.length ? list.map((s) => {
+    const en = EN && enData.shrines[s.id];
+    const place = en ? en.place : `${s.pref} ${s.city || ''}`;
+    const sub = EN ? esc(place) : `${esc(s.reading)}｜${esc(place)}`;
+    return `<li><button type="button" data-shrine="${esc(s.id)}" data-finderpick="1"><b>${esc(nm(s))}${visited.has(s.id) ? `<span class="vis">${EN ? 'visited' : '参拝ずみ'}</span>` : ''}</b><small>${sub}</small></button></li>`;
+  }).join('') : `<li><small>${EN ? 'No shrine found. Try another word (e.g. a prefecture or a deity).' : '見つかりませんでした。別の言葉（都道府県や御祭神の名前など）でお試しください。'}</small></li>`;
+}
+function openFinder(show) {
+  if (show) {
+    if (EN) { $('finderTitle').textContent = 'Find a shrine'; $('btnFindClose').textContent = 'Close'; $('finderIn').placeholder = 'Shrine name, prefecture or deity'; }
+    $('finder').hidden = false; $('finderIn').value = ''; renderFinder();
+    setTimeout(() => $('finderIn').focus(), 50);
+  } else $('finder').hidden = true;
+}
+$('btnFind').textContent = EN ? 'Find a shrine' : '神社を探す';
+$('btnFind').addEventListener('click', () => openFinder(true));
+$('btnFindClose').addEventListener('click', () => openFinder(false));
+$('finderIn').addEventListener('input', renderFinder);
+$('finderIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const b = $('finderList').querySelector('[data-finderpick]'); if (b) b.click(); } });
+$('finder').addEventListener('click', (e) => { if (e.target.closest('[data-finderpick]')) openFinder(false); });
 // ---- 御朱印スタンプ帳 ----
 function renderBook() {
   const visited = new Set(stamps.all().map((v) => v.shrineId));
@@ -1944,7 +2003,7 @@ requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
 stamps.onChange(() => {
-  syncVisited(); syncBookBtn(); if (!$('book').hidden) renderBook();
+  syncVisited(); syncBookBtn(); if (!$('book').hidden) renderBook(); if (!$('finder').hidden) renderFinder();
   document.querySelectorAll('[data-visitbox]').forEach((el) => { const s = shrines.find((x) => x.id === el.dataset.visitbox); if (s) el.outerHTML = visitBoxHTML(s); });
 });
 syncVisited(); syncBookBtn();
