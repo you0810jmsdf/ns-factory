@@ -1138,15 +1138,15 @@ function setSheet(html, book = false) {
 // 宿の候補（PR）。解説とは見出しで分け、先頭に広告表記・リンクは rel="sponsored"。金額は載せない（条件なしの金額は規約で禁止）
 const STAY_HOST = 'https://hb.afl.rakuten.co.jp/';
 function staysHTML(id) {
-  const head = `<h3 class="chh sub">宿 <span class="badge pr">PR</span></h3>`;
+  const head = `<h3 class="chh sub">宿 <span class="badge pr">PR・広告</span></h3>`;
   const list = (staysMap[id] || []).filter((h) => h && h.url && String(h.url).startsWith(STAY_HOST));
   if (!list.length) {
     return `${head}<div class="prbox">${id in staysMap ? '近くの宿の候補は、条件に合うものを探しています。' : '宿の候補は、準備中です。'}未訪問の宿は「候補」として表記します。</div>`;
   }
   const at = staysData.fetched_at ? `（${esc(staysData.fetched_at)} 時点）` : '';
-  return `${head}<div class="prbox stays"><p class="prnote">PR・広告を含みます。楽天トラベルのアフィリエイトリンクです。</p>
+  return `${head}<div class="prbox stays">
     <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small><span class="badge cand">候補</span>${esc(h.area || '')}｜評価 ${esc(h.review_average)}（${esc(h.review_count)}件）</small></li>`).join('')}</ul>
-    <p class="meta">評価・件数は楽天トラベル${at}。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。</p></div>`;
+    <p class="meta">PR・広告を含みます（楽天トラベルのアフィリエイトリンク）。評価・件数は楽天トラベル${at}。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。</p></div>`;
 }
 
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
