@@ -1788,7 +1788,9 @@ export const BINDER_SPECS = [
     13,
     15,
     19,
-    20
+    20,
+    25,
+    30
    ],
    "shape": "round",
    "countPerSide": 6,
@@ -1847,6 +1849,28 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 25,
+     "outerDiameterMm": 29,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 30,
+     "outerDiameterMm": 34,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
      "wireSource": "assumed"
     }
    ]
@@ -1981,7 +2005,9 @@ export const BINDER_SPECS = [
     13,
     15,
     19,
-    20
+    20,
+    25,
+    30
    ],
    "shape": "round",
    "countPerSide": 6,
@@ -2040,6 +2066,28 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 25,
+     "outerDiameterMm": 29,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 30,
+     "outerDiameterMm": 34,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
      "wireSource": "assumed"
     }
    ]
