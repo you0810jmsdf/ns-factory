@@ -2,6 +2,8 @@
 import * as THREE from './vendor/three.module.min.js';
 import { stamps } from './stamps.js';
 import { summarize } from './stampbook.js';
+import { photos, shrink } from './photos.js';
+import { makeShareImage, shareOrSave } from './share.js';
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
 const LON0 = 128.0, LON1 = 146.0, LAT0 = 30.0, LAT1 = 45.9;
@@ -1179,7 +1181,45 @@ const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function visitBoxHTML(s) {
   const v = stamps.get(s.id), total = shrines.length;
   const msg = v ? `<b class="vdone">参拝ずみ（${esc(v.visitedAt)}）</b>` : `<button class="btn vbtn" type="button" data-visit="${esc(s.id)}">参拝した</button>`;
-  return `<div class="visitbox" data-visitbox="${esc(s.id)}">${msg}<small>参拝 ${stamps.count()}／${total}社 ・ 記録はこの端末の中だけに残ります。${v ? ` <button class="lnk" type="button" data-unvisit="${esc(s.id)}">取り消す</button>` : ''}</small></div>`;
+  const photo = !v ? '' : (v.photoId
+    ? `<div class="vphoto"><img class="vthumb" data-photo="${esc(v.photoId)}" alt="${esc(s.name)}の御朱印の写真"><span><button class="btn" type="button" data-pshare="${esc(s.id)}">共有用の画像を作る</button><button class="lnk" type="button" data-ppick="${esc(s.id)}">写真を変える</button><button class="lnk" type="button" data-pdel="${esc(s.id)}">写真を消す</button></span></div>`
+    : `<div class="vphoto"><button class="btn" type="button" data-ppick="${esc(s.id)}">御朱印の写真を撮る</button></div>`);
+  const note = v ? '<small class="pnote">撮影・投稿は、神社の案内に従ってください。写真はこの端末の中だけに保存されます。</small>' : '';
+  return `<div class="visitbox" data-visitbox="${esc(s.id)}">${msg}<small>参拝 ${stamps.count()}／${total}社 ・ 記録はこの端末の中だけに残ります。${v ? ` <button class="lnk" type="button" data-unvisit="${esc(s.id)}">取り消す</button>` : ''}</small>${photo}${note}</div>`;
+}
+// 御朱印の写真（端末内）
+const thumbURLs = new Map();
+async function hydratePhotos(root) {
+  for (const img of (root || document).querySelectorAll('img[data-photo]:not([src])')) {
+    const id = img.dataset.photo;
+    try {
+      let u = thumbURLs.get(id);
+      if (!u) { const b = await photos.get(id); if (!b) continue; u = URL.createObjectURL(b); thumbURLs.set(id, u); }
+      img.src = u;
+    } catch (_) { /* 写真が読めなくても、他は動く */ }
+  }
+}
+new MutationObserver(() => hydratePhotos()).observe(document.body, { childList: true, subtree: true });
+let pickFor = null;
+$('photoIn').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0], id = pickFor; e.target.value = '';
+  if (!f || !id) return;
+  try {
+    const blob = await shrink(f), pid = await photos.put(blob), v = stamps.get(id);
+    if (v && v.photoId) { photos.del(v.photoId).catch(() => {}); thumbURLs.delete(v.photoId); }
+    stamps.setPhoto(id, pid);
+    toast('写真を、この端末に保存しました');
+  } catch (_) { toast('写真を読み込めませんでした。別の写真でお試しください'); }
+});
+async function shareStamp(id) {
+  const s = shrines.find((x) => x.id === id), v = stamps.get(id);
+  if (!s || !v || !v.photoId) return;
+  try {
+    const b = await photos.get(v.photoId);
+    const img = await makeShareImage(b, s.name, v.visitedAt, '日本列島の神社めぐり｜神社巡りノート');
+    const r = await shareOrSave(img, s.name);
+    if (r === 'saved') toast('画像を保存しました。SNSに投稿するときは、神社の案内に従ってください');
+  } catch (_) { toast('共有用の画像を作れませんでした'); }
 }
 function shrineHTML(s) {
   const used = [];
@@ -1500,7 +1540,7 @@ $('btnBack').addEventListener('click', goHome);
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki],[data-visit],[data-unvisit]');
+  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki],[data-visit],[data-unvisit],[data-ppick],[data-pshare],[data-pdel]');
   if (!t) return;
   if (t.dataset.deity) { e.preventDefault(); if (!selected) { current = { shrine: null }; sheetEl.hidden = false; sheetEl.classList.add('show'); } showDeity(t.dataset.deity); }
   else if (t.dataset.shrine) { selectShrine(t.dataset.shrine); }
@@ -1508,7 +1548,10 @@ document.addEventListener('click', (e) => {
   else if (t.dataset.route) { routeAction(t.dataset.route); }
   else if (t.dataset.emaki) { openEmaki(selected); }
   else if (t.dataset.visit) { stamps.add(t.dataset.visit); }
-  else if (t.dataset.unvisit) { stamps.remove(t.dataset.unvisit); }
+  else if (t.dataset.unvisit) { const v = stamps.get(t.dataset.unvisit); if (v && v.photoId) { photos.del(v.photoId).catch(() => {}); thumbURLs.delete(v.photoId); } stamps.remove(t.dataset.unvisit); }
+  else if (t.dataset.ppick) { pickFor = t.dataset.ppick; $('photoIn').click(); }
+  else if (t.dataset.pshare) { shareStamp(t.dataset.pshare); }
+  else if (t.dataset.pdel) { const v = stamps.get(t.dataset.pdel); if (v && v.photoId) { photos.del(v.photoId).catch(() => {}); thumbURLs.delete(v.photoId); stamps.setPhoto(t.dataset.pdel, null); } }
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
