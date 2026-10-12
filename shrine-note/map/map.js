@@ -4,6 +4,7 @@ import { stamps } from './stamps.js';
 import { summarize } from './stampbook.js';
 import { photos, shrink } from './photos.js';
 import { makeShareImage, shareOrSave } from './share.js';
+import { exportAll, importAll } from './backup.js';
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
 const LON0 = 128.0, LON1 = 146.0, LAT0 = 30.0, LAT1 = 45.9;
@@ -1655,6 +1656,7 @@ function renderBook() {
     + `<h3 class="chh">スタンプ</h3><div class="stpgrid">${grid}</div>`
     + `<h3 class="chh">地方ごと</h3><ul class="regs">${regs}</ul>`
     + `<h3 class="chh">バッジ</h3><div class="bdgs">${bds}</div>`
+    + `<h3 class="chh">記録の引っ越し</h3><p class="meta">スマホを替えるときは、記録を書き出して、新しい端末で読み込みます（写真も含みます）。読み込みは、いまの記録に足すだけで、消しません。</p><div class="bk-acts"><button class="btn" type="button" data-bkexport="1">記録を書き出す</button><button class="btn" type="button" data-bkimport="1">記録を読み込む</button></div>`
     + `<p class="meta">参拝は、神社のカードの「参拝した」ボタンで記録します。記録はこの端末の中だけに残り、サーバーへは送りません。</p>`;
 }
 function openBook(show) {
@@ -1663,7 +1665,19 @@ function openBook(show) {
 }
 $('btnBook').addEventListener('click', () => openBook(true));
 $('btnBookClose').addEventListener('click', () => openBook(false));
-$('book').addEventListener('click', (e) => { if (e.target.closest('[data-bookgo]')) openBook(false); });
+$('book').addEventListener('click', async (e) => {
+  if (e.target.closest('[data-bookgo]')) openBook(false);
+  else if (e.target.closest('[data-bkexport]')) {
+    if (!stamps.count()) { toast('書き出す記録が、まだありません'); return; }
+    try { const r = await exportAll(); toast(`${r.count}社の記録（写真${r.photos}枚）を、ファイルに書き出しました`); } catch (_) { toast('書き出せませんでした'); }
+  } else if (e.target.closest('[data-bkimport]')) $('importIn').click();
+});
+$('importIn').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { const r = await importAll(f, new Set(shrines.map((s) => s.id))); toast(`${r.added}社を読み込みました${r.skipped ? `（${r.skipped}件は、すでにある・対象外のため、そのままにしました）` : ''}`); }
+  catch (err) { toast(err.message || '読み込めませんでした'); }
+});
 function syncBookBtn() { $('btnBook').textContent = '御朱印スタンプ帳' + (stamps.count() ? ' ' + stamps.count() : ''); }
 function openTree(show) {
   const el = $('tree');

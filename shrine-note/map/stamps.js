@@ -33,6 +33,12 @@ export const stamps = {
     save();
     return true;
   },
+  addRecord(r) {
+    if (this.has(r.shrineId)) return false;
+    data.visits.push({ shrineId: r.shrineId, visitedAt: r.visitedAt, photoId: r.photoId || null, shareOk: false });
+    save();
+    return true;
+  },
   setPhoto(id, photoId) {
     const v = this.get(id);
     if (!v) return false;
