@@ -298,3 +298,10 @@ body.day::before { content: ""; position: fixed; left: 0; right: 0; top: 0; heig
 #btnBgmNext[hidden] { display: none; }
 .setgroup { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .setgroup[hidden] { display: none; }
+.lbl.visited { color: #e8765a; }
+.lbl.visited.sel { color: var(--gold); }
+.visitbox { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 10px 0 4px; }
+.visitbox small { color: var(--muted); font-size: 12px; }
+.visitbox .vbtn { margin: 0; border-color: #e8765a; background: rgba(232,118,90,0.14); }
+.visitbox .vdone { color: #e8765a; font-weight: 600; }
+.visitbox .lnk { background: none; border: 0; color: var(--muted); text-decoration: underline; font: inherit; cursor: pointer; padding: 0 4px; min-height: 32px; }
