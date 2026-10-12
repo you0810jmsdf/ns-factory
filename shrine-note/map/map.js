@@ -1613,10 +1613,12 @@ function openDeityFromTree(id) {
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
 const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track3', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）
-// 曲の一覧。2曲以上にすると、画面に「曲：」の切り替えボタンが自動で出る。今は1曲だけ（事業主の指示・2026-10-12）。
+// 曲の一覧。2曲以上にすると、画面に「曲：」の切り替えボタンが自動で出る。1曲目が初期の曲。オーケストラ2曲は聴き比べ用の試し追加（事業主の指示・2026-10-12）。
 // 他の曲を戻すときの手順と曲の一覧は、shrine-note/HANDOVER.md の「BGMを増やすとき」を見る。
 const BGM_TRACKS = [   // 音楽：魔王魂（利用規約：商用可・クレジット表記必須）
   { file: 'audio/bgm_healing17.mp3', label: '人魚の目覚め', title: '（ヒーリング17「人魚の目覚め」）', url: 'https://maou.audio/bgm_healing17/' },
+  { file: 'audio/bgm_orchestra23.mp3', label: 'オーケストラ23', title: '（オーケストラ23）', url: 'https://maou.audio/bgm_orchestra23/' },
+  { file: 'audio/bgm_orchestra26.mp3', label: 'オーケストラ26', title: '（オーケストラ26）', url: 'https://maou.audio/bgm_orchestra26/' },
 ];
 let bgmOn = true, bgmEl = null, bgmFade = 0, bgmTrack = 0;
 try {
