@@ -2156,7 +2156,7 @@ function placeHardware(at) {
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
-  renderLayers(); $('hint').textContent = t('hwPlaced', { name: document.documentElement.lang === 'en' ? it.name_en : it.name_ja });
+  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) });   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
 }
 /** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
 function binderDataHtml(spec, ringD) {
