@@ -409,6 +409,38 @@
       "url": "https://zh.wikisource.org/wiki/日本書紀/卷第五",
       "accessed": "2026-10-12",
       "label": "中文維基文庫"
+    },
+    {
+      "id": "n2ns7",
+      "title": "日本書紀 巻第七 景行天皇（舎人親王ら 撰・720）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第七",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "n2km",
+      "title": "古事記 中巻（太安万侶 撰・712）景行記",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/古事記/中卷",
+      "accessed": "2026-10-12",
+      "label": "中文維基文庫"
+    },
+    {
+      "id": "n2y",
+      "title": "由緒・歴史（ご祭神 桓武天皇・孝明天皇）",
+      "publisher": "平安神宮",
+      "url": "https://www.heianjingu.or.jp/about/history/",
+      "accessed": "2026-10-12",
+      "label": "平安神宮"
+    },
+    {
+      "id": "n3x",
+      "label": "中文維基文庫",
+      "title": "先代旧事本紀 巻第十 国造本紀（記紀とは別の書）",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/先代舊事本紀/第十卷",
+      "accessed": "2026-10-12"
     }
   ],
   "deities": [
@@ -2159,7 +2191,9 @@
           "jingu",
           "chuai"
         ],
-        "spouses": [],
+        "spouses": [
+          "nakatsuhime"
+        ],
         "children": []
       },
       "scenes": [
@@ -5201,6 +5235,127 @@
       "src": [
         "m3q",
         "m3r"
+      ]
+    },
+    {
+      "id": "kanmu",
+      "name": "桓武天皇",
+      "reading": "かんむてんのう",
+      "aliases": [],
+      "kojiki_name": "（古事記には登場しない）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（日本書紀には登場しない）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "歴史上の天皇（第50代・737〜806）。公式は、延暦13年（794）に新京（平安京）に遷った天皇と説明する。記紀の時代より後の人物で、記紀には登場しない。神話の神ではなく、平安神宮が祀る祭神として載せる。",
+      "src": [
+        "n2y"
+      ]
+    },
+    {
+      "id": "komei",
+      "name": "孝明天皇",
+      "reading": "こうめいてんのう",
+      "aliases": [],
+      "kojiki_name": "（古事記には登場しない）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（日本書紀には登場しない）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [],
+      "virtues": [],
+      "note": "歴史上の天皇（第121代・1831〜1866）。公式は、幕末の難しい時期に明治維新の基を開いた天皇と説明し、昭和15年（1940）に平安神宮へ合祀された。記紀の時代より後の人物で、記紀には登場しない。",
+      "src": [
+        "n2y"
+      ]
+    },
+    {
+      "id": "nakatsuhime",
+      "name": "仲姫命",
+      "reading": "なかつひめのみこと",
+      "aliases": [
+        "中日売命（記）",
+        "仲姫（紀）"
+      ],
+      "kojiki_name": "中日売命（原文は「中日賣命」）",
+      "kojiki_where": "中巻 通称「応神天皇」",
+      "nihonshoki_name": "仲姫",
+      "nihonshoki_where": "巻第十 応神天皇 二年春三月",
+      "relations": {
+        "parents": [],
+        "spouses": [
+          "ojin"
+        ],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "応神天皇が娶った三姉妹の一人",
+          "where": "古事記 中巻 通称「応神天皇」",
+          "text": "古事記は、応神天皇が品陀真若王の娘の三柱の女王（高木之入日売命・中日売命・弟日売命）を娶ったと記し、中日売命の御子として木之荒田郎女・大雀命・根鳥命を挙げる。",
+          "quote": "次中日賣命",
+          "src": [
+            "k"
+          ]
+        },
+        {
+          "title": "皇后に立てられる",
+          "where": "日本書紀 巻第十 応神天皇 二年春三月",
+          "text": "書紀は、応神天皇二年に仲姫を皇后に立て、荒田皇女・大鷦鷯天皇・根鳥皇子が生まれたと記す。姉の高城入姫と妹の弟姫は妃とされる。",
+          "quote": "立仲姫爲皇后",
+          "src": [
+            "usns10"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "鹿児島神宮の公式は、相殿に「仲姫命（応神天皇皇后）」を祀るとする。古事記は三姉妹の一人として記すが『大后』とは明記しない（取得した本文の範囲）。書紀は皇后とする。父の品陀真若王の神様IDは作っていない。",
+      "src": [
+        "k",
+        "usns10"
+      ]
+    },
+    {
+      "id": "akihayatama",
+      "name": "飽速玉男命",
+      "reading": "あきはやたまおのみこと",
+      "aliases": [
+        "飽速玉命（先代旧事本紀 国造本紀）"
+      ],
+      "kojiki_name": "（古事記には登場しない・取得した上巻・中巻の検索による確認／要確認）",
+      "kojiki_where": "",
+      "nihonshoki_name": "（日本書紀には登場しない・取得した巻の検索による確認／要確認）",
+      "nihonshoki_where": "",
+      "relations": {
+        "parents": [],
+        "spouses": [],
+        "children": []
+      },
+      "scenes": [
+        {
+          "title": "阿岐国造に定め賜る（先代旧事本紀）",
+          "where": "先代旧事本紀 巻第十 国造本紀（記紀ではない）",
+          "text": "国造本紀は、志賀高穴穂朝（成務天皇の時代）に、天湯津彦命の五世孫の飽速玉命が阿岐国造に定め賜われたと記す。記紀には見えない記述。",
+          "quote": "飽速玉命，定賜國造",
+          "src": [
+            "n3x"
+          ]
+        }
+      ],
+      "virtues": [],
+      "note": "速谷神社の祭神。記紀の本文に名は見当たらず、名が確認できたのは先代旧事本紀 国造本紀のみ（記紀とは別の書）。熊野速玉大社の速玉之男神（ID hayatamano）とは別の神として扱う。",
+      "src": [
+        "n3x"
       ]
     }
   ]
