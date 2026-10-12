@@ -674,7 +674,9 @@ export function splitShapeAt(s, positions) {
   const r = splitShapeAtRaw(s, positions); return r.length === 1 && r[0] === s ? r : r.map(straightenPath);
 }
 function splitShapeAtRaw(s, positions) {
-  const len = arcLength(s), cuts = [...new Set(positions.filter(p => Number.isFinite(p) && p > 1e-6 && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
+  const len = arcLength(s), closedLoop = !!s.closed && s.type !== 'circle'; /* 閉じた図形は、始点（位置 0＝終点）も区切りになりうる（始点にある頂点に別の線がつながっている場合） */
+  const norm = p => closedLoop && p >= len - 1e-6 && p <= len + 1e-6 ? 0 : p;
+  const cuts = [...new Set(positions.map(norm).filter(p => Number.isFinite(p) && (p > 1e-6 || (closedLoop && p >= 0)) && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
   if (!cuts.length || s.type === 'text' || s.type === 'dimension') return [s];
   const strip = o => { const { id, ...rest } = o; return rest; };
   if (s.type === 'circle') {
@@ -686,7 +688,8 @@ function splitShapeAtRaw(s, positions) {
   if (s.type === 'line') return bounds.slice(1).map((e, i) => { const p = pointAtLength(s, bounds[i]), q = pointAtLength(s, e); return { ...strip(s), x1: p.x, y1: p.y, x2: q.x, y2: q.y }; });
   if (s.type === 'arc') return bounds.slice(1).map((e, i) => ({ ...strip(s), startDeg: s.startDeg + bounds[i] / s.r * 180 / Math.PI, endDeg: s.startDeg + e / s.r * 180 / Math.PI }));
   // ベジェ・折れ線・path は path に変換し、切断点に節点を挿入してから節点列を分ける。
-  let p = toPath(s); for (const c of cuts) p = pathInsertNode(p, c);
+  let p = toPath(s); const have = [0]; { let acc = 0; for (const g of pathSegments(p)) { acc += arcLength(g); have.push(acc); } } /* すでにある節点の位置（始点・頂点）。そこが区切りなら、節点を重ねて足さない（長さ0の線ができる） */
+  for (const c of cuts) if (!have.some(h => Math.abs(h - c) < 1e-6)) p = pathInsertNode(p, c);
   const idx = []; let acc = 0; const segs = pathSegments(p);
   for (let i = 0; i < segs.length; i++) { if (cuts.some(c => Math.abs(c - acc) < 1e-6)) idx.push(i); acc += arcLength(segs[i]); }
   if (p.closed) { const n = p.nodes.length, order = [...idx, idx[0] + n]; return order.slice(1).map((e, i) => ({ ...strip(p), closed: false, nodes: Array.from({ length: e - order[i] + 1 }, (_, k) => ({ ...p.nodes[(order[i] + k) % n] })) })).filter(x => x.nodes.length >= 2); }
