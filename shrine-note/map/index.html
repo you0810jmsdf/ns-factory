@@ -21,6 +21,7 @@
   <div class="acts">
     <button id="btnGps" class="ghost" type="button">現在地から光の筋</button>
     <button id="btnTree" class="ghost" type="button">神々の系譜図</button>
+    <button id="btnBook" class="ghost" type="button">御朱印スタンプ帳</button>
     <button id="btnSet" class="ghost" type="button" aria-expanded="false" aria-controls="setGroup">設定 ♪ ▾</button>
     <div id="setGroup" class="setgroup" hidden>
       <button id="btnBgm" class="ghost" type="button" aria-pressed="true">♪ BGM：入</button>
@@ -62,6 +63,14 @@
   <p class="tree-note">金色の枠は、特集した神社の御祭神です。タップすると神様のページへ移ります（「しぼりこみ」を入れると、タップした神様につながる系譜だけを残します）。実線は親子、点線は夫婦です。</p>
   <div id="treeFocusBar" class="tree-focus" hidden><span id="treeFocusName"></span><button id="btnTreeOpen" class="ghost" type="button">神様のページ</button><button id="btnTreeAll" class="ghost" type="button">全体に戻す</button></div>
   <div id="treeBody" class="tree-body"></div>
+</section>
+
+<section id="book" class="tree book" hidden aria-label="御朱印スタンプ帳">
+  <div class="tree-head">
+    <h2>御朱印スタンプ帳 <small>この端末の中だけの記録</small></h2>
+    <span class="tree-btns"><button id="btnBookClose" class="ghost" type="button">閉じる</button></span>
+  </div>
+  <div id="bookBody" class="tree-body book-body"></div>
 </section>
 
 <div id="consent" class="consent" role="dialog" aria-modal="true" aria-labelledby="consentTitle" hidden>
