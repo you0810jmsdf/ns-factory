@@ -13,17 +13,20 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isNarrow = () => innerWidth < 880;
 
 // ---------- データ読み込み ----------
-const [shrineData, deityData, staysData, hmImg] = await Promise.all([
+const [shrineData, deityData, staysData, specData, hmImg] = await Promise.all([
   fetch('../shrines.json').then((r) => r.json()),
   fetch('../deities.json').then((r) => r.json()),
   // 宿の候補（楽天トラベル・アフィリエイト）。無くても地図は動く
   fetch('../stays.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  // 名産・お取り寄せ（楽天市場・アフィリエイト）。無くても地図は動く
+  fetch('../specialties.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
 ]).catch((e) => { fail('データの読み込みに失敗しました。' + e); throw e; });
 
 const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
 const staysMap = Object.fromEntries(((staysData && staysData.stays) || []).map((x) => [x.shrine_id, x.hotels || []]));
+const specMap = Object.fromEntries(((specData && specData.specialties) || []).map((x) => [x.shrine_id, x]));
 const srcMap = Object.fromEntries((shrineData.sources || []).map((s) => [s.id, s]));
 Object.assign(srcMap, Object.fromEntries((deityData.sources || []).map((s) => [s.id, s])));
 
@@ -1149,6 +1152,19 @@ function staysHTML(id) {
     <p class="meta">PR・広告を含みます（楽天トラベルのアフィリエイトリンク）。評価・件数は楽天トラベル${at}。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。</p></div>`;
 }
 
+// 名産・お取り寄せ（楽天市場のアフィリエイト）。「食」の枠（ホットペッパー審査待ち）とは別枠。金額・画像は載せない。データが無い神社には何も出さない
+const SPEC_HOST = 'https://hb.afl.rakuten.co.jp/';
+function specialtiesHTML(id) {
+  const x = specMap[id];
+  const list = ((x && x.items) || []).filter((h) => h && h.url && String(h.url).startsWith(SPEC_HOST));
+  if (!list.length) return '';
+  const at = specData.fetched_at ? `（${esc(specData.fetched_at)} 時点）` : '';
+  return `<h3 class="chh sub">${esc(x.pref)}の名産・お取り寄せ <span class="badge pr">PR・広告</span></h3>
+    <div class="prbox stays">
+    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small>${esc(h.shop || '')}｜評価 ${esc(h.review_average)}（${esc(h.review_count)}件）</small></li>`).join('')}</ul>
+    <p class="meta">PR・広告を含みます（楽天市場のアフィリエイトリンク）。この神社だけでなく、${esc(x.pref)}の名産として紹介しています。評価・件数は楽天市場${at}。価格・在庫は変動します。最新は楽天市場で確認してください。</p></div>`;
+}
+
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
 const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function shrineHTML(s) {
@@ -1189,6 +1205,7 @@ function shrineHTML(s) {
     <dl class="row">${row('所在地', s.address)}${row('アクセス', s.access)}${row('参拝時間', s.hours)}${row('駐車場', s.parking)}${row('御朱印', s.goshuin)}</dl>
     <h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
     <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>
+    ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
     <h3 class="chh sub">note 記事</h3>
     ${s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
