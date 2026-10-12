@@ -70,14 +70,14 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
   for (const s of d.shapes) {
     if (!s || typeof s !== 'object') continue;
     if (s.type === 'S_HOLE') { holes.push(lccHole(s)); continue; }
-    const layer = s.type === 'DOT' ? 'marks' : layerId(s);
+    const layer = s.type === 'DOT' ? 'guide' : layerId(s);
     const out = lccShapeToShapes(s); if (!out.length) warnings.push(`skip:${s.type}:${s.id}`);
     const color = colorOf(s);
     for (const sh of out) doc.shapes.push({ id: sid(), layer, ...(color ? { color } : {}), ...sh });
   }
   // 穴：鎖ごとに近い図形へ付ける。近い図形が無い鎖は中心を結ぶ折れ線（marks 層）を作って付ける。
   const chains = holeChains(holes); let attached = 0, viaChain = 0;
-  const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && s.layer !== 'marks';
+  const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && s.layer !== 'guide';
   const toolFor = h => { const kind = h.kind, pitch = h.pitch || 4; const own = (tools || []).find(t => t.kind === kind && Math.abs(t.pitch - pitch) < 0.06); if (own) { if (!doc.tools.some(t => t.id === own.id)) doc.tools.push({ ...own }); return doc.tools.find(t => t.id === own.id); } // 登録済み（現物）の工具があればそれを使う
     const id = `lcc-${kind}-${pitch}-${h.width}x${h.height}`; let tool = doc.tools.find(t => t.id === id); if (!tool) { tool = { id, name: `${kind} ${pitch}mm`, kind, pitch, teeth: 1, holeW: h.width, holeH: h.height, holeD: Math.min(h.width, h.height), angleDeg: kind === 'round' ? 0 : 45, mark: 'tool' }; doc.tools.push(tool); } return tool; };
   const byId = new Map(doc.shapes.map(s => [s.id, s])), groupCache = new Map();
@@ -90,8 +90,8 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     const mid = chain[Math.floor(chain.length / 2)];
     const hit = doc.shapes.filter(stitchable).reduce((best, s) => { const dist = distToShape(s, mid); return dist < (best ? best.d : attachMaxMm) ? { s, d: dist } : best; }, null);
     if (hit) { const grp = groupOf(hit.s), near = h => grp.shapeIds.some(id => distToShape(byId.get(id), h) <= attachMaxMm * 2); if (chain.every(near)) { const path = pathFor(hit.s); for (const h of chain) if (place(h, path)) attached++; continue; } }
-    if (chain.length >= 2) { const poly = { id: sid(), layer: 'marks', type: 'polyline', points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
-    else { const h = chain[0]; doc.shapes.push({ id: sid(), layer: 'marks', type: 'circle', cx: h.x, cy: h.y, r: Math.max(0.1, h.width / 2) }); warnings.push(`hole-as-mark:${h.id}`); }
+    if (chain.length >= 2) { const poly = { id: sid(), layer: 'guide', type: 'polyline', points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
+    else { const h = chain[0]; doc.shapes.push({ id: sid(), layer: 'guide', type: 'circle', cx: h.x, cy: h.y, r: Math.max(0.1, h.width / 2) }); warnings.push(`hole-as-mark:${h.id}`); }
   }
   const stats = lccStats(d, { name });
   return { doc, stats: { ...stats, holesAttached: attached, holesViaChain: viaChain }, warnings };

@@ -5,13 +5,13 @@ import { shapeToSvgD, docToDxfR12 } from './formats.js';
 const fmt3 = n => (Math.round(n * 1000) / 1000).toString();
 const escX = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 /** Leathercraft CAD の線種レイヤー名と本アプリのレイヤーの既定対応表。 */
-export const LC_LAYER_MAP = { LineType_01: 'pattern', LineType_02: 'marks', LineType_03: 'guide', 0: 'pattern', Cut: 'pattern', Stitch: 'marks', Guide: 'guide' };
-export const LC_EXPORT_MAP = { pattern: 'LineType_01', marks: 'LineType_02', guide: 'LineType_03' };
+export const LC_LAYER_MAP = { LineType_01: 'pattern', LineType_02: 'hardware', LineType_03: 'guide', 0: 'pattern', Cut: 'pattern', Stitch: 'guide', Guide: 'guide', Hardware: 'hardware' };   /* 層は 型紙・金具・ガイド の3つ（書き出しと同じ対応で読み戻す）。Stitch など実物でないものはガイド */
+export const LC_EXPORT_MAP = { pattern: 'LineType_01', hardware: 'LineType_02', guide: 'LineType_03' };
 /** Beam Studio 用 SVG：カット線＝黒（kerf/2 外側へ）、縫い穴＝赤の小円、刻印（目印レイヤー・文字）＝青、ガイドは含めない。 */
-export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = ['pattern'], engraveLayerIds = ['marks'], strokeMm = 0.1 } = {}) {
+export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = ['pattern'], engraveLayerIds = [], strokeMm = 0.1 } = {}) {   /* 彫刻は Beam Studio 側で足す（N's CAD からは出さない）。金具の穴（hwHole）は切る */
   const visible = s => doc.layers.find(l => l.id === s.layer)?.visible;
-  const cut = doc.shapes.filter(s => visible(s) && cutLayerIds.includes(s.layer) && !['text', 'dimension', 'fold'].includes(s.type));
-  const engrave = doc.shapes.filter(s => visible(s) && (engraveLayerIds.includes(s.layer) || (s.type === 'text' && !cutLayerIds.includes(s.layer) && s.layer !== 'guide')) && s.type !== 'fold' && s.type !== 'dimension');
+  const cut = doc.shapes.filter(s => visible(s) && (cutLayerIds.includes(s.layer) || (s.hwHole && s.layer === 'hardware')) && !['text', 'dimension', 'fold'].includes(s.type));
+  const engrave = doc.shapes.filter(s => visible(s) && (engraveLayerIds.includes(s.layer) || (s.type === 'text' && !cutLayerIds.includes(s.layer) && s.layer !== 'guide' && s.layer !== 'hardware')) && s.type !== 'fold' && s.type !== 'dimension');
   const holes = holesOnCut(doc, cut, includeHoles);
   const kerfed = cut.map(s => (kerfMm > 0 && (s.closed || s.type === 'circle')) ? (offsetShape(s, kerfMm / 2) || s) : s);
   const all = [...kerfed, ...engrave], b = bboxOfDoc({ ...doc, shapes: all.length ? all : cut, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -37,13 +37,13 @@ export function importLeathercraft(shapes, { layerMap = LC_LAYER_MAP, maxHoleMm 
         if (s.type === 'circle') holeCandidates.push({ x: s.cx, y: s.cy, angleDeg: 0, width: s.r * 2, height: s.r * 2, kind: 'circle' });
         else if (s.type === 'polyline' && s.points.length === 4) { const pts = s.points, cx = pts.reduce((a, p) => a + p.x, 0) / 4, cy = pts.reduce((a, p) => a + p.y, 0) / 4; const far = pts.reduce((best, p) => distance(p, { x: cx, y: cy }) > distance(best, { x: cx, y: cy }) ? p : best); const near = pts.reduce((best, p) => distance(p, { x: cx, y: cy }) < distance(best, { x: cx, y: cy }) ? p : best); holeCandidates.push({ x: cx, y: cy, angleDeg: Math.atan2(far.y - cy, far.x - cx) * 180 / Math.PI, width: 2 * distance(far, { x: cx, y: cy }), height: 2 * distance(near, { x: cx, y: cy }), kind: 'diamond' }); }
         else if (s.type === 'point') holeCandidates.push({ x: s.x, y: s.y, angleDeg: 0, width: 0.5, height: 0.5, kind: 'dot' });
-        else out.push({ ...s, layer: 'marks' });
+        else out.push({ ...s, layer: 'guide' });
         continue;
       }
-      out.push({ ...s, layer: 'marks' }); continue;
+      out.push({ ...s, layer: 'guide' }); continue;
     }
     if (s.type === 'point') continue;
-    const mapped = layerMap[layer] || (/^LineType_(\d+)$/i.test(layer) ? (Number(layer.match(/(\d+)$/)[1]) <= 1 ? 'pattern' : Number(layer.match(/(\d+)$/)[1]) === 2 ? 'marks' : 'guide') : layer || 'pattern');
+    const mapped = layerMap[layer] || (/^LineType_(\d+)$/i.test(layer) ? (Number(layer.match(/(\d+)$/)[1]) <= 1 ? 'pattern' : Number(layer.match(/(\d+)$/)[1]) === 2 ? 'hardware' : 'guide') : layer || 'pattern');
     out.push({ ...s, layer: mapped });
   }
   return { shapes: out, holeCandidates };

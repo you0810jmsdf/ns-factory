@@ -41,11 +41,11 @@
   <!-- 3枚のシート -->
   <g transform="translate(20,200)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--guide)" stroke-width="2"/>
     <line x1="30" y1="22" x2="190" y2="22" stroke="var(--guide)" stroke-dasharray="6 4"/><line x1="110" y1="4" x2="110" y2="38" stroke="var(--guide)" stroke-dasharray="6 4"/>
-    <text x="0" y="68" class="a">ガイド</text><text x="58" y="68" class="s">補助線・目盛り</text></g>
+    <text x="0" y="68" class="a">ガイド</text><text x="58" y="68" class="s">補助線・目盛り・縫い線・印・文字</text></g>
   <g transform="translate(20,110)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--mark)" stroke-width="2"/>
     <rect x="62" y="10" width="100" height="22" rx="6" fill="none" stroke="var(--mark)" stroke-dasharray="5 3" stroke-width="2"/>
     <g fill="var(--mark)"><circle cx="72" cy="21" r="2.6"/><circle cx="86" cy="21" r="2.6"/><circle cx="100" cy="21" r="2.6"/><circle cx="114" cy="21" r="2.6"/><circle cx="128" cy="21" r="2.6"/><circle cx="142" cy="21" r="2.6"/><circle cx="154" cy="21" r="2.6"/></g>
-    <text x="0" y="68" class="a">目印</text><text x="40" y="68" class="s">縫い線・位置の印・金具の外形</text></g>
+    <text x="0" y="68" class="a">金具</text><text x="40" y="68" class="s">置いた金具の外形と穴</text></g>
   <g transform="translate(20,20)"><polygon points="0,40 180,40 230,0 50,0" fill="var(--soft)" stroke="var(--pat)" stroke-width="2"/>
     <rect x="52" y="6" width="116" height="30" rx="9" fill="none" stroke="var(--pat)" stroke-width="2.4"/>
     <text x="0" y="68" class="a">型紙</text><text x="46" y="68" class="s">切り抜く線（革を切る形）</text></g>
@@ -84,11 +84,11 @@
 
 <h3>こんなとき、どうする？</h3>
 <div class="two">
-  <div class="card"><span class="tag">困りごと</span>型紙だけを見たい（目印とガイドを隠したい）。<div class="say"><b>作図先を「型紙」にして、「作図先の層だけ表示」を押す。</b>他の層がすべて隠れます。元に戻すときは「すべて表示」。</div></div>
+  <div class="card"><span class="tag">困りごと</span>型紙だけを見たい（金具とガイドを隠したい）。<div class="say"><b>作図先を「型紙」にして、「作図先の層だけ表示」を押す。</b>他の層がすべて隠れます。元に戻すときは「すべて表示」。</div></div>
   <div class="card"><span class="tag">困りごと</span>あとから、描いた線をガイドに変えたい。<div class="say"><b>作図先を「ガイド」にして、線を選び、「選んだ図形を、作図先の層へ移す」を押す。</b>複数の線をまとめて移せます。つながった線は、ダブルクリックでまとめて選べます。</div></div>
   <div class="card"><span class="tag">困りごと</span>補助線を引きたい。でも型紙に混ぜたくない。<div class="say"><b>作図先を「ガイド」にしてから</b>線を引く。あとで「ガイド」の表示を外せば、まとめて消えたように見えます。</div></div>
   <div class="card"><span class="tag">困りごと</span>型紙を、うっかり動かしてしまう。<div class="say"><b>「型紙」をロック</b>する。ロックしたシートの図形は、クリックしても選べません。</div></div>
-  <div class="card"><span class="tag">困りごと</span>縫い穴や印が多くて、型紙の形が見にくい。<div class="say"><b>「目印」の表示を外す。</b>型紙の線だけが見えます。</div></div>
+  <div class="card"><span class="tag">困りごと</span>縫い穴や印が多くて、型紙の形が見にくい。<div class="say"><b>「ガイド」の表示を外す。</b>型紙の線だけが見えます。</div></div>
   <div class="card"><span class="tag">困りごと</span>書き出し（SVG）に、補助線を入れたくない。<div class="say"><b>書き出す前に「ガイド」の表示を外す。</b>表示を外したシートは SVG に出ません。</div></div>
 </div>
 <p class="note"><b>基本の方針：「点線・寸法線・文字」はガイド、「実線」は型紙。</b>ガイドの層に描いた線は、自動で点線になります。文字と寸法線は、作図先が何でも、自動でガイドの層に入ります。オフセットの結果（点線）も、ガイドの層に入ります。情報カードで線種を点線に変えた図形はガイドへ、実線に戻した図形は型紙へ、自動で移ります。</p>
