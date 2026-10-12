@@ -21,9 +21,12 @@
   <div class="acts">
     <button id="btnGps" class="ghost" type="button">現在地から光の筋</button>
     <button id="btnTree" class="ghost" type="button">神々の系譜図</button>
-    <button id="btnBgm" class="ghost" type="button" aria-pressed="true">♪ BGM：入</button>
-    <button id="btnBgmNext" class="ghost" type="button">曲：人魚の目覚め</button>
-    <button id="btnSky" class="ghost" type="button" aria-expanded="false">時刻：いま</button>
+    <button id="btnSet" class="ghost" type="button" aria-expanded="false" aria-controls="setGroup">設定 ♪ ▾</button>
+    <div id="setGroup" class="setgroup" hidden>
+      <button id="btnBgm" class="ghost" type="button" aria-pressed="true">♪ BGM：入</button>
+      <button id="btnBgmNext" class="ghost" type="button">曲：人魚の目覚め</button>
+      <button id="btnSky" class="ghost" type="button" aria-expanded="false">時刻：いま</button>
+    </div>
   </div>
 </header>
 
