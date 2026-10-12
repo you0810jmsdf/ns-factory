@@ -28,7 +28,8 @@
           "review_count": 758,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "katori",
@@ -58,11 +59,13 @@
           "review_count": 221,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kashima",
       "shrine_name": "鹿島神宮",
+      "fetched_at": "2026-10-12",
       "hotels": [
         {
           "name": "No.12 Kashima Fan Zone",
@@ -118,7 +121,8 @@
           "review_count": 657,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "awa",
@@ -148,7 +152,8 @@
           "review_count": 20,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "susaki",
@@ -178,7 +183,8 @@
           "review_count": 56,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ise",
@@ -208,7 +214,8 @@
           "review_count": 1287,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "izumo",
@@ -238,7 +245,8 @@
           "review_count": 86,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tamasaki",
@@ -268,7 +276,8 @@
           "review_count": 602,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hikawa",
@@ -298,7 +307,8 @@
           "review_count": 1395,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "sengen",
@@ -328,7 +338,8 @@
           "review_count": 15,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "atsuta",
@@ -358,7 +369,8 @@
           "review_count": 1518,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "suwa",
@@ -388,7 +400,8 @@
           "review_count": 793,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "omiwa",
@@ -418,7 +431,8 @@
           "review_count": 62,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kasuga",
@@ -448,7 +462,8 @@
           "review_count": 1736,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "sumiyoshi",
@@ -478,7 +493,8 @@
           "review_count": 61,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kumano",
@@ -508,7 +524,8 @@
           "review_count": 303,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "munakata",
@@ -538,11 +555,13 @@
           "review_count": 98,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "usa",
       "shrine_name": "宇佐神宮",
+      "fetched_at": "2026-10-12",
       "hotels": [
         {
           "name": "宇佐ホテルリバーサイド",
@@ -582,7 +601,8 @@
           "review_count": 13,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "takachiho",
@@ -612,7 +632,8 @@
           "review_count": 250,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hokkaido",
@@ -642,7 +663,8 @@
           "review_count": 815,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "shiogama",
@@ -672,7 +694,8 @@
           "review_count": 126,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "dewa",
@@ -702,7 +725,8 @@
           "review_count": 70,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hakusan",
@@ -732,7 +756,8 @@
           "review_count": 18,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "keta",
@@ -754,7 +779,8 @@
           "review_count": 414,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "yahiko",
@@ -784,7 +810,8 @@
           "review_count": 284,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "togakushi",
@@ -814,7 +841,8 @@
           "review_count": 165,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tsurugaoka",
@@ -844,7 +872,8 @@
           "review_count": 1641,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "futarasan",
@@ -874,7 +903,8 @@
           "review_count": 24,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kashihara",
@@ -904,7 +934,8 @@
           "review_count": 97,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "fushimi",
@@ -934,7 +965,8 @@
           "review_count": 924,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kotohira",
@@ -964,7 +996,8 @@
           "review_count": 13,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "oomishima",
@@ -994,7 +1027,8 @@
           "review_count": 15,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "miho",
@@ -1024,7 +1058,8 @@
           "review_count": 265,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kirishima",
@@ -1054,12 +1089,14 @@
           "review_count": 141,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "udo",
       "shrine_name": "鵜戸神宮",
-      "hotels": []
+      "hotels": [],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "shimogamo",
@@ -1089,7 +1126,8 @@
           "review_count": 58,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "iwakiyama",
@@ -1103,7 +1141,8 @@
           "review_count": 65,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "nukisaki",
@@ -1133,7 +1172,8 @@
           "review_count": 11,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kehi",
@@ -1163,7 +1203,8 @@
           "review_count": 957,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "nangu",
@@ -1185,7 +1226,8 @@
           "review_count": 159,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "izanagijingu",
@@ -1215,7 +1257,8 @@
           "review_count": 99,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tagataisha",
@@ -1237,7 +1280,8 @@
           "review_count": 515,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kibitsu",
@@ -1251,12 +1295,14 @@
           "review_count": 51,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ube",
       "shrine_name": "宇倍神社",
-      "hotels": []
+      "hotels": [],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "aso",
@@ -1286,7 +1332,8 @@
           "review_count": 882,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ooasahiko",
@@ -1300,7 +1347,8 @@
           "review_count": 164,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tosa",
@@ -1330,7 +1378,8 @@
           "review_count": 1392,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "meiji",
@@ -1360,7 +1409,8 @@
           "review_count": 1210,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "chichibu",
@@ -1390,7 +1440,8 @@
           "review_count": 290,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "mishima",
@@ -1420,7 +1471,8 @@
           "review_count": 1617,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "oyama",
@@ -1434,7 +1486,8 @@
           "review_count": 18,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "isonokami",
@@ -1464,7 +1517,8 @@
           "review_count": 33,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hiyoshi",
@@ -1494,7 +1548,8 @@
           "review_count": 281,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "niutsuhime",
@@ -1508,7 +1563,8 @@
           "review_count": 132,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "miyazaki",
@@ -1538,7 +1594,8 @@
           "review_count": 1153,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "naminoue",
@@ -1568,12 +1625,14 @@
           "review_count": 29,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "isasumi",
       "shrine_name": "伊佐須美神社",
-      "hotels": []
+      "hotels": [],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kitaguchi",
@@ -1603,7 +1662,8 @@
           "review_count": 142,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tsubaki",
@@ -1617,7 +1677,8 @@
           "review_count": 89,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ikuta",
@@ -1647,7 +1708,8 @@
           "review_count": 881,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kamigamo",
@@ -1677,7 +1739,8 @@
           "review_count": 65,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kumanoizumo",
@@ -1691,7 +1754,8 @@
           "review_count": 180,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "iminomiya",
@@ -1721,7 +1785,8 @@
           "review_count": 892,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "sumiyoshihakata",
@@ -1751,7 +1816,8 @@
           "review_count": 1021,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "suwanagasaki",
@@ -1781,7 +1847,8 @@
           "review_count": 139,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "komagata",
@@ -1811,12 +1878,14 @@
           "review_count": 200,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tsushima",
       "shrine_name": "津島神社",
-      "hotels": []
+      "hotels": [],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hirota",
@@ -1846,7 +1915,8 @@
           "review_count": 208,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "otori",
@@ -1876,7 +1946,8 @@
           "review_count": 482,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kibitsuhiko",
@@ -1890,7 +1961,8 @@
           "review_count": 139,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "nichizen",
@@ -1920,7 +1992,8 @@
           "review_count": 1509,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ishizuchi",
@@ -1950,7 +2023,8 @@
           "review_count": 167,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tamura",
@@ -1972,7 +2046,8 @@
           "review_count": 10,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "dazaifu",
@@ -2002,7 +2077,8 @@
           "review_count": 46,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "oosaki",
@@ -2032,7 +2108,8 @@
           "review_count": 1645,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kasamainari",
@@ -2054,7 +2131,8 @@
           "review_count": 303,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "wakasahiko",
@@ -2068,7 +2146,8 @@
           "review_count": 339,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "toga",
@@ -2098,7 +2177,8 @@
           "review_count": 1550,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "takebe",
@@ -2128,7 +2208,8 @@
           "review_count": 71,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "heian",
@@ -2158,7 +2239,8 @@
           "review_count": 75,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hakozaki",
@@ -2188,7 +2270,8 @@
           "review_count": 13,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "yutoku",
@@ -2202,7 +2285,8 @@
           "review_count": 19,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kagoshimajingu",
@@ -2232,7 +2316,8 @@
           "review_count": 656,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hayatani",
@@ -2262,12 +2347,14 @@
           "review_count": 115,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "samukawa",
       "shrine_name": "寒川神社",
-      "hotels": []
+      "hotels": [],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "kanda",
@@ -2297,7 +2384,8 @@
           "review_count": 534,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "suwashimosha",
@@ -2327,7 +2415,8 @@
           "review_count": 267,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "minashijinja",
@@ -2357,7 +2446,8 @@
           "review_count": 74,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "ooyamato",
@@ -2387,7 +2477,8 @@
           "review_count": 326,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tsurugijinja",
@@ -2417,7 +2508,8 @@
           "review_count": 28,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hiraoka",
@@ -2439,7 +2531,8 @@
           "review_count": 401,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "taiheizanmiyoshi",
@@ -2469,7 +2562,8 @@
           "review_count": 3588,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "hinomisaki",
@@ -2499,7 +2593,8 @@
           "review_count": 90,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     },
     {
       "shrine_id": "tsuno",
@@ -2513,7 +2608,8 @@
           "review_count": 166,
           "status": "candidate"
         }
-      ]
+      ],
+      "fetched_at": "2026-10-12"
     }
   ]
 }
