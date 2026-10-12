@@ -454,7 +454,7 @@ function markTargetS(s, d, closed, len) { const v = s + d; if (closed) return ((
 /** 目印ツールの距離指定。1 回目のクリック＝基準の点（線の端・角は磁石で正確に）、2 回目のクリック＝進む向き。開いた線の端が基準なら向きは線の内側に決まるので 1 回で打つ。距離は線に沿って測る（つながった線は結合点をまたぐ）。 */
 function markByDistance(click) {
   const d = markDistance(), reach = magnetRadiusMm(), second = stage?.kind === 'markBase'; let base = click;
-  if (!second && reach > 0) { let near = reach; for (const c of magnetEnds) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  if (!second && reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetGuide]) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, base) <= 8 / scale);
   if (!hit) { $('hint').textContent = t('markNoLine'); return; }
   const state = routeForHit(hit); if (!state?.route) return;
@@ -480,7 +480,7 @@ function markDivisions() { const n = Math.floor(Number($('markDiv').value)); ret
 /** 目印ツールの分割指定。1 回目＝線の上の1点目（端・角は磁石で正確に）、2 回目＝同じ線の上の2点目。その間（線に沿って測る）を n 等分する位置に目印を打つ（2＝中心）。元に戻すは1回。 */
 function markByDivision(click) {
   const n = markDivisions(), reach = magnetRadiusMm(), second = stage?.kind === 'markDiv'; let base = click;
-  if (reach > 0) { let near = reach; for (const c of magnetEnds) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetGuide]) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
   /* 交点では複数の線が重なる。クリック位置に乗っている線をすべて拾い（上にある線が先）、1点目はその全部の位置を覚え、2点目は1点目と共通の線を使う。 */
   const cands = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().filter(s => distToShape(s, base) <= 8 / scale).map(hit => { const state = routeForHit(hit); if (!state?.route) return null; const route = { ...state.route, reversed: !!state.saved.reversed }; return { route, key: [...state.saved.shapeIds].sort().join(','), s: projectOnPath(route, base).s }; }).filter(Boolean);
   if (!cands.length) { $('hint').textContent = t('markNoLine'); return; }
@@ -2481,7 +2481,7 @@ function magnetPointsOf(shapes) {
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
-const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror'];
+const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror', 'mark'];
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 /** ポインタの近く（画面で 40px 以内）にあるガイドの点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
 function guideMarkPoints() {
