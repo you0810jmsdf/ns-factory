@@ -1,0 +1,189 @@
+{
+ "id": "mini6-krause",
+ "names": {
+  "ja": "クラウゼ Mini6",
+  "en": "KRAUSE Mini6",
+  "aliases": []
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19.2,
+   19.2,
+   19.2,
+   19.2,
+   19.2
+  ],
+  "centerPitchMm": 19.2,
+  "span1toLastMm": 96
+ },
+ "refill": {
+  "wMm": 80,
+  "hMm": 128
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   11,
+   13,
+   15,
+   19,
+   20
+  ],
+  "shape": "round",
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 15,
+    "innerDiameterMm": 11,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 17,
+    "innerDiameterMm": 13,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 19,
+    "innerDiameterMm": 15,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 23,
+    "innerDiameterMm": 19,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 24,
+    "innerDiameterMm": 20,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   }
+  ]
+ },
+ "plate": {
+  "lengthMm": 135,
+  "widthMm": 20,
+  "thicknessMm": 2,
+  "cornerRMm": 4,
+  "confidence": "measured"
+ },
+ "rivets": [
+  {
+   "xMm": -54,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 54,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated",
+  "parts": [
+   {
+    "xMm": 56,
+    "yMm": 0,
+    "widthMm": 8,
+    "lengthMm": 16,
+    "heightMm": 6,
+    "diameterMm": null,
+    "kind": "lever",
+    "note": "叩き台（推定）：実測で置き換える"
+   },
+   {
+    "xMm": -56,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": 4,
+    "diameterMm": 7,
+    "kind": "button",
+    "note": "叩き台（推定）：実測で置き換える"
+   }
+  ]
+ },
+ "drawings": {
+  "plan": "binder/mini6-krause.plan.svg",
+  "side": "binder/mini6-krause.side.svg",
+  "front": "binder/mini6-krause.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 120,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [],
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -54,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 54,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-03-13 の図から 2026-10-12 に読み取り）。板厚・リング・取り付け穴・機構は規格の値のまま",
+ "parent": "mini6"
+}
