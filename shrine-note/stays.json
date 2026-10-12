@@ -2610,6 +2610,112 @@
         }
       ],
       "fetched_at": "2026-10-12"
+    },
+    {
+      "shrine_id": "utsunomiyafutaarayama",
+      "shrine_name": "宇都宮二荒山神社",
+      "fetched_at": "2026-10-12",
+      "hotels": [
+        {
+          "name": "リッチモンドホテル宇都宮駅前アネックス",
+          "area": "栃木県宇都宮市駅前通り3-6-5",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D108189",
+          "review_average": 4.54,
+          "review_count": 3013,
+          "status": "candidate"
+        },
+        {
+          "name": "CANDEO HOTELS(カンデオホテルズ)宇都宮",
+          "area": "栃木県宇都宮市宮みらい1-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184376",
+          "review_average": 4.45,
+          "review_count": 2356,
+          "status": "candidate"
+        },
+        {
+          "name": "JR東日本ホテルメッツ宇都宮",
+          "area": "栃木県宇都宮市川向町1-23",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D136222",
+          "review_average": 4.38,
+          "review_count": 2491,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kunozantoshogu",
+      "shrine_name": "久能山東照宮",
+      "fetched_at": "2026-10-12",
+      "hotels": [
+        {
+          "name": "日本平ホテル",
+          "area": "静岡県静岡市清水区馬走1500-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D13913",
+          "review_average": 4.71,
+          "review_count": 1102,
+          "status": "candidate"
+        },
+        {
+          "name": "徳川の奥座敷 久能宿<LIBERTY RESORT>",
+          "area": "静岡県静岡市駿河区古宿294",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D191602",
+          "review_average": 4.17,
+          "review_count": 40,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "izawa",
+      "shrine_name": "伊雑宮",
+      "fetched_at": "2026-10-12",
+      "hotels": [
+        {
+          "name": "公共の宿 伊勢志摩ユースホステル",
+          "area": "三重県志摩市磯部町穴川1219-82",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D28032",
+          "review_average": 4.5,
+          "review_count": 80,
+          "status": "candidate"
+        },
+        {
+          "name": "Tabist ステーションホテル磯部 伊勢志摩",
+          "area": "未選択志摩市磯部町迫間1814",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D129990",
+          "review_average": 3.65,
+          "review_count": 101,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "chokaisan",
+      "shrine_name": "鳥海山大物忌神社",
+      "fetched_at": "2026-10-12",
+      "hotels": [
+        {
+          "name": "鳥海温泉 遊楽里",
+          "area": "山形県飽海郡遊佐町吹浦西浜2-76",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D52133",
+          "review_average": 4.3,
+          "review_count": 848,
+          "status": "candidate"
+        },
+        {
+          "name": "酒田屋旅館",
+          "area": "山形県飽海郡遊佐町大字吹浦字湯ノ田9-4",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D4750",
+          "review_average": 4.02,
+          "review_count": 527,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "izushi",
+      "shrine_name": "出石神社",
+      "fetched_at": "2026-10-12",
+      "hotels": []
     }
   ]
 }
