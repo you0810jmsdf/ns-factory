@@ -2809,6 +2809,7 @@ function snapped(p, shift, anchor) {
 }
 function anchor() {
   if (gesture?.kind === 'draw' || gesture?.kind === 'move' || gesture?.kind === 'pen') return gesture.start;
+  if (gesture?.kind === 'lineEnd') return gesture.fixed; /* Shift で、動かさない側の端から水平・垂直に固定 */
   if (stage?.points) return stage.points.at(-1);
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
   if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
@@ -2935,6 +2936,19 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
   }
   path(s); ctx.strokeStyle = color; ctx.stroke();
 }
+/** 直線の片側の端（end＝1か2）だけを p へ動かした直線。 */
+function lineEndMoved(s, end, p) { return end === 1 ? { ...s, x1: p.x, y1: p.y } : { ...s, x2: p.x, y2: p.y }; }
+/** 選択中の直線の端のハンドル（画面で 9px 以内）。目打ちが付いた線・ロック層は対象外（穴が壊れるため）。 */
+/** 端をドラッグ中のカーソル位置。Shift なら、動かさない側の端から元の向きの線の上に限る（水平・垂直の線なら水平・垂直のまま。吸着した点を、その線へ射影する）。 */
+function lineEndCursor(g, w, shift) {
+  const sp = snapped(w, false, null); if (!shift || !g.dir) return sp;
+  const t = (sp.x - g.fixed.x) * g.dir.x + (sp.y - g.fixed.y) * g.dir.y; return { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t };
+}
+function lineEndHit(p) {
+  const s = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id) && x.type === 'line' && editable(x)) : null; if (!s) return null;
+  const near = 9 / scale, d1 = distance(p, { x: s.x1, y: s.y1 }), d2 = distance(p, { x: s.x2, y: s.y2 }); if (Math.min(d1, d2) > near) return null;
+  return { shape: s, end: d1 <= d2 ? 1 : 2 };
+}
 function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
   s.nodes.forEach((n, i) => {
@@ -2977,9 +2991,10 @@ function drawSheetBody(lo, hi) {
     const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? lineEndMoved(s, gesture.end, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
+  if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && s.type === 'line' && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? lineEndMoved(ln, gesture.end, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const [x, y] of [[v.x1, v.y1], [v.x2, v.y2]]) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線を1本選ぶと、両端にハンドル（ドラッグで片側だけ伸び縮み） */
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole)) continue;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
@@ -3104,6 +3119,8 @@ canvas.addEventListener('pointerdown', e => {
   }
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
+    const le = lineEndHit(cursor);
+    if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } const fx = le.end === 1 ? le.shape.x2 : le.shape.x1, fy = le.end === 1 ? le.shape.y2 : le.shape.y1, mx = le.end === 1 ? le.shape.x1 : le.shape.x2, my = le.end === 1 ? le.shape.y1 : le.shape.y2, ln = Math.hypot(mx - fx, my - fy); gesture = { kind: 'lineEnd', id: le.shape.id, end: le.end, screen: p, fixed: { x: fx, y: fy }, dir: ln > 1e-9 ? { x: (mx - fx) / ln, y: (my - fy) / ln } : null }; $('hint').textContent = t('lineEndDrag'); draw(); return; } /* 端のハンドルをつかむと、反対側は動かさずその端だけ動かす */
     const nh = pathShape && nodeHit(pathShape, cursor);
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
@@ -3123,7 +3140,8 @@ canvas.addEventListener('pointermove', e => {
   if (quadOn()) quadHover = quadRoleAt(p);
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
-  else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (gesture?.kind === 'lineEnd') cursor = lineEndCursor(gesture, world(p), e.shiftKey);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   draw();
 });
@@ -3169,13 +3187,17 @@ canvas.addEventListener('dblclick', e => {
 canvas.addEventListener('pointerup', e => {
   if (!gesture) return;
   const g = gesture, p = local(e);
-  cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (g.kind === 'lineEnd') cursor = lineEndCursor(g, world(p), e.shiftKey);
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
+  } else if (g.kind === 'lineEnd') {
+    const s = doc.shapes.find(s => s.id === g.id);
+    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = lineEndMoved(s, g.end, cursor); if (Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) $('hint').textContent = t('lineEndZero'); else { transformSelectedTo(next); $('hint').textContent = t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }); } }
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
