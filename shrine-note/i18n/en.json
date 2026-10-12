@@ -32,15 +32,82 @@
     "wasGuess": "Conjecture"
   },
   "deities": {
-    "amaterasu": { "name": "Amaterasu-Ōmikami", "note": "Sun deity" },
-    "toyouke": { "name": "Toyouke-no-Ōmikami", "note": "Deity of food, enshrined at the Outer Shrine" },
-    "ookuninushi": { "name": "Ōkuninushi-no-Ōkami", "note": "Central figure of the Kojiki's 'building the land' tale" },
-    "munakata3": { "name": "The Three Munakata Goddesses", "note": "Ichikishima-hime, Tagori-hime and Tagitsu-hime" },
-    "ketsumiko": { "name": "Ketsumiko-no-Ōkami", "note": "Chief deity of Kumano Hongū Taisha" },
-    "susanoo": { "name": "Susanoo-no-Mikoto", "note": null },
-    "hayatamano": { "name": "Hayatama-no-O-no-Kami", "note": null },
-    "izanami": { "name": "Izanami-no-Mikoto", "note": null },
-    "takemikazuchi": { "name": "Takemikazuchi-no-Ōkami", "note": "Deity of Kashima" }
+    "amaterasu": {
+      "name": "Amaterasu-Ōmikami",
+      "note": "Sun deity"
+    },
+    "toyouke": {
+      "name": "Toyouke-no-Ōmikami",
+      "note": "Deity of food, enshrined at the Outer Shrine"
+    },
+    "ookuninushi": {
+      "name": "Ōkuninushi-no-Ōkami",
+      "note": "Central figure of the Kojiki's 'building the land' tale"
+    },
+    "munakata3": {
+      "name": "The Three Munakata Goddesses",
+      "note": "Ichikishima-hime, Tagori-hime and Tagitsu-hime"
+    },
+    "ketsumiko": {
+      "name": "Ketsumiko-no-Ōkami",
+      "note": "Chief deity of Kumano Hongū Taisha"
+    },
+    "susanoo": {
+      "name": "Susanoo-no-Mikoto",
+      "note": null
+    },
+    "hayatamano": {
+      "name": "Hayatama-no-O-no-Kami",
+      "note": null
+    },
+    "izanami": {
+      "name": "Izanami-no-Mikoto",
+      "note": null
+    },
+    "takemikazuchi": {
+      "name": "Takemikazuchi-no-Ōkami",
+      "note": "Deity of Kashima"
+    },
+    "ajisuki": {
+      "name": "Ajisukitakahikone-no-Mikoto",
+      "note": null
+    },
+    "amenokoyane": {
+      "name": "Ame-no-Koyane-no-Mikoto",
+      "note": null
+    },
+    "futsunushi": {
+      "name": "Futsunushi-no-Ōkami",
+      "note": null
+    },
+    "himegami": {
+      "name": "Himegami (the Princess Deity)",
+      "note": null
+    },
+    "jingu": {
+      "name": "Empress Jingū",
+      "note": null
+    },
+    "meijitenno": {
+      "name": "Emperor Meiji",
+      "note": null
+    },
+    "ojin": {
+      "name": "Emperor Ōjin",
+      "note": null
+    },
+    "sarutahiko": {
+      "name": "Sarutahiko-no-Kami",
+      "note": null
+    },
+    "shokenkotaigo": {
+      "name": "Empress Dowager Shōken",
+      "note": null
+    },
+    "ukanomitama": {
+      "name": "Ukanomitama-no-Kami",
+      "note": null
+    }
   },
   "shrines": {
     "ise": {
@@ -132,6 +199,118 @@
       "hours": "The grounds have no gates or fences and are open 24 hours, 365 days a year. The amulet office and prayer reception are open 8:30–16:30 (official).",
       "parking": "No. 1 lot: 60 spaces (paid). No. 2 lot: 55 spaces (5-minute walk). Miyanaka-area lot: 150 spaces (3-minute walk; paid on weekends and holidays), and others. Please check fees on the official site.",
       "goshuin": "Not confirmed."
+    },
+    "meiji": {
+      "name": "Meiji Jingū",
+      "place": "Shibuya, Tokyo",
+      "summary": "A shrine founded in 1920 (Taishō 9) in Yoyogi, Shibuya, enshrining Emperor Meiji and his consort Empress Dowager Shōken. Its forest of about 700,000 square meters is an artificial forest made from about 100,000 trees donated from all over Japan. It is distinctive in enshrining a modern emperor and empress rather than deities of the Kojiki and Nihon Shoki era.",
+      "deity_note": "The enshrined deities are the 122nd emperor, Emperor Meiji, and his consort, Empress Dowager Shōken. Neither appears in the Kojiki or the Nihon Shoki. Emperor Meiji died in 1912 and Empress Dowager Shōken in 1914. The official site explains that the shrine was founded from the people's wish to \"enshrine their spirits and forever respect and revere their virtue\". Their deities belong to a modern foundation, separate from the mythology of the Kojiki and Nihon Shoki.",
+      "history": [
+        "Emperor Meiji died in 1912 and Empress Dowager Shōken in 1914. The people's strong wish to enshrine their spirits and honor their virtue led to the founding of the shrine at Yoyogi, a place closely linked to them (official).",
+        "Founded in 1920. The forest of about 700,000 square meters around the sanctuary was made by planting about 100,000 trees donated from all over Japan, aiming for an \"eternal forest\". The official site says the area before construction was the Minami-Toshima imperial estate and, apart from the present Inner Garden, was mostly farmland.",
+        "In an air raid in April 1945, most of the buildings were lost to fire. The official site says the forest became a refuge for people and suffered no great damage.",
+        "It marked the 100th anniversary of its founding in 2020."
+      ],
+      "highlights": [
+        "The grounds include the Inner Garden, which Emperor Meiji developed for his consort and had planted with iris, as well as the Treasure Museum, an Important Cultural Property, and the Meiji Jingu Museum (official).",
+        "The forest was planned with broadleaf evergreens such as shii, kashi and kusu as its main trees. The official site says the Inner Garden had about 120,000 trees of 365 species at the start, and about 36,000 trees of 234 species in the second comprehensive survey (reported in 2013), which also recorded about 3,000 kinds of living things."
+      ],
+      "address": "1-1 Yoyogi-Kamizono-chō, Shibuya, Tokyo 151-8557. Tel. 03-3379-5511 (main). For car navigation, the official site advises entering \"Yoyogi 1-1-2\".",
+      "access": "Harajuku Entrance (south): JR Yamanote Line Harajuku Station, or Tokyo Metro Chiyoda and Fukutoshin Lines Meiji-jingūmae (Harajuku) Station. Yoyogi Entrance (north): JR Yamanote Line Yoyogi Station, or Toei Ōedo Line Yoyogi Station. Sangūbashi Entrance (west): Odakyū Line Sangūbashi Station. About 10 minutes on foot from each entrance to the main sanctuary (official).",
+      "hours": "The gates open at sunrise and close at sunset. The official table of monthly hours gives October 5:40–16:40 and November 6:10–16:10 (January 6:40–16:20, July 5:00–18:20, and so on). Checked 12 Oct 2026.",
+      "parking": "By car, enter from the Yoyogi Entrance (not from the Harajuku or Sangūbashi Entrances). Because the lot can be full, the official site recommends public transport. The number of spaces and fees are not given on the official page checked, so they are to be confirmed.",
+      "goshuin": "Goshuin are given at \"Nagadono\" (the amulet office in front of the Kagura Hall) from 9:00 until closing (official). The fee is not given on the official page checked, so it is to be confirmed."
+    },
+    "fushimi": {
+      "name": "Fushimi Inari Taisha",
+      "place": "Fushimi Ward, Kyoto",
+      "summary": "The head shrine of the Inari shrines, said to number about 30,000 across Japan. The whole of Mt. Inari, 233 m high at the southern end of the Thirty-Six Peaks of Higashiyama, is sacred ground. Tradition says the deity Inari-ōkami was enshrined on Mt. Inari on the first Horse Day of the second month in 711.",
+      "deity_note": "The official site says the main sanctuary houses five shrines in one building: the Lower, Middle and Upper Shrines, plus the subsidiary Tanaka Shrine and Shi-daijin. The five names express the wide virtues of Inari-ōkami. They are Ukanomitama-no-Ōkami (Lower), Sata-hiko-no-Ōkami (Middle), Ōmiyanome-no-Ōkami (Upper), and Tanaka-no-Ōkami and Shi-daijin (subsidiary). In the Kojiki, Ukanomitama is a child of Susanoo and Kamuōichi-hime; in the Nihon Shoki he appears as Ukanomitama-no-Mikoto in a variant account. The official site gives Sarutahiko-no-Ōkami as another name of Sata-hiko-no-Ōkami. For Ōmiyanome-no-Ōkami, Tanaka-no-Ōkami and Shi-daijin, the official site does not match them to deities of the Kojiki and Nihon Shoki; its own history explains that Shi-daijin is described as four deities or one, so it is not certain. We therefore give them no deity entry here (to confirm). In the official prayer guide, Ukanomitama-no-Ōkami (also called Ukemochi-no-Kami) is introduced as the deity of prosperity, and Sata-hiko-no-Ōkami as the deity of traffic and travel safety.",
+      "history": [
+        "The official site records a tradition that Inari-ōkami was enshrined on Mt. Inari on the first Horse Day of the second month in 711. The shrine records tell that Iroku no Hata no Kimi, a wealthy man of Fukakusa, received an imperial order and enshrined three deities on the three peaks of Mt. Inari; this is said to be the beginning.",
+        "The official site introduces a lost passage of the Yamashiro no Kuni Fudoki: a rice cake that Iroku no Hata no Kimi, ancestor of the Hata clan, used as an archery target turned into a white bird and flew off, and rice grew on the peak where it settled. This is said to be the origin of the name \"Inari\".",
+        "The official site explains that in 827 the shrine received the Junior Fifth Rank, Lower Grade, from Emperor Junna, and in 942 the Senior First Rank.",
+        "The official shrine chronology notes that the Engishiki register of 927 lists \"Inari Shrine, three deities, all Myōjin Taisha\", that the buildings were burned in war in 1468, and that the main sanctuary was rebuilt in 1499."
+      ],
+      "highlights": [
+        "The main sanctuary, rebuilt in 1499 in the style called \"Inari-zukuri\", is an Important Cultural Property (official shrine map).",
+        "The Rōmon gate is said to have been built by Toyotomi Hideyoshi in 1589; an ink inscription of that year was found during dismantling and repair in 1973 (official shrine map).",
+        "About 10,000 torii line the paths of the mountain. The official site explains that the custom of donating a torii when a wish \"comes through\", or in thanks that it did, spread from the Edo period onward.",
+        "Mt. Inari is 233 m high, with three peaks (Ichinomine, Ninomine and Sannomine) running from west to east. The mountain holds what are said to be tens of thousands of otsuka stone memorials (official shrine map)."
+      ],
+      "address": "68 Fukakusa Yabunouchi-chō, Fushimi Ward, Kyoto 612-0882 (official site; checked 12 Oct 2026).",
+      "access": "By train: right next to JR Nara Line Inari Station (5 minutes from Kyoto Station), or a 5-minute walk east from Keihan Main Line Fushimi-Inari Station. By city bus: Minami 5 route, \"Inari Taisha-mae\", then a 7-minute walk east. By car: about 20 minutes from Meishin Expressway Kyoto-Minami IC, or about 10 minutes from Hanshin Expressway Kamitoba exit. The official site asks visitors to use public transport because the parking area gets very crowded (official: Access).",
+      "hours": "Visiting hours are not confirmed on the official pages.",
+      "parking": "The official site declines parking for anything other than worship, and asks visitors to follow staff instructions when the lot is full. The on-site lot is closed from 30 Dec to 6 Jan. The number of spaces and fees are not confirmed on the official access page (official: Access).",
+      "goshuin": "The official top page says that during the New Year period only pre-written goshuin sheets are given. Regular hours and fees are not confirmed."
+    },
+    "kasuga": {
+      "name": "Kasuga Taisha",
+      "place": "Nara City, Nara",
+      "summary": "Located on Kasugano in Nara City, it enshrines four deities in its first to fourth sanctuaries: Takemikazuchi-no-Mikoto, Futsunushi-no-Mikoto, Ame-no-Koyane-no-Mikoto and Himegami. The official site says the precinct, including the sacred mountain, is a World Heritage Site, and that it is the head shrine of about 3,000 Kasuga shrines across Japan.",
+      "deity_note": "The official enshrined deities are Takemikazuchi-no-Mikoto (first sanctuary), Futsunushi-no-Mikoto (second), Ame-no-Koyane-no-Mikoto (third) and Himegami (fourth); the names are written as on the official site. Takemikazuchi is written Takemikazuchi-no-O-no-Kami and similar in the Kojiki, and in the Nihon Shoki he appears with Futsunushi-no-Kami in a variant of Volume 2, the ninth section of the Age of the Gods (second part). Ame-no-Koyane appears in both the Kojiki and the Nihon Shoki in scenes such as the Heavenly Rock Cave and the descent of the heavenly grandson. In searches of the Kojiki and the Nihon Shoki, Himegami could not be identified as a specific deity, so which deity of the Kojiki and Nihon Shoki corresponds to the official Himegami is to be confirmed.",
+      "history": [
+        "The official site records that in 768, by imperial order of Empress Shōtoku, a main sanctuary enshrining the four deities was built.",
+        "The official top page says that about 1,300 years ago Takemikazuchi-no-Mikoto was welcomed from Kashima in Ibaraki to the summit of Mt. Mikasa (a founding tradition; support in historical records is to be confirmed).",
+        "The official site says the 20-year rebuilding cycle (Shikinen Zōtai) has continued 60 times, a record shared only with Ise Jingū and Kasuga Taisha.",
+        "The official site says the four main sanctuary buildings are National Treasures and 27 buildings are Important Cultural Properties."
+      ],
+      "highlights": [
+        "Four main sanctuary buildings are National Treasures (official).",
+        "The grounds hold facilities such as the Kokuhō-den (National Treasure Hall) and the Manyō Botanical Garden (official top page and precinct guide)."
+      ],
+      "address": "160 Kasugano-chō, Nara City, Nara 630-8212.",
+      "access": "The official site says to take a bus bound for Kasuga Taisha Honden from JR Nara Station or Kintetsu Nara Station, or to walk about 10 minutes via the main approach. Bus routes and frequency are not confirmed on the official site.",
+      "hours": "Gates open 6:30–17:30 (as written on the official site; whether this changes by season is to be confirmed).",
+      "parking": "Not confirmed on the official site. To be confirmed.",
+      "goshuin": "The official top page has a notice about goshuin, and there are several kinds. The fee and hours are not confirmed on the official site."
+    },
+    "futarasan": {
+      "name": "Nikkō Futarasan Shrine",
+      "place": "Nikkō City, Tochigi",
+      "summary": "A shrine whose sacred body is the mountain Nantai-san (Futarasan), and also the local guardian shrine of Nikkō. It stands in three places: the main shrine in the Nikkō temple-and-shrine area, Chūgūshi on the shore of Lake Chūzenji, and the Okumiya on the summit of Nantai-san. It enshrines three deities of one family: Ōnamuchi-no-Mikoto, Tagorihime-no-Mikoto and Ajisukitakahikone-no-Mikoto. The map marks the main shrine in the Nikkō Sannai area (just west of Tōshō-gū).",
+      "deity_note": "The official site calls the deity Futarasan-no-Ōkami and explains that the shrine enshrines a family of three: the father Ōnamuchi-no-Mikoto, the mother Tagorihime-no-Mikoto and the son Ajisukitakahikone-no-Mikoto. Ōnamuchi is another name of Ōkuninushi (in the Kojiki and the Nihon Shoki); Tagorihime is one of the three Munakata goddesses of the Nihon Shoki (existing deity entry: munakata3); Ajisukitakahikone is \"Ajishiki-takahiko-ne-no-Kami\" in the Kojiki, a child of Ōkuninushi and Takiri-bime of Munakata, and appears in the funeral scene of Ame-no-Wakahiko in the Nihon Shoki. However, in the texts obtained for this work we could not confirm that the Kojiki or the Nihon Shoki names Tagorihime as Ajisuki's mother (to confirm).",
+      "history": [
+        "The monk Shōdō, who opened the Nikkō mountains, is said to have crossed the Daiya River in 766, built a hermitage inside the Nikkō mountains, and the next year built a small shrine for Mt. Futarasan beside it. This is said to lead to today's Motomiya Shrine (a sub-shrine) (from a tourist guide article; not confirmed on the official pages).",
+        "Shōdō is said to have climbed Mt. Futarasan (Nantai-san) in 782 and built the Okumiya on the summit and then Chūgūshi on the shore of Lake Chūzenji (same article; not confirmed on the official pages).",
+        "In the Edo period, with the founding of Tōshō-gū, Futarasan Shrine is said to have moved to the west of Tōshō-gū, where a splendid shrine was built (same article; the year of the move cannot be read from the article and is not confirmed on the official site).",
+        "The two shrines and one temple (Futarasan Shrine, Tōshō-gū and Rinnō-ji) and their surroundings were designated a national historic site, \"Nikkō Sannai\", in 1998, and in 1999 were inscribed as the World Heritage site \"Shrines and Temples of Nikkō\" (same article)."
+      ],
+      "highlights": [
+        "The Shinkyō bridge, called \"the front gate of Nikkō\", is an Important Cultural Property and a World Heritage site, the official page introduces (the page's note \"under repair\" is an old statement from before March 2005).",
+        "Hōyū Shrine at the main shrine enshrines Sukunahikona-no-Mikoto, a deity of learning and wisdom, and is an Important Cultural Property and a World Heritage site according to the official page (annual festival on 15 May).",
+        "The official page introduces a great sword, \"Tarōmaru\" (total length 2.62 m, blade 1.8 m, weight 7.2 kg), in the Daikoku-den in the shrine garden. It is said to be the second largest sword at the shrine after \"Nenekirimaru\" in the Treasure Hall (photo taken in 2003).",
+        "Motomiya Shrine, a sub-shrine at the entrance to the Nikkō Sannai area, enshrines Ajisukitakahikone-no-Mikoto, the official page says."
+      ],
+      "address": "Main shrine: 2307 Sannai, Nikkō, Tochigi 321-1431 (tel. 0288-54-0535). Chūgūshi: 2484 Chūgūshi, Nikkō, Tochigi 321-1661 (tel. 0288-55-0017).",
+      "access": "The official parking page lists the bus stop \"World Heritage Loop Bus (Taiyū-in / Futarasan Shrine-mae)\". Travel times and how to ride from the station are not confirmed on the official site.",
+      "hours": "The official top page's note on the water-gathering ceremony gives the shrine garden's opening hours as 8:00–16:30 from April to October and 9:00–15:30 from November to March (a notice from around October 2021; the parking page currently says \"opens at 8:00\"). The garden admission fee and the hours of the main shrine's worship hall are not confirmed on the official site. Inquiries: main shrine 0288-54-0535.",
+      "parking": "Official main-shrine parking page: cars 700 yen (100 spaces), buses 20 spaces (4,000 yen, up to 3 hours), motorcycles 500 yen, no reservations. Hours: 8:00–17:00 from 1 Apr to 31 Oct, 9:00–16:00 from 1 Nov to 31 Mar (checked 12 Oct 2026).",
+      "goshuin": "Goshuin hours and fees are not confirmed on the official pages."
+    },
+    "tsurugaoka": {
+      "name": "Tsurugaoka Hachimangū",
+      "place": "Kamakura City, Kanagawa",
+      "summary": "A shrine that the official site says Minamoto no Yoritomo moved to its present site, the same year he set up his shogunate base in Kamakura, from a Hachiman shrine linked to the Minamoto clan. It enshrines three deities, Emperor Ōjin, Empress Jingū and Himegami, and stands at the north end of Wakamiya Ōji, the main approach that forms the axis of the town of Kamakura.",
+      "deity_note": "The official site names the enshrined deities as Emperor Ōjin, Empress Jingū and Himegami. It explains that Emperor Ōjin was the 15th emperor, son of Emperor Chūai and Empress Jingū (Emperor Ōjin and Empress Jingū appear in the Kojiki and the Nihon Shoki). In the official account, Ōjin was enshrined here via Usa Jingū and Iwashimizu Hachimangū. Himegami is only named in the official description of the main hall, and which deity of the Kojiki and Nihon Shoki she corresponds to is not confirmed on the official site, so it is to be confirmed.",
+      "history": [
+        "The official site says it began when Minamoto no Yoriyoshi, an ancestor of Yoritomo, invited the deity of Iwashimizu Hachimangū in Kyoto and enshrined the Hachiman deity as the Minamoto clan's guardian at Yuigahama in Kamakura. The year is not given on this official page.",
+        "The official site says that in 1180 Yoritomo set up his shogunate base in Kamakura and in the same year moved the Hachiman shrine linked to his ancestors to its present location.",
+        "Yoritomo held the Hōjōe, Yabusame (horseback archery), sumo and bugaku dance in the grounds as important shogunate rites. The official site explains these are the beginnings of today's festivals. Yabusame is said to have begun in the Kamakura period.",
+        "The official site says that Wakamiya Ōji, the main approach, is said to have been built by Yoritomo as the first step in planning the town of Kamakura, and in prayer for the safe childbirth of his wife Hōjō Masako."
+      ],
+      "highlights": [
+        "The Hongū (Upper Shrine) is the central hall enshrining Emperor Ōjin, Himegami and Empress Jingū, and, together with the Wakamiya (Lower Shrine), is an Important Cultural Property (official precinct guide).",
+        "The great stone stairway on the main approach is one of its symbols. The official site says it gives a view over the whole of Kamakura, and on clear days the Pacific Ocean and Izu-Ōshima can be seen.",
+        "A yabusame ritual is held at the yabusame field every year on 16 September (official precinct guide).",
+        "The official site says Genpei Pond was made by order of Yoritomo to Ōba Kageyoshi and the monk Ryōzen. The three-island Genji Pond and the four-island Heike Pond face each other.",
+        "Maruyama Inari Shrine, the oldest building in the grounds (Muromachi period), is a National Important Cultural Property (official precinct guide)."
+      ],
+      "address": "2-1-31 Yukinoshita, Kamakura, Kanagawa 248-8588 (official visitor guide; checked 12 Oct 2026).",
+      "access": "A 10-minute walk from the east exit of JR Kamakura Station, or 10 minutes from Enoden Kamakura Station. By car, about 5 km toward Kamakura on Prefectural Route 204 from Asahina IC on the Yokohama-Yokosuka Road (official visitor guide; checked 12 Oct 2026).",
+      "hours": "Open 6:00–20:00 all year (official visitor guide; checked 12 Oct 2026). The Treasure Hall is open 9:00–16:00 with no regular closing day (it may close when exhibits are changed).",
+      "parking": "The official table gives cars 9:00–19:30: 600 yen for the first hour, then 300 yen every 30 minutes; 40 car spaces and 10 large-vehicle spaces. Large buses 9:00–17:00 (reservation required; no reservations on weekends and holidays). No reservations for cars (official visitor guide; checked 12 Oct 2026).",
+      "goshuin": "The goshuin hours and fee are not confirmed on the official visitor guide, precinct guide or amulet page."
     }
   }
 }
