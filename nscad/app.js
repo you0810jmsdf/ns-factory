@@ -2979,7 +2979,9 @@ function lineEndHit(p) {
 /** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
 function pickShapeAt(p) {
   const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s)) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); }
-  if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)); return cands.filter(c => c.d <= min + 1.5 / scale).at(-1).s;
+  if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)), near = cands.filter(c => c.d <= min + 1.5 / scale);
+  const lenOf = x => { const n = arcLength(x); return Number.isFinite(n) ? n : Infinity; }; /* ほぼ同じ近さ（つながった端など）なら、短い図形を優先：短い線は端が長い線に重なるので、上のものを選ぶと端をクリックしても選べない。同じ長さなら上に描かれたもの */
+  let best = near[0], bl = lenOf(best.s); for (const c of near.slice(1)) { const l = lenOf(c.s); if (l <= bl + 1e-6) { best = c; bl = Math.min(l, bl); } } return best.s;
 }
 /** 穴・目印をクリックしたときの距離。点の目印は長さ2mmの短い線（元の線と直角）なので、中心ではなく、その線までの距離で測る（端のあたりをクリックしても選べる）。 */
 function holeHitDistance(h, p) {
