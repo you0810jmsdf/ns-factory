@@ -761,13 +761,14 @@ function refreshInfo() {
     const colorable = many.filter(x => INFO_FIELDS[x.type]?.includes('color'));
     for (const f of ALL_FIELDS) $('l-' + f).hidden = !(colorable.length && COLOR_FIELDS.includes(f));
     $('l-type').hidden = $('l-layer').hidden = false;
-    for (const id of ['l-part', 'l-partName', 'l-thickness', 'l-partOrder']) $(id).hidden = true;
+    for (const id of ['l-part', 'l-partName', 'l-thickness', 'l-partOrder', 'l-addNodes']) $(id).hidden = true;
     $('info-type').textContent = t('multiSelected', { n: many.length }); $('info-layer').value = commonValue(many, x => x.layer);
     if (colorable.length) { $('info-color').value = commonValue(colorable, x => x.color || ''); $('info-lineStyle').value = commonValue(colorable, x => x.lineStyle || ''); }
     infoBusy = false; return;
   }
   for (const f of ALL_FIELDS) $('l-' + f).hidden = !s || !INFO_FIELDS[s.type]?.includes(f);
   $('l-type').hidden = $('l-layer').hidden = !s; if (s) $('l-part').hidden = false;
+  $('l-addNodes').hidden = !(s && ['line', 'polyline', 'path', 'bezier'].includes(s.type) && editable(s)); /* 節点を等間隔で足す */
   if (s) {
     $('info-type').textContent = t(s.type); $('info-layer').value = s.layer;
     const typing = el => typeof document.activeElement !== 'undefined' && document.activeElement === el; // 打ちかけの欄は巻き戻さない
@@ -782,6 +783,16 @@ function refreshInfo() {
     $('l-nodeOps').hidden = !(s.type === 'path' && nodeSel?.id === s.id);
   }
   infoBusy = false;
+}
+/** 選んだ線（直線・折れ線・ペン・ベジェ）に、節点を等間隔で n 個足す。全長を n+1 等分する位置に足す（すでに節点がある位置は足さない）。形は変わらず、ペン（節点を持つ線）になる。元に戻すは1回。 */
+function addNodesEqually() {
+  const s = infoShape(); if (!s || !editable(s) || !['line', 'polyline', 'path', 'bezier'].includes(s.type)) { $('hint').textContent = t('selectFirst'); return; }
+  const n = Number($('info-addNodes').value); if (!Number.isInteger(n) || n < 1 || n > 100) { $('hint').textContent = t('addNodesRange'); return; }
+  const base = toPath(s), len = arcLength(base), segs = pathSegments(base); let acc = 0; const have = [0]; for (const g of segs) { acc += arcLength(g); have.push(acc); }
+  const spots = Array.from({ length: n }, (_, k) => len * (k + 1) / (n + 1)).filter(x => !have.some(h => Math.abs(h - x) < 1e-6));
+  if (!spots.length) { $('hint').textContent = t('addNodesNone'); return; }
+  let next = base; for (const x of spots) next = pathInsertNode(next, x);
+  nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('addedNodes', { n: spots.length });
 }
 function flattenForArea(s) { const pts = pathSegments(s).flatMap((seg, i) => { const ps = seg.type === 'line' ? [{ x: seg.x1, y: seg.y1 }, { x: seg.x2, y: seg.y2 }] : Array.from({ length: 17 }, (_, k) => { const t = k / 16, u = 1 - t; return { x: u**3*seg.x1 + 3*u*u*t*seg.c1x + 3*u*t*t*seg.c2x + t**3*seg.x2, y: u**3*seg.y1 + 3*u*u*t*seg.c1y + 3*u*t*t*seg.c2y + t**3*seg.y2 }; }); return i ? ps.slice(1) : ps; }); return pts; }
 /** 2 個以上選んでいるときの層・色・線の種類。選んだ全部に当て、元に戻すは 1 回。 */
@@ -2970,6 +2981,12 @@ function pickShapeAt(p) {
   const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s)) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); }
   if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)); return cands.filter(c => c.d <= min + 1.5 / scale).at(-1).s;
 }
+/** 穴・目印をクリックしたときの距離。点の目印は長さ2mmの短い線（元の線と直角）なので、中心ではなく、その線までの距離で測る（端のあたりをクリックしても選べる）。 */
+function holeHitDistance(h, p) {
+  if (holeAppearance(h, doc)?.kind !== 'dot') return distance(h, p);
+  const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), t = Math.max(-1, Math.min(1, (p.x - h.x) * ux + (p.y - h.y) * uy));
+  return distance({ x: h.x + ux * t, y: h.y + uy * t }, p);
+}
 function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
   s.nodes.forEach((n, i) => {
@@ -3147,7 +3164,7 @@ canvas.addEventListener('pointerdown', e => {
     if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line') { fixed = h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig }; $('hint').textContent = t(sh.type === 'line' ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
     const nh = pathShape && handleOk && nodeHit(pathShape, cursor);
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
-    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
+    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
     if (hit && !e.shiftKey) {
@@ -3285,7 +3302,7 @@ $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
-$('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
+$('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
