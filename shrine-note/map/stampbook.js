@@ -11,15 +11,16 @@ const REGIONS = [
 ];
 const COUNT_BADGES = [1, 10, 30, 50, 100];
 
+const REGION_EN = { '北海道': 'Hokkaido', '東北': 'Tohoku', '関東': 'Kanto', '中部': 'Chubu', '近畿': 'Kinki', '中国': 'Chugoku', '四国': 'Shikoku', '九州・沖縄': 'Kyushu & Okinawa' };
 export function regionOf(pref) {
   const r = REGIONS.find(([, ps]) => ps.includes(pref));
   return r ? r[0] : 'その他';
 }
 
 // shrines: 掲載中の神社の配列、visited: 参拝ずみの神社 ID の集合
-export function summarize(shrines, visited) {
+export function summarize(shrines, visited, en = false) {
   const total = shrines.length, done = shrines.filter((s) => visited.has(s.id)).length;
-  const regions = REGIONS.map(([name]) => ({ name, total: 0, done: 0 }));
+  const regions = REGIONS.map(([name]) => ({ name, label: en ? REGION_EN[name] : name, total: 0, done: 0 }));
   shrines.forEach((s) => {
     const r = regions.find((x) => x.name === regionOf(s.pref));
     if (!r) return;
@@ -27,10 +28,10 @@ export function summarize(shrines, visited) {
   });
   const badges = [];
   COUNT_BADGES.forEach((n) => badges.push({
-    key: 'n' + n, label: n === 1 ? 'はじめの一社' : n + '社 参拝', got: done >= n, remain: Math.max(0, n - done),
+    key: 'n' + n, label: en ? (n === 1 ? 'First shrine' : n + ' shrines') : (n === 1 ? 'はじめの一社' : n + '社 参拝'), got: done >= n, remain: Math.max(0, n - done),
   }));
   regions.filter((r) => r.total > 0).forEach((r) => badges.push({
-    key: 'r' + r.name, label: r.name + ' 制覇', got: r.done >= r.total, remain: r.total - r.done, sub: r.done + '／' + r.total,
+    key: 'r' + r.name, label: en ? (REGION_EN[r.name] || r.name) + ' complete' : r.name + ' 制覇', got: r.done >= r.total, remain: r.total - r.done, sub: r.done + (en ? ' / ' : '／') + r.total,
   }));
   const next = badges.filter((b) => !b.got).sort((a, b) => a.remain - b.remain)[0] || null;
   return { total, done, regions, badges, next };
