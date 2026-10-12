@@ -140,6 +140,11 @@ export const HELP_EN = {
       "id": "step4-editing",
       "title": "Node editing and numeric drawing",
       "body": "Click the selected pen path to insert a node. Removing an inserted node without editing it restores the original curve. Drag nodes or handles; hold Alt (Option) to edit one handle independently. For lines, circles and arcs, click a starting point and complete the geometry in the bottom input. Use x,y for absolute coordinates, @dx,dy for relative coordinates and 50<30 for length and angle. Enter a radius for circles, or radius, start angle and end angle for arcs. F1 opens shortcuts; ? opens help."
+    },
+    {
+      "id": "privacy",
+      "title": "About analytics",
+      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent."
     }
   ]
 };

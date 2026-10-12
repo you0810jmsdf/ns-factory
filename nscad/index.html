@@ -70,6 +70,21 @@
     .svgbody svg { max-width: 100%; height: auto; background: #fff; border-radius: 6px; margin: 4px 0; display: block; }
     .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #phraseText { width: 100%; box-sizing: border-box; font: inherit; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
     #printArea { display: none; }
+    /* Phone layout (width <= 760px): tools in one scrollable row, drawing in the middle, cards below the drawing (40% height, scrollable). 2026-10-12 */
+    @media (max-width: 760px) {
+      body { height: 100dvh; font-size: 14px; }
+      header { padding: 6px 8px; gap: 4px; } h1 { margin-right: 6px; font-size: 13px; }
+      main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 40vh; }
+      aside { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; border-right: 0; border-bottom: 1px solid var(--line); padding: 6px; gap: 2px; -webkit-overflow-scrolling: touch; }
+      aside .group { display: none; }
+      aside button { width: auto; flex: none; padding: 6px 9px; font-size: 13px; }
+      .workspace { min-height: 0; }
+      #side { border-left: 0; border-top: 1px solid var(--line); padding: 8px; }
+      #side .card > summary { padding: 10px 12px; }
+      input[type=number] { width: 64px; }
+      dialog { max-width: calc(100vw - 16px); max-height: 85vh; }
+      footer { padding: 6px 10px; gap: 8px; font-size: 11px; }
+    }
     @media print {
       @page { size: A4 portrait; margin: 10mm; }
       body { display: block; height: auto; overflow: visible; background: #fff; }
@@ -511,7 +526,7 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=8bb6ae0e","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=ee47d8b8","./help/ja.js":"./help/ja.js?v=005932a4","./i18n.js":"./i18n.js?v=93abc393","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=8bb6ae0e","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=85a8f242","./help/ja.js":"./help/ja.js?v=d9337941","./i18n.js":"./i18n.js?v=93abc393","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
 <script type="module" src="app.js?v=8bb6ae0e"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
@@ -17038,6 +17053,11 @@ const HELP_JA = {
       "id": "step4-editing",
       "title": "節点編集と数値作図",
       "body": "選択中の連続ベジェの線上クリックで節点を追加します。追加した節点を編集せずに削除すると元の曲線に戻ります。節点やハンドルをドラッグし、Alt（⌥）で片側だけを動かせます。直線・円・円弧はマウスで始点をクリックし、下の入力欄で数値を確定できます。絶対座標は x,y、相対座標は @dx,dy、長さと角度は 50<30 です。円は半径、円弧は半径・始角・終角を順に入力します。F1 はショートカット一覧、? はヘルプです。"
+    },
+    {
+      "id": "privacy",
+      "title": "計測（アクセス解析）について",
+      "body": "公開版（https://you0810jmsdf.github.io/ns-factory/nscad/）では、Google アナリティクスで次だけを集計しています：ページを開いた回数と、機能の使用回数（三面図の切替・金具を置く・革を透かして見る）。図形・文字・寸法・ファイル名・図面の内容は送りません。保存した図面・定型句・直した金具の寸法は、お使いの PC のブラウザの中だけにあり、どこにも送られません。\n手元にダウンロードして file:// で開いたときは、何も送りません。"
     }
   ]
 };
@@ -17187,6 +17207,11 @@ const HELP_EN = {
       "id": "step4-editing",
       "title": "Node editing and numeric drawing",
       "body": "Click the selected pen path to insert a node. Removing an inserted node without editing it restores the original curve. Drag nodes or handles; hold Alt (Option) to edit one handle independently. For lines, circles and arcs, click a starting point and complete the geometry in the bottom input. Use x,y for absolute coordinates, @dx,dy for relative coordinates and 50<30 for length and angle. Enter a radius for circles, or radius, start angle and end angle for arcs. F1 opens shortcuts; ? opens help."
+    },
+    {
+      "id": "privacy",
+      "title": "About analytics",
+      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent."
     }
   ]
 };
