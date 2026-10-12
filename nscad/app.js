@@ -2151,6 +2151,33 @@ function placeHardware(at) {
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
   renderLayers(); $('hint').textContent = t('hwPlaced', { name: document.documentElement.lang === 'en' ? it.name_en : it.name_ja });
 }
+/** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
+function binderDataHtml(spec, ringD) {
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const en = document.documentElement.lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, mm = v => v == null || Number.isNaN(Number(v)) ? t('bdNone') : String(Math.round(Number(v) * 100) / 100);
+  const conf = c => t(c === 'measured' ? 'confMeasured' : c === 'spec' ? 'confSpec' : c === 'estimated' ? 'confEstimated' : 'confNone');
+  const base = binderBase(spec), size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), option = spec.rings.options?.find(o => Math.round(ringSizeOf(spec, o).inner * 10) / 10 === Math.round(size.inner * 10) / 10);
+  const parent = spec.parent ? binderSpec(spec.parent) : null, rows = [];
+  if (parent) rows.push([t('bdKind'), t('bdProductOf', { parent: nameOf(parent) })]);
+  rows.push([t('bdRefill'), `${mm(spec.refill?.wMm)} × ${mm(spec.refill?.hMm)} mm`]);
+  rows.push([t('bdHoles'), t('bdHolesVal', { n: spec.holes.count, pitch: spec.holes.pitchMm.map(mm).join(' / '), span: mm(spec.holes.span1toLastMm) })]);
+  rows.push([t('bdRing'), t('bdRingVal', { i: mm(size.inner), o: mm(size.outer), w: mm(size.wire), assumed: size.wireSource === 'measured' ? '' : t('bdAssumed') })]);
+  rows.push([t('bdRingOptions'), spec.rings.diameterOptionsMm.map(mm).join(' / ') + ' mm']);
+  let b = t('bdBaseVal', { L: mm(base.lengthMm), W: mm(base.sectionWidthMm), T: mm(base.thicknessMm), R: mm(base.cornerRMm) });
+  if (spec.base) b += '　' + t('bdBaseSection', { H: mm(base.crownHeightMm), cr: mm(base.crownRadiusMm), er: mm(base.edgeRadiusMm) });
+  rows.push([t('bdBase'), b]);
+  const rivets = spec.rivets || []; rows.push([t('bdMounts'), rivets.length ? t('bdMountsVal', { n: rivets.length, list: rivets.map(r => t('bdMountOne', { x: mm(r.xMm), y: mm(r.yMm), d: mm(r.dMm) })).join('、') }) : t('bdNone')]);
+  const m = spec.mechanism || {}, parts = m.parts || []; rows.push([t('bdMech'), t('bdMechVal', { c: mm(m.heightClosedMm), o: mm(m.heightOpenMm), n: parts.length })]);
+  rows.push([t('bdConf'), t('bdConfVal', { base: conf(base.confidence ?? spec.plate?.confidence), ring: conf(option?.confidence ?? (size.wireSource === 'measured' ? 'measured' : null)), mount: conf(spec.mounts?.confidence), mech: conf(m.confidence) })]);
+  const src = [spec.sourceNote, ...(spec.sources || []).map(x => x.note)].filter(Boolean); rows.push([t('bdSource'), src.length ? src.join('　') : t('bdNone')]);
+  return `<table class="bd-table">${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table><p class="bd-note">${esc(t('bdNote'))}</p><button id="bdCopy" type="button">${esc(t('bdCopy'))}</button>`;
+}
+function showBinderData(spec) {
+  const ringD = Number($('ringD').value) || spec.rings.diameterOptionsMm[0];
+  showSvgDialog(binderDataHtml(spec, ringD), t('bdTitle', { name: document.documentElement.lang === 'en' ? spec.names.en : spec.names.ja }));
+  const btn = $('svgBody').querySelector?.('#bdCopy');
+  if (btn) btn.onclick = () => { const text = [...$('svgBody').querySelectorAll('tr')].map(r => r.children[0].textContent + '：' + r.children[1].textContent).join('\n'); const clipboard = globalThis.navigator?.clipboard; clipboard?.writeText?.(text)?.then?.(() => { btn.textContent = t('bdCopied'); }); }; /* copyBinderSection と同じ呼び方（Mac 検査の決まり） */
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -2159,7 +2186,7 @@ function initHardware() {
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
-  $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { $('helpBody').textContent = JSON.stringify(spec, null, 2); $('helpDialog').showModal(); } };
+  $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
 }
 
