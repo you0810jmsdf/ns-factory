@@ -64,7 +64,8 @@ export function placeFootprint(fp, at, angleDeg = 0) {
 export function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z0 = 0, segments = 16 } = {}) {
   const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, embed = spec.rings.embedMm ?? 0, faces = [];
   const box = (cx, cy, w, h, zb, zt) => { const c = [{ x: cx - w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy - h / 2 }, { x: cx + w / 2, y: cy + h / 2 }, { x: cx - w / 2, y: cy + h / 2 }]; faces.push({ kind: 'top', points: c.map(p => ({ x: p.x, y: p.y, z: zt })) }, { kind: 'bottom', points: [...c].reverse().map(p => ({ x: p.x, y: p.y, z: zb })) }); for (let i = 0; i < 4; i++) { const a = c[i], b = c[(i + 1) % 4]; faces.push({ kind: 'side', points: [{ x: a.x, y: a.y, z: zt }, { x: b.x, y: b.y, z: zt }, { x: b.x, y: b.y, z: zb }, { x: a.x, y: a.y, z: zb }] }); } };
-  if (!spec.base) box(at.x, at.y, L, W, z0, z0 + T);
+  // 平らな板の台座：角R（cornerRMm）を付けた押し出し。角Rが 0 なら今までどおりの箱（面の並びも同じ）。実測の角R（例：A6 1.5mm）が3Dにも出る。
+  if (!spec.base) { const pts = roundRect(L, W, base.cornerRMm || 0).map(p => ({ x: at.x + p.x, y: at.y + p.y })), zb = z0, zt = z0 + T; faces.push({ kind: 'top', points: pts.map(p => ({ x: p.x, y: p.y, z: zt })) }, { kind: 'bottom', points: [...pts].reverse().map(p => ({ x: p.x, y: p.y, z: zb })) }); for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; faces.push({ kind: 'side', points: [{ x: a.x, y: a.y, z: zt }, { x: b.x, y: b.y, z: zt }, { x: b.x, y: b.y, z: zb }, { x: a.x, y: a.y, z: zb }] }); } }
   else {
     // 断面を長さ方向へ伸ばす。両端の蓋と、各辺の面で閉じる。
     const section = binderSection(base), point = (p, x) => ({ x: at.x + x, y: at.y + p.x, z: z0 + T - p.y });
