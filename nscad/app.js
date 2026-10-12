@@ -481,14 +481,14 @@ function markDivisions() { const n = Math.floor(Number($('markDiv').value)); ret
 function markByDivision(click) {
   const n = markDivisions(), reach = magnetRadiusMm(), second = stage?.kind === 'markDiv'; let base = click;
   if (reach > 0) { let near = reach; for (const c of magnetEnds) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, base) <= 8 / scale);
-  if (!hit) { $('hint').textContent = t('markNoLine'); return; }
-  const state = routeForHit(hit); if (!state?.route) return;
-  const route = { ...state.route, reversed: !!state.saved.reversed }, key = [...state.saved.shapeIds].sort().join(','), s0 = projectOnPath(route, base).s;
-  if (!second || stage.key !== key) { stage = { kind: 'markDiv', key, s: s0, at: pointAtLength(route, s0), cand: [] }; $('hint').textContent = t('markDivSecond', { n }); draw(); return; }
-  const from = stage.s, span = s0 - from; if (Math.abs(span) < 1e-6) { $('hint').textContent = t('markSameSpot'); return; }
+  /* 交点では複数の線が重なる。クリック位置に乗っている線をすべて拾い（上にある線が先）、1点目はその全部の位置を覚え、2点目は1点目と共通の線を使う。 */
+  const cands = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().filter(s => distToShape(s, base) <= 8 / scale).map(hit => { const state = routeForHit(hit); if (!state?.route) return null; const route = { ...state.route, reversed: !!state.saved.reversed }; return { route, key: [...state.saved.shapeIds].sort().join(','), s: projectOnPath(route, base).s }; }).filter(Boolean);
+  if (!cands.length) { $('hint').textContent = t('markNoLine'); return; }
+  const common = second ? cands.find(c => stage.hits.some(h => h.key === c.key)) : null;
+  if (!common) { const first = cands[0]; stage = { kind: 'markDiv', hits: cands.map(c => ({ key: c.key, s: c.s })), at: pointAtLength(first.route, first.s), cand: [] }; $('hint').textContent = t('markDivSecond', { n }); draw(); return; }
+  const from = stage.hits.find(h => h.key === common.key).s, span = common.s - from; if (Math.abs(span) < 1e-6) { $('hint').textContent = t('markSameSpot'); return; }
   const before = undo.length; stage = null;
-  for (let k = 1; k < n; k++) stampAt(pointAtLength(route, from + span * k / n), true, 'dot');
+  for (let k = 1; k < n; k++) stampAt(pointAtLength(common.route, from + span * k / n), true, 'dot');
   if (undo.length > before + 1) undo.splice(before + 1); /* 途中の保存をまとめて、元に戻すを1回にする */
   $('hint').textContent = t('markDivDone', { n: n - 1 }); draw();
 }
