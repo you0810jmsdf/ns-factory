@@ -13,14 +13,17 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isNarrow = () => innerWidth < 880;
 
 // ---------- データ読み込み ----------
-const [shrineData, deityData, hmImg] = await Promise.all([
+const [shrineData, deityData, staysData, hmImg] = await Promise.all([
   fetch('../shrines.json').then((r) => r.json()),
   fetch('../deities.json').then((r) => r.json()),
+  // 宿の候補（楽天トラベル・アフィリエイト）。無くても地図は動く
+  fetch('../stays.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
 ]).catch((e) => { fail('データの読み込みに失敗しました。' + e); throw e; });
 
 const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
+const staysMap = Object.fromEntries(((staysData && staysData.stays) || []).map((x) => [x.shrine_id, x.hotels || []]));
 const srcMap = Object.fromEntries((shrineData.sources || []).map((s) => [s.id, s]));
 Object.assign(srcMap, Object.fromEntries((deityData.sources || []).map((s) => [s.id, s])));
 
@@ -1132,6 +1135,20 @@ function setSheet(html, book = false) {
   if (book) initBook();
 }
 
+// 宿の候補（PR）。解説とは見出しで分け、先頭に広告表記・リンクは rel="sponsored"。金額は載せない（条件なしの金額は規約で禁止）
+const STAY_HOST = 'https://hb.afl.rakuten.co.jp/';
+function staysHTML(id) {
+  const head = `<h3 class="chh sub">宿 <span class="badge pr">PR</span></h3>`;
+  const list = (staysMap[id] || []).filter((h) => h && h.url && String(h.url).startsWith(STAY_HOST));
+  if (!list.length) {
+    return `${head}<div class="prbox">${id in staysMap ? '近くの宿の候補は、条件に合うものを探しています。' : '宿の候補は、準備中です。'}未訪問の宿は「候補」として表記します。</div>`;
+  }
+  const at = staysData.fetched_at ? `（${esc(staysData.fetched_at)} 時点）` : '';
+  return `${head}<div class="prbox stays"><p class="prnote">PR・広告を含みます。楽天トラベルのアフィリエイトリンクです。</p>
+    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small><span class="badge cand">候補</span>${esc(h.area || '')}｜評価 ${esc(h.review_average)}（${esc(h.review_count)}件）</small></li>`).join('')}</ul>
+    <p class="meta">評価・件数は楽天トラベル${at}。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。</p></div>`;
+}
+
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
 const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function shrineHTML(s) {
@@ -1172,8 +1189,7 @@ function shrineHTML(s) {
     <dl class="row">${row('所在地', s.address)}${row('アクセス', s.access)}${row('参拝時間', s.hours)}${row('駐車場', s.parking)}${row('御朱印', s.goshuin)}</dl>
     <h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
     <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>
-    <h3 class="chh sub">宿 <span class="badge pr">PR枠</span></h3>
-    <div class="prbox">宿の候補は、同じく準備中です。未訪問の宿は「候補」として表記します。</div>
+    ${staysHTML(s.id)}
     <h3 class="chh sub">note 記事</h3>
     ${s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
     ${sourceList(used)}
@@ -1643,23 +1659,23 @@ addEventListener('keydown', bgmFirstGesture, true);
 document.addEventListener('visibilitychange', () => { if (document.hidden) { if (bgmEl) bgmEl.pause(); } else if (bgmOn && bgmEl && bgmEl.paused && bgmEl.currentTime > 0) bgmPlay(); });
 bgmButton();
 
-// ---------- 時刻の操作：スライダーで昼夜の移り変わりを見る（「いま」で端末の時刻に戻る） ----------
-{
-  const range = $('skyRange'), out = $('skyOut'), panel = $('skyPanel'), btn = $('btnSky');
-  const fmt = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
-  const label = () => {
-    const d = skyDate(), m = d.getHours() * 60 + d.getMinutes();
-    range.value = String(m); out.textContent = (sky.override == null ? 'いま ' : '') + fmt(m);
-    btn.textContent = '時刻：' + (sky.override == null ? 'いま' : fmt(m));
-    btn.classList.toggle('on', sky.override != null);
-  };
-  range.addEventListener('input', () => { sky.override = +range.value; updateSky(); label(); });
-  $('skyNow').addEventListener('click', () => { sky.override = null; updateSky(); label(); });
-  btn.addEventListener('click', (e) => { e.stopPropagation(); panel.hidden = !panel.hidden; btn.setAttribute('aria-expanded', String(!panel.hidden)); });
-  setInterval(() => { if (sky.override == null) label(); }, 30000);
-  label();
-}
-
+// ---------- 時刻の操作：スライダーで昼夜の移り変わりを見る（「いま」で端末の時刻に戻る） ----------
+{
+  const range = $('skyRange'), out = $('skyOut'), panel = $('skyPanel'), btn = $('btnSky');
+  const fmt = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  const label = () => {
+    const d = skyDate(), m = d.getHours() * 60 + d.getMinutes();
+    range.value = String(m); out.textContent = (sky.override == null ? 'いま ' : '') + fmt(m);
+    btn.textContent = '時刻：' + (sky.override == null ? 'いま' : fmt(m));
+    btn.classList.toggle('on', sky.override != null);
+  };
+  range.addEventListener('input', () => { sky.override = +range.value; updateSky(); label(); });
+  $('skyNow').addEventListener('click', () => { sky.override = null; updateSky(); label(); });
+  btn.addEventListener('click', (e) => { e.stopPropagation(); panel.hidden = !panel.hidden; btn.setAttribute('aria-expanded', String(!panel.hidden)); });
+  setInterval(() => { if (sky.override == null) label(); }, 30000);
+  label();
+}
+
 // ---------- 描画ループ ----------
 resize();
 applyCamera();
