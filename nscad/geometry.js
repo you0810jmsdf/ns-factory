@@ -661,7 +661,19 @@ export function reflectAcross(s, a, b) {
   return transformGeometry(s, point, deg => 2 * axisDeg - deg, true);
 }
 /** 図形と弧長位置の配列から、その位置で切り分けた図形配列を返す。円は 2 点以上で円弧になる。切れない型は [図形]。 */
+/** 曲がり（ハンドル）が無い、直線だけでできた path を、直線（節点2つ）／折れ線（3つ以上）に戻す。曲線を含むものはそのまま。 */
+export function straightenPath(s) {
+  if (s.type !== 'path' || !s.nodes?.length || s.nodes.length < 2) return s;
+  if (!s.nodes.every(n => !n.smooth && n.inX === n.x && n.inY === n.y && n.outX === n.x && n.outY === n.y)) return s;
+  const { nodes, closed, type, ...rest } = s;
+  if (nodes.length === 2 && !closed) return { ...rest, type: 'line', x1: nodes[0].x, y1: nodes[0].y, x2: nodes[1].x, y2: nodes[1].y };
+  return { ...rest, type: 'polyline', closed: !!closed, points: nodes.map(n => ({ x: n.x, y: n.y })) };
+}
+/** 図形を弧長位置で切り分ける。折れ線・パスを切った残りで、直線だけのものは直線・折れ線のまま返す（トリムで「直線として扱えない」ことが無いように）。 */
 export function splitShapeAt(s, positions) {
+  const r = splitShapeAtRaw(s, positions); return r.length === 1 && r[0] === s ? r : r.map(straightenPath);
+}
+function splitShapeAtRaw(s, positions) {
   const len = arcLength(s), cuts = [...new Set(positions.filter(p => Number.isFinite(p) && p > 1e-6 && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
   if (!cuts.length || s.type === 'text' || s.type === 'dimension') return [s];
   const strip = o => { const { id, ...rest } = o; return rest; };
