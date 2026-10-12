@@ -1,0 +1,94 @@
+{
+  "fetched_at": "2026-10-12",
+  "source": "楽天トラベル（アフィリエイトリンク）",
+  "radius_km": 3,
+  "filter": {
+    "min_reviews": 10,
+    "min_average": 3.5,
+    "show": 3
+  },
+  "stays": [
+    {
+      "shrine_id": "makata",
+      "shrine_name": "麻賀多神社",
+      "hotels": [
+        {
+          "name": "さくらマンダリン(旧:HOTEL 湯ぱらだいす佐倉)",
+          "area": "千葉県佐倉市表町3-26-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D40971",
+          "review_average": 3.86,
+          "review_count": 259,
+          "status": "candidate"
+        },
+        {
+          "name": "佐倉第一ホテル",
+          "area": "千葉県佐倉市大崎台1-13-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D74521",
+          "review_average": 3.74,
+          "review_count": 758,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "katori",
+      "shrine_name": "香取神宮",
+      "hotels": [
+        {
+          "name": "凪(なぎ)",
+          "area": "千葉県香取市佐原イ3412 Nagi",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D190077",
+          "review_average": 4.77,
+          "review_count": 20,
+          "status": "candidate"
+        },
+        {
+          "name": "HOSTEL Co-EDO",
+          "area": "千葉県香取市佐原イ474-8",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D167071",
+          "review_average": 4.62,
+          "review_count": 42,
+          "status": "candidate"
+        },
+        {
+          "name": "佐原商家町ホテルNIPPONIA",
+          "area": "千葉県香取市佐原イ1708-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D166043",
+          "review_average": 4.43,
+          "review_count": 221,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kashima",
+      "shrine_name": "鹿島神宮",
+      "hotels": [
+        {
+          "name": "No.12 Kashima Fan Zone",
+          "area": "茨城県鹿嶋市宮中4813-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D197636",
+          "review_average": 4.77,
+          "review_count": 30,
+          "status": "candidate"
+        },
+        {
+          "name": "神宮ホテル",
+          "area": "茨城県鹿嶋市宮中4-4-25",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D139822",
+          "review_average": 3.84,
+          "review_count": 197,
+          "status": "candidate"
+        },
+        {
+          "name": "ビジネスホテル鈴章",
+          "area": "茨城県鹿嶋市宮下2-12-26",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D9128",
+          "review_average": 3.84,
+          "review_count": 176,
+          "status": "candidate"
+        }
+      ]
+    }
+  ]
+}
