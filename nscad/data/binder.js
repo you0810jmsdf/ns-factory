@@ -1884,12 +1884,12 @@ export const BINDER_SPECS = [
   },
   "rivets": [
    {
-    "xMm": -54,
+    "xMm": -38,
     "yMm": 0,
     "dMm": 5
    },
    {
-    "xMm": 54,
+    "xMm": 38,
     "yMm": 0,
     "dMm": 5
    }
@@ -1947,24 +1947,24 @@ export const BINDER_SPECS = [
    "kind": null,
    "overrides": [
     {
-     "xMm": -54,
+     "xMm": -38,
      "yMm": 0,
      "widthMm": null,
      "lengthMm": null,
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "穴の径5・ビスは実測（2026-10-12）。位置は親規格（Mini6）の値のまま・未実測"
+     "note": "穴の径5・ビス・穴の間隔76は実測（2026-10-13）"
     },
     {
-     "xMm": 54,
+     "xMm": 38,
      "yMm": 0,
      "widthMm": null,
      "lengthMm": null,
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "穴の径5・ビスは実測（2026-10-12）。位置は親規格（Mini6）の値のまま・未実測"
+     "note": "穴の径5・ビス・穴の間隔76は実測（2026-10-13）"
     }
    ],
    "confidence": null
