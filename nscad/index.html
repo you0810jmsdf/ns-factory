@@ -60,7 +60,7 @@
     #tutCursor { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border: 2px solid var(--accent); border-radius: 50%; background: #c9a96e55; pointer-events: none; z-index: 4; transition: left .4s, top .4s; }
     #voiceBtn.mic { font-size: 18px; width: 40px; height: 40px; border-radius: 50%; } #voiceBtn.active { background: var(--accent); color: #000; box-shadow: 0 0 0 4px #c9a96e44; } #voiceLevel { flex: 1; height: 8px; } #voiceHeard { min-height: 1.2em; } #voiceCard .muted { opacity: .7; font-size: 11px; }
     #designSel { width: 100%; font-size: 12px; } #styleNote { font-size: 11px; opacity: .75; }
-    header .logo { width: 26px; height: 26px; border-radius: 6px; margin-right: 2px; } .proto { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #111; background: var(--accent); border-radius: 999px; padding: 2px 8px; margin-left: 4px; } body:not([data-prototype]) .proto { display: none; }
+    header .logo { width: 26px; height: 26px; border-radius: 6px; margin-right: 2px; } .build-ver { font-size: 10px; color: var(--muted, #8a8a8a); margin-left: 6px; letter-spacing: .02em; white-space: nowrap; } .proto { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #111; background: var(--accent); border-radius: 999px; padding: 2px 8px; margin-left: 4px; } body:not([data-prototype]) .proto { display: none; }
     .tut-hl { outline: 2px solid var(--accent) !important; outline-offset: 2px; box-shadow: 0 0 12px #c9a96e88; }
     .tour { font-size: 14px; line-height: 1.7; min-height: 90px; white-space: pre-wrap; } #helpSearch { flex: 1; }
     .swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; } .swatch { width: 100%; aspect-ratio: 1; min-height: 22px; border: 1px solid #555; border-radius: 6px; padding: 0; } .swatch.big { width: 28px; height: 28px; display: inline-block; flex: none; }
@@ -103,7 +103,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-12 18:46 · 3520f43</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -536,8 +536,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=15464a05","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=845449a6","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a1715416","./help/en.js":"./help/en.js?v=870aeec4","./help/ja.js":"./help/ja.js?v=7c742764","./i18n.js":"./i18n.js?v=2ed8562b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=15464a05"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=063aa0eb","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=845449a6","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a1715416","./help/en.js":"./help/en.js?v=870aeec4","./help/ja.js":"./help/ja.js?v=7c742764","./i18n.js":"./i18n.js?v=725162ec","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=063aa0eb"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1441,6 +1441,8 @@ const MESSAGES = {
     "ofOut": "外側",
     "ofIn": "内側",
     "ofBoth": "両側",
+    "devBuild": "開発版",
+    "buildVerTip": "公開した版の番号（日時は日本時間）。画面が古いと思ったら、この番号を教えてください",
     "lineEndDrag": "端をドラッグして動かします（反対側は動きません）。Shift を押すと、元の向きのまま（水平・垂直の線なら水平・垂直のまま）伸び縮みします。",
     "lineEndHoles": "目打ち（縫い穴）が付いているため、端を動かせません。",
     "lineEndZero": "長さが 0 になるので動かしませんでした。",
@@ -2446,6 +2448,8 @@ const MESSAGES = {
     "ofOut": "Outside",
     "ofIn": "Inside",
     "ofBoth": "Both sides",
+    "devBuild": "Dev build",
+    "buildVerTip": "Published build (date and time in Japan time). If the screen looks outdated, tell me this number.",
     "lineEndDrag": "Drag the end to move it (the other end stays). Hold Shift to keep the line's direction (a horizontal or vertical line stays horizontal or vertical).",
     "lineEndHoles": "This line has stitch holes, so its end cannot be moved.",
     "lineEndZero": "Not moved: the length would be 0.",
@@ -20330,6 +20334,11 @@ function lineEndHit(p) {
   const near = 9 / scale; let best = null, bd = near; for (const h of shapeHandles(s)) { const d = distance(p, h); if (d <= bd) { bd = d; best = h; } }
   return best ? { shape: s, handle: best } : null;
 }
+/** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
+function pickShapeAt(p) {
+  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s)) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); }
+  if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)); return cands.filter(c => c.d <= min + 1.5 / scale).at(-1).s;
+}
 function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
   s.nodes.forEach((n, i) => {
@@ -20506,7 +20515,7 @@ canvas.addEventListener('pointerdown', e => {
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
-    const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
+    const hit = pickShapeAt(cursor);
     if (hit && !e.shiftKey) {
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), insertId: pathShape?.id === hit.id ? hit.id : null };
@@ -20591,7 +20600,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
-      const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
+      const hit = pickShapeAt(cursor);
       if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);

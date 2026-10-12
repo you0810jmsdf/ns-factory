@@ -2965,6 +2965,11 @@ function lineEndHit(p) {
   const near = 9 / scale; let best = null, bd = near; for (const h of shapeHandles(s)) { const d = distance(p, h); if (d <= bd) { bd = d; best = h; } }
   return best ? { shape: s, handle: best } : null;
 }
+/** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
+function pickShapeAt(p) {
+  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s)) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); }
+  if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)); return cands.filter(c => c.d <= min + 1.5 / scale).at(-1).s;
+}
 function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
   s.nodes.forEach((n, i) => {
@@ -3141,7 +3146,7 @@ canvas.addEventListener('pointerdown', e => {
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
-    const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
+    const hit = pickShapeAt(cursor);
     if (hit && !e.shiftKey) {
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), insertId: pathShape?.id === hit.id ? hit.id : null };
@@ -3226,7 +3231,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
-      const hit = doc.shapes.filter(editable).reverse().find(s => distToShape(s, cursor) <= 7 / scale);
+      const hit = pickShapeAt(cursor);
       if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
