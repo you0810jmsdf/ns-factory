@@ -28,6 +28,7 @@
     "mobile",
     "home_loan",
     "car_loan",
+    "stripe_fee",
     "car_insurance",
     "joyfulhonda",
     "creema",
@@ -157,6 +158,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -167,9 +177,20 @@
         }
       },
       "joyfulhonda": {
-        "status": "手動DL（DirectCloud）",
-        "count": 0,
-        "records": [],
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-10-20",
+            "amount": 9152,
+            "amount_text": "¥9,152",
+            "subject": "カルチャースクール講師謝礼",
+            "status": "取得済み",
+            "local_path": "",
+            "receipt_id": "bcdd3b3f67a52d55",
+            "ext": "pdf"
+          }
+        ],
         "guide": {
           "url": "https://directcloud.jp/",
           "steps": "カルチャースクール講師謝礼（収入）。毎月10日前後に ジョイフルホンダの担当窓口 から「振込明細書送付の件」と「同【パスワード通知】」の2通が届く（振込日は20日）。保管先: 所定の保存先フォルダ（振込日の月）。入手経路: Gmailに届く案内メールのDirectCloudリンク＋別メールで通知されるパスワードでログインしDL。DirectCloudはアクセス回数制限（5回程度）があるため、取得後は即ローカル保存すること。"
@@ -407,6 +428,26 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "取得済み",
+        "count": 1,
+        "records": [
+          {
+            "date": "2026-09-30",
+            "amount": null,
+            "amount_text": "",
+            "subject": "Stripe決済手数料",
+            "status": "取得済み",
+            "local_path": "",
+            "receipt_id": "b92b7f3951717fa8",
+            "ext": "txt"
+          }
+        ],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -682,6 +723,15 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -1063,6 +1113,15 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -1466,6 +1525,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -1825,6 +1893,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -2163,6 +2240,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -2488,6 +2574,15 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -2838,6 +2933,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -3166,6 +3270,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -3407,6 +3520,15 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -3661,6 +3783,15 @@
         "guide": {
           "url": "",
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
+        }
+      },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
         }
       },
       "car_insurance": {
@@ -3926,6 +4057,15 @@
           "steps": "車のローンは請求メールが届かない。ローン会社（オリコ等）のマイページまたは返済予定表から取得。事業使用割合に応じた按分計上に注意。"
         }
       },
+      "stripe_fee": {
+        "status": "お知らせ待ち（毎月1日）",
+        "count": 0,
+        "records": [],
+        "guide": {
+          "url": "https://dashboard.stripe.com/",
+          "steps": "Stripe決済手数料の適格請求書（Stripe Japan・T8010601046367）。毎月1日朝に「N's factoryの適格請求書のお知らせ」が届く（notifications@stripe.com）。メールに添付は無いので、メールの「適格請求書を表示」からPDFをDLし、ダウンロードフォルダに置いてsort_downloads.py で仕分ける（タグ Stripe手数料）。DLするまでこの列は「未取得」のまま。手数料はStripe残高から引かれるためMF連携に出ない。支払手数料の記帳は別途要。"
+        }
+      },
       "car_insurance": {
         "status": "未対応",
         "count": 0,
@@ -4009,11 +4149,11 @@
       }
     }
   },
-  "checked_at": "2026-10-01 07:01:22",
+  "checked_at": "2026-10-12 15:00:37",
   "health": {
-    "token_updated": "2026-10-01",
+    "token_updated": "2026-10-12",
     "token_age_days": 0,
-    "latest_receipt": "2026-10-01",
+    "latest_receipt": "2026-10-12",
     "receipt_age_days": 0,
     "warnings": []
   }
