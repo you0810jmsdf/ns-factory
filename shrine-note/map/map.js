@@ -18,7 +18,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isNarrow = () => innerWidth < 880;
 
 // ---------- データ読み込み ----------
-const [shrineData, deityData, staysData, specData, hmImg] = await Promise.all([
+const [shrineData, deityData, staysData, specData, hmImg, enData] = await Promise.all([
   fetch('../shrines.json').then((r) => r.json()),
   fetch('../deities.json').then((r) => r.json()),
   // 宿の候補（楽天トラベル・アフィリエイト）。無くても地図は動く
@@ -26,7 +26,22 @@ const [shrineData, deityData, staysData, specData, hmImg] = await Promise.all([
   // 名産・お取り寄せ（楽天市場・アフィリエイト）。無くても地図は動く
   fetch('../specialties.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
+  // 英語版の訳文（日本語の記述の範囲だけを訳したもの）。無くても日本語で動く
+  fetch('../i18n/en.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
 ]).catch((e) => { fail('データの読み込みに失敗しました。' + e); throw e; });
+
+// ---- 言語（日本語／English）----
+const LANG_KEY = 'shrine-note-lang';
+let lang = 'ja';
+try {
+  const q = new URLSearchParams(location.search).get('lang');
+  if (q === 'en' || q === 'ja') localStorage.setItem(LANG_KEY, q);
+  lang = localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'ja';
+} catch (_) { /* 保存できない環境では日本語 */ }
+if (!enData) lang = 'ja';
+const EN = lang === 'en';
+if (EN) { document.documentElement.lang = 'en'; document.title = enData.ui.title; }
+const U = (k, ja) => (EN && enData.ui[k]) || ja;
 
 const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
@@ -1102,10 +1117,10 @@ function refs(ids) {
   if (!ids || !ids.length) return '';
   return ids.map((id) => `<a class="sup" href="#src-${esc(id)}" data-src="${esc(id)}">[${esc(srcMap[id]?.label ?? id)}]</a>`).join('');
 }
-const TYPE = { fact: ['fact', '事実'], tradition: ['trad', '伝承'], guess: ['guess', '推測'], todo: ['todo', '要確認'] };
-function stBadge(status) { return status && status !== 'verified' ? '<span class="badge todo">要確認</span>' : ''; }
+const TYPE = { fact: ['fact', U('wasFact', '事実')], tradition: ['trad', U('wasTradition', '伝承')], guess: ['guess', U('wasGuess', '推測')], todo: ['todo', U('toConfirm', '要確認')] };
+function stBadge(status) { return status && status !== 'verified' ? `<span class="badge todo">${U('toConfirm', '要確認')}</span>` : ''; }
 function item(f) {
-  if (!f) return '<p><span class="badge todo">要確認</span></p>';
+  if (!f) return `<p><span class="badge todo">${U('toConfirm', '要確認')}</span></p>`;
   if (typeof f === 'string') return `<p>${esc(f)}</p>`;
   const t = f.type && TYPE[f.type] ? `<span class="badge ${TYPE[f.type][0]}">${TYPE[f.type][1]}</span>` : '';
   return `<p>${t}${esc(f.text)}${refs(f.src)}${stBadge(f.status)}</p>`;
@@ -1113,7 +1128,7 @@ function item(f) {
 function sourceList(ids) {
   const used = [...new Set(ids)].filter((id) => srcMap[id]);
   if (!used.length) return '';
-  return `<h3>出典</h3><ul class="src">` + used.map((id) => {
+  return `<h3>${U('sources', '出典')}</h3><ul class="src">` + used.map((id) => {
     const s = srcMap[id];
     const url = s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a>` : '';
     return `<li id="src-${esc(id)}"><b>[${esc(s.label ?? id)}]</b> ${esc(s.title)}${s.publisher ? '（' + esc(s.publisher) + '）' : ''}${url}${s.accessed ? '（閲覧 ' + esc(s.accessed) + '）' : ''}</li>`;
@@ -1181,12 +1196,15 @@ const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き
 const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
 function visitBoxHTML(s) {
   const v = stamps.get(s.id), total = shrines.length;
-  const msg = v ? `<b class="vdone">参拝ずみ（${esc(v.visitedAt)}）</b>` : `<button class="btn vbtn" type="button" data-visit="${esc(s.id)}">参拝した</button>`;
+  const V = EN
+    ? { btn: 'I visited', done: (d) => `Visited (${d})`, count: (n, m) => `Visited ${n} / ${m} shrines ・ Your record stays on this device only.`, undo: 'Undo', add: 'Add a goshuin photo', share: 'Make a shareable image', change: 'Change photo', del: 'Delete photo', note: 'Please follow the rules of each shrine on photography and posting. Photos stay on this device only.' }
+    : { btn: '参拝した', done: (d) => `参拝ずみ（${d}）`, count: (n, m) => `参拝 ${n}／${m}社 ・ 記録はこの端末の中だけに残ります。`, undo: '取り消す', add: '御朱印の写真を撮る', share: '共有用の画像を作る', change: '写真を変える', del: '写真を消す', note: '撮影・投稿は、神社の案内に従ってください。写真はこの端末の中だけに保存されます。' };
+  const msg = v ? `<b class="vdone">${esc(V.done(v.visitedAt))}</b>` : `<button class="btn vbtn" type="button" data-visit="${esc(s.id)}">${V.btn}</button>`;
   const photo = !v ? '' : (v.photoId
-    ? `<div class="vphoto"><img class="vthumb" data-photo="${esc(v.photoId)}" alt="${esc(s.name)}の御朱印の写真"><span><button class="btn" type="button" data-pshare="${esc(s.id)}">共有用の画像を作る</button><button class="lnk" type="button" data-ppick="${esc(s.id)}">写真を変える</button><button class="lnk" type="button" data-pdel="${esc(s.id)}">写真を消す</button></span></div>`
-    : `<div class="vphoto"><button class="btn" type="button" data-ppick="${esc(s.id)}">御朱印の写真を撮る</button></div>`);
-  const note = v ? '<small class="pnote">撮影・投稿は、神社の案内に従ってください。写真はこの端末の中だけに保存されます。</small>' : '';
-  return `<div class="visitbox" data-visitbox="${esc(s.id)}">${msg}<small>参拝 ${stamps.count()}／${total}社 ・ 記録はこの端末の中だけに残ります。${v ? ` <button class="lnk" type="button" data-unvisit="${esc(s.id)}">取り消す</button>` : ''}</small>${photo}${note}</div>`;
+    ? `<div class="vphoto"><img class="vthumb" data-photo="${esc(v.photoId)}" alt="${esc(shName(s))}"><span><button class="btn" type="button" data-pshare="${esc(s.id)}">${V.share}</button><button class="lnk" type="button" data-ppick="${esc(s.id)}">${V.change}</button><button class="lnk" type="button" data-pdel="${esc(s.id)}">${V.del}</button></span></div>`
+    : `<div class="vphoto"><button class="btn" type="button" data-ppick="${esc(s.id)}">${V.add}</button></div>`);
+  const note = v ? `<small class="pnote">${V.note}</small>` : '';
+  return `<div class="visitbox" data-visitbox="${esc(s.id)}">${msg}<small>${V.count(stamps.count(), total)}${v ? ` <button class="lnk" type="button" data-unvisit="${esc(s.id)}">${V.undo}</button>` : ''}</small>${photo}${note}</div>`;
 }
 // 御朱印の写真（端末内）
 const thumbURLs = new Map();
@@ -1222,7 +1240,24 @@ async function shareStamp(id) {
     if (r === 'saved') toast('画像を保存しました。SNSに投稿するときは、神社の案内に従ってください');
   } catch (_) { toast('共有用の画像を作れませんでした'); }
 }
-function shrineHTML(s) {
+// 英語版：訳文があれば差し替える（出典・状態・種類はそのまま引き継ぐ）。無ければ日本語のまま
+function locShrine(s) {
+  if (!EN) return s;
+  const o = enData.shrines[s.id];
+  if (!o) return { ...s, _pending: true };
+  const f = (v, txt) => (txt && v ? { ...v, text: txt } : v);
+  const arr = (a, tx) => (a || []).map((h, i) => (tx && tx[i] ? { ...h, text: tx[i] } : h));
+  return {
+    ...s, name: o.name, reading: '', pref: '', city: o.place,
+    summary: f(s.summary, o.summary), deity_note: f(s.deity_note, o.deity_note),
+    history: arr(s.history, o.history), highlights: arr(s.highlights, o.highlights),
+    address: f(s.address, o.address), access: f(s.access, o.access), hours: f(s.hours, o.hours), parking: f(s.parking, o.parking), goshuin: f(s.goshuin, o.goshuin),
+  };
+}
+const shName = (s) => (EN && enData.shrines[s.id] ? enData.shrines[s.id].name : s.name);
+const dName = (d) => (EN && enData.deities[d.id] && enData.deities[d.id].name) || d.name;
+function shrineHTML(s0) {
+  const s = locShrine(s0);
   const used = [];
   const take = (...fs) => fs.forEach((f) => f && f.src && used.push(...f.src));
   (s.history || []).forEach((h) => take(h));
@@ -1233,40 +1268,40 @@ function shrineHTML(s) {
   // 1 はじまり
   const nameSpans = [...s.name].map((ch, k) => `<span style="--k:${k}">${esc(ch)}</span>`).join('');
   const c1 = `<h2 class="nm" aria-label="${esc(s.name)}">${nameSpans}</h2>
-    ${rvs(`<p class="rd">${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</p>`, 5)}
+    ${rvs(EN ? `<p class="rd">${esc(s.city || '')}${s._pending ? ' ｜ ' + esc(U('pendingTranslation', '')) : ''}</p>` : `<p class="rd">${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</p>`, 5)}
     ${rvs(`<div class="lead">${item(s.summary)}</div>`, 7)}
     ${rvs(visitBoxHTML(s), 8)}
-    ${rvs(`<p class="hintnext">上へなぞって、続きを読む<span class="arw" aria-hidden="true">⌃</span></p>`, 10)}`;
+    ${rvs(`<p class="hintnext">${U('readMore', '上へなぞって、続きを読む')}<span class="arw" aria-hidden="true">⌃</span></p>`, 10)}`;
   // 2 御祭神
-  const c2 = `<h3 class="chh">御祭神</h3>` + ds.map((d, k) => {
+  const c2 = `<h3 class="chh">${U('enshrined', '御祭神')}</h3>` + ds.map((d, k) => {
     const sc = (d.scenes || [])[0];
-    return rvs(`<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(d.name)}</b><small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small>${sc ? `<em>神話の場面：${esc(sc.title)} ›</em>` : '<em>神様のページへ ›</em>'}</button>`, k + 1);
+    return rvs(EN ? `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(dName(d))}</b><small>${esc(d.name)}</small><em>${sc ? esc(U('mythScene', '神話の場面')) + ': ' + esc(sc.title) + ' ›' : esc(U('deityPage', '神様のページへ ›'))}</em></button>` : `<button class="dcard" type="button" data-deity="${esc(d.id)}"><b>${esc(d.name)}</b><small>${esc(d.reading)}${d.kojiki_name ? '｜古事記：' + esc(d.kojiki_name) : ''}</small>${sc ? `<em>神話の場面：${esc(sc.title)} ›</em>` : '<em>神様のページへ ›</em>'}</button>`, k + 1);
   }).join('') + (s.deity_note ? rvs(`<p class="meta">${esc(s.deity_note.text)}${refs(s.deity_note.src)}</p>`, ds.length + 2) : '');
   // 3 由緒（時間の線）
   const hist = (s.history || []);
-  const c3 = `<h3 class="chh">由緒</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
+  const c3 = `<h3 class="chh">${U('history', '由緒')}</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
     const ty = h.type && TYPE[h.type] ? h.type : 'fact';
     return rvs(`<div class="tli ${ty}">${item(h)}</div>`, k + 1);
-  }).join('') : rvs(item(null), 1)) + `</div>` + rvs(`<button class="btn" type="button" data-emaki="1">絵巻で見る ›</button>`, hist.length + 2);
+  }).join('') : rvs(item(null), 1)) + `</div>` + rvs(`<button class="btn" type="button" data-emaki="1">${U('emaki', '絵巻で見る ›')}</button>`, hist.length + 2);
   // 4 見どころ
   const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
-  const c4 = `<h3 class="chh">見どころ</h3>` + (hl.length ? hl.map((h, k) => rvs(`<div class="spot">${item(h)}</div>`, k + 1)).join('') : rvs('<div class="spot"><p>見どころの記録は準備中です。<span class="badge todo">要確認</span></p></div>', 1))
-    + (same.length ? rvs(`<h3 class="chh sub">同じ神様を祀る社へ</h3><ul class="linklist">` + same.map(([o, id]) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(o.name)}<small>${esc(deities[id]?.name || '')}を祀る</small></button></li>`).join('') + `</ul>`, hl.length + 2) : '');
+  const c4 = `<h3 class="chh">${U('highlights', '見どころ')}</h3>` + (hl.length ? hl.map((h, k) => rvs(`<div class="spot">${item(h)}</div>`, k + 1)).join('') : rvs(`<div class="spot"><p>${EN ? 'No highlights recorded yet.' : '見どころの記録は準備中です。'}<span class="badge todo">${U('toConfirm', '要確認')}</span></p></div>`, 1))
+    + (same.length ? rvs(`<h3 class="chh sub">${U('samedeity', '同じ神様を祀る社へ')}</h3><ul class="linklist">` + same.map(([o, id]) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(shName(o))}<small>${EN ? esc(dName(deities[id] || { id })) : esc(deities[id]?.name || '') + 'を祀る'}</small></button></li>`).join('') + `</ul>`, hl.length + 2) : '');
   // 5 行き方
-  const row = (k, f) => f ? `<dt>${k}</dt><dd>${typeof f === 'string' ? esc(f) : esc(f.text) + refs(f.src) + stBadge(f.status)}</dd>` : `<dt>${k}</dt><dd><span class="badge todo">要確認</span></dd>`;
-  const c5 = `<h3 class="chh">行き方・参拝</h3>
+  const row = (k, f) => f ? `<dt>${k}</dt><dd>${typeof f === 'string' ? esc(f) : esc(f.text) + refs(f.src) + stBadge(f.status)}</dd>` : `<dt>${k}</dt><dd><span class="badge todo">${U('toConfirm', '要確認')}</span></dd>`;
+  const c5 = `<h3 class="chh">${U('visit', '行き方・参拝')}</h3>
     <div id="routeBox" class="routebox"></div>
     ${s.note_geo ? `<p class="meta">位置：${esc(s.note_geo)}</p>` : ''}
-    <dl class="row">${row('所在地', s.address)}${row('アクセス', s.access)}${row('参拝時間', s.hours)}${row('駐車場', s.parking)}${row('御朱印', s.goshuin)}</dl>
-    <h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
-    <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>
+    <dl class="row">${row(U('address', '所在地'), s.address)}${row(U('access', 'アクセス'), s.access)}${row(U('hours', '参拝時間'), s.hours)}${row(U('parking', '駐車場'), s.parking)}${row(U('goshuin', '御朱印'), s.goshuin)}</dl>
+    ${EN ? '' : `<h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
+    <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>`}
     ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
-    <h3 class="chh sub">note 記事</h3>
+    <h3 class="chh sub">${EN ? U('noteArticle', '') + ' (Japanese)' : 'note 記事'}</h3>
     ${s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
     ${sourceList(used)}
-    <p class="meta">情報確認日：${esc(s.checked || '未確認')}／神社への敬意をもって、境内では現地の表示と作法に従ってください。</p>`;
+    <p class="meta">${EN ? U('checked', '') + ': ' + esc(s.checked || 'not checked') + ' / ' + U('respect', '') : '情報確認日：' + esc(s.checked || '未確認') + '／神社への敬意をもって、境内では現地の表示と作法に従ってください。'}</p>`;
   const cs = [c1, c2, c3, c4, c5];
   return `<div class="chapters" id="chapters">${cs.map((c, i) => `<section class="ch" data-ch="${i}" aria-label="${CHAPTERS[i]}">${c}</section>`).join('')}</div>
     <nav class="dots" aria-label="章">${CHAPTERS.map((n, i) => `<button type="button" data-goto="${i}" aria-label="${n}"><span>${n}</span></button>`).join('')}</nav>`;
@@ -1678,7 +1713,14 @@ $('importIn').addEventListener('change', async (e) => {
   try { const r = await importAll(f, new Set(shrines.map((s) => s.id))); toast(`${r.added}社を読み込みました${r.skipped ? `（${r.skipped}件は、すでにある・対象外のため、そのままにしました）` : ''}`); }
   catch (err) { toast(err.message || '読み込めませんでした'); }
 });
-function syncBookBtn() { $('btnBook').textContent = '御朱印スタンプ帳' + (stamps.count() ? ' ' + stamps.count() : ''); }
+function syncBookBtn() { $('btnBook').textContent = (EN ? 'Goshuin Stamp Book' : '御朱印スタンプ帳') + (stamps.count() ? ' ' + stamps.count() : ''); }
+$('btnLang').hidden = !enData;
+$('btnLang').textContent = EN ? U('langToggle', '日本語') : 'English';
+$('btnLang').addEventListener('click', () => {
+  try { localStorage.setItem(LANG_KEY, EN ? 'ja' : 'en'); } catch (_) { /* 保存できなくても切り替える */ }
+  const u = new URL(location.href); u.searchParams.delete('lang'); if (selected) u.searchParams.set('s', selected.id);
+  location.href = u.toString();
+});
 function openTree(show) {
   const el = $('tree');
   if (show) { treeFocusMode = false; treeFocus = null; renderTree(); }

@@ -1,0 +1,137 @@
+{
+  "_note": "English overlay. Translated from the Japanese entries in shrines.json (same sources, same 'to confirm' status). Nothing is added that the Japanese text does not say. Entries set to null keep the Japanese text.",
+  "ui": {
+    "title": "Shrine Note | Shrines of the Japanese Archipelago",
+    "enshrined": "Enshrined deities",
+    "history": "History",
+    "highlights": "Highlights",
+    "samedeity": "Shrines of the same deity",
+    "visit": "Access & visiting",
+    "food": "Food",
+    "noteArticle": "Articles",
+    "address": "Address",
+    "access": "Access",
+    "hours": "Hours",
+    "parking": "Parking",
+    "goshuin": "Goshuin (shrine stamp)",
+    "sources": "Sources",
+    "toConfirm": "To confirm",
+    "emaki": "View as a scroll ›",
+    "readMore": "Swipe up to keep reading",
+    "mythScene": "Myth scene",
+    "deityPage": "Deity page ›",
+    "kojikiName": "In the Kojiki",
+    "checked": "Information checked",
+    "respect": "Please follow the signs and etiquette on site, with respect for the shrine.",
+    "pendingTranslation": "English translation for this shrine is in preparation. The Japanese text is shown.",
+    "langToggle": "日本語",
+    "visited": "Visited",
+    "iVisited": "I visited",
+    "wasFact": "Fact",
+    "wasTradition": "Tradition",
+    "wasGuess": "Conjecture"
+  },
+  "deities": {
+    "amaterasu": { "name": "Amaterasu-Ōmikami", "note": "Sun deity" },
+    "toyouke": { "name": "Toyouke-no-Ōmikami", "note": "Deity of food, enshrined at the Outer Shrine" },
+    "ookuninushi": { "name": "Ōkuninushi-no-Ōkami", "note": "Central figure of the Kojiki's 'building the land' tale" },
+    "munakata3": { "name": "The Three Munakata Goddesses", "note": "Ichikishima-hime, Tagori-hime and Tagitsu-hime" },
+    "ketsumiko": { "name": "Ketsumiko-no-Ōkami", "note": "Chief deity of Kumano Hongū Taisha" },
+    "susanoo": { "name": "Susanoo-no-Mikoto", "note": null },
+    "hayatamano": { "name": "Hayatama-no-O-no-Kami", "note": null },
+    "izanami": { "name": "Izanami-no-Mikoto", "note": null },
+    "takemikazuchi": { "name": "Takemikazuchi-no-Ōkami", "note": "Deity of Kashima" }
+  },
+  "shrines": {
+    "ise": {
+      "name": "Ise Jingū (Naikū, Inner Shrine)",
+      "place": "Ise City, Mie",
+      "summary": "Formally called simply \"Jingū\". The Inner Shrine (Kōtai Jingū) enshrines Amaterasu-Ōmikami and the Outer Shrine (Toyouke Daijingū) enshrines Toyouke-no-Ōmikami. The light on the map marks the Inner Shrine.",
+      "deity_note": "Amaterasu-Ōmikami appears in the Kojiki in scenes such as the purification rites and the Heavenly Rock Cave. Toyouke-no-Ōmikami corresponds to the Kojiki's \"Toyoukebime / Toyuuke-no-Kami\" and is regarded as the deity of the Outer Shrine.",
+      "history": [
+        "The Inner Shrine is said to have been established about 2,000 years ago, in the reign of Emperor Suinin, on the bank of the Isuzu River (official site).",
+        "The Outer Shrine is said to have been established in the 22nd year of Emperor Yūryaku (encyclopedia only)."
+      ],
+      "highlights": [],
+      "address": "Inner Shrine: 1 Ujitachi-chō, Ise, Mie. Outer Shrine: 279 Toyokawa-chō, Ise, Mie.",
+      "access": "The Outer Shrine is about a 5-minute walk from Iseshi Station. Between the Outer and Inner Shrines it is about 10 minutes by bus or taxi (official). The travel time to the Inner Shrine from a station has not been confirmed on the official site.",
+      "hours": "Jan–Apr and Sep: 5:00–18:00. May–Aug: 5:00–19:00. Oct–Dec: 5:00–17:00 (official).",
+      "parking": "In busy periods the shrine promotes park-and-ride (official). Capacity and fees per lot are to be confirmed.",
+      "goshuin": "Not confirmed."
+    },
+    "izumo": {
+      "name": "Izumo Taisha",
+      "place": "Izumo City, Shimane",
+      "summary": "Enshrines Ōkuninushi-no-Ōkami. The official site tells that, after building the land, he returned it to Amaterasu-Ōmikami and now rests in a grand sanctuary as the ruler of the unseen world.",
+      "deity_note": "The central figure of the Kojiki's tales of \"building the land\" and \"transferring the land\". The Nihon Shoki calls him Ōnamuchi-no-Kami and gives other names including Ōkuninushi-no-Kami and Ōmononushi-no-Kami.",
+      "history": [
+        "The official site explains that the Kojiki and the Nihon Shoki describe the grandeur of the sanctuary, and that the Izumo no Kuni Fudoki (733) praises the deity as \"the great deity who built all under heaven\" and records the place name Kizuki.",
+        "Its shrine ranks (Shikinai Myōjin Taisha, Ichinomiya of Izumo, former Kanpei Taisha, Chokusai-sha) come from encyclopedias only and are not confirmed on the official site."
+      ],
+      "highlights": [],
+      "address": "195 Taisha-chō Kizukihigashi, Izumo, Shimane 699-0701.",
+      "access": "Ichibata Electric Railway: Izumo-taisha-mae Station. From JR Izumoshi Station, about 25 minutes by Ichibata Bus bound for Izumo Taisha (official).",
+      "hours": "6:00–19:00. Outside these hours, visitors pray at the bronze torii. Soga Shrine: 6:00–16:30 (notice dated 14 Oct 2024).",
+      "parking": "Main lot 385 spaces, a second lot 360 spaces, and a third lot 20 spaces (official). Fees and opening hours are to be confirmed.",
+      "goshuin": "Not confirmed."
+    },
+    "itsukushima": {
+      "name": "Itsukushima Shrine",
+      "place": "Hatsukaichi City, Hiroshima",
+      "summary": "Located on Miyajima in the Seto Inland Sea, it enshrines the three Munakata goddesses. It was inscribed as a UNESCO World Heritage Site in 1996 and is known for its National Treasure halls and corridors.",
+      "deity_note": "According to the official site, the enshrined deities are Ichikishima-hime, Tagori-hime and Tagitsu-hime, described as deities born from the oath between Amaterasu-Ōmikami and Susanoo-no-Mikoto. They are the same three goddesses as at Munakata Taisha and appear in the oath scene of the Kojiki and the Nihon Shoki. The official site says they have been revered as protectors of the imperial family, the nation and the sea.",
+      "history": [
+        "The official site says that in the year Empress Suiko took the throne (593), Saeki no Kuramoto of Aki Province received a divine command and, guided by a sacred crow, built the shrine on its present site.",
+        "The official site records that Taira no Kiyomori, after becoming governor of Aki, revered the shrine and rebuilt it in 1168 in the shinden-zukuri style.",
+        "It was inscribed as a UNESCO World Heritage Site in 1996.",
+        "The official list gives six National Treasure structures (the main sanctuary, offering hall, worship hall, Harae-den, the Marōdo shrine buildings, and the east and west corridors) and 11 buildings and 3 structures as Important Cultural Properties, including subsidiary shrines, the five-story pagoda, the Tahōtō and the Great Torii."
+      ],
+      "highlights": [
+        "The Great Torii is an Important Cultural Property. The official site notes it comes at the end of the visiting route.",
+        "The east and west corridors are National Treasures. The official site explains the floorboards are spaced apart to cope with high tides.",
+        "The Noh stage is an Important Cultural Property and lies on the visiting route that runs from the west corridor over the arched bridge.",
+        "The Treasure Hall (8:00–17:00 all year) and the Senjōkaku (8:30–16:30) can be visited."
+      ],
+      "address": "1-1 Miyajima-chō, Hatsukaichi, Hiroshima 739-0588. Tel. 0829-44-2020 (9:00–16:00).",
+      "access": "Take the ferry (about 10 minutes) from Miyajimaguchi Pier to Miyajima Pier and walk from there. Miyajimaguchi Pier can be reached from JR Miyajimaguchi Station or Hiroden Miyajimaguchi Station. By car, leave the Sanyo Expressway at Hatsukaichi IC or Ōno IC, drive to Miyajimaguchi and take the ferry.",
+      "hours": "Open every day. Hours vary by season: 6:30–18:00 from 1 Mar to 14 Oct; 6:30–17:30 from 15 Oct to 30 Nov and from 4 Jan to the end of Feb; 6:30–17:00 in December (1 Jan: 0:00–18:30; 2–3 Jan: 6:30–18:30). Entry to the halls: adults 300 yen, high school students 200 yen, elementary and junior high students 100 yen.",
+      "parking": "The shrine has no parking lot. The official site says public transport is essential.",
+      "goshuin": "The availability, location and price of goshuin could not be confirmed on the official site."
+    },
+    "kumano": {
+      "name": "Kumano Hongū Taisha",
+      "place": "Hongū, Tanabe City, Wakayama",
+      "summary": "In Hongū, Tanabe City, Wakayama. The official site calls it the center of the Three Kumano Shrines and the head shrine of more than 4,700 Kumano shrines across Japan. The chief deity is Ketsumiko-no-Ōkami.",
+      "deity_note": "The official site identifies its chief deity Ketsumiko-no-Ōkami with Susanoo-no-Mikoto. A search of the Kojiki and the Nihon Shoki finds no deity named \"Ketsumiko\", so this deity does not appear in either. One variant in Nihon Shoki volume 1 says Susanoo lived on \"Kumanari Peak\", but whether that is Kumano Hongū has not been confirmed (to confirm). So \"Ketsumiko = Susanoo\" is the official site's statement, not the Kojiki's or the Nihon Shoki's. The official site lists five enshrined deities: Ketsumiko-no-Ōkami, Kumano-musubi-no-Ōkami, Hayatama-no-O-no-Kami, Amaterasu-Ōmikami and Izanami-no-Ōkami.",
+      "history": [
+        "The official site tells that, in the reign of Emperor Sujin, three moons descended on a great tree at the old shrine site, Ōyunohara, and the central moon declared \"I am Shōjō Gongen\" and ordered a shrine to be built.",
+        "The official site records that in the great flood of 1889 the middle and lower shrines collapsed, and now only the four upper shrines are enshrined.",
+        "The official site says it is registered as a World Heritage Site as part of the Sacred Sites and Pilgrimage Routes in the Kii Mountain Range. The year of registration has not been confirmed on the relevant official page."
+      ],
+      "highlights": [
+        "The old shrine site, Ōyunohara, is near the present site (described in the official history; how to visit is to be confirmed)."
+      ],
+      "address": "Hongū, Hongū-chō, Tanabe, Wakayama 647-1731 (as written on the official top page; the street number has not been confirmed).",
+      "access": "The official site refers visitors to the Kumano Hongū Tourist Association (https://www.hongu.jp/) for transport. Train and bus details have not been confirmed on the official site.",
+      "hours": "8:00–17:00 (official).",
+      "parking": "The official site says there are free parking lots next to Zuihōden and by the riverbed, and a free lot near the main sanctuary for visitors with disabilities. The number of spaces has not been confirmed.",
+      "goshuin": "The official site's goods page lists goshuin books (large 3,500 yen; 2,000 yen), but the price and hours for goshuin themselves have not been confirmed."
+    },
+    "kashima": {
+      "name": "Kashima Jingū",
+      "place": "Kashima City, Ibaraki",
+      "summary": "Ichinomiya of Hitachi Province. It enshrines Takemikazuchi-no-Ōkami and is one of the Three Shrines of the East.",
+      "deity_note": "Takemikazuchi appears in the Kojiki in the birth of the deities and the transfer of the land. In the Nihon Shoki he is written Takemikazuchi-no-Kami.",
+      "history": [
+        "Said to have been founded in the first year of Emperor Jinmu. The official site records a tradition that Emperor Jinmu, saved during his eastern expedition by the spiritual power of Takemikazuchi's sword, enshrined the deity in gratitude.",
+        "In the Nara and Heian periods imperial envoys were sent often and the shrine was rebuilt every 20 years (official). It is a Chokusai-sha and a Myōjin Taisha (official)."
+      ],
+      "highlights": [],
+      "address": "2306-1 Miyanaka, Kashima, Ibaraki 314-0031.",
+      "access": "A 7-minute walk from Kashima-jingū Station on the JR Kashima Line and Kashima Rinkai Railway (official).",
+      "hours": "The grounds have no gates or fences and are open 24 hours, 365 days a year. The amulet office and prayer reception are open 8:30–16:30 (official).",
+      "parking": "No. 1 lot: 60 spaces (paid). No. 2 lot: 55 spaces (5-minute walk). Miyanaka-area lot: 150 spaces (3-minute walk; paid on weekends and holidays), and others. Please check fees on the official site.",
+      "goshuin": "Not confirmed."
+    }
+  }
+}
