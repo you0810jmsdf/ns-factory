@@ -449,12 +449,18 @@ function stampAt(p,single=false,markKind='tool') {
 }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
+/** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
+function markSnapPoint(click) {
+  let best = null, near = Infinity; const reach = magnetRadiusMm();
+  if (reach > 0) for (const c of [...magnetEnds, ...magnetGuide]) { const d = distance(click, c); if (d < reach && d < near) { near = d; best = c; } }
+  if ($('snap').checked) for (const c of snapCache) { const d = distance(click, c); if (d < 9 / scale && d < near) { near = d; best = c; } }
+  return best ? { x: best.x, y: best.y } : click;
+}
 /** 線に沿って位置 s から距離 d 離れた位置。開いた線で端をはみ出すなら null。閉じた線は 1 周して戻る。 */
 function markTargetS(s, d, closed, len) { const v = s + d; if (closed) return ((v % len) + len) % len; return v < -1e-9 || v > len + 1e-9 ? null : Math.max(0, Math.min(len, v)); }
 /** 目印ツールの距離指定。1 回目のクリック＝基準の点（線の端・角は磁石で正確に）、2 回目のクリック＝進む向き。開いた線の端が基準なら向きは線の内側に決まるので 1 回で打つ。距離は線に沿って測る（つながった線は結合点をまたぐ）。 */
 function markByDistance(click) {
-  const d = markDistance(), reach = magnetRadiusMm(), second = stage?.kind === 'markBase'; let base = click;
-  if (!second && reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetGuide]) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  const d = markDistance(), reach = magnetRadiusMm(), second = stage?.kind === 'markBase'; let base = second ? click : markSnapPoint(click); /* 2回目は進む向きを決めるクリックなので吸着しない */
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, base) <= 8 / scale);
   if (!hit) { $('hint').textContent = t('markNoLine'); return; }
   const state = routeForHit(hit); if (!state?.route) return;
@@ -479,8 +485,7 @@ function markByDistance(click) {
 function markDivisions() { const n = Math.floor(Number($('markDiv').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 100) : 0; }
 /** 目印ツールの分割指定。1 回目＝線の上の1点目（端・角は磁石で正確に）、2 回目＝同じ線の上の2点目。その間（線に沿って測る）を n 等分する位置に目印を打つ（2＝中心）。元に戻すは1回。 */
 function markByDivision(click) {
-  const n = markDivisions(), reach = magnetRadiusMm(), second = stage?.kind === 'markDiv'; let base = click;
-  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetGuide]) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  const n = markDivisions(), reach = magnetRadiusMm(), second = stage?.kind === 'markDiv'; let base = markSnapPoint(click);
   /* 交点では複数の線が重なる。クリック位置に乗っている線をすべて拾い（上にある線が先）、1点目はその全部の位置を覚え、2点目は1点目と共通の線を使う。 */
   const cands = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().filter(s => distToShape(s, base) <= 8 / scale).map(hit => { const state = routeForHit(hit); if (!state?.route) return null; const route = { ...state.route, reversed: !!state.saved.reversed }; return { route, key: [...state.saved.shapeIds].sort().join(','), s: projectOnPath(route, base).s }; }).filter(Boolean);
   if (!cands.length) { $('hint').textContent = t('markNoLine'); return; }
@@ -3069,7 +3074,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
-  if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(world(p), true, 'dot'); return; }
+  if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
