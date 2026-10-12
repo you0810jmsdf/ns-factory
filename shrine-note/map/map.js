@@ -27,7 +27,7 @@ const [shrineData, deityData, staysData, specData, hmImg, enData] = await Promis
   fetch('../specialties.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
   // 英語版の訳文（日本語の記述の範囲だけを訳したもの）。無くても日本語で動く
-  fetch('../i18n/en.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  fetch('../i18n/en.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
 ]).catch((e) => { fail('データの読み込みに失敗しました。' + e); throw e; });
 
 // ---- 言語（日本語／English）----
