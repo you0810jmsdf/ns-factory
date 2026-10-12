@@ -1,5 +1,6 @@
 // 神社巡りノート｜日本列島の神社めぐり（three.js・標高は国土地理院タイル由来の heightmap.png）
 import * as THREE from './vendor/three.module.min.js';
+import { stamps } from './stamps.js';
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
 const LON0 = 128.0, LON1 = 146.0, LAT0 = 30.0, LAT1 = 45.9;
@@ -295,7 +296,7 @@ scene.add(terrain);
 
 // ---------- 神社の光 ----------
 const n = shrines.length;
-const mPos = new Float32Array(n * 3), mPh = new Float32Array(n), mSel = new Float32Array(n);
+const mPos = new Float32Array(n * 3), mPh = new Float32Array(n), mSel = new Float32Array(n), mVis = new Float32Array(n);
 shrines.forEach((s, i) => {
   mPos.set([s._p.x, s._y + 0.02, s._p.z], i * 3);
   mPh[i] = i * 1.7;
@@ -304,20 +305,21 @@ const mGeo = new THREE.BufferGeometry();
 mGeo.setAttribute('position', new THREE.BufferAttribute(mPos, 3));
 mGeo.setAttribute('aPh', new THREE.BufferAttribute(mPh, 1));
 mGeo.setAttribute('aSel', new THREE.BufferAttribute(mSel, 1));
+mGeo.setAttribute('aVis', new THREE.BufferAttribute(mVis, 1));
 const markerMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
   uniforms: { uTime: { value: 0 }, uPx: { value: DPR }, uK: { value: 1 }, uDay: skyU.uDay },
   vertexShader: `
-    attribute float aPh, aSel; uniform float uTime, uPx, uK; varying float vP, vS;
+    attribute float aPh, aSel, aVis; uniform float uTime, uPx, uK; varying float vP, vS, vV;
     void main(){
-      vP = 0.72 + 0.28*sin(uTime*1.3 + aPh); vS = aSel;
+      vP = 0.72 + 0.28*sin(uTime*1.3 + aPh); vS = aSel; vV = aVis;
       vec4 mv = modelViewMatrix*vec4(position,1.);
       float s = (64.0 + aSel*30.0) * uK / (-mv.z) * 12.0;
       gl_PointSize = clamp(s, 24.0, 96.0) * uPx;
       gl_Position = projectionMatrix*mv;
     }`,
   fragmentShader: `
-    uniform float uDay; varying float vP, vS;
+    uniform float uDay; varying float vP, vS, vV;
     void main(){
       vec2 c = gl_PointCoord-0.5; float r = length(c)*2.0;
       float core = exp(-r*r*34.0);
@@ -325,6 +327,7 @@ const markerMat = new THREE.ShaderMaterial({
       float a = (core*1.1 + halo)*vP*(0.85+vS*0.5);
       vec3 col = mix(vec3(1.0,0.82,0.46), vec3(1.0,0.95,0.78), core);
       col = mix(col, vec3(1.0,0.30,0.14), uDay*0.7);   // 昼は、明るい地図の上で見えるよう朱色寄りに
+      col = mix(col, vec3(1.0,0.34,0.22), vV);          // 参拝した神社は、朱色の光
       gl_FragColor = vec4(col*a, a);
     }`,
 });
@@ -332,6 +335,10 @@ const markers = new THREE.Points(mGeo, markerMat);
 markers.frustumCulled = false;
 markers.renderOrder = 10;
 scene.add(markers);
+function syncVisited() {
+  shrines.forEach((s, i) => { const v = stamps.has(s.id); mVis[i] = v ? 1 : 0; if (s._lbl) s._lbl.classList.toggle('visited', v); });
+  mGeo.attributes.aVis.needsUpdate = true;
+}
 
 // 神社の光から、金色の粒がゆっくり立ちのぼる／神社を選ぶと波紋が1度ひろがる（控えめ。動きを減らす設定では出さない）
 const MOTE_N = isNarrow() ? 80 : 150;            // 1社あたりの粒の数（多くて細かいほど、煙に見える）
@@ -1168,6 +1175,11 @@ function specialtiesHTML(id) {
 
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
 const rvs = (html, i = 0) => `<div class="rv" style="--i:${i}">${html}</div>`;
+function visitBoxHTML(s) {
+  const v = stamps.get(s.id), total = shrines.length;
+  const msg = v ? `<b class="vdone">参拝ずみ（${esc(v.visitedAt)}）</b>` : `<button class="btn vbtn" type="button" data-visit="${esc(s.id)}">参拝した</button>`;
+  return `<div class="visitbox" data-visitbox="${esc(s.id)}">${msg}<small>参拝 ${stamps.count()}／${total}社 ・ 記録はこの端末の中だけに残ります。${v ? ` <button class="lnk" type="button" data-unvisit="${esc(s.id)}">取り消す</button>` : ''}</small></div>`;
+}
 function shrineHTML(s) {
   const used = [];
   const take = (...fs) => fs.forEach((f) => f && f.src && used.push(...f.src));
@@ -1181,6 +1193,7 @@ function shrineHTML(s) {
   const c1 = `<h2 class="nm" aria-label="${esc(s.name)}">${nameSpans}</h2>
     ${rvs(`<p class="rd">${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</p>`, 5)}
     ${rvs(`<div class="lead">${item(s.summary)}</div>`, 7)}
+    ${rvs(visitBoxHTML(s), 8)}
     ${rvs(`<p class="hintnext">上へなぞって、続きを読む<span class="arw" aria-hidden="true">⌃</span></p>`, 10)}`;
   // 2 御祭神
   const c2 = `<h3 class="chh">御祭神</h3>` + ds.map((d, k) => {
@@ -1486,13 +1499,15 @@ $('btnBack').addEventListener('click', goHome);
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki]');
+  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki],[data-visit],[data-unvisit]');
   if (!t) return;
   if (t.dataset.deity) { e.preventDefault(); if (!selected) { current = { shrine: null }; sheetEl.hidden = false; sheetEl.classList.add('show'); } showDeity(t.dataset.deity); }
   else if (t.dataset.shrine) { selectShrine(t.dataset.shrine); }
   else if (t.dataset.back) { backToShrine(); }
   else if (t.dataset.route) { routeAction(t.dataset.route); }
   else if (t.dataset.emaki) { openEmaki(selected); }
+  else if (t.dataset.visit) { stamps.add(t.dataset.visit); }
+  else if (t.dataset.unvisit) { stamps.remove(t.dataset.unvisit); }
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
@@ -1788,7 +1803,12 @@ function loop(now) {
 requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
-window.__shrineMap = { getQual: () => qual, setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
+stamps.onChange(() => {
+  syncVisited();
+  document.querySelectorAll('[data-visitbox]').forEach((el) => { const s = shrines.find((x) => x.id === el.dataset.visitbox); if (s) el.outerHTML = visitBoxHTML(s); });
+});
+syncVisited();
+window.__shrineMap = { stamps, getQual: () => qual, setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
   // 1フレームの描画時間(ms)を、GPUの完了まで待って測る（確認用）
   benchmark: (n = 40) => { const gl = renderer.getContext(); applyCamera(); camera.updateMatrixWorld(); renderer.render(scene, camera); gl.finish(); const t0 = performance.now(); for (let i = 0; i < n; i++) { renderer.render(scene, camera); gl.finish(); } return (performance.now() - t0) / n; } };
 // ?s=katori のように開くと、その神社へ直接飛ぶ
