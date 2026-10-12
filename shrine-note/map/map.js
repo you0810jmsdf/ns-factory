@@ -1227,8 +1227,8 @@ $('photoIn').addEventListener('change', async (e) => {
     const blob = await shrink(f), pid = await photos.put(blob), v = stamps.get(id);
     if (v && v.photoId) { photos.del(v.photoId).catch(() => {}); thumbURLs.delete(v.photoId); }
     stamps.setPhoto(id, pid);
-    toast('写真を、この端末に保存しました');
-  } catch (_) { toast('写真を読み込めませんでした。別の写真でお試しください'); }
+    toast(EN ? 'Photo saved on this device' : '写真を、この端末に保存しました');
+  } catch (_) { toast(EN ? 'Could not load that photo. Please try another.' : '写真を読み込めませんでした。別の写真でお試しください'); }
 });
 async function shareStamp(id) {
   const s = shrines.find((x) => x.id === id), v = stamps.get(id);
@@ -1237,8 +1237,8 @@ async function shareStamp(id) {
     const b = await photos.get(v.photoId);
     const img = await makeShareImage(b, s.name, v.visitedAt, '日本列島の神社めぐり｜神社巡りノート');
     const r = await shareOrSave(img, s.name);
-    if (r === 'saved') toast('画像を保存しました。SNSに投稿するときは、神社の案内に従ってください');
-  } catch (_) { toast('共有用の画像を作れませんでした'); }
+    if (r === 'saved') toast(EN ? 'Image saved. When you post it, please follow the shrine\u2019s rules.' : '画像を保存しました。SNSに投稿するときは、神社の案内に従ってください');
+  } catch (_) { toast(EN ? 'Could not make the shareable image' : '共有用の画像を作れませんでした'); }
 }
 // 英語版：訳文があれば差し替える（出典・状態・種類はそのまま引き継ぐ）。無ければ日本語のまま
 function locShrine(s) {
@@ -1678,24 +1678,38 @@ function renderTree() {
 // ---- 御朱印スタンプ帳 ----
 function renderBook() {
   const visited = new Set(stamps.all().map((v) => v.shrineId));
-  const S = summarize(shrines, visited);
+  const S = summarize(shrines, visited, EN);
   const pct = S.total ? Math.round((S.done / S.total) * 100) : 0;
-  const next = S.next ? `次のバッジまで あと${S.next.remain}社（${esc(S.next.label)}）` : 'すべてのバッジをそろえました';
+  const next = EN
+    ? (S.next ? `${S.next.remain} more to the next badge (${esc(S.next.label)})` : 'You have every badge')
+    : (S.next ? `次のバッジまで あと${S.next.remain}社（${esc(S.next.label)}）` : 'すべてのバッジをそろえました');
   const grid = shrines.map((s) => {
     const v = visited.has(s.id);
-    return `<button type="button" class="stp${v ? ' on' : ''}" data-shrine="${esc(s.id)}" data-bookgo="1" aria-label="${esc(s.name)}${v ? '（参拝ずみ）' : ''}"><i>${esc(s.name.slice(0, 2))}</i><small>${esc(s.name.replace(/(神社|神宮|大社|八幡宮|天満宮)$/, ''))}</small></button>`;
+    const nm = shName(s);
+    const short = EN && enData.shrines[s.id] ? nm.split(' ')[0] : s.name.replace(/(神社|神宮|大社|八幡宮|天満宮)$/, '');
+    const ico = EN && enData.shrines[s.id] ? nm.slice(0, 2) : s.name.slice(0, 2);
+    return `<button type="button" class="stp${v ? ' on' : ''}" data-shrine="${esc(s.id)}" data-bookgo="1" aria-label="${esc(nm)}${v ? (EN ? ' (visited)' : '（参拝ずみ）') : ''}"><i>${esc(ico)}</i><small>${esc(short)}</small></button>`;
   }).join('');
-  const regs = S.regions.filter((r) => r.total > 0).map((r) => `<li><span>${esc(r.name)}</span><b>${r.done}／${r.total}</b><u style="--w:${Math.round((r.done / r.total) * 100)}%"></u></li>`).join('');
-  const bds = S.badges.map((b) => `<span class="bdg${b.got ? ' got' : ''}">${esc(b.label)}${b.got ? ' ✓' : b.sub ? ' ' + esc(b.sub) : ' あと' + b.remain}</span>`).join('');
-  $('bookBody').innerHTML = `<div class="bk-top"><b class="bk-n">${S.done}<small>／${S.total}社</small></b><div class="bk-bar"><u style="--w:${pct}%"></u></div><p>${next}</p></div>`
-    + `<h3 class="chh">スタンプ</h3><div class="stpgrid">${grid}</div>`
-    + `<h3 class="chh">地方ごと</h3><ul class="regs">${regs}</ul>`
-    + `<h3 class="chh">バッジ</h3><div class="bdgs">${bds}</div>`
-    + `<h3 class="chh">記録の引っ越し</h3><p class="meta">スマホを替えるときは、記録を書き出して、新しい端末で読み込みます（写真も含みます）。読み込みは、いまの記録に足すだけで、消しません。</p><div class="bk-acts"><button class="btn" type="button" data-bkexport="1">記録を書き出す</button><button class="btn" type="button" data-bkimport="1">記録を読み込む</button></div>`
-    + `<p class="meta">参拝は、神社のカードの「参拝した」ボタンで記録します。記録はこの端末の中だけに残り、サーバーへは送りません。</p>`;
+  const regs = S.regions.filter((r) => r.total > 0).map((r) => `<li><span>${esc(r.label)}</span><b>${r.done}${EN ? ' / ' : '／'}${r.total}</b><u style="--w:${Math.round((r.done / r.total) * 100)}%"></u></li>`).join('');
+  const bds = S.badges.map((b) => `<span class="bdg${b.got ? ' got' : ''}">${esc(b.label)}${b.got ? ' ✓' : b.sub ? ' ' + esc(b.sub) : (EN ? ' ' + b.remain + ' to go' : ' あと' + b.remain)}</span>`).join('');
+  const X = EN
+    ? { n: ' shrines', stamps: 'Stamps', regions: 'By region', badges: 'Badges', move: 'Moving to a new phone',
+        moveTxt: 'When you change phones, export your record and import it on the new device (photos included). Importing only adds to the current record; it never deletes.',
+        exp: 'Export my record', imp: 'Import a record',
+        how: 'Record each visit with the "I visited" button on a shrine card. Your record stays on this device and is never sent to a server.' }
+    : { n: '社', stamps: 'スタンプ', regions: '地方ごと', badges: 'バッジ', move: '記録の引っ越し',
+        moveTxt: 'スマホを替えるときは、記録を書き出して、新しい端末で読み込みます（写真も含みます）。読み込みは、いまの記録に足すだけで、消しません。',
+        exp: '記録を書き出す', imp: '記録を読み込む',
+        how: '参拝は、神社のカードの「参拝した」ボタンで記録します。記録はこの端末の中だけに残り、サーバーへは送りません。' };
+  $('bookBody').innerHTML = `<div class="bk-top"><b class="bk-n">${S.done}<small>${EN ? ' / ' : '／'}${S.total}${X.n}</small></b><div class="bk-bar"><u style="--w:${pct}%"></u></div><p>${next}</p></div>`
+    + `<h3 class="chh">${X.stamps}</h3><div class="stpgrid">${grid}</div>`
+    + `<h3 class="chh">${X.regions}</h3><ul class="regs">${regs}</ul>`
+    + `<h3 class="chh">${X.badges}</h3><div class="bdgs">${bds}</div>`
+    + `<h3 class="chh">${X.move}</h3><p class="meta">${X.moveTxt}</p><div class="bk-acts"><button class="btn" type="button" data-bkexport="1">${X.exp}</button><button class="btn" type="button" data-bkimport="1">${X.imp}</button></div>`
+    + `<p class="meta">${X.how}</p>`;
 }
 function openBook(show) {
-  if (show) renderBook();
+  if (show) { if (EN) { document.querySelector('#book h2').innerHTML = 'Goshuin Stamp Book <small>Stored on this device only</small>'; $('btnBookClose').textContent = 'Close'; } renderBook(); }
   $('book').hidden = !show;
 }
 $('btnBook').addEventListener('click', () => openBook(true));
@@ -1703,15 +1717,15 @@ $('btnBookClose').addEventListener('click', () => openBook(false));
 $('book').addEventListener('click', async (e) => {
   if (e.target.closest('[data-bookgo]')) openBook(false);
   else if (e.target.closest('[data-bkexport]')) {
-    if (!stamps.count()) { toast('書き出す記録が、まだありません'); return; }
-    try { const r = await exportAll(); toast(`${r.count}社の記録（写真${r.photos}枚）を、ファイルに書き出しました`); } catch (_) { toast('書き出せませんでした'); }
+    if (!stamps.count()) { toast(EN ? 'There is no record to export yet' : '書き出す記録が、まだありません'); return; }
+    try { const r = await exportAll(); toast(EN ? `Exported ${r.count} shrines (${r.photos} photos) to a file` : `${r.count}社の記録（写真${r.photos}枚）を、ファイルに書き出しました`); } catch (_) { toast(EN ? 'Could not export' : '書き出せませんでした'); }
   } else if (e.target.closest('[data-bkimport]')) $('importIn').click();
 });
 $('importIn').addEventListener('change', async (e) => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if (!f) return;
-  try { const r = await importAll(f, new Set(shrines.map((s) => s.id))); toast(`${r.added}社を読み込みました${r.skipped ? `（${r.skipped}件は、すでにある・対象外のため、そのままにしました）` : ''}`); }
-  catch (err) { toast(err.message || '読み込めませんでした'); }
+  try { const r = await importAll(f, new Set(shrines.map((s) => s.id))); toast(EN ? `Imported ${r.added} shrines${r.skipped ? ` (${r.skipped} were already there or not applicable)` : ''}` : `${r.added}社を読み込みました${r.skipped ? `（${r.skipped}件は、すでにある・対象外のため、そのままにしました）` : ''}`); }
+  catch (err) { toast(EN ? 'Could not read this file. Please choose a file exported from this app.' : (err.message || '読み込めませんでした')); }
 });
 function syncBookBtn() { $('btnBook').textContent = (EN ? 'Goshuin Stamp Book' : '御朱印スタンプ帳') + (stamps.count() ? ' ' + stamps.count() : ''); }
 $('btnLang').hidden = !enData;
