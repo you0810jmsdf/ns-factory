@@ -2718,6 +2718,12 @@ function offsetCursorChoice(sel, cur, dist) {
   const cand = [dist, -dist].map(d => ({ d, r: offsetSpanResult(sel, d, { join: $('offsetJoin').value }) })).filter(c => c.r);
   return cand.length ? cand.reduce((m, c) => distToShape(c.r, cur) < distToShape(m.r, cur) ? c : m) : null;
 }
+/** 左右上下の向きのとき、選んだ範囲が1本の線でなければ、クリックした位置に一番近い「1辺」を使う（直線なら直線そのもの、折れ線・矩形なら最も近い辺）。辺にできない図形は null。 */
+function offsetEdgeOfHit(sel) {
+  const h = sel.hit, p = sel.click; if (!h || !p) return null;
+  if (h.type === 'line') return { points: [{ x: h.x1, y: h.y1 }, { x: h.x2, y: h.y2 }], closed: false, shapeIds: [h.id], whole: false, single: null, layer: sel.layer };
+  const e = offsetEdgeSel(h, p); return e ? { ...e, layer: sel.layer } : null;
+}
 let offsetAlt = false; /* Alt+クリック：矩形・折れ線の、クリックした1辺だけを選ぶ */
 /** 折れ線（矩形を含む）の、p に一番近い1辺だけを、オフセット用の選択範囲にする。折れ線以外・辺が1つだけなら null。 */
 function offsetEdgeSel(hit, p) {
@@ -2731,7 +2737,7 @@ function offsetClick(p, whole) {
   if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
   const edge = offsetAlt && !whole ? offsetEdgeSel(hit, p) : null; if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
   const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
-  offsetSelection = { ...sel, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
+  offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
   $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
 }
@@ -2747,7 +2753,7 @@ function placeOffsetFloat() {
 }
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
 function runOffset(override = null) {
-  const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
+  let sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
   let sides; /* 向きごとの { d: 符号つき距離, key: 説明文のキー }。「両側」なら内側と外側の2本 */
   if (override !== null) sides = [{ d: override, key: override < 0 ? 'offsetIn' : 'offsetOut' }];
   else {
@@ -2756,7 +2762,7 @@ function runOffset(override = null) {
     const v = $('offsetSide').value;
     if (v === 'cursor') { const ch = offsetCursorChoice(sel, offsetCursor || cursor, dist); if (!ch) { $('hint').textContent = t('impossible'); return; } sides = [{ d: ch.d, key: 'offsetCursorSide' }]; }
     else if (['left', 'right', 'up', 'down'].includes(v)) { /* 画面の向き：まっすぐな1本の線だけ。内側・外側では、1本の線のどちらか分かりにくいため */
-      if (sel.closed || sel.points.length !== 2) { $('hint').textContent = t('offsetDirNeedLine'); return; }
+      if (sel.closed || sel.points.length !== 2) { const es = offsetEdgeOfHit(sel); if (!es) { $('hint').textContent = t('offsetDirNeedLine'); return; } sel = es; } /* 矩形などは、クリックした位置に一番近い1辺だけをずらす */
       const want = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } }[v], probe = offsetSpanResult(sel, dist, { join: $('offsetJoin').value });
       const q0 = probe?.points ? probe.points[0] : probe && 'x1' in probe ? { x: probe.x1, y: probe.y1 } : null; /* 直線の結果は x1,y1…、折れ線の結果は points */
       if (!q0) { $('hint').textContent = t('impossible'); return; }
