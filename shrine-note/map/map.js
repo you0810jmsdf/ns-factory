@@ -1141,7 +1141,7 @@ function staysHTML(id) {
   const head = `<h3 class="chh sub">宿 <span class="badge pr">PR・広告</span></h3>`;
   const list = (staysMap[id] || []).filter((h) => h && h.url && String(h.url).startsWith(STAY_HOST));
   if (!list.length) {
-    return `${head}<div class="prbox">${id in staysMap ? '近くの宿の候補は、条件に合うものを探しています。' : '宿の候補は、準備中です。'}未訪問の宿は「候補」として表記します。</div>`;
+    return `${head}<div class="prbox">${id in staysMap ? '周辺に宿泊施設が少ないため、候補はありません。' : '宿の候補は、準備中です。未訪問の宿は「候補」として表記します。'}</div>`;
   }
   const at = staysData.fetched_at ? `（${esc(staysData.fetched_at)} 時点）` : '';
   return `${head}<div class="prbox stays">
