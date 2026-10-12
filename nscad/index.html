@@ -136,7 +136,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div>
 <div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side"><button id="sideToggle" class="side-toggle" data-i18n="sideToggleOpen" aria-expanded="false"></button>
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
@@ -222,7 +222,7 @@
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 </div></details>
 <details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
-<label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
+<label id="l-markDiv" data-i18n-title="markDivTip" hidden><span data-i18n="markDiv"></span><input id="markDiv" type="number" step="1" min="1" max="100" value="1"></label><label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
 <label><span data-i18n="stitchTool"></span><select id="stitchTool"></select></label>
 <label><span data-i18n="placement"></span><select id="placement"><option value="fixed" data-i18n="fixed"></option><option value="variable" data-i18n="variable"></option><option value="equal" data-i18n="equal"></option><option value="manual" data-i18n="manual"></option></select></label>
 <label><input id="chain" type="checkbox" checked><span data-i18n="chain"></span></label>
@@ -485,7 +485,7 @@
 <label><span data-i18n="sizeMm"></span><input id="textSize" type="number" step="0.5" value="5"></label>
 <label><span data-i18n="dimOffset"></span><input id="dimOffset" type="number" step="0.5" value="8"></label>
 <label><span data-i18n="offsetDist"></span><input id="offsetDist" type="number" min="0" step="0.5" value="2.5"></label>
-<label><span data-i18n="offsetSide"></span><select id="offsetSide"><option value="in" data-i18n="offsetIn"></option><option value="out" data-i18n="offsetOut"></option></select></label>
+<label><span data-i18n="offsetSide"></span><select id="offsetSide"><option value="in" data-i18n="offsetIn"></option><option value="out" data-i18n="offsetOut"></option><option value="both" data-i18n="ofBoth"></option></select></label>
 <button id="offsetRun" data-i18n="offsetRun"></button>
 <label><span data-i18n="offsetJoin"></span><select id="offsetJoin"><option value="miter" data-i18n="miter"></option><option value="round" data-i18n="roundJoin"></option></select></label>
 <label><span data-i18n="mirrorHoles"></span><select id="mirrorHoles"><option value="reverse" data-i18n="mirrorHolesReverse"></option><option value="keep" data-i18n="mirrorHolesKeep"></option></select></label>
@@ -536,8 +536,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=a74881a2","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a1715416","./help/en.js":"./help/en.js?v=870aeec4","./help/ja.js":"./help/ja.js?v=7c742764","./i18n.js":"./i18n.js?v=1639ba7a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=a74881a2"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=66b4cdb2","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=a1715416","./help/en.js":"./help/en.js?v=870aeec4","./help/ja.js":"./help/ja.js?v=7c742764","./i18n.js":"./i18n.js?v=44fe586a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=66b4cdb2"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1428,6 +1428,11 @@ const MESSAGES = {
     "ofDist": "距離 (mm)",
     "ofOut": "外側",
     "ofIn": "内側",
+    "ofBoth": "両側",
+    "explodeNone": "解除できる図形（グループ・矩形・折れ線）を選んでください。",
+    "explodeHoles": "目打ち（縫い穴）が付いているため分解できません。",
+    "exploded": "{n} 個の図形を {m} 本の直線に分解しました。1本ずつ選んで動かせます。",
+    "explodedSome": "{n} 個の図形を {m} 本の直線に分解しました（目打ちが付いた {k} 個は分解していません）。",
     "ofRun": "実行",
     "ofClose": "×",
     "presetCard": "設定セット（保存・呼び出し）",
@@ -1462,6 +1467,7 @@ const MESSAGES = {
     "unrolledHoles": "選んだ {n} 個の線を、全体の長さ {len} mm の直線にして、右横に足しました。目打ち {m} 個も同じ並びで写しました（元の線と目打ちは残してあります）。",
     "offsetPickedWhole": "つながった図形全体を選びました。距離と向きを確かめて Enter で実行。",
     "offsetNone": "オフセットする図形が見つかりません。図形の線の上をクリックしてください。",
+    "offsetDoneBoth": "{d}mm 両側（内側と外側）にオフセットしました（黄色の点線）。続けて選べます。",
     "offsetDone": "{d}mm {side}にオフセットしました（黄色の点線）。続けて選べます。",
     "offsetJoin": "結合",
     "miter": "交点",
@@ -1527,6 +1533,11 @@ const MESSAGES = {
     "markDist": "基準の点から線に沿って (mm)",
     "markDistTip": "0 のときは、クリックした場所に目印を打ちます。1 以上なら、基準の点（線の端・角）から線に沿って、この距離だけ進んだ場所に打ちます。",
     "hint.markDist": "距離を指定して目印を打ちます。基準にする点（線の端・角）をクリックし、次に進みたい向きの線の上をクリックします。開いた線の端が基準なら、1回のクリックで打てます。",
+    "markDiv": "2点間を分割（1＝使わない・2＝中心・3＝3等分…）",
+    "markDivTip": "2 以上にすると、線の上を2回クリックして、その2点の間（線に沿って測ります）をこの数で等分する位置に目印を打ちます。2 は中心、3 は3等分。1 のときは使いません。",
+    "hint.markDiv": "2点間を {n} 等分して目印を打ちます。線の上の1点目（端・角は正確に吸着）をクリックし、次に同じ線の上の2点目をクリックします。",
+    "markDivSecond": "1点目を決めました。同じ線の上の2点目をクリックしてください（{n} 等分します）。",
+    "markDivDone": "目印を {n} 個打ちました。続けて1点目を選べます。",
     "markPickSide": "基準の点を決めました。進みたい向きの線の上をクリックしてください（{d} mm 先の候補を丸で出しています）。",
     "markNoLine": "線の近くをクリックしてください。",
     "markOutside": "線の長さ（{len} mm）をはみ出すので打てません。距離か向きを変えてください。",
@@ -2414,6 +2425,11 @@ const MESSAGES = {
     "ofDist": "Distance (mm)",
     "ofOut": "Outside",
     "ofIn": "Inside",
+    "ofBoth": "Both sides",
+    "explodeNone": "Select a group, rectangle or polyline to ungroup.",
+    "explodeHoles": "Cannot explode: it has stitch holes.",
+    "exploded": "Exploded {n} shape(s) into {m} lines. You can now select and move each one.",
+    "explodedSome": "Exploded {n} shape(s) into {m} lines ({k} with stitch holes were left as is).",
     "ofRun": "Run",
     "ofClose": "×",
     "presetCard": "Settings sets (save / recall)",
@@ -2448,6 +2464,7 @@ const MESSAGES = {
     "unrolledHoles": "Added a {len} mm straight line to the right for the {n} selected shapes, with its {m} stitching holes copied in the same order (the originals are kept).",
     "offsetPickedWhole": "Selected the whole connected shape. Check the distance and side, then press Enter.",
     "offsetNone": "No shape to offset here. Click on a line of a shape.",
+    "offsetDoneBoth": "Offset {d} mm on both sides (yellow dashed). You can keep selecting.",
     "offsetDone": "Offset {d} mm {side} (yellow dashed). You can keep selecting.",
     "offsetJoin": "Join",
     "miter": "Miter",
@@ -2513,6 +2530,11 @@ const MESSAGES = {
     "markDist": "From the base point along the line (mm)",
     "markDistTip": "0 drops the mark where you click. 1 or more drops it that far along the line from the base point (a line end or corner).",
     "hint.markDist": "Mark by distance: click a base point (a line end or corner), then click the line in the direction you want to go. For the end of an open line, one click is enough.",
+    "markDiv": "Divide between 2 points (1 = off, 2 = center, 3 = thirds…)",
+    "markDivTip": "With 2 or more, click two spots on a line and marks are dropped at equal divisions between them (measured along the line). 2 = center, 3 = thirds. 1 turns it off.",
+    "hint.markDiv": "Divide into {n} equal parts: click the first spot on a line (ends and corners snap exactly), then the second spot on the same line.",
+    "markDivSecond": "First spot set. Click the second spot on the same line (dividing into {n}).",
+    "markDivDone": "Dropped {n} marks. You can pick the next first spot.",
     "markPickSide": "Base point set. Click the line in the direction you want (the circles show the spots {d} mm away).",
     "markNoLine": "Click close to a line.",
     "markOutside": "That is past the end of the line ({len} mm long), so nothing was placed. Change the distance or the direction.",
@@ -17790,6 +17812,23 @@ function markByDistance(click) {
   if (Math.abs(diff) < 1e-6) { $('hint').textContent = t('markSameSpot'); return; }
   place(stage.s, diff > 0 ? 1 : -1);
 }
+/** 分割数（2 以上の整数）。1 以下・空は 0（＝分割して打たない）。 */
+function markDivisions() { const n = Math.floor(Number($('markDiv').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 100) : 0; }
+/** 目印ツールの分割指定。1 回目＝線の上の1点目（端・角は磁石で正確に）、2 回目＝同じ線の上の2点目。その間（線に沿って測る）を n 等分する位置に目印を打つ（2＝中心）。元に戻すは1回。 */
+function markByDivision(click) {
+  const n = markDivisions(), reach = magnetRadiusMm(), second = stage?.kind === 'markDiv'; let base = click;
+  if (reach > 0) { let near = reach; for (const c of magnetEnds) { const k = distance(click, c); if (k < near) { near = k; base = { ...c }; } } }
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, base) <= 8 / scale);
+  if (!hit) { $('hint').textContent = t('markNoLine'); return; }
+  const state = routeForHit(hit); if (!state?.route) return;
+  const route = { ...state.route, reversed: !!state.saved.reversed }, key = [...state.saved.shapeIds].sort().join(','), s0 = projectOnPath(route, base).s;
+  if (!second || stage.key !== key) { stage = { kind: 'markDiv', key, s: s0, at: pointAtLength(route, s0), cand: [] }; $('hint').textContent = t('markDivSecond', { n }); draw(); return; }
+  const from = stage.s, span = s0 - from; if (Math.abs(span) < 1e-6) { $('hint').textContent = t('markSameSpot'); return; }
+  const before = undo.length; stage = null;
+  for (let k = 1; k < n; k++) stampAt(pointAtLength(route, from + span * k / n), true, 'dot');
+  if (undo.length > before + 1) undo.splice(before + 1); /* 途中の保存をまとめて、元に戻すを1回にする */
+  $('hint').textContent = t('markDivDone', { n: n - 1 }); draw();
+}
 function holePosition(h,p) {
   if(!$('constrainHole').checked)return {...h,x:p.x,y:p.y};
   const saved=doc.paths.find(path=>path.id===h.pathId),route=saved&&resolvePath(doc,saved);if(!route)return h;
@@ -17930,6 +17969,7 @@ function initStitch() {
   $('applyAngle').onclick=()=>{const a=Number($('holeAngle').value);if(Number.isFinite(a))commit(()=>affectedHoles().forEach(h=>h.angleDeg=a));};
   $('flipSlant').onclick=()=>commit(()=>affectedHoles().forEach(h=>{const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));const tangent=$('followTangent').checked?pointAtLength(route,h.s).angleDeg:0;h.angleDeg=2*tangent-h.angleDeg;}));
   $('defaultMark').addEventListener('change',()=>commit(()=>doc.mark=$('defaultMark').value));
+  $('markDiv').addEventListener('input',()=>{if(mode==='mark'){cancel();$('hint').textContent=modeHint('mark');draw();}});
   $('markDist').addEventListener('input',()=>{if(mode==='mark'){cancel();$('hint').textContent=modeHint('mark');draw();}}); /* 距離を変えたら、途中の基準の点は捨てて、ヒントも切り替える */
   $('dotD').addEventListener('change',()=>{const d=Number($('dotD').value);if(Number.isFinite(d)&&d>0)commit(()=>doc.dotD=d);else $('dotD').value=doc.dotD;});
   $('help').onclick=()=>showHelp();$('closeHelp').onclick=()=>$('helpDialog').close();
@@ -19821,7 +19861,7 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && groupIdOf(s));
+  $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.length, selected: selected.size });
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
@@ -19839,7 +19879,7 @@ function cancel() { ruler = null; gesture = null; stage = null; snap = null; off
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
-  $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
+  $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
@@ -19852,6 +19892,25 @@ function setMode(next) {
 function history(from, to) {
   if (!from.length) return; scheduleAutosave();
   to.push(JSON.stringify(doc)); doc = JSON.parse(from.pop()); selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw();
+}
+/** 分解：選んだ矩形・折れ線（閉じた図形を含む）を、辺ごとの独立した直線にばらす。層・色・線種・部品の所属は引き継ぐ。目打ち（縫い穴）が付いた図形は穴が壊れるので分解しない。 */
+function explodeSelection() {
+  const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.type === 'polyline' && s.points?.length >= 2); if (!targets.length) { $('hint').textContent = t('explodeNone'); return; }
+  const pathsOf = s => doc.paths.filter(p => p.shapeIds.includes(s.id)), blocked = targets.filter(s => pathsOf(s).some(p => doc.holes.some(h => h.pathId === p.id))), ok = targets.filter(s => !blocked.includes(s));
+  if (!ok.length) { $('hint').textContent = t('explodeHoles'); return; }
+  let made = [];
+  commit(() => {
+    const dropPaths = new Set(ok.flatMap(s => pathsOf(s).map(p => p.id)));
+    for (const s of ok) {
+      const { id, points, closed, type, ...rest } = s, n = points.length, edges = closed ? n : n - 1, ids = [];
+      for (let i = 0; i < edges; i++) { const a = points[i], b = points[(i + 1) % n]; if (Math.hypot(a.x - b.x, a.y - b.y) < 1e-9) continue; const nid = freshId(doc.shapes, 's'); doc.shapes.push({ ...rest, id: nid, type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); ids.push(nid); }
+      doc.shapes = doc.shapes.filter(q => q.id !== id); made.push(...ids);
+      for (const part of doc.parts) if (part.shapeIds.includes(id)) part.shapeIds = [...part.shapeIds.filter(x => x !== id), ...ids];
+    }
+    doc.paths = doc.paths.filter(p => !dropPaths.has(p.id)); doc.seams = doc.seams.filter(m => !dropPaths.has(m.a.pathId) && !dropPaths.has(m.b.pathId));
+    selected = new Set(made);
+  });
+  renderSeams(); $('hint').textContent = t(blocked.length ? 'explodedSome' : 'exploded', { n: ok.length, m: made.length, k: blocked.length });
 }
 function removeSelected() {
   const ids = selectedShapeIds();
@@ -19994,12 +20053,18 @@ function placeOffsetFloat() {
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
 function runOffset(override = null) {
   const sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
-  let d, sideKey = null; if (override !== null) d = override; else { const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; } const inner = $('offsetSide').value === 'in'; d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; sideKey = inner ? 'offsetIn' : 'offsetOut'; } } /* 折れた開いた線の「内側」は、曲がりの内側（挟まれた2直線なら鋭角側） */
-  const result = offsetSpanResult(sel, d, { join: $('offsetJoin').value }); if (!result) { $('hint').textContent = t('impossible'); return; }
+  let sides; /* 向きごとの { d: 符号つき距離, key: 説明文のキー }。「両側」なら内側と外側の2本 */
+  if (override !== null) sides = [{ d: override, key: override < 0 ? 'offsetIn' : 'offsetOut' }];
+  else {
+    const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; }
+    const sideOf = inner => { let d = inner ? -dist : dist, key = inner ? 'offsetIn' : 'offsetOut'; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return { d, key }; }; /* 折れた開いた線の「内側」は、曲がりの内側（挟まれた2直線なら鋭角側） */
+    const v = $('offsetSide').value; sides = v === 'both' ? [sideOf(true), sideOf(false)] : [sideOf(v === 'in')];
+  }
+  const results = sides.map(sd => offsetSpanResult(sel, sd.d, { join: $('offsetJoin').value })); if (results.some(r => !r)) { $('hint').textContent = t('impossible'); return; }
   /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
   const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer; /* 点線はガイド。ガイドが使えないときだけ作図先・元の層 */
-  offsetSelection = null; addShape({ ...result, id: freshId(doc.shapes, 's'), layer: dest, color: 'yellow', lineStyle: 'dashed' });
-  $('hint').textContent = t('offsetDone', { d: Math.abs(d), side: t(sideKey || (d < 0 ? 'offsetIn' : 'offsetOut')) }); draw();
+  offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } }); /* 両側でも元に戻すのは1回で済む */
+  $('hint').textContent = sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) }); draw();
 }
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); return; }
@@ -20111,7 +20176,7 @@ function shapeFromDrag(a, b) {
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
-function modeHint(m) { return m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
+function modeHint(m) { return m === 'mark' && markDivisions() ? t('hint.markDiv', { n: markDivisions() }) : m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
 /** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
@@ -20255,11 +20320,13 @@ function drawSheetBody(lo, hi) {
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
-    if (kind === 'circle' || kind === 'dot') ctx.arc(0,0,w/2,0,Math.PI*2);
+    if (kind === 'dot') { ctx.moveTo(0,-1.5); ctx.lineTo(0,1.5); } /* 目印は、元の線と直角に交わる短い点線（約3mm）で表示 */
+    else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : (doc.paths.find(p => p.id === h.pathId)?.threadHex || '#fff');
-    if (kind === 'slit') { ctx.lineWidth = heightMM; ctx.stroke(); } else ctx.fill();
+    if (kind === 'dot') { ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.7,0.5]); ctx.stroke(); ctx.setLineDash([]); }
+    else if (kind === 'slit') { ctx.lineWidth = heightMM; ctx.stroke(); } else ctx.fill();
     if(selected.has(h.id)){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
@@ -20282,7 +20349,7 @@ function drawSheetBody(lo, hi) {
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
   if (mode === 'ruler') { if (stage?.kind === 'ruler') drawRuler({ a: stage.a, b: cursor }); else if (ruler) drawRuler(ruler); }
-  if (stage?.kind === 'markBase') { /* 基準の点＝金色の丸、打てる場所の候補（線に沿って両側に○mm）＝小さな丸 */
+  if (stage?.kind === 'markBase' || stage?.kind === 'markDiv') { /* 基準の点＝金色の丸、打てる場所の候補（線に沿って両側に○mm）＝小さな丸 */
     ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 1.5 / scale;
     ctx.beginPath(); ctx.arc(stage.at.x, stage.at.y, 6 / scale, 0, Math.PI * 2); ctx.stroke();
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
@@ -20339,7 +20406,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
-  if (mode === 'mark') { if (markDistance() > 0) markByDistance(world(p)); else stampAt(world(p), true, 'dot'); return; }
+  if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(world(p), true, 'dot'); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
@@ -20507,7 +20574,7 @@ $('delete').onclick = removeSelected;
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
-function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) return; cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
+function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
@@ -20548,7 +20615,8 @@ $('file').addEventListener('change', async e => {
 window.addEventListener('keydown', e => {
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save() : $('file').click(); return; }
-  if (input) return;
+  if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
+  else if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
@@ -20556,7 +20624,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
