@@ -1849,10 +1849,16 @@ function initLibrary() {
 const HW_CATEGORIES = ['fastener', 'link', 'closure', 'notebook'];   /* 「その他の金具」の分類。リングバインダーは専用のカード */
 let hwPlaceKind = 'other';   /* 図面に置く金具：'binder'（リングバインダーのカード）か 'other'（その他の金具のカード） */
 function hwItems() { return DATA_HARDWARE.items.filter(i => i.category === $('hwCategory').value); }
-const binderItem = () => DATA_HARDWARE.items.find(i => i.id === 'binder-' + $('binderSpecSel').value) || null;
+/** 選んだ規格（製品なら親の規格）の金具ライブラリ項目。製品は親の binder-<規格> を使う。 */
+const binderItem = () => { const id = $('binderSpecSel').value, sp = binderSpec(id); return DATA_HARDWARE.items.find(i => i.id === 'binder-' + (sp?.parent || id)) || null; };
 function hwCurrent() { return hwPlaceKind === 'binder' ? binderItem() : (DATA_HARDWARE.items.find(i => i.id === $('hwItem').value) || hwItems()[0] || null); }
 const hwAngleValue = () => Number($(hwPlaceKind === 'binder' ? 'binderAngle' : 'hwAngle').value) || 0;
 function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
+/** 規格の選択肢を入れる。製品（parent あり）は親の規格の下にまとめて出す（規格 → 製品の2段）。親の行は規格そのもの。 */
+function fillBinderSpecOptions(sel) {
+  const nameOf = s => document.documentElement.lang === 'en' ? s.names.en : s.names.ja, opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = nameOf(s); into.appendChild(o); };
+  for (const s of BINDER_SPECS.filter(s => !s.parent)) { const kids = BINDER_SPECS.filter(k => k.parent === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
+}
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
@@ -1861,7 +1867,7 @@ function renderHardware() {
   const it = hwCurrent(), box = $('hwParams'); box.textContent = '';
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
   $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : '';
-  const bs = $('binderSpecSel'); if (!bs.textContent) for (const s of BINDER_SPECS) { const o = document.createElement('option'); o.value = s.id; o.textContent = document.documentElement.lang === 'en' ? s.names.en : s.names.ja; bs.appendChild(o); }
+  const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs);
   renderBinder();
 }
 function renderBinder() {
@@ -2048,7 +2054,7 @@ function refreshHwEdit() {
   const key = hw.members.map(m => m.id).join(',') + '|' + JSON.stringify(hw.plate.hw.params) + '|' + JSON.stringify(hw.plate.points?.[0]); if (key === hwEditKey) return; hwEditKey = key; hwEditArmed = 0;
   const isBinder = hwIsBinder(hw.plate); $('l-hwSpec').hidden = $('l-hwRing').hidden = $('hwViewsRow').hidden = !isBinder;
   if (isBinder) {
-    const sel = $('hwEditSpec'); if (!sel.options?.length) for (const sp of BINDER_SPECS) { const o = document.createElement('option'); o.value = sp.id; o.textContent = document.documentElement.lang === 'en' ? sp.names.en : sp.names.ja; sel.appendChild(o); }
+    const sel = $('hwEditSpec'); if (!sel.options?.length) fillBinderSpecOptions(sel);
     sel.value = hw.plate.hw.params.spec; $('hwEditRing').value = String(hw.plate.hw.params.ringD ?? binderSpec(hw.plate.hw.params.spec)?.rings.diameterOptionsMm[0] ?? ''); refreshHwEditOuter();
   }
   $('hwEditAngle').value = String(+hwPoseOfOutline(hw.plate).angleDeg.toFixed(2)); $('hwEditNote').textContent = t('hwEditNote');
@@ -2061,7 +2067,7 @@ function applyHwEdit() {
   const old = hw.plate.hw, isBinder = hwIsBinder(hw.plate), pose = hwPoseOfOutline(hw.plate);
   const specId = isBinder ? $('hwEditSpec').value : null, ringD = isBinder ? Number($('hwEditRing').value) : undefined, angle = Number($('hwEditAngle').value);
   if (!Number.isFinite(angle) || (isBinder && !(ringD > 0))) { $('hint').textContent = t('invalidNumber'); return; }
-  const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + specId : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
+  const it = DATA_HARDWARE.items.find(i => i.id === (isBinder ? 'binder-' + (binderSpec(specId)?.parent || specId) : old.id)), oldItem = DATA_HARDWARE.items.find(i => i.id === old.id); if (!it || !oldItem) { $('hint').textContent = t('invalidNumber'); return; }
   const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest; let same = true;   /* 手で直したかの判定：今の設定で作り直した形と比べる */
   try { same = sameShapes(hardwareDrafts(oldItem, isBinder ? { ...old.params, ringD: old.params.ringD } : old.params, isBinder ? binderSpec(old.params.spec) : null, pose.at, pose.angleDeg).map(strip), hw.members.map(strip)); } catch { same = false; }
   if (!same && Date.now() - hwEditArmed > 6000) { hwEditArmed = Date.now(); $('hint').textContent = t('hwEditWarn'); return; }  /* 埋め込みブラウザでは confirm が出ないので 2 段押し */
@@ -2137,7 +2143,9 @@ $('hwSectionMake').onclick = makeBinderSection; $('hwSectionApply').onclick = ap
 
 function placeHardware(at) {
   const it = hwCurrent(); if (!it) return;
-  const isBinder = it.footprint2d.kind === 'binder', spec = isBinder ? binderSpec(it.params.spec) : null, overrides = isBinder ? { ringD: Number($('ringD').value) || undefined } : hwParams();
+  /* 製品を選んでいれば製品の寸法で置き、置いた金具にも製品の ID を残す（項目は親の規格のもの） */
+  const isBinder = it.footprint2d.kind === 'binder', sel = isBinder ? binderSpec($('binderSpecSel').value) : null, spec = isBinder ? (sel && (sel.parent || sel.id) === it.params.spec ? sel : binderSpec(it.params.spec)) : null;
+  const overrides = isBinder ? { ringD: Number($('ringD').value) || undefined, ...(spec && spec.id !== it.params.spec ? { spec: spec.id } : {}) } : hwParams();
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */

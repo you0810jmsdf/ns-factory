@@ -1,0 +1,143 @@
+{
+ "id": "a6-krause20",
+ "names": {
+  "ja": "クラウゼ A6 内径20mm",
+  "en": "KRAUSE A6 20mm",
+  "aliases": []
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19,
+   19,
+   38,
+   19,
+   19
+  ],
+  "centerPitchMm": 38,
+  "span1toLastMm": 114
+ },
+ "refill": {
+  "wMm": 105,
+  "hMm": 148
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   20,
+   25,
+   30
+  ],
+  "shape": "round",
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "outerDiameterMm": 24,
+    "innerDiameterMm": 20,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 29,
+    "innerDiameterMm": 25,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "outerDiameterMm": 34,
+    "innerDiameterMm": 30,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   }
+  ]
+ },
+ "plate": {
+  "lengthMm": 150,
+  "widthMm": 20,
+  "thicknessMm": 2,
+  "cornerRMm": 1.5,
+  "confidence": "measured"
+ },
+ "rivets": [
+  {
+   "xMm": -63,
+   "yMm": 0,
+   "dMm": 3.5
+  },
+  {
+   "xMm": 63,
+   "yMm": 0,
+   "dMm": 3.5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated"
+ },
+ "drawings": {
+  "plan": "binder/a6-krause20.plan.svg",
+  "side": "binder/a6-krause20.side.svg",
+  "front": "binder/a6-krause20.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 138,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [],
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -63,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   },
+   {
+    "xMm": 63,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 3.5,
+    "kind": "rivet",
+    "note": null
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-10-12）。リング・取り付け穴・機構は規格の値のまま",
+ "parent": "a6"
+}
