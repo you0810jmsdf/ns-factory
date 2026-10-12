@@ -1797,8 +1797,8 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 15,
      "innerDiameterMm": 11,
+     "outerDiameterMm": 15,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -1808,8 +1808,8 @@ export const BINDER_SPECS = [
      "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": 17,
      "innerDiameterMm": 13,
+     "outerDiameterMm": 17,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -1819,8 +1819,8 @@ export const BINDER_SPECS = [
      "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": 19,
      "innerDiameterMm": 15,
+     "outerDiameterMm": 19,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -1830,8 +1830,8 @@ export const BINDER_SPECS = [
      "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": 23,
      "innerDiameterMm": 19,
+     "outerDiameterMm": 23,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -1841,8 +1841,8 @@ export const BINDER_SPECS = [
      "wireSource": "assumed"
     },
     {
-     "outerDiameterMm": 24,
      "innerDiameterMm": 20,
+     "outerDiameterMm": 24,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
      "embedDepthMm": null,
@@ -1856,11 +1856,11 @@ export const BINDER_SPECS = [
      "outerDiameterMm": 29,
      "wireDiameterMm": 2,
      "baseSpanMm": null,
-     "embedDepthMm": null,
+     "embedDepthMm": 6.25,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "confidence": "measured",
+     "sourceNote": "N's factory 実測（台座断面の作図・2026-10-12）：リング下端が台座の頂上から6.25mm下。線径2（外径29）",
+     "wireSource": "measured"
     },
     {
      "innerDiameterMm": 30,
@@ -1876,24 +1876,13 @@ export const BINDER_SPECS = [
    ]
   },
   "plate": {
-   "lengthMm": 135,
-   "widthMm": 20,
+   "lengthMm": 120,
+   "widthMm": 24,
    "thicknessMm": 2,
-   "cornerRMm": 4,
-   "confidence": "measured"
+   "cornerRMm": 3,
+   "confidence": "estimated"
   },
-  "rivets": [
-   {
-    "xMm": -54,
-    "yMm": 0,
-    "dMm": 3.5
-   },
-   {
-    "xMm": 54,
-    "yMm": 0,
-    "dMm": 3.5
-   }
-  ],
+  "rivets": [],
   "mechanism": {
    "heightClosedMm": null,
    "heightOpenMm": null,
@@ -1952,9 +1941,9 @@ export const BINDER_SPECS = [
      "widthMm": null,
      "lengthMm": null,
      "heightMm": null,
-     "diameterMm": 3.5,
-     "kind": "rivet",
-     "note": null
+     "diameterMm": 5,
+     "kind": "screw",
+     "note": "穴の径5・ビスは実測（2026-10-12）。位置は親規格（Mini6）の値のまま・未実測"
     },
     {
      "xMm": 54,
@@ -1962,14 +1951,203 @@ export const BINDER_SPECS = [
      "widthMm": null,
      "lengthMm": null,
      "heightMm": null,
-     "diameterMm": 3.5,
-     "kind": "rivet",
-     "note": null
+     "diameterMm": 5,
+     "kind": "screw",
+     "note": "穴の径5・ビスは実測（2026-10-12）。位置は親規格（Mini6）の値のまま・未実測"
     }
    ],
    "confidence": null
   },
-  "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-03-13 の図から 2026-10-12 に読み取り）。板厚・リング・取り付け穴・機構は規格の値のまま",
+  "sourceNote": "N's factory 実測：台座の長さ・幅・角R（2026-10-12）。断面は実物を見ながらの作図（2026-10-12・幅20・縁の厚み1.33・頂上から底の最下点まで7.25・上面の盛り上がり2.25・下の膨らみ3.66）。リングサポータ厚は膨らみの下の突起の高さ＝2.3〜2.5mm程度の中央値2.4。リング内径25の食い込みは binder_rings.csv。リング位置・機構は規格の値のまま",
+  "base": {
+   "lengthMm": 135,
+   "sectionWidthMm": 20,
+   "crownHeightMm": 7.25,
+   "thicknessMm": 1.33,
+   "crownRadiusMm": null,
+   "edgeRadiusMm": null,
+   "cornerRMm": 4,
+   "supporterThicknessMm": 2.4,
+   "confidence": "measured",
+   "sectionPoints": [
+    {
+     "x": -10,
+     "y": 2.25
+    },
+    {
+     "x": -8.818,
+     "y": 1.729
+    },
+    {
+     "x": -7.609,
+     "y": 1.275
+    },
+    {
+     "x": -6.377,
+     "y": 0.888
+    },
+    {
+     "x": -5.125,
+     "y": 0.569
+    },
+    {
+     "x": -3.858,
+     "y": 0.321
+    },
+    {
+     "x": -2.578,
+     "y": 0.143
+    },
+    {
+     "x": -1.291,
+     "y": 0.036
+    },
+    {
+     "x": 0,
+     "y": 0
+    },
+    {
+     "x": 1.291,
+     "y": 0.036
+    },
+    {
+     "x": 2.578,
+     "y": 0.143
+    },
+    {
+     "x": 3.858,
+     "y": 0.321
+    },
+    {
+     "x": 5.125,
+     "y": 0.569
+    },
+    {
+     "x": 6.377,
+     "y": 0.888
+    },
+    {
+     "x": 7.609,
+     "y": 1.275
+    },
+    {
+     "x": 8.818,
+     "y": 1.729
+    },
+    {
+     "x": 10,
+     "y": 2.25
+    },
+    {
+     "x": 10,
+     "y": 3.583
+    },
+    {
+     "x": 9.792,
+     "y": 3.766
+    },
+    {
+     "x": 8.878,
+     "y": 4.457
+    },
+    {
+     "x": 7.915,
+     "y": 5.077
+    },
+    {
+     "x": 6.909,
+     "y": 5.626
+    },
+    {
+     "x": 5.866,
+     "y": 6.098
+    },
+    {
+     "x": 5.451,
+     "y": 6.25
+    },
+    {
+     "x": 4.79,
+     "y": 6.492
+    },
+    {
+     "x": 3.688,
+     "y": 6.806
+    },
+    {
+     "x": 2.566,
+     "y": 7.037
+    },
+    {
+     "x": 1.43,
+     "y": 7.185
+    },
+    {
+     "x": 0.286,
+     "y": 7.248
+    },
+    {
+     "x": 0,
+     "y": 7.243
+    },
+    {
+     "x": -0.018,
+     "y": 7.242
+    },
+    {
+     "x": -0.859,
+     "y": 7.227
+    },
+    {
+     "x": -2,
+     "y": 7.121
+    },
+    {
+     "x": -3.129,
+     "y": 6.932
+    },
+    {
+     "x": -4.242,
+     "y": 6.659
+    },
+    {
+     "x": -4.787,
+     "y": 6.482
+    },
+    {
+     "x": -5.059,
+     "y": 6.393
+    },
+    {
+     "x": -5.331,
+     "y": 6.305
+    },
+    {
+     "x": -5.466,
+     "y": 6.25
+    },
+    {
+     "x": -6.392,
+     "y": 5.871
+    },
+    {
+     "x": -7.417,
+     "y": 5.361
+    },
+    {
+     "x": -8.402,
+     "y": 4.776
+    },
+    {
+     "x": -9.341,
+     "y": 4.12
+    },
+    {
+     "x": -10,
+     "y": 3.583
+    }
+   ]
+  },
   "parent": "mini6"
  },
  {
