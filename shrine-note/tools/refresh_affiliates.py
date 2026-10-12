@@ -54,7 +54,10 @@ def toast(title, body):
 
 
 def run(args, check=True):
-    r = subprocess.run(args, cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    # 無人実行で止まらないよう、入力待ちを禁止し、時間にも上限を付ける
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0", GCM_INTERACTIVE="never")
+    r = subprocess.run(args, cwd=REPO, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=env, timeout=180)
     if check and r.returncode != 0:
         raise RuntimeError("%s → %s" % (" ".join(args), (r.stderr or r.stdout).strip()[:300]))
     return r
