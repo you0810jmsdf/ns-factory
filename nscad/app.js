@@ -618,7 +618,7 @@ function initPresets() {
   });
 }
 function initStitch() {
-  $('offsetDist').value='2.5'; $('offsetSide').value='in'; /* 標準：2.5mm・内側（事業主指示 2026-10-10） */ $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='three'; /* 標準：3点（始点→通過点→終点のクリックだけ） */ $('arcRadius').value='';
+  $('offsetDist').value='2.5'; $('offsetSide').value='cursor'; /* 標準：2.5mm・カーソルの側（2026-10-12：向きは文字でなくカーソルの位置で決めたい） */ $('offsetJoin').value='miter'; $('mirrorHoles').value='reverse'; $('arcMethod').value='three'; /* 標準：3点（始点→通過点→終点のクリックだけ） */ $('arcRadius').value='';
   try { const saved = localStorage.getItem('leather-cad.snapDist'); $('snapDist').value = saved !== null && Number.isFinite(Number(saved)) && Number(saved) >= 0 ? saved : '10'; } catch { $('snapDist').value = '10'; }
   $('snapDist').addEventListener('change', () => { saveSnapDist(); draw(); });
   const values={placement:'fixed',cornerMode:'place',offsetStart:'0',offsetEnd:'0',segmentFrom:'0',segmentTo:'',holeAngle:'0',dotD:'2',defaultMark:'tool'};
@@ -2711,13 +2711,29 @@ function roundPolylineAt(poly, p) {
   $('hint').textContent = t('hint.' + mode);
 }
 /** オフセットの選択：1回クリック＝他の図形との交点から交点までの区間、ダブルクリック＝つながった図形全体。 */
+let offsetCursor = null; /* オフセットの向きを決めるカーソル位置（世界座標） */
+/** 向き「カーソルの側」：ずらす2通り（+距離・−距離）のうち、結果がカーソルに近い方を選ぶ。{ d, r（結果の図形） } か null。 */
+function offsetCursorChoice(sel, cur, dist) {
+  if (!sel || !cur || !(dist > 0)) return null;
+  const cand = [dist, -dist].map(d => ({ d, r: offsetSpanResult(sel, d, { join: $('offsetJoin').value }) })).filter(c => c.r);
+  return cand.length ? cand.reduce((m, c) => distToShape(c.r, cur) < distToShape(m.r, cur) ? c : m) : null;
+}
+let offsetAlt = false; /* Alt+クリック：矩形・折れ線の、クリックした1辺だけを選ぶ */
+/** 折れ線（矩形を含む）の、p に一番近い1辺だけを、オフセット用の選択範囲にする。折れ線以外・辺が1つだけなら null。 */
+function offsetEdgeSel(hit, p) {
+  if (hit.type !== 'polyline' || hit.points.length < 2) return null;
+  const pts = hit.points, n = pts.length, edges = hit.closed ? n : n - 1; let best = null;
+  for (let i = 0; i < edges; i++) { const a = pts[i], b = pts[(i + 1) % n], d = distToShape({ type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }, p); if (!best || d < best.d) best = { d, a, b }; }
+  return best && best.d <= 7 / scale ? { points: [{ x: best.a.x, y: best.a.y }, { x: best.b.x, y: best.b.y }], closed: false, shapeIds: [hit.id], whole: false, single: null } : null;
+}
 function offsetClick(p, whole) {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale);
   if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
+  const edge = offsetAlt && !whole ? offsetEdgeSel(hit, p) : null; if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
   const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
   offsetSelection = { ...sel, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
-  $('hint').textContent = t(sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
+  $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
 }
 /** 選んだ範囲のそばに、距離・内側/外側・実行の小さな入力欄を出す（選んだ範囲が無ければ隠す）。画面の端では見切れないように寄せる。 */
 function placeOffsetFloat() {
@@ -2737,7 +2753,18 @@ function runOffset(override = null) {
   else {
     const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; }
     const sideOf = inner => { let d = inner ? -dist : dist, key = inner ? 'offsetIn' : 'offsetOut'; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return { d, key }; }; /* 折れた開いた線の「内側」は、曲がりの内側（挟まれた2直線なら鋭角側） */
-    const v = $('offsetSide').value; sides = v === 'both' ? [sideOf(true), sideOf(false)] : [sideOf(v === 'in')];
+    const v = $('offsetSide').value;
+    if (v === 'cursor') { const ch = offsetCursorChoice(sel, offsetCursor || cursor, dist); if (!ch) { $('hint').textContent = t('impossible'); return; } sides = [{ d: ch.d, key: 'offsetCursorSide' }]; }
+    else if (['left', 'right', 'up', 'down'].includes(v)) { /* 画面の向き：まっすぐな1本の線だけ。内側・外側では、1本の線のどちらか分かりにくいため */
+      if (sel.closed || sel.points.length !== 2) { $('hint').textContent = t('offsetDirNeedLine'); return; }
+      const want = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } }[v], probe = offsetSpanResult(sel, dist, { join: $('offsetJoin').value });
+      const q0 = probe?.points ? probe.points[0] : probe && 'x1' in probe ? { x: probe.x1, y: probe.y1 } : null; /* 直線の結果は x1,y1…、折れ線の結果は points */
+      if (!q0) { $('hint').textContent = t('impossible'); return; }
+      const base0 = sel.points.reduce((m, q) => distance(q, q0) < distance(m, q0) ? q : m); /* 結果の端に一番近い元の端（向きが逆でも、横にずれた分だけを見る） */
+      const dot = ((q0.x - base0.x) * want.x + (q0.y - base0.y) * want.y) / dist;
+      if (Math.abs(dot) < 0.5) { $('hint').textContent = t('offsetDirPerp'); return; }
+      sides = [{ d: dot > 0 ? dist : -dist, key: 'offset' + v[0].toUpperCase() + v.slice(1) }];
+    } else sides = v === 'both' ? [sideOf(true), sideOf(false)] : [sideOf(v === 'in')];
   }
   const results = sides.map(sd => offsetSpanResult(sel, sd.d, { join: $('offsetJoin').value })); if (results.some(r => !r)) { $('hint').textContent = t('impossible'); return; }
   /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
@@ -2746,7 +2773,7 @@ function runOffset(override = null) {
   $('hint').textContent = sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) }); draw();
 }
 function editAt(p) {
-  if (mode === 'offset') { offsetClick(p, false); return; }
+  if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
   if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
@@ -3066,6 +3093,7 @@ function drawSheetBody(lo, hi) {
   drawCenterMarks(); drawJunctions();
   placeOffsetFloat(); syncRulerBar();
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
+  if (offsetSelection && mode === 'offset' && $('offsetSide').value === 'cursor') { const ch = offsetCursorChoice(offsetSelection, offsetCursor, Number($('offsetDist').value)); if (ch) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape(ch.r, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); } } /* 向き「カーソルの側」：ずらした結果を、カーソルのある側にプレビュー */
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
@@ -3133,7 +3161,8 @@ canvas.addEventListener('pointerdown', e => {
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
-  if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { editAt(world(p)); return; }
+  if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distToShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
+  if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
@@ -3197,6 +3226,7 @@ canvas.addEventListener('pointermove', e => {
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   draw();
