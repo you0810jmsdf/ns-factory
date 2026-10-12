@@ -305,3 +305,24 @@ body.day::before { content: ""; position: fixed; left: 0; right: 0; top: 0; heig
 .visitbox .vbtn { margin: 0; border-color: #e8765a; background: rgba(232,118,90,0.14); }
 .visitbox .vdone { color: #e8765a; font-weight: 600; }
 .visitbox .lnk { background: none; border: 0; color: var(--muted); text-decoration: underline; font: inherit; cursor: pointer; padding: 0 4px; min-height: 32px; }
+.book { z-index: 10; }
+.book-body { overflow: auto; padding-bottom: 24px; }
+.bk-top { text-align: center; margin: 8px 0 4px; }
+.bk-n { font-size: 40px; color: #e8765a; font-family: var(--serif); }
+.bk-n small { font-size: 16px; color: var(--muted); margin-left: 4px; }
+.bk-bar, .regs u { display: block; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.bk-bar u, .regs u { text-decoration: none; }
+.bk-bar u::before, .regs u::before { content: ''; display: block; height: 100%; width: var(--w); background: #e8765a; }
+.bk-top p { color: var(--ink-soft); font-size: 13px; margin: 8px 0 0; }
+.stpgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.stp { display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: 0; padding: 4px 0; cursor: pointer; color: var(--muted); font: inherit; }
+.stp i { font-style: normal; width: 48px; height: 48px; border-radius: 50%; border: 1px dashed var(--line); display: grid; place-items: center; font-size: 14px; opacity: 0.45; }
+.stp small { font-size: 10px; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stp.on i { border: 2px solid #e8765a; color: #e8765a; opacity: 1; background: rgba(232,118,90,0.12); transform: rotate(-6deg); }
+.stp.on { color: var(--ink); }
+.regs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.regs li { display: grid; grid-template-columns: 5.5em 4em 1fr; align-items: center; gap: 8px; font-size: 13px; }
+.regs b { text-align: right; font-weight: 500; color: var(--ink-soft); }
+.bdgs { display: flex; flex-wrap: wrap; gap: 8px; }
+.bdg { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.bdg.got { border-color: var(--gold); color: var(--gold); background: rgba(216,183,102,0.1); }

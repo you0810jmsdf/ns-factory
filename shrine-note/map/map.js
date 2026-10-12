@@ -1,6 +1,7 @@
 // 神社巡りノート｜日本列島の神社めぐり（three.js・標高は国土地理院タイル由来の heightmap.png）
 import * as THREE from './vendor/three.module.min.js';
 import { stamps } from './stamps.js';
+import { summarize } from './stampbook.js';
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
 const LON0 = 128.0, LON1 = 146.0, LAT0 = 30.0, LAT1 = 45.9;
@@ -1511,7 +1512,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
-  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
+  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
 });
 
 
@@ -1595,6 +1596,32 @@ function renderTree() {
     $('treeFocusName').textContent = deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
   }
 }
+// ---- 御朱印スタンプ帳 ----
+function renderBook() {
+  const visited = new Set(stamps.all().map((v) => v.shrineId));
+  const S = summarize(shrines, visited);
+  const pct = S.total ? Math.round((S.done / S.total) * 100) : 0;
+  const next = S.next ? `次のバッジまで あと${S.next.remain}社（${esc(S.next.label)}）` : 'すべてのバッジをそろえました';
+  const grid = shrines.map((s) => {
+    const v = visited.has(s.id);
+    return `<button type="button" class="stp${v ? ' on' : ''}" data-shrine="${esc(s.id)}" data-bookgo="1" aria-label="${esc(s.name)}${v ? '（参拝ずみ）' : ''}"><i>${esc(s.name.slice(0, 2))}</i><small>${esc(s.name.replace(/(神社|神宮|大社|八幡宮|天満宮)$/, ''))}</small></button>`;
+  }).join('');
+  const regs = S.regions.filter((r) => r.total > 0).map((r) => `<li><span>${esc(r.name)}</span><b>${r.done}／${r.total}</b><u style="--w:${Math.round((r.done / r.total) * 100)}%"></u></li>`).join('');
+  const bds = S.badges.map((b) => `<span class="bdg${b.got ? ' got' : ''}">${esc(b.label)}${b.got ? ' ✓' : b.sub ? ' ' + esc(b.sub) : ' あと' + b.remain}</span>`).join('');
+  $('bookBody').innerHTML = `<div class="bk-top"><b class="bk-n">${S.done}<small>／${S.total}社</small></b><div class="bk-bar"><u style="--w:${pct}%"></u></div><p>${next}</p></div>`
+    + `<h3 class="chh">スタンプ</h3><div class="stpgrid">${grid}</div>`
+    + `<h3 class="chh">地方ごと</h3><ul class="regs">${regs}</ul>`
+    + `<h3 class="chh">バッジ</h3><div class="bdgs">${bds}</div>`
+    + `<p class="meta">参拝は、神社のカードの「参拝した」ボタンで記録します。記録はこの端末の中だけに残り、サーバーへは送りません。</p>`;
+}
+function openBook(show) {
+  if (show) renderBook();
+  $('book').hidden = !show;
+}
+$('btnBook').addEventListener('click', () => openBook(true));
+$('btnBookClose').addEventListener('click', () => openBook(false));
+$('book').addEventListener('click', (e) => { if (e.target.closest('[data-bookgo]')) openBook(false); });
+function syncBookBtn() { $('btnBook').textContent = '御朱印スタンプ帳' + (stamps.count() ? ' ' + stamps.count() : ''); }
 function openTree(show) {
   const el = $('tree');
   if (show) { treeFocusMode = false; treeFocus = null; renderTree(); }
@@ -1804,10 +1831,10 @@ requestAnimationFrame(loop);
 
 // 試験・確認用に最小限の窓口を出す
 stamps.onChange(() => {
-  syncVisited();
+  syncVisited(); syncBookBtn(); if (!$('book').hidden) renderBook();
   document.querySelectorAll('[data-visitbox]').forEach((el) => { const s = shrines.find((x) => x.id === el.dataset.visitbox); if (s) el.outerHTML = visitBoxHTML(s); });
 });
-syncVisited();
+syncVisited(); syncBookBtn();
 window.__shrineMap = { stamps, getQual: () => qual, setSkyMinutes: (m) => { $('skyRange').value = String(m); $('skyRange').dispatchEvent(new Event('input')); }, skyInfo: () => ({ day: skyU.uDay.value, sunLon: skyU.uSunLon.value, sunDec: skyU.uSunDec.value, moonLon: skyU.uMoonLon.value, illum: skyU.uIllum.value }), cam, selectShrine, goHome, shrines, isFlying: () => !!flight, setUserForTest: (la, lo) => setUser(la, lo), routeAction, getRoute: () => route, routeMat, isRunning: () => !!run, startRun,
   // 1フレームの描画時間(ms)を、GPUの完了まで待って測る（確認用）
   benchmark: (n = 40) => { const gl = renderer.getContext(); applyCamera(); camera.updateMatrixWorld(); renderer.render(scene, camera); gl.finish(); const t0 = performance.now(); for (let i = 0; i < n; i++) { renderer.render(scene, camera); gl.finish(); } return (performance.now() - t0) / n; } };
