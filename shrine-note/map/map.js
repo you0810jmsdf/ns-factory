@@ -1649,10 +1649,17 @@ function bgmButton() {
   b.textContent = bgmOn ? '♪ BGM：入' : '♪ BGM：切';
   b.setAttribute('aria-pressed', String(bgmOn));
   b.classList.toggle('on', bgmOn);
+  const bs = $('btnSet'); if (bs) bs.textContent = '設定' + (bgmOn ? ' ♪' : '') + ' ▾';   // 音が出ているかを、閉じていても分かるように
   const tr = BGM_TRACKS[bgmTrack];
   $('btnBgmNext').textContent = '曲：' + tr.label;
   $('btnBgmNext').hidden = BGM_TRACKS.length < 2;   // 曲が1つだけのときは、切り替えボタンを出さない
   $('bgmCredit').href = tr.url; $('bgmTitle').textContent = tr.title;
+}
+{
+  const set = $('btnSet'), grp = $('setGroup');
+  const close = () => { grp.hidden = true; set.setAttribute('aria-expanded', 'false'); };
+  set.addEventListener('click', (e) => { e.stopPropagation(); grp.hidden = !grp.hidden; set.setAttribute('aria-expanded', String(!grp.hidden)); });
+  document.addEventListener('click', (e) => { if (!grp.hidden && !e.target.closest('#setGroup, #btnSet, #skyPanel')) close(); });
 }
 $('btnBgmNext').addEventListener('click', (e) => {
   e.stopPropagation();
