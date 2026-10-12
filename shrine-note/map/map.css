@@ -282,7 +282,7 @@ svg.gene.anim .nd.me rect { animation: geneGlow 2.6s ease-in-out 1.2s infinite; 
 .acts .ghost.on { border-color: var(--gold); color: var(--gold); }
 
 /* 昼夜：時刻の操作と、昼の読みやすさ */
-.skybar { position: fixed; right: 10px; top: calc(112px + env(safe-area-inset-top, 0px)); z-index: 6; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(16,19,15,0.82); border: 1px solid var(--line-strong); font-size: 12px; }
+.skybar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(150px + var(--safe-b)); max-width: calc(100vw - 20px); z-index: 6; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(16,19,15,0.82); border: 1px solid var(--line-strong); font-size: 12px; }
 .skybar[hidden] { display: none; }
 .skybar input[type=range] { width: 140px; accent-color: var(--gold); }
 .skybar output { min-width: 5.2em; text-align: right; font-variant-numeric: tabular-nums; }
