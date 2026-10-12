@@ -332,7 +332,9 @@ const editable = s => { const l = doc.layers.find(l => l.id === s.layer); return
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type);
 const partOf = s => doc.parts.find(p => p.shapeIds.includes(s.id)) || null;
-const layerName = l => l.name === l.id && ['pattern', 'marks', 'guide', 'hwholes'].includes(l.id) ? t('layer.' + l.id) : l.name;
+const layerName = l => l.name === l.id && ['pattern', 'hardware', 'guide'].includes(l.id) ? t('layer.' + l.id) : l.name;
+/** 層 id が無ければ作って返す（金具を置くときなど）。2番目（型紙の次）に入れる。 */
+function ensureLayer(d, id) { if (!d.layers.some(l => l.id === id)) d.layers.splice(Math.min(1, d.layers.length), 0, { id, name: id, visible: true, locked: false }); return id; }
 
 function selectedShapeIds() {
   const ids=new Set(doc.shapes.filter(s=>selected.has(s.id)&&editable(s)).map(s=>s.id));
@@ -364,8 +366,8 @@ function reassignTool(fromId, toId, onlySelected = false) {
 /** 現物合わせ用のテスト片：今の工具の穴を 1 列（10 個）と 50mm の目盛りを実寸で印刷する。 */
 function printToolStrip() {
   const tool = doc.tools.find(t => t.id === $('stitchTool').value); if (!tool) return null;
-  const tmp = newDoc(); tmp.tools = [tool]; const len = tool.pitch * 9;
-  tmp.shapes.push({ id: 's1', layer: 'pattern', type: 'line', x1: 10, y1: 15, x2: 10 + len, y2: 15 }, { id: 's2', layer: 'marks', type: 'line', x1: 10, y1: 25, x2: 60, y2: 25 }, { id: 's3', layer: 'marks', type: 'line', x1: 10, y1: 23, x2: 10, y2: 27 }, { id: 's4', layer: 'marks', type: 'line', x1: 60, y1: 23, x2: 60, y2: 27 }, { id: 's5', layer: 'marks', type: 'text', x: 10, y: 33, text: `${tool.name}  ${tool.pitch}mm  ${tool.holeW}x${tool.holeH}mm  ${tool.angleDeg}deg   |---- 50mm ----|`, sizeMm: 3, angleDeg: 0 });
+  const tmp = newDoc(); /* テスト片は全部「型紙」の層に置く（ガイドは印刷に出ないため） */ tmp.tools = [tool]; const len = tool.pitch * 9;
+  tmp.shapes.push({ id: 's1', layer: 'pattern', type: 'line', x1: 10, y1: 15, x2: 10 + len, y2: 15 }, { id: 's2', layer: 'pattern', type: 'line', x1: 10, y1: 25, x2: 60, y2: 25 }, { id: 's3', layer: 'pattern', type: 'line', x1: 10, y1: 23, x2: 10, y2: 27 }, { id: 's4', layer: 'pattern', type: 'line', x1: 60, y1: 23, x2: 60, y2: 27 }, { id: 's5', layer: 'pattern', type: 'text', x: 10, y: 33, text: `${tool.name}  ${tool.pitch}mm  ${tool.holeW}x${tool.holeH}mm  ${tool.angleDeg}deg   |---- 50mm ----|`, sizeMm: 3, angleDeg: 0 });
   tmp.paths.push({ id: 'p1', shapeIds: ['s1'], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: tool.pitch, mode: 'fixed' }], mark: 'tool' });
   for (let i = 0; i <= 9; i++) tmp.holes.push({ id: 'h' + i, pathId: 'p1', s: i * tool.pitch, x: 10 + i * tool.pitch, y: 15, angleDeg: tool.angleDeg, toolId: tool.id, mark: 'tool' });
   return printPages(tmp);
@@ -515,7 +517,7 @@ function flushAutosave() {
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
 function offerRestore() {
   let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
-  const info = text ? unpackAutosave(text, validateDoc) : null;
+  const info = text ? unpackAutosave(text, d => validateDoc(migrateDoc(d))) : null;   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
   if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
   const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
   pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
@@ -523,7 +525,7 @@ function offerRestore() {
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
-  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: tb.doc, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: migrateDoc(tb.doc), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
   if (info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
 }
@@ -854,7 +856,7 @@ function applyStack() {
 /** 反転コピーした図形群の中心に「裏返し裁断」の印を目印レイヤーに置く。 */
 function flipMark(ids) {
   const shapes = doc.shapes.filter(s => ids.has(s.id) && stitchable(s)); if (!shapes.length) return;
-  const b = bboxOfDoc({ shapes, holes: [] }), layer = doc.layers.find(l => l.id === 'marks') ? 'marks' : shapes[0].layer;
+  const b = bboxOfDoc({ shapes, holes: [] }), layer = doc.layers.find(l => l.id === 'guide') ? 'guide' : shapes[0].layer;
   doc.shapes.push({ id: freshId(doc.shapes, 's'), layer, type: 'text', x: (b.minX + b.maxX) / 2 - 6, y: (b.minY + b.maxY) / 2, text: t('flipMarkText'), sizeMm: 3, angleDeg: 0 });
 }
 
@@ -987,7 +989,7 @@ function patchFillAt(p) {
     selected = new Set(ids);
     if (tool && !doc.tools.some(x => x.id === tool.id)) doc.tools.push({ ...tool }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
-      const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'marks' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
+      const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
       const pathOfPiece = stitch.insets.map(pts => {
         if (!pts) return null;
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: pts.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed' });
@@ -1103,7 +1105,7 @@ function importShapes(list, { layersFrom = [] } = {}) {
 function importVector(rawShapes, layersFrom, { recover = true } = {}) {
   const lc = importLeathercraft(rawShapes);
   const shapes = recover ? lc.shapes.flatMap(s => s.type === 'polyline' ? recoverArcs(s, 0.02) : [s]) : lc.shapes;
-  const known = new Set(['pattern', 'marks', 'guide', ...doc.layers.map(l => l.id)]);
+  const known = new Set(['pattern', 'hardware', 'guide', ...doc.layers.map(l => l.id)]);
   const res = importShapes(shapes, { layersFrom: layersFrom.filter(l => !/^(LineType_\d+|Stitch_Holes|0)$/i.test(l)).concat([...new Set(shapes.map(s => s.layer))].filter(l => !known.has(l))) });
   if (lc.holeCandidates.length) {
     let result = { attached: 0, orphan: 0 };
@@ -1918,15 +1920,15 @@ function hwParams() { const out = {}; for (const input of ($('hwParams').childre
 /** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */
 function hardwareDrafts(it, overrides, spec, at, angleDeg) {
   spec = binderSpecWithSection(spec, overrides);
-  const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = doc.layers.find(l => l.id === 'marks') ? 'marks' : activeLayer, out = [];
+  const fp = placeFootprint(hardwareFootprint(it, overrides, spec), at, angleDeg), marks = 'hardware' /* 置いた金具は外形線も穴も「金具」の層（穴は hwHole 付き） */, out = [];
   fp.outline.forEach((s, i) => out.push({ ...s, layer: marks, ...(i === 0 ? { hw: { id: it.id, params: { ...it.params, ...overrides }, at, angleDeg, solid: fp.solid.kind === 'binder' ? { kind: 'box', w: fp.solid.w, h: fp.solid.h, z: fp.solid.z } : fp.solid } } : {}) }));
-  for (const s of fp.holes) out.push({ ...s, layer: 'hwholes' });
+  for (const s of fp.holes) out.push({ ...s, layer: 'hardware', hwHole: true });
   if (fp.ringCenters) for (const c of fp.ringCenters) for (const [dx, dy] of [[1, 0], [0, 1]]) out.push({ layer: marks, type: 'line', x1: c.x - 2 * dx, y1: c.y - 2 * dy, x2: c.x + 2 * dx, y2: c.y + 2 * dy });
   return out;
 }
 /** 下書きを文書に加える（新しい id を付け、1つのグループにする）。加えた図形の id の配列を返す。 */
 function addHardwareDrafts(drafts, groupId) {
-  if (!doc.layers.some(l => l.id === 'hwholes')) doc.layers.push({ id: 'hwholes', name: 'hwholes', visible: true, locked: false });
+  ensureLayer(doc, 'hardware');
   const ids = []; for (const d of drafts) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...d, id, groupId }); ids.push(id); }
   return ids;
 }
@@ -2098,7 +2100,7 @@ function makeBinderViews() {
   const conv = (s, f) => { const { role, ...rest } = s; return s.type === 'circle' ? { ...rest, role, ...(({ x, y }) => ({ cx: x, cy: y }))(f(s.cx, s.cy)) } : { ...rest, role, points: s.points.map(q => f(q.x, q.y)) }; };
   const put = (td, lists) => {   /* 前に作った図（hwFor が同じ）を全部消してから、図ごとに1つのグループとして置く */
     const gone = new Set(td.shapes.filter(s => s.hwFor === gid).map(s => s.id)); td.shapes = td.shapes.filter(s => !gone.has(s.id));
-    const layer = td.layers.find(l => l.id === 'marks') ? 'marks' : td.layers[0].id;
+    const layer = ensureLayer(td, 'hardware');
     for (const shapes of lists) { const group = nextGroupId(td.shapes); for (const s of shapes) td.shapes.push({ ...s, id: freshId(td.shapes, 's'), layer, hwFor: gid, groupId: group }); }
   };
   const topShapes = views.top.map(s => conv(s, toTop)), sideShapes = views.side.map(s => conv(s, toSide));
@@ -2130,7 +2132,7 @@ function makeBinderSection() {
   const target = quadOn() ? quadSheets().side?.doc : doc; if (!target) return;
   // 横軸は台座の幅、縦軸は高さ。右の投影図の奥行き軸とは分けて置く。
   const at = { x: pose.at.y + (threeViewOn() ? threeViewLayout.side.x - threeViewLayout.front.y : 0), y: pose.at.y };
-  changeSectionDoc(target, () => { target.shapes = target.shapes.filter(s => s.hwSection !== gid); target.shapes.push({ id: freshId(target.shapes, 's'), type: 'polyline', closed: true, layer: target.layers.find(l => l.id === 'marks')?.id || target.layers[0].id, hwSection: gid, points: points.map(p => ({ x: at.x + p.x, y: at.y + p.y })) }); });
+  changeSectionDoc(target, () => { target.shapes = target.shapes.filter(s => s.hwSection !== gid); target.shapes.push({ id: freshId(target.shapes, 's'), type: 'polyline', closed: true, layer: ensureLayer(target, 'hardware'), hwSection: gid, points: points.map(p => ({ x: at.x + p.x, y: at.y + p.y })) }); });
   $('hint').textContent = t('hwSectionMade');
 }
 function applyBinderSection() {

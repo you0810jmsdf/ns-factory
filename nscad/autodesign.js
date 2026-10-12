@@ -57,7 +57,7 @@ export function layoutParts(parts, { paper = 'a4', gap = 6, rotate90 = true } = 
   return { placed, pages: page + 1, overflow, paper: P };
 }
 const rect = (x, y, w, h) => [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }];
-/** 配置済みの部品から文書を組み立てる：裁断線（型紙）・縫い線と穴（目印・内側 m）・折り線・部品名の文字・parts・recipe。 */
+/** 配置済みの部品から文書を組み立てる：裁断線（型紙）・縫い線と穴（ガイド・内側 m）・折り線・部品名の文字・parts・recipe。 */
 export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = defaultTools(), nameOf = null } = {}) {
   const plan = planParts(recipe); if (!plan) return null;
   const r = plan.recipe, m = edgeMargin(r), layout = layoutParts(plan.parts, { paper }), doc = newDoc(); doc.tools = tools;
@@ -68,7 +68,7 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
     doc.shapes.push(outline);
     const label = nameOf ? nameOf(p) : p.name;
     doc.parts.push({ id: p.id, name: label, thickness: p.thickness, shapeIds: [outline.id], color: null, order: p.role === 'pocket' || p.role === 'pen' ? 1 : 0, role: p.role });
-    doc.shapes.push({ id: 's' + sn++, layer: 'marks', type: 'text', x: p.x + 2, y: p.y + Math.min(h - 2, 8), text: `${label} ${Math.round(p.w * 10) / 10}×${Math.round(p.h * 10) / 10}`, sizeMm: 3, angleDeg: 0 });
+    doc.shapes.push({ id: 's' + sn++, layer: 'guide', type: 'text', x: p.x + 2, y: p.y + Math.min(h - 2, 8), text: `${label} ${Math.round(p.w * 10) / 10}×${Math.round(p.h * 10) / 10}`, sizeMm: 3, angleDeg: 0 });
     // 縫い線：指定した辺を内側 m に、連続する開いた折れ線で
     const edges = (p.stitchEdges || []).map(e => p.rot ? ({ left: 'top', right: 'bottom', top: 'right', bottom: 'left' })[e] : e);
     if (edges.length) {
@@ -78,7 +78,7 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
       let pts = [];
       if (closed) pts = [corners.top[0], corners.top[1], corners.right[1], corners.bottom[1]];
       else { let start = order.findIndex((e, i) => chosen.includes(e) && !chosen.includes(order[(i + 3) % 4])); if (start < 0) start = 0; pts.push(corners[order[start]][0]); for (let k = 0; k < 4; k++) { const e = order[(start + k) % 4]; if (!chosen.includes(e)) break; pts.push(corners[e][1]); } }
-      const line = { id: 's' + sn++, layer: 'marks', type: 'polyline', closed, points: pts }; doc.shapes.push(line);
+      const line = { id: 's' + sn++, layer: 'guide', type: 'polyline', closed, points: pts }; doc.shapes.push(line);
       const path = { id: 'p' + pn++, shapeIds: [line.id], reversed: false, closed, segments: [], mark: 'tool' }; doc.paths.push(path);
       const route = resolvePath(doc, path), len = arcLength(route);
       // 角で区切って区間ごとに等分（角穴は区間境界として 1 回だけ置く。全長等分だと角の隣に 1mm 弱の穴が出る）

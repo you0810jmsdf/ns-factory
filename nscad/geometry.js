@@ -302,15 +302,15 @@ export function bboxOfDoc(doc) { return bounds([...doc.shapes.flatMap(s => { con
 /** 図形の色（5色のみ）と線種（2種のみ）。どちらも省略可（既定の見た目を使う）。 */
 export const SHAPE_COLORS = ['blue', 'green', 'red', 'white', 'yellow'];
 export const LINE_STYLES = ['solid', 'dashed'];
-/** 新しい独立した version:7 の mm 文書を返す。副作用なし。既定レイヤーは型紙・目印・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
-export function newDoc() { return { version: 7, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 2, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'marks', name: 'marks', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
+/** 新しい独立した version:8 の mm 文書を返す。副作用なし。既定レイヤーは型紙・金具・ガイド（名前が id と同じときは UI 側で翻訳する）。parts＝部品（厚み）、seams＝縫い合わせ線。 */
+export function newDoc() { return { version: 8, unit: 'mm', shapes: [], holes: [], paths: [], parts: [], seams: [], mark: 'tool', dotD: 2, layers: [{ id: 'pattern', name: 'pattern', visible: true, locked: false }, { id: 'hardware', name: 'hardware', visible: true, locked: false }, { id: 'guide', name: 'guide', visible: true, locked: false }], tools: [] }; }
 /** 任意の JSON 値を受け取り、文書構造・有限数・ID参照が正しい場合 true を返す。入力は変更しない。 */
 export function validateDoc(d) {
   const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x);
   const id = x => typeof x === 'string' && x.length > 0;
   const nums = (x, keys) => keys.every(k => Number.isFinite(x[k]));
   const unique = xs => xs.every(x => obj(x) && id(x.id)) && new Set(xs.map(x => x.id)).size === xs.length;
-  if (!obj(d) || d.version !== 7 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
+  if (!obj(d) || d.version !== 8 || d.unit !== 'mm' || !['shapes', 'holes', 'layers', 'tools', 'paths', 'parts', 'seams'].every(k => Array.isArray(d[k]) && unique(d[k])) || !d.layers.length) return false;
   const partIds = new Set(d.parts.map(p => p.id));
   if (!d.parts.every(p => typeof p.name === 'string' && Number.isFinite(p.thickness) && p.thickness >= 0 && Array.isArray(p.shapeIds) && p.shapeIds.every(id => d.shapes.some(s => s.id === id)) && (p.skive === undefined || (Array.isArray(p.skive) && p.skive.every(k => obj(k) && Number.isFinite(k.toThickness) && k.toThickness >= 0))))) return false;
   if (!d.shapes.every(s => s.type !== 'fold' || (nums(s, ['x1', 'y1', 'x2', 'y2', 'angleDeg']) && typeof s.inner === 'boolean' && (s.partId === null || s.partId === undefined || partIds.has(s.partId))))) return false;
@@ -372,6 +372,16 @@ export function migrateDoc(input) {
   }
   if (d.version === 5) { d.version = 6; } // v6：image（下絵）型を追加
   if (d.version === 6) { d.version = 7; } // v7：図形の色・線種（任意・既定は従来の見た目）を追加
+  if (d.version === 7) {
+    // v8：層を 型紙・金具・ガイド の3つに（事業主決定A・2026-10-12）。目印（marks）はガイドへ。金具穴（hwholes）と、置いた金具の外形線・断面は金具（hardware）へ。金具の穴には hwHole を付ける（Beam Studio で切る）。
+    const has = id => d.layers.some(l => l.id === id);
+    if (has('marks')) { if (!has('guide')) { const m = d.layers.find(l => l.id === 'marks'); m.id = 'guide'; if (m.name === 'marks') m.name = 'guide'; } else d.layers = d.layers.filter(l => l.id !== 'marks'); for (const s of d.shapes) if (s.layer === 'marks') s.layer = 'guide'; }
+    const hwGroups = new Set(d.shapes.filter(s => s.hw && s.groupId).map(s => s.groupId));
+    for (const s of d.shapes) { if (s.layer === 'hwholes') { s.layer = 'hardware'; s.hwHole = true; } else if (s.hw || s.hwSection || (s.groupId && hwGroups.has(s.groupId))) s.layer = 'hardware'; }
+    if (has('hwholes')) { if (!has('hardware')) { const h = d.layers.find(l => l.id === 'hwholes'); h.id = 'hardware'; if (h.name === 'hwholes') h.name = 'hardware'; } else d.layers = d.layers.filter(l => l.id !== 'hwholes'); }
+    if (!has('hardware') && d.shapes.some(s => s.layer === 'hardware')) d.layers.splice(Math.min(1, d.layers.length), 0, { id: 'hardware', name: 'hardware', visible: true, locked: false });
+    d.version = 8;
+  }
   return d;
 }
 /** 画像（下絵）の回転前ローカル矩形。 */
