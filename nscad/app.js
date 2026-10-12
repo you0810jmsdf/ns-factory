@@ -3152,7 +3152,7 @@ canvas.addEventListener('pointerdown', e => {
     const hit = pickShapeAt(cursor);
     if (hit && !e.shiftKey) {
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
-      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), insertId: pathShape?.id === hit.id ? hit.id : null };
+      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds() }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
   else if (stage) { gesture = { kind: 'stage' }; }
@@ -3227,10 +3227,6 @@ canvas.addEventListener('pointerup', e => {
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
-    else if (g.insertId) {
-      const s = doc.shapes.find(s => s.id === g.insertId);
-      if (s && editable(s)) { const next = pathInsertNode(s, projectOnPath(s, cursor).s); nodeSel = null; transformSelectedTo(next); }
-    }
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
