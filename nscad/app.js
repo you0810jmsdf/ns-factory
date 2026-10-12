@@ -2988,14 +2988,14 @@ function drawSheetBody(lo, hi) {
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
-    if (kind === 'dot') { ctx.moveTo(0,-1.5); ctx.lineTo(0,1.5); } /* 目印は、元の線と直角に交わる短い点線（約3mm）で表示 */
+    if (kind === 'dot') { ctx.moveTo(0,-1); ctx.lineTo(0,1); } /* 目印は、元の線と直角に交わる長さ2mmの細かい点線（ガイドと同じ黄色）で表示 */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : (doc.paths.find(p => p.id === h.pathId)?.threadHex || '#fff');
-    if (kind === 'dot') { ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.7,0.5]); ctx.stroke(); ctx.setLineDash([]); }
+    if (kind === 'dot') { ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); }
     else if (kind === 'slit') { ctx.lineWidth = heightMM; ctx.stroke(); } else ctx.fill();
-    if(selected.has(h.id)){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
+    if(selected.has(h.id)&&kind!=='dot'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
   if (mode === 'stitch' && manualNext) {
