@@ -3140,9 +3140,12 @@ canvas.addEventListener('pointerdown', e => {
   }
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
-    const le = lineEndHit(cursor);
+    /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
+    const selOne = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id)) : null, nearest = selOne ? pickShapeAt(cursor) : null;
+    const handleOk = !selOne || !nearest || nearest.id === selOne.id || distToShape(selOne, cursor) <= distToShape(nearest, cursor) + 1.5 / scale;
+    const le = handleOk ? lineEndHit(cursor) : null;
     if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line') { fixed = h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig }; $('hint').textContent = t(sh.type === 'line' ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
-    const nh = pathShape && nodeHit(pathShape, cursor);
+    const nh = pathShape && handleOk && nodeHit(pathShape, cursor);
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
