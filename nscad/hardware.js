@@ -140,7 +140,7 @@ export function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, em
   const ringTop = supporterT + baseH + outerRingD - embedMm; // 背の内面からの輪の天井高さ
   const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
     plate: { x: -12, y: supporterT, w: 24, h: plateT },
-    /* サポーター：角背では平らな部分（内幅−曲げ内半径×2・台座の幅まで）だけ。丸背では表紙の内側に沿う半円の帯（supporterArc） */
+    /* サポーター：断面のデータが無い規格の絵は、角背＝平らな部分（内幅−曲げ内半径×2・台座の幅まで）・丸背＝表紙の内側に沿う半円の帯（supporterArc）。断面のデータがある規格は polys の形（背の形に依らない） */
     supporter: supporterT > 0 && !round ? (w => ({ x: -w / 2, y: 0, w, h: supporterT }))(Math.max(24, innerW - 2 * Math.min(foldR, innerW / 2))) : null,
     supporterArc: supporterT > 0 && round ? { rOut: r, rIn: Math.max(0, r - supporterT) } : null,
     polys: spineSectionPolys(sectionPoints, supporterT, supporterDia, holeDia), /* 台座の断面（レンズ形）と、膨らみに沿ったリングサポータの帯（断面のデータがある規格だけ） */
@@ -165,7 +165,7 @@ export function spineSectionSvg(result, { label = '' } = {}) {
   const leather = `<path id="spine-leather" d="M${f(-xo)} ${f(-top)}L${f(-xo)} ${f(-r)}A${f(R)} ${f(R)} 0 0 0 ${f(-xi + r)} ${f(t)}L${f(xi - r)} ${f(t)}A${f(R)} ${f(R)} 0 0 0 ${f(xo)} ${f(-r)}L${f(xo)} ${f(-top)}L${f(xi)} ${f(-top)}L${f(xi)} ${f(-r)}A${f(r)} ${f(r)} 0 0 1 ${f(xi - r)} 0L${f(-xi + r)} 0A${f(r)} ${f(r)} 0 0 1 ${f(-xi)} ${f(-r)}L${f(-xi)} ${f(-top)}Z" fill="#d9c7a0" stroke="#000" stroke-width="0.2"/>`;
   const arcBand = a => a ? `<path d="M${f(a.rOut)} ${f(-a.rOut)}A${f(a.rOut)} ${f(a.rOut)} 0 0 1 0 0A${f(a.rOut)} ${f(a.rOut)} 0 0 1 ${f(-a.rOut)} ${f(-a.rOut)}L${f(-a.rIn)} ${f(-a.rOut)}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 0 ${f(-(a.rOut - a.rIn))}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 ${f(a.rIn)} ${f(-a.rOut)}Z" fill="#c4ad7f" stroke="#000" stroke-width="0.2"/>` : '';
   const poly = (pts, fill) => `<polygon points="${pts.map(p => `${f(p.x)},${f(-p.y)}`).join(' ')}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
-  const supportEl = s.polys?.supporter && !s.supporterArc ? s.polys.supporter.map(q => poly(q, '#c4ad7f')).join('') : s.supporter ? rect(s.supporter, '#c4ad7f') : arcBand(s.supporterArc), plateEl = s.polys?.plate ? poly(s.polys.plate, '#9a9a9a') : rect(s.plate, '#9a9a9a');
+  const supportEl = s.polys?.supporter ? s.polys.supporter.map(q => poly(q, '#c4ad7f')).join('') : s.supporter ? rect(s.supporter, '#c4ad7f') : arcBand(s.supporterArc), plateEl = s.polys?.plate ? poly(s.polys.plate, '#9a9a9a') : rect(s.plate, '#9a9a9a');
   const body = [leather, supportEl, plateEl,
     `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
     `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
