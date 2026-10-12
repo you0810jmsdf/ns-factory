@@ -423,6 +423,8 @@
 <output id="spTopInfo" class="note"></output><div id="spTopSvg" class="svgbody"></div>
 <div class="sp-compare-scroll"><table id="spCompare"></table></div><p class="note" data-i18n="spCompareHelp"></p>
 <div class="row"><button id="spTopDraw" data-i18n="spTopDraw"></button></div>
+<label><span data-i18n="spMarginTB"></span><input id="spMarginTB" type="number" step="0.5" min="0" value="5"></label><label><span data-i18n="spMarginEdge"></span><input id="spMarginEdge" type="number" step="0.5" min="0" value="5"></label>
+<div class="row"><button id="spCoverDraw" data-i18n="spCoverDraw"></button></div><p class="note" data-i18n="spCoverNote"></p>
 <label><span data-i18n="measuredSpine"></span><input id="spMeasured" type="number" step="0.1" min="0" placeholder="75"></label>
 <div class="row"><button id="spCalib" data-i18n="spCalib"></button><button id="spApply" data-i18n="spApply"></button></div>
 </details>
@@ -533,8 +535,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=42280a11","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=77ae2314","./help/ja.js":"./help/ja.js?v=5acbd9c8","./i18n.js":"./i18n.js?v=a894e003","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=42280a11"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ecd7835b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b8733064","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=68379464","./help/en.js":"./help/en.js?v=5e5d59d5","./help/ja.js":"./help/ja.js?v=1b3ab828","./i18n.js":"./i18n.js?v=39021af3","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=ecd7835b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2387,6 +2389,12 @@ const MESSAGES = {
     "spStack": "リフィルの束の厚み (mm)",
     "spCoverW": "表紙の長さ (mm・空欄＝自動)",
     "spTopDraw": "閉じた手帳の3面図（天・正面・右側面）を図面に描く",
+    "spMarginTB": "上下の余白 (mm)",
+    "spMarginEdge": "小口の余白 (mm)",
+    "spCoverDraw": "この結果で表紙の展開図を描く",
+    "spCoverNote": "横幅＝2×(リフィル幅＋小口の余白)＋背幅（上の計算値）、高さ＝リフィル高＋上下の余白×2。新しいタブに、表紙の外形（部品・厚み＝革厚）と折り線2本、背の中央に金具（いまの規格・リング径・向き90）を描きます。ポケットなどは自分で足してください。",
+    "spineCoverTab": "表紙（{name}）",
+    "spineCoverDone": "表紙 {w}×{h} mm（背幅 {spine} mm）を描き、金具を背の中央に置きました。",
     "spTopInfo": "閉じた手帳：厚み {t} mm・表紙の長さ {c} mm。第三角法（破線は隠れる部分）。",
     "spTopTight": "リフィルの束（{s} mm）がリングの内径（{r} mm）を超えています。",
     "spTopDrawn": "3面図を図面の中央に描きました（ガイドレイヤー・破線は隠れる部分）。",
@@ -3364,6 +3372,12 @@ const MESSAGES = {
     "spStack": "Refill stack thickness (mm)",
     "spCoverW": "Cover length (mm; blank = auto)",
     "spTopDraw": "Draw the closed binder three views (top, front, right) on the drawing",
+    "spMarginTB": "Top/bottom margin (mm)",
+    "spMarginEdge": "Fore-edge margin (mm)",
+    "spCoverDraw": "Draw the cover pattern from this result",
+    "spCoverNote": "Width = 2 × (refill width + fore-edge margin) + spine (computed above); height = refill height + 2 × top/bottom margin. Draws, in a new tab, the cover outline (a part with the leather thickness), two fold lines and the binder (current standard, ring size, angle 90) centered on the spine. Add pockets yourself.",
+    "spineCoverTab": "Cover ({name})",
+    "spineCoverDone": "Drew the cover {w}×{h} mm (spine {spine} mm) and placed the binder at the spine center.",
     "spTopInfo": "Closed binder: thickness {t} mm, cover length {c} mm. Third-angle projection (dashed = hidden).",
     "spTopTight": "The refill stack ({s} mm) is thicker than the ring inner diameter ({r} mm).",
     "spTopDrawn": "Drew the three views at the center (Guide layer; dashed = hidden).",
@@ -4963,7 +4977,14 @@ function binderSection(base) {
   return [...clean.slice(first), ...clean.slice(0, first)];
 }
 
-return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection};
+/** 背幅シミュレーションの背幅から、表紙の展開図の寸法を決める（事業主決定A・2026-10-12）。
+  横幅＝2×(リフィル幅＋小口の余白)＋背幅、高さ＝リフィル高＋上下の余白×2。折り線は背の両端（x）。金具は背の中央。 */
+function coverLayout({ refillW, refillH, spineW, marginTB = 5, marginEdge = 5 }) {
+  const r2 = v => Math.round(v * 100) / 100, panel = r2(refillW + marginEdge), W = r2(2 * panel + spineW), H = r2(refillH + 2 * marginTB);
+  return { W, H, panel, spineW: r2(spineW), folds: [panel, r2(panel + spineW)], center: { x: r2(panel + spineW / 2), y: r2(H / 2) } };
+}
+
+return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection, coverLayout};
 })();
 __mods['binder_edits'] = (function(){
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
@@ -17048,7 +17069,7 @@ const HELP_JA = {
     {
       "id": "hardware",
       "title": "金具ライブラリとバインダー金具",
-      "body": "金具カードで分類と金具を選び、寸法パラメータ（代表値・「要実測」のものは現物で確認）と向きを決めて「図面に置く」→位置をクリック。外形の記号も、カシメ穴・ホックの足穴・ネジ穴などの取り付け穴も「金具」の層に入ります（穴は Beam Studio で切る対象）。置いた金具は 3D でも板の上に立体（箱・円柱）として現れ、折りたたみに追従し、干渉判定に含まれます。\nバインダー金具は規格（Micro5・Mini6・A6・バイブル・A5・A5 Slim・A4・Franklin 各種）を選び、リング径を選んで置きます。穴ピッチ・1番〜最終穴・リフィル寸法は N's factory の規格表を正本にした data/binder/*.json、台座やリベットの寸法は推定値（JSON を実測で上書きできます）。「平面図・側面図・正面図」は JSON から自動生成した図面、「寸法データ」は、紙・穴・リング・台座・取り付け穴・確かさ・出典を表にしたもの。必要な背幅＝リング径＋台座厚＋革厚×2＋遊び 2mm を表示します。\n背幅シミュレーション：バインダー節の「背幅シミュレーション」で、リング内径・線径・台座厚・表紙の革厚・サポータ厚・すき間・曲げ内半径から、閉じた断面（輪の外径＋すき間＝内幅、両端 90° の折り代）を計算して背幅を出します。断面図が下に出ます。これまで現物合わせで決めた背幅があれば「実測からすき間を逆算」に入れると、同じ条件で次の判型にも使えるすき間に直せます。「レシピの背幅に反映」で自動設計の手帳に使われます。\n「寸法を直す」で、台座・リング（径ごとの内径・外径・線径・食い込み）・取り付け穴を自分で入れて保存できます。保存先はこの PC のブラウザで、すぐ図・3D・背幅に反映されます。「新しい製品として保存」で、同じ規格の別メーカー品を名前付きで足せます。公開データに入れるときは「CSV に書き出す」で出た3つのファイルを渡してください。"
+      "body": "金具カードで分類と金具を選び、寸法パラメータ（代表値・「要実測」のものは現物で確認）と向きを決めて「図面に置く」→位置をクリック。外形の記号も、カシメ穴・ホックの足穴・ネジ穴などの取り付け穴も「金具」の層に入ります（穴は Beam Studio で切る対象）。置いた金具は 3D でも板の上に立体（箱・円柱）として現れ、折りたたみに追従し、干渉判定に含まれます。\nバインダー金具は規格（Micro5・Mini6・A6・バイブル・A5・A5 Slim・A4・Franklin 各種）を選び、リング径を選んで置きます。穴ピッチ・1番〜最終穴・リフィル寸法は N's factory の規格表を正本にした data/binder/*.json、台座やリベットの寸法は推定値（JSON を実測で上書きできます）。「平面図・側面図・正面図」は JSON から自動生成した図面、「寸法データ」は、紙・穴・リング・台座・取り付け穴・確かさ・出典を表にしたもの。必要な背幅＝リング径＋台座厚＋革厚×2＋遊び 2mm を表示します。\n背幅シミュレーション：バインダー節の「背幅シミュレーション」で、リング内径・線径・台座厚・表紙の革厚・サポータ厚・すき間・曲げ内半径から、閉じた断面（輪の外径＋すき間＝内幅、両端 90° の折り代）を計算して背幅を出します。断面図が下に出ます。これまで現物合わせで決めた背幅があれば「実測からすき間を逆算」に入れると、同じ条件で次の判型にも使えるすき間に直せます。「レシピの背幅に反映」で自動設計の手帳に使われます。\n「寸法を直す」で、台座・リング（径ごとの内径・外径・線径・食い込み）・取り付け穴を自分で入れて保存できます。保存先はこの PC のブラウザで、すぐ図・3D・背幅に反映されます。「新しい製品として保存」で、同じ規格の別メーカー品を名前付きで足せます。公開データに入れるときは「CSV に書き出す」で出た3つのファイルを渡してください。\n背幅シミュレーションの「この結果で表紙の展開図を描く」は、計算した背幅と「上下の余白」「小口の余白」から、表紙の外形（部品・厚み＝革厚）・折り線2本・背の中央の金具を新しいタブに描きます（ポケットは自分で足す）。"
     },
     {
       "id": "library",
@@ -17202,7 +17223,7 @@ const HELP_EN = {
     {
       "id": "hardware",
       "title": "Hardware library and binder mechanisms",
-      "body": "Choose a category and an item in the Hardware card, adjust the size parameters (typical values; verify the ones marked) and the angle, press Place and click on the drawing. The outline symbol goes to the Hardware layer; mounting holes (rivets, snap posts, screws) go to the Hardware layer. Placed hardware also appears in 3D as a box or cylinder on its panel, follows folding and is included in collision checks.\nFor binder mechanisms pick a standard (Micro5, Mini6, A6, Bible, A5, A5 Slim, A4, Franklin...) and a ring diameter. Hole pitches, first-to-last span and refill sizes come from N's factory's standards table (data/binder/*.json); plate and rivet sizes are estimates you can overwrite. Plan/side/front drawings are generated from the JSON. The required spine width = ring diameter + plate thickness + 2 × leather thickness + 2 mm play.\nSpine simulation: in the binder section, enter ring ID, wire, plate thickness, cover leather, supporter thickness, clearance and bend radius; the closed section (ring OD + clearance = inner width, 90° fold allowances both ends) gives the spine width with a section drawing. Enter a spine you measured by wrapping real leather to derive the clearance, then reuse it for other sizes. \"Apply to recipe spine\" feeds the notebook recipe.\nWith \"Edit sizes\" you can enter the base plate, rings (inner/outer/wire/embed per size) and mounting holes yourself; they are saved in this browser and applied at once to drawings, 3D and the spine simulation. \"Save as a new product\" adds a named maker variant of the same standard. To put them in the public data, export the three CSV files and send them."
+      "body": "Choose a category and an item in the Hardware card, adjust the size parameters (typical values; verify the ones marked) and the angle, press Place and click on the drawing. The outline symbol goes to the Hardware layer; mounting holes (rivets, snap posts, screws) go to the Hardware layer. Placed hardware also appears in 3D as a box or cylinder on its panel, follows folding and is included in collision checks.\nFor binder mechanisms pick a standard (Micro5, Mini6, A6, Bible, A5, A5 Slim, A4, Franklin...) and a ring diameter. Hole pitches, first-to-last span and refill sizes come from N's factory's standards table (data/binder/*.json); plate and rivet sizes are estimates you can overwrite. Plan/side/front drawings are generated from the JSON. The required spine width = ring diameter + plate thickness + 2 × leather thickness + 2 mm play.\nSpine simulation: in the binder section, enter ring ID, wire, plate thickness, cover leather, supporter thickness, clearance and bend radius; the closed section (ring OD + clearance = inner width, 90° fold allowances both ends) gives the spine width with a section drawing. Enter a spine you measured by wrapping real leather to derive the clearance, then reuse it for other sizes. \"Apply to recipe spine\" feeds the notebook recipe.\nWith \"Edit sizes\" you can enter the base plate, rings (inner/outer/wire/embed per size) and mounting holes yourself; they are saved in this browser and applied at once to drawings, 3D and the spine simulation. \"Save as a new product\" adds a named maker variant of the same standard. To put them in the public data, export the three CSV files and send them.\n\"Draw the cover pattern from this result\" in the spine simulation uses the computed spine width plus the top/bottom and fore-edge margins to draw, in a new tab, the cover outline (a part with the leather thickness), two fold lines and the binder centered on the spine (add pockets yourself)."
     },
     {
       "id": "library",
@@ -17315,6 +17336,7 @@ const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
 const { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases } = __mods['phrases'];
+const { coverLayout } = __mods['hardware'];
 const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } = __mods['binder_edits'];
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
@@ -19555,6 +19577,27 @@ function initPhrases() {
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
 }
+/** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
+function drawCoverFromSpine() {
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
+  const r = renderSpineSim(); if (!r) return;
+  const p = spineParams(), tm = Number($('spMarginTB').value), em = Number($('spMarginEdge').value), rw = spec.refill?.wMm, rh = spec.refill?.hMm;
+  if (!(tm >= 0) || !(em >= 0) || !(rw > 0) || !(rh > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  const c = coverLayout({ refillW: rw, refillH: rh, spineW: r.spineW, marginTB: tm, marginEdge: em }), nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
+  const it = DATA_HARDWARE.items.find(i => i.id === 'binder-' + (spec.parent || spec.id));
+  newTab(t('spineCoverTab', { name: nameOf(spec) }));
+  cancel(); commit(() => {
+    const d = newDoc(); d.tools = loadTools();
+    d.shapes.push({ id: 's1', layer: 'pattern', type: 'polyline', closed: true, points: [{ x: 0, y: 0 }, { x: c.W, y: 0 }, { x: c.W, y: c.H }, { x: 0, y: c.H }] });
+    for (const x of c.folds) d.shapes.push({ id: freshId(d.shapes, 's'), layer: 'pattern', type: 'fold', x1: x, y1: 0, x2: x, y2: c.H, angleDeg: 90, partId: 'cover', inner: true });
+    d.parts.push({ id: 'cover', name: t('part.cover'), thickness: p.leatherT, shapeIds: ['s1'], color: null, order: 0, role: 'cover' });
+    d.provenance = [{ source: 'spineCover', at: new Date().toISOString() }];
+    doc = d; selected.clear(); manualNext = null; nodeSel = null; refreshTools();
+    if (it) { const overrides = { ringD: p.ringD, ...(spec.id !== it.params.spec ? { spec: spec.id } : {}) }; try { selected = new Set(addHardwareDrafts(hardwareDrafts(it, overrides, spec, c.center, 90), nextGroupId(doc.shapes))); } catch { /* 金具が置けなくても表紙は残す */ } }
+  });
+  tabs[activeTab].doc = doc; pairLines = []; renderLayers(); renderSeams(); fit();
+  $('hint').textContent = t('spineCoverDone', { w: c.W, h: c.H, spine: c.spineW });
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -19566,6 +19609,7 @@ function initHardware() {
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
   $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
+  $('spCoverDraw').onclick = drawCoverFromSpine;
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
