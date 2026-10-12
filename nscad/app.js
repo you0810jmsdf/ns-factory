@@ -3165,7 +3165,14 @@ canvas.addEventListener('pointerdown', e => {
     const le = handleOk ? lineEndHit(cursor) : null;
     if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line' || (sh.type === 'polyline' && !sh.closed && sh.points.length === 2)) { /* 直線、または節点が2つだけの折れ線（実質は直線）：動かさない側の端から元の向きに延長できる */ fixed = sh.type === 'line' ? (h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }) : sh.points[1 - h.index]; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig }; $('hint').textContent = t(sh.type === 'line' || dir ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
     const nh = pathShape && handleOk && nodeHit(pathShape, cursor);
-    if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
+    if (nh) {
+      nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null };
+      const ns = pathShape.nodes; if (nh.part === 'anchor' && !pathShape.closed && ns.length === 2 && ns.every(n => !n.smooth && n.inX === n.x && n.inY === n.y && n.outX === n.x && n.outY === n.y)) { /* 曲がりのない2節点のペン（実質は直線）：Shift で、動かさない側の端から元の向きに延長できる */
+        const fx = ns[1 - nh.index].x, fy = ns[1 - nh.index].y, mx = ns[nh.index].x, my = ns[nh.index].y, ln = Math.hypot(mx - fx, my - fy);
+        if (ln > 1e-9) { gesture.fixed = { x: fx, y: fy }; gesture.dir = { x: (mx - fx) / ln, y: (my - fy) / ln }; $('hint').textContent = t('lineEndDrag'); }
+      }
+      draw(); return;
+    }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
@@ -3184,7 +3191,7 @@ canvas.addEventListener('pointermove', e => {
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
-  if (gesture?.kind === 'lineEnd') cursor = lineEndCursor(gesture, world(p), e.shiftKey);
+  if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   draw();
 });
@@ -3231,7 +3238,7 @@ canvas.addEventListener('pointerup', e => {
   if (!gesture) return;
   const g = gesture, p = local(e);
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
-  if (g.kind === 'lineEnd') cursor = lineEndCursor(g, world(p), e.shiftKey);
+  if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey);
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
