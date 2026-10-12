@@ -34,3 +34,10 @@ export function phraseShapes(lines, at, sizeMm, layer, gap = PHRASE_LINE_GAP) {
   lines.forEach((text, i) => { if (!text) return; out.push({ type: 'text', layer, x: at.x, y: at.y + i * sizeMm * gap, text, sizeMm, angleDeg: 0 }); });
   return out;
 }
+
+/** 読み込んだ一覧を今の一覧に合流する（同じ名前は置き換え・新しい名前は末尾に）。{ items, added, replaced }。 */
+export function mergePhrases(items, incoming) {
+  const out = items.map(p => ({ ...p })); let added = 0, replaced = 0;
+  for (const p of incoming) { const i = out.findIndex(q => q.name === p.name); if (i >= 0) { out[i] = { name: p.name, text: p.text }; replaced++; } else { out.push({ name: p.name, text: p.text }); added++; } }
+  return { items: out, added, replaced };
+}
