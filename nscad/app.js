@@ -2936,18 +2936,34 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
   }
   path(s); ctx.strokeStyle = color; ctx.stroke();
 }
-/** 直線の片側の端（end＝1か2）だけを p へ動かした直線。 */
-function lineEndMoved(s, end, p) { return end === 1 ? { ...s, x1: p.x, y1: p.y } : { ...s, x2: p.x, y2: p.y }; }
-/** 選択中の直線の端のハンドル（画面で 9px 以内）。目打ちが付いた線・ロック層は対象外（穴が壊れるため）。 */
-/** 端をドラッグ中のカーソル位置。Shift なら、動かさない側の端から元の向きの線の上に限る（水平・垂直の線なら水平・垂直のまま。吸着した点を、その線へ射影する）。 */
-function lineEndCursor(g, w, shift) {
-  const sp = snapped(w, false, null); if (!shift || !g.dir) return sp;
-  const t = (sp.x - g.fixed.x) * g.dir.x + (sp.y - g.fixed.y) * g.dir.y; return { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t };
+/** 端のハンドル（直線の両端・折れ線／矩形の全部の角・円弧の両端）。{ x, y, end（直線・円弧：1か2）, index（折れ線の角の番号） } の配列。 */
+function shapeHandles(s) {
+  if (s.type === 'line') return [{ x: s.x1, y: s.y1, end: 1 }, { x: s.x2, y: s.y2, end: 2 }];
+  if (s.type === 'polyline') return s.points.map((q, index) => ({ x: q.x, y: q.y, index }));
+  if (s.type === 'arc') return [{ ...circlePoint(s, s.startDeg), end: 1 }, { ...circlePoint(s, s.endDeg), end: 2 }];
+  return [];
 }
+/** ハンドル h だけを p へ動かした図形。直線＝その端、折れ線＝その角、円弧＝中心と半径はそのまま角度だけ。 */
+function handleMoved(s, h, p) {
+  if (s.type === 'line') return h.end === 1 ? { ...s, x1: p.x, y1: p.y } : { ...s, x2: p.x, y2: p.y };
+  if (s.type === 'polyline') return { ...s, points: s.points.map((q, i) => i === h.index ? { x: p.x, y: p.y } : q) };
+  if (s.type === 'arc') { const deg = Math.atan2(p.y - s.cy, p.x - s.cx) * 180 / Math.PI; return h.end === 1 ? { ...s, startDeg: deg } : { ...s, endDeg: deg }; }
+  return s;
+}
+/** 端のハンドルを持つ図形（直線・折れ線・矩形・円弧）。 */
+const hasHandles = s => ['line', 'polyline', 'arc'].includes(s.type);
+/** 端をドラッグ中のカーソル位置。Shift：直線＝動かさない側の端から元の向きの線の上（水平・垂直の線なら水平・垂直のまま）、折れ線の角＝元の位置から水平か垂直（近い方）だけ。円弧は角度だけが変わる。 */
+function lineEndCursor(g, w, shift) {
+  const sp = snapped(w, false, null); if (!shift) return sp;
+  if (g.dir) { const t = (sp.x - g.fixed.x) * g.dir.x + (sp.y - g.fixed.y) * g.dir.y; return { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t }; }
+  if (g.orig) return Math.abs(sp.x - g.orig.x) >= Math.abs(sp.y - g.orig.y) ? { x: sp.x, y: g.orig.y } : { x: g.orig.x, y: sp.y };
+  return sp;
+}
+/** 選択中の図形のハンドル（画面で 9px 以内で一番近いもの）。ロック層は対象外。 */
 function lineEndHit(p) {
-  const s = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id) && x.type === 'line' && editable(x)) : null; if (!s) return null;
-  const near = 9 / scale, d1 = distance(p, { x: s.x1, y: s.y1 }), d2 = distance(p, { x: s.x2, y: s.y2 }); if (Math.min(d1, d2) > near) return null;
-  return { shape: s, end: d1 <= d2 ? 1 : 2 };
+  const s = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id) && hasHandles(x) && editable(x)) : null; if (!s) return null;
+  const near = 9 / scale; let best = null, bd = near; for (const h of shapeHandles(s)) { const d = distance(p, h); if (d <= bd) { bd = d; best = h; } }
+  return best ? { shape: s, handle: best } : null;
 }
 function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
@@ -2991,10 +3007,10 @@ function drawSheetBody(lo, hi) {
     const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? lineEndMoved(s, gesture.end, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
-  if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && s.type === 'line' && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? lineEndMoved(ln, gesture.end, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const [x, y] of [[v.x1, v.y1], [v.x2, v.y2]]) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線を1本選ぶと、両端にハンドル（ドラッグで片側だけ伸び縮み） */
+  if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole)) continue;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
@@ -3120,7 +3136,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     const le = lineEndHit(cursor);
-    if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } const fx = le.end === 1 ? le.shape.x2 : le.shape.x1, fy = le.end === 1 ? le.shape.y2 : le.shape.y1, mx = le.end === 1 ? le.shape.x1 : le.shape.x2, my = le.end === 1 ? le.shape.y1 : le.shape.y2, ln = Math.hypot(mx - fx, my - fy); gesture = { kind: 'lineEnd', id: le.shape.id, end: le.end, screen: p, fixed: { x: fx, y: fy }, dir: ln > 1e-9 ? { x: (mx - fx) / ln, y: (my - fy) / ln } : null }; $('hint').textContent = t('lineEndDrag'); draw(); return; } /* 端のハンドルをつかむと、反対側は動かさずその端だけ動かす */
+    if (le) { if (doc.paths.some(pt => pt.shapeIds.includes(le.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('lineEndHoles'); draw(); return; } let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line') { fixed = h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig }; $('hint').textContent = t(sh.type === 'line' ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
     const nh = pathShape && nodeHit(pathShape, cursor);
     if (nh) { nodeSel = { id: pathShape.id, index: nh.index }; gesture = { kind: 'node', id: pathShape.id, index: nh.index, part: nh.part, alt: e.altKey, screen: p, preview: null }; draw(); return; }
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&distance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.width||0)/2));
@@ -3197,7 +3213,7 @@ canvas.addEventListener('pointerup', e => {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'lineEnd') {
     const s = doc.shapes.find(s => s.id === g.id);
-    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = lineEndMoved(s, g.end, cursor); if (Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) $('hint').textContent = t('lineEndZero'); else { transformSelectedTo(next); $('hint').textContent = t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }); } }
+    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = handleMoved(s, g.h, cursor); if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) $('hint').textContent = t('lineEndZero'); else { transformSelectedTo(next); $('hint').textContent = s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
