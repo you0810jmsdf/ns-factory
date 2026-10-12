@@ -553,11 +553,11 @@ export const BINDER_SPECS = [
    ]
   },
   "plate": {
-   "lengthMm": 138,
-   "widthMm": 24,
+   "lengthMm": 150,
+   "widthMm": 20,
    "thicknessMm": 2,
-   "cornerRMm": 3,
-   "confidence": "estimated"
+   "cornerRMm": 1.5,
+   "confidence": "measured"
   },
   "rivets": [
    {
@@ -628,7 +628,7 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-10-12）。リング・取り付け穴・機構は推定のまま"
  },
  {
   "id": "bible",
