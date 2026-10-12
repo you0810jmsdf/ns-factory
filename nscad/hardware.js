@@ -94,10 +94,44 @@ export function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z
 }
 /** 必要な背幅：リング径 + 金具ベース厚 + 革厚×2 + 遊び。 */
 export function spineWidth(ringD, baseThickness = 2, leatherThickness = 1.5, playMm = 2) { return ringD + baseThickness + 2 * leatherThickness + playMm; }
+/** 開いた折れ線 pts を、各点の法線方向へ d だけずらす（角はなめらかな曲線向けの簡易ミター）。d の符号は法線（進行方向の右＝y 下向き系では左回り）による。 */
+function offsetOpenPolyline(pts, d) {
+  const n = pts.length, seg = []; for (let i = 0; i < n - 1; i++) { const dx = pts[i + 1].x - pts[i].x, dy = pts[i + 1].y - pts[i].y, l = Math.hypot(dx, dy) || 1; seg.push({ x: dy / l, y: -dx / l }); }
+  return pts.map((p, i) => { const a = seg[Math.max(0, i - 1)], b = seg[Math.min(seg.length - 1, i)]; let nx = a.x + b.x, ny = a.y + b.y; const l = Math.hypot(nx, ny) || 1; nx /= l; ny /= l; const k = Math.min(3, 1 / Math.max(0.3, nx * b.x + ny * b.y)); return { x: p.x + nx * d * k, y: p.y + ny * d * k }; });
+}
+/** x が単調に動く折れ線 pts の、x における y（端の外は端の値）。 */
+function yAtX(pts, x) {
+  const inc = pts[pts.length - 1].x >= pts[0].x, a = inc ? pts : pts.slice().reverse();
+  if (x <= a[0].x) return a[0].y; if (x >= a[a.length - 1].x) return a[a.length - 1].y;
+  for (let i = 1; i < a.length; i++) if (x <= a[i].x) { const p = a[i - 1], q = a[i], t = q.x === p.x ? 0 : (x - p.x) / (q.x - p.x); return p.y + (q.y - p.y) * t; }
+  return a[a.length - 1].y;
+}
+/** x が単調な折れ線 pts のうち、x が [xa, xb] に入る部分（両端は補間した点）。 */
+function sliceByX(pts, xa, xb) {
+  const inc = pts[pts.length - 1].x >= pts[0].x, a = inc ? pts : pts.slice().reverse(), mid = a.filter(p => p.x > xa && p.x < xb);
+  return [{ x: xa, y: yAtX(a, xa) }, ...mid, { x: xb, y: yAtX(a, xb) }];
+}
+/** 台座の断面の座標（中央 x=0・頂上 y=0・y 下向き・時計回り・先頭＝左上の縁）から、背幅シミュレーション用の多角形（背の内面中央を原点・y 上向き正）を作る。
+ *  plate＝台座の断面そのもの。supporter＝台座の下の膨らみ（下面）に沿って、外側へ supporterT だけオフセットした帯（リングサポータ・事業主定義 2026-10-12）の配列。
+ *  サポータは直径 supporterDia の円で切り抜かれる：ビス穴の中心を通る断面では、中心から ±supporterDia/2 の範囲で、ビス穴（直径 holeDia）の部分は空く。supporterDia が 0 なら帯は断面の全幅。 */
+export function spineSectionPolys(sectionPoints, supporterT, supporterDia = 0, holeDia = 0) {
+  if (!Array.isArray(sectionPoints) || sectionPoints.length < 4) return null;
+  const xs = sectionPoints.map(p => p.x), ys = sectionPoints.map(p => p.y), maxX = Math.max(...xs), H = Math.max(...ys) - Math.min(...ys), y0 = Math.min(...ys);
+  const toSim = p => ({ x: p.x, y: supporterT + (H - (p.y - y0)) }); /* 断面の下の膨らみの頂点を、サポータの上面（y＝supporterT）に置く */
+  const plate = sectionPoints.map(toSim); if (!(supporterT > 0)) return { plate, supporter: [] };
+  let corner = 0; sectionPoints.forEach((p, i) => { if (p.x > xs[corner] + 1e-9 || (Math.abs(p.x - xs[corner]) < 1e-9 && p.y < ys[corner])) corner = i; }); /* 右上の縁の点 */
+  const lower = sectionPoints.slice(corner + 1); if (lower.length < 2) return { plate, supporter: [] };
+  const out = offsetOpenPolyline(lower, 1), flip = out.reduce((a, p) => a + p.y, 0) < lower.reduce((a, p) => a + p.y, 0) ? -1 : 1; /* 下向き（膨らみの外側）へずれる符号 */
+  const band = offsetOpenPolyline(lower, flip * supporterT);
+  const piece = (xa, xb) => { const lo = sliceByX(lower, xa, xb), up = sliceByX(band, xa, xb); return [...lo, ...up.slice().reverse()].map(toSim); }; /* 縦の線で切った帯の一片 */
+  const R = supporterDia > 0 ? Math.min(supporterDia / 2, maxX) : maxX, r = holeDia > 0 && supporterDia > 0 ? Math.min(holeDia / 2, R) : 0;
+  const supporter = r > 0 ? (r < R ? [piece(-R, -r), piece(r, R)] : []) : [piece(-R, R)];
+  return { plate, supporter };
+}
 /** 背幅の断面シミュレーション（純関数）。閉じた手帳の断面：台座（厚さ plateT）の上に外径 ringD+2*wireD の輪が立ち、表紙は背の両端で 90° 折れて輪の両脇を通る。
  *  内幅 = 輪の外径 + 2*遊び（輪と表紙内面のすき間）。背の型紙幅 = 内幅 + 2*折り代（θ(r + K t)・θ=90°）。輪の高さが表紙の張り出し（サポータ厚＋台座厚）を超える分は干渉として返す。
  *  params: {ringD（内径）, wireD（線径）, plateT, baseH（台座の全高・省略時は板厚）, embedMm（輪の食い込み深さ）, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
-export function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, embedMm = 0, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5, spineShape = 'square' } = {}) {
+export function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, embedMm = 0, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5, spineShape = 'square', sectionPoints = null, supporterDia = 0, holeDia = 0 } = {}) {
   const num = v => Number.isFinite(v) && v >= 0;
   if (![ringD, wireD, plateT, baseH, embedMm, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
   /* 背の形（事業主決定A・2026-10-12）：角背＝両端を 90° に折る（曲げ内半径は入力値）。丸背＝表紙がリングを包んで半円になる（曲げ内半径＝内幅の半分で自動・サポーターは表紙の内側に沿って曲がるので内幅に厚みを足す・背の革の長さ＝π×(r＋K×革厚)） */
@@ -109,6 +143,7 @@ export function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, em
     /* サポーター：角背では平らな部分（内幅−曲げ内半径×2・台座の幅まで）だけ。丸背では表紙の内側に沿う半円の帯（supporterArc） */
     supporter: supporterT > 0 && !round ? (w => ({ x: -w / 2, y: 0, w, h: supporterT }))(Math.max(24, innerW - 2 * Math.min(foldR, innerW / 2))) : null,
     supporterArc: supporterT > 0 && round ? { rOut: r, rIn: Math.max(0, r - supporterT) } : null,
+    polys: spineSectionPolys(sectionPoints, supporterT, supporterDia, holeDia), /* 台座の断面（レンズ形）と、膨らみに沿ったリングサポータの帯（断面のデータがある規格だけ） */
     ring: { cx: 0, cy: supporterT + baseH + outerRingD / 2 - embedMm, rOuter: outerRingD / 2, rInner: ringD / 2 },
     fold: { r, t: leatherT, round }, /* 背の革の曲げ（内側の半径・革厚・丸背か）。断面の絵で角を丸く描く */
     coverL: { x: -innerW / 2 - leatherT, y: 0, w: leatherT, h: ringTop + 10 }, coverR: { x: innerW / 2, y: 0, w: leatherT, h: ringTop + 10 }, spine: { x: -innerW / 2 - leatherT, y: -leatherT, w: innerW + 2 * leatherT, h: leatherT },
@@ -129,7 +164,9 @@ export function spineSectionSvg(result, { label = '' } = {}) {
   const iw = result.innerW, t = s.fold?.t ?? s.spine.h, r = Math.min(Math.max(s.fold?.r ?? 0, 0), iw / 2), top = s.coverL.h, R = r + t, xo = iw / 2 + t, xi = iw / 2;
   const leather = `<path id="spine-leather" d="M${f(-xo)} ${f(-top)}L${f(-xo)} ${f(-r)}A${f(R)} ${f(R)} 0 0 0 ${f(-xi + r)} ${f(t)}L${f(xi - r)} ${f(t)}A${f(R)} ${f(R)} 0 0 0 ${f(xo)} ${f(-r)}L${f(xo)} ${f(-top)}L${f(xi)} ${f(-top)}L${f(xi)} ${f(-r)}A${f(r)} ${f(r)} 0 0 1 ${f(xi - r)} 0L${f(-xi + r)} 0A${f(r)} ${f(r)} 0 0 1 ${f(-xi)} ${f(-r)}L${f(-xi)} ${f(-top)}Z" fill="#d9c7a0" stroke="#000" stroke-width="0.2"/>`;
   const arcBand = a => a ? `<path d="M${f(a.rOut)} ${f(-a.rOut)}A${f(a.rOut)} ${f(a.rOut)} 0 0 1 0 0A${f(a.rOut)} ${f(a.rOut)} 0 0 1 ${f(-a.rOut)} ${f(-a.rOut)}L${f(-a.rIn)} ${f(-a.rOut)}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 0 ${f(-(a.rOut - a.rIn))}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 ${f(a.rIn)} ${f(-a.rOut)}Z" fill="#c4ad7f" stroke="#000" stroke-width="0.2"/>` : '';
-  const body = [leather, s.supporter ? rect(s.supporter, '#c4ad7f') : arcBand(s.supporterArc), rect(s.plate, '#9a9a9a'),
+  const poly = (pts, fill) => `<polygon points="${pts.map(p => `${f(p.x)},${f(-p.y)}`).join(' ')}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
+  const supportEl = s.polys?.supporter && !s.supporterArc ? s.polys.supporter.map(q => poly(q, '#c4ad7f')).join('') : s.supporter ? rect(s.supporter, '#c4ad7f') : arcBand(s.supporterArc), plateEl = s.polys?.plate ? poly(s.polys.plate, '#9a9a9a') : rect(s.plate, '#9a9a9a');
+  const body = [leather, supportEl, plateEl,
     `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
     `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
     `<text x="0" y="${f(-(result.ringTop + 8))}" font-size="3" text-anchor="middle" font-family="sans-serif">${label || ''} inner ${f(result.innerW)} / spine ${f(result.spineW)} mm</text>`].join('');
