@@ -2963,9 +2963,15 @@ function handleMoved(s, h, p) {
 }
 /** 端のハンドルを持つ図形（直線・折れ線・矩形・円弧）。 */
 const hasHandles = s => ['line', 'polyline', 'arc'].includes(s.type);
+/** 延長線スナップ：カーソルが、動かさない側の端から元の向きに伸ばした線（延長線）の近く（画面で12px以内）なら、吸着した点を延長線の上にそろえる。離れれば自由に動かせる（Shift 不要でまっすぐ延長できる）。 */
+function extensionSnap(fixed, dir, w, sp) {
+  if (!dir) return sp;
+  const perp = Math.abs((w.x - fixed.x) * dir.y - (w.y - fixed.y) * dir.x); if (perp > 12 / scale) return sp;
+  const t = (sp.x - fixed.x) * dir.x + (sp.y - fixed.y) * dir.y; return { x: fixed.x + dir.x * t, y: fixed.y + dir.y * t };
+}
 /** 端をドラッグ中のカーソル位置。Shift：直線＝動かさない側の端から元の向きの線の上（水平・垂直の線なら水平・垂直のまま）、折れ線の角＝元の位置から水平か垂直（近い方）だけ。円弧は角度だけが変わる。 */
 function lineEndCursor(g, w, shift) {
-  const sp = snapped(w, false, null); if (!shift) return sp;
+  const sp = snapped(w, false, null); if (!shift) return g.dir ? extensionSnap(g.fixed, g.dir, w, sp) : sp;
   if (g.dir) { const t = (sp.x - g.fixed.x) * g.dir.x + (sp.y - g.fixed.y) * g.dir.y; return { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t }; }
   if (g.orig) return Math.abs(sp.x - g.orig.x) >= Math.abs(sp.y - g.orig.y) ? { x: sp.x, y: g.orig.y } : { x: g.orig.x, y: sp.y };
   return sp;
