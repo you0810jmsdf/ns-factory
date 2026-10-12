@@ -4249,6 +4249,750 @@
       "url": "https://hayatanijinja.jp/car/index.html",
       "accessed": "2026-10-12",
       "label": "531"
+    },
+    {
+      "id": "o1a",
+      "title": "御祭神",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/about/main-deities.html",
+      "accessed": "2026-10-12",
+      "label": "532"
+    },
+    {
+      "id": "o1b",
+      "title": "御由緒",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/about/history.html",
+      "accessed": "2026-10-12",
+      "label": "533"
+    },
+    {
+      "id": "o1c",
+      "title": "御祈祷のご案内",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/worship/prayer.html",
+      "accessed": "2026-10-12",
+      "label": "534"
+    },
+    {
+      "id": "o1d",
+      "title": "お守りのご案内（授与時間）",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/worship/charms.html",
+      "accessed": "2026-10-12",
+      "label": "535"
+    },
+    {
+      "id": "o1e",
+      "title": "御朱印について",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/worship/gosyuin.html",
+      "accessed": "2026-10-12",
+      "label": "536"
+    },
+    {
+      "id": "o1f",
+      "title": "アクセス",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/access/",
+      "accessed": "2026-10-12",
+      "label": "537"
+    },
+    {
+      "id": "o1g",
+      "title": "境内のご案内",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/about/keidai.html",
+      "accessed": "2026-10-12",
+      "label": "538"
+    },
+    {
+      "id": "o1h",
+      "title": "【お知らせ】お車、電車、バスでお越しの方へ（2026-01-04）",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/info/468.html",
+      "accessed": "2026-10-12",
+      "label": "539"
+    },
+    {
+      "id": "o1i",
+      "title": "【お知らせ】参道をご通行の皆様へ（倒木に関するお願い）（2026-07-17）",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/info/477.html",
+      "accessed": "2026-10-12",
+      "label": "540"
+    },
+    {
+      "id": "o1j",
+      "title": "【神苑】10月の神嶽山神苑 石舞台公演のお知らせ（2026-10-10）",
+      "publisher": "寒川神社（公式）",
+      "url": "https://samukawajinjya.jp/info/452.html",
+      "accessed": "2026-10-12",
+      "label": "541"
+    },
+    {
+      "id": "o1k",
+      "title": "神田明神とは（御祭神・歴史）",
+      "publisher": "神田神社（公式）",
+      "url": "https://www.kandamyoujin.or.jp/profile/",
+      "accessed": "2026-10-12",
+      "label": "542"
+    },
+    {
+      "id": "o1l",
+      "title": "境内のご案内",
+      "publisher": "神田神社（公式）",
+      "url": "https://www.kandamyoujin.or.jp/keidai/",
+      "accessed": "2026-10-12",
+      "label": "543"
+    },
+    {
+      "id": "o1m",
+      "title": "アクセス",
+      "publisher": "神田神社（公式）",
+      "url": "https://www.kandamyoujin.or.jp/access/",
+      "accessed": "2026-10-12",
+      "label": "544"
+    },
+    {
+      "id": "o1n",
+      "title": "神札授与時間のご案内（令和8年9月28日）",
+      "publisher": "神田神社（公式）",
+      "url": "http://www.kandamyoujin.or.jp/infoblog/detail/?pid=116",
+      "accessed": "2026-10-12",
+      "label": "545"
+    },
+    {
+      "id": "o1o",
+      "title": "よくある質問",
+      "publisher": "神田神社（公式）",
+      "url": "https://www.kandamyoujin.or.jp/faq/",
+      "accessed": "2026-10-12",
+      "label": "546"
+    },
+    {
+      "id": "o1p",
+      "title": "昇殿参拝（ご祈祷）のご案内",
+      "publisher": "神田神社（公式）",
+      "url": "https://www.kandamyoujin.or.jp/shouden_sanpai/",
+      "accessed": "2026-10-12",
+      "label": "547"
+    },
+    {
+      "id": "o1q",
+      "title": "神様と歴史（御祭神・御由緒）",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/_history/",
+      "accessed": "2026-10-12",
+      "label": "548"
+    },
+    {
+      "id": "o1r",
+      "title": "御宝物",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/_homotsu/",
+      "accessed": "2026-10-12",
+      "label": "549"
+    },
+    {
+      "id": "o1s",
+      "title": "年間祭事",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/_event/",
+      "accessed": "2026-10-12",
+      "label": "550"
+    },
+    {
+      "id": "o1t",
+      "title": "交通アクセス",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/_access/",
+      "accessed": "2026-10-12",
+      "label": "551"
+    },
+    {
+      "id": "o1u",
+      "title": "駐車場のご案内",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/_parking/",
+      "accessed": "2026-10-12",
+      "label": "552"
+    },
+    {
+      "id": "o1v",
+      "title": "お知らせ（2026年9月15日「今年の七五三について」ほか）",
+      "publisher": "甲斐国一宮 浅間神社（公式お知らせ）",
+      "url": "https://asama-jinja.blogspot.com/",
+      "accessed": "2026-10-12",
+      "label": "553"
+    },
+    {
+      "id": "o1w",
+      "title": "トップページ",
+      "publisher": "甲斐国一宮 浅間神社（公式）",
+      "url": "https://asamajinja.jp/",
+      "accessed": "2026-10-12",
+      "label": "554"
+    },
+    {
+      "id": "o1x",
+      "title": "諏訪大社について（御祭神・旧社格）",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/about/",
+      "accessed": "2026-10-12",
+      "label": "555"
+    },
+    {
+      "id": "o1y",
+      "title": "諏訪大社の歴史と神話",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/about/history/",
+      "accessed": "2026-10-12",
+      "label": "556"
+    },
+    {
+      "id": "o1z",
+      "title": "参拝時間（授与所・宝物殿）",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/visiting/",
+      "accessed": "2026-10-12",
+      "label": "557"
+    },
+    {
+      "id": "o1za",
+      "title": "ご祈祷",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/praying/gokito/",
+      "accessed": "2026-10-12",
+      "label": "558"
+    },
+    {
+      "id": "o1zb",
+      "title": "よくあるご質問",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/faq/",
+      "accessed": "2026-10-12",
+      "label": "559"
+    },
+    {
+      "id": "o1zc",
+      "title": "下社秋宮",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/about/miyamori/shimoshaakimiya/",
+      "accessed": "2026-10-12",
+      "label": "560"
+    },
+    {
+      "id": "o1zd",
+      "title": "下社春宮",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/about/miyamori/shimoshaharumiya/",
+      "accessed": "2026-10-12",
+      "label": "561"
+    },
+    {
+      "id": "o1ze",
+      "title": "交通アクセス",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/access/",
+      "accessed": "2026-10-12",
+      "label": "562"
+    },
+    {
+      "id": "o1zf",
+      "title": "四つの神社（四社の御祭神）",
+      "publisher": "信濃國一之宮 諏訪大社（公式）",
+      "url": "https://suwataisha.or.jp/about/miyamori/",
+      "accessed": "2026-10-12",
+      "label": "563"
+    },
+    {
+      "id": "o2a",
+      "title": "飛騨一宮水無神社 トップページ（受付時間の案内）",
+      "publisher": "飛騨一宮水無神社（公式）",
+      "url": "https://minashijinjya.or.jp/",
+      "accessed": "2026-10-12",
+      "label": "564"
+    },
+    {
+      "id": "o2b",
+      "title": "水無神社について（御祭神と御神徳・御由緒・境内・奥宮 位山）",
+      "publisher": "飛騨一宮水無神社（公式）",
+      "url": "https://minashijinjya.or.jp/description.html",
+      "accessed": "2026-10-12",
+      "label": "565"
+    },
+    {
+      "id": "o2c",
+      "title": "ご祈祷（受付時間・願意・祈祷料）",
+      "publisher": "飛騨一宮水無神社（公式）",
+      "url": "https://minashijinjya.or.jp/worshipers.html",
+      "accessed": "2026-10-12",
+      "label": "566"
+    },
+    {
+      "id": "o2d",
+      "title": "アクセス（所在地・駐車場・交通）",
+      "publisher": "飛騨一宮水無神社（公式）",
+      "url": "https://minashijinjya.or.jp/access.html",
+      "accessed": "2026-10-12",
+      "label": "567"
+    },
+    {
+      "id": "o2e",
+      "title": "歴史・由緒（御祭神・夫婦岩・興玉神石）",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/about/",
+      "accessed": "2026-10-12",
+      "label": "568"
+    },
+    {
+      "id": "o2f",
+      "title": "ご祈祷（受付時間・願意）",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/visit/gokitou",
+      "accessed": "2026-10-12",
+      "label": "569"
+    },
+    {
+      "id": "o2g",
+      "title": "お札・お守り・授与品のご案内（授与時間・御朱印）",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/visit/gift/",
+      "accessed": "2026-10-12",
+      "label": "570"
+    },
+    {
+      "id": "o2h",
+      "title": "交通アクセス（駐車場を含む）",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/access/",
+      "accessed": "2026-10-12",
+      "label": "571"
+    },
+    {
+      "id": "o2i",
+      "title": "よくあるご質問",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/faq/",
+      "accessed": "2026-10-12",
+      "label": "572"
+    },
+    {
+      "id": "o2j",
+      "title": "特殊神事（夏至祭ほか）",
+      "publisher": "二見興玉神社（公式）",
+      "url": "https://futamiokitamajinja.or.jp/event/special",
+      "accessed": "2026-10-12",
+      "label": "573"
+    },
+    {
+      "id": "o2k",
+      "title": "大和神社由緒（御祭神・御由緒）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/concept.html",
+      "accessed": "2026-10-12",
+      "label": "574"
+    },
+    {
+      "id": "o2l",
+      "title": "御祈祷（受付時間・予約）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/newpage2.html",
+      "accessed": "2026-10-12",
+      "label": "575"
+    },
+    {
+      "id": "o2m",
+      "title": "お問い合わせ（電話・FAXの受付時間）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/contact.html",
+      "accessed": "2026-10-12",
+      "label": "576"
+    },
+    {
+      "id": "o2n",
+      "title": "大和神社年表",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/nenpiyohtml.html",
+      "accessed": "2026-10-12",
+      "label": "577"
+    },
+    {
+      "id": "o2o",
+      "title": "Q&A（御朱印・授与所ほか）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/privacy.html",
+      "accessed": "2026-10-12",
+      "label": "578"
+    },
+    {
+      "id": "o2p",
+      "title": "アクセス",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/access.html",
+      "accessed": "2026-10-12",
+      "label": "579"
+    },
+    {
+      "id": "o2q",
+      "title": "トップページ（御祭神・住所）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/",
+      "accessed": "2026-10-12",
+      "label": "580"
+    },
+    {
+      "id": "o2r",
+      "title": "祭典・神事の予定（御祭神ごとの例祭）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/service.html",
+      "accessed": "2026-10-12",
+      "label": "581"
+    },
+    {
+      "id": "o2s",
+      "title": "ちゃんちゃん祭り（奈良県無形民俗文化財）",
+      "publisher": "大和神社（公式）",
+      "url": "http://ooyamatohp.net/news.html",
+      "accessed": "2026-10-12",
+      "label": "582"
+    },
+    {
+      "id": "o2t",
+      "title": "ご由緒（御祭神・織田信長公との関係）",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/yuisho/%E3%81%94%E7%94%B1%E7%B7%92/",
+      "accessed": "2026-10-12",
+      "label": "583"
+    },
+    {
+      "id": "o2u",
+      "title": "ご祈祷（受付時間・祈祷料）",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/kitou/",
+      "accessed": "2026-10-12",
+      "label": "584"
+    },
+    {
+      "id": "o2v",
+      "title": "文化財（美術品）（国宝 梵鐘ほか）",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/bunkazai/",
+      "accessed": "2026-10-12",
+      "label": "585"
+    },
+    {
+      "id": "o2w",
+      "title": "境内案内図（社務所の案内）",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/keidai/",
+      "accessed": "2026-10-12",
+      "label": "586"
+    },
+    {
+      "id": "o2x",
+      "title": "トップページ（お知らせ・新年祈祷の受付時間）",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/",
+      "accessed": "2026-10-12",
+      "label": "587"
+    },
+    {
+      "id": "o2y",
+      "title": "アクセス",
+      "publisher": "劔神社（公式）",
+      "url": "https://www.tsurugi-jinja.jp/kotsu/%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9/",
+      "accessed": "2026-10-12",
+      "label": "588"
+    },
+    {
+      "id": "o3a",
+      "title": "枚岡神社 公式トップ（お知らせ）",
+      "publisher": "枚岡神社",
+      "url": "http://hiraoka-jinja.org/",
+      "accessed": "2026-10-12",
+      "label": "589"
+    },
+    {
+      "id": "o3b",
+      "title": "枚岡神社 公式「御由緒」",
+      "publisher": "枚岡神社",
+      "url": "http://hiraoka-jinja.org/history/index.html",
+      "accessed": "2026-10-12",
+      "label": "590"
+    },
+    {
+      "id": "o3c",
+      "title": "枚岡神社 公式「御祈祷」",
+      "publisher": "枚岡神社",
+      "url": "http://hiraoka-jinja.org/prayers/index.html",
+      "accessed": "2026-10-12",
+      "label": "591"
+    },
+    {
+      "id": "o3d",
+      "title": "枚岡神社 公式「交通アクセス」",
+      "publisher": "枚岡神社",
+      "url": "http://hiraoka-jinja.org/access/index.html",
+      "accessed": "2026-10-12",
+      "label": "592"
+    },
+    {
+      "id": "o3e",
+      "title": "枚岡神社 公式「境内のご案内」",
+      "publisher": "枚岡神社",
+      "url": "http://hiraoka-jinja.org/grounds-of-a-shrine/index.html",
+      "accessed": "2026-10-12",
+      "label": "593"
+    },
+    {
+      "id": "o3f",
+      "title": "太平山三吉神社 公式トップ（祈祷時間のお知らせ）",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/",
+      "accessed": "2026-10-12",
+      "label": "594"
+    },
+    {
+      "id": "o3g",
+      "title": "由緒・御祭神",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/information/history",
+      "accessed": "2026-10-12",
+      "label": "595"
+    },
+    {
+      "id": "o3h",
+      "title": "神社でのお祓い（ご祈祷について）",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/prayer/prayer",
+      "accessed": "2026-10-12",
+      "label": "596"
+    },
+    {
+      "id": "o3i",
+      "title": "里宮",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/information/satomiya",
+      "accessed": "2026-10-12",
+      "label": "597"
+    },
+    {
+      "id": "o3j",
+      "title": "アクセス",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/information/access",
+      "accessed": "2026-10-12",
+      "label": "598"
+    },
+    {
+      "id": "o3k",
+      "title": "よくある質問",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/trivia/faq",
+      "accessed": "2026-10-12",
+      "label": "599"
+    },
+    {
+      "id": "o3l",
+      "title": "太平山三吉神社（秋田の神社検索）",
+      "publisher": "秋田県神社庁",
+      "url": "https://akita-jinjacho.sakura.ne.jp/shrine_search/%E5%A4%AA%E5%B9%B3%E5%B1%B1%E4%B8%89%E5%90%89%E7%A5%9E%E7%A4%BE/",
+      "accessed": "2026-10-12",
+      "label": "600"
+    },
+    {
+      "id": "o3m",
+      "title": "令和8年 厄年・年祝い並びに戌の日一覧（お知らせ）",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/news/1994",
+      "accessed": "2026-10-12",
+      "label": "601"
+    },
+    {
+      "id": "o3n",
+      "title": "奥宮と山小屋",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/information/okumiya",
+      "accessed": "2026-10-12",
+      "label": "602"
+    },
+    {
+      "id": "o3o",
+      "title": "お祭り・行事（主な祭事）",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/festival/festival",
+      "accessed": "2026-10-12",
+      "label": "603"
+    },
+    {
+      "id": "o3p",
+      "title": "県外の神社（三吉霊神・三吉大神の石碑）",
+      "publisher": "太平山三吉神社総本宮",
+      "url": "http://www.miyoshi.or.jp/trivia/kengai",
+      "accessed": "2026-10-12",
+      "label": "604"
+    },
+    {
+      "id": "o3q",
+      "title": "日御碕神社 公式トップ",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/",
+      "accessed": "2026-10-12",
+      "label": "605"
+    },
+    {
+      "id": "o3r",
+      "title": "日御碕神社について（ご由緒・神社の歴史・建物の歴史）",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/about",
+      "accessed": "2026-10-12",
+      "label": "606"
+    },
+    {
+      "id": "o3s",
+      "title": "境内",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/keidai",
+      "accessed": "2026-10-12",
+      "label": "607"
+    },
+    {
+      "id": "o3t",
+      "title": "ご祈祷・授与品",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/gokito",
+      "accessed": "2026-10-12",
+      "label": "608"
+    },
+    {
+      "id": "o3u",
+      "title": "御朱印に関するお知らせ（9/27追記）",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/infomation/245",
+      "accessed": "2026-10-12",
+      "label": "609"
+    },
+    {
+      "id": "o3v",
+      "title": "よくある質問・お問い合わせ",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/faq",
+      "accessed": "2026-10-12",
+      "label": "610"
+    },
+    {
+      "id": "o3w",
+      "title": "祭り暦",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/koyomi",
+      "accessed": "2026-10-12",
+      "label": "611"
+    },
+    {
+      "id": "o3x",
+      "title": "交通アクセス",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/access",
+      "accessed": "2026-10-12",
+      "label": "612"
+    },
+    {
+      "id": "o3y",
+      "title": "県道大社日御碕線の交通情報について",
+      "publisher": "日御碕神社",
+      "url": "https://hinomisaki-jinja.jp/infomation/310",
+      "accessed": "2026-10-12",
+      "label": "613"
+    },
+    {
+      "id": "o3z",
+      "title": "日が沈む聖地出雲（日本遺産ストーリー）",
+      "publisher": "文化庁 日本遺産ポータルサイト",
+      "url": "https://japan-heritage.bunka.go.jp/ja/stories/story048/",
+      "accessed": "2026-10-12",
+      "label": "614"
+    },
+    {
+      "id": "o3aa",
+      "title": "都農神社公式ホームページ（メインページ）",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/",
+      "accessed": "2026-10-12",
+      "label": "615"
+    },
+    {
+      "id": "o3ab",
+      "title": "都農神社公式ホームページ 御由緒",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e5%be%a1%e7%94%b1%e7%b7%92/",
+      "accessed": "2026-10-12",
+      "label": "616"
+    },
+    {
+      "id": "o3ac",
+      "title": "都農神社公式ホームページ 編纂史・御親拝",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e7%b7%a8%e7%ba%82%e5%8f%b2%e3%83%bb%e5%be%a1%e8%a6%aa%e6%8b%9d/",
+      "accessed": "2026-10-12",
+      "label": "617"
+    },
+    {
+      "id": "o3ad",
+      "title": "都農神社公式ホームページ 御祈願・出張祭典",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e5%be%a1%e7%a5%88%e9%a1%98%e3%83%bb%e5%87%ba%e5%bc%b5%e7%a5%ad%e5%85%b8/",
+      "accessed": "2026-10-12",
+      "label": "618"
+    },
+    {
+      "id": "o3ae",
+      "title": "都農神社公式ホームページ 御朱印",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e5%be%a1%e6%9c%b1%e5%8d%b0/",
+      "accessed": "2026-10-12",
+      "label": "619"
+    },
+    {
+      "id": "o3af",
+      "title": "都農神社公式ホームページ 御神札・御守り",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e5%be%a1%e7%a5%9e%e6%9c%ad%e3%83%bb%e5%be%a1%e5%ae%88%e3%82%8a/",
+      "accessed": "2026-10-12",
+      "label": "620"
+    },
+    {
+      "id": "o3ag",
+      "title": "都農神社公式ホームページ 交通アクセス",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e4%ba%a4%e9%80%9a%e3%82%a2%e3%82%af%e3%82%bb%e3%82%b9/",
+      "accessed": "2026-10-12",
+      "label": "621"
+    },
+    {
+      "id": "o3ah",
+      "title": "都農神社公式ホームページ 境内案内",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e5%a2%83%e5%86%85%e6%a1%88%e5%86%85/",
+      "accessed": "2026-10-12",
+      "label": "622"
+    },
+    {
+      "id": "o3ai",
+      "title": "都農神社公式ホームページ 年間祭事",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e9%83%bd%e8%be%b2%e7%a5%9e%e7%a4%be%e5%85%ac%e5%bc%8f%e3%83%9b%e3%83%bc%e3%83%a0%e3%83%9a%e3%83%bc%e3%82%b8%e5%b9%b4%e9%96%93%e7%a5%ad%e4%ba%8b/",
+      "accessed": "2026-10-12",
+      "label": "623"
+    },
+    {
+      "id": "o3aj",
+      "title": "都農神社公式ホームページ お知らせ",
+      "publisher": "都農神社",
+      "url": "https://tunojinjya6.webnode.jp/%e3%81%8a%e7%9f%a5%e3%82%89%e3%81%9b/",
+      "accessed": "2026-10-12",
+      "label": "624"
     }
   ],
   "shrines": [
@@ -14593,6 +15337,1323 @@
         "kind": "placeholder"
       },
       "checked": "2026-10-12"
+    },
+    {
+      "id": "samukawa",
+      "name": "寒川神社",
+      "reading": "さむかわじんじゃ",
+      "pref": "神奈川県",
+      "city": "高座郡寒川町",
+      "lat": 35.3791,
+      "lon": 139.3833,
+      "deity_ids": [
+        "samukawahiko",
+        "samukawahime"
+      ],
+      "summary": {
+        "text": "相模國一之宮として知られ、寒川比古命と寒川比女命の二柱を寒川大明神として祀る。公式は、全国で唯一の八方除の守護神として信仰されてきたと案内している。",
+        "status": "verified",
+        "src": [
+          "o1a",
+          "o1b",
+          "o1c"
+        ]
+      },
+      "deity_note": {
+        "text": "祭神の寒川比古命・寒川比女命は、取得済みの古事記（上・中巻）・日本書紀（巻一〜三・十四）・古語拾遺に「寒川」の語が見えず、記紀に載る神とは確認できない（下巻・他の巻は未確認）。公式は、この二柱を寒川大明神と奉称し、相模國を中心に関東地方を開拓して衣食住など人の暮らしの根源を開発・指導した神、関東文化の生みの親神として敬ってきたと説明する。記紀の神との関係は公式では示されておらず、本ノートでは記紀とのつながりは確認できない。",
+        "src": [
+          "o1a",
+          "o1b"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、創祀の年代は現存する資料に記されていないとしたうえで、雄略天皇（456〜479）の御代に幣帛が奉られたと伝える記録があると記す。公式はその根拠として「総国風土記」を挙げるが、この書名と内容は本ノートでは確認できていない。",
+          "src": [
+            "o1b"
+          ],
+          "status": "要確認",
+          "when": "雄略天皇の御代（456〜479）"
+        },
+        {
+          "type": "tradition",
+          "text": "公式は、神亀4年（727）に社殿が建立されたと伝える記録があるとし、あわせて少なくとも約1,600年の歴史があると説明する。",
+          "src": [
+            "o1b"
+          ],
+          "when": "神亀4年（727）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、『續日本後紀』に承和13年（846）神階従五位下を授けられたとあるのが公の記録の最初だと記す。のち斎衡元年（854）従四位下、元慶8年（884）正四位下、延喜16年（916）正四位上へと進階したという。",
+          "src": [
+            "o1b"
+          ],
+          "when": "承和13年（846）"
+        },
+        {
+          "type": "fact",
+          "text": "公式によれば、『延喜式』神名帳（927年編纂）では相模國十三社のうち唯一の名神大社とされる。",
+          "src": [
+            "o1b"
+          ],
+          "when": "延喜式神名帳（927年編纂）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "御祈祷の中心は八方除（方位除）で、旅行・改築・新築・引越しなどの方位除も受け付けると公式は案内する。",
+          "src": [
+            "o1c"
+          ]
+        },
+        {
+          "type": "tradition",
+          "text": "御本殿の脇にある二本の杉が御神木で、寒川比古命と寒川比女命が宿ると言い伝えられている。",
+          "src": [
+            "o1g"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "御社殿は平成9年（1997）10月竣功の総桧造り。拝殿には216名が同時に着席して参拝できる席がある。",
+          "src": [
+            "o1g"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "神嶽山神苑は、御祈祷を受けた方に限り入苑できる。10月の案内では月曜は休苑（祝祭日の月曜は開苑）とされ、石舞台で神楽舞・雅楽の奉奏がある。",
+          "src": [
+            "o1g",
+            "o1j"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒253-0195 神奈川県高座郡寒川町宮山3916（公式）",
+        "src": [
+          "o1f"
+        ]
+      },
+      "access": {
+        "text": "公式によれば、最寄りはJR相模線「宮山」駅で、徒歩5分（「寒川駅」ではない）。車は圏央道「寒川北インター」から神社駐車場まで約5分。バスは海老名駅東口2番から「寒川駅行き」で約20分、「寒川神社参道」下車徒歩5分。土日祝は大変な混雑が見込まれるため公共交通機関の利用が呼びかけられ、路上での入庫待ち・近隣への路上駐車は禁止とされている。2026年7月に参道で倒木があり、公式は頭上や周囲の樹木に注意するよう呼びかけている。",
+        "src": [
+          "o1f",
+          "o1h",
+          "o1i"
+        ]
+      },
+      "hours": {
+        "text": "御祈祷の受付は午前8時〜午後5時（5時までに来社）で年中無休。授与所の授与時間は午前8時〜午後4時30分で年中無休。いずれも正月期間は開始時間が変わる。公式は、境内そのものの開門・閉門時刻を示していない（公式で確認できていない）。",
+        "src": [
+          "o1c",
+          "o1d"
+        ]
+      },
+      "parking": {
+        "text": "公式は第1〜第3駐車場に加え、繁忙時のみ開放する第4駐車場があると案内し、全駐車場が左折入庫とされる。台数と料金は公式で確認できていない。",
+        "src": [
+          "o1g",
+          "o1h"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "頒布場所は社務所と御祈祷受付所の2か所で、初穂料は思召し（決まった金額なし）。帳面への記帳と書き置きの両方を用意し、御朱印帳は境内売店で購入する。年始は書き置きのみ・頒布内容と場所が変わる。郵送の対応はない。頒布の時間帯は御朱印の項目としては示されておらず、公式で確認できていない（授与所は午前8時〜午後4時30分）。",
+        "src": [
+          "o1e",
+          "o1d"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『寒川神社』と約56m以内で一致（2026-10-12 確認）。"
+    },
+    {
+      "id": "kanda",
+      "name": "神田神社（神田明神）",
+      "reading": "かんだじんじゃ（かんだみょうじん）",
+      "pref": "東京都",
+      "city": "千代田区",
+      "lat": 35.7015,
+      "lon": 139.7675,
+      "deity_ids": [
+        "ookuninushi",
+        "sukunahikona",
+        "masakado"
+      ],
+      "summary": {
+        "text": "正式名称は神田神社で、「江戸総鎮守」として親しまれ、一之宮に大己貴命、二之宮に少彦名命、三之宮に平将門命を祀る。社殿は国登録有形文化財で、二年に一度の神田祭で知られる。",
+        "status": "verified",
+        "src": [
+          "o1k",
+          "o1l"
+        ]
+      },
+      "deity_note": {
+        "text": "大己貴命は古事記の大穴牟遅神（大国主神）にあたり、日本書紀では大己貴神と書かれる。公式も出雲大社の祭神・大国主命と同じ神と説明する。少彦名命について公式は「高皇産霊神の御子」とするが、取得済みの古事記は「神産巣日神之御子」と書き、高皇産霊尊の子とするのは日本書紀の一書（巻第一）で、資料によって異なる。三之宮の平将門命は平安時代の実在の人物（承平・天慶の乱の将門）で、古事記・日本書紀には登場しない。公式は延慶2年（1309）に奉祀、明治7年（1874）に一時摂社へ遷座、昭和59年（1984）に再び本殿へ奉祀と記す。したがって基準③（記紀の神）を満たすのは大己貴命と少彦名命で、将門は別の伝承による祭神である。",
+        "src": [
+          "o1k",
+          "k",
+          "ns1"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "社伝では、天平2年（730）に出雲氏族の真神田臣が武蔵国豊島郡芝崎村（現在の千代田区大手町・将門塚周辺）に創建したと伝える。",
+          "src": [
+            "o1k"
+          ],
+          "when": "天平2年（730）"
+        },
+        {
+          "type": "tradition",
+          "text": "将門塚周辺で天変地異が続いたため、遊行僧の真教上人が御霊を慰め、延慶2年（1309）に平将門命を当社に奉祀したと伝える。",
+          "src": [
+            "o1k"
+          ],
+          "when": "延慶2年（1309）"
+        },
+        {
+          "type": "fact",
+          "text": "元和2年（1616）、江戸城の表鬼門にあたる現在地へ遷座し、幕府によって社殿が造営された。以後、江戸時代を通じて「江戸総鎮守」として崇敬されたと公式は記す。",
+          "src": [
+            "o1k"
+          ],
+          "when": "元和2年（1616）"
+        },
+        {
+          "type": "fact",
+          "text": "公式によれば、明治時代に社名を神田明神から神田神社へ改め、「准勅祭社」「東京府社」に定められた。勅祭社そのもの・別表神社であるかは、公式サイトでは確認できていない。",
+          "src": [
+            "o1k"
+          ],
+          "when": "明治時代（社格）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "御社殿は昭和9年（1934）竣功の権現造で、鉄骨鉄筋コンクリート・総朱漆塗。平成15年（2003）9月に国登録有形文化財に登録された。昭和20年の東京大空襲にも耐えたと公式は記す。",
+          "src": [
+            "o1l"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "神田祭は二年に一度行われ、公式は江戸三大祭・日本三大祭の一つに数えられると説明する。",
+          "src": [
+            "o1k",
+            "o1l"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "境内の水盤（文化2年・1805奉納）は千代田区指定有形民俗文化財（平成14年指定）で、力石（文政5年・1822）も区の文化財に指定されている。神田祭で大己貴命・少彦名命がお乗りになる鳳輦・神輿は鳳輦神輿奉安殿に納められる。",
+          "src": [
+            "o1l"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒101-0021 東京都千代田区外神田2-16-2（公式）",
+        "src": [
+          "o1m",
+          "o1k"
+        ]
+      },
+      "access": {
+        "text": "公式によれば、JR御茶ノ水駅（聖橋口）から徒歩5分、JR秋葉原駅（電気街口）から徒歩7分、東京メトロ丸ノ内線・千代田線の御茶ノ水・新御茶ノ水駅から徒歩5分、銀座線末広町駅から徒歩5分、日比谷線秋葉原駅から徒歩7分。都バス「茶51」神田明神停留所から徒歩1分。",
+        "src": [
+          "o1m"
+        ]
+      },
+      "hours": {
+        "text": "御神札・御守の授与は、令和8年（2026）12月31日まで9時〜18時。令和9年の年始は日ごとに変わり（1月1日は0時〜21時40分など）、1月18日以降は9時〜18時とされる（公式お知らせ・令和8年9月28日）。昇殿参拝（ご祈祷）は、個人は当日に文化交流館の参拝受付へ（予約不要・随時受付、おおよそ20分ごとの案内）。受付の時間帯と境内の開閉時刻は公式で確認できていない。",
+        "src": [
+          "o1n",
+          "o1o",
+          "o1p"
+        ]
+      },
+      "parking": {
+        "text": "公式は「参拝者駐車場：若干数」と案内し、神社正面の鳥居をくぐり随神門右側の脇門から入って、北側の参拝者駐車場に停めるとする。台数は「若干数」とのみで、料金は公式で確認できていない。周辺の秋葉原UDXパーキング（800台）などは徒歩約5分と案内される。",
+        "src": [
+          "o1m"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "公式のお知らせに、年始の授与時間表の注記として「1月12日以降は御朱印に日付が入る」とあり、御朱印の授与があることは確認できる。ただし御朱印専用の案内ページ・初穂料・頒布場所は公式サイトで確認できていない。授与時間は御神札・御守と同じ9時〜18時（令和8年末まで）の表に含まれると読めるが、御朱印の時間として明記はされていない。",
+        "src": [
+          "o1n"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記は見つからなかった（近傍のタイルに神社名の注記が無い）。住所検索の値のままで、地図での確認は未了（要確認）。"
+    },
+    {
+      "id": "suwashimosha",
+      "name": "諏訪大社 下社（春宮・秋宮）",
+      "reading": "すわたいしゃ しもしゃ（はるみや・あきみや）",
+      "pref": "長野県",
+      "city": "諏訪郡下諏訪町",
+      "lat": 36.0754,
+      "lon": 138.0913,
+      "deity_ids": [
+        "takeminakata",
+        "yasakatome",
+        "kotoshironushi"
+      ],
+      "summary": {
+        "text": "信濃國一之宮・諏訪大社の下社で、春宮と秋宮の二社からなる。公式は両宮の祭神を建御名方神・八坂刀売神・八重事代主神とし、春宮は杉、秋宮はイチイを御神体とすると説明する。",
+        "status": "verified",
+        "src": [
+          "o1x",
+          "o1zc",
+          "o1zd",
+          "o1zf"
+        ]
+      },
+      "deity_note": {
+        "text": "公式は下社春宮・秋宮の祭神を建御名方神・八坂刀売神・八重事代主神とする（上社本宮は建御名方神、前宮は八坂刀売神）。建御名方神は古事記の国譲りに登場し、建御雷神に追われて科野国（信濃）の州羽海に至り、「この地以外へは行かない」と誓う。公式はこれを諏訪へ移って信濃国を治めた神の由来としている。日本書紀（取得済みの巻一〜五・七〜十・十四）に建御名方神の名は確認できない。八重事代主神は、古事記の国譲りで天鳥船神に呼ばれて答える事代主神の表記にあたる。八坂刀売神は記紀に登場せず、公式が妃神とする諏訪の伝承の神である。",
+        "src": [
+          "o1x",
+          "o1zf",
+          "k"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、創建は古事記の国譲り神話にさかのぼり、国譲りに反対した建御名方神が出雲から諏訪へ移ったとされると記す。鎮座の年代は詳しくは分からず、古事記などから推定して少なくとも1500〜2000年前と言われるという。",
+          "src": [
+            "o1y",
+            "o1x"
+          ],
+          "when": "古事記の国譲り神話"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、持統天皇5年（691）に勅使が遣わされ、国家の安泰と五穀豊穣が祈願されたと記す。日本書紀の該当記事の照合は本ノートでは未了。",
+          "src": [
+            "o1y"
+          ],
+          "status": "要確認",
+          "when": "持統天皇5年（691）"
+        },
+        {
+          "type": "fact",
+          "text": "公式によれば、延喜式神名帳には南方刀美神社と記され、信濃國四十八座の第一に挙がる。これは上社・下社を含めた諏訪大社全体についての説明で、下社だけの記載かは公式では示されていない。",
+          "src": [
+            "o1x"
+          ],
+          "when": "延喜式神名帳"
+        },
+        {
+          "type": "fact",
+          "text": "公式によれば、明治4年（1871）に国幣中社、明治29年に官幣中社、大正5年に官幣大社となり、昭和23年の社格廃止後に総本社として諏訪大社と改称した。",
+          "src": [
+            "o1x"
+          ],
+          "when": "明治4年（1871）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "秋宮の幣拝殿・左右片拝殿（安永10年・1781）と神楽殿（天保6年・1835）は国の重要文化財。初代・2代の立川和四郎が手がけたと公式は記す。",
+          "src": [
+            "o1zc"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "春宮の幣拝殿・左右片拝殿も重要文化財で、秋宮と同じ絵図面が与えられたと伝わり、彫刻の技が競われた。",
+          "src": [
+            "o1zd"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "諏訪大社は本殿を持たず、下社は春宮が杉、秋宮がイチイを御神体とする。式年造営御柱大祭は寅年と申年の7年ごとに行われ、諏訪地方20万人の氏子が奉仕する最大の神事。",
+          "src": [
+            "o1x",
+            "o1zc",
+            "o1zd"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "秋宮の境内の手水舎には、下諏訪の天然温泉が流れる「御神湯」がある。",
+          "src": [
+            "o1zc"
+          ]
+        }
+      ],
+      "address": {
+        "text": "下社秋宮：長野県諏訪郡下諏訪町5828（電話0266-27-8035）／下社春宮：長野県諏訪郡下諏訪町193（電話0266-27-8316）（公式。郵便番号は公式で確認できていない）",
+        "src": [
+          "o1x",
+          "o1zc",
+          "o1zd"
+        ]
+      },
+      "access": {
+        "text": "公式によれば、春宮はJR中央本線下諏訪駅から北西へ約1km、秋宮から西へ約1km。秋宮は旧中山道と甲州道中の分岐点に鎮座する。秋宮の駅からの距離・徒歩時間と、バス・車での駐車先は公式で確認できていない。車は中央自動車道の岡谷ICまたは諏訪ICが案内されている。",
+        "src": [
+          "o1zd",
+          "o1zc",
+          "o1ze"
+        ],
+        "status": "要確認"
+      },
+      "hours": {
+        "text": "公式によれば、各宮社は閉門せず自由に参拝できる。授与所は秋宮が8時30分〜17時、春宮が8時30分〜16時30分、宝物殿（秋宮）は9時30分〜15時（秋宮は1月1〜3日休館）。御祈祷は、個人は予約不要で当日9時〜16時に受付窓口で申し込む（受付が案内されているのは本宮と秋宮）。団体は予約制。春宮での御祈祷の受付は公式で確認できていない。",
+        "src": [
+          "o1z",
+          "o1zb",
+          "o1za"
+        ]
+      },
+      "parking": {
+        "text": "下社の駐車場の台数・料金・時間は公式で確認できていない。",
+        "src": [
+          "o1ze"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "公式のよくある質問に、御朱印は四社それぞれにあり、すべて異なる（四社の御朱印を受けた方には記念の品を渡す）とある。御朱印の受付時間・初穂料・授与場所は公式サイトで個別には確認できていない（授与所は秋宮8時30分〜17時、春宮8時30分〜16時30分）。",
+        "src": [
+          "o1zb",
+          "o1z"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『諏訪大社下社秋宮』の位置に合わせた（公式の地図の値 36.0754,138.0891 とは約202m ずれていたため。2026-10-12 確認）。"
+    },
+    {
+      "id": "minashijinja",
+      "name": "水無神社",
+      "reading": "みなしじんじゃ",
+      "pref": "岐阜県",
+      "city": "高山市",
+      "lat": 36.0524,
+      "lon": 137.2013,
+      "deity_ids": [
+        "minashinokami",
+        "mitoshi",
+        "ootoshi",
+        "ookuninushi",
+        "jinmu",
+        "ojin",
+        "mihotsuhime",
+        "amaterasu",
+        "toyouke",
+        "sukunahikona"
+      ],
+      "summary": {
+        "text": "正式には「飛騨一宮水無神社」。飛騨国の一宮で、公式は延喜式内社の首座、明治に国幣小社、戦後は神社本庁の別表神社と案内する。宮川と飛騨川の水源にあたる位山を御神体山とし、「水の主」の水無大神を祀る。",
+        "status": "verified",
+        "src": [
+          "o2b"
+        ]
+      },
+      "deity_note": {
+        "text": "公式は、主祭神を御歳大神（別名 御年大神・歳神・年神）とし、相殿に大己貴命・神武天皇・応神天皇・天火明命・三穂津姫命・高照光姫命・高降姫命・須沼比女命・大歳大神・天照皇大神・豊受姫大神・少彦名命・天熊大人命・大八椅命を挙げる。飛騨国中の神々を祀るとも案内する。水無大神は、御歳大神を指すとする説と、主祭神・相殿神あわせて十五柱の総称とする説の両方があると公式は書く。水無大神（水無神・水主神・作神様）は古事記・日本書紀に名が出ない神で、取得した本文の検索でも「水無」の語は見つからない。御歳大神が古事記の大年神の子「御年神」と同じ神かを、公式は明記していない（要確認）。相殿のうち大己貴命は古事記の大国主神、三穂津姫命・少彦名命・天照皇大神・豊受姫大神・神武天皇・応神天皇も記紀に出る神・天皇なので既存IDを使った。天火明命・高照光姫命・高降姫命・須沼比女命・天熊大人命・大八椅命は今回は神様データを作っていない。",
+        "src": [
+          "o2b"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "創立鎮座の年代は神代にあると伝わるが、古い記録が散逸していて詳しいことは分からないと公式は書く。",
+          "src": [
+            "o2b"
+          ],
+          "when": "神代（伝）"
+        },
+        {
+          "type": "fact",
+          "text": "歴史に現れるのは平安初期で、貞観9年（867）に従五位上の神位を授けられた記事が最初。元慶5年（881）には従四位上に進んだと公式は記す。",
+          "src": [
+            "o2b"
+          ],
+          "when": "貞観9年（867）・元慶5年（881）"
+        },
+        {
+          "type": "fact",
+          "text": "金森長近が高山藩主となって慶長12年（1607）に社殿の造営を進め、江戸時代は歴代の領主や代官の崇敬を受けたと公式は記す。",
+          "src": [
+            "o2b"
+          ],
+          "when": "慶長12年（1607）"
+        },
+        {
+          "type": "fact",
+          "text": "明治4年（1871）に国幣小社に列せられ、戦後は神社本庁に属し別表神社となったと公式は記す。",
+          "src": [
+            "o2b"
+          ],
+          "when": "明治4年（1871）・戦後"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "奥宮の位山のイチイ（一位）で作った笏を朝廷に献上する古い例があり、現在も天皇の即位と伊勢神宮の式年遷宮のときに献上されると公式は案内する。",
+          "src": [
+            "o2b"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "境内の大杉は樹齢およそ800年で県指定天然記念物と公式は紹介する。境内には神馬舎（稲喰の馬・木造2頭）や絵馬殿（棟札は慶長12年）もある。",
+          "src": [
+            "o2b"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒509-3505 岐阜県高山市一之宮町5323（TEL 0577-53-2001）。",
+        "src": [
+          "o2d",
+          "o2a"
+        ]
+      },
+      "access": {
+        "text": "公式の案内は、JR高山駅から普通列車でJR飛騨一ノ宮駅へ行く方法（特急は飛騨一ノ宮駅に停まらず、普通列車の本数は少ないので時刻を確認するよう公式が注意）と、濃飛バスのJR高山駅発・飛騨一之宮バス停行き（高山駅からの片道運賃250円と公式が案内）。駅やバス停から神社までの徒歩時間は、公式の該当ページでは確認できていない。冬季はカーナビが冬季閉鎖の県道98号（宮萩原線）を案内する場合があり、国道41号の宮峠は降雪・凍結に注意と公式が書く。",
+        "src": [
+          "o2d"
+        ]
+      },
+      "hours": {
+        "text": "公式のトップページは、神符守札の授与・御朱印などの受付時間を8:30〜16:30、祈祷の受付を9:00〜16:00（1月1日のみ0:00〜16:00）と案内する。個人祈祷の予約は不要だが、祭典や結婚式などで祈祷できない時間帯があるので神社へ問い合わせるよう公式は書く。境内そのものの開閉門の時間は公式で確認できていない（駐車場案内に「24時間」「境内自由」とある）。",
+        "src": [
+          "o2a",
+          "o2c",
+          "o2d"
+        ]
+      },
+      "parking": {
+        "text": "無料・100台・駐車可能時間は24時間と公式は案内する。参拝以外の駐車は不可。",
+        "src": [
+          "o2d"
+        ]
+      },
+      "goshuin": {
+        "text": "神符守札の授与と同じ受付（8:30〜16:30）で御朱印を受けられると公式トップは案内する。御朱印の種類・初穂料・書置きか直書きかは、公式の取得ページでは確認できていない。",
+        "src": [
+          "o2a"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記は見つからなかった（近傍のタイルに神社名の注記が無い）。住所検索の値のままで、地図での確認は未了（要確認）。"
+    },
+    {
+      "id": "ooyamato",
+      "name": "大和神社",
+      "reading": "おおやまとじんじゃ",
+      "pref": "奈良県",
+      "city": "天理市",
+      "lat": 34.5712,
+      "lon": 135.8366,
+      "deity_ids": [
+        "yamatookunitama",
+        "ookuninushi",
+        "mitoshi"
+      ],
+      "summary": {
+        "text": "山の辺の道の西に鎮座する大和国の古社。日本大国魂大神・八千戈大神・御年大神を祀る。公式は、延喜式神名帳の大和国山辺郡の筆頭に載る式内名神大社で、明治5年に官幣大社になったと年表で案内する。",
+        "status": "verified",
+        "src": [
+          "o2k",
+          "o2n"
+        ]
+      },
+      "deity_note": {
+        "text": "公式の御祭神は、日本大国魂大神（中央）・八千戈大神（向かって右）・御年大神（向かって左）。日本大国魂大神は、公式が「大地主大神」と説明する大和の地主神。日本書紀 巻第五（崇神天皇6年）に、天照大神と倭大国魂の二神が天皇の大殿の内に並べて祭られたが、神威を畏れて天照大神を倭笠縫邑へ移し、日本大国魂神を渟名城入姫命に託して祭らせた、とある。公式が説く創建はこの記事にあたる（公式は「と伝えられている」と書く）。倭大国魂神は古事記には登場しない。古事記上巻の「大国御魂神」は大年神の子で、別の神。日本書紀の一書が大国主神の別名とする「大国玉神」（既存ID okunitama）と、崇神紀の倭大国魂神が同じ神かどうかは、記紀の本文からは断定できない（古語拾遺は大己貴神の一名に大国魂神を挙げ、「今の大和国城上郡の大三輪神」と注する）。八千戈大神は、古事記・日本書紀の一書が大国主神の別名とする八千矛神・八千戈神にあたるので既存IDの ookuninushi を使うが、当社の公式がこの同一視を明記しているかは確認できていない（要確認）。御年大神は古事記の大年神の子の御年神（校訂本文は「年御神」）と一般に同じ神とされるが、公式が明記しているかは未確認（要確認）。",
+        "src": [
+          "o2k",
+          "o2r",
+          "o2q"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "第十代崇神天皇6年に、天皇が神威を畏れて天照大神を倭笠縫邑へ移したとき、日本大国魂大神を淳名城入姫命に託して市磯邑（大和郷）に移したのが当神社の創建と伝えられると公式は書く（2000余年前）。",
+          "src": [
+            "o2k"
+          ],
+          "when": "崇神天皇6年（伝）"
+        },
+        {
+          "type": "fact",
+          "text": "公式年表が延喜5年（905）の項に挙げる「延喜式」神名帳の大和国山辺郡の筆頭に「大和坐大国魂神社三座」と記され、公式は、式内名神大社として祈年・月次・新嘗祭などで官幣を賜ったと年表に書く。",
+          "src": [
+            "o2n"
+          ],
+          "when": "延喜5年（905）"
+        },
+        {
+          "type": "fact",
+          "text": "明治5年（1872）に官幣大社となり、翌年5月に新社殿の造営が成ったと公式年表は記す。",
+          "src": [
+            "o2n"
+          ],
+          "when": "明治5年（1872）"
+        },
+        {
+          "type": "fact",
+          "text": "戦艦大和の守護神とされ、昭和20年（1945）4月7日の沖縄特攻で沈んだ第二艦隊司令長官ら2,736柱が境内の祖霊社に合祀されていると公式は書く。",
+          "src": [
+            "o2k",
+            "o2r"
+          ],
+          "when": "昭和20年（1945）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "4月1日の「ちゃんちゃん祭り」は日本大国魂大神の例祭と渡御祭で、氏子の頭屋・稚児ら二百余名が約2km先の御旅所まで往復する。平成30年（2018）1月17日の奈良県教育委員会で奈良県無形民俗文化財への指定が決まったと公式は書く。",
+          "src": [
+            "o2r",
+            "o2s"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "平成27年（2015）8月5日に万葉歌碑「好去好来」の歌碑を建立したと公式トップは案内する。",
+          "src": [
+            "o2q"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒632-0057 奈良県天理市新泉町306（TEL 0743-66-0044）。",
+        "src": [
+          "o2q",
+          "o2p"
+        ]
+      },
+      "access": {
+        "text": "公式は、近鉄天理駅から奈良交通バス（桜井駅行き）で「大和神社前」まで約10分、下車徒歩5分。JR万葉まほろば線の長柄駅から徒歩約7分。車は西名阪自動車道の天理ICから約15分と案内する。",
+        "src": [
+          "o2p"
+        ]
+      },
+      "hours": {
+        "text": "ご祈祷の受付は午前9時〜午後4時（祭典などの間は案内できないため事前に問い合わせ）と公式は書く。電話・FAXの受付は9:00〜16:00。授与所や境内の開閉の時間は、公式の取得ページでは確認できていない。",
+        "src": [
+          "o2l",
+          "o2m"
+        ],
+        "status": "要確認"
+      },
+      "parking": {
+        "text": "一の鳥居をくぐってすぐ左側に駐車場があり、観光バスも駐車できると公式は案内する。台数・料金は公式で確認できていない。ちゃんちゃん祭りの当日は駐車場が少ないので公共交通機関を使うよう公式は呼びかける。",
+        "src": [
+          "o2p",
+          "o2s"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "御朱印は、御札・御守を授与する「授与所」で受け付けると公式のQ&Aは書く。種類・初穂料・授与所の時間は、公式の取得ページでは確認できていない。",
+        "src": [
+          "o2o"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『大和神社』と約96m以内で一致（2026-10-12 確認）。"
+    },
+    {
+      "id": "tsurugijinja",
+      "name": "劔神社",
+      "reading": "つるぎじんじゃ",
+      "pref": "福井県",
+      "city": "丹生郡越前町",
+      "lat": 35.9575,
+      "lon": 136.0545,
+      "deity_ids": [
+        "susanoo",
+        "izasawake",
+        "oshikuma"
+      ],
+      "summary": {
+        "text": "福井県越前町織田に鎮座し、公式が「越前国二の宮」と案内する古社。素盞嗚大神・氣比大神・忍熊王を祀り、織田信長の祖先が神官を務め、信長が氏神として崇めたと伝える。奈良時代の銘がある梵鐘は国宝。",
+        "status": "verified",
+        "src": [
+          "o2t",
+          "o2v"
+        ]
+      },
+      "deity_note": {
+        "text": "公式の御祭神は素盞嗚大神・氣比大神・忍熊王。素盞嗚大神は記紀の神で、公式は、北の座ヶ岳の峰に素盞嗚大神を祀って「劔大神」と称えたのが創祀と書く。この「劔大神」の話は社伝で、記紀の本文には無い。氣比大神は、古事記 中巻で伊奢沙和気大神（のちの気比大神）として名が見え、既存IDの izasawake を使った。公式が氣比大神を当社に祀る経緯は取得ページでは確認できていない（要確認）。忍熊王は、公式は仲哀天皇の第二皇子と説明し、劔大神の神威で当地方を治めたことに感謝して社を建てたと社記が伝えるとする。古事記・日本書紀の忍熊王は、神功皇后の軍に敗れて淡海（瀬田）で入水して死ぬ皇子で、越を平定した話は記紀に無い（別の伝承）。織田信長との関係（信長が氏神として崇敬した・先祖が神官）は歴史の話で記紀には無い。",
+        "src": [
+          "o2t"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "神功皇后摂政の頃、仲哀天皇の第二皇子の忍熊王が、劔大神の神威を頂いて当地方を治めることができたことに感謝して現在の地に社を建て、「劔大明神」と仰いだことを社記が伝えると公式は書く。",
+          "src": [
+            "o2t"
+          ],
+          "when": "神功皇后摂政の頃（伝）"
+        },
+        {
+          "type": "fact",
+          "text": "所蔵する梵鐘には神護景雲4年（770）の銘があり、国宝（明治35年指定）。現存する銘のある梵鐘では日本で三番目に古いと公式は書く。光仁天皇の奉納と伝えられる。現在は越前町織田文化歴史館に寄託中。",
+          "src": [
+            "o2v",
+            "o2t"
+          ],
+          "when": "神護景雲4年（770）"
+        },
+        {
+          "type": "tradition",
+          "text": "神官の子の常昌が、応永年間（1394〜1427）に越前の守護斯波氏に才能を認められて尾張へ派遣され、故郷の地名をとって織田を名乗ったと公式は書き、織田氏は当社の神官の家柄だったと説明する。学術的な評価は諸説ありうる（要確認）。",
+          "src": [
+            "o2t"
+          ],
+          "when": "応永年間（1394〜1427）",
+          "status": "要確認"
+        },
+        {
+          "type": "fact",
+          "text": "天正3年（1575）の柴田勝家の諸役免許状に「当社の儀は殿様御氏神」とあり、信長が氏神として崇敬したことを示すと公式は説明する。天正10年（1582）の本能寺の変の後、織田の人々が信長の御霊を境内の小松建勲神社に合祀した。",
+          "src": [
+            "o2t"
+          ],
+          "when": "天正3年（1575）・天正10年（1582）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "国宝の梵鐘（奈良時代）は、現在は織田文化歴史館に寄託中のため、神社の境内では見られないと公式の文化財ページから読み取れる。鎌倉時代の「釈迦八相涅槃図」と「涅槃講式断簡」は重要文化財（昭和25年指定）で、奈良国立博物館に寄託中。",
+          "src": [
+            "o2v"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "神紋は織田氏の家紋と同じ織田木瓜紋（五つ木瓜紋）と公式は説明する。織田信長の安堵状（天正元年・1573）も所蔵するが、織田文化歴史館に寄託中。",
+          "src": [
+            "o2t",
+            "o2v"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒916-0215 福井県丹生郡越前町織田113-1（金栄山）（TEL 0778-36-0404・FAX 0778-36-0902）。",
+        "src": [
+          "o2t",
+          "o2x"
+        ]
+      },
+      "access": {
+        "text": "公式は、車は福井ICから約40分、武生・鯖江ICから約20分と案内する。JRは北陸本線の武生駅から、織田経由・越前海岸方面行きのバスで約35分。",
+        "src": [
+          "o2y"
+        ]
+      },
+      "hours": {
+        "text": "ご祈祷は事前予約不要で毎日受け付け、午前の部は9:00〜12:00（11:50最終受付）、午後の部は13:00〜16:00（15:50最終受付）。原則として毎時00分と30分の1時間に2回と公式は書く。祭典・行事・挙式などで受けられない場合があるので空き状況を問い合わせるよう公式は注意する。新年は、1月1日は0:00〜17:00、2・3日は8:30〜17:00、4日以降は9:00〜16:00（2025年12月24日付の公式のお知らせ）。授与所・社務所の受付時間と境内の開閉時間は、公式の取得ページでは確認できていない。",
+        "src": [
+          "o2u",
+          "o2x"
+        ]
+      },
+      "parking": {
+        "text": "公式は、参拝の人は織田文化歴史館の大駐車場を使い、ご祈願・ご祈祷を受ける人は神社境内に駐車するよう案内する。台数・料金は公式で確認できていない。",
+        "src": [
+          "o2y"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "社務所は、ご祈祷の受付と神符守札の授与、ご朱印の受付を行うと公式の境内案内図にある。御朱印の種類・初穂料・受付時間は、公式の取得ページでは確認できていない。",
+        "src": [
+          "o2w"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『劔神社』と約92m以内で一致（2026-10-12 確認）。"
+    },
+    {
+      "id": "hiraoka",
+      "name": "枚岡神社",
+      "reading": "ひらおかじんじゃ",
+      "pref": "大阪府",
+      "city": "東大阪市",
+      "lat": 34.6699,
+      "lon": 135.6499,
+      "deity_ids": [
+        "amenokoyane",
+        "himegami",
+        "takemikazuchi",
+        "futsunushi"
+      ],
+      "summary": {
+        "text": "河内国一之宮。天児屋根命・比売御神・武甕槌命・経津主命の四柱を第1〜4殿に祀り、奈良の春日大社の元となったとして「元春日」とも呼ばれる（公式）。公式は延喜式の名神大社、旧官幣大社と説明する。",
+        "status": "verified",
+        "src": [
+          "o3b"
+        ]
+      },
+      "deity_note": {
+        "text": "天児屋根命は、公式が日本書紀の神代巻に「中臣の上祖」と記されると説明する神で、手元の日本書紀の原文でも「中臣連遠祖天兒屋命」の表記を確認した。古事記は中臣連らの祖と注記する（既存の天児屋命の項を参照）。比売御神は、公式が「諸説があり詳細は不明」としつつ天美豆玉照比売命とも称え、天児屋根命の后神とする神で、記紀に特定の神として登場しない。公式は、二神が神護景雲2年（768）に春日神社（現在の春日大社）に祀られたと述べるため、春日大社第四殿の比売神と同じ神として既存の比売神（himegami）を再利用するが、同一かどうかを公式が明言しているわけではない。武甕槌命は鹿島神宮、経津主命は香取神宮の神で、国譲りに遣わされた神として公式が説明する（経津主神は日本書紀に見え、古事記には見当たらない）。神武天皇の東征と、天種子命による創祀は枚岡神社の伝えで、記紀に枚岡の創祀の記載は確認できない。なお日本書紀 巻第三には天種子命を「中臣氏之遠祖」と記す一節があり、神武東征での長髄彦との戦いも同巻に見える。",
+        "src": [
+          "o3b",
+          "ns1",
+          "ns3"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、創祀は神武天皇が大和で即位される3年前と伝えると記す。神武東征の際、天種子命が勅命を奉じて平国（国土平定）を祈願し、天児屋根命・比売御神の二神を霊地神津嶽に祀ったのが始まりとされる。",
+          "src": [
+            "o3b"
+          ],
+          "when": "即位される3年前（伝）"
+        },
+        {
+          "type": "tradition",
+          "text": "公式は、神津嶽に祀られていた社が、孝徳天皇の白雉元年（650）9月16日に平岡連らにより山麓の現在地へ奉遷されたと伝えると記す。",
+          "src": [
+            "o3b"
+          ],
+          "when": "白雉元年（650）"
+        },
+        {
+          "type": "tradition",
+          "text": "公式は、神護景雲2年（768）に天児屋根命・比売御神の二神が春日山本宮の峰に影向して春日神社（現在の春日大社）に祀られたため、当社が「元春日」と呼ばれると記す。宝亀9年（778）には春日神社から武甕槌命・斎主命（経津主命）を迎えて配祀し、四殿になったとする。",
+          "src": [
+            "o3b"
+          ],
+          "when": "神護景雲2年（768）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、貞観元年（856）に天児屋根命が神階正一位を授かり、延喜式神名帳では名神大社に列せられたと記す。中世に河内国一之宮と崇められ、明治4年（1871）5月14日に官幣大社に列せられたとする（公式の記述。神社庁など第三者での照合は未了）。",
+          "src": [
+            "o3b"
+          ],
+          "when": "社格"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "現在の御本殿は文政9年（1826）に近郡の氏子の奉納により造営されたもので、令和2年（2020）9月に竣工した平成令和の大造営で新しくなったと公式が記す。第1殿から第4殿の四殿が並ぶ。",
+          "src": [
+            "o3e",
+            "o3b"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "公式は、社叢が平成13年（2001）に環境庁（当時）の「香り風景100選」に選ばれたと記す。参道の梅林は梅輪紋ウイルスのため平成28年に全て伐採されたが、令和3年（2021）に四季の花が楽しめる新しい梅林として復活したと説明する。",
+          "src": [
+            "o3d",
+            "o3e"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "秋の収穫感謝祭「秋郷祭」は、令和6年度から日程が変わり、スポーツの日の前々日（土）と前日（日）が前祭、10月15日が秋郷祭となった（公式トップ）。2026年は10月10日・11日が前祭で、駐車場は10月6日から12日終日まで使えない。",
+          "src": [
+            "o3a"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒579-8033 大阪府東大阪市出雲井町7番16号。電話 072-981-4177。",
+        "src": [
+          "o3a",
+          "o3c"
+        ]
+      },
+      "access": {
+        "text": "近鉄奈良線 枚岡駅下車すぐ（普通電車のみ停車。時間帯により区間準急も停車）。大阪なんばから約30分（公式）。車は阪神高速13号東大阪線（奈良方面）水走出口から約10分（公式）。",
+        "src": [
+          "o3d"
+        ]
+      },
+      "hours": {
+        "text": "【公式で確認できた項目】御祈祷の受付は午前9時から午後3時半まで。予約不要で、随時受け付ける（公式「御祈祷」。行事で待つ時間帯がある）。初穂料は初宮詣・安産詣10,000円、七五三詣は一人6,000円、厄除・車祓などその他は8,000円、団体は30,000円から。社務所の受付時間は9時から16時（公式「境内のご案内」の禊場の使い方の項）。【公式で確認できていない項目】授与所（御札・お守りなどを授与。公式は授与所の存在を記す）の開所時間。境内の開閉門時間。",
+        "src": [
+          "o3c",
+          "o3e"
+        ],
+        "status": "要確認"
+      },
+      "parking": {
+        "text": "公式は、約40台のタイムズ駐車場があると案内する（料金・営業時間は公式サイトでは確認できていない）。ご祈祷を受ける人は祈祷の受付時に駐車の旨を伝える。2026年10月6日から12日終日までは駐車場を使えない（秋郷祭の前祭のため）。",
+        "src": [
+          "o3d",
+          "o3a"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "公式トップのお知らせに、2026年10月10日から12日までの御朱印の案内がある（10日と11日は限定朱印のみ、12日は書置きの朱印のみ、13日から御朱印帳に直接書く）。通常日の受付時間と初穂料は公式で確認できていない。",
+        "src": [
+          "o3a"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記は見つからなかった（近傍のタイルに神社名の注記が無い）。住所検索の値のままで、地図での確認は未了（要確認）。"
+    },
+    {
+      "id": "taiheizanmiyoshi",
+      "name": "太平山三吉神社",
+      "reading": "たいへいざんみよしじんじゃ",
+      "pref": "秋田県",
+      "city": "秋田市",
+      "lat": 39.7262,
+      "lon": 140.1446,
+      "deity_ids": [
+        "ookuninushi",
+        "sukunahikona",
+        "miyoshiookami"
+      ],
+      "summary": {
+        "text": "秋田市広面の里宮と、霊峰太平山の山頂（標高1,170m）の奥宮からなる、全国の三吉神社・太平山講の総本宮。大己貴大神・少彦名大神と、秋田で生まれた守護神とされる三吉霊神を祀る。秋田県神社庁は、明治12年に県社、別表神社と記す。",
+        "status": "verified",
+        "src": [
+          "o3g",
+          "o3l"
+        ]
+      },
+      "deity_note": {
+        "text": "大己貴大神（別称 大国主命・大黒さま）は、古事記の大国主神（大穴牟遅神）、日本書紀の大己貴神にあたる（既存の大国主の項を参照）。少彦名大神は、古事記の少名毗古那神、日本書紀の少彦名命にあたり、記紀では大国主と力を合わせて国を作り固めた神として語られる。三吉霊神は、公式が「秋田で生まれた守護神」「力の神・勝負の神」と説明する神で、太平の城主・藤原鶴寿丸三吉が世を捨てて太平山に籠もり、大己貴大神・少彦名神を信仰して修行し、神として祀られた郷土の神という伝えである。記紀には登場しない、秋田の伝承の神である。",
+        "src": [
+          "o3g",
+          "o3p",
+          "o3l"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、天武天皇の白鳳2年（673年）5月に、役の行者小角が創建したと伝えると記す。なお秋田県神社庁の同じ由緒文は「白鳳2年（西暦646年）」と書き、西暦の表記が食い違う。ここでは公式サイトの表記に従う。",
+          "src": [
+            "o3g",
+            "o3l"
+          ],
+          "when": "白鳳2年（673）",
+          "status": "要確認"
+        },
+        {
+          "type": "tradition",
+          "text": "公式は、桓武天皇の延暦20年（801）に、征夷大将軍の坂上田村麻呂が東夷征討の際に戦勝を祈願して堂宇を建立し、奉納された御鏑が神宝として今に伝わると記す。",
+          "src": [
+            "o3g"
+          ],
+          "when": "延暦20年（801）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、明治元年（1868）の戊辰の役での霊験に感謝した秋田藩主の佐竹侯が、太平山を遥拝する雪見御殿の地（現在の里宮の地）を奉賽したと記す。",
+          "src": [
+            "o3g",
+            "o3i"
+          ],
+          "when": "明治元年（戊辰の役）"
+        },
+        {
+          "type": "fact",
+          "text": "秋田県神社庁の神社検索は、明治12年（1879）に県社、別表神社と記す（公式サイトの由緒には社格の記載が無い）。",
+          "src": [
+            "o3l"
+          ],
+          "when": "社格（明治12年）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "毎年1月17日の三吉梵天祭は、江戸時代頃（開始年代不詳）に始まった秋田県固有の特殊神事で、梵天と呼ばれる依代を神社に奉納する（公式）。",
+          "src": [
+            "o3f",
+            "o3o"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "里宮の社殿は昭和52年（1977）の竣功で、屋根は太平山の姿を模した変形の流造り。祈祷拝殿・授与所・社務所などを併設する（公式）。",
+          "src": [
+            "o3i"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "奥宮は太平山の山頂（標高1,170m）に鎮座し、夏季（6月〜9月）のみ開所する。7月17日の開山祭に御神体を里宮から奥宮へ遷し、9月17日の閉山祭まで神職が籠もって祭典・祈祷を奉仕する（公式）。",
+          "src": [
+            "o3j",
+            "o3n"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒010-0041 秋田県秋田市広面字赤沼3の2（里宮）。電話 018-834-3443。奥宮は秋田市太平山の山頂（秋田県神社庁は「秋田市太平山谷字谷山21」とする）。",
+        "src": [
+          "o3g",
+          "o3l"
+        ]
+      },
+      "access": {
+        "text": "秋田駅東口からタクシーで約6分（「赤沼の三吉神社まで」と伝える）。秋田駅正面口（西口）から「太平方面行き」バスで約10分、「三吉神社入口」下車徒歩2分（秋田中央交通）。車は秋田自動車道 秋田中央ICから約8分（公式）。",
+        "src": [
+          "o3j"
+        ]
+      },
+      "hours": {
+        "text": "【公式で確認できた項目】ご祈祷の受付は朝8:30から夕方5:00（随時奉仕。お休みはない）。祈祷の開始時刻は9:00・9:40・10:20・11:00・11:40・12:20・（13:20または13:30）・14:00・14:40・15:20・16:00が最終で、10分前までに本殿向かって左側の受付へ。個人は予約不要、法人・多人数の団体は予約を受ける。公式トップは「12:20の次は13:20」、祈祷のページは「13:30」と書き、時刻の表記が食い違う（どちらかを断定しない）。祈祷のページは「基本的に40分おき」、トップは「多忙日は概ね30分おき」と書く。お知らせ・厄年のページは「祈祷開始時間は9:00〜16:00」と書く。里宮は年中無休と公式が記す。【公式で確認できていない項目】授与所（御札・お守り）の授与時間。境内の開閉門時間。",
+        "src": [
+          "o3f",
+          "o3h",
+          "o3k",
+          "o3m",
+          "o3i"
+        ],
+        "status": "要確認"
+      },
+      "parking": {
+        "text": "駐車場は2か所。東側（広面小通り）が大駐車場で、正参道側にも駐車場がある（公式）。台数・料金は公式で確認できていない。",
+        "src": [
+          "o3j",
+          "o3i"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "公式サイト（トップ、神社紹介、各種祈祷、お守り、よくある質問、社報192号）に、御朱印の案内を見つけられなかった。授与の有無・受付時間・初穂料は公式で確認できていない（問い合わせ先は公式記載の電話 018-834-3443）。",
+        "src": [
+          "o3f",
+          "o3h"
+        ],
+        "status": "要確認"
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『太平山三吉神社』と約23m以内で一致（2026-10-12 確認）。"
+    },
+    {
+      "id": "hinomisaki",
+      "name": "日御碕神社",
+      "reading": "ひのみさきじんじゃ",
+      "pref": "島根県",
+      "city": "出雲市",
+      "lat": 35.4297,
+      "lon": 132.6293,
+      "deity_ids": [
+        "amaterasu",
+        "susanoo"
+      ],
+      "summary": {
+        "text": "島根半島の最西端、出雲市大社町日御碕に鎮座する。下の宮「日沉宮」に天照大御神、上の宮「神の宮」に素盞嗚尊を祀る2社からなり、境内の14棟の建造物と2基の鳥居は国の重要文化財（公式）。",
+        "status": "verified",
+        "src": [
+          "o3r",
+          "o3s"
+        ]
+      },
+      "deity_note": {
+        "text": "公式は、神の宮に素盞嗚尊、日沉宮に天照大御神を祀ると説明する。記紀では、天照大御神と須佐之男命は伊邪那岐命の禊で生まれた三貴子の二柱（古事記 上巻 通称「禊祓」）で、既存の各項を参照。日御碕神社の特色は、この二神を上下の二社に分けて祀る点にある。社伝では、神代に天葺根命が清江の浜にいた折、天照大御神が降臨して「吾はこれ日の神なり」との神勅があり、経島に祀ったのが日沉宮の始まりとされる。また素盞嗚尊が出雲の国造りの後に熊成の峯で柏の葉を使って鎮まる地を占い、柏葉が止まった隠ヶ丘に、御子の天葺根命が社殿を築いて祀ったのが神の宮の始まりとされる。これらは社伝で、日御碕という地名・社名や日沉宮の創祀は記紀には見えない。天葺根命は、手元の古事記上中巻と日本書紀の原文では名を確認できなかった（要確認）。",
+        "src": [
+          "o3r",
+          "o3s",
+          "o3v",
+          "k"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、社伝として、神の宮は隠ヶ丘（現社殿の後ろの丘）に鎮座していたものを、安寧天皇13年に現地へ遷座したと伝えると記す。",
+          "src": [
+            "o3r",
+            "o3v"
+          ],
+          "when": "安寧天皇13年"
+        },
+        {
+          "type": "tradition",
+          "text": "公式は、天照大御神を祀る日沉宮が現社地へ遷座したのは天暦2年（948）の頃で、それまでは現社地の約200m西にある経島に鎮座していたと伝えると記す。この遷座は勅命によると公式は説明し、2社の総称が「日御碕大神宮（日御碕神社）」になったとする。",
+          "src": [
+            "o3r",
+            "o3v"
+          ],
+          "when": "天暦2年（948）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、現在の境内の建物は江戸時代初期の寛永年間に建立されたと記す。徳川家光が寛永12年（1635）に松江藩主の京極忠高に命じて造営を始め、寛永20年（1643）に竣工、翌21年に遷宮が行われたことが、神社の文書から分かる。",
+          "src": [
+            "o3r"
+          ],
+          "when": "寛永12年（1635）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、境内の14棟の建造物と2基の鳥居が昭和28年（1953）に国の重要文化財に指定され、石燈籠5基と建立に関わる文書類が附指定を受けていると記す。",
+          "src": [
+            "o3s"
+          ],
+          "when": "昭和28年（1953）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "毎年8月7日の例大祭（神幸神事）は年間で最も重要な祭典。夕刻に神輿が日沈宮から経島の対岸のお旅所へ渡御し、神職が小舟で神域の経島に上陸して神事を行う。夕日を背景に行われることが多く「夕日の祭り」とも呼ばれる（公式）。",
+          "src": [
+            "o3w",
+            "o3q"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "公式は、社宝に国宝の白糸威鎧があり、甲冑・刀剣など多くが国の重要文化財や島根県指定文化財になっていると記す（国宝の指定は公式の記述のみで、文化庁のデータベースでの照合は未了）。",
+          "src": [
+            "o3r"
+          ],
+          "status": "要確認"
+        },
+        {
+          "type": "fact",
+          "text": "日沉宮・神の宮・楼門などの建造物には100か所以上の彫刻があり、同じ意匠は二つとないと公式が説明する（極彩色）。日御碕は文化庁の日本遺産「日が沈む聖地出雲」の構成要素とされる。",
+          "src": [
+            "o3r",
+            "o3z"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒699-0763 島根県出雲市大社町日御碕455。日御碕神社社務所 電話 0853-54-5261。",
+        "src": [
+          "o3q",
+          "o3v"
+        ]
+      },
+      "access": {
+        "text": "公式の「交通アクセス」に飛行機・車・電車・バスの案内ページがあるが、経路と所要時間は図が中心で、文字として確認できていない。駐車場は、日御碕神社参拝者用（大型車不可）、日御碕公共駐車場（大型車可）、日御碕県営駐車場（大型車可）が示されている。バスは神社横の道が狭いため鳥居前の公共駐車場を使う。県道29号大社日御碕線が全面通行止めになる見込みのときは授与所を閉鎖する（公式）。",
+        "src": [
+          "o3x",
+          "o3v",
+          "o3y"
+        ],
+        "status": "要確認"
+      },
+      "hours": {
+        "text": "ご祈祷の受付は8:30から16:00で随時（受付場所は授与所）。予約は不要で、所要は約20分、初穂料は3000円から。12:00から13:00は受付を休止する（繁忙期を除く）。例祭期間（8月5日から7日）などはご祈祷を受けられず、祭礼の都合で時間が変わることがある（公式）。授与品は授与所で頒布する。御朱印の受付は授与所で8:30から16:50（公式）。境内の開閉門時間は公式で確認できていない。",
+        "src": [
+          "o3t",
+          "o3u"
+        ]
+      },
+      "parking": {
+        "text": "日御碕神社参拝者用の駐車場（大型車不可）がある。大型車は鳥居前の日御碕公共駐車場、または神社から約1分の日御碕県営駐車場を使う。台数・料金は公式で確認できていない（公式）。",
+        "src": [
+          "o3x",
+          "o3v"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "受付は授与所で8:30から16:50、初穂料は500円以上の志納。1人で朱印帳3冊以上は全て書置き。元旦から成人の日の3連休の終了日まで、節分、ゴールデンウィーク、海の日の連休、8月と11月の全期間、シルバーウィーク、スポーツの日の連休、12月27日から大晦日などは書置き対応。神在月（旧暦10月）は神在月限定の朱印で対応する。予告なく変更する場合がある（公式、2026年9月27日の追記）。",
+        "src": [
+          "o3u"
+        ]
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『日御碕神社』の位置に合わせた（公式の地図の値 35.4321,132.6294 とは約271m ずれていたため。2026-10-12 確認）。"
+    },
+    {
+      "id": "tsuno",
+      "name": "都農神社",
+      "reading": "つのじんじゃ",
+      "pref": "宮崎県",
+      "city": "児湯郡都農町",
+      "lat": 32.2632,
+      "lon": 131.5587,
+      "deity_ids": [
+        "ookuninushi"
+      ],
+      "summary": {
+        "text": "宮崎県児湯郡都農町川北に鎮座する日向国一之宮。大己貴命（大国主命）を祀り、公式サイトは「延喜式内社・旧国幣小社」と掲げる。",
+        "status": "verified",
+        "src": [
+          "o3aa",
+          "o3ab",
+          "o3ac"
+        ]
+      },
+      "deity_note": {
+        "text": "御祭神は大己貴命（別名 大国主命）（公式）。古事記では大国主神（別名 大穴牟遅神）、日本書紀では大己貴神にあたる（既存の大国主の項を参照）。公式は、多くの妃との間に多くの御子をもうけた由来から縁結び・子孫繁栄の神、医療の法を定めた由来から病気平癒の神、少彦名命と力を合わせて国造りをした由来から事業開拓（商売繁盛）の神と説明する。境内の摂社の素盞鳴神社について、公式は「大己貴命の父神とも言う」と注記する。日本書紀本文は大己貴神を素戔嗚尊の子とし、古事記は六世の孫と記す（既存の項）ため、公式の注記は紀の本文に近い。神武天皇が東遷の折にこの地に立ち寄り祭ったという社伝は、記紀には記載が確認できない（古事記は神武が日向を発したことを記すが、都農は出てこない）。",
+        "src": [
+          "o3ab",
+          "o3ah",
+          "k",
+          "ns1"
+        ]
+      },
+      "history": [
+        {
+          "type": "tradition",
+          "text": "公式は、創建は、御即位の6年前の神武天皇が宮崎の宮を発して東遷する折、この地に立ち寄って国土平安・海上平穏・武運長久を祈念し、御祭神を鎮祭されたことと伝えると記す。",
+          "src": [
+            "o3ab"
+          ],
+          "when": "御即位の6年前（伝）"
+        },
+        {
+          "type": "fact",
+          "text": "公式の「編纂史」は、承和4年（837）に官社に列せられて神階を授かり（続日本後紀）、天安2年（858）に従四位上を授けられ（日本三代実録）、延長5年（927）に式内社に列せられた（延喜式神名帳）と記す。",
+          "src": [
+            "o3ac"
+          ],
+          "when": "承和4年（837）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、日向国の第一の大社だったが、天正6年（1578）に島津・大友の争乱で大友氏の兵火により社殿・宝物・古文書を全て焼失した（御神体は尾鈴山麓に避難した）と記す。長く小さな祠だけの時期が続き、元禄5年（1692）に高鍋藩主の秋月種政が社殿を再興した。",
+          "src": [
+            "o3ab",
+            "o3ac"
+          ],
+          "when": "天正6年（1578）"
+        },
+        {
+          "type": "fact",
+          "text": "公式は、明治4年（1871）に国幣社に列せられたと記し、公式サイトの冒頭は「延喜式内社・旧国幣小社」と掲げる。",
+          "src": [
+            "o3ac",
+            "o3aa"
+          ],
+          "when": "明治4年（1871）"
+        }
+      ],
+      "highlights": [
+        {
+          "type": "fact",
+          "text": "現在の社殿は、平成14年（2002）に御造営奉賛会が設立され、平成19年（2007）7月7日に竣工した（公式の御由緒・編纂史）。",
+          "src": [
+            "o3ab",
+            "o3ac"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "境内に摂社の素盞鳴神社、手摩乳・足摩乳神社（素盞嗚尊の妻・櫛稲田姫命の父母神）、末社の熊野神社（旧本殿）・稲荷神社・愛宕神社などがある（公式）。",
+          "src": [
+            "o3ah"
+          ]
+        },
+        {
+          "type": "fact",
+          "text": "江戸時代初期に全国の一の宮を巡拝した橘三喜が都農神社も訪れ、『一宮巡詣記』に境内図を描いたことを、公式が紹介している。",
+          "src": [
+            "o3ab"
+          ]
+        }
+      ],
+      "address": {
+        "text": "〒889-1201 宮崎県児湯郡都農町川北13,294番地。都農神社社務所 電話 0983-25-3256。",
+        "src": [
+          "o3aa",
+          "o3ag"
+        ]
+      },
+      "access": {
+        "text": "JR日豊本線 都農駅から徒歩約25分、タクシーで約5分（公式）。宮崎空港駅から都農駅まで約1時間、延岡駅から約45分。車は東九州自動車道 都農ICから約5分、宮崎空港から約1時間20分（公式。交通状況により異なる）。",
+        "src": [
+          "o3ag"
+        ]
+      },
+      "hours": {
+        "text": "御祈願の受付は社務所（神橋を渡って左側）で、午前9時から正午、午後1時から午後3時半まで。初穂料は5,000円以上（公式）。社頭のお札所は午前9時から午後3時半、社務所のお札所は午前9時から午後4時半（公式）。令和8年（2026）7月15日から、12時から13時は社務所での御祈願・御朱印の受付を休務する（お守りなどの授与品は社殿近くのお札所で通常どおり）。境内の開閉門時間は公式で確認できていない。",
+        "src": [
+          "o3ad",
+          "o3af",
+          "o3aj"
+        ]
+      },
+      "parking": {
+        "text": "公式サイトで駐車場の案内（台数・料金・場所）は確認できていない。",
+        "src": [
+          "o3ag"
+        ],
+        "status": "要確認"
+      },
+      "goshuin": {
+        "text": "授与は社務所で、受付時間は午前9時から正午、午後1時から午後4時30分。通常御朱印・特別御朱印・月限定御朱印のいずれも500円（公式）。月限定御朱印は毎月変わり、公式Instagramで案内される。令和8年7月15日から12時から13時は受付を休務する。郵送での対応もある（公式に専用ページ。内容は未確認）。",
+        "src": [
+          "o3ae",
+          "o3aj"
+        ]
+      },
+      "article_url": "",
+      "photo": {
+        "kind": "placeholder"
+      },
+      "checked": "2026-10-12",
+      "note_geo": "国土地理院の注記『都農神社』と約5m以内で一致（2026-10-12 確認）。"
     }
   ]
 }
