@@ -2481,7 +2481,7 @@ function magnetPointsOf(shapes) {
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
-const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror', 'mark'];
+const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror', 'mark', 'rect', 'text', 'koma', 'hardware', 'library', 'imgScale']; /* 点を置くツール全部で、円の中心・ガイドの点を出して吸着（線や図形を選ぶだけのツールは対象外） */
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 /** ポインタの近く（画面で 40px 以内）にあるガイドの点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
 function guideMarkPoints() {
