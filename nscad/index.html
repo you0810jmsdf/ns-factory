@@ -103,7 +103,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 07:50 · 22d3fdf</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 08:01 · ed07643</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -414,7 +414,7 @@
 <details class="sub" id="spineSimSection"><summary data-i18n="spineSim"></summary>
 <label><span data-i18n="wireD"></span><output id="spWire"></output></label>
 <label><span data-i18n="leatherT"></span><input id="spLeather" type="number" step="0.1" min="0.3" value="1.5"></label>
-<label><span data-i18n="supporterT"></span><input id="spSupporter" type="number" step="0.1" min="0" value="0"></label>
+<label><span data-i18n="supporterT"></span><input id="spSupporter" type="number" step="0.1" min="0" value="0"></label><label><span data-i18n="liningT"></span><input id="spLining" type="number" step="0.1" min="0" value="0"></label>
 <label><span data-i18n="playMm"></span><input id="spPlay" type="number" step="0.1" min="0" value="1.5"></label>
 <label><span data-i18n="spShape"></span><select id="spShape"><option value="square" data-i18n="spShapeSquare"></option><option value="round" data-i18n="spShapeRound"></option></select></label>
 <label><span data-i18n="foldR"></span><input id="spFoldR" type="number" step="0.1" min="0" value="0"></label>
@@ -536,8 +536,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5b147e43","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=659e3991","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=d5264488","./help/en.js":"./help/en.js?v=2578c6dc","./help/ja.js":"./help/ja.js?v=09d7a69a","./i18n.js":"./i18n.js?v=7d889004","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=5b147e43"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=60c2b400","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=b20d93bd","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=26a17313","./help/en.js":"./help/en.js?v=2578c6dc","./help/ja.js":"./help/ja.js?v=09d7a69a","./i18n.js":"./i18n.js?v=78d1d539","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=60c2b400"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2448,6 +2448,7 @@ const MESSAGES = {
     "spWireAssumed": "（仮）",
     "leatherT": "表紙の革厚 (mm)",
     "supporterT": "リングサポータ厚 (mm)",
+    "liningT": "内張の革の厚み (mm・内張なしは0・丸背のとき)",
     "playMm": "輪と表紙のすき間 (mm・片側)",
     "foldR": "曲げの内半径 (mm・丸背では自動)",
     "spShape": "背の形",
@@ -3485,6 +3486,7 @@ const MESSAGES = {
     "spWireAssumed": " (assumed)",
     "leatherT": "Cover leather (mm)",
     "supporterT": "Ring supporter (mm)",
+    "liningT": "Lining leather thickness (mm; 0 = none; round spine)",
     "playMm": "Clearance ring–cover (mm, each side)",
     "foldR": "Bend inner radius (mm; automatic for round)",
     "spShape": "Spine shape",
@@ -4909,10 +4911,10 @@ function sliceByX(pts, xa, xb) {
 /** 台座の断面の座標（中央 x=0・頂上 y=0・y 下向き・時計回り・先頭＝左上の縁）から、背幅シミュレーション用の多角形（背の内面中央を原点・y 上向き正）を作る。
  *  plate＝台座の断面そのもの。supporter＝台座の下の膨らみ（下面）に沿って、外側へ supporterT だけオフセットした帯（リングサポータ・事業主定義 2026-10-12）の配列。
  *  サポータは直径 supporterDia の円で切り抜かれる：ビス穴の中心を通る断面では、中心から ±supporterDia/2 の範囲で、ビス穴（直径 holeDia）の部分は空く。supporterDia が 0 なら帯は断面の全幅。 */
-function spineSectionPolys(sectionPoints, supporterT, supporterDia = 0, holeDia = 0) {
+function spineSectionPolys(sectionPoints, supporterT, supporterDia = 0, holeDia = 0, lift = 0) {
   if (!Array.isArray(sectionPoints) || sectionPoints.length < 4) return null;
   const xs = sectionPoints.map(p => p.x), ys = sectionPoints.map(p => p.y), maxX = Math.max(...xs), H = Math.max(...ys) - Math.min(...ys), y0 = Math.min(...ys);
-  const toSim = p => ({ x: p.x, y: supporterT + (H - (p.y - y0)) }); /* 断面の下の膨らみの頂点を、サポータの上面（y＝supporterT）に置く */
+  const toSim = p => ({ x: p.x, y: lift + supporterT + (H - (p.y - y0)) }); /* 断面の下の膨らみの頂点を、サポータの上面（y＝supporterT）に置く */
   const plate = sectionPoints.map(toSim); if (!(supporterT > 0)) return { plate, supporter: [] };
   let corner = 0; sectionPoints.forEach((p, i) => { if (p.x > xs[corner] + 1e-9 || (Math.abs(p.x - xs[corner]) < 1e-9 && p.y < ys[corner])) corner = i; }); /* 右上の縁の点 */
   const lower = sectionPoints.slice(corner + 1); if (lower.length < 2) return { plate, supporter: [] };
@@ -4926,20 +4928,22 @@ function spineSectionPolys(sectionPoints, supporterT, supporterDia = 0, holeDia 
 /** 背幅の断面シミュレーション（純関数）。閉じた手帳の断面：台座（厚さ plateT）の上に外径 ringD+2*wireD の輪が立ち、表紙は背の両端で 90° 折れて輪の両脇を通る。
  *  内幅 = 輪の外径 + 2*遊び（輪と表紙内面のすき間）。背の型紙幅 = 内幅 + 2*折り代（θ(r + K t)・θ=90°）。輪の高さが表紙の張り出し（サポータ厚＋台座厚）を超える分は干渉として返す。
  *  params: {ringD（内径）, wireD（線径）, plateT, baseH（台座の全高・省略時は板厚）, embedMm（輪の食い込み深さ）, leatherT, supporterT, playMm, foldR（曲げ内半径）, k} → {innerW, outerRingD, foldEach, spineW, ringTop, coverGap, section} */
-function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, embedMm = 0, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5, spineShape = 'square', sectionPoints = null, supporterDia = 0, holeDia = 0 } = {}) {
+function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, embedMm = 0, leatherT = 1.5, supporterT = 0, playMm = 1.5, foldR = 0, k = 0.5, spineShape = 'square', sectionPoints = null, supporterDia = 0, holeDia = 0, liningT = 0 } = {}) {
   const num = v => Number.isFinite(v) && v >= 0;
-  if (![ringD, wireD, plateT, baseH, embedMm, leatherT, supporterT, playMm, foldR, k].every(num) || ringD <= 0) return null;
+  if (![ringD, wireD, plateT, baseH, embedMm, leatherT, supporterT, playMm, foldR, k, liningT].every(num) || ringD <= 0) return null;
   /* 背の形（事業主決定A・2026-10-12）：角背＝両端を 90° に折る（曲げ内半径は入力値）。丸背＝表紙がリングを包んで半円になる（曲げ内半径＝内幅の半分で自動・サポーターは表紙の内側に沿って曲がるので内幅に厚みを足す・背の革の長さ＝π×(r＋K×革厚)） */
-  const round = spineShape === 'round', outerRingD = ringSizeOf(null, { innerDiameterMm: ringD, wireDiameterMm: wireD }).outer, innerW = outerRingD + 2 * playMm + (round ? 2 * supporterT : 0);
+  const round = spineShape === 'round', outerRingD = ringSizeOf(null, { innerDiameterMm: ringD, wireDiameterMm: wireD }).outer, /* 内幅（事業主決定・2026-10-13）：丸背＝リング外径＋サポータ厚×2＋内張の厚み×2（輪と表紙のすき間は使わない）。角背＝リング外径＋すき間×2（従来どおり） */
+    innerW = round ? outerRingD + 2 * supporterT + 2 * liningT : outerRingD + 2 * playMm, lift = round ? liningT : 0; /* lift＝内張が底に積む分（丸背のみ） */
   const r = round ? innerW / 2 : foldR, foldEach = (Math.PI / 2) * (r + k * leatherT), spineW = round ? 2 * foldEach : innerW + 2 * foldEach;
-  const ringTop = supporterT + baseH + outerRingD - embedMm; // 背の内面からの輪の天井高さ
+  const ringTop = lift + supporterT + baseH + outerRingD - embedMm; // 背の内面からの輪の天井高さ
   const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
-    plate: { x: -12, y: supporterT, w: 24, h: plateT },
+    plate: { x: -12, y: lift + supporterT, w: 24, h: plateT },
     /* サポーター：断面のデータが無い規格の絵は、角背＝平らな部分（内幅−曲げ内半径×2・台座の幅まで）・丸背＝表紙の内側に沿う半円の帯（supporterArc）。断面のデータがある規格は polys の形（背の形に依らない） */
     supporter: supporterT > 0 && !round ? (w => ({ x: -w / 2, y: 0, w, h: supporterT }))(Math.max(24, innerW - 2 * Math.min(foldR, innerW / 2))) : null,
-    supporterArc: supporterT > 0 && round ? { rOut: r, rIn: Math.max(0, r - supporterT) } : null,
-    polys: spineSectionPolys(sectionPoints, supporterT, supporterDia, holeDia), /* 台座の断面（レンズ形）と、膨らみに沿ったリングサポータの帯（断面のデータがある規格だけ） */
-    ring: { cx: 0, cy: supporterT + baseH + outerRingD / 2 - embedMm, rOuter: outerRingD / 2, rInner: ringD / 2 },
+    supporterArc: supporterT > 0 && round ? { rOut: r - liningT, rIn: Math.max(0, r - liningT - supporterT), c: r } : null,
+    liningArc: liningT > 0 && round ? { rOut: r, rIn: Math.max(0, r - liningT), c: r } : null, /* 内張：表紙の内側に沿う半円の帯 */
+    polys: spineSectionPolys(sectionPoints, supporterT, supporterDia, holeDia, lift), /* 台座の断面（レンズ形）と、膨らみに沿ったリングサポータの帯（断面のデータがある規格だけ） */
+    ring: { cx: 0, cy: lift + supporterT + baseH + outerRingD / 2 - embedMm, rOuter: outerRingD / 2, rInner: ringD / 2 },
     fold: { r, t: leatherT, round }, /* 背の革の曲げ（内側の半径・革厚・丸背か）。断面の絵で角を丸く描く */
     coverL: { x: -innerW / 2 - leatherT, y: 0, w: leatherT, h: ringTop + 10 }, coverR: { x: innerW / 2, y: 0, w: leatherT, h: ringTop + 10 }, spine: { x: -innerW / 2 - leatherT, y: -leatherT, w: innerW + 2 * leatherT, h: leatherT },
   };
@@ -4958,10 +4962,10 @@ function spineSectionSvg(result, { label = '' } = {}) {
   /* 背の革は1枚のU字：内側の角は曲げの内半径 r・外側の角は r＋革厚 t（内半径は内幅の半分まで）。y は上向き正→SVG は上下逆（Y＝−y） */
   const iw = result.innerW, t = s.fold?.t ?? s.spine.h, r = Math.min(Math.max(s.fold?.r ?? 0, 0), iw / 2), top = s.coverL.h, R = r + t, xo = iw / 2 + t, xi = iw / 2;
   const leather = `<path id="spine-leather" d="M${f(-xo)} ${f(-top)}L${f(-xo)} ${f(-r)}A${f(R)} ${f(R)} 0 0 0 ${f(-xi + r)} ${f(t)}L${f(xi - r)} ${f(t)}A${f(R)} ${f(R)} 0 0 0 ${f(xo)} ${f(-r)}L${f(xo)} ${f(-top)}L${f(xi)} ${f(-top)}L${f(xi)} ${f(-r)}A${f(r)} ${f(r)} 0 0 1 ${f(xi - r)} 0L${f(-xi + r)} 0A${f(r)} ${f(r)} 0 0 1 ${f(-xi)} ${f(-r)}L${f(-xi)} ${f(-top)}Z" fill="#d9c7a0" stroke="#000" stroke-width="0.2"/>`;
-  const arcBand = a => a ? `<path d="M${f(a.rOut)} ${f(-a.rOut)}A${f(a.rOut)} ${f(a.rOut)} 0 0 1 0 0A${f(a.rOut)} ${f(a.rOut)} 0 0 1 ${f(-a.rOut)} ${f(-a.rOut)}L${f(-a.rIn)} ${f(-a.rOut)}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 0 ${f(-(a.rOut - a.rIn))}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 ${f(a.rIn)} ${f(-a.rOut)}Z" fill="#c4ad7f" stroke="#000" stroke-width="0.2"/>` : '';
+  const arcBand = (a, fill = '#c4ad7f') => a ? (c => `<path d="M${f(a.rOut)} ${f(-c)}A${f(a.rOut)} ${f(a.rOut)} 0 0 1 0 ${f(-(c - a.rOut))}A${f(a.rOut)} ${f(a.rOut)} 0 0 1 ${f(-a.rOut)} ${f(-c)}L${f(-a.rIn)} ${f(-c)}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 0 ${f(-(c - a.rIn))}A${f(a.rIn)} ${f(a.rIn)} 0 0 0 ${f(a.rIn)} ${f(-c)}Z" fill="${fill}" stroke="#000" stroke-width="0.2"/>`)(a.c ?? a.rOut) : ''; /* c＝半円の中心の高さ（背の内面の底から） */
   const poly = (pts, fill) => `<polygon points="${pts.map(p => `${f(p.x)},${f(-p.y)}`).join(' ')}" fill="${fill}" stroke="#000" stroke-width="0.2"/>`;
   const supportEl = s.polys?.supporter ? s.polys.supporter.map(q => poly(q, '#c4ad7f')).join('') : s.supporter ? rect(s.supporter, '#c4ad7f') : arcBand(s.supporterArc), plateEl = s.polys?.plate ? poly(s.polys.plate, '#9a9a9a') : rect(s.plate, '#9a9a9a');
-  const body = [leather, supportEl, plateEl,
+  const body = [leather, arcBand(s.liningArc, '#e8dcc0'), supportEl, plateEl,
     `<circle cx="${f(s.ring.cx)}" cy="${f(-s.ring.cy)}" r="${f(s.ring.rOuter)}" fill="none" stroke="#b08d2a" stroke-width="${f(s.ring.rOuter - s.ring.rInner)}"/>`,
     `<line x1="${f(-result.innerW / 2)}" y1="${f(-(result.ringTop + 6))}" x2="${f(result.innerW / 2)}" y2="${f(-(result.ringTop + 6))}" stroke="#e00" stroke-width="0.2"/>`,
     `<text x="0" y="${f(-(result.ringTop + 8))}" font-size="3" text-anchor="middle" font-family="sans-serif">${label || ''} inner ${f(result.innerW)} / spine ${f(result.spineW)} mm</text>`].join('');
@@ -15352,7 +15356,18 @@ const BINDER_SPECS = [
    "cornerRMm": 3,
    "confidence": "estimated"
   },
-  "rivets": [],
+  "rivets": [
+   {
+    "xMm": -54,
+    "yMm": 0,
+    "dMm": 5
+   },
+   {
+    "xMm": 54,
+    "yMm": 0,
+    "dMm": 5
+   }
+  ],
   "mechanism": {
    "heightClosedMm": null,
    "heightOpenMm": null,
@@ -19616,7 +19631,7 @@ function renderBinder() {
   const leather = Number($('partThickness').value) || 1.5;
   $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
 }
-function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: wireOf(spec, ringD) /* 線径はリングの諸元なので金具データの値だけを使う（画面では直さない・2026-10-12 事業主指摘） */, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, supporterDia: base.supporterDiameterMm ?? 0, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: (() => { try { return base.sectionPoints ? binderSection(base) : null; } catch { return null; } })() /* 台座の断面のデータがあれば、断面図で実測の形とサポータの帯を描く */, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: Number($('spSupporter').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0, spineShape: $('spShape').value === 'round' ? 'round' : 'square' }; }
+function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: wireOf(spec, ringD) /* 線径はリングの諸元なので金具データの値だけを使う（画面では直さない・2026-10-12 事業主指摘） */, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, supporterDia: base.supporterDiameterMm ?? 0, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: (() => { try { return base.sectionPoints ? binderSection(base) : null; } catch { return null; } })() /* 台座の断面のデータがあれば、断面図で実測の形とサポータの帯を描く */, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: Number($('spSupporter').value) || 0, liningT: Number($('spLining').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0, spineShape: $('spShape').value === 'round' ? 'round' : 'square' }; }
 /** 閉じた手帳の3面図の入力値（背幅の入力に、束の厚み・表紙の長さ・規格のリフィル寸法・台座・リング位置を足す）。 */
 function topParams() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], p = spineParams(), base = binderBase(spec), cw = Number($('spCoverW').value), hp = spec?.holes?.pitchMm || [], span = spec?.holes?.span1toLastMm || 0, H = (spec?.refill?.hMm ?? 210) + 6;
@@ -19646,7 +19661,7 @@ function renderSpCompare() { const spec = binderSpec($('binderSpecSel').value) |
 function renderSpineSim() { renderSpCompare(); const p = spineParams(), r = spineSim(p); if (!r) { $('spResult').textContent = t('invalidNumber'); return null; } $('spFoldR').disabled = r.shape === 'round'; if (r.shape === 'round') $('spFoldR').value = String(r.foldR); /* 丸背：曲げ内半径は内幅の半分で自動 */ $('spResult').textContent = t('spineResult', { ring: r.outerRingD, inner: r.innerW, fold: r.foldEach, spine: r.spineW, top: r.ringTop }); $('spSection').innerHTML = spineSectionSvg(r, { label: `${p.ringD}mm` }); return r; }
 /** 背幅シミュレーションの線径の表示：金具データの値（計算で補った線径なら「（仮）」）。入力欄ではない。 */
 function resetSpineWire() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], ringD = Number($('ringD').value) || 20, size = ringSizeOf(spec, ringD), text = t('spWireVal', { w: Math.round(size.wire * 100) / 100, assumed: size.wireSource === 'measured' ? '' : t('spWireAssumed') }); const el = $('spWire'); el.value = text; el.textContent = text; const st = binderBase(spec).supporterThicknessMm; if (Number.isFinite(st) && st >= 0) $('spSupporter').value = String(st); /* 規格データに「リングサポータ厚」があれば、その値を標準にする（クラウゼ Mini6＝2.4・2026-10-12） */ }
-function initSpineSim() { resetSpineWire(); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spPlay', 'spFoldR', 'spShape']) $(id).addEventListener('change', () => { renderSpineSim(); renderTopSection(); }); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
+function initSpineSim() { resetSpineWire(); $('spCalib').onclick = () => { const m = Number($('spMeasured').value); const play = spinePlayFromMeasured(m, spineParams()); if (play === null) { $('hint').textContent = t('invalidNumber'); return; } $('spPlay').value = String(play); renderSpineSim(); $('hint').textContent = t('spineCalibrated', { play }); }; $('spApply').onclick = () => { const r = renderSpineSim(); if (!r) return; $('recipeSpine').value = String(r.spineW); $('recipeKind').value = 'notebook'; $('recipeRingD').value = $('ringD').value; $('recipeThickness').value = $('spLeather').value; $('recipeCard').open = true; $('hint').textContent = t('spineApplied', { spine: r.spineW }); }; renderSpineSim(); for (const id of ['spStack', 'spCoverW', 'spWire', 'spLeather', 'spSupporter', 'spLining', 'spPlay', 'spFoldR', 'spShape']) $(id).addEventListener('change', () => { renderSpineSim(); renderTopSection(); }); $('spTopDraw').onclick = drawTopSection; renderTopSection(); }
 function hwParams() { const out = {}; for (const input of ($('hwParams').children || [])) { const el = input.querySelector ? input.querySelector('input') : null; if (el && el.dataset?.param) out[el.dataset.param] = Number(el.value); } return out; }
 /** 金具を点に配置：外形は目印レイヤー（hw メタ付き）、取り付け穴は「金具穴」レイヤー。バインダーはリング中心に十字の目印も置く。 */
 /** 金具1個ぶんの図形（外形・取り付け穴・リング中心の印）の下書き（id なし）を作る。外形の先頭に hw（金具の情報）を持たせる。 */

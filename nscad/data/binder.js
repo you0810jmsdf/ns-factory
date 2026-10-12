@@ -1882,7 +1882,18 @@ export const BINDER_SPECS = [
    "cornerRMm": 3,
    "confidence": "estimated"
   },
-  "rivets": [],
+  "rivets": [
+   {
+    "xMm": -54,
+    "yMm": 0,
+    "dMm": 5
+   },
+   {
+    "xMm": 54,
+    "yMm": 0,
+    "dMm": 5
+   }
+  ],
   "mechanism": {
    "heightClosedMm": null,
    "heightOpenMm": null,
