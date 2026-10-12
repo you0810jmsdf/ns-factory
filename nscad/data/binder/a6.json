@@ -71,11 +71,11 @@
   ]
  },
  "plate": {
-  "lengthMm": 150,
-  "widthMm": 20,
+  "lengthMm": 138,
+  "widthMm": 24,
   "thicknessMm": 2,
-  "cornerRMm": 1.5,
-  "confidence": "measured"
+  "cornerRMm": 3,
+  "confidence": "estimated"
  },
  "rivets": [
   {
@@ -146,5 +146,5 @@
   ],
   "confidence": null
  },
- "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-10-12）。リング・取り付け穴・機構は推定のまま"
+ "sourceNote": null
 }
