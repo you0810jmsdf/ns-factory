@@ -326,3 +326,7 @@ body.day::before { content: ""; position: fixed; left: 0; right: 0; top: 0; heig
 .bdgs { display: flex; flex-wrap: wrap; gap: 8px; }
 .bdg { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .bdg.got { border-color: var(--gold); color: var(--gold); background: rgba(216,183,102,0.1); }
+.vphoto { flex-basis: 100%; display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.vthumb { width: 72px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid var(--gold); background: #000; }
+.vphoto > span { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+.visitbox .pnote { flex-basis: 100%; }

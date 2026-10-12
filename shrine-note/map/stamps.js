@@ -33,6 +33,13 @@ export const stamps = {
     save();
     return true;
   },
+  setPhoto(id, photoId) {
+    const v = this.get(id);
+    if (!v) return false;
+    v.photoId = photoId;
+    save();
+    return true;
+  },
   remove(id) {
     const n = data.visits.length;
     data.visits = data.visits.filter((v) => v.shrineId !== id);
