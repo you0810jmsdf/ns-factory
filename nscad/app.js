@@ -32,6 +32,7 @@ import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
+import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes } from './phrases.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
@@ -2237,6 +2238,34 @@ function exportBinderEditsCsv() {
   const files = editsToCsv(BINDER_SPECS, binderEdits); if (!files) { $('hint').textContent = t('bdeCsvNone'); return; }
   for (const [name, text] of Object.entries(files)) download(name, text, 'text/csv'); $('hint').textContent = t('bdeCsvDone');
 }
+/** 定型句：名前付きの文（複数行）をこの PC のブラウザに保存し、クリックした位置に 1 行ずつ文字図形として置く。 */
+let phrases = [];
+function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); }
+function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+function renderPhraseList(selectName) {
+  const sel = $('phraseSel'), keep = selectName ?? sel.value; sel.textContent = '';
+  for (const p of phrases) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); }
+  sel.value = phrases.some(p => p.name === keep) ? keep : (phrases[0]?.name || '');
+  const cur = phrases.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; }
+}
+function savePhrase() {
+  let r; try { r = upsertPhrase(phrases, $('phraseName').value, $('phraseText').value); } catch { $('hint').textContent = t('phraseEmpty'); return; }
+  phrases = r.items; if (!persistPhrases()) return; renderPhraseList(r.name); $('hint').textContent = t('phraseSaved', { name: r.name });
+}
+function deletePhrase() { const name = $('phraseSel').value; if (!name) return; phrases = removePhrase(phrases, name); if (!persistPhrases()) return; $('phraseName').value = ''; $('phraseText').value = ''; renderPhraseList(''); $('hint').textContent = t('phraseDeleted', { name }); }
+function placePhrase(at) {
+  const lines = phraseLines($('phraseText').value); if (!lines.some(Boolean)) { $('hint').textContent = t('phraseEmpty'); return; }
+  const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
+  if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer);
+  cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); });
+  renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length });
+}
+function initPhrases() {
+  loadPhrases();
+  $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
+  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -2967,6 +2996,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }
+  if (mode === 'phrase') { placePhrase(cursor); return; }
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
@@ -3194,7 +3224,7 @@ $('cmd').addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
 window.addEventListener('resize', resize);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
