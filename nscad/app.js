@@ -2284,6 +2284,7 @@ function initHardware() {
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
+  $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };

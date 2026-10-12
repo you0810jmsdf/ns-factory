@@ -70,17 +70,20 @@
     .svgbody svg { max-width: 100%; height: auto; background: #fff; border-radius: 6px; margin: 4px 0; display: block; }
     .bd-table { border-collapse: collapse; max-width: 640px; } .bd-table th { text-align: left; padding: 3px 12px 3px 0; white-space: nowrap; vertical-align: top; font-weight: 600; } .bd-table td { padding: 3px 0; } .bd-note { opacity: .75; font-size: .9em; margin: 8px 0; } #phraseText { width: 100%; box-sizing: border-box; font: inherit; } #bdEditDialog { max-width: 900px; } #bdEditDialog h4 { margin: 10px 0 4px; color: var(--accent); } #bdEditDialog input[type=number] { width: 72px; } #bdEditDialog .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0; }
     #printArea { display: none; }
-    .hdr-more { display: none; } /* shown only on phones (rule inside the media block below) */
+    .hdr-more, .side-toggle { display: none; } /* shown only on phones (rules inside the media block below) */
     /* Phone layout (width <= 760px): tools in one scrollable row, drawing in the middle, cards below the drawing (40% height, scrollable). 2026-10-12 */
     @media (max-width: 760px) {
       body { height: 100dvh; font-size: 14px; }
       header { padding: 6px 8px; gap: 4px; } h1 { margin-right: 6px; font-size: 13px; }
-      main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) 40vh; }
+      main { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; }
       aside { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; border-right: 0; border-bottom: 1px solid var(--line); padding: 6px; gap: 2px; -webkit-overflow-scrolling: touch; }
       aside .group { display: none; }
       aside button { width: auto; flex: none; padding: 6px 9px; font-size: 13px; }
       .workspace { min-height: 0; }
-      #side { border-left: 0; border-top: 1px solid var(--line); padding: 8px; }
+      /* Cards live in a bottom drawer: 48px when closed (only the toggle shows), 60% of the screen when open. */
+      #side { border-left: 0; border-top: 1px solid var(--line); padding: 0 8px 8px; max-height: 48px; overflow: hidden; }
+      body.side-open #side { max-height: 60vh; overflow-y: auto; }
+      .side-toggle { display: flex; width: 100%; justify-content: center; position: sticky; top: 0; z-index: 2; margin: 6px 0 8px; height: 34px; background: #1c1c1e; border-color: var(--accent); color: var(--accent); }
       #side .card > summary { padding: 10px 12px; }
       input[type=number] { width: 64px; }
       dialog { max-width: calc(100vw - 16px); max-height: 85vh; }
@@ -135,7 +138,7 @@
 </aside>
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div>
 <div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
-<div id="side">
+<div id="side"><button id="sideToggle" class="side-toggle" data-i18n="sideToggleOpen" aria-expanded="false"></button>
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
 <label id="l-totalLength" hidden><span data-i18n="totalLength"></span><output id="info-totalLength"></output></label>
@@ -530,8 +533,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ae41173d","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=85a8f242","./help/ja.js":"./help/ja.js?v=d9337941","./i18n.js":"./i18n.js?v=ed0a6f96","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=ae41173d"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=42280a11","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec21f081","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d984f365","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=96b02a31","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=82b017e5","./help/en.js":"./help/en.js?v=85a8f242","./help/ja.js":"./help/ja.js?v=d9337941","./i18n.js":"./i18n.js?v=a894e003","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=0f1b1305","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=42280a11"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2046,6 +2049,8 @@ const MESSAGES = {
     "phrasePlaced": "{n} 行の文字を置きました。",
     "hint.phrase": "置きたい位置（1行目の左下）をクリック。",
     "hdrMore": "設定 ▾",
+    "sideToggleOpen": "メニューを開く ▴",
+    "sideToggleClose": "メニューを閉じる ▾",
     "phraseExport": "書き出す（phrases.json）",
     "phraseImport": "読み込む",
     "phraseNone": "保存した句がありません。",
@@ -3021,6 +3026,8 @@ const MESSAGES = {
     "phrasePlaced": "Placed {n} lines of text.",
     "hint.phrase": "Click where the first line goes (its lower-left).",
     "hdrMore": "Settings ▾",
+    "sideToggleOpen": "Open menu ▴",
+    "sideToggleClose": "Close menu ▾",
     "phraseExport": "Export (phrases.json)",
     "phraseImport": "Import",
     "phraseNone": "No saved phrases.",
@@ -19510,6 +19517,7 @@ function initHardware() {
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
+  $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
