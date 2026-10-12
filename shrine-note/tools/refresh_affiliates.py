@@ -97,27 +97,36 @@ def validate():
 
 def main():
     args = sys.argv[1:]
-    miss = missing()
-    todo = sorted(set(miss["stays"]) | set(miss["specialties"]))
     if "--check" in args:
+        miss = missing()
+        todo = sorted(set(miss["stays"]) | set(miss["specialties"]))
         probs = validate()
         log("確認: 欠け=%d社 検査=%s" % (len(todo), "合格" if not probs else "不合格 " + " / ".join(probs[:5])))
         return 1 if probs else 0
-    if not todo:
-        log("変更なし（欠けた神社はありません）")
-        return 0
     use_git = "--no-git" not in args
     if use_git:
         status = run(["git", "status", "--porcelain", "--untracked-files=no"]).stdout.strip()
         if status:
-            raise RuntimeError("作業用クローンに未コミットの変更があるため中止: " + status.replace("\n", " | ")[:200])
+            raise RuntimeError("作業用クローンに未コミットの変更があるため中止: " + " | ".join(status.splitlines())[:200])
         run(["git", "fetch", "-q", "origin"])
-        run(["git", "checkout", "-q", "-B", BRANCH, "origin/main"])
-        miss = missing()
-        todo = sorted(set(miss["stays"]) | set(miss["specialties"]))
-        if not todo:
-            log("変更なし（最新の main では欠けなし）")
+        # 未マージのPRが残っているあいだは、同じ取得を繰り返さずに待つ（マージ後の実行で、残りを取り足す）
+        waiting = run(["gh", "pr", "list", "--head", BRANCH, "--state", "open", "--json", "url", "--jq", ".[0].url"],
+                      check=False).stdout.strip()
+        if waiting:
+            log("マージ待ちのPRがあるため何もしません: %s" % waiting)
             return 0
+        before = open(os.path.abspath(__file__), "rb").read()
+        run(["git", "checkout", "-q", "-B", BRANCH, "origin/main"])    # 作業ツリーを最新の main に合わせる
+        if open(os.path.abspath(__file__), "rb").read() != before and not os.environ.get("NSF_REEXEC"):
+            log("スクリプトが更新されたので、新しい版で起動し直します")
+            os.environ["NSF_REEXEC"] = "1"
+            sys.stdout.flush()
+            sys.exit(subprocess.call([sys.executable] + sys.argv))
+    miss = missing()
+    todo = sorted(set(miss["stays"]) | set(miss["specialties"]))
+    if not todo:
+        log("変更なし（欠けた神社はありません）")
+        return 0
     log("欠けた神社: %s" % ",".join(todo))
     build_stays.build(missing=True)
     build_specialties.build(missing=True)
