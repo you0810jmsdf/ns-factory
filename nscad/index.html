@@ -54,6 +54,7 @@
     .sp-compare-scroll { overflow-x: auto; } #spCompare { border-collapse: collapse; font-size: 11px; width: 100%; } #spCompare th, #spCompare td { border: 1px solid var(--line); padding: 4px; text-align: right; } #spCompare caption { text-align: left; padding: 6px 0; } #spCompare tr[aria-current="true"] { background: var(--accent); color: #111; font-weight: 700; }
     #hint { color: var(--accent); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #count { white-space: nowrap; color: #888; }
     #cmd { width: 190px; font-family: ui-monospace, Menlo, monospace; }
+    dialog.fb { width: min(560px, calc(100vw - 24px)); } dialog.fb .fb-f { display: block; margin: 8px 0; } dialog.fb textarea, dialog.fb .fb-f input { width: 100%; box-sizing: border-box; } dialog.fb .fb-ctx { display: block; font-size: 12px; color: #aaa; margin: 2px 0 6px 22px; word-break: break-all; } dialog.fb .fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; } dialog.fb .fb-status { display: block; min-height: 1.4em; margin: 6px 0; } dialog.fb .fb-status.ok { color: #7fd48a; } dialog.fb .fb-status.ng { color: #ff8a80; }
     dialog { max-width: 720px; max-height: 80vh; background: var(--card); color: #ddd; border: 1px solid var(--line); border-radius: 12px; } pre { white-space: pre-wrap; font: inherit; }
     .spacer { margin-left: auto; }
     #tutBar { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 3; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: #1c1c1ee6; border: 1px solid var(--accent); border-radius: 10px; font-size: 13px; } #tutBar[hidden] { display: none; } #tutCaption { flex: 1 1 200px; color: #fff; }
@@ -103,11 +104,11 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 19:31 · 32f334e</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 19:58 · d776778</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
-<select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
+<select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="feedbackBtn" data-i18n="fbBtn" data-i18n-title="fbBtnTip"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
 <aside data-i18n-aria="tools">
 <div class="group" data-i18n="drawing"></div>
@@ -527,6 +528,15 @@
 </div>
 </main>
 <div id="printArea" data-pages="0"></div>
+<dialog id="feedbackDialog" class="fb"><h3 data-i18n="fbTitle"></h3><p data-i18n="fbLead"></p>
+<div class="row" id="fbKinds" role="radiogroup"><label><input id="fbKind-idea" type="radio" name="fbKind" value="idea" checked><span data-i18n="fbKindIdea"></span></label><label><input id="fbKind-bug" type="radio" name="fbKind" value="bug"><span data-i18n="fbKindBug"></span></label><label><input id="fbKind-cheer" type="radio" name="fbKind" value="cheer"><span data-i18n="fbKindCheer"></span></label></div>
+<label class="fb-f"><span data-i18n="fbMsgL"></span><textarea id="fbMsg" rows="6" maxlength="500" data-i18n-placeholder="fbPh"></textarea></label><output id="fbCount">0 / 500</output>
+<label class="fb-f"><span data-i18n="fbContactL"></span><input id="fbContact" type="text" maxlength="120" autocomplete="off" data-i18n-placeholder="fbContactPh"></label>
+<label class="fb-ctx-on"><input id="fbCtxOn" type="checkbox" checked><span data-i18n="fbCtxOn"></span></label><output id="fbCtx" class="fb-ctx"></output>
+<input id="fbHp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="fb-hp">
+<p class="bd-note" data-i18n="fbBugNote"></p><p class="bd-note" data-i18n="fbNote"></p>
+<output id="fbStatus" class="fb-status" role="status"></output>
+<div class="row"><button id="fbSend" data-i18n="fbSend"></button><button id="fbClose" data-i18n="fbClose"></button></div></dialog>
 <dialog id="svgDialog"><h3 id="svgTitle"></h3><div id="svgBody" class="svgbody"></div><button id="closeSvg" data-i18n="closeHelp"></button></dialog>
 <dialog id="bdEditDialog"><h3 id="bdEditTitle"></h3>
 <div class="row"><label><input id="bdeAsNew" type="checkbox"> <span id="bdeAsNewLabel"></span></label></div>
@@ -539,8 +549,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=58564681","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=27d7c573","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=822d3b19","./help/en.js":"./help/en.js?v=2578c6dc","./help/ja.js":"./help/ja.js?v=09d7a69a","./i18n.js":"./i18n.js?v=acac02d3","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=58564681"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=3dea675e","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=27d7c573","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=822d3b19","./help/en.js":"./help/en.js?v=d4ee2af7","./help/ja.js":"./help/ja.js?v=aceb4a37","./i18n.js":"./i18n.js?v=15bdcfa1","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=3dea675e"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1640,6 +1650,30 @@ const MESSAGES = {
     "bugLog": "不具合記録",
     "bugLogTip": "うまく動かないときに押すと、最近の操作の記録と図面をファイルに保存します（外部へは送りません）。保存したファイルを渡してください",
     "bugLogSaved": "不具合記録（最近 {n} 件の操作と図面）を保存しました。外部へは送っていません。このファイルを渡してください。",
+    "fbBtn": "改善要望",
+    "fbBtnTip": "使いにくいところ・ほしい機能・うまく動かないことを、作者に直接送ります",
+    "fbTitle": "改善要望・ご意見",
+    "fbLead": "使ってみて気づいたことを、作者に直接送れます。「ここが使いにくい」「こうなると助かる」など、何でも歓迎です。",
+    "fbKindIdea": "要望（こうしてほしい）",
+    "fbKindBug": "不具合（うまく動かない）",
+    "fbKindCheer": "感想・応援",
+    "fbMsgL": "内容（500字まで）",
+    "fbPh": "例：金具を置いたあと、位置をそろえるのに手間がかかります。",
+    "fbContactL": "返事がほしいときの連絡先（なくてもかまいません）",
+    "fbContactPh": "メールアドレスなど",
+    "fbCtxOn": "画面の大きさや使っている機能など（下に表示）を、一緒に送る。図面の中身は送りません",
+    "fbBugNote": "図面を見ないと分からない不具合は、ヘッダーの「不具合記録」でファイルに保存して、そのファイルを渡してください（こちらからは図面は送りません）。",
+    "fbNote": "名前や住所は聞きません。いただいた内容は、作者だけが読みます。返事は、連絡先を書いた方にだけします。",
+    "fbSend": "送る",
+    "fbClose": "閉じる",
+    "fbSending": "送っています…",
+    "fbOk": "届きました。ありがとうございます。",
+    "fbShort": "内容を、もう少し書いてください。",
+    "fbLong": "内容は500字までです。短くしてください。",
+    "fbLinks": "リンクは2つまでにしてください。",
+    "fbContactLong": "連絡先が長すぎます。",
+    "fbBusy": "いまは混み合っています。しばらくしてから、もう一度送ってください。",
+    "fbNet": "送れませんでした。通信を確かめて、もう一度送ってください。",
     "closeHelp": "閉じる",
     "shortcutsText": "元に戻す: {mod}Z\nやり直し: {mod}Shift+Z / Ctrl+Y\nコピー: {mod}D\n保存: {mod}S / 開く: {mod}O\n削除: Delete / Backspace\n選択へ: Esc / 水平垂直: Shift\n1穴: Alt(⌥)+クリック\nショートカット: F1 / ヘルプ: ?",
     "title": "N's CAD — 革の型紙",
@@ -2693,6 +2727,30 @@ const MESSAGES = {
     "bugLog": "Bug log",
     "bugLogTip": "Press when something does not work: saves the recent operations and the drawing to a file (nothing is sent anywhere). Hand over the saved file",
     "bugLogSaved": "Saved the bug log (the last {n} operations and the drawing). Nothing was sent anywhere. Hand over this file.",
+    "fbBtn": "Feedback",
+    "fbBtnTip": "Send the author what is hard to use, what you would like, or what does not work",
+    "fbTitle": "Feedback and requests",
+    "fbLead": "Tell the author what you noticed while using this. Anything is welcome: \"this is hard to use\", \"it would help if…\".",
+    "fbKindIdea": "Request (I would like…)",
+    "fbKindBug": "Problem (it does not work)",
+    "fbKindCheer": "Thoughts / thanks",
+    "fbMsgL": "Message (up to 500 characters)",
+    "fbPh": "Example: after placing a hardware part, it takes many steps to line it up.",
+    "fbContactL": "Contact if you want a reply (optional)",
+    "fbContactPh": "E-mail address, etc.",
+    "fbCtxOn": "Also send the screen size and the features in use (shown below). The contents of your drawing are not sent",
+    "fbBugNote": "For a problem that needs your drawing to understand, use \"Bug log\" in the header to save a file and hand that file over (your drawing is not sent from here).",
+    "fbNote": "We do not ask for your name or address. Only the author reads this. A reply is sent only if you wrote a contact.",
+    "fbSend": "Send",
+    "fbClose": "Close",
+    "fbSending": "Sending…",
+    "fbOk": "Received. Thank you.",
+    "fbShort": "Please write a little more.",
+    "fbLong": "The message can be up to 500 characters. Please shorten it.",
+    "fbLinks": "Please keep it to two links or fewer.",
+    "fbContactLong": "The contact is too long.",
+    "fbBusy": "It is busy right now. Please try again a little later.",
+    "fbNet": "Could not send. Check your connection and try again.",
     "closeHelp": "Close",
     "shortcutsText": "Undo: {mod}Z\nRedo: {mod}Shift+Z / Ctrl+Y\nCopy: {mod}D\nSave: {mod}S / Open: {mod}O\nDelete: Delete / Backspace\nSelect: Esc / Axis lock: Shift\nSingle hole: Alt(⌥)+click\nShortcuts: F1 / Help: ?",
     "title": "N's CAD — Leather Patterns",
@@ -5445,6 +5503,70 @@ function mergePhrases(items, incoming) {
 }
 
 return {PHRASES_KEY, PHRASE_MAX_LINES, PHRASE_LINE_GAP, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases};
+})();
+__mods['feedback'] = (function(){
+// 改善要望（ご意見）の送信。受け口は神社巡りノートと共通の Google Apps Script（app=ncad を付けると、別のシートに記録される）。
+// 送るのは「種類・本文・連絡先（任意）・版・画面情報（任意）」だけ。図面の中身・図形・ファイル名は送らない。
+const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbxVjMD91cS1dDRlHo1jnuKLNChPZnJ1cT7-xhqsgBf28q5v7kMCGkWZ77fHBy-SUEyF9g/exec';
+const FB_KINDS = ['idea', 'bug', 'cheer'];
+const FB_MIN = 3, FB_MAX = 500, FB_CONTACT_MAX = 120, FB_CTX_MAX = 300;
+
+/** 二重送信を防ぐための番号（16進32桁）。受け口が同じ番号を2回目から無視する */
+function newRid(c = globalThis.crypto) {
+  const bytes = new Uint8Array(16);
+  if (c?.getRandomValues) c.getRandomValues(bytes); else for (let i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** 送る前の検査。問題なければ null、あれば理由（'kind' | 'short' | 'long' | 'contact' | 'links'） */
+function checkFeedback({ kind, msg, contact }) {
+  const m = String(msg ?? '').replace(/\r\n?/g, '\n').trim();
+  if (!FB_KINDS.includes(kind)) return 'kind';
+  if (m.length < FB_MIN) return 'short';
+  if (m.length > FB_MAX) return 'long';
+  if (String(contact ?? '').trim().length > FB_CONTACT_MAX) return 'contact';
+  if ((m.match(/https?:\/\//gi) || []).length > 2) return 'links';
+  return null;
+}
+
+/** 一緒に送る画面情報（任意）。画面の大きさ・端末の種類・使っている画面の状態の「数」だけ。図面の中身は含めない */
+function feedbackContext(info = {}) {
+  const ua = String(info.ua || '');
+  const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'other';
+  const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : 'other';
+  const parts = [
+    `screen ${info.w ?? '?'}x${info.h ?? '?'}`, `${os} ${browser}`, `lang ${info.lang === 'en' ? 'en' : 'ja'}`,
+    `mode ${/^[A-Za-z0-9_.-]{1,24}$/.test(String(info.mode)) ? info.mode : '?'}`, `tabs ${Number(info.tabs) || 0}`, `shapes ${Number(info.shapes) || 0}`,
+    `3view ${info.threeView ? 'on' : 'off'}`, info.offline ? 'file' : 'web',
+  ];
+  return parts.join(' / ').slice(0, FB_CTX_MAX);
+}
+
+/** 受け口に送る問い合わせ文字列（GET）。長い本文でも途中で切れないよう、本文の上限は 500 字 */
+function feedbackQuery({ kind, msg, contact, lang, ver, rid, ctx, hp }) {
+  const q = new URLSearchParams({
+    action: 'send', app: 'ncad', kind, msg: String(msg).replace(/\r\n?/g, '\n').trim(), contact: String(contact ?? '').trim(),
+    lang: lang === 'en' ? 'en' : 'ja', ver: String(ver ?? '').slice(0, 40), rid, ctx: String(ctx ?? '').slice(0, FB_CTX_MAX),
+  });
+  if (hp) q.set('hp', String(hp));
+  return q.toString();
+}
+
+/** 送信。戻り値は { ok:true } か { ok:false, error }（error は 'short' 'long' 'links' 'busy' 'net' など）。通信の失敗で例外は投げない */
+async function sendFeedback(fields, { fetchImpl = globalThis.fetch, url = FEEDBACK_URL, timeoutMs = 15000 } = {}) {
+  const bad = checkFeedback(fields);
+  if (bad) return { ok: false, error: bad };
+  const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctl ? setTimeout(() => ctl.abort(), timeoutMs) : null;
+  try {
+    const r = await fetchImpl(url + '?' + feedbackQuery(fields), { method: 'GET', ...(ctl ? { signal: ctl.signal } : {}) });
+    const j = await r.json();
+    return j && j.ok ? { ok: true } : { ok: false, error: String(j?.error || 'net') };
+  } catch { return { ok: false, error: 'net' }; }
+  finally { if (timer) clearTimeout(timer); }
+}
+
+return {FEEDBACK_URL, FB_KINDS, FB_MIN, newRid, checkFeedback, feedbackContext, feedbackQuery};
 })();
 __mods['threeview'] = (function(){
 const { binderSpecWithSection } = __mods['binder_section_edit'];
@@ -18115,7 +18237,7 @@ const HELP_JA = {
     {
       "id": "privacy",
       "title": "計測（アクセス解析）について",
-      "body": "公開版（https://you0810jmsdf.github.io/ns-factory/nscad/）では、Google アナリティクスで次だけを集計しています：ページを開いた回数と、機能の使用回数（三面図の切替・金具を置く・革を透かして見る）。図形・文字・寸法・ファイル名・図面の内容は送りません。保存した図面・定型句・直した金具の寸法は、お使いの PC のブラウザの中だけにあり、どこにも送られません。\n手元にダウンロードして file:// で開いたときは、何も送りません。"
+      "body": "公開版（https://you0810jmsdf.github.io/ns-factory/nscad/）では、Google アナリティクスで次だけを集計しています：ページを開いた回数と、機能の使用回数（三面図の切替・金具を置く・革を透かして見る）。図形・文字・寸法・ファイル名・図面の内容は送りません。保存した図面・定型句・直した金具の寸法は、お使いの PC のブラウザの中だけにあり、どこにも送られません。\n手元にダウンロードして file:// で開いたときは、何も送りません。\n「改善要望」ボタンで送信したときだけ、書いた内容（種類・本文・連絡先）と版、画面の大きさなどの情報（送信前に画面に表示されます。外すこともできます）を作者に送ります。図面の内容は送りません。"
     }
   ]
 };
@@ -18269,7 +18391,7 @@ const HELP_EN = {
     {
       "id": "privacy",
       "title": "About analytics",
-      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent."
+      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent.\nOnly when you press \"Feedback\" and send, what you wrote (type, message, contact), the build number and screen information (shown before sending, and you can turn it off) go to the author. Your drawing contents are not sent."
     }
   ]
 };
@@ -18318,6 +18440,7 @@ const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdi
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 const { track } = __mods['analytics'];
+const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
 const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath } = __mods['design'];
@@ -19343,6 +19466,8 @@ function initDesign() {
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('bugLog').onclick = () => { const r = bugReport(); download(bugReportName(), JSON.stringify(r), 'application/json'); $('hint').textContent = t('bugLogSaved', { n: r.log.length }); }; /* 不具合記録：操作の記録と図面をファイルに保存（外部へは送らない） */
+  $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
+  $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -21564,6 +21689,24 @@ function keyLog(e) { const el = e.target, text = el && (el.tagName === 'TEXTAREA
 function bugReport() {
   const ver = $('buildVer')?.textContent ?? '';
   return { kind: 'ncad-bug-report', savedAt: new Date().toISOString(), app: ver, env: { ua: (typeof navigator !== 'undefined' && navigator.userAgent) || '', scale: +scale.toFixed(3), origin, mode, tab: activeTab }, layers: doc.layers.map(l => ({ id: l.id, name: l.name, visible: l.visible, locked: l.locked })), shapeCount: doc.shapes.length, selected: [...selected].slice(0, 50), log: opLog.slice(), doc };
+}
+/* 改善要望：使い勝手の意見を作者に直接送る（受け口は神社巡りノートと共通・app=ncad で別シート）。送るのは種類・本文・連絡先・版・画面情報だけ。図面の中身は送らない */
+let fbRid = '';
+function fbInfo() { return { w: globalThis.innerWidth, h: globalThis.innerHeight, ua: globalThis.navigator?.userAgent || '', lang: $('language').value, mode, tabs: tabs.length, shapes: doc.shapes.length, threeView: !!$('threeView')?.checked, offline: globalThis.location?.protocol === 'file:' }; }
+function fbKind() { return ['idea', 'bug', 'cheer'].find(k => $('fbKind-' + k).checked) || 'idea'; }
+function fbShowCtx() { $('fbCtx').textContent = $('fbCtxOn').checked ? feedbackContext(fbInfo()) : ''; }
+function openFeedback() {
+  fbRid = fbRid || newRid(); $('fbStatus').textContent = ''; $('fbStatus').className = 'fb-status'; $('fbSend').disabled = false; $('fbHp').value = ''; $('fbCount').textContent = `${$('fbMsg').value.length} / 500`;
+  fbShowCtx(); $('feedbackDialog').showModal(); setTimeout(() => $('fbMsg').focus(), 50);
+}
+async function submitFeedback() {
+  const st = $('fbStatus'), btn = $('fbSend'); fbRid = fbRid || newRid();
+  btn.disabled = true; st.className = 'fb-status'; st.textContent = t('fbSending');
+  const r = await sendFeedback({ kind: fbKind(), msg: $('fbMsg').value, contact: $('fbContact').value, lang: $('language').value, ver: $('buildVer')?.textContent ?? '', rid: fbRid, ctx: $('fbCtxOn').checked ? feedbackContext(fbInfo()) : '', hp: $('fbHp').value });
+  btn.disabled = false;
+  if (r.ok) { st.textContent = t('fbOk'); st.className = 'fb-status ok'; $('fbMsg').value = ''; $('fbContact').value = ''; $('fbCount').textContent = '0 / 500'; fbRid = newRid(); return; }
+  const key = { short: 'fbShort', long: 'fbLong', links: 'fbLinks', contact: 'fbContactLong', busy: 'fbBusy' }[r.error] || 'fbNet';
+  st.textContent = t(key); st.className = 'fb-status ng';
 }
 function bugReportName() { const d = new Date(), z = n => String(n).padStart(2, '0'); return `ncad-bug-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`; }
 document.addEventListener?.('pointerdown', e => { if (e.target === canvas) pointerLog('down', e); }, true);

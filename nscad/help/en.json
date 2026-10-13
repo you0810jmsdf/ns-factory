@@ -143,7 +143,7 @@
     {
       "id": "privacy",
       "title": "About analytics",
-      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent."
+      "body": "The public version (https://you0810jmsdf.github.io/ns-factory/nscad/) uses Google Analytics to count only page views and how often three features are used (three-view toggle, placing hardware, see-through leather). No shapes, text, dimensions, file names or drawing contents are sent. Saved drawings, phrases and edited hardware sizes stay in your browser only.\nWhen opened locally via file://, nothing is sent.\nOnly when you press \"Feedback\" and send, what you wrote (type, message, contact), the build number and screen information (shown before sending, and you can turn it off) go to the author. Your drawing contents are not sent."
     }
   ]
 }
