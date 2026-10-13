@@ -1591,7 +1591,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
-  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('finder').hidden) openFinder(false); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
+  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('feedback').hidden) openFeedback(false); else if (!$('finder').hidden) openFinder(false); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
 });
 
 
@@ -1675,6 +1675,55 @@ function renderTree() {
     $('treeFocusName').textContent = deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
   }
 }
+// ---- ご意見・ご要望（作者へ） ----
+const FEEDBACK_URL = 'https://script.google.com/macros/s/AKfycbxVjMD91cS1dDRlHo1jnuKLNChPZnJ1cT7-xhqsgBf28q5v7kMCGkWZ77fHBy-SUEyF9g/exec';
+const FB = EN
+  ? { title: 'Feedback', close: 'Close', lead: 'This goes straight to the author. Requests, bug reports and words of support are all welcome.', kinds: ['Request', 'Bug', 'Cheer'], msgL: 'Message', ph: 'Anything is fine, even a short note', contactL: 'If you want a reply (optional)', contactPh: 'Email etc. You can send without it', note: 'No name or address is needed. Please do not write personal information. Your device type, screen size and the shrine you have open are sent along. Only the author reads it.', send: 'Send', sending: 'Sending…', ok: 'Thank you! Your message has been sent.', short: 'Please write a little more.', long: 'That is too long. Please keep it within 400 characters.', links: 'Too many links. Please remove some.', busy: 'Many messages are arriving right now. Please try again later.', net: 'Could not send. Please check your connection and press Send again.' }
+  : { title: 'ご意見・ご要望', close: '閉じる', lead: '作者に、直接届きます。要望・不具合・応援、どれでも歓迎です。', kinds: ['要望', '不具合', '応援'], msgL: '内容', ph: 'どんなことでも、短くて大丈夫です', contactL: '返信がほしいとき（任意）', contactPh: 'メールアドレスなど。書かなくても送れます', note: '名前や住所は不要です。個人情報は書かないでください。端末の種類・画面の大きさ・開いている神社だけを、一緒に送ります。内容は作者だけが読みます。', send: '送る', sending: '送っています…', ok: 'ありがとうございます。送りました。', short: 'もう少し書いてください。', long: '長すぎます。400文字以内でお願いします。', links: 'リンクが多すぎます。減らしてください。', busy: 'いま届く数が多くなっています。しばらくしてからお試しください。', net: '送れませんでした。通信を確かめて、もう一度「送る」を押してください。' };
+let fbKind = 'idea', fbRid = '';
+const newRid = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+function openFeedback(show) {
+  if (!show) { $('feedback').hidden = true; return; }
+  $('fbTitle').textContent = FB.title; $('btnFbClose').textContent = FB.close; $('fbLead').textContent = FB.lead;
+  document.querySelectorAll('#fbKinds .fbk').forEach((b, i) => { b.textContent = FB.kinds[i]; });
+  $('fbMsgL').textContent = FB.msgL; $('fbMsg').placeholder = FB.ph; $('fbContactL').textContent = FB.contactL; $('fbContact').placeholder = FB.contactPh;
+  $('fbNote').textContent = FB.note; $('fbSend').textContent = FB.send;
+  $('fbStatus').textContent = ''; $('fbStatus').className = 'fb-status';
+  if (!fbRid) fbRid = newRid();
+  $('feedback').hidden = false;
+  setTimeout(() => $('fbMsg').focus(), 50);
+}
+$('btnFeedback').addEventListener('click', () => { $('setGroup').hidden = true; openFeedback(true); });
+$('btnFbClose').addEventListener('click', () => openFeedback(false));
+$('fbKinds').addEventListener('click', (e) => {
+  const b = e.target.closest('.fbk'); if (!b) return;
+  fbKind = b.dataset.kind;
+  document.querySelectorAll('#fbKinds .fbk').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-checked', String(on)); });
+});
+$('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 400`; });
+$('fbForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const st = $('fbStatus'), btn = $('fbSend');
+  const msg = $('fbMsg').value.trim();
+  const fail = (m) => { st.textContent = m; st.className = 'fb-status ng'; };
+  if (msg.length < 3) return fail(FB.short);
+  if (msg.length > 400) return fail(FB.long);
+  btn.disabled = true; st.className = 'fb-status'; st.textContent = FB.sending;
+  const dev = /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'pc';
+  const q = new URLSearchParams({ action: 'send', kind: fbKind, msg, contact: $('fbContact').value.trim(), lang: EN ? 'en' : 'ja', ver: `${dev} ${innerWidth}x${innerHeight} s=${selected ? selected.id : '-'}`, rid: fbRid, hp: $('fbHp').value });
+  try {
+    const r = await fetch(FEEDBACK_URL + '?' + q.toString(), { method: 'GET' });
+    const j = await r.json();
+    if (j && j.ok) {
+      st.textContent = FB.ok; st.className = 'fb-status ok';
+      $('fbMsg').value = ''; $('fbContact').value = ''; $('fbCount').textContent = '0 / 400'; fbRid = newRid();
+    } else {
+      const m = { short: FB.short, long: FB.long, links: FB.links, busy: FB.busy }[j && j.error];
+      fail(m || FB.net);
+    }
+  } catch (_) { fail(FB.net); }
+  finally { btn.disabled = false; }
+});
 // ---- 神社を探す ----
 // 比べる前に、全角半角・大文字小文字・カタカナ／ひらがなをそろえる
 const normQ = (s) => String(s || '').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60)).replace(/[\s・･\-ー—–‐'’.,、。]/g, '');
@@ -1788,6 +1837,9 @@ $('importIn').addEventListener('change', async (e) => {
 });
 function syncBookBtn() { $('btnBook').textContent = (EN ? 'Goshuin Stamp Book' : '御朱印スタンプ帳') + (stamps.count() ? ' ' + stamps.count() : ''); }
 $('btnLang').hidden = !enData;
+$('btnFeedback').textContent = EN ? 'Feedback' : 'ご意見・ご要望';
+$('fbLink').textContent = EN ? 'Feedback' : 'ご意見・ご要望';
+$('fbLink').addEventListener('click', (e) => { e.preventDefault(); openFeedback(true); });
 $('btnLang').textContent = EN ? U('langToggle', '日本語') : 'English';
 $('btnLang').addEventListener('click', () => {
   try { localStorage.setItem(LANG_KEY, EN ? 'ja' : 'en'); } catch (_) { /* 保存できなくても切り替える */ }
