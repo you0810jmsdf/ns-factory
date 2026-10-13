@@ -243,7 +243,7 @@ export function closedBinderTop(p = {}) {
   if (![stackT, refillW, holeEdge, holeD, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
   /* 背は、曲げの内半径 r で角を丸めたU字：内側の角の半径 r・外側の角の半径 r＋革厚（r は内幅の半分まで。それ以上は半円）。表裏の表紙は xc＝革厚＋r から右へ接続する。曲げの内半径 foldR を指定しない古い呼び出しは、今までどおり半円（r＝内幅の半分） */
   const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, r = p.foldR === undefined ? rIn : Math.min(Math.max(Number(p.foldR) || 0, 0), rIn), xc = t + r;
-  const dyc = plateW / 2 - (rIn - r), plateLeft = dyc <= 0 ? t : xc - Math.sqrt(Math.max(0, r * r - dyc * dyc)), /* 台座は、背の内面の平らな部分に当たるか、角の丸みに両端で当たる位置 */
+  const dyc = plateW / 2 - (rIn - r), plateLeft = sim.section.polys ? t + sim.section.lift : dyc <= 0 ? t : xc - Math.sqrt(Math.max(0, r * r - dyc * dyc)), /* 台座は、背の内面の平らな部分に当たるか、角の丸みに両端で当たる位置。断面のデータがある台座（レンズ形）は、端が上がるので背の曲がりに合わせてずらさない＝上の断面図と同じ位置（背の内面の底・内張の上）に置く（事業主指示 2026-10-13：右メニュー下の三面図を上の断面図に合わせる） */
  ringX = plateLeft + (sim.section.ring.cy - sim.section.lift), holeX = ringX + (sim.outerRingD + p.ringD) / 4, refillLeft = holeX - holeEdge, tipX = refillLeft + refillW; /* 台座は丸い内面に両端で当たる位置。リフィルの穴は、リングの針金が通る位置（リング中心から針金の中心の半径ぶん・遠い側の針金）に置く（事業主指摘 2026-10-13：リフィルの穴にリングが通っていない）。リフィルの端は、穴の中心から holeEdge 戻った位置 */
   const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
   const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
