@@ -1,8 +1,53 @@
 {
- "generatedAt": "2026-10-12T23:54:17",
+ "generatedAt": "2026-10-13T22:10:31",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 291,
+ "count": 296,
  "items": [
+  {
+   "title": "2026-10-13（火） - CAD改善と新しい発見",
+   "url": "https://note.com/you0810jmsdf/n/n81554dab6439",
+   "date": "2026-10-13",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-13_ig.jpg",
+   "key": "n81554dab6439",
+   "imageSource": "sns",
+   "summary": "CADの描画改善でリフィルの穴が赤い丸で見えるようになり、リングとの食い違いを発見した。その他、リングサポータの厚み固定、間取りトレース機能の実装、新しい糸の仕入れ、AIの定期点検を行った。"
+  },
+  {
+   "title": "Hemp, the Thread That Weaves Prayer | From Ise's Kanmiso-sai to Awa, Bōsō and the Daijōsai",
+   "url": "https://note.com/you0810jmsdf/n/naef5e8d15a12",
+   "date": "2026-10-13",
+   "image": "https://assets.st-note.com/production/uploads/images/323909587/rectangle_large_type_2_f6e8d109f5dc7821c41758ada32cc235.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "naef5e8d15a12",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "麻は、神への祈りを織る糸だった｜伊勢の神御衣祭から、阿波・房総、大嘗祭まで",
+   "url": "https://note.com/you0810jmsdf/n/n42b7d6ed65f3",
+   "date": "2026-10-13",
+   "image": "https://assets.st-note.com/production/uploads/images/323896310/rectangle_large_type_2_369983843f6048476b2f48080c2c04f8.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n42b7d6ed65f3",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "Oyama Afuri Shrine Guide | The Rain-Calling Mountain Shrine and the Edo-Period Pilgrimage",
+   "url": "https://note.com/you0810jmsdf/n/n125b3e0044eb",
+   "date": "2026-10-13",
+   "image": "https://assets.st-note.com/production/uploads/images/323857945/rectangle_large_type_2_ce404553a4ea74d3e838de90ee7e3615.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n125b3e0044eb",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "雨降山・大山阿夫利神社｜江戸の庶民が通った「大山詣り」と、いまの歩き方",
+   "url": "https://note.com/you0810jmsdf/n/n99b3ff09875a",
+   "date": "2026-10-13",
+   "image": "https://assets.st-note.com/production/uploads/images/323856918/rectangle_large_type_2_c4177cf1b4aaefd535590809b37a9094.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n99b3ff09875a",
+   "imageSource": "note",
+   "summary": ""
+  },
   {
    "title": "Jarvis開発日記を一つに統合し、NetBirdでの閲覧手順を公開｜Jarvis日記 2026.10.12（月）",
    "url": "https://note.com/you0810jmsdf/n/n1c740545a82b",
