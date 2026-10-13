@@ -139,6 +139,14 @@
     "yamatotakeru": {
       "name": "Yamato Takeru-no-Mikoto",
       "note": null
+    },
+    "konohanasakuya": {
+      "name": "Konohanasakuya-hime-no-Mikoto",
+      "note": "Called Asama-no-Ōkami at the shrine"
+    },
+    "sumiyoshi3": {
+      "name": "The Three Sumiyoshi Deities",
+      "note": "Sokotsutsu-no-O, Nakatsutsu-no-O and Uwatsutsu-no-O"
     }
   },
   "shrines": {
@@ -450,6 +458,115 @@
       "hours": "Second Torii: opens 5:30, closes 17:00. Tower gate and amulet office: open 8:00, close 16:45. Prayer reception 9:00–16:00 (no reservation needed). Special visit to the National Treasure Main Hall 10:00–16:00 (500 yen). Telephone reception at the shrine office 8:30–17:00 (official). The official page still has a note on shortened hours during the 2021 pandemic, so it is best to confirm the latest hours by phone.",
       "parking": "The visitors' lot is normally open 6:00–22:00 (exit possible 24 hours), 200 yen per 30 minutes (a donation for upkeep of the grounds). On busy days such as New Year and festival days, entry is 9:00–16:00, 1,000 yen per entry (official).",
       "goshuin": "The official top page announces a limited goshuin given only on the day of the Kasagake rite (18 October 2026). The place and hours for regular goshuin are not confirmed on the official site."
+    },
+    "sengen": {
+      "name": "Fujisan Hongū Sengen Taisha",
+      "place": "Fujinomiya City, Shizuoka",
+      "summary": "Said to be the head shrine of the more than 1,300 Sengen shrines across Japan, it enshrines Konohanasakuya-hime-no-Mikoto (Asama-no-Ōkami). Ichinomiya of Suruga Province. Its origin is said to lie in the enshrinement of the deity to pacify the eruptions of Mt. Fuji.",
+      "deity_note": "The official site names Konohanasakuya-hime-no-Mikoto (also called Asama-no-Ōkami) as the main deity, with Ninigi-no-Mikoto and Ōyamatsumi-no-Kami as the deities enshrined alongside. In the Kojiki she is a daughter of Ōyamatsumi-no-Kami; she is joined with Ninigi-no-Mikoto and gives birth to her children in the midst of fire (Hoderi-no-Mikoto, Hosuseri-no-Mikoto and Hoori-no-Mikoto). In the Nihon Shoki she appears as Kashitsu-hime and Konohanasakuya-hime.",
+      "history": [
+        "The official account of the shrine's origin says that while the eruptions of Mt. Fuji continued, the 11th emperor, Suinin, was troubled; in the third year of his reign (27 BC) he enshrined Asama-no-Ōkami at the foot of the mountain to calm the spirit of the mountain.",
+        "The official site records that in the first year of Daidō (806), Sakanoue no Tamuramaro, by imperial order of Emperor Heizei, built the shrine buildings at the present Ōmiya site and moved the deity there from Yamamiya.",
+        "The present main sanctuary, offering hall, worship hall and Rōmon gate were built in 1604 (Keichō 9) by Tokugawa Ieyasu as a votive offering. The main sanctuary is a two-story tower-style building in the style called \"Sengen-zukuri\" and is a national Important Cultural Property (the worship hall and the gate are prefectural cultural properties)."
+      ],
+      "highlights": [
+        "Wakutama Pond is a pond where Mt. Fuji's snowmelt wells up through the lava; it is designated a Special Natural Monument (official page on the grounds and buildings)."
+      ],
+      "address": "1-1 Miyamachi, Fujinomiya, Shizuoka.",
+      "access": "Official: on foot, about 10 minutes from Fujinomiya Station on the Minobu Line; by taxi, about 30 minutes from Shin-Fuji Station on the Shinkansen. By car, about 20 minutes from Tōmei Fuji IC via the Nishi-Fuji Bypass, or about 15 minutes from Shin-Tōmei Shin-Fuji IC. Express buses (reservation required) run between Tokyo Station and Fujinomiya.",
+      "hours": "Official top page: the gate is open 6:00–19:00 from November to February, 5:30–19:30 in March and October, and 5:00–20:00 from April to September. Prayer reception (inside the prayer hall) is 8:30–15:50 (the official prayer guide says the same). Reception for goshuin, weddings and naming ceremonies is 8:30–16:30.",
+      "parking": "Official: cars are ¥200 per hour or ¥1,500 per day (free for worshippers leaving within 30 minutes); buses are ¥1,000 per hour (overnight stays only: ¥2,000). People receiving a prayer ritual get 2 hours free. Parking hours are 5:00–19:00 (leaving is possible 24 hours).",
+      "goshuin": "Official top page: goshuin are received 8:30–16:30. The fee is not confirmed in the official text."
+    },
+    "sumiyoshi": {
+      "name": "Sumiyoshi Taisha",
+      "place": "Sumiyoshi Ward, Osaka",
+      "summary": "The head shrine of the roughly 2,300 Sumiyoshi shrines across Japan, in Sumiyoshi Ward, Osaka. It enshrines the Sumiyoshi Ōkami — Sokotsutsu-no-O, Nakatsutsu-no-O and Uwatsutsu-no-O — and Empress Jingū (Okinagatarashi-hime-no-Mikoto).",
+      "deity_note": "The Sumiyoshi Ōkami are the three deities Sokotsutsu-no-O, Nakatsutsu-no-O and Uwatsutsu-no-O. The Kojiki, Part 1, writes them as Sokotsutsu-no-O-no-Mikoto, Nakatsutsu-no-O-no-Mikoto and Uwatsutsu-no-O-no-Mikoto and calls them the \"Suminoe-no-Mimae-no-Ōkami\"; in the Nihon Shoki, Book 1 (the first part of the Age of the Gods), Sokotsutsu-no-O, Nakatsutsu-no-O and Hyōtsutsu-no-O are called the \"Sumiyoshi-no-Ōkami\". In the Kojiki, Part 2, in the Emperor Chūai section, Empress Jingū (Okinagatarashi-hime) is possessed by a deity, and the three great deities speak. The assignment of deities to the four main sanctuaries (first to third = the three deities, fourth = Empress Jingū) was confirmed on tourist sites and could not be confirmed on the relevant official page (to confirm).",
+      "history": [
+        "The official account says that in the 11th year of Empress Jingū's regency (211) the Sumiyoshi Ōkami was enshrined at the present site. It is said that, after returning from the expedition to Silla with the deities' protection, she enshrined them on the way back in triumph.",
+        "The official site records that it was ranked as a Myōjin Taisha of the Engishiki, with the highest divine rank of Shō-ichi-i, one of the Twenty-Two Shrines, Ichinomiya of Settsu Province and a former Kanpei Taisha.",
+        "The official site records that repainting was carried out at the 49th Shikinen Sengū in 2011 (Heisei 23)."
+      ],
+      "highlights": [
+        "The four main sanctuaries, designated National Treasures (mentioned on the official top page). Details of the arrangement of the main shrines and the Sumiyoshi-zukuri style are not confirmed on the relevant official page.",
+        "On the official page about the deities, there is a description of the deity of the fourth main shrine: Empress Jingū called a woman rice-planter (uneme) from Nagato Province, made the sacred rice field, and prayed for abundant harvests."
+      ],
+      "address": "2-9-89 Sumiyoshi, Sumiyoshi Ward, Osaka 558-0045.",
+      "access": "About a 3-minute walk east of Sumiyoshitaisha Station on the Nankai Main Line; about a 5-minute walk west of Sumiyoshi-higashi Station; right by Sumiyoshi-torimae Station on the Hankai Tramway (official).",
+      "hours": "The gates open at 6:00 from April to September and at 6:30 from October to March. They close at 16:00 for the outer gate and 17:00 for the inner enclosure (as written on the official site).",
+      "parking": "The official access page has parking information, but the number of spaces and the fees are not confirmed on the official site. Hours differ during the New Year period and the Sumiyoshi Festival.",
+      "goshuin": "The official site has a goshuin page, but the fee and reception hours are not confirmed on the official site."
+    },
+    "usa": {
+      "name": "Usa Jingū",
+      "place": "Usa City, Oita",
+      "summary": "The official site describes it as the head shrine of the more than 40,000 Hachiman shrines across Japan. Located in Usa, Oita, it enshrines three deities: Hachiman-no-Ōkami, Hime-no-Ōkami and Empress Jingū.",
+      "deity_note": "The official site explains that Hachiman-no-Ōkami is the divine spirit of Emperor Ōjin; that Hime-no-Ōkami is the three goddesses Tagitsu-hime-no-Mikoto, Ichikishima-hime-no-Mikoto and Tagiri-hime-no-Mikoto; and that Empress Jingū is Emperor Ōjin's mother (us1 us2). Emperor Ōjin appears in the Kojiki, Part 2, and the Nihon Shoki, Book 10, and Empress Jingū in the Nihon Shoki, Book 9 and elsewhere; the three goddesses of Hime-no-Ōkami have the same names as the three Munakata goddesses of the oath scene. The official site explains Hime-no-Ōkami as the deity said in the Nihon Shoki to have descended to Usa-jima, and there is a corresponding passage in a variant account of Book 1, Section 6 of the Nihon Shoki. The title Hachiman-no-Kami itself does not appear in the text of the Kojiki and Nihon Shoki that were consulted.",
+      "history": [
+        "The official site explains that Hachiman-no-Ōkami is said to have first appeared in Usa in 571, in the reign of Emperor Kinmei.",
+        "The official site regards the founding of Usa Jingū as 725 (Jinki 2), when, by imperial order, a hall was built at the present site and the deity Hachiman was enshrined.",
+        "According to the official site, in 733 (Tenpyō 5) the Second Hall was built following an oracle and Hime-no-Ōkami was enshrined, and in 823 (Kōnin 14) the Third Hall was built and Empress Jingū was enshrined.",
+        "The official site says the shrine is especially famous for helping with the building of the Great Buddha of Tōdai-ji and for giving Wake no Kiyomaro an oracle to set the nation right. It adds that the imperial family revered it as the ancestral shrine second only to the Grand Shrines of Ise, and that it is one of the 16 Chokusai-sha."
+      ],
+      "highlights": [
+        "The official site says the main sanctuary (the three halls of the Upper Shrine) is designated a National Treasure. Visitors normally cannot approach it closely.",
+        "The official site explains that the grounds cover about 140,000 tsubo, most of which is a national historic site, and that the shrine forest, where ichii-gashi oaks grow in clusters, is designated a natural monument.",
+        "There is a saying, \"If you do not visit the Lower Shrine, your visit is only half done\": after the Upper Shrine, visitors also pay their respects at the Lower Shrine. Worship follows the ancient form: two bows, four claps and one bow.",
+        "The Meoto-ishi (Married Couple Stones) are said to bring blessings for a good match, and the official site says they are among the paving stones on the steps leading to Wakamiya Shrine.",
+        "For people with difficulty walking and elderly visitors, a monorail runs up to the Upper Shrine (it stops on some days for cleaning and other reasons)."
+      ],
+      "address": "2859 Minami-Usa, Usa, Oita 872-0102. Tel. 0978-37-0001.",
+      "access": "By car, about 6 km (about 15 minutes) from Usa IC on the Higashi-Kyūshū Expressway via National Route 10. From Usa Station on the JR Nippō Main Line, take a bus (Usa Hachiman stop) or a taxi (about 4 km, about 10 minutes). The official site says it takes about 1 hour by limited express from Kokura Station and about 40 minutes from Ōita Station.",
+      "hours": "The official top page shows visiting hours of 5:30–19:00 from April to September and 6:00–18:00 from October to March. The FAQ of the same official site says the gate opens at 6:00 and closes at 18:00, so the two do not agree.",
+      "parking": "There is no parking near the main sanctuary. The official site lists Times Usa Jingū Omotesandō Parking (180 standard cars, ¥500), Gaien Parking (150 standard cars, ¥500 for 12 hours), Hachiman Parking (400 standard cars, ¥500) and others. Fees change during the New Year period.",
+      "goshuin": "The FAQ on the official site explains the meaning of goshuin, but whether they are given, where, and the fee are not confirmed on the official site."
+    },
+    "munakata": {
+      "name": "Munakata Taisha",
+      "place": "Munakata City, Fukuoka",
+      "summary": "A shrine that collectively refers to three shrines: Hetsu-miya in Munakata, Fukuoka, Nakatsu-miya on Ōshima, and Okitsu-miya on Okinoshima. It enshrines the three Munakata goddesses. The official site describes it as one of the oldest shrines in Japan.",
+      "deity_note": "The deities named on the official site are Tagori-hime-no-Kami (Okitsu-miya), Tagitsu-hime-no-Kami (Nakatsu-miya) and Ichikishima-hime-no-Kami (Hetsu-miya), explained as three goddesses born in the oath between Amaterasu-Ōmikami and Susanoo-no-Mikoto (mu2 mu3 mu4 mu5). They appear in the oath scene of the Kojiki and the Nihon Shoki (Kojiki, Part 1; Nihon Shoki, Book 1, Section 6). The Kojiki gives Okitsu-miya = Takiri-bime, Nakatsu-miya = Ichikishima-hime and Hetsu-miya = Tagitsu-hime; the Nakatsu-miya and Hetsu-miya assignments differ from the present ones.",
+      "history": [
+        "The official site explains that the Nihon Shoki preserves words in which Amaterasu-Ōmikami told the three Munakata goddesses that if they helped the successive emperors, the emperors would enshrine them. The site interprets this as reflecting that Munakata was Japan's first international port and took on the roles of diplomacy, trade and defense.",
+        "Many of the objects excavated on Okinoshima date from the 4th to the 9th century, and about 80,000 items are designated National Treasures. The official site explains these as traces of state rituals.",
+        "The official account lists records of imperial envoys being sent: 465 (Emperor Yūryaku; Nihon Shoki), 838 and 842 (Emperor Ninmyō; Shoku Nihon Kōki), 870 (Emperor Seiwa; Nihon Sandai Jitsuroku) and 1017 (Emperor Go-Ichijō; Nihon Kiryaku).",
+        "The main sanctuary of Hetsu-miya was built in 1578 (Tenshō 6) and the worship hall in 1590 (Tenshō 18); both are designated Important Cultural Properties."
+      ],
+      "highlights": [
+        "Takamiya Saijō is said to be the place where Ichikishima-hime descended, an ancient-style ritual ground with no buildings. The official site says that on October 3 a night kagura (Yūkyū-no-mai) is performed.",
+        "The Treasure Hall stores and displays the treasures of Okinoshima (80,000 National Treasures) at its center, together with Important Cultural Properties handed down at Munakata Taisha.",
+        "The Second Shrine and the Third Shrine were received from the old buildings of Ise Jingū; Tagori-hime-no-Kami is enshrined in the Second Shrine and Tagitsu-hime-no-Kami in the Third Shrine.",
+        "In 2017 it was inscribed as a World Heritage Site as part of \"Sacred Island of Okinoshima and Associated Sites in the Munakata Region\", and the World Heritage official site says the three shrines of Munakata Taisha and others are included among the component parts."
+      ],
+      "address": "2331 Tajima, Munakata, Fukuoka 811-3505 (Hetsu-miya). Tel. 0940-62-1311.",
+      "access": "The text of the official access page could not be retrieved, and the routes by train, bus and car are not confirmed on the official site.",
+      "hours": "Only two points are confirmed on the official site: the prayer hall (Kigan-den) reception is open 9:00–17:00, and the Treasure Hall (Shinpōkan) is open 9:00–16:30 (last entry 16:00), every day of the year. The hours when the grounds can be visited are not confirmed on the official site.",
+      "parking": "The number of spaces, fees and hours of the parking lots are not confirmed on the official site.",
+      "goshuin": "The official site says that amulets, charms and goshuin are given out at the prayer hall (reception 9:00–17:00)."
+    },
+    "omiwa": {
+      "name": "Ōmiwa Jinja",
+      "place": "Sakurai City, Nara",
+      "summary": "Ichinomiya of Yamato Province, which takes Mt. Miwa as its sacred mountain and has no main sanctuary, worshipping the mountain from the worship hall through the Mitsu-torii. The official site presents it as the oldest shrine in Japan, enshrining Ōmononushi-no-Ōkami.",
+      "deity_note": "The official site names Ōmononushi-no-Ōkami as the enshrined deity. The Kojiki records that the cooperating deity in the building of the land asked to be enshrined \"on the mountain to the east of the green fence of Yamato\", but in Part 1 it calls this deity \"the deity who dwells on Mt. Mimoro\" and does not write the name Ōmononushi. In Part 2, the Jinmu section writes \"Miwa-no-Ōmononushi-no-Kami\" and the Sujin section writes \"Ōmononushi-no-Ōkami\". One variant account in Section 8 of the Nihon Shoki gives Ōmononushi-no-Kami as another name of Ōkuninushi-no-Kami and says that the Sakimitama and Kushimitama became the deity of Ōmiwa who dwells on Mt. Mimoro. The relationship with Ōkuninushi-no-Kami differs by source. The shrine's official engi account says that Ōmononushi-no-Ōkami rests at the rock seat on the summit of Mt. Miwa, Ōanamuchi-no-Kami midway up the slope, and Sukunabikona-no-Kami at the foot.",
+      "history": [
+        "The official site says that the founding tradition is recorded in the Kojiki and the Nihon Shoki: Ōmononushi-no-Ōkami appeared before Ōkuninushi-no-Kami and wished to be enshrined on Mt. Miwa. The official site explains it as an ancient shrine that began in the age of the gods.",
+        "The official site explains that in the reign of Emperor Sujin, Ōmononushi-no-Ōkami calmed a great epidemic, and the sake brewer Takahashi Ikuhi-no-Mikoto brewed fine sake with the deity's help. The Sujin section of the Kojiki also tells of the epidemic and Ōmononushi-no-Ōkami's message in a dream.",
+        "The official site explains that in the Heian period the Ōmiwa Festival, the Chinkasai and the Saegusa Festival continued as court festivals, and that the shrine's divine rank reached the highest, Shō-ichi-i, in 859 (Jōgan 1).",
+        "The official site explains that its shrine rank in the Engishiki was Kanpei Taisha, and that it later became Ichinomiya of Yamato Province and one of the Twenty-Two Shrines. It was also a Kanpei Taisha in the Meiji period."
+      ],
+      "highlights": [
+        "The worship hall is a national Important Cultural Property. Rebuilt in 1664 (Kanbun 4) by Tokugawa Ietsuna, it has no main sanctuary because it is a form for worshipping Mt. Miwa (official).",
+        "The Mitsu-torii (Miwa-torii) divides the sacred mountain from the worship hall, behind the hall, and is a national Important Cultural Property. The official grounds map notes that visits are suspended (confirm the current situation).",
+        "Mt. Miwa is 467 m high and 16 km around. Its cedars are called the \"divine cedars of Miwa\", and rock seats are scattered across the mountain (official).",
+        "The Mi-no-Kamisugi is a sacred tree named for the white snake, thought to be an incarnation of Ōmononushi-no-Ōkami, that lives in it; it is said to be about 500 years old (official)."
+      ],
+      "address": "1422 Miwa, Sakurai, Nara 633-8538 (official).",
+      "access": "A 5-minute walk from Miwa Station on the JR Sakurai Line (Manyō Mahoroba Line) (official). The shuttle bus from the north exit of Sakurai Station carries a note on the official page that it is suspended, so confirmation is needed.",
+      "hours": "The visiting hours of the worship hall are not confirmed on the retrieved official page. The amulet office is open 9:00–17:00 (until 16:30 from December to February), the Sanshūden hall 7:00–17:30, and prayer reception 9:00–16:00 (until 15:30 from December to February) (official). Climbing Mt. Miwa is noted as suspended at times because of landslide damage; check the current situation on the official top page.",
+      "parking": "There are four free parking lots for worshippers, about 320 spaces in total (official; west of the JR level crossing). They can be used all day, but the Ni-no-Torii parking lot is closed to parking during the New Year period and on the 1st of every month (official).",
+      "goshuin": "The giving of goshuin is not confirmed on the retrieved official page. To confirm."
     }
   }
 }
