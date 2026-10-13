@@ -343,3 +343,20 @@ body.day::before { content: ""; position: fixed; left: 0; right: 0; top: 0; heig
 .finder-list li small { color: var(--muted); font-size: 12px; }
 .finder-list li mark { background: rgba(216,183,102,0.28); color: var(--ink); border-radius: 2px; }
 .finder-list li .vis { color: #e8765a; font-size: 12px; margin-left: 6px; }
+.feedback { z-index: 12; }
+.fb-form { overflow: auto; flex: 1; padding: 6px 2px 24px; max-width: 560px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.fb-lead { color: var(--ink-soft); margin: 8px 0 12px; font-size: 14px; }
+.fb-kinds { display: flex; gap: 8px; margin-bottom: 12px; }
+.fbk { flex: 1; min-height: 44px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--ink-soft); font: inherit; cursor: pointer; }
+.fbk.on { border-color: var(--gold); color: var(--gold); background: rgba(216,183,102,0.12); }
+.fb-l { display: block; margin: 10px 0 4px; font-size: 13px; color: var(--ink-soft); }
+.fb-msg, .fb-contact { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 16px; color: var(--ink); background: rgba(255,255,255,0.06); border: 1px solid var(--line); border-radius: 10px; font-family: inherit; }
+.fb-msg:focus, .fb-contact:focus { outline: none; border-color: var(--gold); }
+.fb-count { text-align: right; margin: 2px 2px 0; color: var(--muted); font-size: 12px; }
+.fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.fb-note { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 12px 0; }
+.fb-send { width: 100%; justify-content: center; margin: 4px 0; }
+.fb-send[disabled] { opacity: 0.5; cursor: default; }
+.fb-status { min-height: 1.6em; font-size: 14px; margin: 10px 0; color: var(--ink-soft); }
+.fb-status.ok { color: #9ccf8f; }
+.fb-status.ng { color: #e8765a; }

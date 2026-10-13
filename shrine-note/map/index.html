@@ -29,6 +29,7 @@
       <button id="btnBgmNext" class="ghost" type="button">曲：人魚の目覚め</button>
       <button id="btnSky" class="ghost" type="button" aria-expanded="false">時刻：いま</button>
       <button id="btnLang" class="ghost" type="button" hidden>English</button>
+      <button id="btnFeedback" class="ghost" type="button">ご意見・ご要望</button>
     </div>
   </div>
 </header>
@@ -65,6 +66,30 @@
   <p class="tree-note">金色の枠は、特集した神社の御祭神です。タップすると神様のページへ移ります（「しぼりこみ」を入れると、タップした神様につながる系譜だけを残します）。実線は親子、点線は夫婦です。</p>
   <div id="treeFocusBar" class="tree-focus" hidden><span id="treeFocusName"></span><button id="btnTreeOpen" class="ghost" type="button">神様のページ</button><button id="btnTreeAll" class="ghost" type="button">全体に戻す</button></div>
   <div id="treeBody" class="tree-body"></div>
+</section>
+
+<section id="feedback" class="tree feedback" hidden aria-label="ご意見・ご要望">
+  <div class="tree-head">
+    <h2 id="fbTitle">ご意見・ご要望</h2>
+    <span class="tree-btns"><button id="btnFbClose" class="ghost" type="button">閉じる</button></span>
+  </div>
+  <form id="fbForm" class="fb-form" autocomplete="off" novalidate>
+    <p id="fbLead" class="fb-lead">作者に、直接届きます。</p>
+    <div id="fbKinds" class="fb-kinds" role="radiogroup" aria-label="種類">
+      <button type="button" class="fbk on" data-kind="idea" role="radio" aria-checked="true">要望</button>
+      <button type="button" class="fbk" data-kind="bug" role="radio" aria-checked="false">不具合</button>
+      <button type="button" class="fbk" data-kind="cheer" role="radio" aria-checked="false">応援</button>
+    </div>
+    <label id="fbMsgL" class="fb-l" for="fbMsg">内容</label>
+    <textarea id="fbMsg" class="fb-msg" rows="6" maxlength="400" placeholder="どんなことでも、短くて大丈夫です"></textarea>
+    <p id="fbCount" class="fb-count">0 / 400</p>
+    <label id="fbContactL" class="fb-l" for="fbContact">返信がほしいとき（任意）</label>
+    <input id="fbContact" class="fb-contact" type="text" maxlength="120" placeholder="メールアドレスなど。書かなくても送れます">
+    <div class="fb-hp" aria-hidden="true"><label>空欄のままにしてください<input id="fbHp" type="text" tabindex="-1" autocomplete="off"></label></div>
+    <p id="fbNote" class="fb-note">名前や住所は不要です。個人情報は書かないでください。端末の種類・画面の大きさ・開いている神社だけを、一緒に送ります。内容は作者だけが読みます。</p>
+    <button id="fbSend" class="btn fb-send" type="submit">送る</button>
+    <p id="fbStatus" class="fb-status" role="status" aria-live="polite"></p>
+  </form>
 </section>
 
 <section id="finder" class="tree finder" hidden aria-label="神社を探す">
@@ -108,6 +133,7 @@
   <span>標高・道路：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>（標高タイル・最適化ベクトルタイル）を加工して作成。高さは強調、近景の細かな起伏は演出用</span>
   <span>3D表示：three.js（MIT）</span>
   <span><a href="../criteria.html">神社の掲載基準</a></span>
+  <span><a href="#" id="fbLink">ご意見・ご要望</a></span>
   <span>音楽：<a id="bgmCredit" href="https://maou.audio/bgm_healing17/" target="_blank" rel="noopener">魔王魂</a><span id="bgmTitle">（ヒーリング17「人魚の目覚め」）</span></span>
 </footer>
 
