@@ -1647,7 +1647,8 @@ export const BINDER_SPECS = [
     8,
     11,
     13,
-    15
+    15,
+    20
    ],
    "shape": "round",
    "countPerSide": 5,
@@ -1696,6 +1697,17 @@ export const BINDER_SPECS = [
      "confidence": null,
      "sourceNote": null,
      "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 20,
+     "outerDiameterMm": 22,
+     "wireDiameterMm": 1,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": "measured",
+     "sourceNote": "事業主指示（2026-10-13）：Micro5 の内径20・外径22（線径1）",
+     "wireSource": "measured"
     }
    ]
   },
