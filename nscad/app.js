@@ -331,11 +331,11 @@ function drawQuad(dpr) {
   drawSolidInRect(quadSolidCache, sp, t(quadSolidCache ? 'threeViewMini' : 'quadSolidNone'));
   ctx.strokeStyle = '#3a3a3c'; ctx.lineWidth = 1; ctx.strokeRect(sp.x + 1, sp.y + 1, sp.w - 2, sp.h - 2);
 }
-/* holeLink＝穴の経路のための補助の線（.lcc の取り込みで付く・もとの図面に無い線）。画面にも出さず、選べもしない。穴の判定は層だけで決める（layerVisible／layerEditable）。 */
+/* holeLink＝穴の経路のための補助の線（.lcc の取り込みで付く・もとの図面に無い線）。画面には出さず、クリックでも選ばれない（visible から除く）。全選択・範囲選択には入る（editable は層だけで決める）。穴の判定も層だけ（layerVisible／layerEditable）。 */
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
 const visible = s => layerVisible(s) && !s.holeLink;
-const editable = s => layerEditable(s) && !s.holeLink;
+const editable = s => layerEditable(s); /* holeLink も「選べる」側（全選択・範囲選択に入れて、コピー・移動・複製に穴ごと付けるため）。クリックでは選ばれない（visible で除く） */
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type);
 const partOf = s => doc.parts.find(p => p.shapeIds.includes(s.id)) || null;
@@ -1462,7 +1462,7 @@ function execVoice(r) {
     case 'undo': $('undo').onclick(); break; case 'redo': $('redo').onclick(); break;
     case 'delete': removeSelected(); break; case 'copy': copySelected(); break;
     case 'mirrorX': $('mirrorX').onclick(); break; case 'mirrorY': $('mirrorY').onclick(); break;
-    case 'selectAll': selected = new Set(doc.shapes.filter(s => { const l = doc.layers.find(x => x.id === s.layer || x.name === s.layer); return !s.holeLink && (!l || (l.visible !== false && !l.locked)); }).map(s => s.id)); draw(); break;
+    case 'selectAll': selected = new Set(doc.shapes.filter(s => { const l = doc.layers.find(x => x.id === s.layer || x.name === s.layer); return !l || (l.visible !== false && !l.locked); }).map(s => s.id)); draw(); break;
     case 'save': save(); break; case 'exportSvg': exportSvg(); break; case 'exportDxf': exportDxf(); break; case 'exportPdf': exportPdf(); break; case 'print': printPages(); break;
     case 'view3d': setView3d(true); break; case 'view2d': setView3d(false); break; case 'help': showHelp(); break;
     case 'zoomIn': zoom(1.25); break; case 'zoomOut': zoom(0.8); break; case 'fit': fit(); break;
@@ -1887,7 +1887,7 @@ function onClipCopy(e, cut) {
 }
 /** 全選択（Ctrl+A）：見えていて編集できる図形をすべて選ぶ。 */
 function selectAllShapes() {
-  setMode('select'); selected = new Set(doc.shapes.filter(s => visible(s) && editable(s)).map(s => s.id)); draw();
+  setMode('select'); selected = new Set(doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id)); draw();
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
@@ -3003,8 +3003,9 @@ function shapeFromDrag(a, b) {
 }
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
+function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
-function modeHint(m) { return m === 'mark' && markDivisions() ? t('hint.markDiv', { n: markDivisions() }) : m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
+function modeHint(m) { return m === 'mark' && markDivisions() ? t('hint.markDiv', { n: markDivisions() }) : m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : arcHalf() ? t('hint.arcHalf') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
 /** 3点（始点・通過点・終点）を通る円弧。一直線上なら null。通過点が弧の途中に来る向きに start/end を決める。 */
@@ -3017,6 +3018,18 @@ function arcThroughPoints(a, b, c) {
   return counter ? { type: 'arc', cx, cy, r, startDeg: degA, endDeg: degC } : { type: 'arc', cx, cy, r, startDeg: degC, endDeg: degA };
 }
 /** 3点方式のクリックを1点受け取る。3点そろったら円弧にする。 */
+/** 2点 a・b を直径とする半円。時計回りは a から b へ、反時計回りは b から a へ（円弧は角度が増える向きに描く）。 */
+function halfCircleShape(a, b) {
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, r = distance(a, b) / 2; if (!(r > 1e-9)) return null;
+  const degA = Math.atan2(a.y - my, a.x - mx) * 180 / Math.PI;
+  return $('arcDir').value === 'ccw' ? { type: 'arc', cx: mx, cy: my, r, startDeg: degA + 180, endDeg: degA + 360 } : { type: 'arc', cx: mx, cy: my, r, startDeg: degA, endDeg: degA + 180 };
+}
+/** 半円方式のクリックを1点受け取る。2点そろったら半円にする。 */
+function halfClick(p) {
+  const a = stage.pts[0]; if (distance(a, p) < 1e-8) return;
+  const s = halfCircleShape(a, p); if (!s) return;
+  stage = null; addShape(s); lastPoint = p; $('hint').textContent = modeHint('arc');
+}
 function arc3Click(p) {
   const pts = stage.pts; if (pts.some(q => distance(q, p) < 1e-8)) return;
   if (pts.length < 2) { pts.push(p); return; }
@@ -3227,6 +3240,7 @@ function drawSheetBody(lo, hi) {
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
+  if (stage?.kind === 'half') { const pv = distance(stage.pts[0], cursor) > 1e-8 ? halfCircleShape(stage.pts[0], cursor) : null; if (pv) strokeShape(pv, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
   if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
   if (stage?.kind === 'arcR') { const ang = Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x); strokeShape({ type: 'line', x1: stage.center.x, y1: stage.center.y, x2: stage.center.x + stage.r * Math.cos(ang), y2: stage.center.y + stage.r * Math.sin(ang) }, '#c9a96e'); }
   if (stage?.kind === 'bzpts') { const pv = smoothPathNodes([...stage.points, cursor]); if (pv) strokeShape({ type: 'path', closed: false, nodes: pv }, '#c9a96e'); ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#c9a96e'; for (const q of stage.points) ctx.fillRect(q.x - 2.5 / scale, q.y - 2.5 / scale, 5 / scale, 5 / scale); ctx.restore(); }
@@ -3467,6 +3481,8 @@ canvas.addEventListener('pointerup', e => {
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
       selected = expandToGroups(doc.shapes, selected); /* 囲んだ図形がグループなら全体を選ぶ */
     }
+  } else if (g.kind === 'draw' && mode === 'arc' && arcHalf()) {
+    stage = { kind: 'half', pts: [g.start] }; $('hint').textContent = t('arcHalfHint');
   } else if (g.kind === 'draw' && mode === 'arc' && arcThreePoint()) {
     stage = { kind: 'arc3', pts: [g.start] }; $('hint').textContent = t('arcThreeHint');
   } else if (g.kind === 'draw' && mode === 'arc' && arcFixedRadius() > 0) {
@@ -3489,6 +3505,7 @@ canvas.addEventListener('pointerup', e => {
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
     if (!stage) { /* 直前の入力で図形が確定済み */ }
+    else if (stage.kind === 'half') halfClick(cursor);
     else if (stage.kind === 'arc3') arc3Click(cursor);
     else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
     else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
