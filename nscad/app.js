@@ -1539,14 +1539,24 @@ function metalFillPlan() {
   }
   return out;
 }
-/** 金属の色が付いた金具を、金属らしい斜めの光沢（明→基本→暗）でべた塗りする。線の下に描く。本体の穴は抜く。 */
+/** 2色を割合 t（0〜1）で混ぜた色（#RRGGBB）。 */
+function mixHex(a, b, t) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
+/** 金属の質感：幅方向（細い側）に走る光沢の帯。暗→基本→明るい光→基本→やや暗→暗。磨いた金属が、丸みのある面に光を映したように見える。 */
+function metalStops(m) { return [[0, m.dark], [0.12, mixHex(m.hex, m.dark, 0.35)], [0.3, m.hex], [0.42, m.light], [0.56, m.hex], [0.8, mixHex(m.hex, m.dark, 0.6)], [1, m.dark]]; }
+/** 図形の線の色：情報パネルで選んだ色が先。無ければ、金属の色が付いた図形は金属の濃い側の色（塗りの上でも線が見える）。どちらも無ければ null。 */
+const shapeLineColor = s => SHAPE_DRAW_COLOR[s.color] || (s.metal ? METAL_COLORS.find(m => m.id === s.metal)?.dark : null) || null;
+/** 金属の色が付いた金具の、べた塗り。金属の質感：細い側に光沢の帯・内側の縁のハイライト・影・穴の暗い縁。線の下に描く。本体の穴は抜く。 */
 function drawMetalFills() {
   for (const p of metalFillPlan()) {
-    const m = METAL_COLORS.find(x => x.id === p.metal); if (!m) continue; const all = [p.body, ...p.parts].flat(), xs = all.map(q => q.x), ys = all.map(q => q.y);
-    const g = ctx.createLinearGradient?.(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)); if (g) { g.addColorStop(0, m.light); g.addColorStop(0.45, m.hex); g.addColorStop(1, m.dark); }
+    const m = METAL_COLORS.find(x => x.id === p.metal); if (!m) continue;
     const trace = ps => { ps.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); };
-    ctx.save(); ctx.setLineDash([]); ctx.fillStyle = g || m.hex; ctx.beginPath(); trace(p.body); for (const h of p.holes) trace(h); ctx.fill('evenodd');
-    for (const q of p.parts) { ctx.beginPath(); trace(q); ctx.fill(); } ctx.restore();
+    const shade = ps => { const xs = ps.map(q => q.x), ys = ps.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), g = (x1 - x0 >= y1 - y0) ? ctx.createLinearGradient?.(x0, y0, x0, y1) : ctx.createLinearGradient?.(x0, y0, x1, y0); if (g) for (const [o, c] of metalStops(m)) g.addColorStop(o, c); return g || m.hex; };
+    const shapes = [{ ps: p.body, holes: p.holes }, ...p.parts.map(ps => ({ ps, holes: [] }))];
+    for (const sh of shapes) {
+      ctx.save(); ctx.setLineDash([]); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetX = 1.5; ctx.shadowOffsetY = 2.5; ctx.fillStyle = shade(sh.ps); ctx.beginPath(); trace(sh.ps); for (const h of sh.holes) trace(h); ctx.fill('evenodd'); ctx.restore();
+      ctx.save(); ctx.beginPath(); trace(sh.ps); for (const h of sh.holes) trace(h); ctx.clip('evenodd'); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3 / scale; ctx.beginPath(); trace(sh.ps); ctx.stroke(); ctx.restore(); /* 内側の縁のハイライト */
+      for (const h of sh.holes) { ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); trace(h); ctx.stroke(); ctx.restore(); } /* 穴の暗い縁 */
+    }
   }
 }
 function applyMetal(id) {
@@ -3153,7 +3163,7 @@ function drawSheetBody(lo, hi) {
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
   drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : metalHex(s.metal) || SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
