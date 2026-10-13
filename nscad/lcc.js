@@ -91,7 +91,7 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     const hit = doc.shapes.filter(stitchable).reduce((best, s) => { const dist = distToShape(s, mid); return dist < (best ? best.d : attachMaxMm) ? { s, d: dist } : best; }, null);
     if (hit) { const grp = groupOf(hit.s), near = h => grp.shapeIds.some(id => distToShape(byId.get(id), h) <= attachMaxMm * 2); if (chain.every(near)) { const path = pathFor(hit.s); for (const h of chain) if (place(h, path)) attached++; continue; } }
     if (chain.length >= 2) { const poly = { id: sid(), layer: 'guide', type: 'polyline', holeLink: true, points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; /* 穴の経路のための線。もとの図面に無い線なので、画面・書き出しには描かない（holeLink） */ doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
-    else { const h = chain[0]; doc.shapes.push({ id: sid(), layer: 'guide', type: 'circle', cx: h.x, cy: h.y, r: Math.max(0.1, h.width / 2) }); warnings.push(`hole-as-mark:${h.id}`); }
+    else warnings.push(`hole-skipped:${chain[0].id}`); /* 近くに図形も連結も無い孤立した穴：もとの図面に無い丸の目印は作らない（事業主指示 2026-10-14） */
   }
   const stats = lccStats(d, { name });
   return { doc, stats: { ...stats, holesAttached: attached, holesViaChain: viaChain }, warnings };
