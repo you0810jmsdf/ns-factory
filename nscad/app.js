@@ -2426,8 +2426,12 @@ function nodeHit(s, p) {
   return null;
 }
 function askText() { const raw = window.prompt(t('textPrompt'), ''); return raw && raw.trim() ? raw.trim() : null; }
+/** トリムの対象：クリックから 7px 以内で、いちばん近い線。同じ近さなら後から描いた線。（交点の近くで、上に重なった別の線を選んで消してしまわないように・事業主の不具合記録 2026-10-13） */
+function nearestTrimTarget(p) {
+  let best = null, bd = Infinity; for (const s of doc.shapes) { if (!editable(s) || !stitchable(s)) continue; const d = distToShape(s, p); if (d <= 7 / scale && d <= bd + 1e-9) { best = s; bd = d; } } return best;
+}
 function trimClick(p, keep) {
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale); if (!hit) return;
+  const hit = nearestTrimTarget(p); if (!hit) return;
   const parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
   if (!parts) { $('hint').textContent = t('noIntersection'); return; }
   const removedPaths = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id));
