@@ -1527,6 +1527,28 @@ function applyLeather(hex) {
   commit(() => { for (const p of parts) p.color = hex; }); $('hint').textContent = t('leatherApplied', { n: parts.length, hex });
 }
 /** 選んだ図形に金属の色（ゴールド・シルバー・ピンクゴールド・ブラックゴールド）を付ける。id が null なら解除。線の色と、3D の金具の面の色になる。革色・革の質感とは別（事業主指示 2026-10-13）。 */
+/** 金属の色が付いた、置いた金具（hw のある図形）のべた塗りの計画。金具の登録した形（本体・レバー・リングアーム・穴）を置いた位置・角度に写す。手で描き足した線には左右されない。同じ金具・同じ色は1回。 */
+function metalFillPlan() {
+  const out = [], seen = new Set(), poly = o => o.type === 'circle' ? Array.from({ length: 24 }, (_, k) => ({ x: o.cx + o.r * Math.cos(2 * Math.PI * k / 24), y: o.cy + o.r * Math.sin(2 * Math.PI * k / 24) })) : o.points;
+  for (const s of doc.shapes) {
+    if (!s.metal || !s.hw || !visible(s)) continue; const hw = s.hw, item = DATA_HARDWARE.items.find(i => i.id === hw.id); if (!item) continue;
+    const spec = String(hw.id).startsWith('binder') ? binderSpec(hw.params?.spec) : null; if (String(hw.id).startsWith('binder') && !spec) continue;
+    const pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 }, key = [s.metal, hw.id, JSON.stringify(hw.params), pose.at.x.toFixed(3), pose.at.y.toFixed(3), pose.angleDeg].join('|'); if (seen.has(key)) continue; seen.add(key);
+    let fp; try { fp = placeFootprint(hardwareFootprint(item, hw.params || {}, spec), pose.at, pose.angleDeg); } catch { continue; }
+    out.push({ metal: s.metal, body: poly(fp.outline[0]), parts: fp.outline.slice(1).map(poly), holes: fp.holes.map(poly) });
+  }
+  return out;
+}
+/** 金属の色が付いた金具を、金属らしい斜めの光沢（明→基本→暗）でべた塗りする。線の下に描く。本体の穴は抜く。 */
+function drawMetalFills() {
+  for (const p of metalFillPlan()) {
+    const m = METAL_COLORS.find(x => x.id === p.metal); if (!m) continue; const all = [p.body, ...p.parts].flat(), xs = all.map(q => q.x), ys = all.map(q => q.y);
+    const g = ctx.createLinearGradient?.(Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)); if (g) { g.addColorStop(0, m.light); g.addColorStop(0.45, m.hex); g.addColorStop(1, m.dark); }
+    const trace = ps => { ps.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); };
+    ctx.save(); ctx.setLineDash([]); ctx.fillStyle = g || m.hex; ctx.beginPath(); trace(p.body); for (const h of p.holes) trace(h); ctx.fill('evenodd');
+    for (const q of p.parts) { ctx.beginPath(); trace(q); ctx.fill(); } ctx.restore();
+  }
+}
 function applyMetal(id) {
   const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { $('hint').textContent = t('metalNeedSelect'); return; }
   commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) { if (id) s.metal = id; else delete s.metal; } });
@@ -3130,6 +3152,7 @@ function drawSheetBody(lo, hi) {
     const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
+  drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
   for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : metalHex(s.metal) || SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
