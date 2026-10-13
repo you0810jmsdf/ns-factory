@@ -48,6 +48,10 @@ function ringArmPieces(b, W) {
   const r = (b.maxX - b.minX) / 2, cx = (b.minX + b.maxX) / 2, make = (tipY, sign) => { const pts = [{ x: b.minX, y: W / 2 }, { x: b.minX, y: tipY - r }]; for (let k = 0; k <= 8; k++) { const a = Math.PI - Math.PI * k / 8; pts.push({ x: cx + r * Math.cos(a), y: tipY - r + r * Math.sin(a) }); } pts.push({ x: b.maxX, y: W / 2 }); return pts.map(q => ({ x: q.x, y: sign * q.y })); };
   return [make(b.maxY, 1), make(-b.minY, -1)];
 }
+/** リングアーム（真上から見た細い棒）の全長の輪郭（中心 0,0・本体と重なる部分も切らない）。金属のべた塗りで、リングアームを本体の上に連続した1本の棒として描くため（切った2片だと、境目に継ぎ目の線が出る・事業主の不具合記録 2026-10-13）。 */
+export function binderRingBarPolys(spec, ringD = null) {
+  return binderViews(spec, ringD).plan.rings.map(r => { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; return roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })); });
+}
 /** 金具の色（金属）。革色・革の質感とは別の一覧（事業主指示 2026-10-13：ゴールド・シルバー・ピンクゴールド・ブラックゴールドの4色）。light・dark は、見本の金属らしい光沢の明るい側・暗い側。名前は i18n の metal.<id>。 */
 export const METAL_COLORS = [
   { id: 'gold', hex: '#D4AF37', light: '#F6E39A', dark: '#8A6A12' },
