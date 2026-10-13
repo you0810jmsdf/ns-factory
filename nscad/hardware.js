@@ -89,8 +89,28 @@ export function binderSolid(spec, ringD, openAngle = 0, { at = { x: 0, y: 0 }, z
       for (let k = 0; k < n; k++) { const a = ring[k], b = ring[(k + 1) % n]; faces.push({ kind: 'side', points: [{ ...a, z: zb }, { ...b, z: zb }, { ...b, z: zt }, { ...a, z: zt }] }); }
     }
   }
-  for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0);
-  return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: '#c8b060' }));
+  /* ビス穴金具部（金属・灰色）：台座の下の膨らみに沿って bossT だけ外側へ張り出した、直径 bossDia の円盤（中心にビス穴）。取付穴の位置ごとに1つ。断面のデータがある規格だけ（事業主指示 2026-10-13：3Dでも実物どおりに） */
+  const bossT = base.supporterThicknessMm, bossDia = base.supporterDiameterMm; let bossCount = 0;
+  if (spec.base && base.sectionPoints && bossT > 0 && bossDia > 0 && spec.rivets.length) {
+    const pts = binderSection(base), xs = pts.map(p => p.x), ys = pts.map(p => p.y); let corner = 0; pts.forEach((p, i) => { if (p.x > xs[corner] + 1e-9 || (Math.abs(p.x - xs[corner]) < 1e-9 && p.y < ys[corner])) corner = i; });
+    const lower = pts.slice(corner + 1);
+    if (lower.length >= 2) {
+      const flip = offsetOpenPolyline(lower, 1).reduce((a, p) => a + p.y, 0) < lower.reduce((a, p) => a + p.y, 0) ? -1 : 1, band = offsetOpenPolyline(lower, flip * bossT);
+      const zTop = y => z0 + T - yAtX(lower, y), zBot = y => z0 + T - yAtX(band, y), R = Math.min(bossDia / 2, Math.max(...xs)), NT = 36;
+      for (const rv of spec.rivets) {
+        const r = Math.min(rv.dMm / 2, R * 0.9), radii = [r, r + (R - r) / 3, r + 2 * (R - r) / 3, R], P = (rr, th, zf) => { const y = rv.yMm + rr * Math.sin(th); return { x: at.x + rv.xMm + rr * Math.cos(th), y: at.y + y, z: zf(y) }; };
+        for (let j = 0; j < NT; j++) {
+          const a = 2 * Math.PI * j / NT, b = 2 * Math.PI * (j + 1) / NT;
+          for (let i = 0; i < 3; i++) faces.push({ kind: 'bottom', color: '#9a9a9a', points: [P(radii[i], a, zBot), P(radii[i + 1], a, zBot), P(radii[i + 1], b, zBot), P(radii[i], b, zBot)].reverse() });
+          faces.push({ kind: 'side', color: '#9a9a9a', points: [P(R, a, zTop), P(R, b, zTop), P(R, b, zBot), P(R, a, zBot)] });
+          faces.push({ kind: 'side', color: '#9a9a9a', points: [P(r, a, zBot), P(r, b, zBot), P(r, b, zTop), P(r, a, zTop)] });
+        }
+        bossCount++;
+      }
+    }
+  }
+  if (!bossCount) for (const rv of spec.rivets) box(at.x + rv.xMm, at.y + rv.yMm, rv.dMm, rv.dMm, z0 - 1, z0); /* ビス穴金具部が無い規格は、従来の小さな箱 */
+  return faces.map(f => ({ ...f, panelId: 'binder', partId: 'binder', color: f.color || '#c8b060' }));
 }
 /** 必要な背幅：リング径 + 金具ベース厚 + 革厚×2 + 遊び。 */
 export function spineWidth(ringD, baseThickness = 2, leatherThickness = 1.5, playMm = 2) { return ringD + baseThickness + 2 * leatherThickness + playMm; }
