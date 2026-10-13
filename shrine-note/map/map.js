@@ -1298,8 +1298,8 @@ function shrineHTML(s0) {
     <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>`}
     ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
-    <h3 class="chh sub">${EN ? U('noteArticle', '') + ' (Japanese)' : 'note 記事'}</h3>
-    ${s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
+    <h3 class="chh sub">${EN ? U('noteArticle', '') + (s.article_url_en ? '' : ' (Japanese)') : 'note 記事'}</h3>
+    ${EN && s.article_url_en ? `<a class="btn" href="${esc(s.article_url_en)}" target="_blank" rel="noopener">${U('readNoteEn', '')}</a>${s.article_url ? ` <a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">${U('readNoteJa', '')}</a>` : ''}` : s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
     ${sourceList(used)}
     <p class="meta">${EN ? U('checked', '') + ': ' + esc(s.checked || 'not checked') + ' / ' + U('respect', '') : '情報確認日：' + esc(s.checked || '未確認') + '／神社への敬意をもって、境内では現地の表示と作法に従ってください。'}</p>`;
   const cs = [c1, c2, c3, c4, c5];
