@@ -331,8 +331,11 @@ function drawQuad(dpr) {
   drawSolidInRect(quadSolidCache, sp, t(quadSolidCache ? 'threeViewMini' : 'quadSolidNone'));
   ctx.strokeStyle = '#3a3a3c'; ctx.lineWidth = 1; ctx.strokeRect(sp.x + 1, sp.y + 1, sp.w - 2, sp.h - 2);
 }
-const visible = s => doc.layers.find(l => l.id === s.layer)?.visible;
-const editable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
+/* holeLink＝穴の経路のための補助の線（.lcc の取り込みで付く・もとの図面に無い線）。画面にも出さず、選べもしない。穴の判定は層だけで決める（layerVisible／layerEditable）。 */
+const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
+const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
+const visible = s => layerVisible(s) && !s.holeLink;
+const editable = s => layerEditable(s) && !s.holeLink;
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type);
 const partOf = s => doc.parts.find(p => p.shapeIds.includes(s.id)) || null;
@@ -346,8 +349,8 @@ function selectedShapeIds() {
   for(const p of doc.paths) if(p.shapeIds.some(id=>!editable(doc.shapes.find(s=>s.id===id))))p.shapeIds.forEach(id=>ids.delete(id));
   return ids;
 }
-function holeVisible(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&visible(s);}); }
-function holeEditable(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&editable(s);}); }
+function holeVisible(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerVisible(s);}); }
+function holeEditable(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerEditable(s);}); }
 function loadTools() {
   try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d))return list;} } catch { /* 保存制限・旧設定は既定値で継続。 */ }
   return defaultTools();
@@ -1180,7 +1183,7 @@ function exportDxf() {
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
   const shapes = doc.shapes.filter(visible), overlapMm = 10, pageMm = PAGES[$('paper').value] || PAGES.a4;
-  const holes = $('outHoles').checked ? doc.holes.filter(h => doc.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => shapes.some(s => s.id === id)))) : [];
+  const holes = $('outHoles').checked ? doc.holes.filter(holeVisible) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return;
   const layout = printLayout(b, pageMm, overlapMm, null);
   ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = 'rgba(255,90,90,0.5)'; ctx.fillStyle = 'rgba(255,120,120,0.7)'; ctx.font = `${12 / scale}px system-ui, sans-serif`;
@@ -1192,7 +1195,7 @@ function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + '
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target = doc) {
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
-  const shapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), holes = $('outHoles').checked ? target.holes.filter(h => target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => shapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
+  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
   const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked })}</div>`).join('');
@@ -1459,7 +1462,7 @@ function execVoice(r) {
     case 'undo': $('undo').onclick(); break; case 'redo': $('redo').onclick(); break;
     case 'delete': removeSelected(); break; case 'copy': copySelected(); break;
     case 'mirrorX': $('mirrorX').onclick(); break; case 'mirrorY': $('mirrorY').onclick(); break;
-    case 'selectAll': selected = new Set(doc.shapes.filter(s => { const l = doc.layers.find(x => x.id === s.layer || x.name === s.layer); return !l || (l.visible !== false && !l.locked); }).map(s => s.id)); draw(); break;
+    case 'selectAll': selected = new Set(doc.shapes.filter(s => { const l = doc.layers.find(x => x.id === s.layer || x.name === s.layer); return !s.holeLink && (!l || (l.visible !== false && !l.locked)); }).map(s => s.id)); draw(); break;
     case 'save': save(); break; case 'exportSvg': exportSvg(); break; case 'exportDxf': exportDxf(); break; case 'exportPdf': exportPdf(); break; case 'print': printPages(); break;
     case 'view3d': setView3d(true); break; case 'view2d': setView3d(false); break; case 'help': showHelp(); break;
     case 'zoomIn': zoom(1.25); break; case 'zoomOut': zoom(0.8); break; case 'fit': fit(); break;
