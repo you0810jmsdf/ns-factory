@@ -2426,12 +2426,21 @@ function nodeHit(s, p) {
   return null;
 }
 function askText() { const raw = window.prompt(t('textPrompt'), ''); return raw && raw.trim() ? raw.trim() : null; }
-/** トリムの対象：クリックから 7px 以内で、いちばん近い線。同じ近さなら後から描いた線。（交点の近くで、上に重なった別の線を選んで消してしまわないように・事業主の不具合記録 2026-10-13） */
-function nearestTrimTarget(p) {
-  let best = null, bd = Infinity; for (const s of doc.shapes) { if (!editable(s) || !stitchable(s)) continue; const d = distToShape(s, p); if (d <= 7 / scale && d <= bd + 1e-9) { best = s; bd = d; } } return best;
+/** トリムの対象を決める。クリックから 7px 以内でいちばん近い線（同じ近さなら後から描いた線）。無ければ 14px まで広げる。線の「あいだの空き」をクリックして、同じ近さの別の線が2本以上あるときは、決められない（reason='ambiguous'）。近くに線が無ければ reason='miss'。（事業主の不具合記録 2026-10-13） */
+function trimTarget(p) {
+  const same = (x, y) => x.type === 'line' && y.type === 'line' && [[0, 1], [1, 0]].some(([i, j]) => [['x1', 'y1'], ['x2', 'y2']].every(([kx, ky], k) => Math.abs(x[kx] - y[k ? 'x' + (j + 1) : 'x' + (j + 1)]) < 1e-6 && false) || (Math.abs(x.x1 - y['x' + (i + 1)]) < 1e-6 && Math.abs(x.y1 - y['y' + (i + 1)]) < 1e-6 && Math.abs(x.x2 - y['x' + (j + 1)]) < 1e-6 && Math.abs(x.y2 - y['y' + (j + 1)]) < 1e-6));
+  for (const px of [7, 14]) {
+    let best = null, bd = Infinity; const all = [];
+    for (const s of doc.shapes) { if (!editable(s) || !stitchable(s)) continue; const d = distToShape(s, p); if (d > px / scale) continue; all.push({ s, d }); if (d <= bd + 1e-9) { best = s; bd = d; } }
+    if (!best) continue;
+    if (bd > 3 / scale && all.some(c => c.s !== best && c.d - bd <= 1.5 / scale && !same(c.s, best))) return { hit: null, reason: 'ambiguous' }; /* 線の上ではなく、線と線のあいだ：どちらか決められない */
+    return { hit: best, reason: null };
+  }
+  return { hit: null, reason: 'miss' };
 }
+const nearestTrimTarget = p => trimTarget(p).hit;
 function trimClick(p, keep) {
-  const hit = nearestTrimTarget(p); if (!hit) return;
+  const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
   const parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
   if (!parts) { $('hint').textContent = t('noIntersection'); return; }
   const removedPaths = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id));
