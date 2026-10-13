@@ -59,7 +59,8 @@ let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だ�
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
-let junctions = { joined: [], loose: [] }, blinkOn = true; /* 交点の表示：結合＝赤い点／未結合＝赤い点滅 */
+const opLog = []; /* 操作の記録（不具合調査用・最近300件） */
+let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
@@ -1061,9 +1062,9 @@ function initDesign() {
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
-  if (typeof setInterval === 'function') setInterval(() => { if (junctions.loose.length && $('showJunctions').checked && !(typeof document !== 'undefined' && document.hidden)) { blinkOn = !blinkOn; draw(); } else blinkOn = true; }, 500); /* 未結合の交点だけ点滅させる */
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
+  $('bugLog').onclick = () => { const r = bugReport(); download(bugReportName(), JSON.stringify(r), 'application/json'); $('hint').textContent = t('bugLogSaved', { n: r.log.length }); }; /* 不具合記録：操作の記録と図面をファイルに保存（外部へは送らない） */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') window.open('guide.html', '_blank'); }; /* 図解ガイド（日本語）を別タブで開く */
   $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
@@ -1930,7 +1931,7 @@ function topParams() {
 }
 function renderTopSection() {
   const p = topParams(), res = closedBinderViews(p); if (!res) { $('spTopInfo').textContent = t('invalidNumber'); $('spTopSvg').innerHTML = ''; return null; }
-  $('spTopInfo').textContent = t('spTopInfo', { t: res.thickness, c: res.coverW }) + (res.ringFits ? '' : ' ' + t('spTopTight', { s: p.stackT, r: $('ringD').value })); $('spTopSvg').innerHTML = closedBinderViewsSvg(res); return res;
+  $('spTopInfo').textContent = t('spTopInfo', { t: res.thickness, c: res.coverW }) + (res.ringFits ? '' : ' ' + t('spTopTight', { s: p.stackT, r: $('ringD').value })) + (res.holeD > 0 ? ' ' + t('spTopHole', { d: res.holeD, e: res.holeEdge }) : ''); $('spTopSvg').innerHTML = closedBinderViewsSvg(res); return res;
 }
 function drawTopSection() {
   const res = renderTopSection(); if (!res) return;
@@ -2502,23 +2503,32 @@ const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 /** ポインタの近く（画面で 40px 以内）にあるガイドの点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
 function guideMarkPoints() {
-  if (!MAGNET_DRAW_MODES.includes(mode) || !(magnetRadiusMm() > 0)) return [];
-  const reach = 40 / scale; return magnetGuide.filter(c => distance(cursor, c) <= reach);
+  if (!(magnetRadiusMm() > 0)) return [];
+  const reach = 40 / scale, all = m => [...m.guide, ...m.centers];
+  if (mode === 'select') { /* 選択モード：選んだ図形の点（掴む基点の候補）。基点を持って動かしている間は、合わせ先の点 */
+    if (gesture?.kind === 'move') return (gesture.targets || []).filter(c => distance(cursor, c) <= reach);
+    if (gesture) return []; if (!selected.size) return [];
+    return all(magnetPointsOf(doc.shapes.filter(s => visible(s) && selected.has(s.id)))).filter(c => distance(cursor, c) <= reach);
+  }
+  if (!MAGNET_DRAW_MODES.includes(mode)) return [];
+  return magnetGuide.filter(c => distance(cursor, c) <= reach);
 }
 function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCenters : []; }
-/** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝赤い点（点滅）。 */
+/** 交点のうち、ポインタの近く（画面で 40px 以内）にあるもの。常時出すとちかちかするので、近づいたときだけ印を出す（事業主指示 2026-10-13）。 */
+function nearJunctions(list) { const reach = 40 / scale; return list.filter(p => distance(cursor, p) <= reach); }
+/** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝白い縁の赤い点。ポインタが近いものだけ。点滅はしない。 */
 function drawJunctions() {
-  if (!$('showJunctions').checked) return; const r = 3.5 / scale;
+  if (!$('showJunctions').checked) return; const joined = nearJunctions(junctions.joined), loose = nearJunctions(junctions.loose); if (!joined.length && !loose.length) return; const r = 3.5 / scale;
   ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#ff2a2a';
-  for (const p of junctions.joined) { ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); }
-  if (blinkOn) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1 / scale; for (const p of junctions.loose) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } }
+  for (const p of joined) { ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); }
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1 / scale; for (const p of loose) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
 function drawCenterMarks() {
   const pts = centerMarkPoints(), near = guideMarkPoints(); if (!pts.length && !near.length) return;
-  ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.75)'; ctx.lineWidth = 1 / scale; ctx.beginPath();
+  ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.95)'; ctx.lineWidth = 1.5 / scale; ctx.beginPath();
   for (const c of pts) { ctx.moveTo(c.x - 4 / scale, c.y); ctx.lineTo(c.x + 4 / scale, c.y); ctx.moveTo(c.x, c.y - 4 / scale); ctx.lineTo(c.x, c.y + 4 / scale); }
-  for (const c of near) { const r = 4 / scale; ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x, c.y - r); ctx.lineTo(c.x + r, c.y); ctx.lineTo(c.x, c.y + r); ctx.closePath(); } /* ガイドの点＝小さなひし形（中心の十字と区別） */
+  for (const c of near) { const r = 5.5 / scale; ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x, c.y - r); ctx.lineTo(c.x + r, c.y); ctx.lineTo(c.x, c.y + r); ctx.closePath(); } /* ガイドの点＝小さなひし形（中心の十字と区別） */
   ctx.stroke(); ctx.restore();
 }
 function rebuildSnaps() {
@@ -2565,7 +2575,7 @@ function syncToolCards() {
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; syncToolCards();
+  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -2840,9 +2850,17 @@ function editAt(p) {
   });
   $('hint').textContent = t('hint.chamfer');
 }
+/** 動かす図形の「基点」：掴んだ所の近く（磁石の吸着距離内）にある、選んだ図形の端・中点・中心。見つかれば gesture.start をその点に置き換え、相手の候補（動かさない図形の端・中点・中心）を gesture.targets に持つ（事業主指示 2026-10-13：選んだ矩形の中心と、くっつけたい図形の中心を合わせたい）。 */
+function beginMoveSnap(g) {
+  const reach = magnetRadiusMm(); if (!(reach > 0)) return;
+  const all = m => [...m.ends, ...m.centers, ...m.guide], mine = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && g.ids.has(s.id))));
+  let near = reach, base = null; for (const c of mine) { const d = distance(g.start, c); if (d < near) { near = d; base = c; } }
+  if (!base) return; g.start = { ...base }; g.targets = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id))));
+}
 function moveDelta() { return { x: cursor.x - gesture.start.x, y: cursor.y - gesture.start.y }; }
 function movePosition(p, shift) {
   const start = gesture.start;
+  if (gesture.targets?.length && !shift) { const reach = magnetRadiusMm(); let near = reach, hit = null; for (const c of gesture.targets) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } if (hit) { snap = hit; return { ...hit }; } } /* 基点を持って動かしているとき：相手の点の近くでは、基点がその点にぴたりと合う */
   let result = { ...p };
   if ($('snap').checked) {
     const grid = Number($('spacing').value) || 1;
@@ -3195,6 +3213,23 @@ function fit() {
   else { const vw = viewW(), vh = viewH(); scale = Math.max(0.1, Math.min(100, (vw - 80) / Math.max(1, b.maxX - b.minX), (vh - 80) / Math.max(1, b.maxY - b.minY))); origin = { x: vw / 2 - (b.minX + b.maxX) / 2 * scale, y: vh / 2 - (b.minY + b.maxY) / 2 * scale }; }
   draw();
 }
+/* ── 操作の記録（不具合調査用・事業主指示 2026-10-13）：スクショにはポインタが映らないので、クリックの位置・当たった図形・選択の結果を、最近300件だけメモリに持つ。外部へは送らず、「不具合記録」ボタンでファイルに保存するだけ。 ── */
+function logOp(kind, detail = {}) { opLog.push({ t: new Date().toISOString().slice(11, 23), kind, ...detail }); if (opLog.length > 300) opLog.shift(); }
+function pointerLog(kind, e) {
+  try {
+    const p = local(e), w = world(p), near = doc.shapes.map(s => ({ id: s.id, type: s.type, layer: s.layer, d: distToShape(s, w), editable: !!editable(s) })).filter(c => c.d <= 14 / scale).sort((a, b) => a.d - b.d).slice(0, 6).map(c => ({ ...c, d: +c.d.toFixed(2) }));
+    logOp(kind, { btn: e.button, mode, px: [Math.round(p.x), Math.round(p.y)], mm: [+w.x.toFixed(2), +w.y.toFixed(2)], scale: +scale.toFixed(3), pick: pickShapeAt(w)?.id ?? null, near, nSel: selected.size, selected: [...selected].slice(0, 12), gesture: gesture?.kind ?? null, hint: $('hint')?.textContent ?? '' });
+  } catch (err) { logOp('logError', { msg: String(err) }); }
+}
+function keyLog(e) { const el = e.target, text = el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !['checkbox', 'button', 'radio'].includes(el.type))); logOp('key', { key: text ? '(入力欄)' : e.key, ctrl: !!(e.ctrlKey || e.metaKey), shift: !!e.shiftKey, alt: !!e.altKey, target: el?.id || el?.tagName || '', mode }); }
+function bugReport() {
+  const ver = $('buildVer')?.textContent ?? '';
+  return { kind: 'ncad-bug-report', savedAt: new Date().toISOString(), app: ver, env: { ua: (typeof navigator !== 'undefined' && navigator.userAgent) || '', scale: +scale.toFixed(3), origin, mode, tab: activeTab }, layers: doc.layers.map(l => ({ id: l.id, name: l.name, visible: l.visible, locked: l.locked })), shapeCount: doc.shapes.length, selected: [...selected].slice(0, 50), log: opLog.slice(), doc };
+}
+function bugReportName() { const d = new Date(), z = n => String(n).padStart(2, '0'); return `ncad-bug-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`; }
+document.addEventListener?.('pointerdown', e => { if (e.target === canvas) pointerLog('down', e); }, true);
+document.addEventListener?.('pointerup', e => { if (e.target === canvas) setTimeout(() => pointerLog('up', e), 0); }, true); /* 離した直後の状態（選択の結果・ヒント）を残す */
+document.addEventListener?.('keydown', keyLog, true);
 canvas.addEventListener('pointerdown', e => {
   hideCtxMenu(); /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
@@ -3258,6 +3293,7 @@ canvas.addEventListener('pointerdown', e => {
     if (hit && !e.shiftKey) {
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds() }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
+      beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
   else if (stage) { gesture = { kind: 'stage' }; }

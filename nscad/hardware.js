@@ -175,6 +175,7 @@ export function spineSim({ ringD = 20, wireD = 2, plateT = 2, baseH = plateT, em
   const ringTop = lift + bossT + baseH + outerRingD - embedMm, ringCy = lift + bossT + baseH + outerRingD / 2 - embedMm; // 背の内面からの輪の天井高さ・輪の中心の高さ
   const polys = spineSectionPolys(sectionPoints, bossT, bossDia, holeDia, lift); /* 台座の断面（レンズ形）と、膨らみの下のビス穴金具部（断面のデータがある規格だけ） */
   const section = { // 断面図用（mm・背の内面中央を原点・上向き正）
+    lift, /* 丸背で内張が底に積む分（断面の高さの原点は、内張の上面） */
     plate: { x: -12, y: lift + bossT, w: 24, h: plateT },
     /* ビス穴金具部：断面のデータがある規格は polys.boss。無い規格は台座（幅24）の下の平らな下駄（高さ bossT）で、リングサポータ厚とは無関係（事業主指示 2026-10-13） */
     bossFlat: !polys && bossT > 0 ? { x: -12, y: lift, w: 24, h: bossT } : null,
@@ -213,30 +214,36 @@ export function spineSectionSvg(result, { label = '' } = {}) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="${f(minX)} ${f(-maxY)} ${f(W)} ${f(H)}">${body}</svg>`;
 }
 /** 閉じた手帳を天（真上）から見た断面（mm・Y 下向き・左端＝背の外面・Y が大きい側が手前＝表側の表紙）。背の革・表裏の表紙・サポータ・台座・リング（内外2円）・リフィルの束を図形で返す。
- *  p は spineSim と同じ引数に加え {stackT（リフィルの束の厚み）, refillW（リフィル幅）, holeEdge（穴中心からリフィル縁まで）, coverW（背の内面からの表紙の長さ。省略で束の先から4mm）, plateW（台座の幅）}。
+ *  p は spineSim と同じ引数に加え {stackT（リフィルの束の厚み）, refillW（リフィル幅）, holeEdge（穴中心からリフィル縁まで・省略時6）, holeD（リフィルの穴の直径・省略時5・0 で描かない）, coverW（背の内面からの表紙の長さ。省略で束の先から4mm）, plateW（台座の幅）}。
  *  戻り値 {shapes, thickness（手帳の厚み）, coverW, ringX（背の外面からリング中心まで）, ringFits（束がリングの内径に収まるか）}。不正な数値は null。 */
 export function closedBinderTop(p = {}) {
   const sim = spineSim(p); if (!sim) return null;
-  const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, plateW = Math.min(p.plateW ?? 24, sim.innerW);
-  if (![stackT, refillW, holeEdge, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
+  const { leatherT = 1.5, supporterT = 0, plateT = 2 } = p, bossT = p.bossT ?? supporterT, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, holeD = p.holeD ?? 5, plateW = Math.min(p.plateW ?? 24, sim.innerW);
+  if (![stackT, refillW, holeEdge, holeD, plateW].every(v => Number.isFinite(v) && v >= 0) || refillW <= holeEdge) return null;
   /* 背は、曲げの内半径 r で角を丸めたU字：内側の角の半径 r・外側の角の半径 r＋革厚（r は内幅の半分まで。それ以上は半円）。表裏の表紙は xc＝革厚＋r から右へ接続する。曲げの内半径 foldR を指定しない古い呼び出しは、今までどおり半円（r＝内幅の半分） */
   const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, r = p.foldR === undefined ? rIn : Math.min(Math.max(Number(p.foldR) || 0, 0), rIn), xc = t + r;
   const dyc = plateW / 2 - (rIn - r), plateLeft = dyc <= 0 ? t : xc - Math.sqrt(Math.max(0, r * r - dyc * dyc)), /* 台座は、背の内面の平らな部分に当たるか、角の丸みに両端で当たる位置 */
- ringX = plateLeft + supporterT + (p.baseH ?? plateT) + sim.outerRingD / 2 - (p.embedMm ?? 0), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
+ ringX = plateLeft + (sim.section.ring.cy - sim.section.lift), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
   const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
   const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
   const arc = (cy, rad, a0, a1) => rad > 0 ? Array.from({ length: 19 }, (_, i) => { const a = a0 + (a1 - a0) * i / 18; return { x: xc + rad * Math.cos(a), y: cy + rad * Math.sin(a) }; }) : [{ x: xc, y: cy }], R = r + t, cyTop = t + r, cyBottom = T - t - r;
   const spine = { type: 'polyline', closed: true, role: 'spine', points: [...arc(cyTop, R, -Math.PI / 2, -Math.PI), ...arc(cyBottom, R, -Math.PI, -3 * Math.PI / 2), ...arc(cyBottom, r, Math.PI / 2, Math.PI), ...arc(cyTop, r, Math.PI, 3 * Math.PI / 2)] }; /* 外周（上→左→下）、内周（下→左→上）。角の円弧の間は直線 */
   const shapes = [spine, rect(xc, 0, xc + coverW, t, 'back-cover'), rect(xc, T - t, xc + coverW, T, 'front-cover')];
-  if (supporterT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + supporterT, mid + plateW / 2, 'supporter'));
-  shapes.push(rect(plateLeft + supporterT, mid - plateW / 2, plateLeft + supporterT + plateT, mid + plateW / 2, 'plate'),
+  /* リングサポータ（リングを包む帯）・ビス穴金具部・台座は、上の断面図（spineSim の section）と同じ形を、天の向き（背が左・背の内面からの高さが右向き）に置く（事業主指摘 2026-10-13：下の三面図の台座が上の図と違う） */
+  const sec = sim.section, tv = (x, y) => ({ x: plateLeft + (y - sec.lift), y: mid + x }), poly = (pts, role) => ({ type: 'polyline', closed: true, role, points: pts.map(q => tv(q.x, q.y)) });
+  if (sec.supporterWrap?.poly.length) shapes.push(poly(sec.supporterWrap.poly, 'supporter'));
+  if (sec.polys) { for (const q of sec.polys.boss) shapes.push(poly(q, 'boss')); shapes.push(poly(sec.polys.plate, 'plate')); }
+  else { if (bossT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + bossT, mid + plateW / 2, 'boss')); shapes.push(rect(plateLeft + bossT, mid - plateW / 2, plateLeft + bossT + plateT, mid + plateW / 2, 'plate')); } /* 断面のデータが無い規格は、幅 plateW・厚み plateT の四角い台座（従来どおり） */
+  shapes.push(
     { type: 'circle', cx: ringX, cy: mid, r: sim.outerRingD / 2, role: 'ring-outer' }, { type: 'circle', cx: ringX, cy: mid, r: p.ringD / 2, role: 'ring-inner' },
     rect(ringX - holeEdge, mid - stackT / 2, tipX, mid + stackT / 2, 'refills'));
-  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
+  /* リフィルの穴（直径 holeD・中心は束の端から holeEdge）：リングの中心の面で束を切った天の図では、穴の分だけ束が抜ける（事業主指示 2026-10-13） */
+  if (holeD > 0) shapes.push(rect(ringX - holeD / 2, mid - stackT / 2, ringX + holeD / 2, mid + stackT / 2, 'refill-hole'));
+  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, holeX: Math.round(ringX * 100) / 100, holeD, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
 }
 /** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
  *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
- *  戻り値 {shapes, width, height, views:{front,top,side}, thickness, coverW}。不正な数値は null。 */
+ *  リフィルの穴は、正面に赤い丸（直径 holeD・リングと同じ高さ）で描き、天には束の抜けとして描く。戻り値 {shapes, width, height, views:{front,top,side}, thickness, coverW}。不正な数値は null。 */
 export function closedBinderViews(p = {}) {
   const top = closedBinderTop(p); if (!top) return null;
   const t = p.leatherT ?? 1.5, T = top.thickness, Wf = top.xc + top.coverW, refillH = p.refillH ?? 210, H = p.coverH > 0 ? p.coverH : refillH + 6, gap = p.gap ?? 14, plateL = Math.min(p.plateL ?? 170, H), wire = p.wireD ?? 2;
@@ -248,21 +255,23 @@ export function closedBinderViews(p = {}) {
   for (const s of top.shapes) shapes.push(s.type === 'circle' ? { ...s, cy: s.cy + topY } : { ...s, points: s.points.map(q => ({ x: q.x, y: q.y + topY })) });
   /* 正面：表紙の外形。背（左 t）と表紙の線。隠れ線＝台座・リング（真横から見ると細長い長方形）・リフィルの縁 */
   shapes.push(rect(0, 0, Wf, H, 'front-outline'), { type: 'line', role: 'spine-line', x1: top.xc, y1: 0, x2: top.xc, y2: H }); /* 丸い背が表紙に変わる線 */
-  const px = top.plateLeft + (p.supporterT ?? 0); shapes.push(rect(px, H / 2 - plateL / 2, px + (p.plateT ?? 2), H / 2 + plateL / 2, 'plate', true));
+  const plateTop = top.shapes.find(s => s.role === 'plate'), px0 = Math.min(...plateTop.points.map(q => q.x)), px1 = Math.max(...plateTop.points.map(q => q.x)); /* 台座の天の図（断面の形）の、背の内面からの高さの幅 */
+  shapes.push(rect(px0, H / 2 - plateL / 2, px1, H / 2 + plateL / 2, 'plate', true));
   for (const y of rpos) shapes.push(rect(top.ringX - outerD / 2, y - wire, top.ringX + outerD / 2, y + wire, 'ring', true));
   const rh = Math.min(refillH, H); shapes.push(rect(top.ringX - (p.holeEdge ?? 6), (H - rh) / 2, Wf - 4 + 0, (H + rh) / 2, 'refills', true));
+  if (top.holeD > 0) for (const y of rpos) shapes.push({ type: 'circle', cx: top.holeX, cy: y, r: top.holeD / 2, role: 'refill-hole' }); /* リフィルの穴（リングの位置と見比べられるように実線の丸） */
   /* 右側面（小口側から）：手前＝表の表紙が左。表紙の厚み・リフィルの束の端 */
   shapes.push(rect(sx, 0, sx + T, H, 'side-outline'), { type: 'line', role: 'cover-line', x1: sx + t, y1: 0, x2: sx + t, y2: H }, { type: 'line', role: 'cover-line', x1: sx + T - t, y1: 0, x2: sx + T - t, y2: H });
   const stack = p.stackT ?? 6, sm = T / 2; shapes.push(rect(sx + T - sm - stack / 2, (H - rh) / 2, sx + T - sm + stack / 2, (H + rh) / 2, 'refills'));
   /* 寸法 */
   shapes.push({ type: 'dimension', role: 'dim', x1: 0, y1: H, x2: Wf, y2: H, offset: -8 }, { type: 'dimension', role: 'dim', x1: 0, y1: 0, x2: 0, y2: H, offset: 8 }, { type: 'dimension', role: 'dim', x1: sx, y1: H, x2: sx + T, y2: H, offset: -8 });
-  return { shapes, width: sx + T, height: H - topY, views: { front: { x: 0, y: 0, w: Wf, h: H }, top: { x: 0, y: topY, w: Wf, h: T }, side: { x: sx, y: 0, w: T, h: H } }, thickness: T, coverW: top.coverW, ringFits: top.ringFits };
+  return { shapes, width: sx + T, height: H - topY, views: { front: { x: 0, y: 0, w: Wf, h: H }, top: { x: 0, y: topY, w: Wf, h: T }, side: { x: sx, y: 0, w: T, h: H } }, thickness: T, coverW: top.coverW, ringFits: top.ringFits, holeD: top.holeD, holeEdge: p.holeEdge ?? 6 };
 }
 /** closedBinderViews の結果をプレビュー用 SVG にする（mm・1:1。隠れ線は破線）。 */
 export function closedBinderViewsSvg(res) {
-  if (!res) return ''; const f = n => (Math.round(n * 100) / 100).toString(), fill = { spine: '#d9c7a0', 'back-cover': '#d9c7a0', 'front-cover': '#d9c7a0', supporter: '#c4ad7f', plate: '#9a9a9a', refills: '#f2f2f2' };
+  if (!res) return ''; const f = n => (Math.round(n * 100) / 100).toString(), fill = { spine: '#d9c7a0', 'back-cover': '#d9c7a0', 'front-cover': '#d9c7a0', supporter: '#c4ad7f', boss: '#9a9a9a', plate: '#9a9a9a', refills: '#f2f2f2', 'refill-hole': '#ffffff' }, RED = '#d1342f';
   const ys = res.shapes.flatMap(s => s.type === 'circle' ? [s.cy - s.r, s.cy + s.r] : s.points ? s.points.map(q => q.y) : [s.y1, s.y2]), minY = Math.min(...ys) - 4, W = res.width + 24, H = Math.max(...ys) - minY + 20;
-  const body = res.shapes.filter(s => s.type !== 'dimension').map(s => { const dash = s.hidden ? ' stroke-dasharray="2 1.5"' : ''; return s.type === 'circle' ? `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="none" stroke="#b08d2a" stroke-width="0.4"/>` : s.type === 'line' ? `<line x1="${f(s.x1)}" y1="${f(s.y1)}" x2="${f(s.x2)}" y2="${f(s.y2)}" stroke="#000" stroke-width="0.2"/>` : `<polygon points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="${s.hidden ? 'none' : fill[s.role] || 'none'}" stroke="#000" stroke-width="0.2"${dash}/>`; }).join('');
+  const body = res.shapes.filter(s => s.type !== 'dimension').map(s => { const dash = s.hidden ? ' stroke-dasharray="2 1.5"' : ''; if (s.role === 'refill-hole') return s.type === 'circle' ? `<circle data-role="refill-hole" cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="#fff" fill-opacity="0.7" stroke="${RED}" stroke-width="0.4"/><path data-role="refill-hole-center" d="M${f(s.cx - s.r - 1.5)} ${f(s.cy)}H${f(s.cx + s.r + 1.5)}M${f(s.cx)} ${f(s.cy - s.r - 1.5)}V${f(s.cy + s.r + 1.5)}" stroke="${RED}" stroke-width="0.2" fill="none"/>` : `<polygon data-role="refill-hole" points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="#fff" stroke="${RED}" stroke-width="0.3"/>`; return s.type === 'circle' ? `<circle cx="${f(s.cx)}" cy="${f(s.cy)}" r="${f(s.r)}" fill="none" stroke="#b08d2a" stroke-width="0.4"/>` : s.type === 'line' ? `<line x1="${f(s.x1)}" y1="${f(s.y1)}" x2="${f(s.x2)}" y2="${f(s.y2)}" stroke="#000" stroke-width="0.2"/>` : `<polygon points="${s.points.map(q => f(q.x) + ',' + f(q.y)).join(' ')}" fill="${s.hidden ? 'none' : fill[s.role] || 'none'}" stroke="#000" stroke-width="0.2"${dash}/>`; }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="-4 ${f(minY)} ${f(W)} ${f(H)}">${body}</svg>`;
 }
 /** 同じ入力条件で内径だけを変え、最小の内径との差を比べる。計算できない入力は空の表にする。 */
