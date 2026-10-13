@@ -9,7 +9,7 @@ import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } from './threeview.js';
-import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
+import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingBarPolys, binderViews, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -1535,7 +1535,10 @@ function metalFillPlan() {
     const spec = String(hw.id).startsWith('binder') ? binderSpec(hw.params?.spec) : null; if (String(hw.id).startsWith('binder') && !spec) continue;
     const pose = s.points?.length >= 3 ? hwPoseOfOutline(s) : { at: hw.at || { x: 0, y: 0 }, angleDeg: Number(hw.angleDeg) || 0 }, key = [s.metal, hw.id, JSON.stringify(hw.params), pose.at.x.toFixed(3), pose.at.y.toFixed(3), pose.angleDeg].join('|'); if (seen.has(key)) continue; seen.add(key);
     let fp; try { fp = placeFootprint(hardwareFootprint(item, hw.params || {}, spec), pose.at, pose.angleDeg); } catch { continue; }
-    out.push({ metal: s.metal, body: poly(fp.outline[0]), parts: fp.outline.slice(1).map(poly), holes: fp.holes.map(poly) });
+    let parts = fp.outline.slice(1).map(poly);
+    if (spec) { const ringD = Number(hw.params?.ringD) || spec.rings.diameterOptionsMm[0], arms = binderViews(spec, ringD).plan.ringArms; /* リングアームを切り取った規格：塗りでは、切った2片ではなく、全長の棒を本体の上に重ねる（継ぎ目の線を出さない）。レバーなどはそのまま */
+      if (arms) { const bars = placeFootprint({ outline: binderRingBarPolys(spec, ringD).map(points => ({ type: 'polyline', closed: true, points })), holes: [] }, pose.at, pose.angleDeg).outline.map(poly); parts = [...bars, ...parts.slice(arms.reduce((n, p) => n + p.length, 0))]; } }
+    out.push({ metal: s.metal, body: poly(fp.outline[0]), parts, holes: fp.holes.map(poly) });
   }
   return out;
 }
