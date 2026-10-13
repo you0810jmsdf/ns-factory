@@ -1,0 +1,255 @@
+{
+  "_about": "商品登録画面（register.html）の和名自動変換用。英名のトークンを日本語に置き換える辞書と、minneで実際に検索された語。台帳の正本は 販売部\\minne検索キーワード台帳.md。語だけ（回数は載せない）。",
+  "updated": "2026-10-14",
+  "keywords": [
+    "システム手帳 ミニ6 革",
+    "システム手帳 レザー マルゴー",
+    "M5 リフィル",
+    "マイクロ5",
+    "ミニ6",
+    "手帳",
+    "クラウゼ 手帳",
+    "ペンホルダー M6",
+    "ミニ6 システム手帳 革",
+    "ミニ6 手帳",
+    "M6 手帳",
+    "システム手帳 M5",
+    "マルゴーフォグ 手帳",
+    "手帳用ゴムバンド",
+    "A5スリム システム手帳",
+    "A6 システム手帳"
+  ],
+  "sizeAliases": {
+    "ミニ6": [
+      "ミニ6",
+      "M6"
+    ],
+    "マイクロ5": [
+      "マイクロ5",
+      "M5"
+    ],
+    "A5スリム": [
+      "A5スリム"
+    ],
+    "A5": [
+      "A5"
+    ],
+    "A6": [
+      "A6"
+    ],
+    "バイブル": [
+      "バイブル"
+    ],
+    "ミニ5": [
+      "ミニ5"
+    ]
+  },
+  "normalize": [
+    [
+      "n-classic",
+      "nclassic"
+    ],
+    [
+      "n-through",
+      "nthrough"
+    ],
+    [
+      "n-patch",
+      "npatch"
+    ],
+    [
+      "n-pad",
+      "npad"
+    ],
+    [
+      "dr.organizer",
+      "droganizer"
+    ],
+    [
+      "dr organizer",
+      "droganizer"
+    ],
+    [
+      "a5 slim",
+      "a5slim"
+    ],
+    [
+      "a5_slim",
+      "a5slim"
+    ],
+    [
+      "d-kan",
+      "dkan"
+    ],
+    [
+      "a5-slim",
+      "a5slim"
+    ]
+  ],
+  "size": {
+    "mini6": "ミニ6",
+    "mni6": "ミニ6",
+    "mini6w": "ミニ6W",
+    "micro5": "マイクロ5",
+    "micor5": "マイクロ5",
+    "pinkmicro5": "マイクロ5",
+    "mini5": "ミニ5",
+    "a5slim": "A5スリム",
+    "a5": "A5",
+    "a6": "A6",
+    "bible": "バイブル",
+    "bivle": "バイブル"
+  },
+  "item": {
+    "coinbox": "コインケース",
+    "coincase": "コインケース",
+    "boxcoincase": "コインケース",
+    "coin": "コイン",
+    "coincatcher": "コインキャッチャー",
+    "refill": "リフィル",
+    "rifill": "リフィル",
+    "ringrefill": "リングリフィル",
+    "refillpad": "リフィルパッド",
+    "card": "カード",
+    "cardcase": "カードケース",
+    "cardpocket": "カードポケット",
+    "wallet": "ウォレット",
+    "longwallet": "長財布",
+    "keycase": "キーケース",
+    "key": "キー",
+    "keyholder": "キーホルダー",
+    "penholder": "ペンホルダー",
+    "penholer": "ペンホルダー",
+    "penhoruda": "ペンホルダー",
+    "penholder3": "ペンホルダー",
+    "pencase": "ペンケース",
+    "ringsupporter": "リングサポーター",
+    "supporter": "サポーター",
+    "ring": "リング",
+    "triplering": "トリプルリング",
+    "cover": "カバー",
+    "notecover": "ノートカバー",
+    "bookcover": "ブックカバー",
+    "charm": "チャーム",
+    "charmhole": "チャームホール",
+    "strap": "ストラップ",
+    "belt": "ベルト",
+    "longbelt": "ロングベルト",
+    "flap": "フラップ",
+    "frap": "フラップ",
+    "zip": "ジップ",
+    "flapzip": "フラップジップ",
+    "roundzip": "ラウンドジップ",
+    "tote": "トート",
+    "bag": "バッグ",
+    "glasses": "メガネ",
+    "passcase": "パスケース",
+    "idcase": "IDケース",
+    "index": "インデックス",
+    "divider": "仕切り",
+    "band": "バンド",
+    "moneyclip": "マネークリップ",
+    "pocket": "ポケット",
+    "pad": "パッド",
+    "case": "ケース",
+    "box": "ボックス",
+    "half": "ハーフ",
+    "square": "スクエア",
+    "trackers": "トラッカーズ",
+    "clear": "クリア",
+    "diary": "ダイアリー",
+    "marker": "マーカー",
+    "scarf": "スカーフ",
+    "stamp": "スタンプ",
+    "nclassic": "N-Classic",
+    "npad": "N-Pad",
+    "npadw": "N-Pad W",
+    "nthrough": "N-Through",
+    "npatch": "N-Patch",
+    "simplist": "シンプリスト",
+    "simplest": "シンプリスト",
+    "droganizer": "Dr.オーガナイザー",
+    "organizer": "オーガナイザー",
+    "dkan": "Dカン",
+    "kan": "カン",
+    "bussiness": "ビジネス",
+    "bussness": "ビジネス",
+    "business": "ビジネス",
+    "id": "ID",
+    "book": "ブック",
+    "case2": "ケース",
+    "case3": "ケース",
+    "case4": "ケース",
+    "remake": "リメイク"
+  },
+  "leather": {
+    "alaska": "アラスカ",
+    "margotfog": "マルゴーフォグ",
+    "margot": "マルゴー",
+    "horsebutt": "ホースバット",
+    "hursebutt": "ホースバット",
+    "horcebutt": "ホースバット",
+    "hoesebutt": "ホースバット",
+    "lineavascabox": "リネアヴァスカボックス",
+    "lineavascsbox": "リネアヴァスカボックス",
+    "mariano": "マリアーノ",
+    "amazonia": "アマゾニア",
+    "crocodile": "クロコダイル",
+    "crust": "クラスト"
+  },
+  "color": {
+    "black": "ブラック",
+    "nero": "ネロ",
+    "brown": "ブラウン",
+    "darkbrown": "ダークブラウン",
+    "pink": "ピンク",
+    "orange": "オレンジ",
+    "blue": "ブルー",
+    "bule": "ブルー",
+    "navy": "ネイビー",
+    "olive": "オリーブ",
+    "burgundy": "バーガンディ",
+    "burgandy": "バーガンディ",
+    "red": "レッド",
+    "natural": "ナチュラル",
+    "naturale": "ナチュラル",
+    "multicolor": "マルチカラー",
+    "raspberry": "ラズベリー",
+    "laspbery": "ラズベリー",
+    "raspbery": "ラズベリー",
+    "cobalt": "コバルト",
+    "teablack": "ティーブラック",
+    "iceblue": "アイスブルー",
+    "chocolate": "チョコレート",
+    "milky": "ミルキー",
+    "topo": "トポ",
+    "fuxia": "フクシア",
+    "fragola": "フラゴラ",
+    "fragla": "フラゴラ",
+    "fragora": "フラゴラ"
+  },
+  "drop": [
+    "v2",
+    "v3",
+    "v4",
+    "ver.3",
+    "nsfactory",
+    "mod",
+    "mod2",
+    "nf",
+    "d1",
+    "d2",
+    "d",
+    "p",
+    "w",
+    "n",
+    "no",
+    "for",
+    "and",
+    "with",
+    "of",
+    "type",
+    "model",
+    "parts"
+  ]
+}

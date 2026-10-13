@@ -521,6 +521,13 @@ textarea{min-height:80px;resize:vertical}
       <datalist id="dl_productNames"></datalist>
     </div>
 
+    <div class="form-row">
+      <label>和名（出品タイトル用）<span style="font-weight:400;color:#8a6a4a;font-size:11px"> 英名から自動入力・直せます</span></label>
+      <input type="text" id="f_nameJa" placeholder="例: システム手帳 マイクロ5 コインケース アラスカ ブラウン" list="dl_nameJa" autocomplete="off" data-auto="1">
+      <datalist id="dl_nameJa"></datalist>
+      <div id="nameJaNote" style="margin-top:4px;font-size:11px;line-height:1.6;color:#6a4a1a"></div>
+    </div>
+
     <div class="form-row-2">
       <div>
         <label style="display:block;font-size:12px;font-weight:700;color:#5a3a20;margin-bottom:5px">カテゴリ<span class="req">*</span></label>
@@ -1147,6 +1154,82 @@ function fetchProductNames() {
   document.head.appendChild(script);
 }
 
+// ====== 和名（英名からの自動変換・minne検索語の候補）======
+// 辞書と検索語は register-name-dict.json（正本の台帳は 販売部\minne検索キーワード台帳.md）。
+// 商品名（英名・社内表記）はそのまま残し、和名は出品タイトル用に別欄へ入れる。
+let NAME_DICT = null;
+function fetchNameDict() {
+  fetch('register-name-dict.json?cb=' + Date.now())
+    .then(r => r.json())
+    .then(d => { NAME_DICT = d; refreshNameJa(); })
+    .catch(() => { /* 辞書が読めなくても和名は手入力できる */ });
+}
+function translateNameToJa(en) {
+  const D = NAME_DICT;
+  const res = { text: '', unknown: [], size: '' };
+  if (!D || !en) return res;
+  let s = String(en).toLowerCase();
+  (D.normalize || []).forEach(([a, b]) => { s = s.split(a).join(b); });
+  s = s.replace(/(\d+)-(\d+)mm/g, '$1~$2mm');   // 25-30mm は範囲として1語に保つ
+  const tokens = s.split(/[\s　_\-–\/／・()（）,&:+\[\]「」]+/).filter(Boolean);
+  const out = { size: [], item: [], leather: [], color: [], extra: [] };
+  const seen = new Set();
+  const push = (k, v) => { if (!seen.has(v)) { seen.add(v); out[k].push(v); } };
+  tokens.forEach(t => {
+    if ((D.drop || []).includes(t)) return;
+    let m;
+    if (D.size[t]) return push('size', D.size[t]);
+    if (D.leather[t]) return push('leather', D.leather[t]);
+    if (D.color[t]) return push('color', D.color[t]);
+    if (D.item[t]) return push('item', D.item[t]);
+    if ((m = t.match(/^(\d+(?:~\d+)?)mm[a-z]*$/))) return push('extra', m[1] + 'mm');
+    if (/^[a-z0-9.'’]+$/.test(t)) { if (!/^\d+$/.test(t)) res.unknown.push(t); return; }  // 辞書にない英数字
+    push('extra', t);   // 日本語などはそのまま残す
+  });
+  const head = out.size.length ? ['システム手帳'] : [];
+  res.text = head.concat(out.size, out.item, out.leather, out.color, out.extra).join(' ');
+  res.size = out.size[0] || '';
+  return res;
+}
+function refreshNameJa() {
+  const ja = document.getElementById('f_nameJa');
+  if (!ja) return;
+  const r = translateNameToJa(document.getElementById('f_name').value);
+  if (ja.dataset.auto === '1') ja.value = r.text;
+  // 候補リスト: 自動変換の結果＋minneで検索されている語（規格が合うものを優先）
+  const kws = (NAME_DICT && NAME_DICT.keywords) || [];
+  const aliases = (NAME_DICT && NAME_DICT.sizeAliases && NAME_DICT.sizeAliases[r.size]) || [];
+  const hits = aliases.length ? kws.filter(k => aliases.some(a => k.toLowerCase().includes(a.toLowerCase()))) : [];
+  const cands = [r.text].concat(hits, kws).filter((v, i, a) => v && a.indexOf(v) === i);
+  document.getElementById('dl_nameJa').innerHTML = cands.map(c => '<option value="' + c.replace(/"/g, '&quot;') + '">').join('');
+  const note = document.getElementById('nameJaNote');
+  const parts = [];
+  if (r.unknown.length) parts.push('⚠ 変換できなかった語: ' + r.unknown.join('、') + '（和名に直接入れてください）');
+  const show = (hits.length ? hits : kws).slice(0, 4);
+  if (show.length) parts.push('🔎 minneで検索されている語: ' + show.join(' ／ '));
+  note.textContent = parts.join('　');
+}
+function setNameJa(v) {
+  const ja = document.getElementById('f_nameJa');
+  if (!ja) return;
+  ja.value = v || '';
+  ja.dataset.auto = v ? '0' : '1';     // 保存済みの和名は自動入力で上書きしない
+  refreshNameJa();
+}
+function syncNameJaFlag() {              // 下書き復元後: 自動変換と同じ内容なら自動入力のまま
+  const ja = document.getElementById('f_nameJa');
+  if (!ja) return;
+  const r = translateNameToJa(document.getElementById('f_name').value);
+  ja.dataset.auto = (!ja.value || ja.value === r.text) ? '1' : '0';
+  refreshNameJa();
+}
+document.addEventListener('input', (ev) => {
+  const t = ev.target;
+  if (!t) return;
+  if (t.id === 'f_name') refreshNameJa();
+  else if (t.id === 'f_nameJa') t.dataset.auto = t.value ? '0' : '1';   // 手で触ったら自動入力を止める
+});
+
 function setFallbackOptions() {
   ['category','material','color'].forEach(field => {
     const sel = document.getElementById('f_' + field);
@@ -1334,6 +1417,7 @@ async function checkAuth() {
     document.body.classList.remove('auth-locked');
     fetchNextId();
     fetchProductNames();
+    fetchNameDict();
     loadKawamuraColors();
     await fetchMasterData();
     initSizeOptions();
@@ -1532,6 +1616,7 @@ async function loadProduct() {
     if (!d.ok) { setLoadStatus(''); alert('読込失敗: ' + (d.error || 'unknown')); return; }
     const p = d.product;
     document.getElementById('f_name').value = p.name;
+    setNameJa(p.nameJa || '');
     const _cats = String(p.category || '').split('／').map(c => c.trim()).filter(Boolean);
     setSelectValue('f_category', _cats[0] || '');
     setSelectValue('f_subcategory', _cats[1] || '');
@@ -1975,7 +2060,7 @@ const REGISTER_DRAFT_STORE = 'drafts';
 const REGISTER_DRAFT_KEY = 'current';
 const REGISTER_DRAFT_META_KEY = 'nsf_register_draft_meta_v1';
 const REGISTER_DRAFT_FIELD_IDS = [
-  'f_name','f_category','f_subcategory','f_material','f_color','f_size','f_size_custom',
+  'f_name','f_nameJa','f_category','f_subcategory','f_material','f_color','f_size','f_size_custom',
   'f_hours','f_cost','f_price','f_stock','f_shortDesc','f_longDesc','f_hashtags',
   'f_intentWho','f_intentGoal','f_intentIdea'
 ];
@@ -2148,6 +2233,7 @@ function applyRegisterDraft(draft) {
       el.value = value || '';
       if (id === 'f_size') onSizeChange();
     });
+    syncNameJaFlag();
     photos = (draft.photos || []).filter(p => p.existing || p.dataUrl).map(restoreRegisterDraftPhoto);
     mainPhotoIndex = typeof draft.mainPhotoIndex === 'number' ? draft.mainPhotoIndex : (photos.length ? 0 : -1);
     if (mainPhotoIndex >= photos.length) mainPhotoIndex = photos.length - 1;
@@ -2187,6 +2273,7 @@ document.addEventListener('change', (ev) => {
 function buildConfirm() {
   const rows = [
     ['商品名', val('f_name')],
+    ['和名', val('f_nameJa') || '—'],
     ['カテゴリ', catValue()],
     ['素材', val('f_material')],
     ['色', val('f_color')],
@@ -2250,7 +2337,7 @@ async function doNewRegister() {
   const payload = {
     key: REGISTER_KEY,
     requestId: getRegisterRequestId(),
-    name: val('f_name'), category: catValue(), material: val('f_material'),
+    name: val('f_name'), nameJa: val('f_nameJa'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
     cost: val('f_cost'), price: val('f_price'), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
@@ -2346,7 +2433,7 @@ async function doUpdate() {
   setProgress(80, '商品マスター更新中…', 'スプレッドシートを更新しています…');
   const updPayload = {
     key: REGISTER_KEY, productId: editingProductId,
-    name: val('f_name'), category: catValue(), material: val('f_material'),
+    name: val('f_name'), nameJa: val('f_nameJa'), category: catValue(), material: val('f_material'),
     color: val('f_color'), size: val('f_size'), hours: val('f_hours'),
     cost: val('f_cost'), price: priceWithStatus(val('f_price')), stock: val('f_stock'),
     shortDesc: val('f_shortDesc'), longDesc: val('f_longDesc'),
@@ -2668,6 +2755,7 @@ function resetAll() {
    'f_intentWho','f_intentGoal','f_intentIdea'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  setNameJa('');             // 和名も空に戻し、自動入力を再び有効にする
   renderIntentChips(null);   // 前の作品のAI案を残さない
   document.getElementById('f_category').value = '';
   { const _s = document.getElementById('f_subcategory'); if (_s) _s.value = ''; }
