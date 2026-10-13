@@ -3239,6 +3239,9 @@ function bugReportName() { const d = new Date(), z = n => String(n).padStart(2, 
 document.addEventListener?.('pointerdown', e => { if (e.target === canvas) pointerLog('down', e); }, true);
 document.addEventListener?.('pointerup', e => { if (e.target === canvas) setTimeout(() => pointerLog('up', e), 0); }, true); /* 離した直後の状態（選択の結果・ヒント）を残す */
 document.addEventListener?.('keydown', keyLog, true);
+/** ボタン・見本・欄のクリックの記録（押したものの名前・選択数・画面下のメッセージ）。入力欄・選択欄の中身は残さない。 */
+function clickLogNow(e) { const b = e.target?.closest?.('button, select, input, summary, label'); if (!b) return; const form = b.tagName === 'INPUT' || b.tagName === 'SELECT' || b.tagName === 'TEXTAREA'; logOp('click', { id: b.id || '', cls: String(b.className || '').slice(0, 40), data: { ...(b.dataset || {}) }, text: form ? '' : String(b.textContent || '').trim().slice(0, 20), nSel: selected.size, mode, hint: $('hint')?.textContent ?? '' }); }
+document.addEventListener?.('click', e => setTimeout(() => clickLogNow(e), 0), true); /* 押した直後の状態（選択数・メッセージ）を残す */
 canvas.addEventListener('pointerdown', e => {
   hideCtxMenu(); /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
