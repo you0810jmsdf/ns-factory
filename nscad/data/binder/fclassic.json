@@ -142,7 +142,9 @@
     "heightMm": null,
     "diameterMm": 3.5,
     "kind": "rivet",
-    "note": null
+    "note": null,
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    },
    {
     "xMm": 75.85,
@@ -152,7 +154,9 @@
     "heightMm": null,
     "diameterMm": 3.5,
     "kind": "rivet",
-    "note": null
+    "note": null,
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    }
   ],
   "confidence": null

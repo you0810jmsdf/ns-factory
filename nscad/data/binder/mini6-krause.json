@@ -136,7 +136,9 @@
     "heightMm": 6,
     "diameterMm": null,
     "kind": "lever",
-    "note": "叩き台（推定）：実測で置き換える"
+    "note": "叩き台（推定）：実測で置き換える",
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    },
    {
     "xMm": -56,
@@ -146,7 +148,9 @@
     "heightMm": 4,
     "diameterMm": 7,
     "kind": "button",
-    "note": "叩き台（推定）：実測で置き換える"
+    "note": "叩き台（推定）：実測で置き換える",
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    }
   ]
  },
@@ -182,7 +186,9 @@
     "heightMm": null,
     "diameterMm": null,
     "kind": "slidelock",
-    "note": "スライドロック式（クラウゼ）：窓は中央から非対称。位置と大きさは未実測（のちほど）"
+    "note": "スライドロック式（クラウゼ）：窓は中央から非対称。位置と大きさは未実測（のちほど）",
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    }
   ],
   "confidence": null
@@ -196,6 +202,7 @@
   "crownRadiusMm": null,
   "edgeRadiusMm": null,
   "cornerRMm": 4,
+  "trimRingArms": null,
   "supporterThicknessMm": 2.4,
   "supporterDiameterMm": 10,
   "confidence": "measured",

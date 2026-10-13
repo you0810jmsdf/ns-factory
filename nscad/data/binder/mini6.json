@@ -151,7 +151,9 @@
     "heightMm": 6,
     "diameterMm": null,
     "kind": "lever",
-    "note": "叩き台（推定）：実測で置き換える"
+    "note": "叩き台（推定）：実測で置き換える",
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    },
    {
     "xMm": -56,
@@ -161,7 +163,9 @@
     "heightMm": 4,
     "diameterMm": 7,
     "kind": "button",
-    "note": "叩き台（推定）：実測で置き換える"
+    "note": "叩き台（推定）：実測で置き換える",
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    }
   ]
  },
@@ -201,7 +205,9 @@
     "heightMm": null,
     "diameterMm": 3.5,
     "kind": "rivet",
-    "note": null
+    "note": null,
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    },
    {
     "xMm": 54,
@@ -211,7 +217,9 @@
     "heightMm": null,
     "diameterMm": 3.5,
     "kind": "rivet",
-    "note": null
+    "note": null,
+    "cornerOuterRMm": null,
+    "cornerInnerRMm": null
    }
   ],
   "confidence": null

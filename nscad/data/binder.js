@@ -141,7 +141,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 126,
@@ -151,7 +153,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -313,7 +317,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 79,
@@ -323,7 +329,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -463,7 +471,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 79,
@@ -473,7 +483,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -605,7 +617,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 63,
@@ -615,7 +629,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -756,7 +772,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 63,
@@ -766,7 +784,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -941,7 +961,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 69.5,
@@ -951,7 +973,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1102,7 +1126,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 75.85,
@@ -1112,7 +1138,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1262,7 +1290,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 69.5,
@@ -1272,7 +1302,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1411,7 +1443,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 113.95,
@@ -1421,7 +1455,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1559,7 +1595,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 63.150000000000006,
@@ -1569,7 +1607,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1692,7 +1732,9 @@ export const BINDER_SPECS = [
      "heightMm": 6,
      "diameterMm": null,
      "kind": "lever",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": -46,
@@ -1702,7 +1744,9 @@ export const BINDER_SPECS = [
      "heightMm": 4,
      "diameterMm": 7,
      "kind": "button",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ]
   },
@@ -1742,7 +1786,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 44,
@@ -1752,7 +1798,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1897,7 +1945,9 @@ export const BINDER_SPECS = [
      "heightMm": 6,
      "diameterMm": null,
      "kind": "lever",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": -56,
@@ -1907,7 +1957,9 @@ export const BINDER_SPECS = [
      "heightMm": 4,
      "diameterMm": 7,
      "kind": "button",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ]
   },
@@ -1943,7 +1995,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": null,
      "kind": "slidelock",
-     "note": "スライドロック式（クラウゼ）：窓は中央から非対称。位置と大きさは未実測（のちほど）"
+     "note": "スライドロック式（クラウゼ）：窓は中央から非対称。位置と大きさは未実測（のちほど）",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
@@ -1957,6 +2011,7 @@ export const BINDER_SPECS = [
    "crownRadiusMm": null,
    "edgeRadiusMm": null,
    "cornerRMm": 4,
+   "trimRingArms": null,
    "supporterThicknessMm": 2.4,
    "supporterDiameterMm": 10,
    "confidence": "measured",
@@ -2283,24 +2338,28 @@ export const BINDER_SPECS = [
    "confidence": "estimated",
    "parts": [
     {
-     "xMm": 56,
+     "xMm": -62.5,
      "yMm": 0,
-     "widthMm": 8,
-     "lengthMm": 16,
+     "widthMm": 7,
+     "lengthMm": 20,
      "heightMm": 6,
      "diameterMm": null,
      "kind": "lever",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "実測（2026-10-13 事業主の図）：本体の端に長さ7・幅20・外側の角R5・内側の角R1。高さは未実測（叩き台）",
+     "cornerOuterRMm": 5,
+     "cornerInnerRMm": 1
     },
     {
-     "xMm": -56,
+     "xMm": 62.5,
      "yMm": 0,
-     "widthMm": null,
-     "lengthMm": null,
-     "heightMm": 4,
-     "diameterMm": 7,
-     "kind": "button",
-     "note": "叩き台（推定）：実測で置き換える"
+     "widthMm": 7,
+     "lengthMm": 20,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "実測（2026-10-13 事業主の図）：本体の端に長さ7・幅20・外側の角R5・内側の角R1。高さは未実測（叩き台）",
+     "cornerOuterRMm": 5,
+     "cornerInnerRMm": 1
     }
    ]
   },
@@ -2336,7 +2395,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
+     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 38,
@@ -2346,20 +2407,23 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
+     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
   },
-  "sourceNote": "通常リング（クラウゼ社製以外）の台座：実測（2026-10-12・実物を見ながらの作図）。断面は幅20・全高7.25・縁の厚み1.33のレンズ形、リングサポータ厚2.4（直径10の円で切り抜き）、取付穴は中心から左右38・径5・ビス。台座の長さ120・角R3は推定のまま",
+  "sourceNote": "通常リング（クラウゼ社製以外）の台座：実測（2026-10-12・実物を見ながらの作図）。断面は幅20・全高7.25・縁の厚み1.33のレンズ形、リングサポータ厚2.4（直径10の円で切り抜き）、取付穴は中心から左右38・径5・ビス。2026-10-13 事業主の「完全に忠実な再現」図で、本体の長さ118・角R2、上下（両端）にレバー（長さ7・幅20・外側の角R5・内側の角R1）、リングアームと本体の重なりは切り取り。レバーの高さは未実測（叩き台）",
   "base": {
-   "lengthMm": 120,
+   "lengthMm": 118,
    "sectionWidthMm": 20,
    "crownHeightMm": 7.25,
    "thicknessMm": 1.33,
    "crownRadiusMm": null,
    "edgeRadiusMm": null,
-   "cornerRMm": 3,
+   "cornerRMm": 2,
+   "trimRingArms": "yes",
    "supporterThicknessMm": 2.4,
    "supporterDiameterMm": 10,
    "confidence": "estimated",
@@ -2697,7 +2761,9 @@ export const BINDER_SPECS = [
      "heightMm": 6,
      "diameterMm": null,
      "kind": "lever",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": -56,
@@ -2707,7 +2773,9 @@ export const BINDER_SPECS = [
      "heightMm": 4,
      "diameterMm": 7,
      "kind": "button",
-     "note": "叩き台（推定）：実測で置き換える"
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ]
   },
@@ -2747,7 +2815,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     },
     {
      "xMm": 54,
@@ -2757,7 +2827,9 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 3.5,
      "kind": "rivet",
-     "note": null
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
     }
    ],
    "confidence": null
