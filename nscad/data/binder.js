@@ -1797,6 +1797,198 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": 11,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 17,
+     "innerDiameterMm": 13,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": 15,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 23,
+     "innerDiameterMm": 19,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 24,
+     "innerDiameterMm": 20,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 25,
+     "outerDiameterMm": 29,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 30,
+     "outerDiameterMm": 34,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    }
+   ]
+  },
+  "plate": {
+   "lengthMm": 135,
+   "widthMm": 20,
+   "thicknessMm": 2,
+   "cornerRMm": 4,
+   "confidence": "measured"
+  },
+  "rivets": [],
+  "mechanism": {
+   "heightClosedMm": null,
+   "heightOpenMm": null,
+   "leverPos": "end",
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": 56,
+     "yMm": 0,
+     "widthMm": 8,
+     "lengthMm": 16,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "叩き台（推定）：実測で置き換える"
+    },
+    {
+     "xMm": -56,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": 4,
+     "diameterMm": 7,
+     "kind": "button",
+     "note": "叩き台（推定）：実測で置き換える"
+    }
+   ]
+  },
+  "drawings": {
+   "plan": "binder/mini6-krause.plan.svg",
+   "side": "binder/mini6-krause.side.svg",
+   "front": "binder/mini6-krause.front.svg"
+  },
+  "solid": {
+   "type": "binder",
+   "params": {
+    "plateLengthMm": 120,
+    "plateWidthMm": 24,
+    "plateThicknessMm": 2
+   }
+  },
+  "sources": [],
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": null,
+     "yMm": null,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": null,
+     "kind": "slidelock",
+     "note": "スライドロック式（クラウゼ）：窓は中央から非対称。位置と大きさは未実測（のちほど）"
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-03-13 の図から 2026-10-12 に読み取り）。板厚・リング・機構は規格の値のまま。取付穴はスライドロック式（窓は中央から非対称・位置と大きさは未実測）",
+  "parent": "mini6"
+ },
+ {
+  "id": "mini6-standard",
+  "names": {
+   "ja": "Mini6 通常リング（実測）",
+   "en": "Mini6 standard ring (measured)",
+   "aliases": []
+  },
+  "holes": {
+   "count": 6,
+   "pitchMm": [
+    19.2,
+    19.2,
+    19.2,
+    19.2,
+    19.2
+   ],
+   "centerPitchMm": 19.2,
+   "span1toLastMm": 96
+  },
+  "refill": {
+   "wMm": 80,
+   "hMm": 128
+  },
+  "rings": {
+   "diameterOptionsMm": [
+    11,
+    13,
+    15,
+    19,
+    20,
+    25,
+    30
+   ],
+   "shape": "round",
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
      "innerDiameterMm": 11,
      "outerDiameterMm": 15,
      "wireDiameterMm": 2,
@@ -1859,7 +2051,7 @@ export const BINDER_SPECS = [
      "embedDepthMm": 6.25,
      "openGapMm": null,
      "confidence": "measured",
-     "sourceNote": "N's factory 実測（台座断面の作図・2026-10-12）：リング下端が台座の頂上から6.25mm下。線径2（外径29）",
+     "sourceNote": "通常リングの実測（2026-10-12・台座断面の作図）：リング下端が台座の頂上から6.25mm下。線径2（外径29）",
      "wireSource": "measured"
     },
     {
@@ -1923,9 +2115,9 @@ export const BINDER_SPECS = [
    ]
   },
   "drawings": {
-   "plan": "binder/mini6-krause.plan.svg",
-   "side": "binder/mini6-krause.side.svg",
-   "front": "binder/mini6-krause.front.svg"
+   "plan": "binder/mini6-standard.plan.svg",
+   "side": "binder/mini6-standard.side.svg",
+   "front": "binder/mini6-standard.front.svg"
   },
   "solid": {
    "type": "binder",
@@ -1954,7 +2146,7 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "穴の径5・ビス・穴の間隔76は実測（2026-10-13）"
+     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
     },
     {
      "xMm": 38,
@@ -1964,23 +2156,23 @@ export const BINDER_SPECS = [
      "heightMm": null,
      "diameterMm": 5,
      "kind": "screw",
-     "note": "穴の径5・ビス・穴の間隔76は実測（2026-10-13）"
+     "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
     }
    ],
    "confidence": null
   },
-  "sourceNote": "N's factory 実測：台座の長さ・幅・角R（2026-10-12）。断面は実物を見ながらの作図（2026-10-12・幅20・縁の厚み1.33・頂上から底の最下点まで7.25・上面の盛り上がり2.25・下の膨らみ3.66）。リングサポータ＝台座の下の膨らみに沿って外側へ2.4mm（2.3〜2.5mm程度の中央値）オフセットした帯を、ビス穴の突起（直径10・穴5）の円で切り抜いた形。リング内径25の食い込みは binder_rings.csv。リング位置・機構は規格の値のまま",
+  "sourceNote": "通常リング（クラウゼ社製以外）の台座：実測（2026-10-12・実物を見ながらの作図）。断面は幅20・全高7.25・縁の厚み1.33のレンズ形、リングサポータ厚2.4（直径10の円で切り抜き）、取付穴は中心から左右38・径5・ビス。台座の長さ120・角R3は推定のまま",
   "base": {
-   "lengthMm": 135,
+   "lengthMm": 120,
    "sectionWidthMm": 20,
    "crownHeightMm": 7.25,
    "thicknessMm": 1.33,
    "crownRadiusMm": null,
    "edgeRadiusMm": null,
-   "cornerRMm": 4,
+   "cornerRMm": 3,
    "supporterThicknessMm": 2.4,
    "supporterDiameterMm": 10,
-   "confidence": "measured",
+   "confidence": "estimated",
    "sectionPoints": [
     {
      "x": -10,

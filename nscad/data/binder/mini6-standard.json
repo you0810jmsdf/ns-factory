@@ -1,0 +1,403 @@
+{
+ "id": "mini6-standard",
+ "names": {
+  "ja": "Mini6 通常リング（実測）",
+  "en": "Mini6 standard ring (measured)",
+  "aliases": []
+ },
+ "holes": {
+  "count": 6,
+  "pitchMm": [
+   19.2,
+   19.2,
+   19.2,
+   19.2,
+   19.2
+  ],
+  "centerPitchMm": 19.2,
+  "span1toLastMm": 96
+ },
+ "refill": {
+  "wMm": 80,
+  "hMm": 128
+ },
+ "rings": {
+  "diameterOptionsMm": [
+   11,
+   13,
+   15,
+   19,
+   20,
+   25,
+   30
+  ],
+  "shape": "round",
+  "countPerSide": 6,
+  "firstOffsetMm": null,
+  "options": [
+   {
+    "innerDiameterMm": 11,
+    "outerDiameterMm": 15,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "innerDiameterMm": 13,
+    "outerDiameterMm": 17,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "innerDiameterMm": 15,
+    "outerDiameterMm": 19,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "innerDiameterMm": 19,
+    "outerDiameterMm": 23,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "innerDiameterMm": 20,
+    "outerDiameterMm": 24,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": null,
+    "wireSource": "assumed"
+   },
+   {
+    "innerDiameterMm": 25,
+    "outerDiameterMm": 29,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": 6.25,
+    "openGapMm": null,
+    "confidence": "measured",
+    "sourceNote": "通常リングの実測（2026-10-12・台座断面の作図）：リング下端が台座の頂上から6.25mm下。線径2（外径29）",
+    "wireSource": "measured"
+   },
+   {
+    "innerDiameterMm": 30,
+    "outerDiameterMm": 34,
+    "wireDiameterMm": 2,
+    "baseSpanMm": null,
+    "embedDepthMm": null,
+    "openGapMm": null,
+    "confidence": null,
+    "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+    "wireSource": "assumed"
+   }
+  ]
+ },
+ "plate": {
+  "lengthMm": 120,
+  "widthMm": 24,
+  "thicknessMm": 2,
+  "cornerRMm": 3,
+  "confidence": "estimated"
+ },
+ "rivets": [
+  {
+   "xMm": -38,
+   "yMm": 0,
+   "dMm": 5
+  },
+  {
+   "xMm": 38,
+   "yMm": 0,
+   "dMm": 5
+  }
+ ],
+ "mechanism": {
+  "heightClosedMm": null,
+  "heightOpenMm": null,
+  "leverPos": "end",
+  "confidence": "estimated",
+  "parts": [
+   {
+    "xMm": 56,
+    "yMm": 0,
+    "widthMm": 8,
+    "lengthMm": 16,
+    "heightMm": 6,
+    "diameterMm": null,
+    "kind": "lever",
+    "note": "叩き台（推定）：実測で置き換える"
+   },
+   {
+    "xMm": -56,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": 4,
+    "diameterMm": 7,
+    "kind": "button",
+    "note": "叩き台（推定）：実測で置き換える"
+   }
+  ]
+ },
+ "drawings": {
+  "plan": "binder/mini6-standard.plan.svg",
+  "side": "binder/mini6-standard.side.svg",
+  "front": "binder/mini6-standard.front.svg"
+ },
+ "solid": {
+  "type": "binder",
+  "params": {
+   "plateLengthMm": 120,
+   "plateWidthMm": 24,
+   "plateThicknessMm": 2
+  }
+ },
+ "sources": [],
+ "confidence": "spec",
+ "mounts": {
+  "pattern": {
+   "fromEndMm": null,
+   "pitchMm": null,
+   "count": null,
+   "diameterMm": null
+  },
+  "kind": null,
+  "overrides": [
+   {
+    "xMm": -38,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 5,
+    "kind": "screw",
+    "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
+   },
+   {
+    "xMm": 38,
+    "yMm": 0,
+    "widthMm": null,
+    "lengthMm": null,
+    "heightMm": null,
+    "diameterMm": 5,
+    "kind": "screw",
+    "note": "通常リングの取付穴：穴の間隔76（中心から左右38）・径5・ビスは実測（2026-10-13）"
+   }
+  ],
+  "confidence": null
+ },
+ "sourceNote": "通常リング（クラウゼ社製以外）の台座：実測（2026-10-12・実物を見ながらの作図）。断面は幅20・全高7.25・縁の厚み1.33のレンズ形、リングサポータ厚2.4（直径10の円で切り抜き）、取付穴は中心から左右38・径5・ビス。台座の長さ120・角R3は推定のまま",
+ "base": {
+  "lengthMm": 120,
+  "sectionWidthMm": 20,
+  "crownHeightMm": 7.25,
+  "thicknessMm": 1.33,
+  "crownRadiusMm": null,
+  "edgeRadiusMm": null,
+  "cornerRMm": 3,
+  "supporterThicknessMm": 2.4,
+  "supporterDiameterMm": 10,
+  "confidence": "estimated",
+  "sectionPoints": [
+   {
+    "x": -10,
+    "y": 2.25
+   },
+   {
+    "x": -8.818,
+    "y": 1.729
+   },
+   {
+    "x": -7.609,
+    "y": 1.275
+   },
+   {
+    "x": -6.377,
+    "y": 0.888
+   },
+   {
+    "x": -5.125,
+    "y": 0.569
+   },
+   {
+    "x": -3.858,
+    "y": 0.321
+   },
+   {
+    "x": -2.578,
+    "y": 0.143
+   },
+   {
+    "x": -1.291,
+    "y": 0.036
+   },
+   {
+    "x": 0,
+    "y": 0
+   },
+   {
+    "x": 1.291,
+    "y": 0.036
+   },
+   {
+    "x": 2.578,
+    "y": 0.143
+   },
+   {
+    "x": 3.858,
+    "y": 0.321
+   },
+   {
+    "x": 5.125,
+    "y": 0.569
+   },
+   {
+    "x": 6.377,
+    "y": 0.888
+   },
+   {
+    "x": 7.609,
+    "y": 1.275
+   },
+   {
+    "x": 8.818,
+    "y": 1.729
+   },
+   {
+    "x": 10,
+    "y": 2.25
+   },
+   {
+    "x": 10,
+    "y": 3.583
+   },
+   {
+    "x": 9.792,
+    "y": 3.766
+   },
+   {
+    "x": 8.878,
+    "y": 4.457
+   },
+   {
+    "x": 7.915,
+    "y": 5.077
+   },
+   {
+    "x": 6.909,
+    "y": 5.626
+   },
+   {
+    "x": 5.866,
+    "y": 6.098
+   },
+   {
+    "x": 5.451,
+    "y": 6.25
+   },
+   {
+    "x": 4.79,
+    "y": 6.492
+   },
+   {
+    "x": 3.688,
+    "y": 6.806
+   },
+   {
+    "x": 2.566,
+    "y": 7.037
+   },
+   {
+    "x": 1.43,
+    "y": 7.185
+   },
+   {
+    "x": 0.286,
+    "y": 7.248
+   },
+   {
+    "x": 0,
+    "y": 7.243
+   },
+   {
+    "x": -0.018,
+    "y": 7.242
+   },
+   {
+    "x": -0.859,
+    "y": 7.227
+   },
+   {
+    "x": -2,
+    "y": 7.121
+   },
+   {
+    "x": -3.129,
+    "y": 6.932
+   },
+   {
+    "x": -4.242,
+    "y": 6.659
+   },
+   {
+    "x": -4.787,
+    "y": 6.482
+   },
+   {
+    "x": -5.059,
+    "y": 6.393
+   },
+   {
+    "x": -5.331,
+    "y": 6.305
+   },
+   {
+    "x": -5.466,
+    "y": 6.25
+   },
+   {
+    "x": -6.392,
+    "y": 5.871
+   },
+   {
+    "x": -7.417,
+    "y": 5.361
+   },
+   {
+    "x": -8.402,
+    "y": 4.776
+   },
+   {
+    "x": -9.341,
+    "y": 4.12
+   },
+   {
+    "x": -10,
+    "y": 3.583
+   }
+  ]
+ },
+ "parent": "mini6"
+}
