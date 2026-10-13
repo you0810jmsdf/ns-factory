@@ -6,8 +6,7 @@ const TOOL_WORDS = {
   circle: { ja: ['円', 'まる', '丸', 'サークル'], en: ['circle', 'round'] },
   arc: { ja: ['円弧', '弧', 'アーク'], en: ['arc'] },
   bezier: { ja: ['ベジェ', 'ベジエ', '曲線'], en: ['bezier', 'bézier', 'curve'] },
-  path: { ja: ['ペン', 'パス'], en: ['pen', 'path'] },
-  polyline: { ja: ['折れ線', 'おれせん', 'ポリライン'], en: ['polyline', 'polygon'] },
+  path: { ja: ['ペン', 'パス', '折れ線', 'おれせん', 'ポリライン'], en: ['pen', 'path', 'polyline', 'polygon'] }, /* 折れ線ツールは無い（ペンで、クリックだけなら直線）。言い方だけペンへ */
   text: { ja: ['文字', 'テキスト'], en: ['text', 'label'] },
   dimension: { ja: ['寸法', '寸法線'], en: ['dimension', 'measure'] },
   fillet: { ja: ['丸め', 'フィレット', '角丸'], en: ['fillet', 'round corner'] },
