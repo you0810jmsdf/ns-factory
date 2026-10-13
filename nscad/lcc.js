@@ -33,10 +33,19 @@ export function lccShapeToShapes(s) {
   if (t === 'DIMENSION') { if (s.dk === 'linear' && Array.isArray(s.dp1) && Array.isArray(s.dp2)) { const a = pt(s.dp1), b = pt(s.dp2); return [{ type: 'dimension', x1: a.x, y1: a.y, x2: b.x, y2: b.y, offset: -num(s.doff) || 8 }]; } return viaPath(); }
   return viaPath(); // OTHER など
 }
+/** 菱目（4 点の輪郭）の長い対角線の向きから、N's CAD の穴の角度を求める。N's CAD の菱目は「高さ（長い方）の軸が 角度+90° を向く」ので 角度 = 長い対角線の向き − 90°。.lcc の rt は輪郭の向きと一致しない（実ファイルで 45°・135° のずれ・左右反転あり）ため、輪郭があればそちらを使う。 */
+function diamondAngleFromOutline(path) {
+  const m = [...String(path || '').matchAll(/[ML]\s*(-?[\d.]+(?:e[-+]?\d+)?)\s*,\s*(-?[\d.]+(?:e[-+]?\d+)?)/gi)].map(x => ({ x: Number(x[1]), y: Number(x[2]) }));
+  if (m.length >= 5 && Math.hypot(m[0].x - m.at(-1).x, m[0].y - m.at(-1).y) < 1e-6) m.pop();
+  if (m.length !== 4 || !m.every(p => Number.isFinite(p.x) && Number.isFinite(p.y))) return null;
+  const d1 = { a: m[0], b: m[2] }, d2 = { a: m[1], b: m[3] }, len = d => Math.hypot(d.b.x - d.a.x, d.b.y - d.a.y), long = len(d1) >= len(d2) ? d1 : d2;
+  if (!(len(long) > 1e-9)) return null;
+  return normDeg(Math.atan2(long.b.y - long.a.y, long.b.x - long.a.x) * 180 / Math.PI - 90);
+}
 /** S_HOLE を穴候補へ：{x,y,angleDeg,width,height,kind,pitch,prev,next,id}。 */
 export function lccHole(s) {
-  const ct = pt(s.ct), bt = String(s.pr?.bt || s.st || 'D').toUpperCase();
-  return { id: String(s.id), x: ct.x, y: ct.y, angleDeg: normDeg(num(s.rt)), width: Math.max(0.2, num(s.w) || 1), height: Math.max(0.1, num(s.h) || 2), kind: LCC_TOOL_KIND[bt] || 'diamond', pitch: num(s.pr?.p) || 0, prev: String(s.PrevStId ?? '-1'), next: String(s.NextStId ?? '-1') };
+  const ct = pt(s.ct), bt = String(s.pr?.bt || s.st || 'D').toUpperCase(), kind = LCC_TOOL_KIND[bt] || 'diamond', outlineDeg = kind === 'diamond' ? diamondAngleFromOutline(s.path) : null;
+  return { id: String(s.id), x: ct.x, y: ct.y, angleDeg: outlineDeg ?? normDeg(num(s.rt)), width: Math.max(0.2, num(s.w) || 1), height: Math.max(0.1, num(s.h) || 2), kind: LCC_TOOL_KIND[bt] || 'diamond', pitch: num(s.pr?.p) || 0, prev: String(s.PrevStId ?? '-1'), next: String(s.NextStId ?? '-1') };
 }
 /** 穴候補を Prev/Next の連結順に並べた鎖の配列に分ける（連結のないものは 1 個の鎖）。 */
 export function holeChains(holes) {
