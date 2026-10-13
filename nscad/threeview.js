@@ -10,7 +10,7 @@ import { binderSpecWithSection } from './binder_section_edit.js';
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 import { bboxOf, flattenShape, chainShapes } from './geometry.js';
 import { v3, faceNormal } from './sim3d.js';
-import { binderSolid, binderZRange, hwPoseOfOutline } from './hardware.js';
+import { binderSolid, binderZRange, hwPoseOfOutline, metalHex } from './hardware.js';
 
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 export const THREE_VIEW_LAYOUT = {
@@ -369,7 +369,7 @@ export function threeViewHardwareFaces(solid, hwShapes, specOf) {
     const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;
     const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
     const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
-    const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));
+    const mh = metalHex(s.metal), faces = local.map(f => ({ ...f, points: f.points.map(map), ...(mh ? { color: mh } : {}) })), centre = mean(faces.flatMap(f => f.points));
     for (const f of faces) { let pts = f.points, n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } out.push({ ...f, points: pts, normal: n, center: c }); }
   }
   return out;

@@ -103,7 +103,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 11:35 · 467f148</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-13 11:41 · 671494b</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -275,6 +275,9 @@
 <p class="note" data-i18n="colorHow"></p>
 <div id="leatherGrid" class="swatches"></div>
 <label><span data-i18n="leatherHex"></span><input id="leatherHex" type="text" maxlength="7" placeholder="#RRGGBB"></label>
+<p class="note"><b data-i18n="metalTitle"></b><br><span data-i18n="metalHow"></span></p>
+<div id="metalGrid" class="swatches metal-grid"></div>
+<button id="metalClear" data-i18n="metalClear"></button>
 <details class="sub" open><summary data-i18n="textureSection"></summary>
 <p class="note" data-i18n="textureHow"></p>
 <input id="textureSearch" type="text" data-i18n-placeholder="textureSearch" autocomplete="off">
@@ -536,8 +539,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=02d55c46","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec65f977","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=5b3a9672","./help/en.js":"./help/en.js?v=2578c6dc","./help/ja.js":"./help/ja.js?v=09d7a69a","./i18n.js":"./i18n.js?v=d8c64b9f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=c78e00b7","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
-<script type="module" src="app.js?v=02d55c46"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=e2745ec6","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=ec65f977","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=23964486","./designs.js":"./designs.js?v=0e6bc839","./formats.js":"./formats.js?v=f7551ba3","./geometry.js":"./geometry.js?v=fbe294de","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=46e2c490","./help/en.js":"./help/en.js?v=2578c6dc","./help/ja.js":"./help/ja.js?v=09d7a69a","./i18n.js":"./i18n.js?v=b2e81ca1","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a1e07eec","./lcc.js":"./lcc.js?v=751e0e20","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=ec29d163","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=2a6a8be4"}}</script>
+<script type="module" src="app.js?v=e2745ec6"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1622,6 +1625,16 @@ const MESSAGES = {
     "toolSummary": "{kind} {pitch}mm / {teeth}本",
     "help": "ヘルプ (?)",
     "guideBtn": "図解ガイド",
+    "metalTitle": "金具の色（金属）",
+    "metalHow": "金具の図形を選んで、金属の色をクリック。革の色・質感とは別に、線の色と3Dの金具の色になります。",
+    "metal.gold": "ゴールド",
+    "metal.silver": "シルバー",
+    "metal.pinkgold": "ピンクゴールド",
+    "metal.blackgold": "ブラックゴールド",
+    "metalClear": "金属の色を解除",
+    "metalApplied": "{n} 個の図形に金属の色「{name}」を付けました",
+    "metalCleared": "{n} 個の図形の金属の色を解除しました",
+    "metalNeedSelect": "金具など、色を付ける図形を先に選んでください（ロックしたレイヤーの図形は選べません）",
     "bugLog": "不具合記録",
     "bugLogTip": "うまく動かないときに押すと、最近の操作の記録と図面をファイルに保存します（外部へは送りません）。保存したファイルを渡してください",
     "bugLogSaved": "不具合記録（最近 {n} 件の操作と図面）を保存しました。外部へは送っていません。このファイルを渡してください。",
@@ -2663,6 +2676,16 @@ const MESSAGES = {
     "toolSummary": "{kind} {pitch}mm / {teeth} teeth",
     "help": "Help (?)",
     "guideBtn": "Illustrated guide",
+    "metalTitle": "Hardware color (metal)",
+    "metalHow": "Select the hardware shapes, then click a metal color. Separate from leather color and texture: it sets the line color and the 3D hardware color.",
+    "metal.gold": "Gold",
+    "metal.silver": "Silver",
+    "metal.pinkgold": "Pink gold",
+    "metal.blackgold": "Black gold",
+    "metalClear": "Clear metal color",
+    "metalApplied": "Applied the metal color \"{name}\" to {n} shapes",
+    "metalCleared": "Cleared the metal color of {n} shapes",
+    "metalNeedSelect": "Select the shapes to color first (shapes on locked layers cannot be selected)",
     "bugLog": "Bug log",
     "bugLogTip": "Press when something does not work: saves the recent operations and the drawing to a file (nothing is sent anywhere). Hand over the saved file",
     "bugLogSaved": "Saved the bug log (the last {n} operations and the drawing). Nothing was sent anywhere. Hand over this file.",
@@ -4851,6 +4874,15 @@ function ringArmPieces(b, W) {
   const r = (b.maxX - b.minX) / 2, cx = (b.minX + b.maxX) / 2, make = (tipY, sign) => { const pts = [{ x: b.minX, y: W / 2 }, { x: b.minX, y: tipY - r }]; for (let k = 0; k <= 8; k++) { const a = Math.PI - Math.PI * k / 8; pts.push({ x: cx + r * Math.cos(a), y: tipY - r + r * Math.sin(a) }); } pts.push({ x: b.maxX, y: W / 2 }); return pts.map(q => ({ x: q.x, y: sign * q.y })); };
   return [make(b.maxY, 1), make(-b.minY, -1)];
 }
+/** 金具の色（金属）。革色・革の質感とは別の一覧（事業主指示 2026-10-13：ゴールド・シルバー・ピンクゴールド・ブラックゴールドの4色）。light・dark は、見本の金属らしい光沢の明るい側・暗い側。名前は i18n の metal.<id>。 */
+const METAL_COLORS = [
+  { id: 'gold', hex: '#D4AF37', light: '#F6E39A', dark: '#8A6A12' },
+  { id: 'silver', hex: '#C5C9CE', light: '#F4F6F8', dark: '#7B8086' },
+  { id: 'pinkgold', hex: '#E1A59A', light: '#F8D6CE', dark: '#9A5F58' },
+  { id: 'blackgold', hex: '#4A4132', light: '#80724F', dark: '#1D1910' }
+];
+/** 金属の色の id から色（#RRGGBB）。無い id は null。 */
+const metalHex = id => METAL_COLORS.find(m => m.id === id)?.hex ?? null;
 /** 金具 1 件と上書きパラメータから、ローカル座標（中心 0,0）の {outline:[shape], holes:[shape], solid} を返す。binder は spec（data/binder）が要る。 */
 function hardwareFootprint(item, overrides = {}, binderSpec = null) {
   const p = { ...item.params, ...overrides }, E = x => evalExpr(x, p), fp = item.footprint2d, outline = [], holes = [];
@@ -5274,7 +5306,7 @@ function coverLayout({ refillW, refillH, spineW, marginTB = 5, marginEdge = 5 })
   return { W, H, panel, spineW: r2(spineW), folds: [panel, r2(panel + spineW)], center: { x: r2(panel + spineW / 2), y: r2(H / 2) } };
 }
 
-return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSectionPolys, SUPPORTER_T_MM, ringWrapPoly, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection, coverLayout};
+return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, METAL_COLORS, metalHex, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSectionPolys, SUPPORTER_T_MM, ringWrapPoly, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderViews, binderPlanSvg, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection, coverLayout};
 })();
 __mods['binder_edits'] = (function(){
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
@@ -5429,7 +5461,7 @@ const { binderSpecWithSection } = __mods['binder_section_edit'];
 // 右上へ伸びる 45° の線を使う（上の図の点 → 右へ → 45°の線に当たる → そこから下へ）。
 const { bboxOf, flattenShape, chainShapes } = __mods['geometry'];
 const { v3, faceNormal } = __mods['sim3d'];
-const { binderSolid, binderZRange, hwPoseOfOutline } = __mods['hardware'];
+const { binderSolid, binderZRange, hwPoseOfOutline, metalHex } = __mods['hardware'];
 /** 3つの枠の最初の場所と大きさ（mm）。枠は目安で、図形ではない。描いた形がこれより大きければ threeViewFitLayout で広がる。 */
 const THREE_VIEW_LAYOUT = {
   top: { x: 0, y: 0, w: 300, h: 220 },
@@ -5787,7 +5819,7 @@ function threeViewHardwareFaces(solid, hwShapes, specOf) {
     const local = binderSolid(spec, ringD, 0), zr = binderZRange(spec, ringD), zmid = (zr.min + zr.max) / 2;
     const map = p => v3(at.x + p.x * cs - p.y * sn, base - dc + (p.z - zmid), base - (at.y + p.x * sn + p.y * cs));
     const mean = pts => pts.reduce((m, p) => v3(m.x + p.x / pts.length, m.y + p.y / pts.length, m.z + p.z / pts.length), v3());
-    const faces = local.map(f => ({ ...f, points: f.points.map(map) })), centre = mean(faces.flatMap(f => f.points));
+    const mh = metalHex(s.metal), faces = local.map(f => ({ ...f, points: f.points.map(map), ...(mh ? { color: mh } : {}) })), centre = mean(faces.flatMap(f => f.points));
     for (const f of faces) { let pts = f.points, n = faceNormal(pts); const c = mean(pts); if ((c.x - centre.x) * n.x + (c.y - centre.y) * n.y + (c.z - centre.z) * n.z < 0) { pts = [...pts].reverse(); n = faceNormal(pts); } out.push({ ...f, points: pts, normal: n, center: c }); }
   }
   return out;
@@ -18246,7 +18278,7 @@ const { svgToShapes, dxfToShapesFull } = __mods['importers'];
 const { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } = __mods['interop'];
 const { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } = __mods['sim3d'];
 const { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } = __mods['threeview'];
-const { SUPPORTER_T_MM, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
+const { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } = __mods['hardware'];
 const { DATA_HARDWARE } = __mods['data/hardware'];
 const { DATA_LIBRARY } = __mods['data/library'];
 const { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } = __mods['library'];
@@ -19746,6 +19778,8 @@ function threadList() { const q = ($('threadSearch').value || '').toLowerCase();
 function renderColors() {
   const grid = $('leatherGrid'); grid.textContent = '';
   for (const c of DATA_LEATHER_COLORS.leatherColors) { const b = document.createElement('button'); b.className = 'swatch'; b.title = c.name; b.style.background = c.hex; b.dataset.hex = c.hex; b.onclick = () => applyLeather(c.hex); grid.appendChild(b); }
+  const mg = $('metalGrid'); mg.textContent = ''; /* 金具の色（金属）：革色とは別の見本。金属らしい光沢の見た目 */
+  for (const m of METAL_COLORS) { const b = document.createElement('button'); b.className = 'swatch metal'; b.title = t('metal.' + m.id); b.dataset.metal = m.id; b.style.background = `linear-gradient(135deg, ${m.light} 0%, ${m.hex} 45%, ${m.dark} 100%)`; b.onclick = () => applyMetal(m.id); mg.appendChild(b); }
   const sel = $('threadSel'), keep = sel.value; sel.textContent = '';
   const pinned = threadList().filter(c => colorPins.includes(c.id)), rest = threadList().filter(c => !colorPins.includes(c.id));
   for (const c of [...pinned, ...rest]) { const o = document.createElement('option'); o.value = c.id; o.textContent = (colorPins.includes(c.id) ? '★ ' : '') + c.label + ' ' + (c.jp || '') + (c.verified === false ? ' (?)' : ''); sel.appendChild(o); }
@@ -19759,6 +19793,12 @@ function renderColors() {
 function applyLeather(hex) {
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id))); if (!parts.length) { $('hint').textContent = t('selectPartFirst'); return; }
   commit(() => { for (const p of parts) p.color = hex; }); $('hint').textContent = t('leatherApplied', { n: parts.length, hex });
+}
+/** 選んだ図形に金属の色（ゴールド・シルバー・ピンクゴールド・ブラックゴールド）を付ける。id が null なら解除。線の色と、3D の金具の面の色になる。革色・革の質感とは別（事業主指示 2026-10-13）。 */
+function applyMetal(id) {
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { $('hint').textContent = t('metalNeedSelect'); return; }
+  commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) { if (id) s.metal = id; else delete s.metal; } });
+  $('hint').textContent = id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size });
 }
 /* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
 const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
@@ -19831,6 +19871,7 @@ function initColors() {
   loadPins(); renderColors();
   $('threadSearch').addEventListener('input', renderColors); $('threadSel').addEventListener('change', renderColors);
   $('applyThread').onclick = applyThread; $('pinThread').onclick = () => { const id = $('threadSel').value; if (!id) return; colorPins = colorPins.includes(id) ? colorPins.filter(x => x !== id) : [...colorPins, id]; persistPins(); renderColors(); };
+  $('metalClear').onclick = () => applyMetal(null);
   $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
@@ -21357,7 +21398,7 @@ function drawSheetBody(lo, hi) {
     const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
-  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
+  for (const s of doc.shapes.filter(s => visible(s) && s.type !== 'image')) strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : metalHex(s.metal) || SHAPE_DRAW_COLOR[s.color] || '#d8d8d8', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */

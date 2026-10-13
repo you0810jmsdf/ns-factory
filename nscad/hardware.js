@@ -48,6 +48,15 @@ function ringArmPieces(b, W) {
   const r = (b.maxX - b.minX) / 2, cx = (b.minX + b.maxX) / 2, make = (tipY, sign) => { const pts = [{ x: b.minX, y: W / 2 }, { x: b.minX, y: tipY - r }]; for (let k = 0; k <= 8; k++) { const a = Math.PI - Math.PI * k / 8; pts.push({ x: cx + r * Math.cos(a), y: tipY - r + r * Math.sin(a) }); } pts.push({ x: b.maxX, y: W / 2 }); return pts.map(q => ({ x: q.x, y: sign * q.y })); };
   return [make(b.maxY, 1), make(-b.minY, -1)];
 }
+/** 金具の色（金属）。革色・革の質感とは別の一覧（事業主指示 2026-10-13：ゴールド・シルバー・ピンクゴールド・ブラックゴールドの4色）。light・dark は、見本の金属らしい光沢の明るい側・暗い側。名前は i18n の metal.<id>。 */
+export const METAL_COLORS = [
+  { id: 'gold', hex: '#D4AF37', light: '#F6E39A', dark: '#8A6A12' },
+  { id: 'silver', hex: '#C5C9CE', light: '#F4F6F8', dark: '#7B8086' },
+  { id: 'pinkgold', hex: '#E1A59A', light: '#F8D6CE', dark: '#9A5F58' },
+  { id: 'blackgold', hex: '#4A4132', light: '#80724F', dark: '#1D1910' }
+];
+/** 金属の色の id から色（#RRGGBB）。無い id は null。 */
+export const metalHex = id => METAL_COLORS.find(m => m.id === id)?.hex ?? null;
 /** 金具 1 件と上書きパラメータから、ローカル座標（中心 0,0）の {outline:[shape], holes:[shape], solid} を返す。binder は spec（data/binder）が要る。 */
 export function hardwareFootprint(item, overrides = {}, binderSpec = null) {
   const p = { ...item.params, ...overrides }, E = x => evalExpr(x, p), fp = item.footprint2d, outline = [], holes = [];
