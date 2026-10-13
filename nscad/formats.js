@@ -48,8 +48,8 @@ export function holeToSvg(h, doc, color = '#e00000') {
 /** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
 /** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る）, mm: その質感1枚の実寸（省略可） } }、textureMm：mm の無い質感に使う1枚の大きさ。fill のときだけ使う。 */
 export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30 } = {}) {
-  const shapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible));
-  const holes = includeHoles ? holesOnShapes(doc, shapes) : [];
+  const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
+  const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const x0 = b.minX - marginMm, y0 = b.minY - marginMm, w = b.maxX - b.minX + 2 * marginMm, h = b.maxY - b.minY + 2 * marginMm;
@@ -157,8 +157,8 @@ export function holeToDxf(h, doc, { dotAsPoint = false } = {}) {
 }
 /** 文書から DXF R12（ASCII）文字列を返す。Y は上向きに変換。原点合わせは外接矩形の左下を (0,0) にする。 */
 export function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, originAtCorner = true, tolerance = 0.02, calibration = null } = {}) {
-  const shapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible);
-  const holes = includeHoles ? holesOnShapes(doc, shapes) : [];
+  const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink);
+  const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 0, maxY: 0 };
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1, dx = originAtCorner ? -b.minX : 0, dy = originAtCorner ? -b.maxY : 0;
   const move = o => { if (o.type === 'circle' || o.type === 'arc') return { ...o, cx: (o.cx + dx) * fx, cy: (o.cy + dy) * fy, r: o.r * (fx + fy) / 2 }; const q = { ...o }; for (const [x, y] of [['x', 'y'], ['x1', 'y1'], ['x2', 'y2'], ['c1x', 'c1y'], ['c2x', 'c2y']]) if (x in q) { q[x] = (q[x] + dx) * fx; q[y] = (q[y] + dy) * fy; } if (q.points) q.points = q.points.map(p => ({ x: (p.x + dx) * fx, y: (p.y + dy) * fy })); if (q.nodes) q.nodes = q.nodes.map(n => ({ ...n, x: (n.x + dx) * fx, y: (n.y + dy) * fy, inX: (n.inX + dx) * fx, inY: (n.inY + dy) * fy, outX: (n.outX + dx) * fx, outY: (n.outY + dy) * fy })); return q; };
@@ -186,9 +186,9 @@ const PT = 72 / 25.4, PAPER = { a4: [595.276, 841.89], a3: [841.89, 1190.551] };
 export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1 } = {}) {
   const [pw, ph] = landscape ? [...PAPER[paper] || PAPER.a4].reverse() : (PAPER[paper] || PAPER.a4), fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
-  const shapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), holes = includeHoles ? holesOnShapes(doc, shapes) : [];
+  const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
-  const bbox = { minX: b.minX - 2, minY: b.minY - 2, maxX: b.maxX + 2, maxY: b.maxY + 2 }, layout = pagesFor(bbox, pageMm, overlapMm);
+  const bbox ={ minX: b.minX - 2, minY: b.minY - 2, maxX: b.maxX + 2, maxY: b.maxY + 2 }, layout = pagesFor(bbox, pageMm, overlapMm);
   let skipped = 0;
   const n = v => (Math.round(v * 1000) / 1000).toString();
   const pageContent = page => {

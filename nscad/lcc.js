@@ -90,7 +90,7 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     const mid = chain[Math.floor(chain.length / 2)];
     const hit = doc.shapes.filter(stitchable).reduce((best, s) => { const dist = distToShape(s, mid); return dist < (best ? best.d : attachMaxMm) ? { s, d: dist } : best; }, null);
     if (hit) { const grp = groupOf(hit.s), near = h => grp.shapeIds.some(id => distToShape(byId.get(id), h) <= attachMaxMm * 2); if (chain.every(near)) { const path = pathFor(hit.s); for (const h of chain) if (place(h, path)) attached++; continue; } }
-    if (chain.length >= 2) { const poly = { id: sid(), layer: 'guide', type: 'polyline', points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
+    if (chain.length >= 2) { const poly = { id: sid(), layer: 'guide', type: 'polyline', holeLink: true, points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; /* 穴の経路のための線。もとの図面に無い線なので、画面・書き出しには描かない（holeLink） */ doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
     else { const h = chain[0]; doc.shapes.push({ id: sid(), layer: 'guide', type: 'circle', cx: h.x, cy: h.y, r: Math.max(0.1, h.width / 2) }); warnings.push(`hole-as-mark:${h.id}`); }
   }
   const stats = lccStats(d, { name });
