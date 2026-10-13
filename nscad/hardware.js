@@ -250,7 +250,7 @@ export function closedBinderTop(p = {}) {
   /* 背は、曲げの内半径 r で角を丸めたU字：内側の角の半径 r・外側の角の半径 r＋革厚（r は内幅の半分まで。それ以上は半円）。表裏の表紙は xc＝革厚＋r から右へ接続する。曲げの内半径 foldR を指定しない古い呼び出しは、今までどおり半円（r＝内幅の半分） */
   const t = leatherT, T = sim.innerW + 2 * t, mid = T / 2, rIn = sim.innerW / 2, r = p.foldR === undefined ? rIn : Math.min(Math.max(Number(p.foldR) || 0, 0), rIn), xc = t + r;
   const dyc = plateW / 2 - (rIn - r), plateLeft = dyc <= 0 ? t : xc - Math.sqrt(Math.max(0, r * r - dyc * dyc)), /* 台座は、背の内面の平らな部分に当たるか、角の丸みに両端で当たる位置 */
- ringX = plateLeft + (sim.section.ring.cy - sim.section.lift), tipX = ringX + refillW - holeEdge; /* 台座は丸い内面に両端で当たる位置 */
+ ringX = plateLeft + (sim.section.ring.cy - sim.section.lift), holeX = ringX + (sim.outerRingD + p.ringD) / 4, refillLeft = holeX - holeEdge, tipX = refillLeft + refillW; /* 台座は丸い内面に両端で当たる位置。リフィルの穴は、リングの針金が通る位置（リング中心から針金の中心の半径ぶん・遠い側の針金）に置く（事業主指摘 2026-10-13：リフィルの穴にリングが通っていない）。リフィルの端は、穴の中心から holeEdge 戻った位置 */
   const coverW = p.coverW > 0 ? p.coverW : tipX + 4 - xc;
   const rect = (x1, y1, x2, y2, role, hidden = false) => ({ type: 'polyline', closed: true, role, ...(hidden ? { hidden } : {}), points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] });
   const arc = (cy, rad, a0, a1) => rad > 0 ? Array.from({ length: 19 }, (_, i) => { const a = a0 + (a1 - a0) * i / 18; return { x: xc + rad * Math.cos(a), y: cy + rad * Math.sin(a) }; }) : [{ x: xc, y: cy }], R = r + t, cyTop = t + r, cyBottom = T - t - r;
@@ -263,10 +263,10 @@ export function closedBinderTop(p = {}) {
   else { if (bossT > 0) shapes.push(rect(plateLeft, mid - plateW / 2, plateLeft + bossT, mid + plateW / 2, 'boss')); shapes.push(rect(plateLeft + bossT, mid - plateW / 2, plateLeft + bossT + plateT, mid + plateW / 2, 'plate')); } /* 断面のデータが無い規格は、幅 plateW・厚み plateT の四角い台座（従来どおり） */
   shapes.push(
     { type: 'circle', cx: ringX, cy: mid, r: sim.outerRingD / 2, role: 'ring-outer' }, { type: 'circle', cx: ringX, cy: mid, r: p.ringD / 2, role: 'ring-inner' },
-    rect(ringX - holeEdge, mid - stackT / 2, tipX, mid + stackT / 2, 'refills'));
+    rect(refillLeft, mid - stackT / 2, tipX, mid + stackT / 2, 'refills'));
   /* リフィルの穴（直径 holeD・中心は束の端から holeEdge）：リングの中心の面で束を切った天の図では、穴の分だけ束が抜ける（事業主指示 2026-10-13） */
-  if (holeD > 0) shapes.push(rect(ringX - holeD / 2, mid - stackT / 2, ringX + holeD / 2, mid + stackT / 2, 'refill-hole'));
-  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, holeX: Math.round(ringX * 100) / 100, holeD, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
+  if (holeD > 0) shapes.push(rect(holeX - holeD / 2, mid - stackT / 2, holeX + holeD / 2, mid + stackT / 2, 'refill-hole'));
+  return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, holeX: Math.round(holeX * 100) / 100, refillLeft: Math.round(refillLeft * 100) / 100, holeD, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
 }
 /** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
  *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
@@ -285,7 +285,7 @@ export function closedBinderViews(p = {}) {
   const plateTop = top.shapes.find(s => s.role === 'plate'), px0 = Math.min(...plateTop.points.map(q => q.x)), px1 = Math.max(...plateTop.points.map(q => q.x)); /* 台座の天の図（断面の形）の、背の内面からの高さの幅 */
   shapes.push(rect(px0, H / 2 - plateL / 2, px1, H / 2 + plateL / 2, 'plate', true));
   for (const y of rpos) shapes.push(rect(top.ringX - outerD / 2, y - wire, top.ringX + outerD / 2, y + wire, 'ring', true));
-  const rh = Math.min(refillH, H); shapes.push(rect(top.ringX - (p.holeEdge ?? 6), (H - rh) / 2, Wf - 4 + 0, (H + rh) / 2, 'refills', true));
+  const rh = Math.min(refillH, H); shapes.push(rect(top.refillLeft, (H - rh) / 2, Wf - 4 + 0, (H + rh) / 2, 'refills', true));
   if (top.holeD > 0) for (const y of rpos) shapes.push({ type: 'circle', cx: top.holeX, cy: y, r: top.holeD / 2, role: 'refill-hole' }); /* リフィルの穴（リングの位置と見比べられるように実線の丸） */
   /* 右側面（小口側から）：手前＝表の表紙が左。表紙の厚み・リフィルの束の端 */
   shapes.push(rect(sx, 0, sx + T, H, 'side-outline'), { type: 'line', role: 'cover-line', x1: sx + t, y1: 0, x2: sx + t, y2: H }, { type: 'line', role: 'cover-line', x1: sx + T - t, y1: 0, x2: sx + T - t, y2: H });
