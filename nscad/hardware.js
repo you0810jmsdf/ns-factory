@@ -43,15 +43,6 @@ function partPolygon(b, dir, rOut, rIn) {
   const far = dir > 0 ? b.maxX : b.minX, near = dir > 0 ? b.minX : b.maxX;
   return [...cornerArc(far, b.maxY, -dir, -1, rOut, true), ...cornerArc(near, b.maxY, dir, -1, rIn, false), ...cornerArc(near, b.minY, dir, 1, rIn, true), ...cornerArc(far, b.minY, -dir, 1, rOut, false)];
 }
-/** リングアーム（真上から見た細い棒）のうち、本体の幅の外へはみ出した先だけ（本体と重なる部分は切り取る）。先は線径の半分の半径で丸く、本体側は直線で切る。b＝棒の外形（minX,maxX,minY,maxY）・W＝本体の幅。 */
-function ringArmPieces(b, W) {
-  const r = (b.maxX - b.minX) / 2, cx = (b.minX + b.maxX) / 2, make = (tipY, sign) => { const pts = [{ x: b.minX, y: W / 2 }, { x: b.minX, y: tipY - r }]; for (let k = 0; k <= 8; k++) { const a = Math.PI - Math.PI * k / 8; pts.push({ x: cx + r * Math.cos(a), y: tipY - r + r * Math.sin(a) }); } pts.push({ x: b.maxX, y: W / 2 }); return pts.map(q => ({ x: q.x, y: sign * q.y })); };
-  return [make(b.maxY, 1), make(-b.minY, -1)];
-}
-/** リングアーム（真上から見た細い棒）の全長の輪郭（中心 0,0・本体と重なる部分も切らない）。金属のべた塗りで、リングアームを本体の上に連続した1本の棒として描くため（切った2片だと、境目に継ぎ目の線が出る・事業主の不具合記録 2026-10-13）。 */
-export function binderRingBarPolys(spec, ringD = null) {
-  return binderViews(spec, ringD).plan.rings.map(r => { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; return roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })); });
-}
 /** 金具の色（金属）。革色・革の質感とは別の一覧（事業主指示 2026-10-13：ゴールド・シルバー・ピンクゴールド・ブラックゴールドの4色）。light・dark は、見本の金属らしい光沢の明るい側・暗い側。名前は i18n の metal.<id>。 */
 export const METAL_COLORS = [
   { id: 'gold', hex: '#D4AF37', light: '#F6E39A', dark: '#8A6A12' },
@@ -72,8 +63,7 @@ export function hardwareFootprint(item, overrides = {}, binderSpec = null) {
     if (!binderSpec) throw new Error('binderSpec');
     const base = binderBase(binderSpec), L = base.lengthMm, W = base.sectionWidthMm, ringD = p.ringD || binderSpec.rings.diameterOptionsMm[0], v = binderViews(binderSpec, ringD), xs = v.ringXs;
     outline.push({ type: 'polyline', closed: true, points: roundRect(L, W, base.cornerRMm || 0) });
-    if (v.plan.ringArms) for (const pieces of v.plan.ringArms) for (const pts of pieces) outline.push({ type: 'polyline', closed: true, points: pts }); /* リングアームは、本体と重なる部分を切り取った左右の先だけ */
-    else for (const r of v.plan.rings) { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; outline.push({ type: 'polyline', closed: true, points: roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })) }); } /* リングは真上から見た細い棒（線径×外径）。両端は線径の半分の半径で丸める（線径に自動で追従） */
+    for (const r of v.plan.rings) { const w = r.maxX - r.minX, h = r.maxY - r.minY, cx = (r.minX + r.maxX) / 2, cy = (r.minY + r.maxY) / 2; outline.push({ type: 'polyline', closed: true, ...(v.plan.armsOver ? { occlude: true } : {}), points: roundRect(w, h, Math.min(w, h) / 2).map(q => ({ x: q.x + cx, y: q.y + cy })) }); } /* リングは真上から見た細い棒（線径×外径）。両端は線径の半分の半径で丸める（線径に自動で追従） */
     v.plan.parts.forEach((q, i) => { const b = q.box; outline.push(q.shape === 'circle' ? { type: 'circle', cx: (b.minX + b.maxX) / 2, cy: (b.minY + b.maxY) / 2, r: q.r } : { type: 'polyline', closed: true, points: v.plan.partOutlines[i] }); }); /* 開閉機構の部品：レバーは四角・ボタンは円 */
     for (const rv of binderSpec.rivets) holes.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
     return { outline, holes, solid: { kind: 'binder', spec: binderSpec, ringD, w: L, h: W, z: v.D + base.crownHeightMm - (binderSpec.rings.embedMm ?? 0) }, ringCenters: xs.map(hx => ({ x: hx, y: 0 })) };
@@ -335,7 +325,7 @@ export function binderViews(spec, ringD = null) {
   const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY }), mech = binderMechParts(spec), part = (p, b) => ({ kind: p.kind, shape: p.shape, ...(p.r ? { r: p.r } : {}), ...(p.rOut || p.rIn ? { rOut: p.rOut, rIn: p.rIn, dir: p.dir } : {}), box: b });
   return {
     L, W, T, D, I, wire, ringXs,
-    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), ringArms: base.trimRingArms === 'yes' && D / 2 > W / 2 ? ringXs.map(hx => ringArmPieces(box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2), W)) : null, rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2))), partOutlines: mech.map(p => p.shape === 'rect' ? partPolygon(box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2), p.dir, p.rOut, p.rIn) : null) },
+    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), armsOver: base.trimRingArms === 'yes', rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2))), partOutlines: mech.map(p => p.shape === 'rect' ? partPolygon(box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2), p.dir, p.rOut, p.rIn) : null) },
     front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, -p.h, 0))) },
     side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: I / 2 }, ...(spec.base ? { section: binderSection(base) } : {}), parts: mech.map(p => part(p, box(p.y - p.l / 2, p.y + p.l / 2, -p.h, 0))) },
   };
@@ -350,7 +340,7 @@ export function binderPlanSvg(spec, ringD = null) {
   const pad = 12, w = L + 2 * pad, h = Math.max(W, D) + 2 * pad + 10;
   const parts = [`<rect x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(binderBase(spec).cornerRMm || 0)}" fill="none" stroke="#000" stroke-width="0.2"/>`];
   const poly = (role, ps, cls = '') => `<polygon${cls ? ` class="${cls}"` : ''} data-role="${role}" points="${ps.map(q => `${f(q.x)},${f(q.y)}`).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>`;
-  plan.rings.forEach((r, i) => parts.push((plan.ringArms ? plan.ringArms[i].map(p => poly('ring-arm', p)).join('') : `<rect x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="none" stroke="#000" stroke-width="0.2"/>`) + `<circle cx="${f((r.minX + r.maxX) / 2)}" cy="0" r="0.6" fill="#000"/>`));
+  plan.rings.forEach((r, i) => parts.push(`<rect${plan.armsOver ? ' data-role="ring-arm"' : ''} x="${f(r.minX)}" y="${f(r.minY)}" width="${f(r.maxX - r.minX)}" height="${f(r.maxY - r.minY)}" fill="${plan.armsOver ? '#fff' : 'none'}" stroke="#000" stroke-width="0.2"/>` + `<circle cx="${f((r.minX + r.maxX) / 2)}" cy="0" r="0.6" fill="#000"/>`));
   for (const rv of spec.rivets) parts.push(`<circle cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}" fill="none" stroke="#000" stroke-width="0.2" stroke-dasharray="1 0.5"/>`);
   plan.parts.forEach((q, i) => parts.push(q.rOut || q.rIn ? poly('lever', plan.partOutlines[i], 'mech') : mechSvg(q))); /* 角の丸いレバーは輪郭で、それ以外は今までどおりの四角・円 */
   const dy = Math.max(W, D) / 2 + 5;
