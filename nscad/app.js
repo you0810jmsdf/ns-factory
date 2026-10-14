@@ -337,7 +337,7 @@ const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); r
 const visible = s => layerVisible(s) && !s.holeLink;
 const editable = s => layerEditable(s); /* holeLink も「選べる」側（全選択・範囲選択に入れて、コピー・移動・複製に穴ごと付けるため）。クリックでは選ばれない（visible で除く） */
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
-const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type);
+const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && !s.holeLink; /* 見えない補助の線（holeLink）は、目打ち・オフセット・クリックの当たり判定の相手にしない */
 const partOf = s => doc.parts.find(p => p.shapeIds.includes(s.id)) || null;
 const layerName = l => l.name === l.id && ['pattern', 'hardware', 'guide'].includes(l.id) ? t('layer.' + l.id) : l.name;
 /** 層 id が無ければ作って返す（金具を置くときなど）。2番目（型紙の次）に入れる。 */
@@ -3145,7 +3145,7 @@ function lineEndHit(p) {
 }
 /** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
 function pickShapeAt(p) {
-  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s)) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); }
+  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s) || s.holeLink) continue; const d = distToShape(s, p); if (d <= tol) cands.push({ s, d }); } /* 見えない補助の線（holeLink）はクリックで選ばない */
   if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)), near = cands.filter(c => c.d <= min + 1.5 / scale);
   const lenOf = x => { const n = arcLength(x); return Number.isFinite(n) ? n : Infinity; }; /* ほぼ同じ近さ（つながった端など）なら、短い図形を優先：短い線は端が長い線に重なるので、上のものを選ぶと端をクリックしても選べない。同じ長さなら上に描かれたもの */
   let best = near[0], bl = lenOf(best.s); for (const c of near.slice(1)) { const l = lenOf(c.s); if (l <= bl + 1e-6) { best = c; bl = Math.min(l, bl); } } return best.s;
