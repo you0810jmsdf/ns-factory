@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-14T10:56:40",
+ "generatedAt": "2026-10-14T22:10:31",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 298,
+ "count": 299,
  "items": [
+  {
+   "title": "2026-10-14（水） - CADの機能追加と販売ページ改善",
+   "url": "https://note.com/you0810jmsdf/n/nd4d2de75b044",
+   "date": "2026-10-14",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-14_ig.jpg",
+   "key": "nd4d2de75b044",
+   "imageSource": "sns",
+   "summary": "CADソフトで図面を読み込む際、不要な線が表示される不具合が修正された。販売サイトの商品登録画面に和名欄が追加され、家族の予定メールの重複も解消された。"
+  },
   {
    "title": "スマホで起動したAIが、PCとつながらない。初心者がハマる勘違い8つ",
    "url": "https://note.com/you0810jmsdf/n/nbe4635f088ad",
