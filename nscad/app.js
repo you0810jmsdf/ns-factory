@@ -42,7 +42,7 @@ import { track } from './analytics.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldPlyLengths, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2362,13 +2362,14 @@ function importPhrasesText(text) {
   const r = mergePhrases(phrases, incoming); phrases = r.items; if (!persistPhrases()) return false; renderPhraseList(incoming[0].name); $('hint').textContent = t('phraseImported', { added: r.added, replaced: r.replaced }); return true;
 }
 /* ───────── 三つ折り断面図：平面図の点線から断面を作る／断面で動かした目印の位置を平面図へ戻す（目的：断面から革の長さを決める） ───────── */
+const FOLD_SEC_PLIES = 2; /* 三つ折りは2枚を貼り合わせる前提（事業主指示 2026-10-14）。入れる厚みは1枚ぶん */
 const foldSecThickness = () => { const v = Number($('foldSecT').value); return Number.isFinite(v) && v > 0 ? v : 1.5; };
 const foldSecMid = s => ({ x: (s.x1 + s.x2) / 2, y: (s.y1 + s.y2) / 2 });
 function makeFoldSection() {
   const picked = selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible);
   const spec = foldSectionSpec(picked.filter(s => !s.foldSec && !s.holeLink));
   if (!spec.ok) { $('hint').textContent = t('foldSecErr_' + spec.error, { n: spec.count ?? 0 }); return; }
-  const th = foldSecThickness(), path = foldSectionPath(spec), r1 = spec.bends[0] / Math.PI;
+  const ply = foldSecThickness(), th = ply * FOLD_SEC_PLIES, path = foldSectionPath(spec), r1 = spec.bends[0] / Math.PI;   /* th＝貼り合わせた合計の厚み */
   const circles = picked.filter(s => s.type === 'circle' && !s.foldSec && !s.holeLink && s.cx >= spec.x0 - 1e-6 && s.cx <= spec.x1 + 1e-6);
   const marks = []; for (const c of circles.sort((a, b) => a.cx - b.cx)) { const sPos = spec.flip ? spec.x1 - c.cx : c.cx - spec.x0, same = marks.find(m => Math.abs(m.s0 - sPos) < 0.01); if (same) same.srcIds.push(c.id); else marks.push({ s0: sPos, srcIds: [c.id] }); }
   const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 };
@@ -2378,12 +2379,12 @@ function makeFoldSection() {
     for (const [id, m] of Object.entries(doc.foldSections)) if (m.key === key) { doc.shapes = doc.shapes.filter(s => s.foldSec !== id); delete doc.foldSections[id]; }   /* 同じ紙の前の断面は置き換える */
     let n = 1; while (doc.foldSections['fs' + n]) n++; const secId = 'fs' + n, gid = nextGroupId(doc.shapes);
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
-    doc.foldSections[secId] = { key, flats: spec.flats, bends: spec.bends, flip: spec.flip, t: th, x0: spec.x0, x1: spec.x1 };
-    for (const sh of foldSectionShapes(path, th, origin)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });
+    doc.foldSections[secId] = { key, flats: spec.flats, bends: spec.bends, flip: spec.flip, t: ply, plies: FOLD_SEC_PLIES, x0: spec.x0, x1: spec.x1 };
+    for (const sh of foldSectionShapes(path, th, origin, FOLD_SEC_PLIES)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });
     for (const m of marks) doc.shapes.push({ ...foldSectionMark(path, m.s0, th, origin), id: freshId(doc.shapes, 's'), layer: 'section', color: 'yellow', foldSec: secId, role: 'mark', srcIds: m.srcIds, s0: m.s0 });
   });
   const flat = spec.flats.reduce((a, v) => a + v, 0), bend = spec.bends.reduce((a, v) => a + v, 0), f2 = v => v.toFixed(2);
-  $('hint').textContent = t('foldSecDone', { len: f2(path.length), flat: f2(flat), bend: f2(bend), n: marks.length }); draw();
+  const [outerLen, innerLen] = foldPlyLengths(path, th, FOLD_SEC_PLIES); $('hint').textContent = t('foldSecDone', { len: f2(path.length), flat: f2(flat), bend: f2(bend), n: marks.length, outer: f2(outerLen), inner: f2(innerLen) }); draw();
 }
 function applyFoldSection() {
   if (!doc.foldSections || !Object.keys(doc.foldSections).length) { $('hint').textContent = t('foldSecNone'); return; }
@@ -2394,14 +2395,14 @@ function applyFoldSection() {
     const origin = foldSecMid(cap0), path = foldSectionPath(meta);
     for (const m of doc.shapes.filter(s => s.foldSec === id && s.role === 'mark')) {
       const c = foldSecMid(m), q = projectOnFoldPath(path, c.x - origin.x, origin.y - c.y);
-      if (q.dist > meta.t / 2 + 6) { far++; continue; }
+      const total = meta.t * (meta.plies || 1); if (q.dist > total / 2 + 6) { far++; continue; }
       if (Math.abs(q.s - m.s0) > 1e-6) edits.push({ id: m.id, meta, origin, path, s: q.s });
-      else { const was = foldSecMid(foldSectionMark(path, m.s0, meta.t, origin)); if (Math.hypot(c.x - was.x, c.y - was.y) > 0.05) stuck++; }   /* 動かしたのに、革に沿った位置が変わらない（革に直角に動かした） */
+      else { const was = foldSecMid(foldSectionMark(path, m.s0, total, origin)); if (Math.hypot(c.x - was.x, c.y - was.y) > 0.05) stuck++; }   /* 動かしたのに、革に沿った位置が変わらない（革に直角に動かした） */
     }
   }
   if (!edits.length) { $('hint').textContent = far ? t('foldSecFar', { k: far }) : stuck ? t('foldSecStuck', { k: stuck }) : t('foldSecNoChange'); return; }
   let moved = 0;
-  commit(() => { for (const e of edits) { const m = doc.shapes.find(s => s.id === e.id), ds = e.s - m.s0; for (const sid of m.srcIds || []) { const c = doc.shapes.find(s => s.id === sid && s.type === 'circle'); if (c) { c.cx += e.meta.flip ? -ds : ds; moved++; } } Object.assign(m, foldSectionMark(e.path, e.s, e.meta.t, e.origin), { s0: e.s }); } });
+  commit(() => { for (const e of edits) { const m = doc.shapes.find(s => s.id === e.id), ds = e.s - m.s0; for (const sid of m.srcIds || []) { const c = doc.shapes.find(s => s.id === sid && s.type === 'circle'); if (c) { c.cx += e.meta.flip ? -ds : ds; moved++; } } Object.assign(m, foldSectionMark(e.path, e.s, e.meta.t * (e.meta.plies || 1), e.origin), { s0: e.s }); } });
   $('hint').textContent = t('foldSecApplied', { n: moved }) + (far ? ' ' + t('foldSecFar', { k: far }) : ''); rebuildSnaps(); draw();
 }
 /** 左メニューの各ボタンの横に、キーを小さく並べる（ツール・選択中の操作）。 */
