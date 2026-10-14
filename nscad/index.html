@@ -110,7 +110,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-14 21:02 · 0c0902b</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-14 21:16 · 4962388</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -533,6 +533,7 @@
 </div>
 </main>
 <div id="printArea" data-pages="0"></div>
+<dialog id="regDialog" class="fb"><h3 data-i18n="regTitle"></h3><p data-i18n="regWhy"></p><label class="fb-f"><span data-i18n="regEmailL"></span><input id="regEmail" type="email" maxlength="254" autocomplete="email"></label><label class="fb-f"><span data-i18n="regNickL"></span><input id="regNick" type="text" maxlength="30" autocomplete="nickname"></label><p class="bd-note" data-i18n="regPrivacy"></p><label class="fb-ctx-on"><input id="regConsent" type="checkbox"><span data-i18n="regConsentL"></span></label><output id="regStatus" class="fb-status" role="status"></output><div class="row"><button id="regSend" data-i18n="regSend"></button><button id="regCheck" data-i18n="regCheck" hidden></button><button id="regClose" data-i18n="regClose"></button></div></dialog>
 <dialog id="feedbackDialog" class="fb"><h3 data-i18n="fbTitle"></h3><p data-i18n="fbLead"></p>
 <div class="row" id="fbKinds" role="radiogroup"><label><input id="fbKind-idea" type="radio" name="fbKind" value="idea" checked><span data-i18n="fbKindIdea"></span></label><label><input id="fbKind-bug" type="radio" name="fbKind" value="bug"><span data-i18n="fbKindBug"></span></label><label><input id="fbKind-cheer" type="radio" name="fbKind" value="cheer"><span data-i18n="fbKindCheer"></span></label></div>
 <label class="fb-f"><span data-i18n="fbMsgL"></span><textarea id="fbMsg" rows="6" maxlength="500" data-i18n-placeholder="fbPh"></textarea></label><output id="fbCount">0 / 500</output>
@@ -554,8 +555,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5516ec9c","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=1f02d6c7","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=6748e097","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=8bd69fb0","./help/en.js":"./help/en.js?v=abd4849f","./help/ja.js":"./help/ja.js?v=6e1c180c","./i18n.js":"./i18n.js?v=04b0e5d6","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=5516ec9c"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=af80388b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=1f02d6c7","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=6748e097","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=8bd69fb0","./help/en.js":"./help/en.js?v=abd4849f","./help/ja.js":"./help/ja.js?v=6e1c180c","./i18n.js":"./i18n.js?v=8d4ba909","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=72f43974","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=af80388b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -701,6 +702,73 @@ function createTracker(env = globalThis) {
 const track = createTracker();
 
 return {GA_ID, createTracker, track};
+})();
+__mods['registration'] = (function(){
+// 利用登録：印刷・ファイル保存・書き出しの前に、登録（メールの確認リンク）を求める。登録者の利用（いつ・どの機能か）だけを、運営者のサーバー（GAS のスプレッドシート）へ記録する（事業主指示 2026-10-14）。
+// 送るのは、登録のときの「メール・ニックネーム・同意」と、利用のときの「機能名（短い英数字）」だけ。図形・文字・ファイル名・寸法は送らない。
+// ⛔ ブラウザの中で動くので、プログラムを書き換えられる人は外せる。「普通の利用者に登録を促し、利用を数える」ための仕組み。
+const REG_ENDPOINT = '';   /* 登録サーバー（GAS の /exec）の URL。空のあいだは、登録を求めず今までどおり誰でも使える */
+const REG_KEY = 'leather-cad.reg', REG_QUEUE_KEY = 'leather-cad.reg.queue', REG_DAY = 24 * 3600 * 1000, REG_QUEUE_MAX = 50;
+const REG_FEATURE_RE = /^[a-z0-9_]{1,24}$/, REG_KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
+const regIsEmail = s => typeof s === 'string' && s.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(s);
+
+/** 登録の状態と通信をまとめた部品。storage は localStorage 相当、fetchFn は fetch 相当（どちらも差し替え可）。endpoint が空なら登録を求めない。
+ *  状態 status：'none'（未登録）・'pending'（確認メール待ち）・'ok'（登録済み）。 */
+function createRegistration({ endpoint = REG_ENDPOINT, storage = null, fetchFn = null, now = () => Date.now(), rand = null, version = '' } = {}) {
+  const read = key => { try { return JSON.parse(storage?.getItem(key) || 'null'); } catch { return null; } };
+  const write = (key, value) => { try { storage?.setItem(key, JSON.stringify(value)); } catch { /* 保存できなくても今回の操作は続ける */ } };
+  const token = () => { if (rand) return rand(); const a = new Uint8Array(16); (globalThis.crypto || { getRandomValues: v => v.map(() => Math.floor(Math.random() * 256)) }).getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); };
+  let st = read(REG_KEY) || { status: 'none' };
+  const save = () => write(REG_KEY, st);
+  const post = body => fetchFn(endpoint, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), credentials: 'omit', keepalive: true });
+  let chain = Promise.resolve();
+  const flush = async () => {
+    const queue = read(REG_QUEUE_KEY) || [], sent = new Set();
+    for (const q of queue) { try { const res = await post(q), json = await res.json(); if (json && json.ok === true) sent.add(q.rid); } catch { /* 次の機会に送り直す */ } }
+    write(REG_QUEUE_KEY, (read(REG_QUEUE_KEY) || []).filter(q => !sent.has(q.rid)));   /* 送っている間に積まれた分は残す */
+  };
+  const api = {
+    enabled: () => !!endpoint && typeof fetchFn === 'function',
+    state: () => ({ status: st.status, email: st.email || '', nick: st.nick || '' }),
+    allowed: () => !api.enabled() || st.status === 'ok',
+    /** 登録の申し込み。確認メールが送られ、状態は pending になる。 */
+    async register({ email, nick = '', consent = false } = {}) {
+      if (!regIsEmail(String(email || '').trim())) return { ok: false, error: 'email' };
+      if (consent !== true) return { ok: false, error: 'consent' };
+      const t = token(), cleanNick = String(nick || '').trim().slice(0, 30), mail = String(email).trim();
+      try {
+        const res = await post({ action: 'register', token: t, email: mail, nick: cleanNick, consent: true, v: version }), json = await res.json();
+        if (!json || json.ok !== true) return { ok: false, error: json?.error === 'limit' ? 'limit' : 'server' };
+        st = { status: 'pending', token: t, email: mail, nick: cleanNick, checkedAt: 0 }; save(); return { ok: true };
+      } catch { return { ok: false, error: 'network' }; }
+    },
+    /** 確認メールのリンクを開いたか、サーバーに聞く。ok になれば登録済み。 */
+    async check() {
+      if (!st.token) return { status: 'none' };
+      try {
+        const res = await fetchFn(`${endpoint}?action=status&token=${encodeURIComponent(st.token)}`, { credentials: 'omit' }), json = await res.json(), s = json?.status;
+        if (s === 'ok') { st = { ...st, status: 'ok', checkedAt: now() }; save(); return { status: 'ok' }; }
+        if (s === 'pending') return { status: 'pending' };
+        if (s === 'revoked' || s === 'none') { st = { status: 'none' }; save(); return { status: 'none' }; }
+        return { status: 'error' };
+      } catch { return { status: 'error' }; }
+    },
+    /** 登録済みのとき、1日に1回だけ、まだ有効かをサーバーに聞く（取り消されたら未登録に戻る）。通信できなくても今までどおり使える。 */
+    async refresh() { if (api.enabled() && st.status === 'ok' && now() - (st.checkedAt || 0) > REG_DAY) await api.check(); },
+    /** 利用の記録。登録済みのときだけ、機能名を送る。送れなかった分は端末に残して、次の記録のときにまとめて送り直す（番号 rid で、サーバーが二重に数えない）。送信は1本ずつ順番に行う。 */
+    track(feature, kind = '') {
+      if (!api.enabled() || st.status !== 'ok' || !REG_FEATURE_RE.test(String(feature))) return Promise.resolve();
+      const item = { action: 'use', token: st.token, feature: String(feature), v: version, rid: token() }; if (REG_KIND_RE.test(String(kind))) item.kind = String(kind);
+      write(REG_QUEUE_KEY, [...(read(REG_QUEUE_KEY) || []), item].slice(-REG_QUEUE_MAX));
+      chain = chain.then(flush).catch(() => {}); return chain;
+    },
+    /** この端末の登録を消す（共用のパソコンなど）。サーバーの登録は消えない。 */
+    signOut() { st = { status: 'none' }; save(); write(REG_QUEUE_KEY, []); },
+  };
+  return api;
+}
+
+return {REG_ENDPOINT, REG_FEATURE_RE, regIsEmail, createRegistration};
 })();
 __mods['geometry'] = (function(){
 // 座標・長さは mm、Y 下向き。角度は度、時計回りが正。
@@ -1749,6 +1817,26 @@ const MESSAGES = {
     "bugLogSaved": "不具合記録（最近 {n} 件の操作と図面）を保存しました。外部へは送っていません。このファイルを渡してください。",
     "fbBtn": "改善要望",
     "fbBtnTip": "使いにくいところ・ほしい機能・うまく動かないことを、作者に直接送ります",
+    "regTitle": "利用登録（印刷・保存・書き出しに必要です）",
+    "regWhy": "印刷・ファイル保存・書き出し（SVG・DXF・PDF・PNG・JSON など）は、利用登録が必要です。図面を描く・見る・ブラウザ内の自動保存は、登録なしで使えます。",
+    "regEmailL": "メールアドレス",
+    "regNickL": "ニックネーム（任意）",
+    "regPrivacy": "預かるのは、メールアドレス（とニックネーム）です。目的は、登録の確認と、機能の利用状況（いつ・どの機能を何回使ったか）を運営者が把握することです。図形・寸法・ファイル名など図面の中身は送りません。利用状況は運営者（N's factory）だけが見て、第三者へは提供しません。登録の削除は、運営者へメールでお知らせください。",
+    "regConsentL": "上の内容に同意して登録する",
+    "regSend": "確認メールを送る",
+    "regCheck": "確認できた（登録を確認する）",
+    "regClose": "閉じる",
+    "regSending": "送っています…",
+    "regSent": "確認メールを送りました（{email}）。メールのリンクを開いたら、下の「確認できた」を押してください。届かないときは、迷惑メールのフォルダも見てください。",
+    "regOk": "登録できました。もう一度、印刷・保存・書き出しを押してください。",
+    "regPending": "まだ確認できていません。メールのリンクを開いてから、もう一度押してください。",
+    "regNeed": "印刷・保存・書き出しは、利用登録が必要です。表示された画面から登録してください。",
+    "regErrEmail": "メールアドレスの形が正しくありません。",
+    "regErrConsent": "同意のチェックを入れてください。",
+    "regErrLimit": "短い間に何度も申し込まれています。しばらくしてから、もう一度お試しください。",
+    "regErrNet": "送れませんでした。ネットワークを確かめて、もう一度お試しください。",
+    "regErrServer": "登録を受け付けられませんでした。時間をおいて、もう一度お試しください。",
+    "regErrNone": "登録が見つかりません。もう一度、確認メールを送ってください。",
     "fbTitle": "改善要望・ご意見",
     "fbLead": "使ってみて気づいたことを、作者に直接送れます。「ここが使いにくい」「こうなると助かる」など、何でも歓迎です。",
     "fbKindIdea": "要望（こうしてほしい）",
@@ -2915,6 +3003,26 @@ const MESSAGES = {
     "bugLogSaved": "Saved the bug log (the last {n} operations and the drawing). Nothing was sent anywhere. Hand over this file.",
     "fbBtn": "Feedback",
     "fbBtnTip": "Send the author what is hard to use, what you would like, or what does not work",
+    "regTitle": "Registration (required to print, save and export)",
+    "regWhy": "Printing, saving files and exporting (SVG, DXF, PDF, PNG, JSON, ...) require registration. Drawing, viewing and the in-browser autosave work without it.",
+    "regEmailL": "Email address",
+    "regNickL": "Nickname (optional)",
+    "regPrivacy": "We keep your email address (and nickname) to confirm your registration and to see how often each function is used (when and which function). The contents of your drawings (shapes, dimensions, file names) are never sent. Only the operator (N's factory) sees this and it is not shared with third parties. To delete your registration, email the operator.",
+    "regConsentL": "I agree to the above and register",
+    "regSend": "Send confirmation email",
+    "regCheck": "I confirmed (check registration)",
+    "regClose": "Close",
+    "regSending": "Sending...",
+    "regSent": "A confirmation email was sent to {email}. After opening the link in the email, press \"I confirmed\" below. If it does not arrive, check your spam folder.",
+    "regOk": "Registered. Press print, save or export again.",
+    "regPending": "Not confirmed yet. Open the link in the email, then press again.",
+    "regNeed": "Printing, saving and exporting require registration. Please register in the window that opened.",
+    "regErrEmail": "The email address is not valid.",
+    "regErrConsent": "Please tick the consent box.",
+    "regErrLimit": "Too many requests in a short time. Please try again later.",
+    "regErrNet": "Could not send. Check your network and try again.",
+    "regErrServer": "The registration could not be accepted. Please try again later.",
+    "regErrNone": "No registration found. Please send the confirmation email again.",
     "fbTitle": "Feedback and requests",
     "fbLead": "Tell the author what you noticed while using this. Anything is welcome: \"this is hard to use\", \"it would help if…\".",
     "fbKindIdea": "Request (I would like…)",
@@ -19103,6 +19211,7 @@ const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdi
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 const { track } = __mods['analytics'];
+const { createRegistration } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
@@ -20138,7 +20247,8 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
-  $('bugLog').onclick = () => { const r = bugReport(); download(bugReportName(), JSON.stringify(r), 'application/json'); $('hint').textContent = t('bugLogSaved', { n: r.log.length }); }; /* 不具合記録：操作の記録と図面をファイルに保存（外部へは送らない） */
+  $('bugLog').onclick = () => { const r = bugReport(); download(bugReportName(), JSON.stringify(r), 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }); }; /* 不具合記録：操作の記録と図面をファイルに保存（外部へは送らない） */
+  $('regSend').onclick = doRegister; $('regCheck').onclick = doRegCheck; $('regClose').onclick = () => $('regDialog').close(); registration.refresh();
   $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
@@ -20166,21 +20276,52 @@ let calibration = { fx: 1, fy: 1 }, measuredCalibration = { fx: 1, fy: 1 };
 function loadCalibration() { try { const c = JSON.parse(localStorage.getItem('leather-cad.calibration')); if (c && Number.isFinite(c.fx) && Number.isFinite(c.fy) && c.fx > 0 && c.fy > 0) calibration = { fx: c.fx, fy: c.fy }; } catch { /* 既定 1.0 のまま。 */ } showCalibration(); }
 function showCalibration() { $('calibInfo').textContent = calibration.fx === 1 && calibration.fy === 1 ? t('calibNone') : t('calibCurrent', { fx: calibration.fx.toFixed(4), fy: calibration.fy.toFixed(4) }); }
 function saveCalibration(next) { calibration = next; try { localStorage.setItem('leather-cad.calibration', JSON.stringify(next)); } catch { $('hint').textContent = t('storageUnavailable'); } showCalibration(); }
-function download(name, text, type) {
+// ---- 利用登録（印刷・ファイル保存・書き出しの前に必要。サーバーの宛先が空のあいだは、今までどおり誰でも使える。事業主指示 2026-10-14） ----
+let registration = createRegistration({ storage: (() => { try { return localStorage; } catch { return null; } })(), fetchFn: typeof globalThis.fetch === 'function' && typeof location !== 'undefined' && location.protocol === 'https:' ? globalThis.fetch.bind(globalThis) : null, version: document.getElementById('buildVer')?.textContent ?? '' });
+const REG_EXT = { svg: 'svg', dxf: 'dxf', pdf: 'pdf', png: 'png', json: 'json', csv: 'csv' };
+const regFeatureOf = name => REG_EXT[String(name).split('.').pop().toLowerCase()] || 'file';
+/** 印刷・保存・書き出しの入口で呼ぶ。使ってよければ true（登録済みなら利用を記録する）。未登録なら登録の小窓を開いて false。 */
+function regGuard(feature, kind = '') {
+  if (!registration.enabled()) return true;
+  if (registration.allowed()) { registration.track(feature, kind); registration.refresh(); return true; }
+  openRegistration(); return false;
+}
+function regMsg(key, vars = {}, cls = '') { const el = $('regStatus'); el.textContent = key ? t(key, vars) : ''; el.className = 'fb-status' + (cls ? ' ' + cls : ''); }
+function openRegistration() {
+  const s = registration.state(); if (s.email) $('regEmail').value = s.email; if (s.nick) $('regNick').value = s.nick;
+  $('regConsent').checked = false; $('regCheck').hidden = s.status !== 'pending'; regMsg(s.status === 'pending' ? 'regSent' : '', { email: s.email });
+  $('hint').textContent = t('regNeed'); $('regDialog').showModal();
+}
+async function doRegister() {
+  const btn = $('regSend'); btn.disabled = true; regMsg('regSending');
+  const r = await registration.register({ email: $('regEmail').value, nick: $('regNick').value, consent: $('regConsent').checked }); btn.disabled = false;
+  if (r.ok) { $('regCheck').hidden = false; regMsg('regSent', { email: registration.state().email }, 'ok'); return; }
+  regMsg({ email: 'regErrEmail', consent: 'regErrConsent', limit: 'regErrLimit', network: 'regErrNet' }[r.error] || 'regErrServer', {}, 'ng');
+}
+async function doRegCheck() {
+  const r = await registration.check();
+  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); return; }
+  regMsg(r.status === 'pending' ? 'regPending' : r.status === 'error' ? 'regErrNet' : 'regErrNone', {}, r.status === 'pending' ? '' : 'ng');
+}
+function download(name, text, type, gate = true) {
+  if (gate && !regGuard(regFeatureOf(name), 'dl')) { setTimeout(() => { $('hint').textContent = t('regNeed'); }, 0); return false; }   /* 呼び出し側の「書き出しました」の案内を、登録が必要の案内に直す。gate=false は、不具合記録（登録なしで出せる）か、呼び出し側が入口の確認をすませたとき */
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function exportSvg() {
+  if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
   const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked, textures: $('outFill').checked ? svgTextures() : null, textureMm: textureMm() });
-  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml'); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
+  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
 }
 function exportPdf() {
+  if (!regGuard('pdf', 'dl')) return;
   const paper = $('paper').value, bytes = docToPdf(doc, { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null });
-  download('leather-pattern.pdf', bytes, 'application/pdf'); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
+  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
+  if (!regGuard('png', 'draw')) return;
   const shapes = doc.shapes.filter(visible), holes = doc.holes.filter(holeVisible), b = bboxOfDoc({ ...doc, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return; }
   let dpi = Number($('pngDpi').value) || 300; const margin = 2, wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
@@ -20247,9 +20388,10 @@ async function openFile(file) {
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
 }
 function exportDxf() {
+  if (!regGuard('dxf', 'dl')) return;
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(doc, { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(doc, { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
-  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf'); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
+  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
@@ -20265,6 +20407,7 @@ function drawPrintOverlay() {
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target = doc) {
+  if (!regGuard('print', 'pages')) return null;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
   const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => holeIsOwn(h, ownHolePathIds(target)) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
@@ -20418,7 +20561,7 @@ function togglePlay() {
   let dir = foldT >= 100 ? -1 : 1; $('play').textContent = t('pause');
   playing = setInterval(() => { foldT = Math.max(0, Math.min(100, foldT + dir * 4)); if (foldT === 0 || foldT === 100) dir = -dir; $('foldT').value = String(foldT); render3d(); }, 40);
 }
-function exportViews() { const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: t('views') }); }
+function exportViews() { if (!regGuard('svg', 'views')) return; const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml', false); $('hint').textContent = t('exported', { name: t('views') }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
@@ -20427,7 +20570,7 @@ function makeUnfold() {
   cancel(); commit(() => { let n = 1; for (const piece of u.pieces) { doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'polyline', closed: true, points: piece.points }); } for (const f of u.folds) doc.shapes.push({ id: 's' + n++, layer: 'pattern', type: 'fold', x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2, angleDeg: f.angleDeg, partId: null, inner: true }); doc.provenance = [{ source: 'unfold', at: new Date().toISOString() }]; });
   tabs[activeTab].doc = doc; renderLayers(); fit(); $('hint').textContent = t('unfoldDone', { n: u.pieces.length, e: u.allowanceEdges });
 }
-function printViews() { setPageStyle('a4'); const { faces } = scene3d(); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
+function printViews() { if (!regGuard('print', 'views')) return; setPageStyle('a4'); const { faces } = scene3d(); $('printArea').innerHTML = `<div class="page">${viewsToSvg(faces, { scale: 1 })}</div>`; $('printArea').dataset.pages = '1'; if (typeof window.print === 'function') window.print(); }
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('foldT').addEventListener('input', () => { foldT = Number($('foldT').value) || 0; render3d(); });
@@ -20710,6 +20853,7 @@ function loadPattern() {
   $('hint').textContent = t('patternLoaded', { name: pal.name });
 }
 function exportPng3d() {
+  if (!regGuard('png', 'view3d')) return;
   if (!view3d || typeof canvas3d.toBlob !== 'function') { $('hint').textContent = t('need3d'); return; }
   render3d(); canvas3d.toBlob(blob => { if (!blob) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'leather-3d.png'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); $('hint').textContent = t('exported', { name: 'PNG (3D)' }); }, 'image/png');
 }
@@ -20727,7 +20871,7 @@ function initColors() {
     if (v > 0 ? doc.textureMm !== v : doc.textureMm !== undefined) commit(() => { if (v > 0) doc.textureMm = v; else delete doc.textureMm; });
   });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
-  $('exportSvgFill').onclick = () => { download('leather-pattern-color.svg', docToSvg(doc, { includeHoles: true, fill: true }), 'image/svg+xml'); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
+  $('exportSvgFill').onclick = () => { if (!regGuard('svg', 'color')) return; download('leather-pattern-color.svg', docToSvg(doc, { includeHoles: true, fill: true }), 'image/svg+xml', false); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
 }
 
 // ---- 下絵（スキャン画像）とトレース ----
@@ -22833,6 +22977,7 @@ $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
 function save() {
+  if (!regGuard('json', 'save')) return;
   /* 紙を分けた三面図は、正面の紙を本体にして上・右の紙を一緒に 1 つのファイルへ入れる（どの紙のタブから保存しても同じ） */
   const sheets = quadSheets(); let payload = doc, tab = tabs[activeTab];
   if (doc.threeViewSheet && sheets.front) { const docOf = tb => tb === tabs[activeTab] ? doc : tb.doc; tab = sheets.front; payload = { ...docOf(sheets.front), threeViewSheets: { top: sheets.top ? docOf(sheets.top) : null, side: sheets.side ? docOf(sheets.side) : null } }; }
