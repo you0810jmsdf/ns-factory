@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape } from './geometry.js';
+import { scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -354,8 +354,9 @@ function selectedShapeIds() {
   for(const p of doc.paths) if(p.shapeIds.some(id=>!editable(doc.shapes.find(s=>s.id===id))))p.shapeIds.forEach(id=>ids.delete(id));
   return ids;
 }
-function holeVisible(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerVisible(s);}); }
-function holeEditable(h) { const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerEditable(s);}); }
+let ownPathsCache = null; const ownPaths = () => (ownPathsCache ||= ownHolePathIds(doc)); /* 独立した穴（.lcc の穴）の経路の集まり。描き直し・変更のたびに作り直す */
+function holeVisible(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerVisible(s);}); }
+function holeEditable(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&layerEditable(s);}); }
 function loadTools() {
   try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d))return list;} } catch { /* 保存制限・旧設定は既定値で継続。 */ }
   return defaultTools();
@@ -1200,7 +1201,7 @@ function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + '
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target = doc) {
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
-  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
+  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => holeIsOwn(h, ownHolePathIds(target)) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
   const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked })}</div>`).join('');
@@ -2387,7 +2388,7 @@ function makeFoldSection() {
 function applyFoldSection() {
   if (!doc.foldSections || !Object.keys(doc.foldSections).length) { $('hint').textContent = t('foldSecNone'); return; }
   const chosen = new Set(doc.shapes.filter(s => s.foldSec && selected.has(s.id)).map(s => s.foldSec)), ids = chosen.size ? [...chosen] : Object.keys(doc.foldSections);
-  const edits = []; let far = 0;
+  const edits = []; let far = 0, stuck = 0;
   for (const id of ids) {
     const meta = doc.foldSections[id], cap0 = doc.shapes.find(s => s.foldSec === id && s.role === 'cap0'); if (!meta || !cap0) continue;
     const origin = foldSecMid(cap0), path = foldSectionPath(meta);
@@ -2395,9 +2396,10 @@ function applyFoldSection() {
       const c = foldSecMid(m), q = projectOnFoldPath(path, c.x - origin.x, origin.y - c.y);
       if (q.dist > meta.t / 2 + 6) { far++; continue; }
       if (Math.abs(q.s - m.s0) > 1e-6) edits.push({ id: m.id, meta, origin, path, s: q.s });
+      else { const was = foldSecMid(foldSectionMark(path, m.s0, meta.t, origin)); if (Math.hypot(c.x - was.x, c.y - was.y) > 0.05) stuck++; }   /* 動かしたのに、革に沿った位置が変わらない（革に直角に動かした） */
     }
   }
-  if (!edits.length) { $('hint').textContent = far ? t('foldSecFar', { k: far }) : t('foldSecNoChange'); return; }
+  if (!edits.length) { $('hint').textContent = far ? t('foldSecFar', { k: far }) : stuck ? t('foldSecStuck', { k: stuck }) : t('foldSecNoChange'); return; }
   let moved = 0;
   commit(() => { for (const e of edits) { const m = doc.shapes.find(s => s.id === e.id), ds = e.s - m.s0; for (const sid of m.srcIds || []) { const c = doc.shapes.find(s => s.id === sid && s.type === 'circle'); if (c) { c.cx += e.meta.flip ? -ds : ds; moved++; } } Object.assign(m, foldSectionMark(e.path, e.s, e.meta.t, e.origin), { s0: e.s }); } });
   $('hint').textContent = t('foldSecApplied', { n: moved }) + (far ? ' ' + t('foldSecFar', { k: far }) : ''); rebuildSnaps(); draw();
@@ -2671,6 +2673,7 @@ function updateUI() {
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
 }
 function commit(fn) {
+  ownPathsCache = null;
   const before = JSON.stringify(doc);
   fn();
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
@@ -3214,6 +3217,7 @@ function drawNodes(s) {
   });
 }
 function draw() {
+  ownPathsCache = null;
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (!exporting) { ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, width, height); }
   if (quadOn() && !exporting) { drawQuad(dpr); return; }
