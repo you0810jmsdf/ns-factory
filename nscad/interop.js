@@ -1,5 +1,5 @@
 // 他ソフト連携：Leathercraft CAD（第三者製）と Beam Studio（FLUX）向けの書き出しプリセットと取り込み補助。純粋関数のみ。
-import { bboxOfDoc, bboxOf, holeAppearance, offsetShape, distance, distToShape, projectOnPath, chainShapes } from './geometry.js';
+import { bboxOfDoc, bboxOf, holeAppearance, offsetShape, distance, distToShape, projectOnPath, chainShapes, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { shapeToSvgD, docToDxfR12 } from './formats.js';
 
 const fmt3 = n => (Math.round(n * 1000) / 1000).toString();
@@ -78,7 +78,7 @@ export function recoverArcs(poly, tol = 0.02, minPoints = 5) {
 export function holesOnCut(doc, shapes, includeHoles = true) {
   if (!includeHoles) return [];
   const ids = new Set(shapes.map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id))).map(p => p.id));
-  return doc.holes.filter(h => okPaths.has(h.pathId));
+  const own = ownHolePathIds(doc); return doc.holes.filter(h => holeIsOwn(h, own) || okPaths.has(h.pathId));
 }
 /** ID 採番：配列を 1 回だけ読んで Set に入れ、以後は単調に進める（O(n²) 回避）。呼び元が採番直後に push する前提。 */
 export function makeNextId() {

@@ -719,3 +719,12 @@ export function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   const hit = parts.reduce((best, part) => distToShape(part, p) < distToShape(best, p) ? part : best);
   return keep ? [hit] : parts.filter(part => part !== hit);
 }
+/** .lcc の取り込みで作る層（lcc-… ・ lc0, lc1…）の id か。 */
+export const isLccLayerId = id => /^(lcc-|lc\d)/.test(id || '');
+/** 穴が、経路の線の層に左右されない「独立した穴」か：.lcc から取り込んだ穴（ownVisible）。古い図（印の無い取り込み穴）は、経路の線がすべて .lcc の層（または見えない補助の線）にあるものを同じに扱う。 */
+export function ownHolePathIds(doc) {
+  const byId = new Map(doc.shapes.map(s => [s.id, s])), out = new Set();
+  for (const p of doc.paths) if (p.shapeIds.length && p.shapeIds.every(id => { const s = byId.get(id); return s && (s.holeLink || isLccLayerId(s.layer)); })) out.add(p.id);
+  return out;
+}
+export const holeIsOwn = (h, ownPaths) => !!h.ownVisible || ownPaths.has(h.pathId);
