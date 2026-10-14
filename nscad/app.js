@@ -43,7 +43,7 @@ import { createRegistration } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2406,14 +2406,14 @@ const foldSecMid = s => ({ x: (s.x1 + s.x2) / 2, y: (s.y1 + s.y2) / 2 });
 /** 選んだ図形（なければ見えている図形）から、三つ折り断面図の材料を作る。失敗は { error }。（図面は変えない） */
 const FOLD_HOLE_ROW_TOL = 1; /* 断面の位置の線から、この距離（mm）以内の縫い穴を断面に落とす */
 function foldSectionPlan(picked, ply, holeList = doc.holes) {
-  const spec = foldSectionSpec(picked.filter(s => !s.foldSec && !s.holeLink));
+  const spec = foldSectionSpec(picked.filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu'));
   if (!spec.ok) return { error: spec.error, count: spec.count };
-  const cut = foldCutLine(picked.filter(s => !s.foldSec && !s.holeLink)); if (cut.error) return { error: 'cutMany', count: cut.count };   /* 断面を取る位置の横線（1本まで） */
+  const cut = foldCutLine(picked.filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu')); if (cut.error) return { error: 'cutMany', count: cut.count };   /* 断面を取る位置の横線（1本まで） */
   const th = ply * FOLD_SEC_PLIES, path = foldSectionPath(spec), r1 = spec.bends[0] / Math.PI;   /* th＝貼り合わせた合計の厚み */
-  const circles = picked.filter(s => s.type === 'circle' && !s.foldSec && !s.holeLink && s.cx >= spec.x0 - 1e-6 && s.cx <= spec.x1 + 1e-6 && (cut.y === undefined || Math.abs(s.cy - cut.y) <= s.r + 1e-6));   /* 横線があれば、その線にかかる〇だけ */
+  const circles = picked.filter(s => s.type === 'circle' && !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu' && s.cx >= spec.x0 - 1e-6 && s.cx <= spec.x1 + 1e-6 && (cut.y === undefined || Math.abs(s.cy - cut.y) <= s.r + 1e-6));   /* 横線があれば、その線にかかる〇だけ */
   const marks = []; for (const c of circles.sort((a, b) => a.cx - b.cx)) { const sPos = spec.flip ? spec.x1 - c.cx : c.cx - spec.x0, same = marks.find(m => Math.abs(m.s0 - sPos) < 0.01); if (same) same.srcIds.push(c.id); else marks.push({ s0: sPos, srcIds: [c.id] }); }
   const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 };
-  const inPanel = holeList.filter(h => holeVisible(h) && h.x >= spec.x0 - 1e-6 && h.x <= spec.x1 + 1e-6);   /* 縫い穴（菱目）：断面の位置の線の上のものを、外側・内側の面へ落とす */
+  const inPanel = holeList.filter(h => h.foldFlat !== 'fdu' && holeVisible(h) && h.x >= spec.x0 - 1e-6 && h.x <= spec.x1 + 1e-6);   /* 縫い穴（菱目）：断面の位置の線の上のものを、外側・内側の面へ落とす */
   const holeSS = cut.y === undefined ? [] : inPanel.filter(h => Math.abs(h.y - cut.y) <= FOLD_HOLE_ROW_TOL).map(h => spec.flip ? spec.x1 - h.x : h.x - spec.x0);
   const holeInfo = holeSS.length ? foldHoleSpacing(path, holeSS, th) : null, holeNoCut = cut.y === undefined && inPanel.length > 0;
   return { spec, ply, th, path, marks, cutY: cut.y, holeSS, holeInfo, holeNoCut, origin: { x: spec.x0, y: b.maxY + 40 + 2 * r1 + th }, key: `${spec.x0.toFixed(3)}:${spec.x1.toFixed(3)}` };
@@ -2446,7 +2446,7 @@ function makeFoldSection() {
 }
 /** 丸折りの半径を変える：折りの弧の長さ（π×半径）が変わるぶん、平面図の点線と右側の図形（外形・〇・縫い穴）を横へ動かす。断面図があれば作り直す（元に戻すは1回）。欄が空の側は今のまま。 */
 function applyFoldRadii() {
-  const picked = (selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible)).filter(s => !s.foldSec);
+  const picked = (selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible)).filter(s => !s.foldSec && s.foldFlat !== 'fdu');
   const spec = foldSectionSpec(picked.filter(s => !s.holeLink));
   if (!spec.ok) { $('hint').textContent = t('foldSecErr_' + spec.error, { n: spec.count ?? 0 }); return; }
   const ply = foldSecThickness(), cur = foldBendRadii(spec), num = (id, was) => { const raw = ($(id).value ?? '').trim(), v = Number(raw); return raw === '' || Math.abs(v - was) <= 0.005 ? was : v; };   /* 空欄、または欄に出ている小数2桁の範囲なら、その側は変えない（四捨五入で勝手に動かさない） */
@@ -2499,7 +2499,7 @@ function initToolKeys() {
 }
 /** 三つ折りの縦の基準線（点線6本）を、入れた幅から引く。前にある紙の高さいっぱいの縦の点線は置き換える（12本にならない）。 */
 function makeFoldBaselines() {
-  const picked = (selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible)).filter(s => !s.foldSec && !s.holeLink);
+  const picked = (selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible)).filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu');
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
   const r = foldBaselines(picked, { flat1: num('foldBaseF1'), bend1: num('foldBaseB1'), flat2: num('foldBaseF2'), bend2: num('foldBaseB2') });
   if (!r.ok) { $('hint').textContent = t('foldBaseErr_' + r.error, { w: r.width == null ? '' : r.width.toFixed(2) }); return; }
@@ -2528,7 +2528,7 @@ function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
   const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t('foldDesignErr_' + p.error); return; }
-  const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && s.foldFlat !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
+  const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
   designCommit(() => {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
@@ -2578,6 +2578,44 @@ function projectFoldDesign(withStitch) {
   const f2s = v => v.toFixed(2);
   $('hint').textContent = t('foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0]), s3: f2s(buttons[2]) }) + (st && holeInfo ? ' ' + t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), adj: f2s(holeInfo.step), n: holeInfo.n }) : ''); rebuildSnaps(); draw();
 }
+/** 表（折りの外側の革）・裏（内側の革）の展開図を、図面に並べる（FIX の平面図の下に、表→裏の順）。それぞれに、折りの点線・ボタン穴・菱目打ちライン（菱目の穴）を描き、平らな部分と曲げ部の菱目間の寸法（数字つき）を書き込む。
+ *  菱目は同じ個数・同じ位置（革の長さに沿った割り当て）で、曲げ部の間隔だけが革ごとに違う。前の展開図は置き換える（元に戻すは1回）。 */
+function unfoldFoldDesign() {
+  const d = doc.foldDesign; if (!d) { $('hint').textContent = t('foldFixNone'); return; }
+  const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
+  const btnD = Number($('fdBtnD').value); if (!(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
+  const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
+  const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value);
+  const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null; if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
+  const [f1, f2] = p.flats, [b1, b2] = p.bends, buttons = [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];
+  const plies = foldUnfoldPlan(p, { pitch, margin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
+  const tool = stitchToolCurrent(), fx = d.origin.x, fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60, f2s = v => v.toFixed(2);
+  commit(() => {
+    const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fdu').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fdu').map(q => q.id));
+    doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fdu' && !minePaths.has(q.pathId));
+    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide');
+    plies.forEach((u, i) => {
+      const fy = fy0 + i * (h + 80), side = { right: t('foldSideR'), left: t('foldSideL') }, name = t(u.key === 'outer' ? 'unfoldOuter' : 'unfoldInner'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fdu', ply: u.key }); return id; };
+      add({ type: 'text', layer: guide, x: fx, y: fy - 5, text: t('unfoldTitle', { name, len: f2s(u.length) }), sizeMm: 4, angleDeg: 0 });
+      add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + u.length, y: fy }, { x: fx + u.length, y: fy + h }, { x: fx, y: fy + h }] });
+      for (const x of u.xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
+      for (const x of [u.buttons[0], u.buttons[2]]) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
+      for (const y of [fy + edge, fy + h - edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（この革の長さに沿った位置） */
+        const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + u.rowFrom, y1: y, x2: fx + u.rowTo, y2: y }), len = u.rowTo - u.rowFrom;
+        const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: u.flatStep, mode: 'manual' }], mark: 'tool', foldFlat: 'fdu', ply: u.key }; doc.paths.push(saved);
+        for (const x of u.holes) doc.holes.push({ id: freshId(doc.holes, 'h'), pathId: saved.id, s: x - u.rowFrom, x: fx + x, y, angleDeg: slantOf(tool), toolId: tool.id, mark: 'tool', foldFlat: 'fdu' });
+      }
+      const yd = fy + h - edge, dim = (a, b) => add({ type: 'dimension', layer: guide, x1: fx + a, y1: yd, x2: fx + b, y2: yd, offset: -4 });   /* 菱目間の寸法（数字つき）：下の列の下に */
+      dim(u.holes[0], u.holes[1]);
+      u.bends.forEach((b, k) => {
+        if (b.firstIndex >= 0) dim(u.holes[b.firstIndex], u.holes[b.firstIndex + 1]);
+        add({ type: 'text', layer: guide, x: fx, y: fy + h + 12 + k * 5, text: t('unfoldBendNote', { side: side[b.side], pitch: f2s(b.pitch), flat: f2s(b.flat), n: b.count }), sizeMm: 3, angleDeg: 0 });
+      });
+    });
+  });
+  const [o, ii] = plies;
+  $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }); rebuildSnaps(); draw();
+}
 function fixFoldDesign() { projectFoldDesign(false); }
 /** 設計カードに、曲げ部の菱目ピッチ（外側の面・内側の面・差）を数字で出す。基準の平らな間隔は「菱目のピッチ」の欄（指定する前提）。数値・厚み・ピッチのどれを変えても、その場で更新する。 */
 function refreshFoldPitch() {
@@ -2607,7 +2645,7 @@ function nudgeFoldButton(dir) {
   ids.forEach((id, i) => { $(id).value = String(+next[i].toFixed(2)); });
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
