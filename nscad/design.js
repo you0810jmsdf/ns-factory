@@ -438,18 +438,21 @@ export function detourPath(base, obstacle, { clearance = 3, radius = 2 } = {}) {
 /* ───────── 三つ折り（C型・内側へ巻く）の断面：平面図の点線から断面を作り、断面で決めた位置を平面図へ戻す。目的は、断面から革の長さを決めること。 ───────── */
 const FOLD_EPS = 1e-6;
 /** 縦の点線（まっすぐな線 or 2点の折れ線）の x。縦でない・点線でないものは null。 */
-function dashedVerticalX(s) {
+function dashedVertical(s) {
   if (!s || s.lineStyle !== 'dashed') return null;
-  if (s.type === 'line' && Math.abs(s.x1 - s.x2) < FOLD_EPS && Math.abs(s.y1 - s.y2) > FOLD_EPS) return s.x1;
-  if (s.type === 'polyline' && !s.closed && s.points?.length === 2 && Math.abs(s.points[0].x - s.points[1].x) < FOLD_EPS && Math.abs(s.points[0].y - s.points[1].y) > FOLD_EPS) return s.points[0].x;
+  if (s.type === 'line' && Math.abs(s.x1 - s.x2) < FOLD_EPS && Math.abs(s.y1 - s.y2) > FOLD_EPS) return { x: s.x1, len: Math.abs(s.y2 - s.y1) };
+  if (s.type === 'polyline' && !s.closed && s.points?.length === 2 && Math.abs(s.points[0].x - s.points[1].x) < FOLD_EPS && Math.abs(s.points[0].y - s.points[1].y) > FOLD_EPS) return { x: s.points[0].x, len: Math.abs(s.points[1].y - s.points[0].y) };
   return null;
 }
+const dashedVerticalX = s => dashedVertical(s)?.x ?? null;
 /** 図形から三つ折りの形を読む：縦の点線が6本（左3本＋右3本・外側2本の間＝丸く折るところ・真ん中＝折りの頂点）。
  *  返り値：{ ok, x0, x1（紙の左右の端）, flats[3]・bends[2]（紙の左から右への長さ）, xs（点線の x・小さい順）, flip }。
  *  左の折りより右の折りが長いときは、右から数える（flip）：内側へ巻く3枚が重ならないよう、先の折りを大きくするため。flats・bends は数える順。 */
 export function foldSectionSpec(shapes) {
-  const xs = [...new Set((shapes || []).map(dashedVerticalX).filter(v => v != null).map(v => Math.round(v * 1e6) / 1e6))].sort((a, b) => a - b);
-  if (xs.length !== 6) return { ok: false, error: 'need6', count: xs.length };
+  const byX = new Map(); for (const v of (shapes || []).map(dashedVertical).filter(Boolean)) { const k = Math.round(v.x * 1e6) / 1e6; byX.set(k, Math.max(byX.get(k) ?? 0, v.len)); }
+  let xs = [...byX.keys()].sort((a, b) => a - b);
+  if (xs.length > 6) { const longest = Math.max(...byX.values()); xs = xs.filter(x => byX.get(x) >= 0.95 * longest); }   /* 縫い目の点線の縦の辺など、短い縦線は折り線ではない：紙の高さいっぱいの長い線だけを使う */
+  if (xs.length !== 6) return { ok: false, error: 'need6', count: byX.size };
   let x0 = Infinity, x1 = -Infinity;
   for (const s of shapes) { if (dashedVerticalX(s) != null || ['text', 'dimension', 'fold', 'image'].includes(s.type) || s.holeLink) continue; let b = null; try { b = bboxOf(s); } catch { b = null; } if (!b || ![b.minX, b.maxX].every(Number.isFinite)) continue; x0 = Math.min(x0, b.minX); x1 = Math.max(x1, b.maxX); }
   if (!(x1 > x0)) return { ok: false, error: 'noPanel' };
