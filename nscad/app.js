@@ -2524,12 +2524,13 @@ function designCommit(fn, live) {
   if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
   commit(fn); designUndoLen = undo.length;
 }
+const fdShiftValue = () => { const raw = ($('fdShift').value ?? '').trim(); return raw === '' ? 0 : Number(raw); };   /* ボタン位置のずらし（空欄は 0） */
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
-  const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
+  const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR'), shift: fdShiftValue() }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && s.foldFlat !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
-  const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + vals.cL;
+  const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
   designCommit(() => {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
@@ -2557,7 +2558,7 @@ function projectFoldDesign(withStitch) {
     st = { edge, pitch, margin };
   }
   const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
-  const buttons = [d.cL, f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ */
+  const buttons = [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ */
   const tool = stitchToolCurrent(); let holeInfo = null;
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
@@ -2583,11 +2584,11 @@ function refreshFoldPitch() {
   const el = $('fdPitchOut'); if (!el) return;
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), pitch = num('fdPitch'), f2 = v => v.toFixed(2);
   if (!(pitch > 0)) { el.textContent = t('foldPitchNeed'); return; }
-  const r = foldBendPitch(foldDesignPlan({ t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }), pitch);
+  const r = foldBendPitch(foldDesignPlan({ t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR'), shift: fdShiftValue() }), pitch);
   if (!r) { el.textContent = t('foldPitchBad'); return; }
   el.textContent = t('foldPitchHead', { p: f2(pitch) }) + r.map(b => '\n' + t('foldPitchBend', { side: t(b.side === 'right' ? 'foldSideR' : 'foldSideL'), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff), deg: b.angleDeg.toFixed(1), n: b.count.toFixed(1) })).join('');
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR', 'fdShift']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
