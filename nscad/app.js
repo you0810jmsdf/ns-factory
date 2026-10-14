@@ -3440,9 +3440,9 @@ canvas.addEventListener('pointerdown', e => {
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
-    if (hit && !e.shiftKey) {
+    if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
-      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds() }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
+      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
@@ -3519,6 +3519,7 @@ canvas.addEventListener('pointerup', e => {
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
+    else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
