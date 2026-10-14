@@ -509,16 +509,23 @@ export function projectOnFoldPath(path, u, v) {
   return best;
 }
 const foldDoc = (origin, u, v) => ({ x: origin.x + u, y: origin.y - v });   /* (u 右, v 上) → 図面の座標（y は下向き） */
+/** 断面の厚みの境目（中心線からのずれ k と role）。外側の面（edgeR）〜内側の面（edgeL）まで plies+1 本。間の線は貼り合わせ線（glue）。 */
+const foldEdges = (h, plies) => Array.from({ length: plies + 1 }, (_, i) => [i === 0 ? 'edgeL' : i === plies ? 'edgeR' : 'glue', h - 2 * h * i / plies]);
+/** 貼り合わせた革 plies 枚（合計の厚み t）の、1枚ごとの長さ（外側の革から順に）。中心線の長さに、折り1か所ごと π×（その革の中心の、中心線からのずれ）を足す。外側の革ほど長く、内側ほど短い。 */
+export function foldPlyLengths(path, t, plies = 1) {
+  const bends = path.pieces.filter(p => p.kind === 'arc').length;
+  return Array.from({ length: plies }, (_, j) => path.length + bends * Math.PI * (t / 2 - (j + 0.5) * t / plies));
+}
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
-export function foldSectionShapes(path, t, origin) {
+export function foldSectionShapes(path, t, origin, plies = 1) {
   const out = [], h = t / 2;
   path.pieces.forEach((pc, i) => {
     if (pc.kind === 'line') {
       const nu = -Math.sin(pc.th), nv = Math.cos(pc.th);
-      for (const [role, k] of [['edgeL', h], ['edgeR', -h]]) { const a = foldDoc(origin, pc.p0.u + k * nu, pc.p0.v + k * nv), b = foldDoc(origin, pc.p1.u + k * nu, pc.p1.v + k * nv); out.push({ type: 'line', role, piece: i, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
+      for (const [role, k] of foldEdges(h, plies)) { const a = foldDoc(origin, pc.p0.u + k * nu, pc.p0.v + k * nv), b = foldDoc(origin, pc.p1.u + k * nu, pc.p1.v + k * nv); out.push({ type: 'line', role, piece: i, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
     } else {
       const c = foldDoc(origin, pc.c.u, pc.c.v);
-      for (const [role, r] of [['edgeL', Math.max(0.05, pc.r - h)], ['edgeR', pc.r + h]]) out.push({ type: 'arc', role, piece: i, cx: c.x, cy: c.y, r, startDeg: -pc.a1 * 180 / Math.PI, endDeg: -pc.a0 * 180 / Math.PI });
+      for (const [role, k] of foldEdges(h, plies)) { const r = Math.max(0.05, pc.r - k); out.push({ type: 'arc', role, piece: i, cx: c.x, cy: c.y, r, startDeg: -pc.a1 * 180 / Math.PI, endDeg: -pc.a0 * 180 / Math.PI }); }
     }
   });
   const ends = [['cap0', pointOnFoldPath(path, 0)], ['cap1', pointOnFoldPath(path, path.length)]];
