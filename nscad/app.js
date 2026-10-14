@@ -2491,7 +2491,7 @@ function designCommit(fn, live) {
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
   const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
-  if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
+  if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && s.foldFlat !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + vals.cL;
   designCommit(() => {
@@ -2505,8 +2505,8 @@ function makeFoldDesign(live = false) {
   const f2 = v => v.toFixed(2);
   $('hint').textContent = t('foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2]), b1: f2(p.bends[0]), b2: f2(p.bends[1]), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join(''); draw();
 }
-/** 数値を変えたとき：断面を作ったあとなら、その場で断面を作り直す（元に戻すは1回）。断面を作る前は何もしない。 */
-function liveFoldDesign() { if (doc.foldDesign) makeFoldDesign(true); }
+/** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
+function liveFoldDesign() { makeFoldDesign(true); }   /* 数値が正しければ、断面を作る前でも変えた時点で描く（元に戻すは1回） */
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇3つ（ボタン線が3枚を通る位置）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
 function projectFoldDesign(withStitch) {
