@@ -499,16 +499,20 @@ export function foldHoleMarks(path, ss, t, origin, r = 0.35) {
 /** 三つ折りの設計：完成形の断面を、ボタンが3枚を通る縦線（ボタン線）を基準に決める。dL・dR＝ボタン線から左・右の折りの外側までの距離、cL・cR＝左・右の革の切り口までの距離、rinL・rinR＝左・右の折りの内側の半径、t＝革1枚の厚み（plies 枚貼り合わせ）。
  *  折りの中心線の半径＝内側の半径＋合計の厚みの半分。折りの中心のボタン線からの距離＝外側までの距離−内側の半径−合計の厚み。平らは 1枚目＝cL＋右の折りの中心・2枚目＝両方の折りの中心の間・3枚目＝左の折りの中心＋cR。
  *  返り値：{ ok, T, flats[3], bends[2]（右の折り・左の折りの順＝革を端からたどる順）, rc[2]（中心線の半径）, a[2]（右・左の折りの中心のボタン線からの距離）, length, warnings[] }。
+ *  shift（既定 0）＝ボタン線を右へずらす量。cEff＝ずらしたあとの、ボタン線から左・右の切り口までの距離。ずらしすぎて、ボタン線が切り口や折りの外に出るときは失敗 'shiftOut'。
  *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
-export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR } = {}) {
+export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
   const pos = [dL, dR, rinL, rinR];
   if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
-  const T = t * plies, rc1 = rinR + T / 2, rc2 = rinL + T / 2, a1 = dR - rinR - T, a2 = dL - rinL - T, flats = [cL + a1, a1 + a2, a2 + cR];
+  if (typeof shift !== 'number' || !Number.isFinite(shift)) return { ok: false, error: 'badNumber' };
+  const dl = dL + shift, dr = dR - shift, cl = cL + shift, cr = cR - shift;   /* ボタン線を右へ shift ずらす＝左の距離は＋shift・右の距離は−shift（平らの長さ・折りの形は変わらない） */
+  if (!(dl > 0 && dr > 0) || cl < 0 || cr < 0) return { ok: false, error: 'shiftOut' };
+  const T = t * plies, rc1 = rinR + T / 2, rc2 = rinL + T / 2, a1 = dr - rinR - T, a2 = dl - rinL - T, flats = [cl + a1, a1 + a2, a2 + cr];
   if (!flats.every(v => v > FOLD_EPS)) return { ok: false, error: 'flatShort', flats };
-  const bends = [Math.PI * rc1, Math.PI * rc2], warnings = [], dx = cR - a1, v3 = 2 * (rc1 - rc2) - rc1;   /* v3＝3枚目の高さの、右の折りの中心からのずれ */
+  const bends = [Math.PI * rc1, Math.PI * rc2], warnings = [], dx = cr - a1, v3 = 2 * (rc1 - rc2) - rc1;   /* v3＝3枚目の高さの、右の折りの中心からのずれ */
   if (rc1 - rc2 < T / 2 - 1e-9) warnings.push('gapBottom');
   if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
-  return { ok: true, T, flats, bends, rc: [rc1, rc2], a: [a1, a2], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
+  return { ok: true, T, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
 /** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
  *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
