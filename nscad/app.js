@@ -2546,6 +2546,15 @@ function designCommit(fn, live) {
   if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
   commit(fn); designUndoLen = undo.length;
 }
+/** 図形の一覧を、高さ ym の水平線を軸に上下反転する（y を折り返し・円弧は角度の向きを入れ替える）。 */
+function flipSectionV(shapes, ym) {
+  const f = y => 2 * ym - y;
+  return shapes.map(sh => {
+    const o = { ...sh }; if ('y1' in o) { o.y1 = f(o.y1); o.y2 = f(o.y2); } if ('cy' in o) o.cy = f(o.cy); if (o.points) o.points = o.points.map(q => ({ ...q, y: f(q.y) }));
+    if (o.type === 'arc') { const a = o.startDeg, b = o.endDeg; o.startDeg = -b; o.endDeg = -a; }
+    return o;
+  });
+}
 /** 三つ折りの断面に置くリング・リフィルの入力。規格・リング径は金具の欄、束の厚み・取付位置はこのカードの欄。オフなら null、数値が不正なら { error }。 */
 function foldRingInput() {
   if ($('fdRingOn')?.checked !== true) return null;
@@ -2583,9 +2592,10 @@ function makeFoldDesign(live = false) {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
     const gid = nextGroupId(doc.shapes);
-    for (const sh of foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
-    doc.shapes.push({ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis', id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
-    if (ring) for (const sh of ring.shapes) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
+    const flip = shapes => flipSectionV(shapes, origin.y - p.rc[0]);   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15）。右の丸折りの中心の高さを軸にするので、範囲は変わらない */
+    for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
+    for (const sh of flip([{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
+    if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
     doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2);
