@@ -2551,6 +2551,7 @@ function foldRingShapes(path, T, origin, ring) {
   const at = (h, w) => ({ x: origin.x + fu + nx * h + tx * w, y: origin.y - (fv + ny * h + ty * w) });   /* (面からの高さ h, 面に沿った横 w) → 図面の座標 */
   const shapes = ring.parts.shapes.map(sh => {
     if (sh.type === 'circle') { const c = at(sh.h, sh.w); return { type: 'circle', role: sh.role, cx: c.x, cy: c.y, r: sh.r }; }
+    if (sh.type === 'arc') { const c = at(sh.h, sh.w), phi = Math.atan2(-ny, nx) * 180 / Math.PI; return { type: 'arc', role: sh.role, cx: c.x, cy: c.y, r: sh.r, startDeg: sh.a0 * 180 / Math.PI + phi, endDeg: sh.a1 * 180 / Math.PI + phi }; }   /* 局所の角度（h 軸が0）を図面の角度へ回すだけ（向きは変わらない） */
     if (sh.type === 'line') { const a = at(sh.h1, sh.w1), b = at(sh.h2, sh.w2); return { type: 'line', role: sh.role, lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }; }
     return { type: 'polyline', role: sh.role, closed: true, points: sh.points.map(pt => at(pt.h, pt.w)) };
   });
