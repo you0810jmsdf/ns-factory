@@ -2507,23 +2507,42 @@ function makeFoldDesign(live = false) {
 }
 /** 数値を変えたとき：断面を作ったあとなら、その場で断面を作り直す（元に戻すは1回）。断面を作る前は何もしない。 */
 function liveFoldDesign() { if (doc.foldDesign) makeFoldDesign(true); }
-/** FIX：設計した断面を平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇3つ（ボタン線が3枚を通る位置）。前の投影は置き換える。 */
-function fixFoldDesign() {
+/** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇3つ（ボタン線が3枚を通る位置）。前の投影は置き換える。
+ *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
+function projectFoldDesign(withStitch) {
   const d = doc.foldDesign; if (!d) { $('hint').textContent = t('foldFixNone'); return; }
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
   const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
+  let st = d.stitch || null;
+  if (withStitch) {
+    const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value);
+    const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null;
+    if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
+    st = { edge, pitch, margin };
+  }
   const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   const buttons = [d.cL, f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ */
+  const tool = stitchToolCurrent(); let holeInfo = null;
   commit(() => {
-    doc.shapes = doc.shapes.filter(s => s.foldFlat !== 'fd');
-    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), foldFlat: 'fd' });
+    const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
+    doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
+    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
     add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + p.length, y: fy }, { x: fx + p.length, y: fy + h }, { x: fx, y: fy + h }] });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
     for (const x of buttons) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: 2 });
+    if (st) for (const y of [fy + st.edge, fy + h - st.edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（端の余白を空け、ピッチは均等に調整） */
+      const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + st.margin, y1: y, x2: fx + p.length - st.margin, y2: y });
+      const route = doc.shapes.find(s => s.id === lineId), pts = pointsAlongShape(route, st.pitch, { variable: true }), saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [], mark: 'tool', foldFlat: 'fd' };
+      doc.paths.push(saved); placeHoles(saved, route, pts.map(q => ({ ...q })), tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.foldFlat = 'fd';
+      saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: st.pitch, mode: 'variable' }]; holeInfo = { n: pts.length, step: pts.length > 1 ? arcLength(route) / (pts.length - 1) : 0 };
+    }
+    doc.foldDesign = { ...doc.foldDesign, ...(st ? { stitch: st } : {}) };
   });
-  const f2s = v => v.toFixed(2); $('hint').textContent = t('foldFixDone', { len: f2s(p.length), s1: f2s(buttons[0]), s2: f2s(buttons[1]), s3: f2s(buttons[2]) }); draw();
+  const f2s = v => v.toFixed(2);
+  $('hint').textContent = t('foldFixDone', { len: f2s(p.length), s1: f2s(buttons[0]), s2: f2s(buttons[1]), s3: f2s(buttons[2]) }) + (st && holeInfo ? ' ' + t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), adj: f2s(holeInfo.step), n: holeInfo.n }) : ''); rebuildSnaps(); draw();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = liveFoldDesign; $('foldBaseMake').onclick = makeFoldBaselines; }
+function fixFoldDesign() { projectFoldDesign(false); }
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = liveFoldDesign; $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
