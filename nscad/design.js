@@ -473,6 +473,29 @@ export function foldCutLine(shapes) {
   const found = list.filter(s => s.type === 'line' && s.lineStyle !== 'dashed' && Math.abs(s.y1 - s.y2) < FOLD_EPS && s.y1 > box.y0 + 0.01 && s.y1 < box.y1 - 0.01 && Math.abs(s.x2 - s.x1) >= 0.8 * (box.x1 - box.x0));
   return found.length === 0 ? { none: true } : found.length === 1 ? { y: found[0].y1, id: found[0].id } : { error: 'many', count: found.length };
 }
+/** 断面の中心線の s の位置を、厚みの境目（offset：外側の面は＋・内側の面は－）の面に沿って測った長さ。折りの弧では、通った弧の長さ×(offset÷半径) だけ中心線より長く（外側）・短く（内側）なる。平らな所は中心線と同じ。 */
+export function foldSurfaceS(path, s, offset) {
+  let out = s; for (const pc of path.pieces) if (pc.kind === 'arc') out += Math.max(0, Math.min(s, pc.s1) - pc.s0) * offset / pc.r;
+  return out;
+}
+/** 縫い穴（中心線の s の位置 ss）を、断面の外側の面・内側の面へ落とし（投影し）て、折りごとの間隔を出す。折りの弧に両方の穴が入る隣どうしの組だけを数える。
+ *  戻り値 { holes:[{s,outerS,innerS}]（s の順）, bends:[{pairs, flat, outer, inner, diff}]（折りの順＝断面の中心線の順）}。flat＝平らな間隔・outer／inner＝外側／内側の面での間隔（組の平均）・diff＝外側−内側（差＝平らな間隔×合計の厚み÷半径）。 */
+export function foldHoleSpacing(path, ss, t) {
+  const h = t / 2, holes = [...ss].sort((a, b) => a - b).map(s => ({ s, outerS: foldSurfaceS(path, s, h), innerS: foldSurfaceS(path, s, -h) }));
+  const bends = path.pieces.filter(p => p.kind === 'arc').map(a => {
+    const pairs = []; for (let i = 0; i + 1 < holes.length; i++) { const p = holes[i], q = holes[i + 1]; if (q.s - p.s > FOLD_EPS && p.s >= a.s0 - FOLD_EPS && q.s <= a.s1 + FOLD_EPS) pairs.push({ flat: q.s - p.s, outer: q.outerS - p.outerS, inner: q.innerS - p.innerS }); }
+    const avg = k => pairs.length ? pairs.reduce((x, y) => x + y[k], 0) / pairs.length : 0;
+    return { pairs: pairs.length, flat: avg('flat'), outer: avg('outer'), inner: avg('inner'), diff: avg('outer') - avg('inner') };
+  });
+  return { holes, bends };
+}
+/** 縫い穴の目印：穴ごとに、断面の外側の面・内側の面の上へ小さな円を1つずつ（role: 'hole'・side: 'outer' | 'inner'・s）。origin は中心線の始点の図面上の位置。 */
+export function foldHoleMarks(path, ss, t, origin, r = 0.35) {
+  const h = t / 2, out = [];
+  for (const s of ss) { const q = pointOnFoldPath(path, s), nu = -Math.sin(q.heading), nv = Math.cos(q.heading);
+    for (const [side, k] of [['outer', -h], ['inner', h]]) { const c = foldDoc(origin, q.u + k * nu, q.v + k * nv); out.push({ type: 'circle', role: 'hole', side, s, cx: c.x, cy: c.y, r }); } }
+  return out;
+}
 /** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
 export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
 /** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
