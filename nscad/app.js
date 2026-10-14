@@ -2524,10 +2524,9 @@ function designCommit(fn, live) {
   if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
   commit(fn); designUndoLen = undo.length;
 }
-const fdShiftValue = () => { const raw = ($('fdShift').value ?? '').trim(); return raw === '' ? 0 : Number(raw); };   /* ボタン位置のずらし（空欄は 0） */
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
-  const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR'), shift: fdShiftValue() }, p = foldDesignPlan(vals);
+  const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && s.foldFlat !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
@@ -2585,7 +2584,7 @@ function refreshFoldPitch() {
   const el = $('fdPitchOut'); if (!el) return;
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), pitch = num('fdPitch'), f2 = v => v.toFixed(2);
   if (!(pitch > 0)) { el.textContent = t('foldPitchNeed'); return; }
-  const r = foldBendPitch(foldDesignPlan({ t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR'), shift: fdShiftValue() }), pitch);
+  const r = foldBendPitch(foldDesignPlan({ t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }), pitch);
   if (!r) { el.textContent = t('foldPitchBad'); return; }
   el.textContent = t('foldPitchHead', { p: f2(pitch) }) + r.map(b => '\n' + t('foldPitchBend', { side: t(b.side === 'right' ? 'foldSideR' : 'foldSideL'), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff), deg: b.angleDeg.toFixed(1), n: b.count.toFixed(1) })).join('');
 }
@@ -2598,7 +2597,17 @@ function setFoldWidth() {
   if (!(w > l)) { $('hint').textContent = t('foldWidthSmall', { l: l.toFixed(2) }); return; }
   $('fdDR').value = String(+(w - l).toFixed(2)); refreshFoldPitch(); liveFoldDesign();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR', 'fdShift']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+/** ボタンを左（dir=-1）・右（dir=+1）へ、ずらす量だけ動かす：左の距離は＋量・右の距離は−量（折りの外側・切り口とも）として、4つの距離の欄そのものを書き換える。欄の数字は常に実際の距離。全幅は変わらない。 */
+function nudgeFoldButton(dir) {
+  const step = Number($('fdShift').value); if (!(step > 0)) { $('hint').textContent = t('foldNudgeStep'); return; }
+  const ids = ['fdDL', 'fdDR', 'fdCL', 'fdCR'], cur = ids.map(id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value));
+  if (!cur.every(Number.isFinite)) { $('hint').textContent = t('foldDesignErr_badNumber'); return; }
+  const s = dir * step, next = [cur[0] + s, cur[1] - s, cur[2] + s, cur[3] - s];
+  if (!(next[0] > 0 && next[1] > 0 && next[2] >= 0 && next[3] >= 0)) { $('hint').textContent = t('foldDesignErr_shiftOut'); return; }
+  ids.forEach((id, i) => { $(id).value = String(+next[i].toFixed(2)); });
+  refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
+}
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
