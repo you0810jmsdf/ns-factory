@@ -434,3 +434,79 @@ export function detourPath(base, obstacle, { clearance = 3, radius = 2 } = {}) {
   const dedup = pts.filter((p, i) => !i || distance(p, pts[i - 1]) > 1e-9), baseLength = polyLen(base), length = polyLen(dedup);
   return { points: dedup, baseLength, length, extra: length - baseLength, radius: used };
 }
+
+/* ───────── 三つ折り（C型・内側へ巻く）の断面：平面図の点線から断面を作り、断面で決めた位置を平面図へ戻す。目的は、断面から革の長さを決めること。 ───────── */
+const FOLD_EPS = 1e-6;
+/** 縦の点線（まっすぐな線 or 2点の折れ線）の x。縦でない・点線でないものは null。 */
+function dashedVerticalX(s) {
+  if (!s || s.lineStyle !== 'dashed') return null;
+  if (s.type === 'line' && Math.abs(s.x1 - s.x2) < FOLD_EPS && Math.abs(s.y1 - s.y2) > FOLD_EPS) return s.x1;
+  if (s.type === 'polyline' && !s.closed && s.points?.length === 2 && Math.abs(s.points[0].x - s.points[1].x) < FOLD_EPS && Math.abs(s.points[0].y - s.points[1].y) > FOLD_EPS) return s.points[0].x;
+  return null;
+}
+/** 図形から三つ折りの形を読む：縦の点線が6本（左3本＋右3本・外側2本の間＝丸く折るところ・真ん中＝折りの頂点）。
+ *  返り値：{ ok, x0, x1（紙の左右の端）, flats[3]・bends[2]（紙の左から右への長さ）, xs（点線の x・小さい順）, flip }。
+ *  左の折りより右の折りが長いときは、右から数える（flip）：内側へ巻く3枚が重ならないよう、先の折りを大きくするため。flats・bends は数える順。 */
+export function foldSectionSpec(shapes) {
+  const xs = [...new Set((shapes || []).map(dashedVerticalX).filter(v => v != null).map(v => Math.round(v * 1e6) / 1e6))].sort((a, b) => a - b);
+  if (xs.length !== 6) return { ok: false, error: 'need6', count: xs.length };
+  let x0 = Infinity, x1 = -Infinity;
+  for (const s of shapes) { if (dashedVerticalX(s) != null || ['text', 'dimension', 'fold', 'image'].includes(s.type) || s.holeLink) continue; let b = null; try { b = bboxOf(s); } catch { b = null; } if (!b || ![b.minX, b.maxX].every(Number.isFinite)) continue; x0 = Math.min(x0, b.minX); x1 = Math.max(x1, b.maxX); }
+  if (!(x1 > x0)) return { ok: false, error: 'noPanel' };
+  if (x0 > xs[0] + FOLD_EPS || x1 < xs[5] - FOLD_EPS) return { ok: false, error: 'outside' };
+  const flats = [xs[0] - x0, xs[3] - xs[2], x1 - xs[5]], bends = [xs[2] - xs[0], xs[5] - xs[3]];
+  if (!(bends[0] > FOLD_EPS && bends[1] > FOLD_EPS)) return { ok: false, error: 'noBand' };
+  const flip = bends[0] < bends[1];
+  return { ok: true, x0, x1, xs, flip, flats: flip ? [...flats].reverse() : flats, bends: flip ? [...bends].reverse() : bends };
+}
+/** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 半円 b1（弧の長さ）→ 平ら f2 → 半円 b2 → 平ら f3。折りはどちらも反時計回り（内側へ巻く＝C型）。
+ *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, s0, s1 }], length, flats, bends }。s は始点からの長さ（革の中心に沿った長さ）。 */
+export function foldSectionPath({ flats, bends }) {
+  const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0;
+  const line = len => { if (!(len > FOLD_EPS)) return; const q = { u: p.u + len * Math.cos(th), v: p.v + len * Math.sin(th) }; pieces.push({ kind: 'line', p0: p, p1: q, th, s0: s, s1: s + len }); s += len; p = q; };
+  const turn = len => { const r = len / Math.PI, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + Math.PI, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + Math.PI), v: c.v + r * Math.sin(a0 + Math.PI) }; th += Math.PI; };
+  line(flats[0]); turn(bends[0]); line(flats[1]); turn(bends[1]); line(flats[2]);
+  return { pieces, length: s, flats: [...flats], bends: [...bends] };
+}
+/** 中心線の s の位置の点と向き：{ u, v, heading }（heading はラジアン）。s は 0〜length に丸める。 */
+export function pointOnFoldPath(path, s) {
+  const t = Math.max(0, Math.min(path.length, s)), pc = path.pieces.find(x => t <= x.s1 + FOLD_EPS) || path.pieces.at(-1);
+  if (pc.kind === 'line') { const d = t - pc.s0; return { u: pc.p0.u + d * Math.cos(pc.th), v: pc.p0.v + d * Math.sin(pc.th), heading: pc.th }; }
+  const a = pc.a0 + (t - pc.s0) / pc.r; return { u: pc.c.u + pc.r * Math.cos(a), v: pc.c.v + pc.r * Math.sin(a), heading: a + Math.PI / 2 };
+}
+/** 点 (u, v) にいちばん近い中心線上の位置：{ s, dist }。 */
+export function projectOnFoldPath(path, u, v) {
+  let best = { s: 0, dist: Infinity };
+  const consider = (s, pu, pv) => { const d = Math.hypot(u - pu, v - pv); if (d < best.dist) best = { s, dist: d }; };
+  for (const pc of path.pieces) {
+    if (pc.kind === 'line') { const dx = pc.p1.u - pc.p0.u, dy = pc.p1.v - pc.p0.v, len2 = dx * dx + dy * dy, k = Math.max(0, Math.min(1, ((u - pc.p0.u) * dx + (v - pc.p0.v) * dy) / len2)); consider(pc.s0 + k * Math.sqrt(len2), pc.p0.u + k * dx, pc.p0.v + k * dy); }
+    else {
+      const phi = Math.atan2(v - pc.c.v, u - pc.c.u), rel = ((phi - pc.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+      if (rel <= Math.PI) consider(pc.s0 + rel * pc.r, pc.c.u + pc.r * Math.cos(phi), pc.c.v + pc.r * Math.sin(phi));
+      consider(pc.s0, pc.c.u + pc.r * Math.cos(pc.a0), pc.c.v + pc.r * Math.sin(pc.a0)); consider(pc.s1, pc.c.u + pc.r * Math.cos(pc.a1), pc.c.v + pc.r * Math.sin(pc.a1));
+    }
+  }
+  return best;
+}
+const foldDoc = (origin, u, v) => ({ x: origin.x + u, y: origin.y - v });   /* (u 右, v 上) → 図面の座標（y は下向き） */
+/** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
+export function foldSectionShapes(path, t, origin) {
+  const out = [], h = t / 2;
+  path.pieces.forEach((pc, i) => {
+    if (pc.kind === 'line') {
+      const nu = -Math.sin(pc.th), nv = Math.cos(pc.th);
+      for (const [role, k] of [['edgeL', h], ['edgeR', -h]]) { const a = foldDoc(origin, pc.p0.u + k * nu, pc.p0.v + k * nv), b = foldDoc(origin, pc.p1.u + k * nu, pc.p1.v + k * nv); out.push({ type: 'line', role, piece: i, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
+    } else {
+      const c = foldDoc(origin, pc.c.u, pc.c.v);
+      for (const [role, r] of [['edgeL', Math.max(0.05, pc.r - h)], ['edgeR', pc.r + h]]) out.push({ type: 'arc', role, piece: i, cx: c.x, cy: c.y, r, startDeg: -pc.a1 * 180 / Math.PI, endDeg: -pc.a0 * 180 / Math.PI });
+    }
+  });
+  const ends = [['cap0', pointOnFoldPath(path, 0)], ['cap1', pointOnFoldPath(path, path.length)]];
+  for (const [role, q] of ends) { const nu = -Math.sin(q.heading), nv = Math.cos(q.heading), a = foldDoc(origin, q.u - h * nu, q.v - h * nv), b = foldDoc(origin, q.u + h * nu, q.v + h * nv); out.push({ type: 'line', role, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
+  return out;
+}
+/** s の位置に、厚みをまたぐ短い線（ボタンなどの目印）。両側に extra(mm) ずつはみ出す。 */
+export function foldSectionMark(path, s, t, origin, extra = 1.5) {
+  const q = pointOnFoldPath(path, s), nu = -Math.sin(q.heading), nv = Math.cos(q.heading), k = t / 2 + extra, a = foldDoc(origin, q.u + k * nu, q.v + k * nv), b = foldDoc(origin, q.u - k * nu, q.v - k * nv);
+  return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+}
