@@ -2010,13 +2010,25 @@ function renderHardware() {
   const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs);
   renderBinder();
 }
+function fillRingOptions(rd, spec) {
+  rd.textContent = '';
+  for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); const size = ringSizeOf(spec, d); o.textContent = t('ringSizeLabel', { inner: size.inner, outer: ringOuterLabel(size) }); rd.appendChild(o); }
+}
+/** 三つ折りの設計カードの規格・リング径の選択欄を、金具カードの欄（正本）と同じ中身・同じ選択にそろえる。 */
+function syncFoldRingSelects() {
+  const sp = $('fdRingSpec'), dia = $('fdRingDia'); if (!sp || !dia) return;
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
+  sp.textContent = ''; fillBinderSpecOptions(sp); sp.value = $('binderSpecSel').value; fillRingOptions(dia, spec); dia.value = $('ringD').value;
+}
+/** 規格・リング径が変わったとき（金具カードでも三つ折りの設計カードでも）。リングを描いているときは断面も作り直す。 */
+function onBinderChange() { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); if ($('fdRingOn')?.checked === true) liveFoldDesign(); }
 function renderBinder() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
-  const rd = $('ringD'), keep = Number(rd.value); rd.textContent = '';
-  for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); const size = ringSizeOf(spec, d); o.textContent = t('ringSizeLabel', { inner: size.inner, outer: ringOuterLabel(size) }); rd.appendChild(o); }
+  const rd = $('ringD'), keep = Number(rd.value); fillRingOptions(rd, spec);
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
   const leather = Number($('partThickness').value) || 1.5;
   $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
+  syncFoldRingSelects();
 }
 function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: wireOf(spec, ringD) /* 線径はリングの諸元なので金具データの値だけを使う（画面では直さない・2026-10-12 事業主指摘） */, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, bossDia: base.supporterDiameterMm ?? 0 /* ビス穴金具部の直径・高さは金具のデータの値だけを使う（リングサポータ厚とは無関係・2026-10-13 事業主指示） */, bossT: base.supporterThicknessMm ?? SUPPORTER_T_MM, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: (() => { try { return base.sectionPoints ? binderSection(base) : null; } catch { return null; } })() /* 台座の断面のデータがあれば、断面図で実測の形とサポータの帯を描く */, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: SUPPORTER_T_MM /* リングサポータ厚は固定 2.4mm（つねに 2.3〜2.5mm・入力欄は廃止・2026-10-13 事業主指示） */, liningT: Number($('spLining').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0, spineShape: $('spShape').value === 'round' ? 'round' : 'square' }; }
 /** 閉じた手帳の3面図の入力値（背幅の入力に、束の厚み・表紙の長さ・規格のリフィル寸法・台座・リング位置を足す）。 */
@@ -2531,7 +2543,7 @@ function foldRingInput() {
   if (!Number.isFinite(pos) || !Number.isFinite(stackT) || !(stackT > 0)) return { error: 'bad' };
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), tp = { ...spineParams(), stackT, refillW: spec?.refill?.wMm ?? 110, plateW: base.sectionWidthMm ?? 24 };
   const parts = foldRingParts(tp); if (!parts) return { error: 'bad' };
-  return { spec, ringD: tp.ringD, pos, stackT, parts };
+  return { spec, ringD: tp.ringD, pos, stackT, parts, dir: $('fdRefillDir')?.value === 'v' ? 'v' : 'h' };
 }
 /** リング・台座・リフィルを、右の丸折りの頂点から革に沿って pos(mm) の位置の、革の内側の面に立てる（面に垂直に内側へ）。断面の図形と、取付穴の位置 s（革の端から中心線に沿った長さ）を返す。 */
 function foldRingShapes(path, T, origin, ring) {
@@ -2542,6 +2554,11 @@ function foldRingShapes(path, T, origin, ring) {
     if (sh.type === 'line') { const a = at(sh.h1, sh.w1), b = at(sh.h2, sh.w2); return { type: 'line', role: sh.role, lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }; }
     return { type: 'polyline', role: sh.role, closed: true, points: sh.points.map(pt => at(pt.h, pt.w)) };
   });
+  /* リフィルは、革の面の向きに関係なく、水平か垂直に置く（事業主指示 2026-10-15）。水平＝リングの中心から、面が左を向くなら左へ・右を向くなら右へ（面が水平のときは左へ）・厚みは縦。垂直＝面が上を向くなら上へ・下を向くなら下へ（面が垂直のときは上へ）・厚みは横 */
+  const c = at(ring.parts.ringH, 0), vert = ring.dir === 'v', e = vert ? { x: 0, y: Math.abs(ny) > 1e-6 ? -Math.sign(ny) : -1 } : { x: Math.abs(nx) > 1e-6 ? Math.sign(nx) : -1, y: 0 }, rf = ring.parts.refill, hh = rf.thick / 2;
+  const P = (t, k) => vert ? { x: c.x + k * hh, y: c.y + e.y * t } : { x: c.x + e.x * t, y: c.y + k * hh };   /* t＝リングの中心から向き e への距離・k＝厚みの向き（−1・＋1） */
+  shapes.push({ type: 'polyline', role: 'refills', closed: true, points: [P(rf.t0, -1), P(rf.t1, -1), P(rf.t1, 1), P(rf.t0, 1)] });
+  for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
   return { shapes, s };
 }
 function makeFoldDesign(live = false) {
@@ -2558,11 +2575,11 @@ function makeFoldDesign(live = false) {
     for (const sh of foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
     doc.shapes.push({ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis', id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of ring.shapes) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
-    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s } } : {}) };
+    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2);
   $('hint').textContent = t('foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2]), b1: f2(p.bends[0]), b2: f2(p.bends[1]), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
-    + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT) }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
+    + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
 }
 /** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
 function liveFoldDesign() { makeFoldDesign(true); }   /* 数値が正しければ、断面を作る前でも変えた時点で描く（元に戻すは1回） */
@@ -2669,7 +2686,7 @@ function nudgeFoldButton(dir) {
   ids.forEach((id, i) => { $(id).value = String(+next[i].toFixed(2)); });
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; $('fdRingOn').onchange = liveFoldDesign; for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; $('fdRingOn').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
@@ -2715,7 +2732,7 @@ function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle')
 function initHardware() {
   renderHardware();
   $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware);
-  for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', () => { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); if ($('fdRingOn')?.checked === true) liveFoldDesign(); }); $('partThickness').addEventListener('change', renderBinder);
+  for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', onBinderChange); $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = (k, which) => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)} <button type="button" data-place-view="${which}">${t('binderViewPlace')}</button></div>`; binderViewTarget = { spec, ringD: d }; showSvgDialog(cap('binderViewPlan', 'plan') + binderPlanSvg(spec, d) + cap('binderViewSide', 'side') + binderSideSvg(spec, d) + cap('binderViewFront', 'front') + binderFrontSvg(spec, d), spec.names.ja); for (const b of $('svgBody').querySelectorAll?.('[data-place-view]') || []) b.onclick = () => { placeBinderView(b.dataset.placeView); $('svgDialog').close(); }; } };
