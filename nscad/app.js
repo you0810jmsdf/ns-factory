@@ -3467,9 +3467,17 @@ canvas.addEventListener('pointermove', e => {
 });
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
 /** 右クリックのメニュー（選んだ図形を部品ライブラリに登録する）を、クリックした位置のそばに出す。 */
+/** 右メニュー（右の細長い列）の項目＝見えているカード。右クリックのメニューに並べて、長い列をスクロールせずに開けるようにする。 */
+const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary'));
+function fillCtxCards() {
+  const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
+  for (const c of cards) { const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+  $('ctxCardsTitle').hidden = !cards.length; return cards.length;
+}
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e), w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;
-  menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px'; menu.hidden = false;
+  const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1;
+  menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
+  menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
 function hideCtxMenu() { $('ctxMenu').hidden = true; }
 canvas.addEventListener('contextmenu', e => {
@@ -3485,7 +3493,7 @@ canvas.addEventListener('contextmenu', e => {
     if (distToShape(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s);
     selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeAdded'); return;
   }
-  if (mode === 'select' && selected.size >= 1) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニュー */
+  if (mode === 'select' && (selected.size >= 1 || ctxCardList().length)) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニューと右メニューの項目 */
 });
 canvas.addEventListener('dblclick', e => {
   const p = local(e), w = world(p);
