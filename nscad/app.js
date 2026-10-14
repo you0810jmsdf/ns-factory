@@ -2589,7 +2589,16 @@ function refreshFoldPitch() {
   if (!r) { el.textContent = t('foldPitchBad'); return; }
   el.textContent = t('foldPitchHead', { p: f2(pitch) }) + r.map(b => '\n' + t('foldPitchBend', { side: t(b.side === 'right' ? 'foldSideR' : 'foldSideL'), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff), deg: b.angleDeg.toFixed(1), n: b.count.toFixed(1) })).join('');
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR', 'fdShift']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+/** 全幅（最左端〜最右端の距離）＝ボタン線→左の折りの外側＋ボタン線→右の折りの外側。2つの距離を変えると、合計を自動で出す。 */
+function refreshFoldWidth() { const l = Number($('fdDL').value), r = Number($('fdDR').value); $('fdW').value = ($('fdDL').value ?? '').trim() !== '' && ($('fdDR').value ?? '').trim() !== '' && l > 0 && r > 0 ? String(+(l + r).toFixed(2)) : ''; }
+/** 全幅の欄を書き換えたとき：左の距離は変えず、右の距離を合わせる（全幅が決まっていて、ボタンの位置は「ずらす」で動かす）。 */
+function setFoldWidth() {
+  const w = Number($('fdW').value), l = Number($('fdDL').value), blankL = ($('fdDL').value ?? '').trim() === '';
+  if (blankL || !(l > 0)) { $('hint').textContent = t('foldWidthNeedL'); return; }
+  if (!(w > l)) { $('hint').textContent = t('foldWidthSmall', { l: l.toFixed(2) }); return; }
+  $('fdDR').value = String(+(w - l).toFixed(2)); refreshFoldPitch(); liveFoldDesign();
+}
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR', 'fdShift']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
