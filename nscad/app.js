@@ -2483,24 +2483,47 @@ function closeSelectedGaps() {
   $('hint').textContent = (r.closed ? t('closeGapsDone', { n: r.closed, max: r.maxGap.toFixed(2) }) : '') + (r.skipped ? (r.closed ? ' ' : '') + t('closeGapsSkipped', { k: r.skipped }) : ''); rebuildSnaps(); draw();
 }
 /** 三つ折りの設計：ボタン線を基準にした距離と内側の半径から、完成形の断面を先に作る。重なり・突き抜けは作ったうえで警告する。前の設計の断面は置き換える（元に戻すは1回）。 */
-function makeFoldDesign() {
+let designUndoLen = -1; /* 数値変更のライブ更新を、元に戻す1回にまとめるための印（断面を作った直後の undo の数） */
+function designCommit(fn, live) {
+  if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
+  commit(fn); designUndoLen = undo.length;
+}
+function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
   const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
-  const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && s.foldSec !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };
+  const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && s.foldFlat !== 'fd'), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + vals.cL;
-  commit(() => {
+  designCommit(() => {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
     const gid = nextGroupId(doc.shapes);
     for (const sh of foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
     doc.shapes.push({ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis', id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin };
-  });
+  }, live);
   const f2 = v => v.toFixed(2);
   $('hint').textContent = t('foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2]), b1: f2(p.bends[0]), b2: f2(p.bends[1]), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join(''); draw();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = makeFoldDesign; $('foldBaseMake').onclick = makeFoldBaselines; }
+/** 数値を変えたとき：断面を作ったあとなら、その場で断面を作り直す（元に戻すは1回）。断面を作る前は何もしない。 */
+function liveFoldDesign() { if (doc.foldDesign) makeFoldDesign(true); }
+/** FIX：設計した断面を平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇3つ（ボタン線が3枚を通る位置）。前の投影は置き換える。 */
+function fixFoldDesign() {
+  const d = doc.foldDesign; if (!d) { $('hint').textContent = t('foldFixNone'); return; }
+  const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
+  const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
+  const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
+  const buttons = [d.cL, f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ */
+  commit(() => {
+    doc.shapes = doc.shapes.filter(s => s.foldFlat !== 'fd');
+    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), foldFlat: 'fd' });
+    add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + p.length, y: fy }, { x: fx + p.length, y: fy + h }, { x: fx, y: fy + h }] });
+    for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
+    for (const x of buttons) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: 2 });
+  });
+  const f2s = v => v.toFixed(2); $('hint').textContent = t('foldFixDone', { len: f2s(p.length), s1: f2s(buttons[0]), s2: f2s(buttons[1]), s3: f2s(buttons[2]) }); draw();
+}
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = liveFoldDesign; $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
