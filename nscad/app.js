@@ -9,7 +9,7 @@ import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } from './threeview.js';
-import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg } from './hardware.js';
+import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -2433,6 +2433,19 @@ function drawCoverFromSpine() {
   tabs[activeTab].doc = doc; pairLines = []; renderLayers(); renderSeams(); fit();
   $('hint').textContent = t('spineCoverDone', { w: c.W, h: c.H, spine: c.spineW });
 }
+let binderViewTarget = null; /* 三つの図のダイアログを開いたときの規格・リング径（図面に置くボタンが使う） */
+/** 金具の図（平面・側面・正面）の1つを、画面の中央に、金具の層・グループで置く。 */
+function placeBinderView(which) {
+  const tg = binderViewTarget; if (!tg) return; const raw = binderViewDrawing(tg.spec, tg.ringD, which);
+  const xs = raw.flatMap(s => s.type === 'polyline' ? s.points.map(p => p.x) : [s.cx - s.r, s.cx + s.r]), ys = raw.flatMap(s => s.type === 'polyline' ? s.points.map(p => p.y) : [s.cy - s.r, s.cy + s.r]);
+  const c = world({ x: width / 2, y: height / 2 }), dx = c.x - (Math.min(...xs) + Math.max(...xs)) / 2, dy = c.y - (Math.min(...ys) + Math.max(...ys)) / 2, view = t(which === 'plan' ? 'binderViewPlan' : which === 'side' ? 'binderViewSide' : 'binderViewFront').replace(/（.*$/, '');
+  commit(() => {
+    if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false });
+    const gid = nextGroupId(doc.shapes);
+    for (const s of raw) doc.shapes.push({ ...(s.type === 'polyline' ? { type: 'polyline', closed: true, points: s.points.map(p => ({ x: p.x + dx, y: p.y + dy })) } : { type: 'circle', cx: s.cx + dx, cy: s.cy + dy, r: s.r }), id: freshId(doc.shapes, 's'), layer: 'hardware', groupId: gid });
+  });
+  $('hint').textContent = t('binderViewPlaced', { view, n: raw.length }); draw();
+}
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
@@ -2440,7 +2453,7 @@ function initHardware() {
   for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', () => { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); }); $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
-  $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = k => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)}</div>`; showSvgDialog(cap('binderViewPlan') + binderPlanSvg(spec, d) + cap('binderViewSide') + binderSideSvg(spec, d) + cap('binderViewFront') + binderFrontSvg(spec, d), spec.names.ja); } };
+  $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = (k, which) => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)} <button type="button" data-place-view="${which}">${t('binderViewPlace')}</button></div>`; binderViewTarget = { spec, ringD: d }; showSvgDialog(cap('binderViewPlan', 'plan') + binderPlanSvg(spec, d) + cap('binderViewSide', 'side') + binderSideSvg(spec, d) + cap('binderViewFront', 'front') + binderFrontSvg(spec, d), spec.names.ja); for (const b of $('svgBody').querySelectorAll?.('[data-place-view]') || []) b.onclick = () => { placeBinderView(b.dataset.placeView); $('svgDialog').close(); }; } };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
   $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */

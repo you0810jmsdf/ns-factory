@@ -348,8 +348,28 @@ export function binderPlanSvg(spec, ringD = null) {
   parts.push(`<text x="${f(-L / 2)}" y="${f(-Math.max(W, D) / 2 - 4)}" font-size="3" font-family="sans-serif">${spec.names.ja} ${spec.holes.count}穴 / ring ${f(v.I)}mm / span ${f(spec.holes.span1toLastMm)}mm</text>`);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(-h / 2)} ${f(w)} ${f(h)}"><g id="plan">${parts.join('')}</g></svg>`;
 }
+/** 側面図の断面（台座の端から見て、リングの中心で切った形）：断面データのある台座は、背幅シミュレーションと同じ形（ビス穴金具部・台座のレンズ形・リングを包むサポータの帯・リングの輪）。
+ *  座標は SVG（mm・y 下向き・金具の下面が y=0 に近い側）。断面データが無い規格は null（今までの簡単な側面図を使う）。 */
+export function binderSideSection(spec, ringD = null) {
+  if (!spec.base?.sectionPoints) return null; /* 実測の断面（レンズ形の点）がある台座だけ。無い規格は今までの簡単な側面図 */
+  const base = binderBase(spec), size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), opt = spec.rings.options?.find(o => o.innerDiameterMm === size.inner || Math.round(ringSizeOf(null, o).inner * 10) / 10 === size.inner);
+  let points = null; try { points = binderSection(base); } catch { return null; }
+  const sim = spineSim({ ringD: size.inner, wireD: size.wire, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, bossDia: base.supporterDiameterMm ?? 0, bossT: base.supporterThicknessMm ?? SUPPORTER_T_MM, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: points, embedMm: opt?.embedDepthMm ?? spec.rings.embedMm ?? 0, supporterT: SUPPORTER_T_MM });
+  const sec = sim?.section; if (!sec?.polys) return null;
+  const flip = pts => pts.map(q => ({ x: q.x, y: -q.y }));
+  return { plate: flip(sec.polys.plate), boss: sec.polys.boss.map(flip), wrap: sec.supporterWrap?.poly?.length ? flip(sec.supporterWrap.poly) : [], ring: { cx: sec.ring.cx, cy: -sec.ring.cy, rOuter: sec.ring.rOuter, rInner: sec.ring.rInner }, ringTop: sim.ringTop };
+}
+/** 側面図の SVG：断面データのある台座は binderSideSection の形。 */
+function binderSideSectionSvg(spec, ringD, sec) {
+  const f = n => (Math.round(n * 100) / 100).toString(), pad = 8, pts = [...sec.plate, ...sec.boss.flat(), ...sec.wrap], r = sec.ring;
+  const minX = Math.min(...pts.map(q => q.x), r.cx - r.rOuter) - pad, maxX = Math.max(...pts.map(q => q.x), r.cx + r.rOuter) + pad, minY = Math.min(...pts.map(q => q.y), r.cy - r.rOuter) - pad - 6, maxY = Math.max(...pts.map(q => q.y)) + pad, w = maxX - minX, h = maxY - minY;
+  const poly = (ps, role) => `<polygon data-role="${role}" points="${ps.map(q => `${f(q.x)},${f(q.y)}`).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>`;
+  const I = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]).inner;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(minX)} ${f(minY)} ${f(w)} ${f(h)}"><g id="side">${sec.boss.map(q => poly(q, 'boss')).join('')}${poly(sec.plate, 'plate')}${sec.wrap.length ? poly(sec.wrap, 'supporter-wrap') : ''}<circle cx="${f(r.cx)}" cy="${f(r.cy)}" r="${f(r.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(r.cx)}" cy="${f(r.cy)}" r="${f(r.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(minX + 2)}" y="${f(minY + 4)}" font-size="2.5" font-family="sans-serif">ring ${f(I)}mm</text></g></svg>`;
+}
 /** 側面図（台座の端から）。リングは台座の上面に立つ丸い輪（内径＝リング径・太さ＝線径）。 */
 export function binderSideSvg(spec, ringD = null) {
+  const sideSec = binderSideSection(spec, ringD); if (sideSec) return binderSideSectionSvg(spec, ringD, sideSec);
   const v = binderViews(spec, ringD), { W, T, D, side } = v, f = n => (Math.round(n * 100) / 100).toString(), pad = 8, w = Math.max(W, D) + 2 * pad, embed = spec.rings.embedMm ?? 0, h = D - embed + Math.max(T, embed) + 2 * pad;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(-w / 2)} ${f(spec.base || spec.rings.embedMm ? -(D - (spec.rings.embedMm ?? 0)) - pad : -h + pad)} ${f(w)} ${f(h)}"><g id="side">${side.section ? `<polygon points="${side.section.map(p => f(p.x) + ',' + f(p.y)).join(' ')}" fill="none" stroke="#000" stroke-width="0.2"/>` : `<rect x="${f(side.plate.minX)}" y="0" width="${f(W)}" height="${f(T)}" fill="none" stroke="#000" stroke-width="0.2"/>`}<circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rOuter)}" fill="none" stroke="#000" stroke-width="0.2"/><circle cx="${f(side.ring.cx)}" cy="${f(side.ring.cy)}" r="${f(side.ring.rInner)}" fill="none" stroke="#000" stroke-width="0.2"/><text x="${f(-W / 2)}" y="${f(-D + (spec.rings.embedMm ?? 0) - 2)}" font-size="2.5" font-family="sans-serif">ring ${f(v.I)}mm</text></g></svg>`;
   const mech = side.parts.map(mechSvg).join(''), top = Math.max(0, ...side.parts.map(q => -q.box.minY)), lift = Math.max(0, top - (D - (spec.rings.embedMm ?? 0)));
@@ -472,4 +492,26 @@ export function binderSection(base) {
 export function coverLayout({ refillW, refillH, spineW, marginTB = 5, marginEdge = 5 }) {
   const r2 = v => Math.round(v * 100) / 100, panel = r2(refillW + marginEdge), W = r2(2 * panel + spineW), H = r2(refillH + 2 * marginTB);
   return { W, H, panel, spineW: r2(spineW), folds: [panel, r2(panel + spineW)], center: { x: r2(panel + spineW / 2), y: r2(H / 2) } };
+}
+
+/** 金具の図（平面図 plan・側面図 side・正面図 front）を、図面に置ける形（閉じた折れ線と円）で返す。座標は SVG と同じ（mm・y 下向き・図の中心が原点付近）。
+ *  側面図は、断面データのある台座なら断面（金具部・台座・サポータの帯・リングの輪）、無ければ簡単な側面図。 */
+export function binderViewDrawing(spec, ringD, which) {
+  if (!['plan', 'side', 'front'].includes(which)) throw new RangeError('view must be plan, side or front');
+  const v = binderViews(spec, ringD), out = [], box = b => ({ type: 'polyline', closed: true, points: [{ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, { x: b.maxX, y: b.maxY }, { x: b.minX, y: b.maxY }] });
+  const part = (q, i, outlines) => outlines?.[i] ? { type: 'polyline', closed: true, points: outlines[i].map(p => ({ x: p.x, y: p.y })) } : q.shape === 'circle' ? { type: 'circle', cx: (q.box.minX + q.box.maxX) / 2, cy: (q.box.minY + q.box.maxY) / 2, r: q.r ?? (q.box.maxX - q.box.minX) / 2 } : box(q.box);
+  if (which === 'plan') {
+    const base = binderBase(spec), r = Math.min(base.cornerRMm || 0, v.W / 2, v.L / 2), hl = v.L / 2, hw = v.W / 2, arc = (cx, cy, a0) => Array.from({ length: 7 }, (_, i) => ({ x: cx + r * Math.cos(a0 + i * Math.PI / 12), y: cy + r * Math.sin(a0 + i * Math.PI / 12) }));
+    out.push(r > 0 ? { type: 'polyline', closed: true, points: [...arc(hl - r, -hw + r, -Math.PI / 2), ...arc(hl - r, hw - r, 0), ...arc(-hl + r, hw - r, Math.PI / 2), ...arc(-hl + r, -hw + r, Math.PI)] } : box(v.plan.plate));
+    for (const rb of v.plan.rings) out.push(box(rb));
+    for (const rv of spec.rivets) out.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
+    v.plan.parts.forEach((q, i) => out.push(part(q, i, v.plan.partOutlines)));
+  } else if (which === 'front') {
+    out.push(box(v.front.plate)); for (const rb of v.front.rings) out.push(box(rb)); v.front.parts.forEach((q, i) => out.push(part(q, i)));
+  } else {
+    const sec = binderSideSection(spec, ringD);
+    if (sec) { for (const b of sec.boss) out.push({ type: 'polyline', closed: true, points: b }); out.push({ type: 'polyline', closed: true, points: sec.plate }); if (sec.wrap.length) out.push({ type: 'polyline', closed: true, points: sec.wrap }); out.push({ type: 'circle', cx: sec.ring.cx, cy: sec.ring.cy, r: sec.ring.rOuter }, { type: 'circle', cx: sec.ring.cx, cy: sec.ring.cy, r: sec.ring.rInner }); }
+    else { out.push(v.side.section ? { type: 'polyline', closed: true, points: v.side.section.map(p => ({ x: p.x, y: p.y })) } : box(v.side.plate)); out.push({ type: 'circle', cx: v.side.ring.cx, cy: v.side.ring.cy, r: v.side.ring.rOuter }, { type: 'circle', cx: v.side.ring.cx, cy: v.side.ring.cy, r: v.side.ring.rInner }); v.side.parts.forEach((q, i) => out.push(part(q, i))); }
+  }
+  return out;
 }
