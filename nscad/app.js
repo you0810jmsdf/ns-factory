@@ -766,8 +766,15 @@ function restyled(s, field, v) {
 }
 /** 全部同じ値ならその値、ばらばらなら存在しない値（欄が空白に見える）。 */
 function commonValue(list, get) { const v = get(list[0]); return list.every(s => get(s) === v) ? v : '__mixed'; }
+/** 選んだ線の上にある菱目（縫い穴）の数。その線を通る縫い線（パス）が無ければ null（欄を出さない）。複数の線で1本の縫い線をなすときは、選んだ線の上にある穴だけ数える。 */
+function holeCountOn(list) {
+  const ids = new Set(list.map(s => s.id)), paths = doc.paths.filter(p => p.shapeIds.some(id => ids.has(id))); if (!paths.length) return null;
+  const mine = list.filter(s => paths.some(p => p.shapeIds.includes(s.id)));
+  return doc.holes.filter(h => paths.some(p => p.id === h.pathId) && mine.some(s => paths.some(p => p.id === h.pathId && p.shapeIds.includes(s.id)) && distToShape(s, { x: h.x, y: h.y }) < 0.02)).length;
+}
 function refreshInfo() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
+  const holes = s ? holeCountOn([s]) : many.length ? holeCountOn(many) : null; $('l-holeCount').hidden = holes === null; if (holes !== null) $('info-holeCount').textContent = String(holes);   /* 選んだ線上の菱目の数（読み取り専用） */
   $('infoCard').style.display = s || many.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
   $('l-totalLength').hidden = !many.length; if (many.length) $('info-totalLength').textContent = totalLengthOf(many).toFixed(2); /* 2 個以上：全体の長さ（読み取り専用） */
   if (many.length) { /* 2 個以上：層・色・線の種類だけ。変えると選んだ全部に効く */
@@ -2971,10 +2978,21 @@ function updateUI() {
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
 }
+/** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
+function dedupeHoles() {
+  const cell = 0.1, seen = new Map(), keep = []; let removed = 0;
+  for (const h of doc.holes) {
+    const cx = Math.round(h.x / cell), cy = Math.round(h.y / cell); let dup = false;
+    for (let i = -1; i <= 1 && !dup; i++) for (let j = -1; j <= 1 && !dup; j++) for (const o of seen.get(`${h.toolId}|${cx + i}|${cy + j}`) || []) if (Math.hypot(o.x - h.x, o.y - h.y) < 0.05) { dup = true; break; }
+    if (dup) { removed++; continue; }
+    const key = `${h.toolId}|${cx}|${cy}`; if (!seen.has(key)) seen.set(key, []); seen.get(key).push(h); keep.push(h);
+  }
+  if (removed) doc.holes = keep; return removed;
+}
 function commit(fn) {
   ownPathsCache = null;
   const before = JSON.stringify(doc);
-  fn();
+  fn(); const dupHoles = dedupeHoles(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();

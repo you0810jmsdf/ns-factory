@@ -110,7 +110,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 08:08 · 69e6fe5</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 08:14 · 7baae72</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -147,6 +147,7 @@
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
 <label id="l-totalLength" hidden><span data-i18n="totalLength"></span><output id="info-totalLength"></output></label>
+<label id="l-holeCount" hidden><span data-i18n="holeCount"></span><output id="info-holeCount"></output></label>
 <label id="l-x"><span>X</span><input id="info-x" type="number" step="0.01"></label><label id="l-y"><span>Y</span><input id="info-y" type="number" step="0.01"></label>
 <label id="l-x1"><span>X1</span><input id="info-x1" type="number" step="0.01"></label><label id="l-y1"><span>Y1</span><input id="info-y1" type="number" step="0.01"></label>
 <label id="l-x2"><span>X2</span><input id="info-x2" type="number" step="0.01"></label><label id="l-y2"><span>Y2</span><input id="info-y2" type="number" step="0.01"></label>
@@ -555,8 +556,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=fb24d1a0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=48bef372","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=3ebc18a4","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=b7851d8f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=fb24d1a0"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=2ae889b4","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=48bef372","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=3ebc18a4","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=d0c26111","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=2ae889b4"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1618,6 +1619,8 @@ const MESSAGES = {
     "closeGapsNone": "選んだ線に、{max} mm 以内の隙間はありません。",
     "closeGapsNoSel": "先に線を選んでください。",
     "totalLength": "全体の長さ (mm)",
+    "holeCount": "この線上の菱目の数（個）",
+    "holeDedupe": "同じ位置に重なっていた菱目 {n} 個を、1つにまとめました。",
     "unroll": "直線に展開",
     "unrollTip": "選んだ線（曲線・円弧を含む）の全体の長さと同じ長さの、水平な直線を、右横に足します。元の線は残ります。",
     "unrolled": "選んだ {n} 個の線を、全体の長さ {len} mm の直線にして、右横に足しました（元の線は残してあります）。",
@@ -2835,6 +2838,8 @@ const MESSAGES = {
     "closeGapsNone": "No gap within {max} mm on the selected lines.",
     "closeGapsNoSel": "Select lines first.",
     "totalLength": "Total length (mm)",
+    "holeCount": "Stitch holes on this line (pcs)",
+    "holeDedupe": "Merged {n} stitch hole(s) that sat at exactly the same position.",
     "unroll": "Unroll",
     "unrollTip": "Adds a horizontal straight line, as long as the whole selected line (curves and arcs included), to the right. The original stays.",
     "unrolled": "Added a {len} mm straight line to the right for the {n} selected shapes (the originals are kept).",
@@ -20051,8 +20056,15 @@ function restyled(s, field, v) {
 }
 /** 全部同じ値ならその値、ばらばらなら存在しない値（欄が空白に見える）。 */
 function commonValue(list, get) { const v = get(list[0]); return list.every(s => get(s) === v) ? v : '__mixed'; }
+/** 選んだ線の上にある菱目（縫い穴）の数。その線を通る縫い線（パス）が無ければ null（欄を出さない）。複数の線で1本の縫い線をなすときは、選んだ線の上にある穴だけ数える。 */
+function holeCountOn(list) {
+  const ids = new Set(list.map(s => s.id)), paths = doc.paths.filter(p => p.shapeIds.some(id => ids.has(id))); if (!paths.length) return null;
+  const mine = list.filter(s => paths.some(p => p.shapeIds.includes(s.id)));
+  return doc.holes.filter(h => paths.some(p => p.id === h.pathId) && mine.some(s => paths.some(p => p.id === h.pathId && p.shapeIds.includes(s.id)) && distToShape(s, { x: h.x, y: h.y }) < 0.02)).length;
+}
 function refreshInfo() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
+  const holes = s ? holeCountOn([s]) : many.length ? holeCountOn(many) : null; $('l-holeCount').hidden = holes === null; if (holes !== null) $('info-holeCount').textContent = String(holes);   /* 選んだ線上の菱目の数（読み取り専用） */
   $('infoCard').style.display = s || many.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
   $('l-totalLength').hidden = !many.length; if (many.length) $('info-totalLength').textContent = totalLengthOf(many).toFixed(2); /* 2 個以上：全体の長さ（読み取り専用） */
   if (many.length) { /* 2 個以上：層・色・線の種類だけ。変えると選んだ全部に効く */
@@ -22256,10 +22268,21 @@ function updateUI() {
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
 }
+/** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
+function dedupeHoles() {
+  const cell = 0.1, seen = new Map(), keep = []; let removed = 0;
+  for (const h of doc.holes) {
+    const cx = Math.round(h.x / cell), cy = Math.round(h.y / cell); let dup = false;
+    for (let i = -1; i <= 1 && !dup; i++) for (let j = -1; j <= 1 && !dup; j++) for (const o of seen.get(`${h.toolId}|${cx + i}|${cy + j}`) || []) if (Math.hypot(o.x - h.x, o.y - h.y) < 0.05) { dup = true; break; }
+    if (dup) { removed++; continue; }
+    const key = `${h.toolId}|${cx}|${cy}`; if (!seen.has(key)) seen.set(key, []); seen.get(key).push(h); keep.push(h);
+  }
+  if (removed) doc.holes = keep; return removed;
+}
 function commit(fn) {
   ownPathsCache = null;
   const before = JSON.stringify(doc);
-  fn();
+  fn(); const dupHoles = dedupeHoles(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
