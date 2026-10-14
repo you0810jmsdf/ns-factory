@@ -517,10 +517,10 @@ export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR, shift
 /** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
  *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
  *  plan は foldDesignPlan の結果。折りは右・左の順（革を端からたどる順）。plan が失敗・pitch が正の数でないときは null。 */
-export function foldBendPitch(plan, pitch) {
+export function foldBendPitch(plan, pitch, plies = 2) {
   if (!plan || !plan.ok || !(typeof pitch === 'number' && Number.isFinite(pitch) && pitch > 0)) return null;
-  const h = plan.T / 2;
-  return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + h) / rc, inner: pitch * (rc - h) / rc, diff: pitch * plan.T / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
+  const h = plan.T / plies / 2;   /* 表（外側の革）・裏（内側の革）それぞれの中心線：貼り合わせた中心線から革1枚の厚みの半分ずれた所（面ではない・事業主指示 2026-10-15） */
+  return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + h) / rc, inner: pitch * (rc - h) / rc, diff: pitch * 2 * h / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
 }
 /** 表（折りの外側の革）・裏（内側の革）の展開：2枚貼り合わせの三つ折りを、1枚ずつの平らな型紙にする（事業主指示 2026-10-15）。
  *  平らな3枚の長さは同じ。丸折りの幅は、その革の中心（貼り合わせ線から半枚の厚みだけ外側・内側）の半径で伸縮する（表＝半径＋、裏＝半径−）。
