@@ -85,10 +85,10 @@
     "outerDiameterMm": 22,
     "wireDiameterMm": 1,
     "baseSpanMm": null,
-    "embedDepthMm": null,
+    "embedDepthMm": 6.25,
     "openGapMm": null,
     "confidence": "measured",
-    "sourceNote": "事業主指示（2026-10-13）：Micro5 の内径20・外径22（線径1）",
+    "sourceNote": "事業主指示（2026-10-13）：Micro5 の内径20・外径22（線径1）。リングの食い込み6.25は Mini6 通常リング（実測）と同じ値の仮置き（2026-10-14）",
     "wireSource": "measured"
    }
   ]
@@ -102,14 +102,14 @@
  },
  "rivets": [
   {
-   "xMm": -44,
+   "xMm": -28,
    "yMm": 0,
-   "dMm": 3.5
+   "dMm": 5
   },
   {
-   "xMm": 44,
+   "xMm": 28,
    "yMm": 0,
-   "dMm": 3.5
+   "dMm": 5
   }
  ],
  "mechanism": {
@@ -119,28 +119,28 @@
   "confidence": "estimated",
   "parts": [
    {
-    "xMm": 46,
+    "xMm": -52.5,
     "yMm": 0,
-    "widthMm": 8,
-    "lengthMm": 16,
+    "widthMm": 7,
+    "lengthMm": 20,
     "heightMm": 6,
     "diameterMm": null,
     "kind": "lever",
-    "note": "叩き台（推定）：実測で置き換える",
-    "cornerOuterRMm": null,
-    "cornerInnerRMm": null
+    "note": "Micro5 のレバー（仮）：Mini6 通常リング（実測）と同じ形（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ98の半分49＋3.5）。高さは叩き台（2026-10-14）",
+    "cornerOuterRMm": 5,
+    "cornerInnerRMm": 1
    },
    {
-    "xMm": -46,
+    "xMm": 52.5,
     "yMm": 0,
-    "widthMm": null,
-    "lengthMm": null,
-    "heightMm": 4,
-    "diameterMm": 7,
-    "kind": "button",
-    "note": "叩き台（推定）：実測で置き換える",
-    "cornerOuterRMm": null,
-    "cornerInnerRMm": null
+    "widthMm": 7,
+    "lengthMm": 20,
+    "heightMm": 6,
+    "diameterMm": null,
+    "kind": "lever",
+    "note": "Micro5 のレバー（仮）：Mini6 通常リング（実測）と同じ形（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ98の半分49＋3.5）。高さは叩き台（2026-10-14）",
+    "cornerOuterRMm": 5,
+    "cornerInnerRMm": 1
    }
   ]
  },
@@ -173,31 +173,222 @@
   "kind": null,
   "overrides": [
    {
-    "xMm": -44,
+    "xMm": -28,
     "yMm": 0,
     "widthMm": null,
     "lengthMm": null,
     "heightMm": null,
-    "diameterMm": 3.5,
-    "kind": "rivet",
-    "note": null,
+    "diameterMm": 5,
+    "kind": "screw",
+    "note": "Micro5 の取付穴（仮）：Mini6 通常リングと同じビス径5。位置は端のリングから10mm内側（左右28）と仮置き。実測で直す（2026-10-14）",
     "cornerOuterRMm": null,
     "cornerInnerRMm": null
    },
    {
-    "xMm": 44,
+    "xMm": 28,
     "yMm": 0,
     "widthMm": null,
     "lengthMm": null,
     "heightMm": null,
-    "diameterMm": 3.5,
-    "kind": "rivet",
-    "note": null,
+    "diameterMm": 5,
+    "kind": "screw",
+    "note": "Micro5 の取付穴（仮）：Mini6 通常リングと同じビス径5。位置は端のリングから10mm内側（左右28）と仮置き。実測で直す（2026-10-14）",
     "cornerOuterRMm": null,
     "cornerInnerRMm": null
    }
   ],
   "confidence": null
  },
- "sourceNote": null
+ "sourceNote": "Mini6 通常リング（実測・2026-10-12〜13）と同じ構造：レンズ形の断面（幅20・全高7.25・縁1.33）・角R2・リングアームの切り取り・リングサポータ2.4（径10）・両端にレバー。2026-10-14 事業主指示で、Micro5 も同じ構造にした。⚠ 寸法は仮：本体の長さ98＝リング間隔の合計76＋Mini6と同じ端の余白11×2・台座の幅20はMini6と同じ。実測できたら「寸法を直す」（リング間隔・リング径・台座幅）か CSV で直す。",
+ "base": {
+  "lengthMm": 98,
+  "sectionWidthMm": 20,
+  "crownHeightMm": 7.25,
+  "thicknessMm": 1.33,
+  "crownRadiusMm": null,
+  "edgeRadiusMm": null,
+  "cornerRMm": 2,
+  "trimRingArms": "yes",
+  "supporterThicknessMm": 2.4,
+  "supporterDiameterMm": 10,
+  "confidence": "estimated",
+  "sectionPoints": [
+   {
+    "x": -10,
+    "y": 2.25
+   },
+   {
+    "x": -8.818,
+    "y": 1.729
+   },
+   {
+    "x": -7.609,
+    "y": 1.275
+   },
+   {
+    "x": -6.377,
+    "y": 0.888
+   },
+   {
+    "x": -5.125,
+    "y": 0.569
+   },
+   {
+    "x": -3.858,
+    "y": 0.321
+   },
+   {
+    "x": -2.578,
+    "y": 0.143
+   },
+   {
+    "x": -1.291,
+    "y": 0.036
+   },
+   {
+    "x": 0,
+    "y": 0
+   },
+   {
+    "x": 1.291,
+    "y": 0.036
+   },
+   {
+    "x": 2.578,
+    "y": 0.143
+   },
+   {
+    "x": 3.858,
+    "y": 0.321
+   },
+   {
+    "x": 5.125,
+    "y": 0.569
+   },
+   {
+    "x": 6.377,
+    "y": 0.888
+   },
+   {
+    "x": 7.609,
+    "y": 1.275
+   },
+   {
+    "x": 8.818,
+    "y": 1.729
+   },
+   {
+    "x": 10,
+    "y": 2.25
+   },
+   {
+    "x": 10,
+    "y": 3.583
+   },
+   {
+    "x": 9.792,
+    "y": 3.766
+   },
+   {
+    "x": 8.878,
+    "y": 4.457
+   },
+   {
+    "x": 7.915,
+    "y": 5.077
+   },
+   {
+    "x": 6.909,
+    "y": 5.626
+   },
+   {
+    "x": 5.866,
+    "y": 6.098
+   },
+   {
+    "x": 5.451,
+    "y": 6.25
+   },
+   {
+    "x": 4.79,
+    "y": 6.492
+   },
+   {
+    "x": 3.688,
+    "y": 6.806
+   },
+   {
+    "x": 2.566,
+    "y": 7.037
+   },
+   {
+    "x": 1.43,
+    "y": 7.185
+   },
+   {
+    "x": 0.286,
+    "y": 7.248
+   },
+   {
+    "x": 0,
+    "y": 7.243
+   },
+   {
+    "x": -0.018,
+    "y": 7.242
+   },
+   {
+    "x": -0.859,
+    "y": 7.227
+   },
+   {
+    "x": -2,
+    "y": 7.121
+   },
+   {
+    "x": -3.129,
+    "y": 6.932
+   },
+   {
+    "x": -4.242,
+    "y": 6.659
+   },
+   {
+    "x": -4.787,
+    "y": 6.482
+   },
+   {
+    "x": -5.059,
+    "y": 6.393
+   },
+   {
+    "x": -5.331,
+    "y": 6.305
+   },
+   {
+    "x": -5.466,
+    "y": 6.25
+   },
+   {
+    "x": -6.392,
+    "y": 5.871
+   },
+   {
+    "x": -7.417,
+    "y": 5.361
+   },
+   {
+    "x": -8.402,
+    "y": 4.776
+   },
+   {
+    "x": -9.341,
+    "y": 4.12
+   },
+   {
+    "x": -10,
+    "y": 3.583
+   }
+  ]
+ }
 }

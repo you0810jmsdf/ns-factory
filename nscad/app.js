@@ -2438,7 +2438,7 @@ function initHardware() {
   for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', () => { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); }); $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
-  $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showSvgDialog(binderPlanSvg(spec, Number($('ringD').value)) + binderSideSvg(spec, Number($('ringD').value)) + binderFrontSvg(spec, Number($('ringD').value)), spec.names.ja); };
+  $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = k => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)}</div>`; showSvgDialog(cap('binderViewPlan') + binderPlanSvg(spec, d) + cap('binderViewSide') + binderSideSvg(spec, d) + cap('binderViewFront') + binderFrontSvg(spec, d), spec.names.ja); } };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
   $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
