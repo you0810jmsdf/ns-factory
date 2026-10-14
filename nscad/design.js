@@ -496,6 +496,20 @@ export function foldHoleMarks(path, ss, t, origin, r = 0.35) {
     for (const [side, k] of [['outer', -h], ['inner', h]]) { const c = foldDoc(origin, q.u + k * nu, q.v + k * nv); out.push({ type: 'circle', role: 'hole', side, s, cx: c.x, cy: c.y, r }); } }
   return out;
 }
+/** 三つ折りの設計：完成形の断面を、ボタンが3枚を通る縦線（ボタン線）を基準に決める。dL・dR＝ボタン線から左・右の折りの外側までの距離、cL・cR＝左・右の革の切り口までの距離、rinL・rinR＝左・右の折りの内側の半径、t＝革1枚の厚み（plies 枚貼り合わせ）。
+ *  折りの中心線の半径＝内側の半径＋合計の厚みの半分。折りの中心のボタン線からの距離＝外側までの距離−内側の半径−合計の厚み。平らは 1枚目＝cL＋右の折りの中心・2枚目＝両方の折りの中心の間・3枚目＝左の折りの中心＋cR。
+ *  返り値：{ ok, T, flats[3], bends[2]（右の折り・左の折りの順＝革を端からたどる順）, rc[2]（中心線の半径）, a[2]（右・左の折りの中心のボタン線からの距離）, length, warnings[] }。
+ *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
+export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR } = {}) {
+  const pos = [dL, dR, rinL, rinR];
+  if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
+  const T = t * plies, rc1 = rinR + T / 2, rc2 = rinL + T / 2, a1 = dR - rinR - T, a2 = dL - rinL - T, flats = [cL + a1, a1 + a2, a2 + cR];
+  if (!flats.every(v => v > FOLD_EPS)) return { ok: false, error: 'flatShort', flats };
+  const bends = [Math.PI * rc1, Math.PI * rc2], warnings = [], dx = cR - a1, v3 = 2 * (rc1 - rc2) - rc1;   /* v3＝3枚目の高さの、右の折りの中心からのずれ */
+  if (rc1 - rc2 < T / 2 - 1e-9) warnings.push('gapBottom');
+  if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
+  return { ok: true, T, flats, bends, rc: [rc1, rc2], a: [a1, a2], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
+}
 /** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
 export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
 /** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
