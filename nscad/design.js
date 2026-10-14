@@ -467,6 +467,19 @@ export function foldSectionSpec(shapes) {
   const flip = bends[0] < bends[1];
   return { ok: true, x0, x1, xs, flip, flats: flip ? [...flats].reverse() : flats, bends: flip ? [...bends].reverse() : bends };
 }
+/** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
+export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
+/** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
+ *  左の折りの内側は幅に合わせて伸び縮み・その右は同じ量だけ平行に動く（右の折りも同じ）。thickness＝貼り合わせた合計の厚み（半径がその半分以下だと内側の革が潰れるので失敗）。
+ *  返り値：{ ok, changed, map(x), xs[6]（新しい点線の位置）, deltas[2], total（革の長さの増減） }。失敗は { ok:false, error: 'badNumber' | 'tooSmall', min }。 */
+export function foldBendWarp(spec, radii, thickness = 0) {
+  if (!Array.isArray(radii) || radii.length !== 2 || !radii.every(r => typeof r === 'number' && Number.isFinite(r) && r > 0)) return { ok: false, error: 'badNumber' };
+  const min = thickness / 2 + 0.1; if (radii.some(r => r < min)) return { ok: false, error: 'tooSmall', min };
+  const xs = spec.xs, oldW = [xs[2] - xs[0], xs[5] - xs[3]], newW = radii.map(r => Math.PI * r), d = [newW[0] - oldW[0], newW[1] - oldW[1]];
+  const nx = [xs[0], xs[0] + newW[0] / 2, xs[0] + newW[0], xs[3] + d[0], xs[3] + d[0] + newW[1] / 2, xs[3] + d[0] + newW[1]];
+  const map = x => x <= xs[0] ? x : x <= xs[2] ? xs[0] + (x - xs[0]) * newW[0] / oldW[0] : x <= xs[3] ? x + d[0] : x <= xs[5] ? nx[3] + (x - xs[3]) * newW[1] / oldW[1] : x + d[0] + d[1];
+  return { ok: true, changed: Math.abs(d[0]) + Math.abs(d[1]) > 1e-9, map, xs: nx, deltas: d, total: d[0] + d[1] };
+}
 /** 三つ折りの縦の基準線（点線6本）を引く位置を決める。紙の左端から「平ら1・丸折り1・平ら2・丸折り2」の幅（mm・丸折りは弧の長さ）を並べ、3枚目の平らは紙の右端までの残り。
  *  丸折りの両端と真ん中（折りの頂点）に1本ずつ＝foldSectionSpec が読む形。点線は紙の高さいっぱい。
  *  返り値：{ ok, xs[6], flats[3], bends[2], lines[], replaceIds[] }（replaceIds＝すでにある紙の高さいっぱいの縦の点線・置き換える）。失敗は { ok:false, error: 'noPanel' | 'badNumber' | 'tooWide' }。 */
