@@ -262,6 +262,23 @@ export function closedBinderTop(p = {}) {
   if (holeD > 0) shapes.push(rect(holeX - holeD / 2, mid - stackT / 2, holeX + holeD / 2, mid + stackT / 2, 'refill-hole'));
   return { shapes, thickness: Math.round(T * 100) / 100, coverW: Math.round(coverW * 100) / 100, ringX: Math.round(ringX * 100) / 100, holeX: Math.round(holeX * 100) / 100, refillLeft: Math.round(refillLeft * 100) / 100, holeD, xc: Math.round(xc * 100) / 100, plateLeft: Math.round(plateLeft * 100) / 100, ringFits: stackT <= p.ringD, sim };
 }
+/** 三つ折りの断面に置く、リング・台座・リフィルの断面（革の内側の面に立てる）。座標は革の面からの高さ h（革の内側の面が 0・内側へ向かって＋）と、面に沿った横 w（台座の幅の中心が 0）。
+ *  closedBinderTop と同じ入力 p（spineSim の引数＋{stackT, refillW, holeEdge, holeD, plateW}）。リフィルは、リングの針金が通る位置（遠い側の針金）から holeEdge のところを端にして h の向きに refillW、横に stackT の厚み。
+ *  穴の位置 refill-hole は、穴の両端の2本（点線にする線）。戻り値 {shapes:[{type:'polyline',role,points:[{h,w}]}|{type:'circle',role,h,w,r}|{type:'line',role,h1,w1,h2,w2}], ringH, holeH, ringFits}。不正な数値は null。 */
+export function foldRingParts(p = {}) {
+  const sim = spineSim(p); if (!sim) return null;
+  const { plateT = 2, supporterT = 0 } = p, bossT = p.bossT ?? supporterT, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, holeD = p.holeD ?? 5, plateW = Math.min(p.plateW ?? 24, sim.innerW);
+  if (![stackT, refillW, holeEdge, holeD, plateW].every(v => Number.isFinite(v) && v >= 0) || !(stackT > 0) || refillW <= holeEdge) return null;
+  const sec = sim.section, h0 = sec.polys ? sec.lift : 0, H = y => h0 + y - sec.lift, shapes = [];   /* 断面の高さ y → 革の面からの高さ（closedBinderTop の台座の位置と同じ） */
+  const poly = (pts, role) => ({ type: 'polyline', closed: true, role, points: pts.map(q => ({ h: H(q.y), w: q.x })) }), rect = (h1, w1, h2, w2, role) => ({ type: 'polyline', closed: true, role, points: [{ h: h1, w: w1 }, { h: h2, w: w1 }, { h: h2, w: w2 }, { h: h1, w: w2 }] });
+  if (sec.supporterWrap?.poly.length) shapes.push(poly(sec.supporterWrap.poly, 'supporter'));
+  if (sec.polys) { for (const q of sec.polys.boss) shapes.push(poly(q, 'boss')); shapes.push(poly(sec.polys.plate, 'plate')); }
+  else { if (bossT > 0) shapes.push(rect(0, -plateW / 2, bossT, plateW / 2, 'boss')); shapes.push(rect(bossT, -plateW / 2, bossT + plateT, plateW / 2, 'plate')); }
+  const ringH = H(sec.ring.cy), holeH = ringH + (sim.outerRingD + p.ringD) / 4, left = holeH - holeEdge, tip = left + refillW;
+  shapes.push({ type: 'circle', role: 'ring-outer', h: ringH, w: 0, r: sim.outerRingD / 2 }, { type: 'circle', role: 'ring-inner', h: ringH, w: 0, r: p.ringD / 2 }, rect(left, -stackT / 2, tip, stackT / 2, 'refills'));
+  if (holeD > 0) for (const d of [-1, 1]) shapes.push({ type: 'line', role: 'refill-hole', h1: holeH + d * holeD / 2, w1: -stackT / 2, h2: holeH + d * holeD / 2, w2: stackT / 2 });
+  return { shapes, ringH, holeH, refillLeft: left, refillTip: tip, ringFits: stackT <= p.ringD };
+}
 /** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
  *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
  *  リフィルの穴は、正面に赤い丸（直径 holeD・リングと同じ高さ）で描き、天には束の抜けとして描く。戻り値 {shapes, width, height, views:{front,top,side}, thickness, coverW}。不正な数値は null。 */
