@@ -510,6 +510,14 @@ export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR } = {}
   if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
   return { ok: true, T, flats, bends, rc: [rc1, rc2], a: [a1, a2], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
+/** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
+ *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
+ *  plan は foldDesignPlan の結果。折りは右・左の順（革を端からたどる順）。plan が失敗・pitch が正の数でないときは null。 */
+export function foldBendPitch(plan, pitch) {
+  if (!plan || !plan.ok || !(typeof pitch === 'number' && Number.isFinite(pitch) && pitch > 0)) return null;
+  const h = plan.T / 2;
+  return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + h) / rc, inner: pitch * (rc - h) / rc, diff: pitch * plan.T / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
+}
 /** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
 export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
 /** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
