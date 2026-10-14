@@ -44,7 +44,7 @@ import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
-import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, keyTarget } from './shortcuts.js';
+import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
 import { HELP_EN } from './help/en.js';
 
@@ -2409,6 +2409,7 @@ function initToolKeys() {
   const put = (b, key) => { if (!b || !key || b.querySelector?.('.key')) return; const k = document.createElement('kbd'); k.className = 'key'; k.textContent = key.replace('Shift+', '⇧'); b.appendChild(k); };
   for (const b of document.querySelectorAll('button[data-tool]') || []) put(b, TOOL_KEYS[b.dataset.tool]);
   for (const [id, key] of Object.entries(ACTION_KEYS)) put($(id), key);
+  for (const [id, key] of Object.entries(TOGGLE_KEYS)) { const label = $(id)?.closest?.('label'); if (label && !label.querySelector?.('.key')) put(label, key); }   /* ヘッダのグリッド・スナップの文字の横にも */
 }
 function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; }
 function initPhrases() {
@@ -3430,7 +3431,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'bezier') { bezierClick(cursor); return; }
   if (mode === 'ruler') {
     if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
-    else { ruler = { a: stage.a, b: cursor }; stage = null; $('hint').textContent = rulerText(ruler); }
+    else { ruler = { a: stage.a, b: cursor }; const a = stage.a; stage = null; $('hint').textContent = rulerText(ruler); if (distance(a, cursor) > 1e-8) addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); } /* 始点と終点のクリックで、距離の表示と、寸法の図形ができる */
     draw(); return;
   }
   if (mode === 'dimension') { if (stage?.kind !== 'dim') stage = { kind: 'dim', a: cursor }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); stage = null; } lastPoint = cursor; draw(); return; }
@@ -3656,7 +3657,7 @@ window.addEventListener('keydown', e => {
   else if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
   const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
-  if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
+  if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
