@@ -30,6 +30,7 @@
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
     #rulerBar, #rectBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; max-height: calc(100% - 48px); overflow-y: auto; } .ctx button { height: 30px; text-align: left; }
+    aside button { position: relative; } kbd.key { margin-left: auto; font: 10px/1 ui-monospace, Consolas, monospace; color: #8a7a50; border: 1px solid #3a3a2e; border-radius: 3px; padding: 2px 4px; background: #101010; }
     .ctx-title { font-size: 11px; color: #8a7a50; padding: 6px 4px 2px; } .ctx-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; min-width: 330px; } .ctx-cards button { height: 28px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
@@ -109,7 +110,7 @@
     }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-14 17:46 · 4e223c7</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-14 17:55 · 64aaf64</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -130,8 +131,7 @@
 <div class="group" data-i18n="editing"></div>
 <button data-tool="fillet"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10a6 6 0 0 1 6-6h10"/></svg><span data-i18n="fillet"></span></button>
 <button data-tool="chamfer"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20v-9l7-7h9"/></svg><span data-i18n="chamfer"></span></button>
-<button data-tool="offset"><svg class="ic" viewBox="0 0 24 24"><path d="M5 18V6h12M9 20V10h10"/></svg><span data-i18n="offset"></span></button><button data-tool="detour"><svg class="ic" viewBox="0 0 24 24"><path d="M2 19h5c1.5 0 1.5-11 5-11s3.5 11 5 11h5"/></svg><span data-i18n="detour"></span></button>
-<button data-tool="trim"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4l16 16M4 20L20 4" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="2"/></svg><span data-i18n="trim"></span></button>
+<button data-tool="offset"><svg class="ic" viewBox="0 0 24 24"><path d="M5 18V6h12M9 20V10h10"/></svg><span data-i18n="offset"></span></button><button data-tool="trim"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4l16 16M4 20L20 4" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="2"/></svg><span data-i18n="trim"></span></button>
 <button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button>
 <button data-tool="fold"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20L20 4" stroke-dasharray="3 2"/><path d="M4 4l8 8-8 8"/></svg><span data-i18n="fold"></span></button>
 <button data-tool="koma"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10h12v10M6 7l3 3-3 3M15 13l3 3-3 3"/></svg><span data-i18n="koma"></span></button>
@@ -554,8 +554,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=1b584ee8","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=1f02d6c7","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=af9f8ae6","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=84fb41ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=8bd69fb0","./help/en.js":"./help/en.js?v=d4ee2af7","./help/ja.js":"./help/ja.js?v=aceb4a37","./i18n.js":"./i18n.js?v=f9ce412f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=3a7abe72","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=1b584ee8"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=e4ac063e","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=1f02d6c7","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=af9f8ae6","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=84fb41ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=8bd69fb0","./help/en.js":"./help/en.js?v=d4ee2af7","./help/ja.js":"./help/ja.js?v=aceb4a37","./i18n.js":"./i18n.js?v=49b7678b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=7c040987","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=e4ac063e"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1588,7 +1588,7 @@ const MESSAGES = {
     "arcCw": "時計回り",
     "arcCcw": "反時計回り",
     "arcCollinear": "3点が一直線上にあり円弧になりません。通過点か終点をずらしてください。",
-    "fillet": "丸め (R)",
+    "fillet": "丸め",
     "chamferSize": "C 面の寸法 (mm)",
     "hint.fillet": "2本の線、または折れ線をクリックして半径を指定します。折れ線は角の近くでその角だけ、辺の途中で全部の角を丸めます。",
     "stitch": "目打ち",
@@ -1776,7 +1776,7 @@ const MESSAGES = {
     "arc": "円弧",
     "bezier": "ベジェ",
     "polyline": "折れ線",
-    "chamfer": "面取り (C)",
+    "chamfer": "面取り",
     "offset": "オフセット",
     "delete": "削除",
     "copy": "コピー",
@@ -2690,7 +2690,7 @@ const MESSAGES = {
     "arcCw": "Clockwise",
     "arcCcw": "Counterclockwise",
     "arcCollinear": "The 3 points are collinear, so no arc fits. Move the middle or end point.",
-    "fillet": "Fillet (R)",
+    "fillet": "Fillet",
     "chamferSize": "Chamfer size (mm)",
     "hint.fillet": "Click two connected lines or a polyline and enter a radius. On a polyline, click near a corner for that corner only, or along an edge for every corner.",
     "stitch": "Stitching",
@@ -2878,7 +2878,7 @@ const MESSAGES = {
     "arc": "Arc",
     "bezier": "Bézier",
     "polyline": "Polyline",
-    "chamfer": "Chamfer (C)",
+    "chamfer": "Chamfer",
     "offset": "Offset",
     "delete": "Delete",
     "copy": "Copy",
@@ -3693,8 +3693,24 @@ function arrowNudge(e) {
   const step = e.shiftKey ? 10 : e.ctrlKey ? 0.1 : 1;
   return { dx: dir[0] * step, dy: dir[1] * step };
 }
+/** 左メニューのツールのキー：英語名の頭文字（重なるものは Shift＋文字）。Ctrl・Alt・⌘ つきは使わない（Windows・ブラウザの標準と重ならない）。 */
+const TOOL_KEYS = { select: 'S', line: 'L', rect: 'R', circle: 'C', arc: 'A', bezier: 'B', path: 'P', text: 'T', dimension: 'D', ruler: 'Shift+R', fillet: 'F', chamfer: 'Shift+C', offset: 'O', trim: 'Shift+T', mirror: 'M', fold: 'Shift+F', koma: 'K', stitch: 'Shift+S', mark: 'Shift+M', patchfill: 'Shift+P' };
+/** 左メニュー「選択中」の操作のキー（キー → 押すボタンの id）。コピー・グループ・削除は今までのキー（Ctrl+D・Ctrl+G・Delete）。 */
+const ACTION_KEYS = { mirrorX: 'H', mirrorY: 'V', rotate: 'Q', toPath: 'N', unroll: 'X' };
+/** 修飾キー無し（Shift だけ可）の文字キーを「S」「Shift+S」の形にする。物理キーの位置（e.code）で見るので、日本語入力のままでも同じ。 */
+function plainKey(e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return null;
+  const m = /^Key([A-Z])$/.exec(e.code || ''); return m ? (e.shiftKey ? 'Shift+' : '') + m[1] : null;
+}
+/** キーに割り当てた操作：{ tool }（ツール切替）／{ action }（押すボタンの id）／null。 */
+function keyTarget(e) {
+  const k = plainKey(e); if (!k) return null;
+  for (const [tool, key] of Object.entries(TOOL_KEYS)) if (key === k) return { tool };
+  for (const [action, key] of Object.entries(ACTION_KEYS)) if (key === k) return { action };
+  return null;
+}
 
-return {isShortcut, isUndo, isRedo, isCopy, isSelectAll, isDelete, arrowNudge};
+return {isShortcut, isUndo, isRedo, isCopy, isSelectAll, isDelete, arrowNudge, TOOL_KEYS, ACTION_KEYS, plainKey, keyTarget};
 })();
 __mods['formats'] = (function(){
 // 書き出し形式（SVG・DXF R12）・分割印刷・印刷補正。純粋関数のみ（DOM 禁止）。
@@ -18829,7 +18845,7 @@ const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
 const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
-const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge } = __mods['shortcuts'];
+const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, keyTarget } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
 const { HELP_EN } = __mods['help/en'];
 if (globalThis.__LC_BOOTED) { /* file 互換ブロックが起動済み */ } else {
@@ -21188,6 +21204,12 @@ function applyFoldSection() {
   commit(() => { for (const e of edits) { const m = doc.shapes.find(s => s.id === e.id), ds = e.s - m.s0; for (const sid of m.srcIds || []) { const c = doc.shapes.find(s => s.id === sid && s.type === 'circle'); if (c) { c.cx += e.meta.flip ? -ds : ds; moved++; } } Object.assign(m, foldSectionMark(e.path, e.s, e.meta.t, e.origin), { s0: e.s }); } });
   $('hint').textContent = t('foldSecApplied', { n: moved }) + (far ? ' ' + t('foldSecFar', { k: far }) : ''); rebuildSnaps(); draw();
 }
+/** 左メニューの各ボタンの横に、キーを小さく並べる（ツール・選択中の操作）。 */
+function initToolKeys() {
+  const put = (b, key) => { if (!b || !key || b.querySelector?.('.key')) return; const k = document.createElement('kbd'); k.className = 'key'; k.textContent = key.replace('Shift+', '⇧'); b.appendChild(k); };
+  for (const b of document.querySelectorAll('button[data-tool]') || []) put(b, TOOL_KEYS[b.dataset.tool]);
+  for (const [id, key] of Object.entries(ACTION_KEYS)) put($(id), key);
+}
 function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; }
 function initPhrases() {
   loadPhrases();
@@ -22433,6 +22455,8 @@ window.addEventListener('keydown', e => {
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
+  const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
+  if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
@@ -22458,7 +22482,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initFoldSection(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initFoldSection(); initToolKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang);
