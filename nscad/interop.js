@@ -9,7 +9,7 @@ export const LC_LAYER_MAP = { LineType_01: 'pattern', LineType_02: 'hardware', L
 export const LC_EXPORT_MAP = { pattern: 'LineType_01', hardware: 'LineType_02', guide: 'LineType_03' };
 /** Beam Studio 用 SVG：カット線＝黒（kerf/2 外側へ）、縫い穴＝赤の小円、刻印（目印レイヤー・文字）＝青、ガイドは含めない。 */
 export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = ['pattern'], engraveLayerIds = [], strokeMm = 0.1 } = {}) {   /* 彫刻は Beam Studio 側で足す（N's CAD からは出さない）。金具の穴（hwHole）は切る */
-  const visible = s => doc.layers.find(l => l.id === s.layer)?.visible;
+  const visible = s => doc.layers.find(l => l.id === s.layer)?.visible && !s.holeLink;   /* 見えない補助の線（holeLink）は書き出さない */
   const cut = doc.shapes.filter(s => visible(s) && (cutLayerIds.includes(s.layer) || (s.hwHole && s.layer === 'hardware')) && !['text', 'dimension', 'fold'].includes(s.type));
   const engrave = doc.shapes.filter(s => visible(s) && (engraveLayerIds.includes(s.layer) || (s.type === 'text' && !cutLayerIds.includes(s.layer) && s.layer !== 'guide' && s.layer !== 'hardware')) && s.type !== 'fold' && s.type !== 'dimension');
   const holes = holesOnCut(doc, cut, includeHoles);

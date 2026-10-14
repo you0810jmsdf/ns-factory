@@ -184,7 +184,7 @@ export function viewsToSvg(faces3d, { scale = 1, gapMm = 20, labels = { front: '
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(maxX + 5)}mm" height="${f(maxY + 5)}mm" viewBox="-2 -5 ${f(maxX + 5)} ${f(maxY + 5)}">${groups.join('')}</svg>`;
 }
 /** 文書の bbox から初期カメラを作る。 */
-export function defaultCamera(doc) { const shapes = doc.shapes.filter(s => s.type !== 'fold'); const b = shapes.length ? shapes.map(bboxOf).reduce((a, c) => ({ minX: Math.min(a.minX, c.minX), minY: Math.min(a.minY, c.minY), maxX: Math.max(a.maxX, c.maxX), maxY: Math.max(a.maxY, c.maxY) })) : { minX: 0, minY: 0, maxX: 100, maxY: 100 }; const size = Math.max(b.maxX - b.minX, b.maxY - b.minY, 10); return { yaw: 30, pitch: -35, distance: size * 2.5, zoom: 2, target: v3((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, 0), ortho: false }; }
+export function defaultCamera(doc) { const shapes = doc.shapes.filter(s => s.type !== 'fold' && !s.holeLink); const b = shapes.length ? shapes.map(bboxOf).reduce((a, c) => ({ minX: Math.min(a.minX, c.minX), minY: Math.min(a.minY, c.minY), maxX: Math.max(a.maxX, c.maxX), maxY: Math.max(a.maxY, c.maxY) })) : { minX: 0, minY: 0, maxX: 100, maxY: 100 }; const size = Math.max(b.maxX - b.minX, b.maxY - b.minY, 10); return { yaw: 30, pitch: -35, distance: size * 2.5, zoom: 2, target: v3((b.minX + b.maxX) / 2, (b.minY + b.maxY) / 2, 0), ortho: false }; }
 /** 折り線の履歴がある板を 1 枚の平面に展開する（applyFolds の逆）。各板は元の 2D 多角形へ戻り、折り線を共有する辺はそのまま、共有しない縁には縫い代 allowanceMm を外側へ足す。
  *  戻り値 {pieces:[{id, points, partId}], folds:[{x1,y1,x2,y2,angleDeg}], allowanceEdges}。 */
 export function unfold(panels, folds, { allowanceMm = 0 } = {}) {
