@@ -530,7 +530,9 @@ export function foldBendPitch(plan, pitch) {
 export function foldUnfoldPlan(p, { pitch, margin, buttons = [], plies = 2 } = {}) {
   if (!p || !p.ok || !(typeof pitch === 'number' && pitch > 0) || !(typeof margin === 'number' && margin >= 0) || !(margin * 2 < p.length)) return null;
   const [f1, f2] = p.flats, [b1, b2] = p.bends, xsBase = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
-  const usable = p.length - 2 * margin, n = Math.max(1, Math.round(usable / pitch)), step = usable / n, base = Array.from({ length: n + 1 }, (_, i) => margin + i * step), EPS = 1e-9;
+  /* 菱目は、実際の目打ちのピッチ pitch のまま（平らな所は pitch ちょうど）。端の余り（行の長さを pitch で割った余り）は両端へ等分する。曲げ部は、革の中心線で pitch の間隔にした穴を、各革の半径で割り当てる（表は広く・裏は狭く・平均は pitch）。 */
+  const usable = p.length - 2 * margin, n = Math.floor(usable / pitch + 1e-9), step = pitch, lead = margin + (usable - n * pitch) / 2, EPS = 1e-9; if (n < 1) return null;
+  const base = Array.from({ length: n + 1 }, (_, i) => lead + i * step);
   const bands = [[xsBase[0], xsBase[2]], [xsBase[3], xsBase[5]]];
   return [['outer', 1], ['inner', -1]].map(([key, sign]) => {
     const delta = sign * (p.T / plies) / 2, w = foldBendWarp({ xs: xsBase }, [p.rc[0] + delta, p.rc[1] + delta], 0); if (!w.ok) return null;
