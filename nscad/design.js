@@ -445,6 +445,12 @@ function dashedVertical(s) {
   return null;
 }
 const dashedVerticalX = s => dashedVertical(s)?.x ?? null;
+/** 紙の外形の範囲 { x0, x1, y0, y1 }。縦の点線・文字・寸法・折り線・画像・縫い穴の付属は紙に数えない。幅がなければ null。 */
+function foldPanelBox(shapes) {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const s of shapes) { if (dashedVerticalX(s) != null || ['text', 'dimension', 'fold', 'image'].includes(s.type) || s.holeLink) continue; let b = null; try { b = bboxOf(s); } catch { b = null; } if (!b || ![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; x0 = Math.min(x0, b.minX); x1 = Math.max(x1, b.maxX); y0 = Math.min(y0, b.minY); y1 = Math.max(y1, b.maxY); }
+  return x1 > x0 ? { x0, x1, y0, y1 } : null;
+}
 /** 図形から三つ折りの形を読む：縦の点線が6本（左3本＋右3本・外側2本の間＝丸く折るところ・真ん中＝折りの頂点）。
  *  返り値：{ ok, x0, x1（紙の左右の端）, flats[3]・bends[2]（紙の左から右への長さ）, xs（点線の x・小さい順）, flip }。
  *  左の折りより右の折りが長いときは、右から数える（flip）：内側へ巻く3枚が重ならないよう、先の折りを大きくするため。flats・bends は数える順。 */
@@ -453,14 +459,25 @@ export function foldSectionSpec(shapes) {
   let xs = [...byX.keys()].sort((a, b) => a - b);
   if (xs.length > 6) { const longest = Math.max(...byX.values()); xs = xs.filter(x => byX.get(x) >= 0.95 * longest); }   /* 縫い目の点線の縦の辺など、短い縦線は折り線ではない：紙の高さいっぱいの長い線だけを使う */
   if (xs.length !== 6) return { ok: false, error: 'need6', count: byX.size };
-  let x0 = Infinity, x1 = -Infinity;
-  for (const s of shapes) { if (dashedVerticalX(s) != null || ['text', 'dimension', 'fold', 'image'].includes(s.type) || s.holeLink) continue; let b = null; try { b = bboxOf(s); } catch { b = null; } if (!b || ![b.minX, b.maxX].every(Number.isFinite)) continue; x0 = Math.min(x0, b.minX); x1 = Math.max(x1, b.maxX); }
-  if (!(x1 > x0)) return { ok: false, error: 'noPanel' };
+  const box = foldPanelBox(shapes); if (!box) return { ok: false, error: 'noPanel' };
+  const { x0, x1 } = box;
   if (x0 > xs[0] + FOLD_EPS || x1 < xs[5] - FOLD_EPS) return { ok: false, error: 'outside' };
   const flats = [xs[0] - x0, xs[3] - xs[2], x1 - xs[5]], bends = [xs[2] - xs[0], xs[5] - xs[3]];
   if (!(bends[0] > FOLD_EPS && bends[1] > FOLD_EPS)) return { ok: false, error: 'noBand' };
   const flip = bends[0] < bends[1];
   return { ok: true, x0, x1, xs, flip, flats: flip ? [...flats].reverse() : flats, bends: flip ? [...bends].reverse() : bends };
+}
+/** 三つ折りの縦の基準線（点線6本）を引く位置を決める。紙の左端から「平ら1・丸折り1・平ら2・丸折り2」の幅（mm・丸折りは弧の長さ）を並べ、3枚目の平らは紙の右端までの残り。
+ *  丸折りの両端と真ん中（折りの頂点）に1本ずつ＝foldSectionSpec が読む形。点線は紙の高さいっぱい。
+ *  返り値：{ ok, xs[6], flats[3], bends[2], lines[], replaceIds[] }（replaceIds＝すでにある紙の高さいっぱいの縦の点線・置き換える）。失敗は { ok:false, error: 'noPanel' | 'badNumber' | 'tooWide' }。 */
+export function foldBaselines(shapes, { flat1, bend1, flat2, bend2 } = {}) {
+  const box = foldPanelBox(shapes || []); if (!box) return { ok: false, error: 'noPanel' };
+  const v = [flat1, bend1, flat2, bend2]; if (!v.every(n => typeof n === 'number' && Number.isFinite(n) && n > 0)) return { ok: false, error: 'badNumber' };
+  const x = [box.x0 + flat1]; x.push(x[0] + bend1 / 2, x[0] + bend1); x.push(x[2] + flat2); x.push(x[3] + bend2 / 2, x[3] + bend2);
+  const flat3 = box.x1 - x[5]; if (!(flat3 > FOLD_EPS)) return { ok: false, error: 'tooWide', width: box.x1 - box.x0 };
+  const height = box.y1 - box.y0, replaceIds = shapes.filter(s => { const d = dashedVertical(s); return d && d.len >= 0.95 * height; }).map(s => s.id);
+  const lines = x.map(px => ({ type: 'line', layer: 'guide', lineStyle: 'dashed', x1: px, y1: box.y0, x2: px, y2: box.y1 }));
+  return { ok: true, xs: x, flats: [flat1, flat2, flat3], bends: [bend1, bend2], lines, replaceIds };
 }
 /** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 半円 b1（弧の長さ）→ 平ら f2 → 半円 b2 → 平ら f3。折りはどちらも反時計回り（内側へ巻く＝C型）。
  *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, s0, s1 }], length, flats, bends }。s は始点からの長さ（革の中心に沿った長さ）。 */

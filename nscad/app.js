@@ -42,7 +42,7 @@ import { track } from './analytics.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2411,7 +2411,20 @@ function initToolKeys() {
   for (const [id, key] of Object.entries(ACTION_KEYS)) put($(id), key);
   for (const [id, key] of Object.entries(TOGGLE_KEYS)) { const label = $(id)?.closest?.('label'); if (label && !label.querySelector?.('.key')) put(label, key); }   /* ヘッダのグリッド・スナップの文字の横にも */
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; }
+/** 三つ折りの縦の基準線（点線6本）を、入れた幅から引く。前にある紙の高さいっぱいの縦の点線は置き換える（12本にならない）。 */
+function makeFoldBaselines() {
+  const picked = (selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible)).filter(s => !s.foldSec && !s.holeLink);
+  const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
+  const r = foldBaselines(picked, { flat1: num('foldBaseF1'), bend1: num('foldBaseB1'), flat2: num('foldBaseF2'), bend2: num('foldBaseB2') });
+  if (!r.ok) { $('hint').textContent = t('foldBaseErr_' + r.error, { w: r.width == null ? '' : r.width.toFixed(2) }); return; }
+  commit(() => {
+    const drop = new Set(r.replaceIds), layer = ensureLayer(doc, 'guide'); doc.shapes = doc.shapes.filter(s => !drop.has(s.id));
+    const ids = []; for (const ln of r.lines) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...ln, id, layer }); ids.push(id); }
+    if (selected.size) selected = new Set([...selected].filter(id => !drop.has(id)).concat(ids));   /* 紙を選んで引いたときは、紙も残したまま点線を足す（続けて断面図を作れる）。何も選んでいなければ選ばない */
+  });
+  $('hint').textContent = t('foldBaseDone', { f3: r.flats[2].toFixed(2) }); rebuildSnaps(); draw();
+}
+function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
