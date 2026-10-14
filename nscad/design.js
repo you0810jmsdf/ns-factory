@@ -522,6 +522,25 @@ export function foldBendPitch(plan, pitch) {
   const h = plan.T / 2;
   return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + h) / rc, inner: pitch * (rc - h) / rc, diff: pitch * plan.T / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
 }
+/** 表（折りの外側の革）・裏（内側の革）の展開：2枚貼り合わせの三つ折りを、1枚ずつの平らな型紙にする（事業主指示 2026-10-15）。
+ *  平らな3枚の長さは同じ。丸折りの幅は、その革の中心（貼り合わせ線から半枚の厚みだけ外側・内側）の半径で伸縮する（表＝半径＋、裏＝半径−）。
+ *  菱目は、貼り合わせ線（革の中心線＝基準の平らな長さ）に沿って、余白 margin の内側にピッチ pitch を均等に調整して並べ（同じ個数・同じ位置）、それぞれの革の長さに割り当て直す。
+ *  平らな部分の間隔は表も裏も同じで、曲げ部の間隔だけが革ごとに違う（間隔＝基準の間隔×(中心線の半径＋ずれ)÷中心線の半径）。buttons＝貼り合わせ線に沿ったボタンの位置の配列（任意・割り当て直す）。
+ *  返り値：[{ key:'outer'|'inner', delta, length, xs[6], holes[]（革の左端からの位置）, flatStep, rowFrom, rowTo, buttons[], bends:[{ side:'right'|'left', count, firstIndex, pitch, flat }] }]（表・裏の順）。入力が不正なときは null。 */
+export function foldUnfoldPlan(p, { pitch, margin, buttons = [], plies = 2 } = {}) {
+  if (!p || !p.ok || !(typeof pitch === 'number' && pitch > 0) || !(typeof margin === 'number' && margin >= 0) || !(margin * 2 < p.length)) return null;
+  const [f1, f2] = p.flats, [b1, b2] = p.bends, xsBase = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
+  const usable = p.length - 2 * margin, n = Math.max(1, Math.round(usable / pitch)), step = usable / n, base = Array.from({ length: n + 1 }, (_, i) => margin + i * step), EPS = 1e-9;
+  const bands = [[xsBase[0], xsBase[2]], [xsBase[3], xsBase[5]]];
+  return [['outer', 1], ['inner', -1]].map(([key, sign]) => {
+    const delta = sign * (p.T / plies) / 2, w = foldBendWarp({ xs: xsBase }, [p.rc[0] + delta, p.rc[1] + delta], 0); if (!w.ok) return null;
+    const bends = bands.map(([lo, hi], k) => {
+      const inBand = base.map((u, i) => (u >= lo - EPS && u <= hi + EPS ? i : -1)).filter(i => i >= 0), first = inBand.findIndex((i, j) => j + 1 < inBand.length && inBand[j + 1] === i + 1);
+      return { side: k === 0 ? 'right' : 'left', count: inBand.length, firstIndex: first < 0 ? -1 : inBand[first], pitch: step * (p.rc[k] + delta) / p.rc[k], flat: step };
+    });
+    return { key, delta, length: p.length + w.total, xs: w.xs, holes: base.map(w.map), flatStep: step, rowFrom: w.map(margin), rowTo: w.map(p.length - margin), buttons: buttons.map(w.map), bends };
+  });
+}
 /** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
 export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
 /** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
