@@ -467,6 +467,12 @@ export function foldSectionSpec(shapes) {
   const flip = bends[0] < bends[1];
   return { ok: true, x0, x1, xs, flip, flats: flip ? [...flats].reverse() : flats, bends: flip ? [...bends].reverse() : bends };
 }
+/** 断面を取る位置の線：紙の中を幅の8割以上横切る、実線の横線（紙の縁・点線・短い線・縦や斜めの線は対象外）。1本ならその y。無ければ { none: true }。2本以上は { error: 'many', count }。 */
+export function foldCutLine(shapes) {
+  const list = shapes || [], box = foldPanelBox(list); if (!box) return { none: true };
+  const found = list.filter(s => s.type === 'line' && s.lineStyle !== 'dashed' && Math.abs(s.y1 - s.y2) < FOLD_EPS && s.y1 > box.y0 + 0.01 && s.y1 < box.y1 - 0.01 && Math.abs(s.x2 - s.x1) >= 0.8 * (box.x1 - box.x0));
+  return found.length === 0 ? { none: true } : found.length === 1 ? { y: found[0].y1, id: found[0].id } : { error: 'many', count: found.length };
+}
 /** 丸折りの半径（弧の長さ÷π）。平面図の左から順に [左, 右]。 */
 export const foldBendRadii = spec => [(spec.xs[2] - spec.xs[0]) / Math.PI, (spec.xs[5] - spec.xs[3]) / Math.PI];
 /** 丸折りの半径を [左, 右]（平面図の左から順・mm）に変えたとき、平面図の横位置をどう動かすか。丸折りの幅（弧の長さ）＝π×半径。
