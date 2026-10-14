@@ -486,6 +486,48 @@ export function foldBendWarp(spec, radii, thickness = 0) {
   const map = x => x <= xs[0] ? x : x <= xs[2] ? xs[0] + (x - xs[0]) * newW[0] / oldW[0] : x <= xs[3] ? x + d[0] : x <= xs[5] ? nx[3] + (x - xs[3]) * newW[1] / oldW[1] : x + d[0] + d[1];
   return { ok: true, changed: Math.abs(d[0]) + Math.abs(d[1]) > 1e-9, map, xs: nx, deltas: d, total: d[0] + d[1] };
 }
+/** 線の両端（開いた図形の始点・終点）。円・閉じた図形・長さのない図形には端が無い。 */
+function openEnds(s) {
+  if (!s || s.type === 'circle' || s.closed) return [];
+  let len = 0; try { len = arcLength(s); } catch { len = 0; }
+  if (!(len > 1e-9)) return [];
+  return [pointAtLength(s, 0), pointAtLength(s, len)];
+}
+/** 切れ目：触れていない（0.01mm 以内に別の図形の端が無い）端点と、max(mm) 以内にある別の図形の端点の組。ほぼつながって見えて、実は離れている所を見つける（事業主指示 2026-10-14）。
+ *  shapes は線として扱う図形（穴の目印の補助線などは呼ぶ側で除く）。戻り値は [{ a:{id,end,x,y}, b:{id,end,x,y}, d, x, y }]（a は配列の前のほうの図形・x,y は隙間の真ん中）。 */
+export function findGaps(shapes, max = 2, tol = 0.01) {
+  const ends = []; (shapes || []).forEach((s, i) => openEnds(s).forEach((p, end) => ends.push({ id: s.id, i, end, x: p.x, y: p.y })));
+  const free = e => !ends.some(o => o.i !== e.i && Math.hypot(o.x - e.x, o.y - e.y) <= tol), seen = new Set(), out = [];
+  for (const e of ends) {
+    if (!free(e)) continue;
+    let best = null, bd = Infinity;
+    for (const o of ends) { if (o.i === e.i) continue; const d = Math.hypot(o.x - e.x, o.y - e.y); if (d > tol && d <= max && d < bd) { bd = d; best = o; } }
+    if (!best) continue;
+    const [a, b] = e.i < best.i ? [e, best] : [best, e], key = `${a.i}.${a.end}-${b.i}.${b.end}`; if (seen.has(key)) continue; seen.add(key);
+    out.push({ a: { id: a.id, end: a.end, x: a.x, y: a.y }, b: { id: b.id, end: b.end, x: b.x, y: b.y }, d: bd, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  }
+  return out;
+}
+const MOVABLE_END = ['line', 'polyline', 'path', 'bezier'];   /* 端を自由に動かせる図形（円弧は端を動かすと形が変わるので動かさない） */
+/** 図形 s の end（0＝始点・1＝終点）を点 p へ動かした新しい図形。 */
+function moveEnd(s, end, p) {
+  if (s.type === 'line' || s.type === 'bezier') return end ? { ...s, x2: p.x, y2: p.y } : { ...s, x1: p.x, y1: p.y };
+  if (s.type === 'polyline') { const pts = s.points.map(q => ({ ...q })); pts[end ? pts.length - 1 : 0] = { ...pts[end ? pts.length - 1 : 0], x: p.x, y: p.y }; return { ...s, points: pts }; }
+  const nodes = s.nodes.map(n => ({ ...n })), k = end ? nodes.length - 1 : 0, n = nodes[k], dx = p.x - n.x, dy = p.y - n.y;
+  nodes[k] = { ...n, x: n.x + dx, y: n.y + dy, inX: n.inX + dx, inY: n.inY + dy, outX: n.outX + dx, outY: n.outY + dy }; return { ...s, nodes };
+}
+/** 隙間を閉じる：選んだ図形（selectedIds）が関わる切れ目を、動かせる側の端を相手の端へ動かして閉じる。選ぶ・選ばないが分かれるときは選んだ側を動かす（両方選んでいれば先の図形）。
+ *  movable（図形 id の集合）を渡すと、その図形だけを動かす（ロックした層の図形を動かさない）。円弧どうしなど動かせない組は閉じず skipped に数える。戻り値 { changes:[{id,next}], closed, skipped, maxGap }。 */
+export function closeGaps(shapes, selectedIds, max = 2, tol = 0.01, movable = null) {
+  const work = new Map(), byId = new Map((shapes || []).map(s => [s.id, s])); let closed = 0, skipped = 0, maxGap = 0;
+  for (const g of findGaps(shapes, max, tol)) {
+    if (!selectedIds.has(g.a.id) && !selectedIds.has(g.b.id)) continue;
+    const can = x => MOVABLE_END.includes(byId.get(x.id).type) && (!movable || movable.has(x.id)), sides = [[g.a, g.b], [g.b, g.a]].filter(([m]) => can(m)), chosen = sides.find(([m]) => selectedIds.has(m.id)) || sides[0];
+    if (!chosen) { skipped++; continue; }
+    const [mover, target] = chosen; work.set(mover.id, moveEnd(work.get(mover.id) || byId.get(mover.id), mover.end, { x: target.x, y: target.y })); closed++; maxGap = Math.max(maxGap, g.d);
+  }
+  return { changes: [...work].map(([id, next]) => ({ id, next })), closed, skipped, maxGap };
+}
 /** 三つ折りの縦の基準線（点線6本）を引く位置を決める。紙の左端から「平ら1・丸折り1・平ら2・丸折り2」の幅（mm・丸折りは弧の長さ）を並べ、3枚目の平らは紙の右端までの残り。
  *  丸折りの両端と真ん中（折りの頂点）に1本ずつ＝foldSectionSpec が読む形。点線は紙の高さいっぱい。
  *  返り値：{ ok, xs[6], flats[3], bends[2], lines[], replaceIds[] }（replaceIds＝すでにある紙の高さいっぱいの縦の点線・置き換える）。失敗は { ok:false, error: 'noPanel' | 'badNumber' | 'tooWide' }。 */

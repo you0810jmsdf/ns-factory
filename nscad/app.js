@@ -42,7 +42,7 @@ import { track } from './analytics.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -61,6 +61,7 @@ let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 const opLog = []; /* 操作の記録（不具合調査用・最近300件） */
+let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙の輪・ダブルクリックの案内・隙間を閉じる） */
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
@@ -1092,6 +1093,7 @@ function initInfo() {
     transformSelectedTo({ ...s, nodes }); };
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
+  $('closeGaps').onclick = closeSelectedGaps;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -2467,6 +2469,14 @@ function makeFoldBaselines() {
   });
   $('hint').textContent = t('foldBaseDone', { f3: r.flats[2].toFixed(2) }); rebuildSnaps(); draw();
 }
+/** 隙間を閉じる：選んだ線が関わる切れ目（2mm 以内）を、動かせる側の端を相手の端へ合わせて閉じる。ロックした層の図形は動かさない。元に戻すは1回。 */
+function closeSelectedGaps() {
+  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('closeGapsNoSel'); return; }
+  const editableIds = new Set(doc.shapes.filter(s => editable(s)).map(s => s.id)), r = closeGaps(doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink), ids, 2, 0.01, editableIds);
+  if (!r.closed && !r.skipped) { $('hint').textContent = t('closeGapsNone', { max: 2 }); return; }
+  if (r.closed) commit(() => { const m = new Map(r.changes.map(c => [c.id, c.next])); doc.shapes = doc.shapes.map(s => m.get(s.id) || s); });
+  $('hint').textContent = (r.closed ? t('closeGapsDone', { n: r.closed, max: r.maxGap.toFixed(2) }) : '') + (r.skipped ? (r.closed ? ' ' : '') + t('closeGapsSkipped', { k: r.skipped }) : ''); rebuildSnaps(); draw();
+}
 function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
@@ -2708,10 +2718,12 @@ function centerMarkPoints() { return MAGNET_DRAW_MODES.includes(mode) ? magnetCe
 function nearJunctions(list) { const reach = 40 / scale; return list.filter(p => distance(cursor, p) <= reach); }
 /** 交点の印：端点どうしで接している点＝赤い点、途中で交差している点＝白い縁の赤い点。ポインタが近いものだけ。点滅はしない。 */
 function drawJunctions() {
-  if (!$('showJunctions').checked) return; const joined = nearJunctions(junctions.joined), loose = nearJunctions(junctions.loose); if (!joined.length && !loose.length) return; const r = 3.5 / scale;
+  if (!$('showJunctions').checked) return; const joined = nearJunctions(junctions.joined), loose = nearJunctions(junctions.loose), gapNear = nearJunctions(gaps); if (!joined.length && !loose.length && !gapNear.length) return; const r = 3.5 / scale;
   ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#ff2a2a';
   for (const p of joined) { ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); }
   ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1 / scale; for (const p of loose) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.25, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+  ctx.strokeStyle = '#ff9a1f'; ctx.fillStyle = '#ff9a1f'; ctx.lineWidth = 2 / scale; ctx.font = `${12 / scale}px sans-serif`;   /* 切れ目：橙の輪＋隙間の長さ（赤い点は触れている所だけなので、離れている所は別の印） */
+  for (const p of gapNear) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.9, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + r * 2.4, p.y - r * 2.4); }
   ctx.restore();
 }
 function drawCenterMarks() {
@@ -2729,6 +2741,7 @@ function rebuildSnaps() {
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
+  gaps = findGaps(shapes.filter(s => !s.holeLink));
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
   for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
@@ -2741,7 +2754,7 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
@@ -3585,7 +3598,7 @@ canvas.addEventListener('dblclick', e => {
     const chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x))).find(c => c.shapeIds.includes(hit.id)) : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
-      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }); draw(); }
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : ''); draw(); }
   }
 });
 canvas.addEventListener('pointerup', e => {
