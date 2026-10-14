@@ -501,26 +501,29 @@ export function foldHoleMarks(path, ss, t, origin, r = 0.35) {
  *  返り値：{ ok, T, flats[3], bends[2]（右の折り・左の折りの順＝革を端からたどる順）, rc[2]（中心線の半径）, a[2]（右・左の折りの中心のボタン線からの距離）, length, warnings[] }。
  *  shift（既定 0）＝ボタン線を右へずらす量。cEff＝ずらしたあとの、ボタン線から左・右の切り口までの距離。ずらしすぎて、ボタン線が切り口や折りの外に出るときは失敗 'shiftOut'。
  *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
-export function foldDesignPlan({ t, plies = 2, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+/** tOuter・tInner＝表（外側の革）・裏（内側の革）それぞれの厚み（省略時はどちらも t）。合計 T＝表＋裏（どちらも省略なら t×plies）。dO・dI＝積み重ねの中心線から、表の革の中心・裏の革の中心までのずれ（表は外へ＋・裏は内へ−）。
+ *  積み重ねの中心線の半径 rc＝内側の半径＋T/2。裏の革の中心の半径＝内側の半径＋tI/2・表の革の中心の半径＝内側の半径＋tI＋tO/2 なので、dO＝tI/2・dI＝−tO/2（両方 t なら ±t/2）。 */
+export function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
   const pos = [dL, dR, rinL, rinR];
   if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
   if (typeof shift !== 'number' || !Number.isFinite(shift)) return { ok: false, error: 'badNumber' };
   const dl = dL + shift, dr = dR - shift, cl = cL + shift, cr = cR - shift;   /* ボタン線を右へ shift ずらす＝左の距離は＋shift・右の距離は−shift（平らの長さ・折りの形は変わらない） */
   if (!(dl > 0 && dr > 0) || cl < 0 || cr < 0) return { ok: false, error: 'shiftOut' };
-  const T = t * plies, rc1 = rinR + T / 2, rc2 = rinL + T / 2, a1 = dr - rinR - T, a2 = dl - rinL - T, flats = [cl + a1, a1 + a2, a2 + cr];
+  const tO = tOuter ?? t, tI = tInner ?? t; if (![tO, tI].every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
+  const T = tOuter === undefined && tInner === undefined ? t * plies : tO + tI, rc1 = rinR + T / 2, rc2 = rinL + T / 2, a1 = dr - rinR - T, a2 = dl - rinL - T, flats = [cl + a1, a1 + a2, a2 + cr];
   if (!flats.every(v => v > FOLD_EPS)) return { ok: false, error: 'flatShort', flats };
   const bends = [Math.PI * rc1, Math.PI * rc2], warnings = [], dx = cr - a1, v3 = 2 * (rc1 - rc2) - rc1;   /* v3＝3枚目の高さの、右の折りの中心からのずれ */
   if (rc1 - rc2 < T / 2 - 1e-9) warnings.push('gapBottom');
   if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
-  return { ok: true, T, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
+  return { ok: true, T, tO: tOuter === undefined && tInner === undefined ? T / plies : tO, tI: tOuter === undefined && tInner === undefined ? T / plies : tI, dO: (tOuter === undefined && tInner === undefined ? T / plies : tI) / 2, dI: -(tOuter === undefined && tInner === undefined ? T / plies : tO) / 2, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
 /** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
  *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
  *  plan は foldDesignPlan の結果。折りは右・左の順（革を端からたどる順）。plan が失敗・pitch が正の数でないときは null。 */
 export function foldBendPitch(plan, pitch, plies = 2) {
   if (!plan || !plan.ok || !(typeof pitch === 'number' && Number.isFinite(pitch) && pitch > 0)) return null;
-  const h = plan.T / plies / 2;   /* 表（外側の革）・裏（内側の革）それぞれの中心線：貼り合わせた中心線から革1枚の厚みの半分ずれた所（面ではない・事業主指示 2026-10-15） */
-  return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + h) / rc, inner: pitch * (rc - h) / rc, diff: pitch * 2 * h / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
+  const dO = plan.dO ?? plan.T / plies / 2, dI = plan.dI ?? -plan.T / plies / 2;   /* 表（外側の革）・裏（内側の革）それぞれの中心線：積み重ねの中心線から、各革の厚みの中心までずれた所（面ではない・事業主指示 2026-10-15） */
+  return plan.rc.map((rc, i) => ({ side: i === 0 ? 'right' : 'left', rc, flat: pitch, outer: pitch * (rc + dO) / rc, inner: pitch * (rc + dI) / rc, diff: pitch * (dO - dI) / rc, angleDeg: pitch / rc * 180 / Math.PI, count: plan.bends[i] / pitch }));
 }
 /** 表（折りの外側の革）・裏（内側の革）の展開：2枚貼り合わせの三つ折りを、1枚ずつの平らな型紙にする（事業主指示 2026-10-15）。
  *  平らな3枚の長さは同じ。丸折りの幅は、その革の中心（貼り合わせ線から半枚の厚みだけ外側・内側）の半径で伸縮する（表＝半径＋、裏＝半径−）。
@@ -535,7 +538,7 @@ export function foldUnfoldPlan(p, { pitch, margin, buttons = [], plies = 2 } = {
   const base = Array.from({ length: n + 1 }, (_, i) => lead + i * step);
   const bands = [[xsBase[0], xsBase[2]], [xsBase[3], xsBase[5]]];
   return [['outer', 1], ['inner', -1]].map(([key, sign]) => {
-    const delta = sign * (p.T / plies) / 2, w = foldBendWarp({ xs: xsBase }, [p.rc[0] + delta, p.rc[1] + delta], 0); if (!w.ok) return null;
+    const delta = sign > 0 ? (p.dO ?? (p.T / plies) / 2) : (p.dI ?? -(p.T / plies) / 2), w = foldBendWarp({ xs: xsBase }, [p.rc[0] + delta, p.rc[1] + delta], 0); if (!w.ok) return null;
     const bends = bands.map(([lo, hi], k) => {
       const inBand = base.map((u, i) => (u >= lo - EPS && u <= hi + EPS ? i : -1)).filter(i => i >= 0), first = inBand.findIndex((i, j) => j + 1 < inBand.length && inBand[j + 1] === i + 1);
       return { side: k === 0 ? 'right' : 'left', count: inBand.length, firstIndex: first < 0 ? -1 : inBand[first], pitch: step * (p.rc[k] + delta) / p.rc[k], flat: step };
@@ -641,22 +644,22 @@ export function projectOnFoldPath(path, u, v) {
 }
 const foldDoc = (origin, u, v) => ({ x: origin.x + u, y: origin.y - v });   /* (u 右, v 上) → 図面の座標（y は下向き） */
 /** 断面の厚みの境目（中心線からのずれ k と role）。外側の面（edgeR）〜内側の面（edgeL）まで plies+1 本。間の線は貼り合わせ線（glue）。 */
-const foldEdges = (h, plies) => Array.from({ length: plies + 1 }, (_, i) => [i === 0 ? 'edgeL' : i === plies ? 'edgeR' : 'glue', h - 2 * h * i / plies]);
+const foldEdges = (h, plies, glueK) => plies === 2 && Number.isFinite(glueK) ? [['edgeL', h], ['glue', glueK], ['edgeR', -h]] : Array.from({ length: plies + 1 }, (_, i) => [i === 0 ? 'edgeL' : i === plies ? 'edgeR' : 'glue', h - 2 * h * i / plies]);   /* glueK＝貼り合わせ線の位置（中心線から内側へ＋）。表裏で厚みが違うと中心ではない */
 /** 貼り合わせた革 plies 枚（合計の厚み t）の、1枚ごとの長さ（外側の革から順に）。中心線の長さに、折り1か所ごと π×（その革の中心の、中心線からのずれ）を足す。外側の革ほど長く、内側ほど短い。 */
 export function foldPlyLengths(path, t, plies = 1) {
   const bends = path.pieces.filter(p => p.kind === 'arc').length;
   return Array.from({ length: plies }, (_, j) => path.length + bends * Math.PI * (t / 2 - (j + 0.5) * t / plies));
 }
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
-export function foldSectionShapes(path, t, origin, plies = 1) {
+export function foldSectionShapes(path, t, origin, plies = 1, glueK) {
   const out = [], h = t / 2;
   path.pieces.forEach((pc, i) => {
     if (pc.kind === 'line') {
       const nu = -Math.sin(pc.th), nv = Math.cos(pc.th);
-      for (const [role, k] of foldEdges(h, plies)) { const a = foldDoc(origin, pc.p0.u + k * nu, pc.p0.v + k * nv), b = foldDoc(origin, pc.p1.u + k * nu, pc.p1.v + k * nv); out.push({ type: 'line', role, piece: i, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
+      for (const [role, k] of foldEdges(h, plies, glueK)) { const a = foldDoc(origin, pc.p0.u + k * nu, pc.p0.v + k * nv), b = foldDoc(origin, pc.p1.u + k * nu, pc.p1.v + k * nv); out.push({ type: 'line', role, piece: i, x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
     } else {
       const c = foldDoc(origin, pc.c.u, pc.c.v);
-      for (const [role, k] of foldEdges(h, plies)) { const r = Math.max(0.05, pc.r - k); out.push({ type: 'arc', role, piece: i, cx: c.x, cy: c.y, r, startDeg: -pc.a1 * 180 / Math.PI, endDeg: -pc.a0 * 180 / Math.PI }); }
+      for (const [role, k] of foldEdges(h, plies, glueK)) { const r = Math.max(0.05, pc.r - k); out.push({ type: 'arc', role, piece: i, cx: c.x, cy: c.y, r, startDeg: -pc.a1 * 180 / Math.PI, endDeg: -pc.a0 * 180 / Math.PI }); }
     }
   });
   const ends = [['cap0', pointOnFoldPath(path, 0)], ['cap1', pointOnFoldPath(path, path.length)]];
