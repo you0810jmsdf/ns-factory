@@ -3000,14 +3000,28 @@ function trimClick(p, keep) {
   const parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
   if (!parts) { $('hint').textContent = t('noIntersection'); return; }
   const removedPaths = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id));
-  if (doc.holes.some(h => removedPaths.has(h.pathId)) && !window.confirm(t('holeTrimConfirm'))) return;
+  if (doc.seams.some(seam => removedPaths.has(seam.a.pathId) || removedPaths.has(seam.b.pathId)) && !window.confirm(t('holeTrimConfirm'))) return; /* 縫い合わせ設定だけは、切ると解除になる（菱目は残る部分に引き継ぐ） */
   cancel();
   commit(() => {
+    const oldPaths = doc.paths.filter(path => path.shapeIds.includes(hit.id)), oldHoles = doc.holes.filter(h => removedPaths.has(h.pathId));
     doc.paths = doc.paths.filter(path => !path.shapeIds.includes(hit.id));
     doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
     doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
     const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
     const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
+    /* 菱目は、消した区間の上にあるものだけ消し、残った線の上にあるものは、その線の新しい経路に引き継ぐ（位置・向きはそのまま・経路の上の位置 s は計算し直す） */
+    for (const oldPath of oldPaths) {
+      const keepIds = [...added, ...oldPath.shapeIds.filter(id => id !== hit.id && doc.shapes.some(s => s.id === id))], groups = new Map();
+      for (const h of oldHoles.filter(x => x.pathId === oldPath.id)) {
+        let best = null, bd = Infinity; for (const id of keepIds) { const s = doc.shapes.find(x => x.id === id), d = s ? distToShape(s, { x: h.x, y: h.y }) : Infinity; if (d < bd) { bd = d; best = id; } }
+        if (best && bd <= 0.3) { if (!groups.has(best)) groups.set(best, []); groups.get(best).push(h); }   /* 切り口から 0.3mm 以内の穴は残す側に */
+      }
+      for (const [sid, list] of groups) {
+        const np = { ...oldPath, id: freshId(doc.paths, 'p'), shapeIds: [sid], reversed: false, segments: [] }; doc.paths.push(np);
+        const route = resolvePath(doc, np);
+        for (const h of list) doc.holes.push({ ...h, pathId: np.id, s: route ? projectOnPath(route, { x: h.x, y: h.y }).s : 0 });
+      }
+    }
     selected = new Set(added);
   });
 }
