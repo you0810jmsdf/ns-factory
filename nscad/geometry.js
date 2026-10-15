@@ -775,3 +775,16 @@ export function roundLinesAt(l1, p1, l2, p2, r, kind = 'fillet') {
   const rebuild = (F, q) => F.first ? { x1: F.pt.x, y1: F.pt.y, x2: q.x, y2: q.y } : { x1: q.x, y1: q.y, x2: F.pt.x, y2: F.pt.y };
   return { arc, a: { ...l1, ...rebuild(A, pa) }, b: { ...l2, ...rebuild(B, pb) } };
 }
+
+/** 2本の直線の角に入る、丸めの半径（面取りは寸法）の最大値と、それを決めている短い線の長さ。平行などで決められないとき null。 */
+export function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
+  if (l1?.type !== 'line' || l2?.type !== 'line') return null;
+  const v = { x: l1.x2 - l1.x1, y: l1.y2 - l1.y1 }, w = { x: l2.x2 - l2.x1, y: l2.y2 - l2.y1 }, den = cross(v, w);
+  if (Math.abs(den) < 1e-9 * Math.hypot(v.x, v.y) * Math.hypot(w.x, w.y)) return null;
+  const t = cross({ x: l2.x1 - l1.x1, y: l2.y1 - l1.y1 }, w) / den, C = { x: l1.x1 + v.x * t, y: l1.y1 + v.y * t };
+  const farOf = (l, q) => { const e = [{ x: l.x1, y: l.y1 }, { x: l.x2, y: l.y2 }]; return dot({ x: e[0].x - C.x, y: e[0].y - C.y }, { x: q.x - C.x, y: q.y - C.y }) >= dot({ x: e[1].x - C.x, y: e[1].y - C.y }, { x: q.x - C.x, y: q.y - C.y }) ? e[0] : e[1]; };
+  const A = farOf(l1, p1), B = farOf(l2, p2), la = distance(A, C), lb = distance(B, C); if (la < EPS || lb < EPS) return null;
+  const u = { x: (A.x - C.x) / la, y: (A.y - C.y) / la }, z = { x: (B.x - C.x) / lb, y: (B.y - C.y) / lb }, theta = Math.acos(Math.max(-1, Math.min(1, dot(u, z))));
+  if (theta < EPS || Math.PI - theta < EPS) return null;
+  const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
+}
