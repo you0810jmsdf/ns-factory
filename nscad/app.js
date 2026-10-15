@@ -1218,7 +1218,7 @@ function importVector(rawShapes, layersFrom, { recover = true } = {}) {
 /** ファイルを開くとき：保存していない図があれば、消さずに新しいタブで開く。タブの名前は、開いたファイルの名前（拡張子なし）にする（事業主指示 2026-10-15：タブはファイル名のほうが分かりやすい／開くで保存前の図が消えない）。 */
 function tabForOpenedFile(file) {
   const base = (file.name || '').replace(/\.(json|lcc)$/i, '').trim().slice(0, 60);
-  if (tabs[activeTab]?.dirty && doc.shapes.length) newTab(base || undefined);
+  if (doc.shapes.length) newTab(base || undefined); /* 図形のある図面は、保存済みでも・前回の続きから戻したものでも、消さずに新しいタブで開く（ファイル間のコピーにも使える）。空の図面だけ、同じタブに開く */
   return base;
 }
 function nameOpenedTab(base) { if (tabs[activeTab]) { if (base) tabs[activeTab].name = base; tabs[activeTab].dirty = false; renderTabs(); } }
