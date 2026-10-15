@@ -4328,8 +4328,10 @@ function showCtxMenu(e) {
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
 function hideCtxMenu() { $('ctxMenu').hidden = true; }
+let lastPanDragAt = -1e9; /* 右ドラッグ（画面の移動）を終えた時刻。離した直後に出るメニューのイベントを無視するため */
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault(); hideCtxMenu();
+  if (Date.now() - lastPanDragAt < 400) return; /* 画面を動かしたあとは、メニューを出さない（動かさずに右クリックしたときだけ出す） */
   if (!['select', 'bezier', 'path'].includes(mode) || stage) return;
   if (mode === 'select' && selected.size > 1) { showCtxMenu(e); return; } /* 複数選択（全体選択など）：メニュー。ペンの経由点の編集は、選択が1つ以下のとき */
   const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse();
@@ -4369,7 +4371,7 @@ canvas.addEventListener('pointerup', e => {
   const g = gesture, p = local(e);
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey);
-  gesture = null;
+  gesture = null; if (g.kind === 'pan' && distance(p, g.screen) >= 4) lastPanDragAt = Date.now();
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
