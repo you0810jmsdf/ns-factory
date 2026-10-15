@@ -28,7 +28,7 @@
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #canvas3d { position: absolute; inset: 0; background: #101010; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
-    #rulerBar, #rectBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
+    #rulerBar, #rectBar, #circleBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input, #circleBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; max-height: calc(100% - 48px); overflow-y: auto; } .ctx button { height: 30px; text-align: left; }
     aside button { position: relative; } kbd.key { margin-left: auto; font: 10px/1 ui-monospace, Consolas, monospace; color: #8a7a50; border: 1px solid #3a3a2e; border-radius: 3px; padding: 2px 4px; background: #101010; } .no-keys kbd.key { display: none; }
     .ctx-title { font-size: 11px; color: #8a7a50; padding: 6px 4px 2px; } .ctx-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; min-width: 330px; } .ctx-cards button { height: 28px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -118,7 +118,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 11:33 · 9bfd7c1</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 11:45 · eede6c7</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -134,7 +134,6 @@
 <button data-tool="bezier"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19C4 7 20 17 20 5"/></svg><span data-i18n="bezier"></span></button>
 <button data-tool="path"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20c6-8 8-12 10-12s2 6 8 4"/><circle cx="13" cy="8" r="1.5"/></svg><span data-i18n="path"></span></button>
 <button data-tool="text"><svg class="ic" viewBox="0 0 24 24"><path d="M5 5h14M12 5v14"/></svg><span data-i18n="text"></span></button>
-<button data-tool="dimension"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M3 7v10M21 7v10"/></svg><span data-i18n="dimension"></span></button>
 <button data-tool="ruler"><svg class="ic" viewBox="0 0 24 24"><path d="M3 16 16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2"/></svg><span data-i18n="ruler"></span></button>
 <div class="group" data-i18n="editing"></div>
 <button data-tool="fillet"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10a6 6 0 0 1 6-6h10"/></svg><span data-i18n="fillet"></span></button>
@@ -147,7 +146,7 @@
 <div class="group" data-i18n="selection"></div>
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="closeGaps"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h6M15 12h6"/><path d="M9 8l-3 4 3 4M15 8l3 4-3 4"/></svg><span data-i18n="closeGaps"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
-<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button><div id="ctxCardsTitle" class="ctx-title" data-i18n="ctxCardsTitle"></div><div id="ctxCards" class="ctx-cards"></div></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="cursor" data-i18n="ofCursor"></option><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option><option value="left" data-i18n="ofLeft"></option><option value="right" data-i18n="ofRight"></option><option value="up" data-i18n="ofUp"></option><option value="down" data-i18n="ofDown"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="detourFloat" class="floatbox" hidden><label><span data-i18n="dfClear"></span><input id="df-clear" type="number" min="0" step="0.5" value="3"></label><label><span data-i18n="dfRadius"></span><input id="df-radius" type="number" min="0" step="0.5" value="2"></label><button id="df-run" data-i18n="dfRun"></button><button id="df-close" data-i18n="ofClose" aria-label="close"></button><output id="df-out"></output></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div>
+<div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button><div id="ctxCardsTitle" class="ctx-title" data-i18n="ctxCardsTitle"></div><div id="ctxCards" class="ctx-cards"></div></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="cursor" data-i18n="ofCursor"></option><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option><option value="left" data-i18n="ofLeft"></option><option value="right" data-i18n="ofRight"></option><option value="up" data-i18n="ofUp"></option><option value="down" data-i18n="ofDown"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="detourFloat" class="floatbox" hidden><label><span data-i18n="dfClear"></span><input id="df-clear" type="number" min="0" step="0.5" value="3"></label><label><span data-i18n="dfRadius"></span><input id="df-radius" type="number" min="0" step="0.5" value="2"></label><button id="df-run" data-i18n="dfRun"></button><button id="df-close" data-i18n="ofClose" aria-label="close"></button><output id="df-out"></output></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="circleBar" class="floatbox" data-i18n-title="circleBarTip" hidden><label><span data-i18n="circleR"></span><input id="circleR" type="number" min="0" step="0.5"></label><label><span data-i18n="circleD"></span><input id="circleD" type="number" min="0" step="0.5"></label></div>
 <div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side"><button id="sideToggle" class="side-toggle" data-i18n="sideToggleOpen" aria-expanded="false"></button>
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
@@ -575,8 +574,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=9d8e0af4","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=9ba6e7e7","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=9d8e0af4"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=bcf2fbf9","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=c32c449b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=bcf2fbf9"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1975,6 +1974,10 @@ const MESSAGES = {
     "line": "直線",
     "rect": "矩形",
     "hint.rect": "上の「幅・高さ」を入れてクリックすると、その位置にその大きさの矩形を置きます。空なら、対角の2点をドラッグ（またはクリック→クリック）。Shift で正方形。",
+    "circleR": "半径 (mm)",
+    "circleD": "直径 (mm)",
+    "circleBarTip": "半径か直径を入れると（連動します）、クリックした位置を中心に、その大きさの円を置きます。空にすると、ドラッグで自由に描けます。",
+    "circlePlaced": "半径 {r} mm（直径 {d} mm）の円を置きました。続けて置けます。",
     "rectW": "幅 (mm)",
     "rectH": "高さ (mm)",
     "rectAnchor": "基準",
@@ -2007,7 +2010,7 @@ const MESSAGES = {
     "status": "X {x}　Y {y} mm　｜ {zoom}%",
     "hint.select": "クリックで選択、図形をドラッグして移動（Shift を押しながらで、水平・垂直だけに動く）。空白で囲み選択。Shift で追加・解除。",
     "hint.line": "始点から終点へドラッグ。Shift で水平・垂直固定。",
-    "hint.circle": "中心から円周へドラッグ。",
+    "hint.circle": "中心から円周へドラッグ。上の欄に半径か直径を入れると、クリックした位置にその大きさの円を置きます。",
     "hint.arcHalf": "半円：始点をクリック → 終点をクリック（2点を直径とする半円・膨らむ側は作図オプションの「円弧の向き」・Esc で中止）。",
     "hint.arc3": "円弧：始点をクリック → 通過点をクリック → 終点をクリック（3点を通る円弧・Esc で中止）。",
     "hint.arc": "中心から始点へドラッグ → 終点方向をクリック（時計回り）。",
@@ -2037,13 +2040,15 @@ const MESSAGES = {
     "dimension": "寸法",
     "ruler": "定規",
     "patchTool": "柄（パッチワーク）",
-    "hint.ruler": "始点と終点をクリックすると、距離が出て、寸法線もできます（端点・中心点に吸い付きます）。もう一度クリックで測りなおし。Shift で水平・垂直。",
+    "hint.ruler": "始点と終点をクリックすると、距離が出て、寸法線もできます（端点・中心点に吸い付きます）。3点目をクリックすると、数値（寸法線）がその位置へ動きます。Esc で次の測定。Shift で水平・垂直。",
     "rulerSecond": "終点をクリックしてください。",
     "rbA": "始点 X,Y",
     "rbB": "終点 X,Y",
     "rbEmpty": "（数値かクリックで測れます）",
-    "rulerResult": "距離 {d} mm（横 {dx} ／ 縦 {dy} ／ 角度 {a}°）。もう一度クリックで測りなおし。",
-    "hint.dimension": "2点をクリック。寸法線のずらし量は「作図オプション」。",
+    "rulerResult": "距離 {d} mm（横 {dx} ／ 縦 {dy} ／ 角度 {a}°）。",
+    "dimPlaced": "数値（寸法線）を、測った線から {off} mm の位置に置きました。続けて測れます。",
+    "dimPlaceHint": "3点目をクリックすると、数値（寸法線）の位置がそこへ動きます。クリックしなければ、このままです（Esc で次の測定）。",
+    "hint.dimension": "2点をクリックして測り、3点目で数値（寸法線）の位置を決めます（定規と同じ道具）。ずらし量の既定は「作図オプション」。",
     "trim": "トリム",
     "hint.trim": "消したい部分をクリック（交点で区切った区間）。Shift で残す側を選ぶ。",
     "mirror": "線対称",
@@ -3199,6 +3204,10 @@ const MESSAGES = {
     "line": "Line",
     "rect": "Rectangle",
     "hint.rect": "Enter Width and Height above, then click to place a rectangle of that size. If empty, drag between two opposite corners (or click, then click). Shift makes a square.",
+    "circleR": "Radius (mm)",
+    "circleD": "Diameter (mm)",
+    "circleBarTip": "Enter a radius or a diameter (they are linked), then click to place a circle of that size centered there. Leave them empty to drag freely.",
+    "circlePlaced": "Placed a circle of radius {r} mm (diameter {d} mm). You can keep placing.",
     "rectW": "Width (mm)",
     "rectH": "Height (mm)",
     "rectAnchor": "Anchor",
@@ -3231,7 +3240,7 @@ const MESSAGES = {
     "status": "X {x}  Y {y} mm | {zoom}%",
     "hint.select": "Click to select; drag a shape to move (hold Shift to move only horizontally or vertically). Drag empty space to box-select. Shift adds or removes.",
     "hint.line": "Drag from start to end. Shift locks horizontal / vertical.",
-    "hint.circle": "Drag from center to circumference.",
+    "hint.circle": "Drag from center to circumference. Or enter a radius or diameter above and click to place a circle of that size.",
     "hint.arcHalf": "Semicircle: click the start, then the end (a semicircle with the 2 points as its diameter; the bulging side follows the Arc direction option; Esc cancels).",
     "hint.arc3": "Arc: click the start, a point on the arc, then the end (an arc through 3 points; Esc cancels).",
     "hint.arc": "Drag from center to start, then click the end direction (clockwise).",
@@ -3261,13 +3270,15 @@ const MESSAGES = {
     "dimension": "Dimension",
     "ruler": "Ruler",
     "patchTool": "Pattern fill",
-    "hint.ruler": "Click a start and an end point to see the distance and make a dimension line (it snaps to endpoints and centers). Click again to measure anew. Shift = horizontal / vertical.",
+    "hint.ruler": "Click a start and an end point to see the distance and make a dimension line (it snaps to endpoints and centers). Click a third point to move the number (dimension line) there. Esc for the next measurement. Shift = horizontal / vertical.",
     "rulerSecond": "Click the end point.",
     "rbA": "Start X,Y",
     "rbB": "End X,Y",
     "rbEmpty": "(type numbers or click to measure)",
-    "rulerResult": "Distance {d} mm (horizontal {dx} / vertical {dy} / angle {a}°). Click again to measure anew.",
-    "hint.dimension": "Click two points. The offset is in Drawing options.",
+    "rulerResult": "Distance {d} mm (horizontal {dx} / vertical {dy} / angle {a}°).",
+    "dimPlaced": "Placed the number (dimension line) {off} mm from the measured line. You can keep measuring.",
+    "dimPlaceHint": "Click a third point to move the number (dimension line) there. If you do not, it stays as it is (Esc for the next measurement).",
+    "hint.dimension": "Click two points to measure, then a third to place the number (dimension line) — the same tool as the ruler. The default offset is in Drawing options.",
     "trim": "Trim",
     "hint.trim": "Click the part to remove (between intersections). Shift keeps that part instead.",
     "mirror": "Mirror",
@@ -22339,6 +22350,19 @@ function runCommand(raw) {
   $('cmd').value = ''; draw();
 }
 
+/** 定規（S）と寸法（D）は同じ道具（事業主指示 2026-10-15）：1点目・2点目のクリックで測り（距離を表示し、寸法の図形を既定の位置に置く）、3点目をクリックすると、数値（寸法線）の位置をそこへ動かす。3点目を打たなければ、いまの位置のまま（Esc で次の測定へ）。 */
+const dimOffsetFor = (a, b, pt) => { const len = distance(a, b) || 1, off = (pt.x - a.x) * ((b.y - a.y) / len) - (pt.y - a.y) * ((b.x - a.x) / len), r = Math.round(off * 10) / 10; return Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r; };   /* 測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる） */
+function dimToolClick(pt) {
+  if (stage?.kind === 'dimPlace') { const g = stage, sh = doc.shapes.find(x => x.id === g.id); stage = null; if (sh) { commit(() => { sh.offset = dimOffsetFor(g.a, g.b, pt); }); $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); } lastPoint = pt; draw(); return; }
+  const first = mode === 'ruler' ? 'ruler' : 'dim';
+  if (stage?.kind !== first) { if (mode === 'ruler') ruler = null; stage = { kind: first, a: pt }; if (mode === 'ruler') $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
+  const a = stage.a; stage = null; ruler = { a, b: pt }; $('hint').textContent = rulerText(ruler); lastPoint = pt;
+  if (distance(a, pt) > 1e-8) {
+    addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: pt.x, y2: pt.y, offset: Number($('dimOffset').value) || 8 });
+    const id = [...selected][0], sh = doc.shapes.find(x => x.id === id); if (sh?.type === 'dimension') { stage = { kind: 'dimPlace', id, a, b: pt }; $('hint').textContent += ' ' + t('dimPlaceHint'); }
+  }
+  draw();
+}
 /** 定規の測定結果の文言（距離・横・縦・角度。角度は右向きを 0 として反時計回り）。 */
 function rulerText({ a, b }) {
   const dx = b.x - a.x, dy = b.y - a.y, deg = ((Math.atan2(-dy, dx) * 180 / Math.PI) % 360 + 360) % 360;
@@ -22472,6 +22496,7 @@ function cancel() { ruler = null; gesture = null; stage = null; snap = null; off
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
+  $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
@@ -22821,6 +22846,13 @@ function anchor() {
 /** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
 /** 矩形の「幅・高さ」欄（mm）。どちらも 0 より大きい数のときだけ { w, h }。それ以外（空・0・不正）は null＝ドラッグで自由に描く。 */
 function rectSizeNow() { const w = Number($('rectW').value), h = Number($('rectH').value); return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 ? { w, h } : null; }
+/** 半径か直径を指定して円を置く（事業主指示 2026-10-15）。半径と直径の欄は連動する。入っていれば、クリックした位置を中心に、その大きさの円を置く（続けて置ける）。空ならドラッグで自由に描く。 */
+const circleSizeNow = () => { const r = Number($('circleR').value); return Number.isFinite(r) && r > 0 ? r : null; };
+const circleNum = v => String(Math.round(v * 10000) / 10000);
+function placeCircleBySize(p) {
+  const r = circleSizeNow(); if (!r) return; cancel(); addShape({ type: 'circle', cx: +p.x.toFixed(4), cy: +p.y.toFixed(4), r }); lastPoint = p;
+  $('hint').textContent = t('circlePlaced', { r: circleNum(r), d: circleNum(r * 2) });
+}
 /** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
 function rectBySizeAt(p) {
   const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
@@ -22943,7 +22975,10 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (s.type === 'dimension') {
     const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset);
     ctx.beginPath(); ctx.moveTo(d.a.x, d.a.y); ctx.lineTo(d.b.x, d.b.y); for (const [p, q] of d.ext) { ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); } ctx.strokeStyle = color; ctx.stroke();
-    ctx.save(); ctx.translate(d.textPos.x, d.textPos.y); ctx.rotate(d.angleDeg * Math.PI / 180); ctx.font = `${Math.max(2.5, 12 / scale)}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = color; ctx.fillText(d.value.toFixed(2), 0, 0); ctx.restore(); return;
+    /* 数値は、測る点から見て寸法線の外側へ少し離して置き、縁取りをつける（線・延長線と重ならない・事業主指摘 2026-10-15） */
+    const px = Math.max(2.5, 12 / scale), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale, label = d.value.toFixed(2);
+    ctx.save(); ctx.translate((d.a.x + d.b.x) / 2 + nx / nl * gap, (d.a.y + d.b.y) / 2 + ny / nl * gap); ctx.rotate(d.angleDeg * Math.PI / 180); ctx.font = `${px}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = 3.5 / scale; ctx.strokeStyle = '#080808'; ctx.strokeText(label, 0, 0); ctx.fillStyle = color; ctx.fillText(label, 0, 0); ctx.restore(); return;
   }
   path(s); ctx.strokeStyle = color; ctx.stroke();
 }
@@ -23077,6 +23112,7 @@ function drawSheetBody(lo, hi) {
   if (offsetSelection && mode === 'offset' && $('offsetSide').value === 'cursor') { const ch = offsetCursorChoice(offsetSelection, offsetCursor, Number($('offsetDist').value)); if (ch) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape(ch.r, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); } } /* 向き「カーソルの側」：ずらした結果を、カーソルのある側にプレビュー */
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
+  if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
@@ -23094,6 +23130,7 @@ function drawSheetBody(lo, hi) {
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
+  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目の位置の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -23196,14 +23233,10 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
-  if (mode === 'ruler') {
-    if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
-    else { ruler = { a: stage.a, b: cursor }; const a = stage.a; stage = null; $('hint').textContent = rulerText(ruler); if (distance(a, cursor) > 1e-8) addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); } /* 始点と終点のクリックで、距離の表示と、寸法の図形ができる */
-    draw(); return;
-  }
-  if (mode === 'dimension') { if (stage?.kind !== 'dim') stage = { kind: 'dim', a: cursor }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); stage = null; } lastPoint = cursor; draw(); return; }
+  if (mode === 'ruler' || mode === 'dimension') { dimToolClick(cursor); return; }   /* 定規と寸法はひとつの道具（2点で測って寸法を置き、3点目で数値の位置を決める） */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
@@ -23388,6 +23421,8 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
+$('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
+$('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };

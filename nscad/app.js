@@ -2966,6 +2966,19 @@ function runCommand(raw) {
   $('cmd').value = ''; draw();
 }
 
+/** 定規（S）と寸法（D）は同じ道具（事業主指示 2026-10-15）：1点目・2点目のクリックで測り（距離を表示し、寸法の図形を既定の位置に置く）、3点目をクリックすると、数値（寸法線）の位置をそこへ動かす。3点目を打たなければ、いまの位置のまま（Esc で次の測定へ）。 */
+const dimOffsetFor = (a, b, pt) => { const len = distance(a, b) || 1, off = (pt.x - a.x) * ((b.y - a.y) / len) - (pt.y - a.y) * ((b.x - a.x) / len), r = Math.round(off * 10) / 10; return Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r; };   /* 測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる） */
+function dimToolClick(pt) {
+  if (stage?.kind === 'dimPlace') { const g = stage, sh = doc.shapes.find(x => x.id === g.id); stage = null; if (sh) { commit(() => { sh.offset = dimOffsetFor(g.a, g.b, pt); }); $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); } lastPoint = pt; draw(); return; }
+  const first = mode === 'ruler' ? 'ruler' : 'dim';
+  if (stage?.kind !== first) { if (mode === 'ruler') ruler = null; stage = { kind: first, a: pt }; if (mode === 'ruler') $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
+  const a = stage.a; stage = null; ruler = { a, b: pt }; $('hint').textContent = rulerText(ruler); lastPoint = pt;
+  if (distance(a, pt) > 1e-8) {
+    addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: pt.x, y2: pt.y, offset: Number($('dimOffset').value) || 8 });
+    const id = [...selected][0], sh = doc.shapes.find(x => x.id === id); if (sh?.type === 'dimension') { stage = { kind: 'dimPlace', id, a, b: pt }; $('hint').textContent += ' ' + t('dimPlaceHint'); }
+  }
+  draw();
+}
 /** 定規の測定結果の文言（距離・横・縦・角度。角度は右向きを 0 として反時計回り）。 */
 function rulerText({ a, b }) {
   const dx = b.x - a.x, dy = b.y - a.y, deg = ((Math.atan2(-dy, dx) * 180 / Math.PI) % 360 + 360) % 360;
@@ -3099,6 +3112,7 @@ function cancel() { ruler = null; gesture = null; stage = null; snap = null; off
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
+  $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
@@ -3448,6 +3462,13 @@ function anchor() {
 /** 対角の2点から矩形（閉じた折れ線・4点）。幅か高さが 0 なら null。 */
 /** 矩形の「幅・高さ」欄（mm）。どちらも 0 より大きい数のときだけ { w, h }。それ以外（空・0・不正）は null＝ドラッグで自由に描く。 */
 function rectSizeNow() { const w = Number($('rectW').value), h = Number($('rectH').value); return Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0 ? { w, h } : null; }
+/** 半径か直径を指定して円を置く（事業主指示 2026-10-15）。半径と直径の欄は連動する。入っていれば、クリックした位置を中心に、その大きさの円を置く（続けて置ける）。空ならドラッグで自由に描く。 */
+const circleSizeNow = () => { const r = Number($('circleR').value); return Number.isFinite(r) && r > 0 ? r : null; };
+const circleNum = v => String(Math.round(v * 10000) / 10000);
+function placeCircleBySize(p) {
+  const r = circleSizeNow(); if (!r) return; cancel(); addShape({ type: 'circle', cx: +p.x.toFixed(4), cy: +p.y.toFixed(4), r }); lastPoint = p;
+  $('hint').textContent = t('circlePlaced', { r: circleNum(r), d: circleNum(r * 2) });
+}
 /** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
 function rectBySizeAt(p) {
   const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
@@ -3570,7 +3591,10 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (s.type === 'dimension') {
     const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset);
     ctx.beginPath(); ctx.moveTo(d.a.x, d.a.y); ctx.lineTo(d.b.x, d.b.y); for (const [p, q] of d.ext) { ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); } ctx.strokeStyle = color; ctx.stroke();
-    ctx.save(); ctx.translate(d.textPos.x, d.textPos.y); ctx.rotate(d.angleDeg * Math.PI / 180); ctx.font = `${Math.max(2.5, 12 / scale)}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = color; ctx.fillText(d.value.toFixed(2), 0, 0); ctx.restore(); return;
+    /* 数値は、測る点から見て寸法線の外側へ少し離して置き、縁取りをつける（線・延長線と重ならない・事業主指摘 2026-10-15） */
+    const px = Math.max(2.5, 12 / scale), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale, label = d.value.toFixed(2);
+    ctx.save(); ctx.translate((d.a.x + d.b.x) / 2 + nx / nl * gap, (d.a.y + d.b.y) / 2 + ny / nl * gap); ctx.rotate(d.angleDeg * Math.PI / 180); ctx.font = `${px}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    ctx.lineWidth = 3.5 / scale; ctx.strokeStyle = '#080808'; ctx.strokeText(label, 0, 0); ctx.fillStyle = color; ctx.fillText(label, 0, 0); ctx.restore(); return;
   }
   path(s); ctx.strokeStyle = color; ctx.stroke();
 }
@@ -3704,6 +3728,7 @@ function drawSheetBody(lo, hi) {
   if (offsetSelection && mode === 'offset' && $('offsetSide').value === 'cursor') { const ch = offsetCursorChoice(offsetSelection, offsetCursor, Number($('offsetDist').value)); if (ch) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape(ch.r, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); } } /* 向き「カーソルの側」：ずらした結果を、カーソルのある側にプレビュー */
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
+  if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
@@ -3721,6 +3746,7 @@ function drawSheetBody(lo, hi) {
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
+  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目の位置の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -3823,14 +3849,10 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
-  if (mode === 'ruler') {
-    if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: cursor }; $('hint').textContent = t('rulerSecond'); }
-    else { ruler = { a: stage.a, b: cursor }; const a = stage.a; stage = null; $('hint').textContent = rulerText(ruler); if (distance(a, cursor) > 1e-8) addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); } /* 始点と終点のクリックで、距離の表示と、寸法の図形ができる */
-    draw(); return;
-  }
-  if (mode === 'dimension') { if (stage?.kind !== 'dim') stage = { kind: 'dim', a: cursor }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }); stage = null; } lastPoint = cursor; draw(); return; }
+  if (mode === 'ruler' || mode === 'dimension') { dimToolClick(cursor); return; }   /* 定規と寸法はひとつの道具（2点で測って寸法を置き、3点目で数値の位置を決める） */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
@@ -4015,6 +4037,8 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
+$('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
+$('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
 $('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
