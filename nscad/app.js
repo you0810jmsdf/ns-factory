@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -4347,8 +4347,9 @@ canvas.addEventListener('dblclick', e => {
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distToShape(x, w) <= 7 / scale);
     const dashedOf = x => x.lineStyle === 'dashed' || x.layer === 'guide', pool = hit ? doc.shapes.filter(x => visible(x) && stitchable(x) && (!dashedOf(hit) || dashedOf(x))) : [];   /* 点線（ガイド）をダブルクリックしたときは、つながった点線だけ（実線の外形にはつながっていても広げない） */
-    const dups = dedupeShapeGroups(pool), repOf = id => dups.repOf.get(id) ?? id, rawChain = hit ? chainShapes(dups.reps).find(c => c.shapeIds.includes(repOf(hit.id))) : null;   /* 同じ形で重なった線は1本として数える（重なっていると、つながりがそこで止まるため）。選ぶときは、重なった線も全部 */
-    const chain = rawChain ? { ...rawChain, shapeIds: rawChain.shapeIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
+    const dups = dedupeShapeGroups(pool), repOf = id => dups.repOf.get(id) ?? id;   /* 同じ形で重なった線は1本として数える（重なっていると、つながりがそこで止まるため）。選ぶときは、重なった線も全部 */
+    const chainIds = hit ? contourFrom(dups.reps, repOf(hit.id)) : []; /* 分岐点では真っ直ぐ続く線を選んで先へ進み、枝には入らない。端が 0.2mm 以内で離れた所も越える */
+    const chain = hit ? { shapeIds: chainIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
       const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : ''); draw(); }
