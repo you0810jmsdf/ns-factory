@@ -403,3 +403,61 @@ export function threeViewSolidFromSheets(frontShapes, topShapes, sideShapes, { d
   const S = sp ? sp.map(p => ({ x: p.x, y: p.y })) : null;
   return withHardware(solidFromPolys(F, T, S, { depthDefault, maxSlices }), frontShapes, specOf);
 }
+
+// ---- 図面の中から正面・上・横を自動で見分けて立体にする（ペンのように、線が閉じていなくてもよい） ----
+const autoSkip = s => !s || ['image', 'text', 'dimension', 'fold'].includes(s.type) || s.layer === 'guide' || s.hwFor || s.hwSection || s.lineStyle === 'dashed';
+/** 近い図形どうし（外接の四角が gap(mm) 以内）を1つの図にまとめる。戻り値 [{ shapes, box }]。 */
+function clusterShapes(list, gap) {
+  const items = list.map(s => { let b = null; try { b = bboxOf(s); } catch { b = null; } return { s, b }; }).filter(x => x.b && Number.isFinite(x.b.minX) && Number.isFinite(x.b.maxX));
+  const parent = items.map((_, i) => i), find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
+    const a = items[i].b, b = items[j].b; if (a.maxX + gap < b.minX || b.maxX + gap < a.minX || a.maxY + gap < b.minY || b.maxY + gap < a.minY) continue;
+    parent[find(i)] = find(j);
+  }
+  const groups = new Map(); items.forEach((x, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(x); });
+  return [...groups.values()].map(g => ({ shapes: g.map(x => x.s), box: { minX: Math.min(...g.map(x => x.b.minX)), maxX: Math.max(...g.map(x => x.b.maxX)), minY: Math.min(...g.map(x => x.b.minY)), maxY: Math.max(...g.map(x => x.b.maxY)) } }));
+}
+const overlapRatio = (a0, a1, b0, b1) => { const o = Math.min(a1, b1) - Math.max(a0, b0), m = Math.min(a1 - a0, b1 - b0); return m > 1e-9 ? Math.max(0, o) / m : 0; };
+/** 図面の図形から、正面・上・横の図を位置で見分ける：上は正面の真上（横がそろっている）、横は正面の真右（高さがそろっている）。
+ *  戻り値 { front, top, side }（各 { shapes, box } か null）。図が見つからなければ null。 */
+export function threeViewAutoSplit(shapes, gap = 6) {
+  const list = (shapes || []).filter(s => !autoSkip(s)), cl = clusterShapes(list, gap); if (!cl.length) return null;
+  if (cl.length === 1) return { front: cl[0], top: null, side: null };
+  const area = c => (c.box.maxX - c.box.minX) * (c.box.maxY - c.box.minY);
+  let best = null;
+  for (const f of cl) {
+    const above = cl.filter(c => c !== f && c.box.maxY <= f.box.minY + 1e-6 && overlapRatio(c.box.minX, c.box.maxX, f.box.minX, f.box.maxX) >= 0.5).sort((a, b) => b.box.maxY - a.box.maxY)[0] || null;
+    const right = cl.filter(c => c !== f && c.box.minX >= f.box.maxX - 1e-6 && overlapRatio(c.box.minY, c.box.maxY, f.box.minY, f.box.maxY) >= 0.5).sort((a, b) => a.box.minX - b.box.minX)[0] || null;
+    const score = (above ? 1 : 0) + (right ? 1 : 0); if (!best || score > best.score || (score === best.score && area(f) > area(best.f))) best = { f, above, right, score };
+  }
+  return { front: best.f, top: best.above, side: best.right };
+}
+/** 線が閉じていなくても、図の「外側の形」を取る：線を細かい格子に引いて、外から塗りつぶせない所＝形の中として、各行の左右の端を結んだ多角形にする。内側の細かい線は無視される。 */
+export function threeViewEnvelope(shapes, cell = 0.2, tol = 0.05) {
+  const lines = []; for (const s of shapes || []) { let p; try { p = flattenShape(s, tol); } catch { continue; } if (p && p.length >= 2) lines.push(p); }
+  if (!lines.length) return null;
+  const all = lines.flat(), minX = Math.min(...all.map(p => p.x)), maxX = Math.max(...all.map(p => p.x)), minY = Math.min(...all.map(p => p.y)), maxY = Math.max(...all.map(p => p.y)), pad = 3;
+  const W = Math.ceil((maxX - minX) / cell) + 2 * pad + 1, H = Math.ceil((maxY - minY) / cell) + 2 * pad + 1; if (W * H > 6e6) return null;
+  const wall = new Uint8Array(W * H), cx = x => Math.floor((x - minX) / cell) + pad, cy = y => Math.floor((y - minY) / cell) + pad;
+  const mark = (ix, iy) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = ix + dx, y = iy + dy; if (x >= 0 && y >= 0 && x < W && y < H) wall[y * W + x] = 1; } };
+  for (const p of lines) for (let i = 1; i < p.length; i++) { const a = p[i - 1], b = p[i], n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / (cell / 2))); for (let k = 0; k <= n; k++) mark(cx(a.x + (b.x - a.x) * k / n), cy(a.y + (b.y - a.y) * k / n)); }
+  const out = new Uint8Array(W * H), stack = [0]; out[0] = 1;
+  while (stack.length) { const i = stack.pop(), x = i % W, y = (i - x) / W; for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) { if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny * W + nx; if (!out[j] && !wall[j]) { out[j] = 1; stack.push(j); } } }
+  const rows = []; for (let iy = 0; iy < H; iy++) { let a = -1, b = -1; for (let ix = 0; ix < W; ix++) if (!out[iy * W + ix]) { if (a < 0) a = ix; b = ix; } if (a >= 0 && b - a >= 2) rows.push({ iy, a, b }); }
+  if (rows.length < 3) return null;
+  const rs = rows.slice(1, -1), pts = rs.map((r, k) => ({ y: k === 0 ? minY : k === rs.length - 1 ? maxY : minY + (r.iy - pad + 0.5) * cell, l: minX + (r.a + 1 - pad + 0.5) * cell, r: minX + (r.b - 1 - pad + 0.5) * cell }));
+  const left = pts.map(p => ({ x: p.l, y: p.y })), right = pts.map(p => ({ x: p.r, y: p.y })).reverse(), ring = [...left, ...right];
+  const slim = ring.filter((q, i) => { const a = ring[(i - 1 + ring.length) % ring.length], b = ring[(i + 1) % ring.length]; return !(Math.abs(q.x - a.x) < 1e-9 && Math.abs(q.x - b.x) < 1e-9); }); /* まっすぐな所の途中の点は省く */
+  return slim.length >= 3 ? slim : null;
+}
+/** 図面の中の正面・上・横の図から立体を組み立てる（threeViewAutoSplit の見分け方）。上の図は下の辺を手前、横の図は左の辺を手前とし、横の図の下端を正面の下端にそろえる。
+ *  戻り値は threeViewSolid と同じ形に { auto: { top, side } } を足したもの。正面が見つからない・形が取れないときは null。 */
+export function threeViewSolidAuto(shapes, { depthDefault = 30, maxSlices = 80, gap = 6, cell = 0.2 } = {}) {
+  const sp = threeViewAutoSplit(shapes, gap); if (!sp?.front) return null;
+  const F = threeViewEnvelope(sp.front.shapes, cell); if (!F) return null;
+  const fMaxY = Math.max(...F.map(p => p.y));
+  let T = null, S = null;
+  if (sp.top) { const e = threeViewEnvelope(sp.top.shapes, cell); if (e) { const bottom = Math.max(...e.map(p => p.y)); T = e.map(p => ({ x: p.x, y: bottom - p.y })); } }
+  if (sp.side) { const e = threeViewEnvelope(sp.side.shapes, cell); if (e) { const left = Math.min(...e.map(p => p.x)), bottom = Math.max(...e.map(p => p.y)); S = e.map(p => ({ x: p.x - left, y: p.y + (fMaxY - bottom) })); } }
+  const solid = solidFromPolys(F, T, S, { depthDefault, maxSlices }); return solid ? { ...solid, auto: { top: !!T, side: !!S } } : null;
+}
