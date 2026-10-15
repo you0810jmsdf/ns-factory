@@ -188,6 +188,32 @@ tr:hover td{background:#1c2128}
 tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 .del-btn{background:none;border:1px solid #30363d;color:#ff9d9d;border-radius:8px;padding:4px 8px;font-size:11.5px;cursor:pointer;white-space:nowrap}
 .del-btn:hover{border-color:#f85149}
+/* 接客ログのチャット表示（2026-10-16・LINE風）。お客様=左のグレー／AI・店長=右の緑。1つの相談＝1枚のカード */
+.view-toggle{display:inline-flex;margin-left:12px;vertical-align:middle;border:1px solid #30363d;border-radius:999px;overflow:hidden}
+.view-toggle button{font-size:12px;padding:4px 12px;background:#0d1117;color:#9aa4af;border:none;cursor:pointer;font-family:inherit}
+.view-toggle button.on{background:#1f6feb;color:#fff}
+.chat-view{display:none;flex-direction:column;gap:16px}
+.chat-view.on{display:flex}
+.chat-conv{background:#101a26;border:1px solid #30363d;border-radius:14px;overflow:hidden}
+.chat-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:8px 14px;background:#161b22;border-bottom:1px solid #30363d;font-size:12px;color:#9aa4af}
+.chat-head .when{color:#e6edf3;font-weight:bold;font-variant-numeric:tabular-nums}
+.chat-body{display:flex;flex-direction:column;gap:10px;padding:14px 14px 16px}
+.chat-day{align-self:center;font-size:11px;color:#c9d1d9;background:rgba(255,255,255,.12);padding:2px 12px;border-radius:999px}
+.chat-row{display:flex;gap:8px;align-items:flex-start}
+.chat-row.me{justify-content:flex-end}
+.chat-av{flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:#2b323c;display:flex;align-items:center;justify-content:center;font-size:18px}
+.chat-col{display:flex;flex-direction:column;gap:3px;min-width:0;max-width:min(78%,640px)}
+.chat-row.me .chat-col{align-items:flex-end}
+.chat-name{font-size:11px;color:#9aa4af;padding-left:2px}
+.chat-bub{padding:8px 12px;border-radius:16px;line-height:1.65;font-size:14px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.chat-row.them .chat-bub{background:#2b323c;color:#e6edf3;border-top-left-radius:4px}
+.chat-row.them.bot .chat-bub{background:#3a2d10;color:#f2d98a}
+.chat-row.them.staff .chat-bub{background:#0d2438;color:#9fd0ff}
+.chat-row.me .chat-bub{background:#06c755;color:#03210f;border-top-right-radius:4px}
+.chat-bub.legacy{background:transparent!important;border:1px dashed #30363d;color:#8b949e!important;font-style:italic}
+.chat-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;color:#8b949e;font-variant-numeric:tabular-nums}
+.chat-row.me .chat-meta{justify-content:flex-end}
+@media(max-width:600px){.chat-col{max-width:86%}.chat-body{padding:12px 8px}}
 /* ライブ対応パネル（2026-09-05）。スマホで引き継ぐ前提＝ボタンは指で押せる大きさ・横スクロールなし */
 .live-mini{padding:6px 12px;font-size:12px;margin-left:8px;vertical-align:middle}
 .live-sessions{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
@@ -351,7 +377,8 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
   </div>
 
   <div class="panel">
-    <h2>📋 発言一覧 <span class="sub" id="listSub">新しい順</span></h2>
+    <h2>📋 発言一覧 <span class="sub" id="listSub">新しい順</span>
+      <span class="view-toggle" id="viewToggle"><button type="button" data-view="chat">💬 チャット</button><button type="button" data-view="table">📋 表</button></span></h2>
     <div id="quotaBar" style="display:none"></div>
     <div id="issueBar" style="display:none"></div>
     <div class="table-wrap">
@@ -360,6 +387,7 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
         <tbody id="tbody"><tr><td class="empty" colspan="5">読み込み中…（ログインすると今月分が自動で表示されます）</td></tr></tbody>
       </table>
     </div>
+    <div class="chat-view" id="chatView"></div>
     <p class="note" id="footNote"></p>
   </div>
 </div>
@@ -544,18 +572,29 @@ function normalizeHearingLog(log, from, to) {
    ここでも同じ条件で判定して過去分も拾えるようにしている。 */
 const MISS_PATTERNS_VIEW = /(だけなん|だけです|ではありません|じゃありません|ではなく|じゃなく|そうでは|そうじゃ|違います|ちがいます|見にくい|見づらい|みにくい|小さくて|見つかりま|みつかりま|分かりにく|わかりにく|もう一度|さっきの|同じこと|伝わ)/;
 const HEARING_CLOSING = /(ありがとう|よろしくお願い|検討します|また(来|き)ます|また(伺|うかが)|以上です|注文します|お願いします)/;
-function markHearingIssues(list) {
+/* 1つの会話ごとに束ねる（古い順の配列で返す）。チャット表示と「見直したい相談」の判定で共通に使う（2026-10-16）。
+   hearing: sid が同じ、sid が無い過去ログは30分以内／ai: 同じ幕僚・同じ場所で30分以内／visitor: 30分以内 */
+function groupConversations(list) {
   const asc = list.slice().reverse();          // listは新しい順なので古い順に直す
   const groups = [];
   let cur = null, prevTime = null;
   asc.forEach((r) => {
     const tm = Date.parse(String(r.datetime).replace(/-/g, '/'));
-    const sameBySid  = cur && r.sid && cur.sid === r.sid;
-    const sameByTime = cur && !r.sid && !cur.sid && prevTime && (tm - prevTime) <= 30 * 60 * 1000;
-    if (!cur || !(sameBySid || sameByTime)) { cur = { sid: r.sid || '', items: [] }; groups.push(cur); }
+    const near = prevTime && (tm - prevTime) <= 30 * 60 * 1000;
+    let same = false;
+    if (cur) {
+      if (currentSrc === 'hearing') same = (r.sid && cur.sid === r.sid) || (!r.sid && !cur.sid && near);
+      else if (currentSrc === 'ai') same = cur.staffId === (r.staffId || '') && cur.venue === (r.venue || '') && near;
+      else same = near;
+    }
+    if (!same) { cur = { sid: r.sid || '', staffId: r.staffId || '', venue: r.venue || '', items: [] }; groups.push(cur); }
     cur.items.push(r);
     prevTime = tm;
   });
+  return groups;
+}
+function markHearingIssues(list) {
+  const groups = groupConversations(list);
   let flagged = 0;
   groups.forEach((g) => {
     const miss = g.items.filter((x) => x.miss).length;
@@ -623,6 +662,7 @@ function applySrcUI() {
   if (listPanel) listPanel.style.display = isKn ? 'none' : '';
   const bdPanel = document.getElementById('bdTitle').closest('.panel');
   if (isKn && bdPanel) bdPanel.style.display = 'none';
+  syncViewUI();
 }
 
 // 月次アーカイブ: 保存済みの月一覧を取り、選択中の月・系統の中身を表示する
@@ -698,6 +738,7 @@ async function load() {
   applySrcUI();
   renderMonthlyQuota();   // 当月件数のアラートはログ取得を待たずに出す（GASが遅い日でも見えるように）
   document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">読み込み中…</td></tr>';
+  document.getElementById('chatView').innerHTML = '<div class="empty">読み込み中…</div>';
 
   if (currentSrc === 'knowledge') {
     try { await knLoad(); } catch (e) { showLoadError(String(e.message || e)); } finally { btn.disabled = false; }
@@ -783,6 +824,7 @@ function showLoadError(msg) {
             + 'nsfactory-visitor-chat は手動貼り付け運用のため、<b>ログ閲覧APIを追加した visitor-chat.gs をGASエディタへ貼り付け・デプロイ更新するまでこのタブは動作しません。</b>'
           : 'ログの取得に失敗しました（' + esc(msg) + '）');
     document.getElementById('tbody').innerHTML = '<tr><td class="empty" colspan="5">取得できませんでした</td></tr>';
+    document.getElementById('chatView').innerHTML = '<div class="empty">取得できませんでした</div>';
     rows = [];
     archiveTable = { head: [], rows: [] };
     renderKpis([]);
@@ -1007,6 +1049,7 @@ function render() {
       + '<td><button class="del-btn" type="button" data-del="' + i + '" title="テスト発言をログから削除">🗑</button></td></tr>').join('')
       : '<tr><td class="empty" colspan="6">該当する発言はありません</td></tr>';
   }
+  if (chatMode()) renderChat(list);   // 表はいつも作る（切替ですぐ戻せる）。チャット表示のときだけ会話カードも作る
   // 絞り込みの結果0件になったとき、その理由が画面から分かるようにする
   const word = document.getElementById('fWord').value.trim();
   const conds = [];
@@ -1022,6 +1065,104 @@ function render() {
       + '（取得済みは' + rows.length + '件）<br>'
       + '<button class="more" type="button" id="clearFilters">絞り込みを解除する</button></td></tr>';
   }
+}
+
+// ================================================================
+// 💬 チャット表示（LINE風・2026-10-16）
+//   対象は オーダー相談／幕僚キャラ接客／みんなのチャット。1つの会話＝1枚のカード（groupConversations）。
+//   お客様は左のグレー、AI・店長は右の緑。✏️指摘・🗑削除・✅指摘済は表と同じ data-* で動く（fbList のインデックス）。
+//   表と同じ render() から呼ぶので、絞り込み・期間・本文検索はそのまま効く。
+// ================================================================
+let chatView = true;
+try { chatView = localStorage.getItem('nsf_chatlog_view') !== 'table'; } catch (e) {}
+function chatSupported() { return currentSrc === 'hearing' || currentSrc === 'ai' || currentSrc === 'visitor'; }
+function chatMode() { return chatSupported() && chatView; }
+function syncViewUI() {
+  const on = chatMode();
+  document.getElementById('viewToggle').style.display = chatSupported() ? '' : 'none';
+  document.querySelectorAll('#viewToggle button').forEach(b => b.classList.toggle('on', (b.dataset.view === 'chat') === chatView));
+  document.querySelector('.table-wrap').style.display = on ? 'none' : '';
+  document.getElementById('chatView').classList.toggle('on', on);
+  // 「指摘済みを畳む」は表だけの機能。チャット表示では指摘済バッジを吹き出しに付けるだけ
+  const fold = document.getElementById('fbFoldBtn');
+  if (fold && fold.parentElement) fold.parentElement.style.display = (on || currentSrc === 'archive') ? 'none' : '';
+}
+
+const CHAT_WEEK = ['日', '月', '火', '水', '木', '金', '土'];
+function chatTime(dt) { const m = String(dt || '').match(/(\d{1,2}:\d{2})/); return m ? m[1] : ''; }
+function chatDay(dt) { const m = String(dt || '').match(/^(\d{4}-\d{2}-\d{2}|\d{2}-\d{2})/); return m ? m[1] : ''; }
+function chatDayLabel(dt) {
+  const d = chatDay(dt);
+  if (!/^\d{4}-/.test(d)) return d.replace(/-/g, '/');     // 旧形式は年が無い
+  return d.replace(/-/g, '/') + '（' + CHAT_WEEK[new Date(d.replace(/-/g, '/')).getDay()] + '）';
+}
+const chatMoji = t => looksMojibake(t) ? '<span class="mojibake">文字化け</span>' : '';
+
+// オーダー相談・幕僚キャラ接客: 1行＝お客様の質問（左）＋AIの応答（右）
+function chatQaRows(r, i) {
+  const key = fbKeyOf(currentSrc, r.datetime, currentSrc === 'ai' ? r.staffId : '');
+  const done = fbInfo.has(key);
+  const t = chatTime(r.datetime);
+  const reply = r.reply || (r.legacy ? '' : '（応答なし）');
+  return '<div class="chat-row them"><div class="chat-av">🙂</div><div class="chat-col">'
+    + '<div class="chat-bub">' + esc(r.question) + chatMoji(r.question) + '</div>'
+    + '<div class="chat-meta"><span>' + esc(t) + '</span>' + (r.img ? '<span>📷 画像' + r.img + '枚</span>' : '') + '</div>'
+    + '</div></div>'
+    + '<div class="chat-row me"><div class="chat-col">'
+    + (currentSrc === 'ai' ? '<div class="chat-name">' + esc(whoName(r.staffId)) + '</div>' : '')
+    + '<div class="chat-bub' + (r.legacy ? ' legacy' : '') + '">' + esc(reply) + chatMoji(reply) + '</div>'
+    + '<div class="chat-meta">'
+    + (done ? '<span class="badge-done" data-fbview="' + esc(key) + '" title="クリックで指摘内容を表示">✅ 指摘済</span>' : '')
+    + '<button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button>'
+    + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト会話をログから削除">🗑</button>'
+    + '<span>' + esc(t) + (r.replyLen ? ' · ' + r.replyLen + '字' : '') + '</span></div>'
+    + '</div></div>';
+}
+
+// みんなのチャット: 1行＝1発言。店長は右、来店者・ちえみ・販売幕僚は左（発言者名つき）
+function chatVisitorRow(r, i) {
+  const me = r.role === 'owner';
+  const cls = me ? 'me' : r.role === 'chiemi' ? 'them bot' : r.role === 'staff' ? 'them staff' : 'them';
+  const av = r.role === 'chiemi' ? '🤖' : r.role === 'staff' ? '🧑‍💼' : '🙂';
+  const label = whoName(r.role) + (r.name ? '　' + r.name : '');
+  return '<div class="chat-row ' + cls + '">' + (me ? '' : '<div class="chat-av">' + av + '</div>')
+    + '<div class="chat-col">' + (me ? '' : '<div class="chat-name">' + esc(label) + '</div>')
+    + '<div class="chat-bub">' + esc(r.text) + chatMoji(r.text) + '</div>'
+    + '<div class="chat-meta"><span>' + esc(chatTime(r.datetime)) + '</span>'
+    + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト発言をログから削除">🗑</button></div>'
+    + '</div></div>';
+}
+
+function chatConvHtml(g, idx) {
+  const first = g.items[0], last = g.items[g.items.length - 1];
+  const tags = (last.issueTags || []).map(t => '<span class="badge-issue">' + esc(t) + '</span>').join('');
+  const span = chatTime(first.datetime) + (g.items.length > 1 ? ' 〜 ' + chatTime(last.datetime) : '');
+  let html = '<section class="chat-conv"><div class="chat-head">'
+    + '<span class="when">' + esc(chatDayLabel(first.datetime) + '　' + span) + '</span>'
+    + (currentSrc === 'ai' ? '<span class="badge">' + esc(whoName(g.staffId)) + '</span><span>' + esc(venueName(g.venue)) + '</span>' : '')
+    + '<span>' + g.items.length + (currentSrc === 'visitor' ? '発言' : '往復') + '</span>'
+    + (g.sid ? '<span title="' + esc(g.sid) + '">相談ID ' + esc(g.sid.slice(-6)) + '</span>' : '')
+    + tags + '</div><div class="chat-body">';
+  let prevDay = chatDay(first.datetime);
+  g.items.forEach((r) => {
+    const day = chatDay(r.datetime);
+    if (day !== prevDay) { html += '<div class="chat-day">' + esc(chatDayLabel(r.datetime)) + '</div>'; prevDay = day; }
+    html += currentSrc === 'visitor' ? chatVisitorRow(r, idx.get(r)) : chatQaRows(r, idx.get(r));
+  });
+  return html + '</div></section>';
+}
+
+function renderChat(list) {
+  const box = document.getElementById('chatView');
+  if (!list.length) {
+    const hasCond = whoFilter || document.getElementById('fWord').value.trim();
+    box.innerHTML = '<div class="empty">該当する発言はありません'
+      + (hasCond ? '（取得済みは' + rows.length + '件）<br><button class="more" type="button" id="clearFilters">絞り込みを解除する</button>' : '')
+      + '</div>';
+    return;
+  }
+  const idx = new Map(list.map((r, i) => [r, i]));       // data-fb / data-del が参照する fbList の位置
+  box.innerHTML = groupConversations(list).reverse().map(g => chatConvHtml(g, idx)).join('');   // 新しい会話を上に
 }
 
 function downloadCsv() {
@@ -1690,7 +1831,8 @@ document.getElementById('fbSave').addEventListener('click', saveFeedback);
 document.getElementById('fbCancel').addEventListener('click', () => document.getElementById('fbOverlay').classList.remove('on'));
 document.getElementById('fbViewClose').addEventListener('click', () => document.getElementById('fbViewOverlay').classList.remove('on'));
 
-document.getElementById('tbody').addEventListener('click', (ev) => {
+// 表（tbody）とチャット表示（chatView）は同じ data-* を使うので、クリック処理を共有する
+function onListClick(ev) {
   const fb = ev.target.closest('[data-fb]');
   if (fb) { openFeedback(Number(fb.dataset.fb)); return; }
   const del = ev.target.closest('[data-del]');
@@ -1710,6 +1852,18 @@ document.getElementById('tbody').addEventListener('click', (ev) => {
   if (!btn) return;
   const span = document.getElementById(btn.dataset.more);
   if (span) { span.textContent = span.dataset.full; btn.remove(); }
+}
+document.getElementById('tbody').addEventListener('click', onListClick);
+document.getElementById('chatView').addEventListener('click', onListClick);
+
+// 💬チャット／📋表 の切替（選択はこのブラウザに覚える）
+document.getElementById('viewToggle').addEventListener('click', (ev) => {
+  const b = ev.target.closest('[data-view]');
+  if (!b) return;
+  chatView = b.dataset.view === 'chat';
+  try { localStorage.setItem('nsf_chatlog_view', chatView ? 'chat' : 'table'); } catch (e) {}
+  syncViewUI();
+  if (!document.getElementById('reloadBtn').disabled) render();   // 読み込み中なら load() が描き直す
 });
 
 if (checkSession()) unlockAuth();
