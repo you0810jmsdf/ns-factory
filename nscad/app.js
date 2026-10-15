@@ -3040,6 +3040,13 @@ function selectSpanAt(p, additive) {
 }
 /** 反転コピーの菱目が順目（keep）のとき、反転後の穴の傾きを元の値に戻す。位置は変えない。 */
 function keepHoleSlant(mirrored, original) { return $('mirrorHoles').value === 'keep' && 'pathId' in original ? { ...mirrored, angleDeg: original.angleDeg } : mirrored; }
+/** 平行な2本の直線の、ちょうど真ん中を通る軸（点 a・b）。平行でなければ null。 */
+function midAxisOf(l1, l2) {
+  const v = { x: l1.x2 - l1.x1, y: l1.y2 - l1.y1 }, w = { x: l2.x2 - l2.x1, y: l2.y2 - l2.y1 }, lv = Math.hypot(v.x, v.y), lw = Math.hypot(w.x, w.y); if (lv < 1e-9 || lw < 1e-9) return null;
+  const u = { x: v.x / lv, y: v.y / lv }; if (Math.abs(u.x * w.y / lw - u.y * w.x / lw) > 1e-3) return null; /* 平行（約0.06°以内） */
+  const a0 = { x: l1.x1, y: l1.y1 }, t = (a0.x - l2.x1) * u.x + (a0.y - l2.y1) * u.y, b0 = { x: l2.x1 + t * u.x, y: l2.y1 + t * u.y }, m = { x: (a0.x + b0.x) / 2, y: (a0.y + b0.y) / 2 };
+  return { a: m, b: { x: m.x + u.x * 10, y: m.y + u.y * 10 } };
+}
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
@@ -4077,6 +4084,12 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'dimension') { dimToolClick(cursor); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);
+    if (stage?.kind === 'mirrorMid') { /* 2本目の線：1本目との真ん中を軸にする */
+      if (!axis || axis.id === stage.id) { $('hint').textContent = t('mirrorMid1'); return; }
+      const first = doc.shapes.find(s => s.id === stage.id), ax = first ? midAxisOf(first, axis) : null; if (!ax) { $('hint').textContent = t('mirrorNotParallel'); return; }
+      stage = null; mirrorCopy(ax.a, ax.b); return;
+    }
+    if (axis && e.shiftKey) { stage = { kind: 'mirrorMid', id: axis.id }; $('hint').textContent = t('mirrorMid1'); draw(); return; } /* Shift+クリック：2本の線の真ん中を軸にする（1本目） */
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
     if (stage?.kind !== 'mirror') stage = { kind: 'mirror', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) mirrorCopy(a, cursor); }
     draw(); return;
