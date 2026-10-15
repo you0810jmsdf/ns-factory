@@ -1,4 +1,6 @@
 (function () {
+  // data-badge="off" を付けて読み込むと、数えるだけで画面にバッジを出さない（画面いっぱいのアプリ用・2026-10-16）
+  const SHOW_BADGE = !(document.currentScript && document.currentScript.getAttribute('data-badge') === 'off');
   const GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 
   function pageKey() {
@@ -37,6 +39,7 @@
   }
 
   function addBadge(pv, uu, hasUu) {
+    if (!SHOW_BADGE) return;
     if (document.getElementById('access-counter')) return;
     const badge = document.createElement('div');
     badge.id = 'access-counter';
@@ -84,6 +87,7 @@
 
   // 数えずに今の件数だけ表示する
   async function peek() {
+    if (!SHOW_BADGE) return;
     try {
       const res = await fetch(`${GAS_URL}?action=counts`, { cache: 'no-store' });
       if (!res.ok) return;

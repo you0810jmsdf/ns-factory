@@ -7613,8 +7613,8 @@ const TOOLSTATS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9
 const TOOLSTATS_SITE = 'https://you0810jmsdf.github.io/ns-factory/';
 const TOOLSTATS_GROUPS = [
   { key: 'refill', label: 'リフィル印刷', test: p => /^(a6|bible|a5slim)-(weekly|monthly|daily)\/index\.html$/.test(p) || /^a6-print-tool\//.test(p) || p === 'refill/index.html' || p === 'tools/index.html' },
-  { key: 'apps',   label: '幕僚室アプリ', test: p => /^digital-room\//.test(p) || /^(password-note|diet|bp|costco)\//.test(p) || p === 'password-note.html' },
-  { key: 'order',  label: 'オーダー・見積', test: p => (/^order_estimate\//.test(p) && !/admin\.html$/.test(p)) || p === 'orderprogress.html' || /^showroom\//.test(p) || p === 'planner-guide.html' || p === 'order-guide.html' },
+  { key: 'apps',   label: '幕僚室アプリ', test: p => /^digital-room\//.test(p) || /^(password-note|diet|bp|costco|nscad|kodomo-album|sodatelog|shrine-note|ai-course|showroom)\//.test(p) || p === 'password-note.html' },
+  { key: 'order',  label: 'オーダー・見積', test: p => (/^order_estimate\//.test(p) && !/admin\.html$/.test(p)) || p === 'orderprogress.html' || p === 'planner-guide.html' || p === 'order-guide.html' },
   { key: 'other',  label: 'その他', test: () => true },
 ];
 let toolstatsLoaded = false;
