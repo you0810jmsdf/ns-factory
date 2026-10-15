@@ -517,6 +517,41 @@ export function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, r
   if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
   return { ok: true, T, tO: tOuter === undefined && tInner === undefined ? T / plies : tO, tI: tOuter === undefined && tInner === undefined ? T / plies : tI, dO: (tOuter === undefined && tInner === undefined ? T / plies : tI) / 2, dI: -(tOuter === undefined && tInner === undefined ? T / plies : tO) / 2, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
+const FD_NUMS = { dl: '①', dr: '②', w: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
+/** 三つ折りの設計の寸法線（欄の番号①〜⑫）。いま描いている断面の上に重ねて見せる図形を、図面の座標（mm）で返す（事業主指示 2026-10-15：欄を選ぶと実際の図で該当する寸法が分かるように）。
+ *  d＝doc.foldDesign（dL・dR・cL・cR・rinL・rinR・tOuter・tInner・origin・flipV・ring）。key＝'dl' など（FD_NUMS のキー）。refill＝リフィルの束の短い辺の2点（図面の座標）。⑫に使う。
+ *  返り値 [{ type:'line', a, b, arrows:'none'|'end'|'both', dash }, { type:'dot', x, y }, { type:'text', x, y, text }]。計画が成り立たないとき・知らない key は null。 */
+export function foldDimensions(d, key, { refill = null } = {}) {
+  const num = FD_NUMS[key]; if (!d || !num || !d.origin) return null;
+  const p = foldDesignPlan(d); if (!p.ok) return null;
+  const { T } = p, tI = p.tI, tO = p.tO, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
+  const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
+  const items = [], line = (a, b, arrows = 'none', dash = false) => items.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash }), text = (u, v) => items.push({ type: 'text', ...pt(u, v), text: num });
+  const vBot = -T / 2 - 9, vBot2 = vBot - 11, vTop = 2 * rc1 + T / 2 + 9, rad = (deg, r, c) => [c[0] + r * Math.cos(deg * Math.PI / 180), c[1] + r * Math.sin(deg * Math.PI / 180)];
+  const C1 = [f1, rc1], C2 = [u2, v2], lo = ub - d.dL, hi = ub + d.dR;
+  switch (key) {
+    case 'dl': line([ub, vBot], [lo, vBot], 'both'); line([lo, v2], [lo, vBot - 2], 'none', true); line([ub, -T / 2], [ub, vBot - 2], 'none', true); text((ub + lo) / 2, vBot - 6); break;
+    case 'dr': line([ub, vBot], [hi, vBot], 'both'); line([hi, rc1], [hi, vBot - 2], 'none', true); line([ub, -T / 2], [ub, vBot - 2], 'none', true); text((ub + hi) / 2, vBot - 6); break;
+    case 'w': line([lo, vBot2], [hi, vBot2], 'both'); line([lo, v2], [lo, vBot2 - 2], 'none', true); line([hi, rc1], [hi, vBot2 - 2], 'none', true); text((lo + hi) / 2, vBot2 - 6); break;
+    case 'cl': line([ub, vTop], [0, vTop], 'both'); line([0, T / 2], [0, vTop + 2], 'none', true); line([ub, 2 * rc1 + T / 2], [ub, vTop + 2], 'none', true); text(ub / 2, vTop + 6); break;
+    case 'cr': line([ub, vTop], [ub + d.cR, vTop], 'both'); line([ub + d.cR, 2 * rc1 - 2 * rc2 + T / 2], [ub + d.cR, vTop + 2], 'none', true); line([ub, 2 * rc1 + T / 2], [ub, vTop + 2], 'none', true); text(ub + d.cR / 2, vTop + 6); break;
+    case 'rl': { const e = rad(200, d.rinL, C2); line(C2, e, 'end'); items.push({ type: 'dot', ...pt(...C2) }); const l = rad(200, d.rinL + 5, C2); text(l[0], l[1]); break; }
+    case 'rr': { const e = rad(-55, d.rinR, C1); line(C1, e, 'end'); items.push({ type: 'dot', ...pt(...C1) }); const l = rad(-55, d.rinR + 5, C1); text(l[0], l[1]); break; }
+    case 'to': { line(rad(22, d.rinR + tI, C1), rad(22, d.rinR + T, C1), 'both'); const l = rad(22, d.rinR + T + 5, C1); text(l[0], l[1]); break; }
+    case 'ti': { line(rad(-22, d.rinR, C1), rad(-22, d.rinR + tI, C1), 'both'); const l = rad(-22, d.rinR + T + 5, C1); text(l[0], l[1]); break; }
+    case 'shift': line([ub - 9, vTop + 8], [ub + 9, vTop + 8], 'both'); line([ub, 2 * rc1 + T / 2], [ub, vTop + 10], 'none', true); text(ub, vTop + 14); break;
+    case 'ring': {
+      const s = d.ring?.s ?? p.flats[0] + p.bends[0] / 2, path = foldSectionPath({ flats: p.flats, bends: p.bends }), q = pointOnFoldPath(path, s), nu = -Math.sin(q.heading), nv = Math.cos(q.heading), fu = q.u + nu * T / 2, fv = q.v + nv * T / 2;
+      items.push({ type: 'dot', ...pt(fu, fv) }); line([fu - nu * 6, fv - nv * 6], [fu + nu * 6, fv + nv * 6], 'both'); text(fu - nu * 11, fv - nv * 11); break;
+    }
+    case 'stack': {
+      if (!refill || refill.length < 2) return items;
+      const [a, b] = refill, dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1, px = -dy / len * 5, py = dx / len * 5;
+      items.push({ type: 'line', a: { x: a.x + px, y: a.y + py }, b: { x: b.x + px, y: b.y + py }, arrows: 'both', dash: false }, { type: 'text', x: (a.x + b.x) / 2 + px * 2.2, y: (a.y + b.y) / 2 + py * 2.2, text: num }); break;
+    }
+  }
+  return items;
+}
 /** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
  *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
  *  plan は foldDesignPlan の結果。折りは右・左の順（革を端からたどる順）。plan が失敗・pitch が正の数でないときは null。 */
