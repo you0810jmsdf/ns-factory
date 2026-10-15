@@ -2808,6 +2808,22 @@ function circleHandleHit(w) {
   for (let k = 0; k < 8; k++) { const q = circlePoint(sc, k * 45), dd = distance(q, w); if (dd <= bd) { best = { shape: sc, k }; bd = dd; } }
   return best;
 }
+/** 回転の取っ手：選択ツールで図形を選ぶと、選んだ図形の外接の四角の上に出る丸。つかんで回すと、図形の中心まわりに回る（Shift で15°ずつ）。離したとき確定・元に戻すは1回。 */
+function rotateTargets() { return mode === 'select' ? doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.type !== 'image') : []; }
+function rotateGeom() {
+  const list = rotateTargets(); if (!list.length) return null; let b; try { b = bboxOfDoc({ shapes: list, holes: [] }); } catch { return null; } if (!b || !Number.isFinite(b.minX)) return null;
+  const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }; return { list, c, handle: { x: c.x, y: b.minY - 26 / scale }, top: { x: c.x, y: b.minY } };
+}
+const rotateHandleHit = w => { const g = rotateGeom(); return g && distance(g.handle, w) <= 9 / scale ? g : null; };
+const angleOf = (c, p) => Math.atan2(p.y - c.y, p.x - c.x) * 180 / Math.PI;
+function rotateAngleNow(g, p, shift) { let a = angleOf(g.c, p) - g.a0; a = ((a + 540) % 360) - 180; if (shift) a = Math.round(a / 15) * 15; return Math.round(a * 100) / 100; }
+function drawRotateHandle() {
+  const live = gesture?.kind === 'rotate' ? gesture : null, g = live ? { c: live.c, list: rotateTargets() } : rotateGeom(); if (!g || (live && !g.list.length)) return; const k = 1 / scale;
+  ctx.save(); ctx.setLineDash([]);
+  if (live) { ctx.save(); ctx.translate(g.c.x, g.c.y); ctx.rotate(live.angle * Math.PI / 180); ctx.translate(-g.c.x, -g.c.y); ctx.lineWidth = 1.5 * k; for (const s of g.list) strokeShape(s, '#f0b429', true); ctx.restore(); ctx.strokeStyle = '#f0b429'; ctx.lineWidth = 1 * k; ctx.setLineDash([3 * k, 3 * k]); ctx.beginPath(); ctx.moveTo(g.c.x, g.c.y); ctx.lineTo(live.cursor.x, live.cursor.y); ctx.stroke(); ctx.setLineDash([]); }
+  else { const gg = rotateGeom(); ctx.strokeStyle = 'rgba(240,180,41,.6)'; ctx.lineWidth = 1 * k; ctx.beginPath(); ctx.moveTo(gg.top.x, gg.top.y); ctx.lineTo(gg.handle.x, gg.handle.y); ctx.stroke(); ctx.fillStyle = 'rgba(240,180,41,.85)'; ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.arc(gg.handle.x, gg.handle.y, 5 * k, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
 function drawCircleHandles() {
   const g = gesture?.kind === 'circleR' ? gesture : null, sc = g ? doc.shapes.find(x => x.id === g.id) : selectedCircle(); if (!sc) return; const k = 1 / scale, r = g ? g.r : sc.r;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
@@ -3938,7 +3954,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles();
+  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
   updateUI();
 }
 function resize() {
@@ -4037,6 +4053,7 @@ canvas.addEventListener('pointerdown', e => {
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
     const selOne = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id)) : null, nearest = selOne ? pickShapeAt(cursor) : null;
     const handleOk = !selOne || !nearest || nearest.id === selOne.id || distToShape(selOne, cursor) <= distToShape(nearest, cursor) + 1.5 / scale;
+    const rg = rotateHandleHit(cursor); if (rg) { gesture = { kind: 'rotate', c: rg.c, a0: angleOf(rg.c, cursor), angle: 0, cursor }; $('hint').textContent = t('rotDrag', { a: 0 }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
     const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
@@ -4071,6 +4088,7 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
+  if (gesture?.kind === 'rotate') { const c = world(p); cursor = c; gesture.cursor = c; gesture.angle = rotateAngleNow(gesture, c, e.shiftKey); $('hint').textContent = t('rotDrag', { a: gesture.angle }); draw(); return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
@@ -4142,6 +4160,7 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
+  if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c)); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
