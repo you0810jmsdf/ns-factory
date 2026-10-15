@@ -731,3 +731,30 @@ export function ownHolePathIds(doc) {
   return out;
 }
 export const holeIsOwn = (h, ownPaths) => !!h.ownVisible || ownPaths.has(h.pathId);
+
+/** 2本の曲線（直線・円弧・円・ベジェ・ペン・折れ線）の交点のそばを、半径 r の円弧でなめらかにつなぐ。pA・pB は、それぞれ残したい側（腕）の上でクリックした点。
+ *  戻り値 { arc, a, b }（arc＝つなぎの円弧、a・b＝切って残した曲線）か、成り立たないとき null。曲線は細かい折れ線で計算するので、接する点は 0.01mm 程度の誤差。 */
+export function filletCurves(sA, pA, sB, pB, r) {
+  const okType = s => ['line', 'polyline', 'arc', 'bezier', 'path', 'circle'].includes(s?.type) && !(s.closed && s.type !== 'circle');
+  if (!(r > 0) || !okType(sA) || !okType(sB)) return null;
+  const asArc = s => s.type === 'circle' ? { ...s, type: 'arc', startDeg: 0, endDeg: 360 } : s, A = asArc(sA), B = asArc(sB);
+  const PA = flattenShape(A, 0.005), PB = flattenShape(B, 0.005); if (!PA || !PB || PA.length < 2 || PB.length < 2) return null;
+  const cum = P => P.reduce((c, q, i) => (c.push(i ? c[i - 1] + distance(q, P[i - 1]) : 0), c), []), cA = cum(PA), cB = cum(PB);
+  const segHit = (a, b, c, d) => { const v = { x: b.x - a.x, y: b.y - a.y }, w = { x: d.x - c.x, y: d.y - c.y }, den = cross(v, w); if (Math.abs(den) < 1e-12) return null; const e = { x: c.x - a.x, y: c.y - a.y }, t = cross(e, w) / den, u = cross(e, v) / den; return t < -1e-9 || t > 1 + 1e-9 || u < -1e-9 || u > 1 + 1e-9 ? null : { x: a.x + v.x * t, y: a.y + v.y * t }; };
+  const crossings = (P, Q) => { const out = []; for (let i = 1; i < P.length; i++) for (let j = 1; j < Q.length; j++) { const h = segHit(P[i - 1], P[i], Q[j - 1], Q[j]); if (h) out.push(h); } return out; };
+  const project = (P, C, q) => { let best = { d: Infinity }; for (let i = 1; i < P.length; i++) { const a = P[i - 1], b = P[i], v = { x: b.x - a.x, y: b.y - a.y }, n = dot(v, v), t = n ? Math.max(0, Math.min(1, dot({ x: q.x - a.x, y: q.y - a.y }, v) / n)) : 0, pt = { x: a.x + v.x * t, y: a.y + v.y * t }, d = distance(pt, q); if (d < best.d) best = { d, pt, s: C[i - 1] + t * Math.sqrt(n), side: Math.sign(cross(v, { x: q.x - pt.x, y: q.y - pt.y })) }; } return best; };
+  const mid = { x: (pA.x + pB.x) / 2, y: (pA.y + pB.y) / 2 }, X = crossings(PA, PB).sort((p, q) => distance(p, mid) - distance(q, mid))[0]; if (!X) return null;
+  const sideA = project(PA, cA, pB).side, sideB = project(PB, cB, pA).side; if (!sideA || !sideB) return null;
+  let center = null;
+  for (const da of [r, -r]) for (const db of [r, -r]) {
+    const oa = offsetPolyline(PA, da, false, { join: 'miter' }), ob = offsetPolyline(PB, db, false, { join: 'miter' }); if (oa.length < 2 || ob.length < 2) continue;
+    for (const C of crossings(oa, ob)) if (project(PA, cA, C).side === sideA && project(PB, cB, C).side === sideB && (!center || distance(C, X) < distance(center, X))) center = C;
+  }
+  if (!center) return null;
+  const qa = project(PA, cA, center), qb = project(PB, cB, center); if (Math.abs(qa.d - r) > 0.02 || Math.abs(qb.d - r) > 0.02) return null;
+  const sa = qa.s * arcLength(A) / cA.at(-1), sb = qb.s * arcLength(B) / cB.at(-1), keep = (S, P, C, pt, s, click) => { const parts = splitShapeAt(S, [s]); if (parts.length < 2) return null; return project(P, C, click).s < pt.s ? parts[0] : parts[1]; };
+  const a = keep(A, PA, cA, qa, sa, pA), b = keep(B, PB, cB, qb, sb, pB); if (!a || !b) return null;
+  const ang = q => norm(Math.atan2(q.y - center.y, q.x - center.x) * 180 / Math.PI), a1 = ang(qa.pt), a2 = ang(qb.pt), d = norm(a2 - a1);
+  const arc = d <= 180 ? { type: 'arc', cx: center.x, cy: center.y, r, startDeg: a1, endDeg: a1 + d } : { type: 'arc', cx: center.x, cy: center.y, r, startDeg: a2, endDeg: a2 + norm(a1 - a2) };
+  return { arc, a, b };
+}
