@@ -2966,18 +2966,21 @@ function runCommand(raw) {
   $('cmd').value = ''; draw();
 }
 
-/** 定規（S）と寸法（D）は同じ道具（事業主指示 2026-10-15）：1点目・2点目のクリックで測り（距離を表示し、寸法の図形を既定の位置に置く）、3点目をクリックすると、数値（寸法線）の位置をそこへ動かす。3点目を打たなければ、いまの位置のまま（Esc で次の測定へ）。 */
+/** 定規（S）：始点・終点のクリックで、2点間の距離を表示するだけ（寸法の図形は作らない）。次のクリックは測りなおしの始点。 */
+function rulerClick(pt) {
+  if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: pt }; $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
+  ruler = { a: stage.a, b: pt }; stage = null; $('hint').textContent = rulerText(ruler) + ' ' + t('rulerAgain'); lastPoint = pt; draw();
+}
+/** 寸法（D）：1点目・2点目のクリックで測り、3点目をクリックしたときに初めて、その位置（数値の位置）に寸法を作る。それまでは図面に記録しない（画面の見本だけ）。3点目を打たなければ何も作らない（Esc・ツール切替で消える）。 */
 const dimOffsetFor = (a, b, pt) => { const len = distance(a, b) || 1, off = (pt.x - a.x) * ((b.y - a.y) / len) - (pt.y - a.y) * ((b.x - a.x) / len), r = Math.round(off * 10) / 10; return Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r; };   /* 測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる） */
 function dimToolClick(pt) {
-  if (stage?.kind === 'dimPlace') { const g = stage, sh = doc.shapes.find(x => x.id === g.id); stage = null; if (sh) { commit(() => { sh.offset = dimOffsetFor(g.a, g.b, pt); }); $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); } lastPoint = pt; draw(); return; }
-  const first = mode === 'ruler' ? 'ruler' : 'dim';
-  if (stage?.kind !== first) { if (mode === 'ruler') ruler = null; stage = { kind: first, a: pt }; if (mode === 'ruler') $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
-  const a = stage.a; stage = null; ruler = { a, b: pt }; $('hint').textContent = rulerText(ruler); lastPoint = pt;
-  if (distance(a, pt) > 1e-8) {
-    addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: pt.x, y2: pt.y, offset: Number($('dimOffset').value) || 8 });
-    const id = [...selected][0], sh = doc.shapes.find(x => x.id === id); if (sh?.type === 'dimension') { stage = { kind: 'dimPlace', id, a, b: pt }; $('hint').textContent += ' ' + t('dimPlaceHint'); }
+  if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
+    const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
+    const sh = doc.shapes.find(x => x.id === [...selected][0]); if (sh?.type === 'dimension') $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); lastPoint = pt; draw(); return;
   }
-  draw();
+  if (stage?.kind !== 'dim') { stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }
+  const a = stage.a; stage = distance(a, pt) > 1e-8 ? { kind: 'dimPlace', a, b: pt } : null; lastPoint = pt;   /* 2点目：まだ図面には何も作らない */
+  $('hint').textContent = stage ? rulerText({ a, b: pt }) + ' ' + t('dimPlaceHint') : t('rulerSecond'); draw();
 }
 /** 定規の測定結果の文言（距離・横・縦・角度。角度は右向きを 0 として反時計回り）。 */
 function rulerText({ a, b }) {
@@ -3746,7 +3749,7 @@ function drawSheetBody(lo, hi) {
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
-  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目の位置の見本 */
+  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目で作られる寸法の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -3852,7 +3855,8 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
-  if (mode === 'ruler' || mode === 'dimension') { dimToolClick(cursor); return; }   /* 定規と寸法はひとつの道具（2点で測って寸法を置き、3点目で数値の位置を決める） */
+  if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
+  if (mode === 'dimension') { dimToolClick(cursor); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
