@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -426,7 +426,14 @@ function routeForHit(hit) {
   return {saved,route:{...route,reversed:saved.reversed},fresh:true};
 }
 /** 目打ち／目印ツールのクリック処理。markKind が 'tool' 以外（'dot'）なら、線・曲線の上の最寄り位置に点の目印を1つ打つ。 */
-function stampAt(p,single=false,markKind='tool') {
+/** 経路 route（図形 ids）の上で、クリックの位置 p をはさむ、ほかの図形との交点から交点までの区間 [a, b]（経路の長さに沿った位置）。交点が無ければ全体。 */
+function spanBetweenIntersections(route, ids, p) {
+  const len = arcLength(route), mine = doc.shapes.filter(s => ids.includes(s.id)), others = doc.shapes.filter(s => !ids.includes(s.id) && visible(s) && stitchable(s)), cuts = [0, len];
+  for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cuts.push(pr.s); }
+  const sorted = [...new Set(cuts.map(v => Math.round(v * 1e4) / 1e4))].sort((x, y) => x - y), sc = projectOnPath(route, p).s; let k = 0; while (k + 2 < sorted.length && sc > sorted[k + 1]) k++;
+  return { a: sorted[k], b: sorted[k + 1] };
+}
+function stampAt(p,single=false,markKind='tool',span=false) {
   const hit=doc.shapes.filter(s=>editable(s)&&stitchable(s)).reverse().find(s=>distToShape(s,p)<=8/scale),tool=doc.tools.find(t=>t.id===$('stitchTool').value);
   if(!hit||!tool)return;
   try {
@@ -434,7 +441,8 @@ function stampAt(p,single=false,markKind='tool') {
     const {saved,fresh}=state;
     if(!saved.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id))))return;
     const isMark=markKind!=='tool',reverse=isMark?!!saved.reversed:$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
-    const from=isMark?0:Math.max(opts.from,opts.offsetStart),to=isMark?len:Math.min(opts.to,len-opts.offsetEnd); /* 目印は始端の空き・区間設定に縛られず、線上のどこにでも打てる */
+    const sp=span&&!isMark?spanBetweenIntersections(route,saved.shapeIds,p):null; /* Shift+クリック：交点から交点までの区間だけに打つ */
+    const from=isMark?0:Math.max(opts.from,opts.offsetStart+(sp?sp.a:0)),to=isMark?len:Math.min(opts.to,(sp?sp.b:len)-opts.offsetEnd); /* 目印は始端の空き・区間設定に縛られず、線上のどこにでも打てる */
     if(from>to || len<1e-9){$('hint').textContent=t('invalidRange');return;}
     let points,next=null;
     if(manual){
@@ -466,7 +474,7 @@ function stampAt(p,single=false,markKind='tool') {
       selected=new Set(added);
     });
     manualNext=manual&&!single?{pathId:saved.id,s:next,reversed:reverse}:null;
-    $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)});draw();
+    $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)})+(sp?' '+t('stitchSpanNote',{a:sp.a.toFixed(1),b:sp.b.toFixed(1)}):'');draw();
   }catch(err){$('hint').textContent=err.message;}
 }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
@@ -4065,7 +4073,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distToShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { stampAt(world(p), e.altKey); return; }
+  if (mode === 'stitch') { stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
