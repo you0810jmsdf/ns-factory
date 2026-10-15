@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -32,6 +32,7 @@ import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
+import { saveToSharedDir, canPickDir, getSavedDir } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases } from './phrases.js';
@@ -1101,7 +1102,13 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
-  $('bugLog').onclick = () => { const r = bugReport(); download(bugReportName(), JSON.stringify(r), 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }); }; /* 不具合記録：操作の記録と図面をファイルに保存（外部へは送らない） */
+  $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
+    const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
+    if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
+    const res = await saveToSharedDir(name, text, { repick });
+    if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }); return; }
+    download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : '');
+  };
   $('regSend').onclick = doRegister; $('regCheck').onclick = doRegCheck; $('regClose').onclick = () => $('regDialog').close(); registration.refresh();
   $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
@@ -3029,9 +3036,17 @@ function applyShapeParts(hit, parts) {
   return added;
 }
 const seamsOn = hit => { const ids = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id)); return doc.seams.some(seam => ids.has(seam.a.pathId) || ids.has(seam.b.pathId)); };
-function trimClick(p, keep) {
+function trimClick(p, keep, byHoles = false) {
   const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
-  const parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
+  let parts;
+  if (byHoles) { /* Alt+クリック：その線に打たれた菱目の位置で区切り、クリックした「菱目と菱目の間」の線だけを切る（菱目は残す） */
+    const mine = doc.holes.filter(h => doc.paths.some(pt => pt.id === h.pathId && pt.shapeIds.includes(hit.id))), cuts = [];
+    for (const h of mine) { const q = projectOnPath(hit, { x: h.x, y: h.y }); if (distance(q, h) < 0.3) cuts.push(q.s); }
+    if (!cuts.length) { $('hint').textContent = t('trimNoHoles'); return; }
+    const sc = projectOnPath(hit, p).s, lo = Math.max(...cuts.filter(c => c <= sc), -Infinity), hi = Math.min(...cuts.filter(c => c > sc), Infinity), near2 = [lo, hi].filter(Number.isFinite); /* クリックをはさむ両どなりの菱目の位置だけで切る */
+    const all = splitShapeAt(hit, near2); if (all.length < 2) { $('hint').textContent = t('noIntersection'); return; }
+    const clicked = all.reduce((b, x) => distToShape(x, p) < distToShape(b, p) ? x : b); parts = keep ? [clicked] : all.filter(x => x !== clicked);
+  } else parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
   if (!parts) { $('hint').textContent = t('noIntersection'); return; }
   if (seamsOn(hit) && !window.confirm(t('holeTrimConfirm'))) return; /* 縫い合わせ設定だけは、切ると解除になる（菱目は残る部分に引き継ぐ） */
   cancel();
@@ -3351,7 +3366,7 @@ function explodeSelection() {
 }
 function removeSelected() {
   const ids = selectedShapeIds();
-  cancel(); commit(() => { const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))).map(p=>p.id)); doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
+  cancel(); commit(() => { const own=ownHolePathIds(doc), paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
 }
 function addShape(shape) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
@@ -4114,7 +4129,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
-  if (mode === 'trim') { trimClick(world(p), e.shiftKey); return; }
+  if (mode === 'trim') { trimClick(world(p), e.shiftKey, e.altKey); return; } /* Shift＝残す側・Alt＝菱目と菱目の間だけ */
   if (mode === 'koma') { komaClick(world(p)); return; }
   if (mode === 'hardware') { placeHardware(cursor); return; }
   if (mode === 'phrase') { placePhrase(cursor); return; }
