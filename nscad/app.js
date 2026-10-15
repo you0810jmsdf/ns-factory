@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -70,6 +70,7 @@ let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙�
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
+let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分岐で止まった端の位置（選択が変わったら出さない） */
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -541,6 +542,12 @@ function countStitchClick(w) {
   });
   $('hint').textContent = t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
 }
+function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
+  if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
+  ctx.save(); ctx.strokeStyle = '#6fa8ff'; ctx.fillStyle = '#6fa8ff'; ctx.lineWidth = 2 / scale;
+  for (const p of chainStops.stops) { ctx.beginPath(); ctx.arc(p.x, p.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.2 / scale, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
@@ -789,6 +796,7 @@ function initLayers() {
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
   $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
+  $('showModHelp').checked = modHelpOn; $('showModHelp').addEventListener('change', e => { modHelpOn = e.target.checked; try { localStorage.setItem('leather-cad.modHelp', modHelpOn ? 'on' : 'off'); } catch { /* 保存できなくても続ける */ } refreshModHelp(); });
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
   $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
@@ -3861,8 +3869,9 @@ function arcThreePoint() { return $('arcMethod').value === 'three'; }
 function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
 /** 左のツールを選んだとき、Shift・Alt を押しながらする操作を、作図面の左上に一覧で出す。キーを押している間は、その行が光る。 */
+let modHelpOn = true; try { if (localStorage.getItem('leather-cad.modHelp') === 'off') modHelpOn = false; } catch { /* 保存できない環境でも続ける */ }
 function refreshModHelp() {
-  const el = $('modHelp'); if (!el) return; const key = 'modHelp.' + mode, txt = t(key);
+  const el = $('modHelp'); if (!el) return; if (!modHelpOn) { el.hidden = true; return; } const key = 'modHelp.' + mode, txt = t(key);
   if (txt === key) { el.hidden = true; return; }
   el.hidden = false; el.innerHTML = txt.split('\n').map(line => { const m = /^(.*?)[：:] *(.*)$/.exec(line) || [line, line, ''], kind = /Shift/.test(m[1]) && /Alt/.test(m[1]) ? 'sa' : /Shift/.test(m[1]) ? 's' : /Alt/.test(m[1]) ? 'a' : 'n'; return `<div data-k="${kind}"><b>${m[1]}</b>：${m[2]}</div>`; }).join('');
 }
@@ -4094,7 +4103,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage(); drawChainStops();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -4352,7 +4361,7 @@ canvas.addEventListener('dblclick', e => {
     const chain = hit ? { shapeIds: chainIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
-      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : ''); draw(); }
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : '') + (chainStops ? ' ' + t('chainBranchNote', { n: chainStops.stops.length }) : ''); draw(); }
   }
 });
 canvas.addEventListener('pointerup', e => {

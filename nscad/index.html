@@ -36,7 +36,7 @@
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; max-height: calc(100% - 48px); overflow-y: auto; } .ctx button { height: 30px; text-align: left; }
     aside button { position: relative; } kbd.key { margin-left: auto; font: 10px/1 ui-monospace, Consolas, monospace; color: #8a7a50; border: 1px solid #3a3a2e; border-radius: 3px; padding: 2px 4px; background: #101010; } .no-keys kbd.key { display: none; }
     .ctx-title { font-size: 11px; color: #8a7a50; padding: 6px 4px 2px; } .ctx-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; min-width: 330px; } .ctx-cards button { height: 28px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; } #tabBar .tabX { margin-left: 8px; padding: 0 3px; border-radius: 3px; opacity: .6; } #tabBar .tabX:hover { opacity: 1; background: #ffffff26; }
+    #tabBar { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; z-index: 2; } #tabBar button { height: 24px; padding: 0 10px; font-size: 12px; background: #1c1c1ee6; } #tabBar button.active { color: #111; background: var(--accent); border-color: var(--accent); font-weight: 600; } #tabBar .tabX { margin-left: 8px; padding: 0 3px; border-radius: 3px; opacity: .6; } #tabBar .tabX:hover { opacity: 1; background: #ffffff26; }
     #status { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; background: #141414e6; border: 1px solid var(--line); border-radius: 6px; font: 11px ui-monospace, Menlo, monospace; pointer-events: none; }
     #threeViewTools { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; } #threeViewTools input { width: 64px; }
     #threeViewNotice { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 5px 12px; background: #3a2a10e6; border: 1px solid #e0a93f; border-radius: 6px; font-size: 12px; color: #ffd27f; pointer-events: none; white-space: nowrap; } #threeViewNotice[hidden] { display: none; }
@@ -122,9 +122,9 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 06:54 · 5f1d0aa</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 07:00 · c1ffb28</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
-<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
+<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="feedbackBtn" data-i18n="fbBtn" data-i18n-title="fbBtnTip"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
@@ -581,8 +581,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=1837f892","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=7a56d699","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=04efbdf2","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=1837f892"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=c83b9531","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=8c90989e","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=87341bff","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=c83b9531"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1404,6 +1404,17 @@ function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) {
   }
   return order;
 }
+/** contourFrom で選んだ輪郭 ids の、先へ進めなかった端のうち「分岐」で止まった所を返す：端のすぐそば（tol 以内）に、輪郭に入っていない別の図形の端がある所。
+ *  すき間（離れて見える所）は含めない（画面の橙の輪で出ている）。戻り値は [{ x, y }]。 */
+function contourStops(shapes, ids, { tol = 0.01, gapTol = 0.2 } = {}) {
+  const inSet = new Set(ids), mine = shapes.filter(s => inSet.has(s.id) && s.type !== 'circle' && !s.closed), others = shapes.filter(s => !inSet.has(s.id) && s.type !== 'circle' && !s.closed);
+  const endsOf = s => { const len = arcLength(s); return len > EPS ? [pointAtLength(s, 0), pointAtLength(s, len)] : []; }, out = [];
+  for (const s of mine) for (const p of endsOf(s)) {
+    if (mine.some(o => o !== s && endsOf(o).some(q => distance(p, q) <= gapTol))) continue; /* 輪郭の中でつながっている端 */
+    if (others.some(o => endsOf(o).some(q => distance(p, q) <= tol)) && !out.some(q => distance(p, q) <= tol)) out.push({ x: p.x, y: p.y });
+  }
+  return out;
+}
 /** 文書と永続経路から、図形の向きを解決した計算用経路を返す。不連続なら null。 */
 function resolvePath(doc,path) {
   const shapes=path.shapeIds.map(id=>doc.shapes.find(s=>s.id===id)); if(shapes.some(s=>!s))return null;
@@ -1617,7 +1628,7 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
 
-return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, cornerLimit};
+return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, cornerLimit};
 })();
 __mods['scale_input'] = (function(){
 /** いまの大きさをもとに、寸法と倍率を丸めずに求める。使えない入力は null。 */
@@ -1725,6 +1736,7 @@ const MESSAGES = {
     "chainSelected": "つながった図形 {n} 個をすべて選びました。",
     "chainSelectedLen": "つながった図形 {n} 個をすべて選びました。全体の長さ {len} mm。",
     "chainGapNote": "端が離れている所が {n} か所あります（最大 {max} mm・橙の輪の所）。「隙間を閉じる」で合わせられます。",
+    "chainBranchNote": "分岐で止まった所が {n} か所あります（青い印）。そこには、選んだ線に入れなかった別の線がつながっています。",
     "closeGaps": "隙間を閉じる",
     "closeGapsDone": "隙間を {n} か所閉じました（最大 {max} mm）。",
     "closeGapsSkipped": "{k} か所は円弧どうしなど端を動かせないため、そのままです。",
@@ -2246,6 +2258,8 @@ const MESSAGES = {
     "locked": "ロック",
     "addLayer": "追加",
     "showSolid": "実線を表示",
+    "showModHelp": "操作の補助",
+    "showModHelpTip": "ツールを選んだとき、作図面の左上に出る操作の一覧（クリック・ダブルクリック・Shift・Alt）の表示・非表示。慣れたら外せます。",
     "showSolidTip": "実線の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。隠した線はクリックで選べず、吸着もしません。",
     "showDashed": "点線を表示",
     "showDashedTip": "点線（補助線・ガイド）の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。線種が点線の線と、ガイドの層の線が対象です。",
@@ -3014,6 +3028,7 @@ const MESSAGES = {
     "chainSelected": "Selected all {n} connected shapes.",
     "chainSelectedLen": "Selected all {n} connected shapes. Total length {len} mm.",
     "chainGapNote": "{n} place(s) have ends that are apart (up to {max} mm, at the orange rings). Use Close gaps to join them.",
+    "chainBranchNote": "Stopped at {n} junction(s) (blue marks): other lines that were not selected join there.",
     "closeGaps": "Close gaps",
     "closeGapsDone": "Closed {n} gap(s) (up to {max} mm).",
     "closeGapsSkipped": "{k} gap(s) were left as they are because arc ends cannot be moved.",
@@ -3535,6 +3550,8 @@ const MESSAGES = {
     "locked": "Locked",
     "addLayer": "Add",
     "showSolid": "Show solid lines",
+    "showModHelp": "Operation tips",
+    "showModHelpTip": "Show or hide the list of click / double-click / Shift / Alt operations at the top left of the canvas when you pick a tool. Turn it off once you are used to it.",
     "showSolidTip": "Show or hide solid lines (screen only; printing and export always include them; separate from layers). Hidden lines cannot be clicked and do not snap.",
     "showDashed": "Show dashed lines",
     "showDashedTip": "Show or hide dashed lines (guides / construction lines) (screen only; printing and export always include them; separate from layers). Covers dashed lines and lines on the Guide layer.",
@@ -19694,7 +19711,7 @@ __mods['app'] = (function(){
 const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __mods['binder_section_edit'];
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
-const { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom } = __mods['geometry'];
+const { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom, contourStops } = __mods['geometry'];
 const { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
@@ -19762,6 +19779,7 @@ let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙�
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
+let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分岐で止まった端の位置（選択が変わったら出さない） */
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
@@ -20233,6 +20251,12 @@ function countStitchClick(w) {
   });
   $('hint').textContent = t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
 }
+function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
+  if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
+  ctx.save(); ctx.strokeStyle = '#6fa8ff'; ctx.fillStyle = '#6fa8ff'; ctx.lineWidth = 2 / scale;
+  for (const p of chainStops.stops) { ctx.beginPath(); ctx.arc(p.x, p.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.2 / scale, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
@@ -20481,6 +20505,7 @@ function initLayers() {
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
   $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
+  $('showModHelp').checked = modHelpOn; $('showModHelp').addEventListener('change', e => { modHelpOn = e.target.checked; try { localStorage.setItem('leather-cad.modHelp', modHelpOn ? 'on' : 'off'); } catch { /* 保存できなくても続ける */ } refreshModHelp(); });
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
   $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
@@ -23553,8 +23578,9 @@ function arcThreePoint() { return $('arcMethod').value === 'three'; }
 function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
 /** 左のツールを選んだとき、Shift・Alt を押しながらする操作を、作図面の左上に一覧で出す。キーを押している間は、その行が光る。 */
+let modHelpOn = true; try { if (localStorage.getItem('leather-cad.modHelp') === 'off') modHelpOn = false; } catch { /* 保存できない環境でも続ける */ }
 function refreshModHelp() {
-  const el = $('modHelp'); if (!el) return; const key = 'modHelp.' + mode, txt = t(key);
+  const el = $('modHelp'); if (!el) return; if (!modHelpOn) { el.hidden = true; return; } const key = 'modHelp.' + mode, txt = t(key);
   if (txt === key) { el.hidden = true; return; }
   el.hidden = false; el.innerHTML = txt.split('\n').map(line => { const m = /^(.*?)[：:] *(.*)$/.exec(line) || [line, line, ''], kind = /Shift/.test(m[1]) && /Alt/.test(m[1]) ? 'sa' : /Shift/.test(m[1]) ? 's' : /Alt/.test(m[1]) ? 'a' : 'n'; return `<div data-k="${kind}"><b>${m[1]}</b>：${m[2]}</div>`; }).join('');
 }
@@ -23786,7 +23812,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage(); drawChainStops();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -24044,7 +24070,7 @@ canvas.addEventListener('dblclick', e => {
     const chain = hit ? { shapeIds: chainIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
-      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : ''); draw(); }
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : '') + (chainStops ? ' ' + t('chainBranchNote', { n: chainStops.stops.length }) : ''); draw(); }
   }
 });
 canvas.addEventListener('pointerup', e => {
@@ -24225,5 +24251,4 @@ return {};
 })();
 }
 </script>
-<script src="../assets/access-counter.js" data-badge="off"></script>
 </body></html>
