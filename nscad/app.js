@@ -227,6 +227,13 @@ function ensureSheetSet() {
   }
   switchTab(cur); renderTabs();
 }
+/** 4分割を切ったとき：中身が空の「上から見た図」「右から見た図」のタブを閉じる（図が入っているタブは残す）。残る補助タブが無ければ、正面の紙の「組」の印も外す（次に開いたとき4分割が勝手に入らない）。閉じた数を返す。 */
+function dropEmptySheetTabs() {
+  const isSheet = tb => tb.doc?.threeViewSheet && tb.doc.threeViewSheet.role !== 'front', drop = tb => isSheet(tb) && !tb.doc.shapes.length && !tb.doc.holes?.length;
+  if (!tabs.some(drop)) return 0; snapshotTab(); const cur = tabs[activeTab], n = tabs.filter(drop).length, keep = tabs.filter(tb => !drop(tb)); if (!keep.length) return 0;
+  tabs = keep; for (const tb of tabs) if (tb.doc?.threeViewSheet?.role === 'front' && !tabs.some(o => isSheet(o) && o.doc.threeViewSheet.id === tb.doc.threeViewSheet.id)) delete tb.doc.threeViewSheet;
+  const i = tabs.indexOf(cur); if (i >= 0) { activeTab = i; renderTabs(); } else { activeTab = -1; switchTab(0); } return n;
+}
 function switchSheet(role) { const tb = quadSheets()[role]; if (!tb) return false; const i = tabs.indexOf(tb); if (i !== activeTab) switchTab(i); return true; }
 /** 図形（と、その図形だけで成り立つ経路・穴）を紙 src から紙 dst へ移す。座標は (dx, dy) だけずらす。id は移し先で付け直す。下絵は移さない。移した図形の数を返す */
 function transferShapes(src, dst, ids, dx, dy) {
@@ -461,6 +468,24 @@ function stampAt(p,single=false,markKind='tool') {
   }catch(err){$('hint').textContent=err.message;}
 }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
+/** 目印を補助線にする（事業主指示 2026-10-15：目印を打ったあと、その目印を補助線に使いたい）。選んだ目印（穴の記号）、または目印を打った線について、目印の位置に、線に直角で長さ L の点線を、ガイドの層の普通の線として作る。作った線は選べて、端をつかんで長さを変えられ、磁石の点にもなる。元の目印は残す。同じ目印を二度は作らない。 */
+function markToGuide() {
+  const len = Number($('markGuideLen').value); if (!(len > 0)) { $('hint').textContent = t('markGuideLenBad'); return; }
+  const selShapes = new Set(doc.shapes.filter(sh => selected.has(sh.id)).map(sh => sh.id));
+  const marks = doc.holes.filter(h => h.mark === 'dot' && (selected.has(h.id) || doc.paths.some(pt => pt.id === h.pathId && pt.shapeIds.some(id => selShapes.has(id)))));
+  if (!marks.length) { $('hint').textContent = t('markGuideNone'); return; }
+  const made = marks.filter(h => !doc.shapes.some(sh => sh.markOf === h.id)); if (!made.length) { $('hint').textContent = t('markGuideDone', { n: 0 }); return; }
+  const ids = []; commit(() => {
+    const layer = ensureLayer(doc, 'guide');
+    for (const h of made) {
+      const path = doc.paths.find(pt => pt.id === h.pathId), route = path ? resolvePath(doc, path) : null; if (!route) continue;
+      const ang = (pointAtLength(route, projectOnPath(route, { x: h.x, y: h.y }).s).angleDeg + 90) * Math.PI / 180, dx = Math.cos(ang) * len / 2, dy = Math.sin(ang) * len / 2, id = freshId(doc.shapes, 's');
+      doc.shapes.push({ id, layer, type: 'line', x1: +(h.x - dx).toFixed(4), y1: +(h.y - dy).toFixed(4), x2: +(h.x + dx).toFixed(4), y2: +(h.y + dy).toFixed(4), lineStyle: 'dashed', markOf: h.id }); ids.push(id);
+    }
+    selected = new Set(ids);
+  });
+  $('hint').textContent = t('markGuideDone', { n: ids.length, len: circleNum(len) });
+}
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
 function markSnapPoint(click) {
@@ -1206,6 +1231,13 @@ function importVector(rawShapes, layersFrom, { recover = true } = {}) {
   }
   return res;
 }
+/** ファイルを開くとき：保存していない図があれば、消さずに新しいタブで開く。タブの名前は、開いたファイルの名前（拡張子なし）にする（事業主指示 2026-10-15：タブはファイル名のほうが分かりやすい／開くで保存前の図が消えない）。 */
+function tabForOpenedFile(file) {
+  const base = (file.name || '').replace(/\.(json|lcc)$/i, '').trim().slice(0, 60);
+  if (tabs[activeTab]?.dirty && doc.shapes.length) newTab(base || undefined);
+  return base;
+}
+function nameOpenedTab(base) { if (tabs[activeTab]) { if (base) tabs[activeTab].name = base; tabs[activeTab].dirty = false; renderTabs(); } }
 async function openFile(file) {
   const name = (file.name || '').toLowerCase();
   if (/\.(png|jpe?g|webp)$/.test(name)) { try { await importImageFile(file); return { added: 1, dropped: 0 }; } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; } }
@@ -1214,11 +1246,11 @@ async function openFile(file) {
     if (name.endsWith('.svg')) { const r = svgToShapes(text); return importVector(r.shapes, r.layers, { recover: false }); }
     if (name.endsWith('.dxf')) { const r = dxfToShapesFull(text); const res = importVector(r.shapes, [], { recover: $('recoverArcs').checked }); if (r.units === null) $('hint').textContent += ' ' + t('dxfUnitsAssumed'); return res; }
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
-    if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
+    if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
     const next = migrateDoc(JSON.parse(text));
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
-    cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); $('hint').textContent = t('loaded') + t('hint.' + mode);
+    const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode);
     if (extraSheets && next.threeViewSheet?.role === 'front') restoreSheets(extraSheets, next.threeViewSheet.id);
     return { added: next.shapes.length, dropped: 0 };
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
@@ -4096,16 +4128,20 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
+$('markToGuide').onclick = markToGuide;
 $('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
 $('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
-$('new').onclick = () => { cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
+$('new').onclick = () => {
+  /* 保存していない図があるときは、消さずに新しい図面タブで始める（事業主指摘 2026-10-15：新規で保存前の図が消えた）。保存済み・空の図面だけ、従来どおりその場で空にする */
+  if (tabs[activeTab]?.dirty && doc.shapes.length) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
+  cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
 $('threeView').addEventListener('change', () => { let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
-$('quadView').addEventListener('change', () => { let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
+$('quadView').addEventListener('change', () => { let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } if (!quadOn()) dropEmptySheetTabs(); rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
