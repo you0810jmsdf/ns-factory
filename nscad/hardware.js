@@ -277,19 +277,21 @@ export function foldRingParts(p = {}) {
   /* リングサポータ（リングを包む帯）は金具ではないので、三つ折りの断面には描かない（事業主指示 2026-10-15・リングを突き抜けて見えたため） */
   if (sec.polys) { for (const q of sec.polys.boss) shapes.push(poly(q, 'boss')); shapes.push(poly(sec.polys.plate, 'plate')); }
   else { if (bossT > 0) shapes.push(rect(0, -plateW / 2, bossT, plateW / 2, 'boss')); shapes.push(rect(bossT, -plateW / 2, bossT + plateT, plateW / 2, 'plate')); }
-  const outerR = sim.outerRingD / 2, ringH = Math.max(outerR, p.ringD + FOLD_RING_EXTRA_MM - outerR), holeT = (sim.outerRingD + p.ringD) / 4, left = holeT - holeEdge, tip = left + refillW;
-  /* リングは台座に差し込まれたC形：円のうち台座（台座・ビス穴金具部）の最上面より下の部分は描かず、外に出る弧だけを描く（事業主指摘 2026-10-15：円が台座を突き抜けて見えた）。台座の外にしか出ない円はそのまま円 */
-  const baseTop = Math.max(0, ...shapes.filter(q => q.role === 'plate' || q.role === 'boss').flatMap(q => q.points.map(pt => pt.h))), inBase = hh => hh <= baseTop;   /* 台座の最上面（レンズ形の台座はいちばん高い所）より下は台座の中。リングはそこから上だけ描く */
+  const outerR = sim.outerRingD / 2, innerR = p.ringD / 2, ringH = Math.max(outerR, p.ringD + FOLD_RING_EXTRA_MM - outerR);
+  /* リフィルの穴：リングの針金が束を貫く範囲を覆う位置・幅にする（事業主指摘 2026-10-15：穴でない所を針金が貫通していた）。束の厚み stackT の上下の面では、針金（外径の円〜内径の円）は中心の高さより内側へ寄る：中心の高さでは外半径 outerR・面では √(内半径²−(stackT/2)²)。その範囲の中心に、穴（直径 holeD 以上・範囲より狭ければ範囲いっぱい）を置く */
+  const wireNear = Math.sqrt(Math.max(0, innerR * innerR - (stackT / 2) * (stackT / 2))), holeT = (wireNear + outerR) / 2, holeW = Math.max(holeD, outerR - wireNear), left = holeT - holeEdge, tip = left + refillW;
+  /* リングは台座に差し込まれたC形：円のうち台座（台座・ビス穴金具部）の輪郭の中は描かず、外に出る弧だけを描く（事業主指摘 2026-10-15：円が台座を突き抜けて見えた）。台座の外にしか出ない円はそのまま円 */
+  const baseShapes = shapes.filter(q => q.role === 'plate' || q.role === 'boss'), inBase = (hh, ww) => baseShapes.some(q => { let c = false; for (let a = 0, b = q.points.length - 1; a < q.points.length; b = a++) { const u = q.points[a], v = q.points[b]; if ((u.w > ww) !== (v.w > ww) && hh < (v.h - u.h) * (ww - u.w) / (v.w - u.w) + u.h) c = !c; } return c; });   /* 台座の輪郭の中（レンズ形の台座は縁が低いので、水平な線ではなく輪郭で切る・リングは台座の輪郭に接して終わる） */
   const ringArcs = (role, r) => {
-    const N = 1440, out = [], vis = Array.from({ length: N }, (_, i) => !inBase(ringH + r * Math.cos(2 * Math.PI * i / N)));
+    const N = 1440, out = [], vis = Array.from({ length: N }, (_, i) => !inBase(ringH + r * Math.cos(2 * Math.PI * i / N), r * Math.sin(2 * Math.PI * i / N)));
     if (vis.every(Boolean)) return [{ type: 'circle', role, h: ringH, w: 0, r }];
     if (!vis.some(Boolean)) return out;
     const start = vis.findIndex((v, i) => v && !vis[(i + N - 1) % N]);   /* 見える弧の始まり（見えない所の直後）から1周たどる */
     for (let k = 0; k < N; k++) { const i = (start + k) % N; if (vis[i] && (k === 0 || !vis[(i + N - 1) % N])) { let m = k; while (m + 1 < N && vis[(start + m + 1) % N]) m++; out.push({ type: 'arc', role, h: ringH, w: 0, r, a0: 2 * Math.PI * (start + k) / N, a1: 2 * Math.PI * (start + m) / N }); k = m; } }
-    return out;
+    return [out.reduce((m, x) => (x.a1 - x.a0 > m.a1 - m.a0 ? x : m))];   /* 台座の中を抜けて細切れになる弧は捨て、台座の上に出ている1本のC形だけ残す */
   };
   shapes.push(...ringArcs('ring-outer', sim.outerRingD / 2), ...ringArcs('ring-inner', p.ringD / 2));
-  return { shapes, ringH, refill: { t0: left, t1: tip, thick: stackT, holeT: holeD > 0 ? [holeT - holeD / 2, holeT + holeD / 2] : [] }, ringFits: stackT <= p.ringD };
+  return { shapes, ringH, refill: { t0: left, t1: tip, thick: stackT, holeT: holeD > 0 ? [holeT - holeW / 2, holeT + holeW / 2] : [] }, ringFits: stackT <= p.ringD };
 }
 /** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
  *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。
