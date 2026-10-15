@@ -3055,6 +3055,15 @@ function midAxisOf(l1, l2) {
   const a0 = { x: l1.x1, y: l1.y1 }, t = (a0.x - l2.x1) * u.x + (a0.y - l2.y1) * u.y, b0 = { x: l2.x1 + t * u.x, y: l2.y1 + t * u.y }, m = { x: (a0.x + b0.x) / 2, y: (a0.y + b0.y) / 2 };
   return { a: m, b: { x: m.x + u.x * 10, y: m.y + u.y * 10 } };
 }
+/** 同じ形で重なっている図形（線・円弧・円・2点の折れ線）を1つにまとめる。reps＝代表の図形の並び・groups＝代表 id → 重なった図形の id の並び・repOf＝図形 id → 代表 id。 */
+function dedupeShapeGroups(list) {
+  const r3 = v => (Math.round(v * 1000) / 1000).toFixed(3), key = s => {
+    if (s.type === 'line' || (s.type === 'polyline' && !s.closed && s.points?.length === 2)) { const a = s.type === 'line' ? [s.x1, s.y1, s.x2, s.y2] : [s.points[0].x, s.points[0].y, s.points[1].x, s.points[1].y], p = [[a[0], a[1]], [a[2], a[3]]].map(q => r3(q[0]) + ',' + r3(q[1])).sort(); return 'L' + p.join(';'); }
+    if (s.type === 'arc') return 'A' + [s.cx, s.cy, s.r, s.startDeg, s.endDeg].map(r3).join(','); if (s.type === 'circle') return 'C' + [s.cx, s.cy, s.r].map(r3).join(','); return null;
+  }, seen = new Map(), reps = [], groups = new Map(), repOf = new Map();
+  for (const s of list) { const k = key(s), first = k ? seen.get(k) : null; if (first) { groups.get(first.id).push(s.id); repOf.set(s.id, first.id); } else { if (k) seen.set(k, s); reps.push(s); groups.set(s.id, [s.id]); repOf.set(s.id, s.id); } }
+  return { reps, groups, repOf };
+}
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
@@ -4204,7 +4213,9 @@ canvas.addEventListener('dblclick', e => {
     if (inGroup && selected.size > 1) { selected = new Set([inGroup.id]); nodeSel = null; draw(); return; } /* グループ全体を選んでいるときのダブルクリック＝中の1つだけを選ぶ */
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distToShape(x, w) <= 7 / scale);
-    const dashedOf = x => x.lineStyle === 'dashed' || x.layer === 'guide', chain = hit ? chainShapes(doc.shapes.filter(x => visible(x) && stitchable(x) && (!dashedOf(hit) || dashedOf(x)))).find(c => c.shapeIds.includes(hit.id)) : null; /* 点線（ガイド）をダブルクリックしたときは、つながった点線だけ（実線の外形にはつながっていても広げない） */
+    const dashedOf = x => x.lineStyle === 'dashed' || x.layer === 'guide', pool = hit ? doc.shapes.filter(x => visible(x) && stitchable(x) && (!dashedOf(hit) || dashedOf(x))) : [];   /* 点線（ガイド）をダブルクリックしたときは、つながった点線だけ（実線の外形にはつながっていても広げない） */
+    const dups = dedupeShapeGroups(pool), repOf = id => dups.repOf.get(id) ?? id, rawChain = hit ? chainShapes(dups.reps).find(c => c.shapeIds.includes(repOf(hit.id))) : null;   /* 同じ形で重なった線は1本として数える（重なっていると、つながりがそこで止まるため）。選ぶときは、重なった線も全部 */
+    const chain = rawChain ? { ...rawChain, shapeIds: rawChain.shapeIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
     if (s && !nodeHit(s, w) && distToShape(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
       const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : ''); draw(); }
