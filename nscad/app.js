@@ -64,6 +64,7 @@ let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 const opLog = []; /* 操作の記録（不具合調査用・最近300件） */
+let dupGroups = []; /* 同じ形・同じ層・同じ線種で重なった図形の組（[{ ids }]）。赤く太く表示し、警告と「1本にまとめる」を出す */
 let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙の輪・ダブルクリックの案内・隙間を閉じる） */
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
@@ -2233,7 +2234,7 @@ function applyScale() {
   if (all) quadFollowScale(sx, sy, o);
   $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
 }
-$('scaleApply').onclick = applyScale;
+$('scaleApply').onclick = applyScale; $('dupMerge').onclick = mergeOverlaps;
 for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
 /** 金具の編集カード：金具（外形に hw を持つ図形のグループ）を全体まで選んでいるときだけ出す。規格・リング径・角度を変えて「作り直す」と、位置はそのままで金具を作り直す。 */
 let hwEditKey = '', hwEditArmed = 0;
@@ -3064,6 +3065,32 @@ function dedupeShapeGroups(list) {
   for (const s of list) { const k = key(s), first = k ? seen.get(k) : null; if (first) { groups.get(first.id).push(s.id); repOf.set(s.id, first.id); } else { if (k) seen.set(k, s); reps.push(s); groups.set(s.id, [s.id]); repOf.set(s.id, s.id); } }
   return { reps, groups, repOf };
 }
+/** 同じ形・同じ層・同じ線種・同じ色で重なっている図形の組を返す（[{ ids }]・2本以上の組だけ）。 */
+function findOverlaps(list) {
+  const byStyle = new Map(); for (const s of list) { const k = [s.layer, s.lineStyle || '', s.color || ''].join('|'); if (!byStyle.has(k)) byStyle.set(k, []); byStyle.get(k).push(s); }
+  const out = []; for (const sub of byStyle.values()) { const g = dedupeShapeGroups(sub); for (const ids of g.groups.values()) if (ids.length > 1) out.push({ ids }); } return out;
+}
+function updateDupBar() { const bar = $('dupBar'); if (!bar) return; bar.hidden = !dupGroups.length || exporting; if (dupGroups.length) $('dupInfo').textContent = t('dupInfo', { n: dupGroups.length }); }
+/** 重なった図形を、赤く太く描く（警告）。 */
+function drawOverlaps() {
+  if (!dupGroups.length) return; ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 0.6; ctx.lineWidth = 5 / scale;
+  for (const g of dupGroups) { const s = doc.shapes.find(x => x.id === g.ids[0]); if (s) strokeShape(s, '#ff3b3b', false); }
+  ctx.restore();
+}
+/** 重なった図形を1本にまとめる。菱目の経路・部品が重なった図形の1つを使っていたら、残す1本につけ替える。元に戻すは1回。 */
+function mergeOverlaps() {
+  const groups = dupGroups.filter(g => g.ids.every(id => { const s = doc.shapes.find(x => x.id === id); return s && editable(s); })); if (!groups.length) return;
+  cancel(); let removed = 0;
+  commit(() => {
+    for (const g of groups) {
+      const keep = g.ids.find(id => doc.paths.some(p => p.shapeIds.includes(id))) ?? g.ids[0], drop = new Set(g.ids.filter(id => id !== keep)); removed += drop.size;
+      for (const p of doc.paths) if (p.shapeIds.some(id => drop.has(id))) p.shapeIds = [...new Set(p.shapeIds.map(id => drop.has(id) ? keep : id))];
+      for (const part of doc.parts) if (part.shapeIds.some(id => drop.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => drop.has(id) ? keep : id))];
+      doc.shapes = doc.shapes.filter(s => !drop.has(s.id)); selected = new Set([...selected].filter(id => !drop.has(id)));
+    }
+  });
+  $('hint').textContent = t('dupMerged', { k: removed, n: groups.length });
+}
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
@@ -3219,6 +3246,7 @@ function rebuildSnaps() {
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
   gaps = findGaps(shapes.filter(s => !s.holeLink));
+  dupGroups = findOverlaps(shapes.filter(s => !s.holeLink)); updateDupBar();
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
   for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
@@ -3963,7 +3991,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  drawCenterMarks(); drawJunctions();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
