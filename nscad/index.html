@@ -118,7 +118,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 11:45 · eede6c7</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 11:56 · 93bccf0</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -134,6 +134,7 @@
 <button data-tool="bezier"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19C4 7 20 17 20 5"/></svg><span data-i18n="bezier"></span></button>
 <button data-tool="path"><svg class="ic" viewBox="0 0 24 24"><path d="M3 20c6-8 8-12 10-12s2 6 8 4"/><circle cx="13" cy="8" r="1.5"/></svg><span data-i18n="path"></span></button>
 <button data-tool="text"><svg class="ic" viewBox="0 0 24 24"><path d="M5 5h14M12 5v14"/></svg><span data-i18n="text"></span></button>
+<button data-tool="dimension"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M3 7v10M21 7v10"/></svg><span data-i18n="dimension"></span></button>
 <button data-tool="ruler"><svg class="ic" viewBox="0 0 24 24"><path d="M3 16 16 3l5 5L8 21zM7 12l2 2M10 9l2 2M13 6l2 2"/></svg><span data-i18n="ruler"></span></button>
 <div class="group" data-i18n="editing"></div>
 <button data-tool="fillet"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10a6 6 0 0 1 6-6h10"/></svg><span data-i18n="fillet"></span></button>
@@ -574,8 +575,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=bcf2fbf9","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=c32c449b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=bcf2fbf9"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=61e228bc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=17902a69","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=61e228bc"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2040,15 +2041,16 @@ const MESSAGES = {
     "dimension": "寸法",
     "ruler": "定規",
     "patchTool": "柄（パッチワーク）",
-    "hint.ruler": "始点と終点をクリックすると、距離が出て、寸法線もできます（端点・中心点に吸い付きます）。3点目をクリックすると、数値（寸法線）がその位置へ動きます。Esc で次の測定。Shift で水平・垂直。",
+    "hint.ruler": "始点と終点をクリックすると、2点間の距離が出ます（端点・中心点に吸い付きます）。測るだけで、図面には何も作りません。もう一度クリックで測りなおし。Shift で水平・垂直。",
     "rulerSecond": "終点をクリックしてください。",
     "rbA": "始点 X,Y",
     "rbB": "終点 X,Y",
     "rbEmpty": "（数値かクリックで測れます）",
     "rulerResult": "距離 {d} mm（横 {dx} ／ 縦 {dy} ／ 角度 {a}°）。",
-    "dimPlaced": "数値（寸法線）を、測った線から {off} mm の位置に置きました。続けて測れます。",
-    "dimPlaceHint": "3点目をクリックすると、数値（寸法線）の位置がそこへ動きます。クリックしなければ、このままです（Esc で次の測定）。",
-    "hint.dimension": "2点をクリックして測り、3点目で数値（寸法線）の位置を決めます（定規と同じ道具）。ずらし量の既定は「作図オプション」。",
+    "dimPlaced": "測った線から {off} mm の位置に、寸法を作りました。続けて測れます。",
+    "rulerAgain": "もう一度クリックで測りなおし。",
+    "dimPlaceHint": "3点目をクリックすると、その位置に寸法ができます。それまでは図面に記録しません（Esc でやめる）。",
+    "hint.dimension": "2点をクリックして測り、3点目をクリックした位置に寸法を作ります。3点目を決めるまでは図面に記録しません。",
     "trim": "トリム",
     "hint.trim": "消したい部分をクリック（交点で区切った区間）。Shift で残す側を選ぶ。",
     "mirror": "線対称",
@@ -3270,15 +3272,16 @@ const MESSAGES = {
     "dimension": "Dimension",
     "ruler": "Ruler",
     "patchTool": "Pattern fill",
-    "hint.ruler": "Click a start and an end point to see the distance and make a dimension line (it snaps to endpoints and centers). Click a third point to move the number (dimension line) there. Esc for the next measurement. Shift = horizontal / vertical.",
+    "hint.ruler": "Click a start and an end point to see the distance and make a dimension line (it snaps to endpoints and centers). Nothing is made in the drawing. Click again to measure anew. Shift = horizontal / vertical.",
     "rulerSecond": "Click the end point.",
     "rbA": "Start X,Y",
     "rbB": "End X,Y",
     "rbEmpty": "(type numbers or click to measure)",
     "rulerResult": "Distance {d} mm (horizontal {dx} / vertical {dy} / angle {a}°).",
-    "dimPlaced": "Placed the number (dimension line) {off} mm from the measured line. You can keep measuring.",
-    "dimPlaceHint": "Click a third point to move the number (dimension line) there. If you do not, it stays as it is (Esc for the next measurement).",
-    "hint.dimension": "Click two points to measure, then a third to place the number (dimension line) — the same tool as the ruler. The default offset is in Drawing options.",
+    "dimPlaced": "Made the dimension {off} mm from the measured line. You can keep measuring.",
+    "rulerAgain": "Click again to measure anew.",
+    "dimPlaceHint": "Click a third point to make the dimension there. Nothing is recorded in the drawing until then (Esc to cancel).",
+    "hint.dimension": "Click two points to measure, then a third to make the dimension there. Nothing is recorded until the third point.",
     "trim": "Trim",
     "hint.trim": "Click the part to remove (between intersections). Shift keeps that part instead.",
     "mirror": "Mirror",
@@ -22350,18 +22353,21 @@ function runCommand(raw) {
   $('cmd').value = ''; draw();
 }
 
-/** 定規（S）と寸法（D）は同じ道具（事業主指示 2026-10-15）：1点目・2点目のクリックで測り（距離を表示し、寸法の図形を既定の位置に置く）、3点目をクリックすると、数値（寸法線）の位置をそこへ動かす。3点目を打たなければ、いまの位置のまま（Esc で次の測定へ）。 */
+/** 定規（S）：始点・終点のクリックで、2点間の距離を表示するだけ（寸法の図形は作らない）。次のクリックは測りなおしの始点。 */
+function rulerClick(pt) {
+  if (stage?.kind !== 'ruler') { ruler = null; stage = { kind: 'ruler', a: pt }; $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
+  ruler = { a: stage.a, b: pt }; stage = null; $('hint').textContent = rulerText(ruler) + ' ' + t('rulerAgain'); lastPoint = pt; draw();
+}
+/** 寸法（D）：1点目・2点目のクリックで測り、3点目をクリックしたときに初めて、その位置（数値の位置）に寸法を作る。それまでは図面に記録しない（画面の見本だけ）。3点目を打たなければ何も作らない（Esc・ツール切替で消える）。 */
 const dimOffsetFor = (a, b, pt) => { const len = distance(a, b) || 1, off = (pt.x - a.x) * ((b.y - a.y) / len) - (pt.y - a.y) * ((b.x - a.x) / len), r = Math.round(off * 10) / 10; return Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r; };   /* 測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる） */
 function dimToolClick(pt) {
-  if (stage?.kind === 'dimPlace') { const g = stage, sh = doc.shapes.find(x => x.id === g.id); stage = null; if (sh) { commit(() => { sh.offset = dimOffsetFor(g.a, g.b, pt); }); $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); } lastPoint = pt; draw(); return; }
-  const first = mode === 'ruler' ? 'ruler' : 'dim';
-  if (stage?.kind !== first) { if (mode === 'ruler') ruler = null; stage = { kind: first, a: pt }; if (mode === 'ruler') $('hint').textContent = t('rulerSecond'); lastPoint = pt; draw(); return; }
-  const a = stage.a; stage = null; ruler = { a, b: pt }; $('hint').textContent = rulerText(ruler); lastPoint = pt;
-  if (distance(a, pt) > 1e-8) {
-    addShape({ type: 'dimension', x1: a.x, y1: a.y, x2: pt.x, y2: pt.y, offset: Number($('dimOffset').value) || 8 });
-    const id = [...selected][0], sh = doc.shapes.find(x => x.id === id); if (sh?.type === 'dimension') { stage = { kind: 'dimPlace', id, a, b: pt }; $('hint').textContent += ' ' + t('dimPlaceHint'); }
+  if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
+    const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
+    const sh = doc.shapes.find(x => x.id === [...selected][0]); if (sh?.type === 'dimension') $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); lastPoint = pt; draw(); return;
   }
-  draw();
+  if (stage?.kind !== 'dim') { stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }
+  const a = stage.a; stage = distance(a, pt) > 1e-8 ? { kind: 'dimPlace', a, b: pt } : null; lastPoint = pt;   /* 2点目：まだ図面には何も作らない */
+  $('hint').textContent = stage ? rulerText({ a, b: pt }) + ' ' + t('dimPlaceHint') : t('rulerSecond'); draw();
 }
 /** 定規の測定結果の文言（距離・横・縦・角度。角度は右向きを 0 として反時計回り）。 */
 function rulerText({ a, b }) {
@@ -23130,7 +23136,7 @@ function drawSheetBody(lo, hi) {
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
-  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目の位置の見本 */
+  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目で作られる寸法の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
@@ -23236,7 +23242,8 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
-  if (mode === 'ruler' || mode === 'dimension') { dimToolClick(cursor); return; }   /* 定規と寸法はひとつの道具（2点で測って寸法を置き、3点目で数値の位置を決める） */
+  if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
+  if (mode === 'dimension') { dimToolClick(cursor); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distToShape(s, world(p)) <= 7 / scale);
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
