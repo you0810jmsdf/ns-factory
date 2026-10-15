@@ -469,24 +469,6 @@ function stampAt(p,single=false,markKind='tool') {
   }catch(err){$('hint').textContent=err.message;}
 }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
-/** 目印を補助線にする（事業主指示 2026-10-15：目印を打ったあと、その目印を補助線に使いたい）。選んだ目印（穴の記号）、または目印を打った線について、目印の位置に、線に直角で長さ L の点線を、ガイドの層の普通の線として作る。作った線は選べて、端をつかんで長さを変えられ、磁石の点にもなる。元の目印は残す。同じ目印を二度は作らない。 */
-function markToGuide() {
-  const len = Number($('markGuideLen').value); if (!(len > 0)) { $('hint').textContent = t('markGuideLenBad'); return; }
-  const selShapes = new Set(doc.shapes.filter(sh => selected.has(sh.id)).map(sh => sh.id));
-  const marks = doc.holes.filter(h => h.mark === 'dot' && (selected.has(h.id) || doc.paths.some(pt => pt.id === h.pathId && pt.shapeIds.some(id => selShapes.has(id)))));
-  if (!marks.length) { $('hint').textContent = t('markGuideNone'); return; }
-  const made = marks.filter(h => !doc.shapes.some(sh => sh.markOf === h.id)); if (!made.length) { $('hint').textContent = t('markGuideDone', { n: 0 }); return; }
-  const ids = []; commit(() => {
-    const layer = ensureLayer(doc, 'guide');
-    for (const h of made) {
-      const path = doc.paths.find(pt => pt.id === h.pathId), route = path ? resolvePath(doc, path) : null; if (!route) continue;
-      const ang = (pointAtLength(route, projectOnPath(route, { x: h.x, y: h.y }).s).angleDeg + 90) * Math.PI / 180, dx = Math.cos(ang) * len / 2, dy = Math.sin(ang) * len / 2, id = freshId(doc.shapes, 's');
-      doc.shapes.push({ id, layer, type: 'line', x1: +(h.x - dx).toFixed(4), y1: +(h.y - dy).toFixed(4), x2: +(h.x + dx).toFixed(4), y2: +(h.y + dy).toFixed(4), lineStyle: 'dashed', markOf: h.id }); ids.push(id);
-    }
-    selected = new Set(ids);
-  });
-  $('hint').textContent = t('markGuideDone', { n: ids.length, len: circleNum(len) });
-}
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
 function markSnapPoint(click) {
@@ -1992,7 +1974,7 @@ function renderTabs() {
 }
 function switchTab(i) {
   if (i === activeTab || !tabs[i]) return; snapshotTab(); activeTab = i; const tab = tabs[i];
-  doc = tab.doc; undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
+  doc = tab.doc; syncMarkLines(); undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
@@ -2817,16 +2799,6 @@ function circleHandleHit(w) {
   for (let k = 0; k < 8; k++) { const q = circlePoint(sc, k * 45), dd = distance(q, w); if (dd <= bd) { best = { shape: sc, k }; bd = dd; } }
   return best;
 }
-/** 点の目印の取っ手：点の目印を1つだけ選んでいるとき、線の両端に出る。つかんで引くと、中心を動かさず長さが変わる（0.1mm刻み・最小0.5mm）。離したとき確定・元に戻すは1回。 */
-function selectedDot() { if (mode !== 'select' || selected.size !== 1) return null; const h = doc.holes.find(x => selected.has(x.id)); return h && holeAppearance(h, doc)?.kind === 'dot' && holeEditable(h) ? h : null; }
-function dotEnds(h, L = dotLen(h)) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a); return { ux, uy, p0: { x: h.x - ux * L / 2, y: h.y - uy * L / 2 }, p1: { x: h.x + ux * L / 2, y: h.y + uy * L / 2 } }; }
-function dotHandleHit(w) { const h = selectedDot(); if (!h) return null; const e = dotEnds(h), r = 8 / scale; return distance(e.p0, w) <= r || distance(e.p1, w) <= r ? h : null; }
-function drawDotHandles() {
-  const g = gesture?.kind === 'dotLen' ? gesture : null, h = g ? doc.holes.find(x => x.id === g.id) : selectedDot(); if (!h) return; const e = dotEnds(h, g ? g.len : dotLen(h)), k = 1 / scale, z = (g ? 5 : 4) * k;
-  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 * k; ctx.fillStyle = g ? '#f0b429' : 'rgba(240,180,41,.75)'; ctx.strokeStyle = '#000';
-  for (const q of [e.p0, e.p1]) { ctx.beginPath(); ctx.rect(q.x - z, q.y - z, z * 2, z * 2); ctx.fill(); ctx.stroke(); }
-  ctx.restore();
-}
 function drawCircleHandles() {
   const g = gesture?.kind === 'circleR' ? gesture : null, sc = g ? doc.shapes.find(x => x.id === g.id) : selectedCircle(); if (!sc) return; const k = 1 / scale, r = g ? g.r : sc.r;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
@@ -2902,7 +2874,7 @@ function drawCoverFromSpine() {
     for (const x of c.folds) d.shapes.push({ id: freshId(d.shapes, 's'), layer: 'pattern', type: 'fold', x1: x, y1: 0, x2: x, y2: c.H, angleDeg: 90, partId: 'cover', inner: true });
     d.parts.push({ id: 'cover', name: t('part.cover'), thickness: p.leatherT, shapeIds: ['s1'], color: null, order: 0, role: 'cover' });
     d.provenance = [{ source: 'spineCover', at: new Date().toISOString() }];
-    doc = d; selected.clear(); manualNext = null; nodeSel = null; refreshTools();
+    doc = d; syncMarkLines(); selected.clear(); manualNext = null; nodeSel = null; refreshTools();
     if (it) { const overrides = { ringD: p.ringD, ...(spec.id !== it.params.spec ? { spec: spec.id } : {}) }; try { selected = new Set(addHardwareDrafts(hardwareDrafts(it, overrides, spec, c.center, 90), nextGroupId(doc.shapes))); } catch { /* 金具が置けなくても表紙は残す */ } }
   });
   tabs[activeTab].doc = doc; pairLines = []; renderLayers(); renderSeams(); fit();
@@ -2999,7 +2971,7 @@ function trimClick(p, keep) {
     doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
     doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
     const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
-    const added = parts.map(part => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...part, id, layer: hit.layer }); return id; });
+    const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
     selected = new Set(added);
   });
 }
@@ -3191,10 +3163,35 @@ function dedupeHoles() {
   }
   if (removed) doc.holes = keep; return removed;
 }
+/** 点の目印は、ガイド層の「点線の直線」と一体で持つ：目印を打つと直線が1本でき（hole.lineId ↔ 直線の markOf）、画面の記号・クリックはその直線に置き換わる。
+ *  直線が実体：動かす・長さを変える・トリム・オフセットは普通の点線と同じで、そのあと穴の位置・向き・長さが直線に合う。直線を消すと目印も消え、トリムなどで直線がちぎれたら、残りは普通の点線になる（目印は外れる）。 */
+function syncMarkLines() {
+  const del = new Set(); let add = [];
+  for (const h of doc.holes) {
+    if (holeAppearance(h, doc)?.kind !== 'dot') continue;
+    const mine = doc.shapes.filter(s => s.markOf === h.id);
+    let ln = h.lineId ? doc.shapes.find(s => s.id === h.lineId && s.markOf === h.id && s.type === 'line') : null;
+    if (!ln && !h.lineId && mine.length === 1 && mine[0].type === 'line') { ln = mine[0]; h.lineId = ln.id; } /* 「目印を補助線にする」で作った線を引き継ぐ */
+    if (!ln && h.lineId) { for (const s of mine) delete s.markOf; del.add(h.id); continue; } /* 直線が消えた（削除）か、ちぎれた（トリム）：削除なら目印も消え、ちぎれたなら残りは普通の点線 */
+    if (!ln) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), half = dotLen(h) / 2, id = freshId([...doc.shapes, ...add], 's'); ensureLayer(doc, 'guide'); add.push({ id, layer: 'guide', type: 'line', x1: +(h.x - ux * half).toFixed(6), y1: +(h.y - uy * half).toFixed(6), x2: +(h.x + ux * half).toFixed(6), y2: +(h.y + uy * half).toFixed(6), lineStyle: 'dashed', color: 'yellow', markOf: h.id }); h.lineId = id; continue; }
+    const dx = ln.x2 - ln.x1, dy = ln.y2 - ln.y1, len = Math.hypot(dx, dy);
+    if (len < 1e-6) { del.add(h.id); ln.markOf = undefined; delete ln.markOf; continue; }
+    const mx = (ln.x1 + ln.x2) / 2, my = (ln.y1 + ln.y2) / 2, ang = (Math.atan2(dy, dx) * 180 / Math.PI - 90 + 720) % 360;
+    if (Math.abs(h.x - mx) > 1e-6 || Math.abs(h.y - my) > 1e-6 || Math.abs(((h.angleDeg - ang + 540) % 360) - 180) > 1e-4 || Math.abs((h.len ?? 2) - len) > 1e-6) {
+      h.x = mx; h.y = my; h.angleDeg = ang; h.len = len; const path = doc.paths.find(q => q.id === h.pathId), route = path && resolvePath(doc, path); if (route) h.s = projectOnPath(route, { x: mx, y: my }).s;
+    }
+  }
+  for (const h of doc.holes) if (h.lineId) for (const s of doc.shapes) if (s.markOf === h.id && s.id !== h.lineId) delete s.markOf; /* 目印1つに、結びつく直線は1本だけ（コピーされた直線は普通の点線） */
+  if (add.length) doc.shapes.push(...add);
+  if (del.size) doc.holes = doc.holes.filter(h => !del.has(h.id));
+  for (const s of doc.shapes) if (s.markOf && !doc.holes.some(h => h.id === s.markOf)) delete s.markOf; /* 目印の穴がなくなった線は、普通の点線にする */
+}
+/** 直線に置き換わった目印の記号は、画面に描かず・クリックの対象にもしない（直線のほうを使う）。 */
+const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
 function commit(fn) {
   ownPathsCache = null;
   const before = JSON.stringify(doc);
-  fn(); const dupHoles = dedupeHoles(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
+  fn(); const dupHoles = dedupeHoles(); syncMarkLines(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
@@ -3816,7 +3813,7 @@ function draw() {
   const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
   if (exporting) {
     ctx.lineWidth = Math.max(0.1, 1 / scale); for (const s of doc.shapes.filter(visible)) strokeShape(s, s.type === 'dimension' || s.type === 'text' ? '#335' : '#000');
-    for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = '#c00'; ctx.stroke(); ctx.restore(); }
+    for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = '#c00'; ctx.stroke(); ctx.restore(); }
     return;
   }
   drawSheetBody(lo, hi);
@@ -3849,14 +3846,14 @@ function drawSheetBody(lo, hi) {
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   for (const originalHole of doc.holes) {
-    if (!holeVisible(originalHole)) continue;
+    if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) continue;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
     let h = previewMoved(originalHole, owner);
     if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
-    if (kind === 'dot') { const half = (gesture?.kind === 'dotLen' && gesture.id === h.id ? gesture.len : dotLen(h)) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
+    if (kind === 'dot') { const half = dotLen(h) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
@@ -3923,7 +3920,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawDotHandles();
+  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles();
   updateUI();
 }
 function resize() {
@@ -4022,7 +4019,6 @@ canvas.addEventListener('pointerdown', e => {
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
     const selOne = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id)) : null, nearest = selOne ? pickShapeAt(cursor) : null;
     const handleOk = !selOne || !nearest || nearest.id === selOne.id || distToShape(selOne, cursor) <= distToShape(nearest, cursor) + 1.5 / scale;
-    const dh = dotHandleHit(cursor); if (dh) { gesture = { kind: 'dotLen', id: dh.id, len: dotLen(dh) }; $('hint').textContent = t('dotLenDrag', { len: circleNum(dotLen(dh)) }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
     const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
@@ -4041,7 +4037,7 @@ canvas.addEventListener('pointerdown', e => {
       }
       draw(); return;
     }
-    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
+    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&!markHidden(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
@@ -4057,7 +4053,6 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
-  if (gesture?.kind === 'dotLen') { const h = doc.holes.find(x => x.id === gesture.id); if (h) { const e = dotEnds(h), c = world(p); cursor = c; gesture.len = Math.max(0.5, Math.round(Math.abs((c.x - h.x) * e.ux + (c.y - h.y) * e.uy) * 20) / 10); $('hint').textContent = t('dotLenDrag', { len: circleNum(gesture.len) }); draw(); } return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
@@ -4129,7 +4124,6 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
-  if (g.kind === 'dotLen') { const h0 = doc.holes.find(x => x.id === g.id); if (h0 && Math.abs(g.len - dotLen(h0)) > 1e-9) { commit(() => { doc.holes.find(x => x.id === g.id).len = g.len; }); $('hint').textContent = t('dotLenSet', { len: circleNum(g.len) }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
@@ -4206,7 +4200,6 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
-$('markToGuide').onclick = markToGuide;
 $('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
 $('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));

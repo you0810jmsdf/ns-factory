@@ -118,7 +118,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 13:24 · 3668715</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 13:44 · 39abb1a</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -234,7 +234,6 @@
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 </div></details>
 <details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
-<div class="row"><label><span data-i18n="markGuideLen"></span><input id="markGuideLen" type="number" step="1" min="0.5" value="10"></label><button id="markToGuide" data-i18n="markToGuide" data-i18n-title="markToGuideTip"></button></div>
 <label id="l-markDiv" data-i18n-title="markDivTip" hidden><span data-i18n="markDiv"></span><input id="markDiv" type="number" step="1" min="1" max="100" value="1"></label><label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
 <label><span data-i18n="stitchTool"></span><select id="stitchTool"></select></label>
 <label><span data-i18n="placement"></span><select id="placement"><option value="fixed" data-i18n="fixed"></option><option value="variable" data-i18n="variable"></option><option value="equal" data-i18n="equal"></option><option value="manual" data-i18n="manual"></option></select></label>
@@ -576,8 +575,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5750e89c","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=60affc95","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=12d13139","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=5750e89c"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=05171b69","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=60affc95","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=4eb7bd2f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=05171b69"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1853,12 +1852,6 @@ const MESSAGES = {
     "markDist": "基準の点から線に沿って (mm)",
     "markDistTip": "0 のときは、クリックした場所に目印を打ちます。1 以上なら、基準の点（線の端・角）から線に沿って、この距離だけ進んだ場所に打ちます。",
     "hint.markDist": "距離を指定して目印を打ちます。基準にする点（線の端・角）をクリックし、次に進みたい向きの線の上をクリックします。開いた線の端が基準なら、1回のクリックで打てます。",
-    "markGuideLen": "補助線の長さ (mm)",
-    "markToGuide": "目印を補助線にする",
-    "markToGuideTip": "選んだ目印（または目印を打った線）の位置に、線に直角な点線を、ガイドの普通の線として作ります。作った線は選べて、端をつかんで長さを変えられます（元の目印は残ります）。",
-    "markGuideLenBad": "補助線の長さは、0より大きい数で入れてください。",
-    "markGuideNone": "目印（点）を選ぶか、目印を打った線を選んでから押してください。",
-    "markGuideDone": "目印 {n} 個を、長さ {len} mm の補助線（点線）にしました。選んだ状態です。端をつかんで長さを変えられます。",
     "markDiv": "2点間を分割（1＝使わない・2＝中心・3＝3等分…）",
     "markDivTip": "2 以上にすると、線の上を2回クリックして、その2点の間（線に沿って測ります）をこの数で等分する位置に目印を打ちます。2 は中心、3 は3等分。1 のときは使いません。",
     "hint.markDiv": "2点間を {n} 等分して目印を打ちます。線の上の1点目（端・角は正確に吸着）をクリックし、次に同じ線の上の2点目をクリックします。",
@@ -2015,8 +2008,6 @@ const MESSAGES = {
     "rectHoles": "目打ち（縫い穴）が付いているため、矩形の大きさを動かせません。",
     "circleDrag": "円の点をドラッグして、半径を変えています：半径 {r} mm（直径 {d} mm）。離すと確定します。",
     "circleResized": "円の半径を {r} mm（直径 {d} mm）にしました。",
-    "dotLenDrag": "目印の端をドラッグして、長さを変えています：{len} mm。離すと確定します。",
-    "dotLenSet": "目印の長さを {len} mm にしました。",
     "circleR": "半径 (mm)",
     "circleD": "直径 (mm)",
     "circleBarTip": "半径か直径を入れると（連動します）、クリックした位置を中心に、その大きさの円を置きます。空にすると、ドラッグで自由に描けます。",
@@ -3098,12 +3089,6 @@ const MESSAGES = {
     "markDist": "From the base point along the line (mm)",
     "markDistTip": "0 drops the mark where you click. 1 or more drops it that far along the line from the base point (a line end or corner).",
     "hint.markDist": "Mark by distance: click a base point (a line end or corner), then click the line in the direction you want to go. For the end of an open line, one click is enough.",
-    "markGuideLen": "Guide line length (mm)",
-    "markToGuide": "Make marks into guide lines",
-    "markToGuideTip": "At the selected marks (or the marks on the selected line), make dashed lines perpendicular to the line as ordinary guide lines. You can select them and drag an end to change the length (the original marks stay).",
-    "markGuideLenBad": "Enter the guide line length as a number greater than 0.",
-    "markGuideNone": "Select marks (dots) or a line that has marks, then press.",
-    "markGuideDone": "Made {n} mark(s) into guide lines (dashed) of {len} mm. They are selected; drag an end to change the length.",
     "markDiv": "Divide between 2 points (1 = off, 2 = center, 3 = thirds…)",
     "markDivTip": "With 2 or more, click two spots on a line and marks are dropped at equal divisions between them (measured along the line). 2 = center, 3 = thirds. 1 turns it off.",
     "hint.markDiv": "Divide into {n} equal parts: click the first spot on a line (ends and corners snap exactly), then the second spot on the same line.",
@@ -3260,8 +3245,6 @@ const MESSAGES = {
     "rectHoles": "This rectangle has stitch holes, so its size cannot be changed.",
     "circleDrag": "Dragging a circle point to change its radius: radius {r} mm (diameter {d} mm). Release to confirm.",
     "circleResized": "Resized the circle to radius {r} mm (diameter {d} mm).",
-    "dotLenDrag": "Dragging the end of the mark to change its length: {len} mm. Release to confirm.",
-    "dotLenSet": "Set the mark length to {len} mm.",
     "circleR": "Radius (mm)",
     "circleD": "Diameter (mm)",
     "circleBarTip": "Enter a radius or a diameter (they are linked), then click to place a circle of that size centered there. Leave them empty to drag freely.",
@@ -19913,24 +19896,6 @@ function stampAt(p,single=false,markKind='tool') {
   }catch(err){$('hint').textContent=err.message;}
 }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
-/** 目印を補助線にする（事業主指示 2026-10-15：目印を打ったあと、その目印を補助線に使いたい）。選んだ目印（穴の記号）、または目印を打った線について、目印の位置に、線に直角で長さ L の点線を、ガイドの層の普通の線として作る。作った線は選べて、端をつかんで長さを変えられ、磁石の点にもなる。元の目印は残す。同じ目印を二度は作らない。 */
-function markToGuide() {
-  const len = Number($('markGuideLen').value); if (!(len > 0)) { $('hint').textContent = t('markGuideLenBad'); return; }
-  const selShapes = new Set(doc.shapes.filter(sh => selected.has(sh.id)).map(sh => sh.id));
-  const marks = doc.holes.filter(h => h.mark === 'dot' && (selected.has(h.id) || doc.paths.some(pt => pt.id === h.pathId && pt.shapeIds.some(id => selShapes.has(id)))));
-  if (!marks.length) { $('hint').textContent = t('markGuideNone'); return; }
-  const made = marks.filter(h => !doc.shapes.some(sh => sh.markOf === h.id)); if (!made.length) { $('hint').textContent = t('markGuideDone', { n: 0 }); return; }
-  const ids = []; commit(() => {
-    const layer = ensureLayer(doc, 'guide');
-    for (const h of made) {
-      const path = doc.paths.find(pt => pt.id === h.pathId), route = path ? resolvePath(doc, path) : null; if (!route) continue;
-      const ang = (pointAtLength(route, projectOnPath(route, { x: h.x, y: h.y }).s).angleDeg + 90) * Math.PI / 180, dx = Math.cos(ang) * len / 2, dy = Math.sin(ang) * len / 2, id = freshId(doc.shapes, 's');
-      doc.shapes.push({ id, layer, type: 'line', x1: +(h.x - dx).toFixed(4), y1: +(h.y - dy).toFixed(4), x2: +(h.x + dx).toFixed(4), y2: +(h.y + dy).toFixed(4), lineStyle: 'dashed', markOf: h.id }); ids.push(id);
-    }
-    selected = new Set(ids);
-  });
-  $('hint').textContent = t('markGuideDone', { n: ids.length, len: circleNum(len) });
-}
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
 function markSnapPoint(click) {
@@ -21436,7 +21401,7 @@ function renderTabs() {
 }
 function switchTab(i) {
   if (i === activeTab || !tabs[i]) return; snapshotTab(); activeTab = i; const tab = tabs[i];
-  doc = tab.doc; undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
+  doc = tab.doc; syncMarkLines(); undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
@@ -22261,16 +22226,6 @@ function circleHandleHit(w) {
   for (let k = 0; k < 8; k++) { const q = circlePoint(sc, k * 45), dd = distance(q, w); if (dd <= bd) { best = { shape: sc, k }; bd = dd; } }
   return best;
 }
-/** 点の目印の取っ手：点の目印を1つだけ選んでいるとき、線の両端に出る。つかんで引くと、中心を動かさず長さが変わる（0.1mm刻み・最小0.5mm）。離したとき確定・元に戻すは1回。 */
-function selectedDot() { if (mode !== 'select' || selected.size !== 1) return null; const h = doc.holes.find(x => selected.has(x.id)); return h && holeAppearance(h, doc)?.kind === 'dot' && holeEditable(h) ? h : null; }
-function dotEnds(h, L = dotLen(h)) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a); return { ux, uy, p0: { x: h.x - ux * L / 2, y: h.y - uy * L / 2 }, p1: { x: h.x + ux * L / 2, y: h.y + uy * L / 2 } }; }
-function dotHandleHit(w) { const h = selectedDot(); if (!h) return null; const e = dotEnds(h), r = 8 / scale; return distance(e.p0, w) <= r || distance(e.p1, w) <= r ? h : null; }
-function drawDotHandles() {
-  const g = gesture?.kind === 'dotLen' ? gesture : null, h = g ? doc.holes.find(x => x.id === g.id) : selectedDot(); if (!h) return; const e = dotEnds(h, g ? g.len : dotLen(h)), k = 1 / scale, z = (g ? 5 : 4) * k;
-  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 * k; ctx.fillStyle = g ? '#f0b429' : 'rgba(240,180,41,.75)'; ctx.strokeStyle = '#000';
-  for (const q of [e.p0, e.p1]) { ctx.beginPath(); ctx.rect(q.x - z, q.y - z, z * 2, z * 2); ctx.fill(); ctx.stroke(); }
-  ctx.restore();
-}
 function drawCircleHandles() {
   const g = gesture?.kind === 'circleR' ? gesture : null, sc = g ? doc.shapes.find(x => x.id === g.id) : selectedCircle(); if (!sc) return; const k = 1 / scale, r = g ? g.r : sc.r;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
@@ -22346,7 +22301,7 @@ function drawCoverFromSpine() {
     for (const x of c.folds) d.shapes.push({ id: freshId(d.shapes, 's'), layer: 'pattern', type: 'fold', x1: x, y1: 0, x2: x, y2: c.H, angleDeg: 90, partId: 'cover', inner: true });
     d.parts.push({ id: 'cover', name: t('part.cover'), thickness: p.leatherT, shapeIds: ['s1'], color: null, order: 0, role: 'cover' });
     d.provenance = [{ source: 'spineCover', at: new Date().toISOString() }];
-    doc = d; selected.clear(); manualNext = null; nodeSel = null; refreshTools();
+    doc = d; syncMarkLines(); selected.clear(); manualNext = null; nodeSel = null; refreshTools();
     if (it) { const overrides = { ringD: p.ringD, ...(spec.id !== it.params.spec ? { spec: spec.id } : {}) }; try { selected = new Set(addHardwareDrafts(hardwareDrafts(it, overrides, spec, c.center, 90), nextGroupId(doc.shapes))); } catch { /* 金具が置けなくても表紙は残す */ } }
   });
   tabs[activeTab].doc = doc; pairLines = []; renderLayers(); renderSeams(); fit();
@@ -22443,7 +22398,7 @@ function trimClick(p, keep) {
     doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
     doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
     const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
-    const added = parts.map(part => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...part, id, layer: hit.layer }); return id; });
+    const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
     selected = new Set(added);
   });
 }
@@ -22635,10 +22590,35 @@ function dedupeHoles() {
   }
   if (removed) doc.holes = keep; return removed;
 }
+/** 点の目印は、ガイド層の「点線の直線」と一体で持つ：目印を打つと直線が1本でき（hole.lineId ↔ 直線の markOf）、画面の記号・クリックはその直線に置き換わる。
+ *  直線が実体：動かす・長さを変える・トリム・オフセットは普通の点線と同じで、そのあと穴の位置・向き・長さが直線に合う。直線を消すと目印も消え、トリムなどで直線がちぎれたら、残りは普通の点線になる（目印は外れる）。 */
+function syncMarkLines() {
+  const del = new Set(); let add = [];
+  for (const h of doc.holes) {
+    if (holeAppearance(h, doc)?.kind !== 'dot') continue;
+    const mine = doc.shapes.filter(s => s.markOf === h.id);
+    let ln = h.lineId ? doc.shapes.find(s => s.id === h.lineId && s.markOf === h.id && s.type === 'line') : null;
+    if (!ln && !h.lineId && mine.length === 1 && mine[0].type === 'line') { ln = mine[0]; h.lineId = ln.id; } /* 「目印を補助線にする」で作った線を引き継ぐ */
+    if (!ln && h.lineId) { for (const s of mine) delete s.markOf; del.add(h.id); continue; } /* 直線が消えた（削除）か、ちぎれた（トリム）：削除なら目印も消え、ちぎれたなら残りは普通の点線 */
+    if (!ln) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), half = dotLen(h) / 2, id = freshId([...doc.shapes, ...add], 's'); ensureLayer(doc, 'guide'); add.push({ id, layer: 'guide', type: 'line', x1: +(h.x - ux * half).toFixed(6), y1: +(h.y - uy * half).toFixed(6), x2: +(h.x + ux * half).toFixed(6), y2: +(h.y + uy * half).toFixed(6), lineStyle: 'dashed', color: 'yellow', markOf: h.id }); h.lineId = id; continue; }
+    const dx = ln.x2 - ln.x1, dy = ln.y2 - ln.y1, len = Math.hypot(dx, dy);
+    if (len < 1e-6) { del.add(h.id); ln.markOf = undefined; delete ln.markOf; continue; }
+    const mx = (ln.x1 + ln.x2) / 2, my = (ln.y1 + ln.y2) / 2, ang = (Math.atan2(dy, dx) * 180 / Math.PI - 90 + 720) % 360;
+    if (Math.abs(h.x - mx) > 1e-6 || Math.abs(h.y - my) > 1e-6 || Math.abs(((h.angleDeg - ang + 540) % 360) - 180) > 1e-4 || Math.abs((h.len ?? 2) - len) > 1e-6) {
+      h.x = mx; h.y = my; h.angleDeg = ang; h.len = len; const path = doc.paths.find(q => q.id === h.pathId), route = path && resolvePath(doc, path); if (route) h.s = projectOnPath(route, { x: mx, y: my }).s;
+    }
+  }
+  for (const h of doc.holes) if (h.lineId) for (const s of doc.shapes) if (s.markOf === h.id && s.id !== h.lineId) delete s.markOf; /* 目印1つに、結びつく直線は1本だけ（コピーされた直線は普通の点線） */
+  if (add.length) doc.shapes.push(...add);
+  if (del.size) doc.holes = doc.holes.filter(h => !del.has(h.id));
+  for (const s of doc.shapes) if (s.markOf && !doc.holes.some(h => h.id === s.markOf)) delete s.markOf; /* 目印の穴がなくなった線は、普通の点線にする */
+}
+/** 直線に置き換わった目印の記号は、画面に描かず・クリックの対象にもしない（直線のほうを使う）。 */
+const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
 function commit(fn) {
   ownPathsCache = null;
   const before = JSON.stringify(doc);
-  fn(); const dupHoles = dedupeHoles(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
+  fn(); const dupHoles = dedupeHoles(); syncMarkLines(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
@@ -23260,7 +23240,7 @@ function draw() {
   const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
   if (exporting) {
     ctx.lineWidth = Math.max(0.1, 1 / scale); for (const s of doc.shapes.filter(visible)) strokeShape(s, s.type === 'dimension' || s.type === 'text' ? '#335' : '#000');
-    for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = '#c00'; ctx.stroke(); ctx.restore(); }
+    for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = '#c00'; ctx.stroke(); ctx.restore(); }
     return;
   }
   drawSheetBody(lo, hi);
@@ -23293,14 +23273,14 @@ function drawSheetBody(lo, hi) {
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   for (const originalHole of doc.holes) {
-    if (!holeVisible(originalHole)) continue;
+    if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) continue;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
     let h = previewMoved(originalHole, owner);
     if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
-    if (kind === 'dot') { const half = (gesture?.kind === 'dotLen' && gesture.id === h.id ? gesture.len : dotLen(h)) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
+    if (kind === 'dot') { const half = dotLen(h) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
@@ -23367,7 +23347,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawDotHandles();
+  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles();
   updateUI();
 }
 function resize() {
@@ -23466,7 +23446,6 @@ canvas.addEventListener('pointerdown', e => {
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
     const selOne = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id)) : null, nearest = selOne ? pickShapeAt(cursor) : null;
     const handleOk = !selOne || !nearest || nearest.id === selOne.id || distToShape(selOne, cursor) <= distToShape(nearest, cursor) + 1.5 / scale;
-    const dh = dotHandleHit(cursor); if (dh) { gesture = { kind: 'dotLen', id: dh.id, len: dotLen(dh) }; $('hint').textContent = t('dotLenDrag', { len: circleNum(dotLen(dh)) }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
     const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
@@ -23485,7 +23464,7 @@ canvas.addEventListener('pointerdown', e => {
       }
       draw(); return;
     }
-    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
+    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&!markHidden(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
@@ -23501,7 +23480,6 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
-  if (gesture?.kind === 'dotLen') { const h = doc.holes.find(x => x.id === gesture.id); if (h) { const e = dotEnds(h), c = world(p); cursor = c; gesture.len = Math.max(0.5, Math.round(Math.abs((c.x - h.x) * e.ux + (c.y - h.y) * e.uy) * 20) / 10); $('hint').textContent = t('dotLenDrag', { len: circleNum(gesture.len) }); draw(); } return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
@@ -23573,7 +23551,6 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
-  if (g.kind === 'dotLen') { const h0 = doc.holes.find(x => x.id === g.id); if (h0 && Math.abs(g.len - dotLen(h0)) > 1e-9) { commit(() => { doc.holes.find(x => x.id === g.id).len = g.len; }); $('hint').textContent = t('dotLenSet', { len: circleNum(g.len) }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
@@ -23650,7 +23627,6 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
-$('markToGuide').onclick = markToGuide;
 $('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
 $('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
