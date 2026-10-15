@@ -586,11 +586,13 @@ export function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) 
   if (start.type === 'circle' || start.closed || !open.includes(start)) return [startId];
   const len = new Map(open.map(s => [s.id, arcLength(s)])), at = (s, end) => pointAtLength(s, end ? len.get(s.id) : 0);
   const turn = (a, b) => Math.abs(((a - b + 540) % 360) - 180); /* 2つの向きの差（0〜180度） */
-  const seen = new Set([startId]), order = [startId];
+  const seen = new Set([startId]), order = [startId]; let closed = false;
   for (const firstExit of [1, 0]) {
-    let cur = start, exit = firstExit;
+    if (closed) break; /* 1周して閉じたら、反対向きにはたどらない */
+    let cur = start, exit = firstExit; const far = at(start, firstExit ? 0 : 1); /* 出発した図形の、反対側の端 */
     for (;;) {
       const p = at(cur, exit), travel = exit ? p.angleDeg : p.angleDeg + 180; /* いま端から出ていく向き */
+      if (cur !== start && distance(p, far) <= Math.max(tol, gapTol)) { closed = true; break; } /* 出発点に戻った＝閉じた輪郭。出発点の端に突き当たる別の線（縦線など）は足さない */
       let found = null;
       for (const limit of [Math.max(tol, gapTol)]) { /* 0.2mm 以内の端を全部候補にして、いちばん滑らかにつながる線を選ぶ（突き当たる枝のほうが近くても、先の線を選べる） */
         let best = null, bt = Infinity, bd = Infinity, n = 0;
