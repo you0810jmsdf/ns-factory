@@ -394,7 +394,7 @@ let ownPathsCache = null; const ownPaths = () => (ownPathsCache ||= ownHolePathI
 function holeVisible(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerVisible(s)||s.layer==='guide');}); } /* ガイドの層を隠しても、ガイドの線に乗った穴は消さない（穴は目印の線ではない） */
 function holeEditable(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerEditable(s)||s.layer==='guide');}); }
 function loadTools() {
-  try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d))return list;} } catch { /* 保存制限・旧設定は既定値で継続。 */ }
+  try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d)){const have=new Set(list.map(x=>x.id)),added=defaultTools().filter(x=>!have.has(x.id));return added.length?[...list,...added]:list;}} } catch { /* 保存制限・旧設定は既定値で継続。 */ } /* 保存済みの工具一覧に、あとから増えた既定の工具（3.95mm など）が無いときは、足して返す */
   return defaultTools();
 }
 function persistTools() { try { localStorage.setItem('leather-cad.tools',JSON.stringify(doc.tools)); } catch { $('hint').textContent=t('storageUnavailable'); } }
@@ -747,7 +747,9 @@ function initStitch() {
   document.querySelectorAll('[data-tool]').forEach(b=>{ b.addEventListener('contextmenu',e=>{e.preventDefault();showHelp(false,TOOL_HELP[b.dataset.tool]||'');}); let timer=null; b.addEventListener('pointerdown',()=>{timer=setTimeout(()=>{longPressed=true;showHelp(false,TOOL_HELP[b.dataset.tool]||'');},700);}); b.addEventListener('click',e=>{ if(longPressed){ longPressed=false; e.stopImmediatePropagation(); e.preventDefault(); } },true); for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>clearTimeout(timer)); });
   $('setDefaultTool').onclick=()=>{ try { localStorage.setItem('leather-cad.defaultTool',$('stitchTool').value); $('hint').textContent=t('defaultToolSaved'); } catch { $('hint').textContent=t('storageUnavailable'); } };
   refreshTools();
-  try { const id=localStorage.getItem('leather-cad.defaultTool'); if(id&&doc.tools.some(t=>t.id===id)){$('stitchTool').value=id;fillTool();} } catch { /* 保存不可は既定のまま。 */ }
+  try { /* 既定の工具は 3.95mm の2本刃（2026-10-16）。一度だけ、保存済みの既定をこれに切り替える（そのあと「既定にする」で変えた分は尊重する） */
+    if(localStorage.getItem('leather-cad.defaultTool.v2')!=='1'&&doc.tools.some(t=>t.id==='diamond-3.95-2')){localStorage.setItem('leather-cad.defaultTool','diamond-3.95-2');localStorage.setItem('leather-cad.defaultTool.v2','1');}
+    const id=localStorage.getItem('leather-cad.defaultTool')||'diamond-3.95-2'; if(id&&doc.tools.some(t=>t.id===id)){$('stitchTool').value=id;fillTool();} } catch { const id='diamond-3.95-2'; if(doc.tools.some(t=>t.id===id)){$('stitchTool').value=id;fillTool();} }
 }
 
 // ---- レイヤー（カード）----

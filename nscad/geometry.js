@@ -708,7 +708,7 @@ export function holeAppearance(h,doc) {
 /** 新しい既定工具配列を返す。名前は翻訳キーとして UI 側で表示する。 */
 export function defaultTools() {
   const make=(id,kind,pitch,teeth)=>({id,name:id,kind,pitch,teeth,holeW:kind==='round'?1:2,holeH:kind==='round'?1:0.8,holeD:1,angleDeg:kind==='round'?0:45,mark:'tool'});
-  return [...[3,4].flatMap(p=>[2,4,6].map(n=>make(`diamond-${p}-${n}`,'diamond',p,n))),make('european-3.38-2','european',3.38,2),make('round-3-2','round',3,2)];
+  return [...[3,3.95,4].flatMap(p=>[2,4,6].map(n=>make(`diamond-${p}-${n}`,'diamond',p,n))),make('european-3.38-2','european',3.38,2),make('round-3-2','round',3,2)];
 }
 /** 図形／点／穴を、2 点 a・b を通る任意の軸線で折り返した新データを返す（線対称コピー用）。 */
 export function reflectAcross(s, a, b) {
