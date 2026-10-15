@@ -3446,15 +3446,16 @@ function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
   if (!hit) return;
-  if (hit.type === 'polyline') { roundPolylineAt(hit, p); return; }
+  const twoPt = x => x.type === 'polyline' && !x.closed && x.points.length === 2; /* 2点だけの折れ線は、1本の線として2本の線の丸め・面取りに使う */
+  if (hit.type === 'polyline' && !twoPt(hit)) { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
-  const first = doc.shapes.find(s => s.id === stage.id && editable(s));
+  const first0 = doc.shapes.find(s => s.id === stage.id && editable(s)), lineOf = x => twoPt(x) ? { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y } : x, first = first0 && lineOf(first0), backOf = (orig, ln) => twoPt(orig) ? { ...orig, points: [{ x: ln.x1, y: ln.y1 }, { x: ln.x2, y: ln.y2 }] } : ln;
   if (!first) { cancel(); return; }
   const affectedPaths=new Set(doc.paths.filter(p=>p.shapeIds.includes(first.id)||p.shapeIds.includes(hit.id)).map(p=>p.id));
   if (doc.holes.some(h=>affectedPaths.has(h.pathId))) { $('hint').textContent = t('holeChamfer'); return; }
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
-  const arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, hit, r);
+  const arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r);
   if (!arc) { $('hint').textContent = t('impossible'); return; }
   const endpoints = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{x:arc.x1,y:arc.y1},{x:arc.x2,y:arc.y2}];
   const trim = (line, other) => {
@@ -3462,7 +3463,7 @@ function editAt(p) {
     const p = endpoints.reduce((a, b) => distToShape(line, a) <= distToShape(line, b) ? a : b);
     return { ...line, ['x' + end]: p.x, ['y' + end]: p.y };
   };
-  const a = trim(first, hit), b = trim(hit, first), id = freshId(doc.shapes, 's');
+  const hitL = lineOf(hit), a = backOf(first0, trim(first, hitL)), b = backOf(hit, trim(hitL, first)), id = freshId(doc.shapes, 's');
   cancel();
   commit(() => {
     doc.paths=doc.paths.filter(p=>!affectedPaths.has(p.id));
