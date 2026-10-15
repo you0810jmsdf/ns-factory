@@ -2714,8 +2714,18 @@ function highlightFoldDiagram(id) {
   for (const g of $('fdDiagram')?.querySelectorAll?.('[data-k]') ?? []) g.classList.toggle('hl', g.dataset.k === key);
   return true;
 }
+/** サンプル図の拡大表示（右メニューの幅では番号が小さいため・事業主指摘 2026-10-15）：図をクリックで画面中央に大きく出し、①〜⑫の欄の名前を並べる。もう一度クリックか Esc で閉じる。 */
+const FD_ORDER = ['fdDL', 'fdDR', 'fdW', 'fdCL', 'fdCR', 'fdRL', 'fdRR', 'fdTO', 'fdTI', 'fdShift', 'fdRingPos', 'fdStackT'];
+const fdDiagramLegend = () => FD_ORDER.map(id => t(id));
+function toggleFdDiagramBig(open) {
+  const old = document.getElementById?.('fdDiagramBig'); if (old) old.remove(); if (!open || !$('fdDiagram')?.cloneNode) return;
+  const box = document.createElement('div'); box.id = 'fdDiagramBig'; const clone = $('fdDiagram').cloneNode(true); clone.removeAttribute('id'); box.appendChild(clone);
+  const ol = document.createElement('ol'); for (const text of fdDiagramLegend()) { const li = document.createElement('li'); li.textContent = text; ol.appendChild(li); } box.appendChild(ol);
+  box.onclick = () => toggleFdDiagramBig(false); document.body.appendChild(box);
+}
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
+  $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
   card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
