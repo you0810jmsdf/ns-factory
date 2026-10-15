@@ -43,7 +43,7 @@ import { createRegistration } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2735,6 +2735,44 @@ function drawFoldDims() {
   }
   ctx.restore();
 }
+/** 取っ手：実際の断面の上の金色の小さな四角。つかんで横へドラッグすると、欄の数値が変わり断面が作り直される（元に戻すは1回）。「三つ折りの設計」カードを開いていて、選択モードのときだけ出る。 */
+const FD_HANDLE_FIELDS = [['fdDL', 'dL'], ['fdDR', 'dR'], ['fdCL', 'cL'], ['fdCR', 'cR'], ['fdRL', 'rinL'], ['fdRR', 'rinR']];
+const foldHandleList = () => mode === 'select' && !exporting && doc.foldDesign && $('foldDesignCard')?.open === true ? (foldHandles(doc.foldDesign) ?? []) : [];
+function foldHandleAt(p) {
+  const w = world(p), r = 10 / scale; let best = null, bd = Infinity;
+  for (const h of foldHandleList()) { const dd = Math.hypot(h.x - w.x, h.y - w.y); if (dd <= r && dd < bd) { best = h; bd = dd; } }
+  return best;
+}
+let fdHandleHot = null;
+function drawFoldHandles() {
+  const list = foldHandleList(); if (!list.length) return; const k = 1 / scale, a = (gesture?.kind === 'foldHandle' ? gesture.h.key : fdHandleHot);
+  ctx.save(); ctx.lineWidth = 1.5 * k; ctx.setLineDash([]);
+  for (const h of list) { const sz = (h.key === a ? 6 : 4.5) * k; ctx.fillStyle = h.key === a ? '#f0b429' : 'rgba(240,180,41,.55)'; ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.rect(h.x - sz, h.y - sz, 2 * sz, 2 * sz); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
+function startFoldHandleDrag(h, w) {
+  const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
+  gesture = { kind: 'foldHandle', h, start: w, vals: Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])) }; setFdDimKey(h.dim);
+  $('hint').textContent = t('foldHandleDrag'); draw();
+}
+function dragFoldHandle(w) {
+  const g = gesture, v = g.vals; let dx = Math.round((w.x - g.start.x) * 10) / 10; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
+  switch (g.h.key) {
+    case 'btn': { dx = Math.max(-Math.min(v.dL - 0.1, v.cL), Math.min(dx, Math.min(v.dR - 0.1, v.cR))); set('fdDL', v.dL + dx); set('fdDR', v.dR - dx); set('fdCL', v.cL + dx); set('fdCR', v.cR - dx); break; }   /* ボタン線を右へ dx：左の距離は＋dx・右の距離は−dx（全幅は変わらない） */
+    case 'dl': set('fdDL', Math.max(0.1, v.dL - dx)); break;
+    case 'dr': set('fdDR', Math.max(0.1, v.dR + dx)); break;
+    case 'cl': set('fdCL', Math.max(0, v.cL - dx)); break;
+    case 'cr': set('fdCR', Math.max(0, v.cR + dx)); break;
+    case 'rl': set('fdRL', Math.max(0.1, v.rinL - dx)); break;
+    case 'rr': set('fdRR', Math.max(0.1, v.rinR + dx)); break;
+  }
+  refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
+}
+/** ドラッグを離したとき：成り立たない寸法で断面が作り直せなかったときは、欄を直前の正しい値へ戻す。 */
+function endFoldHandleDrag() {
+  const d = doc.foldDesign; if (d) for (const [id, k] of FD_HANDLE_FIELDS) if (Number($(id).value) !== d[k]) $(id).value = String(d[k]);
+  refreshFoldWidth(); refreshFoldPitch(); setFdDimKey(null);
+}
 function setFdDimKey(key) { if (fdDimKey === key) return; fdDimKey = key; const items = fdDimItems(key); if (items) revealFdDims(items); draw(); }
 function highlightFoldDiagram(id) {
   const key = FD_DIAGRAM[id]; if (!key) return false; setFdDimKey(key);
@@ -3707,7 +3745,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims();
+  drawFoldDims(); drawFoldHandles();
   updateUI();
 }
 function resize() {
@@ -3803,6 +3841,7 @@ canvas.addEventListener('pointerdown', e => {
     if (stage?.kind === 'path' && stage.nodes.length >= 2 && distance(cursor, stage.nodes[0]) <= 9 / scale) { finishPath(true); return; }
     gesture = { kind: 'pen', start: cursor, screen: p }; draw(); return;
   }
+  if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p)); return; } }
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
@@ -3834,6 +3873,8 @@ canvas.addEventListener('pointerdown', e => {
 });
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
+  if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
+  if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
@@ -3898,6 +3939,7 @@ canvas.addEventListener('pointerup', e => {
   gesture = null;
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
+  if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
