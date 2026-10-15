@@ -33,6 +33,8 @@
     #modHelp { position: absolute; left: 10px; top: 44px; z-index: 2; pointer-events: none; font-size: 11px; line-height: 1.6; color: #aaa; background: #1c1c1ecc; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; max-width: 46ch; } #modHelp[hidden] { display: none; }
     #modHelp b { color: #eee; font-weight: 600; } #modHelp [data-k] { opacity: .85; } #modHelp [data-k="n"] { opacity: 1; color: #ccc; }
     #modHelp[data-mods="s"] [data-k="s"], #modHelp[data-mods="a"] [data-k="a"], #modHelp[data-mods="sa"] [data-k] { color: #c9a96e; opacity: 1; } #modHelp[data-mods="s"] [data-k="s"] b, #modHelp[data-mods="a"] [data-k="a"] b, #modHelp[data-mods="sa"] [data-k] b { color: #c9a96e; }
+    [data-lock].locked { opacity: .72; } button[data-lock].locked::before, label[data-lock].locked::before, details[data-lock].locked > summary::before { content: "🔒 "; }
+    details[data-lock].locked > .body { opacity: .4; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
     #dupBar { left: 50%; bottom: 40px; transform: translateX(-50%); border-color: #ff4d4d; color: #ffb3b3; }
     #rulerBar, #rectBar, #circleBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input, #circleBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
@@ -125,10 +127,10 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 07:45 · c69a246</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 08:34 · 92daf48</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
-<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
-<button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
+<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
+<button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="feedbackBtn" data-i18n="fbBtn" data-i18n-title="fbBtnTip"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
 <aside data-i18n-aria="tools">
@@ -150,7 +152,7 @@
 <button data-tool="koma"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10h12v10M6 7l3 3-3 3M15 13l3 3-3 3"/></svg><span data-i18n="koma"></span></button>
 <button data-tool="stitch"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M7 10l2 2-2 2M12 10l2 2-2 2M17 10l2 2-2 2"/></svg><span data-i18n="stitch"></span></button>
 <button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button>
-<button data-tool="patchfill"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9zM12 3v18M3 12h18"/></svg><span data-i18n="patchTool"></span></button>
+<button data-tool="patchfill" data-lock="patchwork"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l9 9-9 9-9-9zM12 3v18M3 12h18"/></svg><span data-i18n="patchTool"></span></button>
 <div class="group" data-i18n="selection"></div>
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="closeGaps"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h6M15 12h6"/><path d="M9 8l-3 4 3 4M15 8l3 4-3 4"/></svg><span data-i18n="closeGaps"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
@@ -327,7 +329,7 @@
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
 </div></details>
-<details class="card" id="foldDesignCard"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
+<details class="card" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
 <g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
 <g class="dim" data-k="dr"><line class="ext" x1="352" y1="82" x2="352" y2="176"/><line x1="190" y1="152" x2="352" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="271" y="148">②</text></g>
 <g class="dim" data-k="w"><line x1="30" y1="172" x2="352" y2="172" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="191" y="168">③</text></g>
@@ -340,7 +342,7 @@
 <g class="dim" data-k="shift"><line x1="190" y1="-2" x2="170" y2="-2" marker-end="url(#fdArr)"/><line x1="190" y1="-2" x2="210" y2="-2" marker-end="url(#fdArr)"/><text x="228" y="2">⑩</text></g>
 <g class="dim" data-k="ring"><path d="M349.1,59.5 A60,60 0 0 1 349.1,96.5" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><circle cx="352" cy="78" r="2.5"/><text x="376" y="82">⑪</text></g>
 <g class="dim" data-k="stack"><circle cx="318" cy="78" r="14"/><rect x="170" y="74" width="140" height="8"/><line x1="156" y1="74" x2="156" y2="82" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="144" y="82">⑫</text></g>
-</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" id="foldSecCard"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
+</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
 <details class="card" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
 <div class="row"><button id="imgImport" data-i18n="imgImport"></button><button id="imgRemove" data-i18n="imgRemove"></button></div>
 <input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
@@ -534,7 +536,7 @@
 <label><span data-i18n="snapDist"></span><input id="snapDist" type="number" min="0" max="60" step="1" value="10"></label>
 <label><input id="showJunctions" type="checkbox" checked><span data-i18n="showJunctions"></span></label>
 </div></details>
-<details class="card" id="patchCard"><summary data-i18n="patchSection"></summary><div class="body">
+<details class="card" id="patchCard" data-lock="patchwork"><summary data-i18n="patchSection"></summary><div class="body">
 <label><span data-i18n="seamStyle"></span><select id="seamStyle"><option value="butt" data-i18n="styleButt"></option><option value="overlap" data-i18n="styleOverlap"></option><option value="felled" data-i18n="styleFelled"></option></select></label>
 <label><span data-i18n="patchPitch"></span><input id="patchPitch" type="number" step="0.1" value="4"></label>
 <label><span data-i18n="patchTol"></span><input id="patchTol" type="number" step="1" value="15"></label>
@@ -563,6 +565,7 @@
 </div>
 </main>
 <div id="printArea" data-pages="0"></div>
+<dialog id="lockDialog" class="fb"><h3 id="lockTitle"></h3><p data-i18n="lockBody"></p><p class="bd-note" data-i18n="lockOwnerNote"></p><div class="row"><button id="lockRegister" data-i18n="lockRegister"></button><button id="lockClose" data-i18n="lockClose"></button></div></dialog>
 <dialog id="regDialog" class="fb"><h3 data-i18n="regTitle"></h3><p data-i18n="regWhy"></p><label class="fb-f"><span data-i18n="regEmailL"></span><input id="regEmail" type="email" maxlength="254" autocomplete="email"></label><label class="fb-f"><span data-i18n="regNickL"></span><input id="regNick" type="text" maxlength="30" autocomplete="nickname"></label><p class="bd-note" data-i18n="regPrivacy"></p><label class="fb-ctx-on"><input id="regConsent" type="checkbox"><span data-i18n="regConsentL"></span></label><output id="regStatus" class="fb-status" role="status"></output><div class="row"><button id="regSend" data-i18n="regSend"></button><button id="regCheck" data-i18n="regCheck" hidden></button><button id="regClose" data-i18n="regClose"></button></div></dialog>
 <dialog id="feedbackDialog" class="fb"><h3 data-i18n="fbTitle"></h3><p data-i18n="fbLead"></p>
 <div class="row" id="fbKinds" role="radiogroup"><label><input id="fbKind-idea" type="radio" name="fbKind" value="idea" checked><span data-i18n="fbKindIdea"></span></label><label><input id="fbKind-bug" type="radio" name="fbKind" value="bug"><span data-i18n="fbKindBug"></span></label><label><input id="fbKind-cheer" type="radio" name="fbKind" value="cheer"><span data-i18n="fbKindCheer"></span></label></div>
@@ -585,8 +588,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=2b81ead1","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=88dc3bdc","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=d4d83278","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=9262b212","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=2b81ead1"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=c00b27f0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=88dc3bdc","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=d4d83278","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=3b11da39","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=c00b27f0"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -740,6 +743,11 @@ __mods['registration'] = (function(){
 const REG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx4nv5oEVFqb_kmamGFFEjqQwJs4Hl4h89TlzDJ0R_SaHp0AEdcX91ShU8E5Eo27slZbQ/exec';   /* 登録サーバー（GAS の /exec・ncad-registration）の URL。空にすると、登録を求めず誰でも使える（止めたいときはここを空にして公開する） */
 const REG_KEY = 'leather-cad.reg', REG_QUEUE_KEY = 'leather-cad.reg.queue', REG_DAY = 24 * 3600 * 1000, REG_QUEUE_MAX = 50;
 const REG_FEATURE_RE = /^[a-z0-9_]{1,24}$/, REG_KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
+/** 有料版の機能のロック（パッチワーク・三つ折り・三面図）を外せる「オーナーのメール」の照合値。メールそのものは書かない（公開されるプログラムのため）。ブラウザの中だけの仕組みなので、書き換えられる人には外せる（利用の抑止が目的）。 */
+const OWNER_EMAIL_HASH = '1o98r71vhte';
+const regOwnerHash = email => { const str = String(email || '').trim().toLowerCase() + '|ncad-owner-2026'; let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); };
+/** 登録の状態 {status, email} が、確認済みのオーナーのものか。 */
+const regIsOwner = state => !!state && state.status === 'ok' && regOwnerHash(state.email) === OWNER_EMAIL_HASH;
 const regIsEmail = s => typeof s === 'string' && s.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(s);
 
 /** 登録の状態と通信をまとめた部品。storage は localStorage 相当、fetchFn は fetch 相当（どちらも差し替え可）。endpoint が空なら登録を求めない。
@@ -798,7 +806,7 @@ function createRegistration({ endpoint = REG_ENDPOINT, storage = null, fetchFn =
   return api;
 }
 
-return {REG_ENDPOINT, REG_FEATURE_RE, regIsEmail, createRegistration};
+return {REG_ENDPOINT, REG_FEATURE_RE, OWNER_EMAIL_HASH, regOwnerHash, regIsOwner, regIsEmail, createRegistration};
 })();
 __mods['geometry'] = (function(){
 // 座標・長さは mm、Y 下向き。角度は度、時計回りが正。
@@ -2045,6 +2053,14 @@ const MESSAGES = {
     "regOk": "登録できました。もう一度、印刷・保存・書き出しを押してください。",
     "regPending": "まだ確認できていません。メールのリンクを開いてから、もう一度押してください。",
     "regNeed": "印刷・保存・書き出しは、利用登録が必要です。表示された画面から登録してください。",
+    "lockPatchwork": "パッチワーク（有料版の機能）",
+    "lockFold": "三つ折りの設計・断面図（有料版の機能）",
+    "lockThreeView": "三面図（有料版の機能）",
+    "lockBody": "この機能は、将来の有料版でお使いいただけます。有料版の公開まで、しばらくお待ちください。",
+    "lockOwnerNote": "開発者の端末は、利用登録（メール確認）を済ませると、ロックが自動で外れます。",
+    "lockRegister": "利用登録を開く",
+    "lockClose": "閉じる",
+    "lockHint": "🔒 有料版の機能です。",
     "regErrEmail": "メールアドレスの形が正しくありません。",
     "regErrConsent": "同意のチェックを入れてください。",
     "regErrLimit": "短い間に何度も申し込まれています。しばらくしてから、もう一度お試しください。",
@@ -3347,6 +3363,14 @@ const MESSAGES = {
     "regOk": "Registered. Press print, save or export again.",
     "regPending": "Not confirmed yet. Open the link in the email, then press again.",
     "regNeed": "Printing, saving and exporting require registration. Please register in the window that opened.",
+    "lockPatchwork": "Patchwork (paid-version feature)",
+    "lockFold": "Tri-fold design and section (paid-version feature)",
+    "lockThreeView": "Three views (paid-version feature)",
+    "lockBody": "This feature will be available in the paid version. Please wait until it is released.",
+    "lockOwnerNote": "On the developer's devices the lock is lifted automatically once usage registration (email confirmation) is done.",
+    "lockRegister": "Open registration",
+    "lockClose": "Close",
+    "lockHint": "🔒 This is a paid-version feature.",
     "regErrEmail": "The email address is not valid.",
     "regErrConsent": "Please tick the consent box.",
     "regErrLimit": "Too many requests in a short time. Please try again later.",
@@ -19801,7 +19825,7 @@ const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdi
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 const { track } = __mods['analytics'];
-const { createRegistration } = __mods['registration'];
+const { createRegistration, regIsOwner } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
@@ -20431,7 +20455,7 @@ function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: migrateDoc(tb.doc), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
-  if (info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
+  if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
 }
 function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
@@ -20970,7 +20994,7 @@ function initDesign() {
   $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
-  $('patchFill').onclick = () => { setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
+  $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
@@ -21004,6 +21028,22 @@ function regGuard(feature, kind = '') {
   if (registration.allowed()) { registration.track(feature, kind); registration.refresh(); return true; }
   openRegistration(); return false;
 }
+/** 有料版の機能のロック（パッチワーク・三つ折り・三面図）。インターネットの公開版（登録サーバーが使えるとき）だけロックがかかり、確認済みのオーナーのメールで利用登録した端末では外れる。
+ *  手元で開いたファイル（file://）や開発中（http://localhost）は、ロックしない。 */
+const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView' };
+function featureLocked() { return registration.enabled() && !regIsOwner(registration.state()); }
+/** ロックされた機能を使おうとしたとき：使ってよければ true。ロック中なら、🔒の案内を出して false。 */
+function lockGate(feature) {
+  if (!featureLocked()) return true;
+  $('lockTitle').textContent = '🔒 ' + t(LOCK_NAMES[feature] || 'lockFold'); $('hint').textContent = t('lockHint');
+  if (!$('lockDialog').open) $('lockDialog').showModal(); return false;
+}
+/** 🔒の印と、ロック中のカードの操作の無効化を、いまの状態に合わせる。 */
+function syncLockMarks() {
+  const locked = featureLocked();
+  document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
+}
+document.addEventListener?.('click', e => { const sm = e.target?.closest?.('details[data-lock].locked > summary'); if (sm) { e.preventDefault(); lockGate(sm.parentElement.dataset.lock); } }, true);
 function regMsg(key, vars = {}, cls = '') { const el = $('regStatus'); el.textContent = key ? t(key, vars) : ''; el.className = 'fb-status' + (cls ? ' ' + cls : ''); }
 function openRegistration() {
   const s = registration.state(); if (s.email) $('regEmail').value = s.email; if (s.nick) $('regNick').value = s.nick;
@@ -21018,7 +21058,7 @@ async function doRegister() {
 }
 async function doRegCheck() {
   const r = await registration.check();
-  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); return; }
+  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); return; }
   regMsg(r.status === 'pending' ? 'regPending' : r.status === 'error' ? 'regErrNet' : 'regErrNone', {}, r.status === 'pending' ? '' : 'ng');
 }
 function download(name, text, type, gate = true) {
@@ -21301,6 +21341,7 @@ function printViews() { if (!regGuard('print', 'views')) return; setPageStyle('a
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('autoSolid').onclick = () => {
+    if (!lockGate('threeview')) return;
     const solid = threeViewSolidAuto(doc.shapes.filter(s => visibleData(s) && s.type !== 'image'), { gap: 6 });
     if (!solid) { $('hint').textContent = t('autoSolidNone'); return; }
     autoSolid = solid; cam = threeViewCamera(solid.faces); if (!view3d) setView3d(true); else render3d();
@@ -23207,6 +23248,7 @@ function syncToolCards() {
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
+  if (next === 'patchfill' && !lockGate('patchwork')) return;
   cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards(); refreshModHelp();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
@@ -24261,8 +24303,8 @@ $('new').onclick = () => {
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
-$('threeView').addEventListener('change', () => { let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
-$('quadView').addEventListener('change', () => { let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } if (!quadOn()) dropEmptySheetTabs(); rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
+$('threeView').addEventListener('change', () => { if ($('threeView').checked && !lockGate('threeview')) { $('threeView').checked = false; return; } let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
+$('quadView').addEventListener('change', () => { if ($('quadView').checked && !lockGate('threeview')) { $('quadView').checked = false; return; } let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } if (!quadOn()) dropEmptySheetTabs(); rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
@@ -24327,7 +24369,7 @@ if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = c
 doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
-applyLanguage(initialLang);
+applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting();
 offerRestore(); autosaveReady = true;
 showTour();

@@ -4,6 +4,11 @@
 export const REG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx4nv5oEVFqb_kmamGFFEjqQwJs4Hl4h89TlzDJ0R_SaHp0AEdcX91ShU8E5Eo27slZbQ/exec';   /* 登録サーバー（GAS の /exec・ncad-registration）の URL。空にすると、登録を求めず誰でも使える（止めたいときはここを空にして公開する） */
 const REG_KEY = 'leather-cad.reg', REG_QUEUE_KEY = 'leather-cad.reg.queue', REG_DAY = 24 * 3600 * 1000, REG_QUEUE_MAX = 50;
 export const REG_FEATURE_RE = /^[a-z0-9_]{1,24}$/, REG_KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
+/** 有料版の機能のロック（パッチワーク・三つ折り・三面図）を外せる「オーナーのメール」の照合値。メールそのものは書かない（公開されるプログラムのため）。ブラウザの中だけの仕組みなので、書き換えられる人には外せる（利用の抑止が目的）。 */
+export const OWNER_EMAIL_HASH = '1o98r71vhte';
+export const regOwnerHash = email => { const str = String(email || '').trim().toLowerCase() + '|ncad-owner-2026'; let h1 = 0xdeadbeef, h2 = 0x41c6ce57; for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); };
+/** 登録の状態 {status, email} が、確認済みのオーナーのものか。 */
+export const regIsOwner = state => !!state && state.status === 'ok' && regOwnerHash(state.email) === OWNER_EMAIL_HASH;
 export const regIsEmail = s => typeof s === 'string' && s.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]{2,}$/.test(s);
 
 /** 登録の状態と通信をまとめた部品。storage は localStorage 相当、fetchFn は fetch 相当（どちらも差し替え可）。endpoint が空なら登録を求めない。
