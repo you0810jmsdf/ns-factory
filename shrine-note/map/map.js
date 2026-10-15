@@ -1275,7 +1275,7 @@ function shrineHTML(s0) {
   (s.deity_refs || []).forEach((r) => used.push(...(r.src || [])));
   const ds = s.deity_ids.map((id) => deities[id]).filter(Boolean);
   // 1 はじまり
-  const nameSpans = [...s.name].map((ch, k) => `<span style="--k:${k}">${esc(ch)}</span>`).join('');
+  const nameSpans = [...s.name].map((ch, k) => `<span style="--k:${k}">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('');   // 英語の名前の空白を、1文字ずつの span の中でも消さない
   const c1 = `<h2 class="nm" aria-label="${esc(s.name)}">${nameSpans}</h2>
     ${rvs(EN ? `<p class="rd">${esc(s.city || '')}${s._pending ? ' ｜ ' + esc(U('pendingTranslation', '')) : ''}</p>` : `<p class="rd">${esc(s.reading)}｜${esc(s.pref)} ${esc(s.city || '')}</p>`, 5)}
     ${rvs(`<div class="lead">${item(s.summary)}</div>`, 7)}
