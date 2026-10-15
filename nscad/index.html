@@ -122,9 +122,9 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 05:13 · 2dbdf63</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 05:25 · 13b21e4</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
-<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
+<label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="feedbackBtn" data-i18n="fbBtn" data-i18n-title="fbBtnTip"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
 <main>
@@ -236,6 +236,7 @@
 <div class="row"><button id="layerPickYellow" data-i18n="layerPickYellow"></button></div>
 <div class="row"><button id="layerMove" data-i18n="layerMove"></button></div>
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
+<div class="row"><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
 </div></details>
 <details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
 <label id="l-markDiv" data-i18n-title="markDivTip" hidden><span data-i18n="markDiv"></span><input id="markDiv" type="number" step="1" min="1" max="100" value="1"></label><label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
@@ -580,8 +581,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=6fa2ff21","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=f3ed5ea5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=6f337246","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=6fa2ff21"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=0147384b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=f3ed5ea5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=04efbdf2","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=0147384b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2215,6 +2216,15 @@ const MESSAGES = {
     "layerSoloDone": "「{name}」だけを表示しました。",
     "locked": "ロック",
     "addLayer": "追加",
+    "showSolid": "実線を表示",
+    "showSolidTip": "実線の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。隠した線はクリックで選べず、吸着もしません。",
+    "showDashed": "点線を表示",
+    "showDashedTip": "点線（補助線・ガイド）の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。線種が点線の線と、ガイドの層の線が対象です。",
+    "gatherLayer": "表示中の線を作図レイヤーに集める",
+    "gatherLayerTip": "いま画面に出ている（実線・点線の表示とレイヤーの両方で見えている）線を、すべて上の「作図レイヤー」に移します。ロック中・非表示のレイヤーの線は動きません。元に戻せます。",
+    "gatherLocked": "作図レイヤーが非表示かロック中です。別のレイヤーを選ぶか、ロックを外してください。",
+    "gatherNone": "移す線がありません（表示中の線は、すべて作図レイヤーにあります）。",
+    "gatherDone": "表示中の線 {n} 本を、レイヤー「{layer}」に集めました。",
     "removeLayer": "削除",
     "newLayer": "レイヤー {n}",
     "lastLayer": "最後のレイヤーは削除できません。",
@@ -3495,6 +3505,15 @@ const MESSAGES = {
     "layerSoloDone": "Showing only \"{name}\".",
     "locked": "Locked",
     "addLayer": "Add",
+    "showSolid": "Show solid lines",
+    "showSolidTip": "Show or hide solid lines (screen only; printing and export always include them; separate from layers). Hidden lines cannot be clicked and do not snap.",
+    "showDashed": "Show dashed lines",
+    "showDashedTip": "Show or hide dashed lines (guides / construction lines) (screen only; printing and export always include them; separate from layers). Covers dashed lines and lines on the Guide layer.",
+    "gatherLayer": "Gather visible lines into the drawing layer",
+    "gatherLayerTip": "Moves every line you can see now (visible by both the solid / dashed toggles and the layers) to the Drawing layer above. Lines on locked or hidden layers stay. You can undo it.",
+    "gatherLocked": "The drawing layer is hidden or locked. Pick another layer or unlock it.",
+    "gatherNone": "Nothing to move (all visible lines are already on the drawing layer).",
+    "gatherDone": "Moved {n} visible lines to the layer \"{layer}\".",
     "removeLayer": "Remove",
     "newLayer": "Layer {n}",
     "lastLayer": "The last layer cannot be removed.",
@@ -19717,6 +19736,20 @@ let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：ス�
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
+/** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
+function syncViewShow(save) {
+  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
+  if (save) { try { localStorage.setItem('leather-cad.view', JSON.stringify(viewShow)); } catch { /* 保存できなくても続ける */ } }
+  selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || viewShows(x); })); cancel(); draw();
+}
+function gatherVisibleToActiveLayer() {
+  const layer = doc.layers.find(l => l.id === activeLayer);
+  if (!layer?.visible || layer.locked) { $('hint').textContent = t('gatherLocked'); return; }
+  const moved = doc.shapes.filter(x => visible(x) && editable(x) && x.layer !== activeLayer);
+  if (!moved.length) { $('hint').textContent = t('gatherNone'); return; }
+  commit(() => { for (const x of moved) x.layer = activeLayer; });
+  $('hint').textContent = t('gatherDone', { n: moved.length, layer: layerName(layer) });
+}
 function applyLanguage(lang) {
   const current = setLang(lang);
   try { localStorage.setItem('leather-cad.lang', current); } catch { /* file:// の保存制限でも操作を続ける。 */ }
@@ -19742,7 +19775,7 @@ const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visibleData(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
 /** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
 function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
 /** 小さな立体画面（枠方式）：右上の空きに、三面図から組み立てた立体を描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
@@ -19788,11 +19821,11 @@ function drawThreeViewStaticGuides() {
 function makeThreeViewOutlines() {
   const depth = Number($('threeViewDepthIn').value);
   if (!(depth > 0)) { $('hint').textContent = t('threeViewMakeBadDepth'); return; }
-  const r = threeViewOutlines(doc.shapes.filter(s => visible(s)), depth, threeViewLayout);
+  const r = threeViewOutlines(doc.shapes.filter(s => visibleData(s)), depth, threeViewLayout);
   if (!r) { $('hint').textContent = t('threeViewMakeNoFront'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visible(s) && threeViewSameRect(s, rect)));
+  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visibleData(s) && threeViewSameRect(s, rect)));
   if (!fresh.length) { $('hint').textContent = t('threeViewMakeExists'); return; }
   cancel();
   commit(() => { const ids = [], tex = solidTextureOf('frame'); /* 正面の形の質感を、作った外形にも付ける（三面図・立体で同じ革に見える） */ for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })), ...(tex ? { texture: tex } : {}) }); ids.push(id); } selected = new Set(ids); });
@@ -19996,8 +20029,15 @@ function drawQuad(dpr) {
 }
 /* holeLink＝穴の経路のための補助の線（.lcc の取り込みで付く・もとの図面に無い線）。画面には出さず、クリックでも選ばれない（visible から除く）。全選択・範囲選択には入る（editable は層だけで決める）。穴の判定も層だけ（layerVisible／layerEditable）。 */
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
-const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
-const visible = s => layerVisible(s) && !s.holeLink;
+const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && (exporting || viewShows(s)); };
+/** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
+const viewShow = { solid: true, dashed: true };
+const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
+const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
+try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; } catch { /* 保存できない環境でも操作を続ける */ }
+const visible = s => layerVisible(s) && !s.holeLink && (exporting || viewShows(s));
+/** 三面図・金具の自動生成など、図形の数値を使う計算では、実線・点線の表示切り替えを見ない（画面だけの切り替えのため）。 */
+const visibleData = s => layerVisible(s) && !s.holeLink;
 const editable = s => layerEditable(s); /* holeLink も「選べる」側（全選択・範囲選択に入れて、コピー・移動・複製に穴ごと付けるため）。クリックでは選ばれない（visible で除く） */
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && !s.holeLink; /* 見えない補助の線（holeLink）は、目打ち・オフセット・クリックの当たり判定の相手にしない */
@@ -20412,6 +20452,10 @@ function initLayers() {
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
   $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
+  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
+  $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
+  $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
+  $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
     if (doc.layers.length < 2) { $('hint').textContent = t('lastLayer'); return; }
@@ -21043,7 +21087,7 @@ let autoSolid = null; /* 「三面図から立体に」で作った立体（図�
 function scene3d() {
   if (autoSolid) return { faces: autoSolid.faces, hits: [], panels: [], solid: autoSolid };
   if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('quad')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visibleData(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
@@ -21051,7 +21095,7 @@ function scene3d() {
 function solidTextureOf(kind) {
   let d = doc, list;
   if (kind === 'quad') { d = sheetDoc('front'); list = d ? d.shapes.filter(s => d.layers.find(l => l.id === s.layer)?.visible) : []; }
-  else list = doc.shapes.filter(s => visible(s) && threeViewShapeArea(s, threeViewLayout) === 'front');
+  else list = doc.shapes.filter(s => visibleData(s) && threeViewShapeArea(s, threeViewLayout) === 'front');
   const areaOf = s => { try { const b = bboxOf(s); return (b.maxX - b.minX) * (b.maxY - b.minY); } catch { return 0; } };
   const front = list.filter(s => s.type !== 'image' && (s.closed || s.type === 'circle')).sort((a, b) => areaOf(b) - areaOf(a))[0];
   return front ? textureOf(front, d) : null;
@@ -21130,7 +21174,7 @@ function printViews() { if (!regGuard('print', 'views')) return; setPageStyle('a
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('autoSolid').onclick = () => {
-    const solid = threeViewSolidAuto(doc.shapes.filter(s => visible(s) && s.type !== 'image'), { gap: 6 });
+    const solid = threeViewSolidAuto(doc.shapes.filter(s => visibleData(s) && s.type !== 'image'), { gap: 6 });
     if (!solid) { $('hint').textContent = t('autoSolidNone'); return; }
     autoSolid = solid; cam = threeViewCamera(solid.faces); if (!view3d) setView3d(true); else render3d();
     $('hint').textContent = t('autoSolidDone', { f: t('autoSolidYes'), t: t(solid.auto.top ? 'autoSolidYes' : 'autoSolidNo'), s: t(solid.auto.side ? 'autoSolidYes' : 'autoSolidNo'), w: +solid.width.toFixed(1), h: +solid.height.toFixed(1), d: +solid.depth.toFixed(1) });
@@ -21971,7 +22015,7 @@ function makeBinderViews() {
   const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
   const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpecWithSection(binderSpec(p.spec), p), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
-  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visibleData(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
   if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
   const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
