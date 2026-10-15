@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Listing criteria | Shrine Note</title>
+<meta name="description" content="How Shrine Note chooses the shrines it lists: the total number, the status of confirmation, and how sources are treated.">
+<meta name="theme-color" content="#10130f">
+<meta name="robots" content="noindex">
+<style>
+:root { --bg: #0d100d; --panel: #161b15; --ink: #e9e7dc; --soft: #b9b8a8; --muted: #8b8c7c; --gold: #c9a96e; --line: rgba(201,169,110,.28); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg: #f6f3ea; --panel: #ffffff; --ink: #1f2420; --soft: #4a5048; --muted: #6d7167; --gold: #8a6a2f; --line: rgba(138,106,47,.35); } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.8 Georgia, "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho", serif; }
+main { max-width: 720px; margin: 0 auto; padding: 28px 16px 64px; }
+.eyebrow { font: 600 11px/1 system-ui, sans-serif; letter-spacing: .3em; color: var(--gold); }
+h1 { margin: 10px 0 6px; font-size: 26px; line-height: 1.4; }
+.lead { color: var(--soft); margin: 0 0 22px; }
+h2 { margin: 30px 0 8px; font-size: 18px; color: var(--gold); letter-spacing: .06em; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 10px 0; }
+.card b { color: var(--gold); }
+.card p { margin: 4px 0 0; color: var(--soft); font-size: 15px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; margin: 10px 0; }
+summary { cursor: pointer; font-weight: 600; }
+details p, details li { color: var(--soft); font-size: 15px; }
+table { width: 100%; border-collapse: collapse; font: 14px/1.7 system-ui, sans-serif; margin: 8px 0; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td.n { text-align: right; font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; }
+a { color: var(--gold); }
+nav { margin: 0 0 18px; font: 13px system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="map/?lang=en">← Back to Shrine Note</a> ｜ <a href="criteria.html">日本語</a></nav>
+  <div class="eyebrow">SHRINE NOTE</div>
+  <h1>Listing criteria</h1>
+  <p class="lead">Japan has about 80,000 shrines. This page explains how we choose the ones listed here. We want the notes to be reliable when you use them to prepare for a visit.</p>
+
+  <h2>Three criteria for listing a shrine</h2>
+  <div class="card"><b>1. The shrine's visiting arrangements are shown officially</b>
+    <p>Office and amulet-counter hours, goshuin information and the like appear on the official website or the page of the Shrine Association (jinja-chō). A shrine's name alone does not tell us whether priests are resident, so we use this official information as the guide.</p></div>
+  <div class="card"><b>2. The shrine has a history backed by public records</b>
+    <p>Shrines whose place in history or in the system can be confirmed: Ichinomiya, shrines listed in the Engishiki, Beppyō shrines, Chokusai-sha and so on. Shrine rank is only a guide; it does not rank shrines as better or worse.</p></div>
+  <div class="card"><b>3. It is connected to deities of the Kojiki and Nihon Shoki</b>
+    <p>The shrine enshrines a deity who appears in the Kojiki or Nihon Shoki, or we can explain its link to such a deity. Shrines of figures who do not appear there (for example Emperor Meiji at Meiji Jingū) are also listed, and we say clearly that they are not in the Kojiki or Nihon Shoki.</p></div>
+
+  <h2>Current status of confirmation</h2>
+  <div id="stat" class="card"><p>Counting…</p></div>
+  <p class="note">"Confirmed" means the item was checked against official information. Items we could not check are marked "To confirm" on the shrine's page, and we correct them when we can.</p>
+
+  <details>
+    <summary>How many shrines are there in Japan?</summary>
+    <p>About 80,000 (Agency for Cultural Affairs, Religions Yearbook, Reiwa 5 edition: 80,709 shrines). About 79,000 belong to the Association of Shinto Shrines, and there are about 20,000 priests, so in many regions one chief priest looks after several shrines. For this reason we give weight to whether a shrine's visiting arrangements are shown.</p>
+  </details>
+  <details>
+    <summary>Why not list them all? (The current goal is 150 shrines)</summary>
+    <p>We build up reliable information little by little, checking sources as we go, rather than listing everything. We put the accuracy of what we list ahead of the number of shrines.</p>
+  </details>
+  <details>
+    <summary>How do we research the information?</summary>
+    <p>We trust sources in this order: official shrine websites; shrine associations, local governments and the Agency for Cultural Affairs; the classics (Kojiki, Nihon Shoki, Kogo Shūi); encyclopedias; tourist sites. Quotations from the classics are checked against the original text character by character, and any that do not match are not published. Coordinates are checked against the place-name notes on the Geospatial Information Authority of Japan maps.</p>
+  </details>
+  <details>
+    <summary>What these criteria do not cover</summary>
+    <ul>
+      <li>"Resident priests" is inferred from official information and does not guarantee the actual arrangements. Please check the latest official information before you visit.</li>
+      <li>Small shrines treasured by local people have little official information, so they are hard to list for now.</li>
+    </ul>
+  </details>
+</main>
+<script>
+fetch('shrines.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (d) {
+  var L = d.shrines || d, n = L.length;
+  function ok(f) { return L.filter(function (s) { var v = s[f]; return v && typeof v === 'object' && v.status !== '要確認'; }).length; }
+  var rows = [['Visiting hours', 'hours'], ['Goshuin', 'goshuin'], ['Parking', 'parking'], ['Access', 'access']];
+  var html = '<p>Listed: <b>' + n + ' shrines</b></p><table><tr><th>Item</th><th class="n">Confirmed officially</th><th class="n">To confirm</th></tr>';
+  rows.forEach(function (r) { var a = ok(r[1]); html += '<tr><td>' + r[0] + '</td><td class="n">' + a + '</td><td class="n">' + (n - a) + '</td></tr>'; });
+  document.getElementById('stat').innerHTML = html + '</table>';
+}).catch(function () { document.getElementById('stat').innerHTML = '<p>Could not load the numbers.</p>'; });
+</script>
+</body>
+</html>
