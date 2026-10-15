@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-14T23:32:14",
+ "generatedAt": "2026-10-15T22:10:33",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 300,
+ "count": 301,
  "items": [
+  {
+   "title": "2026-10-15（木） - CADに新機能、そして見えないエラーとの格闘",
+   "url": "https://note.com/you0810jmsdf/n/ne2a126855df8",
+   "date": "2026-10-15",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-15_ig.jpg",
+   "key": "ne2a126855df8",
+   "imageSource": "sns",
+   "summary": "レザークラフトの三つ折り設計をシミュレーションできるCADに、待望の三つ折り設計機能が追加された。記事生成の自動化や請求メールの自動保存も進み、見えない部分のシステム調整も継続している。"
+  },
   {
    "title": "案件報告の公開処理を停止｜Jarvis日記 2026.10.14（水）",
    "url": "https://note.com/you0810jmsdf/n/na2800cd2e5b3",
