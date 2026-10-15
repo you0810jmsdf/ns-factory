@@ -32,7 +32,16 @@ export const TUTORIALS_STITCH = {
     {
       "say": "tut.stitch.4",
       "mouse": [
-        80,
+        30,
+        40
+      ],
+      "press": true,
+      "wait": 700
+    },
+    {
+      "say": "tut.stitch.4b",
+      "mouse": [
+        130,
         40
       ],
       "press": true,

@@ -502,45 +502,66 @@ function stampAt(p,single=false,markKind='tool',span=false) {
     $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)})+(sp?' '+t('stitchSpanNote',{a:sp.a.toFixed(1),b:sp.b.toFixed(1)}):'');draw();
   }catch(err){$('hint').textContent=err.message;}
 }
-/** 目打ちカードの「個数」（両端の穴を含む総数）。空欄・2未満なら使わない。 */
+/** 目打ちカードの「個数」（両端の穴を含む総数）。空欄・2未満なら 0。 */
 function stitchCountN() { const n = Math.floor(Number($('stitchCount').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 500) : 0; }
-/** 個数指定の目打ち：始点の交点→終点の交点の順にクリックすると、その間（つながった線をたどる・途中の交点は無視）に、両端を含めて n 個を等間隔に打つ。同じ位置の穴は1つにまとめ、線は切らない。 */
-/** クリック位置の近くにある線ごとに、その線（つながった線の経路）の上の「交点または端」のうち、いちばん近いものを集める。交点では複数の線が重なるので、候補は線の数だけ返す。 */
-function countCandidates(w) {
+/** 配置方法：固定ピッチ・可変ピッチ・個数指定の3つ。保存済みの設定にある旧い値（均等・手動）は、近い方法に読み替える。 */
+function placementKind() { const v = $('placement').value; return v === 'variable' || v === 'equal' ? 'variable' : v === 'count' ? 'count' : 'fixed'; }
+/** 個数の欄は、配置方法が「個数指定」のときだけ見せる。 */
+function syncPlacementFields() { const el = $('l-stitchCount'); if (el) el.hidden = $('placement').value !== 'count'; }
+/** クリック位置の近くにある線ごとに、その線（つながった線の経路）の上の点を集める。点は、端・交点・すでにある穴にいちばん近いものへ吸着（画面14px以内）。無ければ、クリックした位置に一番近い線上の点。交点では複数の線が重なるので、候補は線の数だけ返す。 */
+function stitchPointCandidates(w) {
   const out = [], seen = new Set();
   for (const hit of doc.shapes.filter(s => editable(s) && stitchable(s)).reverse()) {
     if (distToShape(hit, w) > 8 / scale) continue;
     const state = routeForHit(hit); if (!state?.route) continue; const { saved, route } = state, key = saved.shapeIds.join(',');
     if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
-    const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len]; /* 経路の両端と、ほかの図形との交点 */
+    const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
+    if (!state.fresh) for (const h of doc.holes) if (h.pathId === saved.id) cands.push(h.s);
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
-    if (best !== null && bd <= 14 / scale) out.push({ key, state, s: best, p: pointAtLength(route, best) });
+    const s = best !== null && bd <= 14 / scale ? best : projectOnPath(route, w).s;
+    out.push({ key, state, s, p: pointAtLength(route, s) });
   }
   return out;
 }
-function countStitchClick(w) {
-  const tool = doc.tools.find(x => x.id === $('stitchTool').value), n = stitchCountN(), near = countCandidates(w);
-  if (!tool || !near.length) { $('hint').textContent = t(doc.shapes.some(s => editable(s) && stitchable(s) && distToShape(s, w) <= 8 / scale) ? 'countNoPoint' : 'countNoLine'); return; }
+/** 目打ち：始点→終点の順に2回クリックして、その間に打つ。固定ピッチ＝始点からピッチずつ、終点を超えない所まで／可変ピッチ＝両端を含めて、間隔をそろえて／個数指定＝両端を含めて n 個を等間隔。
+ *  つながった線もたどる（途中の交点は無視）。同じ位置の穴は1つにまとめ、線は切らない。始点・終点を決める前のクリックでは、何も打たない。 */
+function rangeStitchClick(w) {
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
+  if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
+  if (kind === 'count' && !n) { $('hint').textContent = t('countNeedN'); return; }
   const pair = countStage ? near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6) : null;
   if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
     if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
-    countStage = { list: near }; $('hint').textContent = t('countStart', { n }); draw(); return;
+    countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
-  const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s), pitch = (hi - lo) / (n - 1); countStage = null;
+  const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s); countStage = null;
+  let points, pitch, mode;
+  try {
+    if (kind === 'count') { pitch = (hi - lo) / (n - 1); mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
+    else {
+      const opts = stitchOptions(), from = lo + opts.offsetStart, to = hi - opts.offsetEnd; pitch = tool.pitch; mode = kind;
+      if (from > to || len < 1e-9) { $('hint').textContent = t('invalidRange'); return; }
+      points = pointsAlongShape(route, tool.pitch, { offsetStart: from, offsetEnd: len - to, variable: kind === 'variable' });
+      const corners = cornerHoles(route, opts.corner).filter(p => p.s >= from - 1e-7 && p.s <= to + 1e-7);
+      for (const c of corners) { points = points.filter(p => Math.abs(p.s - c.s) > 1e-6); points.push(c); }
+      if (opts.corner === 'none') { const cs = cornerHoles(route); points = points.filter(p => !cs.some(c => Math.abs(c.s - p.s) < 1e-6)); }
+      points.sort((p, q) => p.s - q.s);
+    }
+  } catch (err) { $('hint').textContent = err.message; return; }
   commit(() => {
     if (fresh) doc.paths.push(saved);
-    doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7); /* 区間の中にあった同じ線の穴は、打ち直す */
+    doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7); /* 指定した区間の中にあった同じ線の穴は、打ち直す */
     saved.segments = saved.segments.flatMap(s => s.to < lo || s.from > hi ? [s] : [...(s.from < lo ? [{ ...s, to: lo }] : []), ...(s.to > hi ? [{ ...s, from: hi }] : [])]);
     const added = [];
-    for (let i = 0; i < n; i++) {
-      const s = i === n - 1 ? hi : lo + pitch * i, p = pointAtLength(route, s), pos = saved.closed && Math.abs(s - len) < 1e-7 ? 0 : s;
+    for (const p of points) {
+      const pos = saved.closed && Math.abs(p.s - len) < 1e-7 ? 0 : p.s;
       if (doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - pos) < 1e-5)) continue;
-      const id = freshId(doc.holes, 'h'); doc.holes.push({ x: p.x, y: p.y, s: pos, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), mark: 'tool' }); added.push(id);
+      const id = freshId(doc.holes, 'h'); doc.holes.push({ ...p, s: pos, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), mark: 'tool' }); added.push(id);
     }
-    saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode: 'manual' }); selected = new Set(added);
+    saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode }); selected = new Set(added);
   });
-  $('hint').textContent = t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
+  $('hint').textContent = kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
 }
 function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
   if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
@@ -730,6 +751,7 @@ function initStitch() {
   $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
   $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
+  $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
   for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
@@ -4224,7 +4246,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distToShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { if (stitchCountN()) { countStitchClick(world(p)); return; } stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p)); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
