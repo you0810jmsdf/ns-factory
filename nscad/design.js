@@ -552,6 +552,18 @@ export function foldDimensions(d, key, { refill = null } = {}) {
   }
   return items;
 }
+/** 三つ折りの設計の取っ手（実際の断面の上で、つかんで横へドラッグすると欄の数値が変わる点・事業主指示 2026-10-15）。図面の座標（mm）。
+ *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
+export function foldHandles(d) {
+  if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  const { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
+  const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
+  return [
+    { key: 'btn', dim: 'shift', ...pt(ub, 2 * rc1 + T / 2 + 8) }, { key: 'dl', dim: 'dl', ...pt(ub - d.dL, v2) }, { key: 'dr', dim: 'dr', ...pt(ub + d.dR, rc1) },
+    { key: 'cl', dim: 'cl', ...pt(0, 0) }, { key: 'cr', dim: 'cr', ...pt(ub + d.cR, 2 * rc1 - 2 * rc2) },
+    { key: 'rl', dim: 'rl', ...pt(u2 - d.rinL, v2) }, { key: 'rr', dim: 'rr', ...pt(f1 + d.rinR, rc1) },
+  ];
+}
 /** 曲げ部の菱目ピッチ：基準の平らな間隔 pitch（革の中心線＝平らに伸ばした長さで測る）を、折りごとに外側の面・内側の面へ割り当てた間隔。
  *  同じ角度で並べるので、外側＝pitch×(中心線の半径＋合計の厚みの半分)÷半径・内側＝pitch×(半径−厚みの半分)÷半径・差＝pitch×厚み÷半径。1ピッチの角度＝pitch÷半径（度）・count＝折りの弧の長さ÷pitch。
  *  plan は foldDesignPlan の結果。折りは右・左の順（革を端からたどる順）。plan が失敗・pitch が正の数でないときは null。 */
