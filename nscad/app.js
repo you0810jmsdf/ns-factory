@@ -1985,7 +1985,7 @@ function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { d
 function renderTabs() {
   scheduleAutosave();
   const bar = $('tabBar'); bar.textContent = '';
-  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); bar.appendChild(b); });
+  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tabs.length > 1) { const x = document.createElement('span'); x.className = 'tabX'; x.textContent = '×'; x.title = t('tabClose'); x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
   $('tabName').value = tabs[activeTab]?.name || '';
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
 }
@@ -1995,10 +1995,13 @@ function switchTab(i) {
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
-let closeArmed = 0;
-function closeTab() { if (tabs.length < 2) { $('hint').textContent = t('lastTab'); return; }
-  if (tabs[activeTab]?.dirty && Date.now() - closeArmed > 5000) { closeArmed = Date.now(); $('hint').textContent = t('closeTabConfirm'); return; } // 埋め込みブラウザでは confirm が出ないので 2 段押し
-  closeArmed = 0; tabs.splice(activeTab, 1); const next = Math.min(activeTab, tabs.length - 1); activeTab = -1; switchTab(next); }
+let closeArmed = 0, closeArmedTab = null;
+function closeTab() { closeTabAt(activeTab); }
+/** タブ i を閉じる（右上の×・中クリック・「図面タブを閉じる」ボタン共通）。未保存なら5秒以内にもう一度押すと閉じる。最後の1枚は閉じない。 */
+function closeTabAt(i) { if (tabs.length < 2) { $('hint').textContent = t('lastTab'); return; } const tab = tabs[i]; if (!tab) return;
+  if (tab.dirty && !(closeArmedTab === tab && Date.now() - closeArmed <= 5000)) { closeArmed = Date.now(); closeArmedTab = tab; $('hint').textContent = t('closeTabConfirm'); return; } // 埋め込みブラウザでは confirm が出ないので 2 段押し
+  closeArmedTab = null; const cur = tabs[activeTab]; tabs.splice(i, 1);
+  if (tab === cur) { const next = Math.min(i, tabs.length - 1); activeTab = -1; switchTab(next); } else { activeTab = tabs.indexOf(cur); renderTabs(); } }
 /** 選択図形を別タブへコピー（move=true なら元を削除）。 */
 function sendToTab(move) {
   const target = Number($('tabTarget').value); if (!tabs[target] || target === activeTab) { $('hint').textContent = t('needTab'); return; }
