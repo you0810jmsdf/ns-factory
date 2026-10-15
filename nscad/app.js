@@ -3053,15 +3053,26 @@ function trimClick(p, keep, byHoles = false) {
   commit(() => { selected = new Set(applyShapeParts(hit, parts)); });
 }
 /** Alt+クリック：クリックした図形を、ほかの図形との交点で区切り、クリックした区間（交点から交点まで）だけを選ぶ。Shift+Alt+クリックで、選んだものに足す。交点が無ければ、図形全体を選ぶ。 */
-function selectSpanAt(p, additive) {
-  const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
-  const others = doc.shapes.filter(s => visible(s) && stitchable(s)), mine = trimAt(hit, p, others, { keep: true }), rest = trimAt(hit, p, others, { keep: false });
-  if (!mine || !rest || !rest.length) { selected = additive ? new Set([...selected, hit.id]) : new Set([hit.id]); $('hint').textContent = t('spanWhole'); draw(); return; }
-  if (seamsOn(hit) && !window.confirm(t('holeTrimConfirm'))) return;
+function selectSpanAt(p, additive, { byHoles = false, auto = false } = {}) {
+  const { hit, reason } = trimTarget(p); if (!hit) { if (!auto) $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
+  let parts;
+  if (byHoles) { /* Alt+クリック：その線に打たれた菱目の位置で区切り、クリックした「菱目と菱目の間」だけを選ぶ（trimClick と同じ区切り方） */
+    const cuts = doc.holes.filter(h => holeVisible(h) && distToShape(hit, { x: h.x, y: h.y }) < 0.3).map(h => projectOnPath(hit, { x: h.x, y: h.y }).s);
+    if (!cuts.length) { $('hint').textContent = t('trimNoHoles'); return; }
+    const sc = projectOnPath(hit, p).s, lo = Math.max(...cuts.filter(c => c <= sc), -Infinity), hi = Math.min(...cuts.filter(c => c > sc), Infinity), all = splitShapeAt(hit, [lo, hi].filter(Number.isFinite));
+    if (all.length > 1) { const clicked = all.reduce((b, x) => distToShape(x, p) < distToShape(b, p) ? x : b); parts = [clicked, ...all.filter(x => x !== clicked)]; }
+  } else {
+    const others = doc.shapes.filter(s => visible(s) && stitchable(s)), mine = trimAt(hit, p, others, { keep: true }), rest = trimAt(hit, p, others, { keep: false });
+    if (mine && rest && rest.length) parts = [...mine, ...rest];
+  }
+  if (!parts) { selected = additive ? new Set([...selected, hit.id]) : new Set([hit.id]); if (!auto) $('hint').textContent = t('spanWhole'); draw(); return; }
+  if (seamsOn(hit)) { if (auto) return; if (!window.confirm(t('holeTrimConfirm'))) return; } /* 縫い合わせ設定がある線は、ふつうのクリックでは切らない */
   cancel();
-  commit(() => { const added = applyShapeParts(hit, [...mine, ...rest]), next = additive ? new Set([...selected].filter(id => id !== hit.id)) : new Set(); next.add(added[0]); selected = next; });
-  $('hint').textContent = t('spanSelected');
+  commit(() => { const added = applyShapeParts(hit, parts), next = additive ? new Set([...selected].filter(id => id !== hit.id)) : new Set(); next.add(added[0]); selected = next; });
+  $('hint').textContent = t(byHoles ? 'spanHolesSelected' : 'spanSelected');
 }
+let spanClickTimer = null; /* シングルクリックの予約。ダブルクリックや次の操作が来たら取り消す */
+const cancelSpanClick = () => { if (spanClickTimer) { clearTimeout(spanClickTimer); spanClickTimer = null; } };
 /** 反転コピーの菱目が順目（keep）のとき、反転後の穴の傾きを元の値に戻す。位置は変えない。 */
 function keepHoleSlant(mirrored, original) { return $('mirrorHoles').value === 'keep' && 'pathId' in original ? { ...mirrored, angleDeg: original.angleDeg } : mirrored; }
 /** 平行な2本の直線の、ちょうど真ん中を通る軸（点 a・b）。平行でなければ null。 */
@@ -4186,7 +4197,8 @@ canvas.addEventListener('pointerdown', e => {
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&!markHidden(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
-    if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey); return; } /* Alt+クリック：交点から交点までの区間だけを選ぶ（Shift で追加） */
+    cancelSpanClick();
+    if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
@@ -4246,6 +4258,7 @@ canvas.addEventListener('contextmenu', e => {
   if (mode === 'select' && (selected.size >= 1 || ctxCardList().length)) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニューと右メニューの項目 */
 });
 canvas.addEventListener('dblclick', e => {
+  cancelSpanClick();
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
   if (mode === 'bezier') { finishBezier(); return; } /* 終点でダブルクリック＝確定 */
@@ -4288,6 +4301,10 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
     else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
+    else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
+      const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
+      if (only && ['line', 'arc'].includes(only.type) && !groupIdOf(only)) { cancelSpanClick(); spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
+    }
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
