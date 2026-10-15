@@ -605,6 +605,17 @@ export function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) 
   }
   return order;
 }
+/** contourFrom で選んだ輪郭 ids の、先へ進めなかった端のうち「分岐」で止まった所を返す：端のすぐそば（tol 以内）に、輪郭に入っていない別の図形の端がある所。
+ *  すき間（離れて見える所）は含めない（画面の橙の輪で出ている）。戻り値は [{ x, y }]。 */
+export function contourStops(shapes, ids, { tol = 0.01, gapTol = 0.2 } = {}) {
+  const inSet = new Set(ids), mine = shapes.filter(s => inSet.has(s.id) && s.type !== 'circle' && !s.closed), others = shapes.filter(s => !inSet.has(s.id) && s.type !== 'circle' && !s.closed);
+  const endsOf = s => { const len = arcLength(s); return len > EPS ? [pointAtLength(s, 0), pointAtLength(s, len)] : []; }, out = [];
+  for (const s of mine) for (const p of endsOf(s)) {
+    if (mine.some(o => o !== s && endsOf(o).some(q => distance(p, q) <= gapTol))) continue; /* 輪郭の中でつながっている端 */
+    if (others.some(o => endsOf(o).some(q => distance(p, q) <= tol)) && !out.some(q => distance(p, q) <= tol)) out.push({ x: p.x, y: p.y });
+  }
+  return out;
+}
 /** 文書と永続経路から、図形の向きを解決した計算用経路を返す。不連続なら null。 */
 export function resolvePath(doc,path) {
   const shapes=path.shapeIds.map(id=>doc.shapes.find(s=>s.id===id)); if(shapes.some(s=>!s))return null;
