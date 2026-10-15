@@ -5,6 +5,7 @@ import { summarize } from './stampbook.js';
 import { photos, shrink } from './photos.js';
 import { makeShareImage, shareOrSave } from './share.js';
 import { exportAll, importAll } from './backup.js';
+import { track } from './analytics.js';   // アクセス計測（公開版だけ・見られた神社/神様/機能と言語だけ。現在地やスタンプは送らない）
 
 // ---- 範囲（tools/build_heightmap.py と同じ値）----
 const LON0 = 128.0, LON1 = 146.0, LAT0 = 30.0, LAT1 = 45.9;
@@ -43,6 +44,7 @@ const EN = lang === 'en';
 if (EN) { document.documentElement.lang = 'en'; document.title = enData.ui.title; }
 const U = (k, ja) => (EN && enData.ui[k]) || ja;
 const TX = (ja, en) => (EN ? en : ja);
+const LG = () => (EN ? 'en' : 'ja');
 const trunc = (t, n) => ((t || '').length > n ? (t || '').slice(0, n) + '…' : (t || ''));
 
 const shrines = shrineData.shrines;
@@ -774,6 +776,7 @@ async function ensureConsent() {
 }
 async function routeAction(kind) {
   const s = selected;
+  track.section(LG(), 'route');   // 種類（現在地を取る・道路を調べる…）だけ。位置は送らない
   if (kind === 'locate') {
     locate(async () => {
       if (!(await ensureConsent())) return;
@@ -1308,7 +1311,7 @@ function shrineHTML(s0) {
     ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
     <h3 class="chh sub">${EN ? U('noteArticle', '') + (s.article_url_en ? '' : ' (Japanese)') : 'note 記事'}</h3>
-    ${EN && s.article_url_en ? `<a class="btn" href="${esc(s.article_url_en)}" target="_blank" rel="noopener">${U('readNoteEn', '')}</a>${s.article_url ? ` <a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">${U('readNoteJa', '')}</a>` : ''}` : s.article_url ? `<a class="btn" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
+    ${EN && s.article_url_en ? `<a class="btn" data-art="en" href="${esc(s.article_url_en)}" target="_blank" rel="noopener">${U('readNoteEn', '')}</a>${s.article_url ? ` <a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">${U('readNoteJa', '')}</a>` : ''}` : s.article_url ? `<a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
     ${sourceList(used)}
     <p class="meta">${EN ? U('checked', '') + ': ' + esc(s.checked || 'not checked') + ' / ' + U('respect', '') : '情報確認日：' + esc(s.checked || '未確認') + '／神社への敬意をもって、境内では現地の表示と作法に従ってください。'}</p>`;
   const cs = [c1, c2, c3, c4, c5];
@@ -1546,6 +1549,7 @@ function selectShrine(id) {
   const my = ++seq;
   const wasOpen = !!selected;
   selected = s; current = { shrine: s };
+  track.shrine(LG(), s.id);
   document.body.classList.add('open');
   hint.classList.add('off');
   $('btnBack').hidden = false;
@@ -1573,6 +1577,7 @@ function showDeity(id) {
   const d = deities[id];
   if (!d) return;
   current = { ...current, deity: d };
+  track.deity(LG(), d.id);
   setSheet(deityHTML(d, current.shrine));
   openTree(false);
 }
@@ -1594,6 +1599,12 @@ function goHome() {
   flyTo({ ...HOME }, 3.6, () => { hint.classList.remove('off'); });
 }
 $('btnBack').addEventListener('click', goHome);
+
+// 記事ボタンの押下（どの神社の・何語の記事か）
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-art]');
+  if (a && selected) track.event('shrine_article', { shrine: selected.id, lang: LG(), kind: a.dataset.art });
+});
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
@@ -1799,6 +1810,7 @@ function openFinder(show) {
     setTimeout(() => $('finderIn').focus(), 50);
   } else $('finder').hidden = true;
 }
+track.pageview(LG());
 $('btnFind').textContent = EN ? 'Find a shrine' : '神社を探す';
 if (EN) {   // index.html の静的な日本語を、英語表示のときだけ差し替える（要素が無ければ何もしない）
   const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
@@ -1819,11 +1831,12 @@ if (EN) {   // index.html の静的な日本語を、英語表示のときだけ
   const fsp = document.querySelectorAll('footer.credit > span');
   if (fsp[0] && fsp[0].firstChild && fsp[0].lastChild) { const a = fsp[0].querySelector('a'); if (a) a.textContent = 'Geospatial Information Authority of Japan'; fsp[0].firstChild.textContent = 'Terrain and roads: '; fsp[0].lastChild.textContent = ' (elevation tiles, optimized vector tiles), processed. Heights are exaggerated; fine relief in the foreground is decorative.'; }
   if (fsp[1]) fsp[1].textContent = '3D: three.js (MIT)';
+  setT('gaNote', 'We count only visits and how often each shrine and feature is viewed, anonymously. Your location, stamp records and photos are never sent.');
   if (fsp[2]) { const a = fsp[2].querySelector('a'); if (a) { a.textContent = 'Listing criteria'; a.href = '../criteria-en.html'; } }
   if (fsp[3]) { const a = fsp[3].querySelector('a'); if (a) a.textContent = 'Feedback'; }
   if (fsp[4] && fsp[4].firstChild) fsp[4].firstChild.textContent = 'Music: ';
 }
-$('btnFind').addEventListener('click', () => openFinder(true));
+$('btnFind').addEventListener('click', () => { track.section(LG(), 'find'); openFinder(true); });
 $('btnFindClose').addEventListener('click', () => openFinder(false));
 $('finderIn').addEventListener('input', renderFinder);
 $('finderIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const b = $('finderList').querySelector('[data-finderpick]'); if (b) b.click(); } });
@@ -1865,7 +1878,7 @@ function openBook(show) {
   if (show) { if (EN) { document.querySelector('#book h2').innerHTML = 'Goshuin Stamp Book <small>Stored on this device only</small>'; $('btnBookClose').textContent = 'Close'; } renderBook(); }
   $('book').hidden = !show;
 }
-$('btnBook').addEventListener('click', () => openBook(true));
+$('btnBook').addEventListener('click', () => { track.section(LG(), 'book'); openBook(true); });
 $('btnBookClose').addEventListener('click', () => openBook(false));
 $('book').addEventListener('click', async (e) => {
   if (e.target.closest('[data-bookgo]')) openBook(false);
@@ -1887,6 +1900,7 @@ $('fbLink').textContent = EN ? 'Feedback' : 'ご意見・ご要望';
 $('fbLink').addEventListener('click', (e) => { e.preventDefault(); openFeedback(true); });
 $('btnLang').textContent = EN ? U('langToggle', '日本語') : 'English';
 $('btnLang').addEventListener('click', () => {
+  track.event('shrine_lang', { shrine: selected ? selected.id : '', lang: LG(), kind: EN ? 'to_ja' : 'to_en' });
   try { localStorage.setItem(LANG_KEY, EN ? 'ja' : 'en'); } catch (_) { /* 保存できなくても切り替える */ }
   const u = new URL(location.href); u.searchParams.delete('lang'); if (selected) u.searchParams.set('s', selected.id);
   location.href = u.toString();
@@ -1903,7 +1917,7 @@ $('btnTreeFocus').addEventListener('click', () => {
 });
 $('btnTreeAll').addEventListener('click', () => { treeFocus = null; renderTree(); });
 $('btnTreeOpen').addEventListener('click', () => { if (treeFocus) openDeityFromTree(treeFocus); });
-$('btnTree').addEventListener('click', () => openTree(true));
+$('btnTree').addEventListener('click', () => { track.section(LG(), 'tree'); openTree(true); });
 $('btnGps').addEventListener('click', () => routeAction('locate'));
 $('btnStop').addEventListener('click', () => endRun(true));
 $('btnTreeClose').addEventListener('click', () => openTree(false));
