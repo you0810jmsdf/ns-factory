@@ -2995,35 +2995,48 @@ function trimTarget(p) {
   return { hit: null, reason: 'miss' };
 }
 const nearestTrimTarget = p => trimTarget(p).hit;
+/** 図形 hit を、parts（切り分けた図形の並び）で置き換える（commit の中で呼ぶ）。新しい図形の id の並びを返す。菱目は、残る線の上にあるものだけ新しい経路に引き継ぎ、縫い合わせ設定は解除する。 */
+function applyShapeParts(hit, parts) {
+  const removedPaths = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id));
+  const oldPaths = doc.paths.filter(path => path.shapeIds.includes(hit.id)), oldHoles = doc.holes.filter(h => removedPaths.has(h.pathId));
+  doc.paths = doc.paths.filter(path => !path.shapeIds.includes(hit.id));
+  doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
+  doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
+  const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
+  const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
+  /* 菱目は、消した区間の上にあるものだけ消し、残った線の上にあるものは、その線の新しい経路に引き継ぐ（位置・向きはそのまま・経路の上の位置 s は計算し直す） */
+  for (const oldPath of oldPaths) {
+  const keepIds = [...added, ...oldPath.shapeIds.filter(id => id !== hit.id && doc.shapes.some(s => s.id === id))], groups = new Map();
+  for (const h of oldHoles.filter(x => x.pathId === oldPath.id)) {
+    let best = null, bd = Infinity; for (const id of keepIds) { const s = doc.shapes.find(x => x.id === id), d = s ? distToShape(s, { x: h.x, y: h.y }) : Infinity; if (d < bd) { bd = d; best = id; } }
+    if (best && bd <= 0.3) { if (!groups.has(best)) groups.set(best, []); groups.get(best).push(h); }   /* 切り口から 0.3mm 以内の穴は残す側に */
+  }
+  for (const [sid, list] of groups) {
+    const np = { ...oldPath, id: freshId(doc.paths, 'p'), shapeIds: [sid], reversed: false, segments: [] }; doc.paths.push(np);
+    const route = resolvePath(doc, np);
+    for (const h of list) doc.holes.push({ ...h, pathId: np.id, s: route ? projectOnPath(route, { x: h.x, y: h.y }).s : 0 });
+  }
+  }
+  return added;
+}
+const seamsOn = hit => { const ids = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id)); return doc.seams.some(seam => ids.has(seam.a.pathId) || ids.has(seam.b.pathId)); };
 function trimClick(p, keep) {
   const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
   const parts = trimAt(hit, p, doc.shapes.filter(s => visible(s) && stitchable(s)), { keep });
   if (!parts) { $('hint').textContent = t('noIntersection'); return; }
-  const removedPaths = new Set(doc.paths.filter(path => path.shapeIds.includes(hit.id)).map(path => path.id));
-  if (doc.seams.some(seam => removedPaths.has(seam.a.pathId) || removedPaths.has(seam.b.pathId)) && !window.confirm(t('holeTrimConfirm'))) return; /* 縫い合わせ設定だけは、切ると解除になる（菱目は残る部分に引き継ぐ） */
+  if (seamsOn(hit) && !window.confirm(t('holeTrimConfirm'))) return; /* 縫い合わせ設定だけは、切ると解除になる（菱目は残る部分に引き継ぐ） */
   cancel();
-  commit(() => {
-    const oldPaths = doc.paths.filter(path => path.shapeIds.includes(hit.id)), oldHoles = doc.holes.filter(h => removedPaths.has(h.pathId));
-    doc.paths = doc.paths.filter(path => !path.shapeIds.includes(hit.id));
-    doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
-    doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
-    const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
-    const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
-    /* 菱目は、消した区間の上にあるものだけ消し、残った線の上にあるものは、その線の新しい経路に引き継ぐ（位置・向きはそのまま・経路の上の位置 s は計算し直す） */
-    for (const oldPath of oldPaths) {
-      const keepIds = [...added, ...oldPath.shapeIds.filter(id => id !== hit.id && doc.shapes.some(s => s.id === id))], groups = new Map();
-      for (const h of oldHoles.filter(x => x.pathId === oldPath.id)) {
-        let best = null, bd = Infinity; for (const id of keepIds) { const s = doc.shapes.find(x => x.id === id), d = s ? distToShape(s, { x: h.x, y: h.y }) : Infinity; if (d < bd) { bd = d; best = id; } }
-        if (best && bd <= 0.3) { if (!groups.has(best)) groups.set(best, []); groups.get(best).push(h); }   /* 切り口から 0.3mm 以内の穴は残す側に */
-      }
-      for (const [sid, list] of groups) {
-        const np = { ...oldPath, id: freshId(doc.paths, 'p'), shapeIds: [sid], reversed: false, segments: [] }; doc.paths.push(np);
-        const route = resolvePath(doc, np);
-        for (const h of list) doc.holes.push({ ...h, pathId: np.id, s: route ? projectOnPath(route, { x: h.x, y: h.y }).s : 0 });
-      }
-    }
-    selected = new Set(added);
-  });
+  commit(() => { selected = new Set(applyShapeParts(hit, parts)); });
+}
+/** Alt+クリック：クリックした図形を、ほかの図形との交点で区切り、クリックした区間（交点から交点まで）だけを選ぶ。Shift+Alt+クリックで、選んだものに足す。交点が無ければ、図形全体を選ぶ。 */
+function selectSpanAt(p, additive) {
+  const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
+  const others = doc.shapes.filter(s => visible(s) && stitchable(s)), mine = trimAt(hit, p, others, { keep: true }), rest = trimAt(hit, p, others, { keep: false });
+  if (!mine || !rest || !rest.length) { selected = additive ? new Set([...selected, hit.id]) : new Set([hit.id]); $('hint').textContent = t('spanWhole'); draw(); return; }
+  if (seamsOn(hit) && !window.confirm(t('holeTrimConfirm'))) return;
+  cancel();
+  commit(() => { const added = applyShapeParts(hit, [...mine, ...rest]), next = additive ? new Set([...selected].filter(id => id !== hit.id)) : new Set(); next.add(added[0]); selected = next; });
+  $('hint').textContent = t('spanSelected');
 }
 /** 反転コピーの菱目が順目（keep）のとき、反転後の穴の傾きを元の値に戻す。位置は変えない。 */
 function keepHoleSlant(mirrored, original) { return $('mirrorHoles').value === 'keep' && 'pathId' in original ? { ...mirrored, angleDeg: original.angleDeg } : mirrored; }
@@ -4100,6 +4113,7 @@ canvas.addEventListener('pointerdown', e => {
     const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&!markHidden(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
+    if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey); return; } /* Alt+クリック：交点から交点までの区間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
