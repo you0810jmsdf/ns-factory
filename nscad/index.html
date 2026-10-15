@@ -27,6 +27,9 @@
     .workspace { position: relative; min-width: 0; min-height: 0; }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
     #canvas3d { position: absolute; inset: 0; background: #101010; }
+    #modHelp { position: absolute; left: 10px; top: 44px; z-index: 2; pointer-events: none; font-size: 11px; line-height: 1.6; color: #aaa; background: #1c1c1ecc; border: 1px solid #3a3a3a; border-radius: 6px; padding: 4px 8px; max-width: 46ch; } #modHelp[hidden] { display: none; }
+    #modHelp b { color: #eee; font-weight: 600; } #modHelp [data-k] { opacity: .85; } #modHelp [data-k="n"] { opacity: 1; color: #ccc; }
+    #modHelp[data-mods="s"] [data-k="s"], #modHelp[data-mods="a"] [data-k="a"], #modHelp[data-mods="sa"] [data-k] { color: #c9a96e; opacity: 1; } #modHelp[data-mods="s"] [data-k="s"] b, #modHelp[data-mods="a"] [data-k="a"] b, #modHelp[data-mods="sa"] [data-k] b { color: #c9a96e; }
     .floatbox { position: absolute; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #1c1c1ef2; border: 1px solid #c9a96e; border-radius: 8px; font-size: 12px; white-space: nowrap; } .floatbox[hidden] { display: none; } .floatbox label { display: flex; align-items: center; gap: 4px; } .floatbox input { width: 64px; } .floatbox select, .floatbox button { height: 26px; }
     #dupBar { left: 50%; bottom: 40px; transform: translateX(-50%); border-color: #ff4d4d; color: #ffb3b3; }
     #rulerBar, #rectBar, #circleBar, #restoreBar { left: 50%; top: 8px; transform: translateX(-50%); } #rulerBar input, #rectBar input, #circleBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
@@ -119,7 +122,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 05:06 · b108627</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-16 05:13 · 2dbdf63</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -149,7 +152,7 @@
 <button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="closeGaps"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h6M15 12h6"/><path d="M9 8l-3 4 3 4M15 8l3 4-3 4"/></svg><span data-i18n="closeGaps"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button>
 </aside>
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button><div id="ctxCardsTitle" class="ctx-title" data-i18n="ctxCardsTitle"></div><div id="ctxCards" class="ctx-cards"></div></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="cursor" data-i18n="ofCursor"></option><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option><option value="left" data-i18n="ofLeft"></option><option value="right" data-i18n="ofRight"></option><option value="up" data-i18n="ofUp"></option><option value="down" data-i18n="ofDown"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="detourFloat" class="floatbox" hidden><label><span data-i18n="dfClear"></span><input id="df-clear" type="number" min="0" step="0.5" value="3"></label><label><span data-i18n="dfRadius"></span><input id="df-radius" type="number" min="0" step="0.5" value="2"></label><button id="df-run" data-i18n="dfRun"></button><button id="df-close" data-i18n="ofClose" aria-label="close"></button><output id="df-out"></output></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="circleBar" class="floatbox" data-i18n-title="circleBarTip" hidden><label><span data-i18n="circleR"></span><input id="circleR" type="number" min="0" step="0.5"></label><label><span data-i18n="circleD"></span><input id="circleD" type="number" min="0" step="0.5"></label></div>
-<div id="dupBar" class="floatbox" hidden><span id="dupInfo"></span><button id="dupMerge" data-i18n="dupMerge" data-i18n-title="dupMergeTip"></button></div><div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
+<div id="dupBar" class="floatbox" hidden><span id="dupInfo"></span><button id="dupMerge" data-i18n="dupMerge" data-i18n-title="dupMergeTip"></button></div><div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="modHelp" hidden></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side"><button id="sideToggle" class="side-toggle" data-i18n="sideToggleOpen" aria-expanded="false"></button>
 <details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
@@ -244,6 +247,7 @@
 <label><span data-i18n="offsetEnd"></span><input id="offsetEnd" type="number" step="0.1" value="0"></label>
 <label><span data-i18n="segmentFrom"></span><input id="segmentFrom" type="number" step="0.1" value="0"></label>
 <label><span data-i18n="segmentTo"></span><input id="segmentTo" type="number" step="0.1" value=""></label>
+<label data-i18n-title="stitchCountTip"><span data-i18n="stitchCount"></span><input id="stitchCount" type="number" step="1" min="2" max="500" value=""></label>
 <label><span data-i18n="cornerMode"></span><select id="cornerMode"><option value="place" data-i18n="place"></option><option value="none" data-i18n="none"></option><option value="bisect" data-i18n="bisect"></option></select></label>
 <label><input id="followTangent" type="checkbox" checked><span data-i18n="followTangent"></span></label>
 <label><input id="reverseSlant" type="checkbox"><span data-i18n="reverseSlant"></span></label>
@@ -576,8 +580,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=6d1f87dd","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=f3ed5ea5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=44dbc12f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=6d1f87dd"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=6fa2ff21","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=36d476b1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=f3ed5ea5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c208b121","./help/ja.js":"./help/ja.js?v=2b4fe75a","./i18n.js":"./i18n.js?v=6f337246","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=6fa2ff21"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1858,6 +1862,23 @@ const MESSAGES = {
     "offsetEnd": "終端の空き (mm)",
     "segmentFrom": "区間の開始 s (mm)",
     "segmentTo": "区間の終了 s (空欄＝末尾)",
+    "modHelp.select": "クリック：交点から交点までの区間を選ぶ（線はそこで分かれます）\nダブルクリック：つながった線をすべて選ぶ（ペンの線は節点を足す）\nドラッグ：図形を動かす／空白をドラッグで囲み選択\nShift＋クリック：選択に追加・解除\nShift＋ドラッグ：水平・垂直だけに動かす\nAlt＋クリック：菱目と菱目の間だけを選ぶ\nShift＋Alt＋クリック：菱目の間を選択に追加\nAlt＋ドラッグ：矩形は角だけ動かす（ペンのハンドルは片側だけ折る）",
+    "modHelp.line": "ドラッグ：始点から終点へ\nダブルクリック：連続線を確定\nShift＋ドラッグ：水平・垂直に固定",
+    "modHelp.rect": "ドラッグ：対角の2点で矩形\nShift＋ドラッグ：正方形",
+    "modHelp.ruler": "クリック：始点→終点で距離を測る\nShift＋クリック：水平・垂直に固定",
+    "modHelp.stitch": "クリック：線に目打ちを打つ（手動は続けてクリック）\n個数欄に数字：交点を2回クリック（始点→終点）して等間隔に打つ\nShift＋クリック：交点から交点までの区間だけに打つ\nAlt＋クリック：1穴だけ打つ",
+    "modHelp.trim": "クリック：クリックした部分（交点で区切った区間）を消す\nShift＋クリック：クリックした側を残す\nAlt＋クリック：菱目と菱目の間の線だけを切る",
+    "modHelp.offset": "クリック：他の図形との交点から交点までを選ぶ\nダブルクリック：つながった図形全体を選ぶ（Enter で実行）\nAlt＋クリック：矩形などの1辺だけ",
+    "modHelp.mirror": "クリック：軸にする線を選ぶ\nShift＋クリック：平行な2本の線の真ん中を軸にする",
+    "modHelp.path": "クリック：角の節点を足す\nドラッグ：滑らかな節点を足す\nダブルクリック：確定（始点をクリックすると閉じる）",
+    "modHelp.bezier": "クリック：通る点を足す\nダブルクリック：終点を決めて確定",
+    "stitchCount": "交点間に打つ個数（空欄＝使わない）",
+    "stitchCountTip": "数字を入れると、線の上の交点を2回クリックして、その間に両端の穴を含めてこの個数を等間隔に打てます（つながった線もたどります）。",
+    "countNoLine": "線の上をクリックしてください。",
+    "countNoPoint": "交点（または線の端）の近くをクリックしてください。",
+    "countStart": "始点を決めました。終点の交点をクリックすると、両端を含めて{n}個を等間隔に打ちます（途中の交点は数えません）。",
+    "countSame": "始点と同じ場所です。別の交点をクリックしてください。",
+    "countPlaced": "{n}個を等間隔（{pitch} mm）で打ちました（区間の長さ {len} mm）。同じ位置の穴は1つにまとめています。",
     "cornerMode": "30°超の角",
     "place": "角に置く",
     "none": "角には置かない",
@@ -3121,6 +3142,23 @@ const MESSAGES = {
     "offsetEnd": "End margin (mm)",
     "segmentFrom": "Section start s (mm)",
     "segmentTo": "Section end s (blank = end)",
+    "modHelp.select": "Click: select the part between intersections (the line is split there)\nDouble-click: select all connected lines (a pen line gets a node)\nDrag: move shapes / drag empty space to box-select\nShift+click: add to / remove from the selection\nShift+drag: move only horizontally or vertically\nAlt+click: select only between two stitch holes\nShift+Alt+click: add the between-holes part to the selection\nAlt+drag: move only a rectangle's corner (a pen handle: bend one side only)",
+    "modHelp.line": "Drag: from start to end\nDouble-click: finish the connected line\nShift+drag: lock horizontal / vertical",
+    "modHelp.rect": "Drag: two opposite corners\nShift+drag: make a square",
+    "modHelp.ruler": "Click: start, then end, to measure\nShift+click: lock horizontal / vertical",
+    "modHelp.stitch": "Click: place holes on the line (repeat in manual mode)\nNumber in the count field: click two intersections (start, end) to place that many evenly\nShift+click: stitch only between intersections\nAlt+click: place a single hole",
+    "modHelp.trim": "Click: remove the clicked part (between intersections)\nShift+click: keep the clicked part instead\nAlt+click: cut only the line between two stitch holes",
+    "modHelp.offset": "Click: select the part between intersections\nDouble-click: select the whole connected shape (Enter runs it)\nAlt+click: one edge of a rectangle",
+    "modHelp.mirror": "Click: pick the axis line\nShift+click: use the middle of two parallel lines as the axis",
+    "modHelp.path": "Click: add a corner node\nDrag: add a smooth node\nDouble-click: finish (click the start to close)",
+    "modHelp.bezier": "Click: add a point to pass through\nDouble-click: set the end point and finish",
+    "stitchCount": "Holes between intersections (blank = off)",
+    "stitchCountTip": "Enter a number, then click two intersections on a line to place that many holes evenly between them, including both ends (connected lines are followed).",
+    "countNoLine": "Click on a line.",
+    "countNoPoint": "Click near an intersection (or a line end).",
+    "countStart": "Start set. Click the end intersection to place {n} holes evenly, both ends included (intersections in between are ignored).",
+    "countSame": "That is the start point. Click a different intersection.",
+    "countPlaced": "Placed {n} holes evenly ({pitch} mm apart) over {len} mm. Overlapping holes were merged.",
     "cornerMode": "Corners over 30°",
     "place": "Place at corner",
     "none": "Omit at corner",
@@ -19676,6 +19714,7 @@ let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙�
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
+let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 function applyLanguage(lang) {
@@ -19688,7 +19727,7 @@ function applyLanguage(lang) {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   $('language').value = current;
   for (const [id, key] of [['undo', 'Z'], ['redo', 'Y'], ['copy', 'D'], ['save', 'S'], ['open', 'O']]) $(id).title = t(id) + ' (' + (isMac ? (id === 'redo' ? '⌘⇧Z' : '⌘' + key) : 'Ctrl+' + key) + ')';
-  $('hint').textContent = t('hint.' + mode); refreshTools(); renderLayers(); showCalibration(); if (typeof renderLibrary === 'function' && $('libItem')) { renderLibrary(); renderDesigns(); initTutorialSelect(); $('styleNote').textContent = styleSummary(DATA_STYLE, current === 'en' ? 'en' : 'ja'); } draw();
+  refreshModHelp(); $('hint').textContent = t('hint.' + mode); refreshTools(); renderLayers(); showCalibration(); if (typeof renderLibrary === 'function' && $('libItem')) { renderLibrary(); renderDesigns(); initTutorialSelect(); $('styleNote').textContent = styleSummary(DATA_STYLE, current === 'en' ? 'en' : 'ja'); } draw();
 }
 const world = p => { const o = paneOff(); return { x: (p.x - o.x - origin.x) / scale, y: (p.y - o.y - origin.y) / scale }; };
 /** ポインタ位置（キャンバス内・描画の座標）。描画サイズ（ビットマップ）と表示サイズ（CSS）がずれているとき（表示だけ縮んで、描き直しが届いていない間）は、その比で補正して、見えている線の位置とクリックの位置を合わせる。ずれが1.5px 以内（小数の丸め）なら補正しない。 */
@@ -20085,6 +20124,47 @@ function stampAt(p,single=false,markKind='tool',span=false) {
     $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)})+(sp?' '+t('stitchSpanNote',{a:sp.a.toFixed(1),b:sp.b.toFixed(1)}):'');draw();
   }catch(err){$('hint').textContent=err.message;}
 }
+/** 目打ちカードの「個数」（両端の穴を含む総数）。空欄・2未満なら使わない。 */
+function stitchCountN() { const n = Math.floor(Number($('stitchCount').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 500) : 0; }
+/** 個数指定の目打ち：始点の交点→終点の交点の順にクリックすると、その間（つながった線をたどる・途中の交点は無視）に、両端を含めて n 個を等間隔に打つ。同じ位置の穴は1つにまとめ、線は切らない。 */
+/** クリック位置の近くにある線ごとに、その線（つながった線の経路）の上の「交点または端」のうち、いちばん近いものを集める。交点では複数の線が重なるので、候補は線の数だけ返す。 */
+function countCandidates(w) {
+  const out = [], seen = new Set();
+  for (const hit of doc.shapes.filter(s => editable(s) && stitchable(s)).reverse()) {
+    if (distToShape(hit, w) > 8 / scale) continue;
+    const state = routeForHit(hit); if (!state?.route) continue; const { saved, route } = state, key = saved.shapeIds.join(',');
+    if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
+    const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len]; /* 経路の両端と、ほかの図形との交点 */
+    for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
+    let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
+    if (best !== null && bd <= 14 / scale) out.push({ key, state, s: best, p: pointAtLength(route, best) });
+  }
+  return out;
+}
+function countStitchClick(w) {
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value), n = stitchCountN(), near = countCandidates(w);
+  if (!tool || !near.length) { $('hint').textContent = t(doc.shapes.some(s => editable(s) && stitchable(s) && distToShape(s, w) <= 8 / scale) ? 'countNoPoint' : 'countNoLine'); return; }
+  const pair = countStage ? near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6) : null;
+  if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
+    if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
+    countStage = { list: near }; $('hint').textContent = t('countStart', { n }); draw(); return;
+  }
+  const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s), pitch = (hi - lo) / (n - 1); countStage = null;
+  commit(() => {
+    if (fresh) doc.paths.push(saved);
+    doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7); /* 区間の中にあった同じ線の穴は、打ち直す */
+    saved.segments = saved.segments.flatMap(s => s.to < lo || s.from > hi ? [s] : [...(s.from < lo ? [{ ...s, to: lo }] : []), ...(s.to > hi ? [{ ...s, from: hi }] : [])]);
+    const added = [];
+    for (let i = 0; i < n; i++) {
+      const s = i === n - 1 ? hi : lo + pitch * i, p = pointAtLength(route, s), pos = saved.closed && Math.abs(s - len) < 1e-7 ? 0 : s;
+      if (doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - pos) < 1e-5)) continue;
+      const id = freshId(doc.holes, 'h'); doc.holes.push({ x: p.x, y: p.y, s: pos, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), mark: 'tool' }); added.push(id);
+    }
+    saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode: 'manual' }); selected = new Set(added);
+  });
+  $('hint').textContent = t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
+}
+function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
@@ -20266,7 +20346,7 @@ function initStitch() {
   $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
   $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
-  for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo'])$(id).addEventListener('change',()=>{manualNext=null;});
+  for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
@@ -22945,7 +23025,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
@@ -22956,7 +23036,7 @@ function syncToolCards() {
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards();
+  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards(); refreshModHelp();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -23399,6 +23479,14 @@ function shapeFromDrag(a, b) {
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
 function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
+/** 左のツールを選んだとき、Shift・Alt を押しながらする操作を、作図面の左上に一覧で出す。キーを押している間は、その行が光る。 */
+function refreshModHelp() {
+  const el = $('modHelp'); if (!el) return; const key = 'modHelp.' + mode, txt = t(key);
+  if (txt === key) { el.hidden = true; return; }
+  el.hidden = false; el.innerHTML = txt.split('\n').map(line => { const m = /^(.*?)[：:] *(.*)$/.exec(line) || [line, line, ''], kind = /Shift/.test(m[1]) && /Alt/.test(m[1]) ? 'sa' : /Shift/.test(m[1]) ? 's' : /Alt/.test(m[1]) ? 'a' : 'n'; return `<div data-k="${kind}"><b>${m[1]}</b>：${m[2]}</div>`; }).join('');
+}
+function syncModHelpKeys(e) { const el = $('modHelp'); if (el) el.setAttribute('data-mods', (e.shiftKey ? 's' : '') + (e.altKey ? 'a' : '')); }
+document.addEventListener?.('keydown', syncModHelpKeys); document.addEventListener?.('keyup', syncModHelpKeys);
 function modeHint(m) { return m === 'mark' && markDivisions() ? t('hint.markDiv', { n: markDivisions() }) : m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : arcHalf() ? t('hint.arcHalf') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
@@ -23625,7 +23713,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -23744,7 +23832,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distToShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'stitch') { if (stitchCountN()) { countStitchClick(world(p)); return; } stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }

@@ -70,6 +70,7 @@ let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙�
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
+let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 function applyLanguage(lang) {
@@ -82,7 +83,7 @@ function applyLanguage(lang) {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   $('language').value = current;
   for (const [id, key] of [['undo', 'Z'], ['redo', 'Y'], ['copy', 'D'], ['save', 'S'], ['open', 'O']]) $(id).title = t(id) + ' (' + (isMac ? (id === 'redo' ? '⌘⇧Z' : '⌘' + key) : 'Ctrl+' + key) + ')';
-  $('hint').textContent = t('hint.' + mode); refreshTools(); renderLayers(); showCalibration(); if (typeof renderLibrary === 'function' && $('libItem')) { renderLibrary(); renderDesigns(); initTutorialSelect(); $('styleNote').textContent = styleSummary(DATA_STYLE, current === 'en' ? 'en' : 'ja'); } draw();
+  refreshModHelp(); $('hint').textContent = t('hint.' + mode); refreshTools(); renderLayers(); showCalibration(); if (typeof renderLibrary === 'function' && $('libItem')) { renderLibrary(); renderDesigns(); initTutorialSelect(); $('styleNote').textContent = styleSummary(DATA_STYLE, current === 'en' ? 'en' : 'ja'); } draw();
 }
 const world = p => { const o = paneOff(); return { x: (p.x - o.x - origin.x) / scale, y: (p.y - o.y - origin.y) / scale }; };
 /** ポインタ位置（キャンバス内・描画の座標）。描画サイズ（ビットマップ）と表示サイズ（CSS）がずれているとき（表示だけ縮んで、描き直しが届いていない間）は、その比で補正して、見えている線の位置とクリックの位置を合わせる。ずれが1.5px 以内（小数の丸め）なら補正しない。 */
@@ -479,6 +480,47 @@ function stampAt(p,single=false,markKind='tool',span=false) {
     $('hint').textContent=t(manualNext?'nextStamp':'placed',{count:points.length,s:next?.toFixed(2)})+(sp?' '+t('stitchSpanNote',{a:sp.a.toFixed(1),b:sp.b.toFixed(1)}):'');draw();
   }catch(err){$('hint').textContent=err.message;}
 }
+/** 目打ちカードの「個数」（両端の穴を含む総数）。空欄・2未満なら使わない。 */
+function stitchCountN() { const n = Math.floor(Number($('stitchCount').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 500) : 0; }
+/** 個数指定の目打ち：始点の交点→終点の交点の順にクリックすると、その間（つながった線をたどる・途中の交点は無視）に、両端を含めて n 個を等間隔に打つ。同じ位置の穴は1つにまとめ、線は切らない。 */
+/** クリック位置の近くにある線ごとに、その線（つながった線の経路）の上の「交点または端」のうち、いちばん近いものを集める。交点では複数の線が重なるので、候補は線の数だけ返す。 */
+function countCandidates(w) {
+  const out = [], seen = new Set();
+  for (const hit of doc.shapes.filter(s => editable(s) && stitchable(s)).reverse()) {
+    if (distToShape(hit, w) > 8 / scale) continue;
+    const state = routeForHit(hit); if (!state?.route) continue; const { saved, route } = state, key = saved.shapeIds.join(',');
+    if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
+    const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len]; /* 経路の両端と、ほかの図形との交点 */
+    for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
+    let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
+    if (best !== null && bd <= 14 / scale) out.push({ key, state, s: best, p: pointAtLength(route, best) });
+  }
+  return out;
+}
+function countStitchClick(w) {
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value), n = stitchCountN(), near = countCandidates(w);
+  if (!tool || !near.length) { $('hint').textContent = t(doc.shapes.some(s => editable(s) && stitchable(s) && distToShape(s, w) <= 8 / scale) ? 'countNoPoint' : 'countNoLine'); return; }
+  const pair = countStage ? near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6) : null;
+  if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
+    if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
+    countStage = { list: near }; $('hint').textContent = t('countStart', { n }); draw(); return;
+  }
+  const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s), pitch = (hi - lo) / (n - 1); countStage = null;
+  commit(() => {
+    if (fresh) doc.paths.push(saved);
+    doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7); /* 区間の中にあった同じ線の穴は、打ち直す */
+    saved.segments = saved.segments.flatMap(s => s.to < lo || s.from > hi ? [s] : [...(s.from < lo ? [{ ...s, to: lo }] : []), ...(s.to > hi ? [{ ...s, from: hi }] : [])]);
+    const added = [];
+    for (let i = 0; i < n; i++) {
+      const s = i === n - 1 ? hi : lo + pitch * i, p = pointAtLength(route, s), pos = saved.closed && Math.abs(s - len) < 1e-7 ? 0 : s;
+      if (doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - pos) < 1e-5)) continue;
+      const id = freshId(doc.holes, 'h'); doc.holes.push({ x: p.x, y: p.y, s: pos, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), mark: 'tool' }); added.push(id);
+    }
+    saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode: 'manual' }); selected = new Set(added);
+  });
+  $('hint').textContent = t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
+}
+function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
@@ -660,7 +702,7 @@ function initStitch() {
   $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
   $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
-  for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo'])$(id).addEventListener('change',()=>{manualNext=null;});
+  for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
@@ -3339,7 +3381,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
@@ -3350,7 +3392,7 @@ function syncToolCards() {
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
-  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards();
+  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards(); refreshModHelp();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -3793,6 +3835,14 @@ function shapeFromDrag(a, b) {
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
 function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
+/** 左のツールを選んだとき、Shift・Alt を押しながらする操作を、作図面の左上に一覧で出す。キーを押している間は、その行が光る。 */
+function refreshModHelp() {
+  const el = $('modHelp'); if (!el) return; const key = 'modHelp.' + mode, txt = t(key);
+  if (txt === key) { el.hidden = true; return; }
+  el.hidden = false; el.innerHTML = txt.split('\n').map(line => { const m = /^(.*?)[：:] *(.*)$/.exec(line) || [line, line, ''], kind = /Shift/.test(m[1]) && /Alt/.test(m[1]) ? 'sa' : /Shift/.test(m[1]) ? 's' : /Alt/.test(m[1]) ? 'a' : 'n'; return `<div data-k="${kind}"><b>${m[1]}</b>：${m[2]}</div>`; }).join('');
+}
+function syncModHelpKeys(e) { const el = $('modHelp'); if (el) el.setAttribute('data-mods', (e.shiftKey ? 's' : '') + (e.altKey ? 'a' : '')); }
+document.addEventListener?.('keydown', syncModHelpKeys); document.addEventListener?.('keyup', syncModHelpKeys);
 function modeHint(m) { return m === 'mark' && markDivisions() ? t('hint.markDiv', { n: markDivisions() }) : m === 'mark' && markDistance() > 0 ? t('hint.markDist') : m === 'arc' ? (arcThreePoint() ? t('hint.arc3') : arcHalf() ? t('hint.arcHalf') : t($('arcDir').value === 'ccw' ? 'hint.arcCcw' : 'hint.arc')) : t('hint.' + m); }
 /** 円弧の「先に決める半径」(mm)。空欄・0以下は 0（＝ドラッグで決める）。 */
 function arcFixedRadius() { const r = Number($('arcRadius').value); return Number.isFinite(r) && r > 0 ? r : 0; }
@@ -4019,7 +4069,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -4138,7 +4188,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distToShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'stitch') { if (stitchCountN()) { countStitchClick(world(p)); return; } stampAt(world(p), e.altKey, 'tool', e.shiftKey); return; } /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
