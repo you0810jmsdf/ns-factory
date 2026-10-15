@@ -73,6 +73,20 @@ let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：ス�
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
+/** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
+function syncViewShow(save) {
+  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
+  if (save) { try { localStorage.setItem('leather-cad.view', JSON.stringify(viewShow)); } catch { /* 保存できなくても続ける */ } }
+  selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || viewShows(x); })); cancel(); draw();
+}
+function gatherVisibleToActiveLayer() {
+  const layer = doc.layers.find(l => l.id === activeLayer);
+  if (!layer?.visible || layer.locked) { $('hint').textContent = t('gatherLocked'); return; }
+  const moved = doc.shapes.filter(x => visible(x) && editable(x) && x.layer !== activeLayer);
+  if (!moved.length) { $('hint').textContent = t('gatherNone'); return; }
+  commit(() => { for (const x of moved) x.layer = activeLayer; });
+  $('hint').textContent = t('gatherDone', { n: moved.length, layer: layerName(layer) });
+}
 function applyLanguage(lang) {
   const current = setLang(lang);
   try { localStorage.setItem('leather-cad.lang', current); } catch { /* file:// の保存制限でも操作を続ける。 */ }
@@ -98,7 +112,7 @@ const threeViewOn = () => $('threeView').checked;
 /** 描いてある図形に合わせて枠を広げ、「合わせたい位置」を集め直す（図形が変わるたび・rebuildSnaps から）。 */
 /** 枠の出発点：文書に「枠の指定」（選んだ四角を枠にしたもの）があればそれ、無ければ標準の枠。 */
 function threeViewBase() { const f = doc.threeView; return threeViewFrameValid(f) ? threeViewBaseFrom(f.front, f.depth) : THREE_VIEW_LAYOUT; }
-function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visible(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
+function rebuildThreeViewMarks() { const shapes = doc.shapes.filter(s => visibleData(s) && s.type !== 'image'); threeViewLayout = threeViewFitLayout(shapes, threeViewBase()); threeViewMarksCache = threeViewMarks(shapes, threeViewLayout); threeViewSolidCache = threeViewOn() ? threeViewSolid(shapes, threeViewLayout, { specOf: binderSpec }) : null; }
 /** 右上の空き（45°の線のある区画）：ここに小さな立体画面を出す。文書座標の四角。 */
 function threeViewMiniBox() { const { top, side } = threeViewLayout; return { x: side.x, y: top.y, w: side.w, h: top.h }; }
 /** 小さな立体画面（枠方式）：右上の空きに、三面図から組み立てた立体を描く（描くたびに更新・この中をドラッグすると回る）。点線はこの上に描かれる。 */
@@ -144,11 +158,11 @@ function drawThreeViewStaticGuides() {
 function makeThreeViewOutlines() {
   const depth = Number($('threeViewDepthIn').value);
   if (!(depth > 0)) { $('hint').textContent = t('threeViewMakeBadDepth'); return; }
-  const r = threeViewOutlines(doc.shapes.filter(s => visible(s)), depth, threeViewLayout);
+  const r = threeViewOutlines(doc.shapes.filter(s => visibleData(s)), depth, threeViewLayout);
   if (!r) { $('hint').textContent = t('threeViewMakeNoFront'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visible(s) && threeViewSameRect(s, rect)));
+  const fresh = [r.top, r.side].filter(rect => !doc.shapes.some(s => visibleData(s) && threeViewSameRect(s, rect)));
   if (!fresh.length) { $('hint').textContent = t('threeViewMakeExists'); return; }
   cancel();
   commit(() => { const ids = [], tex = solidTextureOf('frame'); /* 正面の形の質感を、作った外形にも付ける（三面図・立体で同じ革に見える） */ for (const rect of fresh) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: layer.id, type: 'polyline', closed: true, points: rect.points.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4) })), ...(tex ? { texture: tex } : {}) }); ids.push(id); } selected = new Set(ids); });
@@ -352,8 +366,15 @@ function drawQuad(dpr) {
 }
 /* holeLink＝穴の経路のための補助の線（.lcc の取り込みで付く・もとの図面に無い線）。画面には出さず、クリックでも選ばれない（visible から除く）。全選択・範囲選択には入る（editable は層だけで決める）。穴の判定も層だけ（layerVisible／layerEditable）。 */
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
-const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked; };
-const visible = s => layerVisible(s) && !s.holeLink;
+const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && (exporting || viewShows(s)); };
+/** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
+const viewShow = { solid: true, dashed: true };
+const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
+const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
+try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; } catch { /* 保存できない環境でも操作を続ける */ }
+const visible = s => layerVisible(s) && !s.holeLink && (exporting || viewShows(s));
+/** 三面図・金具の自動生成など、図形の数値を使う計算では、実線・点線の表示切り替えを見ない（画面だけの切り替えのため）。 */
+const visibleData = s => layerVisible(s) && !s.holeLink;
 const editable = s => layerEditable(s); /* holeLink も「選べる」側（全選択・範囲選択に入れて、コピー・移動・複製に穴ごと付けるため）。クリックでは選ばれない（visible で除く） */
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && !s.holeLink; /* 見えない補助の線（holeLink）は、目打ち・オフセット・クリックの当たり判定の相手にしない */
@@ -768,6 +789,10 @@ function initLayers() {
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
   $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
+  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
+  $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
+  $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
+  $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
     if (doc.layers.length < 2) { $('hint').textContent = t('lastLayer'); return; }
@@ -1399,7 +1424,7 @@ let autoSolid = null; /* 「三面図から立体に」で作った立体（図�
 function scene3d() {
   if (autoSolid) return { faces: autoSolid.faces, hits: [], panels: [], solid: autoSolid };
   if (quadOn()) { const solid = quadSolidCache; return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('quad')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
-  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visible(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
+  if (threeViewOn()) { const solid = threeViewSolid(doc.shapes.filter(s => visibleData(s) && s.type !== 'image'), threeViewLayout, { specOf: binderSpec }); return { faces: solid ? withSolidTexture(solid.faces, solidTextureOf('frame')) : [], hits: [], panels: [], solid: solid || { faces: [], slabs: 0, empty: true } }; }
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds();
   return { faces: applyFolds(panels, fl, foldT / 100), hits: collisions(panels, fl, foldT / 100), panels, solid: null };
 }
@@ -1407,7 +1432,7 @@ function scene3d() {
 function solidTextureOf(kind) {
   let d = doc, list;
   if (kind === 'quad') { d = sheetDoc('front'); list = d ? d.shapes.filter(s => d.layers.find(l => l.id === s.layer)?.visible) : []; }
-  else list = doc.shapes.filter(s => visible(s) && threeViewShapeArea(s, threeViewLayout) === 'front');
+  else list = doc.shapes.filter(s => visibleData(s) && threeViewShapeArea(s, threeViewLayout) === 'front');
   const areaOf = s => { try { const b = bboxOf(s); return (b.maxX - b.minX) * (b.maxY - b.minY); } catch { return 0; } };
   const front = list.filter(s => s.type !== 'image' && (s.closed || s.type === 'circle')).sort((a, b) => areaOf(b) - areaOf(a))[0];
   return front ? textureOf(front, d) : null;
@@ -1486,7 +1511,7 @@ function printViews() { if (!regGuard('print', 'views')) return; setPageStyle('a
 function init3d() {
   $('view3d').onclick = () => setView3d(!view3d);
   $('autoSolid').onclick = () => {
-    const solid = threeViewSolidAuto(doc.shapes.filter(s => visible(s) && s.type !== 'image'), { gap: 6 });
+    const solid = threeViewSolidAuto(doc.shapes.filter(s => visibleData(s) && s.type !== 'image'), { gap: 6 });
     if (!solid) { $('hint').textContent = t('autoSolidNone'); return; }
     autoSolid = solid; cam = threeViewCamera(solid.faces); if (!view3d) setView3d(true); else render3d();
     $('hint').textContent = t('autoSolidDone', { f: t('autoSolidYes'), t: t(solid.auto.top ? 'autoSolidYes' : 'autoSolidNo'), s: t(solid.auto.side ? 'autoSolidYes' : 'autoSolidNo'), w: +solid.width.toFixed(1), h: +solid.height.toFixed(1), d: +solid.depth.toFixed(1) });
@@ -2327,7 +2352,7 @@ function makeBinderViews() {
   const hw = selectedHardware(); if (!hw || !hwIsBinder(hw.plate)) { $('hint').textContent = t('hwViewsNeedBinder'); return; }
   const frame = threeViewOn(), quad = quadOn() && sheetRole() === 'front'; if (!frame && !quad) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const pose = hwPoseOfOutline(hw.plate), p = hw.plate.hw.params, spec = binderSpecWithSection(binderSpec(p.spec), p), ringD = Number(p.ringD) || spec.rings.diameterOptionsMm[0], gid = groupIdOf(hw.plate) || hw.plate.id;
-  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visible(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
+  const sheets = quadSheets(), cleanShapes = d => d ? d.shapes.filter(s => visibleData(s) && s.type !== 'image' && !s.hwFor && !s.hwSection) : [];
   if (quad && !(sheets.top && sheets.side)) { $('hint').textContent = t('hwViewsNeedMode'); return; }
   const solid = quad ? threeViewSolidFromSheets(cleanShapes(sheetDoc('front')), cleanShapes(sheetDoc('top')), cleanShapes(sheetDoc('side'))) : threeViewSolid(cleanShapes(doc), threeViewLayout);
   const views = binderViewShapes(spec, ringD, pose.at, pose.angleDeg, (solid ? solid.depth : 30) / 2);
