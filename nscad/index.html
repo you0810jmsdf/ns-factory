@@ -108,9 +108,14 @@
       #printArea .page:last-child { page-break-after: auto; break-after: auto; }
       #printArea svg { width: var(--page-w, 190mm); height: var(--page-h, 277mm); display: block; }
     }
+    /* fold design: sample diagram (the dimension of the focused field lights up; 2026-10-15) */
+    #fdDiagram { width: 100%; height: auto; display: block; background: #080808; border-radius: 6px; margin: 4px 0; color: #9aa0a6; }
+    #fdDiagram .lth { stroke: #c9a45c; stroke-width: 8; fill: none; opacity: .85; } #fdDiagram .glue { stroke: #6b5120; stroke-width: .8; fill: none; } #fdDiagram .btn { stroke: #4aa3ff; stroke-width: 1; stroke-dasharray: 4 3; }
+    #fdDiagram .dim line, #fdDiagram .dim path, #fdDiagram .dim circle, #fdDiagram .dim rect { stroke: #9aa0a6; stroke-width: 1; fill: none; } #fdDiagram .dim .ext { stroke-dasharray: 2 2; stroke-width: .6; } #fdDiagram .dim rect { stroke-dasharray: 3 2; }
+    #fdDiagram .dim text { fill: #c9ced3; font: 11px sans-serif; text-anchor: middle; } #fdDiagram .dim.hl line, #fdDiagram .dim.hl path, #fdDiagram .dim.hl circle, #fdDiagram .dim.hl rect { stroke: #f0b429; stroke-width: 2; } #fdDiagram .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 09:19 · 4c7393d</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-15 09:25 · 6198f97</span>
 <button id="new" title="" data-i18n="new"></button><button id="open" data-i18n="open"></button><span class="hmenu"><button id="save" aria-haspopup="true" data-i18n="saveBtn"></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative" data-i18n="saveNativeFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo" data-i18n="undo"></button><button id="redo" data-i18n="redo"></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -311,7 +316,20 @@
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
 </div></details>
-<details class="card" id="foldDesignCard"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" id="foldSecCard"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
+<details class="card" id="foldDesignCard"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" viewBox="0 -12 400 196" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
+<g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
+<g class="dim" data-k="dr"><line class="ext" x1="352" y1="82" x2="352" y2="176"/><line x1="190" y1="152" x2="352" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="271" y="148">②</text></g>
+<g class="dim" data-k="w"><line x1="30" y1="172" x2="352" y2="172" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="191" y="168">③</text></g>
+<g class="dim" data-k="cl"><line class="ext" x1="110" y1="18" x2="110" y2="8"/><line x1="190" y1="13" x2="110" y2="13" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="150" y="9">④</text></g>
+<g class="dim" data-k="cr"><line class="ext" x1="318" y1="58" x2="318" y2="40"/><line x1="190" y1="44" x2="318" y2="44" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="254" y="40">⑤</text></g>
+<g class="dim" data-k="rl"><circle cx="70" cy="98" r="1.5"/><line x1="70" y1="98" x2="39.9" y2="108.9" marker-end="url(#fdArr)"/><text x="86" y="104">⑥</text></g>
+<g class="dim" data-k="rr"><circle cx="292" cy="78" r="1.5"/><line x1="292" y1="78" x2="337" y2="104" marker-end="url(#fdArr)"/><text x="312" y="108">⑦</text></g>
+<g class="dim" data-k="to"><line x1="370" y1="62" x2="350.5" y2="75"/><text x="383" y="64">⑧</text></g>
+<g class="dim" data-k="ti"><line x1="370" y1="98" x2="345.5" y2="81"/><text x="383" y="102">⑨</text></g>
+<g class="dim" data-k="shift"><line x1="190" y1="-2" x2="170" y2="-2" marker-end="url(#fdArr)"/><line x1="190" y1="-2" x2="210" y2="-2" marker-end="url(#fdArr)"/><text x="228" y="2">⑩</text></g>
+<g class="dim" data-k="ring"><path d="M349.1,59.5 A60,60 0 0 1 349.1,96.5" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><circle cx="352" cy="78" r="2.5"/><text x="376" y="82">⑪</text></g>
+<g class="dim" data-k="stack"><circle cx="318" cy="78" r="14"/><rect x="170" y="74" width="140" height="8"/><line x1="156" y1="74" x2="156" y2="82" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="144" y="82">⑫</text></g>
+</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" id="foldSecCard"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
 <details class="card" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
 <div class="row"><button id="imgImport" data-i18n="imgImport"></button><button id="imgRemove" data-i18n="imgRemove"></button></div>
 <input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
@@ -556,8 +574,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=58fa32cc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=89d47ee1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=2d095671","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=58fa32cc"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=9e4a4fac","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=3acc4c4d","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=89d47ee1","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=dc2e2753","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c815bc42","./help/ja.js":"./help/ja.js?v=41d21832","./i18n.js":"./i18n.js?v=d5c208cf","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=6a24ab17","./scale_input.js":"./scale_input.js?v=97da0efd","./shortcuts.js":"./shortcuts.js?v=bbb5961a","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=10d1e701","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=d3c711b0","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=9e4a4fac"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1653,18 +1671,18 @@ const MESSAGES = {
     "foldSecThickness": "革1枚の厚み (mm)（2枚貼り合わせ）",
     "foldDesignTitle": "三つ折りの設計（ボタン線から断面を先に作る）",
     "foldDesignNote": "巻いた形（完成形）の断面を先に作ります。ボタンが3枚を通る縦線（ボタン線）から、左右の折りの外側までの距離・左右の革の切り口までの距離・左右の折りの内側の半径を入れて押してください。表・裏の革の厚みは、下の「表（外側の革）の厚み」「裏（内側の革）の厚み」に入れます（空欄なら「革1枚の厚み」を使い、2枚貼り合わせ）。最左端から最右端までの距離（全幅）は、左右の距離の合計です。全幅の欄に入れると、左の距離はそのままで右の距離が合います。ボタンの位置は、ずらす量を入れて「ボタンを左へ／右へ」で動かせます（4つの距離の欄が書き換わり、全幅は変わりません）。折りが重なる・3枚目が折りを突き抜ける寸法は、作ったうえで警告を出します。",
-    "fdDL": "ボタン線→左の折りの外側 (mm)",
-    "fdDR": "ボタン線→右の折りの外側 (mm)",
-    "fdCL": "ボタン線→左の切り口 (mm)",
-    "fdCR": "ボタン線→右の切り口 (mm)",
-    "fdRL": "左の折りの内側の半径 (mm)",
-    "fdRR": "右の折りの内側の半径 (mm)",
-    "fdShift": "ボタンをずらす量 (mm)",
+    "fdDL": "①ボタン線→左の折りの外側 (mm)",
+    "fdDR": "②ボタン線→右の折りの外側 (mm)",
+    "fdCL": "④ボタン線→左の切り口 (mm)",
+    "fdCR": "⑤ボタン線→右の切り口 (mm)",
+    "fdRL": "⑥左の折りの内側の半径 (mm)",
+    "fdRR": "⑦右の折りの内側の半径 (mm)",
+    "fdShift": "⑩ボタンをずらす量 (mm)",
     "fdNudgeL": "◀ ボタンを左へ",
     "fdNudgeR": "ボタンを右へ ▶",
     "foldNudgeStep": "ずらす量は0より大きい数で入れてください。",
     "foldDesignErr_shiftOut": "ボタンをずらしすぎです。ボタン線が革の切り口や折りの外に出てしまいます。ずらす量を小さくしてください。",
-    "fdW": "最左端〜最右端の距離（全幅） (mm)",
+    "fdW": "③最左端〜最右端の距離（全幅） (mm)",
     "foldWidthNeedL": "全幅から右の距離を決めるには、先に「ボタン線→左の折りの外側」を入れてください。",
     "foldWidthSmall": "全幅は、ボタン線→左の折りの外側（{l} mm）より大きくしてください。",
     "fdUnfold": "表・裏の展開図を作る（菱目ピッチ付き）",
@@ -1677,9 +1695,10 @@ const MESSAGES = {
     "fdMake": "断面を作る（ボタン線から）",
     "fdH": "平面図の高さ (mm)",
     "fdBtnD": "ボタン穴の直径 (mm・両端の2枚だけ)",
+    "fdDiagramNote": "サンプル図（上下反転の向き・縮尺は実寸ではありません）。①〜⑫は、下の欄の頭の番号と同じ寸法です。欄を選ぶ（または欄の上にマウスを置く）と、図の該当する寸法が金色に光ります。青の点線がボタン線です。",
     "fdFlip": "断面を上下反転する（机に置いた向き・左右は変わりません）",
-    "fdTO": "表（外側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
-    "fdTI": "裏（内側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
+    "fdTO": "⑧表（外側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
+    "fdTI": "⑨裏（内側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
     "fdRingOn": "リングとリフィルを断面に描く",
     "fdRingSpec": "リフィル・リングの規格（金具カードと連動。リフィルの幅・穴の位置もここから）",
     "fdRingDia": "リング径（内径・外径）",
@@ -1688,8 +1707,8 @@ const MESSAGES = {
     "fdRefillV": "垂直（縦に置く）",
     "foldRefillH": "水平",
     "foldRefillV": "垂直",
-    "fdRingPos": "リング取付穴の位置 (mm・右の丸折りの頂点から革に沿って。0＝頂点・＋は3枚目側)",
-    "fdStackT": "リフィルの束の厚み (mm)",
+    "fdRingPos": "⑪リング取付穴の位置 (mm・右の丸折りの頂点から革に沿って。0＝頂点・＋は3枚目側)",
+    "fdStackT": "⑫リフィルの束の厚み (mm)",
     "fdFix": "確定して平面へ投影（FIX）",
     "fdEdge": "菱目打ちライン：縁からの距離 (mm)",
     "fdPitch": "菱目のピッチ (mm・実際の目打ちの値。平らな所はこのピッチで打つ)",
@@ -2875,18 +2894,18 @@ const MESSAGES = {
     "foldSecThickness": "Thickness of one leather (mm) (2 glued)",
     "foldDesignTitle": "Tri-fold design (make the section first from the button line)",
     "foldDesignNote": "Make the section of the finished (wrapped) shape first. Enter, from the button line (the vertical line the button passes through all 3 layers), the distance to the outside of each fold, the distance to each cut end of the leather, and the inner radius of each fold, then press the button. Enter the thickness of the outer and the inner leather in the two thickness fields below (blank = 'Thickness of one leather'; 2 glued). The overall width (leftmost to rightmost) is the sum of the left and right distances; entering it keeps the left distance and adjusts the right one. Move the button with the Button left/right buttons (they rewrite the four distance fields; the overall width does not change). Sizes where folds overlap or the third layer pokes through a fold are still made, with a warning.",
-    "fdDL": "Button line → outside of left fold (mm)",
-    "fdDR": "Button line → outside of right fold (mm)",
-    "fdCL": "Button line → left cut end (mm)",
-    "fdCR": "Button line → right cut end (mm)",
-    "fdRL": "Inner radius of left fold (mm)",
-    "fdRR": "Inner radius of right fold (mm)",
-    "fdShift": "Amount to move the button (mm)",
+    "fdDL": "(1) Button line → outside of left fold (mm)",
+    "fdDR": "(2) Button line → outside of right fold (mm)",
+    "fdCL": "(4) Button line → left cut end (mm)",
+    "fdCR": "(5) Button line → right cut end (mm)",
+    "fdRL": "(6) Inner radius of left fold (mm)",
+    "fdRR": "(7) Inner radius of right fold (mm)",
+    "fdShift": "(10) Amount to move the button (mm)",
     "fdNudgeL": "◀ Button left",
     "fdNudgeR": "Button right ▶",
     "foldNudgeStep": "Enter the amount to move as a number greater than 0.",
     "foldDesignErr_shiftOut": "The button is shifted too far: the button line would fall outside the leather ends or folds. Use a smaller shift.",
-    "fdW": "Overall width, leftmost to rightmost (mm)",
+    "fdW": "(3) Overall width, leftmost to rightmost (mm)",
     "foldWidthNeedL": "To set the right distance from the overall width, first enter the distance from the button line to the left fold.",
     "foldWidthSmall": "The overall width must be larger than the distance from the button line to the left fold ({l} mm).",
     "fdUnfold": "Make outer / inner flat patterns (with hole pitch)",
@@ -2899,9 +2918,10 @@ const MESSAGES = {
     "fdMake": "Make section (from button line)",
     "fdH": "Height of flat drawing (mm)",
     "fdBtnD": "Button hole diameter (mm, outer 2 layers only)",
+    "fdDiagramNote": "Sample diagram (upside-down orientation, not to scale). The numbers (1)-(12) match the numbers at the start of the fields below. Select a field (or hover over it) and the matching dimension lights up in gold. The blue dotted line is the button line.",
     "fdFlip": "Flip the section upside down (as it lies on a desk; left and right do not change)",
-    "fdTO": "Thickness of the outer leather (mm; blank = \"Thickness of one leather\")",
-    "fdTI": "Thickness of the inner leather (mm; blank = \"Thickness of one leather\")",
+    "fdTO": "(8) Thickness of the outer leather (mm; blank = \"Thickness of one leather\")",
+    "fdTI": "(9) Thickness of the inner leather (mm; blank = \"Thickness of one leather\")",
     "fdRingOn": "Draw the ring and refills in the section",
     "fdRingSpec": "Refill / ring standard (linked to the hardware card; refill width and hole positions come from it)",
     "fdRingDia": "Ring size (inner / outer)",
@@ -2910,8 +2930,8 @@ const MESSAGES = {
     "fdRefillV": "Vertical (stands upright)",
     "foldRefillH": "horizontal",
     "foldRefillV": "vertical",
-    "fdRingPos": "Ring mount position (mm, along the leather from the apex of the right fold; 0 = apex, + toward layer 3)",
-    "fdStackT": "Thickness of the refill stack (mm)",
+    "fdRingPos": "(11) Ring mount position (mm, along the leather from the apex of the right fold; 0 = apex, + toward layer 3)",
+    "fdStackT": "(12) Thickness of the refill stack (mm)",
     "fdFix": "Fix and project to flat drawing",
     "fdEdge": "Stitch line: distance from the edge (mm)",
     "fdPitch": "Diamond-punch pitch (mm; your real tool. Flat parts are punched at exactly this pitch)",
@@ -22010,7 +22030,16 @@ function nudgeFoldButton(dir) {
   ids.forEach((id, i) => { $(id).value = String(+next[i].toFixed(2)); });
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
 }
-function initFoldSection() { $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+/** 三つ折りの設計のサンプル図：欄（または欄の上のマウス）に対応する寸法を金色に光らせる（事業主指示 2026-10-15）。図の data-k と欄の対応。 */
+const FD_DIAGRAM = { fdDL: 'dl', fdDR: 'dr', fdW: 'w', fdCL: 'cl', fdCR: 'cr', fdRL: 'rl', fdRR: 'rr', fdTO: 'to', fdTI: 'ti', fdShift: 'shift', fdNudgeL: 'shift', fdNudgeR: 'shift', fdRingOn: 'ring', fdRingSpec: 'ring', fdRingDia: 'ring', fdRingPos: 'ring', fdStackT: 'stack', fdRefillDir: 'stack' };
+function highlightFoldDiagram(id) {
+  const key = FD_DIAGRAM[id]; if (!key) return false;
+  for (const g of $('fdDiagram')?.querySelectorAll?.('[data-k]') ?? []) g.classList.toggle('hl', g.dataset.k === key);
+  return true;
+}
+function initFoldSection() {
+  const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
