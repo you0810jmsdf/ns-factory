@@ -42,6 +42,8 @@ if (!enData) lang = 'ja';
 const EN = lang === 'en';
 if (EN) { document.documentElement.lang = 'en'; document.title = enData.ui.title; }
 const U = (k, ja) => (EN && enData.ui[k]) || ja;
+const TX = (ja, en) => (EN ? en : ja);
+const trunc = (t, n) => ((t || '').length > n ? (t || '').slice(0, n) + '…' : (t || ''));
 
 const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
@@ -465,7 +467,7 @@ shrines.forEach((s) => {
   const el = document.createElement('div');
   el.className = 'lbl';
   el.style.opacity = '0';   // 最初は隠す。重なりを避ける判定を終えた名前だけを、あとから出す
-  el.textContent = s.name;
+  el.textContent = (EN && enData.shrines[s.id] ? enData.shrines[s.id].name : s.name);
   labelsEl.appendChild(el);
   s._lbl = el;
 });
@@ -531,7 +533,7 @@ const userPoint = new THREE.Points(userGeo, userMat);
 userPoint.frustumCulled = false; userPoint.renderOrder = 11; userPoint.visible = false;
 scene.add(userPoint);
 const userLbl = document.createElement('div');
-userLbl.className = 'lbl you'; userLbl.textContent = '現在地'; userLbl.style.opacity = 0;
+userLbl.className = 'lbl you'; userLbl.textContent = EN ? 'You are here' : '現在地'; userLbl.style.opacity = 0;
 labelsEl.appendChild(userLbl);
 let user = null;
 
@@ -581,7 +583,7 @@ async function buildRoute(s) {
   if (!user || routeConsent !== 'road') return null;
   let r;
   try {
-    toast('道路の経路を調べています…', 15000);
+    toast(TX('道路の経路を調べています…', 'Finding a road route…'), 15000);
     r = await fetchRoad(s);
   } catch (e) {
     if (tok !== routeTok) return null;
@@ -591,7 +593,7 @@ async function buildRoute(s) {
     return null;
   }
   if (tok !== routeTok) return null;
-  toast('道路の経路が見つかりました。', 2200);
+  toast(TX('道路の経路が見つかりました。', 'Road route found.'), 2200);
   const ll = r.ll, km = r.km, min = r.min;
   // 世界座標へ。道路の線は点が粗いので、一定の間隔で打ち直す
   const raw = ll.map(([la, lo]) => { const p = toWorld(lo, la); return { x: p.x, z: p.z, u: p.u, vv: p.vv }; });
@@ -643,15 +645,15 @@ function toast(msg, ms = 4800) {
   toastTimer = setTimeout(() => { toastEl.classList.remove('on'); setTimeout(() => { toastEl.hidden = true; }, 500); }, ms);
 }
 function locate(after) {
-  if (!navigator.geolocation) { toast('この端末では現在地を使えません。'); return; }
-  toast('現在地を確認しています。許可の画面が出たら「許可」を選んでください。', 9000);
+  if (!navigator.geolocation) { toast(TX('この端末では現在地を使えません。', 'This device cannot provide your location.')); return; }
+  toast(TX('現在地を確認しています。許可の画面が出たら「許可」を選んでください。', 'Checking your location. If a permission prompt appears, choose "Allow".'), 9000);
   navigator.geolocation.getCurrentPosition(
     (pos) => { if (setUser(pos.coords.latitude, pos.coords.longitude)) after && after(); },
-    (err) => toast(err && err.code === 1 ? '現在地の使用が許可されませんでした。端末の設定で許可すると、光の筋を引けます。' : '現在地を取得できませんでした。電波のよい場所でもう一度お試しください。'),
+    (err) => toast(err && err.code === 1 ? TX('現在地の使用が許可されませんでした。端末の設定で許可すると、光の筋を引けます。', 'Location access was not allowed. Allow it in your device settings to draw the light trail.') : TX('現在地を取得できませんでした。電波のよい場所でもう一度お試しください。', 'Could not get your location. Please try again where the signal is better.')),
     { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 });
 }
 function setUser(lat, lon) {
-  if (lon < LON0 - 0.5 || lon > LON1 + 0.5 || lat < LAT0 - 0.5 || lat > LAT1 + 0.5) { toast('現在地がこの地図の範囲外です（九州〜北海道の範囲です）。'); return false; }
+  if (lon < LON0 - 0.5 || lon > LON1 + 0.5 || lat < LAT0 - 0.5 || lat > LAT1 + 0.5) { toast(TX('現在地がこの地図の範囲外です（九州〜北海道の範囲です）。', 'Your location is outside this map (it covers Kyūshū to Hokkaidō).')); return false; }
   const p = toWorld(lon, lat);
   user = { lat, lon, _p: p, _y: heightAt(p.u, p.vv) };
   userGeo.attributes.position.array.set([p.x, user._y + 0.03, p.z]);
@@ -709,7 +711,7 @@ function endRun(userStopped) {
     sheetEl.classList.add('show'); photoEl.classList.add('show', 'compact');
     flyTo({ tx: s._p.x, tz: s._p.z, ty: s._y, dist: isNarrow() ? 1.25 : 0.95, el: isNarrow() ? 0.5 : 0.46, az: cam.az }, 3.2);
   } else { selectShrine(s.id); }
-  if (!userStopped) toast(`${s.name}に着きました。`, 3000);
+  if (!userStopped) toast(EN ? `Arrived at ${shName(s)}.` : `${s.name}に着きました。`, 3000);
 }
 function stepRun(now) {
   if (!run) return null;
@@ -725,16 +727,23 @@ function stepRun(now) {
   const stepN = r.N * 0.026;
   for (let i = 0; i < TRAIL_N; i++) { const ff = f - i * stepN; if (ff < 0) { trailU[i].set(0, 0, 0, 0); continue; } const q = routePoint(r, ff); trailU[i].set(q.x, q.z, Math.pow(1 - i / TRAIL_N, 1.3), 0); }
   roadAhead = [0.08, 0.16, 0.24].map((k) => routePoint(r, Math.min(r.N, f + r.N * k)));
-  showHud(`${shrines.find((x) => x.id === r.shrineId)?.name ?? ''}まで　残り ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km　（全 ${fmtKm(r.km)} km）`);
+  const hs = shrines.find((x) => x.id === r.shrineId);
+  showHud(EN ? `${hs ? shName(hs) : ''}: ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km to go (of ${fmtKm(r.km)} km)` : `${hs?.name ?? ''}まで　残り ${fmtKm(Math.max(0, r.km * (1 - f / r.N)))} km　（全 ${fmtKm(r.km)} km）`);
   if (p >= 1) endRun(false);
   return f / r.N;
 }
 function routeText(s) {
   if (!user || !route || route.shrineId !== s.id) return '';
   const km = route.km, kmS = km < 10 ? km.toFixed(1) : Math.round(km);
+  const mins = Math.max(1, Math.round(route.min));
+  if (EN) {
+    const altE = route.alts > 1 ? ` (the shortest of ${route.alts} candidate routes.` : ' (';
+    const fastE = route.fastestMin && route.fastestMin < route.min - 1 ? ` The fastest route takes about ${Math.round(route.fastestMin)} min.` : '';
+    return `From your location to ${esc(shName(s))}: about ${kmS} km by road (car), about ${mins} min, by the shortest route${altE}${fastE} Traffic is not included). The light follows real roads.`;
+  }
   const alt = route.alts > 1 ? `（${route.alts}つの候補から、距離がいちばん短い道を選びました。` : '（';
   const fast = route.fastestMin && route.fastestMin < route.min - 1 ? `最速の道なら約 ${Math.round(route.fastestMin)} 分。` : '';
-  return `現在地から${esc(s.name)}まで、近道を通る最短距離で道路（車）約 ${kmS} km・約 ${Math.max(1, Math.round(route.min))} 分${alt}${fast}渋滞は含みません）。光は実際の道路をたどります。`;
+  return `現在地から${esc(s.name)}まで、近道を通る最短距離で道路（車）約 ${kmS} km・約 ${mins} 分${alt}${fast}渋滞は含みません）。光は実際の道路をたどります。`;
 }
 function refreshRouteBox() {
   const box = document.getElementById('routeBox');
@@ -742,12 +751,12 @@ function refreshRouteBox() {
   const s = selected;
   const has = user && route && route.shrineId === s.id;
   const pending = user && !has && routeConsent === 'road' && !routeErr;
-  const big = has ? `<div class="bignum"><div><b data-count="${route.km < 10 ? route.km.toFixed(1) : Math.round(route.km)}" data-dec="${route.km < 10 ? 1 : 0}">0</b><small>km</small></div><div><b data-count="${Math.max(1, Math.round(route.min))}">0</b><small>分（車）</small></div></div>` : '';
-  box.innerHTML = `<h3>現在地から</h3>${big}
-    <p>${has ? routeText(s) : pending ? '道路の経路を調べています…' : routeErr ? esc(routeErr) : '現在地を取ると、ここまでの道路の経路（近道の最短距離）を光の筋で描きます。'}</p>
-    <p class="meta">現在地は、この端末の画面の中で使います。道路の経路を調べるときだけ、同意のうえで外部へ送ります（保存はしません）。</p>
-    ${has ? `<button class="btn" type="button" data-route="run">光で走る</button><button class="btn" type="button" data-route="frame">経路の全体を見る</button><button class="btn" type="button" data-route="near">神社の近くへ寄る</button>`
-          : `<button class="btn" type="button" data-route="${user ? 'road' : 'locate'}">${routeErr ? 'もう一度調べる' : user ? '道路の経路を調べる' : '現在地から光の筋をひく'}</button>`}`;
+  const big = has ? `<div class="bignum"><div><b data-count="${route.km < 10 ? route.km.toFixed(1) : Math.round(route.km)}" data-dec="${route.km < 10 ? 1 : 0}">0</b><small>km</small></div><div><b data-count="${Math.max(1, Math.round(route.min))}">0</b><small>${TX('分（車）', 'min by car')}</small></div></div>` : '';
+  box.innerHTML = `<h3>${TX('現在地から', 'From your location')}</h3>${big}
+    <p>${has ? routeText(s) : pending ? TX('道路の経路を調べています…', 'Finding a road route…') : routeErr ? esc(routeErr) : TX('現在地を取ると、ここまでの道路の経路（近道の最短距離）を光の筋で描きます。', 'Share your location, and the road route to this shrine (the shortest way) is drawn as a trail of light.')}</p>
+    <p class="meta">${TX('現在地は、この端末の画面の中で使います。道路の経路を調べるときだけ、同意のうえで外部へ送ります（保存はしません）。', 'Your location is used only on this device. It is sent outside only to look up the road route, with your consent, and is not stored.')}</p>
+    ${has ? `<button class="btn" type="button" data-route="run">${TX('光で走る', 'Run the light')}</button><button class="btn" type="button" data-route="frame">${TX('経路の全体を見る', 'See the whole route')}</button><button class="btn" type="button" data-route="near">${TX('神社の近くへ寄る', 'Zoom in to the shrine')}</button>`
+          : `<button class="btn" type="button" data-route="${user ? 'road' : 'locate'}">${routeErr ? TX('もう一度調べる', 'Try again') : user ? TX('道路の経路を調べる', 'Look up the road route') : TX('現在地から光の筋をひく', 'Draw a light trail from here')}</button>`}`;
 }
 // 外部へ送る前の同意
 function askConsent() {
@@ -771,7 +780,7 @@ async function routeAction(kind) {
       const target = s || nearestShrine();
       const r = await buildRoute(target);
       if (!r) return;
-      toast(`${target.name}まで、道路で約${Math.round(r.km)} km。光が走ります。`, 3200);
+      toast(EN ? `About ${Math.round(r.km)} km by road to ${shName(target)}. The light will run.` : `${target.name}まで、道路で約${Math.round(r.km)} km。光が走ります。`, 3200);
       startRun();
     });
   } else if (kind === 'road' && user) {
@@ -1107,7 +1116,7 @@ const chipsEl = $('chips');
 
 shrines.forEach((s) => {
   const b = document.createElement('button');
-  b.className = 'chip'; b.type = 'button'; b.textContent = s.name; b.dataset.id = s.id;
+  b.className = 'chip'; b.type = 'button'; b.textContent = (EN && enData.shrines[s.id] ? enData.shrines[s.id].name : s.name); b.dataset.id = s.id;
   b.addEventListener('click', () => selectShrine(s.id));
   chipsEl.appendChild(b);
 });
@@ -1131,7 +1140,7 @@ function sourceList(ids) {
   return `<h3>${U('sources', '出典')}</h3><ul class="src">` + used.map((id) => {
     const s = srcMap[id];
     const url = s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a>` : '';
-    return `<li id="src-${esc(id)}"><b>[${esc(s.label ?? id)}]</b> ${esc(s.title)}${s.publisher ? '（' + esc(s.publisher) + '）' : ''}${url}${s.accessed ? '（閲覧 ' + esc(s.accessed) + '）' : ''}</li>`;
+    return `<li id="src-${esc(id)}"><b>[${esc(s.label ?? id)}]</b> ${esc(s.title)}${s.publisher ? TX('（', ' (') + esc(s.publisher) + TX('）', ')') : ''}${url}${s.accessed ? TX('（閲覧 ', ' (viewed ') + esc(s.accessed) + TX('）', ')') : ''}</li>`;
   }).join('') + `</ul>`;
 }
 
@@ -1140,17 +1149,17 @@ function photoHTML(s) {
   const p = s.photo || { kind: 'placeholder' };
   if (p.kind === 'photo' && p.src) {
     return `<div class="ph-frame"><img src="${esc(p.src)}" alt="${esc(s.name)}" loading="lazy"></div>
-      <figcaption>写真：${esc(p.credit || '')}／${esc(p.license || '')}${p.source_url ? '／<a href="' + esc(p.source_url) + '" target="_blank" rel="noopener">出典</a>' : ''}</figcaption>`;
+      <figcaption>${TX('写真：', 'Photo: ')}${esc(p.credit || '')}${TX('／', ' / ')}${esc(p.license || '')}${p.source_url ? TX('／', ' / ') + '<a href="' + esc(p.source_url) + '" target="_blank" rel="noopener">' + TX('出典', 'source') + '</a>' : ''}</figcaption>`;
   }
   if (p.kind === 'ai' && p.src) {
-    return `<div class="ph-frame"><img src="${esc(p.src)}" alt="${esc(s.name)}のイメージ図"><div class="ph-tag">AIによるイメージ図です。実在の社殿・ご神体の姿ではありません。</div></div>
-      <figcaption>${esc(p.note || '古事記の記述に基づく想像図')}（生成ツール・日付は assets/generated/LOG.md に記録）</figcaption>`;
+    return `<div class="ph-frame"><img src="${esc(p.src)}" alt="${esc(s.name)}"><div class="ph-tag">${TX('AIによるイメージ図です。実在の社殿・ご神体の姿ではありません。', 'An AI-made illustration. It does not show the real shrine buildings or sacred object.')}</div></div>
+      <figcaption>${esc(EN ? 'An imaginary picture based on the Kojiki' : (p.note || '古事記の記述に基づく想像図'))}${TX('（生成ツール・日付は assets/generated/LOG.md に記録）', ' (generation tool and date are recorded in assets/generated/LOG.md)')}</figcaption>`;
   }
-  return `<div class="ph-frame">${toriiSVG()}<div class="ph-tag">写真は準備中です（権利を確認できた写真を、順に掲載します）</div></div>
-    <figcaption>${esc(s.name)}</figcaption>`;
+  return `<div class="ph-frame">${toriiSVG()}<div class="ph-tag">${TX('写真は準備中です（権利を確認できた写真を、順に掲載します）', 'Photo coming soon (we add photos as their rights are confirmed)')}</div></div>
+    <figcaption>${esc((EN && enData.shrines[s.id] ? enData.shrines[s.id].name : s.name))}</figcaption>`;
 }
 function toriiSVG() {
-  return `<svg viewBox="0 0 400 300" role="img" aria-label="鳥居のシルエット（仮の絵）"><defs>
+  return `<svg viewBox="0 0 400 300" role="img" aria-label="${TX('鳥居のシルエット（仮の絵）', 'Torii silhouette (placeholder)')}"><defs>
     <radialGradient id="mg" cx="70%" cy="22%" r="60%"><stop offset="0" stop-color="#e9dcae" stop-opacity=".55"/><stop offset="1" stop-color="#0e1210" stop-opacity="0"/></radialGradient></defs>
     <rect width="400" height="300" fill="url(#mg)"/>
     <circle cx="280" cy="66" r="18" fill="#efe3b8" opacity=".85"/>
@@ -1168,15 +1177,15 @@ function setSheet(html, book = false) {
 // 宿の候補（PR）。解説とは見出しで分け、先頭に広告表記・リンクは rel="sponsored"。金額は載せない（条件なしの金額は規約で禁止）
 const STAY_HOST = 'https://hb.afl.rakuten.co.jp/';
 function staysHTML(id) {
-  const head = `<h3 class="chh sub">宿 <span class="badge pr">PR・広告</span></h3>`;
+  const head = `<h3 class="chh sub">${TX('宿', 'Stays nearby')} <span class="badge pr">${TX('PR・広告', 'PR / ads')}</span></h3>`;
   const list = (staysMap[id] || []).filter((h) => h && h.url && String(h.url).startsWith(STAY_HOST));
   if (!list.length) {
-    return `${head}<div class="prbox">${id in staysMap ? '周辺に宿泊施設が少ないため、候補はありません。' : '宿の候補は、準備中です。未訪問の宿は「候補」として表記します。'}</div>`;
+    return `${head}<div class="prbox">${id in staysMap ? TX('周辺に宿泊施設が少ないため、候補はありません。', 'There are few places to stay nearby, so no candidates are listed.') : TX('宿の候補は、準備中です。未訪問の宿は「候補」として表記します。', 'Stay candidates are being prepared. Places we have not visited are marked as "candidate".')}</div>`;
   }
-  const at = staysData.fetched_at ? `（${esc(staysData.fetched_at)} 時点）` : '';
+  const at = staysData.fetched_at ? `${TX('（', ' (as of ')}${esc(staysData.fetched_at)}${TX(' 時点）', ')')}` : '';
   return `${head}<div class="prbox stays">
-    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small><span class="badge cand">候補</span>${esc(h.area || '')}｜評価 ${esc(h.review_average)}（${esc(h.review_count)}件）</small></li>`).join('')}</ul>
-    <p class="meta">PR・広告を含みます（楽天トラベルのアフィリエイトリンク）。評価・件数は楽天トラベル${at}。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。</p></div>`;
+    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small><span class="badge cand">${TX('候補', 'candidate')}</span>${esc(h.area || '')}${TX('｜評価 ', ' | rating ')}${esc(h.review_average)}${TX('（', ' (')}${esc(h.review_count)}${TX('件）', ' reviews)')}</small></li>`).join('')}</ul>
+    <p class="meta">${TX('PR・広告を含みます（楽天トラベルのアフィリエイトリンク）。評価・件数は楽天トラベル', 'Contains PR / advertising (Rakuten Travel affiliate links; Japanese site). Ratings and review counts are from Rakuten Travel')}${at}${TX('。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。', '. Prices and availability change; check Rakuten Travel for the latest. We have not stayed at these places, so they are listed as candidates, not recommendations.')}</p></div>`;
 }
 
 // 名産・お取り寄せ（楽天市場のアフィリエイト）。「食」の枠（ホットペッパー審査待ち）とは別枠。金額・画像は載せない。データが無い神社には何も出さない
@@ -1185,11 +1194,11 @@ function specialtiesHTML(id) {
   const x = specMap[id];
   const list = ((x && x.items) || []).filter((h) => h && h.url && String(h.url).startsWith(SPEC_HOST));
   if (!list.length) return '';
-  const at = specData.fetched_at ? `（${esc(specData.fetched_at)} 時点）` : '';
-  return `<h3 class="chh sub">${esc(x.pref)}の名産・お取り寄せ <span class="badge pr">PR・広告</span></h3>
+  const at = specData.fetched_at ? `${TX('（', ' (as of ')}${esc(specData.fetched_at)}${TX(' 時点）', ')')}` : '';
+  return `<h3 class="chh sub">${EN ? 'Local specialties to order' : esc(x.pref) + 'の名産・お取り寄せ'} <span class="badge pr">${TX('PR・広告', 'PR / ads')}</span></h3>
     <div class="prbox stays">
-    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small>${esc(h.shop || '')}｜評価 ${esc(h.review_average)}（${esc(h.review_count)}件）</small></li>`).join('')}</ul>
-    <p class="meta">PR・広告を含みます（楽天市場のアフィリエイトリンク）。この神社だけでなく、${esc(x.pref)}の名産として紹介しています。評価・件数は楽天市場${at}。価格・在庫は変動します。最新は楽天市場で確認してください。</p></div>`;
+    <ul class="staylist">${list.map((h) => `<li><a href="${esc(h.url)}" target="_blank" rel="sponsored noopener">${esc(h.name)}</a><small>${esc(h.shop || '')}${TX('｜評価 ', ' | rating ')}${esc(h.review_average)}${TX('（', ' (')}${esc(h.review_count)}${TX('件）', ' reviews)')}</small></li>`).join('')}</ul>
+    <p class="meta">${EN ? 'Contains PR / advertising (Rakuten Ichiba affiliate links; Japanese site). These are specialties of the prefecture, not of this shrine alone. Ratings and review counts are from Rakuten Ichiba' : 'PR・広告を含みます（楽天市場のアフィリエイトリンク）。この神社だけでなく、' + esc(x.pref) + 'の名産として紹介しています。評価・件数は楽天市場'}${at}${TX('。価格・在庫は変動します。最新は楽天市場で確認してください。', '. Prices and stock change; check Rakuten for the latest.')}</p></div>`;
 }
 
 const CHAPTERS = ['はじまり', '御祭神', '由緒', '見どころ', '行き方'];
@@ -1282,7 +1291,7 @@ function shrineHTML(s0) {
   const c3 = `<h3 class="chh">${U('history', '由緒')}</h3><div class="tl">` + (hist.length ? hist.map((h, k) => {
     const ty = h.type && TYPE[h.type] ? h.type : 'fact';
     return rvs(`<div class="tli ${ty}">${item(h)}</div>`, k + 1);
-  }).join('') : rvs(item(null), 1)) + `</div>` + (EN ? '' : rvs(`<button class="btn" type="button" data-emaki="1">${U('emaki', '絵巻で見る ›')}</button>`, hist.length + 2));
+  }).join('') : rvs(item(null), 1)) + `</div>` + rvs(`<button class="btn" type="button" data-emaki="1">${U('emaki', '絵巻で見る ›')}</button>`, hist.length + 2);
   // 4 見どころ
   const hl = (s.highlights || []);
   const same = (s.deity_ids || []).flatMap((id) => shrines.filter((o) => o.id !== s.id && o.deity_ids.includes(id)).map((o) => [o, id]));
@@ -1292,7 +1301,7 @@ function shrineHTML(s0) {
   const row = (k, f) => f ? `<dt>${k}</dt><dd>${typeof f === 'string' ? esc(f) : esc(f.text) + refs(f.src) + stBadge(f.status)}</dd>` : `<dt>${k}</dt><dd><span class="badge todo">${U('toConfirm', '要確認')}</span></dd>`;
   const c5 = `<h3 class="chh">${U('visit', '行き方・参拝')}</h3>
     <div id="routeBox" class="routebox"></div>
-    ${s.note_geo ? `<p class="meta">位置：${esc(s.note_geo)}</p>` : ''}
+    ${s.note_geo && !EN ? `<p class="meta">位置：${esc(s.note_geo)}</p>` : ''}
     <dl class="row">${row(U('address', '所在地'), s.address)}${row(U('access', 'アクセス'), s.access)}${row(U('hours', '参拝時間'), s.hours)}${row(U('parking', '駐車場'), s.parking)}${row(U('goshuin', '御朱印'), s.goshuin)}</dl>
     ${EN ? '' : `<h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
     <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>`}
@@ -1362,28 +1371,40 @@ function countUps() {
   });
 }
 
-function deityHTML(d, fromShrine) {
+function locDeity(d) {
+  if (!EN) return d;
+  const o = enData.deities[d.id];
+  if (!o) return d;
+  const sc = (d.scenes || []).map((x, i) => (o.scenes && o.scenes[i] ? { ...x, title: o.scenes[i].title || x.title, where: o.scenes[i].where || x.where, text: o.scenes[i].text || x.text } : x));
+  return { ...d, _ja: d.name, name: o.name || d.name, reading: '', aliases: o.aliases && o.aliases.length ? o.aliases : (d.aliases || []),
+    kojiki_name: o.kojiki_name || d.kojiki_name, kojiki_where: o.kojiki_where || d.kojiki_where,
+    nihonshoki_name: o.nihonshoki_name || d.nihonshoki_name, nihonshoki_where: o.nihonshoki_where || d.nihonshoki_where,
+    scenes: sc, virtues: o.virtues && o.virtues.length ? o.virtues : (d.virtues || []), note: o.note_full || d.note };
+}
+function deityHTML(d0, fromShrine) {
+  const d = locDeity(d0);
   const used = [...(d.src || [])];
   const rel = d.relations || {};
-  const linkTo = (ids, label) => ids && ids.length ? `<dt>${label}</dt><dd>${ids.map((id) => deities[id] ? `<a href="#" data-deity="${esc(id)}">${esc(deities[id].name)}</a>` : esc(id)).join('、')}</dd>` : '';
+  const linkTo = (ids, label) => ids && ids.length ? `<dt>${label}</dt><dd>${ids.map((id) => deities[id] ? `<a href="#" data-deity="${esc(id)}">${esc(dName(deities[id]))}</a>` : esc(id)).join(TX('、', ', '))}</dd>` : '';
   const others = shrines.filter((o) => o.deity_ids.includes(d.id) && (!fromShrine || o.id !== fromShrine.id));
   (d.scenes || []).forEach((sc) => used.push(...(sc.src || [])));
+  const none = TX('記載なし／要確認', 'Not recorded / to be confirmed');
   return `
-    <button class="crumb" type="button" data-back="1">← ${fromShrine ? esc(fromShrine.name) + 'へ戻る' : '戻る'}</button>
-    <h2>${esc(d.name)}<small>${esc(d.reading)}${d.aliases && d.aliases.length ? '｜別名：' + esc(d.aliases.join('、')) : ''}</small></h2>
-    <p class="meta">※ 古事記・日本書紀の記述をもとにした整理です。解釈が分かれる点は「諸説あり」と添えています。</p>
+    <button class="crumb" type="button" data-back="1">← ${fromShrine ? (EN ? 'Back to ' + esc(shName(fromShrine)) : esc(fromShrine.name) + 'へ戻る') : TX('戻る', 'Back')}</button>
+    <h2>${esc(d.name)}<small>${EN ? esc(d._ja || '') : esc(d.reading)}${d.aliases && d.aliases.length ? TX('｜別名：', ' | Also: ') + esc(d.aliases.join(TX('、', '; '))) : ''}</small></h2>
+    <p class="meta">${TX('※ 古事記・日本書紀の記述をもとにした整理です。解釈が分かれる点は「諸説あり」と添えています。', 'Based on the Kojiki and the Nihon Shoki. Points where interpretations differ are marked "disputed".')}</p>
     <dl class="row">
-      <dt>古事記</dt><dd>${esc(d.kojiki_name || '記載なし／要確認')}${d.kojiki_where ? '（' + esc(d.kojiki_where) + '）' : ''}</dd>
-      <dt>日本書紀</dt><dd>${esc(d.nihonshoki_name || '記載なし／要確認')}${d.nihonshoki_where ? '（' + esc(d.nihonshoki_where) + '）' : ''}</dd>
-      ${linkTo(rel.parents, '親')}${linkTo(rel.spouses, '配偶')}${linkTo(rel.children, '子')}
+      <dt>${TX('古事記', 'Kojiki')}</dt><dd>${esc(d.kojiki_name || none)}${d.kojiki_where ? TX('（', ' (') + esc(d.kojiki_where) + TX('）', ')') : ''}</dd>
+      <dt>${TX('日本書紀', 'Nihon Shoki')}</dt><dd>${esc(d.nihonshoki_name || none)}${d.nihonshoki_where ? TX('（', ' (') + esc(d.nihonshoki_where) + TX('）', ')') : ''}</dd>
+      ${linkTo(rel.parents, TX('親', 'Parents'))}${linkTo(rel.spouses, TX('配偶', 'Spouse'))}${linkTo(rel.children, TX('子', 'Children'))}
     </dl>
-    ${geneSVG(d)}
-    <h3>神話の場面</h3>
-    ${(d.scenes || []).map((sc) => `<div class="scene"><b>${esc(sc.title)}</b>${sc.where ? `<span class="meta">（${esc(sc.where)}）</span>` : ''}<p>${esc(sc.text)}${refs(sc.src)}${sc.disputed ? ' <span class="badge guess">諸説あり</span>' : ''}</p>${sc.quote ? `<div class="quote" lang="zh-Hant">原文：${esc(sc.quote)}</div>` : ''}</div>`).join('') || '<p><span class="badge todo">要確認</span></p>'}
-    <h3>神徳（と信じられているもの）</h3>
-    <p>${d.virtues && d.virtues.length ? esc(d.virtues.join('、')) : '<span class="badge todo">要確認</span>'}</p>
+    ${geneSVG(d0)}
+    <h3>${TX('神話の場面', 'Myth scenes')}</h3>
+    ${(d.scenes || []).map((sc) => `<div class="scene"><b>${esc(sc.title)}</b>${sc.where ? `<span class="meta">${TX('（', ' (')}${esc(sc.where)}${TX('）', ')')}</span>` : ''}<p>${esc(sc.text)}${refs(sc.src)}${sc.disputed ? ` <span class="badge guess">${TX('諸説あり', 'Disputed')}</span>` : ''}</p></div>`).join('')}
+    <h3>${TX('神徳（と信じられているもの）', 'Virtues (as believed)')}</h3>
+    <p>${d.virtues && d.virtues.length ? esc(d.virtues.join(TX('、', '; '))) : `<span class="badge todo">${U('toConfirm', '要確認')}</span>`}</p>
     ${d.note ? `<p class="meta">${esc(d.note)}</p>` : ''}
-    ${others.length ? `<h3>この神様を祀る、ほかの神社</h3><ul class="linklist">${others.map((o) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(o.name)}<small>${esc(o.pref)} ${esc(o.city || '')}</small></button></li>`).join('')}</ul>` : ''}
+    ${others.length ? `<h3>${TX('この神様を祀る、ほかの神社', 'Other shrines of this deity')}</h3><ul class="linklist">${others.map((o) => `<li><button type="button" data-shrine="${esc(o.id)}">${esc(shName(o))}<small>${EN && enData.shrines[o.id] ? esc(enData.shrines[o.id].place) : esc(o.pref) + ' ' + esc(o.city || '')}</small></button></li>`).join('')}</ul>` : ''}
     ${sourceList(used)}`;
 }
 
@@ -1443,11 +1464,11 @@ function svgTree(ids, meId, opts = {}) {
   ids.forEach((id) => {
     const p = pos[id], d = map[id];
     const cls = ['nd', enshrined.has(id) ? 'en' : '', id === meId ? 'me' : ''].join(' ');
-    nodes += `<g class="${cls}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
-      <text x="${p.x + NW / 2}" y="${p.y + 18}" text-anchor="middle" font-size="12.5">${esc(d.name.length > 9 ? d.name.slice(0, 9) + '…' : d.name)}</text>
-      <text x="${p.x + NW / 2}" y="${p.y + 33}" text-anchor="middle" font-size="9" style="fill:#a9aa93">${esc(d.reading.length > 14 ? d.reading.slice(0, 14) + '…' : d.reading)}</text></g>`;
+    nodes += `<g class="${cls}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(dName(d))}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
+      <text x="${p.x + NW / 2}" y="${p.y + 18}" text-anchor="middle" font-size="${EN ? 10 : 12.5}">${esc(EN ? trunc(dName(d), 21) : trunc(d.name, 9))}</text>
+      <text x="${p.x + NW / 2}" y="${p.y + 33}" text-anchor="middle" font-size="9" style="fill:#a9aa93">${esc(EN ? trunc(d.name, 11) : trunc(d.reading, 14))}</text></g>`;
   });
-  return `<svg class="gene" viewBox="0 0 ${wTot} ${hTot + NH}" role="img" aria-label="系譜図">${edges}${nodes}</svg>`;
+  return `<svg class="gene" viewBox="0 0 ${wTot} ${hTot + NH}" role="img" aria-label="${TX('系譜図', 'Family tree')}">${edges}${nodes}</svg>`;
 }
 // 全体の系譜図: 世代を左→右の列にし、各列は縦に並べる（横に長くならないように）
 function svgTreeLR(ids, focusId) {
@@ -1494,11 +1515,11 @@ function svgTreeLR(ids, focusId) {
   ids.forEach((id) => {
     const p = pos[id], d = map[id];
     const cls = ['nd', enshrined.has(id) ? 'en' : '', id === focusId ? 'me' : ''].join(' ');
-    nodes += `<g class="${cls}" style="--c:${p.c};--r:${Math.round(p.y / (NH + GY))}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(d.name)}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
-      <text x="${p.x + NW / 2}" y="${p.y + 19}" text-anchor="middle" font-size="12.5">${esc(d.name.length > 8 ? d.name.slice(0, 8) + '…' : d.name)}</text>
-      <text x="${p.x + NW / 2}" y="${p.y + 34}" text-anchor="middle" font-size="8.5" style="fill:#a9aa93">${esc(d.reading.length > 13 ? d.reading.slice(0, 13) + '…' : d.reading)}</text></g>`;
+    nodes += `<g class="${cls}" style="--c:${p.c};--r:${Math.round(p.y / (NH + GY))}" data-deity="${esc(id)}" tabindex="0" role="button" aria-label="${esc(dName(d))}"><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="7"/>
+      <text x="${p.x + NW / 2}" y="${p.y + 19}" text-anchor="middle" font-size="${EN ? 10 : 12.5}">${esc(EN ? trunc(dName(d), 21) : trunc(d.name, 8))}</text>
+      <text x="${p.x + NW / 2}" y="${p.y + 34}" text-anchor="middle" font-size="8.5" style="fill:#a9aa93">${esc(EN ? trunc(d.name, 10) : trunc(d.reading, 13))}</text></g>`;
   });
-  return `<svg class="gene" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="神々の系譜図">${edges}${nodes}</svg>`;
+  return `<svg class="gene" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${TX('神々の系譜図', 'Family tree of the gods')}">${edges}${nodes}</svg>`;
 }
 function geneSVG(d) {
   const rel = d.relations || {};
@@ -1509,7 +1530,7 @@ function geneSVG(d) {
   // 親の配偶（もう片方の親）も出す
   (rel.parents || []).forEach((p) => (deities[p]?.relations?.spouses || []).forEach((q) => deities[q] && set.add(q)));
   if (set.size < 2) return '';
-  return `<h3>系譜</h3>${svgTree([...set], d.id, { nw: 112, minW: 330 })}<p class="meta">実線＝親子／点線＝夫婦。金の枠＝特集した神社の御祭神。</p>`;
+  return `<h3>${TX('系譜', 'Family tree')}</h3>${svgTree([...set], d.id, { nw: 112, minW: 330 })}<p class="meta">${TX('実線＝親子／点線＝夫婦。金の枠＝特集した神社の御祭神。', 'Solid line = parent and child. Dotted line = spouses. Gold frame = enshrined at a featured shrine.')}</p>`;
 }
 
 // ---- 選択・遷移 ----
@@ -1599,15 +1620,16 @@ document.addEventListener('keydown', (e) => {
 const emakiEl = document.getElementById('emaki'), emakiTrack = document.getElementById('emakiTrack');
 function emakiHTML(s) {
   const ds = s.deity_ids.map((id) => deities[id]).filter(Boolean);
-  const head = `<article class="sp sp0"><h2 class="vt">${esc(s.name)}</h2><p class="vr">${esc(s.reading)}</p><p class="vh">横になぞって、時をたどる <span aria-hidden="true">›››</span></p></article>`;
-  const mid = (s.history || []).map((h, i) => {
+  const L = locShrine(s);
+  const head = `<article class="sp sp0"><h2 class="vt">${esc(L.name)}</h2><p class="vr">${esc(EN ? (L.city || '') : s.reading)}</p><p class="vh">${TX('横になぞって、時をたどる', 'Swipe sideways to follow the years')} <span aria-hidden="true">›››</span></p></article>`;
+  const mid = (L.history || []).map((h, i) => {
     const ty = h.type && TYPE[h.type] ? h.type : 'fact';
-    return `<article class="sp ${ty}"><div class="when rv2" style="--i:0">${esc(h.when || '')}</div><div class="rv2 body" style="--i:2">${item(h)}</div></article>`;
+    return `<article class="sp ${ty}"><div class="when rv2" style="--i:0">${EN ? '' : esc(h.when || '')}</div><div class="rv2 body" style="--i:2">${item(h)}</div></article>`;
   }).join('');
   const km = user && route && route.shrineId === s.id ? route : null;
-  const tail = `<article class="sp spE"><div class="rv2" style="--i:0"><p class="when s">御祭神</p><p class="gods">${ds.map((d) => esc(d.name)).join('<br>')}</p></div>
-    ${km ? `<div class="rv2 bignum" style="--i:3"><div><b>${km.km < 10 ? km.km.toFixed(1) : Math.round(km.km)}</b><small>km</small></div><div><b>${Math.max(1, Math.round(km.min))}</b><small>分（車）</small></div></div>` : ''}
-    <button class="btn rv2" style="--i:4" type="button" data-emakiclose="1">神社へもどる</button></article>`;
+  const tail = `<article class="sp spE"><div class="rv2" style="--i:0"><p class="when s">${U('enshrined', '御祭神')}</p><p class="gods">${ds.map((d) => esc(dName(d))).join('<br>')}</p></div>
+    ${km ? `<div class="rv2 bignum" style="--i:3"><div><b>${km.km < 10 ? km.km.toFixed(1) : Math.round(km.km)}</b><small>km</small></div><div><b>${Math.max(1, Math.round(km.min))}</b><small>${TX('分（車）', 'min by car')}</small></div></div>` : ''}
+    <button class="btn rv2" style="--i:4" type="button" data-emakiclose="1">${TX('神社へもどる', 'Back to the shrine')}</button></article>`;
   return head + mid + tail;
 }
 let emakiRaf = 0;
@@ -1668,11 +1690,11 @@ function renderTree() {
   if (!reduce) sv.classList.add('anim');
   $('treeBody').scrollTop = 0; $('treeBody').scrollLeft = 0;
   $('btnTreeFocus').classList.toggle('on', treeFocusMode);
-  $('btnTreeFocus').textContent = treeFocusMode ? 'しぼりこみ：入' : 'しぼりこみ';
+  $('btnTreeFocus').textContent = treeFocusMode ? TX('しぼりこみ：入', 'Filter: on') : TX('しぼりこみ', 'Filter');
   const bar = $('treeFocusBar');
   bar.hidden = !treeFocus;
   if (treeFocus) {
-    $('treeFocusName').textContent = deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
+    $('treeFocusName').textContent = EN ? dName(deities[treeFocus]) + ' and the deities connected to it (' + ids.length + ')' : deities[treeFocus].name + ' につながる神々（' + ids.length + '柱）';
   }
 }
 // ---- ご意見・ご要望（作者へ） ----
@@ -1778,6 +1800,29 @@ function openFinder(show) {
   } else $('finder').hidden = true;
 }
 $('btnFind').textContent = EN ? 'Find a shrine' : '神社を探す';
+if (EN) {   // index.html の静的な日本語を、英語表示のときだけ差し替える（要素が無ければ何もしない）
+  const setT = (id, t) => { const el = $(id); if (el) el.textContent = t; };
+  const h1 = document.querySelector('h1'); if (h1) h1.innerHTML = 'Shrine Note <small>Shrines of the Japanese Archipelago</small>';
+  setT('btnGps', 'Light trail from here'); setT('btnTree', 'Family tree of the gods'); setT('btnSky', 'Time: now'); setT('btnFeedback', 'Feedback');
+  setT('hint', 'Tap a light to fly to that shrine'); setT('btnBack', '← Back to all of Japan'); setT('btnStop', 'Stop the run'); setT('emakiClose', 'Close');
+  setT('btnTreeFocus', 'Filter'); setT('btnTreeClose', 'Close'); setT('btnTreeOpen', 'Deity page'); setT('btnTreeAll', 'Show all'); setT('skyNow', 'now');
+  const th = document.querySelector('#tree h2'); if (th) th.innerHTML = 'Family tree of the gods <small>Based on the Kojiki</small>';
+  const tn = document.querySelector('#tree .tree-note'); if (tn) tn.textContent = 'Gold frames mark deities enshrined at the featured shrines. Tap a deity to open its page (turn on "Filter" to keep only the lineage connected to the deity you tap). Solid lines are parent and child; dotted lines are spouses.';
+  setT('consentTitle', 'Look up a road route?');
+  const cp = document.querySelector('#consent p'); if (cp) cp.innerHTML = 'To draw a light trail along real roads, <b>your location and the shrine position (coordinates)</b> are sent to the external routing service <b>OSRM</b> (router.project-osrm.org, a free public server).';
+  const clt = ['This feature does not store the location you send.', 'How the service handles it is governed by that service\u2019s terms.', 'Road (car) routes only: the shortest of several candidates is chosen. Trains and buses are not included.'];
+  document.querySelectorAll('#consent li').forEach((li, i) => { if (clt[i]) li.textContent = clt[i]; });
+  const cb = document.querySelector('#consent [data-c="road"]'); if (cb) cb.textContent = 'Agree and look up the road route';
+  const cc = document.querySelector('#consent [data-c="cancel"]'); if (cc) cc.textContent = 'Cancel';
+  const sl = document.querySelector('#skyPanel label'); if (sl) sl.textContent = 'Time';
+  const chips = $('chips'); if (chips) chips.setAttribute('aria-label', 'List of shrines');
+  const fsp = document.querySelectorAll('footer.credit > span');
+  if (fsp[0] && fsp[0].firstChild && fsp[0].lastChild) { const a = fsp[0].querySelector('a'); if (a) a.textContent = 'Geospatial Information Authority of Japan'; fsp[0].firstChild.textContent = 'Terrain and roads: '; fsp[0].lastChild.textContent = ' (elevation tiles, optimized vector tiles), processed. Heights are exaggerated; fine relief in the foreground is decorative.'; }
+  if (fsp[1]) fsp[1].textContent = '3D: three.js (MIT)';
+  if (fsp[2]) { const a = fsp[2].querySelector('a'); if (a) { a.textContent = 'Listing criteria'; a.href = '../criteria-en.html'; } }
+  if (fsp[3]) { const a = fsp[3].querySelector('a'); if (a) a.textContent = 'Feedback'; }
+  if (fsp[4] && fsp[4].firstChild) fsp[4].firstChild.textContent = 'Music: ';
+}
 $('btnFind').addEventListener('click', () => openFinder(true));
 $('btnFindClose').addEventListener('click', () => openFinder(false));
 $('finderIn').addEventListener('input', renderFinder);
@@ -1912,12 +1957,12 @@ function bgmPlay() {
 function bgmPause() { if (bgmEl && !bgmEl.paused) bgmFadeTo(0, () => bgmEl.pause()); }
 function bgmButton() {
   const b = $('btnBgm');
-  b.textContent = bgmOn ? '♪ BGM：入' : '♪ BGM：切';
+  b.textContent = bgmOn ? TX('♪ BGM：入', '♪ BGM: on') : TX('♪ BGM：切', '♪ BGM: off');
   b.setAttribute('aria-pressed', String(bgmOn));
   b.classList.toggle('on', bgmOn);
-  const bs = $('btnSet'); if (bs) bs.textContent = '設定' + (bgmOn ? ' ♪' : '') + ' ▾';   // 音が出ているかを、閉じていても分かるように
+  const bs = $('btnSet'); if (bs) bs.textContent = TX('設定', 'Settings') + (bgmOn ? ' ♪' : '') + ' ▾';   // 音が出ているかを、閉じていても分かるように
   const tr = BGM_TRACKS[bgmTrack];
-  $('btnBgmNext').textContent = '曲：' + tr.label;
+  $('btnBgmNext').textContent = TX('曲：', 'Track: ') + tr.label;
   $('btnBgmNext').hidden = BGM_TRACKS.length < 2;   // 曲が1つだけのときは、切り替えボタンを出さない
   $('bgmCredit').href = tr.url; $('bgmTitle').textContent = tr.title;
 }
@@ -1959,7 +2004,7 @@ bgmButton();
   const label = () => {
     const d = skyDate(), m = d.getHours() * 60 + d.getMinutes();
     range.value = String(m); out.textContent = (sky.override == null ? 'いま ' : '') + fmt(m);
-    btn.textContent = '時刻：' + (sky.override == null ? 'いま' : fmt(m));
+    btn.textContent = TX('時刻：', 'Time: ') + (sky.override == null ? TX('いま', 'now') : fmt(m));
     btn.classList.toggle('on', sky.override != null);
   };
   range.addEventListener('input', () => { sky.override = +range.value; updateSky(); label(); });
