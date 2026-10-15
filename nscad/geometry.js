@@ -758,3 +758,20 @@ export function filletCurves(sA, pA, sB, pB, r) {
   const arc = d <= 180 ? { type: 'arc', cx: center.x, cy: center.y, r, startDeg: a1, endDeg: a1 + d } : { type: 'arc', cx: center.x, cy: center.y, r, startDeg: a2, endDeg: a2 + norm(a1 - a2) };
   return { arc, a, b };
 }
+
+/** 2本の直線の角を丸める（kind='fillet'）／面取りする（'chamfer'）。端がつながっていなくても、交わっていなくても、2本をのばした交点を角にする（のばす・切り詰める）。
+ *  p1・p2 は、それぞれ残したい側（腕）の上でクリックした点。戻り値 { arc, a, b }（arc＝丸めの円弧または面取りの線、a・b＝残した直線）か、平行・長さ不足などで成り立たないとき null。 */
+export function roundLinesAt(l1, p1, l2, p2, r, kind = 'fillet') {
+  if (!(r > 0) || l1?.type !== 'line' || l2?.type !== 'line') return null;
+  const v = { x: l1.x2 - l1.x1, y: l1.y2 - l1.y1 }, w = { x: l2.x2 - l2.x1, y: l2.y2 - l2.y1 }, den = cross(v, w);
+  if (Math.abs(den) < 1e-9 * Math.hypot(v.x, v.y) * Math.hypot(w.x, w.y)) return null; /* 平行 */
+  const t = cross({ x: l2.x1 - l1.x1, y: l2.y1 - l1.y1 }, w) / den, C = { x: l1.x1 + v.x * t, y: l1.y1 + v.y * t };
+  const farOf = (l, q) => { const e = [{ x: l.x1, y: l.y1 }, { x: l.x2, y: l.y2 }], s = e.map(pt => dot({ x: pt.x - C.x, y: pt.y - C.y }, { x: q.x - C.x, y: q.y - C.y })); return s[0] >= s[1] ? { pt: e[0], first: true } : { pt: e[1], first: false }; };
+  const A = farOf(l1, p1), B = farOf(l2, p2); if (distance(A.pt, C) < EPS || distance(B.pt, C) < EPS) return null;
+  const VA = { type: 'line', x1: A.pt.x, y1: A.pt.y, x2: C.x, y2: C.y }, VB = { type: 'line', x1: B.pt.x, y1: B.pt.y, x2: C.x, y2: C.y };
+  const arc = (kind === 'chamfer' ? chamferCorner : filletCorner)(VA, VB, r); if (!arc) return null;
+  const ends = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{ x: arc.x1, y: arc.y1 }, { x: arc.x2, y: arc.y2 }];
+  const pa = ends.reduce((m, q) => distToShape(VA, m) <= distToShape(VA, q) ? m : q), pb = ends.find(q => q !== pa) || ends[1];
+  const rebuild = (F, q) => F.first ? { x1: F.pt.x, y1: F.pt.y, x2: q.x, y2: q.y } : { x1: q.x, y1: q.y, x2: F.pt.x, y2: F.pt.y };
+  return { arc, a: { ...l1, ...rebuild(A, pa) }, b: { ...l2, ...rebuild(B, pb) } };
+}

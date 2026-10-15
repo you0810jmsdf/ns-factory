@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -3525,7 +3525,8 @@ function editAt(p) {
   const affectedPaths=new Set(doc.paths.filter(p=>p.shapeIds.includes(first.id)||p.shapeIds.includes(hit.id)).map(p=>p.id));
   if (roundHoleBlock(affectedPaths)) { $('hint').textContent = t('holeChamfer'); return; }
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
-  const arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r);
+  let arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r), gen = null;
+  if (!arc) { gen = stage.click ? roundLinesAt(first, stage.click, lineOf(hit), p, r, mode) : null; arc = gen?.arc; } /* 端がつながっていない・交わっていない・鈍角などの2本は、のばした交点を角にして、のばす／切り詰めて丸める */
   if (!arc) { $('hint').textContent = t('impossible'); return; }
   const endpoints = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{x:arc.x1,y:arc.y1},{x:arc.x2,y:arc.y2}];
   const trim = (line, other) => {
@@ -3533,7 +3534,7 @@ function editAt(p) {
     const p = endpoints.reduce((a, b) => distToShape(line, a) <= distToShape(line, b) ? a : b);
     return { ...line, ['x' + end]: p.x, ['y' + end]: p.y };
   };
-  const hitL = lineOf(hit), a = backOf(first0, trim(first, hitL)), b = backOf(hit, trim(hitL, first)), id = freshId(doc.shapes, 's');
+  const hitL = lineOf(hit), a = backOf(first0, gen ? gen.a : trim(first, hitL)), b = backOf(hit, gen ? gen.b : trim(hitL, first)), id = freshId(doc.shapes, 's');
   cancel();
   commit(() => {
     doc.shapes = doc.shapes.map(s => s.id === first.id ? a : s.id === hit.id ? b : s);
