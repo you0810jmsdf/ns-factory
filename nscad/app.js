@@ -1253,7 +1253,7 @@ function featureLocked() { return registration.enabled() && !regIsOwner(registra
 /** ロックされた機能を使おうとしたとき：使ってよければ true。ロック中なら、🔒の案内を出して false。 */
 function lockGate(feature) {
   if (!featureLocked()) return true;
-  $('lockTitle').textContent = '🔒 ' + t(LOCK_NAMES[feature] || 'lockFold'); $('hint').textContent = t('lockHint');
+  showRegNow(); $('lockTitle').textContent = '🔒 ' + t(LOCK_NAMES[feature] || 'lockFold'); $('hint').textContent = t('lockHint');
   if (!$('lockDialog').open) $('lockDialog').showModal(); return false;
 }
 /** 🔒の印と、ロック中のカードの操作の無効化を、いまの状態に合わせる。 */
@@ -1262,8 +1262,17 @@ function syncLockMarks() {
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
 }
 document.addEventListener?.('click', e => { const sm = e.target?.closest?.('details[data-lock].locked > summary'); if (sm) { e.preventDefault(); lockGate(sm.parentElement.dataset.lock); } }, true);
+/** 「いまの登録」の1行：なし／確認待ち／確認済み、と、オーナーかどうか（オーナーなら、有料版の機能のロックが外れる）。 */
+function regNowText() {
+  const s = registration.state();
+  if (s.status === 'ok') return t('regNowOk', { email: s.email }) + t(regIsOwner(s) ? 'regNowOwner' : 'regNowNotOwner');
+  if (s.status === 'pending') return t('regNowPending', { email: s.email });
+  return t('regNowNone');
+}
+function showRegNow() { for (const id of ['regNow', 'lockNow']) { const el = $(id); if (el) el.textContent = regNowText(); } }
 function regMsg(key, vars = {}, cls = '') { const el = $('regStatus'); el.textContent = key ? t(key, vars) : ''; el.className = 'fb-status' + (cls ? ' ' + cls : ''); }
 function openRegistration() {
+  showRegNow();
   const s = registration.state(); if (s.email) $('regEmail').value = s.email; if (s.nick) $('regNick').value = s.nick;
   $('regConsent').checked = false; $('regCheck').hidden = s.status !== 'pending'; regMsg(s.status === 'pending' ? 'regSent' : '', { email: s.email });
   $('hint').textContent = t('regNeed'); $('regDialog').showModal();
@@ -1271,12 +1280,12 @@ function openRegistration() {
 async function doRegister() {
   const btn = $('regSend'); btn.disabled = true; regMsg('regSending');
   const r = await registration.register({ email: $('regEmail').value, nick: $('regNick').value, consent: $('regConsent').checked }); btn.disabled = false;
-  if (r.ok) { $('regCheck').hidden = false; regMsg('regSent', { email: registration.state().email }, 'ok'); return; }
+  if (r.ok) { $('regCheck').hidden = false; regMsg('regSent', { email: registration.state().email }, 'ok'); showRegNow(); return; }
   regMsg({ email: 'regErrEmail', consent: 'regErrConsent', limit: 'regErrLimit', network: 'regErrNet' }[r.error] || 'regErrServer', {}, 'ng');
 }
 async function doRegCheck() {
   const r = await registration.check();
-  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); return; }
+  if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); showRegNow(); return; }
   regMsg(r.status === 'pending' ? 'regPending' : r.status === 'error' ? 'regErrNet' : 'regErrNone', {}, r.status === 'pending' ? '' : 'ng');
 }
 function download(name, text, type, gate = true) {
