@@ -3328,18 +3328,31 @@ function roundPolylineCorners(poly, only, r, kind) {
   }
   return result;
 }
+/** 穴が「目印」か（縫い穴ではないか）。穴の見た目を決める規則と同じ。 */
+const holeIsMark = h => { const p = doc.paths.find(q => q.id === h.pathId), tool = doc.tools.find(q => q.id === h.toolId); return !![h.mark, p?.mark, doc.mark, tool?.mark].find(m => m && m !== 'tool'); };
+/** 丸め・面取りでできない理由：対象の線に、縫い穴（目印でない穴）がある。目印だけなら丸められる（目印は残る）。 */
+const roundHoleBlock = pathIds => doc.holes.some(h => pathIds.has(h.pathId) && !holeIsMark(h));
+/** 丸め・面取りのあと、目印だけが付いていた線を作り直す：図形の入れ替え（swap: 古い図形の id → 新しい図形の id の列）を線に反映し、目印を新しい線の上へ置き直す（つながらなければ、その線の目印は外す）。目印のない線は消す。commit の中で、図形を入れ替えたあとに呼ぶ。 */
+function reattachMarks(pathIds, swap = new Map()) {
+  doc.paths = doc.paths.filter(q => !pathIds.has(q.id) || doc.holes.some(h => h.pathId === q.id));
+  for (const q of doc.paths.filter(x => pathIds.has(x.id))) {
+    q.shapeIds = q.shapeIds.flatMap(id => swap.has(id) ? swap.get(id) : [id]); const route = resolvePath(doc, q);
+    if (!route) { doc.holes = doc.holes.filter(h => h.pathId !== q.id); doc.paths = doc.paths.filter(x => x.id !== q.id); continue; }
+    for (const h of doc.holes.filter(x => x.pathId === q.id)) { const sPos = projectOnPath(route, { x: h.x, y: h.y }).s, pt = pointAtLength(route, sPos); h.s = sPos; h.x = pt.x; h.y = pt.y; }
+  }
+}
 /** 折れ線をクリック：頂点の近くならその角だけ、辺の途中なら全部の角を丸める／面取りする。 */
 function roundPolylineAt(poly, p) {
   cancel();
   const affected = new Set(doc.paths.filter(q => q.shapeIds.includes(poly.id)).map(q => q.id));
-  if (doc.holes.some(h => affected.has(h.pathId))) { $('hint').textContent = t('holeChamfer'); return; }
+  if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); return; }
   const near = poly.points.map((v, i) => [distance(v, p), i]).filter(([d]) => d <= 9 / scale).sort((x, y) => x[0] - y[0])[0];
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
   const shapes = roundPolylineCorners(poly, near ? [near[1]] : null, r, mode);
   if (!shapes) { $('hint').textContent = t('impossible'); return; }
   commit(() => {
-    doc.paths = doc.paths.filter(q => !affected.has(q.id)); doc.shapes = doc.shapes.filter(s => s.id !== poly.id);
-    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: poly.layer }); return id; });
+    doc.shapes = doc.shapes.filter(s => s.id !== poly.id);
+    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: poly.layer }); return id; }); reattachMarks(affected, new Map([[poly.id, ids]]));
     for (const part of doc.parts) if (part.shapeIds.includes(poly.id)) part.shapeIds = [...part.shapeIds.filter(x => x !== poly.id), ...ids];
     selected = new Set(ids);
   });
@@ -3445,10 +3458,34 @@ function runOffset(override = null) {
   offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } }); /* 両側でも元に戻すのは1回で済む */
   $('hint').textContent = sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) }); draw();
 }
+/** すでに丸めた角（円弧）を、もっと丸く（または小さく）しなおす：円弧の両端につながる2本の線を、交わる角まで延ばして戻し、新しい半径で丸めなおす。つながる2本が直線（2点だけの折れ線を含む）でなければ、できない。 */
+function reroundArc(arc) {
+  const asLine = x => x.type === 'polyline' && !x.closed && x.points.length === 2 ? { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y } : x;
+  const back = (orig, ln) => orig.type === 'polyline' ? { ...orig, points: [{ x: ln.x1, y: ln.y1 }, { x: ln.x2, y: ln.y2 }] } : ln;
+  const ends = [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)], near = e => { for (const o of doc.shapes) { if (o.id === arc.id || !editable(o)) continue; const l = asLine(o); if (l.type !== 'line') continue; if (distance(e, { x: l.x1, y: l.y1 }) < 1e-4) return { o, l, end: 1 }; if (distance(e, { x: l.x2, y: l.y2 }) < 1e-4) return { o, l, end: 2 }; } return null; };
+  const A = near(ends[0]), B = near(ends[1]); if (!A || !B || A.o.id === B.o.id) { $('hint').textContent = t('impossible'); return; }
+  const far = n => n.end === 1 ? { x: n.l.x2, y: n.l.y2 } : { x: n.l.x1, y: n.l.y1 }, fa = far(A), fb = far(B), da = { x: ends[0].x - fa.x, y: ends[0].y - fa.y }, db = { x: ends[1].x - fb.x, y: ends[1].y - fb.y };
+  const den = da.x * db.y - da.y * db.x; if (Math.abs(den) < 1e-9) { $('hint').textContent = t('impossible'); return; }
+  const tt = ((fb.x - fa.x) * db.y - (fb.y - fa.y) * db.x) / den, C = { x: fa.x + da.x * tt, y: fa.y + da.y * tt }; if (!(tt >= 1 - 1e-6)) { $('hint').textContent = t('impossible'); return; }
+  const affected = new Set(doc.paths.filter(q => q.shapeIds.some(id => [arc.id, A.o.id, B.o.id].includes(id))).map(q => q.id));
+  if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); return; }
+  const r = askNumber('radius', Math.round(arc.r * 100) / 100); if (r === null) return;
+  const VA = { type: 'line', x1: fa.x, y1: fa.y, x2: C.x, y2: C.y }, VB = { type: 'line', x1: fb.x, y1: fb.y, x2: C.x, y2: C.y }, na = filletCorner(VA, VB, r); if (!na) { $('hint').textContent = t('impossible'); return; }
+  const ne = [circlePoint(na, na.startDeg), circlePoint(na, na.endDeg)], pa = ne.reduce((m, q) => distToShape(VA, m) <= distToShape(VA, q) ? m : q), pb = ne.find(q => q !== pa);
+  const upd = (n, pt) => back(n.o, { ...n.l, ['x' + n.end]: pt.x, ['y' + n.end]: pt.y });
+  commit(() => {
+    const id = freshId(doc.shapes.filter(x => x.id !== arc.id), 's'); const a2 = upd(A, pa), b2 = upd(B, pb);
+    doc.shapes = doc.shapes.filter(x => x.id !== arc.id).map(x => x.id === A.o.id ? a2 : x.id === B.o.id ? b2 : x); doc.shapes.push({ ...na, id, layer: arc.layer });
+    for (const part of doc.parts) if (part.shapeIds.includes(arc.id)) part.shapeIds = part.shapeIds.map(x => x === arc.id ? id : x);
+    reattachMarks(affected, new Map([[arc.id, [id]]])); selected = new Set([A.o.id, B.o.id, id]);
+  });
+  $('hint').textContent = t('hint.fillet');
+}
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline'));
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distToShape(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && s.type === 'arc')));
   if (!hit) return;
+  if (hit.type === 'arc') { cancel(); reroundArc(hit); return; } /* 丸めた角をもう一度クリック：半径を入れなおして丸めなおす */
   const twoPt = x => x.type === 'polyline' && !x.closed && x.points.length === 2; /* 2点だけの折れ線は、1本の線として2本の線の丸め・面取りに使う */
   if (hit.type === 'polyline' && !twoPt(hit)) { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
@@ -3456,7 +3493,7 @@ function editAt(p) {
   const first0 = doc.shapes.find(s => s.id === stage.id && editable(s)), lineOf = x => twoPt(x) ? { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y } : x, first = first0 && lineOf(first0), backOf = (orig, ln) => twoPt(orig) ? { ...orig, points: [{ x: ln.x1, y: ln.y1 }, { x: ln.x2, y: ln.y2 }] } : ln;
   if (!first) { cancel(); return; }
   const affectedPaths=new Set(doc.paths.filter(p=>p.shapeIds.includes(first.id)||p.shapeIds.includes(hit.id)).map(p=>p.id));
-  if (doc.holes.some(h=>affectedPaths.has(h.pathId))) { $('hint').textContent = t('holeChamfer'); return; }
+  if (roundHoleBlock(affectedPaths)) { $('hint').textContent = t('holeChamfer'); return; }
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
   const arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r);
   if (!arc) { $('hint').textContent = t('impossible'); return; }
@@ -3469,9 +3506,10 @@ function editAt(p) {
   const hitL = lineOf(hit), a = backOf(first0, trim(first, hitL)), b = backOf(hit, trim(hitL, first)), id = freshId(doc.shapes, 's');
   cancel();
   commit(() => {
-    doc.paths=doc.paths.filter(p=>!affectedPaths.has(p.id));
     doc.shapes = doc.shapes.map(s => s.id === first.id ? a : s.id === hit.id ? b : s);
     doc.shapes.push({ ...arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
+    for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); /* 2本が同じ線なら、間にできた円弧も同じ線に入れる */
+    reattachMarks(affectedPaths);
   });
   $('hint').textContent = t('hint.chamfer');
 }
