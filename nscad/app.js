@@ -1,6 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
+import { dotLen } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -2816,6 +2817,16 @@ function circleHandleHit(w) {
   for (let k = 0; k < 8; k++) { const q = circlePoint(sc, k * 45), dd = distance(q, w); if (dd <= bd) { best = { shape: sc, k }; bd = dd; } }
   return best;
 }
+/** 点の目印の取っ手：点の目印を1つだけ選んでいるとき、線の両端に出る。つかんで引くと、中心を動かさず長さが変わる（0.1mm刻み・最小0.5mm）。離したとき確定・元に戻すは1回。 */
+function selectedDot() { if (mode !== 'select' || selected.size !== 1) return null; const h = doc.holes.find(x => selected.has(x.id)); return h && holeAppearance(h, doc)?.kind === 'dot' && holeEditable(h) ? h : null; }
+function dotEnds(h, L = dotLen(h)) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a); return { ux, uy, p0: { x: h.x - ux * L / 2, y: h.y - uy * L / 2 }, p1: { x: h.x + ux * L / 2, y: h.y + uy * L / 2 } }; }
+function dotHandleHit(w) { const h = selectedDot(); if (!h) return null; const e = dotEnds(h), r = 8 / scale; return distance(e.p0, w) <= r || distance(e.p1, w) <= r ? h : null; }
+function drawDotHandles() {
+  const g = gesture?.kind === 'dotLen' ? gesture : null, h = g ? doc.holes.find(x => x.id === g.id) : selectedDot(); if (!h) return; const e = dotEnds(h, g ? g.len : dotLen(h)), k = 1 / scale, z = (g ? 5 : 4) * k;
+  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 * k; ctx.fillStyle = g ? '#f0b429' : 'rgba(240,180,41,.75)'; ctx.strokeStyle = '#000';
+  for (const q of [e.p0, e.p1]) { ctx.beginPath(); ctx.rect(q.x - z, q.y - z, z * 2, z * 2); ctx.fill(); ctx.stroke(); }
+  ctx.restore();
+}
 function drawCircleHandles() {
   const g = gesture?.kind === 'circleR' ? gesture : null, sc = g ? doc.shapes.find(x => x.id === g.id) : selectedCircle(); if (!sc) return; const k = 1 / scale, r = g ? g.r : sc.r;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
@@ -3762,7 +3773,7 @@ function pickShapeAt(p) {
 /** 穴・目印をクリックしたときの距離。点の目印は長さ2mmの短い線（元の線と直角）なので、中心ではなく、その線までの距離で測る（端のあたりをクリックしても選べる）。 */
 function holeHitDistance(h, p) {
   if (holeAppearance(h, doc)?.kind !== 'dot') return distance(h, p);
-  const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), t = Math.max(-1, Math.min(1, (p.x - h.x) * ux + (p.y - h.y) * uy));
+  const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), half = dotLen(h) / 2, t = Math.max(-half, Math.min(half, (p.x - h.x) * ux + (p.y - h.y) * uy));
   return distance({ x: h.x + ux * t, y: h.y + uy * t }, p);
 }
 function drawNodes(s) {
@@ -3823,7 +3834,7 @@ function drawSheetBody(lo, hi) {
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
-    if (kind === 'dot') { ctx.moveTo(0,-1); ctx.lineTo(0,1); } /* 目印は、元の線と直角に交わる長さ2mmの細かい点線（ガイドと同じ黄色）で表示 */
+    if (kind === 'dot') { const half = (gesture?.kind === 'dotLen' && gesture.id === h.id ? gesture.len : dotLen(h)) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
@@ -3890,7 +3901,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles();
+  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawDotHandles();
   updateUI();
 }
 function resize() {
@@ -3989,6 +4000,7 @@ canvas.addEventListener('pointerdown', e => {
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
     const selOne = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id)) : null, nearest = selOne ? pickShapeAt(cursor) : null;
     const handleOk = !selOne || !nearest || nearest.id === selOne.id || distToShape(selOne, cursor) <= distToShape(nearest, cursor) + 1.5 / scale;
+    const dh = dotHandleHit(cursor); if (dh) { gesture = { kind: 'dotLen', id: dh.id, len: dotLen(dh) }; $('hint').textContent = t('dotLenDrag', { len: circleNum(dotLen(dh)) }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
     const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
@@ -4023,6 +4035,7 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
+  if (gesture?.kind === 'dotLen') { const h = doc.holes.find(x => x.id === gesture.id); if (h) { const e = dotEnds(h), c = world(p); cursor = c; gesture.len = Math.max(0.5, Math.round(Math.abs((c.x - h.x) * e.ux + (c.y - h.y) * e.uy) * 20) / 10); $('hint').textContent = t('dotLenDrag', { len: circleNum(gesture.len) }); draw(); } return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
@@ -4094,6 +4107,7 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
+  if (g.kind === 'dotLen') { const h0 = doc.holes.find(x => x.id === g.id); if (h0 && Math.abs(g.len - dotLen(h0)) > 1e-9) { commit(() => { doc.holes.find(x => x.id === g.id).len = g.len; }); $('hint').textContent = t('dotLenSet', { len: circleNum(g.len) }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {

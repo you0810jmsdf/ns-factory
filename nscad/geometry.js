@@ -643,6 +643,7 @@ export function projectOnPath(path,p) {
   return candidates.reduce((a,b)=>distance(a,p)<=distance(b,p)?a:b);
 }
 /** 穴・文書から表示／出力用の形状、実寸幅高、角度を返す。 */
+export const dotLen = h => Number.isFinite(h?.len) && h.len > 0 ? h.len : 2; /* 点の目印の、画面での線の長さ（mm）。穴に len があればそれ、なければ2mm。選択ツールで端をつかんで変えられる */
 export function holeAppearance(h,doc) {
   const tool=doc.tools.find(t=>t.id===h.toolId); if(!tool)return null;
   const p=doc.paths?.find(p=>p.id===h.pathId), mark=[h.mark,p?.mark,doc.mark,tool.mark].find(m=>m&&m!=='tool')||'tool';
