@@ -592,7 +592,7 @@ export function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) 
     for (;;) {
       const p = at(cur, exit), travel = exit ? p.angleDeg : p.angleDeg + 180; /* いま端から出ていく向き */
       let found = null;
-      for (const limit of [tol, gapTol]) {
+      for (const limit of [Math.max(tol, gapTol)]) { /* 0.2mm 以内の端を全部候補にして、いちばん滑らかにつながる線を選ぶ（突き当たる枝のほうが近くても、先の線を選べる） */
         let best = null, bt = Infinity, bd = Infinity, n = 0;
         for (const o of open) { if (seen.has(o.id)) continue; for (const end of [0, 1]) { const q = at(o, end), d = distance(p, q); if (d > limit) continue; n++; const inward = end ? q.angleDeg + 180 : q.angleDeg, tn = turn(travel, inward); if (tn < bt - 1e-6 || (Math.abs(tn - bt) <= 1e-6 && d < bd)) { bt = tn; bd = d; best = { shape: o, end }; } } }
         if (best && n > 1 && bt > 60) break; /* 枝が分岐点（T字）の根元に突き当たったとき：左右どちらへ進むか決められないので、そこで止まる */
@@ -604,6 +604,20 @@ export function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) 
     }
   }
   return order;
+}
+/** contourFrom でたどった輪郭を、向きをそろえた「経路」（chainShapes の要素と同じ形：{items, shapeIds, closed, reversed}）にする。2本以上でなければ null。
+ *  オフセットの「つながった図形全体」用：分岐点では真っ直ぐ続く線を選び、枝は含めない。小さなすき間（gapTol 以内）は、そのまま点でつなぐ。 */
+export function contourChain(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) {
+  const ids = contourFrom(shapes, startId, { tol, gapTol }); if (ids.length < 2) return null;
+  const list = ids.map(id => shapes.find(s => s.id === id)), end = (s, last) => pointAtLength(s, last ? arcLength(s) : 0), items = [];
+  for (let i = 0; i < list.length; i++) {
+    const s = list[i]; let reversed;
+    if (i === 0) { const next = list[1], ne = [end(next, 0), end(next, 1)], near = p => Math.min(distance(p, ne[0]), distance(p, ne[1])); reversed = near(end(s, 0)) < near(end(s, 1)); }
+    else { const prev = items[i - 1], exit = end(prev.shape, !prev.reversed); reversed = distance(exit, end(s, 1)) < distance(exit, end(s, 0)); }
+    items.push({ shape: s, reversed });
+  }
+  const first = items[0], last = items.at(-1), closed = distance(end(first.shape, first.reversed), end(last.shape, !last.reversed)) <= tol;
+  return { items, shapeIds: ids, closed, reversed: false };
 }
 /** contourFrom で選んだ輪郭 ids の、先へ進めなかった端のうち「分岐」で止まった所を返す：端のすぐそば（tol 以内）に、輪郭に入っていない別の図形の端がある所。
  *  すき間（離れて見える所）は含めない（画面の橙の輪で出ている）。戻り値は [{ x, y }]。 */

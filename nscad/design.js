@@ -1,6 +1,6 @@
 // 革の厚みを考慮した設計：折り代・重ね補正・コバ帯・駒合わせ・パッチワークの目打ち最適化・ピース寸法提案。
 // 純粋関数のみ（DOM 禁止）。単位 mm・角度は度。
-import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, flattenShape, areaOf, allIntersections, offsetShape, intersections, distToShape, bboxOf, circlePoint } from './geometry.js';
+import { distance, offsetPolyline, arcLength, pointAtLength, resolvePath, cornerHoles, equalDivide, chainShapes, contourChain, flattenShape, areaOf, allIntersections, offsetShape, intersections, distToShape, bboxOf, circlePoint } from './geometry.js';
 
 const DEPS = 1e-9;
 /** 折り代 ΔL = θ[rad] × (r + K·t)。t=厚み、angleDeg=折り角、r=内曲げ半径（既定 0）、k=中立係数（既定 0.5）。 */
@@ -357,7 +357,7 @@ export function bendInnerSign(points) {
  *  whole=false：他の図形との交点から交点までの区間（交点が無ければ全体）。whole=true：つながった図形全体（閉じていれば閉じた図形）。
  *  戻り値 {points, closed, shapeIds, whole, single}。points は平坦化した点列。single は全体が1つの図形のときその図形。 */
 export function offsetSpan(shapes, hit, p, whole = false, tol = 0.01) {
-  const chain = chainShapes(shapes, tol).find(c => c.shapeIds.includes(hit.id)); if (!chain) return null;
+  const chain = (whole ? contourChain(shapes, hit.id, { tol }) : null) || chainShapes(shapes, tol).find(c => c.shapeIds.includes(hit.id)); if (!chain) return null; /* 全体：分岐点では真っ直ぐ続く線を選んで先へ進む（枝は含めない） */
   const members = chain.items.map(i => i.shape), closed = chain.closed;
   let pts = []; chain.items.forEach((item, i) => { let ps = flattenShape(item.shape, 0.01); if (item.reversed) ps = [...ps].reverse(); pts.push(...(i ? ps.slice(1) : ps)); });
   if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < tol) pts.pop();
