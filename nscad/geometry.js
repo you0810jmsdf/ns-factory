@@ -576,6 +576,35 @@ export function chainShapes(shapes,tol=0.01) {
   }
   return out;
 }
+/** ダブルクリックの「つながった線の選択」用：図形 startId から、端でつながった輪郭をたどって、図形の id の並びを返す。
+ *  分岐点（3本以上が集まる所）では、進行方向にいちばん滑らかにつながる線を選んで先へ進み、枝（突き当たる縦線など）には入らない。
+ *  端が gapTol（mm）以内で少し離れているだけの所も、つながっているものとして越える（まず tol 以内を探し、無ければ gapTol 以内でいちばん近い端）。
+ *  円・閉じた図形は、それ1つだけ。chainShapes（目打ち・オフセットなどの経路）とは別で、分岐点では止まらない。 */
+export function contourFrom(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {}) {
+  const open = shapes.filter(s => s.type !== 'circle' && !s.closed), start = shapes.find(s => s.id === startId);
+  if (!start) return [];
+  if (start.type === 'circle' || start.closed || !open.includes(start)) return [startId];
+  const len = new Map(open.map(s => [s.id, arcLength(s)])), at = (s, end) => pointAtLength(s, end ? len.get(s.id) : 0);
+  const turn = (a, b) => Math.abs(((a - b + 540) % 360) - 180); /* 2つの向きの差（0〜180度） */
+  const seen = new Set([startId]), order = [startId];
+  for (const firstExit of [1, 0]) {
+    let cur = start, exit = firstExit;
+    for (;;) {
+      const p = at(cur, exit), travel = exit ? p.angleDeg : p.angleDeg + 180; /* いま端から出ていく向き */
+      let found = null;
+      for (const limit of [tol, gapTol]) {
+        let best = null, bt = Infinity, bd = Infinity, n = 0;
+        for (const o of open) { if (seen.has(o.id)) continue; for (const end of [0, 1]) { const q = at(o, end), d = distance(p, q); if (d > limit) continue; n++; const inward = end ? q.angleDeg + 180 : q.angleDeg, tn = turn(travel, inward); if (tn < bt - 1e-6 || (Math.abs(tn - bt) <= 1e-6 && d < bd)) { bt = tn; bd = d; best = { shape: o, end }; } } }
+        if (best && n > 1 && bt > 60) break; /* 枝が分岐点（T字）の根元に突き当たったとき：左右どちらへ進むか決められないので、そこで止まる */
+        if (best) { found = best; break; }
+      }
+      if (!found) break;
+      seen.add(found.shape.id); if (firstExit) order.push(found.shape.id); else order.unshift(found.shape.id);
+      cur = found.shape; exit = found.end ? 0 : 1;
+    }
+  }
+  return order;
+}
 /** 文書と永続経路から、図形の向きを解決した計算用経路を返す。不連続なら null。 */
 export function resolvePath(doc,path) {
   const shapes=path.shapeIds.map(id=>doc.shapes.find(s=>s.id===id)); if(shapes.some(s=>!s))return null;
