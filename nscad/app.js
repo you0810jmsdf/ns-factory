@@ -1188,10 +1188,10 @@ function initDesign() {
   $('offsetRun').onclick = () => runOffset();
   for (const id of ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by']) $(id).addEventListener('input', rulerFromBar);
   /* 図形のそばの入力欄：右のカードの距離・向きと値を共有する */
-  $('of-dist').addEventListener('input', () => { $('offsetDist').value = $('of-dist').value; });
-  $('of-side').addEventListener('change', () => { $('offsetSide').value = $('of-side').value; });
-  $('offsetDist').addEventListener('input', () => { $('of-dist').value = $('offsetDist').value; });
-  $('offsetSide').addEventListener('change', () => { $('of-side').value = $('offsetSide').value; });
+  $('of-dist').addEventListener('input', () => { $('offsetDist').value = $('of-dist').value; draw(); });
+  $('of-side').addEventListener('change', () => { $('offsetSide').value = $('of-side').value; draw(); });
+  $('offsetDist').addEventListener('input', () => { $('of-dist').value = $('offsetDist').value; draw(); });
+  $('offsetSide').addEventListener('change', () => { $('of-side').value = $('offsetSide').value; draw(); });
   for (const id of ['of-dist', 'of-side']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('of-run').onclick = () => runOffset();
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
@@ -3637,8 +3637,18 @@ function offsetClick(p, whole) {
   const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
   offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; /* 向き「カーソルの側」：1回クリックでは、別々の線でつながっていても、クリックした1本の線だけをずらす（全体はダブルクリック。矩形・折れ線は従来どおり全体） */ if ($('offsetSide').value === 'cursor' && !whole && hit.type === 'line' && sel.points.length > 2) { const es = offsetEdgeOfHit(offsetSelection); if (es) offsetSelection = { ...es, hit, click: p }; } $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
-  $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
+  const info = t('offsetSpanInfo', { len: offsetSpanLength(sel).toFixed(2), n: sel.shapeIds?.length ?? 1, state: t(sel.closed ? 'offsetClosedShape' : 'offsetOpenLine') }); /* 選んだ範囲の全長・本数・閉じているか（外周が全部選ばれたかの確認用） */
+  $('hint').textContent = info + ' ' + t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
 }
+/** 向きが「内側」「外側」「両側」のときの、ずらした結果（実行しなくても見える黄色の点線のプレビュー用）。成立しない向きがあれば failed に数える。距離が不正なら何も返さない。 */
+function offsetPreviewResults(sel) {
+  const dist = Number($('offsetDist').value), v = $('offsetSide').value; if (!sel || !Number.isFinite(dist) || dist <= 0 || !['in', 'out', 'both'].includes(v)) return { results: [], failed: 0 };
+  const sideOf = inner => { let d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return d; };
+  const ds = v === 'both' ? [sideOf(true), sideOf(false)] : [sideOf(v === 'in')], all = ds.map(d => offsetSpanResult(sel, d, { join: $('offsetJoin').value }));
+  return { results: all.filter(Boolean), failed: all.filter(r => !r).length };
+}
+/** 選んだ範囲の全長（mm）。閉じていれば、最後の点から最初の点までも足す。 */
+function offsetSpanLength(sel) { let len = 0; const ps = sel.points; for (let i = 1; i < ps.length; i++) len += distance(ps[i - 1], ps[i]); if (sel.closed && ps.length > 2) len += distance(ps.at(-1), ps[0]); return len; }
 /** 選んだ範囲のそばに、距離・内側/外側・実行の小さな入力欄を出す（選んだ範囲が無ければ隠す）。画面の端では見切れないように寄せる。 */
 /* ── 回避：出っ張った図形を、すき間をあけて滑らかによける線を作り、追加で必要な革の長さを出す ── */
 let detourState = null; /* { baseId, obstId }：基準の線・よけたい図形 */
@@ -4135,6 +4145,7 @@ function drawSheetBody(lo, hi) {
   }
   if (offsetSelection && mode === 'offset') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff9f43'); ctx.restore(); }
   if (offsetSelection && mode === 'offset' && $('offsetSide').value === 'cursor') { const ch = offsetCursorChoice(offsetSelection, offsetCursor, Number($('offsetDist').value)); if (ch) { ctx.save(); ctx.lineWidth = 1.5 / scale; strokeShape(ch.r, SHAPE_DRAW_COLOR.yellow, true); ctx.restore(); } } /* 向き「カーソルの側」：ずらした結果を、カーソルのある側にプレビュー */
+  if (offsetSelection && mode === 'offset') { const pv = offsetPreviewResults(offsetSelection); if (pv.results.length || pv.failed) { ctx.save(); ctx.lineWidth = 1.5 / scale; for (const r of pv.results) strokeShape(r, SHAPE_DRAW_COLOR.yellow, true); if (pv.failed) { ctx.setLineDash([6 / scale, 4 / scale]); ctx.lineWidth = 3 / scale; strokeShape({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, '#ff4d4d'); } ctx.restore(); } } /* 内側・外側・両側：実行する前に、結果を黄色の点線でプレビュー。成立しない向きがあれば、選んだ範囲を赤い点線にする */
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
