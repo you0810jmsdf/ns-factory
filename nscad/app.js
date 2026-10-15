@@ -32,7 +32,7 @@ import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
-import { saveToSharedDir, canPickDir, getSavedDir } from './bugdir.js';
+import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases } from './phrases.js';
@@ -1106,7 +1106,7 @@ function initDesign() {
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
     if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
     const res = await saveToSharedDir(name, text, { repick });
-    if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }); return; }
+    if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }) + (res.expected ? '' : ' ' + t('bugLogWrongDir', { name: BUGDIR_NAME })) + (res.why && !repick ? ' ' + t('bugLogWhy', { why: res.why }) : ''); return; } /* 約束のフォルダ名でなければ、共有されない場所かもしれないと知らせる */
     download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : '');
   };
   $('regSend').onclick = doRegister; $('regCheck').onclick = doRegCheck; $('regClose').onclick = () => $('regDialog').close(); registration.refresh();
@@ -3040,8 +3040,8 @@ function trimClick(p, keep, byHoles = false) {
   const { hit, reason } = trimTarget(p); if (!hit) { $('hint').textContent = t(reason === 'ambiguous' ? 'trimAmbiguous' : 'trimMiss'); return; }
   let parts;
   if (byHoles) { /* Alt+クリック：その線に打たれた菱目の位置で区切り、クリックした「菱目と菱目の間」の線だけを切る（菱目は残す） */
-    const mine = doc.holes.filter(h => doc.paths.some(pt => pt.id === h.pathId && pt.shapeIds.includes(hit.id))), cuts = [];
-    for (const h of mine) { const q = projectOnPath(hit, { x: h.x, y: h.y }); if (distance(q, h) < 0.3) cuts.push(q.s); }
+    const mine = doc.holes.filter(h => holeVisible(h) && distToShape(hit, { x: h.x, y: h.y }) < 0.3), cuts = []; /* その線の上（0.3mm 以内）にある菱目。.lcc の菱目のように、線とは別の経路についている穴も数える */
+    for (const h of mine) cuts.push(projectOnPath(hit, { x: h.x, y: h.y }).s);
     if (!cuts.length) { $('hint').textContent = t('trimNoHoles'); return; }
     const sc = projectOnPath(hit, p).s, lo = Math.max(...cuts.filter(c => c <= sc), -Infinity), hi = Math.min(...cuts.filter(c => c > sc), Infinity), near2 = [lo, hi].filter(Number.isFinite); /* クリックをはさむ両どなりの菱目の位置だけで切る */
     const all = splitShapeAt(hit, near2); if (all.length < 2) { $('hint').textContent = t('noIntersection'); return; }
