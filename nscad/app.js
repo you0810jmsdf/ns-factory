@@ -2764,7 +2764,7 @@ function drawFoldDims() {
 }
 /** 取っ手：実際の断面の上の金色の小さな四角。つかんで横へドラッグすると、欄の数値が変わり断面が作り直される（元に戻すは1回）。「三つ折りの設計」カードを開いていて、選択モードのときだけ出る。 */
 const FD_HANDLE_FIELDS = [['fdDL', 'dL'], ['fdDR', 'dR'], ['fdCL', 'cL'], ['fdCR', 'cR'], ['fdRL', 'rinL'], ['fdRR', 'rinR']];
-const foldHandleList = () => mode === 'select' && !exporting && doc.foldDesign && $('foldDesignCard')?.open === true ? (foldHandles(doc.foldDesign) ?? []) : [];
+const foldHandleList = () => mode === 'select' && !exporting && doc.foldDesign && ($('foldDesignCard')?.open === true || doc.shapes.some(s => s.foldSec === 'fd' && selected.has(s.id))) ? (foldHandles(doc.foldDesign) ?? []) : []; /* 設計カードを開いているか、断面を選んでいるとき、断面の寸法の取っ手が出る */
 function foldHandleAt(p) {
   const w = world(p), r = 10 / scale; let best = null, bd = Infinity;
   for (const h of foldHandleList()) { const dd = Math.hypot(h.x - w.x, h.y - w.y); if (dd <= r && dd < bd) { best = h; bd = dd; } }
@@ -2777,8 +2777,19 @@ function drawFoldHandles() {
   for (const h of list) { const sz = (h.key === a ? 6 : 4.5) * k; ctx.fillStyle = h.key === a ? '#f0b429' : 'rgba(240,180,41,.55)'; ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.rect(h.x - sz, h.y - sz, 2 * sz, 2 * sz); ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
+/** 図面に保存されている三つ折りの設計の値を、設計カードの数値欄へ書き戻す。図面を開いた・前回の続きを開いた・タブを切り替えた・元に戻したときなど、欄が図面の設計とずれていると、
+ *  取っ手のドラッグや欄の入力で断面を作り直すときに、ずれた欄の値（ほかの寸法・厚み・リング）を読んでしまい、寸法が変わらない・別の形になる（事業主指摘 2026-10-15）。 */
+let foldSyncDoc = null;
+function syncFoldFields() {
+  const d = doc.foldDesign; if (!d) return; const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null && String(el.value) !== String(v)) el.value = String(v); };
+  for (const [id, k] of FD_HANDLE_FIELDS) set(id, d[k]);
+  set('foldSecT', d.t); set('fdTO', d.tOuter); set('fdTI', d.tInner); if ($('fdFlip')) $('fdFlip').checked = d.flipV !== false;
+  if ($('fdRingOn')) $('fdRingOn').checked = !!d.ring;
+  if (d.ring) { set('fdRingPos', d.ring.pos); set('fdStackT', d.ring.stackT); set('fdRefillDir', d.ring.dir === 'v' ? 'v' : 'h'); if ([...($('binderSpecSel')?.options || [])].some?.(o => o.value === d.ring.specId)) set('binderSpecSel', d.ring.specId); set('ringD', d.ring.ringD); }
+  refreshFoldWidth(); refreshFoldPitch();
+}
 function startFoldHandleDrag(h, w) {
-  const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
+  syncFoldFields(); const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
   gesture = { kind: 'foldHandle', h, start: w, vals: Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])) }; setFdDimKey(h.dim);
   $('hint').textContent = t('foldHandleDrag'); draw();
 }
@@ -3839,7 +3850,7 @@ function drawNodes(s) {
   });
 }
 function draw() {
-  ownPathsCache = null;
+  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; syncFoldFields(); } /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (!exporting) { ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, width, height); }
   if (quadOn() && !exporting) { drawQuad(dpr); return; }
