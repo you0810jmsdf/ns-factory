@@ -198,6 +198,7 @@ body.hasroute .photo.compact { top: calc(168px + env(safe-area-inset-top, 0px));
 .nm { margin: 0 0 6px; font: 600 clamp(34px, 9.5vw, 46px)/1.25 var(--serif); letter-spacing: .08em; }
 .nm span { display: inline-block; opacity: 0; transform: translateY(14px) scale(1.06); filter: blur(7px); transition: opacity .8s ease, transform 1s cubic-bezier(.2,.7,.2,1), filter .9s ease; transition-delay: calc(var(--k) * 90ms + 80ms); }
 .ch.in .nm span { opacity: 1; transform: none; filter: none; }
+.nm .wd { opacity: 1; transform: none; filter: none; transition: none; }   /* 英語の名前の単語まとめ（中の1文字ずつがアニメーションする） */
 .rd { color: var(--muted); font-size: 13px !important; letter-spacing: .1em; margin: 0 0 18px; }
 .lead p { font: 500 19px/1.9 var(--serif) !important; color: var(--ink); }
 .hintnext { margin-top: 26px !important; font-size: 12px !important; color: var(--muted); letter-spacing: .14em; display: flex; align-items: center; gap: 8px; }
