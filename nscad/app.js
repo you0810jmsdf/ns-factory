@@ -3068,8 +3068,10 @@ function selectSpanAt(p, additive, { byHoles = false, auto = false } = {}) {
   if (!parts) { selected = additive ? new Set([...selected, hit.id]) : new Set([hit.id]); if (!auto) $('hint').textContent = t('spanWhole'); draw(); return; }
   if (seamsOn(hit)) { if (auto) return; if (!window.confirm(t('holeTrimConfirm'))) return; } /* 縫い合わせ設定がある線は、ふつうのクリックでは切らない */
   cancel();
-  commit(() => { const added = applyShapeParts(hit, parts), next = additive ? new Set([...selected].filter(id => id !== hit.id)) : new Set(); next.add(added[0]); selected = next; });
-  $('hint').textContent = t(byHoles ? 'spanHolesSelected' : 'spanSelected');
+  let picked = null;
+  commit(() => { const added = applyShapeParts(hit, parts), next = additive ? new Set([...selected].filter(id => id !== hit.id)) : new Set(); next.add(added[0]); selected = next; picked = doc.shapes.find(x => x.id === added[0]); });
+  const len = picked ? arcLength(picked) : NaN; /* 選んだ区間の長さ（mm）を案内の先頭に出す */
+  $('hint').textContent = (Number.isFinite(len) ? t('spanLen', { len: len.toFixed(2) }) + ' ' : '') + t(byHoles ? 'spanHolesSelected' : 'spanSelected');
 }
 let spanClickTimer = null; /* シングルクリックの予約。ダブルクリックや次の操作が来たら取り消す */
 const cancelSpanClick = () => { if (spanClickTimer) { clearTimeout(spanClickTimer); spanClickTimer = null; } };
