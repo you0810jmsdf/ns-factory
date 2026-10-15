@@ -161,7 +161,7 @@ tr:hover td{background:#1c2128}
   font-size:13.5px;background:#0d1117;color:#e6edf3;outline:none;font-family:inherit;line-height:1.7;resize:vertical;
 }
 .fb-card textarea:focus{border-color:#58a6ff}
-.fb-actions{display:flex;gap:8px;margin-top:12px;align-items:center}
+.fb-actions{display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap}
 .fb-status{font-size:12px;color:#9aa4af;line-height:1.6}
 .fb-status.ok{color:#4ade80}
 .fb-status.err{color:#ff9d9d}
@@ -210,6 +210,15 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
 .chat-row.them.bot .chat-bub{background:#3a2d10;color:#f2d98a}
 .chat-row.them.staff .chat-bub{background:#0d2438;color:#9fd0ff}
 .chat-row.me .chat-bub{background:#06c755;color:#03210f;border-top-right-radius:4px}
+/* 🧪 指摘の反映を試す（2026-10-16）: 当時の答えと、いまの知識で聞き直した答えを並べる */
+.fb-card.wide{width:min(900px,100%)}
+.rt-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:700px){.rt-cols{grid-template-columns:1fr}}
+.rt-col h3{margin:0 0 6px;font-size:12px;color:#9aa4af;font-weight:normal}
+.rt-box{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;min-height:64px;max-height:46vh;overflow-y:auto}
+.rt-box.new{border-color:#06c755}
+.rt-ok{color:#4ade80}
+.rt-warn{color:#f0b429}
 .chat-bub.legacy{background:transparent!important;border:1px dashed #30363d;color:#8b949e!important;font-style:italic}
 .chat-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:11px;color:#8b949e;font-variant-numeric:tabular-nums}
 .chat-row.me .chat-meta{justify-content:flex-end}
@@ -419,6 +428,25 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
   </div>
 </div>
 
+<!-- 🧪 指摘の反映を試す（2026-10-16）。同じ質問をいまの知識でAIに聞き直し、当時の答えと並べる（AIを1回呼ぶ＝概算5〜10円） -->
+<div class="fb-overlay" id="retestOverlay">
+  <div class="fb-card wide">
+    <h2>🧪 指摘の反映を試す</h2>
+    <p class="fb-sub" id="rtSub"></p>
+    <div class="fb-quote" id="rtQuote"></div>
+    <div class="rt-cols">
+      <div class="rt-col"><h3>🕘 当時の答え（ログ）</h3><div class="rt-box" id="rtOld"></div></div>
+      <div class="rt-col"><h3>🆕 いまの知識での答え</h3><div class="rt-box new" id="rtNew">まだ聞き直していません</div></div>
+    </div>
+    <p class="fb-sub" id="rtNote">押すとAIを1回呼びます（概算5〜10円・お客様の相談と共通の「1日20回」の枠に数えられます）。この会話の前半のやり取りも引き継いで質問します。在庫・ステッチ糸の色リストは含みません。</p>
+    <div class="fb-actions">
+      <button class="btn" type="button" id="rtRun">AIに聞き直す（約5〜10円）</button>
+      <button class="btn sub" type="button" id="rtClose">閉じる</button>
+      <span class="fb-status" id="rtStatus"></span>
+    </div>
+  </div>
+</div>
+
 <div class="auth-overlay" id="authOverlay">
   <div class="auth-card">
     <h2>N's Factory</h2>
@@ -556,7 +584,8 @@ function normalizeHearingLog(log, from, to) {
       img: Number(o.img || 0),
       sid: String(o.sid || ''),      // 相談1件を通しで追う識別子（2026-08-31以降のログのみ）
       miss: !!o.miss || MISS_PATTERNS_VIEW.test(String(o.q || '')),  // GASの印を優先し、古いログはここで判定
-      legacy: !!o.legacy
+      legacy: !!o.legacy,
+      test: !!o.test                 // 工房への送信テスト・「反映を試す」の相談（GASが印を付ける）
     });
   });
   // recentlog は古い順に積まれるため、他系統と同じ「新しい順」に揃える
@@ -1011,6 +1040,7 @@ function render() {
         + '<td class="num">' + (r.replyLen || 0) + '</td>'
         + '<td style="white-space:nowrap">' + (done ? '<span class="badge-done" data-fbview="' + esc(k) + '" title="クリックで指摘内容を表示">✅ 指摘済</span> ' : '')
         + '<button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button> '
+        + (done ? '<button class="fb-btn" type="button" data-retest="' + i + '" title="同じ質問をいまの知識でAIに聞き直して、当時の答えと並べます">🧪 反映を試す</button> ' : '')
         + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト会話をログから削除">🗑</button></td></tr>';
     }).join('')
       : '<tr><td class="empty" colspan="5">該当する相談はありません</td></tr>';
@@ -1114,6 +1144,7 @@ function chatQaRows(r, i) {
     + '<div class="chat-meta">'
     + (done ? '<span class="badge-done" data-fbview="' + esc(key) + '" title="クリックで指摘内容を表示">✅ 指摘済</span>' : '')
     + '<button class="fb-btn" type="button" data-fb="' + i + '">✏️ 指摘</button>'
+    + (done && currentSrc === 'hearing' ? '<button class="fb-btn" type="button" data-retest="' + i + '" title="同じ質問をいまの知識でAIに聞き直して、当時の答えと並べます">🧪 反映を試す</button>' : '')
     + '<button class="del-btn" type="button" data-del="' + i + '" title="テスト会話をログから削除">🗑</button>'
     + '<span>' + esc(t) + (r.replyLen ? ' · ' + r.replyLen + '字' : '') + '</span></div>'
     + '</div></div>';
@@ -1142,6 +1173,7 @@ function chatConvHtml(g, idx) {
     + (currentSrc === 'ai' ? '<span class="badge">' + esc(whoName(g.staffId)) + '</span><span>' + esc(venueName(g.venue)) + '</span>' : '')
     + '<span>' + g.items.length + (currentSrc === 'visitor' ? '発言' : '往復') + '</span>'
     + (g.sid ? '<span title="' + esc(g.sid) + '">相談ID ' + esc(g.sid.slice(-6)) + '</span>' : '')
+    + (g.sid === RETEST_SID || g.items.some(x => x.test) ? '<span class="badge-issue" title="管理画面の「反映を試す」などのテストです">🧪 テスト</span>' : '')
     + tags + '</div><div class="chat-body">';
   let prevDay = chatDay(first.datetime);
   g.items.forEach((r) => {
@@ -1831,12 +1863,145 @@ document.getElementById('fbSave').addEventListener('click', saveFeedback);
 document.getElementById('fbCancel').addEventListener('click', () => document.getElementById('fbOverlay').classList.remove('on'));
 document.getElementById('fbViewClose').addEventListener('click', () => document.getElementById('fbViewOverlay').classList.remove('on'));
 
+// ================================================================
+// 🧪 指摘の反映を試す（2026-10-16・オーダー相談のみ）
+//   指摘済みの発言について、同じ質問を「いまの知識」でAIに聞き直し、当時の答えと並べて見る。
+//   ・指示文は本番（hearing-ai.html）と同じ NSF_HEARING.buildSystemPrompt で組む（hearing-kb.json の追加メモ込み）。
+//     在庫マップとステッチ糸の色リストだけ省く（指摘の効きを見る目的には影響しない）。
+//   ・同じ会話の前半（質問と答えの組）を履歴として引き継ぐ（最大11組）。画像は再現しない。
+//   ・テスト用の相談ID RETEST_SID で送り、事前に markTest で印を付ける＝月次の集計から外れる。
+//     ただし1日20回の枠には数えられ、通知メールがこのIDにつき6時間に1通届くことがある（GAS側の仕様・無変更）。
+//   ・⛔ AI呼び出しは自動で再送しない。再送してよいのは「GASに届かなかった応答（本文がHTML）」だけ（二重課金の防止）。
+//   ・ボタンを押すまでAIは呼ばない（モーダルを開くだけなら無料）。
+// ================================================================
+const RETEST_SID = 'adminretest';
+let rtTarget = null;
+let rtMarked = false;
+
+function loadHearingCore() {
+  if (window.NSF_HEARING) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'order_estimate/hearing-core.js';
+    s.onload = () => (window.NSF_HEARING ? resolve() : reject(new Error('hearing-core.js が初期化されませんでした')));
+    s.onerror = () => reject(new Error('hearing-core.js を読み込めませんでした'));
+    document.head.appendChild(s);
+  });
+}
+
+async function retestPost(body) {
+  for (let n = 1; n <= 3; n++) {
+    const res = await fetch(SOURCES.hearing.url, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
+    const t = await res.text();
+    if (t.trim().startsWith('{')) return JSON.parse(t);
+    await new Promise(r => setTimeout(r, 1500 * n));   // 本文がHTML＝GASが処理しなかった応答。届いた応答の失敗は再送しない
+  }
+  throw new Error('gas_unavailable');
+}
+
+async function openRetest(i) {
+  const r = fbList[i];
+  if (!r) return;
+  const g = groupConversations(fbList).find(x => x.items.includes(r));
+  const before = g ? g.items.slice(0, g.items.indexOf(r)).filter(x => x.question && x.reply && !x.legacy) : [];
+  const history = [];
+  before.slice(-11).forEach(x => history.push({ role: 'user', content: x.question }, { role: 'assistant', content: x.reply }));
+  history.push({ role: 'user', content: r.question });
+  const fbs = fbInfo.get(fbKeyOf('hearing', r.datetime, '')) || [];
+  rtTarget = { r, history, fbs, system: '', running: false };
+
+  const $ = id => document.getElementById(id);
+  $('rtQuote').innerHTML = '<div class="q">🙂 ' + esc(r.question || '') + '</div>'
+    + (before.length ? '<div class="a">（この会話の前半 ' + before.length + '往復を引き継いで質問します）</div>' : '')
+    + (fbs.length ? '<div class="a">✏️ 指摘: ' + fbs.map(f => esc(f.fb || '')).join(' ／ ') + '</div>' : '');
+  $('rtOld').textContent = r.reply || '';
+  $('rtNew').textContent = 'まだ聞き直していません';
+  $('rtStatus').textContent = '';
+  $('rtStatus').className = 'fb-status';
+  $('rtRun').disabled = true;
+  $('rtRun').textContent = 'AIに聞き直す（約5〜10円）';
+  $('rtSub').className = 'fb-sub';
+  $('rtSub').textContent = '追加メモ（hearing-kb.json）を確認しています…';
+  $('retestOverlay').classList.add('on');
+
+  try {
+    await loadHearingCore();
+    const [kb, leathers, cases] = await Promise.all([
+      NSF_HEARING.loadKB('order_estimate/hearing-kb.json'),
+      NSF_HEARING.loadLeathers('order_estimate/leather-catalog.json'),
+      NSF_HEARING.loadCases('order_estimate/hearing-cases.json')
+    ]);
+    if (rtTarget === null || rtTarget.r !== r) return;   // 確認中に閉じた・別の発言を開いた
+    const extra = String(kb.extraKnowledge || '');
+    rtTarget.system = NSF_HEARING.buildSystemPrompt(kb, leathers, null)
+      + NSF_HEARING.buildCasesSection(NSF_HEARING.selectRelevant(cases, history.map(h => h.content).join('\n')));
+    const missing = fbs.filter(f => f.fb && extra.indexOf(String(f.fb).trim()) === -1);
+    const sub = $('rtSub');
+    if (!fbs.length) {
+      sub.className = 'fb-sub rt-warn';
+      sub.textContent = '⚠️ この発言への指摘の控えが読めませんでした。追加メモに入っているかは確認できません（聞き直しはできます）。';
+    } else if (missing.length) {
+      sub.className = 'fb-sub rt-warn';
+      sub.textContent = '⚠️ 指摘 ' + fbs.length + '件のうち ' + missing.length + '件が、まだ追加メモ（現在 ' + extra.length + '字）に入っていません。'
+        + '保存から公開まで1〜2分かかります。少し待って開き直すと確実です。';
+      $('rtRun').textContent = 'それでもAIに聞き直す（約5〜10円）';
+    } else {
+      sub.className = 'fb-sub rt-ok';
+      sub.textContent = '✅ 指摘 ' + fbs.length + '件は追加メモ（現在 ' + extra.length + '字・上限の目安6,000字）に入っています。'
+        + (extra.length > 5500 ? '　⚠️ 上限に近いので、古い指摘の整理を考えてください。' : '');
+    }
+    $('rtRun').disabled = false;
+  } catch (e) {
+    $('rtSub').className = 'fb-sub rt-warn';
+    $('rtSub').textContent = '⚠️ 知識の読み込みに失敗しました（' + String(e.message || e) + '）。';
+  }
+}
+
+async function runRetest() {
+  const t = rtTarget;
+  if (!t || t.running || !t.system) return;
+  const $ = id => document.getElementById(id);
+  const btn = $('rtRun'), st = $('rtStatus');
+  t.running = true; btn.disabled = true;
+  $('rtNew').textContent = '考え中…';
+  st.textContent = ''; st.className = 'fb-status';
+  try {
+    if (!rtMarked) {
+      const m = await retestPost({ action: 'markTest', sid: RETEST_SID });
+      if (m.status !== 'ok') throw new Error('テスト印を付けられませんでした（' + (m.error || '不明') + '）。AIは呼んでいません。');
+      rtMarked = true;
+    }
+    const data = await retestPost({ system: t.system, history: t.history, model: 'claude-sonnet-5', lang: 'ja', sid: RETEST_SID, hasContact: false });
+    if (data.error) {
+      throw new Error(data.error === 'quota exceeded'
+        ? '本日のAI回数の上限（20回）に達しています。お客様の相談と共通の枠なので、明日また試してください。'
+        : data.error);
+    }
+    if (rtTarget !== t) return;
+    $('rtNew').textContent = data.reply || '(応答が空でした)';
+    st.textContent = '✅ 聞き直しました。この往復はログに「🧪 テスト」として残ります（🗑で消せます）。';
+    st.className = 'fb-status ok';
+  } catch (e) {
+    $('rtNew').textContent = '取得できませんでした';
+    st.textContent = '⚠️ ' + String(e.message || e) + '（自動では再送しません。もう一度押すと再度AIを呼びます）';
+    st.className = 'fb-status err';
+  } finally {
+    t.running = false;
+    btn.disabled = false;
+    btn.textContent = 'もう一度聞き直す（約5〜10円）';
+  }
+}
+document.getElementById('rtRun').addEventListener('click', runRetest);
+document.getElementById('rtClose').addEventListener('click', () => { rtTarget = null; document.getElementById('retestOverlay').classList.remove('on'); });
+
 // 表（tbody）とチャット表示（chatView）は同じ data-* を使うので、クリック処理を共有する
 function onListClick(ev) {
   const fb = ev.target.closest('[data-fb]');
   if (fb) { openFeedback(Number(fb.dataset.fb)); return; }
   const del = ev.target.closest('[data-del]');
   if (del) { deleteRow(Number(del.dataset.del)); return; }
+  const rt = ev.target.closest('[data-retest]');
+  if (rt) { openRetest(Number(rt.dataset.retest)); return; }
   const fv = ev.target.closest('[data-fbview]');
   if (fv) { openFbView(fv.dataset.fbview); return; }
   const uf = ev.target.closest('[data-unfold]');
