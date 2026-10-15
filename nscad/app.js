@@ -3369,7 +3369,7 @@ function offsetClick(p, whole) {
   if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
   const edge = offsetAlt && !whole ? offsetEdgeSel(hit, p) : null; if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
   const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
-  offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
+  offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; /* 向き「カーソルの側」：1回クリックでは、別々の線でつながっていても、クリックした1本の線だけをずらす（全体はダブルクリック。矩形・折れ線は従来どおり全体） */ if ($('offsetSide').value === 'cursor' && !whole && hit.type === 'line' && sel.points.length > 2) { const es = offsetEdgeOfHit(offsetSelection); if (es) offsetSelection = { ...es, hit, click: p }; } $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
   $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : sel.whole ? 'offsetPickedWhole' : 'offsetPickedSpan');
 }
