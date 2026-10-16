@@ -5,7 +5,7 @@
   - **選び方**：全47都道府県に1社以上あるので、引き継ぎ書の古い候補（掲載のない県を埋める）は使えない。掲載が1社だけの18県から、一宮・記紀に強く結びつく社を10県で選び、各県に候補と予備を付けて並行調査。基準A（公式に参拝の体制／公的な由緒／記紀の神）を満たさない社は載せない（新潟・福島・長崎は見送り/保留、佐賀は與止日女神社を見送って千栗八幡宮を採用。理由は `VERIFY_TODO.md` の「第R回」）
   - **手順と道具**（`広報部\SNS素材\神社巡りノート\追加分_第R回\`）：`in\_BRIEF.md`（調査係への依頼書）→ 県ごとに調査 → `out\rNN.json` → `tools\verify_add.py <out...> --net --geo`（形式・出典IDと神様の参照・出典ページとの原文の突き合わせ・OSM座標）→ `tools\apply_add.py <out...>`（shrines.json / deities.json に統合・書式は indent=2 で完全再現）→ 英訳（`英訳作業\第6弾_追加R回\make_in.py` で入力を作り、束ごとに並行して訳し、`merge_check.py --apply`・`unify_names.py`・`audit_readings.py`）→ `python tools/build_stays.py --missing` と `build_specialties.py --missing` → 画面検査 `tools\check_pages.py`（スマホ幅・日英・宿名産の枠）→ PR
   - ⚠ 調査係の「原文と一致」の報告は鵜呑みにしない：r03 で、出典ページに実在しない抜き書き（駐車場『すべて無料』）があった。必ず `verify_add.py --net` で独立に突き合わせる。古典の出典（k・ns1・ns2・p2w など）は `deities.json` 側の `sources` にあり、画面は両方の出典を合わせて引く（IDの重なりは無い）
-  - 英訳で読みを推測された箇所は出典で確認し、確認できないものは漢字を残して `(reading unconfirmed)` にした（申殿・河渡祭・御斎祭・雨潜・越之下草・神山）。既存の英訳に Hyōtsutsu-no-O が1件残る（Uwatsutsu が正。未対応）
+  - 英訳で読みを推測された箇所は出典で確認し、確認できないものは漢字を残して `(reading unconfirmed)` にした（申殿・河渡祭・御斎祭・雨潜・越之下草・神山）。既存の英訳にあった Hyōtsutsu-no-O（住吉大社）は Uwatsutsu-no-O に修正済み（2026-10-16）
   - 保留の下書き：福島 `out\r01.json`（石都々古和気神社・根拠が公式SNSのみ）・佐賀 `out\r07.json`（與止日女神社・記紀とのつながりが弱い）。公式サイト等が見つかれば再開できる
 - **大山阿夫利神社（102社目・基準A確認済み・OSMと約40m一致）**：掲載済みの `oyama` は富山の雄山神社で別の社。目標は150社（`hitsuki/index.html` の GOAL）
 - **御朱印スタンプ帳**（設計書 `STAMP_DESIGN.md`）：カードの「参拝した」ボタン→地図の光が朱色／スタンプ帳（進み具合・バッジ・地方別）／御朱印の写真（端末のIndexedDB）／共有用の画像（canvas）／記録の書き出し・読み込み。コードは `map/stamps.js`・`stampbook.js`・`photos.js`・`share.js`・`backup.js`。`?book=1` で直接スタンプ帳を開く。入口は教育幕僚室とデジタル幕僚室のカード（バナー `assets/shrine-stamp-announce.jpg`）
