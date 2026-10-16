@@ -556,6 +556,7 @@ function rangeStitchClick(w) {
       points.sort((p, q) => p.s - q.s);
     }
   } catch (err) { $('hint').textContent = err.message; return; }
+  const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
   commit(() => {
     if (fresh) doc.paths.push(saved);
     /* 指定した区間の中にあった同じ線の穴は、打ち直す。ただし区間の両端（つなぎ目）の穴は、新しい穴がそこに来るときだけ置き換える。固定ピッチは終点ぴったりには打たないので、両端まで消すと、隣の区間の端の穴が消えて歯抜けになる（事業主指摘 2026-10-16） */
@@ -567,6 +568,11 @@ function rangeStitchClick(w) {
       const pos = saved.closed && Math.abs(p.s - len) < 1e-7 ? 0 : p.s;
       if (doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - pos) < 1e-5)) continue;
       const id = freshId(doc.holes, 'h'); doc.holes.push({ ...p, s: pos, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), mark: 'tool' }); added.push(id);
+    }
+    if (joinNext && !doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - hi) < 1e-5)) { /* 隣の区間の始点（つなぎ目）の穴が無いときは補う。固定ピッチは終点ぴったりには打たないので、つなぎ目の穴が消えていると歯抜けのままになる（事業主指摘 2026-10-16）。向き・工具は、つなぎ目のすぐ隣の穴に合わせる */
+      const jt = doc.tools.find(x => x.id === joinNext.toolId) || tool, nb = doc.holes.filter(h => h.pathId === saved.id && h.s > hi && h.toolId === jt.id).sort((p, q) => p.s - q.s)[0], pj = pointAtLength(route, hi), follow = $('followTangent').checked;
+      const delta = nb ? nb.angleDeg - (follow ? pointAtLength(route, nb.s).angleDeg : 0) : slantOf(jt), id = freshId(doc.holes, 'h');
+      doc.holes.push({ ...pj, s: hi, id, pathId: saved.id, toolId: jt.id, angleDeg: (follow ? pj.angleDeg : 0) + delta, mark: 'tool' }); added.push(id);
     }
     saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode }); selected = new Set(added);
   });
