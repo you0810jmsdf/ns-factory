@@ -1203,13 +1203,14 @@ function foodsHTML(id) {
   if (!items.length) return '';
   const at = x.fetched ? `${TX('（', ' (as of ')}${esc(x.fetched)}${TX(' 時点）', ')')}` : '';
   const gmap = (h) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name)}&query_place_id=${encodeURIComponent(h.place_id)}`;
-  const link = (u, ja, en) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${TX(ja, en)}</a>`;
+  // food / fk は押下の計測用（どの神社・何語・何番目の店のどの種類のリンクか。店名は送らない）
+  const link = (u, ja, en, food, fk) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer" data-food="${food}" data-fk="${fk}">${TX(ja, en)}</a>`;
   return `<h3 class="chh sub">${TX('行ってみたい店（候補）', 'Places to try nearby (candidates)')}</h3>
     <div class="prbox stays">
-    <ul class="foodlist">${items.map((h) => {
-      const k = FOOD_KIND[h.url_kind] || FOOD_KIND.official;
-      const shop = /^https:\/\//i.test(h.url || '') || /^http:\/\//i.test(h.url || '') ? link(h.url, k[0], k[1]) : '';
-      return `<li><span class="fname">${esc(h.name)}</span><small><span class="badge cand">${esc(h.genre ? TX(h.genre.ja, h.genre.en) : '')}</span>${link(gmap(h), 'Googleマップで見る', 'View on Google Maps')}${shop}</small></li>`;
+    <ul class="foodlist">${items.map((h, i) => {
+      const kind = FOOD_KIND[h.url_kind] ? h.url_kind : 'official', k = FOOD_KIND[kind];
+      const shop = /^https:\/\//i.test(h.url || '') || /^http:\/\//i.test(h.url || '') ? link(h.url, k[0], k[1], 'link', `${kind}_p${i + 1}`) : '';
+      return `<li><span class="fname">${esc(h.name)}</span><small><span class="badge cand">${esc(h.genre ? TX(h.genre.ja, h.genre.en) : '')}</span>${link(gmap(h), 'Googleマップで見る', 'View on Google Maps', 'gmap', `p${i + 1}`)}${shop}</small></li>`;
     }).join('')}</ul>
     <p class="meta">${TX('神社の近くにある店の候補です。Googleマップの口コミ評価を参考に選びました' + at + '。私たちは実際には訪れていません。営業日・時間・料金は、各店のサイトやGoogleマップでご確認ください。広告・アフィリエイトではありません。', 'Candidate places to eat near the shrine, chosen with reference to Google Maps reviews' + at + '. We have not visited them ourselves. Please check opening days, hours and prices on each shop page or on Google Maps. This is not advertising or an affiliate link.')}</p></div>`;
 }
@@ -1626,6 +1627,14 @@ document.addEventListener('click', (e) => {
   const a = e.target.closest('a[data-art]');
   if (a && selected) track.event('shrine_article', { shrine: selected.id, lang: LG(), kind: a.dataset.art });
 });
+
+// 食の欄（行ってみたい店）のリンクの押下。gmap＝Googleマップ／link＝店自身のリンク。kind は p1〜p5（並び順）と、リンクの種類だけ。店名は送らない。中ボタン（新しいタブで開く）も数える
+function trackFood(e) {
+  const a = e.target.closest('a[data-food]');
+  if (a && selected && (e.type === 'click' || e.button === 1)) track.event('shrine_food_' + a.dataset.food, { shrine: selected.id, lang: LG(), kind: a.dataset.fk });
+}
+document.addEventListener('click', trackFood);
+document.addEventListener('auxclick', trackFood);
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
