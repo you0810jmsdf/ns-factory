@@ -2924,6 +2924,243 @@
           "status": "candidate"
         }
       ]
+    },
+    {
+      "shrine_id": "mitsumine",
+      "shrine_name": "三峯神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "ゲストハウス 錦",
+          "area": "埼玉県秩父市大滝138-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D147486",
+          "review_average": 4.5,
+          "review_count": 64,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "hakone",
+      "shrine_name": "箱根神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "箱根芦ノ湖温泉 和心亭 豊月",
+          "area": "神奈川県足柄下郡箱根町元箱根90-42",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D28275",
+          "review_average": 4.78,
+          "review_count": 387,
+          "status": "candidate"
+        },
+        {
+          "name": "芦ノ湖温泉 匠の宿 佳松",
+          "area": "神奈川県足柄下郡箱根町箱根521",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D129582",
+          "review_average": 4.75,
+          "review_count": 86,
+          "status": "candidate"
+        },
+        {
+          "name": "ザ・プリンス 箱根芦ノ湖",
+          "area": "神奈川県足柄下郡箱根町元箱根144",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D59637",
+          "review_average": 4.59,
+          "review_count": 1420,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "haruna",
+      "shrine_name": "榛名神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "【はるな湖の隠れ家】オーベルジュ・セゾンドはるな",
+          "area": "群馬県高崎市榛名湖町847",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D7842",
+          "review_average": 4.5,
+          "review_count": 140,
+          "status": "candidate"
+        },
+        {
+          "name": "榛名湖温泉 ゆうすげ元湯",
+          "area": "群馬県高崎市榛名湖町846-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D16275",
+          "review_average": 4.26,
+          "review_count": 341,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "konojinja",
+      "shrine_name": "籠神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "松露亭",
+          "area": "京都府宮津市文珠466",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D107701",
+          "review_average": 5.0,
+          "review_count": 49,
+          "status": "candidate"
+        },
+        {
+          "name": "神風楼",
+          "area": "京都府宮津市字江尻73-6",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D18516",
+          "review_average": 4.88,
+          "review_count": 163,
+          "status": "candidate"
+        },
+        {
+          "name": "余花の宿 花笑舞",
+          "area": "京都府宮津市江尻924",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D135525",
+          "review_average": 4.83,
+          "review_count": 30,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kumanonachi",
+      "shrine_name": "熊野那智大社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "民宿 美滝山荘",
+          "area": "和歌山県東牟婁郡那智勝浦町那智山545-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D13918",
+          "review_average": 4.8,
+          "review_count": 215,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kumanohayatama",
+      "shrine_name": "熊野速玉大社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "Sushi House",
+          "area": "和歌山県新宮市橋本2-5-35",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D184666",
+          "review_average": 4.75,
+          "review_count": 10,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルニューパレス <和歌山県>",
+          "area": "和歌山県新宮市丹鶴二丁目2番22号",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D145482",
+          "review_average": 4.11,
+          "review_count": 625,
+          "status": "candidate"
+        },
+        {
+          "name": "天然温泉 高野坂の湯 ホテルコンソラータ",
+          "area": "和歌山県新宮市新宮2372-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D192153",
+          "review_average": 4.07,
+          "review_count": 148,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "yaegaki",
+      "shrine_name": "八重垣神社",
+      "fetched_at": "2026-10-16",
+      "hotels": []
+    },
+    {
+      "shrine_id": "kashiigu",
+      "shrine_name": "香椎宮",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "ベッセルホテル福岡貝塚",
+          "area": "福岡県福岡市東区箱崎7-10-65",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D43964",
+          "review_average": 4.43,
+          "review_count": 2907,
+          "status": "candidate"
+        },
+        {
+          "name": "CRYSTAL&RESORT FUKUOKA",
+          "area": "福岡県福岡市東区名島3-2-24",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D177556",
+          "review_average": 4.29,
+          "review_count": 88,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "okunitamajinja",
+      "shrine_name": "大國魂神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "ホテル ケヤキゲート 東京府中",
+          "area": "東京都府中市府中町1-1-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D182739",
+          "review_average": 4.54,
+          "review_count": 1003,
+          "status": "candidate"
+        },
+        {
+          "name": "HOTEL松本屋1725",
+          "area": "東京都府中市宮西町2-4-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D129933",
+          "review_average": 4.42,
+          "review_count": 661,
+          "status": "candidate"
+        },
+        {
+          "name": "マンスリーマンション東京ウエスト21/民泊",
+          "area": "東京都府中市美好町2-18-10 マンスリーマンション東京ウエスト21",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D170023",
+          "review_average": 4.29,
+          "review_count": 184,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kamikawa",
+      "shrine_name": "上川神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "JRイン旭川",
+          "area": "北海道旭川市宮下通7丁目2番5号",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D147739",
+          "review_average": 4.43,
+          "review_count": 1926,
+          "status": "candidate"
+        },
+        {
+          "name": "ホテルWBFグランデ旭川",
+          "area": "北海道旭川市宮下通10丁目3-3",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D148897",
+          "review_average": 4.32,
+          "review_count": 1536,
+          "status": "candidate"
+        },
+        {
+          "name": "ワイズホテル 旭川駅前",
+          "area": "北海道旭川市宮下通9-2-17",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D166948",
+          "review_average": 4.3,
+          "review_count": 1426,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }
