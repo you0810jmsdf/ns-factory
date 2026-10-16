@@ -1766,6 +1766,13 @@ tr.row-out-stock td{
       <div id="ga-loading" style="display:none;text-align:center;padding:32px;color:#8a6a4a">読み込み中…</div>
       <div id="ga-error" style="display:none;color:#b42318;font-size:13px;padding:8px 0"></div>
 
+      <!-- 神社巡りノート：食の欄（行ってみたい店）のクリック数（2026-10-16・データは GAS の api=foodclicks） -->
+      <div id="ga-food-wrap" style="margin-bottom:14px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:12px">
+        <div style="font-size:13px;color:#6b3a1f;font-weight:700;margin-bottom:2px">🍽 行ってみたい店（候補）のクリック <span style="font-weight:400;font-size:11px;color:#8a6a4a">神社巡りノート</span></div>
+        <div id="ga-food-sub" style="font-size:11px;color:#8a6a4a;margin-bottom:8px"></div>
+        <div id="ga-food-body" style="font-size:13px;color:#5C3D2E">読み込み中…</div>
+      </div>
+
       <!-- グラフ①：全ページ合計（PV/UU） -->
       <div id="ga-chart-total-wrap" style="display:none;margin-bottom:14px;background:#fff8f1;border:1px solid #eadccf;border-radius:12px;padding:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -7265,9 +7272,97 @@ function gaWriteLocal(days, data) {
   try { localStorage.setItem(GA_LOCAL_PREFIX + days, JSON.stringify(data)); } catch (err) {}
 }
 
+// ── 神社巡りノート：食の欄（行ってみたい店）のクリック数（2026-10-16）──
+// 本体のGA4読み込み（gaLoad）とは独立。こちらが失敗しても、ページ別の解析は出る。
+// データは GAS の api=foodclicks（GA4 の shrine_food_gmap＝Googleマップで見る／shrine_food_link＝店自身のリンク）。
+// GA4 には店名もURLも送っていない（神社ID・言語・並び順 p1〜p5・リンクの種類だけ）。店名は公開データ shrine-note/foods.json の並び順から引く。
+let gaFoodSeq = 0, gaFoodRefs = null;
+async function gaFoodRefsLoad() {
+  if (gaFoodRefs) return gaFoodRefs;
+  const out = { items: {}, names: {} };
+  try { ((await (await fetch('../shrine-note/foods.json')).json()).foods || []).forEach(x => { out.items[x.shrine_id] = x.items || []; }); } catch (err) {}
+  try { ((await (await fetch('../shrine-note/shrines.json')).json()).shrines || []).forEach(x => { out.names[x.id] = String(x.name || '').split('（')[0]; }); } catch (err) {}
+  gaFoodRefs = out;
+  return out;
+}
+function gaLoadFood(days, noCache) {
+  const seq = ++gaFoodSeq;
+  const body = document.getElementById('ga-food-body'), sub = document.getElementById('ga-food-sub');
+  if (!body) return;
+  sub.textContent = '';
+  body.textContent = '読み込み中…';
+  const show = (msg) => { if (seq === gaFoodSeq) { body.textContent = msg; } };
+  const attempt = (n) => {
+    if (seq !== gaFoodSeq) return;
+    const cbName = 'gaFoodCb' + Date.now() + '_' + n;
+    const script = document.createElement('script');
+    let settled = false;
+    const retire = () => {
+      window[cbName] = function() {};
+      setTimeout(() => { delete window[cbName]; }, 600000);
+      if (script.parentNode) script.parentNode.removeChild(script);
+    };
+    const retry = (why) => { if (n < 2) { setTimeout(() => attempt(n + 1), 1500); } else { show('取得できませんでした（' + why + '）。期間のボタンか「強制更新」でもう一度読み込めます。'); } };
+    const timer = setTimeout(() => { if (settled) return; settled = true; retire(); retry('応答がありません'); }, 45000);
+    window[cbName] = async function(data) {
+      if (settled) return;
+      settled = true; clearTimeout(timer); retire();
+      if (seq !== gaFoodSeq) return;
+      if (!data || data.error) { retry(data ? data.error : '空の応答'); return; }
+      try { gaFoodRender(data, await gaFoodRefsLoad(), seq); } catch (err) { show('表示できませんでした（' + err.message + '）'); }
+    };
+    script.onerror = () => { if (settled) return; settled = true; clearTimeout(timer); retire(); retry('読み込みに失敗'); };
+    script.src = GAS_URL + '?api=foodclicks&key=' + encodeURIComponent(getAdminKey()) + '&days=' + days + '&callback=' + cbName + (noCache ? '&nocache=1' : '');
+    document.body.appendChild(script);
+  };
+  attempt(1);
+}
+function gaFoodRender(data, refs, seq) {
+  if (seq !== gaFoodSeq) return;
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const body = document.getElementById('ga-food-body'), sub = document.getElementById('ga-food-sub');
+  const ev = {}; (data.totals || []).forEach(t => { ev[t.event] = t; });
+  const g = ev.shrine_food_gmap || { count: 0, users: 0 }, l = ev.shrine_food_link || { count: 0, users: 0 };
+  sub.textContent = '直近' + data.days + '日・' + (data.cached ? '15分以内に取得したデータ' : '最新') + '。押してから GA4 の集計に出るまで、数時間〜1日ほどかかることがあります。';
+  const tile = (label, t) => '<div style="flex:1;min-width:130px;background:#fff;border:1px solid #eadccf;border-radius:10px;padding:10px"><div style="font-size:11px;color:#8a6a4a">' + label + '</div><div style="font-size:1.5rem;font-weight:800;color:#6b3a1f">' + (t.count || 0).toLocaleString() + '<span style="font-size:11px;font-weight:400;color:#8a6a4a"> 回・' + (t.users || 0).toLocaleString() + '人</span></div></div>';
+  let html = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">' + tile('Googleマップで見る', g) + tile('店自身のリンク', l) + '</div>';
+
+  // 内訳（神社・言語・店の順番）。kind は p1〜p5（Googleマップ）または official_p3 などリンクの種類＋順番
+  const rows = {}, kinds = { official: 0, sns: 0, portal: 0 }; let unknown = 0;
+  (data.detail || []).forEach(d => {
+    const m = /^(?:(official|sns|portal)_)?p(\d{1,2})$/.exec(d.kind || '');
+    if (!m || !d.shrine || d.shrine === '(not set)') { unknown += d.count; return; }
+    const key = d.shrine + '|' + m[2];
+    const r = rows[key] || (rows[key] = { shrine: d.shrine, pos: +m[2], gmap: 0, link: 0, ja: 0, en: 0 });
+    if (d.event === 'shrine_food_gmap') r.gmap += d.count;
+    else if (d.event === 'shrine_food_link') { r.link += d.count; if (m[1]) kinds[m[1]] += d.count; }
+    if (d.lang === 'ja') r.ja += d.count; else if (d.lang === 'en') r.en += d.count;
+  });
+  const list = Object.keys(rows).map(k => rows[k]).sort((a, b) => (b.gmap + b.link) - (a.gmap + a.link) || a.shrine.localeCompare(b.shrine) || a.pos - b.pos);
+  const th = (t, right) => '<th style="padding:6px 8px;text-align:' + (right ? 'right' : 'left') + ';color:#6b3a1f;font-size:11px;font-weight:700;border-bottom:1px solid #eadccf;white-space:nowrap">' + t + '</th>';
+  const td = (t, right) => '<td style="padding:6px 8px;text-align:' + (right ? 'right' : 'left') + ';border-bottom:1px solid #f0e6da;font-size:12px">' + t + '</td>';
+  if (list.length) {
+    html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#fff0e5">' + th('神社｜店') + th('Googleマップ', true) + th('店のリンク', true) + th('日本語', true) + th('English', true) + '</tr></thead><tbody>'
+      + list.map(r => {
+        const shop = ((refs.items[r.shrine] || [])[r.pos - 1] || {}).name || ('（' + r.pos + '番目の店）');
+        return '<tr>' + td(esc(refs.names[r.shrine] || r.shrine) + '｜' + esc(shop)) + td(r.gmap.toLocaleString(), true) + td(r.link.toLocaleString(), true) + td(r.ja.toLocaleString(), true) + td(r.en.toLocaleString(), true) + '</tr>';
+      }).join('') + '</tbody></table></div>';
+    html += '<div style="font-size:11px;color:#8a6a4a;margin-top:6px">店のリンクの種類：公式サイト ' + kinds.official + '回・店のSNS ' + kinds.sns + '回・紹介ページ ' + kinds.portal + '回'
+      + (unknown ? '　／　内訳が付いていない分 ' + unknown + '回（カスタムディメンション登録前など）' : '') + '</div>';
+  } else if ((g.count || 0) + (l.count || 0) === 0) {
+    html += '<div style="font-size:12px;color:#8a6a4a">この期間は、まだ押された記録がありません（押された分が GA4 に反映されると出ます）。</div>';
+  } else if (data.detailError) {
+    html += '<div style="font-size:12px;color:#8a6a4a">神社別・店別の内訳は取得できませんでした（GA4 のカスタムディメンション shrine・lang・kind が使えるようになるまで、登録から時間がかかることがあります）。総数だけ表示しています。</div>';
+  } else {
+    html += '<div style="font-size:12px;color:#8a6a4a">内訳はまだ付いていません' + (unknown ? '（内訳が付いていない分 ' + unknown + '回）' : '') + '。</div>';
+  }
+  body.innerHTML = html;
+}
+
 function gaLoad(days, noCache) {
   gaLoaded = true;
   gaCurrentDays = days;
+  gaLoadFood(days, noCache);   // 食の欄のクリック数（本体の読み込みとは独立・失敗しても解析は出る）
   const seq = ++gaLoadSeq;   // 期間を切り替えたら、古い応答は描かない
   document.querySelectorAll('.ga-period-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.days) === days);
