@@ -80,6 +80,9 @@ function buildHtml(w) {
   const canonical = `${SITE}/works/${id}.html`;
   const target = `${SITE}/works.html?id=${encodeURIComponent(id)}`;
 
+  // 検索結果には載せない（2026-10-16 事業主決定）。中身が無い転送ページが約625本あり、
+  //    サイト全体の7割強を占める。OGP を読む SNS クローラーは noindex の影響を受けない。
+  //    ⛔ noindex を外すなら、先に「薄いページを大量に索引へ入れてよいか」を確認すること。
   // ⛔ meta refresh は使わない。
   //    Metaのクローラは refresh を追ってしまい、OGPを持たない works.html を読んで
   //    「プレビューなし」になる（2026-08-12 Threadsで実際に発生）。
@@ -94,6 +97,7 @@ function buildHtml(w) {
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${esc(canonical)}">
+<meta name="robots" content="noindex,follow">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ja_JP">
 <meta property="og:site_name" content="N's factory">
