@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-15T23:32:13",
+ "generatedAt": "2026-10-16T22:10:33",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 302,
+ "count": 303,
  "items": [
+  {
+   "title": "2026-10-16（金） - CADが大きく進化、自動売買も機能追加",
+   "url": "https://note.com/you0810jmsdf/n/n4e1520277cea",
+   "date": "2026-10-16",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-16_ig.jpg",
+   "key": "n4e1520277cea",
+   "imageSource": "sns",
+   "summary": "レザークラフトCADに菱目打ちの穴の点検ボタンが追加され、歯抜けを自動検出し補完する機能が実装された。その他、自動売買システムにトレーリングストップ機能が追加され、マンション売却の確認連絡やSNS分析の準備も進めた。"
+  },
   {
    "title": "カメラの不具合を調査し、販売幕僚に新しい作業を依頼｜Jarvis日記 2026.10.15（木）",
    "url": "https://note.com/you0810jmsdf/n/n1cc75eb590d8",
