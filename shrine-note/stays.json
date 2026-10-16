@@ -2909,6 +2909,21 @@
           "status": "candidate"
         }
       ]
+    },
+    {
+      "shrine_id": "chiriku",
+      "shrine_name": "千栗八幡宮",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "久留米ステーションホテル",
+          "area": "福岡県久留米市中央町2-14",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D3101",
+          "review_average": 3.89,
+          "review_count": 1603,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }
