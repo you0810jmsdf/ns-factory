@@ -3638,10 +3638,29 @@ function syncMarkLines() {
 }
 /** 直線に置き換わった目印の記号は、画面に描かず・クリックの対象にもしない（直線のほうを使う）。 */
 const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
+/** 寸法の追従（事業主指示 2026-10-17：寸法は、実際の図形が変化したら追従して数値を変える）。寸法の端が図形の点（snapPoints の k 番目：端点・中心など）と一致していれば、anchors＝[{id, k}｜null, …] に覚える。
+ *  図形が変わると、覚えた点の新しい位置へ、寸法の端を動かす（数値は座標から出すので、自動で変わる）。寸法そのものを（図形と別に）動かしたら外す。図形といっしょに動かした（追従の位置と同じ）なら保つ。三つ折りの設計が作る寸法（foldSec）は対象外。 */
+const DIM_NEAR = 1e-3, dimPointOf = a => { const sh = doc.shapes.find(x => x.id === a.id); return sh ? (snapPoints(sh)[a.k] ?? null) : null; };
+function dimAnchorFor(pt) {
+  for (const sh of doc.shapes) { if (['dimension', 'text', 'image'].includes(sh.type) || sh.holeLink) continue; const pts = snapPoints(sh); for (let k = 0; k < pts.length; k++) if (Math.hypot(pts[k].x - pt.x, pts[k].y - pt.y) < DIM_NEAR) return { id: sh.id, k }; }
+  return null;
+}
+function syncDimensions(before) {
+  for (const d of doc.shapes) {
+    if (d.type !== 'dimension' || d.foldSec) continue; const old = before.get(d.id), cur = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }];
+    const moved = !old || Math.abs(old[0] - d.x1) > 1e-9 || Math.abs(old[1] - d.y1) > 1e-9 || Math.abs(old[2] - d.x2) > 1e-9 || Math.abs(old[3] - d.y2) > 1e-9;
+    if (d.anchors) {
+      const tgt = d.anchors.map(a => a ? dimPointOf(a) : null);
+      if (moved) { if (!d.anchors.every((a, i) => !a || (tgt[i] && Math.hypot(tgt[i].x - cur[i].x, tgt[i].y - cur[i].y) < DIM_NEAR))) delete d.anchors; } /* 寸法そのものが動いた：図形といっしょでなければ、外す */
+      else { d.anchors = d.anchors.map((a, i) => a && tgt[i] ? a : null); [[0, 'x1', 'y1'], [1, 'x2', 'y2']].forEach(([i, kx, ky]) => { if (d.anchors[i] && tgt[i] && Math.hypot(tgt[i].x - d[kx], tgt[i].y - d[ky]) > 1e-4) { d[kx] = tgt[i].x; d[ky] = tgt[i].y; } }); /* 0.0001mm 未満の差は追従させない（意味のない変更で、元に戻すの履歴を増やさない） */ if (!d.anchors.some(Boolean)) delete d.anchors; }
+    }
+    if (!d.anchors) { const an = cur.map(dimAnchorFor); if (an.some(Boolean)) d.anchors = an; }
+  }
+}
 function commit(fn) {
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
-  const before = JSON.stringify(doc);
-  fn(); const dupHoles = dedupeHoles(); syncMarkLines(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
+  const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]]));
+  fn(); const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
