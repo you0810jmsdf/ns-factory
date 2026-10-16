@@ -19,13 +19,15 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isNarrow = () => innerWidth < 880;
 
 // ---------- データ読み込み ----------
-const [shrineData, deityData, staysData, specData, hmImg, enData] = await Promise.all([
+const [shrineData, deityData, staysData, specData, foodsData, hmImg, enData] = await Promise.all([
   fetch('../shrines.json').then((r) => r.json()),
   fetch('../deities.json').then((r) => r.json()),
   // 宿の候補（楽天トラベル・アフィリエイト）。無くても地図は動く
   fetch('../stays.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   // 名産・お取り寄せ（楽天市場・アフィリエイト）。無くても地図は動く
   fetch('../specialties.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+  // 行ってみたい店（候補）。広告ではない（Googleマップの口コミを参考に選んだ）。無くても地図は動く
+  fetch('../foods.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
   new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'data/heightmap.png'; }),
   // 英語版の訳文（日本語の記述の範囲だけを訳したもの）。無くても日本語で動く
   fetch('../i18n/en.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
@@ -51,6 +53,7 @@ const shrines = shrineData.shrines;
 const deities = Object.fromEntries(deityData.deities.map((d) => [d.id, d]));
 const staysMap = Object.fromEntries(((staysData && staysData.stays) || []).map((x) => [x.shrine_id, x.hotels || []]));
 const specMap = Object.fromEntries(((specData && specData.specialties) || []).map((x) => [x.shrine_id, x]));
+const foodsMap = Object.fromEntries(((foodsData && foodsData.foods) || []).map((x) => [x.shrine_id, x]));
 const srcMap = Object.fromEntries((shrineData.sources || []).map((s) => [s.id, s]));
 Object.assign(srcMap, Object.fromEntries((deityData.sources || []).map((s) => [s.id, s])));
 
@@ -1191,7 +1194,26 @@ function staysHTML(id) {
     <p class="meta">${TX('PR・広告を含みます（楽天トラベルのアフィリエイトリンク）。評価・件数は楽天トラベル', 'Contains PR / advertising (Rakuten Travel affiliate links; Japanese site). Ratings and review counts are from Rakuten Travel')}${at}${TX('。料金・空室は変動します。最新は楽天トラベルで確認してください。未訪問のため「おすすめ」ではなく「候補」として載せています。', '. Prices and availability change; check Rakuten Travel for the latest. We have not stayed at these places, so they are listed as candidates, not recommendations.')}</p></div>`;
 }
 
-// 名産・お取り寄せ（楽天市場のアフィリエイト）。「食」の枠（ホットペッパー審査待ち）とは別枠。金額・画像は載せない。データが無い神社には何も出さない
+// 行ってみたい店（候補）。広告ではない（アフィリエイトではない）。Googleマップの口コミを参考に選んだ候補で、評価の数字・住所・口コミの原文は載せない（Google Maps Platform の規約で、保存して再掲載できるのは place_id だけ）。
+// 載せるのは、店名・ジャンル・店自身のサイトまたはSNS等のリンク・place_id から作る「Googleマップで見る」リンク。データが無い神社には何も出さない
+const FOOD_KIND = { official: ['公式サイト', 'Official site'], sns: ['店のSNS', 'Shop social media'], portal: ['紹介ページ', 'Info page'] };
+function foodsHTML(id) {
+  const x = foodsMap[id];
+  const items = ((x && x.items) || []).filter((h) => h && h.name && h.place_id);
+  if (!items.length) return '';
+  const at = x.fetched ? `${TX('（', ' (as of ')}${esc(x.fetched)}${TX(' 時点）', ')')}` : '';
+  const gmap = (h) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name)}&query_place_id=${encodeURIComponent(h.place_id)}`;
+  const link = (u, ja, en) => `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${TX(ja, en)}</a>`;
+  return `<h3 class="chh sub">${TX('行ってみたい店（候補）', 'Places to try nearby (candidates)')}</h3>
+    <div class="prbox stays">
+    <ul class="foodlist">${items.map((h) => {
+      const k = FOOD_KIND[h.url_kind] || FOOD_KIND.official;
+      const shop = /^https:\/\//i.test(h.url || '') || /^http:\/\//i.test(h.url || '') ? link(h.url, k[0], k[1]) : '';
+      return `<li><span class="fname">${esc(h.name)}</span><small><span class="badge cand">${esc(h.genre ? TX(h.genre.ja, h.genre.en) : '')}</span>${link(gmap(h), 'Googleマップで見る', 'View on Google Maps')}${shop}</small></li>`;
+    }).join('')}</ul>
+    <p class="meta">${TX('神社の近くにある店の候補です。Googleマップの口コミ評価を参考に選びました' + at + '。私たちは実際には訪れていません。営業日・時間・料金は、各店のサイトやGoogleマップでご確認ください。広告・アフィリエイトではありません。', 'Candidate places to eat near the shrine, chosen with reference to Google Maps reviews' + at + '. We have not visited them ourselves. Please check opening days, hours and prices on each shop page or on Google Maps. This is not advertising or an affiliate link.')}</p></div>`;
+}
+// 名産・お取り寄せ（楽天市場のアフィリエイト）。「行ってみたい店（候補）」の枠（foodsHTML・広告ではない）とは別枠。金額・画像は載せない。データが無い神社には何も出さない
 const SPEC_HOST = 'https://hb.afl.rakuten.co.jp/';
 function specialtiesHTML(id) {
   const x = specMap[id];
@@ -1306,8 +1328,7 @@ function shrineHTML(s0) {
     <div id="routeBox" class="routebox"></div>
     ${s.note_geo && !EN ? `<p class="meta">位置：${esc(s.note_geo)}</p>` : ''}
     <dl class="row">${row(U('address', '所在地'), s.address)}${row(U('access', 'アクセス'), s.access)}${row(U('hours', '参拝時間'), s.hours)}${row(U('parking', '駐車場'), s.parking)}${row(U('goshuin', '御朱印'), s.goshuin)}</dl>
-    ${EN ? '' : `<h3 class="chh sub">食 <span class="badge pr">PR枠</span></h3>
-    <div class="prbox">グルメの候補は、提携先が決まり次第ここに掲載します（広告を含む場合は「PR」と明記します）。現在リンクはありません。</div>`}
+    ${foodsHTML(s.id)}
     ${specialtiesHTML(s.id)}
     ${staysHTML(s.id)}
     <h3 class="chh sub">${EN ? U('noteArticle', '') + (s.article_url_en ? '' : ' (Japanese)') : 'note 記事'}</h3>
