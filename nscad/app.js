@@ -48,7 +48,7 @@ import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
-import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget } from './shortcuts.js';
+import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
 import { HELP_EN } from './help/en.js';
 
@@ -98,6 +98,7 @@ function applyLanguage(lang) {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
   $('language').value = current;
   for (const [id, key] of [['undo', 'Z'], ['redo', 'Y'], ['copy', 'D'], ['save', 'S'], ['open', 'O']]) $(id).title = t(id) + ' (' + (isMac ? (id === 'redo' ? '⌘⇧Z' : '⌘' + key) : 'Ctrl+' + key) + ')';
+  document.querySelectorAll('kbd[data-mod]').forEach(el => { el.textContent = modLabel(el.dataset.mod); }); /* ヘッダーのボタンのキー表示（Mac は ⌘） */
   refreshModHelp(); $('hint').textContent = t('hint.' + mode); refreshTools(); renderLayers(); showCalibration(); if (typeof renderLibrary === 'function' && $('libItem')) { renderLibrary(); renderDesigns(); initTutorialSelect(); $('styleNote').textContent = styleSummary(DATA_STYLE, current === 'en' ? 'en' : 'ja'); } draw();
 }
 const world = p => { const o = paneOff(); return { x: (p.x - o.x - origin.x) / scale, y: (p.y - o.y - origin.y) / scale }; };
@@ -640,9 +641,13 @@ function renderHelpSelect() {
   for (const p of helpData().pages.filter(p => !q || (p.title + ' ' + p.body).toLowerCase().includes(q))) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.title; sel.appendChild(o); }
   sel.value = keep && helpData().pages.some(p => p.id === keep) ? keep : '';
 }
+/** ヘッダーのキー表示用：'S'→「Ctrl+S」（Mac は ⌘S）・'Shift+S'→「Ctrl+Shift+S」（⌘⇧S）・'Redo'→「Ctrl+Y」（⌘⇧Z）。 */
+function modLabel(k) { if (k === 'Redo') return isMac ? '⌘⇧Z' : 'Ctrl+Y'; const shift = k.startsWith('Shift+'), key = k.replace('Shift+', ''); return isMac ? '⌘' + (shift ? '⇧' : '') + key : 'Ctrl+' + (shift ? 'Shift+' : '') + key; }
+/** ショートカット一覧の項目名：左メニューのボタン・上部のチェックに付いている言葉をそのまま使う（言語に合わせて変わる）。 */
+function keyLabel(id) { const el = document.querySelector?.(`[data-tool="${id}"]`) || $(id), src = el?.closest?.('label') || el, k = src?.querySelector?.('[data-i18n]')?.dataset?.i18n || src?.dataset?.i18n; return k ? t(k) : id; }
 function showHelp(shortcuts = false, pageId = null) {
   const data = helpData();
-  if (shortcuts) { $('helpBody').textContent = t('shortcutsText', { mod: isMac ? '⌘' : 'Ctrl+' }); $('helpDialog').showModal(); return; }
+  if (shortcuts) { $('helpBody').textContent = t('shortcutsText', { mod: isMac ? '⌘' : 'Ctrl+' }) + '\n\n' + t('shortcutsToolsHead') + '\n' + shortcutLines(keyLabel).join('\n'); $('helpDialog').showModal(); return; }
   if (pageId !== null) $('helpPage').value = pageId;
   renderHelpSelect();
   const q = ($('helpSearch').value || '').toLowerCase(); if (!$('helpPage').value && !q && data.pages.length) $('helpPage').value = data.pages[0].id; const id = $('helpPage').value;
@@ -4535,14 +4540,39 @@ $('quadView').addEventListener('change', () => { if ($('quadView').checked && !l
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
-function save() {
+/** 保存：Chrome／Edge は、最初の保存でファイルの場所を選び（タブが覚える）、次からは同じファイルへ上書きする（事業主指摘 2026-10-16：毎回新規保存でファイルが増える）。
+ *  asNew=true（名前を付けて保存）は毎回選び直す。選択窓の無いブラウザ（Firefox・Safari）は、従来どおりダウンロード（同名は (1)(2) が付く）。 */
+async function save(asNew = false) {
   if (!regGuard('json', 'save')) return;
   /* 紙を分けた三面図は、正面の紙を本体にして上・右の紙を一緒に 1 つのファイルへ入れる（どの紙のタブから保存しても同じ） */
   const sheets = quadSheets(); let payload = doc, tab = tabs[activeTab];
   if (doc.threeViewSheet && sheets.front) { const docOf = tb => tb === tabs[activeTab] ? doc : tb.doc; tab = sheets.front; payload = { ...docOf(sheets.front), threeViewSheets: { top: sheets.top ? docOf(sheets.top) : null, side: sheets.side ? docOf(sheets.side) : null } }; }
-  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
-  const a = document.createElement('a'); a.href = url; a.download = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs();
+  const text = JSON.stringify(payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
+  const clean = () => { for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs(); };
+  if (typeof globalThis.showSaveFilePicker !== 'function') {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    clean(); $('hint').textContent = t('savedDownload', { name: fileName }); return;
+  }
+  const write = async handle => { const w = await handle.createWritable(); await w.write(text); await w.close(); };
+  let handle = asNew ? null : tab?.fileHandle, overwrote = false;
+  if (handle) { try { await write(handle); overwrote = true; } catch { handle = null; if (tab) tab.fileHandle = null; /* 消された・動かされた・許可が切れた：選び直す */ } }
+  if (!handle) {
+    try {
+      handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });
+      await write(handle);
+    } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); return; }
+  }
+  if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; }
+  clean(); $('hint').textContent = t(overwrote ? 'savedOverwrite' : 'savedNew', { name: handle.name || fileName });
+}
+/** 「開く」：Chrome／Edge はファイル選択で開き、N's CAD 形式（.json）なら場所を覚える（Ctrl+S でそのファイルへ上書き）。それ以外の形式（.lcc・.svg・.dxf・画像）は覚えない（元のファイルを JSON で壊さない）。選択窓の無いブラウザは従来の入力欄。 */
+async function openDialog() {
+  if (typeof globalThis.showOpenFilePicker !== 'function') { $('file').click(); return; }
+  let handle; try { [handle] = await globalThis.showOpenFilePicker({ types: [{ description: "N's CAD・図面・画像", accept: { 'application/json': ['.json'], 'text/plain': ['.lcc', '.dxf'], 'image/svg+xml': ['.svg'], 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] } }] }); } catch (err) { if (err?.name !== 'AbortError') $('hint').textContent = t('loadFailed', { message: err?.message || String(err) }); return; }
+  if (!handle) return;
+  const res = await openFile(await handle.getFile());
+  if (res && /\.json$/i.test(handle.name || '') && tabs[activeTab]) tabs[activeTab].fileHandle = handle;
 }
 /** 読み込んだ正面の紙に上・右の紙が入っていれば、それぞれのタブを作って同じ組にする。 */
 function restoreSheets(extra, id) {
@@ -4554,15 +4584,16 @@ window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { 
 /* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
 $('save').onclick = () => { $('saveMenu').hidden = !$('saveMenu').hidden; };
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+$('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
-document.addEventListener?.('click', e => { const m = $('saveMenu'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && e.target !== $('save')) m.hidden = true; }); $('open').onclick = () => $('file').click();
+document.addEventListener?.('click', e => { const m = $('saveMenu'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && e.target !== $('save')) m.hidden = true; }); $('open').onclick = openDialog; $('shortcutsBtn').onclick = () => showHelp(true);
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
 });
 window.addEventListener('keydown', e => {
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
-  if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save() : $('file').click(); return; }
+  if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save(e.shiftKey) : openDialog(); return; }
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
