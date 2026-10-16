@@ -2267,7 +2267,7 @@ function renderTabs() {
 }
 function switchTab(i) {
   if (i === activeTab || !tabs[i]) return; openGapMarks = []; snapshotTab(); activeTab = i; const tab = tabs[i];
-  doc = tab.doc; syncMarkLines(); undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
+  doc = tab.doc; syncDimensions(new Map()); syncMarkLines(); undo = tab.undo; /* 寸法が覚えていない図形の点を覚える（復元・タブ切り替えの直後でも、次の編集から追従する） */ redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
@@ -3640,9 +3640,11 @@ function syncMarkLines() {
 const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
 /** 寸法の追従（事業主指示 2026-10-17：寸法は、実際の図形が変化したら追従して数値を変える）。寸法の端が図形の点（snapPoints の k 番目：端点・中心など）と一致していれば、anchors＝[{id, k}｜null, …] に覚える。
  *  図形が変わると、覚えた点の新しい位置へ、寸法の端を動かす（数値は座標から出すので、自動で変わる）。寸法そのものを（図形と別に）動かしたら外す。図形といっしょに動かした（追従の位置と同じ）なら保つ。三つ折りの設計が作る寸法（foldSec）は対象外。 */
-const DIM_NEAR = 1e-3, dimPointOf = a => { const sh = doc.shapes.find(x => x.id === a.id); return sh ? (snapPoints(sh)[a.k] ?? null) : null; };
+/** 寸法が覚える点の一覧：図形の吸着点（snapPoints）。円は、中心（0番）のほかに、縁の8点（45度ごと・1〜8番）も（画面の金色の点と同じ・2026-10-17 事業主指摘）。 */
+const dimPointsOf = sh => sh.type === 'circle' ? [{ x: sh.cx, y: sh.cy }, ...Array.from({ length: 8 }, (_, n) => circlePoint(sh, n * 45))] : snapPoints(sh);
+const DIM_NEAR = 1e-3, dimPointOf = a => { const sh = doc.shapes.find(x => x.id === a.id); return sh ? (dimPointsOf(sh)[a.k] ?? null) : null; };
 function dimAnchorFor(pt) {
-  for (const sh of doc.shapes) { if (['dimension', 'text', 'image'].includes(sh.type) || sh.holeLink) continue; const pts = snapPoints(sh); for (let k = 0; k < pts.length; k++) if (Math.hypot(pts[k].x - pt.x, pts[k].y - pt.y) < DIM_NEAR) return { id: sh.id, k }; }
+  for (const sh of doc.shapes) { if (['dimension', 'text', 'image'].includes(sh.type) || sh.holeLink) continue; const pts = dimPointsOf(sh); for (let k = 0; k < pts.length; k++) if (Math.hypot(pts[k].x - pt.x, pts[k].y - pt.y) < DIM_NEAR) return { id: sh.id, k }; }
   return null;
 }
 function syncDimensions(before) {
@@ -4056,6 +4058,22 @@ function movePosition(p, shift) {
   if (shift) { if (Math.abs(p.x - start.x) >= Math.abs(p.y - start.y)) result.y = start.y; else result.x = start.x; }
   return result;
 }
+/** ドラッグ中の図形の見た目（動かす・線の端・節点・矩形の取っ手・回す）。寸法が追従する端の位置を、ドラッグ中の位置から求めるために使う。 */
+function livePreviewOf(sh) {
+  if (!gesture) return sh;
+  if (gesture.kind === 'node' && gesture.id === sh.id) return gesture.preview || sh;
+  if (gesture.kind === 'lineEnd' && gesture.id === sh.id) return handleMoved(sh, gesture.h, cursor);
+  if (gesture.kind === 'move') return previewMoved(sh);
+  if (gesture.kind === 'rectR' && gesture.id === sh.id && gesture.box) { const b = gesture.box; return { ...sh, points: rectShape({ x: b.x0, y: b.y0 }, { x: b.x1, y: b.y1 }).points }; }
+  if (gesture.kind === 'circleR' && gesture.id === sh.id) return { ...sh, r: gesture.r };
+  if (gesture.kind === 'rotate' && gesture.angle && rotateTargets().some(x => x.id === sh.id)) return rotate(sh, gesture.angle, gesture.c);
+  return sh;
+}
+/** 追従する寸法（anchors あり）の、ドラッグ中の見た目：覚えた点を、ドラッグ中の図形の位置から求める（寸法の数字も、その場で変わる）。図面のデータは、離したときだけ変わる。 */
+function liveDimension(d) {
+  const pts = d.anchors.map(a => { const sh = a && doc.shapes.find(x => x.id === a.id); return sh ? (dimPointsOf(livePreviewOf(sh))[a.k] ?? null) : null; }); if (!pts.some(Boolean)) return previewMoved(d);
+  return { ...d, x1: pts[0]?.x ?? d.x1, y1: pts[0]?.y ?? d.y1, x2: pts[1]?.x ?? d.x2, y2: pts[1]?.y ?? d.y2 };
+}
 function previewMoved(s, owner = s.id) {
   if (gesture?.kind !== 'move' || !gesture.ids.has(owner)) return s;
   const d = moveDelta(); return translate(s, d.x, d.y);
@@ -4349,7 +4367,7 @@ function drawSheetBody(lo, hi) {
     path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
   }
   drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
-  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
   for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
   ctx.setLineDash([]);
