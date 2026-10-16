@@ -678,8 +678,8 @@ function findHoleGaps(wholeDoc = false) {
       while (iv(lo - 1) !== null && isGapLike(iv(lo - 1), tool.pitch)) lo--; while (iv(hi + 1) !== null && isGapLike(iv(hi + 1), tool.pitch)) hi++;
       const fl = iv(lo - 1), fr = iv(hi + 1); if ((fl === null && fr === null) || !regularGap(fl, tool.pitch) || !regularGap(fr, tool.pitch)) continue; /* もともと2倍ピッチで並ぶ列・ピッチが途中で変わる列は、対象外 */
       const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !sel.some(s => distToShape(s, mid) < 0.5)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
-      gapCount++; const dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
-      for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
+      gapCount++; const gid = gapCount, dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
+      for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, gapId: gid, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
     }
   }
   /* 別々の2本の経路が端でつながっているつなぎ目をまたぐ歯抜け（事業主指摘 2026-10-16：線のつなぎ目の穴が抜けていた）。経路の端から、いちばん近い穴までの距離を足して、ピッチの整数倍なら、隙間を等分して補う。選んだ経路か、選んだ線の上の経路が片側にあれば対象 */
@@ -697,12 +697,12 @@ function findHoleGaps(wholeDoc = false) {
     const tool = doc.tools.find(t => t.id === e1.hole.toolId); if (!tool) continue;
     const g = e1.d + e2.d, n = Math.round(g / tool.pitch) - 1; if (n < 1 || n > MAX_GAP_HOLES || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
     if ((e1.nb === null && e2.nb === null) || !regularGap(e1.nb, tool.pitch) || !regularGap(e2.nb, tool.pitch)) continue; /* 両隣がピッチどおりのときだけ */
-    gapCount++; const dAng = ((e2.hole.angleDeg - e1.hole.angleDeg + 540) % 360) - 180;
+    gapCount++; const gid = gapCount, dAng = ((e2.hole.angleDeg - e1.hole.angleDeg + 540) % 360) - 180;
     for (let k = 1; k <= n; k++) {
       const tt = k * g / (n + 1); let pid, s;
       if (tt <= e1.d) { pid = e1.pid; s = e1.which === 'end' ? e1.hole.s + tt : e1.hole.s - tt; } else { const u = tt - e1.d; pid = e2.pid; s = e2.which === 'start' ? u : e2.L - u; }
       s = Math.max(0, Math.min(pid === e1.pid ? e1.L : e2.L, s)); const pt = pointAtLength(routeOf.get(pid), s);
-      add.push({ ...pt, s, pathId: pid, toolId: e1.hole.toolId, angleDeg: e1.hole.angleDeg + dAng * k / (n + 1), mark: 'tool' });
+      add.push({ ...pt, s, gapId: gid, pathId: pid, toolId: e1.hole.toolId, angleDeg: e1.hole.angleDeg + dAng * k / (n + 1), mark: 'tool' });
     }
   }
   return { add, gapCount };
@@ -727,8 +727,23 @@ function refreshGapCount() {
 function checkHoles() {
   const { add, gapCount } = findHoleGaps();
   if (!add.length) { $('hint').textContent = t('noGapFound'); return; }
-  commit(() => { const made = []; for (const h of add) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } selected = new Set(made); });
+  commit(() => { selected = new Set(addGapHoles(add)); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
+}
+/** 歯抜けの穴を図面に足す（commit の中で呼ぶ）。足した穴の id の並びを返す。 */
+function addGapHoles(list) { const made = []; for (const { gapId, ...h } of list) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } return made; }
+/** 赤い輪をクリックしたとき：クリックの近くの輪（いちばん近いもの）と、その輪の所属（選んだ線の分／開いた直後の分）を返す。無ければ null。 */
+function gapMarkAt(p) {
+  const tol = Math.max(2.2, 9 / scale) + 2 / scale; let best = null, bd = Infinity;
+  for (const list of [selGapMarks, openGapMarks]) for (const m of list) { const d = Math.hypot(m.x - p.x, m.y - p.y); if (d <= tol && d < bd) { bd = d; best = { m, list }; } }
+  return best;
+}
+/** 赤い輪をクリック：その1か所の歯抜け（続けて抜けた穴はいっしょに）だけを補う。選択は変えない（続けて、ほかの輪も押せる）。事業主指示 2026-10-16 */
+function fillOneGap({ m, list }) {
+  const entries = list.filter(x => x.gapId === m.gapId), wasOpen = list === openGapMarks; if (!entries.length) return;
+  cancel(); commit(() => { addGapHoles(entries); });
+  if (wasOpen) openGapMarks = findHoleGaps(true).add; /* commit が消した、開いた直後の印を、残りの歯抜けの分だけ出し直す */
+  $('hint').textContent = t('holesFilled', { gaps: 1, n: entries.length }); draw();
 }
 /** 「菱目を消す」：選んだ線の上の菱目をすべて（線は残す）。菱目を選んでいれば、その菱目だけ。 */
 function deleteSelectedHoles() {
@@ -4484,6 +4499,7 @@ canvas.addEventListener('pointerdown', e => {
     if (stage?.kind === 'path' && stage.nodes.length >= 2 && distance(cursor, stage.nodes[0]) <= 9 / scale) { finishPath(true); return; }
     gesture = { kind: 'pen', start: cursor, screen: p }; draw(); return;
   }
+  if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) { const gm = gapMarkAt(cursor); if (gm) { fillOneGap(gm); return; } } /* 赤い輪（歯抜けの印）のクリックは、下の線の選択より優先 */
   if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p)); return; } }
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
