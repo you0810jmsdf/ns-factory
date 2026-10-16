@@ -399,11 +399,17 @@ function loadTools() {
   return defaultTools();
 }
 function persistTools() { try { localStorage.setItem('leather-cad.tools',JSON.stringify(doc.tools)); } catch { $('hint').textContent=t('storageUnavailable'); } }
+/** 既定の工具の id：「既定にする」で決めたもの。無ければ 3.95mm の2本刃（2026-10-16 事業主指示）。いまの図面に無ければ空。 */
+function defaultToolId() { let id = 'diamond-3.95-2'; try { id = localStorage.getItem('leather-cad.defaultTool') || id; } catch { /* 保存できなくても既定は 3.95mm */ } return doc.tools.some(t => t.id === id) ? id : (doc.tools.some(t => t.id === 'diamond-3.95-2') ? 'diamond-3.95-2' : ''); }
+/** 3.95mm（2本刃）の工具が無い古い図面には足す（元の工具は変えない）。開いた図面でも、新しく打つ穴の既定が 3.95mm になるように。 */
+function withDefaultTool(d) { if (Array.isArray(d.tools) && !d.tools.some(t => t.id === 'diamond-3.95-2')) { const add = defaultTools().find(t => t.id === 'diamond-3.95-2'); if (add) d.tools = [...d.tools, add]; } return d; }
+/** 順目・逆目：押した側を選ぶ（いま選んでいる側を押しても反対にはならない）。 */
+function slantPick(rev) { const el = $('reverseSlant'); if (el.checked === rev) return; el.checked = rev; el.dispatchEvent?.(new Event('change', { bubbles: true })); }
 function refreshTools() {
   $('defaultMark').value=doc.mark; $('dotD').value=doc.dotD;
   const current=$('stitchTool').value; $('stitchTool').textContent='';
   for(const tool of doc.tools){const option=document.createElement('option');option.value=tool.id;option.textContent=tool.name===tool.id?t('toolSummary',{kind:t(tool.kind),pitch:tool.pitch,teeth:tool.teeth}):tool.name;$('stitchTool').appendChild(option);}
-  $('stitchTool').value=doc.tools.some(t=>t.id===current)?current:doc.tools[0]?.id||'';
+  $('stitchTool').value=doc.tools.some(t=>t.id===current)?current:defaultToolId()||doc.tools[0]?.id||'';   /* 選んでいた工具が無い図面でも、図面の先頭（4mm など）ではなく既定の工具（3.95mm か、「既定にする」で決めた工具）にする */
   const to=$('toolReassignTo'), keepTo=to.value; to.textContent=''; for(const tool of doc.tools){const o=document.createElement('option');o.value=tool.id;o.textContent=tool.name===tool.id?t('toolSummary',{kind:t(tool.kind),pitch:tool.pitch,teeth:tool.teeth}):tool.name;to.appendChild(o);} if(doc.tools.some(t=>t.id===keepTo))to.value=keepTo;
   fillTool();
 }
@@ -677,7 +683,7 @@ function offerRestore() {
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
-  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: migrateDoc(tb.doc), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
 }
@@ -772,6 +778,7 @@ function initStitch() {
   $('help').onclick=()=>showHelp();$('closeHelp').onclick=()=>$('helpDialog').close();
   $('helpSearch').addEventListener('input',()=>showHelp(false));$('helpPage').addEventListener('change',()=>showHelp(false));
   document.querySelectorAll('[data-tool]').forEach(b=>{ b.addEventListener('contextmenu',e=>{e.preventDefault();showHelp(false,TOOL_HELP[b.dataset.tool]||'');}); let timer=null; b.addEventListener('pointerdown',()=>{timer=setTimeout(()=>{longPressed=true;showHelp(false,TOOL_HELP[b.dataset.tool]||'');},700);}); b.addEventListener('click',e=>{ if(longPressed){ longPressed=false; e.stopImmediatePropagation(); e.preventDefault(); } },true); for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>clearTimeout(timer)); });
+  document.querySelectorAll?.('.slantSwitch .s-fwd, .slantSwitch .s-rev').forEach(sp=>sp.addEventListener('click',e=>{e.preventDefault();slantPick(sp.classList.contains('s-rev'));}));
   $('setDefaultTool').onclick=()=>{ try { localStorage.setItem('leather-cad.defaultTool',$('stitchTool').value); $('hint').textContent=t('defaultToolSaved'); } catch { $('hint').textContent=t('storageUnavailable'); } };
   refreshTools();
   try { /* 既定の工具は 3.95mm の2本刃（2026-10-16）。一度だけ、保存済みの既定をこれに切り替える（そのあと「既定にする」で変えた分は尊重する） */
@@ -1376,7 +1383,7 @@ async function openFile(file) {
     if (name.endsWith('.dxf')) { const r = dxfToShapesFull(text); const res = importVector(r.shapes, [], { recover: $('recoverArcs').checked }); if (r.units === null) $('hint').textContent += ' ' + t('dxfUnitsAssumed'); return res; }
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
     if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
-    const next = migrateDoc(JSON.parse(text));
+    const next = withDefaultTool(migrateDoc(JSON.parse(text)));
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
     const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode);
