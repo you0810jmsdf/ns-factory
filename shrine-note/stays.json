@@ -2716,6 +2716,199 @@
       "shrine_name": "出石神社",
       "fetched_at": "2026-10-12",
       "hotels": []
+    },
+    {
+      "shrine_id": "oyamaafuri",
+      "shrine_name": "大山阿夫利神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "獅子山荘",
+          "area": "神奈川県伊勢原市大山325",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D136924",
+          "review_average": 5.0,
+          "review_count": 16,
+          "status": "candidate"
+        },
+        {
+          "name": "蓬生亭 逸見",
+          "area": "神奈川県伊勢原市大山413",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D141289",
+          "review_average": 4.8,
+          "review_count": 43,
+          "status": "candidate"
+        },
+        {
+          "name": "宿坊 いわ江",
+          "area": "神奈川県伊勢原市大山239",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D135502",
+          "review_average": 4.78,
+          "review_count": 136,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "takase",
+      "shrine_name": "高瀬神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "かしや旅館",
+          "area": "富山県南砺市井波2050",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D40777",
+          "review_average": 5.0,
+          "review_count": 164,
+          "status": "candidate"
+        },
+        {
+          "name": "越中井波 町屋旅館 古香里庵",
+          "area": "富山県南砺市本町2-23",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D179420",
+          "review_average": 4.69,
+          "review_count": 34,
+          "status": "candidate"
+        },
+        {
+          "name": "東山荘",
+          "area": "富山県南砺市井波3043",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D53753",
+          "review_average": 4.48,
+          "review_count": 75,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ichinomiyaasama",
+      "shrine_name": "一宮浅間神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "わいんと宿 川口園",
+          "area": "山梨県甲州市勝沼町勝沼2890-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D16391",
+          "review_average": 4.84,
+          "review_count": 250,
+          "status": "candidate"
+        },
+        {
+          "name": "ワインの宿東夢",
+          "area": "山梨県甲州市勝沼町上岩崎狐原816-1 ワインの宿東夢",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D189560",
+          "review_average": 4.17,
+          "review_count": 10,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "shitoriyurihama",
+      "shrine_name": "倭文神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "はわい温泉 望湖楼",
+          "area": "鳥取県東伯郡湯梨浜町はわい温泉4-25",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D14991",
+          "review_average": 4.59,
+          "review_count": 1659,
+          "status": "candidate"
+        },
+        {
+          "name": "湖上に浮かぶ絶景の宿 はわい温泉 千年亭",
+          "area": "鳥取県東伯郡湯梨浜町はわい温泉4-62",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D13515",
+          "review_average": 4.45,
+          "review_count": 963,
+          "status": "candidate"
+        },
+        {
+          "name": "はわい温泉 民宿鯉の湯",
+          "area": "鳥取県東伯郡湯梨浜町はわい温泉35-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D40822",
+          "review_average": 4.38,
+          "review_count": 183,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "sumiyoshishimonoseki",
+      "shrine_name": "住吉神社（下関）",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "ねをはす Book&Hotel",
+          "area": "山口県下関市秋根西町2-7-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D192299",
+          "review_average": 4.74,
+          "review_count": 184,
+          "status": "candidate"
+        },
+        {
+          "name": "ビジネスホテル はやし<山口県>",
+          "area": "山口県下関市秋根南町1-8-13",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D44850",
+          "review_average": 3.99,
+          "review_count": 699,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "yusuhara",
+      "shrine_name": "柞原八幡宮",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "ビジネスホテルKG大分",
+          "area": "大分県大分市浜の市2丁目2-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D37364",
+          "review_average": 4.18,
+          "review_count": 946,
+          "status": "candidate"
+        },
+        {
+          "name": "大分キャセイホテル",
+          "area": "大分県大分市賀来新川2丁目1番10号",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D15972",
+          "review_average": 3.78,
+          "review_count": 458,
+          "status": "candidate"
+        }
+      ]
+    },
+    {
+      "shrine_id": "ohirumemuchi",
+      "shrine_name": "大日霊貴神社",
+      "fetched_at": "2026-10-16",
+      "hotels": [
+        {
+          "name": "四季彩り 秋田づくし 湯瀬ホテル",
+          "area": "秋田県鹿角市八幡平字湯瀬湯端43",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D7188",
+          "review_average": 4.62,
+          "review_count": 2327,
+          "status": "candidate"
+        },
+        {
+          "name": "民宿 あんべ",
+          "area": "秋田県鹿角市八幡平小山66-2",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D67110",
+          "review_average": 4.33,
+          "review_count": 18,
+          "status": "candidate"
+        },
+        {
+          "name": "亀の井ホテル 秋田湯瀬",
+          "area": "秋田県鹿角市八幡平湯瀬40-1",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/1ce87d88.dc83ba0b.1ce87d89.6c18bd86/?pc=https%3A%2F%2Fimg.travel.rakuten.co.jp%2Fimage%2Ftr%2Fapi%2Fhs%2FdQ4dX%2F%3Ff_no%3D69319",
+          "review_average": 4.09,
+          "review_count": 1047,
+          "status": "candidate"
+        }
+      ]
     }
   ]
 }
