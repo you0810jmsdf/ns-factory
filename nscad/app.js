@@ -658,18 +658,25 @@ function flipSlantOfSelection() {
 }
 /** 「穴の点検」：選んだ線（経路）の上で、穴の間隔が空きすぎている所（歯抜け）を探し、隙間の中で等間隔に穴を補う（事業主指示 2026-10-16・補い方は「隙間の中で等間隔」・範囲は「選んだ線だけ」）。
  *  歯抜けとみなすのは、隣り合う同じ工具の穴の間隔が、ピッチの整数倍（2倍以上・誤差はピッチの0.3倍まで）のとき。わざと空けた所（整数倍でない隙間）は補わない。向きは両隣の穴の間をなめらかにつなぐ。 */
-function findHoleGaps() {
+/** 隣の穴との間隔が、ピッチどおり（誤差15%以内）か。隣が無い（null）ときは、問わない。 */
+const regularGap = (g, pitch) => g === null || Math.abs(g - pitch) <= 0.15 * pitch;
+const MAX_GAP_HOLES = 3; /* 歯抜けは最大3個続きまで。それより長い空きは、わざと打っていない区間 */
+const isGapLike = (g, pitch) => { const n = Math.round(g / pitch) - 1; return n >= 1 && n <= MAX_GAP_HOLES && Math.abs(g - (n + 1) * pitch) <= 0.3 * pitch; };
+function findHoleGaps(wholeDoc = false) {
   /* 対象：選んだ図形の経路と、選んだ菱目の経路。さらに、選んだ線の上（0.5mm以内）に穴が乗っている経路（穴の付いた線に、別の線が重なっているとき、上の線を選んでも点検できる）。後者は、選んだ線の上にある歯抜けだけを補う（事業主指摘 2026-10-16 「反応なし」） */
   const ids = new Set(), onlyNear = new Set(), sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image');
-  for (const p of doc.paths) if (p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
-  for (const p of doc.paths) if (!ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && sel.some(s => distToShape(s, h) < 0.5))) { ids.add(p.id); onlyNear.add(p.id); }
+  for (const p of doc.paths) if (wholeDoc || p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
+  for (const p of doc.paths) if (!wholeDoc && !ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && sel.some(s => distToShape(s, h) < 0.5))) { ids.add(p.id); onlyNear.add(p.id); }
   const add = []; let gapCount = 0;
   for (const pid of ids) {
     const path = doc.paths.find(p => p.id === pid), route = path && resolvePath(doc, path); if (!route) continue;
     const hs = doc.holes.filter(h => h.pathId === pid && h.mark === 'tool' && holeEditable(h)).sort((p, q) => p.s - q.s);
     for (let i = 1; i < hs.length; i++) {
       const a = hs[i - 1], b = hs[i], tool = doc.tools.find(t => t.id === a.toolId); if (!tool || a.toolId !== b.toolId) continue;
-      const g = b.s - a.s, n = Math.round(g / tool.pitch) - 1; if (n < 1 || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+      const g = b.s - a.s, n = Math.round(g / tool.pitch) - 1; if (n < 1 || n > MAX_GAP_HOLES || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+      const iv = k => k >= 1 && k < hs.length ? hs[k].s - hs[k - 1].s : null; let lo = i, hi = i; /* 続けて歯抜けの間隔（ピッチの整数倍）が並ぶ範囲を求め、その外側の間隔がピッチどおりのときだけ歯抜けとする */
+      while (iv(lo - 1) !== null && isGapLike(iv(lo - 1), tool.pitch)) lo--; while (iv(hi + 1) !== null && isGapLike(iv(hi + 1), tool.pitch)) hi++;
+      const fl = iv(lo - 1), fr = iv(hi + 1); if ((fl === null && fr === null) || !regularGap(fl, tool.pitch) || !regularGap(fr, tool.pitch)) continue; /* もともと2倍ピッチで並ぶ列・ピッチが途中で変わる列は、対象外 */
       const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !sel.some(s => distToShape(s, mid) < 0.5)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
       gapCount++; const dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
       for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
@@ -680,15 +687,16 @@ function findHoleGaps() {
   for (const p of doc.paths) {
     if (p.closed) continue; const route = resolvePath(doc, p); if (!route || route.closed) continue; const L = arcLength(route);
     const hs = doc.holes.filter(h => h.pathId === p.id && h.mark === 'tool' && holeEditable(h)); if (!hs.length) continue;
-    const first = hs.reduce((a, b) => b.s < a.s ? b : a), last = hs.reduce((a, b) => b.s > a.s ? b : a);
-    ends.push({ pid: p.id, route, L, which: 'start', pt: pointAtLength(route, 0), hole: first, d: first.s }, { pid: p.id, route, L, which: 'end', pt: pointAtLength(route, L), hole: last, d: L - last.s });
+    const sorted = [...hs].sort((a, b) => a.s - b.s), first = sorted[0], last = sorted.at(-1);
+    ends.push({ pid: p.id, route, L, which: 'start', pt: pointAtLength(route, 0), hole: first, d: first.s, nb: sorted.length > 1 ? sorted[1].s - first.s : null }, { pid: p.id, route, L, which: 'end', pt: pointAtLength(route, L), hole: last, d: L - last.s, nb: sorted.length > 1 ? last.s - sorted.at(-2).s : null });
   }
   const routeOf = new Map(ends.map(e => [e.pid, e.route]));
   for (let i = 0; i < ends.length; i++) for (let j = i + 1; j < ends.length; j++) {
     const e1 = ends[i], e2 = ends[j]; if (e1.pid === e2.pid || Math.hypot(e1.pt.x - e2.pt.x, e1.pt.y - e2.pt.y) > 0.05 || e1.hole.toolId !== e2.hole.toolId) continue;
     if (!(ids.has(e1.pid) && !onlyNear.has(e1.pid)) && !(ids.has(e2.pid) && !onlyNear.has(e2.pid))) continue; /* どちらかが、選んだ図形の経路 */
     const tool = doc.tools.find(t => t.id === e1.hole.toolId); if (!tool) continue;
-    const g = e1.d + e2.d, n = Math.round(g / tool.pitch) - 1; if (n < 1 || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+    const g = e1.d + e2.d, n = Math.round(g / tool.pitch) - 1; if (n < 1 || n > MAX_GAP_HOLES || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+    if ((e1.nb === null && e2.nb === null) || !regularGap(e1.nb, tool.pitch) || !regularGap(e2.nb, tool.pitch)) continue; /* 両隣がピッチどおりのときだけ */
     gapCount++; const dAng = ((e2.hole.angleDeg - e1.hole.angleDeg + 540) % 360) - 180;
     for (let k = 1; k <= n; k++) {
       const tt = k * g / (n + 1); let pid, s;
@@ -700,6 +708,8 @@ function findHoleGaps() {
   return { add, gapCount };
 }
 /** ボタンの表示：押す前に、歯抜けが何か所ありそうかを知らせる。選択・穴が変わったときだけ数え直す（描き直しのたびには数えない）。 */
+/** 図面を開いた直後の案内：図面全体の歯抜けの可能性を数え、あれば案内の末尾に足す（無ければ何も言わない・事業主指示 2026-10-16）。 */
+function noticeGaps() { let n = 0; try { n = findHoleGaps(true).gapCount; } catch { /* 数えられなくても、開く処理は止めない */ } if (n) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('gapNotice', { n }); }
 let gapKey = null;
 function refreshGapCount() {
   const key = [...selected].join(',') + '|' + undo.length + '|' + redo.length + '|' + doc.holes.length + '|' + activeTab + '|' + t('checkHoles'); if (key === gapKey) return; gapKey = key;
@@ -770,7 +780,7 @@ function restoreAutosave() {
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
-  activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); flushAutosave();
+  activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); noticeGaps(); flushAutosave();
 }
 function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
@@ -1472,7 +1482,7 @@ async function openFile(file) {
     const next = withDefaultTool(migrateDoc(JSON.parse(text)));
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
-    const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode);
+    const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode); noticeGaps();
     if (extraSheets && next.threeViewSheet?.role === 'front') restoreSheets(extraSheets, next.threeViewSheet.id);
     return { added: next.shapes.length, dropped: 0 };
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
