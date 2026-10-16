@@ -4198,7 +4198,7 @@ function drawSheetBody(lo, hi) {
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : (doc.paths.find(p => p.id === h.pathId)?.threadHex || '#fff');
     if (kind === 'dot') { ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); }
     else if (kind === 'slit') { ctx.lineWidth = heightMM; ctx.stroke(); } else ctx.fill();
-    if(selected.has(h.id)&&kind!=='dot'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
+    if(selected.has(h.id)&&kind!=='dot'&&kind!=='diamond'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
   if (mode === 'stitch' && manualNext) {
