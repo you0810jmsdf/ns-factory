@@ -543,7 +543,7 @@ function rangeStitchClick(w) {
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
   const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s); countStage = null;
-  let points, pitch, mode;
+  let points, pitch, mode, leftover = null; /* leftover＝固定ピッチのあまり（mm・終点側）。固定ピッチ以外は null */
   try {
     if (kind === 'count') { pitch = (hi - lo) / (n - 1); mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
     else {
@@ -556,6 +556,7 @@ function rangeStitchClick(w) {
       for (const c of corners) { points = points.filter(p => Math.abs(p.s - c.s) > 1e-6); points.push(c); }
       if (opts.corner === 'none') { const cs = cornerHoles(route); points = points.filter(p => !cs.some(c => Math.abs(c.s - p.s) < 1e-6)); }
       points.sort((p, q) => p.s - q.s);
+      if (kind === 'fixed' && points.length) leftover = Math.max(0, startAtHi ? points[0].s - from : to - points.at(-1).s); /* 終点側に、どれだけあまるか */
     }
   } catch (err) { $('hint').textContent = err.message; return; }
   const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
@@ -578,7 +579,7 @@ function rangeStitchClick(w) {
     }
     saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode }); selected = new Set(added);
   });
-  $('hint').textContent = kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }); draw();
+  $('hint').textContent = (kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) })) + (leftover === null ? '' : ' ' + (leftover < 0.005 ? t('rangeLeftNone') : t('rangeLeft', { r: leftover.toFixed(2) }))); draw();
 }
 function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
   if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
