@@ -144,6 +144,7 @@ tr:hover td{background:#1c2128}
   padding:20px;background:rgba(1,4,9,.8);backdrop-filter:blur(4px);
 }
 .fb-overlay.on{display:flex}
+#fbOverlay{z-index:1200}   /* 「反映を試す」の画面（1100）の上に指摘画面を重ねるため */
 .fb-card{
   width:min(640px,100%);background:#161b22;border:1px solid #30363d;border-radius:18px;
   padding:22px;box-shadow:0 18px 40px rgba(0,0,0,.5);max-height:90vh;overflow-y:auto;
@@ -441,6 +442,7 @@ tr.folded td{color:#9aa4af;font-size:12px;background:#0d1117}
     <p class="fb-sub" id="rtNote">押すとAIを1回呼びます（概算5〜10円・お客様の相談と共通の「1日20回」の枠に数えられます）。この会話の前半のやり取りも引き継いで質問します。在庫・ステッチ糸の色リストは含みません。</p>
     <div class="fb-actions">
       <button class="btn" type="button" id="rtRun">AIに聞き直す（約5〜10円）</button>
+      <button class="btn sub" type="button" id="rtFb" disabled title="いまの答えが気に入らなければ指摘して、すぐ聞き直して試せます">✏️ いまの答えを指摘</button>
       <button class="btn sub" type="button" id="rtClose">閉じる</button>
       <span class="fb-status" id="rtStatus"></span>
     </div>
@@ -1776,11 +1778,15 @@ const KB_API = 'https://api.github.com/repos/you0810jmsdf/ns-factory/contents/' 
 function openFeedback(i) {
   const r = fbList[i];
   if (!r) return;
-  fbTarget = { src: currentSrc, row: r };
+  openFeedbackFor(r, currentSrc, false);
+}
+// fromRetest=true: 「🧪 反映を試す」の答えへの指摘（その答えは reply に入れて渡す）。保存後は試す画面へ戻って続けて試せる。
+function openFeedbackFor(r, src, fromRetest) {
+  fbTarget = { src, row: r, fromRetest: !!fromRetest };
   fbRequestId = 'fb_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-  document.getElementById('fbSub').textContent = currentSrc === 'ai'
+  document.getElementById('fbSub').textContent = src === 'ai'
     ? '反映先: 幕僚キャラ接客の追加知識（保存すると次の会話から全幕僚に効きます）＋指摘台帳'
-    : '反映先: オーダー相談のナレッジ（hearing-kb.json）＋指摘台帳';
+    : '反映先: オーダー相談のナレッジ（hearing-kb.json）＋指摘台帳' + (fromRetest ? '　※下の答えは「反映を試す」で聞き直した答えです' : '');
   document.getElementById('fbQuote').innerHTML =
     '<div class="q">🙂 ' + esc(r.question || '') + '</div>'
     + '<div class="a">🤖 ' + esc(r.reply || '') + '</div>';
@@ -1807,8 +1813,13 @@ async function fbPostGas(body) {
   throw new Error(last);
 }
 
-// hearing-kb.json の extraKnowledge へ追記して GitHub へ保存（管理画面と同じContents API）
-async function fbAppendToHearingKb(feedback) {
+// 追加メモ（extraKnowledge）の上限。ナレッジ候補の画面と同じ6,000字（2026-10-16: 指摘を繰り返すと超えるため、保存の前に止める）
+const KB_EXTRA_MAX = 6000;
+// toISOString()はUTCのため日本の午前中は前日になる。JSTへ+9hして日付を取る
+const fbJstDate = () => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+const fbMemoLine = (feedback) => '\n■' + fbJstDate() + '指摘: ' + feedback;
+
+async function fbReadHearingKb() {
   const token = (window.NSFGitHubToken && NSFGitHubToken.get()) || '';
   if (!token) throw new Error('GitHubトークン未設定（管理画面の「GitHubトークン設定」で保存してください）');
   const headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' };
@@ -1816,9 +1827,21 @@ async function fbAppendToHearingKb(feedback) {
   if (!getRes.ok) throw new Error('kb取得に失敗 HTTP ' + getRes.status);
   const meta = await getRes.json();
   const kb = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(meta.content.replace(/\n/g, '')), c => c.charCodeAt(0))));
-  // toISOString()はUTCのため日本の午前中は前日になる。JSTへ+9hして日付を取る
-  const stamp = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-  kb.extraKnowledge = ((kb.extraKnowledge || '').trim() + '\n■' + stamp + '指摘: ' + feedback).trim();
+  return { headers, meta, kb };
+}
+function fbCheckRoom(kb, feedback) {
+  const next = ((kb.extraKnowledge || '').trim() + fbMemoLine(feedback)).trim();
+  if (next.length > KB_EXTRA_MAX) {
+    throw new Error('追加メモが' + KB_EXTRA_MAX.toLocaleString() + '字を超えます（現在' + (kb.extraKnowledge || '').trim().length.toLocaleString()
+      + '字＋今回' + fbMemoLine(feedback).length + '字）。古い指摘の整理（統合・削除）が先に必要です。台帳にも記録していません。');
+  }
+}
+
+// hearing-kb.json の extraKnowledge へ追記して GitHub へ保存（管理画面と同じContents API）
+async function fbAppendToHearingKb(feedback) {
+  const { headers, meta, kb } = await fbReadHearingKb();
+  fbCheckRoom(kb, feedback);
+  kb.extraKnowledge = ((kb.extraKnowledge || '').trim() + fbMemoLine(feedback)).trim();
   const json = JSON.stringify(kb, null, 2) + '\n';
   const b64 = btoa(Array.from(new TextEncoder().encode(json), b => String.fromCharCode(b)).join(''));
   const putRes = await fetch(KB_API, {
@@ -1837,6 +1860,8 @@ async function saveFeedback() {
   st.textContent = '保存中…'; st.className = 'fb-status';
   const r = fbTarget.row;
   try {
+    // 先に追加メモの空きを確かめる（超えるなら台帳にも記録せず止める＝記録だけ残って知識に入らない状態を作らない）
+    if (fbTarget.src === 'hearing') fbCheckRoom((await fbReadHearingKb()).kb, text);
     // ①台帳記録＋（ai系は）知識への即反映
     const gas = await fbPostGas({
       action: 'feedback', key: getKey(), requestId: fbRequestId,
@@ -1852,6 +1877,7 @@ async function saveFeedback() {
     const doneKey = fbKeyOf(fbTarget.src, r.datetime, r.staffId || '');
     if (!fbInfo.has(doneKey)) fbInfo.set(doneKey, []);
     fbInfo.get(doneKey).push({ at: new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' '), fb: text, applied: gas.applied || '' });
+    if (fbTarget.fromRetest) rtAfterFeedback(text);   // 「反映を試す」の答えへの指摘: 公開前でも次の聞き直しに足して試せるようにする
     setTimeout(() => { document.getElementById('fbOverlay').classList.remove('on'); render(); }, 1800);
   } catch (e) {
     st.textContent = '⚠️ ' + String(e.message || e) + '（同じ保存ボタンで再試行できます。二重反映はされません）';
@@ -1899,6 +1925,34 @@ async function retestPost(body) {
   throw new Error('gas_unavailable');
 }
 
+// 指示文を組む。この画面で保存した指摘（pending）が、まだ公開（hearing-kb.json への反映）前でも次の聞き直しに入るよう、追加メモの末尾へ足す。
+// 公開後は追加メモにすでに入っているので二重には足さない。⛔ 足すのはこの画面で組む指示文の中だけ（ファイルは書き換えない）。
+function rtBuildSystem(t) {
+  let extra = String(t.kb.extraKnowledge || '').trim();
+  t.pending.forEach(p => { if (extra.indexOf(p) === -1) extra += fbMemoLine(p); });
+  const kb = Object.assign({}, t.kb, { extraKnowledge: extra.trim() });
+  return NSF_HEARING.buildSystemPrompt(kb, t.leathers, null)
+    + NSF_HEARING.buildCasesSection(NSF_HEARING.selectRelevant(t.cases, t.history.map(h => h.content).join('\n')));
+}
+
+// 「反映を試す」の答えを指摘して保存できたあと: 試す画面に戻し、次の聞き直しへすぐ反映させる
+function rtAfterFeedback(text) {
+  const t = rtTarget;
+  if (!t || !t.kb) return;
+  t.pending.push(text);
+  t.fbs.push({ fb: text, applied: 'hearing-kb.json' });
+  t.system = rtBuildSystem(t);
+  const $ = id => document.getElementById(id);
+  $('rtQuote').querySelectorAll('.rt-fbline').forEach(n => n.remove());
+  const line = document.createElement('div');
+  line.className = 'a rt-fbline';
+  line.textContent = '✏️ 指摘: ' + t.fbs.map(f => f.fb || '').join(' ／ ');
+  $('rtQuote').appendChild(line);
+  $('rtSub').className = 'fb-sub rt-ok';
+  $('rtSub').textContent = '✅ 指摘を保存しました（公開まで1〜2分）。公開前でも、次の「聞き直し」には今の指摘を足して試せます。';
+  $('rtRun').textContent = 'この指摘を入れて聞き直す（約5〜10円）';
+}
+
 async function openRetest(i) {
   const r = fbList[i];
   if (!r) return;
@@ -1908,17 +1962,18 @@ async function openRetest(i) {
   before.slice(-11).forEach(x => history.push({ role: 'user', content: x.question }, { role: 'assistant', content: x.reply }));
   history.push({ role: 'user', content: r.question });
   const fbs = fbInfo.get(fbKeyOf('hearing', r.datetime, '')) || [];
-  rtTarget = { r, history, fbs, system: '', running: false };
+  rtTarget = { r, history, fbs, system: '', running: false, kb: null, leathers: null, cases: null, pending: [], lastReply: '' };
 
   const $ = id => document.getElementById(id);
   $('rtQuote').innerHTML = '<div class="q">🙂 ' + esc(r.question || '') + '</div>'
     + (before.length ? '<div class="a">（この会話の前半 ' + before.length + '往復を引き継いで質問します）</div>' : '')
-    + (fbs.length ? '<div class="a">✏️ 指摘: ' + fbs.map(f => esc(f.fb || '')).join(' ／ ') + '</div>' : '');
+    + (fbs.length ? '<div class="a rt-fbline">✏️ 指摘: ' + fbs.map(f => esc(f.fb || '')).join(' ／ ') + '</div>' : '');
   $('rtOld').textContent = r.reply || '';
   $('rtNew').textContent = 'まだ聞き直していません';
   $('rtStatus').textContent = '';
   $('rtStatus').className = 'fb-status';
   $('rtRun').disabled = true;
+  $('rtFb').disabled = true;
   $('rtRun').textContent = 'AIに聞き直す（約5〜10円）';
   $('rtSub').className = 'fb-sub';
   $('rtSub').textContent = '追加メモ（hearing-kb.json）を確認しています…';
@@ -1933,8 +1988,8 @@ async function openRetest(i) {
     ]);
     if (rtTarget === null || rtTarget.r !== r) return;   // 確認中に閉じた・別の発言を開いた
     const extra = String(kb.extraKnowledge || '');
-    rtTarget.system = NSF_HEARING.buildSystemPrompt(kb, leathers, null)
-      + NSF_HEARING.buildCasesSection(NSF_HEARING.selectRelevant(cases, history.map(h => h.content).join('\n')));
+    Object.assign(rtTarget, { kb, leathers, cases });
+    rtTarget.system = rtBuildSystem(rtTarget);
     const missing = fbs.filter(f => f.fb && extra.indexOf(String(f.fb).trim()) === -1);
     const sub = $('rtSub');
     if (!fbs.length) {
@@ -1963,6 +2018,8 @@ async function runRetest() {
   const $ = id => document.getElementById(id);
   const btn = $('rtRun'), st = $('rtStatus');
   t.running = true; btn.disabled = true;
+  $('rtFb').disabled = true;
+  t.lastReply = '';
   $('rtNew').textContent = '考え中…';
   st.textContent = ''; st.className = 'fb-status';
   try {
@@ -1979,7 +2036,9 @@ async function runRetest() {
     }
     if (rtTarget !== t) return;
     $('rtNew').textContent = data.reply || '(応答が空でした)';
-    st.textContent = '✅ 聞き直しました。この往復はログに「🧪 テスト」として残ります（🗑で消せます）。';
+    t.lastReply = data.reply || '';
+    $('rtFb').disabled = !t.lastReply;   // 気に入らなければ、この答えを指摘して続けて試せる
+    st.textContent = '✅ 聞き直しました。この往復はログに「🧪 テスト」として残ります（🗑で消せます）。気になる点があれば「いまの答えを指摘」で続けて育てられます。';
     st.className = 'fb-status ok';
   } catch (e) {
     $('rtNew').textContent = '取得できませんでした';
@@ -1992,6 +2051,12 @@ async function runRetest() {
   }
 }
 document.getElementById('rtRun').addEventListener('click', runRetest);
+document.getElementById('rtFb').addEventListener('click', () => {
+  const t = rtTarget;
+  if (!t || !t.lastReply) return;
+  // 指摘の台帳には「お客様の質問」と、いま聞き直した答えを記録する（対象の日時は元の発言のもの）
+  openFeedbackFor({ datetime: t.r.datetime, question: t.r.question, reply: t.lastReply, staffId: '' }, 'hearing', true);
+});
 document.getElementById('rtClose').addEventListener('click', () => { rtTarget = null; document.getElementById('retestOverlay').classList.remove('on'); });
 
 // 表（tbody）とチャット表示（chatView）は同じ data-* を使うので、クリック処理を共有する
