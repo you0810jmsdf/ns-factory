@@ -4406,7 +4406,10 @@ canvas.addEventListener('pointerdown', e => {
       }
       draw(); return;
     }
-    const hole = [...doc.holes].reverse().find(h=>holeEditable(h)&&!markHidden(h)&&holeHitDistance(h,cursor)<=Math.max(6/scale,(holeAppearance(h,doc)?.kind==='dot'?0:(holeAppearance(h,doc)?.width||0)/2)));
+    /* 穴（菱目）は小さいので、判定は中心から 12px まで広げ、入った穴のうちいちばん近いものを選ぶ（事業主指摘 2026-10-16：任意の菱目を選んで削除できない）。穴から 7px より離れた所の線を正確に（4px 以内で）クリックしたときは、穴ではなく線を選ぶ */
+    let hole = doc.holes.filter(h => holeEditable(h) && !markHidden(h)).map(h => ({ h, d: holeHitDistance(h, cursor) })).filter(c => c.d <= Math.max(12 / scale, holeAppearance(c.h, doc)?.kind === 'dot' ? 0 : (holeAppearance(c.h, doc)?.width || 0) / 2)).sort((p, q) => p.d - q.d)[0];
+    if (hole) { const ln = pickShapeAt(cursor); if (ln && distTo(ln, cursor) < 4 / scale && hole.d > 7 / scale) hole = undefined; }
+    hole = hole?.h;
     if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
     const hit = pickShapeAt(cursor);
     cancelSpanClick();
