@@ -47,6 +47,21 @@ ok('イベントは shrine / lang / kind だけを通す（位置情報などは
   const ev = sent.filter((a) => a[0] === 'event' && a[1] !== 'page_view');
   assert.equal(ev.length, 1); assert.deepEqual(ev[0][2], { shrine: 'ise', lang: 'en', kind: 'en' });
 });
+ok('食の欄のリンクの押下（shrine_food_gmap / shrine_food_link）は、神社・言語・並び順と種類だけを送る', () => {
+  const { env, sent } = fakeEnv(); const t = createTracker(env);
+  t.event('shrine_food_gmap', { shrine: 'ise', lang: 'ja', kind: 'p1', name: '和cafe ととのま', place_id: 'ChIJxxxx', lat: 34.4 });
+  t.event('shrine_food_link', { shrine: 'izumo', lang: 'en', kind: 'official_p5' });
+  t.event('shrine_food_link', { shrine: 'ise', lang: 'en', kind: 'sns_p3' }); t.event('shrine_food_link', { shrine: 'ise', lang: 'en', kind: 'portal_p4' });
+  const ev = sent.filter((a) => a[0] === 'event' && a[1] !== 'page_view');
+  assert.deepEqual(ev.map((a) => a[1]), ['shrine_food_gmap', 'shrine_food_link', 'shrine_food_link', 'shrine_food_link']);
+  assert.deepEqual(ev[0][2], { shrine: 'ise', lang: 'ja', kind: 'p1' });                // 店名・place_id・座標は落ちる
+  assert.deepEqual(ev.map((a) => a[2].kind), ['p1', 'official_p5', 'sns_p3', 'portal_p4']);
+});
+ok('食の欄の押下も、手元では送らず、「計測しない」設定を守る', () => {
+  const a = fakeEnv({ host: 'localhost', protocol: 'http:' }), b = fakeEnv({ optout: '1' });
+  createTracker(a.env).event('shrine_food_gmap', { shrine: 'ise', lang: 'ja', kind: 'p1' }); createTracker(b.env).event('shrine_food_link', { shrine: 'ise', lang: 'ja', kind: 'sns_p2' });
+  assert.equal(a.sent.length, 0); assert.equal(b.sent.length, 0);
+});
 ok('gtag が壊れても例外を外へ出さない', () => {
   const { env } = fakeEnv(); env.gtag = () => { throw new Error('x'); }; const t = createTracker(env);
   assert.doesNotThrow(() => { t.pageview('en'); t.event('shrine_lang', { kind: 'to_en' }); });
