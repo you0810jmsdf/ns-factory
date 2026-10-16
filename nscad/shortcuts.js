@@ -33,7 +33,3 @@ export function keyTarget(e) {
   for (const [toggle, key] of Object.entries(TOGGLE_KEYS)) if (key === k) return { toggle };
   return null;
 }
-/** ショートカット一覧に出す「名前: キー」の行（ツール → 選択中の操作 → 画面上部のチェック の順）。labelOf(id) は画面の言葉（言語に合わせる）を返す。 */
-export function shortcutLines(labelOf) {
-  return [TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS].flatMap(map => Object.entries(map).map(([id, k]) => `${labelOf(id)}: ${k}`));
-}
