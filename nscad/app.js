@@ -641,6 +641,21 @@ function holePosition(h,p) {
   const old=pointAtLength(route,h.s),next=projectOnPath(route,p);
   return {...h,x:next.x,y:next.y,s:next.s,angleDeg:h.angleDeg+($('followTangent').checked?next.angleDeg-old.angleDeg:0)};
 }
+/** 「順目⇔逆目」：選んだ線の上の菱目（菱目を選んでいればその菱目だけ）の傾きを、線の向きを軸に鏡写しにして、順目と逆目を入れ替える（事業主指示 2026-10-16）。
+ *  対象は、選んだ線の経路の穴・選んだ穴・選んだ線の上（0.5mm以内）に乗っている穴（穴の付いた線に重なった別の線を選んでも効く）。点の目印・円の穴は対象外（傾きの意味が違う）。 */
+function flipSlantOfSelection() {
+  const sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image'), picked = new Set(affectedHoles().map(h => h.id));
+  for (const h of doc.holes) if (!picked.has(h.id) && holeEditable(h) && sel.some(s => distToShape(s, h) < 0.5)) picked.add(h.id);
+  const routes = new Map(), made = [];
+  for (const h of doc.holes) {
+    if (!picked.has(h.id) || !['diamond', 'slit'].includes(holeAppearance(h, doc)?.kind)) continue;
+    if (!routes.has(h.pathId)) { const p = doc.paths.find(q => q.id === h.pathId); routes.set(h.pathId, p ? resolvePath(doc, p) : null); }
+    const route = routes.get(h.pathId); if (route) made.push({ id: h.id, angleDeg: (((2 * pointAtLength(route, h.s).angleDeg - h.angleDeg) % 360) + 360) % 360 });
+  }
+  if (!made.length) { $('hint').textContent = t('noHolesToFlip'); return; }
+  commit(() => { for (const m of made) { const h = doc.holes.find(x => x.id === m.id); if (h) h.angleDeg = m.angleDeg; } });
+  $('hint').textContent = t('slantFlipped', { n: made.length });
+}
 /** 「穴の点検」：選んだ線（経路）の上で、穴の間隔が空きすぎている所（歯抜け）を探し、隙間の中で等間隔に穴を補う（事業主指示 2026-10-16・補い方は「隙間の中で等間隔」・範囲は「選んだ線だけ」）。
  *  歯抜けとみなすのは、隣り合う同じ工具の穴の間隔が、ピッチの整数倍（2倍以上・誤差はピッチの0.3倍まで）のとき。わざと空けた所（整数倍でない隙間）は補わない。向きは両隣の穴の間をなめらかにつなぐ。 */
 function findHoleGaps() {
@@ -812,7 +827,7 @@ function initStitch() {
   $('resetManual').onclick=()=>{manualNext=null;draw();};
   $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
   for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
-  $('delHoles').onclick=deleteSelectedHoles; $('checkHoles').onclick=checkHoles;
+  $('delHoles').onclick=deleteSelectedHoles; $('checkHoles').onclick=checkHoles; $('flipHoleSlant').onclick=flipSlantOfSelection;
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
@@ -3511,7 +3526,7 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
-  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; refreshGapCount();
+  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
