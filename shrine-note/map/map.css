@@ -94,6 +94,11 @@ body.open .hint { display: none; }
 .staylist li { margin: 6px 0; padding: 8px 10px; background: rgba(49,67,50,0.4); border: 1px solid var(--line); border-radius: 8px; }
 .staylist a { display: block; min-height: 24px; font: 14px var(--serif); }
 .staylist small { display: block; font: 11px var(--sans); color: var(--muted); margin-top: 2px; }
+.foodlist { list-style: none; padding: 0; margin: 6px 0; }
+.foodlist li { margin: 6px 0; padding: 8px 10px; background: rgba(49,67,50,0.4); border: 1px solid var(--line); border-radius: 8px; }
+.foodlist .fname { display: block; font: 14px var(--serif); }
+.foodlist small { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; font: 12px var(--sans); color: var(--muted); margin-top: 4px; }
+.foodlist small a { display: inline-flex; align-items: center; min-height: 32px; }
 .badge.cand { margin-right: 6px; }
 .prbox { border: 1px dashed var(--line-strong); border-radius: 8px; padding: 10px 12px; margin: 8px 0; font-size: 13px; color: var(--muted); }
 .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--gold); background: rgba(216,183,102,0.12); color: var(--ink); text-decoration: none; font-size: 14px; cursor: pointer; margin: 4px 8px 4px 0; }
