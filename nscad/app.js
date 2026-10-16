@@ -547,9 +547,11 @@ function rangeStitchClick(w) {
   try {
     if (kind === 'count') { pitch = (hi - lo) / (n - 1); mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
     else {
-      const opts = stitchOptions(), from = lo + opts.offsetStart, to = hi - opts.offsetEnd; pitch = tool.pitch; mode = kind;
+      /* 固定ピッチは、先にクリックした点（始点）から数え始める。始点が線の上の位置の大きいほう（hi）なら、hi から lo のほうへ数える。始端・終端の空きも、先にクリックした側が始端（事業主指摘 2026-10-16：右辺中央から上下へ打つと、下は点線側から数えていて、折り返しても重ならなかった） */
+      const opts = stitchOptions(), startAtHi = pair.first.s > pair.c.s + 1e-9, from = lo + (startAtHi ? opts.offsetEnd : opts.offsetStart), to = hi - (startAtHi ? opts.offsetStart : opts.offsetEnd); pitch = tool.pitch; mode = kind;
       if (from > to || len < 1e-9) { $('hint').textContent = t('invalidRange'); return; }
-      points = pointsAlongShape(route, tool.pitch, { offsetStart: from, offsetEnd: len - to, variable: kind === 'variable' });
+      if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + 1e-9) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = to - i * tool.pitch; return { ...pointAtLength(route, sp), s: sp }; }); }
+      else points = pointsAlongShape(route, tool.pitch, { offsetStart: from, offsetEnd: len - to, variable: kind === 'variable' });
       const corners = cornerHoles(route, opts.corner).filter(p => p.s >= from - 1e-7 && p.s <= to + 1e-7);
       for (const c of corners) { points = points.filter(p => Math.abs(p.s - c.s) > 1e-6); points.push(c); }
       if (opts.corner === 'none') { const cs = cornerHoles(route); points = points.filter(p => !cs.some(c => Math.abs(c.s - p.s) < 1e-6)); }
