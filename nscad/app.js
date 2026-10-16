@@ -3052,16 +3052,25 @@ function calcSaveMemo() {
   commit(() => { const list = (doc.calcMemos ||= []); list.push({ id: freshId(list, 'm'), expr, result: r.value, note }); });
   calcAns = r.value; $('calcExpr').value = ''; $('calcNote').value = ''; $('calcResult').textContent = ''; $('hint').textContent = t('calcSaved', { expr, result: fmtCalc(r.value) });
 }
+/** 計算メモの結果を、図面の文字（テキスト図形）にして、見えている図面の中央に置く。文字は「コメント ＝ 結果」（コメントが無ければ「式 ＝ 結果」）。 */
+function placeCalcMemo(m) {
+  const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
+  if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const text = (m.note || m.expr) + ' ＝ ' + fmtCalc(m.result), at = world({ x: width / 2, y: height / 2 });
+  cancel(); commit(() => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'text', x: +at.x.toFixed(3), y: +at.y.toFixed(3), text, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); selected = new Set([id]); });
+  renderLayers(); $('hint').textContent = t('calcPlaced', { text });
+}
 function refreshCalcCard() {
-  const list = doc.calcMemos || [], key = JSON.stringify(list) + t('calcUse'); if (key === calcKey) return; calcKey = key;
+  const list = doc.calcMemos || [], key = JSON.stringify(list) + t('calcUse') + t('calcPlace'); if (key === calcKey) return; calcKey = key;
   const ul = $('calcList'); ul.textContent = ''; $('calcEmptyMsg').hidden = list.length > 0;
   for (const m of list) {
     const li = document.createElement('li'), line = document.createElement('span'), use = document.createElement('button'), del = document.createElement('button');
     line.className = 'calcLine'; line.textContent = m.expr + ' ＝ ' + fmtCalc(m.result); li.appendChild(line);
     if (m.note) { const n = document.createElement('span'); n.className = 'calcNoteText'; n.textContent = m.note; li.appendChild(n); }
+    const place = document.createElement('button'); place.className = 'calcPlace'; place.textContent = t('calcPlace'); place.onclick = () => placeCalcMemo(m);
     use.className = 'calcUse'; use.textContent = t('calcUse'); use.onclick = () => { $('calcExpr').value = fmtCalc(m.result); calcLive(); $('calcExpr').focus?.(); };
     del.className = 'calcDel'; del.textContent = t('calcDel'); del.onclick = () => commit(() => { doc.calcMemos = (doc.calcMemos || []).filter(x => x.id !== m.id); if (!doc.calcMemos.length) delete doc.calcMemos; });
-    li.appendChild(use); li.appendChild(del); ul.appendChild(li);
+    li.appendChild(place); li.appendChild(use); li.appendChild(del); ul.appendChild(li);
   }
 }
 function initCalc() {
