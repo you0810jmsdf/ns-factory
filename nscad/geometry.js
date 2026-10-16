@@ -335,6 +335,7 @@ export function validateDoc(d) {
     if (s.type === 'image') return nums(s, ['x', 'y', 'wMm', 'hMm', 'angleDeg', 'opacity']) && s.wMm > 0 && s.hMm > 0 && s.opacity >= 0 && s.opacity <= 1 && typeof s.imageId === 'string' && s.imageId.length > 0;
     return s.type === 'polyline' && Array.isArray(s.points) && s.points.length >= (s.closed ? 3 : 2) && typeof s.closed === 'boolean' && s.points.every(p => obj(p) && nums(p, ['x', 'y']));
   })) return false;
+  if (d.calcMemos !== undefined && !(Array.isArray(d.calcMemos) && d.calcMemos.length <= 500 && unique(d.calcMemos) && d.calcMemos.every(m => typeof m.expr === 'string' && m.expr.length <= 300 && Number.isFinite(m.result) && typeof m.note === 'string' && m.note.length <= 500))) return false; /* 計算メモ（式・結果・コメント）。無くてもよい */
   const mark = m => ['tool','diamond','dot','circle','slit'].includes(m);
   if (!mark(d.mark) || !Number.isFinite(d.dotD) || d.dotD <= 0) return false;
   if (!d.tools.every(t => typeof t.name === 'string' && ['diamond', 'european', 'round', 'flat'].includes(t.kind) && nums(t, ['pitch', 'holeW', 'holeH', 'holeD', 'angleDeg']) && t.pitch > 0 && t.holeW > 0 && t.holeH > 0 && t.holeD > 0 && Number.isInteger(t.teeth) && t.teeth > 0 && t.teeth <= 1000 && mark(t.mark))) return false;

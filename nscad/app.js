@@ -3,7 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
-import { scaleInput } from './scale_input.js';
+import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
@@ -1370,7 +1370,7 @@ function importVector(rawShapes, layersFrom, { recover = true } = {}) {
 /** ファイルを開くとき：保存していない図があれば、消さずに新しいタブで開く。タブの名前は、開いたファイルの名前（拡張子なし）にする（事業主指示 2026-10-15：タブはファイル名のほうが分かりやすい／開くで保存前の図が消えない）。 */
 function tabForOpenedFile(file) {
   const base = (file.name || '').replace(/\.(json|lcc)$/i, '').trim().slice(0, 60);
-  if (doc.shapes.length) newTab(base || undefined); /* 図形のある図面は、保存済みでも・前回の続きから戻したものでも、消さずに新しいタブで開く（ファイル間のコピーにも使える）。空の図面だけ、同じタブに開く */
+  if (doc.shapes.length || doc.calcMemos?.length) newTab(base || undefined); /* 図形のある図面は、保存済みでも・前回の続きから戻したものでも、消さずに新しいタブで開く（ファイル間のコピーにも使える）。空の図面だけ、同じタブに開く */
   return base;
 }
 function nameOpenedTab(base) { if (tabs[activeTab]) { if (base) tabs[activeTab].name = base; tabs[activeTab].dirty = false; renderTabs(); } }
@@ -3041,6 +3041,35 @@ function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
   card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+// ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
+let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
+const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
+function calcLive() { const txt = $('calcExpr').value; if (!txt.trim()) { $('calcResult').textContent = ''; return null; } const r = calcExpr(txt, { ans: calcAns }); $('calcResult').textContent = calcMsg(r); return r; }
+function calcEnter() { const r = calcLive(); if (r && r.value !== undefined) calcAns = r.value; }
+function calcSaveMemo() {
+  const txt = $('calcExpr').value.trim(), r = calcExpr(txt, { ans: calcAns }); if (r.error) { $('calcResult').textContent = calcMsg(r); return; }
+  const expr = /ans|答/i.test(txt) ? txt.replace(/ans|答/gi, '(' + fmtCalc(calcAns) + ')') : txt, note = $('calcNote').value.trim().slice(0, 100); /* ans は、そのときの数に置き換えて残す（メモだけで読める） */
+  commit(() => { const list = (doc.calcMemos ||= []); list.push({ id: freshId(list, 'm'), expr, result: r.value, note }); });
+  calcAns = r.value; $('calcExpr').value = ''; $('calcNote').value = ''; $('calcResult').textContent = ''; $('hint').textContent = t('calcSaved', { expr, result: fmtCalc(r.value) });
+}
+function refreshCalcCard() {
+  const list = doc.calcMemos || [], key = JSON.stringify(list) + t('calcUse'); if (key === calcKey) return; calcKey = key;
+  const ul = $('calcList'); ul.textContent = ''; $('calcEmptyMsg').hidden = list.length > 0;
+  for (const m of list) {
+    const li = document.createElement('li'), line = document.createElement('span'), use = document.createElement('button'), del = document.createElement('button');
+    line.className = 'calcLine'; line.textContent = m.expr + ' ＝ ' + fmtCalc(m.result); li.appendChild(line);
+    if (m.note) { const n = document.createElement('span'); n.className = 'calcNoteText'; n.textContent = m.note; li.appendChild(n); }
+    use.className = 'calcUse'; use.textContent = t('calcUse'); use.onclick = () => { $('calcExpr').value = fmtCalc(m.result); calcLive(); $('calcExpr').focus?.(); };
+    del.className = 'calcDel'; del.textContent = t('calcDel'); del.onclick = () => commit(() => { doc.calcMemos = (doc.calcMemos || []).filter(x => x.id !== m.id); if (!doc.calcMemos.length) delete doc.calcMemos; });
+    li.appendChild(use); li.appendChild(del); ul.appendChild(li);
+  }
+}
+function initCalc() {
+  $('calcExpr').addEventListener('input', calcLive);
+  $('calcExpr').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); calcEnter(); } });
+  $('calcNote').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); calcSaveMemo(); } });
+  $('calcSave').onclick = calcSaveMemo;
+}
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
@@ -3430,7 +3459,7 @@ function updateUI() {
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard();
+  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -4537,7 +4566,7 @@ $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
 $('new').onclick = () => {
   /* 保存していない図があるときは、消さずに新しい図面タブで始める（事業主指摘 2026-10-15：新規で保存前の図が消えた）。保存済み・空の図面だけ、従来どおりその場で空にする */
-  if (tabs[activeTab]?.dirty && doc.shapes.length) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
+  if (tabs[activeTab]?.dirty && (doc.shapes.length || doc.calcMemos?.length)) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
   cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
@@ -4631,7 +4660,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
