@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
-import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -673,6 +673,28 @@ function findHoleGaps() {
       const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !sel.some(s => distToShape(s, mid) < 0.5)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
       gapCount++; const dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
       for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
+    }
+  }
+  /* 別々の2本の経路が端でつながっているつなぎ目をまたぐ歯抜け（事業主指摘 2026-10-16：線のつなぎ目の穴が抜けていた）。経路の端から、いちばん近い穴までの距離を足して、ピッチの整数倍なら、隙間を等分して補う。選んだ経路か、選んだ線の上の経路が片側にあれば対象 */
+  const ends = [];
+  for (const p of doc.paths) {
+    if (p.closed) continue; const route = resolvePath(doc, p); if (!route || route.closed) continue; const L = arcLength(route);
+    const hs = doc.holes.filter(h => h.pathId === p.id && h.mark === 'tool' && holeEditable(h)); if (!hs.length) continue;
+    const first = hs.reduce((a, b) => b.s < a.s ? b : a), last = hs.reduce((a, b) => b.s > a.s ? b : a);
+    ends.push({ pid: p.id, route, L, which: 'start', pt: pointAtLength(route, 0), hole: first, d: first.s }, { pid: p.id, route, L, which: 'end', pt: pointAtLength(route, L), hole: last, d: L - last.s });
+  }
+  const routeOf = new Map(ends.map(e => [e.pid, e.route]));
+  for (let i = 0; i < ends.length; i++) for (let j = i + 1; j < ends.length; j++) {
+    const e1 = ends[i], e2 = ends[j]; if (e1.pid === e2.pid || Math.hypot(e1.pt.x - e2.pt.x, e1.pt.y - e2.pt.y) > 0.05 || e1.hole.toolId !== e2.hole.toolId) continue;
+    if (!(ids.has(e1.pid) && !onlyNear.has(e1.pid)) && !(ids.has(e2.pid) && !onlyNear.has(e2.pid))) continue; /* どちらかが、選んだ図形の経路 */
+    const tool = doc.tools.find(t => t.id === e1.hole.toolId); if (!tool) continue;
+    const g = e1.d + e2.d, n = Math.round(g / tool.pitch) - 1; if (n < 1 || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+    gapCount++; const dAng = ((e2.hole.angleDeg - e1.hole.angleDeg + 540) % 360) - 180;
+    for (let k = 1; k <= n; k++) {
+      const tt = k * g / (n + 1); let pid, s;
+      if (tt <= e1.d) { pid = e1.pid; s = e1.which === 'end' ? e1.hole.s + tt : e1.hole.s - tt; } else { const u = tt - e1.d; pid = e2.pid; s = e2.which === 'start' ? u : e2.L - u; }
+      s = Math.max(0, Math.min(pid === e1.pid ? e1.L : e2.L, s)); const pt = pointAtLength(routeOf.get(pid), s);
+      add.push({ ...pt, s, pathId: pid, toolId: e1.hole.toolId, angleDeg: e1.hole.angleDeg + dAng * k / (n + 1), mark: 'tool' });
     }
   }
   return { add, gapCount };
@@ -4673,6 +4695,10 @@ async function save(asNew = false) {
   /* 紙を分けた三面図は、正面の紙を本体にして上・右の紙を一緒に 1 つのファイルへ入れる（どの紙のタブから保存しても同じ） */
   const sheets = quadSheets(); let payload = doc, tab = tabs[activeTab];
   if (doc.threeViewSheet && sheets.front) { const docOf = tb => tb === tabs[activeTab] ? doc : tb.doc; tab = sheets.front; payload = { ...docOf(sheets.front), threeViewSheets: { top: sheets.top ? docOf(sheets.top) : null, side: sheets.side ? docOf(sheets.side) : null } }; }
+  /* 保存の前に図面の検査を通す。直せる不整合は直し、直せなければ保存を止める（読み込めない図面を保存して、作業が失われるのを防ぐ・事業主指示 2026-10-16） */
+  const docsToCheck = payload === doc ? [doc] : [payload, payload.threeViewSheets?.top, payload.threeViewSheets?.side].filter(Boolean);
+  for (const d of docsToCheck) healDoc(d);
+  if (!docsToCheck.every(d => validateDoc(d))) { $('hint').textContent = t('saveInvalid'); return; }
   const text = JSON.stringify(payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
   const clean = () => { for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs(); };
   if (typeof globalThis.showSaveFilePicker !== 'function') {
