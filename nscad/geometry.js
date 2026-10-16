@@ -385,6 +385,8 @@ export function migrateDoc(input) {
     if (!has('hardware') && d.shapes.some(s => s.layer === 'hardware')) d.layers.splice(Math.min(1, d.layers.length), 0, { id: 'hardware', name: 'hardware', visible: true, locked: false });
     d.version = 8;
   }
+  /* 経路の「閉じている」を、実際の線に合わせる。区間選択で線を切り分けたあと、新しい経路が元の印を引き継いで、検査に通らず読み込めなくなった図面を直す（2026-10-16 不具合記録） */
+  if (d.version === 8 && Array.isArray(d.paths) && Array.isArray(d.shapes)) for (const p of d.paths) { try { const route = resolvePath(d, p); if (route && typeof route.closed === 'boolean' && route.closed !== p.closed) p.closed = route.closed; } catch { /* 直せない経路は、そのまま（検査で弾く） */ } }
   return d;
 }
 /** 画像（下絵）の回転前ローカル矩形。 */

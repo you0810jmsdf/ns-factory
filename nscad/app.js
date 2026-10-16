@@ -3268,7 +3268,7 @@ function applyShapeParts(hit, parts) {
   }
   for (const [sid, list] of groups) {
     const np = { ...oldPath, id: freshId(doc.paths, 'p'), shapeIds: [sid], reversed: false, segments: [] }; doc.paths.push(np);
-    const route = resolvePath(doc, np);
+    const route = resolvePath(doc, np); if (route) np.closed = route.closed; /* 切り分けた線は閉じていないことがある。元の経路の「閉じている」を引き継がない（検査に通らなくなる） */
     for (const h of list) doc.holes.push({ ...h, pathId: np.id, s: route ? projectOnPath(route, { x: h.x, y: h.y }).s : 0 });
   }
   }
