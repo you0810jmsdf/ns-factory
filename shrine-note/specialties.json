@@ -2860,6 +2860,27 @@
           "review_count": 320
         }
       ]
+    },
+    {
+      "shrine_id": "chiriku",
+      "pref": "佐賀県",
+      "fetched_at": "2026-10-12",
+      "items": [
+        {
+          "name": "白石町産 泥付きれんこん レンコン 蓮根 野菜 根菜 高評価 佐賀県 白石町 白石",
+          "shop": "佐賀県白石町",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00sxc98.0r79k510.g00sxc98.0r79l869/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Ff414255-shiroishi%2Fiak015%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Ff414255-shiroishi%2Fi%2F10000238%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.73,
+          "review_count": 153
+        },
+        {
+          "name": "唐津 佐賀 名産 選べる Mother’s Day 楽天限定 母の日特別限定セット 唐津…",
+          "shop": "九州唐津ひもの鯨海産物の岩本商店",
+          "url": "https://hb.afl.rakuten.co.jp/hgc/g00qobd8.0r79k579.g00qobd8.0r79ld5d/?pc=https%3A%2F%2Fitem.rakuten.co.jp%2Fkaratsu-iwamoto%2Fhimono-hahanohi01%2F&m=http%3A%2F%2Fm.rakuten.co.jp%2Fkaratsu-iwamoto%2Fi%2F10000267%2F&rafcid=wsc_i_is_88ea717f-f7c2-4370-a1e2-0d815f1d57fc",
+          "review_average": 4.86,
+          "review_count": 21
+        }
+      ]
     }
   ]
 }
