@@ -4532,6 +4532,7 @@ canvas.addEventListener('pointerup', e => {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
       selected = expandToGroups(doc.shapes, selected); /* 囲んだ図形がグループなら全体を選ぶ */
+      for (const h of doc.holes) if (holeVisible(h) && holeEditable(h) && !markHidden(h) && h.x >= minX && h.x <= maxX && h.y >= minY && h.y <= maxY) selected.add(h.id); /* 囲んだ範囲の穴（菱目）も選ぶ（事業主指示 2026-10-16）。中心が範囲の中にあるもの */
     }
   } else if (g.kind === 'draw' && mode === 'arc' && arcHalf()) {
     stage = { kind: 'half', pts: [g.start] }; $('hint').textContent = t('arcHalfHint');
