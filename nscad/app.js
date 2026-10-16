@@ -527,7 +527,11 @@ function stitchPointCandidates(w) {
     if (!state.fresh) for (const h of doc.holes) if (h.pathId === saved.id) cands.push(h.s);
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
     const s = best !== null && bd <= 14 / scale ? best : projectOnPath(route, w).s;
-    out.push({ key, state, s, p: pointAtLength(route, s) });
+    /* 別の経路の既存の穴にも吸着する（画面14px以内・その線から 1.5mm 以内）。吸着先より穴のほうがクリックに近いとき、その穴を「0番目の穴」とする：線の端より外にある穴なら、anchorS＝線の外の位置（始点側 −距離／終点側 長さ＋距離）。打ち始めは、この穴からピッチを続けて数える（つなぎ目を越えても間隔が変わらない・事業主指摘 2026-10-16） */
+    let anchorS, ah = null, adist = Infinity;
+    for (const h of doc.holes) { if (h.pathId === saved.id) continue; const dh = Math.hypot(h.x - w.x, h.y - w.y); if (dh > 14 / scale || dh >= adist) continue; if (best !== null && bd <= 14 / scale && dh >= bd - 1e-9) continue; const pr = projectOnPath(route, h); if (distance(pr, h) > 1.5) continue; ah = { h, pr }; adist = dh; }
+    let sUse = s; if (ah) { const { h, pr } = ah; if (pr.s <= 1e-6) { anchorS = -distance(pointAtLength(route, 0), h); sUse = 0; } else if (pr.s >= len - 1e-6) { anchorS = len + distance(pointAtLength(route, len), h); sUse = len; } else { anchorS = pr.s; sUse = pr.s; } }
+    out.push({ key, state, s: sUse, anchorS, p: pointAtLength(route, sUse) });
   }
   return out;
 }
@@ -550,7 +554,12 @@ function rangeStitchClick(w) {
       /* 固定ピッチは、先にクリックした点（始点）から数え始める。始点が線の上の位置の大きいほう（hi）なら、hi から lo のほうへ数える。始端・終端の空きも、先にクリックした側が始端（事業主指摘 2026-10-16：右辺中央から上下へ打つと、下は点線側から数えていて、折り返しても重ならなかった） */
       const opts = stitchOptions(), startAtHi = pair.first.s > pair.c.s + 1e-9, from = lo + (startAtHi ? opts.offsetEnd : opts.offsetStart), to = hi - (startAtHi ? opts.offsetStart : opts.offsetEnd); pitch = tool.pitch; mode = kind;
       if (from > to || len < 1e-9) { $('hint').textContent = t('invalidRange'); return; }
-      if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + 1e-9) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = to - i * tool.pitch; return { ...pointAtLength(route, sp), s: sp }; }); }
+      const anchorS = pair.first.anchorS; /* 始点を既存の穴に置いたとき：その穴を 0 番目として、ピッチを続けて数える */
+      if (kind === 'fixed' && anchorS !== undefined && Math.abs(anchorS - pair.first.s) > 1e-6) {
+        points = []; if (!startAtHi) { for (let sp = anchorS + Math.max(1, Math.ceil((from - anchorS - 1e-9) / tool.pitch)) * tool.pitch; sp <= to + 1e-9; sp += tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); }
+        else { for (let sp = anchorS - Math.max(1, Math.ceil((anchorS - to - 1e-9) / tool.pitch)) * tool.pitch; sp >= from - 1e-9; sp -= tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); points.sort((p, q) => p.s - q.s); }
+      }
+      else if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + 1e-9) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = to - i * tool.pitch; return { ...pointAtLength(route, sp), s: sp }; }); }
       else points = pointsAlongShape(route, tool.pitch, { offsetStart: from, offsetEnd: len - to, variable: kind === 'variable' });
       const corners = cornerHoles(route, opts.corner).filter(p => p.s >= from - 1e-7 && p.s <= to + 1e-7);
       for (const c of corners) { points = points.filter(p => Math.abs(p.s - c.s) > 1e-6); points.push(c); }
