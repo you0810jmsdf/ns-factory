@@ -643,8 +643,11 @@ function holePosition(h,p) {
 }
 /** 「穴の点検」：選んだ線（経路）の上で、穴の間隔が空きすぎている所（歯抜け）を探し、隙間の中で等間隔に穴を補う（事業主指示 2026-10-16・補い方は「隙間の中で等間隔」・範囲は「選んだ線だけ」）。
  *  歯抜けとみなすのは、隣り合う同じ工具の穴の間隔が、ピッチの整数倍（2倍以上・誤差はピッチの0.3倍まで）のとき。わざと空けた所（整数倍でない隙間）は補わない。向きは両隣の穴の間をなめらかにつなぐ。 */
-function checkHoles() {
-  const ids = new Set(); for (const p of doc.paths) if (p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
+function findHoleGaps() {
+  /* 対象：選んだ図形の経路と、選んだ菱目の経路。さらに、選んだ線の上（0.5mm以内）に穴が乗っている経路（穴の付いた線に、別の線が重なっているとき、上の線を選んでも点検できる）。後者は、選んだ線の上にある歯抜けだけを補う（事業主指摘 2026-10-16 「反応なし」） */
+  const ids = new Set(), onlyNear = new Set(), sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image');
+  for (const p of doc.paths) if (p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
+  for (const p of doc.paths) if (!ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && sel.some(s => distToShape(s, h) < 0.5))) { ids.add(p.id); onlyNear.add(p.id); }
   const add = []; let gapCount = 0;
   for (const pid of ids) {
     const path = doc.paths.find(p => p.id === pid), route = path && resolvePath(doc, path); if (!route) continue;
@@ -652,10 +655,22 @@ function checkHoles() {
     for (let i = 1; i < hs.length; i++) {
       const a = hs[i - 1], b = hs[i], tool = doc.tools.find(t => t.id === a.toolId); if (!tool || a.toolId !== b.toolId) continue;
       const g = b.s - a.s, n = Math.round(g / tool.pitch) - 1; if (n < 1 || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
+      const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !sel.some(s => distToShape(s, mid) < 0.5)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
       gapCount++; const dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
       for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
     }
   }
+  return { add, gapCount };
+}
+/** ボタンの表示：押す前に、歯抜けが何か所ありそうかを知らせる。選択・穴が変わったときだけ数え直す（描き直しのたびには数えない）。 */
+let gapKey = null;
+function refreshGapCount() {
+  const key = [...selected].join(',') + '|' + undo.length + '|' + redo.length + '|' + doc.holes.length + '|' + activeTab + '|' + t('checkHoles'); if (key === gapKey) return; gapKey = key;
+  const n = selected.size ? findHoleGaps().gapCount : 0;
+  $('checkHolesLabel').textContent = n ? t('checkHolesN', { n }) : t('checkHoles'); $('checkHoles').title = n ? t('checkHolesTip') + ' — ' + t('checkHolesN', { n }) : t('checkHolesTip');
+}
+function checkHoles() {
+  const { add, gapCount } = findHoleGaps();
   if (!add.length) { $('hint').textContent = t('noGapFound'); return; }
   commit(() => { const made = []; for (const h of add) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } selected = new Set(made); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
@@ -3496,7 +3511,7 @@ function updateUI() {
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
-  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length;
+  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
