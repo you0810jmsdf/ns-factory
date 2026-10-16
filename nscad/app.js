@@ -709,12 +709,20 @@ function findHoleGaps(wholeDoc = false) {
 }
 /** ボタンの表示：押す前に、歯抜けが何か所ありそうかを知らせる。選択・穴が変わったときだけ数え直す（描き直しのたびには数えない）。 */
 /** 図面を開いた直後の案内：図面全体の歯抜けの可能性を数え、あれば案内の末尾に足す（無ければ何も言わない・事業主指示 2026-10-16）。 */
-function noticeGaps() { let n = 0; try { n = findHoleGaps(true).gapCount; } catch { /* 数えられなくても、開く処理は止めない */ } if (n) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('gapNotice', { n }); }
-let gapKey = null;
+function noticeGaps() { let n = 0; try { const g = findHoleGaps(true); n = g.gapCount; openGapMarks = g.add; } catch { /* 数えられなくても、開く処理は止めない */ } if (n) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('gapNotice', { n }); }
+let gapKey = null, selGapMarks = [], openGapMarks = []; /* 歯抜けの赤い輪の位置。selGapMarks＝選んだ線の歯抜け（選んでいる間）／openGapMarks＝図面を開いた直後の図面全体の歯抜け（編集・タブ切り替えで消える） */
+/** 歯抜けの場所に、赤い輪を描く（補う予定の位置・事業主指示 2026-10-16）。書き出し・印刷には出さない。 */
+function drawGapMarks() {
+  if (exporting) return; const list = [...selGapMarks, ...openGapMarks]; if (!list.length) return;
+  ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff3b3b'; ctx.lineWidth = 2 / scale; const r = Math.max(2.2, 9 / scale);
+  for (const m of list) { ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.restore();
+}
 function refreshGapCount() {
   const key = [...selected].join(',') + '|' + undo.length + '|' + redo.length + '|' + doc.holes.length + '|' + activeTab + '|' + t('checkHoles'); if (key === gapKey) return; gapKey = key;
-  const n = selected.size ? findHoleGaps().gapCount : 0;
+  const gs = selected.size ? findHoleGaps() : { gapCount: 0, add: [] }, n = gs.gapCount, changed = gs.add.length !== selGapMarks.length || gs.add.some((m, i) => Math.abs(m.x - selGapMarks[i].x) > 1e-6 || Math.abs(m.y - selGapMarks[i].y) > 1e-6); selGapMarks = gs.add;
   $('checkHolesLabel').textContent = n ? t('checkHolesN', { n }) : t('checkHoles'); $('checkHoles').title = n ? t('checkHolesTip') + ' — ' + t('checkHolesN', { n }) : t('checkHolesTip');
+  if (changed) draw(); /* 印を出す・消すために、一度だけ描き直す（同じ状態では、ここへ来ても何もしない） */
 }
 function checkHoles() {
   const { add, gapCount } = findHoleGaps();
@@ -2231,7 +2239,7 @@ function renderTabs() {
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
 }
 function switchTab(i) {
-  if (i === activeTab || !tabs[i]) return; snapshotTab(); activeTab = i; const tab = tabs[i];
+  if (i === activeTab || !tabs[i]) return; openGapMarks = []; snapshotTab(); activeTab = i; const tab = tabs[i];
   doc = tab.doc; syncMarkLines(); undo = tab.undo; redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
@@ -3604,7 +3612,7 @@ function syncMarkLines() {
 /** 直線に置き換わった目印の記号は、画面に描かず・クリックの対象にもしない（直線のほうを使う）。 */
 const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
 function commit(fn) {
-  ownPathsCache = null;
+  ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
   const before = JSON.stringify(doc);
   fn(); const dupHoles = dedupeHoles(); syncMarkLines(); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
@@ -4323,7 +4331,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage(); drawChainStops();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage(); drawChainStops(); drawGapMarks();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
