@@ -547,7 +547,7 @@ function rangeStitchClick(w) {
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
   const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s); countStage = null;
-  let points, pitch, mode, leftover = null; /* leftover＝固定ピッチのあまり（mm・終点側）。固定ピッチ以外は null */
+  let points, pitch, mode, leftover = null, anchoredHole = false; /* anchoredHole＝始点が、別の経路の既存の穴に吸着した（固定ピッチ） */ /* leftover＝固定ピッチのあまり（mm・終点側）。固定ピッチ以外は null */
   try {
     if (kind === 'count') { pitch = (hi - lo) / (n - 1); mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
     else {
@@ -556,7 +556,7 @@ function rangeStitchClick(w) {
       if (from > to || len < 1e-9) { $('hint').textContent = t('invalidRange'); return; }
       const anchorS = pair.first.anchorS; /* 始点を既存の穴に置いたとき：その穴を 0 番目として、ピッチを続けて数える */
       if (kind === 'fixed' && anchorS !== undefined && Math.abs(anchorS - pair.first.s) > 1e-6) {
-        points = []; if (!startAtHi) { for (let sp = anchorS + Math.max(1, Math.ceil((from - anchorS - 1e-9) / tool.pitch)) * tool.pitch; sp <= to + 1e-9; sp += tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); }
+        anchoredHole = true; points = []; if (!startAtHi) { for (let sp = anchorS + Math.max(1, Math.ceil((from - anchorS - 1e-9) / tool.pitch)) * tool.pitch; sp <= to + 1e-9; sp += tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); }
         else { for (let sp = anchorS - Math.max(1, Math.ceil((anchorS - to - 1e-9) / tool.pitch)) * tool.pitch; sp >= from - 1e-9; sp -= tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); points.sort((p, q) => p.s - q.s); }
       }
       else if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + 1e-9) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = to - i * tool.pitch; return { ...pointAtLength(route, sp), s: sp }; }); }
@@ -588,7 +588,7 @@ function rangeStitchClick(w) {
     }
     saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode }); selected = new Set(added);
   });
-  $('hint').textContent = (kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) })) + (leftover === null ? '' : ' ' + (leftover < 0.005 ? t('rangeLeftNone') : t('rangeLeft', { r: leftover.toFixed(2) }))); draw();
+  $('hint').textContent = (kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) })) + (leftover === null ? '' : ' ' + (leftover < 0.005 ? t(anchoredHole ? 'rangeAnchorLeftNone' : 'rangeLeftNone') : t(anchoredHole ? 'rangeAnchorLeft' : 'rangeLeft', { r: leftover.toFixed(2) }))); draw();
 }
 function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
   if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
