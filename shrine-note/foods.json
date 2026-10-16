@@ -1,0 +1,286 @@
+{
+  "updated": "2026-10-16",
+  "policy": "神社の近くの飲食店の『行ってみたい店（候補）』。Googleマップの口コミ評価を参考に選んだ（評価の数字・住所・口コミの原文は載せない。Google Maps Platform の規約）。公開するのは、店名・ジャンル・店自身のサイトまたはSNS等のリンク・place_id（Googleマップへのリンク用）だけ。私たちは実際に訪れていない。広告ではない（アフィリエイトではない）",
+  "foods": [
+    {
+      "shrine_id": "ise",
+      "fetched": "2026-10-16",
+      "items": [
+        {
+          "name": "和cafe ととのま",
+          "genre": {
+            "ja": "カフェ",
+            "en": "Café"
+          },
+          "place_id": "ChIJhT_wQL1RBGARKskGRoomDNw",
+          "url": "https://www.instagram.com/wacafe_totonoma/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "ゑびや大食堂",
+          "genre": {
+            "ja": "和食（定食）",
+            "en": "Japanese set meals"
+          },
+          "place_id": "ChIJ47r9eexQBGARiQ39l8aCbcY",
+          "url": "https://daishokudo.ise-ebiya.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "茶房山中",
+          "genre": {
+            "ja": "カフェ・甘味",
+            "en": "Café & sweets"
+          },
+          "place_id": "ChIJoZxJb-xQBGARjpU2ct942ps",
+          "url": "https://www.instagram.com/sabouyamanaka/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "五十鈴茶屋",
+          "genre": {
+            "ja": "甘味処",
+            "en": "Japanese sweets"
+          },
+          "place_id": "ChIJaxYnq-xQBGARNRMVH-zuXtc",
+          "url": "https://www.isuzuchaya.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "宝彩",
+          "genre": {
+            "ja": "食事処",
+            "en": "Restaurant"
+          },
+          "place_id": "ChIJi7hfm5RQBGARyz5gkFwcdtI",
+          "url": "http://isehousai.com/",
+          "url_kind": "official"
+        }
+      ]
+    },
+    {
+      "shrine_id": "izumo",
+      "fetched": "2026-10-16",
+      "items": [
+        {
+          "name": "平和そば本店",
+          "genre": {
+            "ja": "そば",
+            "en": "Soba noodles"
+          },
+          "place_id": "ChIJIUr9JoNcVzURXsvshDKvmZg",
+          "url": "https://www.heiwasoba.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "そば耕一",
+          "genre": {
+            "ja": "そば",
+            "en": "Soba noodles"
+          },
+          "place_id": "ChIJKZVwu31dVzURwbWJ17CJ9NA",
+          "url": "https://soba-kouichi.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "大〆",
+          "genre": {
+            "ja": "居酒屋",
+            "en": "Izakaya (pub)"
+          },
+          "place_id": "ChIJP1RtcJxcVzURDxogV9R_8C4",
+          "url": "http://www.daishime-izumo.jp/",
+          "url_kind": "official"
+        },
+        {
+          "name": "LoTa -日本茶とアイスクリーム-",
+          "genre": {
+            "ja": "日本茶・アイス",
+            "en": "Tea & ice cream"
+          },
+          "place_id": "ChIJOZWeFF9dVzUR-A_b8LGLepo",
+          "url": "https://www.instagram.com/lota_craft_lab/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "koharu",
+          "genre": {
+            "ja": "カフェ",
+            "en": "Café"
+          },
+          "place_id": "ChIJgfuCkDRdVzURgt0ZM2ut86w",
+          "url": "https://izumo.mypl.net/shop/00000375352/",
+          "url_kind": "portal"
+        }
+      ]
+    },
+    {
+      "shrine_id": "itsukushima",
+      "fetched": "2026-10-16",
+      "items": [
+        {
+          "name": "喫茶 しま",
+          "genre": {
+            "ja": "喫茶",
+            "en": "Coffee shop"
+          },
+          "place_id": "ChIJxQeRG7GwWjURu_jbf9JgcEY",
+          "url": "http://kissa-shima.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "汐まち寿司つるみ",
+          "genre": {
+            "ja": "寿司",
+            "en": "Sushi"
+          },
+          "place_id": "ChIJB1I8SmOxWjURcbdqePvcTRk",
+          "url": "https://shiomachian.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "ぎゃらりぃ宮郷 茶房",
+          "genre": {
+            "ja": "茶房",
+            "en": "Tea room"
+          },
+          "place_id": "ChIJwdIb0LawWjURlN7ELSndn1s",
+          "url": "http://ww4.tiki.ne.jp/~miyazato/",
+          "url_kind": "official"
+        },
+        {
+          "name": "山村茶屋",
+          "genre": {
+            "ja": "和食",
+            "en": "Japanese"
+          },
+          "place_id": "ChIJP4xQMrawWjURnH8NCTKXJ6g",
+          "url": "https://japoncompany.business/hatsukaichi/544178-yamamura-chaya",
+          "url_kind": "portal"
+        },
+        {
+          "name": "JapaneseEspressoCafe珈琲創庫coffee-souko",
+          "genre": {
+            "ja": "コーヒー",
+            "en": "Coffee"
+          },
+          "place_id": "ChIJs5_s-rWwWjURnrSXB2iDdB4",
+          "url": "https://www.coffee-souko.com/",
+          "url_kind": "official"
+        }
+      ]
+    },
+    {
+      "shrine_id": "tsurugaoka",
+      "fetched": "2026-10-16",
+      "items": [
+        {
+          "name": "鎌倉ふくみ",
+          "genre": {
+            "ja": "和食",
+            "en": "Japanese"
+          },
+          "place_id": "ChIJ1WdlzN1FGGARWatX3CZB8tE",
+          "url": "https://kamakurafukumi.com/",
+          "url_kind": "official"
+        },
+        {
+          "name": "鎌倉倶楽部 茶寮小町",
+          "genre": {
+            "ja": "甘味処・喫茶",
+            "en": "Tea room & sweets"
+          },
+          "place_id": "ChIJHWQ-F05FGGARqGhEu30ZcyY",
+          "url": "https://kamakura-club.com/tearoom/",
+          "url_kind": "official"
+        },
+        {
+          "name": "和処大むら",
+          "genre": {
+            "ja": "居酒屋",
+            "en": "Izakaya (pub)"
+          },
+          "place_id": "ChIJqeQLPcZFGGARx0wTvRso7tY",
+          "url": "https://www.instagram.com/oomura2429/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "麺吾郎",
+          "genre": {
+            "ja": "ラーメン",
+            "en": "Ramen"
+          },
+          "place_id": "ChIJq8K3PABFGGAR8kvzLrw8-1Q",
+          "url": "https://www.instagram.com/mengoro_kamakura/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "鎌倉らーめん物語",
+          "genre": {
+            "ja": "ラーメン",
+            "en": "Ramen"
+          },
+          "place_id": "ChIJHbLxhTZFGGARyVz9MSBaFlQ",
+          "url": "https://www.instagram.com/kamakuramen",
+          "url_kind": "sns"
+        }
+      ]
+    },
+    {
+      "shrine_id": "kumanohayatama",
+      "fetched": "2026-10-16",
+      "items": [
+        {
+          "name": "東宝茶屋",
+          "genre": {
+            "ja": "和食",
+            "en": "Japanese"
+          },
+          "place_id": "ChIJ6SfXOa5sBmARLL-jJkZX3rs",
+          "url": "https://www.shinguu.jp/spots/detail/C0051",
+          "url_kind": "portal"
+        },
+        {
+          "name": "Cafe 丹福",
+          "genre": {
+            "ja": "カフェ",
+            "en": "Café"
+          },
+          "place_id": "ChIJMxh_kdBtBmARJt4f9fJ7byw",
+          "url": "https://www.instagram.com/tanpuku_cafe/",
+          "url_kind": "sns"
+        },
+        {
+          "name": "カフェプチレストSetsu (せつ)",
+          "genre": {
+            "ja": "カフェ",
+            "en": "Café"
+          },
+          "place_id": "ChIJ7bNTca9sBmARDIodj1EQlok",
+          "url": "https://tabelog.com/wakayama/A3005/A300501/30002272/",
+          "url_kind": "portal"
+        },
+        {
+          "name": "味斗",
+          "genre": {
+            "ja": "居酒屋",
+            "en": "Izakaya (pub)"
+          },
+          "place_id": "ChIJpfbkr69sBmARlpsxV03B5sg",
+          "url": "https://instagram.com/ajito2359",
+          "url_kind": "sns"
+        },
+        {
+          "name": "まるみ食堂",
+          "genre": {
+            "ja": "食堂",
+            "en": "Casual diner"
+          },
+          "place_id": "ChIJXYJrFLJsBmARg5lGg7Ia9Rg",
+          "url": "https://www.instagram.com/marumi.shokudo/",
+          "url_kind": "sns"
+        }
+      ]
+    }
+  ]
+}
