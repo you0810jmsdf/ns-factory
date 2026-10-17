@@ -3829,11 +3829,14 @@ function transformAboutCenter(kind) {
   transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s));
   if (kind !== 'rotate' && doc.shapes.some(s => selected.has(s.id) && partOf(s))) { const ids = new Set(selected); commit(() => flipMark(ids)); }
 }
-function askNumber(key, initial) {
+/** 数の入力ダイアログ。remember（丸め・面取りなど）を渡すと、前回入れた数を初期値にする（ブラウザに保存・事業主指示 2026-10-17）。キャンセル・不正な入力では前回の値を変えない。 */
+function askNumber(key, initial, remember) {
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; return v; }
-  const raw = window.prompt(t(key), String(initial));
+  let start = initial; if (remember) { try { const saved = localStorage.getItem('leather-cad.ask.' + remember); if (saved !== null && Number.isFinite(Number(saved))) start = Number(saved); } catch { /* 保存を読めなくても、既定の値で続ける */ } }
+  const raw = window.prompt(t(key), String(start));
   if (raw === null) return null;
   if (!raw.trim() || !Number.isFinite(Number(raw))) { $('hint').textContent = t('invalidNumber'); return null; }
+  if (remember) { try { localStorage.setItem('leather-cad.ask.' + remember, String(Number(raw))); } catch { /* 保存できなくても続ける */ } }
   return Number(raw);
 }
 /** 折れ線の角を丸め(fillet)／面取り(chamfer)した直線と円弧の列を返す。only は角の頂点番号（null=全部）。不成立は null。 */
@@ -3878,7 +3881,7 @@ function roundPolylineAt(poly, p) {
   const affected = new Set(doc.paths.filter(q => q.shapeIds.includes(poly.id)).map(q => q.id));
   if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); return; }
   const near = poly.points.map((v, i) => [distance(v, p), i]).filter(([d]) => d <= 9 / scale).sort((x, y) => x[0] - y[0])[0];
-  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
+  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3, mode === 'fillet' ? 'fillet' : 'chamfer'); if (r === null) return;
   const shapes = roundPolylineCorners(poly, near ? [near[1]] : null, r, mode);
   if (!shapes) { $('hint').textContent = t('impossible'); return; }
   commit(() => {
@@ -4027,7 +4030,7 @@ const curveType = x => ['arc', 'bezier', 'path', 'circle'].includes(x?.type);
 function curveFillet(first, pFirst, hit, p) {
   const affected = new Set(doc.paths.filter(q => q.shapeIds.some(id => id === first.id || id === hit.id)).map(q => q.id));
   if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); cancel(); return; }
-  const r = askNumber('radius', 3); if (r === null) { cancel(); return; }
+  const r = askNumber('radius', 3, 'fillet'); if (r === null) { cancel(); return; }
   const res = filletCurves(first, pFirst, hit, p, r); if (!res) { $('hint').textContent = t('impossible'); cancel(); return; }
   cancel();
   commit(() => {
@@ -4081,7 +4084,7 @@ function editAt(p) {
   if (!first) { cancel(); return; }
   const affectedPaths=new Set(doc.paths.filter(p=>p.shapeIds.includes(first.id)||p.shapeIds.includes(hit.id)).map(p=>p.id));
   if (roundHoleBlock(affectedPaths)) { $('hint').textContent = t('holeChamfer'); return; }
-  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
+  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3, mode === 'fillet' ? 'fillet' : 'chamfer'); if (r === null) return;
   let arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r), gen = null;
   if (!arc) { gen = stage.click ? roundLinesAt(first, stage.click, lineOf(hit), p, r, mode) : null; arc = gen?.arc; } /* 端がつながっていない・交わっていない・鈍角などの2本は、のばした交点を角にして、のばす／切り詰めて丸める */
   if (!arc) { const ch = chainAround(first, lineOf(hit)); if (ch) { if (roundHoleBlock(new Set(doc.paths.filter(q => [...ch.ids].some(id => q.shapeIds.includes(id))).map(q => q.id)))) { $('hint').textContent = t('holeChamfer'); return; } const res = roundChainAt(first, ch.c1, lineOf(hit), ch.c2, r, mode); if (res) { applyRoundChain(first, hit, res, ch, affectedPaths); return; } } } /* 角の線が短くて入らないときは、同じ直線上につながった続きの線（層が違ってもよい）まで1本の辺として丸める（不具合記録 2026-10-17） */
