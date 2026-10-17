@@ -1031,6 +1031,12 @@ function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer)
 /** 作図先の層だけを表示し、他の層を隠す。 */
 function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
 function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
+/** 見えていて編集できる図形のうち、点線（lineStyle が dashed）を、色に関わらずすべて選ぶ（事業主指示 2026-10-17：一括でガイド層へ移すため）。 */
+function pickDashedAll() {
+  const ids = doc.shapes.filter(s => visible(s) && editable(s) && !s.holeLink && s.lineStyle === 'dashed').map(s => s.id);
+  if (!ids.length) { $('hint').textContent = t('layerPickNoneDashed'); return; }
+  selected = new Set(ids); nodeSel = null; $('hint').textContent = t('layerPickedDashed', { n: ids.length }); draw();
+}
 /** 見えていて編集できる図形のうち、黄色の点線（オフセット線など）をすべて選ぶ。 */
 function pickYellowDashed() {
   const ids = doc.shapes.filter(s => visible(s) && editable(s) && s.color === 'yellow' && s.lineStyle === 'dashed').map(s => s.id);
@@ -1049,7 +1055,7 @@ function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
   $('layerName').addEventListener('change', () => { const name = $('layerName').value.trim(); if (name) commit(() => { doc.layers.find(l => l.id === activeLayer).name = name; }); renderLayers(); });
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
-  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
+  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed; $('layerPickDashed').onclick = pickDashedAll;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
   $('showModHelp').checked = modHelpOn; $('showModHelp').addEventListener('change', e => { modHelpOn = e.target.checked; try { localStorage.setItem('leather-cad.modHelp', modHelpOn ? 'on' : 'off'); } catch { /* 保存できなくても続ける */ } refreshModHelp(); });
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
@@ -2980,7 +2986,7 @@ function makeFoldBaselines() {
 function mergeSelectedLines() {
   const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
   const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && !s.foldFlat, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
-  for (const s of cand) { const key = [s.layer, s.lineStyle || '', s.color || '', groupIdOf(s) || ''].join('|'); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
+  for (const s of cand) { const key = [s.layer, s.lineStyle || '', groupIdOf(s) || ''].join('|'); /* 色は区別しない（トリムなどで一部の色が抜けた短い線が混ざることがある）。まとめた線の色は、いちばん長い線のもの */ if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
   const clusters = [...groups.values()].flatMap(list => collinearLineClusters(list)).filter(c => c.ids.some(id => ids.has(id)));   /* 選んだ線を1本以上含むまとまりだけ */
   const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
   const ok = clusters.filter(c => { const set = new Set(c.ids); return doc.paths.filter(p => p.shapeIds.some(id => set.has(id))).every(p => p.shapeIds.every(id => set.has(id)) && !seamPaths.has(p.id)); });
@@ -2988,7 +2994,7 @@ function mergeSelectedLines() {
   cancel(); let made = 0, total = 0, newIds = [];
   commit(() => {
     for (const c of ok) {
-      const set = new Set(c.ids), members = doc.shapes.filter(s => set.has(s.id)), first = members[0], look = {}; for (const [k, v] of Object.entries(first)) if (!GEOM.has(k)) look[k] = v;
+      const set = new Set(c.ids), members = doc.shapes.filter(s => set.has(s.id)), first = members[0], longest = members.reduce((m, q) => arcLength(q) > arcLength(m) ? q : m, first), look = {}; for (const [k, v] of Object.entries(longest)) if (!GEOM.has(k)) look[k] = v;
       const affected = doc.paths.filter(p => p.shapeIds.some(id => set.has(id))), olds = new Map(affected.map(p => [p.id, resolvePath(doc, p)]));
       const nid = freshId(doc.shapes, 's'), line = { ...look, id: nid, type: 'line', x1: c.p1.x, y1: c.p1.y, x2: c.p2.x, y2: c.p2.y }, at = doc.shapes.findIndex(s => s.id === first.id);
       doc.shapes = doc.shapes.filter(s => !set.has(s.id)); doc.shapes.splice(Math.min(at, doc.shapes.length), 0, line);
