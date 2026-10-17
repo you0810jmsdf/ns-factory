@@ -4085,6 +4085,16 @@ function applyRoundChain(first, hit, res, ch, affectedPaths) {
   });
   $('hint').textContent = t('hint.chamfer');
 }
+/** 2本の直線 first・second の角に、前に丸めた（面取りした）円弧・直線が残っているか：2本を延ばして交わる角から近いほうの端どうしが離れていて、その2つの端をつなぐ円弧か直線があれば、それ（古いつなぎ）を返す。初めての角（端が同じ点）や平行な2本、つなぐものが無いときは null。三角形の斜めの辺のような、ほかの図形は、近いほうの端をつないでいないので対象にならない。 */
+function oldCornerConnector(first, second) {
+  const d1 = { x: first.x2 - first.x1, y: first.y2 - first.y1 }, d2 = { x: second.x2 - second.x1, y: second.y2 - second.y1 }, den = d1.x * d2.y - d1.y * d2.x;
+  if (Math.abs(den) < 1e-9) return null;
+  const tt = ((second.x1 - first.x1) * d2.y - (second.y1 - first.y1) * d2.x) / den, C = { x: first.x1 + d1.x * tt, y: first.y1 + d1.y * tt };
+  const nearEnd = l => [{ x: l.x1, y: l.y1 }, { x: l.x2, y: l.y2 }].reduce((m, q) => distance(m, C) <= distance(q, C) ? m : q);
+  const P = nearEnd(first), Q = nearEnd(second); if (distance(P, Q) < 1e-6) return null;
+  const same = (u, v) => distance(u, v) < 1e-4;
+  return doc.shapes.find(o => { if (o.id === first.id || o.id === second.id || !editable(o)) return false; let e = null; if (o.type === 'arc') e = [circlePoint(o, o.startDeg), circlePoint(o, o.endDeg)]; else if (o.type === 'line') e = [{ x: o.x1, y: o.y1 }, { x: o.x2, y: o.y2 }]; return !!e && ((same(e[0], P) && same(e[1], Q)) || (same(e[0], Q) && same(e[1], P))); }) || null;
+}
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && curveType(s))));
@@ -4115,9 +4125,11 @@ function editAt(p) {
     return { ...line, ['x' + end]: p.x, ['y' + end]: p.y };
   };
   const hitL = lineOf(hit), a = backOf(first0, gen ? gen.a : trim(first, hitL)), b = backOf(hit, gen ? gen.b : trim(hitL, first)), id = freshId(doc.shapes, 's');
+  const old = oldCornerConnector(first, hitL); /* 同じ角を、前に丸めた（面取りした）あとで、2本の線から丸め直す：前の円弧・面取り線は不要なので消す（事業主指示 2026-10-17） */
   cancel();
   commit(() => {
     doc.shapes = doc.shapes.map(s => s.id === first.id ? a : s.id === hit.id ? b : s);
+    if (old) { doc.shapes = doc.shapes.filter(s => s.id !== old.id); for (const part of doc.parts) if (part.shapeIds.includes(old.id)) part.shapeIds = part.shapeIds.filter(x => x !== old.id); for (const q of doc.paths) if (q.shapeIds.includes(old.id)) q.shapeIds = q.shapeIds.filter(x => x !== old.id); }
     doc.shapes.push({ ...arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); /* 2本が同じ線なら、間にできた円弧も同じ線に入れる */
     reattachMarks(affectedPaths);
