@@ -2367,7 +2367,7 @@ function onClipCopy(e, cut) {
 }
 /** 全選択（Ctrl+A）：見えていて編集できる図形をすべて選ぶ。 */
 function selectAllShapes() {
-  setMode('select'); selected = new Set(doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id)); draw();
+  setMode('select'); selected = new Set([...doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id), ...doc.holes.filter(h => holeVisible(h) && holeEditable(h)).map(h => h.id)]); draw();   /* 見えていて編集できる菱目も選ぶ（事業主指摘 2026-10-17：全体を選んで動かすと菱目だけ取り残された） */
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
@@ -2979,9 +2979,9 @@ function makeFoldBaselines() {
 /** 「1本に結合」：選んだ線のうち、端がつながって同じ直線の上に並び、層・線の種類・色・グループが同じものを、1本の直線にまとめる。菱目（縫い穴）は位置のまま1本の経路にまとめ直す。縫い合わせ設定がある線や、選んでいない線もいっしょの経路は、まとめない（事業主指示 2026-10-17）。 */
 function mergeSelectedLines() {
   const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
-  const cand = doc.shapes.filter(s => ids.has(s.id) && editable(s) && !s.markOf && !s.holeLink && !s.foldSec && !s.foldFlat), groups = new Map();
+  const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && !s.foldFlat, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
   for (const s of cand) { const key = [s.layer, s.lineStyle || '', s.color || '', groupIdOf(s) || ''].join('|'); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
-  const clusters = [...groups.values()].flatMap(list => collinearLineClusters(list));
+  const clusters = [...groups.values()].flatMap(list => collinearLineClusters(list)).filter(c => c.ids.some(id => ids.has(id)));   /* 選んだ線を1本以上含むまとまりだけ */
   const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
   const ok = clusters.filter(c => { const set = new Set(c.ids); return doc.paths.filter(p => p.shapeIds.some(id => set.has(id))).every(p => p.shapeIds.every(id => set.has(id)) && !seamPaths.has(p.id)); });
   if (!ok.length) { $('hint').textContent = t(clusters.length ? 'mergeLinesBlocked' : 'mergeLinesNone'); return; }
@@ -3766,7 +3766,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = selectedShapeIds().size < 2; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
@@ -3899,6 +3899,7 @@ function freshId(items, prefix) {
 }
 function transformSelected(fn) {
   const ids = selectedShapeIds();
+  for (const p of doc.paths) { const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (shs.length && shs.every(s => s && s.layer === 'guide' && !editable(s)) && doc.holes.some(h => h.pathId === p.id && selected.has(h.id) && holeEditable(h))) p.shapeIds.forEach(id => ids.add(id)); } /* 選んだ菱目がついた、非表示のガイド層の線は、菱目といっしょに動かす（取り残して、菱目が線から外れないように） */
   cancel();
   commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
