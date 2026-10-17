@@ -2606,14 +2606,8 @@ function toggleAccordion(btn) {
       });
     })
     .catch(function () { /* HTML 側のリストがそのまま残る */ });
-})();/* 部外秘ゲート：SHA-256ハッシュ照合。平文はコードに置かない。
+})();/* 部外秘ゲート：パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
    通過時に入力値を sessionStorage に保持し、GASリンクの key= は開く直前に付与する */
-var NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
-function nsfSha256(t) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then(function (b) {
-    return Array.from(new Uint8Array(b)).map(function (x) { return x.toString(16).padStart(2, '0'); }).join('');
-  });
-}
 function nsfStoredKey() {
   try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; }
 }
@@ -2628,18 +2622,22 @@ function gateConfidential(e, url) {
   if (nsfStoredKey()) { nsfOpenGated(url); return false; }
   var pw = prompt('部外秘ページです。パスワードを入力してください');
   if (pw === null || pw === '') return false;
-  nsfSha256(pw).then(function (hex) {
-    if (hex === NSF_GATE_HASH) {
+  if (typeof window.nsfAdminVerify !== 'function') {
+    alert('照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください');
+    return false;
+  }
+  window.nsfAdminVerify(pw).then(function (valid) {
+    if (valid === true) {
       try {
         sessionStorage.setItem('nsf_admin_key', pw);
-        sessionStorage.setItem('nsf_admin_auth', hex);
+        sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok');
       } catch (e2) {}
       nsfOpenGated(url);
     } else {
       alert('パスワードが一致しません');
     }
   }).catch(function () {
-    alert('照合に失敗しました（https環境で開いてください）');
+    alert('照合に失敗しました（通信できません。時間をおいてもう一度）');
   });
   return false;
 }

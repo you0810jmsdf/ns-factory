@@ -2165,13 +2165,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
     }
 
-    // ===== 管理者ゲート（index.htmlと同じSHA-256照合パターン。サイト全体で共通のパスワード） =====
-    const NSF_GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
-    function nsfSha256(t) {
-      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then((b) =>
-        Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join('')
-      );
-    }
+    // ===== 管理者ゲート（サーバー側で照合。window.nsfAdminVerify は assets/admin-remember.js にある。サイト全体で共通のパスワード） =====
     function nsfStoredKey() {
       try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; }
     }
@@ -2217,14 +2211,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
       const pw = prompt('管理者パスワードを入力してください');
       if (pw === null || pw === '') return;
-      nsfSha256(pw).then((hex) => {
-        if (hex === NSF_GATE_HASH) {
+      if (typeof window.nsfAdminVerify !== 'function') {
+        alert('照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください');
+        return;
+      }
+      window.nsfAdminVerify(pw).then((valid) => {
+        if (valid === true) {
           try { sessionStorage.setItem('nsf_admin_key', pw); } catch (e) {}
           updateAdminUI();
         } else {
           alert('パスワードが一致しません');
         }
-      }).catch(() => alert('照合に失敗しました（https環境で開いてください）'));
+      }).catch(() => alert('照合に失敗しました（通信できません。時間をおいてもう一度）'));
     });
 
     if (missingPriceFilterBtn) {
