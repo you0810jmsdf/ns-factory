@@ -175,15 +175,8 @@ a:hover{text-decoration:underline}
 <script>
 (function(){
   var AUTH_KEY = 'senryaku_auth_token';
-  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
-  var PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+  // パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある
   var TTL_MS = 24 * 60 * 60 * 1000;
-
-  function sha256Hex(text){
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
-      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-    });
-  }
 
   function isAuthed(){
     try{
@@ -234,11 +227,17 @@ a:hover{text-decoration:underline}
     e.preventDefault();
     var pw = document.getElementById('pw').value;
     var msg = document.getElementById('gateMsg');
-    sha256Hex(pw).then(function(hex){
-      if(hex === PASS_HASH){
+    if(typeof window.nsfAdminVerify !== 'function'){
+      msg.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください。';
+      return;
+    }
+    msg.textContent = '確認中…';
+    window.nsfAdminVerify(pw).then(function(valid){
+      if(valid === true){
+        msg.textContent = '';
         try{
           sessionStorage.setItem('nsf_admin_key', pw);
-          sessionStorage.setItem('nsf_admin_auth', hex);
+          sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok');
         }catch(err){}
         setAuthed();
         showContent();
@@ -247,7 +246,7 @@ a:hover{text-decoration:underline}
         document.getElementById('pw').value = '';
       }
     }).catch(function(){
-      msg.textContent = '照合に失敗しました（https環境で開いてください）。';
+      msg.textContent = '照合に失敗しました（通信できません。時間をおいてもう一度）。';
     });
   });
 
