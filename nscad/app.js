@@ -588,13 +588,25 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
 function stitchJoint(c1, c2) {
   if (c1.key === c2.key || c1.state.saved.closed || c2.state.saved.closed) return null;
   const r1 = c1.state.route, r2 = c2.state.route, L1 = arcLength(r1), L2 = arcLength(r2); let best = null;
-  for (const j1 of [0, L1]) for (const j2 of [0, L2]) { const d = distance(pointAtLength(r1, j1), pointAtLength(r2, j2)); if (d <= 0.05 && (!best || d < best.d)) best = { j1, j2, d }; }
+  for (const j1 of [0, L1]) for (const j2 of [0, L2]) { const d = distance(pointAtLength(r1, j1), pointAtLength(r2, j2)); if (d <= STITCH_JOINT_GAP_MM && (!best || d < best.d)) best = { j1, j2, d }; }
+  return best;
+}
+/** つなぎ目のすき間（端どうしの距離）がこれ以下なら、つながっているものとして越えて打つ。ピッチ（3.95mm など）に比べてごく小さなすき間（不具合記録 2026-10-17：0.16mm のすき間で打てなかった）。ピッチは、すき間も含めた長さで続ける。 */
+const STITCH_JOINT_GAP_MM = 0.5;
+/** 始点の線の候補と終点の線の候補のうち、端どうしがいちばん近いもののすき間（mm）。閉じた線・同じ線は除く。無ければ Infinity。「つながっていない」案内に、すき間の大きさを添えるため。 */
+function stitchNearestGap(list1, list2) {
+  let best = Infinity;
+  for (const c1 of list1) for (const c2 of list2) {
+    if (c1.key === c2.key || c1.state.saved.closed || c2.state.saved.closed) continue;
+    const r1 = c1.state.route, r2 = c2.state.route, L1 = arcLength(r1), L2 = arcLength(r2);
+    for (const j1 of [0, L1]) for (const j2 of [0, L2]) best = Math.min(best, distance(pointAtLength(r1, j1), pointAtLength(r2, j2)));
+  }
   return best;
 }
 /** つなぎ目を越えて打つ：始点（経路A）→接している端→終点（経路B）。固定ピッチ専用。区間1（始点→接点）の最後の穴から、ピッチを続けて区間2（接点→終点）を打つ。2区間の計画を先に作り、1回の commit で打つ（元に戻すは1回）。 */
 function stitchJointPunch(c1, c2, joint, kind, n, tool) {
   const { j1, j2 } = joint, plans = []; let r = 0;
-  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); r = p1.info.leftover ?? 0; }
+  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); r = (p1.info.leftover ?? 0) + (joint.d ?? 0); }
   if (Math.abs(c2.s - j2) > 1e-6) {
     const L2 = arcLength(c2.state.route), keep = plans.length > 0, exact = keep && r < 0.005, anchorS = !keep ? undefined : exact ? j2 : j2 === 0 ? -r : L2 + r;
     const p2 = stitchRangePlan({ first: { key: c2.key, s: j2, anchorS }, c: c2 }, kind, n, tool, { noStartOffset: true, forceAnchor: exact, jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2);
@@ -613,7 +625,7 @@ function rangeStitchClick(w) {
     if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
     if (countStage) { /* 始点とは別の線をクリックした：端が接している線どうしなら、つなぎ目を越えて打つ（固定ピッチだけ）。接していなければ、ここを新しい始点にして、そのことを案内する */
       for (const c2 of near) for (const c1 of countStage.list) { const joint = stitchJoint(c1, c2); if (joint) { if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; } }
-      countStage = { list: near }; $('hint').textContent = t('rangeStartMoved'); draw(); return;
+      const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
     }
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
