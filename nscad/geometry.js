@@ -755,7 +755,8 @@ function splitShapeAtRaw(s, positions) {
   if (s.type === 'line') return bounds.slice(1).map((e, i) => { const p = pointAtLength(s, bounds[i]), q = pointAtLength(s, e); return { ...strip(s), x1: p.x, y1: p.y, x2: q.x, y2: q.y }; });
   if (s.type === 'arc') return bounds.slice(1).map((e, i) => ({ ...strip(s), startDeg: s.startDeg + bounds[i] / s.r * 180 / Math.PI, endDeg: s.startDeg + e / s.r * 180 / Math.PI }));
   // ベジェ・折れ線・path は path に変換し、切断点に節点を挿入してから節点列を分ける。
-  let p = toPath(s); const have = [0]; { let acc = 0; for (const g of pathSegments(p)) { acc += arcLength(g); have.push(acc); } } /* すでにある節点の位置（始点・頂点）。そこが区切りなら、節点を重ねて足さない（長さ0の線ができる） */
+  /* 折れ線・ベジェ・直線は path に変換して切るが、変換で見た目（点線・色・層・グループなど、形以外の属性）が捨てられるので、元の図形から引き継ぐ（不具合記録 2026-10-17：点線をトリムしたら残りが実線になった） */
+  let p = toPath(s); if (s.type !== 'path') { const GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes']), look = {}; for (const [k, v] of Object.entries(s)) if (!GEOM.has(k)) look[k] = v; p = { ...look, ...p }; } const have = [0]; { let acc = 0; for (const g of pathSegments(p)) { acc += arcLength(g); have.push(acc); } } /* すでにある節点の位置（始点・頂点）。そこが区切りなら、節点を重ねて足さない（長さ0の線ができる） */
   for (const c of cuts) if (!have.some(h => Math.abs(h - c) < 1e-6)) p = pathInsertNode(p, c);
   const idx = []; let acc = 0; const segs = pathSegments(p);
   for (let i = 0; i < segs.length; i++) { if (cuts.some(c => Math.abs(c - acc) < 1e-6)) idx.push(i); acc += arcLength(segs[i]); }
