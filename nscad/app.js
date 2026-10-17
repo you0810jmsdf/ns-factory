@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
 import { warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -4039,6 +4039,30 @@ function curveFillet(first, pFirst, hit, p) {
   });
   $('hint').textContent = t('hint.fillet');
 }
+/** 丸め・面取りの角の2本（端を共有）の先に、同じ直線上でつながった線があれば { c1, c2, M1, M2, ids }（c＝続きの線の列・M＝角から先端までを1本にした直線・ids＝続きの線の id の集合）。無ければ null。 */
+function chainAround(first, hitL) {
+  const asLine = s => s.type === 'line' ? s : { ...s, type: 'line', x1: s.points[0].x, y1: s.points[0].y, x2: s.points[1].x, y2: s.points[1].y };
+  const pool = doc.shapes.filter(s => s.id !== first.id && s.id !== hitL.id && editable(s) && stitchable(s) && visible(s) && (s.type === 'line' || (s.type === 'polyline' && !s.closed && s.points.length === 2))).map(asLine);
+  const ends = l => [{ x: l.x1, y: l.y1 }, { x: l.x2, y: l.y2 }]; let C = null; for (const a of ends(first)) for (const b of ends(hitL)) if (distance(a, b) < 1e-9) C = a;
+  if (!C) return null;
+  const c1 = collinearChain(pool, first, C), c2 = collinearChain(pool, hitL, C); if (!c1.length && !c2.length) return null;
+  const farOf = (l, ch) => ch.length ? ch.at(-1).far : (distance({ x: l.x1, y: l.y1 }, C) <= distance({ x: l.x2, y: l.y2 }, C) ? { x: l.x2, y: l.y2 } : { x: l.x1, y: l.y1 }), F1 = farOf(first, c1), F2 = farOf(hitL, c2);
+  return { c1, c2, M1: { type: 'line', x1: C.x, y1: C.y, x2: F1.x, y2: F1.y }, M2: { type: 'line', x1: C.x, y1: C.y, x2: F2.x, y2: F2.y }, ids: new Set([...c1, ...c2].map(c => c.id)) };
+}
+/** 続きの線まで含めた丸め・面取りを図面に反映する：丸めの内側に入った線は消し、接点をまたぐ線は角側の端を接点へ切り詰める。円弧の層は最初にクリックした線の層。 */
+function applyRoundChain(first, hit, res, ch, affectedPaths) {
+  const id = freshId(doc.shapes, 's'), edits = new Map([...res.side1, ...res.side2].map(e => [e.id, e])), removed = new Set([...edits.values()].filter(e => e.remove).map(e => e.id));
+  const trimmed = s => { const e = edits.get(s.id), ln = s.type === 'line' ? s : { x1: s.points[0].x, y1: s.points[0].y, x2: s.points[1].x, y2: s.points[1].y }; const atNear = Math.hypot(ln.x1 - e.near.x, ln.y1 - e.near.y) < 1e-6 ? 1 : 2; const upd = { ['x' + atNear]: e.to.x, ['y' + atNear]: e.to.y }; return s.type === 'line' ? { ...s, ...upd } : { ...s, points: atNear === 1 ? [{ x: e.to.x, y: e.to.y }, s.points[1]] : [s.points[0], { x: e.to.x, y: e.to.y }] }; };
+  cancel();
+  commit(() => {
+    doc.shapes = doc.shapes.filter(s => !removed.has(s.id)).map(s => edits.has(s.id) ? trimmed(s) : s);
+    doc.shapes.push({ ...res.arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id].filter(x => !removed.has(x)));
+    for (const q of doc.paths) { if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); q.shapeIds = q.shapeIds.filter(x => !removed.has(x)); }
+    doc.paths = doc.paths.filter(q => q.shapeIds.length);
+    reattachMarks(affectedPaths);
+  });
+  $('hint').textContent = t('hint.chamfer');
+}
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && curveType(s))));
@@ -4060,7 +4084,8 @@ function editAt(p) {
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3); if (r === null) return;
   let arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r), gen = null;
   if (!arc) { gen = stage.click ? roundLinesAt(first, stage.click, lineOf(hit), p, r, mode) : null; arc = gen?.arc; } /* 端がつながっていない・交わっていない・鈍角などの2本は、のばした交点を角にして、のばす／切り詰めて丸める */
-  if (!arc) { const lim = stage.click ? cornerLimit(first, stage.click, lineOf(hit), p, mode) : null; $('hint').textContent = lim && r > lim.max + 1e-9 ? t('roundTooBig', { r: +r.toFixed(2), max: Math.floor(lim.max * 100 + 1e-6) / 100, short: +lim.short.toFixed(2) }) : t('impossible'); return; } /* 半径が大きすぎるときは、入る最大の半径を知らせる */
+  if (!arc) { const ch = chainAround(first, lineOf(hit)); if (ch) { if (roundHoleBlock(new Set(doc.paths.filter(q => [...ch.ids].some(id => q.shapeIds.includes(id))).map(q => q.id)))) { $('hint').textContent = t('holeChamfer'); return; } const res = roundChainAt(first, ch.c1, lineOf(hit), ch.c2, r, mode); if (res) { applyRoundChain(first, hit, res, ch, affectedPaths); return; } } } /* 角の線が短くて入らないときは、同じ直線上につながった続きの線（層が違ってもよい）まで1本の辺として丸める（不具合記録 2026-10-17） */
+  if (!arc) { const ch = chainAround(first, lineOf(hit)), lim = stage.click ? (ch ? cornerLimit(ch.M1, stage.click, ch.M2, p, mode) : cornerLimit(first, stage.click, lineOf(hit), p, mode)) : null; $('hint').textContent = lim && r > lim.max + 1e-9 ? t('roundTooBig', { r: +r.toFixed(2), max: Math.floor(lim.max * 100 + 1e-6) / 100, short: +lim.short.toFixed(2) }) : t('impossible'); return; } /* 半径が大きすぎるときは、入る最大の半径を知らせる */
   const endpoints = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{x:arc.x1,y:arc.y1},{x:arc.x2,y:arc.y2}];
   const trim = (line, other) => {
     const end = distance({ x: line.x1, y: line.y1 }, { x: other.x1, y: other.y1 }) < 1e-9 || distance({ x: line.x1, y: line.y1 }, { x: other.x2, y: other.y2 }) < 1e-9 ? 1 : 2;

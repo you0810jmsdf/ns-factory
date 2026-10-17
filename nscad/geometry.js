@@ -840,6 +840,46 @@ export function roundLinesAt(l1, p1, l2, p2, r, kind = 'fillet') {
   return { arc, a: { ...l1, ...rebuild(A, pa) }, b: { ...l2, ...rebuild(B, pb) } };
 }
 
+/** 線 base の、角 C と反対側の端から先へ、同じ直線上で端どうしがつながっている線を順にたどる（層・種類が違ってもよい。呼ぶ側で直線にそろえて渡す）。
+ *  lines＝候補（{ id, x1, y1, x2, y2 }）。戻り値＝[{ id, near, far }]（近い順。near＝角側の端・far＝先の端）。折れ曲がる線・折り返す線・端が離れた線は入らない。 */
+export function collinearChain(lines, base, C, tol = 1e-4) {
+  const ends = l => [{ x: l.x1, y: l.y1 }, { x: l.x2, y: l.y2 }], [p0, p1] = ends(base), farEnd = distance(p0, C) <= distance(p1, C) ? p1 : p0, nearEnd = farEnd === p1 ? p0 : p1, len = distance(nearEnd, farEnd);
+  if (len < EPS) return [];
+  const u = { x: (farEnd.x - nearEnd.x) / len, y: (farEnd.y - nearEnd.y) / len }, out = [], used = new Set([base.id]); let E = farEnd;
+  for (;;) {
+    let found = null;
+    for (const l of lines) {
+      if (used.has(l.id)) continue;
+      const [a, b] = ends(l), aNear = distance(a, E) <= tol, bNear = distance(b, E) <= tol; if (aNear === bNear) continue;
+      const nr = aNear ? a : b, fr = aNear ? b : a, d = distance(nr, fr); if (d < EPS) continue;
+      const v = { x: (fr.x - nr.x) / d, y: (fr.y - nr.y) / d };
+      if (dot(u, v) > 0 && Math.abs(cross(u, v)) < 1e-6) { found = { id: l.id, near: nr, far: fr }; break; }
+    }
+    if (!found) break; used.add(found.id); out.push(found); E = found.far;
+  }
+  return out;
+}
+
+/** 端（角）を共有する2本の直線 l1・l2 の角を、それぞれの先につながった同じ直線上の線（chain1・chain2＝collinearChain の戻り値）まで含めて丸める（'fillet'）／面取りする（'chamfer'）。
+ *  戻り値 { arc, side1, side2 }：side＝その辺の編集の列（角に近い順）。{ id, remove:true }＝丸めの内側に入って消す線／{ id, near, to }＝角側の端 near を接点 to へ切り詰める線。成り立たない（平行・続きを足しても入らない）とき null。 */
+export function roundChainAt(l1, chain1, l2, chain2, r, kind = 'fillet') {
+  if (!(r > 0) || l1?.type !== 'line' || l2?.type !== 'line') return null;
+  const a = [{ x: l1.x1, y: l1.y1 }, { x: l1.x2, y: l1.y2 }], b = [{ x: l2.x1, y: l2.y1 }, { x: l2.x2, y: l2.y2 }]; let C = null;
+  for (const p of a) for (const q of b) if (distance(p, q) < EPS) C = p;
+  if (!C) return null;
+  const farOf = (l, ch) => ch.length ? ch.at(-1).far : (distance({ x: l.x1, y: l.y1 }, C) <= distance({ x: l.x2, y: l.y2 }, C) ? { x: l.x2, y: l.y2 } : { x: l.x1, y: l.y1 });
+  const F1 = farOf(l1, chain1), F2 = farOf(l2, chain2), M1 = { type: 'line', x1: C.x, y1: C.y, x2: F1.x, y2: F1.y }, M2 = { type: 'line', x1: C.x, y1: C.y, x2: F2.x, y2: F2.y };
+  const arc = (kind === 'chamfer' ? chamferCorner : filletCorner)(M1, M2, r); if (!arc) return null;
+  const ends = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{ x: arc.x1, y: arc.y1 }, { x: arc.x2, y: arc.y2 }];
+  const pa = ends.reduce((m, q) => distToShape(M1, m) <= distToShape(M1, q) ? m : q), pb = ends.find(q => q !== pa) || ends[1];
+  const edits = (l, ch, P) => {
+    const farPt = distance({ x: l.x1, y: l.y1 }, C) <= distance({ x: l.x2, y: l.y2 }, C) ? { x: l.x2, y: l.y2 } : { x: l.x1, y: l.y1 }, t = distance(C, P), out = []; let cum = 0;
+    for (const e of [{ id: l.id, near: C, far: farPt }, ...ch]) { const end = cum + distance(e.near, e.far); if (end <= t + 1e-6) out.push({ id: e.id, remove: true }); else { if (cum < t - 1e-6) out.push({ id: e.id, near: e.near, to: P }); break; } cum = end; }
+    return out;
+  };
+  return { arc, side1: edits(l1, chain1, pa), side2: edits(l2, chain2, pb) };
+}
+
 /** 2本の直線の角に入る、丸めの半径（面取りは寸法）の最大値と、それを決めている短い線の長さ。平行などで決められないとき null。 */
 export function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   if (l1?.type !== 'line' || l2?.type !== 'line') return null;
