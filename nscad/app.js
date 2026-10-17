@@ -840,7 +840,7 @@ function showHelp(shortcuts = false, pageId = null) {
 function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
 function flushAutosave() {
   if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
-  snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc })), activeTab);
+  snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
     if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; }
     else if (r.status === 'empty') localStorage.removeItem(AUTOSAVE_KEY);
@@ -858,9 +858,9 @@ function offerRestore() {
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
-  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true });
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
-  activeTab = -1; switchTab(base + info.active); fit(); $('hint').textContent = t('restored'); noticeGaps(); flushAutosave();
+  activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); flushAutosave();
 }
 function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
