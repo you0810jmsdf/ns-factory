@@ -539,6 +539,8 @@ function stitchPointCandidates(w) {
  *  つながった線もたどる（途中の交点は無視）。同じ位置の穴は1つにまとめ、線は切らない。始点・終点を決める前のクリックでは、何も打たない。 */
 /** 目打ち（範囲）の1区間の計画：pair（始点の候補 first・終点の候補 c）の間に打つ穴を決める（図面は変えない）。失敗は { error: 案内の文 }。成功は { apply, info }。apply() は commit の中で呼ぶと、穴を打って、打った穴の id の一覧を返す。
  *  opt：noStartOffset／noEndOffset＝その側は「つなぎ目」なので、始端・終端の空きを入れない／forceAnchor＝始点の穴を、ちょうど anchorS に打った扱いにする（最初の穴は1ピッチ先）／jointS＝この経路の上のつなぎ目の位置（そこにあった前の穴は消す）。 */
+/** 固定ピッチの最後の穴が、終点より、これ以下（mm）手前に来るときは、終点ぴったりに置く。目で合わせた「ぴったり」は、数字ではわずかにずれるため（事業主指摘 2026-10-17：つなぎ目とピッチをぴったりにしたつもりなのに、つなぎ目の穴が目落ちする）。 */
+const STITCH_END_TOL_MM = 0.1;
 function stitchRangePlan(pair, kind, n, tool, opt = {}) {
   const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s);
   let points, pitch, mode, leftover = null, anchoredHole = false; /* anchoredHole＝始点が、別の経路の既存の穴に吸着した（固定ピッチ） */ /* leftover＝固定ピッチのあまり（mm・終点側）。固定ピッチ以外は null */
@@ -550,10 +552,11 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
       if (from > to || len < 1e-9) return { error: t('invalidRange') };
       const anchorS = pair.first.anchorS; /* 始点を既存の穴に置いたとき：その穴を 0 番目として、ピッチを続けて数える */
       if (kind === 'fixed' && anchorS !== undefined && (opt.forceAnchor || Math.abs(anchorS - pair.first.s) > 1e-6)) {
-        anchoredHole = true; points = []; if (!startAtHi) { for (let sp = anchorS + Math.max(1, Math.ceil((from - anchorS - 1e-9) / tool.pitch)) * tool.pitch; sp <= to + 1e-9; sp += tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); }
-        else { for (let sp = anchorS - Math.max(1, Math.ceil((anchorS - to - 1e-9) / tool.pitch)) * tool.pitch; sp >= from - 1e-9; sp -= tool.pitch) points.push({ ...pointAtLength(route, sp), s: sp }); points.sort((p, q) => p.s - q.s); }
+        anchoredHole = true; points = []; if (!startAtHi) { for (let sp = anchorS + Math.max(1, Math.ceil((from - anchorS - 1e-9) / tool.pitch)) * tool.pitch; sp <= to + STITCH_END_TOL_MM; sp += tool.pitch) { const q = Math.min(sp, to); points.push({ ...pointAtLength(route, q), s: q }); } }
+        else { for (let sp = anchorS - Math.max(1, Math.ceil((anchorS - to - 1e-9) / tool.pitch)) * tool.pitch; sp >= from - STITCH_END_TOL_MM; sp -= tool.pitch) { const q = Math.max(sp, from); points.push({ ...pointAtLength(route, q), s: q }); } points.sort((p, q) => p.s - q.s); }
       }
-      else if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + 1e-9) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = to - i * tool.pitch; return { ...pointAtLength(route, sp), s: sp }; }); }
+      else if (kind === 'fixed' && startAtHi) { const nFixed = Math.floor((to - from + STITCH_END_TOL_MM) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = Math.max(from, to - i * tool.pitch); return { ...pointAtLength(route, sp), s: sp }; }); }
+      else if (kind === 'fixed' && !saved.closed) { const nFixed = Math.floor((to - from + STITCH_END_TOL_MM) / tool.pitch); points = Array.from({ length: nFixed + 1 }, (_, i) => { const sp = Math.min(from + i * tool.pitch, to); return { ...pointAtLength(route, sp), s: sp }; }); }
       else points = pointsAlongShape(route, tool.pitch, { offsetStart: from, offsetEnd: len - to, variable: kind === 'variable' });
       const corners = cornerHoles(route, opts.corner).filter(p => p.s >= from - 1e-7 && p.s <= to + 1e-7);
       for (const c of corners) { points = points.filter(p => Math.abs(p.s - c.s) > 1e-6); points.push(c); }
