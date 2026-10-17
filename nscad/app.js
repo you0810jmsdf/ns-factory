@@ -543,7 +543,7 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
   const { saved, fresh, route } = pair.c.state, len = arcLength(route), lo = Math.min(pair.first.s, pair.c.s), hi = Math.max(pair.first.s, pair.c.s);
   let points, pitch, mode, leftover = null, anchoredHole = false; /* anchoredHole＝始点が、別の経路の既存の穴に吸着した（固定ピッチ） */ /* leftover＝固定ピッチのあまり（mm・終点側）。固定ピッチ以外は null */
   try {
-    if (kind === 'count') { pitch = (hi - lo) / (n - 1); mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
+    if (kind === 'count') { pitch = n > 1 ? (hi - lo) / (n - 1) : tool.pitch; mode = 'manual'; points = Array.from({ length: n }, (_, i) => { const s = i === n - 1 ? hi : lo + pitch * i; return { ...pointAtLength(route, s), s }; }); }
     else {
       /* 固定ピッチは、先にクリックした点（始点）から数え始める。始点が線の上の位置の大きいほう（hi）なら、hi から lo のほうへ数える。始端・終端の空きも、先にクリックした側が始端（事業主指摘 2026-10-16：右辺中央から上下へ打つと、下は点線側から数えていて、折り返しても重ならなかった） */
       const opts = stitchOptions(), startAtHi = pair.first.s > pair.c.s + 1e-9, offS = opt.noStartOffset ? 0 : opts.offsetStart, offE = opt.noEndOffset ? 0 : opts.offsetEnd, from = lo + (startAtHi ? offE : offS), to = hi - (startAtHi ? offS : offE); pitch = tool.pitch; mode = kind;
@@ -616,6 +616,17 @@ function stitchJointPunch(c1, c2, joint, kind, n, tool) {
   const last = plans.at(-1).info, total = plans.reduce((sum, p) => sum + p.info.points.length, 0), left = last.leftover ?? 0;
   $('hint').textContent = t('rangeJointPlaced', { n: total, pitch: last.pitch.toFixed(2), a: Math.abs(c1.s - j1).toFixed(2), b: Math.abs(c2.s - j2).toFixed(2) }) + ' ' + (left < 0.005 ? t('rangeLeftNone') : t('rangeLeft', { r: left.toFixed(2) })); draw();
 }
+/** つなぎ目を越えて、個数指定で打つ：始点（経路A）→接している端→終点（経路B）に、両端を含めて n 個を等間隔に打つ。間隔は、始点から終点までの長さ（つなぎ目のすき間も含む）を n−1 等分。穴の位置は、始点から k×間隔 の所（経路A の接点までに入る分は経路A・残りは経路B）。 */
+function stitchJointCount(c1, c2, joint, n, tool) {
+  const { j1, j2 } = joint, gap = joint.d ?? 0, a = Math.abs(c1.s - j1), b = Math.abs(c2.s - j2), T = a + gap + b;
+  if (!(n >= 2) || !(T > 1e-9)) { $('hint').textContent = t('invalidRange'); return; }
+  const P = T / (n - 1), dir1 = j1 >= c1.s ? 1 : -1, dir2 = c2.s >= j2 ? 1 : -1, plans = [];
+  const n1 = a < 1e-6 ? 0 : b < 1e-6 && gap < 1e-9 ? n : Math.min(n - 1, Math.floor(a / P + 1e-9) + 1), n2 = n - n1;   /* 経路A に入る個数（始点が接点なら 0・終点が接点なら全部） */
+  if (n1 > 0) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: c1.s + dir1 * (n1 - 1) * P } }, 'count', n1, tool, { jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); }
+  if (n2 > 0) { const off = Math.max(0, n1 * P - a - gap), p2 = stitchRangePlan({ first: { key: c2.key, s: j2 + dir2 * off }, c: c2 }, 'count', n2, tool, { jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2); }
+  countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
+  $('hint').textContent = t('rangeJointPlaced', { n, pitch: P.toFixed(2), a: a.toFixed(2), b: b.toFixed(2) }); draw();
+}
 function rangeStitchClick(w) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
@@ -624,7 +635,7 @@ function rangeStitchClick(w) {
   if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
     if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
     if (countStage) { /* 始点とは別の線をクリックした：端が接している線どうしなら、つなぎ目を越えて打つ（固定ピッチだけ）。接していなければ、ここを新しい始点にして、そのことを案内する */
-      for (const c2 of near) for (const c1 of countStage.list) { const joint = stitchJoint(c1, c2); if (joint) { if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; } }
+      for (const c2 of near) for (const c1 of countStage.list) { const joint = stitchJoint(c1, c2); if (joint) { if (kind === 'count') { stitchJointCount(c1, c2, joint, n, tool); return; } if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; } }
       const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
     }
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
