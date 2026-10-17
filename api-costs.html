@@ -156,22 +156,16 @@ td.hot{color:#ffb38a}
 
 <script>
 // ================================================================
-// 認証（SHA-256照合）。admin.html と同じ nsf_admin_key を使うため、
+// 認証（サーバー側で照合。window.nsfAdminVerify）。admin.html と同じ nsf_admin_key を使うため、
 // admin.html の iframe から開かれた場合は再入力不要。
 // 画面側の照合は出し分けにすぎない。数字はGASがキーを確認してから返す。
 // ================================================================
-const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 const SESSION_KEY = 'nsfactory-api-costs-auth';
 const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
 // 幕僚計画GAS。自宅PCのアップローダーが5分おきに送ったデータ（apiCosts は毎朝1回集計）を getMonitor で受け取る
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwGydHIr4OyZZB4zeXwpmcXw7LXGCDDb2FMz7HG8YQwSrJIa422G1J_ESWHZPX5u3nH/exec';
 const STALE_HOURS = 30;  // 毎朝の集計が止まったと判断する経過時間
 
-function sha256(text) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
-    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
-  );
-}
 function getKey() {
   try { return sessionStorage.getItem(KEY_STORE) || ''; } catch (e) { return ''; }
 }
@@ -186,17 +180,20 @@ function unlockAuth() {
 function submitAuth() {
   const input = document.getElementById('authPassword');
   const errEl = document.getElementById('authError');
-  sha256(input.value).then((hex) => {
-    if (hex === ADMIN_PASS_HASH) {
+  if (typeof window.nsfAdminVerify !== 'function') { errEl.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  errEl.textContent = '確認中…';
+  const typed = input.value;
+  window.nsfAdminVerify(typed).then((valid) => {
+    if (valid === true) {
       try {
         sessionStorage.setItem(SESSION_KEY, 'ok');
-        sessionStorage.setItem(KEY_STORE, input.value);
+        sessionStorage.setItem(KEY_STORE, typed);
       } catch (e) {}
       unlockAuth();
     } else {
       errEl.textContent = 'パスワードが違います';
     }
-  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+  }).catch(() => { errEl.textContent = '照合に失敗しました（通信できません。時間をおいてもう一度）'; });
 }
 
 // ================================================================

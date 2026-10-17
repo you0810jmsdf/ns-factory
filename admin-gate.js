@@ -3,37 +3,27 @@
 // 台帳(invoice/*)・オーダー進捗(orderprogress.html)で共用
 //
 // 【仕組み】
-//  - <head> 内で同期読み込みすること（body描画前に実行される）
+//  - <head> 内で同期読み込みすること（body描画前に実行される）。assets/admin-remember.js を先に読み込むこと
 //  - 未認証ならページ全体を隠し、パスワード入力画面を被せる
-//  - 入力値の SHA-256 を計算し、下記 PASS_HASH と照合
+//  - 入力値は admin_guard GAS の verify（サーバー側）で照合する。公開 JS にハッシュは置かない
+//    （2026-10-17・API漏洩総点検 M5。照合の関数 window.nsfAdminVerify は assets/admin-remember.js にある）
 //  - 一致したらタブを閉じるまで（sessionStorage）認証を保持
 //
-// 【パスワード変更手順】
-//  1. 任意のパスワードを決める
-//  2. SHA-256ハッシュを生成（下記いずれか）
-//     - PowerShell:
-//        $s=[Text.Encoding]::UTF8.GetBytes('決めたパス'); `
-//        ($h=[Security.Cryptography.SHA256]::Create().ComputeHash($s)|
-//         %{ $_.ToString('x2') }) -join ''
-//     - ブラウザのコンソール(F12)で:
-//        crypto.subtle.digest('SHA-256', new TextEncoder().encode('決めたパス'))
-//          .then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
-//  3. 出力された64桁の文字列を、下の PASS_HASH の値に貼り替える
-//  4. git add → commit → push（GitHub Pages に自動反映）
+// 【パスワード変更手順】サーバー側（GAS のスクリプトプロパティ）で行う。この JS を直す必要はない。
 //
 // ※ パスワードは1Password等の安全な場所に別途保管すること。
-// ※ これは画面ロックです。GASの窓口(API)直叩きは別途対策が必要（次段階）。
+// ※ これは画面ロックです。GASの窓口(API)は各GAS側でパスワードを確認している。
 // ============================================================
 (function () {
   'use strict';
 
-  var PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+  var AUTH_OK   = window.NSF_ADMIN_AUTH_OK || 'ok'; // 通過印の値（assets/admin-remember.js と同じ）
   var AUTH_KEY  = 'nsf_admin_auth';
   var KEY_STORE = 'nsf_admin_key'; // 通過時に入力平文を保持（GAS APIのkeyとして各ページが使用）
 
   // 既に認証済み（同一タブセッション内）なら何もしない
   try {
-    if (sessionStorage.getItem(AUTH_KEY) === PASS_HASH) return;
+    if (sessionStorage.getItem(AUTH_KEY) === AUTH_OK) return;
   } catch (e) { /* sessionStorage不可環境はゲート表示にフォールバック */ }
 
   // ---- 認証されるまでページ本体を隠す（FOUC防止・即時） ----
@@ -41,16 +31,6 @@
   hideStyle.id = 'nsf-gate-hide';
   hideStyle.textContent = 'body{visibility:hidden !important;}';
   (document.head || document.documentElement).appendChild(hideStyle);
-
-  // ---- SHA-256（crypto.subtle / https必須） ----
-  function sha256Hex(text) {
-    var enc = new TextEncoder().encode(text);
-    return crypto.subtle.digest('SHA-256', enc).then(function (buf) {
-      return Array.from(new Uint8Array(buf))
-        .map(function (b) { return b.toString(16).padStart(2, '0'); })
-        .join('');
-    });
-  }
 
   // ---- ゲート画面を構築 ----
   function buildGate() {
@@ -95,14 +75,25 @@
     var msg = document.getElementById('nsf-gate-msg');
     input.focus();
 
+    var btn = form.querySelector('button[type="submit"]');
+    var busy = false;
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
+      if (busy) return;
       msg.textContent = '';
-      sha256Hex(input.value).then(function (hex) {
-        if (hex === PASS_HASH) {
+      if (typeof window.nsfAdminVerify !== 'function') {
+        msg.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください';
+        return;
+      }
+      busy = true;
+      btn.disabled = true;
+      btn.textContent = '確認中…';
+      var typed = input.value;
+      window.nsfAdminVerify(typed).then(function (valid) {
+        if (valid === true) {
           try {
-            sessionStorage.setItem(AUTH_KEY, PASS_HASH);
-            sessionStorage.setItem(KEY_STORE, input.value);
+            sessionStorage.setItem(AUTH_KEY, AUTH_OK);
+            sessionStorage.setItem(KEY_STORE, typed);
           } catch (e) {}
           // 解錠：ゲート除去・本体表示
           var g = document.getElementById('nsf-admin-gate');
@@ -115,7 +106,11 @@
           input.focus();
         }
       }).catch(function () {
-        msg.textContent = '照合に失敗しました（https環境で開いてください）';
+        msg.textContent = '照合に失敗しました（通信できません。時間をおいてもう一度）';
+      }).then(function () {
+        busy = false;
+        btn.disabled = false;
+        btn.textContent = 'ログイン';
       });
     });
   }

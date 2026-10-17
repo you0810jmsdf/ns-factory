@@ -103,18 +103,12 @@ a{color:#79c0ff}
 // ================================================================
 // 認証（画面側の照合は出し分けにすぎない。一覧はGASが合言葉を確認してから返す）
 // ================================================================
-const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 const SESSION_KEY = 'nsfactory-sns-queue-auth';
 const KEY_STORE = 'nsf_admin_key';  // admin.html と共通
 // Threads自動投稿GAS『Nsfactory-SNS-AutoPost』（一覧は text/plain を返すので直接fetchできる）
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxZztUxgw06jJX3EKLY5gHtYuq18lcGUeuRY9vYcUIwxvufqHp_dpYEMMMulvtM9xc/exec';
 const SNS_PASS_SAVE = 'nsf_snsq_pass_saved';  // 「このPCに覚える」用（localStorage・このPC限定運用）
 
-function sha256(text) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
-    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
-  );
-}
 function checkSession() {
   try { return sessionStorage.getItem(SESSION_KEY) === 'ok'; } catch (e) { return false; }
 }
@@ -133,17 +127,20 @@ function unlockAuth() {
 function submitAuth() {
   const input = document.getElementById('authPassword');
   const errEl = document.getElementById('authError');
-  sha256(input.value).then((hex) => {
-    if (hex === ADMIN_PASS_HASH) {
+  if (typeof window.nsfAdminVerify !== 'function') { errEl.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  errEl.textContent = '確認中…';
+  const typed = input.value;
+  window.nsfAdminVerify(typed).then((valid) => {
+    if (valid === true) {
       try {
         sessionStorage.setItem(SESSION_KEY, 'ok');
-        sessionStorage.setItem(KEY_STORE, input.value);
+        sessionStorage.setItem(KEY_STORE, typed);
       } catch (e) {}
       unlockAuth();
     } else {
       errEl.textContent = 'パスワードが違います';
     }
-  }).catch(() => { errEl.textContent = '照合に失敗しました（https環境で開いてください）'; });
+  }).catch(() => { errEl.textContent = '照合に失敗しました（通信できません。時間をおいてもう一度）'; });
 }
 
 // ================================================================
