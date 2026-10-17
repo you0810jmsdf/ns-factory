@@ -61,6 +61,8 @@ const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
+const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
+let lamSig = '';   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
@@ -1293,13 +1295,17 @@ function applyPartField(field) {
 }
 /** 選択中の折り線をまたぐ部品の閉図形に、折り代 ΔL を足した新しい図形を作る（元は残す）。 */
 /** 貼り合わせの曲げ検証（事業主指示 2026-10-17）：表と裏の部品・厚みを選び、貼り合わせたときの曲げ・寸法の過不足・菱目の数と位置を調べる。計算は laminate.js。 */
-const lamTouched = { o: false, i: false };   /* 厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
 function fillLaminateParts() {
   for (const [id, k] of [['lamOuter', 0], ['lamInner', 1]]) {
     const sel = $(id), cur = sel.value; sel.textContent = '';
     for (const p of doc.parts) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); }
     sel.value = doc.parts.some(p => p.id === cur) ? cur : (doc.parts[k]?.id ?? '');
   }
+}
+/** 部品を作る・名前を変える・消す・タブを切り替えると、検証カードの選択欄を最新にする（「検証する」を押さなくても）。一覧が変わったときだけ作り直す（開いている選択欄を閉じないため）。 */
+function refreshLaminateParts() {
+  const sig = doc.parts.map(p => p.id + ':' + p.name).join('|'); if (sig === lamSig) return; lamSig = sig; fillLaminateParts();
+  if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
 }
 function laminateThickFromPart(which) {
   const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
@@ -3829,6 +3835,7 @@ function selectedLineHoleStats() {
   return { len, holes };
 }
 function updateUI() {
+  refreshLaminateParts();
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
