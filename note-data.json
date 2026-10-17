@@ -1,8 +1,35 @@
 {
- "generatedAt": "2026-10-16T23:32:13",
+ "generatedAt": "2026-10-17T22:10:33",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 304,
+ "count": 307,
  "items": [
+  {
+   "title": "2026-10-17（土） - 試行錯誤のUI改善と新しい機能",
+   "url": "https://note.com/you0810jmsdf/n/n6675e92f282d",
+   "date": "2026-10-17",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-17_ig.jpg",
+   "key": "n6675e92f282d",
+   "imageSource": "sns",
+   "summary": "取引ツールのチャート画面でトレンドラインを引く際、右クリックで線が確定するように改善された。その他、板情報の操作性向上や、新しい分析ツールの追加、練習モードの改善、会計ツールとの連携が進んだ。"
+  },
+  {
+   "title": "【作り方】BTCの「練習用の見張り番」N's Trade｜線・板・通知・手法まで、AIと作った全記録（ドライラン検証中）",
+   "url": "https://note.com/you0810jmsdf/n/n5daeb4951432",
+   "date": "2026-10-17",
+   "image": "https://assets.st-note.com/production/uploads/images/325205092/rectangle_large_type_2_b872b4e1da00594db2f8b3e0ad1fbd74.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n5daeb4951432",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "毎日チャートに張り付く生活を、終わらせたくて。AIと一緒に「練習用の見張り番」を作りました",
+   "url": "https://note.com/you0810jmsdf/n/ne882ba4e3b9b",
+   "date": "2026-10-17",
+   "image": "https://assets.st-note.com/production/uploads/images/325194277/rectangle_large_type_2_d562efa1790e7b222c874ac9c6af1d94.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "ne882ba4e3b9b",
+   "imageSource": "note",
+   "summary": ""
+  },
   {
    "title": "AI秘書が自動で報告を作成！ 報告作成時のフィルターを調整｜Jarvis日記 2026.10.16（金）",
    "url": "https://note.com/you0810jmsdf/n/n56ebd628a67b",
