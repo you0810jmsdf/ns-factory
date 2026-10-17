@@ -610,16 +610,10 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
 <script>
 (function(){
   const AUTH_KEY = 'kanri_auth_token';
-  // パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）。
+  // パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
   // APIキーは管理室ゲート通過時に sessionStorage へ保持した平文を使用する。
-  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
   const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzwAqNSsJqtr3ZxMNg2dfZliZ0y-_VZPmVvWdkATF5JuXrMQuFkHfsxcMLS7ziwJgR3/exec';
 
-  function sha256Hex(text){
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
-      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-    });
-  }
   function storedKey(){
     try{ return sessionStorage.getItem('nsf_admin_key') || ''; }catch(e){ return ''; }
   }
@@ -628,11 +622,13 @@ h1{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.02em;margin-bottom:8px}
     if(k) return k;
     const pw = prompt('管理者パスワードを入力してください:');
     if(pw === null || pw === '') return '';
-    const hex = await sha256Hex(pw);
-    if(hex === PASS_HASH){
+    if(typeof window.nsfAdminVerify !== 'function') return '';
+    let valid = false;
+    try{ valid = ((await window.nsfAdminVerify(pw)) === true); }catch(e){ return ''; }
+    if(valid){
       try{
         sessionStorage.setItem('nsf_admin_key', pw);
-        sessionStorage.setItem('nsf_admin_auth', hex);
+        sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok');
       }catch(e){}
       return pw;
     }
