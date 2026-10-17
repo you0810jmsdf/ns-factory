@@ -62,7 +62,7 @@ let longPressed = false; // ツールボタンを長押ししてヘルプを開�
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
-let lamSig = '';   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
+let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
@@ -1304,8 +1304,25 @@ function fillLaminateParts() {
 }
 /** 部品を作る・名前を変える・消す・タブを切り替えると、検証カードの選択欄を最新にする（「検証する」を押さなくても）。一覧が変わったときだけ作り直す（開いている選択欄を閉じないため）。 */
 function refreshLaminateParts() {
-  const sig = doc.parts.map(p => p.id + ':' + p.name).join('|'); if (sig === lamSig) return; lamSig = sig; fillLaminateParts();
+  const live = p => p.shapeIds.filter(id => doc.shapes.some(s => s.id === id)).length, sig = doc.parts.map(p => p.id + ':' + p.name + ':' + live(p) + ':' + p.thickness).join('|'); if (sig === lamSig) return; lamSig = sig; fillLaminateParts(); renderLaminateParts();
   if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+}
+/** 検証カードの「部品の一覧」：作った部品が、名前（書き換えられる）・図形の数・厚みつきで、すぐ見える。「選ぶ」でその部品の図形を選択・「消す」で部品だけ消す（図形は残る）。 */
+function renderLaminateParts() {
+  const box = $('lamParts'); box.textContent = '';
+  if (!doc.parts.length) { const d = document.createElement('div'); d.className = 'note'; d.textContent = t('lamPartsNone'); box.appendChild(d); return; }
+  const cur = id => doc.parts.find(q => q.id === id), count = p => p.shapeIds.filter(sid => doc.shapes.some(s => s.id === sid));
+  for (const p of doc.parts) {
+    const id = p.id, row = document.createElement('div'); row.className = 'lam-part';
+    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = p.name; name.dataset.role = 'name';
+    name.addEventListener('change', () => { const part = cur(id), v = name.value.trim(); if (part && v && v !== part.name) commit(() => { part.name = v; }); else if (part) name.value = part.name; });
+    const info = document.createElement('span'); info.textContent = t('lamPartRow', { n: count(p).length, t: p.thickness });
+    const pick = document.createElement('button'); pick.dataset.role = 'pick'; pick.textContent = t('lamPartPick');
+    pick.onclick = () => { const part = cur(id); if (!part) return; const ids = count(part); selected = new Set(ids); draw(); $('hint').textContent = t('lamPartPicked', { name: part.name, n: ids.length }); };
+    const del = document.createElement('button'); del.dataset.role = 'del'; del.textContent = t('lamPartDel');
+    del.onclick = () => { const part = cur(id); if (!part) return; const nm = part.name; commit(() => { doc.parts = doc.parts.filter(q => q.id !== id); for (const s of doc.shapes) if (s.type === 'fold' && s.partId === id) s.partId = null; }); $('hint').textContent = t('lamPartDeleted', { name: nm }); };
+    for (const el of [name, info, pick, del]) row.appendChild(el); box.appendChild(row);
+  }
 }
 function laminateThickFromPart(which) {
   const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
