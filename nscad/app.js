@@ -3124,7 +3124,7 @@ function projectFoldDesign(withStitch) {
   const mounts = (d.ring && binderSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
-    doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
+    dropDimAnchorsTo(mineShapes); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
     add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + p.length, y: fy }, { x: fx + p.length, y: fy + h }, { x: fx, y: fy + h }] });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
@@ -3154,8 +3154,8 @@ function unfoldFoldDesign() {
   const plies = foldUnfoldPlan(p, { pitch, margin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
   const tool = stitchToolCurrent(), fx = d.origin.x, fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60, f2s = v => v.toFixed(2);
   commit(() => {
-    const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fdu').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fdu').map(q => q.id));
-    doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fdu' && !minePaths.has(q.pathId));
+    const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fdu').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fdu' || q.shapeIds.some(id => mineShapes.has(id))).map(q => q.id));   /* 消える展開の図形を通る経路も、いっしょに消す（残すと、新しい図形と id が重なって図面が壊れる） */
+    dropDimAnchorsTo(mineShapes); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fdu' && !minePaths.has(q.pathId));
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide');
     plies.forEach((u, i) => {
       const fy = fy0 + i * (h + 80), side = { right: t('foldSideR'), left: t('foldSideL') }, name = t(u.key === 'outer' ? 'unfoldOuter' : 'unfoldInner'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fdu', ply: u.key }); return id; };
@@ -3857,6 +3857,8 @@ function dimStraighten(pts, axis, old, anchored = []) {
   const k = axis === 'h' ? 'y' : 'x', moveOf = i => old ? Math.abs(pts[i][k] - old[i][k]) : i, one = anchored[0] && !anchored[1] ? 0 : anchored[1] && !anchored[0] ? 1 : null, v = pts[one ?? (moveOf(1) < moveOf(0) ? 1 : 0)][k];
   return pts.map(pt => ({ ...pt, [k]: v }));
 }
+/** 作り直しで消える図形（ids）に付いていた寸法の追従を外す。同じ id の新しい図形が同じ操作の中でできるので、残すと寸法が新しい図形へ付き直して飛ぶ（位置はそのまま）。 */
+function dropDimAnchorsTo(ids) { for (const d of doc.shapes) if (d.type === 'dimension' && d.anchors) { d.anchors = d.anchors.map(a => a && ids.has(a.id) ? null : a); if (!d.anchors.some(Boolean)) delete d.anchors; } }
 function syncDimensions(before) {
   for (const d of doc.shapes) {
     if (d.type !== 'dimension' || d.foldSec) continue; const old = before.get(d.id), cur = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }];
