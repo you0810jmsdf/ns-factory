@@ -134,7 +134,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-17 17:56 · 07618c2</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-17 18:45 · cc9b2e2</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -247,6 +247,7 @@
 <div id="layerRows"></div>
 <div class="row"><button id="layerSolo" data-i18n="layerSolo"></button><button id="layerAll" data-i18n="layerAll"></button></div>
 <div class="row"><button id="layerPickYellow" data-i18n="layerPickYellow"></button></div>
+<div class="row"><button id="layerPickDashed" data-i18n="layerPickDashed"></button></div>
 <div class="row"><button id="layerMove" data-i18n="layerMove"></button></div>
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 <div class="row"><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
@@ -604,8 +605,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=c7651b20","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=e0d84d56","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=65366e4a","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=e8628eab","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=c7651b20"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=b42e17a9","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=e0d84d56","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=2bc5f202","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=85b32b60","./data/library.js":"./data/library.js?v=91d945ee","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3145781d","./geometry.js":"./geometry.js?v=65366e4a","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=85c81065","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=b42e17a9"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2436,7 +2437,7 @@ const MESSAGES = {
     "slopeDiag": "斜め",
     "mergeLines": "1本に結合",
     "mergeLinesDone": "{k} 本の線を、{n} 本の直線にまとめました。",
-    "mergeLinesNone": "まとめられる線がありません。端がつながって、同じ直線の上にあり、層・線の種類・色が同じ線を選んでください（1本だけ選んでも、つながった一直線の線といっしょにまとめます）。",
+    "mergeLinesNone": "まとめられる線がありません。端がつながって、同じ直線の上にあり、層・線の種類（実線／点線）が同じ線を選んでください（1本だけ選んでも、つながった一直線の線といっしょにまとめます。色は区別しません）。",
     "mergeLinesBlocked": "この線は、縫い合わせの設定がある、または選んでいない線といっしょの経路になっているため、まとめられません。",
     "closeGapsDone": "隙間を {n} か所閉じました（最大 {max} mm）。",
     "closeGapsSkipped": "{k} か所は円弧どうしなど端を動かせないため、そのままです。",
@@ -3027,6 +3028,9 @@ const MESSAGES = {
     "layerPickYellow": "黄色の点線の図形をすべて選ぶ（オフセット線など）",
     "layerPickedYellow": "黄色の点線の図形 {n} 個を選びました。続けて「選んだ図形を、作図先の層へ移す」を押せます。",
     "layerPickNoneYellow": "黄色の点線の図形はありません（非表示・ロック中の層は対象外）。",
+    "layerPickDashed": "点線の図形をすべて選ぶ（すべての色）",
+    "layerPickedDashed": "点線の図形 {n} 個を選びました（色は問いません）。続けて「選んだ図形を、作図先の層へ移す」を押せます。",
+    "layerPickNoneDashed": "点線の図形はありません（非表示・ロック中の層は対象外）。",
     "layerMove": "選んだ図形を、作図先の層へ移す",
     "layerMoved": "{n} 個の図形を「{name}」へ移しました。",
     "layerMoveNone": "移す図形が選ばれていません（ロック中の層の図形は移せません）。",
@@ -4409,6 +4413,9 @@ const MESSAGES = {
     "layerPickYellow": "Select all yellow dashed shapes (offset lines, etc.)",
     "layerPickedYellow": "Selected {n} yellow dashed shapes. Now press \"Move selected shapes to the drawing layer\".",
     "layerPickNoneYellow": "No yellow dashed shapes (hidden or locked layers are excluded).",
+    "layerPickDashed": "Select all dashed shapes (any color)",
+    "layerPickedDashed": "Selected {n} dashed shapes (any color). Now press \"Move selected shapes to the drawing layer\".",
+    "layerPickNoneDashed": "No dashed shapes (hidden or locked layers are excluded).",
     "layerMove": "Move selected shapes to the drawing layer",
     "layerMoved": "Moved {n} shapes to \"{name}\".",
     "layerMoveNone": "No shapes to move are selected (shapes on locked layers cannot be moved).",
@@ -21076,6 +21083,12 @@ function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer)
 /** 作図先の層だけを表示し、他の層を隠す。 */
 function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
 function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
+/** 見えていて編集できる図形のうち、点線（lineStyle が dashed）を、色に関わらずすべて選ぶ（事業主指示 2026-10-17：一括でガイド層へ移すため）。 */
+function pickDashedAll() {
+  const ids = doc.shapes.filter(s => visible(s) && editable(s) && !s.holeLink && s.lineStyle === 'dashed').map(s => s.id);
+  if (!ids.length) { $('hint').textContent = t('layerPickNoneDashed'); return; }
+  selected = new Set(ids); nodeSel = null; $('hint').textContent = t('layerPickedDashed', { n: ids.length }); draw();
+}
 /** 見えていて編集できる図形のうち、黄色の点線（オフセット線など）をすべて選ぶ。 */
 function pickYellowDashed() {
   const ids = doc.shapes.filter(s => visible(s) && editable(s) && s.color === 'yellow' && s.lineStyle === 'dashed').map(s => s.id);
@@ -21094,7 +21107,7 @@ function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
   $('layerName').addEventListener('change', () => { const name = $('layerName').value.trim(); if (name) commit(() => { doc.layers.find(l => l.id === activeLayer).name = name; }); renderLayers(); });
   $('layerVisible').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).visible = $('layerVisible').checked; selected.clear(); }); renderLayers(); });
-  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed;
+  $('layerSolo').onclick = soloLayer; $('layerAll').onclick = showAllLayers; $('layerMove').onclick = moveSelectedToLayer; $('layerPickYellow').onclick = pickYellowDashed; $('layerPickDashed').onclick = pickDashedAll;
   $('layerLocked').addEventListener('change', () => { commit(() => { doc.layers.find(l => l.id === activeLayer).locked = $('layerLocked').checked; selected.clear(); }); renderLayers(); });
   $('showModHelp').checked = modHelpOn; $('showModHelp').addEventListener('change', e => { modHelpOn = e.target.checked; try { localStorage.setItem('leather-cad.modHelp', modHelpOn ? 'on' : 'off'); } catch { /* 保存できなくても続ける */ } refreshModHelp(); });
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
@@ -23025,7 +23038,7 @@ function makeFoldBaselines() {
 function mergeSelectedLines() {
   const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
   const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && !s.foldFlat, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
-  for (const s of cand) { const key = [s.layer, s.lineStyle || '', s.color || '', groupIdOf(s) || ''].join('|'); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
+  for (const s of cand) { const key = [s.layer, s.lineStyle || '', groupIdOf(s) || ''].join('|'); /* 色は区別しない（トリムなどで一部の色が抜けた短い線が混ざることがある）。まとめた線の色は、いちばん長い線のもの */ if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
   const clusters = [...groups.values()].flatMap(list => collinearLineClusters(list)).filter(c => c.ids.some(id => ids.has(id)));   /* 選んだ線を1本以上含むまとまりだけ */
   const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
   const ok = clusters.filter(c => { const set = new Set(c.ids); return doc.paths.filter(p => p.shapeIds.some(id => set.has(id))).every(p => p.shapeIds.every(id => set.has(id)) && !seamPaths.has(p.id)); });
@@ -23033,7 +23046,7 @@ function mergeSelectedLines() {
   cancel(); let made = 0, total = 0, newIds = [];
   commit(() => {
     for (const c of ok) {
-      const set = new Set(c.ids), members = doc.shapes.filter(s => set.has(s.id)), first = members[0], look = {}; for (const [k, v] of Object.entries(first)) if (!GEOM.has(k)) look[k] = v;
+      const set = new Set(c.ids), members = doc.shapes.filter(s => set.has(s.id)), first = members[0], longest = members.reduce((m, q) => arcLength(q) > arcLength(m) ? q : m, first), look = {}; for (const [k, v] of Object.entries(longest)) if (!GEOM.has(k)) look[k] = v;
       const affected = doc.paths.filter(p => p.shapeIds.some(id => set.has(id))), olds = new Map(affected.map(p => [p.id, resolvePath(doc, p)]));
       const nid = freshId(doc.shapes, 's'), line = { ...look, id: nid, type: 'line', x1: c.p1.x, y1: c.p1.y, x2: c.p2.x, y2: c.p2.y }, at = doc.shapes.findIndex(s => s.id === first.id);
       doc.shapes = doc.shapes.filter(s => !set.has(s.id)); doc.shapes.splice(Math.min(at, doc.shapes.length), 0, line);
