@@ -225,6 +225,7 @@ function submitAuth() {
   const input = document.getElementById('authPassword');
   const errEl = document.getElementById('authError');
   if (typeof window.nsfAdminVerify !== 'function') { errEl.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  if (errEl.textContent === '確認中…') return;   // 照合中の二重送信を防ぐ
   errEl.textContent = '確認中…';
   const typed = input.value;
   window.nsfAdminVerify(typed).then((valid) => {

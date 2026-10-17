@@ -293,6 +293,7 @@ a{color:inherit;text-decoration:none}
       msg.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください。';
       return;
     }
+    if(msg.textContent === '確認中…') return;   // 照合中の二重送信を防ぐ
     msg.textContent = '確認中…';
     window.nsfAdminVerify(pw).then(function(valid){
       if(valid === true){

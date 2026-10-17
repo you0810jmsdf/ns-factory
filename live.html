@@ -116,6 +116,7 @@ function submitAuth(){
   const v=document.getElementById('pw').value;
   const err=document.getElementById('authErr');
   if(typeof window.nsfAdminVerify!=='function'){ err.textContent='照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  if(err.textContent==='確認中…') return;   // 照合中の二重送信を防ぐ
   err.textContent='確認中…';
   window.nsfAdminVerify(v).then(ok=>{
     if(ok!==true){ err.textContent='パスワードが違います'; return; }
