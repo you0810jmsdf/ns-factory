@@ -1308,14 +1308,20 @@ function addLaminateDim(sg) {
   const b = sg.box, v = sg.value; commit(() => { const id = freshId(doc.shapes, 's'), layer = ensureLayer(doc, 'guide'); doc.shapes.push(sg.horizontal ? { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX + v, y2: b.minY, offset: -8 } : { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX, y2: b.minY + v, offset: 8 }); });
   runLaminate(); $('hint').textContent = t('lamAdded', { v: v.toFixed(2), side: t(sg.side === '表' ? 'lamSideOuter' : 'lamSideInner') });
 }
+/** 曲げ区間の入力（例：28.1-81, 155-202）を [[28.1, 81], [155, 202]] にする。区切りは , ， 、 ; 空白、「から」は - ー〜~。読めなければ null（点線から自動）。 */
+function parseLaminateZones(text) {
+  const out = []; for (const part of String(text || '').split(/[,，、;；\s]+/).filter(Boolean)) { const m = part.match(/^(-?\d+(?:\.\d+)?)[-ー〜～~](-?\d+(?:\.\d+)?)$/); if (m) out.push([Number(m[1]), Number(m[2])]); }
+  return out.length ? out : null;
+}
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
   if (doc.parts.length < 2) { $('hint').textContent = t('lamNeedParts'); return; }
   fillLaminateParts(); if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
-  const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3 });
+  const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value) });
   if (!r.ok) { $('hint').textContent = t('lamErr_' + r.error); return; }
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, f2 = v => v.toFixed(2), b = r.bend;
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
+  if (r.mode === 'zones') { line(t(parseLaminateZones($('lamZones').value) ? 'lamZonesGiven' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
   line(r.issues.length ? t('lamSummary', { e: r.errors, w: r.warns }) : t('lamOk'));
   for (const is of r.issues) {
