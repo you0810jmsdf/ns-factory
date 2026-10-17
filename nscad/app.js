@@ -562,6 +562,7 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
       if (kind === 'fixed' && points.length) leftover = Math.max(0, startAtHi ? points[0].s - from : to - points.at(-1).s); /* 終点側に、どれだけあまるか */
     }
   } catch (err) { return { error: err.message }; }
+  const joinPrev = saved.segments.find(sg => Math.abs(sg.to - lo) < 1e-6 && sg.toolId); /* 反対側の隣の区間（終点が、今打つ区間の始点側 lo にある）：今の区間を反対側（hi）から数えると、lo にぴったり穴が来ないので、つなぎ目が目落ちする（事業主指摘 2026-10-17：続きで目打ちをするとかならず目落ちする） */
   const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
   const apply = () => {
     if (fresh) doc.paths.push(saved);
@@ -579,6 +580,11 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
       const jt = doc.tools.find(x => x.id === joinNext.toolId) || tool, nb = doc.holes.filter(h => h.pathId === saved.id && h.s > hi && h.toolId === jt.id).sort((p, q) => p.s - q.s)[0], pj = pointAtLength(route, hi), follow = $('followTangent').checked;
       const delta = nb ? nb.angleDeg - (follow ? pointAtLength(route, nb.s).angleDeg : 0) : slantOf(jt), id = freshId(doc.holes, 'h');
       doc.holes.push({ ...pj, s: hi, id, pathId: saved.id, toolId: jt.id, angleDeg: (follow ? pj.angleDeg : 0) + delta, mark: 'tool' }); added.push(id);
+    }
+    if (joinPrev && !doc.holes.some(h => h.pathId === saved.id && Math.abs(h.s - lo) < 1e-5)) { /* 隣の区間の終点（つなぎ目）の穴が無いときは補う。向き・工具は、つなぎ目のすぐ隣の穴に合わせる */
+      const jt = doc.tools.find(x => x.id === joinPrev.toolId) || tool, nb = doc.holes.filter(h => h.pathId === saved.id && h.s < lo && h.toolId === jt.id).sort((p, q) => q.s - p.s)[0], pj = pointAtLength(route, lo), follow = $('followTangent').checked;
+      const delta = nb ? nb.angleDeg - (follow ? pointAtLength(route, nb.s).angleDeg : 0) : slantOf(jt), id = freshId(doc.holes, 'h');
+      doc.holes.push({ ...pj, s: lo, id, pathId: saved.id, toolId: jt.id, angleDeg: (follow ? pj.angleDeg : 0) + delta, mark: 'tool' }); added.push(id);
     }
     saved.segments.push({ from: lo, to: hi, toolId: tool.id, pitch, mode }); return added;
   };
