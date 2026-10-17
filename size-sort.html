@@ -61,8 +61,7 @@
 </div>
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
-// 認証は works.html / register.html と同じSHA-256照合（平文はコードに置かない）
-const GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+// 認証は works.html / register.html と同じ（サーバー側で照合。window.nsfAdminVerify は assets/admin-remember.js にある）
 // サイズの物差しは2系統（2026-08-06 事業主指示）。
 //   システム手帳 … リング規格 ／ 手帳カバー … ノートの判型
 // 「その他サイズ」は特殊判型（NOLTY・お薬手帳等）の確定用。押すとこのページに二度と並ばない。
@@ -70,11 +69,6 @@ const GATE_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac0
 const PLANNER_SIZES = ['Micro5', 'mini6', 'A6', 'B6', 'バイブル', 'A5スリム', 'A5', 'その他サイズ'];
 const COVER_SIZES = ['A6', 'B6', 'A5', 'B5', 'A4', '新書判', 'トラベラーズ レギュラー', 'トラベラーズ パスポート', 'その他サイズ'];
 let ADMIN_KEY = '';
-
-function sha256(t) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)).then((b) =>
-    Array.from(new Uint8Array(b)).map((x) => x.toString(16).padStart(2, '0')).join(''));
-}
 
 // GASは処理完了後にHTMLのエラーページだけ返すことがある（2026-08-04実測）。
 // setSize は自然に冪等（同じ値の上書き）なので、HTML応答時はそのまま再送してよい。
@@ -175,7 +169,19 @@ async function main() {
   while (!ADMIN_KEY) {
     const pw = prompt('管理者パスワードを入力してください');
     if (pw === null) { document.getElementById('status').textContent = '認証されていません。'; return; }
-    if (await sha256(pw) === GATE_HASH) {
+    if (typeof window.nsfAdminVerify !== 'function') {
+      alert('照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください');
+      document.getElementById('status').textContent = '認証されていません。';
+      return;
+    }
+    let valid = false;
+    try { valid = ((await window.nsfAdminVerify(pw)) === true); }
+    catch (e) {
+      alert('照合に失敗しました（通信できません。時間をおいてもう一度）');
+      document.getElementById('status').textContent = '認証されていません。';
+      return;
+    }
+    if (valid) {
       ADMIN_KEY = pw;
       try { sessionStorage.setItem('nsf_admin_key', pw); } catch (e) {}
     } else { alert('パスワードが一致しません'); }

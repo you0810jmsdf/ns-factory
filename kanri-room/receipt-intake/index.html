@@ -342,9 +342,8 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   const CHECKLIST_URL = '../../order_estimate/receipt-checklist.json';
   // ⛔ 経理ルール（店名・按分率）は公開リポジトリに置かない。GAS内蔵の RULES を action=rules で取得する。
   //    正本は 監理部\経理ルール.md、機械可読版は GAS の Rules.js。
-  // admin-gate.js と同じ公開ハッシュ（平文は保存しない）。ルール取得に失敗したとき、
-  // このページ単体でパスワードを受け直して復旧できるようにするために持つ。
-  const PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+  // ルール取得に失敗したとき、このページ単体でパスワードを受け直して復旧できるようにする。
+  // 照合はサーバー側（admin_guard GAS）。window.nsfAdminVerify は assets/admin-remember.js にある。
   // 過去14ファイル504件の仕訳実績で、紙レシート対象の99.3%を占めた6科目（2026-08-23実測）。
   // 並びは使用頻度順。ここに無い科目は下のドロップダウンから選ぶ。
   const QUICK_ACCOUNTS = [
@@ -372,11 +371,6 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   function yen(n){ return '¥'+Number(n||0).toLocaleString('ja-JP'); }
   function uuid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2)); }
   function adminKey(){ try{ return sessionStorage.getItem('nsf_admin_key')||''; }catch(e){ return ''; } }
-  function sha256Hex(text){
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
-      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-    });
-  }
   // ゲートを素通りしたセッションでは平文キーが残らず、GASが unauthorized を返して
   // 科目が「不明」しか出せなくなる（2026-08-23 実発生）。その場で受け直して復旧する。
   async function ensureAdminKey(force){
@@ -384,9 +378,12 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     if(cur && !force) return cur;
     const pw = prompt('管理者パスワードを入力してください（経理ルールの取得に必要です）');
     if(pw === null || pw === '') return '';
-    const hex = await sha256Hex(pw);
-    if(hex !== PASS_HASH){ toast('パスワードが違います'); return ''; }
-    try{ sessionStorage.setItem('nsf_admin_key', pw); sessionStorage.setItem('nsf_admin_auth', hex); }catch(e){}
+    if(typeof window.nsfAdminVerify !== 'function'){ toast('照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'); return ''; }
+    let valid = false;
+    try{ valid = ((await window.nsfAdminVerify(pw)) === true); }
+    catch(e){ toast('照合に失敗しました（通信できません。時間をおいてもう一度）'); return ''; }
+    if(!valid){ toast('パスワードが違います'); return ''; }
+    try{ sessionStorage.setItem('nsf_admin_key', pw); sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok'); }catch(e){}
     return pw;
   }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
