@@ -46,7 +46,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2741,7 +2741,7 @@ const FOLD_HOLE_ROW_TOL = 1; /* 断面の位置の線から、この距離（mm�
 function foldSectionPlan(picked, ply, holeList = doc.holes) {
   const spec = foldSectionSpec(picked.filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu'));
   if (!spec.ok) return { error: spec.error, count: spec.count };
-  const cut = foldCutLine(picked.filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu')); if (cut.error) return { error: 'cutMany', count: cut.count };   /* 断面を取る位置の横線（1本まで） */
+  const cut = foldCutPick(picked.filter(s => !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu'), doc.foldCutY); if (cut.error) return cut.error === 'out' ? { error: 'out' } : { error: 'cutMany', count: cut.count };   /* 断面を取る位置：指定の高さ（doc.foldCutY）が優先・無ければ選んだ範囲の横線（1本まで） */
   const th = ply * FOLD_SEC_PLIES, path = foldSectionPath(spec), r1 = spec.bends[0] / Math.PI;   /* th＝貼り合わせた合計の厚み */
   const circles = picked.filter(s => s.type === 'circle' && !s.foldSec && !s.holeLink && s.foldFlat !== 'fdu' && s.cx >= spec.x0 - 1e-6 && s.cx <= spec.x1 + 1e-6 && (cut.y === undefined || Math.abs(s.cy - cut.y) <= s.r + 1e-6));   /* 横線があれば、その線にかかる〇だけ */
   const marks = []; for (const c of circles.sort((a, b) => a.cx - b.cx)) { const sPos = spec.flip ? spec.x1 - c.cx : c.cx - spec.x0, same = marks.find(m => Math.abs(m.s0 - sPos) < 0.01); if (same) same.srcIds.push(c.id); else marks.push({ s0: sPos, srcIds: [c.id] }); }
@@ -2749,7 +2749,7 @@ function foldSectionPlan(picked, ply, holeList = doc.holes) {
   const inPanel = holeList.filter(h => h.foldFlat !== 'fdu' && holeVisible(h) && h.x >= spec.x0 - 1e-6 && h.x <= spec.x1 + 1e-6);   /* 縫い穴（菱目）：断面の位置の線の上のものを、外側・内側の面へ落とす */
   const holeSS = cut.y === undefined ? [] : inPanel.filter(h => Math.abs(h.y - cut.y) <= FOLD_HOLE_ROW_TOL).map(h => spec.flip ? spec.x1 - h.x : h.x - spec.x0);
   const holeInfo = holeSS.length ? foldHoleSpacing(path, holeSS, th) : null, holeNoCut = cut.y === undefined && inPanel.length > 0;
-  return { spec, ply, th, path, marks, cutY: cut.y, holeSS, holeInfo, holeNoCut, origin: { x: spec.x0, y: b.maxY + 40 + 2 * r1 + th }, key: `${spec.x0.toFixed(3)}:${spec.x1.toFixed(3)}` };
+  return { spec, ply, th, path, marks, cutY: cut.y, cutSet: cut.source === 'set', holeSS, holeInfo, holeNoCut, origin: { x: spec.x0, y: b.maxY + 40 + 2 * r1 + th }, key: `${spec.x0.toFixed(3)}:${spec.x1.toFixed(3)}` };
 }
 /** commit の中で呼ぶ：同じ紙の前の断面を消して、plan の断面を図面に足す。 */
 function placeFoldSection(plan) {
@@ -2765,11 +2765,20 @@ function placeFoldSection(plan) {
 }
 /** 断面を作った（作り直した）あとの案内。長さは貼り合わせ線・外側の革・内側の革。 */
 function foldSectionDoneText(plan) {
-  const { spec, th, path, marks, cutY, holeInfo, holeNoCut } = plan, flat = spec.flats.reduce((a, v) => a + v, 0), bend = spec.bends.reduce((a, v) => a + v, 0), f2 = v => v.toFixed(2), [outerLen, innerLen] = foldPlyLengths(path, th, FOLD_SEC_PLIES);
-  return t('foldSecDone', { len: f2(path.length), flat: f2(flat), bend: f2(bend), n: marks.length, outer: f2(outerLen), inner: f2(innerLen) }) + (cutY === undefined ? '' : ' ' + t('foldSecCut', { y: f2(cutY) })) + (holeInfo ? ' ' + t('foldHoleHead', { n: holeInfo.holes.length }) + holeInfo.bends.map((b, k) => ' ' + (b.pairs ? t('foldHoleBend', { side: t(plan.spec.flip === (k === 0) ? 'foldSideR' : 'foldSideL'), flat: f2(b.flat), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff) }) : t('foldHoleNone', { side: t(plan.spec.flip === (k === 0) ? 'foldSideR' : 'foldSideL') }))).join('') : holeNoCut ? ' ' + t('foldHoleNoCut') : '');
+  const { spec, th, path, marks, cutY, cutSet, holeInfo, holeNoCut } = plan, flat = spec.flats.reduce((a, v) => a + v, 0), bend = spec.bends.reduce((a, v) => a + v, 0), f2 = v => v.toFixed(2), [outerLen, innerLen] = foldPlyLengths(path, th, FOLD_SEC_PLIES);
+  return t('foldSecDone', { len: f2(path.length), flat: f2(flat), bend: f2(bend), n: marks.length, outer: f2(outerLen), inner: f2(innerLen) }) + (cutY === undefined ? '' : ' ' + t(cutSet ? 'foldSecCutSet' : 'foldSecCut', { y: f2(cutY) })) + (holeInfo ? ' ' + t('foldHoleHead', { n: holeInfo.holes.length }) + holeInfo.bends.map((b, k) => ' ' + (b.pairs ? t('foldHoleBend', { side: t(plan.spec.flip === (k === 0) ? 'foldSideR' : 'foldSideL'), flat: f2(b.flat), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff) }) : t('foldHoleNone', { side: t(plan.spec.flip === (k === 0) ? 'foldSideR' : 'foldSideL') }))).join('') : holeNoCut ? ' ' + t('foldHoleNoCut') : '');
 }
 /** 半径の欄に、平面図の今の半径（左から順）を入れる。 */
 function fillFoldRadii(spec) { const r = foldBendRadii(spec); $('foldRadL').value = r[0].toFixed(2); $('foldRadR').value = r[1].toFixed(2); }
+/* 断面を取る位置の指定（高さの欄・図面クリック）。値は図面（doc.foldCutY）に保存する。無いときは今までどおり選んだ範囲の横線（事業主指示 2026-10-17） */
+let foldCutPicking = false;
+function syncFoldCutField() { const el = $('foldCutY'); if (!el) return; const v = doc.foldCutY, str = Number.isFinite(v) ? String(Math.round(v * 100) / 100) : ''; if (el.value !== str) el.value = str; }
+function setFoldCutY(v) { const next = Number.isFinite(v) ? v : undefined; if (doc.foldCutY === next) return; commit(() => { if (next === undefined) delete doc.foldCutY; else doc.foldCutY = next; }); }
+function foldCutPickClick(p) { foldCutPicking = false; setFoldCutY(p.y); syncFoldCutField(); $('hint').textContent = t('foldCutSetDone', { y: p.y.toFixed(2) }); draw(); }
+function drawFoldCutMark() {
+  const y = doc.foldCutY; if (!Number.isFinite(y) || exporting) return; const box = foldPanelBox(doc.shapes.filter(s => visible(s) && !s.foldSec)); if (!box || y <= box.y0 || y >= box.y1) return;
+  const k = 1 / scale; ctx.save(); ctx.lineWidth = 1.5 * k; ctx.strokeStyle = 'rgba(80,200,255,.9)'; ctx.setLineDash([6 * k, 4 * k]); ctx.beginPath(); ctx.moveTo(box.x0 - 8 * k, y); ctx.lineTo(box.x1 + 8 * k, y); ctx.stroke(); ctx.restore();   /* 指定した高さの目印（図形ではなく、描くだけ） */
+}
 function makeFoldSection() {
   const picked = selected.size ? doc.shapes.filter(s => selected.has(s.id)) : doc.shapes.filter(visible);
   const plan = foldSectionPlan(picked, foldSecThickness());
@@ -3171,7 +3180,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
@@ -4333,7 +4342,7 @@ function drawNodes(s) {
   });
 }
 function draw() {
-  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; syncFoldFields(); } /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
+  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; syncFoldFields(); syncFoldCutField(); } /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (!exporting) { ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, width, height); }
   if (quadOn() && !exporting) { drawQuad(dpr); return; }
@@ -4449,7 +4458,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
+  drawFoldCutMark(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
   updateUI();
 }
 function resize() {
@@ -4513,6 +4522,7 @@ canvas.addEventListener('pointerdown', e => {
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p)); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
@@ -4840,7 +4850,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
