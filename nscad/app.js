@@ -524,7 +524,9 @@ function stitchPointCandidates(w) {
     if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
     const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
-    if (!state.fresh) for (const h of doc.holes) if (h.pathId === saved.id) cands.push(h.s);
+    for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); } /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
+    if (!state.fresh) for (const sg of saved.segments) cands.push(sg.from, sg.to); /* 前に打った区間の始まり・終わり（つなぎ目）も吸着の点：隣のピッチの位置より、ちょうどそこをクリックしたときは、そこが優先される */
+    if (!state.fresh) { const cur = doc.tools.find(x => x.id === $('stitchTool').value); for (const h of doc.holes) if (h.pathId === saved.id) { cands.push(h.s); /* 隣のピッチの位置（穴の位置 ± ピッチ）にも吸い付く：前の続きを、同じ固定幅でぴったり続けられる（事業主指摘 2026-10-17：均等化した場所だけで、隣のピッチからだとずれる） */ for (const pt of new Set([cur?.pitch, doc.tools.find(x => x.id === h.toolId)?.pitch].filter(v => Number.isFinite(v) && v > 0))) for (const q of [h.s - pt, h.s + pt]) if (q > 1e-6 && q < len - 1e-6) cands.push(q); } }
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
     const s = best !== null && bd <= 14 / scale ? best : projectOnPath(route, w).s;
     /* 別の経路の既存の穴にも吸着する（画面14px以内・その線から 1.5mm 以内）。吸着先より穴のほうがクリックに近いとき、その穴を「0番目の穴」とする：線の端より外にある穴なら、anchorS＝線の外の位置（始点側 −距離／終点側 長さ＋距離）。打ち始めは、この穴からピッチを続けて数える（つなぎ目を越えても間隔が変わらない・事業主指摘 2026-10-16） */
@@ -672,6 +674,16 @@ function drawChainStops() { /* 分岐で止まった端に青い印（選択が�
   for (const p of chainStops.stops) { ctx.beginPath(); ctx.arc(p.x, p.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(p.x, p.y, 2.2 / scale, 0, Math.PI * 2); ctx.fill(); }
   ctx.restore();
 }
+/** 目打ち：マウスの近く（画面14px以内）にある、吸い付く点（端・線の中心・線と線の交点・すでにある穴）のうち、いちばん近いもの。なければ null。マウスを動かすたびに計算するので、近くの線（最大12本）だけで求める。 */
+let stitchHover = null;
+function stitchHoverAt(w) {
+  const reach = 14 / scale, near = doc.shapes.filter(s => visible(s) && editable(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, w) <= reach * 1.5).slice(0, 12), pts = [];
+  for (const s of near) { const len = arcLength(s); pts.push(pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)); }
+  if (near.length >= 2) pts.push(...allIntersections(near));
+  for (const h of doc.holes) if (holeVisible(h) && Math.hypot(h.x - w.x, h.y - w.y) <= reach) pts.push({ x: h.x, y: h.y });
+  let best = null, bd = reach; for (const q of pts) { const d = distance(w, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
+}
+function drawStitchHover() { if (mode !== 'stitch' || !stitchHover || exporting) return; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(80,200,255,.95)'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(stitchHover.x, stitchHover.y, 5 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
@@ -4601,7 +4613,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawCountStage(); drawChainStops(); drawGapMarks();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -4809,6 +4821,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && mode === 'select') { const hot = circleHandleHit(world(p))?.k ?? null; if (hot !== circleHot) { circleHot = hot; canvas.style.cursor = hot !== null ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
+  stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
