@@ -446,7 +446,7 @@ function dashedVertical(s) {
 }
 const dashedVerticalX = s => dashedVertical(s)?.x ?? null;
 /** 紙の外形の範囲 { x0, x1, y0, y1 }。縦の点線・文字・寸法・折り線・画像・縫い穴の付属は紙に数えない。幅がなければ null。 */
-function foldPanelBox(shapes) {
+export function foldPanelBox(shapes) {
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   for (const s of shapes) { if (dashedVerticalX(s) != null || ['text', 'dimension', 'fold', 'image'].includes(s.type) || s.holeLink) continue; let b = null; try { b = bboxOf(s); } catch { b = null; } if (!b || ![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; x0 = Math.min(x0, b.minX); x1 = Math.max(x1, b.maxX); y0 = Math.min(y0, b.minY); y1 = Math.max(y1, b.maxY); }
   return x1 > x0 ? { x0, x1, y0, y1 } : null;
@@ -466,6 +466,12 @@ export function foldSectionSpec(shapes) {
   if (!(bends[0] > FOLD_EPS && bends[1] > FOLD_EPS)) return { ok: false, error: 'noBand' };
   const flip = bends[0] < bends[1];
   return { ok: true, x0, x1, xs, flip, flats: flip ? [...flats].reverse() : flats, bends: flip ? [...bends].reverse() : bends };
+}
+/** 断面を取る位置：指定の高さ setY（有限の数）があれば、紙の中なら { y, source:'set' }・紙の縁や外なら { error:'out' }。指定が無い（undefined・null）ときは foldCutLine（選んだ図形の中の横線）。 */
+export function foldCutPick(shapes, setY) {
+  if (setY === undefined || setY === null) return foldCutLine(shapes);
+  const box = foldPanelBox(shapes || []), y = Number(setY);
+  return Number.isFinite(y) && box && y > box.y0 + 0.01 && y < box.y1 - 0.01 ? { y, source: 'set' } : { error: 'out' };
 }
 /** 断面を取る位置の線：紙の中を幅の8割以上横切る、実線の横線（紙の縁・点線・短い線・縦や斜めの線は対象外）。1本ならその y。無ければ { none: true }。2本以上は { error: 'many', count }。 */
 export function foldCutLine(shapes) {
