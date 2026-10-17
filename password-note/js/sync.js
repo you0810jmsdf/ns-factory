@@ -7,6 +7,7 @@
  *   - 保存したとき: 3秒まとめて送る。baseRev が古ければ 409 で相手の最新が返るので、合流してから再送する。
  *   - 合流の規則: 項目ごとに更新日時（updatedAt）の新しい方を採用。削除は墓標（vault.deleted[id]=日時）で伝える。
  *     予備コピー読込・自動復元のような「全体の置き換え」は resetAt が新しい側をそのまま採用する。
+ *   - 受け取り箱（inbox.js）の鍵 vault.inbox は、どの場合も kid ごとの和集合にする（片方にしか無い鍵を失わない）。
  *
  * 守り
  *   - 鍵が未設定なら一切通信しない。鍵は端末内（IndexedDB の syncConfig）。保管庫の中には入れない（保管庫を開く前に要るため）。
@@ -117,15 +118,23 @@ const Sync = (() => {
   function canon(v) {
     const entries = [...(v.entries || [])].map(e => ({ ...e })).sort((a, b) => String(a.id).localeCompare(String(b.id)));
     const deleted = Object.fromEntries(Object.entries(v.deleted || {}).sort());
-    return JSON.stringify({ entries, deleted, guard: v.guard || null, resetAt: v.resetAt || '' });
+    const inbox = typeof Inbox !== 'undefined' ? Inbox.canonInbox(v.inbox) : null;   // 受け取り箱の鍵（inbox.js）
+    return JSON.stringify({ entries, deleted, guard: v.guard || null, resetAt: v.resetAt || '', inbox });
   }
   function clone(v) { return JSON.parse(JSON.stringify(v)); }
+
+  // 受け取り箱の鍵・取り込み済みは、どちらの側にあるものも失わない（和集合）
+  function mergeInboxInto(out, a, b) {
+    if (typeof Inbox === 'undefined') return;
+    const m = Inbox.mergeInbox(a.inbox, b.inbox);
+    if (m) out.inbox = m; else delete out.inbox;
+  }
 
   // a=この端末, b=中継。戻り値は合流後の保管庫（新しいオブジェクト）
   function merge(a, b) {
     const ra = a.resetAt || '';
     const rb = b.resetAt || '';
-    if (ra !== rb) return clone(ra > rb ? a : b);
+    if (ra !== rb) { const w = clone(ra > rb ? a : b); mergeInboxInto(w, a, b); return w; }
 
     // 墓標: 同じ id は新しい日時を採る
     const del = {};
@@ -162,6 +171,7 @@ const Sync = (() => {
     if (ga && gb) out.guard = String(gb.savedAt || '') > String(ga.savedAt || '') ? clone(gb) : clone(ga);
     else if (ga || gb) out.guard = clone(ga || gb);
     else delete out.guard;
+    mergeInboxInto(out, a, b);
     return out;
   }
 
@@ -215,8 +225,15 @@ const Sync = (() => {
     if (state.dirty) await saveState({ dirty: false });
   }
 
-  // ---- 取得して合流 ----
+  // ---- 取得して合流（終わったら受け取り箱を確認する） ----
   async function pullInner(reason) {
+    await pullCore(reason);
+    if (typeof Inbox !== 'undefined') {
+      try { await Inbox.onSynced(); } catch (e) { /* 受け取り箱の失敗で同期を止めない */ }
+    }
+  }
+
+  async function pullCore(reason) {
     if (!isConfigured() || !masterPassword) return;
     const seq = changeSeq;
     const meta = await api('GET', '/vault/meta');
@@ -338,6 +355,18 @@ const Sync = (() => {
     run(() => pushInner(state.rev));
   }
 
+  // ---- 受け取り箱（inbox.js）から使う入口 ----
+  function inboxApi(method, path, body) { return api(method, path, body); }
+  function status() { return { ok: state.ok === true, clean: !state.dirty, rev: state.rev }; }
+  /** まとめ待ちを待たず、今すぐ中継へ送る。送れて未送信が無ければ true */
+  async function flushNow() {
+    if (!isConfigured()) return false;
+    clearTimeout(pushTimer);
+    pushTimer = null;
+    await pushInner(state.rev);
+    return !state.dirty;
+  }
+
   /** 削除した id に墓標を立てる（同期が未設定でも害はない。相手の端末で消すために要る） */
   function noteDeleted(ids) {
     vault.deleted = vault.deleted || {};
@@ -348,6 +377,7 @@ const Sync = (() => {
   /** 予備コピー読込・自動復元のあと。同期中なら「全体の置き換え」として相手の端末にも反映する */
   async function noteReplaced() {
     if (!isConfigured()) return;
+    if (typeof Inbox !== 'undefined') Inbox.restoreInto(vault);   // 古い予備コピーに鍵が無くても失わない
     vault.resetAt = now();
     await saveVaultLocal();
   }
@@ -560,7 +590,8 @@ const Sync = (() => {
       box.append(msg, rm);
     }
     body.appendChild(sec);
+    if (typeof Inbox !== 'undefined') Inbox.renderSection(body);
   }
 
-  return { init, onOpen, notifyChange, flush, noteDeleted, noteReplaced, render, isConfigured, merge, canon };
+  return { init, onOpen, notifyChange, flush, noteDeleted, noteReplaced, render, isConfigured, merge, canon, run, inboxApi, status, flushNow };
 })();
