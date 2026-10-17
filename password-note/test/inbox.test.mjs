@@ -249,3 +249,17 @@ test('restoreInto: 復元で金庫が置き換わっても、控えの鍵を足�
   Inbox.restoreInto(restored);
   same(restored.inbox.keys.map(k => k.kid), [kid]);
 });
+
+test('ログアウト（合言葉が消えた）後は、メモリ上の鍵の控えを捨てる', async () => {
+  const { world, Inbox } = makeWorld();
+  await Inbox.onSynced();
+  assert.equal(Inbox._test.hasMem(), true);
+  Inbox._test.wipeIfLocked();
+  assert.equal(Inbox._test.hasMem(), true, '合言葉がある間は残す');
+  world.masterPassword = '';
+  Inbox._test.wipeIfLocked();
+  assert.equal(Inbox._test.hasMem(), false);
+  const restored = { entries: [], resetAt: 'x' };
+  Inbox.restoreInto(restored);
+  assert.equal(restored.inbox, undefined, '捨てたあとは足し戻さない');
+});
