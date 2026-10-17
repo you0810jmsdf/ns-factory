@@ -677,13 +677,7 @@ function stLabel(s) { return isEN() ? (STATUS_EN[s] || s) : s; }
 document.addEventListener('nsf:langchange', () => location.reload());
 
 const GAS_KEY = 'op_gas_url';
-// 管理者パスワードは SHA-256 ハッシュ照合（平文はコードに置かない）
-const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
-function opSha256(text) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
-    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
-  );
-}
+// 管理者パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
 const FALLBACK_DATA_URL = 'orderprogress-data.json';
 const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbzERvxy0zmLdytf0roNlzVzj6JHg2keLvMQ3tl38fxQk97S-O83VjG-bQPOLMI_HYZe/exec';
@@ -735,12 +729,16 @@ function checkAuth() {
   if (sessionStorage.getItem('op_auth') === '1') return Promise.resolve(true);
   const pw = prompt('管理者パスワードを入力してください:');
   if (pw === null || pw === '') return Promise.resolve(false);
-  return opSha256(pw).then(async (hex) => {
-    if (hex === ADMIN_PASS_HASH) {
+  if (typeof window.nsfAdminVerify !== 'function') {
+    alert('照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください');
+    return Promise.resolve(false);
+  }
+  return window.nsfAdminVerify(pw).then(async (valid) => {
+    if (valid === true) {
       sessionStorage.setItem('op_auth', '1');
       try {
         sessionStorage.setItem('nsf_admin_key', pw);
-        sessionStorage.setItem('nsf_admin_auth', hex);
+        sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok');
       } catch(e) {}
       // 認証後は全列版（依頼者名・メモ・ヒアリング内容）を取り直す。取り直せなくても表示は続ける
       // ⛔ await を外さないこと（2026-09-11）。待たずに返すと、呼び出し側の openModal が
@@ -750,7 +748,10 @@ function checkAuth() {
       return true;
     }
     return false;
-  }).catch(() => false);
+  }).catch(() => {
+    alert('パスワードの照合に失敗しました（通信できません。時間をおいてもう一度）');
+    return false;
+  });
 }
 function isAdmin() {
   return sessionStorage.getItem('op_auth') === '1';

@@ -108,29 +108,32 @@ body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 <div class="toast" id="toast"></div>
 
 <script>
-// ---- 認証（chatlog.html と同じハッシュ・同じ保存キー） ----
-const ADMIN_PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+// ---- 認証（サーバー側で照合。window.nsfAdminVerify は assets/admin-remember.js・chatlog.html と同じ保存キー） ----
 const KEY_STORE = 'nsf_admin_key';
 const GAS = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
-function sha256(text){ return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(buf=>Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')); }
 function getKey(){ try{ return sessionStorage.getItem(KEY_STORE)||''; }catch(e){ return ''; } }
 function submitAuth(){
   const v=document.getElementById('pw').value;
-  sha256(v).then(hex=>{
-    if(hex!==ADMIN_PASS_HASH){ document.getElementById('authErr').textContent='パスワードが違います'; return; }
+  const err=document.getElementById('authErr');
+  if(typeof window.nsfAdminVerify!=='function'){ err.textContent='照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  err.textContent='確認中…';
+  window.nsfAdminVerify(v).then(ok=>{
+    if(ok!==true){ err.textContent='パスワードが違います'; return; }
+    err.textContent='';
     try{ sessionStorage.setItem(KEY_STORE, v); }catch(e){}
     unlock();
-  }).catch(()=>{ document.getElementById('authErr').textContent='照合に失敗しました（https で開いてください）'; });
+  }).catch(()=>{ err.textContent='照合に失敗しました（通信できません。時間をおいてもう一度）'; });
 }
 function unlock(){
   const a=document.getElementById('auth'); if(a) a.remove();
   init();
 }
-// 既にログイン済み（chatlog/admin で入力済み）なら再入力なし。保存された平文がハッシュに一致するかで判定
+// 既にログイン済み（chatlog/admin で入力済み）なら再入力なし。保存された平文をサーバーで照合して判定
 (function(){
   const k=getKey();
   if(!k){ return; }
-  sha256(k).then(hex=>{ if(hex===ADMIN_PASS_HASH) unlock(); }).catch(()=>{});
+  if(typeof window.nsfAdminVerify!=='function'){ return; }
+  window.nsfAdminVerify(k).then(ok=>{ if(ok===true) unlock(); }).catch(()=>{});
 })();
 
 // ---- 状態 ----
