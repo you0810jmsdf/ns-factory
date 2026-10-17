@@ -32,6 +32,7 @@ import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
+import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -59,7 +60,7 @@ const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
 const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false;
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
-let autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
+let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
@@ -885,10 +886,29 @@ function flushAutosave() {
   if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; }
-    else if (r.status === 'empty') localStorage.removeItem(AUTOSAVE_KEY);
+    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; scheduleUndoSave(r.savedAt); }
+    else if (r.status === 'empty') { localStorage.removeItem(AUTOSAVE_KEY); clearUndoRecord().catch(() => {}); }
     else if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); }
   } catch { if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
+}
+/** 元に戻す履歴の保管（事業主指示 2026-10-17：再起動しても Undo が残る）：自動保存の2秒後に、全タブの履歴を圧縮して IndexedDB へ。自動保存と同じ時刻（savedAt）を付け、復元のときは時刻が合うものだけ使う（図面とずれた履歴で戻して、作業を失わないため）。 */
+function scheduleUndoSave(savedAt) {
+  if (undoAttaching || typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(undoSaveTimer);
+  const stacks = tabs.map(tb => ({ undo: tb.undo.slice(), redo: tb.redo.slice() })); /* その時点の履歴を控える（2秒のあいだに増えても、この時刻の図面に合う分だけ） */
+  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }); } catch { /* 保管できない環境では何もしない */ } }, 2000);
+}
+/** 「前回の続き」で復元したタブに、保管した履歴を戻す。時刻が合わない・もう編集を始めた（履歴が空でない）タブには戻さない。 */
+async function attachSavedUndo(info, base) {
+  undoAttaching = true;
+  try {
+    const rec = await loadUndoRecord(); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.tabs)) return;
+    for (let i = 0; i < info.tabs.length; i++) {
+      const st = rec.tabs[i] ? await decodeStacks(rec.tabs[i]) : null, idx = base + i, tb = tabs[idx]; if (!st || !tb) continue;
+      const cur = idx === activeTab ? undo : tb.undo; if (cur.length || (idx === activeTab ? redo : tb.redo).length) continue;
+      tb.undo = st.undo; tb.redo = st.redo; if (idx === activeTab) { undo = tb.undo; redo = tb.redo; }
+    }
+    updateUI();
+  } catch { /* 履歴が読めなくても、図面の復元はそのまま */ } finally { undoAttaching = false; }
 }
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
 function offerRestore() {
@@ -903,9 +923,9 @@ function restoreAutosave() {
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
-  activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); flushAutosave();
+  activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; attachSavedUndo(info, base); flushAutosave();
 }
-function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } flushAutosave(); }
+function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } clearUndoRecord().catch(() => {}); flushAutosave(); }
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
@@ -1641,10 +1661,12 @@ async function openFile(file) {
     if (name.endsWith('.dxf')) { const r = dxfToShapesFull(text); const res = importVector(r.shapes, [], { recover: $('recoverArcs').checked }); if (r.units === null) $('hint').textContent += ' ' + t('dxfUnitsAssumed'); return res; }
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
     if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
-    const next = withDefaultTool(migrateDoc(JSON.parse(text)));
+    const raw = JSON.parse(text), hist = raw && raw.undoHistory; if (raw) delete raw.undoHistory; /* 保存ファイルに入っていた元に戻す履歴は、図面とは別に扱う */
+    const next = withDefaultTool(migrateDoc(raw));
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
     const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode); noticeGaps();
+    if (hist) { const st = await decodeStacks(hist); if (st) { undo = st.undo; redo = st.redo; snapshotTab(); updateUI(); } } /* 保存した履歴で、元に戻す・やり直しを置き換える（読めないときは、そのまま） */
     if (extraSheets && next.threeViewSheet?.role === 'front') restoreSheets(extraSheets, next.threeViewSheet.id);
     return { added: next.shapes.length, dropped: 0 };
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
@@ -3824,6 +3846,17 @@ function dimAnchorFor(pt) {
   for (const sh of doc.shapes) { if (['dimension', 'text', 'image'].includes(sh.type) || sh.holeLink) continue; const pts = dimPointsOf(sh); for (let k = 0; k < pts.length; k++) if (Math.hypot(pts[k].x - pt.x, pts[k].y - pt.y) < DIM_NEAR) return { id: sh.id, k }; }
   return null;
 }
+/** 寸法線は傾けない（2026-10-17 事業主指示）：水平・垂直の寸法（軸から5°以内・長さ1mm以上）は、端がずれても水平・垂直のまま、図形の大きさに追従するだけ。axis＝'h'｜'v'｜null。 */
+const DIM_AXIS_DEG = 5;
+function dimAxisOf(p, q) {
+  const dx = Math.abs(q.x - p.x), dy = Math.abs(q.y - p.y); if (Math.hypot(dx, dy) < 1) return null;
+  const tilt = Math.atan2(Math.min(dx, dy), Math.max(dx, dy)) * 180 / Math.PI; return tilt > DIM_AXIS_DEG ? null : dx >= dy ? 'h' : 'v';
+}
+/** 2点を軸にそろえる。そろえる座標（水平なら y・垂直なら x）は、図形に付いている端が片方だけならその端のもの、両方付いている（または両方ない）なら、元の位置からあまり動いていないほうの端のもの（元が無ければ1点目）。 */
+function dimStraighten(pts, axis, old, anchored = []) {
+  const k = axis === 'h' ? 'y' : 'x', moveOf = i => old ? Math.abs(pts[i][k] - old[i][k]) : i, one = anchored[0] && !anchored[1] ? 0 : anchored[1] && !anchored[0] ? 1 : null, v = pts[one ?? (moveOf(1) < moveOf(0) ? 1 : 0)][k];
+  return pts.map(pt => ({ ...pt, [k]: v }));
+}
 function syncDimensions(before) {
   for (const d of doc.shapes) {
     if (d.type !== 'dimension' || d.foldSec) continue; const old = before.get(d.id), cur = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }];
@@ -3834,6 +3867,8 @@ function syncDimensions(before) {
       else { d.anchors = d.anchors.map((a, i) => a && tgt[i] ? a : null); [[0, 'x1', 'y1'], [1, 'x2', 'y2']].forEach(([i, kx, ky]) => { if (d.anchors[i] && tgt[i] && Math.hypot(tgt[i].x - d[kx], tgt[i].y - d[ky]) > 1e-4) { d[kx] = tgt[i].x; d[ky] = tgt[i].y; } }); /* 0.0001mm 未満の差は追従させない（意味のない変更で、元に戻すの履歴を増やさない） */ if (!d.anchors.some(Boolean)) delete d.anchors; }
     }
     if (!d.anchors) { const an = cur.map(dimAnchorFor); if (an.some(Boolean)) d.anchors = an; }
+    const oldPts = old ? [{ x: old[0], y: old[1] }, { x: old[2], y: old[3] }] : null, now = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }], axis = (oldPts && dimAxisOf(oldPts[0], oldPts[1])) || dimAxisOf(now[0], now[1]);
+    if (axis) { const [p, q] = dimStraighten(now, axis, oldPts, (d.anchors || []).map(Boolean)); if (p.x !== d.x1 || p.y !== d.y1 || q.x !== d.x2 || q.y !== d.y2) { d.x1 = p.x; d.y1 = p.y; d.x2 = q.x; d.y2 = q.y; } } /* 傾けない */
   }
 }
 function commit(fn) {
@@ -3862,7 +3897,7 @@ function setMode(next) {
 }
 function history(from, to) {
   if (!from.length) return; scheduleAutosave();
-  to.push(JSON.stringify(doc)); doc = JSON.parse(from.pop()); selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw();
+  to.push(JSON.stringify(doc)); doc = migrateDoc(JSON.parse(from.pop())); /* 保存した履歴は古い版の図面かもしれないので、版上げしてから戻す */ selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw();
 }
 /** 分解：選んだ矩形・折れ線（閉じた図形を含む）を、辺ごとの独立した直線にばらす。層・色・線種・部品の所属は引き継ぐ。目打ち（縫い穴）が付いた図形は穴が壊れるので分解しない。 */
 function explodeSelection() {
@@ -4291,7 +4326,8 @@ function livePreviewOf(sh) {
 /** 追従する寸法（anchors あり）の、ドラッグ中の見た目：覚えた点を、ドラッグ中の図形の位置から求める（寸法の数字も、その場で変わる）。図面のデータは、離したときだけ変わる。 */
 function liveDimension(d) {
   const pts = d.anchors.map(a => { const sh = a && doc.shapes.find(x => x.id === a.id); return sh ? (dimPointsOf(livePreviewOf(sh))[a.k] ?? null) : null; }); if (!pts.some(Boolean)) return previewMoved(d);
-  return { ...d, x1: pts[0]?.x ?? d.x1, y1: pts[0]?.y ?? d.y1, x2: pts[1]?.x ?? d.x2, y2: pts[1]?.y ?? d.y2 };
+  const now = [{ x: pts[0]?.x ?? d.x1, y: pts[0]?.y ?? d.y1 }, { x: pts[1]?.x ?? d.x2, y: pts[1]?.y ?? d.y2 }], base = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }], axis = dimAxisOf(base[0], base[1]) || dimAxisOf(now[0], now[1]), [p, q] = axis ? dimStraighten(now, axis, base, (d.anchors || []).map(Boolean)) : now;
+  return { ...d, x1: p.x, y1: p.y, x2: q.x, y2: q.y };
 }
 function previewMoved(s, owner = s.id) {
   if (gesture?.kind !== 'move' || !gesture.ids.has(owner)) return s;
@@ -5009,7 +5045,8 @@ async function save(asNew = false) {
   const docsToCheck = payload === doc ? [doc] : [payload, payload.threeViewSheets?.top, payload.threeViewSheets?.side].filter(Boolean);
   for (const d of docsToCheck) healDoc(d);
   if (!docsToCheck.every(d => validateDoc(d))) { $('hint').textContent = t('saveInvalid'); return; }
-  const text = JSON.stringify(payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
+  const keep = Number($('saveHistory').value) || 0, withHistory = keep && payload === doc && (undo.length || redo.length); /* 元に戻す履歴も一緒に保存（事業主指示 2026-10-17・既定100回・三面図の紙分けは対象外） */
+  const text = JSON.stringify(withHistory ? { ...payload, undoHistory: await encodeStacks({ undo, redo }, { keep }) } : payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
   const clean = () => { for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs(); };
   if (typeof globalThis.showSaveFilePicker !== 'function') {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
@@ -5045,6 +5082,8 @@ function restoreSheets(extra, id) {
 window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { e.preventDefault(); e.returnValue = ''; } });
 /* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
 $('save').onclick = () => { $('saveMenu').hidden = !$('saveMenu').hidden; };
+try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
+$('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
