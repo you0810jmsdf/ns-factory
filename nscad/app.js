@@ -33,7 +33,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck } from './laminate.js';
+import { laminateCheck, partBox } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1316,7 +1316,7 @@ function renderLaminateParts() {
     const id = p.id, row = document.createElement('div'); row.className = 'lam-part';
     const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = p.name; name.dataset.role = 'name';
     name.addEventListener('change', () => { const part = cur(id), v = name.value.trim(); if (part && v && v !== part.name) commit(() => { part.name = v; }); else if (part) name.value = part.name; });
-    const info = document.createElement('span'); info.textContent = t('lamPartRow', { n: count(p).length, t: p.thickness });
+    const info = document.createElement('span'); const bx = partBox(doc, p); info.textContent = t('lamPartRow', { n: count(p).length, t: p.thickness, w: bx ? (bx.maxX - bx.minX).toFixed(2) : '-', h: bx ? (bx.maxY - bx.minY).toFixed(2) : '-' });
     const pick = document.createElement('button'); pick.dataset.role = 'pick'; pick.textContent = t('lamPartPick');
     pick.onclick = () => { const part = cur(id); if (!part) return; const ids = count(part); selected = new Set(ids); draw(); $('hint').textContent = t('lamPartPicked', { name: part.name, n: ids.length }); };
     const del = document.createElement('button'); del.dataset.role = 'del'; del.textContent = t('lamPartDel');
@@ -1338,11 +1338,13 @@ function parseLaminateZones(text) {
 }
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
-  if (doc.parts.length < 2) { $('hint').textContent = t('lamNeedParts'); return; }
-  fillLaminateParts(); if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, fail = key => { line(t(key), 'lam-error'); $('hint').textContent = t(key); };   /* エラーは、検証ボタンの下（カードの中）にも赤い文字で出す */
+  if (doc.parts.length < 2) { fail('lamNeedParts'); return; }
+  fillLaminateParts(); if ($('lamOuter').value === $('lamInner').value) { const other = doc.parts.find(p => p.id !== $('lamOuter').value); if (other) { $('lamInner').value = other.id; lamTouched.i = false; line(t('lamSwitched', { name: other.name }), 'lam-warn'); } }   /* 表と裏が同じ部品なら、裏を別の部品に切り替える */
+  if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
   const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value) });
-  if (!r.ok) { $('hint').textContent = t('lamErr_' + r.error); return; }
-  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, f2 = v => v.toFixed(2), b = r.bend;
+  if (!r.ok) { fail('lamErr_' + r.error); return; }
+  const f2 = v => v.toFixed(2), b = r.bend;
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
   if (r.mode === 'zones') { line(t(parseLaminateZones($('lamZones').value) ? 'lamZonesGiven' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
