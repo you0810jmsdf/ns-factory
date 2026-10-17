@@ -588,8 +588,10 @@ function logMsgToSheet_(m) {
 /* ---------- 発言ログ閲覧API（管理者限定） ----------
    chatlog.html / admin.html の接客ログタブが参照する。
    admin.html と同一パスワード。平文は持たずSHA-256ハッシュで照合する。
-   ScriptProperties に NSF_ADMIN_KEY_HASH があればそちらを優先（ローテーション時はプロパティ側を更新）。 */
-var ADMIN_KEY_HASH_FALLBACK = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+   ハッシュは ScriptProperties の NSF_ADMIN_KEY_HASH に入れる（ローテーション時もプロパティ側を更新）。
+   ⛔ このファイルは公開リポジトリにあるため、ハッシュをここに書かない（2026-10-17・API漏洩総点検 M5）。
+   プロパティが無いときは FALLBACK が空なので、管理者向けAPIは常に拒否される（安全側）。 */
+var ADMIN_KEY_HASH_FALLBACK = '';
 
 function sha256Hex_(text) {
   var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(text), Utilities.Charset.UTF_8);
