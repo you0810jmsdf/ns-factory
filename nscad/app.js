@@ -3597,6 +3597,15 @@ function rebuildSnaps() {
     snapCache.push(...intersections(a.type === 'arc' ? { ...a, type: 'circle' } : a, b.type === 'arc' ? { ...b, type: 'circle' } : b).filter(p => distTo(a, p) < 1e-7 && distTo(b, p) < 1e-7));
   }
 }
+/** 選んだ線の合計の長さ（mm）と、その線の上（0.3mm 以内）にある見えている菱目の数。線を選んでいなければ null。数えるのは選んだ線が60本までのとき（全選択のような大きな選択では重くなるため、出さない）。目打ちの「区間を選ぶ」と同じ基準（事業主指示 2026-10-17） */
+function selectedLineHoleStats() {
+  const lines = doc.shapes.filter(s => selected.has(s.id) && stitchable(s) && editable(s)), withLen = [];
+  if (!lines.length || lines.length > 60) return null;
+  let len = 0; for (const s of lines) { let l = NaN; try { l = arcLength(s); } catch { l = NaN; } if (Number.isFinite(l)) { len += l; withLen.push(s); } }
+  if (!withLen.length) return null;
+  const holes = doc.holes.filter(h => holeVisible(h) && withLen.some(s => distTo(s, { x: h.x, y: h.y }) < 0.3)).length;
+  return { len, holes };
+}
 function updateUI() {
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
@@ -3606,7 +3615,7 @@ function updateUI() {
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
-  $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
+  $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard();
