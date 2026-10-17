@@ -9,7 +9,7 @@ const cleanView = v => v && Number.isFinite(v.cx) && Number.isFinite(v.cy) && Nu
 export function packAutosave(tabs, active, now = new Date()) {
   if (!tabs.some(t => t.doc.shapes.length)) return { status: 'empty' };
   const text = JSON.stringify({ v: 1, savedAt: now.toISOString(), active, tabs: tabs.map(t => ({ name: t.name, doc: t.doc, ...(cleanView(t.view) ? { view: cleanView(t.view) } : {}) })) });
-  return text.length > AUTOSAVE_MAX_CHARS ? { status: 'tooLarge' } : { status: 'ok', text };
+  return text.length > AUTOSAVE_MAX_CHARS ? { status: 'tooLarge' } : { status: 'ok', text, savedAt: now.toISOString() };
 }
 
 /** 保存の文字列を読み戻す。壊れている・版が違う・図面が不正・空のときは null。validate(doc) は図面の検査（validateDoc）。 */
