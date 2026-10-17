@@ -197,6 +197,13 @@ const Inbox = (() => {
     return ks.length ? ks.reduce((m, k) => (String(k.createdAt) >= String(m.createdAt) ? k : m)) : null;
   }
 
+  /** ログアウト（合言葉が消えた）後は、メモリ上の控え（秘密鍵を含む）を捨てる */
+  function wipeIfLocked() {
+    if (mem && typeof masterPassword === 'string' && !masterPassword) mem = null;
+  }
+  const wipeTimer = setInterval(() => { try { wipeIfLocked(); } catch (e) { /* */ } }, 5000);
+  if (wipeTimer && typeof wipeTimer.unref === 'function') wipeTimer.unref();   // Node の試験が終われなくならないように
+
   /** 予備コピーの復元などで金庫が置き換わったあと、控えておいた鍵を足し戻す（古い予備コピーに鍵が無くても失わない）。 */
   function restoreInto(v) {
     if (!mem || !v) return;
@@ -553,7 +560,7 @@ const Inbox = (() => {
 
   const api = { generateKeyPair, seal, open, kidOf, normalizePayload, mergeInbox, canonInbox, restoreInto, onSynced, check, renderSection };
   // 試験用（アプリ本体からは使わない）
-  api._test = { classify, applyOne, urlInfo, doImport, drop, ensureKey, syncPubkey, state: () => ({ ...st }) };
+  api._test = { classify, applyOne, urlInfo, doImport, drop, ensureKey, syncPubkey, wipeIfLocked, hasMem: () => !!mem, state: () => ({ ...st }) };
   return api;
 })();
 
