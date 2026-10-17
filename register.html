@@ -824,15 +824,10 @@ textarea{min-height:80px;resize:vertical}
 <script src="assets/js/github-token.js"></script>
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
-// 認証は SHA-256 ハッシュ照合（平文はコードに置かない）。
+// 認証はサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
 // 通過時の入力値を REGISTER_KEY として保持し、GAS API の key に使用する。
-const REGISTER_KEY_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
 let REGISTER_KEY = '';
-function regSha256(text) {
-  return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then((buf) =>
-    Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
-  );
-}
+let regAuthBusy = false;   // 照合中の二重送信を防ぐ（成功後は true のまま）
 const YEAR = '2026';
 
 // ====== GAS 呼び出し（間欠障害リトライ付き） ======
@@ -1406,12 +1401,20 @@ async function deleteOption(field) {
 // ====== AUTH ======
 async function checkAuth() {
   const v = document.getElementById('authInput').value.trim();
-  const hex = await regSha256(v).catch(() => '');
-  if (hex === REGISTER_KEY_HASH) {
+  const errEl = document.getElementById('authError');
+  if (regAuthBusy) return;
+  if (typeof window.nsfAdminVerify !== 'function') { errEl.textContent = '照合の部品を読み込めませんでした。再読み込み（Ctrl+F5）してください'; return; }
+  regAuthBusy = true;
+  errEl.textContent = '確認中…';
+  let valid = false;
+  try { valid = ((await window.nsfAdminVerify(v)) === true); }
+  catch (e) { regAuthBusy = false; errEl.textContent = '照合に失敗しました（通信できません。時間をおいてもう一度）'; return; }
+  if (valid) {
+    errEl.textContent = '';
     REGISTER_KEY = v;
     try {
       sessionStorage.setItem('nsf_admin_key', v);
-      sessionStorage.setItem('nsf_admin_auth', hex);
+      sessionStorage.setItem('nsf_admin_auth', window.NSF_ADMIN_AUTH_OK || 'ok');
     } catch (e) {}
     document.getElementById('authOverlay').classList.add('hidden');
     document.body.classList.remove('auth-locked');
@@ -1432,7 +1435,8 @@ async function checkAuth() {
       maybeRestoreRegisterDraft();
     }
   } else {
-    document.getElementById('authError').textContent = 'パスワードが違います';
+    regAuthBusy = false;
+    errEl.textContent = 'パスワードが違います';
   }
 }
 document.getElementById('authInput').addEventListener('keydown', e => {
