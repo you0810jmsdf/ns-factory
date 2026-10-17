@@ -17,12 +17,15 @@
 //  - 聞き直す:   「キャンセル」を選んだ後でもう一度聞かせたいときは ?remember-admin=1 を付けて開く
 //
 // ※ 合言葉はこのブラウザの中に平文で残る。共用のPCでは覚えさせないこと。
-// ※ 照合用のハッシュは admin-gate.js の PASS_HASH と同じ値。合言葉を変えるときは両方を直す。
+// ※ 合言葉の照合は admin_guard GAS の verify（サーバー側）で行う。公開 JS にハッシュは置かない
+//    （2026-10-17・API漏洩総点検 M5）。この関数 window.nsfAdminVerify は全管理ページが共用する
+//    （admin-gate.js と各ページのログイン処理がこれを呼ぶ）。
 // ============================================================
 (function () {
   'use strict';
 
-  var PASS_HASH = '46f4870c381185671ba3ff063fd973ddb6ba34e5bcbd093a1ca8df3858ac018a';
+  var GUARD_URL = 'https://script.google.com/macros/s/AKfycbwzqQnnPluysWrt6rr53eq3LoOE3adXvmkiTVp-vvnr0bbrO1FMh25C9jJYtpX4qIr5/exec';
+  var AUTH_OK = 'ok';                     // 通過印の値（admin-gate.js と各ページが同じ値を見る。画面ロックの目印にすぎない）
   var KEY = 'nsf_admin_key';              // 各ページが GAS API の key として使う平文
   var AUTH = 'nsf_admin_auth';            // admin-gate.js の通過印
   var REMEMBER = 'nsf_admin_remember_key';
@@ -63,12 +66,25 @@
   var rawSet = Storage.prototype.setItem;
   var rawRemove = Storage.prototype.removeItem;
 
-  function sha256Hex(text) {
-    if (!window.crypto || !crypto.subtle) return Promise.resolve('');
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (buf) {
-      return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  // 合言葉をサーバーで照合する。true=一致 / false=不一致 / 通信できない・想定外の応答のときは reject。
+  // 不一致の応答は GAS が2秒待ってから返す（総当たり対策）。一致した値はこのページの間だけ覚えて再問い合わせしない。
+  var okMemo = '';
+  function nsfAdminVerify(pw) {
+    var text = String(pw == null ? '' : pw);
+    if (!text) return Promise.resolve(false);
+    if (okMemo && okMemo === text) return Promise.resolve(true);
+    var opt = { method: 'POST', body: JSON.stringify({ action: 'verify', adminKey: text }) };
+    if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) opt.signal = AbortSignal.timeout(25000);
+    return fetch(GUARD_URL, opt).then(function (res) { return res.text(); }).then(function (body) {
+      if (String(body).trim().charAt(0) === '<') throw new Error('unexpected response');
+      var data = JSON.parse(body);
+      if (!data || data.ok !== true || typeof data.valid !== 'boolean') throw new Error('unexpected response');
+      if (data.valid) okMemo = text;
+      return data.valid;
     });
   }
+  window.nsfAdminVerify = nsfAdminVerify;
+  window.NSF_ADMIN_AUTH_OK = AUTH_OK;
 
   function forgetThisPc() {
     try {
@@ -96,7 +112,7 @@
     try {
       if (!ss.getItem(KEY)) rawSet.call(ss, KEY, saved);
       if (ss.getItem(KEY) === saved) {
-        if (ss.getItem(AUTH) !== PASS_HASH) rawSet.call(ss, AUTH, PASS_HASH);
+        if (ss.getItem(AUTH) !== AUTH_OK) rawSet.call(ss, AUTH, AUTH_OK);
         // 各ページが独自に持つ「このタブは認証済み」の印（ページ側のコードと同じ名前・同じ値）
         SESSION_FLAGS.forEach(function (flag) { rawSet.call(ss, flag[0], flag[1]); });
         // 幕僚室（24時間トークン方式）も通す
@@ -106,13 +122,14 @@
         autoLoginForms(saved);
       }
     } catch (e) {}
-    // 合言葉が変わっていたら記憶を消してやり直す（古い合言葉のまま通過させない）
-    sha256Hex(saved).then(function (hex) {
-      if (!hex || hex === PASS_HASH) return;
+    // 合言葉が変わっていたら記憶を消してやり直す（古い合言葉のまま通過させない）。
+    // サーバーが「不一致」と答えたときだけ消す（通信できないときは何もしない）
+    nsfAdminVerify(saved).then(function (valid) {
+      if (valid !== false) return;
       forgetThisPc();
       try { rawRemove.call(ss, KEY); rawRemove.call(ss, AUTH); } catch (e) {}
       location.reload();
-    });
+    }, function () {});
   }
 
   // ---- 2) ログインの瞬間を捕まえて、このPCに覚えさせるか聞く ----
@@ -122,8 +139,8 @@
       if (this !== ss || name !== KEY || !value) return;
       var text = String(value);
       if (ls.getItem(REMEMBER) === text) return;
-      sha256Hex(text).then(function (hex) {
-        if (hex !== PASS_HASH) return;                       // 間違った合言葉は覚えない
+      nsfAdminVerify(text).then(function (valid) {
+        if (valid !== true) return;                          // 間違った合言葉は覚えない
         if (ls.getItem(REMEMBER)) { rawSet.call(ls, REMEMBER, text); return; }   // すでに覚えさせているPCは更新だけ
         if (ls.getItem(ASKED) === 'no') return;
         setTimeout(function () {
@@ -135,7 +152,7 @@
           );
           try { rawSet.call(ls, ok ? REMEMBER : ASKED, ok ? text : 'no'); } catch (e) {}
         }, 400);
-      });
+      }, function () {});   // 通信できないときは何もしない（次回のログインで再び聞く）
     } catch (e) {}
   };
 
