@@ -2289,7 +2289,9 @@ function selectAllShapes() {
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
 function pasteText(text, at = null) {
   const data = decodeClipboard(text); if (!data) return false;
-  const target = at || cursor; let ids = [];
+  /* 位置の指定が無いとき：貼り付ける図形全体の中心を、マウスの位置に置く。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
+  let target = at; if (!target) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; target = { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
+  let ids = [];
   cancel(); commit(() => { ids = mergePayload(doc, data.payload, { at: target, scale: Number($('pasteScale').value) || 1, freshId, source: 'clip:' + data.source }); selected = new Set(ids); });
   renderLayers(); $('hint').textContent = t('pasted', { n: ids.length, from: data.source }); return true;
 }
