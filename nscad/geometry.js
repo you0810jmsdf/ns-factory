@@ -729,6 +729,25 @@ export function reflectAcross(s, a, b) {
 }
 /** 図形と弧長位置の配列から、その位置で切り分けた図形配列を返す。円は 2 点以上で円弧になる。切れない型は [図形]。 */
 /** 曲がり（ハンドル）が無い、直線だけでできた path を、直線（節点2つ）／折れ線（3つ以上）に戻す。曲線を含むものはそのまま。 */
+/** 直線（line・2点だけの折れ線）の中から、同じ直線の上に並び、端がつながっている（重なり・gap mm 以内のすき間を含む）ものを、まとまりにして返す。2本以上のまとまりだけ：[{ ids, p1, p2 }]（p1・p2＝まとめた1本の直線の両端）。向きは cross（外積）、直線からのずれは dist（mm）で見る。 */
+export function collinearLineClusters(list, { gap = 0.5, dist = 0.01, cross = 1e-4 } = {}) {
+  const lines = list.map(s => s.type === 'line' ? { id: s.id, a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } } : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? { id: s.id, a: { x: s.points[0].x, y: s.points[0].y }, b: { x: s.points[1].x, y: s.points[1].y } } : null).filter(l => l && Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) > EPS);
+  for (const l of lines) { const d = Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y); l.len = d; l.u = { x: (l.b.x - l.a.x) / d, y: (l.b.y - l.a.y) / d }; }
+  const parent = lines.map((_, i) => i), find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
+  for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) {
+    const A = lines[i], B = lines[j]; if (Math.abs(A.u.x * B.u.y - A.u.y * B.u.x) > cross) continue;
+    const off = q => Math.abs((q.x - A.a.x) * A.u.y - (q.y - A.a.y) * A.u.x), t = q => (q.x - A.a.x) * A.u.x + (q.y - A.a.y) * A.u.y;
+    if (off(B.a) > dist || off(B.b) > dist) continue;
+    const t0 = Math.min(t(B.a), t(B.b)), t1 = Math.max(t(B.a), t(B.b)); if (t0 <= A.len + gap && t1 >= -gap) parent[find(j)] = find(i);
+  }
+  const groups = new Map(); lines.forEach((l, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(l); });
+  const out = [];
+  for (const g of groups.values()) {
+    if (g.length < 2) continue; const R = g[0], t = q => (q.x - R.a.x) * R.u.x + (q.y - R.a.y) * R.u.y, pts = g.flatMap(l => [l.a, l.b]);
+    out.push({ ids: g.map(l => l.id), p1: pts.reduce((m, q) => t(q) < t(m) ? q : m), p2: pts.reduce((m, q) => t(q) > t(m) ? q : m) });
+  }
+  return out;
+}
 export function straightenPath(s) {
   if (s.type !== 'path' || !s.nodes?.length || s.nodes.length < 2) return s;
   if (!s.nodes.every(n => !n.smooth && n.inX === n.x && n.inY === n.y && n.outX === n.x && n.outY === n.y)) return s;
