@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-17T22:30:30",
+ "generatedAt": "2026-10-17T23:32:19",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 307,
+ "count": 308,
  "items": [
+  {
+   "title": "APIキーの漏洩対策を徹底し、Tailscaleのアクセスを制限｜Jarvis日記 2026.10.17（土）",
+   "url": "https://note.com/you0810jmsdf/n/nea486bcfb802",
+   "date": "2026-10-17",
+   "image": "https://assets.st-note.com/production/uploads/images/325491258/rectangle_large_type_2_0e343238b6d58d0d7c071f92ffec67ed.png?fit=bounds&quality=85&width=1280",
+   "key": "nea486bcfb802",
+   "imageSource": "note",
+   "summary": ""
+  },
   {
    "title": "2026-10-17（土） - 試行錯誤のUI改善と新しい機能",
    "url": "https://note.com/you0810jmsdf/n/n6675e92f282d",
