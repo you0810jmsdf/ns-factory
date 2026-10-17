@@ -568,7 +568,7 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
   const joinPrev = saved.segments.find(sg => Math.abs(sg.to - lo) < 1e-6 && sg.toolId); /* 反対側の隣の区間（終点が、今打つ区間の始点側 lo にある）：今の区間を反対側（hi）から数えると、lo にぴったり穴が来ないので、つなぎ目が目落ちする（事業主指摘 2026-10-17：続きで目打ちをするとかならず目落ちする） */
   const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
   const apply = () => {
-    if (fresh) doc.paths.push(saved);
+    if (fresh) { if (doc.paths.some(q => q.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); } /* 新しい経路の id は、計画を立てたときに決めたもの。つなぎ目を越えて2本とも新しい経路のとき、同じ id になるので、重なるときは付け直す（不具合記録 2026-10-17：後半の菱目が抜けた） */
     /* 指定した区間の中にあった同じ線の穴は、打ち直す。ただし区間の両端（つなぎ目）の穴は、新しい穴がそこに来るときだけ置き換える。固定ピッチは終点ぴったりには打たないので、両端まで消すと、隣の区間の端の穴が消えて歯抜けになる（事業主指摘 2026-10-16） */
     const posOf = p => saved.closed && Math.abs(p.s - len) < 1e-7 ? 0 : p.s, newPos = points.map(posOf), atEdge = h => (Math.abs(h.s - lo) < 1e-7 || Math.abs(h.s - hi) < 1e-7) && !(opt.jointS !== undefined && Math.abs(h.s - opt.jointS) < 1e-7);   /* つなぎ目（別の経路との境）の穴は、ピッチが変わるので前のものを消す */
     doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7 || (atEdge(h) && !newPos.some(q => Math.abs(q - h.s) < 1e-5)));
@@ -636,13 +636,24 @@ function stitchJointCount(c1, c2, joint, n, tool) {
   countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
   $('hint').textContent = t('rangeJointPlaced', { n, pitch: P.toFixed(2), a: a.toFixed(2), b: b.toFixed(2) }); draw();
 }
+/** 始点と同じ場所をもう一度クリックしたとき：その点（経路 c の位置 c.s）に菱目を1つだけ打つ。そこにすでに菱目があれば、増やさずに案内する。 */
+function stitchSingleAt(c, tool) {
+  const { saved, fresh, route } = c.state, q = pointAtLength(route, c.s); countStage = null;
+  if (doc.holes.some(h => holeVisible(h) && Math.hypot(h.x - q.x, h.y - q.y) < 0.05)) { $('hint').textContent = t('singleExists'); draw(); return; }
+  commit(() => {
+    if (fresh) { if (doc.paths.some(p => p.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); }
+    const id = freshId(doc.holes, 'h'); doc.holes.push({ ...q, s: c.s, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? q.angleDeg : 0) + slantOf(tool), mark: 'tool' });
+    saved.segments.push({ from: c.s, to: c.s, toolId: tool.id, pitch: tool.pitch, mode: 'manual' }); selected = new Set([id]);
+  });
+  $('hint').textContent = t('singleDone'); draw();
+}
 function rangeStitchClick(w) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
   if (kind === 'count' && !n) { $('hint').textContent = t('countNeedN'); return; }
   const pair = countStage ? near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6) : null;
   if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
-    if (countStage && near.some(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6))) { $('hint').textContent = t('countSame'); return; }
+    if (countStage) { const same = near.find(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6)); if (same) { stitchSingleAt(same, tool); return; } } /* 始点と同じ場所（交点など）をもう一度クリック：そこに菱目を1つだけ打つ（事業主指示 2026-10-17） */
     if (countStage) { /* 始点とは別の線をクリックした：端が接している線どうしなら、つなぎ目を越えて打つ（固定ピッチだけ）。接していなければ、ここを新しい始点にして、そのことを案内する */
       for (const c2 of near) for (const c1 of countStage.list) { const joint = stitchJoint(c1, c2); if (joint) { if (kind === 'count') { stitchJointCount(c1, c2, joint, n, tool); return; } if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; } }
       const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
@@ -1124,6 +1135,11 @@ function refreshInfo() {
     if ('inner' in s) $('info-inner').checked = s.inner;
     if (INFO_FIELDS[s.type]?.includes('color')) { $('info-color').value = s.color || ''; $('info-lineStyle').value = s.lineStyle || ''; }
     $('info-length').value = (s.type === 'fold' ? distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }) : arcLength(s)).toFixed(2);
+    { /* 直線（2点だけの折れ線を含む）の角度：水平から左まわり（0〜180度・小数3桁）。重なった線のどれが真っ直ぐか見分けるため（事業主の質問 2026-10-17） */
+      const ends = s.type === 'line' ? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }] : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? s.points : null, el = $('info-slope'), row = $('l-slope');
+      if (row) row.hidden = !ends;
+      if (ends && el) { const dx = ends[1].x - ends[0].x, dy = ends[1].y - ends[0].y; let a = Math.atan2(-dy, dx) * 180 / Math.PI; if (a < 0) a += 180; if (a >= 180 - 1e-9) a -= 180; el.textContent = t('infoSlope', { a: a.toFixed(3), kind: t(a < 0.0005 || a > 179.9995 ? 'slopeH' : Math.abs(a - 90) < 0.0005 ? 'slopeV' : 'slopeDiag') }); }
+    }
     renderPartInfo(s);
     if (s.type === 'polyline' || s.type === 'path') { $('info-nodes').textContent = String((s.points || s.nodes).length); $('info-area').textContent = s.closed ? areaOf(s.type === 'path' ? flattenForArea(s) : s.points).toFixed(1) + ' mm²' : '—'; }
     $('l-nodeOps').hidden = !(s.type === 'path' && nodeSel?.id === s.id);
@@ -4262,6 +4278,11 @@ function previewMoved(s, owner = s.id) {
   if (gesture?.kind !== 'move' || !gesture.ids.has(owner)) return s;
   const d = moveDelta(); return translate(s, d.x, d.y);
 }
+/** 点 p の近く（画面9px以内）にある、線と線の交点のうち、いちばん近いもの（なければ null）。近くを通る線（最大12本）だけで交点を求めるので、マウスを動かしても重くならない。 */
+function intersectionSnapAt(p) {
+  const reach = 9 / scale, near = doc.shapes.filter(s => visible(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 2).slice(0, 12); if (near.length < 2) return null;
+  let best = null, bd = reach; for (const q of allIntersections(near)) { const d = distance(p, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
+}
 function snapped(p, shift, anchor) {
   snap = null;
   let result = { ...p };
@@ -4281,6 +4302,7 @@ function snapped(p, shift, anchor) {
     const hit = threeViewSnap(p, threeViewMarksCache, 9 / scale, threeViewLayout);
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
+  if (!snap && (mode === 'ruler' || mode === 'dimension')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
   if ($('snap').checked && !snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }

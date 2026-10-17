@@ -348,6 +348,18 @@ export function validateDoc(d) {
 /** 直せる不整合を直す（図面を書き換える・直した数を返す）。いまは、経路の「閉じている」を実際の線に合わせる：区間選択で線を切り分けたあと、新しい経路が元の印を引き継いで、検査に通らず読み込めなくなった図面を直す（2026-10-16 不具合記録）。読み込み（migrateDoc）と保存の前に使う。 */
 export function healDoc(d) {
   let fixed = 0; if (!d || !Array.isArray(d.paths) || !Array.isArray(d.shapes)) return fixed;
+  { /* 同じ id の経路が2つ以上ある図面（つなぎ目を越えて新しい2本に打ったときの不具合・2026-10-17）：2つ目以降に新しい id を付け、同じ id の菱目は、いちばん近い経路に付け直す（経路の上の位置 s も取り直す） */
+    const seen = new Map(); for (const p of d.paths) { if (!seen.has(p.id)) seen.set(p.id, []); seen.get(p.id).push(p); }
+    for (const [id, list] of seen) {
+      if (list.length < 2) continue; const used = new Set(d.paths.map(p => p.id)); let n = 1; const fresh = () => { while (used.has('p' + n)) n++; used.add('p' + n); return 'p' + n; };
+      const routes = list.map((p, i) => { if (i > 0) p.id = fresh(); let route = null; try { route = resolvePath(d, p); } catch { route = null; } return { p, route }; });
+      for (const h of (d.holes || []).filter(h => h.pathId === id)) {
+        let best = null, bd = Infinity; for (const r of routes) { if (!r.route) continue; const pr = projectOnPath(r.route, h), dist = distance(pr, h); if (dist < bd) { bd = dist; best = { r, pr }; } }
+        if (best) { h.pathId = best.r.p.id; h.s = best.pr.s; }
+      }
+      fixed++;
+    }
+  }
   for (const p of d.paths) { try { const route = resolvePath(d, p); if (route && typeof route.closed === 'boolean' && route.closed !== p.closed) { p.closed = route.closed; fixed++; } } catch { /* 直せない経路は、そのまま（検査で弾く） */ } }
   return fixed;
 }
