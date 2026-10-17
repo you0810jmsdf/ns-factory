@@ -1437,6 +1437,10 @@ function syncLockMarks() {
   const locked = featureLocked();
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
 }
+/** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップだけ抑えて、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
+let numberJustFocused = null;
+document.addEventListener?.('focusin', e => { const el = e?.target; if (el?.tagName === 'INPUT' && el.type === 'number') { numberJustFocused = el; setTimeout(() => { try { el.select?.(); } catch { /* 選べない欄は、そのまま */ } }, 0); } else numberJustFocused = null; });
+document.addEventListener?.('mouseup', e => { if (numberJustFocused && e?.target === numberJustFocused) { e.preventDefault?.(); numberJustFocused = null; } });
 document.addEventListener?.('click', e => { const sm = e.target?.closest?.('details[data-lock].locked > summary'); if (sm) { e.preventDefault(); lockGate(sm.parentElement.dataset.lock); } }, true);
 /** 「いまの登録」の1行：なし／確認待ち／確認済み、と、オーナーかどうか（オーナーなら、有料版の機能のロックが外れる）。 */
 function regNowText() {
@@ -3784,8 +3788,9 @@ function transformSelected(fn) {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>p.id));
-    doc.holes=doc.holes.map(h=>paths.has(h.pathId)?fn(h):h);
-    for(const h of doc.holes.filter(h=>paths.has(h.pathId))){const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));if(route)h.s=projectOnPath(route,h).s;}
+    const alone=h=>!paths.has(h.pathId)&&selected.has(h.id)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
+    doc.holes=doc.holes.map(h=>paths.has(h.pathId)||alone(h)?fn(h):h);
+    for(const h of doc.holes.filter(h=>paths.has(h.pathId)||alone(h))){const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));if(route)h.s=projectOnPath(route,h).s;}
     for(const saved of doc.paths.filter(p=>paths.has(p.id))){
       const old=before.get(saved.id),route=resolvePath(doc,saved),len=arcLength(route);
       const mapped=s=>projectOnPath(route,fn(pointAtLength(old,s),saved)).s;
