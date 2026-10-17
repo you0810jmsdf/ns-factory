@@ -33,6 +33,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
+import { laminateCheck } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1291,6 +1292,38 @@ function applyPartField(field) {
   else if (field === 'partOrder') { const v = Number($('info-partOrder').value); if (Number.isFinite(v)) commit(() => { part.order = v; }); }
 }
 /** 選択中の折り線をまたぐ部品の閉図形に、折り代 ΔL を足した新しい図形を作る（元は残す）。 */
+/** 貼り合わせの曲げ検証（事業主指示 2026-10-17）：表と裏の部品・厚みを選び、貼り合わせたときの曲げ・寸法の過不足・菱目の数と位置を調べる。計算は laminate.js。 */
+const lamTouched = { o: false, i: false };   /* 厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
+function fillLaminateParts() {
+  for (const [id, k] of [['lamOuter', 0], ['lamInner', 1]]) {
+    const sel = $(id), cur = sel.value; sel.textContent = '';
+    for (const p of doc.parts) { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); }
+    sel.value = doc.parts.some(p => p.id === cur) ? cur : (doc.parts[k]?.id ?? '');
+  }
+}
+function laminateThickFromPart(which) {
+  const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
+}
+function addLaminateDim(sg) {
+  const b = sg.box, v = sg.value; commit(() => { const id = freshId(doc.shapes, 's'), layer = ensureLayer(doc, 'guide'); doc.shapes.push(sg.horizontal ? { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX + v, y2: b.minY, offset: -8 } : { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX, y2: b.minY + v, offset: 8 }); });
+  runLaminate(); $('hint').textContent = t('lamAdded', { v: v.toFixed(2), side: t(sg.side === '表' ? 'lamSideOuter' : 'lamSideInner') });
+}
+function runLaminate() {
+  const box = $('lamResult'); box.textContent = '';
+  if (doc.parts.length < 2) { $('hint').textContent = t('lamNeedParts'); return; }
+  fillLaminateParts(); if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+  const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3 });
+  if (!r.ok) { $('hint').textContent = t('lamErr_' + r.error); return; }
+  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, f2 = v => v.toFixed(2), b = r.bend;
+  line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
+  if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
+  line(r.issues.length ? t('lamSummary', { e: r.errors, w: r.warns }) : t('lamOk'));
+  for (const is of r.issues) {
+    const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner');
+    const d = line(t(is.level === 'error' ? 'lamLevelError' : 'lamLevelWarn') + t('lamIssue_' + is.code, { ...is.params, side, from }), is.level === 'error' ? 'lam-error' : 'lam-warn');
+    if (is.suggest && ['length', 'width', 'mate'].includes(is.suggest.role)) { const bt = document.createElement('button'); bt.textContent = t('lamAdd', { v: f2(is.suggest.value) }); bt.onclick = () => addLaminateDim(is.suggest); d.appendChild(bt); }
+  }
+}
 function addFoldAllowance() {
   const fold = doc.shapes.find(s => selected.has(s.id) && s.type === 'fold'); if (!fold) { $('hint').textContent = t('selectFold'); return; }
   const part = fold.partId ? doc.parts.find(p => p.id === fold.partId) : null;
@@ -1470,6 +1503,8 @@ function patchFillAt(p) {
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
+  $('lamRun').onclick = runLaminate; $('lamOuter').addEventListener('change', () => laminateThickFromPart('o')); $('lamInner').addEventListener('change', () => laminateThickFromPart('i'));
+  $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; }); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) fillLaminateParts(); });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
   for (const id of ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by']) $(id).addEventListener('input', rulerFromBar);
