@@ -984,7 +984,8 @@ export function diamondLoopSizes(list, { maxMm = 12 } = {}) {
     if (pts.length !== 4 || pts.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) continue;
     const xs = pts.map(p => p.x), ys = pts.map(p => p.y); if (Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) > maxMm + 1e-9) continue;
     const d1 = Math.hypot(pts[2].x - pts[0].x, pts[2].y - pts[0].y), d2 = Math.hypot(pts[3].x - pts[1].x, pts[3].y - pts[1].y);
-    out.push({ w: Math.max(d1, d2), h: Math.min(d1, d2), x: xs.reduce((m, v) => m + v, 0) / 4, y: ys.reduce((m, v) => m + v, 0) / 4 });
+    const lv = d1 >= d2 ? { x: pts[2].x - pts[0].x, y: pts[2].y - pts[0].y } : { x: pts[3].x - pts[1].x, y: pts[3].y - pts[1].y }; let ang = Math.atan2(lv.y, lv.x) * 180 / Math.PI; ang = ((ang % 180) + 180) % 180;   /* 長いほうの対角線の向き（0〜180度） */
+    out.push({ w: Math.max(d1, d2), h: Math.min(d1, d2), ang, x: xs.reduce((m, v) => m + v, 0) / 4, y: ys.reduce((m, v) => m + v, 0) / 4 });
   }
   return out;
 }
