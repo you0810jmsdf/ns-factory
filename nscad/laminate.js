@@ -74,7 +74,6 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   const len = b => horizontalAxis ? b.maxX - b.minX : b.maxY - b.minY, wid = b => horizontalAxis ? b.maxY - b.minY : b.maxX - b.minX;
   const Lo = len(bo), Li = len(bi), Wo = wid(bo), Wi = wid(bi), bend = bendOf(Lo, Li, tO, tI), issues = [], push = (level, code, side, params = {}, suggest) => issues.push({ level, code, side, params, ...(suggest ? { suggest } : {}) });
   if (!bend.ok) push('error', 'bendTooMuch', null, { dl: lamNum(Math.abs(bend.dL)) });
-  if (Math.abs(Wo - Wi) > DIM_TOL) push('warn', 'widthDiffer', null, { wo: lamNum(Wo), wi: lamNum(Wi) });
   /* ①寸法の過不足 */
   const checkDims = opts.checkDims !== false, checkHoles = opts.checkHoles !== false;   /* 寸法・菱目の検査は、オフにできる（寸法を非表示にしたとき・菱目をまだ打っていないとき） */
   const names = checkDims ? [['表', po, bo, Lo, Wo, 'outer'], ['裏', pi, bi, Li, Wi, 'inner']] : [], dimInfo = {};
@@ -97,6 +96,8 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   /* 基準（表 or 裏）と、もう一方の全長（目標）：基準の部品を正しいものとして、もう一方の全長・菱目の位置を求める。目標が無ければ、もう一方のいまの長さ */
   const baseOuter = opts.base !== 'inner', baseSide = baseOuter ? '表' : '裏', otherSide = baseOuter ? '裏' : '表', otherLen = baseOuter ? Li : Lo, tgt = Number(opts.targetLen), hasTarget = Number.isFinite(tgt) && tgt > 0, wantLen = hasTarget ? tgt : otherLen;
   const LoU = baseOuter ? Lo : wantLen, LiU = baseOuter ? wantLen : Li, bendU = bendOf(LoU, LiU, tO, tI);   /* 目標の長さで貼り合わせたときの曲げ（目標が無ければ、いまの曲げと同じ） */
+  { const dW = Math.abs(Wo - Wi);   /* 貼り合わせる幅（曲がらない方向）は、表と裏で同じ。大きく違うときは、部品の選び方が合っていない */
+    if (dW > 5) push('error', 'partsMismatch', otherSide, { wo: lamNum(Wo), wi: lamNum(Wi) }); else if (dW > DIM_TOL) push('error', 'widthDiffer', otherSide, { cur: lamNum(baseOuter ? Wi : Wo), want: lamNum(baseOuter ? Wo : Wi), base: baseSide }, { side: otherSide, current: baseOuter ? Wi : Wo, want: baseOuter ? Wo : Wi }); }
   if (hasTarget && Math.abs(otherLen - wantLen) > DIM_TOL) push('error', 'lenOff', otherSide, { cur: lamNum(otherLen), want: lamNum(wantLen), diff: lamNum(Math.abs(wantLen - otherLen)), dir: wantLen > otherLen ? 'long' : 'short' }, { side: otherSide, current: otherLen, want: wantLen });
   /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、もう一方の位置を求める */
   let zones = [], mode = 'uniform', given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, cand = given ?? lamZonesFromDashes(lamDashPositions(doc, bo, axis, po));

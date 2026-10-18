@@ -1341,6 +1341,11 @@ function renderLaminateParts() {
 function laminateThickFromPart(which) {
   const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
 }
+/** 全長・幅の寸法を、まとめて足す（足りない寸法の案すべて）。 */
+function addLaminateDims(list) {
+  commit(() => { for (const sg of list) { const b = sg.box, v = sg.value, id = freshId(doc.shapes, 's'), layer = ensureLayer(doc, 'guide'); doc.shapes.push(sg.horizontal ? { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX + v, y2: b.minY, offset: -8 } : { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX, y2: b.minY + v, offset: 8 }); } });
+  runLaminate(); $('hint').textContent = t('lamAddedAll', { n: list.length });
+}
 function addLaminateDim(sg) {
   const b = sg.box, v = sg.value; commit(() => { const id = freshId(doc.shapes, 's'), layer = ensureLayer(doc, 'guide'); doc.shapes.push(sg.horizontal ? { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX + v, y2: b.minY, offset: -8 } : { id, type: 'dimension', layer, x1: b.minX, y1: b.minY, x2: b.minX, y2: b.minY + v, offset: 8 }); });
   runLaminate(); $('hint').textContent = t('lamAdded', { v: v.toFixed(2), side: t(sg.side === '表' ? 'lamSideOuter' : 'lamSideInner') });
@@ -1356,22 +1361,31 @@ function runLaminate() {
   if (doc.parts.length < 2) { fail('lamNeedParts'); return; }
   fillLaminateParts(); if ($('lamOuter').value === $('lamInner').value) { const other = doc.parts.find(p => p.id !== $('lamOuter').value); if (other) { $('lamInner').value = other.id; lamTouched.i = false; line(t('lamSwitched', { name: other.name }), 'lam-warn'); } }   /* 表と裏が同じ部品なら、裏を別の部品に切り替える */
   if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
-  const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value), base: $('lamBase').value === 'inner' ? 'inner' : 'outer', targetLen: Number($('lamTarget').value) > 0 ? Number($('lamTarget').value) : undefined, checkDims: $('lamDimCheck').checked !== false, checkHoles: $('lamHoleCheck').checked !== false });
+  const dimShapes = doc.shapes.filter(s => s.type === 'dimension' && !s.foldSec), dimsHidden = dimShapes.length > 0 && dimShapes.every(s => !layerVisible(s));   /* 寸法が、すべて非表示の層にあるとき：見えない寸法は、数えない・検査もしない */
+  const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value), base: $('lamBase').value === 'inner' ? 'inner' : 'outer', targetLen: Number($('lamTarget').value) > 0 ? Number($('lamTarget').value) : undefined, checkDims: $('lamDimCheck').checked !== false && !dimsHidden, checkHoles: $('lamHoleCheck').checked !== false });
   if (!r.ok) { fail('lamErr_' + r.error); return; }
   const f2 = v => v.toFixed(2), b = r.bend, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer');
   const issueText = is => { const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner'); return t('lamIssue_' + is.code, { ...is.params, side, from, base: baseName, dir: is.params.dir ? t(is.params.dir === 'long' ? 'lamDirLong' : 'lamDirShort') : '' }); };
   const withAdd = (d, is) => { if (is.suggest && ['length', 'width', 'mate'].includes(is.suggest.role)) { const bt = document.createElement('button'); bt.textContent = t('lamAdd', { v: f2(is.suggest.value) }); bt.onclick = () => addLaminateDim(is.suggest); d.appendChild(bt); } };
   /* 1. 結論：基準と、直す件数 */
-  const fixes = r.issues.filter(is => is.level === 'error' || is.code === 'holesNone'), notes = r.issues.filter(is => !fixes.includes(is));
-  line(fixes.length ? t('lamVerdictFix', { base: baseName, other: otherName, n: fixes.length }) : t('lamVerdictOk', { base: baseName, other: otherName }), fixes.length ? 'lam-error' : 'lam-ok');
+  const fixIssues = r.issues.filter(is => is.level === 'error' || is.code === 'holesNone'), notes = r.issues.filter(is => !fixIssues.includes(is));
+  const dimNeeds = fixIssues.filter(is => is.code === 'needLength' || is.code === 'needWidth'), fixes = fixIssues.filter(is => !dimNeeds.includes(is)).sort((p, q) => (q.code === 'partsMismatch') - (p.code === 'partsMismatch'));   /* 部品の選び方の確認を最初に・足りない寸法は1件にまとめる */
+  const nFix = fixes.length + (dimNeeds.length ? 1 : 0);
+  line(nFix ? t('lamVerdictFix', { base: baseName, other: otherName, n: nFix }) : t('lamVerdictOk', { base: baseName, other: otherName }), nFix ? 'lam-error' : 'lam-ok');
   /* 2. 直すところ（番号つき・具体的な数字） */
-  if (fixes.length) { line(t('lamFixTitle'), 'lam-h'); fixes.forEach((is, k) => withAdd(line((k + 1) + '. ' + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is)); }
+  if (nFix) {
+    line(t('lamFixTitle'), 'lam-h'); fixes.forEach((is, k) => withAdd(line((k + 1) + '. ' + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is));
+    if (dimNeeds.length) { const list = dimNeeds.map(is => t(is.side === '表' ? 'lamSideOuter' : 'lamSideInner') + 'の' + t(is.code === 'needLength' ? 'lamRoleLength' : 'lamRoleWidth') + ' ' + is.params.v + ' mm').join('、'); const d = line((fixes.length + 1) + '. ' + t('lamFixDims', { n: dimNeeds.length, list }), 'lam-error'), bt = document.createElement('button'); bt.textContent = t('lamAddAllDims', { n: dimNeeds.length }); bt.onclick = () => addLaminateDims(dimNeeds.map(is => is.suggest)); d.appendChild(bt); }
+  }
   /* 3. 参考：曲げの数字・曲げ区間・菱目の数・注意 */
   line(t('lamRefTitle'), 'lam-h');
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
   if (r.mode === 'zones') { line(t(parseLaminateZones($('lamZones').value) ? 'lamZonesGiven' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
-  for (const is of notes) withAdd(line(t(is.level === 'error' ? 'lamLevelError' : 'lamLevelWarn') + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is);
+  if (dimsHidden && $('lamDimCheck').checked !== false) line(t('lamDimSkipped'), 'lam-warn');
+  const unpaired = notes.filter(is => is.code === 'unpaired'), only = from => unpaired.filter(is => is.params.from === from).map(is => is.params.v).join('・');   /* 片方にだけある寸法は、1行にまとめる */
+  if (unpaired.length) line(t('lamNoteUnpaired', { text: [only('表') && t('lamUnpairedOuter', { list: only('表') }), only('裏') && t('lamUnpairedInner', { list: only('裏') })].filter(Boolean).join('／') }), 'lam-warn');
+  for (const is of notes.filter(is => is.code !== 'unpaired')) withAdd(line(t(is.level === 'error' ? 'lamLevelError' : 'lamLevelWarn') + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is);
 }
 function addFoldAllowance() {
   const fold = doc.shapes.find(s => selected.has(s.id) && s.type === 'fold'); if (!fold) { $('hint').textContent = t('selectFold'); return; }
