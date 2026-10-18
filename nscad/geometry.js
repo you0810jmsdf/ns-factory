@@ -709,7 +709,7 @@ export function enclosedAreaAt(shapes, p, { gaps = [0.8, 2.5], windows = [120, 3
   }
   return null;
 }
-function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：窓の中心（省略は p） */
+function rasterGrid(segs, gap, W, maxCells, center) {   /* 線を細い帯にして画素に描く：owner[画素]＝その線の番号（0＝空き） */
   const cell = Math.max(0.1, W / maxCells), N = Math.ceil(W / cell), x0 = center.x - W / 2, y0 = center.y - W / 2, rad = Math.max(1, Math.round(gap / 2 / cell));
   const owner = new Int32Array(N * N), disk = []; for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) if (dx * dx + dy * dy <= rad * rad + 0.5) disk.push(dx, dy);
   const lo = -rad, hi = N + rad;   /* 窓のまわり（帯の半径ぶん）まで描く */
@@ -727,6 +727,10 @@ function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：�
       for (let s = 0; s <= steps; s++) { const t = s / steps, cx = Math.floor(ax + (bx - ax) * t), cy = Math.floor(ay + (by - ay) * t); for (let d = 0; d < disk.length; d += 2) { const x = cx + disk[d], y = cy + disk[d + 1]; if (x >= 0 && x < N && y >= 0 && y < N) owner[y * N + x] = k + 1; } }
     }
   }
+  return { N, cell, x0, y0, rad, owner };
+}
+function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：窓の中心（省略は p） */
+  const g = rasterGrid(segs, gap, W, maxCells, center), { N, cell, x0, y0, rad, owner } = g;
   const sx = Math.min(N - 1, Math.max(0, Math.floor((p.x - x0) / cell))), sy = Math.min(N - 1, Math.max(0, Math.floor((p.y - y0) / cell))), seeds = [];
   if (owner[sy * N + sx] === 0) seeds.push([sx, sy]);
   else for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, x = sx + Math.round(Math.cos(a) * (rad + 2)), y = sy + Math.round(Math.sin(a) * (rad + 2)); if (x >= 0 && x < N && y >= 0 && y < N && owner[y * N + x] === 0) seeds.push([x, y]); }   /* 線の上：両側のまわりの点から */
@@ -745,6 +749,11 @@ function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：�
   }
   let best = 0; for (let k = 1; k < info.length; k++) if (!info[k].border && (!best || info[k].count < info[best].count)) best = k;
   if (!best) return touchedBorder ? 'leak' : null;
+  return buildRegion(g, segs, lab, best);
+}
+/** ラベル best の空き画素の連なり（領域）を、外形・穴・囲む図形の id・面積にする（外形は、帯の半分の幅ぶん線の中心まで広げる）。 */
+function buildRegion(g, segs, lab, best) {
+  const { N, cell, x0, y0, rad, owner } = g;
   const m = new Uint8Array(N * N), touch = new Map(); for (let c = 0; c < N * N; c++) if (lab[c] === best) m[c] = 1;
   for (let c = 0; c < N * N; c++) if (m[c]) { const cy = (c / N) | 0, cx = c - cy * N; for (const nb of [cx > 0 ? c - 1 : -1, cx < N - 1 ? c + 1 : -1, cy > 0 ? c - N : -1, cy < N - 1 ? c + N : -1]) if (nb >= 0 && owner[nb]) touch.set(owner[nb], (touch.get(owner[nb]) || 0) + 1); }
   for (let it = 0; it < rad; it++) { /* 帯（線の半分の幅）ぶん、線の中心まで広げる：塗りが線に届く */
@@ -782,6 +791,40 @@ function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：�
   const areaMm = Math.abs(outer.a) / 2 * cell * cell - holes.reduce((s, h) => s + Math.abs(area2(h)) / 2, 0);
   const total = [...touch.values()].reduce((s, v) => s + v, 0), ids = [...touch].filter(([, v]) => v >= total * 0.03).map(([k]) => segs[k - 1].id);   /* 領域に長く接している図形だけ（縫い目の短い印などは入れない）：動かしたとき、塗りがついていくかの判定に使う */
   return { points, holes, ids, area: areaMm, bridged: false, cell };
+}
+
+/** 選んだ図形（selectedIds）と、まわりの線で囲まれた場所を、全部求める（事業主の指摘 2026-10-18「選んだ線が一周つながっていないと言われる。つながっているのに」）。
+ *  選んだ図形の範囲（＋30mm）の窓に線を描き、空きを全部ラベルづけして、窓の端に届かず（囲まれていて）・4mm² 以上で・境目の半分以上が選んだ図形の場所を返す。
+ *  最初の隙間（0.8mm）で見つからなければ 2.5mm まで広げる（bridged）。窓が 1080mm を超える選択・囲む場所が無い選択は []。戻り値は enclosedAreaAt と同じ形の配列。 */
+export function enclosedAreasAround(shapes, selectedIds, { gaps = [0.8, 2.5], maxWindow = 1080, maxCells = 1400, maxRegions = 20 } = {}) {
+  const sel = selectedIds instanceof Set ? selectedIds : new Set(selectedIds || []), segs = [];
+  for (const s of shapes || []) { if (!s || s.id === undefined) continue; let pts; try { pts = flattenShape(s, 0.05); } catch { continue; } if (pts && pts.length >= 2) segs.push({ id: s.id, pts }); }
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity; for (const s of segs) if (sel.has(s.id)) for (const q of s.pts) { if (q.x < minX) minX = q.x; if (q.x > maxX) maxX = q.x; if (q.y < minY) minY = q.y; if (q.y > maxY) maxY = q.y; }
+  if (!Number.isFinite(minX)) return [];
+  const W = Math.max(maxX - minX, maxY - minY) + 30; if (!(W > 30) || W > maxWindow) return [];
+  for (let gi = 0; gi < gaps.length; gi++) {
+    const g = rasterGrid(segs, gaps[gi], W, maxCells, { x: (minX + maxX) / 2, y: (minY + maxY) / 2 }), { N, owner } = g, lab = new Int32Array(N * N), stack = new Int32Array(N * N), info = [null];
+    for (let c0 = 0; c0 < N * N; c0++) {
+      if (lab[c0] || owner[c0]) continue; const id = info.length; let sp = 0, count = 0, border = false; stack[sp++] = c0; lab[c0] = id;
+      while (sp) {
+        const c = stack[--sp], cy = (c / N) | 0, cx = c - cy * N; count++; if (cx === 0 || cy === 0 || cx === N - 1 || cy === N - 1) border = true;
+        if (cx > 0 && !lab[c - 1] && !owner[c - 1]) { lab[c - 1] = id; stack[sp++] = c - 1; }
+        if (cx < N - 1 && !lab[c + 1] && !owner[c + 1]) { lab[c + 1] = id; stack[sp++] = c + 1; }
+        if (cy > 0 && !lab[c - N] && !owner[c - N]) { lab[c - N] = id; stack[sp++] = c - N; }
+        if (cy < N - 1 && !lab[c + N] && !owner[c + N]) { lab[c + N] = id; stack[sp++] = c + N; }
+      }
+      info.push({ count, border });
+    }
+    const contact = info.map(() => new Map());
+    for (let c = 0; c < N * N; c++) { const L = lab[c]; if (!L || info[L].border) continue; const cy = (c / N) | 0, cx = c - cy * N; for (const nb of [cx > 0 ? c - 1 : -1, cx < N - 1 ? c + 1 : -1, cy > 0 ? c - N : -1, cy < N - 1 ? c + N : -1]) if (nb >= 0 && owner[nb]) contact[L].set(owner[nb], (contact[L].get(owner[nb]) || 0) + 1); }
+    const picks = [];
+    for (let k = 1; k < info.length; k++) {
+      if (info[k].border || info[k].count * g.cell * g.cell < 4) continue; let tot = 0, mine = 0; for (const [o, v] of contact[k]) { tot += v; if (sel.has(segs[o - 1].id)) mine += v; }
+      if (tot > 0 && mine / tot >= 0.5) picks.push(k);
+    }
+    if (picks.length) return picks.slice(0, maxRegions).map(k => { const r = buildRegion(g, segs, lab, k); if (r) r.bridged = gi > 0; return r; }).filter(Boolean);
+  }
+  return [];
 }
 /** 型紙の輪郭を、塗りつぶし用の多角形にする（革色を部品を作らずに付けるため・2026-10-18）。
  *  startId が閉じた図形（円・閉じた折れ線など）ならそれ自身。開いた線なら、端がつながった線を一周たどり（contourChain・すき間 gapTol まで越える）、出発点へ戻ってこなければ null。

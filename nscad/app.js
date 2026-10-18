@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -2166,6 +2166,15 @@ function addRegionFill(p, brush) {
   commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
   $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
 }
+/** 選んだ図形（ids）と、まわりの線で囲まれた場所を、全部「領域の塗り」にする（事業主の指摘 2026-10-18「選んだ線が一周つながっていないと言われる。つながっているのに」：袋の形の13本を選んで色を押した）。塗れた数を返す（0 なら何も塗らない）。 */
+function addSelectionRegionFills(brush, ids) {
+  const regs = enclosedAreasAround(regionShapes(), ids); if (!regs.length) return 0;
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
+  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id } : { leather: brush.hex }) }; list.push(nf); made.push(nf); }
+  const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });   /* 同じ場所は置き換える */
+  $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : ''); return made.length;
+}
 function clearFills() {
   const n = (doc.fills || []).length; if (!n) { $('hint').textContent = t('fillsNone'); return; }
   commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
@@ -2199,7 +2208,8 @@ function applyLeather(hex, quiet = false) {   /* quiet：塗りモードで、�
   const closedOnes = loose.filter(sh => sh.closed || sh.type === 'circle'), open = loose.filter(sh => !(sh.closed || sh.type === 'circle'));
   const loops = [], rest = new Set(open.map(s => s.id)); let unclosed = 0;
   while (rest.size) { const pool = open.filter(s => rest.has(s.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId); if (poly) { loops.push(poly.ids); for (const id of poly.ids) rest.delete(id); } else { for (const id of contourFrom(pool, startId)) { rest.delete(id); unclosed++; } if (rest.delete(startId)) unclosed++; } } /* 一周しない線は数えて案内するだけ */
-  if (!parts.length && !closedOnes.length && !loops.length) { if (!quiet) $('hint').textContent = t(unclosed ? 'leatherNotClosed' : 'leatherNeedShape'); return 0; }
+  if (!parts.length && !closedOnes.length && !loops.length) { if (!quiet && open.length) { const n = addSelectionRegionFills({ kind: 'leather', hex }, new Set(open.map(sh => sh.id))); if (n) return n; }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る */
+    if (!quiet) $('hint').textContent = t(unclosed ? 'leatherNotClosed' : 'leatherNeedShape'); return 0; }
   const used = new Set(doc.shapes.map(s => s.leatherGroup).filter(Boolean)); let seq = 0; const nextGroup = () => { do seq++; while (used.has('lg' + seq)); used.add('lg' + seq); return 'lg' + seq; };
   commit(() => { for (const p of parts) p.color = hex; for (const s of closedOnes) { s.leather = hex; delete s.leatherGroup; } for (const ids of loops) { const gid = nextGroup(); for (const s of doc.shapes) if (ids.includes(s.id)) { s.leather = hex; s.leatherGroup = gid; } } });
   $('hint').textContent = t('leatherApplied', { n: parts.length + closedOnes.length + loops.length, hex }) + (unclosed ? ' ' + t('leatherSkippedOpen', { n: unclosed }) : ''); return parts.length + closedOnes.length + loops.length;
@@ -2277,8 +2287,10 @@ function applyMetal(id) {
       else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) unclosed++; if (rest.delete(startId)) unclosed++; }
     }
   });
+  const fillable = doc.shapes.filter(sh => ids.has(sh.id) && (sh.closed || sh.type === 'circle')).length + loopsMade;   /* 塗れた形の数（0 なら、線の色だけ） */
+  if (id && !fillable && unclosed) { const n = addSelectionRegionFills({ kind: 'metal', id }, new Set(doc.shapes.filter(sh => ids.has(sh.id) && !sh.hw && !(sh.closed || sh.type === 'circle')).map(sh => sh.id))); if (n) return n; }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る */
   $('hint').textContent = (id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size })) + (unclosed ? ' ' + t('metalLineOnly', { n: unclosed }) : '');
-  return doc.shapes.filter(sh => ids.has(sh.id) && (sh.closed || sh.type === 'circle')).length + loopsMade;   /* 塗れた形の数（0 なら、線の色だけ） */
+  return fillable;
 }
 /* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
 const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
