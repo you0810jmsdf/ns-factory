@@ -4303,10 +4303,37 @@ function syncDimensions(before) {
     if (axis) { const [p, q] = dimStraighten(now, axis, oldPts, (d.anchors || []).map(Boolean)); if (p.x !== d.x1 || p.y !== d.y1 || q.x !== d.x2 || q.y !== d.y2) { d.x1 = p.x; d.y1 = p.y; d.x2 = q.x; d.y2 = q.y; } } /* 傾けない */
   }
 }
+/** 領域の塗り（doc.fills）が囲んでいる図形の形（種類・位置・大きさ・点）の見張り。色・線の種類・層などの見た目は含めない。 */
+const FILL_GEOM_KEYS = ['type', 'cx', 'cy', 'r', 'startDeg', 'endDeg', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'nodes', 'closed', 'reversed'];
+const fillGeomSig = sh => JSON.stringify(FILL_GEOM_KEYS.map(k => sh[k]));
+function fillSnapshot() {
+  const fills = doc.fills || []; if (!fills.length) return null; const ids = new Set(fills.flatMap(f => f.ids || []));
+  return { geom: new Map(doc.shapes.filter(sh => ids.has(sh.id)).map(sh => [sh.id, fillGeomSig(sh)])), pts: new Map(fills.map(f => [f.id, JSON.stringify(f.points)])) };
+}
+/** 囲んでいる図形の形が変わった領域の塗りを、新しい形に取り直す（commit の中で呼ぶので、元に戻すは図形と同じ1回）。
+ *  事業主の指摘 2026-10-18「あとから円のサイズを変更できない」：金色の環（円2つ＋塗り）の外の円の半径を変えても、塗りは前の大きさのままだった。
+ *  対象外：消えた・増えた図形を含む塗り／形が変わっていない塗り／操作の側で塗りの点も動かした塗り（まとめて移動）。
+ *  囲まれた場所が同じ図形の組み合わせで見つからないとき（環が崩れた）は、塗りを前のまま残す。戻り値＝取り直せなかった塗りの数。 */
+function refollowFills(snap) {
+  if (!snap || !(doc.fills || []).length) return 0;
+  const byId = new Map(doc.shapes.map(sh => [sh.id, sh])); let stale = 0, shapes = null;
+  doc.fills = doc.fills.map(fl => {
+    const ids = fl.ids || []; if (!ids.length || !ids.every(id => byId.has(id) && snap.geom.has(id))) return fl;
+    if (ids.every(id => fillGeomSig(byId.get(id)) === snap.geom.get(id))) return fl;
+    if (JSON.stringify(fl.points) !== snap.pts.get(fl.id)) return fl;
+    shapes ??= regionShapes(); const want = new Set(ids);
+    const r = enclosedAreasAround(shapes, want).find(x => x.ids.length === want.size && x.ids.every(id => want.has(id)));
+    if (!r) { stale++; return fl; }
+    const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) });
+    return { ...fl, points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), area: Math.round(r.area * 10) / 10 };
+  });
+  return stale;
+}
 function commit(fn) {
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
-  const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]]));
+  const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
   fn(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
+  const staleFills = refollowFills(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
   const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
