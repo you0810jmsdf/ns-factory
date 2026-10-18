@@ -89,7 +89,33 @@
   "heightClosedMm": null,
   "heightOpenMm": null,
   "leverPos": "end",
-  "confidence": "estimated"
+  "confidence": "estimated",
+  "parts": [
+   {
+    "xMm": -78.5,
+    "yMm": 0,
+    "widthMm": 7,
+    "lengthMm": 20,
+    "heightMm": 6,
+    "diameterMm": null,
+    "kind": "lever",
+    "note": "クラウゼ A6 のレバー：Micro5・Mini6 通常リング（実測）と同じ形・同じ大きさ（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ150の半分75＋3.5）。高さは叩き台（2026-10-18 事業主指示）",
+    "cornerOuterRMm": 5,
+    "cornerInnerRMm": 1
+   },
+   {
+    "xMm": 78.5,
+    "yMm": 0,
+    "widthMm": 7,
+    "lengthMm": 20,
+    "heightMm": 6,
+    "diameterMm": null,
+    "kind": "lever",
+    "note": "クラウゼ A6 のレバー：Micro5・Mini6 通常リング（実測）と同じ形・同じ大きさ（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ150の半分75＋3.5）。高さは叩き台（2026-10-18 事業主指示）",
+    "cornerOuterRMm": 5,
+    "cornerInnerRMm": 1
+   }
+  ]
  },
  "drawings": {
   "plan": "binder/a6-krause20.plan.svg",

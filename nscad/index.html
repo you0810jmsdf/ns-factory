@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-18 17:20 · 90f3e2e</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-18 17:36 · 3f9fd8a</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -632,8 +632,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=2d9e15bb","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=cf5a8f15","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=cc9c0905","./geometry.js":"./geometry.js?v=2812b6c4","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=b2252a43","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=a19219f1","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=2d9e15bb"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=d1995bb0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=22e15008","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=cc9c0905","./geometry.js":"./geometry.js?v=a96d563b","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=b2252a43","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=a19219f1","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=d1995bb0"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1816,6 +1816,41 @@ function collinearLineClusters(list, { gap = 0.5, dist = 0.01, cross = 1e-4 } = 
   }
   return out;
 }
+/** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
+ *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
+ *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。
+ *  （事業主の指摘 2026-10-18「スナップの位置が上下対称のはずなのにずれる」：1本の辺が3本に分かれていて、1本ごとの中点が、下の1本の辺の中点とずれた） */
+function straightRuns(list, { tol = 0.02, cross = 1e-3 } = {}) {
+  const lines = [];
+  for (const s of list || []) {
+    const pts = s.type === 'line' ? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }] : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? s.points : null; if (!pts) continue;
+    const a = pts[0], b = pts[1], len = Math.hypot(b.x - a.x, b.y - a.y); if (!(len > 1e-3) || !Number.isFinite(len)) continue;
+    lines.push({ id: s.id, layer: s.layer, a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y }, len, u: { x: (b.x - a.x) / len, y: (b.y - a.y) / len } });
+  }
+  const cell = 2 * tol, key = (cx, cy) => cx + ',' + cy, grid = new Map(), recs = [];
+  lines.forEach((l, i) => [0, 1].forEach(e => { const p = e ? l.b : l.a, rec = { i, e, p, d: e ? { x: -l.u.x, y: -l.u.y } : { x: l.u.x, y: l.u.y } }, k = key(Math.round(p.x / cell), Math.round(p.y / cell)); recs.push(rec); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(rec); }));   /* d＝その端から線の中へ向かう向き */
+  const candidates = rec => {   /* その端の続きの候補：同じ層・同じ直線上で、反対向きに伸びる線の端 */
+    const out = [], cx = Math.round(rec.p.x / cell), cy = Math.round(rec.p.y / cell);
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const o of grid.get(key(cx + dx, cy + dy)) || []) {
+      if (o.i === rec.i || Math.hypot(o.p.x - rec.p.x, o.p.y - rec.p.y) > tol || lines[o.i].layer !== lines[rec.i].layer) continue;
+      if (Math.abs(rec.d.x * o.d.y - rec.d.y * o.d.x) <= cross && rec.d.x * o.d.x + rec.d.y * o.d.y < 0) out.push(o);
+    }
+    return out;
+  };
+  const parent = lines.map((_, i) => i), find = i => parent[i] === i ? i : (parent[i] = find(parent[i])), cand = new Map(recs.map(r => [r, candidates(r)]));
+  for (const rec of recs) { const c = cand.get(rec); if (c.length === 1 && cand.get(c[0]).length === 1 && cand.get(c[0])[0] === rec) parent[find(rec.i)] = find(c[0].i); }   /* お互いにただ1つの続きのときだけつなぐ */
+  const groups = new Map(); lines.forEach((l, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(l); });
+  const out = [];
+  for (const grp of groups.values()) {
+    if (grp.length < 2) continue;
+    const R = grp.reduce((m, l) => l.len > m.len ? l : m), t = q => (q.x - R.a.x) * R.u.x + (q.y - R.a.y) * R.u.y, off = q => Math.abs((q.x - R.a.x) * R.u.y - (q.y - R.a.y) * R.u.x), pts = grp.flatMap(l => [l.a, l.b]);
+    if (pts.some(q => off(q) > 0.05)) continue;   /* 少しずつ曲がっていく列は、まとめない */
+    const lo = pts.reduce((m, q) => t(q) < t(m) ? q : m), hi = pts.reduce((m, q) => t(q) > t(m) ? q : m), span = t(hi) - t(lo), sum = grp.reduce((m, l) => m + l.len, 0);
+    if (Math.abs(sum - span) > 0.05 + tol * grp.length) continue;   /* 重なり・折り返しがあれば、まとめない */
+    out.push({ ids: grp.map(l => l.id), p1: { x: lo.x, y: lo.y }, p2: { x: hi.x, y: hi.y }, mid: { x: (lo.x + hi.x) / 2, y: (lo.y + hi.y) / 2 } });
+  }
+  return out;
+}
 function straightenPath(s) {
   if (s.type !== 'path' || !s.nodes?.length || s.nodes.length < 2) return s;
   if (!s.nodes.every(n => !n.smooth && n.inX === n.x && n.inY === n.y && n.outX === n.x && n.outY === n.y)) return s;
@@ -1981,7 +2016,7 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
 
-return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
+return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -16428,7 +16463,33 @@ const BINDER_SPECS = [
    "heightClosedMm": null,
    "heightOpenMm": null,
    "leverPos": "end",
-   "confidence": "estimated"
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": -78.5,
+     "yMm": 0,
+     "widthMm": 7,
+     "lengthMm": 20,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "クラウゼ A6 のレバー：Micro5・Mini6 通常リング（実測）と同じ形・同じ大きさ（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ150の半分75＋3.5）。高さは叩き台（2026-10-18 事業主指示）",
+     "cornerOuterRMm": 5,
+     "cornerInnerRMm": 1
+    },
+    {
+     "xMm": 78.5,
+     "yMm": 0,
+     "widthMm": 7,
+     "lengthMm": 20,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "クラウゼ A6 のレバー：Micro5・Mini6 通常リング（実測）と同じ形・同じ大きさ（長さ7・幅20・外R5・内R1・高さ6）。位置は本体の端（本体の長さ150の半分75＋3.5）。高さは叩き台（2026-10-18 事業主指示）",
+     "cornerOuterRMm": 5,
+     "cornerInnerRMm": 1
+    }
+   ]
   },
   "drawings": {
    "plan": "binder/a6-krause20.plan.svg",
@@ -20741,7 +20802,7 @@ const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __m
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
-const { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
+const { straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
 const { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } = __mods['formats'];
@@ -24715,10 +24776,10 @@ function drawRuler({ a, b }) {
 }
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
-  const ends = [], centers = [], guide = [];
+  const ends = [], centers = [], guide = [], runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* inRun：1本の辺が途中で分かれている線（中点は辺全体の1つだけ） */
   for (const s of shapes) {
     const segs = s.type === 'line' || s.type === 'bezier' ? [s] : s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((q, i) => ({ type: 'line', x1: q.x, y1: q.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : s.type === 'path' ? pathSegments(s) : [];
-    for (const g of segs) guide.push({ x: g.x1, y: g.y1 }, g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2), { x: g.x2, y: g.y2 }); /* 各区間の「中点（長さの真ん中）と両端」 */
+    for (const g of segs) guide.push({ x: g.x1, y: g.y1 }, ...(inRun.has(s.id) ? [] : [g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2)]), { x: g.x2, y: g.y2 }); /* 各区間の「中点（長さの真ん中）と両端」 */
     if (s.type === 'arc') guide.push(circlePoint(s, s.startDeg), circlePoint(s, s.startDeg + arcSweep(s) / 2), circlePoint(s, s.endDeg));
     if (s.type === 'line') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'polyline') ends.push(...s.points.map(p => ({ x: p.x, y: p.y })));
@@ -24727,6 +24788,7 @@ function magnetPointsOf(shapes) {
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
     else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push(circlePoint(s, k * 45)); }
   }
+  guide.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
   return { ends, centers, guide };
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
@@ -24768,7 +24830,8 @@ function drawCenterMarks() {
 function rebuildSnaps() {
   rebuildThreeViewMarks(); rebuildQuad();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
-  snapCache = shapes.flatMap(snapPoints);
+  const runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* 1本の辺が途中で分かれている線：中点は、辺全体の中点だけ（1本ごとの中点は、上下対称のはずの辺とずれる・事業主の指摘 2026-10-18） */
+  snapCache = shapes.flatMap(s => inRun.has(s.id) ? snapPoints(s).slice(0, 2) : snapPoints(s)); snapCache.push(...runs.map(r => ({ ...r.mid })));
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
