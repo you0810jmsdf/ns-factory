@@ -1171,10 +1171,30 @@ function holeCountOn(list) {
   const mine = list.filter(s => paths.some(p => p.shapeIds.includes(s.id)));
   return doc.holes.filter(h => paths.some(p => p.id === h.pathId) && mine.some(s => paths.some(p => p.id === h.pathId && p.shapeIds.includes(s.id)) && distTo(s, { x: h.x, y: h.y }) < 0.02)).length;
 }
+/** 選んだ菱目（穴）の工具の規格：工具ごとに1行（個数・工具名・種類・ピッチ・刃数・穴の大きさ・刃の傾き）。（事業主の指摘 2026-10-18「選んだ菱目の工具の規格がわかるようにしてくれれば今回の件は解決できていた」） */
+function holeSpecText(hs) {
+  const by = new Map(); for (const h of hs) { const k = h.toolId || ''; if (!by.has(k)) by.set(k, []); by.get(k).push(h); }
+  const num = v => Number.isFinite(+v) && v !== undefined && v !== null ? +(+v).toFixed(2) : '—';
+  return [...by.entries()].map(([id, list]) => { const tool = doc.tools.find(x => x.id === id), a = holeAppearance(list[0], doc); return t('holeSpecLine', { n: list.length, tool: tool ? tool.name : (id || '—'), kind: tool ? t(tool.kind) : '', pitch: tool ? num(tool.pitch) : '—', teeth: tool ? num(tool.teeth) : '—', w: a ? num(a.width) : '—', h: a ? num(a.height) : '—', angle: tool ? num(tool.angleDeg) : '—' }); }).join('\n');
+}
+/** 選んだ菱の線（4つの頂点の小さな線）の大きさ：幅（長い対角線）×高さ（短い対角線）。大きさが違えば範囲で出す。 */
+function diamondLineSpecText(sz) {
+  const f = v => +v.toFixed(2), rng = arr => { const lo = f(Math.min(...arr)), hi = f(Math.max(...arr)); return lo === hi ? String(lo) : lo + '〜' + hi; };
+  return t('diamondLineSpec', { n: sz.length, w: rng(sz.map(z => z.w)), h: rng(sz.map(z => z.h)) });
+}
+/** 選んだ菱目（穴）の工具を、工具設定の欄に読み込む（大きさなどを自分で直せる）。 */
+function loadHoleToolToEditor() {
+  const h = doc.holes.find(x => selected.has(x.id)); if (!h) return; const tool = doc.tools.find(x => x.id === h.toolId);
+  if (!tool) { $('hint').textContent = t('holeToolMissing'); return; }
+  $('stitchTool').value = tool.id; fillTool(); const ed = $('toolEditorCard'); if (ed) { for (let p = ed; p; p = p.parentElement) if (p.tagName === 'DETAILS') p.open = true; ed.scrollIntoView?.({ block: 'nearest' }); }
+  $('hint').textContent = t('holeToolLoaded', { name: tool.name });
+}
 function refreshInfo() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
+  const hs = !s && !many.length ? doc.holes.filter(h => selected.has(h.id)) : [], dl = s ? diamondLoopSizes([s]) : many.length ? diamondLoopSizes(many) : [], spec = hs.length ? holeSpecText(hs) : dl.length ? diamondLineSpecText(dl) : '';   /* 選んだ菱目の工具の規格・菱の線の大きさ */
+  $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
   const holes = s ? holeCountOn([s]) : many.length ? holeCountOn(many) : null; $('l-holeCount').hidden = holes === null; if (holes !== null) $('info-holeCount').textContent = String(holes);   /* 選んだ線上の菱目の数（読み取り専用） */
-  $('infoCard').style.display = s || many.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
+  $('infoCard').style.display = s || many.length || hs.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
   $('l-totalLength').hidden = !many.length; if (many.length) $('info-totalLength').textContent = totalLengthOf(many).toFixed(2); /* 2 個以上：全体の長さ（読み取り専用） */
   if (many.length) { /* 2 個以上：層・色・線の種類だけ。変えると選んだ全部に効く */
     const colorable = many.filter(x => INFO_FIELDS[x.type]?.includes('color'));
@@ -1188,6 +1208,7 @@ function refreshInfo() {
   for (const f of ALL_FIELDS) $('l-' + f).hidden = !s || !INFO_FIELDS[s.type]?.includes(f);
   $('l-type').hidden = $('l-layer').hidden = !s; if (s) $('l-part').hidden = false;
   $('l-addNodes').hidden = !(s && ['line', 'polyline', 'path', 'bezier'].includes(s.type) && editable(s)); /* 節点を等間隔で足す */
+  if (hs.length) { for (const id of ['l-slope', 'l-nodeOps', 'l-part', 'l-partName', 'l-thickness', 'l-partOrder']) { const el = $(id); if (el) el.hidden = true; } $('l-type').hidden = false; $('info-type').textContent = t('holesSelected', { n: hs.length }); }   /* 穴だけ選んでいるとき：種類の欄に「菱目 n 個」・ほかの欄は隠す */
   if (s) {
     $('info-type').textContent = t(s.type); $('info-layer').value = s.layer;
     const typing = el => typeof document.activeElement !== 'undefined' && document.activeElement === el; // 打ちかけの欄は巻き戻さない
@@ -4257,6 +4278,23 @@ function explodeSelection() {
   });
   renderSeams(); $('hint').textContent = t(blocked.length ? 'explodedSome' : 'exploded', { n: ok.length, m: made.length, k: blocked.length });
 }
+/** 「線だけ削除（菱目は残す）」（Shift+Delete・専用ボタン）：選んだ線を、見えない補助の線（holeLink）にして、その線に付いた菱目（穴）と経路を残す。穴の無い線は普通に消す。
+ *  （事業主の指摘 2026-10-18「直線を削除したら菱目も消える」→ 決定「Delete は今までどおり・線だけ削除は別のキーとボタン」）。選んでいる穴は消える。 */
+function removeSelectedKeepHoles() {
+  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
+  let lines = 0, kept = 0;
+  cancel(); commit(() => {
+    const holed = new Set(doc.holes.map(h => h.pathId)), keepPaths = doc.paths.filter(p => holed.has(p.id) && p.shapeIds.some(id => ids.has(id))), keepIds = new Set(keepPaths.flatMap(p => p.shapeIds.filter(id => ids.has(id))));
+    const dropPaths = new Set(doc.paths.filter(p => p.shapeIds.some(id => ids.has(id)) && !keepPaths.includes(p)).map(p => p.id));
+    lines = ids.size; kept = doc.holes.filter(h => keepPaths.some(p => p.id === h.pathId) && !(selected.has(h.id) && holeEditable(h))).length;
+    doc.shapes = doc.shapes.filter(sh => !ids.has(sh.id) || keepIds.has(sh.id)).map(sh => keepIds.has(sh.id) ? { ...sh, holeLink: true } : sh);   /* 穴のある線は、見えない補助の線として残る（経路を保つ） */
+    doc.holes = doc.holes.filter(h => !dropPaths.has(h.pathId) && !(selected.has(h.id) && holeEditable(h)));
+    doc.paths = doc.paths.filter(p => !dropPaths.has(p.id)); doc.seams = doc.seams.filter(m => !dropPaths.has(m.a.pathId) && !dropPaths.has(m.b.pathId));
+    for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id));
+    selected.clear(); manualNext = null;
+  }); renderSeams();
+  $('hint').textContent = t('holesKept', { n: lines, h: kept });
+}
 function removeSelected() {
   const ids = selectedShapeIds();
   cancel(); commit(() => { const own=ownHolePathIds(doc), paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
@@ -5388,7 +5426,7 @@ canvas.addEventListener('wheel', e => {
 }, { passive: false });
 canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
-$('delete').onclick = removeSelected;
+$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor;
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
@@ -5486,6 +5524,7 @@ window.addEventListener('keydown', e => {
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
   else if (e.key === 'Escape') { hideCtxMenu(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
