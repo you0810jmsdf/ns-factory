@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-18 19:14 · 25f08bf</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-18 19:23 · c2cf442</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -293,6 +293,7 @@
 <label><span data-i18n="holeD"></span><input id="tool-holeD" type="number" step="0.01" value="1"></label>
 <label><span data-i18n="angleDeg"></span><input id="tool-angleDeg" type="number" step="0.01" value="1"></label>
 <div class="row"><button id="addTool" data-i18n="addTool"></button><button id="updateTool" data-i18n="updateTool"></button></div>
+<div class="row"><button id="toolFitDiamond" data-i18n="toolFitDiamond" data-i18n-title="toolFitTip"></button></div>
 <details class="sub"><summary data-i18n="toolMatch"></summary><p class="note" data-i18n="toolMatchNote"></p>
 <div class="row"><button id="toolStrip" data-i18n="toolStrip"></button></div>
 <label><span data-i18n="toolReassignTo"></span><select id="toolReassignTo"></select></label>
@@ -635,8 +636,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=2592ef67","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=4ef7137e","./geometry.js":"./geometry.js?v=201225ef","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=9fa1c725","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=a19219f1","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=2592ef67"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=5199e378","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=6feb4445","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=4ef7137e","./geometry.js":"./geometry.js?v=665c64c6","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=da29aeed","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=a19219f1","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=5199e378"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1833,6 +1834,21 @@ function smallLoopCenters(list, { maxMm = 12 } = {}) {
   }
   return out;
 }
+/** 小さな菱形・四角（4つの頂点で一周する折れ線・大きさ maxMm 以下）の大きさ：長いほうの対角線＝幅 w・短いほうの対角線＝高さ h と、中心。目打ちの穴の大きさ（holeW・holeH）に合わせるために使う。
+ *  （事業主の指摘 2026-10-18「菱目の大きさがバラバラ・外周と同じ大きさにしたい」：外周の菱の線は 1.1×0.4mm・目打ちの穴は 2×0.8mm だった）。対象は smallLoopCenters と同じ。戻り値 [{ w, h, x, y }]。 */
+function diamondLoopSizes(list, { maxMm = 12 } = {}) {
+  const out = [];
+  for (const s of list || []) {
+    if (s?.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 4 || s.points.length > 5) continue;
+    let pts = s.points; const a = pts[0], b = pts[pts.length - 1], same = Math.hypot(a.x - b.x, a.y - b.y) < 1e-6;
+    if (same) pts = pts.slice(0, -1); else if (!s.closed) continue;
+    if (pts.length !== 4 || pts.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) continue;
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y); if (Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) > maxMm + 1e-9) continue;
+    const d1 = Math.hypot(pts[2].x - pts[0].x, pts[2].y - pts[0].y), d2 = Math.hypot(pts[3].x - pts[1].x, pts[3].y - pts[1].y);
+    out.push({ w: Math.max(d1, d2), h: Math.min(d1, d2), x: xs.reduce((m, v) => m + v, 0) / 4, y: ys.reduce((m, v) => m + v, 0) / 4 });
+  }
+  return out;
+}
 /** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
  *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
  *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。
@@ -2033,7 +2049,7 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
 
-return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
+return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, diamondLoopSizes, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -4102,6 +4118,10 @@ const MESSAGES = {
     "drawnOnLayer": "作業レイヤーがロック中のため「{name}」に描きました。",
     "aiHttpsOnly": "接続先は https:// にしてください（http は localhost だけ）。",
     "holesCount": "（{n}穴）",
+    "toolFitDiamond": "図面の菱目の線に、穴の大きさを合わせる",
+    "toolFitTip": "図面にある菱の線（外周の菱目など）の大きさを測って、目打ちのツールの穴の幅・高さに入れます。菱の線を選んでいればそれに、選んでいなければ図面でいちばん多い大きさに合わせます。ピッチ・歯数・角度は変わりません。",
+    "toolFitDone": "穴の大きさを {w}×{h} mm にしました（図面の菱目の線 {n} 個の大きさ）。変えたツール：{tools}。",
+    "toolFitNone": "大きさを測れる菱目の線（4つの頂点で一周する小さな線）が、図面にありません。",
     "toolMatch": "現物の目打ちに合わせる",
     "toolMatchNote": "穴の幅・高さ・傾きを現物の刃に合わせて「更新」すると、その工具の穴が全部追従します。テスト片を実寸で印刷し、現物の刃を当てて比べてください。読み込んだ図面の穴が別の工具になっているときは「付け替え」で登録済みの工具へ移せます。",
     "toolStrip": "テスト片を印刷（10穴＋50mm）",
@@ -5628,6 +5648,10 @@ const MESSAGES = {
     "drawnOnLayer": "Active layer is locked; drawn on \"{name}\" instead.",
     "aiHttpsOnly": "Use an https:// endpoint (http only for localhost).",
     "holesCount": "({n} holes)",
+    "toolFitDiamond": "Match hole size to the diamond lines",
+    "toolFitTip": "Measures the diamond lines in the drawing (e.g. the outer stitching diamonds) and sets the stitching tool's hole width and height to match. Uses the selected diamond lines, or the most common size if none are selected. Pitch, teeth and angle do not change.",
+    "toolFitDone": "Set the hole size to {w}×{h} mm (the size of {n} diamond line(s) in the drawing). Tools changed: {tools}.",
+    "toolFitNone": "There are no diamond lines (small shapes with four corners) to measure in the drawing.",
     "toolMatch": "Match the real pricking iron",
     "toolMatchNote": "Set hole width, height and slant to the real iron and press Update; every hole using that tool follows. Print the test strip at actual size and compare with the iron. If an imported drawing uses a different tool, reassign its holes to a registered tool.",
     "toolStrip": "Print test strip (10 holes + 50 mm)",
@@ -20827,7 +20851,7 @@ const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __m
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
-const { smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
+const { diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
 const { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } = __mods['formats'];
@@ -21263,6 +21287,20 @@ function printToolStrip() {
 function fillTool() {
   const tool=doc.tools.find(t=>t.id===$('stitchTool').value);if(!tool)return;
   for(const key of ['name','kind','pitch','teeth','holeW','holeH','holeD','angleDeg'])$('tool-'+key).value=tool[key];
+}
+/** 目打ちのツールの穴の大きさ（幅・高さ）を、図面の菱の線に合わせる（事業主の指摘 2026-10-18「菱目の大きさがバラバラ・外周と同じ大きさにしたい」）。
+ *  選んだ菱の線があればその大きさ、無ければ図面でいちばん多い大きさ（0.01mm に丸めて数える）。変えるのは、いま選んでいるツールと、図面の穴が使っている菱形のツール。ピッチ・歯数・角度は変えない。 */
+function fitToolsToDiamondLines() {
+  const chosen = diamondLoopSizes(doc.shapes.filter(sh => selected.has(sh.id))), sizes = chosen.length ? chosen : diamondLoopSizes(doc.shapes.filter(sh => layerVisible(sh) && !sh.holeLink));
+  if (!sizes.length) { $('hint').textContent = t('toolFitNone'); return; }
+  const key = z => z.w.toFixed(2) + 'x' + z.h.toFixed(2), count = new Map(); for (const z of sizes) count.set(key(z), (count.get(key(z)) || 0) + 1);
+  const best = [...count.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0][0], same = sizes.filter(z => key(z) === best), w = +(same.reduce((m, z) => m + z.w, 0) / same.length).toFixed(2), h = +(same.reduce((m, z) => m + z.h, 0) / same.length).toFixed(2);
+  if (!(w >= 0.1 && h >= 0.1)) { $('hint').textContent = t('toolFitNone'); return; }
+  const ids = new Set([$('stitchTool').value, ...doc.holes.map(x => x.toolId)]), tools = doc.tools.filter(tl => ids.has(tl.id) && tl.kind === 'diamond');
+  if (!tools.length) { $('hint').textContent = t('toolFitNone'); return; }
+  commit(() => { for (const tl of tools) { tl.holeW = w; tl.holeH = h; } });
+  refreshTools(); fillTool(); persistTools();
+  $('hint').textContent = t('toolFitDone', { w, h, n: sizes.length, tools: tools.map(tl => tl.name).join('・') });
 }
 function registerTool(replace) {
   const tool={id:replace?$('stitchTool').value:freshId(doc.tools,'tool'),mark:'tool'};
@@ -21829,7 +21867,7 @@ function initStitch() {
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
   for(const id of ['reversePath','reverseSlant'])$(id).checked=false;
   $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
-  $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
+  $('toolFitDiamond').onclick=()=>fitToolsToDiamondLines(); $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
   $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
   for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});

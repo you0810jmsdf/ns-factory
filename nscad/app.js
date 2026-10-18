@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
-import { smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -439,6 +439,20 @@ function printToolStrip() {
 function fillTool() {
   const tool=doc.tools.find(t=>t.id===$('stitchTool').value);if(!tool)return;
   for(const key of ['name','kind','pitch','teeth','holeW','holeH','holeD','angleDeg'])$('tool-'+key).value=tool[key];
+}
+/** 目打ちのツールの穴の大きさ（幅・高さ）を、図面の菱の線に合わせる（事業主の指摘 2026-10-18「菱目の大きさがバラバラ・外周と同じ大きさにしたい」）。
+ *  選んだ菱の線があればその大きさ、無ければ図面でいちばん多い大きさ（0.01mm に丸めて数える）。変えるのは、いま選んでいるツールと、図面の穴が使っている菱形のツール。ピッチ・歯数・角度は変えない。 */
+function fitToolsToDiamondLines() {
+  const chosen = diamondLoopSizes(doc.shapes.filter(sh => selected.has(sh.id))), sizes = chosen.length ? chosen : diamondLoopSizes(doc.shapes.filter(sh => layerVisible(sh) && !sh.holeLink));
+  if (!sizes.length) { $('hint').textContent = t('toolFitNone'); return; }
+  const key = z => z.w.toFixed(2) + 'x' + z.h.toFixed(2), count = new Map(); for (const z of sizes) count.set(key(z), (count.get(key(z)) || 0) + 1);
+  const best = [...count.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0][0], same = sizes.filter(z => key(z) === best), w = +(same.reduce((m, z) => m + z.w, 0) / same.length).toFixed(2), h = +(same.reduce((m, z) => m + z.h, 0) / same.length).toFixed(2);
+  if (!(w >= 0.1 && h >= 0.1)) { $('hint').textContent = t('toolFitNone'); return; }
+  const ids = new Set([$('stitchTool').value, ...doc.holes.map(x => x.toolId)]), tools = doc.tools.filter(tl => ids.has(tl.id) && tl.kind === 'diamond');
+  if (!tools.length) { $('hint').textContent = t('toolFitNone'); return; }
+  commit(() => { for (const tl of tools) { tl.holeW = w; tl.holeH = h; } });
+  refreshTools(); fillTool(); persistTools();
+  $('hint').textContent = t('toolFitDone', { w, h, n: sizes.length, tools: tools.map(tl => tl.name).join('・') });
 }
 function registerTool(replace) {
   const tool={id:replace?$('stitchTool').value:freshId(doc.tools,'tool'),mark:'tool'};
@@ -1005,7 +1019,7 @@ function initStitch() {
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
   for(const id of ['reversePath','reverseSlant'])$(id).checked=false;
   $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
-  $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
+  $('toolFitDiamond').onclick=()=>fitToolsToDiamondLines(); $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
   $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
   for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
