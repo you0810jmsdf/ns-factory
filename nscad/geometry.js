@@ -989,6 +989,17 @@ export function diamondLoopSizes(list, { maxMm = 12 } = {}) {
   }
   return out;
 }
+/** 小さな菱形の線（diamondLoopSizes の対象）を、新しい大きさ（幅 w＝長い対角線・高さ h＝短い対角線）に作り直した点の並びを返す。中心・長軸の向き・頂点の並び（始点＝終点の5点／閉じた4点）はそのまま。
+ *  各頂点を、長軸方向に w/元の幅・短軸方向に h/元の高さだけ、中心から伸ばし縮みさせる（傾いた平行四辺形でも形の傾きは保つ）。対象でなければ null。 */
+export function resizeDiamondLoop(s, w, h) {
+  const z = diamondLoopSizes([s])[0]; if (!z || !(w > 0) || !(h > 0) || !(z.w > 1e-9) || !(z.h > 1e-9)) return null;
+  const same = Math.hypot(s.points[0].x - s.points[s.points.length - 1].x, s.points[0].y - s.points[s.points.length - 1].y) < 1e-6, base = same ? s.points.slice(0, -1) : s.points;
+  const d1 = Math.hypot(base[2].x - base[0].x, base[2].y - base[0].y), d2 = Math.hypot(base[3].x - base[1].x, base[3].y - base[1].y), [a, b] = d1 >= d2 ? [0, 2] : [1, 3], len = Math.hypot(base[b].x - base[a].x, base[b].y - base[a].y);
+  const u = { x: (base[b].x - base[a].x) / len, y: (base[b].y - base[a].y) / len }, v = { x: -u.y, y: u.x }, kw = w / z.w; let kh = h / z.h;
+  { const [a2, b2] = d1 >= d2 ? [1, 3] : [0, 2], sx = base[b2].x - base[a2].x, sy = base[b2].y - base[a2].y, su = sx * u.x + sy * u.y, sv = sx * v.x + sy * v.y, rem = h * h - (su * kw) ** 2; if (Math.abs(sv) > 1e-9 && rem > 0) kh = Math.sqrt(rem) / Math.abs(sv); }   /* 短い対角線が長い対角線に直角でない形でも、短い対角線の長さがちょうど h になるように */
+  const out = base.map(p => { const dx = p.x - z.x, dy = p.y - z.y, du = (dx * u.x + dy * u.y) * kw, dv = (dx * v.x + dy * v.y) * kh; return { x: z.x + u.x * du + v.x * dv, y: z.y + u.y * du + v.y * dv }; });
+  return same ? [...out, { ...out[0] }] : out;
+}
 /** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
  *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
  *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。
