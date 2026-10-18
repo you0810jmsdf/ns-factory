@@ -1308,6 +1308,20 @@ function refreshLaminateParts() {
   if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
 }
 /** 検証カードの「部品の一覧」：作った部品が、名前（書き換えられる）・図形の数・厚みつきで、すぐ見える。「選ぶ」でその部品の図形を選択・「消す」で部品だけ消す（図形は残る）。 */
+/** 三つ折りの展開（ply＝'outer'｜'inner'）の外形と円の id。点線・寸法・文字・菱目は入れない。 */
+function foldUnfoldPartIds(ply) { return doc.shapes.filter(s => s.foldFlat === 'fdu' && s.ply === ply && (s.type === 'polyline' || s.type === 'circle')).map(s => s.id); }
+/** 「三つ折りの展開の表・裏を、部品にする」：表と裏を、1回で「表」「裏」の部品にする（もう一度押すと置き換える）。厚みは設計の値。 */
+function makeFoldUnfoldParts() {
+  const box = $('lamResult'); box.textContent = ''; const o = foldUnfoldPartIds('outer'), i = foldUnfoldPartIds('inner');
+  if (!o.length || !i.length) { const d = document.createElement('div'); d.className = 'lam-error'; d.textContent = t('lamAutoNone'); box.appendChild(d); $('hint').textContent = t('lamAutoNone'); return; }
+  const fd = doc.foldDesign || {}, tO = Number(fd.tOuter ?? fd.t) > 0 ? Number(fd.tOuter ?? fd.t) : Number($('partThickness').value) || 1.5, tI = Number(fd.tInner ?? fd.t) > 0 ? Number(fd.tInner ?? fd.t) : tO; let ids = [];
+  commit(() => {
+    doc.parts = doc.parts.filter(p => !p.autoPly); const mk = (ply, name, thickness, shapeIds) => { const id = freshId(doc.parts, 'part'); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(x => !shapeIds.includes(x)); doc.parts.push({ id, name, thickness, shapeIds, color: null, order: doc.parts.length, autoPly: ply }); return id; };
+    ids = [mk('outer', t('lamPartOuterName'), tO, o), mk('inner', t('lamPartInnerName'), tI, i)];
+  });
+  fillLaminateParts(); $('lamOuter').value = ids[0]; $('lamInner').value = ids[1]; lamTouched.o = false; lamTouched.i = false; laminateThickFromPart('o'); laminateThickFromPart('i');
+  const d = document.createElement('div'); d.textContent = t('lamAutoDone', { a: o.length, b: i.length, to: tO, ti: tI }); box.appendChild(d); $('hint').textContent = d.textContent;
+}
 function renderLaminateParts() {
   const box = $('lamParts'); box.textContent = '';
   if (!doc.parts.length) { const d = document.createElement('div'); d.className = 'note'; d.textContent = t('lamPartsNone'); box.appendChild(d); return; }
@@ -1534,7 +1548,7 @@ function patchFillAt(p) {
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
-  $('lamRun').onclick = runLaminate; $('lamOuter').addEventListener('change', () => laminateThickFromPart('o')); $('lamInner').addEventListener('change', () => laminateThickFromPart('i'));
+  $('lamRun').onclick = runLaminate; $('lamAutoParts').onclick = makeFoldUnfoldParts; $('lamOuter').addEventListener('change', () => laminateThickFromPart('o')); $('lamInner').addEventListener('change', () => laminateThickFromPart('i'));
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; }); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) fillLaminateParts(); });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
@@ -3190,7 +3204,7 @@ function projectFoldDesign(withStitch) {
   const mounts = (d.ring && binderSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
-    dropDimAnchorsTo(mineShapes); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
+    dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
     add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + p.length, y: fy }, { x: fx + p.length, y: fy + h }, { x: fx, y: fy + h }] });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
@@ -3221,7 +3235,7 @@ function unfoldFoldDesign() {
   const tool = stitchToolCurrent(), fx = d.origin.x, fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60, f2s = v => v.toFixed(2);
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fdu').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fdu' || q.shapeIds.some(id => mineShapes.has(id))).map(q => q.id));   /* 消える展開の図形を通る経路も、いっしょに消す（残すと、新しい図形と id が重なって図面が壊れる） */
-    dropDimAnchorsTo(mineShapes); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fdu' && !minePaths.has(q.pathId));
+    dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fdu' && !minePaths.has(q.pathId));   /* 消える図形を、部品の中身から外す（同じ番号の新しい図形を、取り違えない） */
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide');
     plies.forEach((u, i) => {
       const fy = fy0 + i * (h + 80), side = { right: t('foldSideR'), left: t('foldSideL') }, name = t(u.key === 'outer' ? 'unfoldOuter' : 'unfoldInner'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fdu', ply: u.key }); return id; };
@@ -3242,6 +3256,7 @@ function unfoldFoldDesign() {
       });
     });
   });
+  commit(() => { for (const p of doc.parts) if (p.autoPly) p.shapeIds = foldUnfoldPartIds(p.autoPly); });   /* 「表・裏を部品にする」で作った部品は、新しい展開の図形で作り直す */
   const [o, ii] = plies;
   $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }); rebuildSnaps(); draw();
 }
