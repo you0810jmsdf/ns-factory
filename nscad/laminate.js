@@ -138,6 +138,30 @@ export function lamRimBendZones(doc, outerId, innerId, { axis = 'x', tol = 0.1 }
   if (!idx.length) return { ok: false, error: 'noBend' };
   return { ok: true, outer: { zones: idx.map(([x, y]) => [a[x].a - eO, a[y + 1].a - eO]), pos: a.map(it => it.a - eO) }, inner: { zones: idx.map(([x, y]) => [b[x].a - eI, b[y + 1].a - eI]), pos: b.map(it => it.a - eI) } };
 }
+/** 部品の端から u の位置（曲がる向き）を、区間（平ら・丸折り）ごとに比例して、もう一方の部品の端からの位置に写す（事業主の選択 2026-10-19・案A）。from・to＝lamFoldSpec の結果（flats[3]・bends[2]）。範囲外は端に丸める。 */
+export function lamAlongMap(from, to, u) {
+  const seg = sp => [sp.flats[0], sp.bends[0], sp.flats[1], sp.bends[1], sp.flats[2]], cum = a => a.reduce((r, v) => [...r, r.at(-1) + v], [0]), sf = seg(from), st = seg(to), cf = cum(sf), ct = cum(st);
+  const x = Math.max(0, Math.min(cf.at(-1), u)); let k = 0; while (k < 4 && x > cf[k + 1] + 1e-12) k++;
+  const f = sf[k] > 0 ? (x - cf[k]) / sf[k] : 0; return ct[k] + Math.max(0, Math.min(1, f)) * st[k];
+}
+/** 「展開：ボタンの穴を、表と裏でそろえる」の計画（事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。図面は変えない（計画だけ）。
+ *  基準の部品の円（ボタンの穴・取付穴）ごとに、もう一方の部品の「貼り合わせたとき重なる位置」を求める（曲がる向きの位置は lamAlongMap＝区間ごとに比例・曲がらない向きは部品の端からの距離が同じ）。
+ *  もう一方に、同じ半径（±0.01）の円が near mm 以内にあれば、それをその位置へ（same mm 以内なら「合っている」・それより外れていれば「動かす」）。無ければ「足す」。
+ *  opts：{ axis:'x'｜'y'（曲がる向き）, specs:{ base, other }（lamFoldSpec の結果）, near（既定 3）, same（既定 0.02）}。
+ *  返り値：{ ok:true, base, other, same:[{ from, id }], moves:[{ from, id, x, y, dist }], adds:[{ from, x, y, r }] }（x・y は円の中心の位置）。失敗：{ ok:false, error:'pickTwo'｜'noButtons' }。 */
+export function lamButtonPlan(doc, baseId, otherId, { axis = 'x', specs, near = 3, same = 0.02 } = {}) {
+  const pb = doc.parts.find(p => p.id === baseId), po = doc.parts.find(p => p.id === otherId); if (!pb || !po || pb === po || !specs?.base?.ok || !specs?.other?.ok) return { ok: false, error: 'pickTwo' };
+  const bb = partBox(doc, pb), bo = partBox(doc, po); if (!bb || !bo) return { ok: false, error: 'pickTwo' };
+  const key = axis === 'y' ? 'y' : 'x', cross = key === 'x' ? 'y' : 'x', e0 = b => key === 'x' ? b.minX : b.minY, c0 = b => cross === 'x' ? b.minX : b.minY;
+  const circles = part => doc.shapes.filter(q => q.type === 'circle' && part.shapeIds.includes(q.id) && lamOwnShape(part, q)), src = circles(pb); if (!src.length) return { ok: false, error: 'noButtons' };
+  const mine = circles(po), used = new Set(), r4 = v => +v.toFixed(4), sameL = [], moves = [], adds = [];
+  for (const c of src) {
+    const along = lamAlongMap(specs.base, specs.other, (key === 'x' ? c.cx : c.cy) - e0(bb)) + e0(bo), across = (cross === 'x' ? c.cx : c.cy) - c0(bb) + c0(bo), pos = key === 'x' ? { x: along, y: across } : { x: across, y: along };
+    let best = null; for (const m of mine) { if (used.has(m.id) || Math.abs(m.r - c.r) > 0.01) continue; const dist = Math.hypot(m.cx - pos.x, m.cy - pos.y); if (dist <= near && (!best || dist < best.dist)) best = { m, dist }; }
+    if (best) { used.add(best.m.id); if (best.dist <= same) sameL.push({ from: c.id, id: best.m.id }); else moves.push({ from: c.id, id: best.m.id, x: r4(pos.x), y: r4(pos.y), dist: best.dist }); } else adds.push({ from: c.id, x: r4(pos.x), y: r4(pos.y), r: c.r });
+  }
+  return { ok: true, base: baseId, other: otherId, same: sameL, moves, adds };
+}
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
 export function laminateNow(doc, outerId, innerId, opts = {}) {

@@ -34,7 +34,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1610,6 +1610,26 @@ function relayRim() {
   line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
   rebuildSnaps(); draw();
 }
+/* ───────── 展開：ボタンの穴を、表と裏でそろえる（事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
+function unfoldButtons() {
+  const box = $('lamResult'); box.textContent = '';
+  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, fail = (key, p) => { const m = t(key, p); line(m, 'lam-error'); $('hint').textContent = m; }, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner');
+  if (doc.parts.length < 2) { fail('lamNeedParts'); return; }
+  fillLaminateParts(); const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value); if (!po || !pi || po === pi) { fail('lamErr_pickTwo'); return; }
+  const axisSel = $('lamAxis').value, bx = partBox(doc, po), axis = axisSel === 'x' || axisSel === 'y' ? axisSel : (bx && bx.maxY - bx.minY > bx.maxX - bx.minX ? 'y' : 'x');
+  const rimZ = lamRimBendZones(doc, po.id, pi.id, { axis }), specs = {};   /* 曲げの区間（平ら・丸折り）：縦の点線 → 外周の菱の線 → 穴 の順 */
+  for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
+  const baseOuter = $('lamBase').value !== 'inner', [bp, op] = baseOuter ? [po, pi] : [pi, po], plan = lamButtonPlan(doc, bp.id, op.id, { axis, specs: { base: baseOuter ? specs.outer : specs.inner, other: baseOuter ? specs.inner : specs.outer } });
+  if (!plan.ok) { fail('lamUnfoldErr_' + plan.error); return; }
+  const srcOf = id => doc.shapes.find(q => q.id === id), blocked = [...plan.adds.map(a => srcOf(a.from)), ...plan.moves.map(m => srcOf(m.id))].filter(q => q && !editable(q)).length; if (blocked) { fail('lamUnfoldErr_locked', { n: blocked }); return; }
+  if (plan.adds.length || plan.moves.length) commit(() => {
+    for (const m of plan.moves) { const q = doc.shapes.find(x => x.id === m.id); if (q) { q.cx = m.x; q.cy = m.y; } }
+    const added = []; for (const a of plan.adds) { const src = srcOf(a.from), id = freshId([...doc.shapes, ...added], 's'); added.push({ ...src, id, cx: a.x, cy: a.y }); op.shapeIds.push(id); }   /* 足す円は、基準の円の複製（半径・層・色はそのまま）。部品にも入れる */
+    doc.shapes.push(...added);
+  });
+  const done = t('lamUnfoldDone', { s: plan.same.length, m: plan.moves.length, a: plan.adds.length }); line(done); $('hint').textContent = done;
+  line(t('lamUnfoldNote', { base: sideName(baseOuter ? 'outer' : 'inner'), other: sideName(baseOuter ? 'inner' : 'outer') })); rebuildSnaps(); draw();
+}
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, fail = key => { line(t(key), 'lam-error'); $('hint').textContent = t(key); };   /* エラーは、検証ボタンの下（カードの中）にも赤い文字で出す */
@@ -1823,7 +1843,7 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
