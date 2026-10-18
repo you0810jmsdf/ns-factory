@@ -49,7 +49,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1492,7 +1492,16 @@ function renderLaminateParts() {
   }
 }
 /** 「もう一方の全長（目標）」の欄のすぐ上に、いまの全長（表・裏）・差・曲げを、部品を選んだ時点で自動で出す（事業主の質問 2026-10-18「選択した時点で自動算出できないのか」）。目標を入れても、ここは「いまの長さ」のまま。 */
+let lamSecViewLast = '';
+/** 貼り合わせ検証カードの中に、いま選んでいる表・裏の断面図を画像（SVG）で出す（事業主の指示 2026-10-19「断面図の画像を、画面の中に出す」）。断面が無い（作っていない・元に戻した・別の組み合わせ）ときは枠ごと隠す。同じ画像なら描き直さない。 */
+function renderLamSecView() {
+  const wrap = $('lamSecWrap'), box = $('lamSecView'); if (!wrap || !box) return;
+  const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value), key = po && pi && po !== pi ? `lam:${po.id}:${pi.id}` : null;
+  const id = key ? Object.entries(doc.foldSections || {}).find(([, m]) => m.key === key)?.[0] : null, svg = id ? foldSectionSvg(doc.shapes.filter(s => s.foldSec === id)) : '';
+  if (svg !== lamSecViewLast) { lamSecViewLast = svg; box.innerHTML = svg; } wrap.hidden = !svg;
+}
 function renderLaminateNow() {
+  renderLamSecView();
   const box = $('lamNow'); if (!box) return;
   const o = $('lamOuter').value, i = $('lamInner').value; if (doc.parts.length < 2) { box.textContent = t('lamNowNeedParts'); return; } if (o && o === i) { box.textContent = t('lamNowSame'); return; }
   /* 厚みは、手で直していれば欄の数字、直していなければ部品の厚み（欄は書き換えない：入力の途中の数字を消さないため） */
@@ -1572,7 +1581,7 @@ function makeLamSection() {
     if (!ring.ok) $('hint').textContent += ' ' + t('lamRingHint', { d, list: ring.gaps.filter(g => !g.ok).map(g => sideLabel(g.k - 1) + ' ' + g1(g.gap) + ' mm').join('・') });
     line(t('lamRingNote'));
   }
-  draw();
+  draw(); renderLamSecView();   /* カードの中の断面の画像も描く */
 }
 /** 寸法が入っている層（レイヤー）を、表示にする（貼り合わせ検証の「寸法の層を表示する」ボタン。事業主の質問 2026-10-19「寸法非表示とは？どこにボタンがある？」）。元に戻すは1回。検証は出し直す。 */
 function showDimensionLayers() {

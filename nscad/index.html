@@ -65,7 +65,7 @@
     .sub { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 2px; }
     .sub > summary { cursor: pointer; color: #aaa; font-size: 12px; }
     .note { margin: 4px 0; color: #999; font-size: 11px; line-height: 1.5; white-space: pre-wrap; }
-    .lam-error { color: #ff8a80; } .lam-ok { color: #8bd48b; } .lam-h { margin-top: 8px; font-weight: bold; color: #ddd; } .lam-warn { color: #ffd180; } #lamResult div { margin: 4px 0; } .lam-part { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 4px 0; } .lam-part input { width: 84px; } .lam-part span { font-size: 11px; color: #bbb; } #lamResult button { display: block; margin-top: 4px; }
+    .lam-error { color: #ff8a80; } .lam-ok { color: #8bd48b; } .lam-h { margin-top: 8px; font-weight: bold; color: #ddd; } .lam-warn { color: #ffd180; } #lamResult div { margin: 4px 0; } #lamSecView svg { display: block; width: 100%; height: auto; max-height: 380px; border-radius: 6px; } .lam-part { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 4px 0; } .lam-part input { width: 84px; } .lam-part span { font-size: 11px; color: #bbb; } #lamResult button { display: block; margin-top: 4px; }
     footer { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; padding: 7px 14px; font-size: 12px; border-top: 1px solid var(--line); background: #181818; }
     .sp-compare-scroll { overflow-x: auto; } #spCompare { border-collapse: collapse; font-size: 11px; width: 100%; } #spCompare th, #spCompare td { border: 1px solid var(--line); padding: 4px; text-align: right; } #spCompare caption { text-align: left; padding: 6px 0; } #spCompare tr[aria-current="true"] { background: var(--accent); color: #111; font-weight: 700; }
     #hint { color: var(--accent); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } #count { white-space: nowrap; color: #888; }
@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 08:35 · 6ff4ba3</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 08:41 · bf71196</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -534,6 +534,7 @@
 <label><span data-i18n="lamPitch"></span><input id="lamPitch" type="number" step="0.05" min="0.5"></label>
 <label><span data-i18n="lamRingD"></span><input id="lamRingD" type="number" step="0.5" min="0"></label>
 <button id="lamRun" data-i18n="lamRun"></button><button id="lamSection" data-i18n="lamSection" data-i18n-title="lamSectionTip"></button><button id="lamRelay" data-i18n="lamRelay" data-i18n-title="lamRelayTip"></button>
+<div id="lamSecWrap" hidden><div id="lamSecView"></div><p class="note" data-i18n="lamSecViewLegend"></p></div>
 <div id="lamResult" class="note"></div></details>
 <details class="sub" id="foldSubCard" hidden style="display:none"><summary data-i18n="foldSection"></summary>
 <label><span data-i18n="foldAngle"></span><input id="foldAngle" type="number" step="1" value="180"></label>
@@ -656,8 +657,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=d1b47753","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=704e6aa9","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=47c0c989","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=fb5a90f5","./help/ja.js":"./help/ja.js?v=05a4b421","./i18n.js":"./i18n.js?v=62dcf214","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=d1b47753"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=40ccc373","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=704e6aa9","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=fa50a535","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=fb5a90f5","./help/ja.js":"./help/ja.js?v=05a4b421","./i18n.js":"./i18n.js?v=a4e5bd55","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=40ccc373"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3422,6 +3423,7 @@ const MESSAGES = {
     "lamSecSrc_dashes": "縦の点線",
     "lamSecRadius": "丸折りの半径（内側の面）：図面の左の折り {a} mm・右の折り {b} mm",
     "lamSecAngle": "折りの角度（表と裏の曲げの差÷厚みの平均）：図面の左の折り {a}°・右の折り {b}°",
+    "lamSecViewLegend": "断面図：橙＝表（外側の革）の面・青＝裏（内側の革）の面・灰＝貼り合わせ線・●＝菱目・円＝リング外径（赤＝入らない・緑＝入る）",
     "lamSecThick": "革の厚み：表 {o} mm・裏 {i} mm",
     "lamSecThickDiff": "革の厚み：表 {o} mm・裏 {i} mm（表と裏で厚みが違うので、断面の2枚の厚みも違って見えます。同じ厚みなら、「表の革の厚み」「裏の革の厚み」の欄に入れて、もう一度押してください）",
     "lamSecBendA": "丸折り {k}：表 {o} mm・裏 {i} mm（差 {d} mm・角度 {a}°・貼り合わせ線の半径 {r} mm）",
@@ -5087,6 +5089,7 @@ const MESSAGES = {
     "lamSecSrc_dashes": "dashed lines",
     "lamSecRadius": "Bend radius (inner surface): left fold {a} mm · right fold {b} mm",
     "lamSecAngle": "Fold angle (outer-inner bend difference / mean thickness): left fold {a}° · right fold {b}°",
+    "lamSecViewLegend": "Section: orange = outer leather surface · blue = inner leather surface · gray = glue line · dots = stitch holes · circle = ring outer diameter (red = does not fit, green = fits)",
     "lamSecThick": "Leather thickness: outer {o} mm · inner {i} mm",
     "lamSecThickDiff": "Leather thickness: outer {o} mm · inner {i} mm (the two differ, so the two layers look different in the section. If they are the same, type the value in the outer and inner thickness boxes and press again)",
     "lamSecBendA": "Bend {k}: outer {o} mm · inner {i} mm (difference {d} mm · angle {a}° · glue-line radius {r} mm)",
@@ -7583,6 +7586,24 @@ function foldRingCheck(plan, { ringD, tO, tI, pitch } = {}) {
   }
   return { ringD, ok: gaps.every(g => g.ok), angleMode: data ? 'data' : 'half', gaps, needs, byPitch, extra };
 }
+/** 断面の図形（makeLamSection が図面に置いたもの：type 'line'｜'arc'｜'circle'・role）から、画像（SVG）の文字列を作る（事業主の指示 2026-10-19「断面図の画像を、画面の中に出す」）。
+ *  色：裏の面（edgeL）＝青・表の面（edgeR）＝橙・貼り合わせ線（glue）＝灰・ふた（cap0・cap1）＝白・菱目（role 'hole'・side 'outer'／'inner'）＝橙／青の点・リングの円（role 'ring'・color 'red'／'green'）＝赤／緑の輪。
+ *  円弧は、始点から終点まで（終点が小さければ360°足して）折れ線でなぞる。viewBox は図形をすべて含み、少し余白をとる。線も円弧も無いときは空の文字列。 */
+function foldSectionSvg(shapes) {
+  const list = Array.isArray(shapes) ? shapes : [], ok = v => Number.isFinite(v), f = v => String(+v.toFixed(3));
+  const arcPts = a => { const e = a.endDeg < a.startDeg ? a.endDeg + 360 : a.endDeg, n = Math.max(12, Math.ceil((e - a.startDeg) / 3)); return Array.from({ length: n + 1 }, (_, i) => { const t = (a.startDeg + (e - a.startDeg) * i / n) * Math.PI / 180; return { x: a.cx + a.r * Math.cos(t), y: a.cy + a.r * Math.sin(t) }; }); };
+  const paths = [...list.filter(q => q?.type === 'line').map(q => ({ role: q.role, pts: [{ x: q.x1, y: q.y1 }, { x: q.x2, y: q.y2 }] })), ...list.filter(q => q?.type === 'arc' && [q.cx, q.cy, q.r, q.startDeg, q.endDeg].every(ok)).map(q => ({ role: q.role, pts: arcPts(q) }))].filter(p => p.pts.every(q => ok(q.x) && ok(q.y)));
+  const circles = list.filter(q => q?.type === 'circle' && [q.cx, q.cy, q.r].every(ok)); if (!paths.length) return '';
+  const all = [...paths.flatMap(p => p.pts), ...circles.flatMap(c => [{ x: c.cx - c.r, y: c.cy - c.r }, { x: c.cx + c.r, y: c.cy + c.r }])], x0 = Math.min(...all.map(p => p.x)), x1 = Math.max(...all.map(p => p.x)), y0 = Math.min(...all.map(p => p.y)), y1 = Math.max(...all.map(p => p.y));
+  const m = Math.max(x1 - x0, y1 - y0) * 0.04 + 1, vx = x0 - m, vy = y0 - m, vw = x1 - x0 + 2 * m, vh = y1 - y0 + 2 * m, dot = Math.max(0.6, vw / 260), COLOR = { edgeL: '#78c8ff', edgeR: '#ffbe5a', glue: '#bebebe', cap0: '#ffffff', cap1: '#ffffff' };
+  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vx)} ${f(vy)} ${f(vw)} ${f(vh)}" preserveAspectRatio="xMidYMid meet" role="img" style="background:#161616">`];
+  for (const p of paths) parts.push(`<path d="M${p.pts.map(q => `${f(q.x)} ${f(q.y)}`).join(' L')}" fill="none" stroke="${COLOR[p.role] || '#d8d8d8'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`);
+  for (const c of circles) {
+    if (c.role === 'hole') parts.push(`<circle data-role="hole" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(Math.max(c.r, dot))}" fill="${c.side === 'outer' ? '#ffbe5a' : '#78c8ff'}" stroke="#ffe14d" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`);
+    else if (c.role === 'ring') parts.push(`<circle data-role="ring" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(c.r)}" fill="none" stroke="${c.color === 'red' ? '#ff5050' : '#5adc78'}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`);
+  }
+  parts.push('</svg>'); return parts.join('');
+}
 /** 断面の中心線の、いちばん高い点の v（始点を 0 とした高さ）。折りの角度が 180° でなくても、断面を図面の下へ置く高さを決めるのに使う。 */
 function foldPathVMax(path) {
   let m = 0; for (const pc of path.pieces) { if (pc.kind === 'line') { m = Math.max(m, pc.p0.v, pc.p1.v); continue; } m = Math.max(m, pc.c.v + pc.r * Math.sin(pc.a0), pc.c.v + pc.r * Math.sin(pc.a1)); for (let a = Math.PI / 2 + Math.ceil((pc.a0 - Math.PI / 2) / (2 * Math.PI)) * 2 * Math.PI; a <= pc.a1 + 1e-12; a += 2 * Math.PI) m = Math.max(m, pc.c.v + pc.r); }
@@ -7610,7 +7631,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -21521,7 +21542,7 @@ const { createRegistration, regIsOwner } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -22963,7 +22984,16 @@ function renderLaminateParts() {
   }
 }
 /** 「もう一方の全長（目標）」の欄のすぐ上に、いまの全長（表・裏）・差・曲げを、部品を選んだ時点で自動で出す（事業主の質問 2026-10-18「選択した時点で自動算出できないのか」）。目標を入れても、ここは「いまの長さ」のまま。 */
+let lamSecViewLast = '';
+/** 貼り合わせ検証カードの中に、いま選んでいる表・裏の断面図を画像（SVG）で出す（事業主の指示 2026-10-19「断面図の画像を、画面の中に出す」）。断面が無い（作っていない・元に戻した・別の組み合わせ）ときは枠ごと隠す。同じ画像なら描き直さない。 */
+function renderLamSecView() {
+  const wrap = $('lamSecWrap'), box = $('lamSecView'); if (!wrap || !box) return;
+  const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value), key = po && pi && po !== pi ? `lam:${po.id}:${pi.id}` : null;
+  const id = key ? Object.entries(doc.foldSections || {}).find(([, m]) => m.key === key)?.[0] : null, svg = id ? foldSectionSvg(doc.shapes.filter(s => s.foldSec === id)) : '';
+  if (svg !== lamSecViewLast) { lamSecViewLast = svg; box.innerHTML = svg; } wrap.hidden = !svg;
+}
 function renderLaminateNow() {
+  renderLamSecView();
   const box = $('lamNow'); if (!box) return;
   const o = $('lamOuter').value, i = $('lamInner').value; if (doc.parts.length < 2) { box.textContent = t('lamNowNeedParts'); return; } if (o && o === i) { box.textContent = t('lamNowSame'); return; }
   /* 厚みは、手で直していれば欄の数字、直していなければ部品の厚み（欄は書き換えない：入力の途中の数字を消さないため） */
@@ -23043,7 +23073,7 @@ function makeLamSection() {
     if (!ring.ok) $('hint').textContent += ' ' + t('lamRingHint', { d, list: ring.gaps.filter(g => !g.ok).map(g => sideLabel(g.k - 1) + ' ' + g1(g.gap) + ' mm').join('・') });
     line(t('lamRingNote'));
   }
-  draw();
+  draw(); renderLamSecView();   /* カードの中の断面の画像も描く */
 }
 /** 寸法が入っている層（レイヤー）を、表示にする（貼り合わせ検証の「寸法の層を表示する」ボタン。事業主の質問 2026-10-19「寸法非表示とは？どこにボタンがある？」）。元に戻すは1回。検証は出し直す。 */
 function showDimensionLayers() {
