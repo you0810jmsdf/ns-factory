@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
-import { diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -1187,13 +1187,37 @@ function diamondLineSpecText(sz) {
 }
 /** 情報カードの入力欄で、選んだ穴の工具（1種類のときだけ）の 穴の幅・高さ・ピッチ・刃数・刃の傾き を直して、工具に反映する。同じ工具で打った穴が全部変わる（穴の位置は変わらない）。
  *  （事業主の希望 2026-10-18「菱目は自分で大きさ等を設定したい」） */
-function applyHoleToolEdit() {
+/** 小さな菱形の線（図形）で、一斉置換の対象になるもの：編集できる層の、4頂点の小さな線。革色・金属・質感・部品・置いた金具のものは除く。 */
+const isReplaceableDiamond = s => s.type === 'polyline' && !s.holeLink && !s.leather && !s.metal && !s.texture && !s.hw && editable(s) && !(doc.parts || []).some(p => p.shapeIds.includes(s.id)) && diamondLoopSizes([s]).length === 1;
+/** 全体の菱目を一斉置換する（事業主の希望 2026-10-18「菱目を一つ選択すると規格が表示され、そこで修正した結果を全体の菱目を一斉置換できるように」）。
+ *  図面の菱の線は全部 w×h に（中心・向きはそのまま）。穴：tool があれば（穴から始めたとき）、菱形の工具の穴を全部その工具に付け替える。無ければ（菱の線から始めたとき）、穴が使っている菱形の工具の穴の大きさを w×h に。1回で取り消せる。 */
+function applyDiamondAll({ w, h, tool }) {
+  const lines = doc.shapes.filter(isReplaceableDiamond), isDiamond = id => doc.tools.find(x => x.id === id)?.kind === 'diamond'; let holeN = 0;
+  commit(() => {
+    for (const sh of lines) { const pts = resizeDiamondLoop(sh, w, h); if (pts) sh.points = pts; }
+    if (tool) { const i = doc.tools.findIndex(x => x.id === tool.id); if (i >= 0) doc.tools[i] = tool; for (const hl of doc.holes) if (isDiamond(hl.toolId) || hl.toolId === tool.id) { hl.toolId = tool.id; holeN++; } }
+    else { const used = new Set(doc.holes.map(x => x.toolId)); for (const tl of doc.tools) if (tl.kind === 'diamond' && used.has(tl.id)) { tl.holeW = w; tl.holeH = h; } holeN = doc.holes.filter(x => isDiamond(x.toolId)).length; }
+  });
+  const keep = $('stitchTool').value; refreshTools(); $('stitchTool').value = keep; persistTools();
+  $('hint').textContent = t('diamondAllApplied', { w, h, lines: lines.length, holes: holeN });
+}
+/** 情報カードの幅・高さの欄で、選んだ菱の線（scope='selected'）または図面の菱の線すべて（scope='all'）を、新しい大きさにする。向き・中心はそれぞれのまま。 */
+function applyDiamondLineEdit(scope) {
+  const wv = $('info-lineW').value, hv = $('info-lineH').value, w = Number(wv), h = Number(hv);
+  if (wv === '' || hv === '' || !(w >= 0.05) || !(h >= 0.05)) { $('hint').textContent = t('invalidTool'); return; }
+  if (scope === 'all') { applyDiamondAll({ w, h, tool: null }); return; }
+  const targets = doc.shapes.filter(sh => selected.has(sh.id) && isReplaceableDiamond(sh)); if (!targets.length) { $('hint').textContent = t('selectFirst'); return; }
+  commit(() => { for (const sh of targets) { const pts = resizeDiamondLoop(sh, w, h); if (pts) sh.points = pts; } });
+  $('hint').textContent = t('diamondLinesApplied', { n: targets.length, w, h });
+}
+function applyHoleToolEdit(all = false) {
   const hs = doc.holes.filter(h => selected.has(h.id)), ids = new Set(hs.map(h => h.toolId)); if (ids.size !== 1) return;
   const cur = doc.tools.find(x => x.id === [...ids][0]); if (!cur) { $('hint').textContent = t('holeToolMissing'); return; }
   const num = id => { const v = $(id).value; return v === '' || v === null ? NaN : Number(v); };
   const tool = { ...cur, holeW: num('info-holeW'), holeH: num('info-holeH'), pitch: num('info-holePitch'), teeth: num('info-holeTeeth'), angleDeg: num('info-holeAngle') };
   const sample = newDoc(); sample.tools = [tool];
   if (![tool.holeW, tool.holeH, tool.pitch, tool.teeth, tool.angleDeg].every(Number.isFinite) || !validateDoc(sample)) { $('hint').textContent = t('invalidTool'); return; }
+  if (all) { applyDiamondAll({ w: tool.holeW, h: tool.holeH, tool }); return; }   /* 全体の菱目に反映：穴は全部この工具に・菱の線も同じ大きさに */
   commit(() => { const i = doc.tools.findIndex(x => x.id === tool.id); if (i >= 0) doc.tools[i] = tool; });
   const keep = $('stitchTool').value; refreshTools(); $('stitchTool').value = keep; persistTools();   /* 工具設定で選んでいる工具は、そのまま */
   $('hint').textContent = t('holeToolApplied', { name: tool.name, w: tool.holeW, h: tool.holeH, p: tool.pitch, t: tool.teeth, a: tool.angleDeg, n: doc.holes.filter(h => h.toolId === tool.id).length });
@@ -1211,6 +1235,7 @@ function refreshInfo() {
   $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
   { /* 選んだ穴が、菱形の1つの工具だけのとき：その工具の値を入力欄に入れて、直せるようにする */
     const toolIds = [...new Set(hs.map(h => h.toolId))], one = hs.length && toolIds.length === 1 ? doc.tools.find(x => x.id === toolIds[0]) : null, edit = !!one && one.kind === 'diamond'; $('l-holeEdit').hidden = !edit;
+    $('l-lineEdit').hidden = !dOnly; if (dOnly) for (const [id, v] of [['info-lineW', dl[0].w], ['info-lineH', dl[0].h]]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+v.toFixed(2)); }   /* 菱の線だけ選んでいるとき：いまの大きさを入れる */
     if (edit) for (const [id, key] of [['info-holeW', 'holeW'], ['info-holeH', 'holeH'], ['info-holePitch', 'pitch'], ['info-holeTeeth', 'teeth'], ['info-holeAngle', 'angleDeg']]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+Number(one[key]).toFixed(2)); }   /* 打ちかけの欄は巻き戻さない */
   }
   const holes = s ? holeCountOn([s]) : many.length ? holeCountOn(many) : null; $('l-holeCount').hidden = holes === null; if (holes !== null) $('info-holeCount').textContent = String(holes);   /* 選んだ線上の菱目の数（読み取り専用） */
@@ -4137,6 +4162,8 @@ function drawCenterMarks() {
   for (const c of near) { const r = 5.5 / scale; ctx.moveTo(c.x - r, c.y); ctx.lineTo(c.x, c.y - r); ctx.lineTo(c.x + r, c.y); ctx.lineTo(c.x, c.y + r); ctx.closePath(); } /* ガイドの点＝小さなひし形（中心の十字と区別） */
   ctx.stroke(); ctx.restore();
 }
+/** 辺（line・円・円弧）の外接の四角 [x0, x1, y0, y1]（余白 1e-6）。交点を計算できない種類は null。rebuildSnaps が、範囲が重ならない辺どうしの交点計算を省くために使う（菱の線 560 個の図面で 7 秒かかっていた）。 */
+const edgeBox = e => e.type === 'line' ? [Math.min(e.x1, e.x2) - 1e-6, Math.max(e.x1, e.x2) + 1e-6, Math.min(e.y1, e.y2) - 1e-6, Math.max(e.y1, e.y2) + 1e-6] : (e.type === 'circle' || e.type === 'arc') ? [e.cx - e.r - 1e-6, e.cx + e.r + 1e-6, e.cy - e.r - 1e-6, e.cy + e.r + 1e-6] : null;
 function rebuildSnaps() {
   rebuildThreeViewMarks(); rebuildQuad();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
@@ -4150,7 +4177,9 @@ function rebuildSnaps() {
   dupGroups = findOverlaps(shapes.filter(s => !s.holeLink)); updateDupBar();
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
+  const boxes = edges.map(edgeBox);
   for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
+    const A = boxes[i], B = boxes[j]; if (!A || !B || A[1] < B[0] || B[1] < A[0] || A[3] < B[2] || B[3] < A[2]) continue;   /* 範囲が重ならない辺どうしは、交わらない */
     const a = edges[i], b = edges[j];
     snapCache.push(...intersections(a.type === 'arc' ? { ...a, type: 'circle' } : a, b.type === 'arc' ? { ...b, type: 'circle' } : b).filter(p => distTo(a, p) < 1e-7 && distTo(b, p) < 1e-7));
   }
@@ -5452,7 +5481,7 @@ document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click'
 /** 数字の欄を選んだまま、その上でマウスのホイールを回すと、ブラウザの標準動作で数字が増減する（右のカードを動かそうとして、工具の穴の高さが 0.8 → 5 になった・事業主の指摘 2026-10-18「数字が勝手に増えていく」）。
  *  数字の欄の上でホイールを回したら、欄の選択を外す：数字は変わらず、画面のスクロールはそのまま通る。 */
 document.addEventListener('wheel', e => { const el = e?.target; if (el && el.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) el.blur(); }, { passive: true, capture: true });
-$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = applyHoleToolEdit;
+$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
