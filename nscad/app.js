@@ -1500,6 +1500,16 @@ function renderLaminateNow() {
   const f2 = v => (+v).toFixed(2), b = r.bend, head = t('lamNowLine', { o: f2(r.outerLen), i: f2(r.innerLen), dl: f2(r.diff) });
   box.textContent = head + ' ' + (b.curl === 'none' ? t('lamNowNone') : b.ok ? t('lamNowBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner') }) : t('lamNowTooMuch'));
 }
+/** 厚み欄（表の革の厚み・裏の革の厚み）に入れた値を、選んでいる部品の厚みにも保存する（事業主の指示 2026-10-19「画面を開き直しても2.3のまま」）。欄を確定したとき（change）。
+ *  部品が選ばれていないときは何もしない。0 以下・数でない・空は保存せず案内する（部品の厚みは変えない）。いまの値と同じなら何もしない。保存は1回の操作（元に戻せる）。部品の厚みは図面に残るので、開き直しても欄に出る（refreshLaminateParts）。 */
+function saveLamThickness(which) {
+  const el = $(which === 'o' ? 'lamTOuter' : 'lamTInner'), part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); if (!part) return;
+  const raw = String(el.value ?? '').trim(), v = Number(raw); if (raw === '' || !(v > 0)) { $('hint').textContent = t('lamThickBad'); return; }
+  lamTouched[which] = false;   /* 保存したあとは、部品の値に従う（欄＝部品の値） */
+  if (part.thickness === v) return;
+  commit(() => { part.thickness = v; }); $('hint').textContent = t('lamThickSaved', { name: part.name, v: String(+v.toFixed(3)) }); renderLaminateNow();
+}
+
 function laminateThickFromPart(which) {
   const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
 }
@@ -1805,7 +1815,7 @@ function initDesign() {
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
-  $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
+  $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
   for (const id of ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by']) $(id).addEventListener('input', rulerFromBar);
