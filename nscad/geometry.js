@@ -646,6 +646,38 @@ export function contourChain(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {})
   const first = items[0], last = items.at(-1), closed = distance(end(first.shape, first.reversed), end(last.shape, !last.reversed)) <= tol;
   return { items, shapeIds: ids, closed, reversed: false };
 }
+/** 図形のうち、点 p にいちばん近い区間（直線の1区間）を返す：{ a, b }。円・円弧・ベジェ・折れ線は、折れ線にした区間のうちの1つ（閉じた図形は、閉じる区間も入れる）。区間が無ければ null。金具を本体の線に着けるときの「着ける線」を決めるのに使う。 */
+export function nearestSegmentOf(shape, p, flat = 0.05) {
+  const pts = flattenShape(shape, flat); if (!pts || pts.length < 2) return null;
+  const segs = []; for (let k = 0; k + 1 < pts.length; k++) segs.push([pts[k], pts[k + 1]]);
+  if ((shape.closed || shape.type === 'circle') && distance(pts[0], pts.at(-1)) > 1e-9) segs.push([pts.at(-1), pts[0]]);
+  let best = null, bd = Infinity; for (const [a, b] of segs) { const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy; if (l2 < 1e-18) continue; const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)), d = Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)); if (d < bd) { bd = d; best = { a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y } }; } }
+  return best;
+}
+/** 金具を本体の線にぴったり着ける動き（2026-10-18 事業主の希望「金具をしっかり本体にくっつけたいが、隙間ができる」）。
+ *  points：金具の外形を折れ線にした点（mm）。line：{ a, b }（本体の線。無限に延ばした直線として使う）。rotate：true なら、金具の線に近い辺（凸包の辺で、線にいちばん近い点につながる長いほう）が線と平行になるよう、先に回す（±45度を超えるときは回さない）。
+ *  金具は、いまある側（点の重心の側）のまま、線にいちばん近い点が線に乗るまで、線に垂直な向きに動く。隙間があれば寄せ、めり込んでいれば外へ戻す。
+ *  戻り値：{ dx, dy, angleDeg（回す角度・0＝回さない）, pivot（回す中心）, gap（回したあとの、動かす前の隙間 mm・めり込みは負） }。使うときは、点・図形を pivot まわりに angleDeg 回してから (dx, dy) 動かす。点が2つ未満・線が点なら null。 */
+export function attachToLine(points, line, { rotate: doRotate = false } = {}) {
+  const pts = (points || []).filter(q => Number.isFinite(q?.x) && Number.isFinite(q?.y)); if (pts.length < 2 || !line?.a || !line?.b) return null;
+  const ux0 = line.b.x - line.a.x, uy0 = line.b.y - line.a.y, len = Math.hypot(ux0, uy0); if (!(len > 1e-9)) return null;
+  const ux = ux0 / len, uy = uy0 / len, cx = pts.reduce((m, q) => m + q.x, 0) / pts.length, cy = pts.reduce((m, q) => m + q.y, 0) / pts.length;
+  const up = (-uy * (cx - line.a.x) + ux * (cy - line.a.y)) >= 0, nx = up ? -uy : uy, ny = up ? ux : -ux;   /* 線の法線：金具のある側へ向ける */
+  const sd = q => nx * (q.x - line.a.x) + ny * (q.y - line.a.y);
+  let pts2 = pts, angleDeg = 0, pivot = { x: cx, y: cy };
+  if (doRotate) {
+    const hull = (() => { const s = [...pts].sort((p, q) => p.x - q.x || p.y - q.y), cr = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x), lo = [], hi = []; for (const q of s) { while (lo.length >= 2 && cr(lo.at(-2), lo.at(-1), q) <= 0) lo.pop(); lo.push(q); } for (const q of [...s].reverse()) { while (hi.length >= 2 && cr(hi.at(-2), hi.at(-1), q) <= 0) hi.pop(); hi.push(q); } return [...lo.slice(0, -1), ...hi.slice(0, -1)]; })();
+    if (hull.length >= 3) {
+      let vi = 0; hull.forEach((q, k) => { if (sd(q) < sd(hull[vi]) - 1e-12) vi = k; });
+      const prev = hull[(vi + hull.length - 1) % hull.length], cur = hull[vi], next = hull[(vi + 1) % hull.length], lp = Math.hypot(cur.x - prev.x, cur.y - prev.y), ln = Math.hypot(next.x - cur.x, next.y - cur.y), e = ln >= lp ? [cur, next] : [prev, cur];
+      if (Math.max(lp, ln) > 1e-9) {
+        const ea = Math.atan2(e[1].y - e[0].y, e[1].x - e[0].x), la = Math.atan2(uy, ux); let d = ((ea - la) * 180 / Math.PI) % 180; if (d > 90) d -= 180; if (d <= -90) d += 180;   /* 辺と線の向きの差（-90〜90度） */
+        if (Math.abs(d) <= 45 && Math.abs(d) > 1e-9) { angleDeg = -d; pivot = { x: (e[0].x + e[1].x) / 2, y: (e[0].y + e[1].y) / 2 }; const a = angleDeg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a); pts2 = pts.map(q => ({ x: pivot.x + (q.x - pivot.x) * co - (q.y - pivot.y) * si, y: pivot.y + (q.x - pivot.x) * si + (q.y - pivot.y) * co })); }
+      }
+    }
+  }
+  const gap = Math.min(...pts2.map(sd)); return { dx: -gap * nx, dy: -gap * ny, angleDeg, pivot, gap };
+}
 /** 型紙の輪郭を、塗りつぶし用の多角形にする（革色を部品を作らずに付けるため・2026-10-18）。
  *  startId が閉じた図形（円・閉じた折れ線など）ならそれ自身。開いた線なら、端がつながった線を一周たどり（contourChain・すき間 gapTol まで越える）、出発点へ戻ってこなければ null。
  *  戻り値 { ids: 一周に入った図形の id, points: 多角形の点（mm・円弧やベジェは折れ線にする・最後の点は最初と重ねない） }。 */
