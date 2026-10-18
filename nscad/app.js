@@ -1319,6 +1319,22 @@ function makeFoldUnfoldParts() {
   fillLaminateParts(); $('lamOuter').value = ids[0]; $('lamInner').value = ids[1]; lamTouched.o = false; lamTouched.i = false; laminateThickFromPart('o'); laminateThickFromPart('i');
   const d = document.createElement('div'); d.textContent = t('lamAutoDone', { a: o.length, b: i.length, to: tO, ti: tI }); box.appendChild(d); $('hint').textContent = d.textContent;
 }
+/** 手で描いた図形を、表（'o'）・裏（'i'）の部品にする（事業主の指摘 2026-10-18「表の部品と裏の部品を登録できない」）。
+ *  選んだ図形で、部品「表」「裏」を作り（同じ名前の部品があれば、図形を入れ替える）、表の部品・裏の部品の欄に入れる。厚みは、表・裏の革の厚みの欄の値。 */
+function makeLamPart(which) {
+  const ids = [...selectedShapeIds()].filter(id => { const sh = doc.shapes.find(q => q.id === id); return sh && stitchable(sh) && !['text', 'dimension', 'image', 'fold'].includes(sh.type); });
+  if (!ids.length) { $('hint').textContent = t('selectFirst'); return; }
+  const name = t(which === 'o' ? 'lamPartOuterName' : 'lamPartInnerName'), th = Number($(which === 'o' ? 'lamTOuter' : 'lamTInner').value), pt = Number($('partThickness').value), thickness = th > 0 ? th : pt > 0 ? pt : 1.5;
+  let id = null;
+  commit(() => {
+    for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(x => !ids.includes(x));   /* 1つの図形は、1つの部品にだけ属する */
+    let part = doc.parts.find(p => p.name === name && !p.autoPly);
+    if (part) { part.shapeIds = ids; part.thickness = thickness; } else { part = { id: freshId(doc.parts, 'part'), name, thickness, shapeIds: ids, color: null, order: doc.parts.length }; doc.parts.push(part); }
+    id = part.id;
+  });
+  fillLaminateParts(); $(which === 'o' ? 'lamOuter' : 'lamInner').value = id; renderLaminateNow();
+  $('hint').textContent = t(which === 'o' ? 'lamMadeOuter' : 'lamMadeInner', { n: ids.length, t: thickness });
+}
 function renderLaminateParts() {
   const box = $('lamParts'); box.textContent = '';
   if (!doc.parts.length) { const d = document.createElement('div'); d.className = 'note'; d.textContent = t('lamPartsNone'); box.appendChild(d); return; }
@@ -1573,7 +1589,7 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
@@ -2154,7 +2170,7 @@ function renderColors() {
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
 const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
-const paintName = b => b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+const paintName = b => b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
 function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
@@ -2163,9 +2179,15 @@ const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1
 const fillContains = (fl, q) => insideRing(q, fl.points) && !(fl.holes || []).some(h => insideRing(q, h));
 /** 点を含む領域の塗り（小さいものが上） */
 function fillAt(q) { return (doc.fills || []).filter(fl => fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null; }
+/** 領域の塗りの中身：金属（と光沢の形）・質感（同じ領域に革色があれば残す）・革色。 */
+function fillPayload(brush, ids) {
+  if (brush.kind === 'metal') return { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) };
+  if (brush.kind === 'texture') { const old = (doc.fills || []).find(o => o.ids.length === ids.length && o.ids.every(i => ids.includes(i))); return { ...(old?.leather ? { leather: old.leather } : {}), texture: brush.id }; }
+  return { leather: brush.hex };
+}
 function addRegionFill(p, brush) {
   const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
-  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) } : { leather: brush.hex }) };
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) };
   commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
   $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
 }
@@ -2173,7 +2195,7 @@ function addRegionFill(p, brush) {
 function addSelectionRegionFills(brush, ids) {
   const regs = enclosedAreasAround(regionShapes(), ids); if (!regs.length) return 0;
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
-  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) } : { leather: brush.hex }) }; list.push(nf); made.push(nf); }
+  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) }; list.push(nf); made.push(nf); }
   const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
   commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });   /* 同じ場所は置き換える */
   $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : ''); return made.length;
@@ -2191,10 +2213,10 @@ function clearFills() {
   commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
-const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : fl.leather) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
+const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
 function regionLeatherItems(d, vis) {
-  return visibleFills(d, vis, 'leather').map(fl => ({ area: leatherItemArea(fl.points), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
+  return visibleFills(d, vis, 'leather').map(fl => ({ area: leatherItemArea(fl.points), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : fl.texture ? 0.92 : 0.55; ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
 }
 /** 多角形の面積（絶対値）。革色の塗りを大きい順に重ねるために使う。点が無い・壊れているときは 0。 */
 function leatherItemArea(ps) { if (!ps || ps.length < 3) return 0; const v = Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2; return Number.isFinite(v) ? v : 0; }
@@ -2202,7 +2224,7 @@ function paintClick(p, eyedrop) {
   const s = pickShapeAt(p);
   if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）、無ければ、領域の塗りの色を持つ */
     const part = s && doc.parts.find(q => q.shapeIds.includes(s.id)), hex = part?.color || s?.leather, fl = fillAt(p);
-    if (s?.metal) paintBrush = { kind: 'metal', id: s.metal, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }; else if (hex) paintBrush = { kind: 'leather', hex }; else if (fl) paintBrush = fl.metal ? { kind: 'metal', id: fl.metal, style: fl.style === 'radial' ? 'radial' : 'linear' } : { kind: 'leather', hex: fl.leather }; else { $('hint').textContent = t(s ? 'paintNoColor' : 'paintNoneColor'); return; }
+    if (s?.metal) paintBrush = { kind: 'metal', id: s.metal, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }; else if (hex) paintBrush = { kind: 'leather', hex }; else if (fl && (fl.metal || fl.leather)) paintBrush = fl.metal ? { kind: 'metal', id: fl.metal, style: fl.style === 'radial' ? 'radial' : 'linear' } : { kind: 'leather', hex: fl.leather }; else { $('hint').textContent = t(s ? 'paintNoColor' : 'paintNoneColor'); return; }
     if (paintBrush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = paintBrush.style; $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
   }
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
@@ -2230,8 +2252,8 @@ function applyLeather(hex, quiet = false) {   /* quiet：塗りモードで、�
 }
 /** 型紙に直接付けた革色のうち、端がつながった線の一周（leatherGroup）の塗り：一周をたどった多角形（閉じた図形は図形ごとの塗りで描く）。move は作図中の移動プレビュー用。 */
 function leatherOutlineFills(d, vis, move = s => s) {
-  const byGroup = new Map(); for (const s of d.shapes) { if (!s.leather || !s.leatherGroup || !vis(s)) continue; if (!byGroup.has(s.leatherGroup)) byGroup.set(s.leatherGroup, []); byGroup.get(s.leatherGroup).push(move(s)); }
-  const out = []; for (const list of byGroup.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) out.push({ points: poly.points, color: list[0].leather }); } return out;
+  const byGroup = new Map(); for (const s of d.shapes) { if (!(s.leather || s.texture) || !s.leatherGroup || !vis(s)) continue; if (!byGroup.has(s.leatherGroup)) byGroup.set(s.leatherGroup, []); byGroup.get(s.leatherGroup).push(move(s)); }
+  const out = []; for (const list of byGroup.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) out.push({ points: poly.points, color: list[0].leather, texture: list.find(q => q.texture)?.texture || null }); } return out;
 }
 /** 革色・革の質感の塗り（カラーシミュレーション）：部品の閉図形・型紙に付けた革色（閉じた図形）・質感（図形自身の指定が優先）を塗り、端がつながった線の一周の革色も塗る。画面・ほかの紙・PNG 書き出しで同じ見え方（書き出しは不透明）。 */
 function drawLeatherFills(d, vis, move = s => s) {
@@ -2241,7 +2263,7 @@ function drawLeatherFills(d, vis, move = s => s) {
     const poly = outlinePolygon([move(sh)], sh.id)?.points, bb = poly ? null : bboxOf(move(sh));
     items.push({ area: poly ? leatherItemArea(poly) : bb ? Math.max(0, (bb.maxX - bb.minX) * (bb.maxY - bb.minY)) || 0 : 0, draw: () => { path(move(sh)); ctx.save(); ctx.globalAlpha = exporting ? 1 : tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore(); } });
   }
-  for (const r of leatherOutlineFills(d, vis, move)) items.push({ area: leatherItemArea(r.points), draw: () => { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = r.color; ctx.fill(); ctx.restore(); } });   /* 一周の線（型紙の輪郭）の塗り */
+  for (const r of leatherOutlineFills(d, vis, move)) items.push({ area: leatherItemArea(r.points), draw: () => { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.globalAlpha = exporting ? 1 : r.texture ? 0.92 : 0.55; ctx.fillStyle = r.texture ? textureFill(r.texture) : r.color; ctx.fill(); ctx.restore(); } });   /* 一周の線（型紙の輪郭）の塗り */
   items.sort((x, y) => y.area - x.area);   /* 大きい形が下・小さい形が上（本体の内側のポケットが、本体の下に隠れない・事業主の指摘 2026-10-18）。同じ面積は、並べた順のまま（安定ソート） */
   for (const it of items) it.draw();
 }
@@ -2358,10 +2380,28 @@ function renderTextures() {
 function applyTexture(id) {
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(i => okIds.has(i)));
   const loose = doc.shapes.filter(sh => okIds.has(sh.id) && (sh.closed || sh.type === 'circle') && !doc.parts.some(p => p.shapeIds.includes(sh.id)));
-  if (!parts.length && !loose.length) { $('hint').textContent = t('selectPartFirst'); return; }
+  const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), open = doc.shapes.filter(sh => okIds.has(sh.id) && !sh.hw && !sh.holeLink && !inPart.has(sh.id) && !(sh.closed || sh.type === 'circle') && !['text', 'dimension', 'image', 'fold'].includes(sh.type));   /* 端と端が一周する線・囲まれた場所＝型紙（部品でなくてよい・事業主の指摘 2026-10-18「囲まれた矩形にホースバットが載せられない」） */
+  if (!parts.length && !loose.length && !open.length) { $('hint').textContent = t('selectPartFirst'); return; }
   const x = id ? textureById(id) : null; if (id && !x) return;
-  commit(() => { for (const p of parts) p.texture = x ? x.id : null; for (const s of loose) s.texture = x ? x.id : null; });
-  $('hint').textContent = x ? t('textureApplied', { n: parts.length + loose.length, name: x.name }) : t('textureCleared', { n: parts.length + loose.length });
+  const loops = [], rest = new Set(open.map(sh => sh.id)), left = [];   /* 一周にできた線のまとまり・一周にできなかった線 */
+  while (rest.size) { const pool = open.filter(sh => rest.has(sh.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId); if (poly) { loops.push(poly.ids); for (const i of poly.ids) rest.delete(i); } else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) left.push(i); if (rest.delete(startId)) left.push(startId); } }
+  const canDo = parts.length || loose.length || loops.length || (x ? left.length && enclosedAreasAround(regionShapes(), new Set(left)).length : open.some(sh => sh.texture) || (doc.fills || []).some(f => f.texture && f.ids.filter(i => okIds.has(i)).length * 2 >= f.ids.length));   /* 何も付けられない（囲めない線だけ）なら、今までの案内 */
+  if (!canDo) { $('hint').textContent = t('selectPartFirst'); return; }
+  const used = new Set(doc.shapes.map(sh => sh.leatherGroup).filter(Boolean)); let seq = 0; const nextGroup = () => { do seq++; while (used.has('lg' + seq)); used.add('lg' + seq); return 'lg' + seq; };
+  commit(() => {
+    for (const p of parts) p.texture = x ? x.id : null; for (const sh of loose) sh.texture = x ? x.id : null;
+    for (const ids of loops) {
+      const members = doc.shapes.filter(sh => ids.includes(sh.id)), gs = new Set(members.map(sh => sh.leatherGroup).filter(Boolean)), g0 = gs.size === 1 ? [...gs][0] : null;
+      const gid = g0 && members.every(sh => sh.leatherGroup === g0) && doc.shapes.filter(sh => sh.leatherGroup === g0).length === members.length ? g0 : nextGroup();   /* 革色で作ったまとまりがあれば、同じものを使う */
+      for (const sh of members) { if (x) { sh.leatherGroup = gid; sh.texture = x.id; } else { delete sh.texture; if (!sh.leather) delete sh.leatherGroup; } }
+    }
+    if (!x) {
+      for (const i of left) { const sh = doc.shapes.find(q => q.id === i); if (sh) delete sh.texture; }
+      doc.fills = (doc.fills || []).flatMap(f => { if (!f.texture || f.ids.filter(i => okIds.has(i)).length * 2 < f.ids.length) return [f]; if (f.leather) { const { texture, ...rest2 } = f; return [rest2]; } return []; });   /* 質感を外す：質感だけの領域は消え、革色もある領域は革色に戻る */
+    }
+  });
+  const made = x && left.length ? addSelectionRegionFills({ kind: 'texture', id: x.id }, new Set(left)) : 0, n = parts.length + loose.length + loops.length + made;   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば付ける */
+  $('hint').textContent = x ? t('textureApplied', { n, name: x.name }) : t('textureCleared', { n });
 }
 function applyThread() {
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === $('threadSel').value); if (!th) return;
