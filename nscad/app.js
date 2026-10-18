@@ -2190,9 +2190,12 @@ function clearFills() {
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
 const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : fl.leather) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); })).sort((x, y) => (y.area || 0) - (x.area || 0));
-function drawRegionLeather(d, vis) {
-  for (const fl of visibleFills(d, vis, 'leather')) { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = fl.leather; ctx.fill('evenodd'); ctx.restore(); }
+/** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
+function regionLeatherItems(d, vis) {
+  return visibleFills(d, vis, 'leather').map(fl => ({ area: leatherItemArea(fl.points), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
 }
+/** 多角形の面積（絶対値）。革色の塗りを大きい順に重ねるために使う。点が無い・壊れているときは 0。 */
+function leatherItemArea(ps) { if (!ps || ps.length < 3) return 0; const v = Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2; return Number.isFinite(v) ? v : 0; }
 function paintClick(p, eyedrop) {
   const s = pickShapeAt(p);
   if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）、無ければ、領域の塗りの色を持つ */
@@ -2230,14 +2233,16 @@ function leatherOutlineFills(d, vis, move = s => s) {
 }
 /** 革色・革の質感の塗り（カラーシミュレーション）：部品の閉図形・型紙に付けた革色（閉じた図形）・質感（図形自身の指定が優先）を塗り、端がつながった線の一周の革色も塗る。画面・ほかの紙・PNG 書き出しで同じ見え方（書き出しは不透明）。 */
 function drawLeatherFills(d, vis, move = s => s) {
-  drawRegionLeather(d, vis);   /* 線で囲まれた場所の塗り（図形ごとの塗りの下） */
-  for (const s of d.shapes.filter(s => vis(s) && (s.closed || s.type === 'circle'))) {
-    const tex = textureOf(s, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(s.id)), color = part?.color || s.leather; if (!tex && !color) continue;
-    path(move(s)); ctx.save(); ctx.globalAlpha = exporting ? 1 : tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore();
+  const items = regionLeatherItems(d, vis);   /* 線で囲まれた場所の塗り */
+  for (const sh of d.shapes.filter(sh => vis(sh) && (sh.closed || sh.type === 'circle'))) {   /* 図形ごとの塗り */
+    const tex = textureOf(sh, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(sh.id)), color = part?.color || sh.leather; if (!tex && !color) continue;
+    const poly = outlinePolygon([move(sh)], sh.id)?.points, bb = poly ? null : bboxOf(move(sh));
+    items.push({ area: poly ? leatherItemArea(poly) : bb ? Math.max(0, (bb.maxX - bb.minX) * (bb.maxY - bb.minY)) || 0 : 0, draw: () => { path(move(sh)); ctx.save(); ctx.globalAlpha = exporting ? 1 : tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore(); } });
   }
-  drawLeatherOutlines(d, vis, move);
+  for (const r of leatherOutlineFills(d, vis, move)) items.push({ area: leatherItemArea(r.points), draw: () => { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = r.color; ctx.fill(); ctx.restore(); } });   /* 一周の線（型紙の輪郭）の塗り */
+  items.sort((x, y) => y.area - x.area);   /* 大きい形が下・小さい形が上（本体の内側のポケットが、本体の下に隠れない・事業主の指摘 2026-10-18）。同じ面積は、並べた順のまま（安定ソート） */
+  for (const it of items) it.draw();
 }
-function drawLeatherOutlines(d, vis, move) { for (const r of leatherOutlineFills(d, vis, move)) { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = r.color; ctx.fill(); ctx.restore(); } }
 /** 選んだ図形に金属の色（ゴールド・シルバー・ピンクゴールド・ブラックゴールド）を付ける。id が null なら解除。線の色と、3D の金具の面の色になる。革色・革の質感とは別（事業主指示 2026-10-13）。 */
 /** 金属の色が付いた図形の、べた塗りの計画。置いた金具・手描き・取り込みのどれも、図形そのものの形から作る（登録した金具の形は見ない）。だから、金具を動かしても・形を直しても・拡大縮小しても、線と塗りは同じ（事業主の指摘 2026-10-18「リングの線と塗りがずれる」）。
  *  塗る形：閉じた図形（円も）と、端がつながった線の一周（metalGroup）。同じ金属の別の形にすっぽり入る形は、その形のくり抜きの穴（穴の中の形は、また塗る形）。リングアームの棒（occlude）は、線を描くときに本体の上へ別に塗る。
@@ -4859,6 +4864,36 @@ function drawNodes(s) {
     if (n.smooth) { ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(n.x - r, n.y - r, 2 * r, 2 * r); ctx.strokeRect(n.x - r, n.y - r, 2 * r, 2 * r); }
   });
 }
+/** 色つき書き出しの、金具の黄色い線の色：白い紙の上でも黒い革の上でも見える金色。 */
+const EXPORT_GOLD_WIRE = '#c8a232';
+/** 色つき書き出しの線の色（色コード）と太さ（画素）。dark＝線の下が暗い（黒い革など）か。黒い革の上は明るい線（画面と同じ）・白い紙の上は黒い線にして、どこでも見える。
+ *  金具の黄色い線は明暗どちらでも見える金色で少し太く。金属の色の図形・寸法・文字は今までどおり。色なし（color=false）は黒の細い線（切る線）。
+ *  （事業主の指摘 2026-10-18「PNG に変換すると全然違う配色・金具も消えている」：黒い革の上の黒い縫い目・縁、紙の上の薄い黄色の金具の線が見えなかった） */
+function exportLineLook(s, dark, color) {
+  if (s.type === 'dimension' || s.type === 'text') return { color: '#335', px: 1 };
+  if (!color) return { color: '#000', px: 1 };
+  const own = shapeLineColor(s);
+  if (s.color === 'yellow') return { color: EXPORT_GOLD_WIRE, px: 2.4 };   /* 金属の色が付いていても、黄色指定の線は金色（薄い黄色は白い紙で見えない） */
+  if (s.metal) return { color: own || '#000', px: 1.6 };
+  if (own && s.color !== 'white') return { color: own, px: 1.6 };
+  return { color: dark ? (own || '#d8d8d8') : '#000', px: 1.6 };
+}
+/** 明暗を読む必要がある線か（色の指定が無い・白）。金属・黄色・青緑赤・寸法・文字・画像などは、読まない。 */
+const exportNeedsProbe = s => !s.metal && s.color !== 'yellow' && (!shapeLineColor(s) || s.color === 'white') && !['dimension', 'text', 'image', 'fold', 'path'].includes(s.type);
+/** 図形の下（始め・まん中・終わりの3か所）の画素が暗いか。3か所のうち2か所以上で、まわり3×3画素のどれかが暗ければ true。読めない環境では false。 */
+function exportBehindDark(s) {
+  if (typeof ctx.getImageData !== 'function') return false;
+  let pts; try { pts = flattenShape(s, 0.5); } catch { return false; } if (!pts || !pts.length) return false;
+  let votes = 0;
+  for (const p of [pts[0], pts[pts.length >> 1], pts[pts.length - 1]]) {
+    try {
+      const px = Math.round(origin.x + p.x * scale) - 1, py = Math.round(origin.y + p.y * scale) - 1; if (px < 0 || py < 0 || px + 3 > width || py + 3 > height) continue;
+      const d = ctx.getImageData(px, py, 3, 3)?.data; if (!d) continue;
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2] < 77) { votes++; break; }
+    } catch { /* 読めない画素は数えない */ }
+  }
+  return votes >= 2;
+}
 function draw() {
   ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; syncFoldFields(); syncFoldCutField(); } /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
@@ -4868,10 +4903,13 @@ function draw() {
   const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
   if (exporting) {
     ctx.lineWidth = Math.max(0.1, 1 / scale);
-    const color = exportColor, list = doc.shapes.filter(visible), lineOf = s => s.type === 'dimension' || s.type === 'text' ? '#335' : (color && shapeLineColor(s)) || '#000';
+    const color = exportColor, list = doc.shapes.filter(visible);
     if (color) { drawLeatherFills(doc, visible); drawMetalFills(); }   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
-    for (const s of list) if (!(color && s.occlude)) strokeShape(s, lineOf(s));
-    if (color) for (const s of list) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); strokeShape(s, lineOf(s)); }   /* リングアームの棒：本体の上に重ねる */
+    const looks = new Map(); for (const sh of list) looks.set(sh.id, exportLineLook(sh, color && exportNeedsProbe(sh) ? exportBehindDark(sh) : false, color));   /* 線を引く前に、下の色の明暗を全部読む（先に引いた線に左右されない） */
+    const outStroke = sh => { const lk = looks.get(sh.id); ctx.lineWidth = Math.max(0.1, lk.px / scale); strokeShape(sh, lk.color); };
+    for (const s of list) if (!(color && s.occlude)) outStroke(s);
+    if (color) for (const s of list) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
+    ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
     for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; ctx.stroke(); ctx.restore(); }   /* 色つき：糸の色 */
     return;
   }
