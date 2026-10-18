@@ -73,18 +73,7 @@
   "cornerRMm": 1,
   "confidence": "measured"
  },
- "rivets": [
-  {
-   "xMm": -63,
-   "yMm": 0,
-   "dMm": 3.5
-  },
-  {
-   "xMm": 63,
-   "yMm": 0,
-   "dMm": 3.5
-  }
- ],
+ "rivets": [],
  "mechanism": {
   "heightClosedMm": null,
   "heightOpenMm": null,
@@ -142,26 +131,14 @@
   "kind": null,
   "overrides": [
    {
-    "xMm": -63,
-    "yMm": 0,
+    "xMm": null,
+    "yMm": null,
     "widthMm": null,
     "lengthMm": null,
     "heightMm": null,
-    "diameterMm": 3.5,
-    "kind": "rivet",
-    "note": null,
-    "cornerOuterRMm": null,
-    "cornerInnerRMm": null
-   },
-   {
-    "xMm": 63,
-    "yMm": 0,
-    "widthMm": null,
-    "lengthMm": null,
-    "heightMm": null,
-    "diameterMm": 3.5,
-    "kind": "rivet",
-    "note": null,
+    "diameterMm": null,
+    "kind": "slidelock",
+    "note": "クラウゼ A6 はビス・リベットの取付穴が無い（事業主 2026-10-18）：置いたときに穴を出さない。取り付けは Mini6 クラウゼと同じスライドロック式として扱い（推定）窓の位置と大きさは未実測",
     "cornerOuterRMm": null,
     "cornerInnerRMm": null
    }
