@@ -322,7 +322,7 @@ export function validateDoc(d) {
   if (!d.shapes.every(x => x.groupId === undefined || (typeof x.groupId === 'string' && x.groupId.length > 0 && x.groupId.length <= 40))) return false; /* グループ（同じ groupId の図形をまとめて扱う） */
   if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
   const leatherOk = x => x.leather === undefined || x.leather === null || /^#[0-9a-fA-F]{6}$/.test(String(x.leather)), leatherGroupOk = x => x.leatherGroup === undefined || x.leatherGroup === null || (typeof x.leatherGroup === 'string' && x.leatherGroup.length > 0 && x.leatherGroup.length <= 40); /* 型紙に直接付けた革色（部品を作らなくても塗れる・2026-10-18）と、端がつながった線の一周をまとめる印 */
-  if (!d.shapes.every(x => leatherOk(x) && leatherGroupOk(x))) return false;
+  if (!d.shapes.every(x => leatherOk(x) && leatherGroupOk(x) && (x.metalGroup === undefined || x.metalGroup === null || (typeof x.metalGroup === 'string' && x.metalGroup.length > 0 && x.metalGroup.length <= 40)))) return false; /* 金属の色の、線の一周のまとまり */
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
