@@ -323,6 +323,9 @@ export function validateDoc(d) {
   if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
   const leatherOk = x => x.leather === undefined || x.leather === null || /^#[0-9a-fA-F]{6}$/.test(String(x.leather)), leatherGroupOk = x => x.leatherGroup === undefined || x.leatherGroup === null || (typeof x.leatherGroup === 'string' && x.leatherGroup.length > 0 && x.leatherGroup.length <= 40); /* 型紙に直接付けた革色（部品を作らなくても塗れる・2026-10-18）と、端がつながった線の一周をまとめる印 */
   if (!d.shapes.every(x => leatherOk(x) && leatherGroupOk(x) && (x.metalGroup === undefined || x.metalGroup === null || (typeof x.metalGroup === 'string' && x.metalGroup.length > 0 && x.metalGroup.length <= 40)))) return false; /* 金属の色の、線の一周のまとまり */
+  const ringOk = r => Array.isArray(r) && r.length >= 3 && r.length <= 20000 && r.every(q => obj(q) && Number.isFinite(q.x) && Number.isFinite(q.y));
+  const fillOk = f => obj(f) && id(f.id) && f.id.length <= 40 && ringOk(f.points) && Array.isArray(f.holes ?? []) && (f.holes ?? []).length <= 500 && (f.holes ?? []).every(ringOk) && Array.isArray(f.ids) && f.ids.length <= 5000 && f.ids.every(x => typeof x === 'string') && ((typeof f.leather === 'string' && /^#[0-9a-fA-F]{6}$/.test(f.leather)) !== (typeof f.metal === 'string' && f.metal.length > 0 && f.metal.length <= 20)) && (f.area === undefined || Number.isFinite(f.area));   /* 領域の塗り（線で囲まれた場所・2026-10-18）：革色か金属の色のどちらか1つ */
+  if (!(d.fills === undefined || (Array.isArray(d.fills) && d.fills.length <= 2000 && d.fills.every(fillOk)))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
@@ -352,6 +355,9 @@ export function healDoc(d) {
   let fixed = 0; if (!d || !Array.isArray(d.paths) || !Array.isArray(d.shapes)) return fixed;
   { /* 部品が、消えた図形を指したままの図面（どこかの消し方で、部品の掃除が漏れた・2026-10-18）：検査に通らず、色の変更・保存・「前回の続き」が止まる。消えた図形を、部品の中身から外す */
     const ids = new Set(d.shapes.map(s => s.id)); for (const p of Array.isArray(d.parts) ? d.parts : []) if (Array.isArray(p.shapeIds) && p.shapeIds.some(id => !ids.has(id))) { p.shapeIds = p.shapeIds.filter(id => ids.has(id)); fixed++; }
+  }
+  { /* 領域の塗り：囲む図形が全部消えた塗りは、掃除で消す（2026-10-18） */
+    const ids = new Set(d.shapes.map(s => s.id)); if (Array.isArray(d.fills)) { const keep = d.fills.filter(f => Array.isArray(f?.ids) && f.ids.some(id => ids.has(id))); if (keep.length !== d.fills.length) { fixed += d.fills.length - keep.length; d.fills = keep; } }
   }
   { /* 同じ id の経路が2つ以上ある図面（つなぎ目を越えて新しい2本に打ったときの不具合・2026-10-17）：2つ目以降に新しい id を付け、同じ id の菱目は、いちばん近い経路に付け直す（経路の上の位置 s も取り直す） */
     const seen = new Map(); for (const p of d.paths) { if (!seen.has(p.id)) seen.set(p.id, []); seen.get(p.id).push(p); }
@@ -677,6 +683,105 @@ export function attachToLine(points, line, { rotate: doRotate = false } = {}) {
     }
   }
   const gap = Math.min(...pts2.map(sd)); return { dx: -gap * nx, dy: -gap * ny, angleDeg, pivot, gap };
+}
+/** 線で囲まれた場所（領域）を、点 p から「塗りつぶし」で求める（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。
+ *  取り込んだ図面の輪郭は、線の端が別の線の途中に付く形（T字）や、0.3mm ほどの隙間があり、端と端をたどる方式では閉じて見えない。ここでは、線を細い帯（幅 gap）にして画素に描き、p から塗りつぶす：
+ *  帯より狭い隙間・T字は、閉じたものとして越える。窓（p を中心にした正方形）の端に届いたら「囲まれていない」とみなし、もっと大きい窓で試す。最初の隙間（0.8mm）で漏れるときは、2.5mm まで広げて試す（bridged）。
+ *  p が線の上なら、まわりの点から試して、囲まれた領域のうち小さいほうを返す。
+ *  shapes：線になる図形（line・arc・circle・polyline・bezier・path…。id が要る）。戻り値：{ points（外形・mm）, holes（中の穴の外形の配列）, ids（領域を囲む図形の id）, area（mm²・穴を引いた）, bridged } または null（囲まれていない）。 */
+export function enclosedAreaAt(shapes, p, { gaps = [0.8, 2.5], windows = [120, 360, 1080], maxCells = 1400 } = {}) {
+  if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
+  const segs = []; for (const s of shapes || []) { if (!s || s.id === undefined) continue; let pts; try { pts = flattenShape(s, 0.05); } catch { continue; } if (pts && pts.length >= 2) segs.push({ id: s.id, pts }); }
+  if (!segs.length) return null;
+  for (let gi = 0; gi < gaps.length; gi++) {
+    for (const W of windows) {
+      let r = regionInWindow(segs, p, gaps[gi], W, maxCells);
+      if (r === 'leak') continue;   /* 窓より広がった：もっと大きい窓で */
+      if (!r) break;   /* 空きの無い（線だらけの）点：窓を広げても同じ。次の隙間へ */
+      if (r.cell > 0.1001) {   /* 粗い窓の結果：囲んだ範囲だけを、細かい画素で求め直す（粗い画素が偶然すき間を閉じた分は、ここで漏れて外れる） */
+        const xs = r.points.map(q => q.x), ys = r.points.map(q => q.y), cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+        const f = regionInWindow(segs, p, gaps[gi], Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) + 8, maxCells, { x: cx, y: cy });
+        if (!f || f === 'leak') break;   /* 細かく見ると漏れる：この隙間では塗れない。次の隙間へ */
+        r = f;
+      }
+      r.bridged = gi > 0; return r;
+    }
+  }
+  return null;
+}
+function regionInWindow(segs, p, gap, W, maxCells, center = p) {   /* center：窓の中心（省略は p） */
+  const cell = Math.max(0.1, W / maxCells), N = Math.ceil(W / cell), x0 = center.x - W / 2, y0 = center.y - W / 2, rad = Math.max(1, Math.round(gap / 2 / cell));
+  const owner = new Int32Array(N * N), disk = []; for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) if (dx * dx + dy * dy <= rad * rad + 0.5) disk.push(dx, dy);
+  const lo = -rad, hi = N + rad;   /* 窓のまわり（帯の半径ぶん）まで描く */
+  for (let k = 0; k < segs.length; k++) {
+    const pts = segs[k].pts;
+    for (let q = 0; q + 1 < pts.length; q++) {
+      let ax = (pts[q].x - x0) / cell, ay = (pts[q].y - y0) / cell, bx = (pts[q + 1].x - x0) / cell, by = (pts[q + 1].y - y0) / cell;
+      if (Math.max(ax, bx) < lo || Math.min(ax, bx) > hi || Math.max(ay, by) < lo || Math.min(ay, by) > hi) continue;
+      { /* 窓の中に切り詰める（Liang–Barsky） */
+        let t0 = 0, t1 = 1, ok = true; const dx = bx - ax, dy = by - ay;
+        for (const [pp, qq] of [[-dx, ax - lo], [dx, hi - ax], [-dy, ay - lo], [dy, hi - ay]]) { if (pp === 0) { if (qq < 0) { ok = false; break; } } else { const r = qq / pp; if (pp < 0) { if (r > t1) { ok = false; break; } if (r > t0) t0 = r; } else { if (r < t0) { ok = false; break; } if (r < t1) t1 = r; } } }
+        if (!ok) continue; const nax = ax + dx * t0, nay = ay + dy * t0, nbx = ax + dx * t1, nby = ay + dy * t1; ax = nax; ay = nay; bx = nbx; by = nby;
+      }
+      const steps = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 0.6));
+      for (let s = 0; s <= steps; s++) { const t = s / steps, cx = Math.floor(ax + (bx - ax) * t), cy = Math.floor(ay + (by - ay) * t); for (let d = 0; d < disk.length; d += 2) { const x = cx + disk[d], y = cy + disk[d + 1]; if (x >= 0 && x < N && y >= 0 && y < N) owner[y * N + x] = k + 1; } }
+    }
+  }
+  const sx = Math.min(N - 1, Math.max(0, Math.floor((p.x - x0) / cell))), sy = Math.min(N - 1, Math.max(0, Math.floor((p.y - y0) / cell))), seeds = [];
+  if (owner[sy * N + sx] === 0) seeds.push([sx, sy]);
+  else for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, x = sx + Math.round(Math.cos(a) * (rad + 2)), y = sy + Math.round(Math.sin(a) * (rad + 2)); if (x >= 0 && x < N && y >= 0 && y < N && owner[y * N + x] === 0) seeds.push([x, y]); }   /* 線の上：両側のまわりの点から */
+  if (!seeds.length) return null;
+  const lab = new Int32Array(N * N), stack = new Int32Array(N * N), info = [null]; let touchedBorder = false;
+  for (const [x, y] of seeds) {
+    if (lab[y * N + x]) continue; const id = info.length; let sp = 0, count = 0, border = false; stack[sp++] = y * N + x; lab[y * N + x] = id;
+    while (sp) {
+      const c = stack[--sp], cy = (c / N) | 0, cx = c - cy * N; count++; if (cx === 0 || cy === 0 || cx === N - 1 || cy === N - 1) border = true;
+      if (cx > 0 && !lab[c - 1] && !owner[c - 1]) { lab[c - 1] = id; stack[sp++] = c - 1; }
+      if (cx < N - 1 && !lab[c + 1] && !owner[c + 1]) { lab[c + 1] = id; stack[sp++] = c + 1; }
+      if (cy > 0 && !lab[c - N] && !owner[c - N]) { lab[c - N] = id; stack[sp++] = c - N; }
+      if (cy < N - 1 && !lab[c + N] && !owner[c + N]) { lab[c + N] = id; stack[sp++] = c + N; }
+    }
+    info.push({ count, border }); if (border) touchedBorder = true;
+  }
+  let best = 0; for (let k = 1; k < info.length; k++) if (!info[k].border && (!best || info[k].count < info[best].count)) best = k;
+  if (!best) return touchedBorder ? 'leak' : null;
+  const m = new Uint8Array(N * N), touch = new Map(); for (let c = 0; c < N * N; c++) if (lab[c] === best) m[c] = 1;
+  for (let c = 0; c < N * N; c++) if (m[c]) { const cy = (c / N) | 0, cx = c - cy * N; for (const nb of [cx > 0 ? c - 1 : -1, cx < N - 1 ? c + 1 : -1, cy > 0 ? c - N : -1, cy < N - 1 ? c + N : -1]) if (nb >= 0 && owner[nb]) touch.set(owner[nb], (touch.get(owner[nb]) || 0) + 1); }
+  for (let it = 0; it < rad; it++) { /* 帯（線の半分の幅）ぶん、線の中心まで広げる：塗りが線に届く */
+    const add = []; for (let c = 0; c < N * N; c++) { if (m[c] || !owner[c]) continue; const cy = (c / N) | 0, cx = c - cy * N; if ((cx > 0 && m[c - 1]) || (cx < N - 1 && m[c + 1]) || (cy > 0 && m[c - N]) || (cy < N - 1 && m[c + N])) add.push(c); }
+    for (const c of add) m[c] = 1;
+  }
+  const V = N + 1, adj = new Map(), edges = [], addEdge = (x1, y1, x2, y2) => { const e = { x1, y1, x2, y2, used: false }; edges.push(e); const key = y1 * V + x1; (adj.get(key) || adj.set(key, []).get(key)).push(e); };
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    if (!m[y * N + x]) continue;   /* 領域を右手に見て、時計回り（画面の座標）にたどる辺 */
+    if (y === 0 || !m[(y - 1) * N + x]) addEdge(x, y, x + 1, y); if (x === N - 1 || !m[y * N + x + 1]) addEdge(x + 1, y, x + 1, y + 1);
+    if (y === N - 1 || !m[(y + 1) * N + x]) addEdge(x + 1, y + 1, x, y + 1); if (x === 0 || !m[y * N + x - 1]) addEdge(x, y + 1, x, y);
+  }
+  const loops = [];
+  for (const e0 of edges) {
+    if (e0.used) continue; const pts = []; let e = e0;
+    while (e && !e.used) {
+      e.used = true; pts.push({ x: e.x1, y: e.y1 }); const dx = e.x2 - e.x1, dy = e.y2 - e.y1; let next = null, bs = -9;
+      for (const o of adj.get(e.y2 * V + e.x2) || []) { if (o.used) continue; const sc = dx * (o.y2 - o.y1) - dy * (o.x2 - o.x1); if (sc > bs) { bs = sc; next = o; } }   /* 分かれ目では右に曲がる（斜めにだけ接する別の領域とつながらない） */
+      e = next;
+    }
+    if (pts.length >= 4) loops.push(pts);
+  }
+  const area2 = ps => ps.reduce((a, q, k) => { const r = ps[(k + 1) % ps.length]; return a + (q.x * r.y - r.x * q.y); }, 0);
+  const epsCells = Math.max(0.6, 0.08 / cell), simplify = ps => {   /* 一直線の点を除き、階段（セルの段差）をならす */
+    const keep = ps.filter((q, k) => { const a = ps[(k + ps.length - 1) % ps.length], b = ps[(k + 1) % ps.length]; return (q.x - a.x) * (b.y - q.y) - (q.y - a.y) * (b.x - q.x) !== 0; }); if (keep.length < 4) return keep;
+    const rdp = (arr, a, b, out) => { let dmax = 0, idx = -1; const A = arr[a], B = arr[b], dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy) || 1; for (let k = a + 1; k < b; k++) { const d = Math.abs((arr[k].x - A.x) * dy - (arr[k].y - A.y) * dx) / len; if (d > dmax) { dmax = d; idx = k; } } if (dmax > epsCells && idx > 0) { rdp(arr, a, idx, out); rdp(arr, idx, b, out); } else out.push(arr[a]); };
+    let far = 0, fd = -1; keep.forEach((q, k) => { const d = (q.x - keep[0].x) ** 2 + (q.y - keep[0].y) ** 2; if (d > fd) { fd = d; far = k; } });
+    const a1 = keep.slice(0, far + 1), a2 = [...keep.slice(far), keep[0]], out = []; rdp(a1, 0, a1.length - 1, out); rdp(a2, 0, a2.length - 1, out); return out;
+  };
+  const toMm = ps => ps.map(q => ({ x: x0 + q.x * cell, y: y0 + q.y * cell }));
+  const polys = loops.map(l => ({ pts: simplify(l), a: area2(l) })).filter(l => l.pts.length >= 3 && Math.abs(l.a) > 0);
+  if (!polys.length) return null; polys.sort((u, v) => Math.abs(v.a) - Math.abs(u.a));
+  const outer = polys[0], sign = Math.sign(outer.a), minHole = 2 / (cell * cell);   /* 穴：向きが逆で、2mm² 以上（細い線の跡は穴にしない） */
+  const holes = polys.slice(1).filter(l => Math.sign(l.a) !== sign && Math.abs(l.a) / 2 >= minHole).map(l => toMm(l.pts)), points = toMm(outer.pts);
+  const areaMm = Math.abs(outer.a) / 2 * cell * cell - holes.reduce((s, h) => s + Math.abs(area2(h)) / 2, 0);
+  const total = [...touch.values()].reduce((s, v) => s + v, 0), ids = [...touch].filter(([, v]) => v >= total * 0.03).map(([k]) => segs[k - 1].id);   /* 領域に長く接している図形だけ（縫い目の短い印などは入れない）：動かしたとき、塗りがついていくかの判定に使う */
+  return { points, holes, ids, area: areaMm, bridged: false, cell };
 }
 /** 型紙の輪郭を、塗りつぶし用の多角形にする（革色を部品を作らずに付けるため・2026-10-18）。
  *  startId が閉じた図形（円・閉じた折れ線など）ならそれ自身。開いた線なら、端がつながった線を一周たどり（contourChain・すき間 gapTol まで越える）、出発点へ戻ってこなければ null。
