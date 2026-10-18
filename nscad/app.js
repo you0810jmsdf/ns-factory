@@ -5209,7 +5209,9 @@ $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
-document.addEventListener?.('click', e => { const m = $('saveMenu'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && e.target !== $('save')) m.hidden = true; }); $('open').onclick = openDialog; $('shortcutsBtn').onclick = () => showHelp(true);
+/** 保存メニューの外をクリックしたら閉じる。「保存 ▾」ボタンの中の文字（span・kbd）のクリックは、ボタンの中なので閉じない（事業主指摘 2026-10-18：文字をクリックすると、開いた直後に閉じて、メニューが見えなかった）。 */
+function closeSaveMenuOnOutsideClick(e) { const m = $('saveMenu'), sv = $('save'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && !sv.contains(e.target)) m.hidden = true; }
+document.addEventListener?.('click', closeSaveMenuOnOutsideClick); $('open').onclick = openDialog; $('shortcutsBtn').onclick = () => showHelp(true);
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
