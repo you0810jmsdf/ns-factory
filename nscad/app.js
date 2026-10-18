@@ -49,7 +49,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1530,36 +1530,36 @@ function makeLamSection() {
   const ringRaw = String($('lamRingD').value ?? '').trim(), ringD = ringRaw === '' ? 0 : Number(ringRaw); if (ringRaw !== '' && !(ringD > 0)) { fail('lamRingErr_bad'); return; }   /* リング外径（空なら見ない） */
   const specs = {}, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), rimZ = lamRimBendZones(doc, po.id, pi.id, { axis: now.axis });   /* 外周の菱の線の曲げ部（点線が無いとき・穴より先に使う） */
   for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis: now.axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
-  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
+  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, angleMode: 'data', outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
   if (!plan.ok) { fail('lamSecErr_' + plan.error, { k: plan.index ?? 0 }); return; }
   const ring = ringD > 0 ? foldRingCheck(plan, { ringD, tO, tI, pitch: lamPitchValue() }) : null;   /* 折りの内側の隙間が、リング外径以上か */
-  const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + 2 * plan.bends[0] / Math.PI + plan.T }, key = `lam:${po.id}:${pi.id}`;
+  const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + foldPathVMax(plan.path) + plan.T }, key = `lam:${po.id}:${pi.id}`;
   commit(() => {
     doc.foldSections ||= {};
     for (const [id, m] of Object.entries(doc.foldSections)) if (m.key === key) { doc.shapes = doc.shapes.filter(s => s.foldSec !== id); delete doc.foldSections[id]; }   /* 同じ組み合わせの前の断面は置き換える */
     let n = 1; while (doc.foldSections['fs' + n]) n++; const secId = 'fs' + n, gid = nextGroupId(doc.shapes);
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
-    doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
+    doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, angles: plan.pathAngles, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
     for (const sh of foldSectionShapes(plan.path, plan.T, origin, FOLD_SEC_PLIES, plan.T / 2 - tI)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から */
     for (const [ss, side] of [[plan.outerS, 'outer'], [plan.innerS, 'inner']]) for (const hm of foldHoleMarks(plan.path, ss, plan.T, origin).filter(m => m.side === side)) doc.shapes.push({ ...hm, id: freshId(doc.shapes, 's'), layer: 'section', color: 'blue', foldSec: secId });   /* 表の菱目は外側の面・裏の菱目は内側の面 */
-    if (ring) for (const pc of plan.path.pieces.filter(q => q.kind === 'arc')) doc.shapes.push({ type: 'circle', cx: origin.x + pc.c.u, cy: origin.y - pc.c.v, r: ring.ringD / 2, id: freshId(doc.shapes, 's'), layer: 'section', color: ring.ok ? 'green' : 'red', foldSec: secId, role: 'ring' });   /* リングの円：2か所の折りの中心に置く目安（足りなければ赤） */
+    if (ring) plan.path.pieces.filter(q => q.kind === 'arc').forEach((pc, ai) => doc.shapes.push({ type: 'circle', cx: origin.x + pc.c.u, cy: origin.y - pc.c.v, r: ring.ringD / 2, id: freshId(doc.shapes, 's'), layer: 'section', color: ring.gaps[plan.flip ? 1 - ai : ai].ok ? 'green' : 'red', foldSec: secId, role: 'ring' }));   /* リングの円：2か所の折りの中心に置く目安（足りなければ赤） */
   });
   const f2 = v => (+v).toFixed(2), r = plan.report, baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer'), src = k => t('lamSecSrc_' + specs[k].source), warn = d => Math.abs(d) > 0.05 ? 'lam-warn' : '';
   const done = t('lamSecDone', { so: src('outer'), si: src('inner'), glue: f2(plan.glueLen), outer: f2(r.lenOuter), inner: f2(r.lenInner) }); line(done); $('hint').textContent = done;
+  line(t(tO === tI ? 'lamSecThick' : 'lamSecThickDiff', { o: f2(tO), i: f2(tI) }), tO === tI ? undefined : 'lam-warn');   /* 断面に使った革の厚み（表と裏で違うと、2枚の厚みも違って見える・事業主の指摘 2026-10-19「内側と外側の革で厚みが違ってみえます」） */
   if ([specs.outer.source, specs.inner.source].some(x => x === 'holes' || x === 'rim')) line(t('lamSecHolesNote'), 'lam-warn');   /* 菱目から見つけた曲げ部は、折りの始まり・終わりが穴の位置どまり（±1ピッチ） */
   line(t('lamSecRadius', { a: f2(plan.radii[0].inner), b: f2(plan.radii[1].inner) }));
+  line(t('lamSecAngle', { a: (plan.angles[0] * 180 / Math.PI).toFixed(1), b: (plan.angles[1] * 180 / Math.PI).toFixed(1) }));   /* 折りの角度＝（表の曲げ−裏の曲げ）÷厚みの平均 */
   r.flats.forEach((f, k) => line(t('lamSecFlat', { k: k + 1, o: f2(f.outer), i: f2(f.inner), d: lamSecDiff(f.diff) }), warn(f.diff)));
-  r.bends.forEach((bd, k) => line(t('lamSecBend', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), base: baseName, other: otherName, w: f2(bd.want), d: lamSecDiff(bd.diff) }), warn(bd.diff)));
-  line(t('lamSecTotal', { o: f2(r.lenOuter), i: f2(r.lenInner), base: baseName, other: otherName, w: f2(r.wantOther), d: lamSecDiff(r.diffTotal) }), warn(r.diffTotal));
-  if (Math.abs(r.diffTotal) > 0.05) line(t('lamSecAdvice', { other: otherName, w: f2(r.wantOther), c: f2(r.base === 'outer' ? r.lenInner : r.lenOuter) }), 'lam-warn');
-  if (ring) {   /* リング外径：折りの内側の隙間が足りるか・足りなければ必要な曲げの長さ */
-    const g1 = x => x.toFixed(1), d = String(+ring.ringD.toFixed(2)), ga = ring.gaps[0], gb = ring.gaps[1];
+  r.bends.forEach((bd, k) => line(t('lamSecBendA', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), d: f2(bd.outer - bd.inner), a: (plan.angles[k] * 180 / Math.PI).toFixed(1), r: f2(plan.radii[k].glue) })));
+  line(t('lamSecTotal2', { o: f2(r.lenOuter), i: f2(r.lenInner), d: f2(r.lenOuter - r.lenInner) }));
+  if (ring) {   /* リング外径：折りの内側の隙間が足りるか・足りない折りは、折りごとの角度での必要な曲げの長さ */
+    const g1 = x => x.toFixed(1), d = String(+ring.ringD.toFixed(2)), ga = ring.gaps[0], gb = ring.gaps[1], sideLabel = k => t(k === 0 ? 'lamRingLeft' : 'lamRingRight');
     line(ring.ok ? t('lamRingOk', { d, a: g1(ga.gap), b: g1(gb.gap) }) : t('lamRingShort', { d, a: g1(ga.gap), b: g1(gb.gap), sa: g1(ga.short), sb: g1(gb.short) }), ring.ok ? 'lam-ok' : 'lam-warn');
-    if (!ring.ok) {
-      line(t('lamRingNeed', { d, bi: f2(ring.need.inner), bo: f2(ring.need.outer) }), 'lam-warn');
-      if (ring.byPitch) line(t('lamRingPitch', { p: String(+ring.byPitch.pitch.toFixed(3)), n: ring.byPitch.n, n1: ring.byPitch.n + 1, bi: f2(ring.byPitch.inner), bo: f2(ring.byPitch.outer), g: g1(ring.byPitch.gap), dIn: f2(ring.extra.innerTotal), dOut: f2(ring.extra.outerTotal) }), 'lam-warn');
-      $('hint').textContent += ' ' + t('lamRingHint', { d, a: g1(ga.gap), b: g1(gb.gap) });
-    }
+    ring.gaps.forEach((g, k) => { if (g.ok) return; const nd = ring.needs[k], bp = ring.byPitch?.[k];
+      line(t('lamRingNeed', { k: g.k, ang: (nd.angle * 180 / Math.PI).toFixed(1), d, bi: f2(nd.inner), bo: f2(nd.outer) }), 'lam-warn');
+      if (bp) line(t('lamRingPitch', { k: g.k, p: String(+bp.pitch.toFixed(3)), n: bp.n, bi: f2(bp.inner), bo: f2(bp.outer), g: g1(bp.gap), dIn: f2(ring.extra.inner[k]), dOut: f2(ring.extra.outer[k]) }), 'lam-warn'); });
+    if (!ring.ok) $('hint').textContent += ' ' + t('lamRingHint', { d, list: ring.gaps.filter(g => !g.ok).map(g => sideLabel(g.k - 1) + ' ' + g1(g.gap) + ' mm').join('・') });
     line(t('lamRingNote'));
   }
   draw();
