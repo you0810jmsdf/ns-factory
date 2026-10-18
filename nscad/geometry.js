@@ -959,6 +959,20 @@ export function collinearLineClusters(list, { gap = 0.5, dist = 0.01, cross = 1e
   }
   return out;
 }
+/** 小さな菱形・四角（4つの頂点で一周する折れ線・大きさ maxMm 以下）の中心＝4つの頂点の平均。一周＝閉じた折れ線、または始点と終点が同じ位置の開いた折れ線（菱目の作り）。
+ *  （事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」：円には中心のスナップがあるが、菱形には無く、頂点にしか吸い付かなかった）。大きな図形・4頂点でない図形・線・円は対象外。戻り値は [{ x, y }]。 */
+export function smallLoopCenters(list, { maxMm = 12 } = {}) {
+  const out = [];
+  for (const s of list || []) {
+    if (s?.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 4 || s.points.length > 5) continue;
+    let pts = s.points; const a = pts[0], b = pts[pts.length - 1], same = Math.hypot(a.x - b.x, a.y - b.y) < 1e-6;
+    if (same) pts = pts.slice(0, -1); else if (!s.closed) continue;
+    if (pts.length !== 4 || pts.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) continue;
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y); if (Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) > maxMm + 1e-9) continue;
+    out.push({ x: xs.reduce((m, v) => m + v, 0) / 4, y: ys.reduce((m, v) => m + v, 0) / 4 });
+  }
+  return out;
+}
 /** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
  *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
  *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。

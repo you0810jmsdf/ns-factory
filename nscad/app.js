@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
-import { straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -4042,6 +4042,7 @@ function magnetPointsOf(shapes) {
     else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push(circlePoint(s, k * 45)); }
   }
   guide.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
+  guide.push(...smallLoopCenters(shapes));   /* 小さな菱形・四角の中心（ガイドの点＝近づくと印が出る。常時の十字は出さない・事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」） */
   return { ends, centers, guide };
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
@@ -4084,7 +4085,7 @@ function rebuildSnaps() {
   rebuildThreeViewMarks(); rebuildQuad();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   const runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* 1本の辺が途中で分かれている線：中点は、辺全体の中点だけ（1本ごとの中点は、上下対称のはずの辺とずれる・事業主の指摘 2026-10-18） */
-  snapCache = shapes.flatMap(s => inRun.has(s.id) ? snapPoints(s).slice(0, 2) : snapPoints(s)); snapCache.push(...runs.map(r => ({ ...r.mid })));
+  snapCache = shapes.flatMap(s => inRun.has(s.id) ? snapPoints(s).slice(0, 2) : snapPoints(s)); snapCache.push(...runs.map(r => ({ ...r.mid }))); snapCache.push(...smallLoopCenters(shapes));
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
