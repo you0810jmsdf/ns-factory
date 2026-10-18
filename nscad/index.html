@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 06:43 · f90e094</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 06:52 · ee31f11</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -643,8 +643,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=b067275b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d5309219","./help/ja.js":"./help/ja.js?v=18f82b8d","./i18n.js":"./i18n.js?v=61383725","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=1fa7a800","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=b067275b"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=63bbd3be","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d5309219","./help/ja.js":"./help/ja.js?v=18f82b8d","./i18n.js":"./i18n.js?v=7dab5e5e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=2be013d2","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=63bbd3be"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3237,7 +3237,9 @@ const MESSAGES = {
     "lamBendNone": "表と裏の長さが同じなので、貼り合わせても曲がりません。",
     "lamSideOuter": "表",
     "lamSideInner": "裏",
-    "lamHoles": "菱目：表 {a} 個・裏 {b} 個（貼り合わせたときの位置のずれは、いちばん大きくて {m} mm）",
+    "lamHoles": "菱目（穴）：表 {a} 個・裏 {b} 個（貼り合わせたときの位置のずれは、いちばん大きくて {m} mm）",
+    "lamLoops": "菱の線（図形）：表 {a} 個・裏 {b} 個",
+    "lamShowDims": "寸法の層を表示する",
     "lamSummary": "エラー {e} 件・注意 {w} 件",
     "lamOk": "寸法・菱目とも、問題は見つかりませんでした。",
     "lamLevelError": "エラー：",
@@ -3286,6 +3288,9 @@ const MESSAGES = {
     "lamDirShort": "短く",
     "lamIssue_lenOff": "{side}の全長を、いまの {cur} mm から {want} mm にします（{diff} mm {dir}）。",
     "lamIssue_holesNone": "{side}には、まだ菱目がありません。基準（{base}）と同じ {n} 個（{rows} 列）を、端から次の位置に打ちます（1列目）：{list}",
+    "lamIssue_holesNoneLoops": "{side}には、穴（目打ち）がまだありません（菱の線は {loops} 個あります）。基準（{base}）と同じ {n} 個（{rows} 列）の穴を、端から次の位置に打ちます（1列目）：{list}",
+    "lamIssue_holesExtraLoops": "基準（{base}）には穴（目打ち）がありません（菱の線は {loops} 個あります）が、{side}には穴が {n} 個あります。",
+    "lamIssue_loopsDiffer": "菱の線（図形）の数が違います（表 {o} 個・裏 {i} 個）。",
     "lamIssue_holesExtra": "基準（{base}）には菱目がありませんが、{side}には {n} 個あります。",
     "lamIssue_partsMismatch": "表（幅 {wo} mm）と裏（幅 {wi} mm）の大きさが大きく違います。部品に入れた図形が合っているか、上の部品の一覧（横 × 縦）で確かめてください。三つ折りの展開なら、「三つ折りの展開の表・裏を、部品にする」を使うと、自動で正しく作れます。",
     "lamFixDims": "全長・幅の寸法が足りません（{n} か所）：{list}。下のボタンで、まとめて足せます。",
@@ -3295,7 +3300,7 @@ const MESSAGES = {
     "lamNoteUnpaired": "注意：{text}。曲げの所は、表と裏で長さが違うのが普通なので、そのままで構いません。",
     "lamUnpairedOuter": "表にだけある寸法：{list} mm",
     "lamUnpairedInner": "裏にだけある寸法：{list} mm",
-    "lamDimSkipped": "寸法が非表示のため、寸法の検査は飛ばしました（寸法を表示すると、調べます）。",
+    "lamDimSkipped": "寸法が入っている層（{layers}）が非表示のため、寸法の検査は飛ばしました。右の「レイヤー」で、その層の「表示」にチェックを入れると調べます。",
     "lamAddedAll": "全長・幅の寸法を {n} 本、足しました。",
     "lamIssue_bendTooMuch": "表と裏の長さの差（{dl} mm）が大きすぎて、貼り合わせると短いほうの革が潰れます。",
     "lamIssue_widthDiffer": "{side}の幅を、いまの {cur} mm から、基準（{base}）と同じ {want} mm にします。",
@@ -4833,7 +4838,9 @@ const MESSAGES = {
     "lamBendNone": "Outer and inner have the same length, so they will not bend when glued.",
     "lamSideOuter": "outer",
     "lamSideInner": "inner",
-    "lamHoles": "Stitch holes: outer {a} / inner {b} (largest position error after gluing: {m} mm)",
+    "lamHoles": "Stitch holes (punched): outer {a} / inner {b} (largest position error after gluing: {m} mm)",
+    "lamLoops": "Diamond lines (shapes): outer {a} / inner {b}",
+    "lamShowDims": "Show the dimension layer",
     "lamSummary": "{e} errors, {w} notices",
     "lamOk": "No problems found in dimensions or stitch holes.",
     "lamLevelError": "Error: ",
@@ -4882,6 +4889,9 @@ const MESSAGES = {
     "lamDirShort": "shorter",
     "lamIssue_lenOff": "Change the overall length of the {side} part from {cur} mm to {want} mm ({diff} mm {dir}).",
     "lamIssue_holesNone": "The {side} part has no stitch holes yet. Punch the same {n} holes ({rows} rows) as the reference ({base}), at these positions from the edge (row 1): {list}",
+    "lamIssue_holesNoneLoops": "The {side} part has no punched stitch holes yet (it has {loops} diamond lines). Punch the same {n} holes ({rows} rows) as the reference ({base}), at these positions from the edge (row 1): {list}",
+    "lamIssue_holesExtraLoops": "The reference ({base}) has no punched stitch holes (it has {loops} diamond lines), but the {side} part has {n} holes.",
+    "lamIssue_loopsDiffer": "The number of diamond lines (shapes) differs (outer {o}, inner {i}).",
     "lamIssue_holesExtra": "The reference ({base}) has no stitch holes, but the {side} part has {n}.",
     "lamIssue_partsMismatch": "The outer part ({wo} mm wide) and the inner part ({wi} mm wide) differ a lot in size. Check which shapes are in each part in the part list above (W × H). For a tri-fold unfold, use \"Make outer/inner parts from the tri-fold unfold\" to build them correctly.",
     "lamFixDims": "Overall-length and width dimensions are missing ({n}): {list}. Add them all with the button below.",
@@ -4891,7 +4901,7 @@ const MESSAGES = {
     "lamNoteUnpaired": "Notice: {text}. Bend areas normally differ in length between outer and inner, so this is fine.",
     "lamUnpairedOuter": "Only the outer part has: {list} mm",
     "lamUnpairedInner": "Only the inner part has: {list} mm",
-    "lamDimSkipped": "Dimensions are hidden, so the dimension check was skipped (show them to check).",
+    "lamDimSkipped": "The layer holding the dimensions ({layers}) is hidden, so the dimension check was skipped. In the Layers card on the right, tick \"Visible\" for that layer to check.",
     "lamAddedAll": "Added {n} length/width dimensions.",
     "lamIssue_bendTooMuch": "The length difference ({dl} mm) is too large; the shorter leather would be crushed when glued.",
     "lamIssue_widthDiffer": "Change the width of the {side} part from {cur} mm to {want} mm, the same as the reference ({base}).",
@@ -8633,7 +8643,7 @@ return {UNDO_KEEP_MAX, encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecor
 __mods['laminate'] = (function(){
 // 貼り合わせの曲げ検証（事業主指示 2026-10-17）：表と裏を別々に作図した図面（図面の「部品」2つ）を貼り合わせたとき、どのくらい曲がるかを、革の厚みから求める。
 // あわせて、①寸法の過不足（足りない寸法の案つき）②菱目の数と位置が表と裏で合うか、を調べる。ブラウザにも Node にも依存しない（図面の JSON だけを見る）。
-const { bboxOf, distance } = __mods['geometry'];
+const { bboxOf, distance, smallLoopCenters } = __mods['geometry'];
 const DIM_TOL = 0.05, ROW_GAP = 0.5, EDGE_PAD = 1;   /* 寸法の一致の許容（mm）・同じ列とみなす幅（mm）・部品の外枠から寸法の端が出てよい幅（mm） */
 
 /** 部品の外枠（部品に入れた図形の外接の四角）。図形が無ければ null。 */
@@ -8787,12 +8797,13 @@ function laminateCheck(doc, outerId, innerId, opts = {}) {
   const expect = baseOuter ? mapInner : mapOuter;   /* 基準の位置 → もう一方にあるべき位置 */
   const ro = checkHoles ? holeRows(doc, bo, axis, po) : [], ri = checkHoles ? holeRows(doc, bi, axis, pi) : [], rb = baseOuter ? ro : ri, rx = baseOuter ? ri : ro, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
   const total = rows => rows.reduce((n, r) => n + r.pos.length, 0);
+  const loopsOf = part => smallLoopCenters(doc.shapes.filter(s => part.shapeIds.includes(s.id) && lamOwnShape(part, s))).length, loops = [loopsOf(po), loopsOf(pi)], baseLoops = baseOuter ? loops[0] : loops[1], otherLoops = baseOuter ? loops[1] : loops[0];   /* 菱の線（小さな菱形の図形）の数：穴とは別に数える（位置の検査・曲げ区間には使わない。事業主の指摘 2026-10-19「表に菱目があるのにないと計画がでる」） */
   if (!rb.length && !rx.length) { /* 菱目が無ければ、見るものが無い */ }
   else if (rb.length && !rx.length) {   /* もう一方に、まだ菱目が無い：エラーではなく、打つ位置を案内する */
-    const want = rb.map(r => r.pos.map(expect)); push('warn', 'holesNone', otherSide, { n: total(rb), rows: rb.length, base: baseSide, list: want[0].slice(0, 6).map(v => lamNum(v)).join(', ') + (want[0].length > 6 ? ' …' : '') });
+    const want = rb.map(r => r.pos.map(expect)); push('warn', 'holesNone', otherSide, { n: total(rb), rows: rb.length, base: baseSide, loops: otherLoops, list: want[0].slice(0, 6).map(v => lamNum(v)).join(', ') + (want[0].length > 6 ? ' …' : '') });
     rb.forEach((r, k) => holes.rows.push({ row: k + 1, countOuter: baseOuter ? r.pos.length : 0, countInner: baseOuter ? 0 : r.pos.length, devs: [], missing: want[k].map(v => +v.toFixed(3)) }));
   }
-  else if (!rb.length && rx.length) push('warn', 'holesExtra', otherSide, { n: total(rx), base: baseSide });
+  else if (!rb.length && rx.length) push('warn', 'holesExtra', otherSide, { n: total(rx), base: baseSide, loops: baseLoops });
   else if (ro.length !== ri.length) push('error', 'rowCount', null, { a: ro.length, b: ri.length });
   else rb.forEach((a, k) => {
     const b = rx[k], oc = baseOuter ? a : b, ic = baseOuter ? b : a, row = { row: k + 1, countOuter: oc.pos.length, countInner: ic.pos.length, devs: [], missing: [] };
@@ -8807,6 +8818,7 @@ function laminateCheck(doc, outerId, innerId, opts = {}) {
     if (bad.length) { const worst = bad.reduce((p, q) => Math.abs(q.v) > Math.abs(p.v) ? q : p); push('error', 'holePos', otherSide, { row: k + 1, n: bad.length, i: worst.i + 1, dev: lamNum(Math.abs(worst.v)), to: lamNum(want[worst.i]) }, { side: otherSide, row: k + 1, from: b.pos[worst.i], to: want[worst.i], index: worst.i + 1 }); }
     holes.rows.push(row);
   });
+  holes.loops = loops; if (checkHoles && loops[0] !== loops[1]) push('warn', 'loopsDiffer', null, { o: loops[0], i: loops[1] });
   return { ok: true, axis, mode, zoneSource, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
 }
 
@@ -22612,6 +22624,11 @@ function makeLamSection() {
   if (Math.abs(r.diffTotal) > 0.05) line(t('lamSecAdvice', { other: otherName, w: f2(r.wantOther), c: f2(r.base === 'outer' ? r.lenInner : r.lenOuter) }), 'lam-warn');
   draw();
 }
+/** 寸法が入っている層（レイヤー）を、表示にする（貼り合わせ検証の「寸法の層を表示する」ボタン。事業主の質問 2026-10-19「寸法非表示とは？どこにボタンがある？」）。元に戻すは1回。検証は出し直す。 */
+function showDimensionLayers() {
+  const ids = new Set(doc.shapes.filter(s => s.type === 'dimension' && !s.foldSec).map(s => s.layer));
+  commit(() => { for (const l of doc.layers) if (ids.has(l.id)) l.visible = true; selected.clear(); }); renderLayers(); runLaminate(); renderLaminateNow();
+}
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, fail = key => { line(t(key), 'lam-error'); $('hint').textContent = t(key); };   /* エラーは、検証ボタンの下（カードの中）にも赤い文字で出す */
@@ -22622,7 +22639,7 @@ function runLaminate() {
   const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value), base: $('lamBase').value === 'inner' ? 'inner' : 'outer', targetLen: Number($('lamTarget').value) > 0 ? Number($('lamTarget').value) : undefined, checkDims: $('lamDimCheck').checked !== false && !dimsHidden, checkHoles: $('lamHoleCheck').checked !== false });
   if (!r.ok) { fail('lamErr_' + r.error); return; }
   const f2 = v => v.toFixed(2), b = r.bend, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer');
-  const issueText = is => { const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner'); return t('lamIssue_' + is.code, { ...is.params, side, from, base: baseName, dir: is.params.dir ? t(is.params.dir === 'long' ? 'lamDirLong' : 'lamDirShort') : '' }); };
+  const issueText = is => { const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner'); return t('lamIssue_' + is.code + ((is.code === 'holesNone' || is.code === 'holesExtra') && is.params.loops > 0 ? 'Loops' : ''), { ...is.params, side, from, base: baseName, dir: is.params.dir ? t(is.params.dir === 'long' ? 'lamDirLong' : 'lamDirShort') : '' }); };
   const withAdd = (d, is) => { if (is.suggest && ['length', 'width', 'mate'].includes(is.suggest.role)) { const bt = document.createElement('button'); bt.textContent = t('lamAdd', { v: f2(is.suggest.value) }); bt.onclick = () => addLaminateDim(is.suggest); d.appendChild(bt); } };
   /* 1. 結論：基準と、直す件数 */
   const fixIssues = r.issues.filter(is => is.level === 'error' || is.code === 'holesNone'), notes = r.issues.filter(is => !fixIssues.includes(is));
@@ -22639,7 +22656,8 @@ function runLaminate() {
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
   if (r.mode === 'zones') { line(t(r.zoneSource === 'given' ? 'lamZonesGiven' : r.zoneSource === 'holes' ? 'lamZonesHoles' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
-  if (dimsHidden && $('lamDimCheck').checked !== false) line(t('lamDimSkipped'), 'lam-warn');
+  if (r.holes.loops && r.holes.loops[0] + r.holes.loops[1] > 0) line(t('lamLoops', { a: r.holes.loops[0], b: r.holes.loops[1] }));
+  if (dimsHidden && $('lamDimCheck').checked !== false) { const hiddenLayers = [...new Set(dimShapes.map(s => s.layer))].map(id => doc.layers.find(l => l.id === id)).filter(l => l && !l.visible), d = line(t('lamDimSkipped', { layers: hiddenLayers.map(layerName).join('・') }), 'lam-warn'), bt = document.createElement('button'); bt.textContent = t('lamShowDims'); bt.onclick = showDimensionLayers; d.appendChild(bt); }   /* 寸法が入っている層が非表示：その層の名前と、その場で表示にするボタン */
   const unpaired = notes.filter(is => is.code === 'unpaired'), only = from => unpaired.filter(is => is.params.from === from).map(is => is.params.v).join('・');   /* 片方にだけある寸法は、1行にまとめる */
   if (unpaired.length) line(t('lamNoteUnpaired', { text: [only('表') && t('lamUnpairedOuter', { list: only('表') }), only('裏') && t('lamUnpairedInner', { list: only('裏') })].filter(Boolean).join('／') }), 'lam-warn');
   for (const is of notes.filter(is => is.code !== 'unpaired')) withAdd(line(t(is.level === 'error' ? 'lamLevelError' : 'lamLevelWarn') + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is);
