@@ -375,6 +375,12 @@ const viewShow = { solid: true, dashed: true, colors: true, hardware: true };   
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
+/** 全体の菱目（穴も菱の線も）を、中抜き（'line'）／中塗り（'fill'）に一斉に切り替える（事業主の希望 2026-10-18「塗りつぶしと中抜きの菱目が混在している…中抜き・中塗りの一斉置換もできるように」）。
+ *  上の「菱目の見せ方」の選択欄を変えるのと同じ（画面・PNG・SVG に効く・保存される）。 */
+function setDiamondMode(mode) {
+  $('diamondStyle').value = mode; try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ }
+  draw(); refreshInfo(); $('hint').textContent = t('diamondModeSet', { name: t('diamondModeName_' + diamondMode()) });
+}
 function restoreDiamondStyle() { try { const v = localStorage.getItem(DIAMOND_KEY); if ((v === 'auto' || v === 'fill' || v === 'line') && $('diamondStyle')) $('diamondStyle').value = v; } catch { /* 保存できない環境でも続ける */ } }
 const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fill' || v === 'line' ? v : 'auto'; };
 /** 金具の図形か：「金具」の層・置いた金具の外形（hw）・金属の色を付けた図形。「金具を表示」を切ると、これらを隠す。 */
@@ -1107,7 +1113,8 @@ function initLayers() {
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
-  restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); });
+  restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
+  $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
@@ -1235,6 +1242,7 @@ function refreshInfo() {
   $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
   { /* 選んだ穴が、菱形の1つの工具だけのとき：その工具の値を入力欄に入れて、直せるようにする */
     const toolIds = [...new Set(hs.map(h => h.toolId))], one = hs.length && toolIds.length === 1 ? doc.tools.find(x => x.id === toolIds[0]) : null, edit = !!one && one.kind === 'diamond'; $('l-holeEdit').hidden = !edit;
+    $('l-diamondMode').hidden = !(hs.length || dOnly); $('info-diamondModeNow').textContent = t('diamondModeName_' + diamondMode());   /* 菱目を選んでいるとき：全体の菱目の見せ方（中抜き・中塗り）のボタン */
     $('l-lineEdit').hidden = !dOnly; if (dOnly) for (const [id, v] of [['info-lineW', dl[0].w], ['info-lineH', dl[0].h]]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+v.toFixed(2)); }   /* 菱の線だけ選んでいるとき：いまの大きさを入れる */
     if (edit) for (const [id, key] of [['info-holeW', 'holeW'], ['info-holeH', 'holeH'], ['info-holePitch', 'pitch'], ['info-holeTeeth', 'teeth'], ['info-holeAngle', 'angleDeg']]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+Number(one[key]).toFixed(2)); }   /* 打ちかけの欄は巻き戻さない */
   }
