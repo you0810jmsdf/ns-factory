@@ -1,6 +1,6 @@
 // 書き出し形式（SVG・DXF R12）・分割印刷・印刷補正。純粋関数のみ（DOM 禁止）。
 // 内部座標は Y 下向き・mm。SVG は同じ向き、DXF は Y 上向きなので y → -y と円弧の始終角を入れ替える。
-import { mirrorY, bboxOfDoc, bboxOf, holeAppearance, flattenShape, pathSegments, dimension, rotate, arcSweep, ownHolePathIds, holeIsOwn, outlinePolygon } from './geometry.js';
+import { mirrorY, bboxOfDoc, bboxOf, holeAppearance, flattenShape, pathSegments, dimension, rotate, arcSweep, ownHolePathIds, holeIsOwn, outlinePolygon, diamondLoopSizes } from './geometry.js';
 
 /** 内部 Y 下向きと DXF/PDF の Y 上向きを相互変換する（同じ関数で往復）。円弧端も交換。 */
 export function flipFormatY(shape) { return mirrorY(shape); }
@@ -66,7 +66,7 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
       const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color || s.leather) : null; /* 部品の色が無ければ、型紙（図形自身）に付けた革色 */
       const strokeAttr = s.color && SHAPE_COLOR_HEX[s.color] ? ` stroke="${SHAPE_COLOR_HEX[s.color]}"` : '';
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
-      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}/>` : '';
+      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && s.type === 'polyline' && !(fill && s.closed) && diamondLoopSizes([s]).length ? ' fill="#000"' : ''}/>` : '';
     }).join('');
     return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
   }).join('');

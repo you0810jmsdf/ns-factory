@@ -373,6 +373,9 @@ const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); r
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
 const viewShow = { solid: true, dashed: true, colors: true, hardware: true };   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
+const DIAMOND_KEY = 'leather-cad.diamondStyle';
+/** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
+function restoreDiamondStyle() { try { const v = localStorage.getItem(DIAMOND_KEY); if ((v === 'auto' || v === 'fill' || v === 'line') && $('diamondStyle')) $('diamondStyle').value = v; } catch { /* 保存できない環境でも続ける */ } }
 const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fill' || v === 'line' ? v : 'auto'; };
 /** 金具の図形か：「金具」の層・置いた金具の外形（hw）・金属の色を付けた図形。「金具を表示」を切ると、これらを隠す。 */
 const isHardwareShape = s => s.layer === 'hardware' || !!s.hw || !!s.metal;
@@ -1104,7 +1107,7 @@ function initLayers() {
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
-  $('diamondStyle').addEventListener('change', () => draw());
+  restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); });
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
   $('removeLayer').onclick = () => {
@@ -1180,7 +1183,20 @@ function holeSpecText(hs) {
 /** 選んだ菱の線（4つの頂点の小さな線）の大きさ：幅（長い対角線）×高さ（短い対角線）。大きさが違えば範囲で出す。 */
 function diamondLineSpecText(sz) {
   const f = v => +v.toFixed(2), rng = arr => { const lo = f(Math.min(...arr)), hi = f(Math.max(...arr)); return lo === hi ? String(lo) : lo + '〜' + hi; };
-  return t('diamondLineSpec', { n: sz.length, w: rng(sz.map(z => z.w)), h: rng(sz.map(z => z.h)) });
+  return t('diamondLineSpec', { n: sz.length, w: rng(sz.map(z => z.w)), h: rng(sz.map(z => z.h)), a: rng(sz.map(z => z.ang)) });
+}
+/** 情報カードの入力欄で、選んだ穴の工具（1種類のときだけ）の 穴の幅・高さ・ピッチ・刃数・刃の傾き を直して、工具に反映する。同じ工具で打った穴が全部変わる（穴の位置は変わらない）。
+ *  （事業主の希望 2026-10-18「菱目は自分で大きさ等を設定したい」） */
+function applyHoleToolEdit() {
+  const hs = doc.holes.filter(h => selected.has(h.id)), ids = new Set(hs.map(h => h.toolId)); if (ids.size !== 1) return;
+  const cur = doc.tools.find(x => x.id === [...ids][0]); if (!cur) { $('hint').textContent = t('holeToolMissing'); return; }
+  const num = id => { const v = $(id).value; return v === '' || v === null ? NaN : Number(v); };
+  const tool = { ...cur, holeW: num('info-holeW'), holeH: num('info-holeH'), pitch: num('info-holePitch'), teeth: num('info-holeTeeth'), angleDeg: num('info-holeAngle') };
+  const sample = newDoc(); sample.tools = [tool];
+  if (![tool.holeW, tool.holeH, tool.pitch, tool.teeth, tool.angleDeg].every(Number.isFinite) || !validateDoc(sample)) { $('hint').textContent = t('invalidTool'); return; }
+  commit(() => { const i = doc.tools.findIndex(x => x.id === tool.id); if (i >= 0) doc.tools[i] = tool; });
+  const keep = $('stitchTool').value; refreshTools(); $('stitchTool').value = keep; persistTools();   /* 工具設定で選んでいる工具は、そのまま */
+  $('hint').textContent = t('holeToolApplied', { name: tool.name, w: tool.holeW, h: tool.holeH, p: tool.pitch, t: tool.teeth, a: tool.angleDeg, n: doc.holes.filter(h => h.toolId === tool.id).length });
 }
 /** 選んだ菱目（穴）の工具を、工具設定の欄に読み込む（大きさなどを自分で直せる）。 */
 function loadHoleToolToEditor() {
@@ -1191,8 +1207,12 @@ function loadHoleToolToEditor() {
 }
 function refreshInfo() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
-  const hs = !s && !many.length ? doc.holes.filter(h => selected.has(h.id)) : [], dl = s ? diamondLoopSizes([s]) : many.length ? diamondLoopSizes(many) : [], spec = hs.length ? holeSpecText(hs) : dl.length ? diamondLineSpecText(dl) : '';   /* 選んだ菱目の工具の規格・菱の線の大きさ */
+  const hs = !s && !many.length ? doc.holes.filter(h => selected.has(h.id)) : [], dl = s ? diamondLoopSizes([s]) : many.length ? diamondLoopSizes(many) : [], spec = hs.length ? holeSpecText(hs) : dl.length ? diamondLineSpecText(dl) : '', subj = s ? [s] : many, dOnly = !!subj.length && dl.length === subj.length;   /* dOnly：選んだのが菱の線だけ（穴と同じ並びで出す） */   /* 選んだ菱目の工具の規格・菱の線の大きさ */
   $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
+  { /* 選んだ穴が、菱形の1つの工具だけのとき：その工具の値を入力欄に入れて、直せるようにする */
+    const toolIds = [...new Set(hs.map(h => h.toolId))], one = hs.length && toolIds.length === 1 ? doc.tools.find(x => x.id === toolIds[0]) : null, edit = !!one && one.kind === 'diamond'; $('l-holeEdit').hidden = !edit;
+    if (edit) for (const [id, key] of [['info-holeW', 'holeW'], ['info-holeH', 'holeH'], ['info-holePitch', 'pitch'], ['info-holeTeeth', 'teeth'], ['info-holeAngle', 'angleDeg']]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+Number(one[key]).toFixed(2)); }   /* 打ちかけの欄は巻き戻さない */
+  }
   const holes = s ? holeCountOn([s]) : many.length ? holeCountOn(many) : null; $('l-holeCount').hidden = holes === null; if (holes !== null) $('info-holeCount').textContent = String(holes);   /* 選んだ線上の菱目の数（読み取り専用） */
   $('infoCard').style.display = s || many.length || hs.length ? '' : 'none'; /* 何も選んでいないときは情報カードを出さない */
   $('l-totalLength').hidden = !many.length; if (many.length) $('info-totalLength').textContent = totalLengthOf(many).toFixed(2); /* 2 個以上：全体の長さ（読み取り専用） */
@@ -1201,7 +1221,7 @@ function refreshInfo() {
     for (const f of ALL_FIELDS) $('l-' + f).hidden = !(colorable.length && COLOR_FIELDS.includes(f));
     $('l-type').hidden = $('l-layer').hidden = false;
     for (const id of ['l-part', 'l-partName', 'l-thickness', 'l-partOrder', 'l-addNodes']) $(id).hidden = true;
-    $('info-type').textContent = t('multiSelected', { n: many.length }); $('info-layer').value = commonValue(many, x => x.layer);
+    $('info-type').textContent = dOnly ? t('diamondLinesSelected', { n: many.length }) : t('multiSelected', { n: many.length }); $('info-layer').value = commonValue(many, x => x.layer);
     if (colorable.length) { $('info-color').value = commonValue(colorable, x => x.color || ''); $('info-lineStyle').value = commonValue(colorable, x => x.lineStyle || ''); }
     infoBusy = false; return;
   }
@@ -1226,6 +1246,7 @@ function refreshInfo() {
     renderPartInfo(s);
     if (s.type === 'polyline' || s.type === 'path') { $('info-nodes').textContent = String((s.points || s.nodes).length); $('info-area').textContent = s.closed ? areaOf(s.type === 'path' ? flattenForArea(s) : s.points).toFixed(1) + ' mm²' : '—'; }
     $('l-nodeOps').hidden = !(s.type === 'path' && nodeSel?.id === s.id);
+    if (dOnly) { for (const id of ['l-length', 'l-closed', 'l-nodes', 'l-area', 'l-addNodes', 'l-slope', 'l-nodeOps']) { const el = $(id); if (el) el.hidden = true; } $('info-type').textContent = t('diamondLinesSelected', { n: 1 }); }   /* 菱の線：穴と同じ並び（形に関係する欄は隠す・事業主の指摘 2026-10-18「同じ菱目なのに表示の仕方が違う」） */
   }
   infoBusy = false;
 }
@@ -5015,6 +5036,7 @@ function draw() {
     if (color) { drawLeatherFills(doc, vis); drawMetalFills(vis); }   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
     const looks = new Map(); for (const sh of list) looks.set(sh.id, exportLineLook(sh, color && exportNeedsProbe(sh) ? exportBehindDark(sh) : false, color));   /* 線を引く前に、下の色の明暗を全部読む（先に引いた線に左右されない） */
     const outStroke = sh => { const lk = looks.get(sh.id); ctx.lineWidth = Math.max(0.1, lk.px / scale); strokeShape(sh, lk.color); };
+    if (diamondMode() === 'fill') for (const sh of list) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
     for (const s of list) if (!(color && s.occlude)) outStroke(s);
     if (color) for (const s of list) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
@@ -5042,6 +5064,7 @@ function drawSheetBody(lo, hi) {
   if (viewShow.colors) drawLeatherFills(doc, visible, previewMoved); /* 革色・革の質感・型紙の輪郭の革色（画面・ほかの紙・PNG 書き出しで同じ見え方） */
   if (viewShow.colors) drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
   const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
   for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
   ctx.setLineDash([]);
@@ -5426,7 +5449,10 @@ canvas.addEventListener('wheel', e => {
 }, { passive: false });
 canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
-$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor;
+/** 数字の欄を選んだまま、その上でマウスのホイールを回すと、ブラウザの標準動作で数字が増減する（右のカードを動かそうとして、工具の穴の高さが 0.8 → 5 になった・事業主の指摘 2026-10-18「数字が勝手に増えていく」）。
+ *  数字の欄の上でホイールを回したら、欄の選択を外す：数字は変わらず、画面のスクロールはそのまま通る。 */
+document.addEventListener('wheel', e => { const el = e?.target; if (el && el.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) el.blur(); }, { passive: true, capture: true });
+$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = applyHoleToolEdit;
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
