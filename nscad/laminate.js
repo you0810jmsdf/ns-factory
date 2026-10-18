@@ -79,19 +79,19 @@ export function lamZonesFromHoles(pos, opts = {}) {
 function lamZonesFromRows(rows) {
   const best = rows.filter(r => r.pos.length >= 4).reduce((a, r) => !a || r.pos.length > a.pos.length ? r : a, null), z = best ? lamZonesFromHoles(best.pos) : null; return z?.ok ? z.zones : [];
 }
-/** 三つ折りの断面図のための、部品1つの「平ら3・丸折り2」の長さ（事業主の選択 2026-10-19・案A）。曲げ部の見つけ方：縦の点線から2か所（4本か6本）→ そうならなければ、菱目の間隔が変わる範囲から2か所。
+/** 三つ折りの断面図のための、部品1つの「平ら3・丸折り2」の長さ（事業主の選択 2026-10-19・案A）。曲げ部の見つけ方：縦の点線から2か所（4本か6本）→ そうならなければ、外周の菱の線の列（opts.rim＝lamRimBendZones の表・裏それぞれの結果）→ それも無ければ、穴の間隔が変わる範囲から2か所。
  *  opts：{ axis:'x'｜'y'（曲がる向き・既定 'x'）}。
  *  返り値：{ ok:true, source:'dashes'｜'holes', axis, length（部品の全長）, flats[3]・bends[2]（部品の端から順）, zones:[[a,b],[a,b]], holes[]（いちばん穴の多い列の、部品の端からの位置・昇順）, edge（部品の端の座標）}
  *  か { ok:false, error:'emptyPart'｜'noZones'（曲げ部が見つからない）｜'zoneCount'（2か所でない・count）｜'zoneBad'（重なり・はみ出し）}。 */
-export function lamFoldSpec(doc, part, { axis = 'x' } = {}) {
+export function lamFoldSpec(doc, part, { axis = 'x', rim = null } = {}) {
   const box = partBox(doc, part); if (!box) return { ok: false, error: 'emptyPart' };
   const horizontal = axis !== 'y', length = horizontal ? box.maxX - box.minX : box.maxY - box.minY, rows = holeRows(doc, box, horizontal ? 'x' : 'y', part);
   const dash = lamZonesFromDashes(lamDashPositions(doc, box, horizontal ? 'x' : 'y', part)), hole = lamZonesFromRows(rows);
-  const source = dash.length === 2 ? 'dashes' : hole.length === 2 ? 'holes' : null, zones = source === 'dashes' ? dash : source === 'holes' ? hole : null;
-  if (!zones) { const count = dash.length || hole.length; return count ? { ok: false, error: 'zoneCount', count } : { ok: false, error: 'noZones' }; }
+  const rimZ = rim?.zones || [], source = dash.length === 2 ? 'dashes' : rimZ.length === 2 ? 'rim' : hole.length === 2 ? 'holes' : null, zones = source === 'dashes' ? dash : source === 'rim' ? rimZ : source === 'holes' ? hole : null;   /* 点線 → 外周の菱の線（rim）→ 穴 の順 */
+  if (!zones) { const count = dash.length || rimZ.length || hole.length; return count ? { ok: false, error: 'zoneCount', count } : { ok: false, error: 'noZones' }; }
   const [[a1, b1], [a2, b2]] = zones; if (!(a1 >= -0.01 && b1 - a1 > 1e-6 && a2 >= b1 - 1e-9 && b2 - a2 > 1e-6 && b2 <= length + 0.01)) return { ok: false, error: 'zoneBad' };
   const best = rows.reduce((a, r) => !a || r.pos.length > a.pos.length ? r : a, null);
-  return { ok: true, source, axis: horizontal ? 'x' : 'y', length, flats: [a1, a2 - b1, length - b2], bends: [b1 - a1, b2 - a2], zones, holes: best ? [...best.pos] : [], edge: horizontal ? box.minX : box.minY };
+  return { ok: true, source, axis: horizontal ? 'x' : 'y', length, flats: [a1, a2 - b1, length - b2], bends: [b1 - a1, b2 - a2], zones, holes: source === 'rim' ? [...rim.pos] : best ? [...best.pos] : [], edge: horizontal ? box.minX : box.minY };
 }
 /** 外周の菱目（菱の線）の列：部品の図形のうち、小さな菱形（smallLoopCenters）の中心を、曲がる向き（along）の位置で並べた列。同じ高さ（±ROW_GAP）の菱形が20個以上あり、いちばん多い列の半分以上ある列だけ＝外周の直線の列（角・短い辺の菱形は入らない）。 */
 function rimRows(doc, part, along) {
@@ -125,6 +125,18 @@ export function lamRimRelayout(doc, outerId, innerId, { pitch, axis = 'x', tol =
   const plan = (rows, ply) => { const gaps = [...layGaps(ply), ...Array(m).fill(pitch)], moves = [], adds = []; for (const r of rows) { const pos = [r.items[0].a]; for (const g of gaps) pos.push(pos.at(-1) + g); r.items.forEach((it, i) => moves.push({ id: it.id, d: pos[i] - it.a })); const last = r.items.at(-1); for (let j = 0; j < m; j++) adds.push({ from: last.id, d: pos[r.items.length + j] - last.a }); } return { moves, adds }; };
   const pO = plan(ro, 'outer'), pI = plan(ri, 'inner');
   return { ok: true, pitch, axis: along, rows: ro.length, counts: [ro[0].items.length, ro[0].items.length + m], zones: zones.map((z, k) => ({ k: k + 1, n: z.n, delta: z.delta, outerOld: z.outerOld, innerOld: z.innerOld, outerNew: z.outerNew, innerNew: z.innerNew, outerGap: z.outerGap, innerGap: z.innerGap })), extra: m, span: { outer: [oldO, newO + m * pitch], inner: [oldI, newI + m * pitch] }, remainder: { outer: oldO - newO - m * pitch, inner: oldI - newI - m * pitch }, moves: { outer: pO.moves, inner: pI.moves }, adds: { outer: pO.adds, inner: pI.adds } };
+}
+/** 表と裏の外周の菱目（菱の線）の列から、曲げ部を見つける（事業主の指示 2026-10-19「外周の菱目だけ見てください」・指摘「断面図が作れない」）。最初の列どうしを1個ずつ突き合わせ、間隔が違う範囲を、表・裏それぞれの部品の端からの位置で返す。
+ *  返り値：{ ok:true, outer:{ zones:[[a,b]…], pos:[菱目の位置…] }, inner:{…} }（位置は部品の端から・mm）か { ok:false, error:'pickTwo'｜'noRim'｜'rowMismatch'｜'noBend' }。lamFoldSpec の opts.rim に、outer／inner を渡す。 */
+export function lamRimBendZones(doc, outerId, innerId, { axis = 'x', tol = 0.1 } = {}) {
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', ro = rimRows(doc, po, along), ri = rimRows(doc, pi, along); if (!ro.length || !ri.length) return { ok: false, error: 'noRim' };
+  const a = ro[0].items, b = ri[0].items; if (a.length !== b.length) return { ok: false, error: 'rowMismatch' };
+  const edge = part => { const bx = partBox(doc, part); return along === 'x' ? bx.minX : bx.minY; }, eO = edge(po), eI = edge(pi), idx = [];
+  const go = a.slice(1).map((it, k) => it.a - a[k].a), gi = b.slice(1).map((it, k) => it.a - b[k].a); let st = -1;
+  go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { idx.push([st, off ? k : k - 1]); st = -1; } });   /* 間隔が違う範囲（間隔の番号の始め・終わり） */
+  if (!idx.length) return { ok: false, error: 'noBend' };
+  return { ok: true, outer: { zones: idx.map(([x, y]) => [a[x].a - eO, a[y + 1].a - eO]), pos: a.map(it => it.a - eO) }, inner: { zones: idx.map(([x, y]) => [b[x].a - eI, b[y + 1].a - eI]), pos: b.map(it => it.a - eI) } };
 }
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
