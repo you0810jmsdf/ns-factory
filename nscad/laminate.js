@@ -94,30 +94,44 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     push('warn', 'unpaired', '表', { v: lamNum(e.value), from: '裏' }, { side: '表', partId: po.id, value: e.value, horizontal: e.horizontal, box: bo, role: 'mate' });
   /* ②菱目の数と位置：貼り合わせて曲げたとき、表の i 番目の菱目の下に、裏の i 番目の菱目が来るか。同じ角度で曲がるので、裏の位置は、表の位置 × （裏の全長 ÷ 表の全長）になる */
   /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、裏の位置を求める */
+  /* 基準（表 or 裏）と、もう一方の全長（目標）：基準の部品を正しいものとして、もう一方の全長・菱目の位置を求める。目標が無ければ、もう一方のいまの長さ */
+  const baseOuter = opts.base !== 'inner', baseSide = baseOuter ? '表' : '裏', otherSide = baseOuter ? '裏' : '表', otherLen = baseOuter ? Li : Lo, tgt = Number(opts.targetLen), hasTarget = Number.isFinite(tgt) && tgt > 0, wantLen = hasTarget ? tgt : otherLen;
+  const LoU = baseOuter ? Lo : wantLen, LiU = baseOuter ? wantLen : Li, bendU = bendOf(LoU, LiU, tO, tI);   /* 目標の長さで貼り合わせたときの曲げ（目標が無ければ、いまの曲げと同じ） */
+  if (hasTarget && Math.abs(otherLen - wantLen) > DIM_TOL) push('error', 'lenOff', otherSide, { cur: lamNum(otherLen), want: lamNum(wantLen), diff: lamNum(Math.abs(wantLen - otherLen)), dir: wantLen > otherLen ? 'long' : 'short' }, { side: otherSide, current: otherLen, want: wantLen });
+  /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、もう一方の位置を求める */
   let zones = [], mode = 'uniform', given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, cand = given ?? lamZonesFromDashes(lamDashPositions(doc, bo, axis, po));
-  if (cand.length && Math.abs(bend.dL) > 1e-9 && bend.ok) {
-    const sorted = cand.every(([a, b], k) => Number.isFinite(a) && Number.isFinite(b) && a >= -0.01 && b <= Lo + 0.01 && b > a && (k === 0 || a >= cand[k - 1][1] - 1e-9)), red = bend.dL / cand.length;
+  if (cand.length && Math.abs(bendU.dL) > 1e-9 && bendU.ok) {
+    const sorted = cand.every(([a, b], k) => Number.isFinite(a) && Number.isFinite(b) && a >= -0.01 && b <= Lo + 0.01 && b > a && (k === 0 || a >= cand[k - 1][1] - 1e-9)), red = bendU.dL / cand.length;
     if (sorted && cand.every(([a, b]) => b - a - Math.abs(red) > 1e-6)) {
-      const theta = Math.abs(bend.dL) / bend.d / cand.length;   /* 1か所あたりの角度（ラジアン） */
-      zones = cand.map(([a, b]) => ({ a, b, lenOuter: b - a, lenInner: b - a - red, thetaDeg: theta * 180 / Math.PI, radius: (b - a) / theta - (bend.dL > 0 ? tO / 2 : -tO / 2) })); mode = 'zones';
+      const theta = Math.abs(bendU.dL) / bendU.d / cand.length;   /* 1か所あたりの角度（ラジアン） */
+      zones = cand.map(([a, b]) => ({ a, b, lenOuter: b - a, lenInner: b - a - red, thetaDeg: theta * 180 / Math.PI, radius: (b - a) / theta - (bendU.dL > 0 ? tO / 2 : -tO / 2) })); mode = 'zones';
     } else push('warn', 'zonesBad', null, { n: cand.length });
   }
-  const mapInner = x => mode === 'zones' ? x - zones.reduce((sum, z) => sum + (bend.dL / zones.length) * Math.min(Math.max((x - z.a) / (z.b - z.a), 0), 1), 0) : x * (Lo > 0 ? Li / Lo : 1);
-  const ro = checkHoles ? holeRows(doc, bo, axis, po) : [], ri = checkHoles ? holeRows(doc, bi, axis, pi) : [], ratio = Lo > 0 ? Li / Lo : 1, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
-  if (!ro.length && !ri.length) { /* 菱目が無ければ、見るものが無い */ }
+  const mapInner = x => mode === 'zones' ? x - zones.reduce((sum, z) => sum + (bendU.dL / zones.length) * Math.min(Math.max((x - z.a) / (z.b - z.a), 0), 1), 0) : x * (LoU > 0 ? LiU / LoU : 1);
+  const bpOuter = mode === 'zones' ? [0, ...zones.flatMap(z => [z.a, z.b]), Lo] : [0, Lo], bpInner = bpOuter.map(mapInner);   /* 表→裏の対応の折れ点（裏→表は、これを逆にたどる） */
+  const mapOuter = y => { for (let k = 0; k + 1 < bpInner.length; k++) { if (y <= bpInner[k + 1] + 1e-9 || k + 2 === bpInner.length) { const span = bpInner[k + 1] - bpInner[k]; return span === 0 ? bpOuter[k] : bpOuter[k] + (y - bpInner[k]) * (bpOuter[k + 1] - bpOuter[k]) / span; } } return y; };
+  const expect = baseOuter ? mapInner : mapOuter;   /* 基準の位置 → もう一方にあるべき位置 */
+  const ro = checkHoles ? holeRows(doc, bo, axis, po) : [], ri = checkHoles ? holeRows(doc, bi, axis, pi) : [], rb = baseOuter ? ro : ri, rx = baseOuter ? ri : ro, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
+  const total = rows => rows.reduce((n, r) => n + r.pos.length, 0);
+  if (!rb.length && !rx.length) { /* 菱目が無ければ、見るものが無い */ }
+  else if (rb.length && !rx.length) {   /* もう一方に、まだ菱目が無い：エラーではなく、打つ位置を案内する */
+    const want = rb.map(r => r.pos.map(expect)); push('warn', 'holesNone', otherSide, { n: total(rb), rows: rb.length, base: baseSide, list: want[0].slice(0, 6).map(v => lamNum(v)).join(', ') + (want[0].length > 6 ? ' …' : '') });
+    rb.forEach((r, k) => holes.rows.push({ row: k + 1, countOuter: baseOuter ? r.pos.length : 0, countInner: baseOuter ? 0 : r.pos.length, devs: [], missing: want[k].map(v => +v.toFixed(3)) }));
+  }
+  else if (!rb.length && rx.length) push('warn', 'holesExtra', otherSide, { n: total(rx), base: baseSide });
   else if (ro.length !== ri.length) push('error', 'rowCount', null, { a: ro.length, b: ri.length });
-  else ro.forEach((a, k) => {
-    const b = ri[k], row = { row: k + 1, countOuter: a.pos.length, countInner: b.pos.length, devs: [], missing: [] };
-    if (Math.abs(a.cross - b.cross) > holeTol) push('error', 'rowOffset', null, { row: k + 1, a: lamNum(a.cross), b: lamNum(b.cross) });
-    const want = a.pos.map(mapInner);   /* 裏にあるべき位置（端から） */
+  else rb.forEach((a, k) => {
+    const b = rx[k], oc = baseOuter ? a : b, ic = baseOuter ? b : a, row = { row: k + 1, countOuter: oc.pos.length, countInner: ic.pos.length, devs: [], missing: [] };
+    if (Math.abs(a.cross - b.cross) > holeTol) push('error', 'rowOffset', null, { row: k + 1, a: lamNum(oc.cross), b: lamNum(ic.cross) });
+    const want = a.pos.map(expect);   /* もう一方にあるべき位置（端から） */
     if (a.pos.length !== b.pos.length) {
-      push('error', a.pos.length > b.pos.length ? 'holeFew' : 'holeMany', '裏', { row: k + 1, a: a.pos.length, b: b.pos.length, n: Math.abs(a.pos.length - b.pos.length) });
+      push('error', a.pos.length > b.pos.length ? 'holeFew' : 'holeMany', otherSide, { row: k + 1, a: oc.pos.length, b: ic.pos.length, n: Math.abs(a.pos.length - b.pos.length) });
       row.missing = want.filter(w => !b.pos.some(p => Math.abs(p - w) <= holeTol)).map(w => +w.toFixed(3));
     }
     const n = Math.min(a.pos.length, b.pos.length); for (let i = 0; i < n; i++) { const dev = b.pos[i] - want[i]; row.devs.push(+dev.toFixed(3)); holes.maxDev = Math.max(holes.maxDev, Math.abs(dev)); }
     const bad = row.devs.map((v, i) => ({ i, v })).filter(x => Math.abs(x.v) > holeTol);
-    if (bad.length) { const worst = bad.reduce((p, q) => Math.abs(q.v) > Math.abs(p.v) ? q : p); push('error', 'holePos', '裏', { row: k + 1, n: bad.length, i: worst.i + 1, dev: lamNum(Math.abs(worst.v)), to: lamNum(want[worst.i]) }, { side: '裏', row: k + 1, from: b.pos[worst.i], to: want[worst.i], index: worst.i + 1 }); }
+    if (bad.length) { const worst = bad.reduce((p, q) => Math.abs(q.v) > Math.abs(p.v) ? q : p); push('error', 'holePos', otherSide, { row: k + 1, n: bad.length, i: worst.i + 1, dev: lamNum(Math.abs(worst.v)), to: lamNum(want[worst.i]) }, { side: otherSide, row: k + 1, from: b.pos[worst.i], to: want[worst.i], index: worst.i + 1 }); }
     holes.rows.push(row);
   });
-  return { ok: true, axis, mode, zones, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
+  return { ok: true, axis, mode, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
 }
