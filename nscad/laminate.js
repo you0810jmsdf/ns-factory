@@ -30,25 +30,28 @@ export function bendOf(lenOuter, lenInner, tOuter, tInner) {
   return { ok: true, curl: dL > 0 ? 'outer' : 'inner', dL, d, thetaDeg: theta * 180 / Math.PI, radius };
 }
 
+/** 自動の部品（三つ折りの展開の表・裏。part.autoPly＝'outer'｜'inner'）は、外枠の中に財布の図面の菱目・寸法・点線が入り込んでいても、展開の図形だけを数える。手で作った部品は、外枠の中のものをすべて数える。 */
+const lamOwnShape = (part, s) => !part.autoPly || (s.foldFlat === 'fdu' && s.ply === part.autoPly);
+const lamOwnHole = (doc, part, h) => !part.autoPly || (h.foldFlat === 'fdu' && doc.paths.find(p => p.id === h.pathId)?.ply === part.autoPly);
 /** 部品に付く寸法：両端が、部品の外枠（EDGE_PAD だけ広げた）に入る寸法。 */
-function dimsOf(doc, box) {
-  return doc.shapes.filter(s => s.type === 'dimension' && !s.foldSec && within(box, { x: s.x1, y: s.y1 }, EDGE_PAD) && within(box, { x: s.x2, y: s.y2 }, EDGE_PAD))
+function dimsOf(doc, box, part) {
+  return doc.shapes.filter(s => s.type === 'dimension' && !s.foldSec && lamOwnShape(part, s) && within(box, { x: s.x1, y: s.y1 }, EDGE_PAD) && within(box, { x: s.x2, y: s.y2 }, EDGE_PAD))
     .map(s => ({ id: s.id, value: distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }), horizontal: Math.abs(s.x2 - s.x1) >= Math.abs(s.y2 - s.y1) }));
 }
 
 /** 部品の菱目：外枠の中にある穴を、断面方向の位置でそろえた「列」にして、列ごとに曲がる方向の位置（外枠の端から）を昇順に並べる。 */
-function holeRows(doc, box, axis) {
+function holeRows(doc, box, axis, part) {
   const along = axis === 'x' ? 'x' : 'y', across = axis === 'x' ? 'y' : 'x', a0 = axis === 'x' ? box.minX : box.minY, c0 = axis === 'x' ? box.minY : box.minX;
-  const hs = doc.holes.filter(h => within(box, h, 0.01)).sort((p, q) => p[across] - q[across]); const rows = [];
+  const hs = doc.holes.filter(h => within(box, h, 0.01) && lamOwnHole(doc, part, h)).sort((p, q) => p[across] - q[across]); const rows = [];
   for (const h of hs) { const last = rows.at(-1); if (last && Math.abs(h[across] - last.at) <= ROW_GAP) { last.pos.push(h[along] - a0); last.sum += h[across]; last.n++; last.at = last.sum / last.n; } else rows.push({ at: h[across], sum: h[across], n: 1, pos: [h[along] - a0] }); }
   return rows.map(r => ({ cross: r.at - c0, pos: r.pos.sort((p, q) => p - q) }));
 }
 
 /** 曲げ区間の候補：表の部品の中にある、部品の幅（曲がらない方向）の8割以上を横切る点線の位置（外枠の端から）。同じ位置（0.01mm 以内）は1本にする。 */
-function lamDashPositions(doc, box, axis) {
+function lamDashPositions(doc, box, axis, part) {
   const horizontal = axis === 'x', span = horizontal ? box.maxY - box.minY : box.maxX - box.minX, a0 = horizontal ? box.minX : box.minY, pad = 0.5, out = [];
   for (const s of doc.shapes) {
-    if (s.type !== 'line' || s.lineStyle !== 'dashed') continue;
+    if (s.type !== 'line' || s.lineStyle !== 'dashed' || !lamOwnShape(part, s)) continue;
     const along = horizontal ? [s.x1, s.x2] : [s.y1, s.y2], across = horizontal ? [s.y1, s.y2] : [s.x1, s.x2], cLo = horizontal ? box.minY : box.minX, cHi = horizontal ? box.maxY : box.maxX;
     if (Math.abs(along[0] - along[1]) > 0.01 || Math.abs(across[0] - across[1]) < span * 0.8 || Math.min(...across) < cLo - pad || Math.max(...across) > cHi + pad) continue;
     const p = along[0] - a0; if (p >= -0.01 && p <= (horizontal ? box.maxX - box.minX : box.maxY - box.minY) + 0.01 && !out.some(q => Math.abs(q - p) < 0.01)) out.push(p);
@@ -75,7 +78,7 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   /* ①寸法の過不足 */
   const names = [['表', po, bo, Lo, Wo, 'outer'], ['裏', pi, bi, Li, Wi, 'inner']], dimInfo = {};
   for (const [side, part, box, L, W] of names) {
-    const ds = dimsOf(doc, box), hit = (value, horizontal) => ds.some(d => d.horizontal === horizontal && Math.abs(d.value - value) <= DIM_TOL);
+    const ds = dimsOf(doc, box, part), hit = (value, horizontal) => ds.some(d => d.horizontal === horizontal && Math.abs(d.value - value) <= DIM_TOL);
     dimInfo[side] = ds;
     if (!hit(L, horizontalAxis)) push('error', 'needLength', side, { v: lamNum(L) }, { side, partId: part.id, value: L, horizontal: horizontalAxis, box, role: 'length' });
     if (!hit(W, !horizontalAxis)) push('error', 'needWidth', side, { v: lamNum(W) }, { side, partId: part.id, value: W, horizontal: !horizontalAxis, box, role: 'width' });
@@ -90,7 +93,7 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     push('warn', 'unpaired', '表', { v: lamNum(e.value), from: '裏' }, { side: '表', partId: po.id, value: e.value, horizontal: e.horizontal, box: bo, role: 'mate' });
   /* ②菱目の数と位置：貼り合わせて曲げたとき、表の i 番目の菱目の下に、裏の i 番目の菱目が来るか。同じ角度で曲がるので、裏の位置は、表の位置 × （裏の全長 ÷ 表の全長）になる */
   /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、裏の位置を求める */
-  let zones = [], mode = 'uniform', given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, cand = given ?? lamZonesFromDashes(lamDashPositions(doc, bo, axis));
+  let zones = [], mode = 'uniform', given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, cand = given ?? lamZonesFromDashes(lamDashPositions(doc, bo, axis, po));
   if (cand.length && Math.abs(bend.dL) > 1e-9 && bend.ok) {
     const sorted = cand.every(([a, b], k) => Number.isFinite(a) && Number.isFinite(b) && a >= -0.01 && b <= Lo + 0.01 && b > a && (k === 0 || a >= cand[k - 1][1] - 1e-9)), red = bend.dL / cand.length;
     if (sorted && cand.every(([a, b]) => b - a - Math.abs(red) > 1e-6)) {
@@ -99,7 +102,7 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     } else push('warn', 'zonesBad', null, { n: cand.length });
   }
   const mapInner = x => mode === 'zones' ? x - zones.reduce((sum, z) => sum + (bend.dL / zones.length) * Math.min(Math.max((x - z.a) / (z.b - z.a), 0), 1), 0) : x * (Lo > 0 ? Li / Lo : 1);
-  const ro = holeRows(doc, bo, axis), ri = holeRows(doc, bi, axis), ratio = Lo > 0 ? Li / Lo : 1, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
+  const ro = holeRows(doc, bo, axis, po), ri = holeRows(doc, bi, axis, pi), ratio = Lo > 0 ? Li / Lo : 1, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
   if (!ro.length && !ri.length) { /* 菱目が無ければ、見るものが無い */ }
   else if (ro.length !== ri.length) push('error', 'rowCount', null, { a: ro.length, b: ri.length });
   else ro.forEach((a, k) => {
