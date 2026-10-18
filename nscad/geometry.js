@@ -973,6 +973,21 @@ export function smallLoopCenters(list, { maxMm = 12 } = {}) {
   }
   return out;
 }
+/** 小さな菱形・四角（4つの頂点で一周する折れ線・大きさ maxMm 以下）の大きさ：長いほうの対角線＝幅 w・短いほうの対角線＝高さ h と、中心。目打ちの穴の大きさ（holeW・holeH）に合わせるために使う。
+ *  （事業主の指摘 2026-10-18「菱目の大きさがバラバラ・外周と同じ大きさにしたい」：外周の菱の線は 1.1×0.4mm・目打ちの穴は 2×0.8mm だった）。対象は smallLoopCenters と同じ。戻り値 [{ w, h, x, y }]。 */
+export function diamondLoopSizes(list, { maxMm = 12 } = {}) {
+  const out = [];
+  for (const s of list || []) {
+    if (s?.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 4 || s.points.length > 5) continue;
+    let pts = s.points; const a = pts[0], b = pts[pts.length - 1], same = Math.hypot(a.x - b.x, a.y - b.y) < 1e-6;
+    if (same) pts = pts.slice(0, -1); else if (!s.closed) continue;
+    if (pts.length !== 4 || pts.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) continue;
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y); if (Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) > maxMm + 1e-9) continue;
+    const d1 = Math.hypot(pts[2].x - pts[0].x, pts[2].y - pts[0].y), d2 = Math.hypot(pts[3].x - pts[1].x, pts[3].y - pts[1].y);
+    out.push({ w: Math.max(d1, d2), h: Math.min(d1, d2), x: xs.reduce((m, v) => m + v, 0) / 4, y: ys.reduce((m, v) => m + v, 0) / 4 });
+  }
+  return out;
+}
 /** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
  *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
  *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。
