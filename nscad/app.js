@@ -2151,9 +2151,10 @@ function renderColors() {
 /** 選んだ図形に革色を付ける。部品の図形なら部品の色（今までどおり）。部品に入っていない図形は「型紙」として図形自身に付ける：閉じた図形はそのまま、開いた線は端がつながった一周ごとにまとめて（leatherGroup）塗る。
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
-const paintName = b => b.kind === 'metal' ? t('metal.' + b.id) : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
+const paintName = b => b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
-function startPaint(brush) { paintBrush = brush; selected = new Set(); setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
+function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
 const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
 const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > q.y) !== (ps[j].y > q.y) && q.x < (ps[j].x - ps[i].x) * (q.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
@@ -2162,7 +2163,7 @@ const fillContains = (fl, q) => insideRing(q, fl.points) && !(fl.holes || []).so
 function fillAt(q) { return (doc.fills || []).filter(fl => fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null; }
 function addRegionFill(p, brush) {
   const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
-  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id } : { leather: brush.hex }) };
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) } : { leather: brush.hex }) };
   commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
   $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
 }
@@ -2170,10 +2171,18 @@ function addRegionFill(p, brush) {
 function addSelectionRegionFills(brush, ids) {
   const regs = enclosedAreasAround(regionShapes(), ids); if (!regs.length) return 0;
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
-  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id } : { leather: brush.hex }) }; list.push(nf); made.push(nf); }
+  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) } : { leather: brush.hex }) }; list.push(nf); made.push(nf); }
   const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
   commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });   /* 同じ場所は置き換える */
   $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : ''); return made.length;
+}
+/** 「光沢の形」を選び直したとき：金属の色が付いた図形を選んでいれば、色はそのままで形（帯・放射）だけを変える。何も選んでいなければ、これから塗る形（と塗りモードで持っている色の形）を決めるだけ。 */
+function changeMetalStyle() {
+  const style = currentMetalStyle(), name = t(style === 'radial' ? 'metalStyleRadialShort' : 'metalStyleLinearShort'), ids = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh) && sh.metal).map(sh => sh.id));
+  if (paintBrush?.kind === 'metal' && mode === 'paint') paintBrush = { ...paintBrush, style };
+  if (!ids.size) { $('hint').textContent = t('metalStyleSet', { name }); return; }
+  commit(() => { for (const sh of doc.shapes) if (ids.has(sh.id)) { if (style === 'radial') sh.metalStyle = 'radial'; else delete sh.metalStyle; } });
+  $('hint').textContent = t('metalStyleChanged', { n: ids.size, name });
 }
 function clearFills() {
   const n = (doc.fills || []).length; if (!n) { $('hint').textContent = t('fillsNone'); return; }
@@ -2188,15 +2197,15 @@ function paintClick(p, eyedrop) {
   const s = pickShapeAt(p);
   if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）、無ければ、領域の塗りの色を持つ */
     const part = s && doc.parts.find(q => q.shapeIds.includes(s.id)), hex = part?.color || s?.leather, fl = fillAt(p);
-    if (s?.metal) paintBrush = { kind: 'metal', id: s.metal }; else if (hex) paintBrush = { kind: 'leather', hex }; else if (fl) paintBrush = fl.metal ? { kind: 'metal', id: fl.metal } : { kind: 'leather', hex: fl.leather }; else { $('hint').textContent = t(s ? 'paintNoColor' : 'paintNoneColor'); return; }
-    $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
+    if (s?.metal) paintBrush = { kind: 'metal', id: s.metal, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }; else if (hex) paintBrush = { kind: 'leather', hex }; else if (fl) paintBrush = fl.metal ? { kind: 'metal', id: fl.metal, style: fl.style === 'radial' ? 'radial' : 'linear' } : { kind: 'leather', hex: fl.leather }; else { $('hint').textContent = t(s ? 'paintNoColor' : 'paintNoneColor'); return; }
+    if (paintBrush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = paintBrush.style; $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
   }
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
   let painted = 0;
   if (s) {
     const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
     if (!(s.closed || s.type === 'circle') && (paintBrush.kind === 'leather' || !g)) for (const id of contourFrom(doc.shapes.filter(x => editable(x) && visible(x) && !x.holeLink), s.id)) ids.add(id);   /* 型紙の輪郭は、端がつながった線を一周まとめて */
-    selected = ids; try { painted = paintBrush.kind === 'metal' ? applyMetal(paintBrush.id) : applyLeather(paintBrush.hex, true); } finally { selected = new Set(); }
+    selected = ids; try { painted = paintBrush.kind === 'metal' ? applyMetal(paintBrush.id, paintBrush.style) : applyLeather(paintBrush.hex, true); } finally { selected = new Set(); }
   }
   if (!painted) addRegionFill(p, paintBrush);   /* 線から離れた所・閉じた形にならない線：線で囲まれた場所を塗る（T字・すき間があっても） */
   draw();
@@ -2237,10 +2246,10 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
   const items = [], loops = new Map(), nonGeom = ['text', 'dimension', 'image', 'fold'];
   for (const s of d.shapes) {
     if (!s.metal || s.occlude || s.holeLink || nonGeom.includes(s.type) || !vis(s)) continue;
-    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ metal: s.metal, points: poly.points }); }
+    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }); }
     else if (s.metalGroup) { if (!loops.has(s.metalGroup)) loops.set(s.metalGroup, []); loops.get(s.metalGroup).push(move(s)); }
   }
-  for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) items.push({ metal: list[0].metal, points: poly.points }); }
+  for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) items.push({ metal: list[0].metal, points: poly.points, style: list[0].metalStyle === 'radial' ? 'radial' : 'linear' }); }
   const area = ps => Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2;
   const inside = (p, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
   for (const it of items) it.area = area(it.points);
@@ -2249,7 +2258,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
     const parents = items.filter(o => o !== it && o.area > it.area && o.metal === it.metal && it.points.every(p => inside(p, o.points))).sort((x, y) => x.area - y.area);
     it.parent = parents[0] || null; it.hole = !!it.parent && !it.parent.hole;
   }
-  return items.filter(it => !it.hole).map(it => ({ metal: it.metal, body: it.points, holes: items.filter(h => h.hole && h.parent === it).map(h => h.points) }));
+  return items.filter(it => !it.hole).map(it => ({ metal: it.metal, style: it.style, body: it.points, holes: items.filter(h => h.hole && h.parent === it).map(h => h.points) }));
 }
 /** 2色を割合 t（0〜1）で混ぜた色（#RRGGBB）。 */
 function mixHex(a, b, t) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
@@ -2258,25 +2267,32 @@ function metalStops(m) { return [[0, m.dark], [0.12, mixHex(m.hex, m.dark, 0.35)
 /** 図形の線の色：情報パネルで選んだ色が先。無ければ、金属の色が付いた図形は金属の濃い側の色（塗りの上でも線が見える）。どちらも無ければ null。 */
 const shapeLineColor = s => SHAPE_DRAW_COLOR[s.color] || (s.metal ? METAL_COLORS.find(m => m.id === s.metal)?.dark : null) || null;
 /** 金属の質感の塗り（光沢の帯のグラデーション）。ps＝多角形の点列。細い側に帯が走る。 */
-function metalShade(m, ps) { const xs = ps.map(q => q.x), ys = ps.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), g = (x1 - x0 >= y1 - y0) ? ctx.createLinearGradient?.(x0, y0, x0, y1) : ctx.createLinearGradient?.(x0, y0, x1, y0); if (g) for (const [o, c] of metalStops(m)) g.addColorStop(o, c); return g || m.hex; }
+/** 金属の光沢の放射：明るい点（中心の少し左上）→基本色→暗い縁。丸いボタン・コインの金属らしい見え方。 */
+function metalRadialStops(m) { return [[0, m.light], [0.3, mixHex(m.hex, m.light, 0.45)], [0.62, m.hex], [0.86, mixHex(m.hex, m.dark, 0.55)], [1, m.dark]]; }
+/** 金属の質感の塗りつぶし色。style：'linear'（細い側に走る帯・今までどおり）か 'radial'（放射・事業主の希望 2026-10-18「ボタンの塗りで放射を選べるように」）。 */
+function metalShade(m, ps, style = 'linear') {
+  const xs = ps.map(q => q.x), ys = ps.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  if (style === 'radial') { const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, R = Math.max(1e-6, ...ps.map(q => Math.hypot(q.x - cx, q.y - cy))), rg = ctx.createRadialGradient?.(cx - R * 0.28, cy - R * 0.28, R * 0.04, cx, cy, R * 1.02); if (rg) for (const [o, c] of metalRadialStops(m)) rg.addColorStop(o, c); return rg || m.hex; }
+  const g = (x1 - x0 >= y1 - y0) ? ctx.createLinearGradient?.(x0, y0, x0, y1) : ctx.createLinearGradient?.(x0, y0, x1, y0); if (g) for (const [o, c] of metalStops(m)) g.addColorStop(o, c); return g || m.hex;
+}
 /** 本体の上に重なる図形（リングアームの棒）の塗り：金属の色が付いていればその光沢、なければ背景色で塗って、下の線を隠す。 */
-function drawOccluder(s, bg = '#080808') { const q = previewMoved(s); if (!q.points?.length) return; const m = s.metal ? METAL_COLORS.find(x => x.id === s.metal) : null; if (!m && !bg) return; ctx.save(); ctx.setLineDash([]); ctx.fillStyle = m ? metalShade(m, q.points) : bg; path(q); ctx.fill(); ctx.restore(); }   /* bg：金属の色が無いとき下の線を隠す色（書き出しは白・透明 PNG は隠さない） */
+function drawOccluder(s, bg = '#080808') { const q = previewMoved(s); if (!q.points?.length) return; const m = s.metal ? METAL_COLORS.find(x => x.id === s.metal) : null; if (!m && !bg) return; ctx.save(); ctx.setLineDash([]); ctx.fillStyle = m ? metalShade(m, q.points, s.metalStyle) : bg; path(q); ctx.fill(); ctx.restore(); }   /* bg：金属の色が無いとき下の線を隠す色（書き出しは白・透明 PNG は隠さない） */
 /** 金属の色が付いた金具の、べた塗り。金属の質感：細い側に光沢の帯・内側の縁のハイライト・影・穴の暗い縁。線の下に描く。本体の穴は抜く。 */
 function drawMetalFills() {
   const trace = ps => { ps.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); };
-  const paint = (m, ps, holes) => {
-    ctx.save(); ctx.setLineDash([]); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetX = 1.5; ctx.shadowOffsetY = 2.5; ctx.fillStyle = metalShade(m, ps); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.fill('evenodd'); ctx.restore();
+  const paint = (m, ps, holes, style) => {
+    ctx.save(); ctx.setLineDash([]); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetX = 1.5; ctx.shadowOffsetY = 2.5; ctx.fillStyle = metalShade(m, ps, style); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.fill('evenodd'); ctx.restore();
     ctx.save(); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.clip('evenodd'); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3 / scale; ctx.beginPath(); trace(ps); ctx.stroke(); ctx.restore(); /* 内側の縁のハイライト */
     for (const h of holes) { ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); trace(h); ctx.stroke(); ctx.restore(); } /* 穴の暗い縁 */
   };
-  for (const fl of visibleFills(doc, visible, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) paint(m, fl.points, fl.holes || []); }   /* 線で囲まれた場所の金属の塗り */
-  for (const r of metalFillPlan(doc, visible, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
+  for (const fl of visibleFills(doc, visible, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) paint(m, fl.points, fl.holes || [], fl.style); }   /* 線で囲まれた場所の金属の塗り */
+  for (const r of metalFillPlan(doc, visible, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
-function applyMetal(id) {
-  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
+function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id, style }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
   let unclosed = 0, loopsMade = 0;   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数 */
   commit(() => {
-    for (const s of doc.shapes) if (ids.has(s.id)) { if (id) s.metal = id; else { delete s.metal; delete s.metalGroup; } }
+    for (const s of doc.shapes) if (ids.has(s.id)) { if (id) { s.metal = id; if (style === 'radial') s.metalStyle = 'radial'; else delete s.metalStyle; } else { delete s.metal; delete s.metalGroup; delete s.metalStyle; } }
     if (!id) return;
     const hwGroups = new Set(doc.shapes.filter(s => s.hw && groupIdOf(s)).map(s => groupIdOf(s))), mine = doc.shapes.filter(s => ids.has(s.id) && !s.hw && !s.holeLink && !['text', 'dimension', 'image', 'fold'].includes(s.type) && !(groupIdOf(s) && hwGroups.has(groupIdOf(s))));   /* 置いた金具は、金具の登録した形で塗る */
     for (const s of mine) delete s.metalGroup;
@@ -2288,7 +2304,7 @@ function applyMetal(id) {
     }
   });
   const fillable = doc.shapes.filter(sh => ids.has(sh.id) && (sh.closed || sh.type === 'circle')).length + loopsMade;   /* 塗れた形の数（0 なら、線の色だけ） */
-  if (id && !fillable && unclosed) { const n = addSelectionRegionFills({ kind: 'metal', id }, new Set(doc.shapes.filter(sh => ids.has(sh.id) && !sh.hw && !(sh.closed || sh.type === 'circle')).map(sh => sh.id))); if (n) return n; }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る */
+  if (id && !fillable && unclosed) { const n = addSelectionRegionFills({ kind: 'metal', id, style }, new Set(doc.shapes.filter(sh => ids.has(sh.id) && !sh.hw && !(sh.closed || sh.type === 'circle')).map(sh => sh.id))); if (n) return n; }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る */
   $('hint').textContent = (id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size })) + (unclosed ? ' ' + t('metalLineOnly', { n: unclosed }) : '');
   return fillable;
 }
@@ -2816,7 +2832,7 @@ function attachClick(p) {
   const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy));
   setMode('select'); $('hint').textContent = r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) });
 }
-$('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills;
+$('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
   const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
