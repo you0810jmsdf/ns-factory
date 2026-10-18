@@ -703,6 +703,31 @@ export function foldPlyLengths(path, t, plies = 1) {
   const bends = path.pieces.filter(p => p.kind === 'arc').length;
   return Array.from({ length: plies }, (_, j) => path.length + bends * Math.PI * (t / 2 - (j + 0.5) * t / plies));
 }
+/** 表（外側の革）と裏（内側の革）の図面から、1枚の三つ折り断面図の形を求める（事業主の選択 2026-10-19・案A）。
+ *  outer・inner＝{ flats:[3], bends:[2] }（図面の左から：平ら・丸折り・平ら・丸折り・平ら。図面に描いた長さ＝革の中立面の長さ）。tO・tI＝表・裏の厚み。base＝'outer'｜'inner'（基準にするほう。断面の形は基準から求め、もう一方は差を出す）。
+ *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。
+ *  考え方：平らは、表も裏も同じ長さ。丸折りは、貼り合わせ線での長さ G＝π×半径。表の丸折り＝G＋π×tO/2・裏の丸折り＝G−π×tI/2。貼り合わせ線は、断面の中心から（tO−tI）/2 だけ内側へずれる。
+ *  返り値：{ ok, flip, T, glueK, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・flip のときは右から数えた順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
+ *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner（図面の全長）, wantOther（もう一方のあるべき全長）, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
+ *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ。失敗は { ok:false, error:'badNumber' } か { ok:false, error:'tight', index（図面の左から数えた折りの番号・1 から）}（内側の面の半径が 0.05 以下）。 */
+export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles = [], innerHoles = [] } = {}) {
+  const num = (a, n, min) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && v >= min);
+  if (!outer || !inner || !num(outer.flats, 3, 0) || !num(inner.flats, 3, 0) || !num(outer.bends, 2, FOLD_EPS) || !num(inner.bends, 2, FOLD_EPS) || ![tO, tI].every(v => Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
+  const baseOuter = base !== 'inner', gO = outer.bends.map(b => b - Math.PI * tO / 2), gI = inner.bends.map(b => b + Math.PI * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での丸折りの長さ */
+  const rg = gB.map(g => g / Math.PI), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
+  const flip = gB[0] < gB[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
+  const flats = orient(fB), bends = orient(rg.map(r => Math.PI * (r + kg))), path = foldSectionPath({ flats, bends });
+  const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map(g => g - Math.PI * tI / 2) : gI.map(g => g + Math.PI * tO / 2), other = baseOuter ? inner : outer;
+  const rf = outer.flats.map((o, i) => ({ outer: o, inner: inner.flats[i], want: fB[i], diff: other.flats[i] - fB[i] })), rb = outer.bends.map((o, i) => ({ outer: o, inner: inner.bends[i], want: wantBend[i], diff: other.bends[i] - wantBend[i] }));
+  const lenOuter = sum(outer.flats) + sum(outer.bends), lenInner = sum(inner.flats) + sum(inner.bends), wantOther = sum(fB) + sum(wantBend);
+  /* 菱目：図面の位置を、その革の図面の区間（平ら・丸折り）ごとに、断面の中心線の同じ区間へ比例して写す */
+  const segC = [flats[0], bends[0], flats[1], bends[1], flats[2]], cumC = segC.reduce((a, v) => [...a, a.at(-1) + v], [0]);
+  const mapHoles = (list, ply) => {
+    const segD = [ply.flats[0], ply.bends[0], ply.flats[1], ply.bends[1], ply.flats[2]], d = flip ? [...segD].reverse() : segD, L = sum(segD), cumD = d.reduce((a, v) => [...a, a.at(-1) + v], [0]);
+    return (list || []).filter(Number.isFinite).map(u => { const x = Math.max(0, Math.min(L, flip ? L - u : u)); let k = 0; while (k < 4 && x > cumD[k + 1] + 1e-9) k++; const f = d[k] > 0 ? (x - cumD[k]) / d[k] : 0; return cumC[k] + Math.max(0, Math.min(1, f)) * segC[k]; }).sort((a, b) => a - b);
+  };
+  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
+}
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
 export function foldSectionShapes(path, t, origin, plies = 1, glueK) {
   const out = [], h = t / 2;

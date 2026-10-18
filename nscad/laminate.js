@@ -63,6 +63,36 @@ function lamZonesFromDashes(pos) {
   const k = pos.length % 3 === 0 && pos.length ? 3 : pos.length % 2 === 0 && pos.length ? 2 : 0, out = [];
   for (let i = 0; k && i < pos.length; i += k) out.push([pos[i], pos[i + k - 1]]); return out;
 }
+/** 菱目の間隔が変わる範囲を、曲げ部として見つける（事業主の希望 2026-10-19「菱目間隔が変わる範囲を自動で検知してそこを曲げ部として扱う」）。pos＝1列の菱目の位置（mm・昇順でなくてもよい）。
+ *  平らな所の間隔（ピッチ）は、いちばん多い間隔（±0.05mm でまとめる・同数なら左のほう）。ピッチから許容（max(0.1mm, ピッチの2%)）より外れた間隔が続く範囲を、1つの曲げ部［始まりの穴の位置, 終わりの穴の位置］にする。
+ *  返り値：{ ok:true, pitch, zones:[[a,b]…] } か { ok:false, reason:'few'（間隔が6つ未満＝穴が7個より少ない）｜'irregular'（ピッチが半数に満たない）｜'uniform'（間隔が変わる所なし）, pitch? }。 */
+export function lamZonesFromHoles(pos, opts = {}) {
+  const p = [...pos].filter(Number.isFinite).sort((a, b) => a - b), gaps = p.slice(1).map((x, i) => x - p[i]);
+  if (gaps.length < 6) return { ok: false, reason: 'few' };   /* 穴が7個より少ない列は、ピッチを決められない */
+  let best = null; for (const g of gaps) { const same = gaps.filter(h => Math.abs(h - g) <= 0.05); if (!best || same.length > best.length) best = same; }
+  if (best.length * 2 < gaps.length) return { ok: false, reason: 'irregular' };   /* ピッチ（いちばん多い間隔）が半分に満たない列は、平らな所が分からない */
+  const pitch = best.reduce((sum, v) => sum + v, 0) / best.length, tol = opts.tol ?? Math.max(0.1, pitch * 0.02), zones = []; let start = -1;
+  gaps.forEach((g, i) => { const off = Math.abs(g - pitch) > tol; if (off && start < 0) start = i; if ((!off || i === gaps.length - 1) && start >= 0) { zones.push([p[start], p[off ? i + 1 : i]]); start = -1; } });
+  return zones.length ? { ok: true, pitch, zones } : { ok: false, reason: 'uniform', pitch };
+}
+/** 菱目の列（holeRows の結果）から、曲げ区間（部品の端からの位置）を見つける：穴が4個以上ある列のうち、いちばん穴の多い列の、間隔が変わる範囲。なければ空。 */
+function lamZonesFromRows(rows) {
+  const best = rows.filter(r => r.pos.length >= 4).reduce((a, r) => !a || r.pos.length > a.pos.length ? r : a, null), z = best ? lamZonesFromHoles(best.pos) : null; return z?.ok ? z.zones : [];
+}
+/** 三つ折りの断面図のための、部品1つの「平ら3・丸折り2」の長さ（事業主の選択 2026-10-19・案A）。曲げ部の見つけ方：縦の点線から2か所（4本か6本）→ そうならなければ、菱目の間隔が変わる範囲から2か所。
+ *  opts：{ axis:'x'｜'y'（曲がる向き・既定 'x'）}。
+ *  返り値：{ ok:true, source:'dashes'｜'holes', axis, length（部品の全長）, flats[3]・bends[2]（部品の端から順）, zones:[[a,b],[a,b]], holes[]（いちばん穴の多い列の、部品の端からの位置・昇順）, edge（部品の端の座標）}
+ *  か { ok:false, error:'emptyPart'｜'noZones'（曲げ部が見つからない）｜'zoneCount'（2か所でない・count）｜'zoneBad'（重なり・はみ出し）}。 */
+export function lamFoldSpec(doc, part, { axis = 'x' } = {}) {
+  const box = partBox(doc, part); if (!box) return { ok: false, error: 'emptyPart' };
+  const horizontal = axis !== 'y', length = horizontal ? box.maxX - box.minX : box.maxY - box.minY, rows = holeRows(doc, box, horizontal ? 'x' : 'y', part);
+  const dash = lamZonesFromDashes(lamDashPositions(doc, box, horizontal ? 'x' : 'y', part)), hole = lamZonesFromRows(rows);
+  const source = dash.length === 2 ? 'dashes' : hole.length === 2 ? 'holes' : null, zones = source === 'dashes' ? dash : source === 'holes' ? hole : null;
+  if (!zones) { const count = dash.length || hole.length; return count ? { ok: false, error: 'zoneCount', count } : { ok: false, error: 'noZones' }; }
+  const [[a1, b1], [a2, b2]] = zones; if (!(a1 >= -0.01 && b1 - a1 > 1e-6 && a2 >= b1 - 1e-9 && b2 - a2 > 1e-6 && b2 <= length + 0.01)) return { ok: false, error: 'zoneBad' };
+  const best = rows.reduce((a, r) => !a || r.pos.length > a.pos.length ? r : a, null);
+  return { ok: true, source, axis: horizontal ? 'x' : 'y', length, flats: [a1, a2 - b1, length - b2], bends: [b1 - a1, b2 - a2], zones, holes: best ? [...best.pos] : [], edge: horizontal ? box.minX : box.minY };
+}
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
 export function laminateNow(doc, outerId, innerId, opts = {}) {
@@ -109,12 +139,14 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     if (dW > 5) push('error', 'partsMismatch', otherSide, { wo: lamNum(Wo), wi: lamNum(Wi) }); else if (dW > DIM_TOL) push('error', 'widthDiffer', otherSide, { cur: lamNum(baseOuter ? Wi : Wo), want: lamNum(baseOuter ? Wo : Wi), base: baseSide }, { side: otherSide, current: baseOuter ? Wi : Wo, want: baseOuter ? Wo : Wi }); }
   if (hasTarget && Math.abs(otherLen - wantLen) > DIM_TOL) push('error', 'lenOff', otherSide, { cur: lamNum(otherLen), want: lamNum(wantLen), diff: lamNum(Math.abs(wantLen - otherLen)), dir: wantLen > otherLen ? 'long' : 'short' }, { side: otherSide, current: otherLen, want: wantLen });
   /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、もう一方の位置を求める */
-  let zones = [], mode = 'uniform', given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, cand = given ?? lamZonesFromDashes(lamDashPositions(doc, bo, axis, po));
+  let zones = [], mode = 'uniform', zoneSource = null, given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, dashZones = given ? [] : lamZonesFromDashes(lamDashPositions(doc, bo, axis, po)), cand = given ?? dashZones;
+  if (!cand.length) { const hz = lamZonesFromRows(holeRows(doc, bo, axis, po)); if (hz.length) cand = hz; }   /* 点線が無いときは、表の菱目の間隔が変わる範囲を曲げ区間にする（2026-10-19） */
+  const candSource = given ? 'given' : dashZones.length ? 'dashes' : cand.length ? 'holes' : null;   /* 曲げ区間の出どころ：入力 ＞ 縦の点線 ＞ 菱目の間隔 */
   if (cand.length && Math.abs(bendU.dL) > 1e-9 && bendU.ok) {
     const sorted = cand.every(([a, b], k) => Number.isFinite(a) && Number.isFinite(b) && a >= -0.01 && b <= Lo + 0.01 && b > a && (k === 0 || a >= cand[k - 1][1] - 1e-9)), red = bendU.dL / cand.length;
     if (sorted && cand.every(([a, b]) => b - a - Math.abs(red) > 1e-6)) {
       const theta = Math.abs(bendU.dL) / bendU.d / cand.length;   /* 1か所あたりの角度（ラジアン） */
-      zones = cand.map(([a, b]) => ({ a, b, lenOuter: b - a, lenInner: b - a - red, thetaDeg: theta * 180 / Math.PI, radius: (b - a) / theta - (bendU.dL > 0 ? tO / 2 : -tO / 2) })); mode = 'zones';
+      zones = cand.map(([a, b]) => ({ a, b, lenOuter: b - a, lenInner: b - a - red, thetaDeg: theta * 180 / Math.PI, radius: (b - a) / theta - (bendU.dL > 0 ? tO / 2 : -tO / 2) })); mode = 'zones'; zoneSource = candSource;
     } else push('warn', 'zonesBad', null, { n: cand.length });
   }
   const mapInner = x => mode === 'zones' ? x - zones.reduce((sum, z) => sum + (bendU.dL / zones.length) * Math.min(Math.max((x - z.a) / (z.b - z.a), 0), 1), 0) : x * (LoU > 0 ? LiU / LoU : 1);
@@ -143,5 +175,5 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     if (bad.length) { const worst = bad.reduce((p, q) => Math.abs(q.v) > Math.abs(p.v) ? q : p); push('error', 'holePos', otherSide, { row: k + 1, n: bad.length, i: worst.i + 1, dev: lamNum(Math.abs(worst.v)), to: lamNum(want[worst.i]) }, { side: otherSide, row: k + 1, from: b.pos[worst.i], to: want[worst.i], index: worst.i + 1 }); }
     holes.rows.push(row);
   });
-  return { ok: true, axis, mode, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
+  return { ok: true, axis, mode, zoneSource, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
 }
