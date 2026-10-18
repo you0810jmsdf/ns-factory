@@ -1550,6 +1550,11 @@ function makeLamSection() {
   if (Math.abs(r.diffTotal) > 0.05) line(t('lamSecAdvice', { other: otherName, w: f2(r.wantOther), c: f2(r.base === 'outer' ? r.lenInner : r.lenOuter) }), 'lam-warn');
   draw();
 }
+/** 寸法が入っている層（レイヤー）を、表示にする（貼り合わせ検証の「寸法の層を表示する」ボタン。事業主の質問 2026-10-19「寸法非表示とは？どこにボタンがある？」）。元に戻すは1回。検証は出し直す。 */
+function showDimensionLayers() {
+  const ids = new Set(doc.shapes.filter(s => s.type === 'dimension' && !s.foldSec).map(s => s.layer));
+  commit(() => { for (const l of doc.layers) if (ids.has(l.id)) l.visible = true; selected.clear(); }); renderLayers(); runLaminate(); renderLaminateNow();
+}
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, fail = key => { line(t(key), 'lam-error'); $('hint').textContent = t(key); };   /* エラーは、検証ボタンの下（カードの中）にも赤い文字で出す */
@@ -1560,7 +1565,7 @@ function runLaminate() {
   const axis = $('lamAxis').value, r = laminateCheck(doc, $('lamOuter').value, $('lamInner').value, { tOuter: Number($('lamTOuter').value), tInner: Number($('lamTInner').value), axis: axis === 'x' || axis === 'y' ? axis : 'auto', holeTol: Number($('lamTol').value) || 0.3, zones: parseLaminateZones($('lamZones').value), base: $('lamBase').value === 'inner' ? 'inner' : 'outer', targetLen: Number($('lamTarget').value) > 0 ? Number($('lamTarget').value) : undefined, checkDims: $('lamDimCheck').checked !== false && !dimsHidden, checkHoles: $('lamHoleCheck').checked !== false });
   if (!r.ok) { fail('lamErr_' + r.error); return; }
   const f2 = v => v.toFixed(2), b = r.bend, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer');
-  const issueText = is => { const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner'); return t('lamIssue_' + is.code, { ...is.params, side, from, base: baseName, dir: is.params.dir ? t(is.params.dir === 'long' ? 'lamDirLong' : 'lamDirShort') : '' }); };
+  const issueText = is => { const side = is.side === '表' ? t('lamSideOuter') : is.side === '裏' ? t('lamSideInner') : '', from = is.params.from === '表' ? t('lamSideOuter') : t('lamSideInner'); return t('lamIssue_' + is.code + ((is.code === 'holesNone' || is.code === 'holesExtra') && is.params.loops > 0 ? 'Loops' : ''), { ...is.params, side, from, base: baseName, dir: is.params.dir ? t(is.params.dir === 'long' ? 'lamDirLong' : 'lamDirShort') : '' }); };
   const withAdd = (d, is) => { if (is.suggest && ['length', 'width', 'mate'].includes(is.suggest.role)) { const bt = document.createElement('button'); bt.textContent = t('lamAdd', { v: f2(is.suggest.value) }); bt.onclick = () => addLaminateDim(is.suggest); d.appendChild(bt); } };
   /* 1. 結論：基準と、直す件数 */
   const fixIssues = r.issues.filter(is => is.level === 'error' || is.code === 'holesNone'), notes = r.issues.filter(is => !fixIssues.includes(is));
@@ -1577,7 +1582,8 @@ function runLaminate() {
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
   if (r.mode === 'zones') { line(t(r.zoneSource === 'given' ? 'lamZonesGiven' : r.zoneSource === 'holes' ? 'lamZonesHoles' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
-  if (dimsHidden && $('lamDimCheck').checked !== false) line(t('lamDimSkipped'), 'lam-warn');
+  if (r.holes.loops && r.holes.loops[0] + r.holes.loops[1] > 0) line(t('lamLoops', { a: r.holes.loops[0], b: r.holes.loops[1] }));
+  if (dimsHidden && $('lamDimCheck').checked !== false) { const hiddenLayers = [...new Set(dimShapes.map(s => s.layer))].map(id => doc.layers.find(l => l.id === id)).filter(l => l && !l.visible), d = line(t('lamDimSkipped', { layers: hiddenLayers.map(layerName).join('・') }), 'lam-warn'), bt = document.createElement('button'); bt.textContent = t('lamShowDims'); bt.onclick = showDimensionLayers; d.appendChild(bt); }   /* 寸法が入っている層が非表示：その層の名前と、その場で表示にするボタン */
   const unpaired = notes.filter(is => is.code === 'unpaired'), only = from => unpaired.filter(is => is.params.from === from).map(is => is.params.v).join('・');   /* 片方にだけある寸法は、1行にまとめる */
   if (unpaired.length) line(t('lamNoteUnpaired', { text: [only('表') && t('lamUnpairedOuter', { list: only('表') }), only('裏') && t('lamUnpairedInner', { list: only('裏') })].filter(Boolean).join('／') }), 'lam-warn');
   for (const is of notes.filter(is => is.code !== 'unpaired')) withAdd(line(t(is.level === 'error' ? 'lamLevelError' : 'lamLevelWarn') + issueText(is), is.level === 'error' ? 'lam-error' : 'lam-warn'), is);

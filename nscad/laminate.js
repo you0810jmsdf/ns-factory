@@ -1,6 +1,6 @@
 // 貼り合わせの曲げ検証（事業主指示 2026-10-17）：表と裏を別々に作図した図面（図面の「部品」2つ）を貼り合わせたとき、どのくらい曲がるかを、革の厚みから求める。
 // あわせて、①寸法の過不足（足りない寸法の案つき）②菱目の数と位置が表と裏で合うか、を調べる。ブラウザにも Node にも依存しない（図面の JSON だけを見る）。
-import { bboxOf, distance } from './geometry.js';
+import { bboxOf, distance, smallLoopCenters } from './geometry.js';
 
 const DIM_TOL = 0.05, ROW_GAP = 0.5, EDGE_PAD = 1;   /* 寸法の一致の許容（mm）・同じ列とみなす幅（mm）・部品の外枠から寸法の端が出てよい幅（mm） */
 
@@ -155,12 +155,13 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   const expect = baseOuter ? mapInner : mapOuter;   /* 基準の位置 → もう一方にあるべき位置 */
   const ro = checkHoles ? holeRows(doc, bo, axis, po) : [], ri = checkHoles ? holeRows(doc, bi, axis, pi) : [], rb = baseOuter ? ro : ri, rx = baseOuter ? ri : ro, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
   const total = rows => rows.reduce((n, r) => n + r.pos.length, 0);
+  const loopsOf = part => smallLoopCenters(doc.shapes.filter(s => part.shapeIds.includes(s.id) && lamOwnShape(part, s))).length, loops = [loopsOf(po), loopsOf(pi)], baseLoops = baseOuter ? loops[0] : loops[1], otherLoops = baseOuter ? loops[1] : loops[0];   /* 菱の線（小さな菱形の図形）の数：穴とは別に数える（位置の検査・曲げ区間には使わない。事業主の指摘 2026-10-19「表に菱目があるのにないと計画がでる」） */
   if (!rb.length && !rx.length) { /* 菱目が無ければ、見るものが無い */ }
   else if (rb.length && !rx.length) {   /* もう一方に、まだ菱目が無い：エラーではなく、打つ位置を案内する */
-    const want = rb.map(r => r.pos.map(expect)); push('warn', 'holesNone', otherSide, { n: total(rb), rows: rb.length, base: baseSide, list: want[0].slice(0, 6).map(v => lamNum(v)).join(', ') + (want[0].length > 6 ? ' …' : '') });
+    const want = rb.map(r => r.pos.map(expect)); push('warn', 'holesNone', otherSide, { n: total(rb), rows: rb.length, base: baseSide, loops: otherLoops, list: want[0].slice(0, 6).map(v => lamNum(v)).join(', ') + (want[0].length > 6 ? ' …' : '') });
     rb.forEach((r, k) => holes.rows.push({ row: k + 1, countOuter: baseOuter ? r.pos.length : 0, countInner: baseOuter ? 0 : r.pos.length, devs: [], missing: want[k].map(v => +v.toFixed(3)) }));
   }
-  else if (!rb.length && rx.length) push('warn', 'holesExtra', otherSide, { n: total(rx), base: baseSide });
+  else if (!rb.length && rx.length) push('warn', 'holesExtra', otherSide, { n: total(rx), base: baseSide, loops: baseLoops });
   else if (ro.length !== ri.length) push('error', 'rowCount', null, { a: ro.length, b: ri.length });
   else rb.forEach((a, k) => {
     const b = rx[k], oc = baseOuter ? a : b, ic = baseOuter ? b : a, row = { row: k + 1, countOuter: oc.pos.length, countInner: ic.pos.length, devs: [], missing: [] };
@@ -175,5 +176,6 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     if (bad.length) { const worst = bad.reduce((p, q) => Math.abs(q.v) > Math.abs(p.v) ? q : p); push('error', 'holePos', otherSide, { row: k + 1, n: bad.length, i: worst.i + 1, dev: lamNum(Math.abs(worst.v)), to: lamNum(want[worst.i]) }, { side: otherSide, row: k + 1, from: b.pos[worst.i], to: want[worst.i], index: worst.i + 1 }); }
     holes.rows.push(row);
   });
+  holes.loops = loops; if (checkHoles && loops[0] !== loops[1]) push('warn', 'loopsDiffer', null, { o: loops[0], i: loops[1] });
   return { ok: true, axis, mode, zoneSource, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
 }
