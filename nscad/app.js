@@ -772,24 +772,34 @@ function holePosition(h,p) {
   const old=pointAtLength(route,h.s),next=projectOnPath(route,p);
   return {...h,x:next.x,y:next.y,s:next.s,angleDeg:h.angleDeg+($('followTangent').checked?next.angleDeg-old.angleDeg:0)};
 }
-/** 選んだ穴の傾きを数える（情報カード用）。順目＝線の向きに対して、置くときの既定の傾き（工具の傾きの符号を反転）。逆目＝その鏡写し。
- *  線が見つからない穴・傾きの区別がない工具（0°・90°）・どちらにも合わない穴は「どちらでもない」。数えるのは、入れ替えの対象（菱目・切れ目）だけ。 */
+/** 穴の傾きの種類：'fwd'（順目）・'rev'（逆目）・'other'（どちらでもない）。順目＝線の向きに対して、置くときの既定の傾き（工具の傾きの符号を反転）。逆目＝その鏡写し（誤差1°まで）。
+ *  線が見つからない穴・傾きの区別がない工具（0°・90°）・どちらにも合わない穴は 'other'。 */
+function holeSlantKind(h, tool, route) {
+  const m180 = d => ((d % 180) + 180) % 180, near = (a, b) => { const d = m180(a - b); return Math.min(d, 180 - d) < 1; };
+  if (!tool || !route || near(tool.angleDeg, -tool.angleDeg)) return 'other';
+  const rel = h.angleDeg - pointAtLength(route, h.s).angleDeg;
+  return near(rel, -tool.angleDeg) ? 'fwd' : near(rel, tool.angleDeg) ? 'rev' : 'other';
+}
+/** 選んだ穴の傾きを数える（情報カード用）。数えるのは、入れ替えの対象（菱目・切れ目）だけ。 */
 function holeSlantCounts(hs) {
-  const n = { fwd: 0, rev: 0, other: 0 }, routes = new Map(), m180 = d => ((d % 180) + 180) % 180, near = (a, b) => { const d = m180(a - b); return Math.min(d, 180 - d) < 1; };
+  const n = { fwd: 0, rev: 0, other: 0 }, routes = new Map();
   for (const h of hs) {
     const tool = doc.tools.find(x => x.id === h.toolId); if (!routes.has(h.pathId)) { const p = doc.paths.find(q => q.id === h.pathId); routes.set(h.pathId, p ? resolvePath(doc, p) : null); }
-    const route = routes.get(h.pathId); if (!tool || !route || near(tool.angleDeg, -tool.angleDeg)) { n.other++; continue; }
-    const rel = h.angleDeg - pointAtLength(route, h.s).angleDeg;
-    if (near(rel, -tool.angleDeg)) n.fwd++; else if (near(rel, tool.angleDeg)) n.rev++; else n.other++;
+    n[holeSlantKind(h, tool, routes.get(h.pathId))]++;
   }
   return n;
+}
+/** 傾きを変える対象の穴の id：選んだ穴・選んだ線の経路の穴・選んだ線の上（0.5mm以内）に乗っている穴（穴の付いた線に重なった別の線を選んでも効く）。入れ替えと、順目・逆目にそろえるで共通。 */
+function slantPickedIds() {
+  const sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image'), picked = new Set(affectedHoles().map(h => h.id));
+  for (const h of doc.holes) if (!picked.has(h.id) && holeEditable(h) && sel.some(s => distToShape(s, h) < 0.5)) picked.add(h.id);
+  return picked;
 }
 
 /** 「順目⇔逆目」：選んだ線の上の菱目（菱目を選んでいればその菱目だけ）の傾きを、線の向きを軸に鏡写しにして、順目と逆目を入れ替える（事業主指示 2026-10-16）。
  *  対象は、選んだ線の経路の穴・選んだ穴・選んだ線の上（0.5mm以内）に乗っている穴（穴の付いた線に重なった別の線を選んでも効く）。点の目印・円の穴は対象外（傾きの意味が違う）。 */
 function flipSlantOfSelection() {
-  const sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image'), picked = new Set(affectedHoles().map(h => h.id));
-  for (const h of doc.holes) if (!picked.has(h.id) && holeEditable(h) && sel.some(s => distToShape(s, h) < 0.5)) picked.add(h.id);
+  const picked = slantPickedIds();   /* 選んだ穴・選んだ線の経路の穴・選んだ線の上に乗っている穴 */
   const routes = new Map(), made = [];
   for (const h of doc.holes) {
     if (!picked.has(h.id) || !['diamond', 'slit'].includes(holeAppearance(h, doc)?.kind)) continue;
@@ -799,6 +809,21 @@ function flipSlantOfSelection() {
   if (!made.length) { $('hint').textContent = t('noHolesToFlip'); return; }
   commit(() => { for (const m of made) { const h = doc.holes.find(x => x.id === m.id); if (h) h.angleDeg = m.angleDeg; } });
   $('hint').textContent = t('slantFlipped', { n: made.length });
+}
+/** 「順目に揃える／逆目に揃える」（事業主の選択 2026-10-18 案C）：選んだ菱目のうち、反対側の穴だけを入れ替えて、順目（'fwd'）または逆目（'rev'）にそろえる。
+ *  どちらでもない穴（途中で角度を変えた穴・傾きの区別がない工具・線の無い穴）は、意図した角度を壊さないので変えない。対象は入れ替えと同じ（slantPickedIds）。何も変えないときは履歴に残さず、案内だけ出す。 */
+function unifySlantOfSelection(kind) {
+  const picked = slantPickedIds(), from = kind === 'fwd' ? 'rev' : 'fwd', routes = new Map(), made = []; let keep = 0;
+  for (const h of doc.holes) {
+    if (!picked.has(h.id) || !['diamond', 'slit'].includes(holeAppearance(h, doc)?.kind)) continue;
+    if (!routes.has(h.pathId)) { const p = doc.paths.find(q => q.id === h.pathId); routes.set(h.pathId, p ? resolvePath(doc, p) : null); }
+    const route = routes.get(h.pathId);
+    if (holeSlantKind(h, doc.tools.find(x => x.id === h.toolId), route) === from) made.push({ id: h.id, angleDeg: (((2 * pointAtLength(route, h.s).angleDeg - h.angleDeg) % 360) + 360) % 360 }); else keep++;
+  }
+  const name = t(kind === 'fwd' ? 'slantNameFwd' : 'slantNameRev');
+  if (!made.length) { $('hint').textContent = t(keep ? 'slantAlready' : 'noHolesToFlip', { name }); return; }
+  commit(() => { for (const m of made) { const h = doc.holes.find(x => x.id === m.id); if (h) h.angleDeg = m.angleDeg; } });
+  $('hint').textContent = t('slantUnified', { n: made.length, name, keep });
 }
 /** 「穴の点検」：選んだ線（経路）の上で、穴の間隔が空きすぎている所（歯抜け）を探し、隙間の中で等間隔に穴を補う（事業主指示 2026-10-16・補い方は「隙間の中で等間隔」・範囲は「選んだ線だけ」）。
  *  歯抜けとみなすのは、隣り合う同じ工具の穴の間隔が、ピッチの整数倍（2倍以上・誤差はピッチの0.3倍まで）のとき。わざと空けた所（整数倍でない隙間）は補わない。向きは両隣の穴の間をなめらかにつなぐ。 */
@@ -1127,7 +1152,7 @@ function initLayers() {
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
-  $('info-flipSlant').onclick = flipSlantOfSelection;
+  $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
