@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
-import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -3977,10 +3977,10 @@ function drawRuler({ a, b }) {
 }
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
-  const ends = [], centers = [], guide = [];
+  const ends = [], centers = [], guide = [], runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* inRun：1本の辺が途中で分かれている線（中点は辺全体の1つだけ） */
   for (const s of shapes) {
     const segs = s.type === 'line' || s.type === 'bezier' ? [s] : s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((q, i) => ({ type: 'line', x1: q.x, y1: q.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : s.type === 'path' ? pathSegments(s) : [];
-    for (const g of segs) guide.push({ x: g.x1, y: g.y1 }, g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2), { x: g.x2, y: g.y2 }); /* 各区間の「中点（長さの真ん中）と両端」 */
+    for (const g of segs) guide.push({ x: g.x1, y: g.y1 }, ...(inRun.has(s.id) ? [] : [g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2)]), { x: g.x2, y: g.y2 }); /* 各区間の「中点（長さの真ん中）と両端」 */
     if (s.type === 'arc') guide.push(circlePoint(s, s.startDeg), circlePoint(s, s.startDeg + arcSweep(s) / 2), circlePoint(s, s.endDeg));
     if (s.type === 'line') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'polyline') ends.push(...s.points.map(p => ({ x: p.x, y: p.y })));
@@ -3989,6 +3989,7 @@ function magnetPointsOf(shapes) {
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
     else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push(circlePoint(s, k * 45)); }
   }
+  guide.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
   return { ends, centers, guide };
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
@@ -4030,7 +4031,8 @@ function drawCenterMarks() {
 function rebuildSnaps() {
   rebuildThreeViewMarks(); rebuildQuad();
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
-  snapCache = shapes.flatMap(snapPoints);
+  const runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* 1本の辺が途中で分かれている線：中点は、辺全体の中点だけ（1本ごとの中点は、上下対称のはずの辺とずれる・事業主の指摘 2026-10-18） */
+  snapCache = shapes.flatMap(s => inRun.has(s.id) ? snapPoints(s).slice(0, 2) : snapPoints(s)); snapCache.push(...runs.map(r => ({ ...r.mid })));
   const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });

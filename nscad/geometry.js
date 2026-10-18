@@ -959,6 +959,41 @@ export function collinearLineClusters(list, { gap = 0.5, dist = 0.01, cross = 1e
   }
   return out;
 }
+/** 端と端がつながって、同じ直線上に続く直線（line・2点の開いた折れ線・同じ層）を、1つの辺としてまとめる（1本の辺が、途中で分かれているもの）。
+ *  戻り値 [{ ids, p1, p2, mid }]（ids は 2 本以上・p1・p2＝辺全体の両端・mid＝辺全体の中点）。
+ *  まとめない：すき間がある（tol 超）・曲がっている・折り返す・重なる・続きの候補が2本以上ある端（どれが続きか決められない）。層が違う線は続きにしない。
+ *  （事業主の指摘 2026-10-18「スナップの位置が上下対称のはずなのにずれる」：1本の辺が3本に分かれていて、1本ごとの中点が、下の1本の辺の中点とずれた） */
+export function straightRuns(list, { tol = 0.02, cross = 1e-3 } = {}) {
+  const lines = [];
+  for (const s of list || []) {
+    const pts = s.type === 'line' ? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }] : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? s.points : null; if (!pts) continue;
+    const a = pts[0], b = pts[1], len = Math.hypot(b.x - a.x, b.y - a.y); if (!(len > 1e-3) || !Number.isFinite(len)) continue;
+    lines.push({ id: s.id, layer: s.layer, a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y }, len, u: { x: (b.x - a.x) / len, y: (b.y - a.y) / len } });
+  }
+  const cell = 2 * tol, key = (cx, cy) => cx + ',' + cy, grid = new Map(), recs = [];
+  lines.forEach((l, i) => [0, 1].forEach(e => { const p = e ? l.b : l.a, rec = { i, e, p, d: e ? { x: -l.u.x, y: -l.u.y } : { x: l.u.x, y: l.u.y } }, k = key(Math.round(p.x / cell), Math.round(p.y / cell)); recs.push(rec); if (!grid.has(k)) grid.set(k, []); grid.get(k).push(rec); }));   /* d＝その端から線の中へ向かう向き */
+  const candidates = rec => {   /* その端の続きの候補：同じ層・同じ直線上で、反対向きに伸びる線の端 */
+    const out = [], cx = Math.round(rec.p.x / cell), cy = Math.round(rec.p.y / cell);
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const o of grid.get(key(cx + dx, cy + dy)) || []) {
+      if (o.i === rec.i || Math.hypot(o.p.x - rec.p.x, o.p.y - rec.p.y) > tol || lines[o.i].layer !== lines[rec.i].layer) continue;
+      if (Math.abs(rec.d.x * o.d.y - rec.d.y * o.d.x) <= cross && rec.d.x * o.d.x + rec.d.y * o.d.y < 0) out.push(o);
+    }
+    return out;
+  };
+  const parent = lines.map((_, i) => i), find = i => parent[i] === i ? i : (parent[i] = find(parent[i])), cand = new Map(recs.map(r => [r, candidates(r)]));
+  for (const rec of recs) { const c = cand.get(rec); if (c.length === 1 && cand.get(c[0]).length === 1 && cand.get(c[0])[0] === rec) parent[find(rec.i)] = find(c[0].i); }   /* お互いにただ1つの続きのときだけつなぐ */
+  const groups = new Map(); lines.forEach((l, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(l); });
+  const out = [];
+  for (const grp of groups.values()) {
+    if (grp.length < 2) continue;
+    const R = grp.reduce((m, l) => l.len > m.len ? l : m), t = q => (q.x - R.a.x) * R.u.x + (q.y - R.a.y) * R.u.y, off = q => Math.abs((q.x - R.a.x) * R.u.y - (q.y - R.a.y) * R.u.x), pts = grp.flatMap(l => [l.a, l.b]);
+    if (pts.some(q => off(q) > 0.05)) continue;   /* 少しずつ曲がっていく列は、まとめない */
+    const lo = pts.reduce((m, q) => t(q) < t(m) ? q : m), hi = pts.reduce((m, q) => t(q) > t(m) ? q : m), span = t(hi) - t(lo), sum = grp.reduce((m, l) => m + l.len, 0);
+    if (Math.abs(sum - span) > 0.05 + tol * grp.length) continue;   /* 重なり・折り返しがあれば、まとめない */
+    out.push({ ids: grp.map(l => l.id), p1: { x: lo.x, y: lo.y }, p2: { x: hi.x, y: hi.y }, mid: { x: (lo.x + hi.x) / 2, y: (lo.y + hi.y) / 2 } });
+  }
+  return out;
+}
 export function straightenPath(s) {
   if (s.type !== 'path' || !s.nodes?.length || s.nodes.length < 2) return s;
   if (!s.nodes.every(n => !n.smooth && n.inX === n.x && n.inY === n.y && n.outX === n.x && n.outY === n.y)) return s;
