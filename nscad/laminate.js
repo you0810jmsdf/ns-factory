@@ -185,8 +185,9 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   if (hasTarget && Math.abs(otherLen - wantLen) > DIM_TOL) push('error', 'lenOff', otherSide, { cur: lamNum(otherLen), want: lamNum(wantLen), diff: lamNum(Math.abs(wantLen - otherLen)), dir: wantLen > otherLen ? 'long' : 'short' }, { side: otherSide, current: otherLen, want: wantLen });
   /* 曲げ区間：手入力があればそれ、なければ表の点線から。区間があれば、平らな所は表と裏で同じ長さ・曲げの区間は、どれも同じ角度で曲がる（長さの差を区間の数で等分）として、もう一方の位置を求める */
   let zones = [], mode = 'uniform', zoneSource = null, given = Array.isArray(opts.zones) && opts.zones.length ? opts.zones : null, dashZones = given ? [] : lamZonesFromDashes(lamDashPositions(doc, bo, axis, po)), cand = given ?? dashZones;
-  if (!cand.length) { const hz = lamZonesFromRows(holeRows(doc, bo, axis, po)); if (hz.length) cand = hz; }   /* 点線が無いときは、表の菱目の間隔が変わる範囲を曲げ区間にする（2026-10-19） */
-  const candSource = given ? 'given' : dashZones.length ? 'dashes' : cand.length ? 'holes' : null;   /* 曲げ区間の出どころ：入力 ＞ 縦の点線 ＞ 菱目の間隔 */
+  let rimZones = []; if (!cand.length) { const rz = lamRimBendZones(doc, outerId, innerId, { axis }); if (rz.ok) rimZones = rz.outer.zones; if (rimZones.length) cand = rimZones; }   /* 点線が無いときは、表と裏の外周の菱の線の列を突き合わせ、間隔が違う範囲を曲げ区間にする（事業主の指示 2026-10-19） */
+  if (!cand.length) { const hz = lamZonesFromRows(holeRows(doc, bo, axis, po)); if (hz.length) cand = hz; }   /* それも無ければ、表の穴の間隔が変わる範囲（2026-10-19） */   /* 点線が無いときは、表の菱目の間隔が変わる範囲を曲げ区間にする（2026-10-19） */
+  const candSource = given ? 'given' : dashZones.length ? 'dashes' : rimZones.length ? 'rim' : cand.length ? 'holes' : null;   /* 曲げ区間の出どころ：入力 ＞ 縦の点線 ＞ 外周の菱の線の突き合わせ ＞ 穴の間隔 */
   if (cand.length && Math.abs(bendU.dL) > 1e-9 && bendU.ok) {
     const sorted = cand.every(([a, b], k) => Number.isFinite(a) && Number.isFinite(b) && a >= -0.01 && b <= Lo + 0.01 && b > a && (k === 0 || a >= cand[k - 1][1] - 1e-9)), red = bendU.dL / cand.length;
     if (sorted && cand.every(([a, b]) => b - a - Math.abs(red) > 1e-6)) {
