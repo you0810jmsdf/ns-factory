@@ -1,6 +1,6 @@
 // 書き出し形式（SVG・DXF R12）・分割印刷・印刷補正。純粋関数のみ（DOM 禁止）。
 // 内部座標は Y 下向き・mm。SVG は同じ向き、DXF は Y 上向きなので y → -y と円弧の始終角を入れ替える。
-import { mirrorY, bboxOfDoc, bboxOf, holeAppearance, flattenShape, pathSegments, dimension, rotate, arcSweep, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { mirrorY, bboxOfDoc, bboxOf, holeAppearance, flattenShape, pathSegments, dimension, rotate, arcSweep, ownHolePathIds, holeIsOwn, outlinePolygon } from './geometry.js';
 
 /** 内部 Y 下向きと DXF/PDF の Y 上向きを相互変換する（同じ関数で往復）。円弧端も交換。 */
 export function flipFormatY(shape) { return mirrorY(shape); }
@@ -61,7 +61,7 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
       const d = shapeToSvgD(s), part = fill ? (doc.parts || []).find(p => p.shapeIds.includes(s.id)) : null;
       const texId = fill ? (s.texture || part?.texture || null) : null, tex = texId && textures ? textures[texId] : null; /* 革の質感：図形自身の指定が優先、無ければ部品の指定 */
       if (tex?.href) usedTex.add(texId);
-      const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color) : null;
+      const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color || s.leather) : null; /* 部品の色が無ければ、型紙（図形自身）に付けた革色 */
       const strokeAttr = s.color && SHAPE_COLOR_HEX[s.color] ? ` stroke="${SHAPE_COLOR_HEX[s.color]}"` : '';
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
       return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}/>` : '';
@@ -70,7 +70,9 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
   }).join('');
   const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
   const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h))).join('')}</g>` : '';
-  const inner = `<g fill="none" stroke="#000" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${groups}${holeGroup}</g>`;
+  const leatherGroups = new Map(); if (fill) for (const s of shapes) if (s.leather && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
+  const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id); return poly ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${safeColor(list[0].leather)}" stroke="none"/>` : ''; }).join('');
+  const inner = `<g fill="none" stroke="#000" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${leatherFill ? `<g id="leather-fill">${leatherFill}</g>` : ''}${groups}${holeGroup}</g>`;
   const mmOf = id => (Number(textures[id].mm) > 0 ? Number(textures[id].mm) : textureMm > 0 ? textureMm : 30); /* 質感の繰り返し模様：1 ユーザー単位＝1mm。写真ごとの実寸（mm）があればそれ、無ければ textureMm */
   const defs = usedTex.size ? `<defs>${[...usedTex].map(id => { const mm = f(mmOf(id)); return `<pattern id="tex-${safeId(id)}" patternUnits="userSpaceOnUse" width="${mm}" height="${mm}"><image href="${esc(textures[id].href)}" x="0" y="0" width="${mm}" height="${mm}" preserveAspectRatio="none"/></pattern>`; }).join('')}</defs>` : '';
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w * fx)}mm" height="${f(h * fy)}mm" viewBox="${f(x0 * fx)} ${f(y0 * fy)} ${f(w * fx)} ${f(h * fy)}">${defs}${fx === 1 && fy === 1 ? inner : `<g transform="scale(${f(fx)} ${f(fy)})">${inner}</g>`}</svg>`;

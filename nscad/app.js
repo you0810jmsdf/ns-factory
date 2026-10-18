@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon } from './geometry.js';
 import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -320,9 +320,10 @@ function drawPlainSheet(d, sc, lo, hi) {
   ctx.lineWidth = 1.5 / sc;
   const vis = s => d.layers.find(l => l.id === s.layer)?.visible;
   for (const s of d.shapes.filter(s => vis(s) && (s.closed || s.type === 'circle'))) { /* ほかの紙でも革色・質感を塗る（いま描いている紙と同じ見え方） */
-    const tex = textureOf(s, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
-    path(s); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
+    const tex = textureOf(s, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(s.id)), color = part?.color || s.leather; if (!tex && !color) continue;
+    path(s); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore();
   }
+  drawLeatherOutlines(d, vis);
   for (const s of d.shapes.filter(s => vis(s) && s.type !== 'image')) strokeShape(s, s.type === 'dimension' || s.type === 'text' ? '#6f8898' : '#a0a0a0', s.lineStyle === 'dashed');
   ctx.setLineDash([]);
   for (const h of d.holes) { const a = holeAppearance(h, d); if (!a) continue; const pth = d.paths.find(q => q.id === h.pathId); if (pth && !pth.shapeIds.every(id => d.shapes.some(x => x.id === id && vis(x)))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.fillStyle = ctx.strokeStyle = '#bbb'; if (a.kind === 'slit') { ctx.lineWidth = a.height; ctx.stroke(); } else ctx.fill(); ctx.restore(); }
@@ -2141,10 +2142,25 @@ function renderColors() {
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === sel.value); $('threadPreview').style.background = th ? th.hex : 'transparent';
   renderTextures();
 }
+/** 選んだ図形に革色を付ける。部品の図形なら部品の色（今までどおり）。部品に入っていない図形は「型紙」として図形自身に付ける：閉じた図形はそのまま、開いた線は端がつながった一周ごとにまとめて（leatherGroup）塗る。
+ *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 function applyLeather(hex) {
-  const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id))); if (!parts.length) { $('hint').textContent = t('selectPartFirst'); return; }
-  commit(() => { for (const p of parts) p.color = hex; }); $('hint').textContent = t('leatherApplied', { n: parts.length, hex });
+  const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id)));
+  const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), loose = doc.shapes.filter(sh => okIds.has(sh.id) && !inPart.has(sh.id) && !sh.holeLink && !['text', 'dimension', 'image', 'fold'].includes(sh.type));
+  const closedOnes = loose.filter(sh => sh.closed || sh.type === 'circle'), open = loose.filter(sh => !(sh.closed || sh.type === 'circle'));
+  const loops = [], rest = new Set(open.map(s => s.id)); let unclosed = 0;
+  while (rest.size) { const pool = open.filter(s => rest.has(s.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId); if (poly) { loops.push(poly.ids); for (const id of poly.ids) rest.delete(id); } else { for (const id of contourFrom(pool, startId)) { rest.delete(id); unclosed++; } if (rest.delete(startId)) unclosed++; } } /* 一周しない線は数えて案内するだけ */
+  if (!parts.length && !closedOnes.length && !loops.length) { $('hint').textContent = t(unclosed ? 'leatherNotClosed' : 'leatherNeedShape'); return; }
+  const used = new Set(doc.shapes.map(s => s.leatherGroup).filter(Boolean)); let seq = 0; const nextGroup = () => { do seq++; while (used.has('lg' + seq)); used.add('lg' + seq); return 'lg' + seq; };
+  commit(() => { for (const p of parts) p.color = hex; for (const s of closedOnes) { s.leather = hex; delete s.leatherGroup; } for (const ids of loops) { const gid = nextGroup(); for (const s of doc.shapes) if (ids.includes(s.id)) { s.leather = hex; s.leatherGroup = gid; } } });
+  $('hint').textContent = t('leatherApplied', { n: parts.length + closedOnes.length + loops.length, hex }) + (unclosed ? ' ' + t('leatherSkippedOpen', { n: unclosed }) : '');
 }
+/** 型紙に直接付けた革色のうち、端がつながった線の一周（leatherGroup）の塗り：一周をたどった多角形（閉じた図形は図形ごとの塗りで描く）。move は作図中の移動プレビュー用。 */
+function leatherOutlineFills(d, vis, move = s => s) {
+  const byGroup = new Map(); for (const s of d.shapes) { if (!s.leather || !s.leatherGroup || !vis(s)) continue; if (!byGroup.has(s.leatherGroup)) byGroup.set(s.leatherGroup, []); byGroup.get(s.leatherGroup).push(move(s)); }
+  const out = []; for (const list of byGroup.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) out.push({ points: poly.points, color: list[0].leather }); } return out;
+}
+function drawLeatherOutlines(d, vis, move) { for (const r of leatherOutlineFills(d, vis, move)) { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = r.color; ctx.fill(); ctx.restore(); } }
 /** 選んだ図形に金属の色（ゴールド・シルバー・ピンクゴールド・ブラックゴールド）を付ける。id が null なら解除。線の色と、3D の金具の面の色になる。革色・革の質感とは別（事業主指示 2026-10-13）。 */
 /** 金属の色が付いた、置いた金具（hw のある図形）のべた塗りの計画。金具の登録した形（本体・レバー・リングアーム・穴）を置いた位置・角度に写す。手で描き足した線には左右されない。同じ金具・同じ色は1回。 */
 function metalFillPlan() {
@@ -4753,9 +4769,10 @@ function drawSheetBody(lo, hi) {
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   for (const s of doc.shapes.filter(s => visible(s) && (s.closed || s.type === 'circle'))) {
-    const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)); if (!tex && !part) continue;
-    path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : part.color; ctx.fill(); ctx.restore();
+    const tex = textureOf(s), part = tex ? null : doc.parts.find(p => p.color && p.shapeIds.includes(s.id)), color = part?.color || s.leather; if (!tex && !color) continue; /* 部品の色が無ければ、型紙（図形自身）に付けた革色 */
+    path(previewMoved(s)); ctx.save(); ctx.globalAlpha = tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore();
   }
+  drawLeatherOutlines(doc, visible, previewMoved); /* 端がつながった線の一周（型紙の輪郭）に付けた革色 */
   drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
   const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
