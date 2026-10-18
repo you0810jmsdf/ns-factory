@@ -1,6 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
+import { autoDimensionPlan, autoDimCounts } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -3050,6 +3051,7 @@ function applyMove() {
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
 }
 $('moveApply').onclick = applyMove;
+$('adRun').onclick = runAutoDims; $('adClear').onclick = clearAutoDims;
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
   if (!selectedShapeIds().size) { $('hint').textContent = t('attachNeedSelect'); return; }
@@ -4152,11 +4154,11 @@ function rulerClick(pt) {
 /** 寸法（D）：1点目・2点目のクリックで測り、3点目をクリックしたときに初めて、その位置（数値の位置）に寸法を作る。それまでは図面に記録しない（画面の見本だけ）。3点目を打たなければ何も作らない（Esc・ツール切替で消える）。 */
 /** 寸法の3点目（a→b を測る）から、寸法の「offset」を決める。測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる）。
  *  近く（画面の約10px以内）に、向きが平行な既存の寸法線があれば、その寸法線とぴったり同じ位置へ吸着する（事業主指示 2026-10-18：寸法線のラインをそろえる）。{ offset, snap: 相手の寸法線の両端 | null } */
-function dimOffsetInfo(a, b, pt) {
+function dimOffsetInfo(a, b, pt, exclude = null) {
   const len = distance(a, b) || 1, v = { x: (b.x - a.x) / len, y: (b.y - a.y) / len }, n = { x: v.y, y: -v.x }, dot = (p, q) => p.x * q.x + p.y * q.y, off = dot({ x: pt.x - a.x, y: pt.y - a.y }, n), tol = 10 / (scale || 1);
   let best = null;
   for (const e of doc.shapes) {
-    if (e.type !== 'dimension' || e.foldSec || !visible(e)) continue; const el = distance({ x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }); if (el < 1e-6) continue;
+    if (e.type !== 'dimension' || e.foldSec || !visible(e) || (exclude && exclude.has(e.id))) continue; const el = distance({ x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }); if (el < 1e-6) continue;
     const ev = { x: (e.x2 - e.x1) / el, y: (e.y2 - e.y1) / el }, en = { x: ev.y, y: -ev.x }; if (Math.abs(ev.x * v.y - ev.y * v.x) > 1e-3) continue;   /* 平行な寸法だけ */
     const c = dot({ x: e.x1, y: e.y1 }, n) + e.offset * dot(en, n), o = c - dot(a, n), gap = Math.abs(o - off);   /* c＝相手の寸法線の、n 方向の位置 */
     if (gap <= tol && (!best || gap < best.gap)) best = { gap, o, e };
@@ -4165,6 +4167,29 @@ function dimOffsetInfo(a, b, pt) {
   const r = Math.round(off * 10) / 10; return { offset: Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r, snap: null };
 }
 const dimOffsetFor = (a, b, pt) => dimOffsetInfo(a, b, pt).offset;
+/** 寸法線だけをドラッグで動かす（事業主の希望 2026-10-19「あとから微調整が簡単に」）：ドラッグの、寸法線に直角な向きの量だけ「ずらし」を変える。測る点は動かさない（図形に追従する覚えも残る）。近くの平行な寸法線にはそろえる（作るときと同じ吸着・動かしている寸法どうしは除く）。 */
+function dimOffPreview(g, cur) {
+  const out = new Map(), dx = cur.x - g.start.x, dy = cur.y - g.start.y;
+  for (const id of g.ids) { const d = doc.shapes.find(s => s.id === id); if (!d || d.type !== 'dimension') continue; const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }, len = distance(a, b) || 1, n = { x: (b.y - a.y) / len, y: -(b.x - a.x) / len }, off = g.base.get(id) + dx * n.x + dy * n.y; out.set(id, dimOffsetInfo(a, b, { x: a.x + n.x * off, y: a.y + n.y * off }, g.ids).offset); }
+  return out;
+}
+const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
+/** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+function runAutoDims() {
+  const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap });
+  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : 'adNoShapes'); $('adInfo').textContent = ''; return; }
+  const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
+  cancel(); commit(() => { for (const d of plan) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, ...d }); ids.push(id); } });
+  selected = new Set(ids); refreshInfo(); draw();
+  $('hint').textContent = t('adDone', { n: plan.length }); $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan));
+}
+function clearAutoDims() {
+  const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim); if (!gone.length) { $('hint').textContent = t('adNoneToClear'); return; }
+  cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
+  $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
+}
 function dimToolClick(pt) {
   if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
     const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
@@ -5214,7 +5239,7 @@ function drawSheetBody(lo, hi) {
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   if (viewShow.colors) drawLeatherFills(doc, visible, previewMoved); /* 革色・革の質感・型紙の輪郭の革色（画面・ほかの紙・PNG 書き出しで同じ見え方） */
   if (viewShow.colors) drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
-  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
   for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
@@ -5435,6 +5460,7 @@ canvas.addEventListener('pointerdown', e => {
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
+      if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
@@ -5460,6 +5486,7 @@ canvas.addEventListener('pointermove', e => {
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
+  if (gesture?.kind === 'dimOff') gesture.preview = dimOffPreview(gesture, cursor);
   draw();
 });
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
@@ -5543,6 +5570,8 @@ canvas.addEventListener('pointerup', e => {
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
       if (only && ['line', 'arc', 'polyline', 'path'].includes(only.type) && !groupIdOf(only)) { cancelSpanClick(); spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
     }
+  } else if (g.kind === 'dimOff') {
+    if (distance(p, g.screen) >= 4) { const pv = dimOffPreview(g, cursor); if (pv.size) { commit(() => { for (const s of doc.shapes) if (s.type === 'dimension' && pv.has(s.id)) s.offset = pv.get(s.id); }); $('hint').textContent = pv.size === 1 ? t('dimOffDragged', { off: Math.abs([...pv.values()][0]).toFixed(1) }) : t('dimOffDraggedMany', { n: pv.size }); } }   /* 寸法線だけを動かした（測る点はそのまま・追従の覚えも残る・事業主の希望 2026-10-19） */
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {

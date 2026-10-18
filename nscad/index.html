@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 06:52 · ee31f11</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 07:07 · 6d81f1a</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -591,6 +591,17 @@
 <label><span data-i18n="snapDist"></span><input id="snapDist" type="number" min="0" max="60" step="1" value="10"></label>
 <label><input id="showJunctions" type="checkbox" checked><span data-i18n="showJunctions"></span></label>
 </div></details>
+<details class="card" id="autoDimCard"><summary data-i18n="autoDimTitle"></summary><div class="body">
+<p class="note" data-i18n="adNote"></p>
+<label><input id="adSize" type="checkbox" checked><span data-i18n="adSize"></span></label>
+<label><input id="adEdges" type="checkbox" checked><span data-i18n="adEdges"></span></label>
+<label><input id="adCircles" type="checkbox" checked><span data-i18n="adCircles"></span></label>
+<label><input id="adHoles" type="checkbox"><span data-i18n="adHoles"></span></label>
+<label><span data-i18n="adGap"></span><input id="adGap" type="number" min="0.5" step="0.5" value="8"></label>
+<div class="row"><button id="adRun" data-i18n="adRun"></button><button id="adClear" data-i18n="adClear"></button></div>
+<output id="adInfo"></output>
+<p class="note" data-i18n="adAdjustNote"></p>
+</div></details>
 <details class="card" id="patchCard" data-lock="patchwork"><summary data-i18n="patchSection"></summary><div class="body">
 <label><span data-i18n="seamStyle"></span><select id="seamStyle"><option value="butt" data-i18n="styleButt"></option><option value="overlap" data-i18n="styleOverlap"></option><option value="felled" data-i18n="styleFelled"></option></select></label>
 <label><span data-i18n="patchPitch"></span><input id="patchPitch" type="number" step="0.1" value="4"></label>
@@ -643,8 +654,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=63bbd3be","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d5309219","./help/ja.js":"./help/ja.js?v=18f82b8d","./i18n.js":"./i18n.js?v=7dab5e5e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=2be013d2","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=63bbd3be"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=1739defd","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=fe6b1399","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=589a48ee","./help/ja.js":"./help/ja.js?v=c9c6851f","./i18n.js":"./i18n.js?v=c00950bd","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=2be013d2","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=1739defd"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2069,6 +2080,91 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
 }
 
 return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, diamondLoopSizes, resizeDiamondLoop, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
+})();
+__mods['autodim'] = (function(){
+// 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。
+// 純粋関数：図面（doc）と対象の図形（cand）から「作る寸法線の一覧」を返す。図面には触らない。画面側（app.js）が一覧を doc.shapes に足す。
+// 入れるもの（チェックで選ぶ）：①型紙（端がつながった一周の線）ごとの全体の幅と高さ ②まっすぐな辺ごとの長さ ③円の直径 ④縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）。
+// 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
+const { distance, bboxOf, chainShapes, flattenShape, arcLength, pointAtLength, resolvePath, pathSegments } = __mods['geometry'];
+const AD_EQ = 0.01;   /* 同じ点とみなす距離（mm） */
+const AD_MIN = 1;     /* これより短い寸法は入れない（mm） */
+const adRound = v => Math.round(v * 100) / 100;
+const adSame = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) <= AD_EQ;
+const adSamePair = (d, p, q) => { const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }; return (adSame(a, p) && adSame(b, q)) || (adSame(a, q) && adSame(b, p)); };
+
+/** 多角形（点列）の中に点があるか（辺をまたぐ回数の偶奇で決める）。 */
+function adPointInPolygon(pt, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > pt.y) !== (b.y > pt.y) && pt.x < (b.x - a.x) * (pt.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+/** ひとつながり（chainShapes の1件）を、端どうしをつないだ点列にする（閉じていれば多角形）。 */
+function adChainPoints(chain) {
+  const out = [];
+  for (const it of chain.items) { let pts = flattenShape(it.shape, 0.05); if (it.reversed) pts = [...pts].reverse(); for (const p of pts) if (!out.length || distance(out.at(-1), p) > 1e-6) out.push({ x: p.x, y: p.y }); }
+  if (out.length > 1 && distance(out[0], out.at(-1)) <= 1e-6) out.pop();
+  return out;
+}
+/** 図形のまっすぐな辺 [[p, q], …]（直線・折れ線の各辺・ペンの直線区間。円弧・曲線は無し）。 */
+function adStraightEdges(s) {
+  if (s.type === 'line') return [[{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]];
+  if (s.type === 'polyline') { const pts = s.points, n = pts.length, out = []; for (let i = 0; i < n - (s.closed ? 0 : 1); i++) out.push([pts[i], pts[(i + 1) % n]]); return out; }
+  if (s.type === 'path') return pathSegments(s).filter(seg => seg.type === 'line').map(seg => [{ x: seg.x1, y: seg.y1 }, { x: seg.x2, y: seg.y2 }]);
+  return [];
+}
+/** 辺 p→q の寸法線を置く側：型紙（多角形）があれば外側、無ければ進む向きの左。dimension() の offset は、進む向きの左が正。 */
+function adEdgeOffset(p, q, poly, gap) {
+  if (!poly) return gap;
+  const len = distance(p, q) || 1, n = { x: (q.y - p.y) / len, y: -(q.x - p.x) / len }, mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 };
+  return adPointInPolygon({ x: mid.x + n.x * 0.5, y: mid.y + n.y * 0.5 }, poly) ? -gap : gap;
+}
+const adBoundsOf = list => { let b = null; for (const s of list) { const x = bboxOf(s); if (!x) continue; b = b ? { minX: Math.min(b.minX, x.minX), minY: Math.min(b.minY, x.minY), maxX: Math.max(b.maxX, x.maxX), maxY: Math.max(b.maxY, x.maxY) } : { ...x }; } return b; };
+/** 辺 p→q が、全体の幅（上下の辺で長さが幅と同じ）か全体の高さ（左右の辺で長さが高さと同じ）と同じ寸法になるか。同じなら辺の寸法は入れない（全体の寸法と二重になる）。 */
+function adIsBoxEdge(p, q, b) {
+  const horiz = Math.abs(p.y - q.y) <= AD_EQ, vert = Math.abs(p.x - q.x) <= AD_EQ;
+  if (horiz && Math.abs(Math.abs(q.x - p.x) - (b.maxX - b.minX)) <= AD_EQ) return true;
+  if (vert && Math.abs(Math.abs(q.y - p.y) - (b.maxY - b.minY)) <= AD_EQ) return true;
+  return false;
+}
+
+/** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す。
+ *  doc：図面（既存の寸法・穴・経路を見る）。cand：対象の図形（画面側で「見えている・ガイドの層でない・金具でない」に絞ったもの。選んでいればその図形だけ）。
+ *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。 */
+function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8 } = {}) {
+  const existing = (doc.shapes || []).filter(s => s.type === 'dimension'), out = [];
+  const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
+  const add = (p, q, offset, kind) => { if (!(distance(p, q) >= AD_MIN) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind }); };
+  const geo = (cand || []).filter(s => s && ['line', 'polyline', 'path', 'arc', 'bezier', 'circle'].includes(s.type));
+  const polyOfShape = new Map();   /* 辺の図形 id → それが属する型紙の多角形（穴の間隔の置く側にも使う） */
+  for (const ch of chainShapes(geo)) {
+    const list = ch.shapeIds.map(id => geo.find(s => s.id === id)), isCircle = list.length === 1 && list[0].type === 'circle';
+    const poly = ch.closed && !isCircle ? adChainPoints(ch) : null, b = adBoundsOf(list);
+    if (poly && poly.length >= 3) for (const s of list) polyOfShape.set(s.id, poly);
+    if (size && poly && b) {
+      add({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, gap, 'size');    /* 全体の幅：上の辺の上（左→右の左側＝上） */
+      add({ x: b.minX, y: b.minY }, { x: b.minX, y: b.maxY }, -gap, 'size');   /* 全体の高さ：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
+    }
+    if (circles && isCircle) { const c = list[0]; add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); }   /* 直径：円の上に */
+    if (edges) for (const s of list) for (const [p, q] of adStraightEdges(s)) { if (size && poly && b && adIsBoxEdge(p, q, b)) continue; add(p, q, adEdgeOffset(p, q, poly, gap), 'edge'); }
+  }
+  if (holes) for (const path of doc.paths || []) {
+    if (!path.shapeIds.every(id => geo.some(s => s.id === id))) continue;
+    const hs = (doc.holes || []).filter(h => h.pathId === path.id).sort((a, b) => a.s - b.s); if (hs.length < 2) continue;
+    const route = resolvePath(doc, path), poly = polyOfShape.get(path.shapeIds[0]) || null, off = (p, q) => adEdgeOffset(p, q, poly, gap);
+    if (route && !path.closed) { const a = pointAtLength(route, 0), z = pointAtLength(route, arcLength(route)); if (a) add(a, hs[0], off(a, hs[0]), 'hole'); if (z) add(hs.at(-1), z, off(hs.at(-1), z), 'hole'); }   /* 端から最初の穴・最後の穴から端 */
+    let last = null;
+    for (let i = 0; i + 1 < hs.length; i++) { const d = distance(hs[i], hs[i + 1]); if (last === null || Math.abs(d - last) > 0.05) { add(hs[i], hs[i + 1], off(hs[i], hs[i + 1]), 'hole'); last = d; } }   /* 穴と穴：間隔が変わる所だけ */
+  }
+  return out;
+}
+/** 一覧の種類ごとの本数 { size, edge, circle, hole }。 */
+function autoDimCounts(plan) { const c = { size: 0, edge: 0, circle: 0, hole: 0 }; for (const d of plan || []) if (d.autoDim in c) c[d.autoDim]++; return c; }
+
+return {adPointInPolygon, autoDimensionPlan, autoDimCounts};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -3564,6 +3660,24 @@ const MESSAGES = {
     "layer.guide": "ガイド",
     "drawOptions": "作図オプション",
     "dimOffset": "寸法線のずらし (mm)",
+    "autoDimTitle": "寸法線を自動で入れる",
+    "adNote": "図形を選んでいればその図形だけ、選んでいなければ図面の全部に、寸法線をまとめて入れます（ガイドの層の線・金具は除く）。同じ所にもう寸法があれば入れません。",
+    "adSize": "型紙ごとの全体の幅と高さ",
+    "adEdges": "辺ごとの長さ（まっすぐな辺）",
+    "adCircles": "円の直径",
+    "adHoles": "縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）",
+    "adGap": "線から離す距離 (mm)",
+    "adRun": "寸法線を入れる",
+    "adClear": "自動で入れた寸法を全部消す",
+    "adDone": "寸法線を {n} 本入れました（選んだ状態です。要らないものは Delete で消せます）。",
+    "adDoneDetail": "全体 {size} 本・辺 {edge} 本・円 {circle} 本・穴 {hole} 本",
+    "adNothingNew": "新しく入れる寸法はありません（同じ所にもう寸法があります）。",
+    "adNoShapes": "寸法を入れる図形がありません（図形が見えているか、選んでいる図形を確かめてください）。",
+    "adCleared": "自動で入れた寸法を {n} 本消しました。",
+    "adNoneToClear": "自動で入れた寸法はありません。",
+    "adAdjustNote": "直し方：寸法線をドラッグすると、線だけが動きます（測る点は動きません。近くの寸法線にそろいます）。情報カードの「ずらし (mm)」でも数字で直せます。寸法ごと動かすときは、Shift を押しながらドラッグします。",
+    "dimOffDragged": "寸法線を、測った線から {off} mm の位置にしました。",
+    "dimOffDraggedMany": "{n} 本の寸法線を動かしました。",
     "holeEdit": "穴の編集",
     "setDefaultTool": "既定にする",
     "defaultToolSaved": "この工具を既定にしました。",
@@ -5165,6 +5279,24 @@ const MESSAGES = {
     "layer.guide": "Guide",
     "drawOptions": "Drawing options",
     "dimOffset": "Dimension offset (mm)",
+    "autoDimTitle": "Auto dimensions",
+    "adNote": "Adds dimension lines to the selected shapes, or to the whole drawing when nothing is selected (lines on the Guide layer and hardware are skipped). Places that already have a dimension are left alone.",
+    "adSize": "Overall width and height of each piece",
+    "adEdges": "Length of each straight edge",
+    "adCircles": "Circle diameters",
+    "adHoles": "Stitch hole spacing (edge to first hole, hole to hole, last hole to edge)",
+    "adGap": "Distance from the line (mm)",
+    "adRun": "Add dimensions",
+    "adClear": "Remove all auto dimensions",
+    "adDone": "Added {n} dimension(s). They are selected; press Delete to remove the ones you do not need.",
+    "adDoneDetail": "Overall {size} · edges {edge} · circles {circle} · holes {hole}",
+    "adNothingNew": "Nothing new to add (dimensions already exist there).",
+    "adNoShapes": "No shapes to dimension (check that shapes are visible, or which shapes are selected).",
+    "adCleared": "Removed {n} auto dimension(s).",
+    "adNoneToClear": "There are no auto dimensions.",
+    "adAdjustNote": "Adjusting: drag a dimension line to move only the line (the measured points stay; it aligns with nearby dimension lines). You can also type the offset in the Info card. Hold Shift while dragging to move the whole dimension.",
+    "dimOffDragged": "Moved the dimension line to {off} mm from the measured line.",
+    "dimOffDraggedMany": "Moved {n} dimension lines.",
     "holeEdit": "Hole editing",
     "setDefaultTool": "Make default",
     "defaultToolSaved": "Saved as the default tool.",
@@ -20786,7 +20918,7 @@ const HELP_JA = {
     {
       "id": "text-dimension",
       "title": "文字と寸法",
-      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。\n「定型句」カードに、よく使う文（屋号・作品名・サイズ・日付など。複数行可）を名前付きで保存できます（保存先はこの PC のブラウザ）。「図面に置く（クリック）」で、クリックした位置に 1 行ずつ文字として置きます（ガイドの層）。「書き出す」で phrases.json に保存し、別の PC で「読み込む」と合流します（同じ名前は置き換え）。"
+      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n「寸法線を自動で入れる」カード：型紙ごとの全体の幅と高さ・まっすぐな辺ごとの長さ・円の直径・縫い穴の間隔を、チェックで選んでまとめて入れます（図形を選んでいればその図形だけ・同じ所にあれば入れない）。入れた寸法線は、ドラッグすると線だけが動きます（測る点は動かず、近くの寸法線にそろいます）。情報カードの「ずらし (mm)」でも直せます。寸法ごと動かすときは Shift を押しながらドラッグ。「自動で入れた寸法を全部消す」で、手で描いた寸法を残して消せます。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。\n「定型句」カードに、よく使う文（屋号・作品名・サイズ・日付など。複数行可）を名前付きで保存できます（保存先はこの PC のブラウザ）。「図面に置く（クリック）」で、クリックした位置に 1 行ずつ文字として置きます（ガイドの層）。「書き出す」で phrases.json に保存し、別の PC で「読み込む」と合流します（同じ名前は置き換え）。"
     },
     {
       "id": "numeric",
@@ -20940,7 +21072,7 @@ const HELP_EN = {
     {
       "id": "text-dimension",
       "title": "Text and dimensions",
-      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing.\nThe \"Phrases\" card stores reusable text (brand, item name, size, date; multi-line) by name in this browser. \"Place on drawing (click)\" puts it at the clicked point, one text shape per line, on the Guide layer.\"Export\" saves phrases.json; \"Import\" on another PC merges it (same names are replaced)."
+      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe \"Auto dimensions\" card adds, in one go, the overall width and height of each piece, the length of each straight edge, circle diameters and stitch hole spacing (tick what you want; only the selected shapes when something is selected; places that already have a dimension are skipped). Drag a dimension line to move only the line (the measured points stay and it aligns with nearby dimension lines); the offset can also be typed in the Info card. Hold Shift while dragging to move the whole dimension. \"Remove all auto dimensions\" keeps the ones you drew by hand.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing.\nThe \"Phrases\" card stores reusable text (brand, item name, size, date; multi-line) by name in this browser. \"Place on drawing (click)\" puts it at the clicked point, one text shape per line, on the Guide layer.\"Export\" saves phrases.json; \"Import\" on another PC merges it (same names are replaced)."
     },
     {
       "id": "numeric",
@@ -21076,6 +21208,7 @@ __mods['app'] = (function(){
 const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __mods['binder_section_edit'];
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
+const { autoDimensionPlan, autoDimCounts } = __mods['autodim'];
 const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
 const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
@@ -24124,6 +24257,7 @@ function applyMove() {
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
 }
 $('moveApply').onclick = applyMove;
+$('adRun').onclick = runAutoDims; $('adClear').onclick = clearAutoDims;
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
   if (!selectedShapeIds().size) { $('hint').textContent = t('attachNeedSelect'); return; }
@@ -25226,11 +25360,11 @@ function rulerClick(pt) {
 /** 寸法（D）：1点目・2点目のクリックで測り、3点目をクリックしたときに初めて、その位置（数値の位置）に寸法を作る。それまでは図面に記録しない（画面の見本だけ）。3点目を打たなければ何も作らない（Esc・ツール切替で消える）。 */
 /** 寸法の3点目（a→b を測る）から、寸法の「offset」を決める。測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる）。
  *  近く（画面の約10px以内）に、向きが平行な既存の寸法線があれば、その寸法線とぴったり同じ位置へ吸着する（事業主指示 2026-10-18：寸法線のラインをそろえる）。{ offset, snap: 相手の寸法線の両端 | null } */
-function dimOffsetInfo(a, b, pt) {
+function dimOffsetInfo(a, b, pt, exclude = null) {
   const len = distance(a, b) || 1, v = { x: (b.x - a.x) / len, y: (b.y - a.y) / len }, n = { x: v.y, y: -v.x }, dot = (p, q) => p.x * q.x + p.y * q.y, off = dot({ x: pt.x - a.x, y: pt.y - a.y }, n), tol = 10 / (scale || 1);
   let best = null;
   for (const e of doc.shapes) {
-    if (e.type !== 'dimension' || e.foldSec || !visible(e)) continue; const el = distance({ x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }); if (el < 1e-6) continue;
+    if (e.type !== 'dimension' || e.foldSec || !visible(e) || (exclude && exclude.has(e.id))) continue; const el = distance({ x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }); if (el < 1e-6) continue;
     const ev = { x: (e.x2 - e.x1) / el, y: (e.y2 - e.y1) / el }, en = { x: ev.y, y: -ev.x }; if (Math.abs(ev.x * v.y - ev.y * v.x) > 1e-3) continue;   /* 平行な寸法だけ */
     const c = dot({ x: e.x1, y: e.y1 }, n) + e.offset * dot(en, n), o = c - dot(a, n), gap = Math.abs(o - off);   /* c＝相手の寸法線の、n 方向の位置 */
     if (gap <= tol && (!best || gap < best.gap)) best = { gap, o, e };
@@ -25239,6 +25373,29 @@ function dimOffsetInfo(a, b, pt) {
   const r = Math.round(off * 10) / 10; return { offset: Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r, snap: null };
 }
 const dimOffsetFor = (a, b, pt) => dimOffsetInfo(a, b, pt).offset;
+/** 寸法線だけをドラッグで動かす（事業主の希望 2026-10-19「あとから微調整が簡単に」）：ドラッグの、寸法線に直角な向きの量だけ「ずらし」を変える。測る点は動かさない（図形に追従する覚えも残る）。近くの平行な寸法線にはそろえる（作るときと同じ吸着・動かしている寸法どうしは除く）。 */
+function dimOffPreview(g, cur) {
+  const out = new Map(), dx = cur.x - g.start.x, dy = cur.y - g.start.y;
+  for (const id of g.ids) { const d = doc.shapes.find(s => s.id === id); if (!d || d.type !== 'dimension') continue; const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }, len = distance(a, b) || 1, n = { x: (b.y - a.y) / len, y: -(b.x - a.x) / len }, off = g.base.get(id) + dx * n.x + dy * n.y; out.set(id, dimOffsetInfo(a, b, { x: a.x + n.x * off, y: a.y + n.y * off }, g.ids).offset); }
+  return out;
+}
+const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
+/** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+function runAutoDims() {
+  const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap });
+  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : 'adNoShapes'); $('adInfo').textContent = ''; return; }
+  const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
+  cancel(); commit(() => { for (const d of plan) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, ...d }); ids.push(id); } });
+  selected = new Set(ids); refreshInfo(); draw();
+  $('hint').textContent = t('adDone', { n: plan.length }); $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan));
+}
+function clearAutoDims() {
+  const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim); if (!gone.length) { $('hint').textContent = t('adNoneToClear'); return; }
+  cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
+  $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
+}
 function dimToolClick(pt) {
   if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
     const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
@@ -26288,7 +26445,7 @@ function drawSheetBody(lo, hi) {
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   if (viewShow.colors) drawLeatherFills(doc, visible, previewMoved); /* 革色・革の質感・型紙の輪郭の革色（画面・ほかの紙・PNG 書き出しで同じ見え方） */
   if (viewShow.colors) drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
-  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
   for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
@@ -26509,6 +26666,7 @@ canvas.addEventListener('pointerdown', e => {
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
+      if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
@@ -26534,6 +26692,7 @@ canvas.addEventListener('pointermove', e => {
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
+  if (gesture?.kind === 'dimOff') gesture.preview = dimOffPreview(gesture, cursor);
   draw();
 });
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
@@ -26617,6 +26776,8 @@ canvas.addEventListener('pointerup', e => {
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
       if (only && ['line', 'arc', 'polyline', 'path'].includes(only.type) && !groupIdOf(only)) { cancelSpanClick(); spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
     }
+  } else if (g.kind === 'dimOff') {
+    if (distance(p, g.screen) >= 4) { const pv = dimOffPreview(g, cursor); if (pv.size) { commit(() => { for (const s of doc.shapes) if (s.type === 'dimension' && pv.has(s.id)) s.offset = pv.get(s.id); }); $('hint').textContent = pv.size === 1 ? t('dimOffDragged', { off: Math.abs([...pv.values()][0]).toFixed(1) }) : t('dimOffDraggedMany', { n: pv.size }); } }   /* 寸法線だけを動かした（測る点はそのまま・追従の覚えも残る・事業主の希望 2026-10-19） */
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
