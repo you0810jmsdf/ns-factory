@@ -772,6 +772,19 @@ function holePosition(h,p) {
   const old=pointAtLength(route,h.s),next=projectOnPath(route,p);
   return {...h,x:next.x,y:next.y,s:next.s,angleDeg:h.angleDeg+($('followTangent').checked?next.angleDeg-old.angleDeg:0)};
 }
+/** 選んだ穴の傾きを数える（情報カード用）。順目＝線の向きに対して、置くときの既定の傾き（工具の傾きの符号を反転）。逆目＝その鏡写し。
+ *  線が見つからない穴・傾きの区別がない工具（0°・90°）・どちらにも合わない穴は「どちらでもない」。数えるのは、入れ替えの対象（菱目・切れ目）だけ。 */
+function holeSlantCounts(hs) {
+  const n = { fwd: 0, rev: 0, other: 0 }, routes = new Map(), m180 = d => ((d % 180) + 180) % 180, near = (a, b) => { const d = m180(a - b); return Math.min(d, 180 - d) < 1; };
+  for (const h of hs) {
+    const tool = doc.tools.find(x => x.id === h.toolId); if (!routes.has(h.pathId)) { const p = doc.paths.find(q => q.id === h.pathId); routes.set(h.pathId, p ? resolvePath(doc, p) : null); }
+    const route = routes.get(h.pathId); if (!tool || !route || near(tool.angleDeg, -tool.angleDeg)) { n.other++; continue; }
+    const rel = h.angleDeg - pointAtLength(route, h.s).angleDeg;
+    if (near(rel, -tool.angleDeg)) n.fwd++; else if (near(rel, tool.angleDeg)) n.rev++; else n.other++;
+  }
+  return n;
+}
+
 /** 「順目⇔逆目」：選んだ線の上の菱目（菱目を選んでいればその菱目だけ）の傾きを、線の向きを軸に鏡写しにして、順目と逆目を入れ替える（事業主指示 2026-10-16）。
  *  対象は、選んだ線の経路の穴・選んだ穴・選んだ線の上（0.5mm以内）に乗っている穴（穴の付いた線に重なった別の線を選んでも効く）。点の目印・円の穴は対象外（傾きの意味が違う）。 */
 function flipSlantOfSelection() {
@@ -1114,6 +1127,7 @@ function initLayers() {
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
+  $('info-flipSlant').onclick = flipSlantOfSelection;
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const id = freshId(doc.layers, 'layer'); commit(() => { doc.layers.push({ id, name: t('newLayer', { n: id.slice(5) }), visible: true, locked: false }); }); activeLayer = id; renderLayers(); };
@@ -1242,6 +1256,7 @@ function refreshInfo() {
   $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
   { /* 選んだ穴が、菱形の1つの工具だけのとき：その工具の値を入力欄に入れて、直せるようにする */
     const toolIds = [...new Set(hs.map(h => h.toolId))], one = hs.length && toolIds.length === 1 ? doc.tools.find(x => x.id === toolIds[0]) : null, edit = !!one && one.kind === 'diamond'; $('l-holeEdit').hidden = !edit;
+    { const sc = hs.length ? holeSlantCounts(hs.filter(h => ['diamond', 'slit'].includes(holeAppearance(h, doc)?.kind))) : null, any = !!sc && sc.fwd + sc.rev + sc.other > 0; $('l-holeSlant').hidden = !any; if (any) $('info-holeSlant').textContent = t('holeSlantLine', { f: sc.fwd, r: sc.rev, o: sc.other ? t('holeSlantOther', { n: sc.other }) : '' }); }   /* 菱目の穴を選んでいるとき：いまの傾き（順目・逆目の数）と、入れ替えボタン */
     $('l-diamondMode').hidden = !(hs.length || dOnly); $('info-diamondModeNow').textContent = t('diamondModeName_' + diamondMode());   /* 菱目を選んでいるとき：全体の菱目の見せ方（中抜き・中塗り）のボタン */
     $('l-lineEdit').hidden = !dOnly; if (dOnly) for (const [id, v] of [['info-lineW', dl[0].w], ['info-lineH', dl[0].h]]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+v.toFixed(2)); }   /* 菱の線だけ選んでいるとき：いまの大きさを入れる */
     if (edit) for (const [id, key] of [['info-holeW', 'holeW'], ['info-holeH', 'holeH'], ['info-holePitch', 'pitch'], ['info-holeTeeth', 'teeth'], ['info-holeAngle', 'angleDeg']]) { const el = $(id); if (!(typeof document.activeElement !== 'undefined' && document.activeElement === el)) el.value = String(+Number(one[key]).toFixed(2)); }   /* 打ちかけの欄は巻き戻さない */
