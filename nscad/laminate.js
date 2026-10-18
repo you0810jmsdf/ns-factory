@@ -76,15 +76,16 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
   if (!bend.ok) push('error', 'bendTooMuch', null, { dl: lamNum(Math.abs(bend.dL)) });
   if (Math.abs(Wo - Wi) > DIM_TOL) push('warn', 'widthDiffer', null, { wo: lamNum(Wo), wi: lamNum(Wi) });
   /* ①寸法の過不足 */
-  const names = [['表', po, bo, Lo, Wo, 'outer'], ['裏', pi, bi, Li, Wi, 'inner']], dimInfo = {};
+  const checkDims = opts.checkDims !== false, checkHoles = opts.checkHoles !== false;   /* 寸法・菱目の検査は、オフにできる（寸法を非表示にしたとき・菱目をまだ打っていないとき） */
+  const names = checkDims ? [['表', po, bo, Lo, Wo, 'outer'], ['裏', pi, bi, Li, Wi, 'inner']] : [], dimInfo = {};
   for (const [side, part, box, L, W] of names) {
     const ds = dimsOf(doc, box, part), hit = (value, horizontal) => ds.some(d => d.horizontal === horizontal && Math.abs(d.value - value) <= DIM_TOL);
     dimInfo[side] = ds;
     if (!hit(L, horizontalAxis)) push('error', 'needLength', side, { v: lamNum(L) }, { side, partId: part.id, value: L, horizontal: horizontalAxis, box, role: 'length' });
     if (!hit(W, !horizontalAxis)) push('error', 'needWidth', side, { v: lamNum(W) }, { side, partId: part.id, value: W, horizontal: !horizontalAxis, box, role: 'width' });
   }
-  const used = new Set(), inner = dimInfo['裏'];
-  for (const d of dimInfo['表']) {
+  const used = new Set(), inner = dimInfo['裏'] || [];
+  for (const d of dimInfo['表'] || []) {
     if (Math.abs(d.value - Lo) <= DIM_TOL || Math.abs(d.value - Wo) <= DIM_TOL) continue;
     const mate = inner.find(e => !used.has(e.id) && e.horizontal === d.horizontal && Math.abs(e.value - d.value) <= DIM_TOL); if (mate) used.add(mate.id);
     else push('warn', 'unpaired', '裏', { v: lamNum(d.value), from: '表' }, { side: '裏', partId: pi.id, value: d.value, horizontal: d.horizontal, box: bi, role: 'mate' });
@@ -102,7 +103,7 @@ export function laminateCheck(doc, outerId, innerId, opts = {}) {
     } else push('warn', 'zonesBad', null, { n: cand.length });
   }
   const mapInner = x => mode === 'zones' ? x - zones.reduce((sum, z) => sum + (bend.dL / zones.length) * Math.min(Math.max((x - z.a) / (z.b - z.a), 0), 1), 0) : x * (Lo > 0 ? Li / Lo : 1);
-  const ro = holeRows(doc, bo, axis, po), ri = holeRows(doc, bi, axis, pi), ratio = Lo > 0 ? Li / Lo : 1, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
+  const ro = checkHoles ? holeRows(doc, bo, axis, po) : [], ri = checkHoles ? holeRows(doc, bi, axis, pi) : [], ratio = Lo > 0 ? Li / Lo : 1, holes = { rows: [], count: [ro.reduce((n, r) => n + r.pos.length, 0), ri.reduce((n, r) => n + r.pos.length, 0)], maxDev: 0 };
   if (!ro.length && !ri.length) { /* 菱目が無ければ、見るものが無い */ }
   else if (ro.length !== ri.length) push('error', 'rowCount', null, { a: ro.length, b: ri.length });
   else ro.forEach((a, k) => {
