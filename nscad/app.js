@@ -5,7 +5,7 @@ import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundC
 import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
-import { docToSvg, docToDxfR12, dxfToShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
+import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
@@ -1682,22 +1682,28 @@ function download(name, text, type, gate = true) {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+/** 書き出す図形・穴が1つも無い（外接矩形が無い）とき、空のファイルを保存せず、理由（図面タブ名つき）を案内して true を返す。利用登録の小窓より前に呼ぶ（2026-10-18。空の DXF/SVG/PDF を別のソフトに渡して「図形がありません」と止まるため） */
+function exportIsEmpty(shapes, holes) { if (bboxOfDoc({ ...doc, shapes, holes })) return false; $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return true; }
+/** SVG・PDF が書き出す対象（docToSvg / docToPdf と同じ選び方：表示中のレイヤー・穴をつなぐ補助の線（holeLink）以外・穴は「穴を入れる」の設定どおり） */
+function exportTargets(includeHoles) { const layerShapes = doc.shapes.filter(layerVisible), shapes = layerShapes.filter(s => !s.holeLink); return { shapes, holes: includeHoles ? holesOnShapes(doc, layerShapes) : [] }; }
 function exportSvg() {
+  const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
   const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked, textures: $('outFill').checked ? svgTextures() : null, textureMm: textureMm() });
   download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
 }
 function exportPdf() {
+  const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
   const paper = $('paper').value, bytes = docToPdf(doc, { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null });
   download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
+  const shapes = doc.shapes.filter(visible), holes = doc.holes.filter(holeVisible), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
+  if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('png', 'draw')) return;
-  const shapes = doc.shapes.filter(visible), holes = doc.holes.filter(holeVisible), b = bboxOfDoc({ ...doc, shapes, holes });
-  if (!b) { $('hint').textContent = t('nothingToPrint'); return; }
   let dpi = Number($('pngDpi').value) || 300; const margin = 2, wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
   const pixels = d => (wMm / 25.4 * d) * (hMm / 25.4 * d); let lowered = false;
   while (pixels(dpi) > 50e6 && dpi > 10) { dpi = Math.floor(dpi * 0.8); lowered = true; }
