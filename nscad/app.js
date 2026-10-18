@@ -443,7 +443,7 @@ function printToolStrip() {
   tmp.shapes.push({ id: 's1', layer: 'pattern', type: 'line', x1: 10, y1: 15, x2: 10 + len, y2: 15 }, { id: 's2', layer: 'pattern', type: 'line', x1: 10, y1: 25, x2: 60, y2: 25 }, { id: 's3', layer: 'pattern', type: 'line', x1: 10, y1: 23, x2: 10, y2: 27 }, { id: 's4', layer: 'pattern', type: 'line', x1: 60, y1: 23, x2: 60, y2: 27 }, { id: 's5', layer: 'pattern', type: 'text', x: 10, y: 33, text: `${tool.name}  ${tool.pitch}mm  ${tool.holeW}x${tool.holeH}mm  ${tool.angleDeg}deg   |---- 50mm ----|`, sizeMm: 3, angleDeg: 0 });
   tmp.paths.push({ id: 'p1', shapeIds: ['s1'], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: tool.pitch, mode: 'fixed' }], mark: 'tool' });
   for (let i = 0; i <= 9; i++) tmp.holes.push({ id: 'h' + i, pathId: 'p1', s: i * tool.pitch, x: 10 + i * tool.pitch, y: 15, angleDeg: tool.angleDeg, toolId: tool.id, mark: 'tool' });
-  return printPages(tmp);
+  return printPages(tmp, { dots: false });   /* 現物の刃と比べる紙なので、「縫い穴を点で印刷する」が入っていても穴の形のまま */
 }
 function fillTool() {
   const tool=doc.tools.find(t=>t.id===$('stitchTool').value);if(!tool)return;
@@ -1813,6 +1813,11 @@ function initInfo() {
 // ---- 出力（SVG・DXF・印刷・校正）----
 const PAGES = { a4: { w: 190, h: 277 }, a4l: { w: 277, h: 190 }, a3: { w: 277, h: 400 }, a3l: { w: 400, h: 277 } };
 let calibration = { fx: 1, fy: 1 }, measuredCalibration = { fx: 1, fy: 1 };
+/** 「縫い穴を点で印刷する」（出力カード・事業主の希望 2026-10-19）：印刷と PDF で、穴と菱の線を真ん中の●にする。入っていて直径が正の数ならその直径（mm）、それ以外は 0（今までどおりの形）。画面・保存データ・SVG・DXF・PNG は変えない。設定はブラウザに残す。 */
+const PRINT_DOTS_KEY = 'leather-cad.printDots'; let printDotLast = 1;
+const printDotMm = () => { if (!$('printDots')?.checked) return 0; const d = Number($('printDotD')?.value); return Number.isFinite(d) && d > 0 ? d : 0; };
+function savePrintDots() { const d = Number($('printDotD').value); if (Number.isFinite(d) && d > 0) printDotLast = d; else $('printDotD').value = String(printDotLast); try { localStorage.setItem(PRINT_DOTS_KEY, JSON.stringify({ on: !!$('printDots').checked, d: printDotLast })); } catch { /* 保存できなくても続ける */ } }
+function restorePrintDots() { let v = null; try { v = JSON.parse(localStorage.getItem(PRINT_DOTS_KEY) || 'null'); } catch { v = null; } $('printDots').checked = v?.on === true; const d = Number(v?.d); if (Number.isFinite(d) && d > 0) { printDotLast = d; $('printDotD').value = String(d); } }
 function loadCalibration() { try { const c = JSON.parse(localStorage.getItem('leather-cad.calibration')); if (c && Number.isFinite(c.fx) && Number.isFinite(c.fy) && c.fx > 0 && c.fy > 0) calibration = { fx: c.fx, fy: c.fy }; } catch { /* 既定 1.0 のまま。 */ } showCalibration(); }
 function showCalibration() { $('calibInfo').textContent = calibration.fx === 1 && calibration.fy === 1 ? t('calibNone') : t('calibCurrent', { fx: calibration.fx.toFixed(4), fy: calibration.fy.toFixed(4) }); }
 function saveCalibration(next) { calibration = next; try { localStorage.setItem('leather-cad.calibration', JSON.stringify(next)); } catch { $('hint').textContent = t('storageUnavailable'); } showCalibration(); }
@@ -1891,7 +1896,7 @@ function exportSvg() {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null });
+  const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
   download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -1994,13 +1999,14 @@ function drawPrintOverlay() {
 /** 用紙キー（a4/a4l/a3/a3l）から @page を書く。CSS のセレクタ内 @page は無効なので style 要素を差し替える。 */
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
-function printPages(target = outputDoc()) {
+function printPages(target = outputDoc(), { dots = true } = {}) {   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
   if (!regGuard('print', 'pages')) return null;
+  const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
   const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => holeIsOwn(h, ownHolePathIds(target)) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
-  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked })}</div>`).join('');
+  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot })}</div>`).join('');
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
@@ -2030,6 +2036,7 @@ function initOutput() {
   $('restartCalib').onclick = () => { saveCalibration({fx:1,fy:1}); $('outCalib').checked = true; printCalibration(); };
   $('verifyCalib').onclick = printCalibration;
   loadCalibration();
+  restorePrintDots(); for (const id of ['printDots', 'printDotD']) $(id).addEventListener('change', savePrintDots);
 }
 
 // ---- 3D（折りたたみ・三面図）----
