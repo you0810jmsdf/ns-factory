@@ -59,7 +59,7 @@ globalThis.__LC_BOOTED = true;
 
 const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
-const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false, exportColor = false;   /* exportColor：書き出し（PNG）のとき、革色・金属の色・糸の色も描く */
+const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false, exportColor = false, exportFilter = null;   /* exportFilter：「選んだ図形だけ出力」のとき { vis, hvis, ids }（描く図形・穴の条件と、選んだ id） */   /* exportColor：書き出し（PNG）のとき、革色・金属の色・糸の色も描く */
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
 let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
@@ -1707,7 +1707,9 @@ function exportPdf() {
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
-  const shapes = doc.shapes.filter(visible), holes = doc.holes.filter(holeVisible), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
+  const only = !!$('pngSelOnly')?.checked, selIds = new Set(selected), vis = only ? (sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 「選んだ図形だけ出力」：選んだ図形と、その縫い穴だけ */
+  const shapes = doc.shapes.filter(vis), holes = doc.holes.filter(hvis), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
+  if (only && !shapes.length && !holes.length) { $('hint').textContent = t('pngSelNone'); return; }
   if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('png', 'draw')) return;
   let dpi = Number($('pngDpi').value) || 300; const margin = 2, wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
@@ -1717,9 +1719,9 @@ function exportPng() {
   const k = dpi / 25.4; off.width = Math.ceil(wMm * k); off.height = Math.ceil(hMm * k);
   const saved = { ctx, width, height, scale, origin }; ctx = off.getContext('2d'); exporting = true;
   width = off.width; height = off.height; scale = k; origin = { x: (margin - b.minX) * k, y: (margin - b.minY) * k };
-  exportColor = $('pngColor').checked;
+  exportColor = $('pngColor').checked; exportFilter = only ? { vis, hvis, ids: selIds } : null;
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
-  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; draw(); }
+  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; draw(); }
   const done = blob => { if (!blob) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'leather-pattern.png'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : ''); };
   if (typeof off.toBlob === 'function') off.toBlob(done, 'image/png'); else $('hint').textContent = t('pngUnavailable');
 }
@@ -2189,7 +2191,7 @@ function clearFills() {
   commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
-const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : fl.leather) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); })).sort((x, y) => (y.area || 0) - (x.area || 0));
+const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : fl.leather) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
 function regionLeatherItems(d, vis) {
   return visibleFills(d, vis, 'leather').map(fl => ({ area: leatherItemArea(fl.points), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
@@ -2283,19 +2285,19 @@ function metalShade(m, ps, style = 'linear') {
 /** 本体の上に重なる図形（リングアームの棒）の塗り：金属の色が付いていればその光沢、なければ背景色で塗って、下の線を隠す。 */
 function drawOccluder(s, bg = '#080808') { const q = previewMoved(s); if (!q.points?.length) return; const m = s.metal ? METAL_COLORS.find(x => x.id === s.metal) : null; if (!m && !bg) return; ctx.save(); ctx.setLineDash([]); ctx.fillStyle = m ? metalShade(m, q.points, s.metalStyle) : bg; path(q); ctx.fill(); ctx.restore(); }   /* bg：金属の色が無いとき下の線を隠す色（書き出しは白・透明 PNG は隠さない） */
 /** 金属の色が付いた金具の、べた塗り。金属の質感：細い側に光沢の帯・内側の縁のハイライト・影・穴の暗い縁。線の下に描く。本体の穴は抜く。 */
-function drawMetalFills() {
+function drawMetalFills(vis = visible) {
   const trace = ps => { ps.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); };
   const paint = (m, ps, holes, style) => {
     ctx.save(); ctx.setLineDash([]); ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 6; ctx.shadowOffsetX = 1.5; ctx.shadowOffsetY = 2.5; ctx.fillStyle = metalShade(m, ps, style); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.fill('evenodd'); ctx.restore();
     ctx.save(); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.clip('evenodd'); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3 / scale; ctx.beginPath(); trace(ps); ctx.stroke(); ctx.restore(); /* 内側の縁のハイライト */
     for (const h of holes) { ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); trace(h); ctx.stroke(); ctx.restore(); } /* 穴の暗い縁 */
   };
-  for (const fl of visibleFills(doc, visible, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) paint(m, fl.points, fl.holes || [], fl.style); }   /* 線で囲まれた場所の金属の塗り */
-  for (const r of metalFillPlan(doc, visible, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
+  for (const fl of visibleFills(doc, vis, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) paint(m, fl.points, fl.holes || [], fl.style); }   /* 線で囲まれた場所の金属の塗り */
+  for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
 function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
   const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id, style }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
-  let unclosed = 0, loopsMade = 0;   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数 */
+  let unclosed = 0, loopsMade = 0; const openLeft = [];   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数・一周にできなかった線の id */
   commit(() => {
     for (const s of doc.shapes) if (ids.has(s.id)) { if (id) { s.metal = id; if (style === 'radial') s.metalStyle = 'radial'; else delete s.metalStyle; } else { delete s.metal; delete s.metalGroup; delete s.metalStyle; } }
     if (!id) return;
@@ -2305,11 +2307,11 @@ function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形
     while (rest.size) {   /* 開いた線は、端がつながった一周ごとに、まとまり（metalGroup）にして、一周を塗る */
       const pool = flat.filter(s => rest.has(s.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId);
       if (poly) { do seq++; while (used.has('mg' + seq)); used.add('mg' + seq); for (const s of doc.shapes) if (poly.ids.includes(s.id)) s.metalGroup = 'mg' + seq; for (const i of poly.ids) rest.delete(i); loopsMade++; }
-      else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) unclosed++; if (rest.delete(startId)) unclosed++; }
+      else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) { unclosed++; openLeft.push(i); } if (rest.delete(startId)) { unclosed++; openLeft.push(startId); } }
     }
   });
   const fillable = doc.shapes.filter(sh => ids.has(sh.id) && (sh.closed || sh.type === 'circle')).length + loopsMade;   /* 塗れた形の数（0 なら、線の色だけ） */
-  if (id && !fillable && unclosed) { const n = addSelectionRegionFills({ kind: 'metal', id, style }, new Set(doc.shapes.filter(sh => ids.has(sh.id) && !sh.hw && !(sh.closed || sh.type === 'circle')).map(sh => sh.id))); if (n) return n; }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る */
+  if (id && unclosed) { const brush = { kind: 'metal', id, style }, n = addSelectionRegionFills(brush, new Set(openLeft)); if (n) { if (fillable) $('hint').textContent = t('metalApplied', { n: fillable, name: t('metal.' + id) }) + ' ' + t('regionsPainted', { n, name: paintName(brush) }); return fillable + n; } }   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば塗る。閉じた円などと一緒に選んでも（事業主の指摘 2026-10-18「下の金具が塗りつぶせない」：ボタンの開いた円弧と内側の円） */
   $('hint').textContent = (id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size })) + (unclosed ? ' ' + t('metalLineOnly', { n: unclosed }) : '');
   return fillable;
 }
@@ -4905,14 +4907,14 @@ function draw() {
   const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
   if (exporting) {
     ctx.lineWidth = Math.max(0.1, 1 / scale);
-    const color = exportColor, list = doc.shapes.filter(visible);
-    if (color) { drawLeatherFills(doc, visible); drawMetalFills(); }   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
+    const color = exportColor, ef = exportFilter, vis = ef ? ef.vis : visible, list = doc.shapes.filter(vis);
+    if (color) { drawLeatherFills(doc, vis); drawMetalFills(vis); }   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
     const looks = new Map(); for (const sh of list) looks.set(sh.id, exportLineLook(sh, color && exportNeedsProbe(sh) ? exportBehindDark(sh) : false, color));   /* 線を引く前に、下の色の明暗を全部読む（先に引いた線に左右されない） */
     const outStroke = sh => { const lk = looks.get(sh.id); ctx.lineWidth = Math.max(0.1, lk.px / scale); strokeShape(sh, lk.color); };
     for (const s of list) if (!(color && s.occlude)) outStroke(s);
     if (color) for (const s of list) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
-    for (const h of doc.holes.filter(holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; ctx.stroke(); ctx.restore(); }   /* 色つき：糸の色 */
+    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } ctx.strokeStyle = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; ctx.stroke(); ctx.restore(); }   /* 色つき：糸の色 */
     return;
   }
   drawSheetBody(lo, hi);
