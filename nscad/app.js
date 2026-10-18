@@ -33,7 +33,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -48,7 +48,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1516,6 +1516,40 @@ function parseLaminateZones(text) {
   const out = []; for (const part of String(text || '').split(/[,，、;；\s]+/).filter(Boolean)) { const m = part.match(/^(-?\d+(?:\.\d+)?)[-ー〜～~](-?\d+(?:\.\d+)?)$/); if (m) out.push([Number(m[1]), Number(m[2])]); }
   return out.length ? out : null;
 }
+/* ───────── 表の部品と裏の部品から、1枚の三つ折り断面図（事業主の選択 2026-10-19・案A）。曲げ部は、菱目の間隔が変わる範囲（なければ縦の点線）から自動で見つける（同日の事業主の希望） ───────── */
+const lamSecDiff = v => { const r = Math.round(v * 100) / 100; return (r > 0 ? '+' : '') + r.toFixed(2); };   /* 差の表示：+1.00・0.00・-0.50 */
+function makeLamSection() {
+  const box = $('lamResult'); box.textContent = '';
+  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, fail = (key, p) => { const m = t(key, p); line(m, 'lam-error'); $('hint').textContent = m; };
+  if (doc.parts.length < 2) { fail('lamNeedParts'); return; }
+  fillLaminateParts(); const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value); if (!po || !pi || po === pi) { fail('lamErr_pickTwo'); return; }
+  if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+  const tO = Number($('lamTOuter').value), tI = Number($('lamTInner').value), axisSel = $('lamAxis').value, now = laminateNow(doc, po.id, pi.id, { tOuter: tO, tInner: tI, axis: axisSel === 'x' || axisSel === 'y' ? axisSel : 'auto' });
+  if (!(tO > 0 && tI > 0)) { fail('lamErr_thickness'); return; } if (!now) { fail('lamErr_emptyPart'); return; }
+  const specs = {}, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner');
+  for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis: now.axis }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
+  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
+  if (!plan.ok) { fail('lamSecErr_' + plan.error, { k: plan.index ?? 0 }); return; }
+  const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + 2 * plan.bends[0] / Math.PI + plan.T }, key = `lam:${po.id}:${pi.id}`;
+  commit(() => {
+    doc.foldSections ||= {};
+    for (const [id, m] of Object.entries(doc.foldSections)) if (m.key === key) { doc.shapes = doc.shapes.filter(s => s.foldSec !== id); delete doc.foldSections[id]; }   /* 同じ組み合わせの前の断面は置き換える */
+    let n = 1; while (doc.foldSections['fs' + n]) n++; const secId = 'fs' + n, gid = nextGroupId(doc.shapes);
+    if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
+    doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
+    for (const sh of foldSectionShapes(plan.path, plan.T, origin, FOLD_SEC_PLIES, plan.T / 2 - tI)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から */
+    for (const [ss, side] of [[plan.outerS, 'outer'], [plan.innerS, 'inner']]) for (const hm of foldHoleMarks(plan.path, ss, plan.T, origin).filter(m => m.side === side)) doc.shapes.push({ ...hm, id: freshId(doc.shapes, 's'), layer: 'section', color: 'blue', foldSec: secId });   /* 表の菱目は外側の面・裏の菱目は内側の面 */
+  });
+  const f2 = v => (+v).toFixed(2), r = plan.report, baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer'), src = k => t('lamSecSrc_' + specs[k].source), warn = d => Math.abs(d) > 0.05 ? 'lam-warn' : '';
+  const done = t('lamSecDone', { so: src('outer'), si: src('inner'), glue: f2(plan.glueLen), outer: f2(r.lenOuter), inner: f2(r.lenInner) }); line(done); $('hint').textContent = done;
+  if (specs.outer.source === 'holes' || specs.inner.source === 'holes') line(t('lamSecHolesNote'), 'lam-warn');   /* 菱目から見つけた曲げ部は、折りの始まり・終わりが穴の位置どまり（±1ピッチ） */
+  line(t('lamSecRadius', { a: f2(plan.radii[0].inner), b: f2(plan.radii[1].inner) }));
+  r.flats.forEach((f, k) => line(t('lamSecFlat', { k: k + 1, o: f2(f.outer), i: f2(f.inner), d: lamSecDiff(f.diff) }), warn(f.diff)));
+  r.bends.forEach((bd, k) => line(t('lamSecBend', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), base: baseName, other: otherName, w: f2(bd.want), d: lamSecDiff(bd.diff) }), warn(bd.diff)));
+  line(t('lamSecTotal', { o: f2(r.lenOuter), i: f2(r.lenInner), base: baseName, other: otherName, w: f2(r.wantOther), d: lamSecDiff(r.diffTotal) }), warn(r.diffTotal));
+  if (Math.abs(r.diffTotal) > 0.05) line(t('lamSecAdvice', { other: otherName, w: f2(r.wantOther), c: f2(r.base === 'outer' ? r.lenInner : r.lenOuter) }), 'lam-warn');
+  draw();
+}
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); return d; }, fail = key => { line(t(key), 'lam-error'); $('hint').textContent = t(key); };   /* エラーは、検証ボタンの下（カードの中）にも赤い文字で出す */
@@ -1541,7 +1575,7 @@ function runLaminate() {
   /* 3. 参考：曲げの数字・曲げ区間・菱目の数・注意 */
   line(t('lamRefTitle'), 'lam-h');
   line(b.curl === 'none' ? t('lamBendNone') : b.ok ? t('lamBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner'), dl: f2(Math.abs(b.dL)), to: f2(r.outer.thickness), ti: f2(r.inner.thickness) }) : t('lamIssue_bendTooMuch', { dl: f2(Math.abs(b.dL)) }));
-  if (r.mode === 'zones') { line(t(parseLaminateZones($('lamZones').value) ? 'lamZonesGiven' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
+  if (r.mode === 'zones') { line(t(r.zoneSource === 'given' ? 'lamZonesGiven' : r.zoneSource === 'holes' ? 'lamZonesHoles' : 'lamZonesAuto', { n: r.zones.length })); r.zones.forEach((z, k) => line(t('lamZoneLine', { k: k + 1, a: f2(z.a), b: f2(z.b), deg: z.thetaDeg.toFixed(1), r: f2(z.radius), li: f2(z.lenInner) }))); } else if (b.curl !== 'none') line(t('lamZonesNone'));
   if (r.holes.count[0] + r.holes.count[1] > 0) line(t('lamHoles', { a: r.holes.count[0], b: r.holes.count[1], m: f2(r.holes.maxDev) }));
   if (dimsHidden && $('lamDimCheck').checked !== false) line(t('lamDimSkipped'), 'lam-warn');
   const unpaired = notes.filter(is => is.code === 'unpaired'), only = from => unpaired.filter(is => is.params.from === from).map(is => is.params.v).join('・');   /* 片方にだけある寸法は、1行にまとめる */
@@ -1728,7 +1762,7 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
