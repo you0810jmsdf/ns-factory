@@ -750,6 +750,24 @@ export function foldRingCheck(plan, { ringD, tO, tI, pitch } = {}) {
   }
   return { ringD, ok: gaps.every(g => g.ok), angleMode: data ? 'data' : 'half', gaps, needs, byPitch, extra };
 }
+/** 断面の図形（makeLamSection が図面に置いたもの：type 'line'｜'arc'｜'circle'・role）から、画像（SVG）の文字列を作る（事業主の指示 2026-10-19「断面図の画像を、画面の中に出す」）。
+ *  色：裏の面（edgeL）＝青・表の面（edgeR）＝橙・貼り合わせ線（glue）＝灰・ふた（cap0・cap1）＝白・菱目（role 'hole'・side 'outer'／'inner'）＝橙／青の点・リングの円（role 'ring'・color 'red'／'green'）＝赤／緑の輪。
+ *  円弧は、始点から終点まで（終点が小さければ360°足して）折れ線でなぞる。viewBox は図形をすべて含み、少し余白をとる。線も円弧も無いときは空の文字列。 */
+export function foldSectionSvg(shapes) {
+  const list = Array.isArray(shapes) ? shapes : [], ok = v => Number.isFinite(v), f = v => String(+v.toFixed(3));
+  const arcPts = a => { const e = a.endDeg < a.startDeg ? a.endDeg + 360 : a.endDeg, n = Math.max(12, Math.ceil((e - a.startDeg) / 3)); return Array.from({ length: n + 1 }, (_, i) => { const t = (a.startDeg + (e - a.startDeg) * i / n) * Math.PI / 180; return { x: a.cx + a.r * Math.cos(t), y: a.cy + a.r * Math.sin(t) }; }); };
+  const paths = [...list.filter(q => q?.type === 'line').map(q => ({ role: q.role, pts: [{ x: q.x1, y: q.y1 }, { x: q.x2, y: q.y2 }] })), ...list.filter(q => q?.type === 'arc' && [q.cx, q.cy, q.r, q.startDeg, q.endDeg].every(ok)).map(q => ({ role: q.role, pts: arcPts(q) }))].filter(p => p.pts.every(q => ok(q.x) && ok(q.y)));
+  const circles = list.filter(q => q?.type === 'circle' && [q.cx, q.cy, q.r].every(ok)); if (!paths.length) return '';
+  const all = [...paths.flatMap(p => p.pts), ...circles.flatMap(c => [{ x: c.cx - c.r, y: c.cy - c.r }, { x: c.cx + c.r, y: c.cy + c.r }])], x0 = Math.min(...all.map(p => p.x)), x1 = Math.max(...all.map(p => p.x)), y0 = Math.min(...all.map(p => p.y)), y1 = Math.max(...all.map(p => p.y));
+  const m = Math.max(x1 - x0, y1 - y0) * 0.04 + 1, vx = x0 - m, vy = y0 - m, vw = x1 - x0 + 2 * m, vh = y1 - y0 + 2 * m, dot = Math.max(0.6, vw / 260), COLOR = { edgeL: '#78c8ff', edgeR: '#ffbe5a', glue: '#bebebe', cap0: '#ffffff', cap1: '#ffffff' };
+  const parts = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vx)} ${f(vy)} ${f(vw)} ${f(vh)}" preserveAspectRatio="xMidYMid meet" role="img" style="background:#161616">`];
+  for (const p of paths) parts.push(`<path d="M${p.pts.map(q => `${f(q.x)} ${f(q.y)}`).join(' L')}" fill="none" stroke="${COLOR[p.role] || '#d8d8d8'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`);
+  for (const c of circles) {
+    if (c.role === 'hole') parts.push(`<circle data-role="hole" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(Math.max(c.r, dot))}" fill="${c.side === 'outer' ? '#ffbe5a' : '#78c8ff'}" stroke="#ffe14d" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`);
+    else if (c.role === 'ring') parts.push(`<circle data-role="ring" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(c.r)}" fill="none" stroke="${c.color === 'red' ? '#ff5050' : '#5adc78'}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`);
+  }
+  parts.push('</svg>'); return parts.join('');
+}
 /** 断面の中心線の、いちばん高い点の v（始点を 0 とした高さ）。折りの角度が 180° でなくても、断面を図面の下へ置く高さを決めるのに使う。 */
 export function foldPathVMax(path) {
   let m = 0; for (const pc of path.pieces) { if (pc.kind === 'line') { m = Math.max(m, pc.p0.v, pc.p1.v); continue; } m = Math.max(m, pc.c.v + pc.r * Math.sin(pc.a0), pc.c.v + pc.r * Math.sin(pc.a1)); for (let a = Math.PI / 2 + Math.ceil((pc.a0 - Math.PI / 2) / (2 * Math.PI)) * 2 * Math.PI; a <= pc.a1 + 1e-12; a += 2 * Math.PI) m = Math.max(m, pc.c.v + pc.r); }
