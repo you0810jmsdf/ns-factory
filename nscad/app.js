@@ -2153,8 +2153,26 @@ function renderColors() {
 }
 /** 選んだ図形に革色を付ける。部品の図形なら部品の色（今までどおり）。部品に入っていない図形は「型紙」として図形自身に付ける：閉じた図形はそのまま、開いた線は端がつながった一周ごとにまとめて（leatherGroup）塗る。
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
+let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
+const paintName = b => b.kind === 'metal' ? t('metal.' + b.id) : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+/** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
+function startPaint(brush) { paintBrush = brush; selected = new Set(); setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
+function paintClick(p, eyedrop) {
+  const s = pickShapeAt(p); if (!s) { $('hint').textContent = t(eyedrop ? 'paintNoneColor' : 'paintNone'); return; }
+  if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）を持つ */
+    const part = doc.parts.find(q => q.shapeIds.includes(s.id)), hex = part?.color || s.leather;
+    if (s.metal) paintBrush = { kind: 'metal', id: s.metal }; else if (hex) paintBrush = { kind: 'leather', hex }; else { $('hint').textContent = t('paintNoColor'); return; }
+    $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
+  }
+  if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
+  const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
+  if (paintBrush.kind === 'leather' && !(s.closed || s.type === 'circle')) for (const id of contourFrom(doc.shapes.filter(x => editable(x) && visible(x) && !x.holeLink), s.id)) ids.add(id);   /* 型紙の輪郭は、端がつながった線を一周まとめて */
+  selected = ids; try { if (paintBrush.kind === 'metal') applyMetal(paintBrush.id); else applyLeather(paintBrush.hex); } finally { selected = new Set(); }
+  draw();
+}
 function applyLeather(hex) {
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id)));
+  if (!okIds.size && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'leather', hex }); return; }   /* 何も選んでいなければ、その色を持って塗りモードに（ロックしたレイヤーの図形を選んでいるときは、今までどおり塗れない案内） */
   const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), loose = doc.shapes.filter(sh => okIds.has(sh.id) && !inPart.has(sh.id) && !sh.holeLink && !['text', 'dimension', 'image', 'fold'].includes(sh.type));
   const closedOnes = loose.filter(sh => sh.closed || sh.type === 'circle'), open = loose.filter(sh => !(sh.closed || sh.type === 'circle'));
   const loops = [], rest = new Set(open.map(s => s.id)); let unclosed = 0;
@@ -2209,7 +2227,7 @@ function drawMetalFills() {
   }
 }
 function applyMetal(id) {
-  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { $('hint').textContent = t('metalNeedSelect'); return; }
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id }); else $('hint').textContent = t('metalNeedSelect'); return; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
   commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) { if (id) s.metal = id; else delete s.metal; } });
   $('hint').textContent = id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size });
 }
@@ -4929,6 +4947,7 @@ canvas.addEventListener('pointerdown', e => {
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (mode === 'paint') { paintClick(world(p), e.altKey); return; }   /* 塗りモード：クリックで塗る・Alt＋クリックで色を拾う */
   if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
