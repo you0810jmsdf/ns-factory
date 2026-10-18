@@ -5,7 +5,7 @@ import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundC
 import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
-import { docToSvg, docToDxfR12, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
+import { docToSvg, docToDxfR12, dxfToShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
@@ -1771,9 +1771,10 @@ async function openFile(file) {
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
 }
 function exportDxf() {
-  if (!regGuard('dxf', 'dl')) return;
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(doc, { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(doc, { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
+  if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
+  if (!regGuard('dxf', 'dl')) return;
   download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
