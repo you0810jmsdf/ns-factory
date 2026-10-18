@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 06:37 · 58cbafb</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 06:43 · f90e094</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -554,6 +554,8 @@
 <details class="card" id="outputCard"><summary data-i18n="output"></summary><div class="body">
 <label><span data-i18n="paper"></span><select id="paper"><option value="a4">A4</option><option value="a4l" data-i18n="paperA4L"></option><option value="a3">A3</option><option value="a3l" data-i18n="paperA3L"></option></select></label>
 <label><input id="outHoles" type="checkbox" checked><span data-i18n="outHoles"></span></label>
+<label data-i18n-title="printDotsTip"><input id="printDots" type="checkbox"><span data-i18n="printDots"></span></label>
+<label data-i18n-title="printDotsTip"><span data-i18n="printDotD"></span><input id="printDotD" type="number" step="0.1" min="0.1" value="1"></label>
 <label><input id="dotAsPoint" type="checkbox"><span data-i18n="dotAsPoint"></span></label>
 <label><input id="outCalib" type="checkbox" checked><span data-i18n="outCalib"></span></label>
 <label><span data-i18n="exportPreset"></span><select id="exportPreset"><option value="standard" data-i18n="presetStandard"></option><option value="leathercraft">Leathercraft CAD</option><option value="beam">Beam Studio</option></select></label>
@@ -641,8 +643,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=f3a43f1f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=0f12eb92","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=52b2f9d8","./help/ja.js":"./help/ja.js?v=1a1f6f19","./i18n.js":"./i18n.js?v=b489aced","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=1fa7a800","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=f3a43f1f"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=b067275b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d5309219","./help/ja.js":"./help/ja.js?v=18f82b8d","./i18n.js":"./i18n.js?v=61383725","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=1fa7a800","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=b067275b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3578,6 +3580,9 @@ const MESSAGES = {
     "output": "出力",
     "paper": "用紙",
     "outHoles": "縫い穴を含める",
+    "printDots": "縫い穴を点で印刷する（印刷・PDF）",
+    "printDotD": "点の直径 (mm)",
+    "printDotsTip": "印刷と PDF で、菱目（目打ちの穴と、図面の菱形の線）を、それぞれの真ん中の丸い点に置き換えます。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。SVG・DXF・PNG と、工具のテスト片の印刷は今までどおりです。",
     "dotAsPoint": "点は DXF の POINT で出す",
     "outCalib": "印刷補正を適用",
     "print": "印刷",
@@ -5171,6 +5176,9 @@ const MESSAGES = {
     "output": "Output",
     "paper": "Paper",
     "outHoles": "Include stitching holes",
+    "printDots": "Print stitching holes as dots (print and PDF)",
+    "printDotD": "Dot diameter (mm)",
+    "printDotsTip": "In print and PDF, each diamond hole (punched holes and diamond-shaped lines in the drawing) is replaced by a filled dot at its center. Set the size with “Dot diameter”. The screen and the saved data do not change. SVG, DXF, PNG and the tool test strip print as before.",
     "dotAsPoint": "Dots as DXF POINT",
     "outCalib": "Apply print calibration",
     "print": "Print",
@@ -5936,8 +5944,9 @@ function shapeToSvgD(s) {
   return null;
 }
 /** 穴 1 つの SVG 要素文字列を返す（mark に従う：菱形は polygon、点・丸は circle、線分は line）。 */
-function holeToSvg(h, doc, color = '#e00000', fillDiamond = false) {
+function holeToSvg(h, doc, color = '#e00000', fillDiamond = false, dotMm = 0) {
   const a = holeAppearance(h, doc); if (!a) return '';
+  if (dotMm > 0) return `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="${color}" stroke="none"/>`;   /* 印刷・PDF の「縫い穴を点で印刷する」：形にかかわらず真ん中の●（直径 dotMm・事業主の希望 2026-10-19） */
   if (a.kind === 'dot' || a.kind === 'circle') return `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(a.width / 2)}" fill="none" stroke="${color}"/>`;
   const pts = (a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]).map(p => { const q = rotate(p, h.angleDeg); return `${f(q.x + h.x)},${f(q.y + h.y)}`; });
   return a.kind === 'slit' ? `<line x1="${pts[0].split(',')[0]}" y1="${pts[0].split(',')[1]}" x2="${pts[1].split(',')[0]}" y2="${pts[1].split(',')[1]}" stroke="${color}"/>` : `<polygon points="${pts.join(' ')}" fill="${fillDiamond ? color : 'none'}" stroke="${color}"/>`;   /* 菱目：fillDiamond で塗る（事業主の希望 2026-10-18） */
@@ -5945,7 +5954,8 @@ function holeToSvg(h, doc, color = '#e00000', fillDiamond = false) {
 /** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
 /** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る）, mm: その質感1枚の実寸（省略可） } }、textureMm：mm の無い質感に使う1枚の大きさ。fill のときだけ使う。 */
 const METAL_FALLBACK = { gold: '#D4AF37', silver: '#C0C0C0', pinkgold: '#E5A593', blackgold: '#6B5B3A' };   /* 領域の塗りの金属の色（呼び出し側が色を渡さないとき） */
-function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false } = {}) {
+/** holeDot：0 より大きいと、穴も菱の線（菱形の polyline）も、真ん中の●（直径 holeDot mm）に置き換える（印刷・PDF だけが使う。画面・SVG 書き出しは渡さない）。 */
+function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0 } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
   const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -5957,6 +5967,7 @@ function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marg
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(fontFamily)}" fill="#000" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${f(d.value)}</text>`; }
+      if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) return `<circle id="${safeId(s.id)}" cx="${f(dl[0].x)}" cy="${f(dl[0].y)}" r="${f(holeDot / 2)}" fill="${s.color && SHAPE_COLOR_HEX[s.color] ? SHAPE_COLOR_HEX[s.color] : '#000'}" stroke="none"/>`; }   /* 菱の線（取り込んだ図面の菱形）も真ん中の● */
       const d = shapeToSvgD(s), part = fill ? (doc.parts || []).find(p => p.shapeIds.includes(s.id)) : null;
       const texId = fill ? (s.texture || part?.texture || null) : null, tex = texId && textures ? textures[texId] : null; /* 革の質感：図形自身の指定が優先、無ければ部品の指定 */
       if (tex?.href) usedTex.add(texId);
@@ -5968,7 +5979,7 @@ function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marg
     return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
   }).join('');
   const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill)).join('')}</g>` : '';
+  const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '';
   const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
   const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
@@ -6004,9 +6015,9 @@ function printLayout(b, pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration
   return pagesFor({ minX: b.minX * fx - 2, minY: b.minY * fy - 2, maxX: b.maxX * fx + 2, maxY: b.maxY * fy + 2 }, pageMm, overlapMm);
 }
 /** 1 ページ分の印刷用 SVG（viewBox をページ位置に合わせ、重なり部分に合わせ目の十字とページ番号を付ける）。 */
-function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif' } = {}) {
+function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0 } = {}) {
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
-  const content = docToSvg(doc, { includeHoles, marginMm: 0, fontFamily }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const content = docToSvg(doc, { includeHoles, marginMm: 0, fontFamily, holeDot }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
   const cross = (x, y) => `<path d="M${f(x - 4)} ${f(y)}L${f(x + 4)} ${f(y)}M${f(x)} ${f(y - 4)}L${f(x)} ${f(y + 4)}" stroke="#888" stroke-width="0.15" fill="none"/>`;
   const marks = [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]].map(([x, y]) => cross(x, y)).join('');
   const text = `<text x="${f(page.x + 2)}" y="${f(page.y + pageMm.h - 2)}" font-size="3" font-family="${esc(fontFamily)}" fill="#888">${esc(label)}</text>`;
@@ -6086,7 +6097,8 @@ function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, originAtCor
 // ---- PDF（直接生成・ASCII のみ・xref はバイトオフセット）----
 const PT = 72 / 25.4, PAPER = { a4: [595.276, 841.89], a3: [841.89, 1190.551] };
 /** 文書から PDF（Uint8Array）を返す。用紙 A4/A3（landscape 可）、余白 10mm、STEP 5 の分割と印刷補正を反映。文字は ASCII のみ（それ以外は警告に数えて省略）。 */
-function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1 } = {}) {
+/** holeDot：0 より大きいと、穴も菱の線も真ん中の●（直径 holeDot mm・塗り）にする（印刷の「縫い穴を点で印刷する」と同じ）。 */
+function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0 } = {}) {
   const [pw, ph] = landscape ? [...PAPER[paper] || PAPER.a4].reverse() : (PAPER[paper] || PAPER.a4), fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
   const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
@@ -6097,7 +6109,9 @@ function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlap
   const pageContent = page => {
     const X = x => n(((x - page.x) * fx + marginMm) * PT), Y = y => n(ph - ((y - page.y) * fy + marginMm) * PT);
     const ops = [`${n(strokeMm * PT)} w 1 J 1 j`];
+    const K = 0.5523, dot = (cx, cy, r) => { const k = r * K; return `${X(cx + r)} ${Y(cy)} m ${X(cx + r)} ${Y(cy + k)} ${X(cx + k)} ${Y(cy + r)} ${X(cx)} ${Y(cy + r)} c ${X(cx - k)} ${Y(cy + r)} ${X(cx - r)} ${Y(cy + k)} ${X(cx - r)} ${Y(cy)} c ${X(cx - r)} ${Y(cy - k)} ${X(cx - k)} ${Y(cy - r)} ${X(cx)} ${Y(cy - r)} c ${X(cx + k)} ${Y(cy - r)} ${X(cx + r)} ${Y(cy - k)} ${X(cx + r)} ${Y(cy)} c f`; };   /* 塗った●（4本の曲線。X・Y に印刷補正が入るので、補正が縦横で違えば●も同じに伸びる） */
     const pathOps = s => {
+      if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) { const rgb = s.color && SHAPE_COLOR_HEX[s.color] ? hexToRgb01(SHAPE_COLOR_HEX[s.color]) : null; const d = dot(dl[0].x, dl[0].y, holeDot / 2); return rgb ? `${rgb.join(' ')} rg ${d} 0 0 0 rg` : d; } }   /* 菱の線は真ん中の● */
       if (s.type === 'text') { if (/[^\x20-\x7e]/.test(s.text)) { skipped++; return ''; } return `BT /F1 ${n(s.sizeMm * PT)} Tf 1 0 0 1 ${X(s.x)} ${Y(s.y)} Tm (${s.text.replace(/[\\()]/g, c => '\\' + c)}) Tj ET`; }
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `${X(d.a.x)} ${Y(d.a.y)} m ${X(d.b.x)} ${Y(d.b.y)} l ${d.ext.map(([p, q]) => `${X(p.x)} ${Y(p.y)} m ${X(q.x)} ${Y(q.y)} l`).join(' ')} S BT /F1 ${n(2.5 * PT)} Tf 1 0 0 1 ${X(d.textPos.x)} ${Y(d.textPos.y)} Tm (${n(d.value)}) Tj ET`; }
       if (s.type === 'fold' || s.type === 'image') return '';
@@ -6108,9 +6122,9 @@ function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlap
       return `${colorOn}${dashOn}${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S${dashOff}${colorOff}`;
     };
     for (const s of shapes) ops.push(pathOps(s));
-    ops.push('1 0 0 RG');
-    for (const h of holes) { const a = holeAppearance(h, doc); if (!a) continue; if (a.kind === 'dot' || a.kind === 'circle') { const r = a.width / 2, pts = Array.from({ length: 17 }, (_, i) => ({ x: h.x + r * Math.cos(i / 8 * Math.PI), y: h.y + r * Math.sin(i / 8 * Math.PI) })); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')} S`); } else { const local = a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]; const pts = local.map(p => { const q = rotate(p, h.angleDeg); return { x: q.x + h.x, y: q.y + h.y }; }); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${a.kind === 'slit' ? '' : ' h'} S`); } }
-    ops.push('0 0 0 RG');
+    ops.push('1 0 0 RG'); if (holeDot > 0) ops.push('1 0 0 rg');
+    for (const h of holes) { const a = holeAppearance(h, doc); if (!a) continue; if (holeDot > 0) { ops.push(dot(h.x, h.y, holeDot / 2)); continue; } if (a.kind === 'dot' || a.kind === 'circle') { const r = a.width / 2, pts = Array.from({ length: 17 }, (_, i) => ({ x: h.x + r * Math.cos(i / 8 * Math.PI), y: h.y + r * Math.sin(i / 8 * Math.PI) })); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')} S`); } else { const local = a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]; const pts = local.map(p => { const q = rotate(p, h.angleDeg); return { x: q.x + h.x, y: q.y + h.y }; }); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${a.kind === 'slit' ? '' : ' h'} S`); } }
+    ops.push('0 0 0 RG'); if (holeDot > 0) ops.push('0 0 0 rg');
     // 合わせ目の十字
     for (const [x, y] of [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]]) ops.push(`${X(x - 4)} ${Y(y)} m ${X(x + 4)} ${Y(y)} l ${X(x)} ${Y(y - 4)} m ${X(x)} ${Y(y + 4)} l S`);
     return ops.filter(Boolean).join('\n');
@@ -20780,7 +20794,7 @@ const HELP_JA = {
     {
       "id": "output",
       "title": "出力と印刷",
-      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。点は DXF の POINT にもできます。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。"
+      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。点は DXF の POINT にもできます。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n「縫い穴を点で印刷する」を入れると、印刷と PDF では菱目（目打ちの穴と、図面の菱形の線）が真ん中の丸い点になります。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。"
     },
     {
       "id": "design",
@@ -20934,7 +20948,7 @@ const HELP_EN = {
     {
       "id": "output",
       "title": "Output and printing",
-      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm."
+      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nWith “Print stitching holes as dots” on, print and PDF replace each diamond hole (punched holes and diamond-shaped lines in the drawing) with a filled dot at its center; set the size with “Dot diameter”. The screen and the saved data do not change.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm."
     },
     {
       "id": "design",
@@ -21491,7 +21505,7 @@ function printToolStrip() {
   tmp.shapes.push({ id: 's1', layer: 'pattern', type: 'line', x1: 10, y1: 15, x2: 10 + len, y2: 15 }, { id: 's2', layer: 'pattern', type: 'line', x1: 10, y1: 25, x2: 60, y2: 25 }, { id: 's3', layer: 'pattern', type: 'line', x1: 10, y1: 23, x2: 10, y2: 27 }, { id: 's4', layer: 'pattern', type: 'line', x1: 60, y1: 23, x2: 60, y2: 27 }, { id: 's5', layer: 'pattern', type: 'text', x: 10, y: 33, text: `${tool.name}  ${tool.pitch}mm  ${tool.holeW}x${tool.holeH}mm  ${tool.angleDeg}deg   |---- 50mm ----|`, sizeMm: 3, angleDeg: 0 });
   tmp.paths.push({ id: 'p1', shapeIds: ['s1'], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: tool.pitch, mode: 'fixed' }], mark: 'tool' });
   for (let i = 0; i <= 9; i++) tmp.holes.push({ id: 'h' + i, pathId: 'p1', s: i * tool.pitch, x: 10 + i * tool.pitch, y: 15, angleDeg: tool.angleDeg, toolId: tool.id, mark: 'tool' });
-  return printPages(tmp);
+  return printPages(tmp, { dots: false });   /* 現物の刃と比べる紙なので、「縫い穴を点で印刷する」が入っていても穴の形のまま */
 }
 function fillTool() {
   const tool=doc.tools.find(t=>t.id===$('stitchTool').value);if(!tool)return;
@@ -22861,6 +22875,11 @@ function initInfo() {
 // ---- 出力（SVG・DXF・印刷・校正）----
 const PAGES = { a4: { w: 190, h: 277 }, a4l: { w: 277, h: 190 }, a3: { w: 277, h: 400 }, a3l: { w: 400, h: 277 } };
 let calibration = { fx: 1, fy: 1 }, measuredCalibration = { fx: 1, fy: 1 };
+/** 「縫い穴を点で印刷する」（出力カード・事業主の希望 2026-10-19）：印刷と PDF で、穴と菱の線を真ん中の●にする。入っていて直径が正の数ならその直径（mm）、それ以外は 0（今までどおりの形）。画面・保存データ・SVG・DXF・PNG は変えない。設定はブラウザに残す。 */
+const PRINT_DOTS_KEY = 'leather-cad.printDots'; let printDotLast = 1;
+const printDotMm = () => { if (!$('printDots')?.checked) return 0; const d = Number($('printDotD')?.value); return Number.isFinite(d) && d > 0 ? d : 0; };
+function savePrintDots() { const d = Number($('printDotD').value); if (Number.isFinite(d) && d > 0) printDotLast = d; else $('printDotD').value = String(printDotLast); try { localStorage.setItem(PRINT_DOTS_KEY, JSON.stringify({ on: !!$('printDots').checked, d: printDotLast })); } catch { /* 保存できなくても続ける */ } }
+function restorePrintDots() { let v = null; try { v = JSON.parse(localStorage.getItem(PRINT_DOTS_KEY) || 'null'); } catch { v = null; } $('printDots').checked = v?.on === true; const d = Number(v?.d); if (Number.isFinite(d) && d > 0) { printDotLast = d; $('printDotD').value = String(d); } }
 function loadCalibration() { try { const c = JSON.parse(localStorage.getItem('leather-cad.calibration')); if (c && Number.isFinite(c.fx) && Number.isFinite(c.fy) && c.fx > 0 && c.fy > 0) calibration = { fx: c.fx, fy: c.fy }; } catch { /* 既定 1.0 のまま。 */ } showCalibration(); }
 function showCalibration() { $('calibInfo').textContent = calibration.fx === 1 && calibration.fy === 1 ? t('calibNone') : t('calibCurrent', { fx: calibration.fx.toFixed(4), fy: calibration.fy.toFixed(4) }); }
 function saveCalibration(next) { calibration = next; try { localStorage.setItem('leather-cad.calibration', JSON.stringify(next)); } catch { $('hint').textContent = t('storageUnavailable'); } showCalibration(); }
@@ -22939,7 +22958,7 @@ function exportSvg() {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null });
+  const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
   download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -23042,13 +23061,14 @@ function drawPrintOverlay() {
 /** 用紙キー（a4/a4l/a3/a3l）から @page を書く。CSS のセレクタ内 @page は無効なので style 要素を差し替える。 */
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
-function printPages(target = outputDoc()) {
+function printPages(target = outputDoc(), { dots = true } = {}) {   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
   if (!regGuard('print', 'pages')) return null;
+  const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
   const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => holeIsOwn(h, ownHolePathIds(target)) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
-  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked })}</div>`).join('');
+  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot })}</div>`).join('');
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
@@ -23078,6 +23098,7 @@ function initOutput() {
   $('restartCalib').onclick = () => { saveCalibration({fx:1,fy:1}); $('outCalib').checked = true; printCalibration(); };
   $('verifyCalib').onclick = printCalibration;
   loadCalibration();
+  restorePrintDots(); for (const id of ['printDots', 'printDotD']) $(id).addEventListener('change', savePrintDots);
 }
 
 // ---- 3D（折りたたみ・三面図）----
