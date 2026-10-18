@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt } from './geometry.js';
 import { collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -1696,7 +1696,7 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked, textures: $('outFill').checked ? svgTextures() : null, textureMm: textureMm() });
+  const svg = preset === 'beam' ? beamStudioSvg(doc, { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(doc, { includeHoles: $('outHoles').checked, fill: $('outFill').checked, textures: $('outFill').checked ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex });
   download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
 }
 function exportPdf() {
@@ -2154,30 +2154,55 @@ let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leath
 const paintName = b => b.kind === 'metal' ? t('metal.' + b.id) : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
 function startPaint(brush) { paintBrush = brush; selected = new Set(); setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
+/** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
+const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
+const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > q.y) !== (ps[j].y > q.y) && q.x < (ps[j].x - ps[i].x) * (q.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
+const fillContains = (fl, q) => insideRing(q, fl.points) && !(fl.holes || []).some(h => insideRing(q, h));
+/** 点を含む領域の塗り（小さいものが上） */
+function fillAt(q) { return (doc.fills || []).filter(fl => fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null; }
+function addRegionFill(p, brush) {
+  const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...(brush.kind === 'metal' ? { metal: brush.id } : { leather: brush.hex }) };
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
+  $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
+}
+function clearFills() {
+  const n = (doc.fills || []).length; if (!n) { $('hint').textContent = t('fillsNone'); return; }
+  commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
+}
+/** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
+const visibleFills = (d, vis, kind) => (d.fills || []).filter(fl => (kind === 'metal' ? fl.metal : fl.leather) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); })).sort((x, y) => (y.area || 0) - (x.area || 0));
+function drawRegionLeather(d, vis) {
+  for (const fl of visibleFills(d, vis, 'leather')) { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.globalAlpha = exporting ? 1 : 0.55; ctx.fillStyle = fl.leather; ctx.fill('evenodd'); ctx.restore(); }
+}
 function paintClick(p, eyedrop) {
-  const s = pickShapeAt(p); if (!s) { $('hint').textContent = t(eyedrop ? 'paintNoneColor' : 'paintNone'); return; }
-  if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）を持つ */
-    const part = doc.parts.find(q => q.shapeIds.includes(s.id)), hex = part?.color || s.leather;
-    if (s.metal) paintBrush = { kind: 'metal', id: s.metal }; else if (hex) paintBrush = { kind: 'leather', hex }; else { $('hint').textContent = t('paintNoColor'); return; }
+  const s = pickShapeAt(p);
+  if (eyedrop) {   /* スポイト：図形の色（金属の色が先・無ければ部品の革色・型紙に付けた革色）、無ければ、領域の塗りの色を持つ */
+    const part = s && doc.parts.find(q => q.shapeIds.includes(s.id)), hex = part?.color || s?.leather, fl = fillAt(p);
+    if (s?.metal) paintBrush = { kind: 'metal', id: s.metal }; else if (hex) paintBrush = { kind: 'leather', hex }; else if (fl) paintBrush = fl.metal ? { kind: 'metal', id: fl.metal } : { kind: 'leather', hex: fl.leather }; else { $('hint').textContent = t(s ? 'paintNoColor' : 'paintNoneColor'); return; }
     $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
   }
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
-  const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
-  if (!(s.closed || s.type === 'circle') && (paintBrush.kind === 'leather' || !g)) for (const id of contourFrom(doc.shapes.filter(x => editable(x) && visible(x) && !x.holeLink), s.id)) ids.add(id);   /* 型紙の輪郭は、端がつながった線を一周まとめて */
-  selected = ids; try { if (paintBrush.kind === 'metal') applyMetal(paintBrush.id); else applyLeather(paintBrush.hex); } finally { selected = new Set(); }
+  let painted = 0;
+  if (s) {
+    const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
+    if (!(s.closed || s.type === 'circle') && (paintBrush.kind === 'leather' || !g)) for (const id of contourFrom(doc.shapes.filter(x => editable(x) && visible(x) && !x.holeLink), s.id)) ids.add(id);   /* 型紙の輪郭は、端がつながった線を一周まとめて */
+    selected = ids; try { painted = paintBrush.kind === 'metal' ? applyMetal(paintBrush.id) : applyLeather(paintBrush.hex, true); } finally { selected = new Set(); }
+  }
+  if (!painted) addRegionFill(p, paintBrush);   /* 線から離れた所・閉じた形にならない線：線で囲まれた場所を塗る（T字・すき間があっても） */
   draw();
 }
-function applyLeather(hex) {
+function applyLeather(hex, quiet = false) {   /* quiet：塗りモードで、塗れなければ案内を出さず 0 を返す（そのあと領域を塗る）。返り値：塗ったまとまりの数 */
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id)));
-  if (!okIds.size && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'leather', hex }); return; }   /* 何も選んでいなければ、その色を持って塗りモードに（ロックしたレイヤーの図形を選んでいるときは、今までどおり塗れない案内） */
+  if (!okIds.size && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'leather', hex }); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（ロックしたレイヤーの図形を選んでいるときは、今までどおり塗れない案内） */
   const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), loose = doc.shapes.filter(sh => okIds.has(sh.id) && !inPart.has(sh.id) && !sh.holeLink && !['text', 'dimension', 'image', 'fold'].includes(sh.type));
   const closedOnes = loose.filter(sh => sh.closed || sh.type === 'circle'), open = loose.filter(sh => !(sh.closed || sh.type === 'circle'));
   const loops = [], rest = new Set(open.map(s => s.id)); let unclosed = 0;
   while (rest.size) { const pool = open.filter(s => rest.has(s.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId); if (poly) { loops.push(poly.ids); for (const id of poly.ids) rest.delete(id); } else { for (const id of contourFrom(pool, startId)) { rest.delete(id); unclosed++; } if (rest.delete(startId)) unclosed++; } } /* 一周しない線は数えて案内するだけ */
-  if (!parts.length && !closedOnes.length && !loops.length) { $('hint').textContent = t(unclosed ? 'leatherNotClosed' : 'leatherNeedShape'); return; }
+  if (!parts.length && !closedOnes.length && !loops.length) { if (!quiet) $('hint').textContent = t(unclosed ? 'leatherNotClosed' : 'leatherNeedShape'); return 0; }
   const used = new Set(doc.shapes.map(s => s.leatherGroup).filter(Boolean)); let seq = 0; const nextGroup = () => { do seq++; while (used.has('lg' + seq)); used.add('lg' + seq); return 'lg' + seq; };
   commit(() => { for (const p of parts) p.color = hex; for (const s of closedOnes) { s.leather = hex; delete s.leatherGroup; } for (const ids of loops) { const gid = nextGroup(); for (const s of doc.shapes) if (ids.includes(s.id)) { s.leather = hex; s.leatherGroup = gid; } } });
-  $('hint').textContent = t('leatherApplied', { n: parts.length + closedOnes.length + loops.length, hex }) + (unclosed ? ' ' + t('leatherSkippedOpen', { n: unclosed }) : '');
+  $('hint').textContent = t('leatherApplied', { n: parts.length + closedOnes.length + loops.length, hex }) + (unclosed ? ' ' + t('leatherSkippedOpen', { n: unclosed }) : ''); return parts.length + closedOnes.length + loops.length;
 }
 /** 型紙に直接付けた革色のうち、端がつながった線の一周（leatherGroup）の塗り：一周をたどった多角形（閉じた図形は図形ごとの塗りで描く）。move は作図中の移動プレビュー用。 */
 function leatherOutlineFills(d, vis, move = s => s) {
@@ -2186,6 +2211,7 @@ function leatherOutlineFills(d, vis, move = s => s) {
 }
 /** 革色・革の質感の塗り（カラーシミュレーション）：部品の閉図形・型紙に付けた革色（閉じた図形）・質感（図形自身の指定が優先）を塗り、端がつながった線の一周の革色も塗る。画面・ほかの紙・PNG 書き出しで同じ見え方（書き出しは不透明）。 */
 function drawLeatherFills(d, vis, move = s => s) {
+  drawRegionLeather(d, vis);   /* 線で囲まれた場所の塗り（図形ごとの塗りの下） */
   for (const s of d.shapes.filter(s => vis(s) && (s.closed || s.type === 'circle'))) {
     const tex = textureOf(s, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(s.id)), color = part?.color || s.leather; if (!tex && !color) continue;
     path(move(s)); ctx.save(); ctx.globalAlpha = exporting ? 1 : tex ? 0.92 : 0.55; ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore();
@@ -2233,11 +2259,12 @@ function drawMetalFills() {
     ctx.save(); ctx.beginPath(); trace(ps); for (const h of holes) trace(h); ctx.clip('evenodd'); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 3 / scale; ctx.beginPath(); trace(ps); ctx.stroke(); ctx.restore(); /* 内側の縁のハイライト */
     for (const h of holes) { ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); trace(h); ctx.stroke(); ctx.restore(); } /* 穴の暗い縁 */
   };
+  for (const fl of visibleFills(doc, visible, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) paint(m, fl.points, fl.holes || []); }   /* 線で囲まれた場所の金属の塗り */
   for (const r of metalFillPlan(doc, visible, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
 function applyMetal(id) {
-  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id }); else $('hint').textContent = t('metalNeedSelect'); return; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
-  let unclosed = 0;   /* 一周つながっていない線の数（線の色だけ付く） */
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
+  let unclosed = 0, loopsMade = 0;   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数 */
   commit(() => {
     for (const s of doc.shapes) if (ids.has(s.id)) { if (id) s.metal = id; else { delete s.metal; delete s.metalGroup; } }
     if (!id) return;
@@ -2246,11 +2273,12 @@ function applyMetal(id) {
     const flat = mine.filter(s => !(s.closed || s.type === 'circle')), rest = new Set(flat.map(s => s.id)), used = new Set(doc.shapes.map(s => s.metalGroup).filter(Boolean)); let seq = 0;
     while (rest.size) {   /* 開いた線は、端がつながった一周ごとに、まとまり（metalGroup）にして、一周を塗る */
       const pool = flat.filter(s => rest.has(s.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId);
-      if (poly) { do seq++; while (used.has('mg' + seq)); used.add('mg' + seq); for (const s of doc.shapes) if (poly.ids.includes(s.id)) s.metalGroup = 'mg' + seq; for (const i of poly.ids) rest.delete(i); }
+      if (poly) { do seq++; while (used.has('mg' + seq)); used.add('mg' + seq); for (const s of doc.shapes) if (poly.ids.includes(s.id)) s.metalGroup = 'mg' + seq; for (const i of poly.ids) rest.delete(i); loopsMade++; }
       else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) unclosed++; if (rest.delete(startId)) unclosed++; }
     }
   });
   $('hint').textContent = (id ? t('metalApplied', { n: ids.size, name: t('metal.' + id) }) : t('metalCleared', { n: ids.size })) + (unclosed ? ' ' + t('metalLineOnly', { n: unclosed }) : '');
+  return doc.shapes.filter(sh => ids.has(sh.id) && (sh.closed || sh.type === 'circle')).length + loopsMade;   /* 塗れた形の数（0 なら、線の色だけ） */
 }
 /* ---- 革の質感（テクスチャ）：継ぎ目なしの革写真を部品やピースに繰り返し貼る（カラーシミュレーション） ---- */
 const TEXTURES = DATA_TEXTURES.textures, textureById = id => (id && TEXTURES.find(x => x.id === id)) || null, texImages = new Map();
@@ -2776,7 +2804,7 @@ function attachClick(p) {
   const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy));
   setMode('select'); $('hint').textContent = r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) });
 }
-$('attachStart').onclick = attachStart;
+$('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
   const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
@@ -4154,6 +4182,7 @@ function transformSelected(fn) {
   commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
+    if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => fl.ids.length && fl.ids.every(id => ids.has(id)) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : fl); }   /* 囲む図形を全部動かしたら、領域の塗りもついていく */
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>p.id));
     const alone=h=>!paths.has(h.pathId)&&selected.has(h.id)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
     doc.holes=doc.holes.map(h=>paths.has(h.pathId)||alone(h)?fn(h):h);
