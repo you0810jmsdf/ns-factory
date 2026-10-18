@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 08:02 · 8b8870c</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 08:15 · 4381e2b</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -656,8 +656,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ab4311dc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=c8608069","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=21c820ce","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=ac81ac44","./help/ja.js":"./help/ja.js?v=167625d9","./i18n.js":"./i18n.js?v=a305a898","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=ab4311dc"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=21baee46","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=c8608069","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=47c0c989","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=ac81ac44","./help/ja.js":"./help/ja.js?v=167625d9","./i18n.js":"./i18n.js?v=0d6c304e","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=21baee46"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3370,6 +3370,15 @@ const MESSAGES = {
     "lamSecSrc_rim": "外周の菱目の間隔",
     "lamSecSrc_dashes": "縦の点線",
     "lamSecRadius": "丸折りの半径（内側の面）：図面の左の折り {a} mm・右の折り {b} mm",
+    "lamSecAngle": "折りの角度（表と裏の曲げの差÷厚みの平均）：図面の左の折り {a}°・右の折り {b}°",
+    "lamSecThick": "革の厚み：表 {o} mm・裏 {i} mm",
+    "lamSecThickDiff": "革の厚み：表 {o} mm・裏 {i} mm（表と裏で厚みが違うので、断面の2枚の厚みも違って見えます。同じ厚みなら、「表の革の厚み」「裏の革の厚み」の欄に入れて、もう一度押してください）",
+    "lamSecBendA": "丸折り {k}：表 {o} mm・裏 {i} mm（差 {d} mm・角度 {a}°・貼り合わせ線の半径 {r} mm）",
+    "lamSecTotal2": "全長：表 {o} mm・裏 {i} mm（差 {d} mm）",
+    "lamSecErr_bendReversed": "表の曲げが、裏の曲げより長くありません。折りの角度を表と裏の曲げの差から求めるので、表（外側の革）のほうが長い必要があります。表と裏の選び方を確かめてください。",
+    "lamSecErr_angleTooBig": "折りの角度が 360° を超えます（表と裏の曲げの差が大きすぎます）。",
+    "lamRingLeft": "左の折り",
+    "lamRingRight": "右の折り",
     "lamRelay": "外周の菱目を、ピッチに並べ直す",
     "lamRelayTip": "表と裏の外周の菱目（菱の線）の直線の列を、指定したピッチに並べ直します。表と裏で間隔が違う範囲を曲げ部として見つけ、平らな所はピッチ・曲げの範囲はピッチの倍数（裏はピッチ×個数・表は裏より1ピッチ長く）にします。列の右端が元の位置を越えない範囲で、菱目を足します。角と短い辺は動かしません。元に戻すは1回です。",
     "lamPitch": "ピッチ（mm・空なら、いま選んでいる目打ち工具のピッチ）",
@@ -3380,10 +3389,10 @@ const MESSAGES = {
     "lamRingD": "リング外径（mm・断面図で、折りの内側の隙間が足りるか調べる。空なら見ない）",
     "lamRingOk": "リング外径 {d} mm：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（どちらも入ります）。",
     "lamRingShort": "リング外径 {d} mm が入りません：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（不足 {sa}・{sb} mm）。",
-    "lamRingNeed": "隙間を {d} mm 以上にするには、どちらの折りも、裏の曲げを {bi} mm 以上（表 {bo} mm 以上）にします。",
-    "lamRingPitch": "ピッチ {p} mm の倍数なら、裏 {n} 間隔＝{bi} mm・表 {n1} 間隔＝{bo} mm（隙間 {g} mm）。いまの曲げから、裏は合計 +{dIn} mm・表は +{dOut} mm 長くなります。",
-    "lamRingNote": "リングの円は、2か所の折りの中心に置いた目安です。断面は180°の折り（C型）として計算しています。",
-    "lamRingHint": "リング外径 {d} mm が入りません（隙間 {a}／{b} mm）。",
+    "lamRingNeed": "折り {k}（角度 {ang}°）：隙間を {d} mm 以上にするには、裏の曲げを {bi} mm 以上（表 {bo} mm 以上）にします。",
+    "lamRingPitch": "折り {k}：ピッチ {p} mm の倍数なら、裏 {n} 間隔＝{bi} mm・表 {bo} mm（隙間 {g} mm）。いまの曲げから、裏は +{dIn} mm・表は +{dOut} mm 長くなります。",
+    "lamRingNote": "リングの円は、2か所の折りの中心に置いた目安です（足りない折りは赤・足りる折りは緑）。折りの角度は、表と裏の曲げの差から求めています。",
+    "lamRingHint": "リング外径 {d} mm が入りません（{list}）。",
     "lamRingErr_bad": "リング外径は 0 より大きい数にしてください（空なら見ません）。",
     "lamRelayErr_badPitch": "ピッチは 0.5 mm 以上の数にしてください（欄が空のときは、目打ち工具のピッチを使います）。",
     "lamRelayErr_noRim": "外周の菱目（菱の線）の直線の列が見つかりません。表と裏の部品に、菱の線が20個以上並んだ列が要ります。",
@@ -5018,6 +5027,15 @@ const MESSAGES = {
     "lamSecSrc_rim": "rim diamond spacing",
     "lamSecSrc_dashes": "dashed lines",
     "lamSecRadius": "Bend radius (inner surface): left fold {a} mm · right fold {b} mm",
+    "lamSecAngle": "Fold angle (outer-inner bend difference / mean thickness): left fold {a}° · right fold {b}°",
+    "lamSecThick": "Leather thickness: outer {o} mm · inner {i} mm",
+    "lamSecThickDiff": "Leather thickness: outer {o} mm · inner {i} mm (the two differ, so the two layers look different in the section. If they are the same, type the value in the outer and inner thickness boxes and press again)",
+    "lamSecBendA": "Bend {k}: outer {o} mm · inner {i} mm (difference {d} mm · angle {a}° · glue-line radius {r} mm)",
+    "lamSecTotal2": "Total: outer {o} mm · inner {i} mm (difference {d} mm)",
+    "lamSecErr_bendReversed": "An outer bend is not longer than the inner bend. The fold angle comes from the outer-inner bend difference, so the outer leather must be longer. Check which part is outer and inner.",
+    "lamSecErr_angleTooBig": "The fold angle would exceed 360° (the outer-inner bend difference is too large).",
+    "lamRingLeft": "left fold",
+    "lamRingRight": "right fold",
     "lamRelay": "Re-lay the rim diamonds at the pitch",
     "lamRelayTip": "Re-lays the straight rows of rim diamond lines on the outer and inner parts at the given pitch. Bend zones are found where the outer and inner spacings differ; flats get the pitch, bends become multiples of it (inner = pitch x count, outer = one pitch longer). Diamonds are added as long as the right end does not pass its old position. Corners and short sides are untouched. One undo.",
     "lamPitch": "Pitch (mm; empty = pitch of the selected punch tool)",
@@ -5028,10 +5046,10 @@ const MESSAGES = {
     "lamRingD": "Ring outer diameter (mm; the section checks the inner gap of the folds; empty = not checked)",
     "lamRingOk": "Ring outer diameter {d} mm: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (both fit).",
     "lamRingShort": "A ring of {d} mm does not fit: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (short by {sa} and {sb} mm).",
-    "lamRingNeed": "For a gap of {d} mm or more, both bends need an inner bend of {bi} mm or more (outer {bo} mm or more).",
-    "lamRingPitch": "In multiples of the {p} mm pitch: inner {n} gaps = {bi} mm, outer {n1} gaps = {bo} mm (gap {g} mm). From the current bends, the inner part gets +{dIn} mm longer and the outer +{dOut} mm in total.",
-    "lamRingNote": "The ring circles are placed at the centers of the two folds as a guide. The section is calculated as 180-degree folds (C shape).",
-    "lamRingHint": "A ring of {d} mm does not fit (gap {a} / {b} mm).",
+    "lamRingNeed": "Fold {k} (angle {ang}°): for a gap of {d} mm or more, the inner bend needs {bi} mm or more (outer {bo} mm or more).",
+    "lamRingPitch": "Fold {k}: in multiples of the {p} mm pitch: inner {n} gaps = {bi} mm, outer {bo} mm (gap {g} mm). From the current bends, the inner part gets +{dIn} mm longer and the outer +{dOut} mm.",
+    "lamRingNote": "The ring circles are placed at the centers of the two folds as a guide (red = too tight, green = fits). The fold angle is worked out from the outer-inner bend difference.",
+    "lamRingHint": "A ring of {d} mm does not fit ({list}).",
     "lamRingErr_bad": "The ring outer diameter must be larger than 0 (empty = not checked).",
     "lamRelayErr_badPitch": "The pitch must be at least 0.5 mm (if empty, the pitch of the punch tool is used).",
     "lamRelayErr_noRim": "No straight row of rim diamond lines found. Each part needs a row of 20 or more diamond lines.",
@@ -7416,14 +7434,15 @@ function foldBaselines(shapes, { flat1, bend1, flat2, bend2 } = {}) {
   const lines = x.map(px => ({ type: 'line', layer: 'guide', lineStyle: 'dashed', x1: px, y1: box.y0, x2: px, y2: box.y1 }));
   return { ok: true, xs: x, flats: [flat1, flat2, flat3], bends: [bend1, bend2], lines, replaceIds };
 }
-/** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 半円 b1（弧の長さ）→ 平ら f2 → 半円 b2 → 平ら f3。折りはどちらも反時計回り（内側へ巻く＝C型）。
- *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, s0, s1 }], length, flats, bends }。s は始点からの長さ（革の中心に沿った長さ）。 */
-function foldSectionPath({ flats, bends }) {
-  const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0;
+/** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 折り b1（弧の長さ・角度 angles[0]）→ 平ら f2 → 折り b2（角度 angles[1]）→ 平ら f3。折りはどちらも反時計回り（内側へ巻く）。
+ *  angles（ラジアン・省略は 180°＝半円＝三つ折りのC型）：折りごとの角度。弧の半径＝弧の長さ÷角度（事業主の指示 2026-10-19「180°前提をやめて」）。
+ *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, ang, s0, s1 }], length, flats, bends, angles }。s は始点からの長さ（革の中心に沿った長さ）。 */
+function foldSectionPath({ flats, bends, angles }) {
+  const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0; const ang = i => Array.isArray(angles) && Number.isFinite(angles[i]) && angles[i] > 0 ? angles[i] : Math.PI;
   const line = len => { if (!(len > FOLD_EPS)) return; const q = { u: p.u + len * Math.cos(th), v: p.v + len * Math.sin(th) }; pieces.push({ kind: 'line', p0: p, p1: q, th, s0: s, s1: s + len }); s += len; p = q; };
-  const turn = len => { const r = len / Math.PI, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + Math.PI, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + Math.PI), v: c.v + r * Math.sin(a0 + Math.PI) }; th += Math.PI; };
-  line(flats[0]); turn(bends[0]); line(flats[1]); turn(bends[1]); line(flats[2]);
-  return { pieces, length: s, flats: [...flats], bends: [...bends] };
+  const turn = (len, a) => { const r = len / a, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + a, ang: a, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + a), v: c.v + r * Math.sin(a0 + a) }; th += a; };
+  line(flats[0]); turn(bends[0], ang(0)); line(flats[1]); turn(bends[1], ang(1)); line(flats[2]);
+  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: [ang(0), ang(1)] };
 }
 /** 中心線の s の位置の点と向き：{ u, v, heading }（heading はラジアン）。s は 0〜length に丸める。 */
 function pointOnFoldPath(path, s) {
@@ -7439,7 +7458,7 @@ function projectOnFoldPath(path, u, v) {
     if (pc.kind === 'line') { const dx = pc.p1.u - pc.p0.u, dy = pc.p1.v - pc.p0.v, len2 = dx * dx + dy * dy, k = Math.max(0, Math.min(1, ((u - pc.p0.u) * dx + (v - pc.p0.v) * dy) / len2)); consider(pc.s0 + k * Math.sqrt(len2), pc.p0.u + k * dx, pc.p0.v + k * dy); }
     else {
       const phi = Math.atan2(v - pc.c.v, u - pc.c.u), rel = ((phi - pc.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-      if (rel <= Math.PI) consider(pc.s0 + rel * pc.r, pc.c.u + pc.r * Math.cos(phi), pc.c.v + pc.r * Math.sin(phi));
+      if (rel <= pc.a1 - pc.a0 + 1e-12) consider(pc.s0 + rel * pc.r, pc.c.u + pc.r * Math.cos(phi), pc.c.v + pc.r * Math.sin(phi));
       consider(pc.s0, pc.c.u + pc.r * Math.cos(pc.a0), pc.c.v + pc.r * Math.sin(pc.a0)); consider(pc.s1, pc.c.u + pc.r * Math.cos(pc.a1), pc.c.v + pc.r * Math.sin(pc.a1));
     }
   }
@@ -7453,21 +7472,25 @@ function foldPlyLengths(path, t, plies = 1) {
   const bends = path.pieces.filter(p => p.kind === 'arc').length;
   return Array.from({ length: plies }, (_, j) => path.length + bends * Math.PI * (t / 2 - (j + 0.5) * t / plies));
 }
-/** 表（外側の革）と裏（内側の革）の図面から、1枚の三つ折り断面図の形を求める（事業主の選択 2026-10-19・案A）。
+/** 表（外側の革）と裏（内側の革）の図面から、1枚の断面図の形を求める（事業主の選択 2026-10-19・案A）。
  *  outer・inner＝{ flats:[3], bends:[2] }（図面の左から：平ら・丸折り・平ら・丸折り・平ら。図面に描いた長さ＝革の中立面の長さ）。tO・tI＝表・裏の厚み。base＝'outer'｜'inner'（基準にするほう。断面の形は基準から求め、もう一方は差を出す）。
  *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。
- *  考え方：平らは、表も裏も同じ長さ。丸折りは、貼り合わせ線での長さ G＝π×半径。表の丸折り＝G＋π×tO/2・裏の丸折り＝G−π×tI/2。貼り合わせ線は、断面の中心から（tO−tI）/2 だけ内側へずれる。
- *  返り値：{ ok, flip, T, glueK, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・flip のときは右から数えた順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
- *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner（図面の全長）, wantOther（もう一方のあるべき全長）, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
- *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ。失敗は { ok:false, error:'badNumber' } か { ok:false, error:'tight', index（図面の左から数えた折りの番号・1 から）}（内側の面の半径が 0.05 以下）。 */
-function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles = [], innerHoles = [] } = {}) {
+ *  angleMode：'half'（既定）＝折りはどちらも180°（三つ折りのC型）。'data'＝折りごとの角度 θ を、表と裏の曲げの差から求める（事業主の指示 2026-10-19「180°前提をやめて」）：θ＝（表の曲げ−裏の曲げ）÷（（表の厚み＋裏の厚み）/2）。
+ *  考え方：平らは、表も裏も同じ長さ。折り k（角度 θ）：貼り合わせ線での長さ G＝θ×半径 rg。表の曲げ＝G＋θ×表の厚み/2・裏の曲げ＝G−θ×裏の厚み/2。貼り合わせ線は、断面の中心から（表−裏）/2 だけ内側へずれる。
+ *  返り値：{ ok, flip, T, glueK, glueLen（貼り合わせ線の全長）, angleMode, angles（図面の左から・ラジアン）, pathAngles（中心線の順・flip のときは逆）, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・中心線の順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
+ *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner, wantOther, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
+ *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ（'data' では、曲げの差は角度を決めるのに使うので 0）。失敗：'badNumber'｜'tight'（index＝図面の左から数えた折りの番号・内側の面の半径が 0.05 以下）｜'bendReversed'（'data' で、表の曲げが裏の曲げより長くない）｜'angleTooBig'（'data' で、角度が 360° を超える）。 */
+function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode = 'half', outerHoles = [], innerHoles = [] } = {}) {
   const num = (a, n, min) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && v >= min);
   if (!outer || !inner || !num(outer.flats, 3, 0) || !num(inner.flats, 3, 0) || !num(outer.bends, 2, FOLD_EPS) || !num(inner.bends, 2, FOLD_EPS) || ![tO, tI].every(v => Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
-  const baseOuter = base !== 'inner', gO = outer.bends.map(b => b - Math.PI * tO / 2), gI = inner.bends.map(b => b + Math.PI * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での丸折りの長さ */
-  const rg = gB.map(g => g / Math.PI), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
-  const flip = gB[0] < gB[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
-  const flats = orient(fB), bends = orient(rg.map(r => Math.PI * (r + kg))), path = foldSectionPath({ flats, bends });
-  const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map(g => g - Math.PI * tI / 2) : gI.map(g => g + Math.PI * tO / 2), other = baseOuter ? inner : outer;
+  const baseOuter = base !== 'inner', mode = angleMode === 'data' ? 'data' : 'half', dAvg = (tO + tI) / 2;
+  const th = mode === 'data' ? outer.bends.map((b, i) => (b - inner.bends[i]) / dAvg) : [Math.PI, Math.PI];   /* 折りごとの角度（ラジアン・図面の左から） */
+  if (th.some(x => !(x > 1e-6))) return { ok: false, error: 'bendReversed' }; if (th.some(x => x > 2 * Math.PI + 1e-9)) return { ok: false, error: 'angleTooBig' };
+  const gO = outer.bends.map((b, i) => b - th[i] * tO / 2), gI = inner.bends.map((b, i) => b + th[i] * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での折りの長さ */
+  const rg = gB.map((g, i) => g / th[i]), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
+  const flip = rg[0] < rg[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
+  const flats = orient(fB), pathAngles = orient(th), bends = orient(rg.map((r, i) => th[i] * (r + kg))), path = foldSectionPath({ flats, bends, angles: pathAngles });
+  const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map((g, i) => g - th[i] * tI / 2) : gI.map((g, i) => g + th[i] * tO / 2), other = baseOuter ? inner : outer;
   const rf = outer.flats.map((o, i) => ({ outer: o, inner: inner.flats[i], want: fB[i], diff: other.flats[i] - fB[i] })), rb = outer.bends.map((o, i) => ({ outer: o, inner: inner.bends[i], want: wantBend[i], diff: other.bends[i] - wantBend[i] }));
   const lenOuter = sum(outer.flats) + sum(outer.bends), lenInner = sum(inner.flats) + sum(inner.bends), wantOther = sum(fB) + sum(wantBend);
   /* 菱目：図面の位置を、その革の図面の区間（平ら・丸折り）ごとに、断面の中心線の同じ区間へ比例して写す */
@@ -7476,23 +7499,29 @@ function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles = [], 
     const segD = [ply.flats[0], ply.bends[0], ply.flats[1], ply.bends[1], ply.flats[2]], d = flip ? [...segD].reverse() : segD, L = sum(segD), cumD = d.reduce((a, v) => [...a, a.at(-1) + v], [0]);
     return (list || []).filter(Number.isFinite).map(u => { const x = Math.max(0, Math.min(L, flip ? L - u : u)); let k = 0; while (k < 4 && x > cumD[k + 1] + 1e-9) k++; const f = d[k] > 0 ? (x - cumD[k]) / d[k] : 0; return cumC[k] + Math.max(0, Math.min(1, f)) * segC[k]; }).sort((a, b) => a - b);
   };
-  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
+  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), angleMode: mode, angles: th, pathAngles, path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
 }
 /** 断面図の、折りの内側の隙間が、リング外径以上かを調べる（事業主の指摘 2026-10-19「リング外径が22mmくらいあるので、間のスペースをそれ以上にしないといけないです」・案A）。plan＝foldStackPlan の結果。tO・tI＝表・裏の厚み。pitch＝目打ちのピッチ（省略可）。
- *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ G＝π×半径 → 裏の曲げ＝G−π×裏の厚み/2・表の曲げ＝G＋π×表の厚み/2（180°の折りとして）。
- *  返り値：{ ringD, ok, gaps:[{ k, gap, short, ok }]（図面の左から）, need:{ innerRadius, inner, outer }, byPitch:{ pitch, n, inner, outer, gap }｜null（ピッチの倍数で、足りる最小の長さ。裏＝n×ピッチ・表＝裏＋1ピッチ）, extra:{ inner[], outer[], innerTotal, outerTotal }｜null（いまの曲げから増える長さ・足りている折りは 0）}。
- *  外径が数でない・0 以下・plan が失敗のときは null。 */
+ *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ＝θ×半径 → 裏の曲げ＝θ×（D/2＋裏の厚み/2）・表の曲げ＝裏の曲げ＋θ×（表の厚み＋裏の厚み）/2。θ＝折りごとの角度（plan.angles・180°の断面は π）。
+ *  返り値：{ ringD, ok, angleMode, gaps:[{ k, gap, short, ok }]（図面の左から）, needs:[{ k, angle, innerRadius, inner, outer }]（折りごとの、必要な曲げ）, byPitch:[{ k, pitch, n, inner, outer, gap }]｜null（ピッチの倍数で、足りる最小の長さ。裏＝n×ピッチ・表＝裏＋θ×（厚みの平均）［180°の断面は 裏＋1ピッチ］）,
+ *  extra:{ inner[], outer[], innerTotal, outerTotal }｜null（いまの曲げから増える長さ・足りている折りは 0）}。外径が数でない・0 以下・plan が失敗のときは null。 */
 function foldRingCheck(plan, { ringD, tO, tI, pitch } = {}) {
   if (!plan?.ok || !(typeof ringD === 'number' && ringD > 0) || !(tO > 0) || !(tI > 0)) return null;
+  const th = plan.angles || [Math.PI, Math.PI], data = plan.angleMode === 'data', dAvg = (tO + tI) / 2, sum = a => a.reduce((x, y) => x + y, 0);
   const gaps = plan.radii.map((r, k) => { const gap = 2 * r.inner; return { k: k + 1, gap, short: Math.max(0, ringD - gap), ok: gap >= ringD - 1e-9 }; });
-  const G = Math.PI * (ringD / 2 + tI), need = { innerRadius: ringD / 2, inner: G - Math.PI * tI / 2, outer: G + Math.PI * tO / 2 };
+  const needs = th.map((a, k) => { const inner = a * (ringD / 2 + tI / 2); return { k: k + 1, angle: a, innerRadius: ringD / 2, inner, outer: inner + a * dAvg }; });
   let byPitch = null, extra = null;
   if (typeof pitch === 'number' && pitch > 0) {
-    const n = Math.max(1, Math.ceil(need.inner / pitch - 1e-9)), inner = n * pitch, outer = inner + pitch, gap = 2 * ((inner + Math.PI * tI / 2) / Math.PI - tI); byPitch = { pitch, n, inner, outer, gap };
-    const up = (target, now) => Math.max(0, target - now), bi = plan.report.bends.map(b => up(inner, b.inner)), bo = plan.report.bends.map(b => up(outer, b.outer)), sum = a => a.reduce((x, y) => x + y, 0);
+    byPitch = needs.map((nd, k) => { const n = Math.max(1, Math.ceil(nd.inner / pitch - 1e-9)), inner = n * pitch; return { k: k + 1, pitch, n, inner, outer: data ? inner + th[k] * dAvg : inner + pitch, gap: 2 * (inner / th[k] - tI / 2) }; });
+    const bi = byPitch.map((b, k) => Math.max(0, b.inner - plan.report.bends[k].inner)), bo = byPitch.map((b, k) => Math.max(0, b.outer - plan.report.bends[k].outer));
     extra = { inner: bi, outer: bo, innerTotal: sum(bi), outerTotal: sum(bo) };
   }
-  return { ringD, ok: gaps.every(g => g.ok), gaps, need, byPitch, extra };
+  return { ringD, ok: gaps.every(g => g.ok), angleMode: data ? 'data' : 'half', gaps, needs, byPitch, extra };
+}
+/** 断面の中心線の、いちばん高い点の v（始点を 0 とした高さ）。折りの角度が 180° でなくても、断面を図面の下へ置く高さを決めるのに使う。 */
+function foldPathVMax(path) {
+  let m = 0; for (const pc of path.pieces) { if (pc.kind === 'line') { m = Math.max(m, pc.p0.v, pc.p1.v); continue; } m = Math.max(m, pc.c.v + pc.r * Math.sin(pc.a0), pc.c.v + pc.r * Math.sin(pc.a1)); for (let a = Math.PI / 2 + Math.ceil((pc.a0 - Math.PI / 2) / (2 * Math.PI)) * 2 * Math.PI; a <= pc.a1 + 1e-12; a += 2 * Math.PI) m = Math.max(m, pc.c.v + pc.r); }
+  return m;
 }
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
 function foldSectionShapes(path, t, origin, plies = 1, glueK) {
@@ -7516,7 +7545,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -21427,7 +21456,7 @@ const { createRegistration, regIsOwner } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -22907,36 +22936,36 @@ function makeLamSection() {
   const ringRaw = String($('lamRingD').value ?? '').trim(), ringD = ringRaw === '' ? 0 : Number(ringRaw); if (ringRaw !== '' && !(ringD > 0)) { fail('lamRingErr_bad'); return; }   /* リング外径（空なら見ない） */
   const specs = {}, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), rimZ = lamRimBendZones(doc, po.id, pi.id, { axis: now.axis });   /* 外周の菱の線の曲げ部（点線が無いとき・穴より先に使う） */
   for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis: now.axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
-  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
+  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, angleMode: 'data', outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
   if (!plan.ok) { fail('lamSecErr_' + plan.error, { k: plan.index ?? 0 }); return; }
   const ring = ringD > 0 ? foldRingCheck(plan, { ringD, tO, tI, pitch: lamPitchValue() }) : null;   /* 折りの内側の隙間が、リング外径以上か */
-  const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + 2 * plan.bends[0] / Math.PI + plan.T }, key = `lam:${po.id}:${pi.id}`;
+  const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + foldPathVMax(plan.path) + plan.T }, key = `lam:${po.id}:${pi.id}`;
   commit(() => {
     doc.foldSections ||= {};
     for (const [id, m] of Object.entries(doc.foldSections)) if (m.key === key) { doc.shapes = doc.shapes.filter(s => s.foldSec !== id); delete doc.foldSections[id]; }   /* 同じ組み合わせの前の断面は置き換える */
     let n = 1; while (doc.foldSections['fs' + n]) n++; const secId = 'fs' + n, gid = nextGroupId(doc.shapes);
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
-    doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
+    doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, angles: plan.pathAngles, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
     for (const sh of foldSectionShapes(plan.path, plan.T, origin, FOLD_SEC_PLIES, plan.T / 2 - tI)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から */
     for (const [ss, side] of [[plan.outerS, 'outer'], [plan.innerS, 'inner']]) for (const hm of foldHoleMarks(plan.path, ss, plan.T, origin).filter(m => m.side === side)) doc.shapes.push({ ...hm, id: freshId(doc.shapes, 's'), layer: 'section', color: 'blue', foldSec: secId });   /* 表の菱目は外側の面・裏の菱目は内側の面 */
-    if (ring) for (const pc of plan.path.pieces.filter(q => q.kind === 'arc')) doc.shapes.push({ type: 'circle', cx: origin.x + pc.c.u, cy: origin.y - pc.c.v, r: ring.ringD / 2, id: freshId(doc.shapes, 's'), layer: 'section', color: ring.ok ? 'green' : 'red', foldSec: secId, role: 'ring' });   /* リングの円：2か所の折りの中心に置く目安（足りなければ赤） */
+    if (ring) plan.path.pieces.filter(q => q.kind === 'arc').forEach((pc, ai) => doc.shapes.push({ type: 'circle', cx: origin.x + pc.c.u, cy: origin.y - pc.c.v, r: ring.ringD / 2, id: freshId(doc.shapes, 's'), layer: 'section', color: ring.gaps[plan.flip ? 1 - ai : ai].ok ? 'green' : 'red', foldSec: secId, role: 'ring' }));   /* リングの円：2か所の折りの中心に置く目安（足りなければ赤） */
   });
   const f2 = v => (+v).toFixed(2), r = plan.report, baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer'), src = k => t('lamSecSrc_' + specs[k].source), warn = d => Math.abs(d) > 0.05 ? 'lam-warn' : '';
   const done = t('lamSecDone', { so: src('outer'), si: src('inner'), glue: f2(plan.glueLen), outer: f2(r.lenOuter), inner: f2(r.lenInner) }); line(done); $('hint').textContent = done;
+  line(t(tO === tI ? 'lamSecThick' : 'lamSecThickDiff', { o: f2(tO), i: f2(tI) }), tO === tI ? undefined : 'lam-warn');   /* 断面に使った革の厚み（表と裏で違うと、2枚の厚みも違って見える・事業主の指摘 2026-10-19「内側と外側の革で厚みが違ってみえます」） */
   if ([specs.outer.source, specs.inner.source].some(x => x === 'holes' || x === 'rim')) line(t('lamSecHolesNote'), 'lam-warn');   /* 菱目から見つけた曲げ部は、折りの始まり・終わりが穴の位置どまり（±1ピッチ） */
   line(t('lamSecRadius', { a: f2(plan.radii[0].inner), b: f2(plan.radii[1].inner) }));
+  line(t('lamSecAngle', { a: (plan.angles[0] * 180 / Math.PI).toFixed(1), b: (plan.angles[1] * 180 / Math.PI).toFixed(1) }));   /* 折りの角度＝（表の曲げ−裏の曲げ）÷厚みの平均 */
   r.flats.forEach((f, k) => line(t('lamSecFlat', { k: k + 1, o: f2(f.outer), i: f2(f.inner), d: lamSecDiff(f.diff) }), warn(f.diff)));
-  r.bends.forEach((bd, k) => line(t('lamSecBend', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), base: baseName, other: otherName, w: f2(bd.want), d: lamSecDiff(bd.diff) }), warn(bd.diff)));
-  line(t('lamSecTotal', { o: f2(r.lenOuter), i: f2(r.lenInner), base: baseName, other: otherName, w: f2(r.wantOther), d: lamSecDiff(r.diffTotal) }), warn(r.diffTotal));
-  if (Math.abs(r.diffTotal) > 0.05) line(t('lamSecAdvice', { other: otherName, w: f2(r.wantOther), c: f2(r.base === 'outer' ? r.lenInner : r.lenOuter) }), 'lam-warn');
-  if (ring) {   /* リング外径：折りの内側の隙間が足りるか・足りなければ必要な曲げの長さ */
-    const g1 = x => x.toFixed(1), d = String(+ring.ringD.toFixed(2)), ga = ring.gaps[0], gb = ring.gaps[1];
+  r.bends.forEach((bd, k) => line(t('lamSecBendA', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), d: f2(bd.outer - bd.inner), a: (plan.angles[k] * 180 / Math.PI).toFixed(1), r: f2(plan.radii[k].glue) })));
+  line(t('lamSecTotal2', { o: f2(r.lenOuter), i: f2(r.lenInner), d: f2(r.lenOuter - r.lenInner) }));
+  if (ring) {   /* リング外径：折りの内側の隙間が足りるか・足りない折りは、折りごとの角度での必要な曲げの長さ */
+    const g1 = x => x.toFixed(1), d = String(+ring.ringD.toFixed(2)), ga = ring.gaps[0], gb = ring.gaps[1], sideLabel = k => t(k === 0 ? 'lamRingLeft' : 'lamRingRight');
     line(ring.ok ? t('lamRingOk', { d, a: g1(ga.gap), b: g1(gb.gap) }) : t('lamRingShort', { d, a: g1(ga.gap), b: g1(gb.gap), sa: g1(ga.short), sb: g1(gb.short) }), ring.ok ? 'lam-ok' : 'lam-warn');
-    if (!ring.ok) {
-      line(t('lamRingNeed', { d, bi: f2(ring.need.inner), bo: f2(ring.need.outer) }), 'lam-warn');
-      if (ring.byPitch) line(t('lamRingPitch', { p: String(+ring.byPitch.pitch.toFixed(3)), n: ring.byPitch.n, n1: ring.byPitch.n + 1, bi: f2(ring.byPitch.inner), bo: f2(ring.byPitch.outer), g: g1(ring.byPitch.gap), dIn: f2(ring.extra.innerTotal), dOut: f2(ring.extra.outerTotal) }), 'lam-warn');
-      $('hint').textContent += ' ' + t('lamRingHint', { d, a: g1(ga.gap), b: g1(gb.gap) });
-    }
+    ring.gaps.forEach((g, k) => { if (g.ok) return; const nd = ring.needs[k], bp = ring.byPitch?.[k];
+      line(t('lamRingNeed', { k: g.k, ang: (nd.angle * 180 / Math.PI).toFixed(1), d, bi: f2(nd.inner), bo: f2(nd.outer) }), 'lam-warn');
+      if (bp) line(t('lamRingPitch', { k: g.k, p: String(+bp.pitch.toFixed(3)), n: bp.n, bi: f2(bp.inner), bo: f2(bp.outer), g: g1(bp.gap), dIn: f2(ring.extra.inner[k]), dOut: f2(ring.extra.outer[k]) }), 'lam-warn'); });
+    if (!ring.ok) $('hint').textContent += ' ' + t('lamRingHint', { d, list: ring.gaps.filter(g => !g.ok).map(g => sideLabel(g.k - 1) + ' ' + g1(g.gap) + ' mm').join('・') });
     line(t('lamRingNote'));
   }
   draw();

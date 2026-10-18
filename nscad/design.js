@@ -666,14 +666,15 @@ export function foldBaselines(shapes, { flat1, bend1, flat2, bend2 } = {}) {
   const lines = x.map(px => ({ type: 'line', layer: 'guide', lineStyle: 'dashed', x1: px, y1: box.y0, x2: px, y2: box.y1 }));
   return { ok: true, xs: x, flats: [flat1, flat2, flat3], bends: [bend1, bend2], lines, replaceIds };
 }
-/** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 半円 b1（弧の長さ）→ 平ら f2 → 半円 b2 → 平ら f3。折りはどちらも反時計回り（内側へ巻く＝C型）。
- *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, s0, s1 }], length, flats, bends }。s は始点からの長さ（革の中心に沿った長さ）。 */
-export function foldSectionPath({ flats, bends }) {
-  const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0;
+/** 断面の中心線（革の中心）。座標は (u 右, v 上)・始点 (0,0)・右向き。平ら f1 → 折り b1（弧の長さ・角度 angles[0]）→ 平ら f2 → 折り b2（角度 angles[1]）→ 平ら f3。折りはどちらも反時計回り（内側へ巻く）。
+ *  angles（ラジアン・省略は 180°＝半円＝三つ折りのC型）：折りごとの角度。弧の半径＝弧の長さ÷角度（事業主の指示 2026-10-19「180°前提をやめて」）。
+ *  返り値：{ pieces: [{ kind:'line', p0, p1, th, s0, s1 } | { kind:'arc', c, r, a0, a1, ang, s0, s1 }], length, flats, bends, angles }。s は始点からの長さ（革の中心に沿った長さ）。 */
+export function foldSectionPath({ flats, bends, angles }) {
+  const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0; const ang = i => Array.isArray(angles) && Number.isFinite(angles[i]) && angles[i] > 0 ? angles[i] : Math.PI;
   const line = len => { if (!(len > FOLD_EPS)) return; const q = { u: p.u + len * Math.cos(th), v: p.v + len * Math.sin(th) }; pieces.push({ kind: 'line', p0: p, p1: q, th, s0: s, s1: s + len }); s += len; p = q; };
-  const turn = len => { const r = len / Math.PI, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + Math.PI, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + Math.PI), v: c.v + r * Math.sin(a0 + Math.PI) }; th += Math.PI; };
-  line(flats[0]); turn(bends[0]); line(flats[1]); turn(bends[1]); line(flats[2]);
-  return { pieces, length: s, flats: [...flats], bends: [...bends] };
+  const turn = (len, a) => { const r = len / a, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + a, ang: a, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + a), v: c.v + r * Math.sin(a0 + a) }; th += a; };
+  line(flats[0]); turn(bends[0], ang(0)); line(flats[1]); turn(bends[1], ang(1)); line(flats[2]);
+  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: [ang(0), ang(1)] };
 }
 /** 中心線の s の位置の点と向き：{ u, v, heading }（heading はラジアン）。s は 0〜length に丸める。 */
 export function pointOnFoldPath(path, s) {
@@ -689,7 +690,7 @@ export function projectOnFoldPath(path, u, v) {
     if (pc.kind === 'line') { const dx = pc.p1.u - pc.p0.u, dy = pc.p1.v - pc.p0.v, len2 = dx * dx + dy * dy, k = Math.max(0, Math.min(1, ((u - pc.p0.u) * dx + (v - pc.p0.v) * dy) / len2)); consider(pc.s0 + k * Math.sqrt(len2), pc.p0.u + k * dx, pc.p0.v + k * dy); }
     else {
       const phi = Math.atan2(v - pc.c.v, u - pc.c.u), rel = ((phi - pc.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-      if (rel <= Math.PI) consider(pc.s0 + rel * pc.r, pc.c.u + pc.r * Math.cos(phi), pc.c.v + pc.r * Math.sin(phi));
+      if (rel <= pc.a1 - pc.a0 + 1e-12) consider(pc.s0 + rel * pc.r, pc.c.u + pc.r * Math.cos(phi), pc.c.v + pc.r * Math.sin(phi));
       consider(pc.s0, pc.c.u + pc.r * Math.cos(pc.a0), pc.c.v + pc.r * Math.sin(pc.a0)); consider(pc.s1, pc.c.u + pc.r * Math.cos(pc.a1), pc.c.v + pc.r * Math.sin(pc.a1));
     }
   }
@@ -703,21 +704,25 @@ export function foldPlyLengths(path, t, plies = 1) {
   const bends = path.pieces.filter(p => p.kind === 'arc').length;
   return Array.from({ length: plies }, (_, j) => path.length + bends * Math.PI * (t / 2 - (j + 0.5) * t / plies));
 }
-/** 表（外側の革）と裏（内側の革）の図面から、1枚の三つ折り断面図の形を求める（事業主の選択 2026-10-19・案A）。
+/** 表（外側の革）と裏（内側の革）の図面から、1枚の断面図の形を求める（事業主の選択 2026-10-19・案A）。
  *  outer・inner＝{ flats:[3], bends:[2] }（図面の左から：平ら・丸折り・平ら・丸折り・平ら。図面に描いた長さ＝革の中立面の長さ）。tO・tI＝表・裏の厚み。base＝'outer'｜'inner'（基準にするほう。断面の形は基準から求め、もう一方は差を出す）。
  *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。
- *  考え方：平らは、表も裏も同じ長さ。丸折りは、貼り合わせ線での長さ G＝π×半径。表の丸折り＝G＋π×tO/2・裏の丸折り＝G−π×tI/2。貼り合わせ線は、断面の中心から（tO−tI）/2 だけ内側へずれる。
- *  返り値：{ ok, flip, T, glueK, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・flip のときは右から数えた順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
- *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner（図面の全長）, wantOther（もう一方のあるべき全長）, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
- *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ。失敗は { ok:false, error:'badNumber' } か { ok:false, error:'tight', index（図面の左から数えた折りの番号・1 から）}（内側の面の半径が 0.05 以下）。 */
-export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles = [], innerHoles = [] } = {}) {
+ *  angleMode：'half'（既定）＝折りはどちらも180°（三つ折りのC型）。'data'＝折りごとの角度 θ を、表と裏の曲げの差から求める（事業主の指示 2026-10-19「180°前提をやめて」）：θ＝（表の曲げ−裏の曲げ）÷（（表の厚み＋裏の厚み）/2）。
+ *  考え方：平らは、表も裏も同じ長さ。折り k（角度 θ）：貼り合わせ線での長さ G＝θ×半径 rg。表の曲げ＝G＋θ×表の厚み/2・裏の曲げ＝G−θ×裏の厚み/2。貼り合わせ線は、断面の中心から（表−裏）/2 だけ内側へずれる。
+ *  返り値：{ ok, flip, T, glueK, glueLen（貼り合わせ線の全長）, angleMode, angles（図面の左から・ラジアン）, pathAngles（中心線の順・flip のときは逆）, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・中心線の順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
+ *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner, wantOther, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
+ *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ（'data' では、曲げの差は角度を決めるのに使うので 0）。失敗：'badNumber'｜'tight'（index＝図面の左から数えた折りの番号・内側の面の半径が 0.05 以下）｜'bendReversed'（'data' で、表の曲げが裏の曲げより長くない）｜'angleTooBig'（'data' で、角度が 360° を超える）。 */
+export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode = 'half', outerHoles = [], innerHoles = [] } = {}) {
   const num = (a, n, min) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && v >= min);
   if (!outer || !inner || !num(outer.flats, 3, 0) || !num(inner.flats, 3, 0) || !num(outer.bends, 2, FOLD_EPS) || !num(inner.bends, 2, FOLD_EPS) || ![tO, tI].every(v => Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
-  const baseOuter = base !== 'inner', gO = outer.bends.map(b => b - Math.PI * tO / 2), gI = inner.bends.map(b => b + Math.PI * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での丸折りの長さ */
-  const rg = gB.map(g => g / Math.PI), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
-  const flip = gB[0] < gB[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
-  const flats = orient(fB), bends = orient(rg.map(r => Math.PI * (r + kg))), path = foldSectionPath({ flats, bends });
-  const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map(g => g - Math.PI * tI / 2) : gI.map(g => g + Math.PI * tO / 2), other = baseOuter ? inner : outer;
+  const baseOuter = base !== 'inner', mode = angleMode === 'data' ? 'data' : 'half', dAvg = (tO + tI) / 2;
+  const th = mode === 'data' ? outer.bends.map((b, i) => (b - inner.bends[i]) / dAvg) : [Math.PI, Math.PI];   /* 折りごとの角度（ラジアン・図面の左から） */
+  if (th.some(x => !(x > 1e-6))) return { ok: false, error: 'bendReversed' }; if (th.some(x => x > 2 * Math.PI + 1e-9)) return { ok: false, error: 'angleTooBig' };
+  const gO = outer.bends.map((b, i) => b - th[i] * tO / 2), gI = inner.bends.map((b, i) => b + th[i] * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での折りの長さ */
+  const rg = gB.map((g, i) => g / th[i]), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
+  const flip = rg[0] < rg[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
+  const flats = orient(fB), pathAngles = orient(th), bends = orient(rg.map((r, i) => th[i] * (r + kg))), path = foldSectionPath({ flats, bends, angles: pathAngles });
+  const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map((g, i) => g - th[i] * tI / 2) : gI.map((g, i) => g + th[i] * tO / 2), other = baseOuter ? inner : outer;
   const rf = outer.flats.map((o, i) => ({ outer: o, inner: inner.flats[i], want: fB[i], diff: other.flats[i] - fB[i] })), rb = outer.bends.map((o, i) => ({ outer: o, inner: inner.bends[i], want: wantBend[i], diff: other.bends[i] - wantBend[i] }));
   const lenOuter = sum(outer.flats) + sum(outer.bends), lenInner = sum(inner.flats) + sum(inner.bends), wantOther = sum(fB) + sum(wantBend);
   /* 菱目：図面の位置を、その革の図面の区間（平ら・丸折り）ごとに、断面の中心線の同じ区間へ比例して写す */
@@ -726,23 +731,29 @@ export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles
     const segD = [ply.flats[0], ply.bends[0], ply.flats[1], ply.bends[1], ply.flats[2]], d = flip ? [...segD].reverse() : segD, L = sum(segD), cumD = d.reduce((a, v) => [...a, a.at(-1) + v], [0]);
     return (list || []).filter(Number.isFinite).map(u => { const x = Math.max(0, Math.min(L, flip ? L - u : u)); let k = 0; while (k < 4 && x > cumD[k + 1] + 1e-9) k++; const f = d[k] > 0 ? (x - cumD[k]) / d[k] : 0; return cumC[k] + Math.max(0, Math.min(1, f)) * segC[k]; }).sort((a, b) => a - b);
   };
-  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
+  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), angleMode: mode, angles: th, pathAngles, path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
 }
 /** 断面図の、折りの内側の隙間が、リング外径以上かを調べる（事業主の指摘 2026-10-19「リング外径が22mmくらいあるので、間のスペースをそれ以上にしないといけないです」・案A）。plan＝foldStackPlan の結果。tO・tI＝表・裏の厚み。pitch＝目打ちのピッチ（省略可）。
- *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ G＝π×半径 → 裏の曲げ＝G−π×裏の厚み/2・表の曲げ＝G＋π×表の厚み/2（180°の折りとして）。
- *  返り値：{ ringD, ok, gaps:[{ k, gap, short, ok }]（図面の左から）, need:{ innerRadius, inner, outer }, byPitch:{ pitch, n, inner, outer, gap }｜null（ピッチの倍数で、足りる最小の長さ。裏＝n×ピッチ・表＝裏＋1ピッチ）, extra:{ inner[], outer[], innerTotal, outerTotal }｜null（いまの曲げから増える長さ・足りている折りは 0）}。
- *  外径が数でない・0 以下・plan が失敗のときは null。 */
+ *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ＝θ×半径 → 裏の曲げ＝θ×（D/2＋裏の厚み/2）・表の曲げ＝裏の曲げ＋θ×（表の厚み＋裏の厚み）/2。θ＝折りごとの角度（plan.angles・180°の断面は π）。
+ *  返り値：{ ringD, ok, angleMode, gaps:[{ k, gap, short, ok }]（図面の左から）, needs:[{ k, angle, innerRadius, inner, outer }]（折りごとの、必要な曲げ）, byPitch:[{ k, pitch, n, inner, outer, gap }]｜null（ピッチの倍数で、足りる最小の長さ。裏＝n×ピッチ・表＝裏＋θ×（厚みの平均）［180°の断面は 裏＋1ピッチ］）,
+ *  extra:{ inner[], outer[], innerTotal, outerTotal }｜null（いまの曲げから増える長さ・足りている折りは 0）}。外径が数でない・0 以下・plan が失敗のときは null。 */
 export function foldRingCheck(plan, { ringD, tO, tI, pitch } = {}) {
   if (!plan?.ok || !(typeof ringD === 'number' && ringD > 0) || !(tO > 0) || !(tI > 0)) return null;
+  const th = plan.angles || [Math.PI, Math.PI], data = plan.angleMode === 'data', dAvg = (tO + tI) / 2, sum = a => a.reduce((x, y) => x + y, 0);
   const gaps = plan.radii.map((r, k) => { const gap = 2 * r.inner; return { k: k + 1, gap, short: Math.max(0, ringD - gap), ok: gap >= ringD - 1e-9 }; });
-  const G = Math.PI * (ringD / 2 + tI), need = { innerRadius: ringD / 2, inner: G - Math.PI * tI / 2, outer: G + Math.PI * tO / 2 };
+  const needs = th.map((a, k) => { const inner = a * (ringD / 2 + tI / 2); return { k: k + 1, angle: a, innerRadius: ringD / 2, inner, outer: inner + a * dAvg }; });
   let byPitch = null, extra = null;
   if (typeof pitch === 'number' && pitch > 0) {
-    const n = Math.max(1, Math.ceil(need.inner / pitch - 1e-9)), inner = n * pitch, outer = inner + pitch, gap = 2 * ((inner + Math.PI * tI / 2) / Math.PI - tI); byPitch = { pitch, n, inner, outer, gap };
-    const up = (target, now) => Math.max(0, target - now), bi = plan.report.bends.map(b => up(inner, b.inner)), bo = plan.report.bends.map(b => up(outer, b.outer)), sum = a => a.reduce((x, y) => x + y, 0);
+    byPitch = needs.map((nd, k) => { const n = Math.max(1, Math.ceil(nd.inner / pitch - 1e-9)), inner = n * pitch; return { k: k + 1, pitch, n, inner, outer: data ? inner + th[k] * dAvg : inner + pitch, gap: 2 * (inner / th[k] - tI / 2) }; });
+    const bi = byPitch.map((b, k) => Math.max(0, b.inner - plan.report.bends[k].inner)), bo = byPitch.map((b, k) => Math.max(0, b.outer - plan.report.bends[k].outer));
     extra = { inner: bi, outer: bo, innerTotal: sum(bi), outerTotal: sum(bo) };
   }
-  return { ringD, ok: gaps.every(g => g.ok), gaps, need, byPitch, extra };
+  return { ringD, ok: gaps.every(g => g.ok), angleMode: data ? 'data' : 'half', gaps, needs, byPitch, extra };
+}
+/** 断面の中心線の、いちばん高い点の v（始点を 0 とした高さ）。折りの角度が 180° でなくても、断面を図面の下へ置く高さを決めるのに使う。 */
+export function foldPathVMax(path) {
+  let m = 0; for (const pc of path.pieces) { if (pc.kind === 'line') { m = Math.max(m, pc.p0.v, pc.p1.v); continue; } m = Math.max(m, pc.c.v + pc.r * Math.sin(pc.a0), pc.c.v + pc.r * Math.sin(pc.a1)); for (let a = Math.PI / 2 + Math.ceil((pc.a0 - Math.PI / 2) / (2 * Math.PI)) * 2 * Math.PI; a <= pc.a1 + 1e-12; a += 2 * Math.PI) m = Math.max(m, pc.c.v + pc.r); }
+  return m;
 }
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
 export function foldSectionShapes(path, t, origin, plies = 1, glueK) {
