@@ -916,7 +916,7 @@ async function attachSavedUndo(info, base) {
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
 function offerRestore() {
   let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
-  const info = text ? unpackAutosave(text, d => validateDoc(migrateDoc(d))) : null;   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
+  const info = text ? unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); return validateDoc(m); }) : null;   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
   if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
   const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
   pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
@@ -924,7 +924,7 @@ function offerRestore() {
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
-  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: withDefaultTool(migrateDoc(tb.doc)), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; attachSavedUndo(info, base); flushAutosave();
 }
@@ -1742,7 +1742,7 @@ async function openFile(file) {
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
     if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
     const raw = JSON.parse(text), hist = raw && raw.undoHistory; if (raw) delete raw.undoHistory; /* 保存ファイルに入っていた元に戻す履歴は、図面とは別に扱う */
-    const next = withDefaultTool(migrateDoc(raw));
+    const next = withDefaultTool(migrateDoc(raw)); healDoc(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
     const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode); noticeGaps();
@@ -3751,7 +3751,21 @@ function rulerClick(pt) {
   ruler = { a: stage.a, b: pt }; stage = null; $('hint').textContent = rulerText(ruler) + ' ' + t('rulerAgain'); lastPoint = pt; draw();
 }
 /** 寸法（D）：1点目・2点目のクリックで測り、3点目をクリックしたときに初めて、その位置（数値の位置）に寸法を作る。それまでは図面に記録しない（画面の見本だけ）。3点目を打たなければ何も作らない（Esc・ツール切替で消える）。 */
-const dimOffsetFor = (a, b, pt) => { const len = distance(a, b) || 1, off = (pt.x - a.x) * ((b.y - a.y) / len) - (pt.y - a.y) * ((b.x - a.x) / len), r = Math.round(off * 10) / 10; return Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r; };   /* 測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる） */
+/** 寸法の3点目（a→b を測る）から、寸法の「offset」を決める。測る線から3点目までの、符号つきの距離（寸法の図形の向きに合わせる）。
+ *  近く（画面の約10px以内）に、向きが平行な既存の寸法線があれば、その寸法線とぴったり同じ位置へ吸着する（事業主指示 2026-10-18：寸法線のラインをそろえる）。{ offset, snap: 相手の寸法線の両端 | null } */
+function dimOffsetInfo(a, b, pt) {
+  const len = distance(a, b) || 1, v = { x: (b.x - a.x) / len, y: (b.y - a.y) / len }, n = { x: v.y, y: -v.x }, dot = (p, q) => p.x * q.x + p.y * q.y, off = dot({ x: pt.x - a.x, y: pt.y - a.y }, n), tol = 10 / (scale || 1);
+  let best = null;
+  for (const e of doc.shapes) {
+    if (e.type !== 'dimension' || e.foldSec || !visible(e)) continue; const el = distance({ x: e.x1, y: e.y1 }, { x: e.x2, y: e.y2 }); if (el < 1e-6) continue;
+    const ev = { x: (e.x2 - e.x1) / el, y: (e.y2 - e.y1) / el }, en = { x: ev.y, y: -ev.x }; if (Math.abs(ev.x * v.y - ev.y * v.x) > 1e-3) continue;   /* 平行な寸法だけ */
+    const c = dot({ x: e.x1, y: e.y1 }, n) + e.offset * dot(en, n), o = c - dot(a, n), gap = Math.abs(o - off);   /* c＝相手の寸法線の、n 方向の位置 */
+    if (gap <= tol && (!best || gap < best.gap)) best = { gap, o, e };
+  }
+  if (best) { const g = dimension({ x: best.e.x1, y: best.e.y1 }, { x: best.e.x2, y: best.e.y2 }, best.e.offset); return { offset: Math.abs(best.o) < 0.5 ? (best.o < 0 ? -0.5 : 0.5) : best.o, snap: [g.a, g.b] }; }
+  const r = Math.round(off * 10) / 10; return { offset: Math.abs(r) < 0.5 ? (r < 0 ? -0.5 : 0.5) : r, snap: null };
+}
+const dimOffsetFor = (a, b, pt) => dimOffsetInfo(a, b, pt).offset;
 function dimToolClick(pt) {
   if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
     const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
@@ -3958,7 +3972,8 @@ function syncDimensions(before) {
 function commit(fn) {
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
   const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]]));
-  fn(); const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
+  fn(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
+  const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
@@ -4769,7 +4784,7 @@ function drawSheetBody(lo, hi) {
     for (const c of stage.cand) if (c) { ctx.beginPath(); ctx.arc(c.x, c.y, 3 / scale, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
   }
-  if (stage?.kind === 'dimPlace') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: dimOffsetFor(stage.a, stage.b, cursor) }, '#f0b429');   /* 3点目で作られる寸法の見本 */
+  if (stage?.kind === 'dimPlace') { const di = dimOffsetInfo(stage.a, stage.b, cursor); strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: di.offset }, '#f0b429'); if (di.snap) strokeShape({ type: 'line', x1: di.snap[0].x, y1: di.snap[0].y, x2: di.snap[1].x, y2: di.snap[1].y }, '#7ee787'); }   /* 近くの寸法線にそろうときは、そろえる相手を緑の線で示す */   /* 3点目で作られる寸法の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
