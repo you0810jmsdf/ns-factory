@@ -82,13 +82,13 @@
    },
    {
     "innerDiameterMm": 20,
-    "outerDiameterMm": 22,
-    "wireDiameterMm": 1,
+    "outerDiameterMm": 25.4,
+    "wireDiameterMm": 2.6999999999999993,
     "baseSpanMm": null,
     "embedDepthMm": 6.25,
     "openGapMm": null,
     "confidence": "measured",
-    "sourceNote": "事業主指示（2026-10-13）：Micro5 の内径20・外径22（線径1）。リングの食い込み6.25は Mini6 通常リング（実測）と同じ値の仮置き（2026-10-14）",
+    "sourceNote": "事業主指示（2026-10-18）：線径 2.7（実測）・内径 20 を正として外径 25.4。10-13 の「外径 22（線径1）」は誤りだった。リングの食い込み6.25は Mini6 通常リング（実測）と同じ値の仮置き（2026-10-14）",
     "wireSource": "measured"
    }
   ]
