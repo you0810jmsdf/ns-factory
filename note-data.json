@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-17T23:32:19",
+ "generatedAt": "2026-10-18T22:10:32",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 308,
+ "count": 309,
  "items": [
+  {
+   "title": "2026-10-18（日） - AIと進む制作と売買、小さな一歩の積み重ね",
+   "url": "https://note.com/you0810jmsdf/n/n384fdb3cc3f0",
+   "date": "2026-10-18",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-18_ig.jpg",
+   "key": "n384fdb3cc3f0",
+   "imageSource": "sns",
+   "summary": "AIがチャートの「箱にズーム」ボタンや縦の点線を追加し、相場画面の「見にくさ」を解消した。新しい分析ツールの実装や取引ルールの改善、複数のお客様からの注文対応もAIが支援した。"
+  },
   {
    "title": "APIキーの漏洩対策を徹底し、Tailscaleのアクセスを制限｜Jarvis日記 2026.10.17（土）",
    "url": "https://note.com/you0810jmsdf/n/nea486bcfb802",
