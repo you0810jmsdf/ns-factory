@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { autoDimensionPlan, autoDimCounts } from './autodim.js';
+import { autoDimensionPlan, autoDimCounts, adIsDiamond } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -4234,15 +4234,17 @@ function dimOffPreview(g, cur) {
 }
 const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
 /** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
-function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && (adIsDiamond(s) || (s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed')) && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 菱目（菱の線）は、目印・ガイドの層や点線でも対象に入れる（寸法は付けず、菱目の間隔の比較にだけ使う） */   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
 function runAutoDims() {
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
-  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap });
-  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : 'adNoShapes'); $('adInfo').textContent = ''; return; }
+  const tool = doc.tools.find(x => x.id === $('stitchTool')?.value) || doc.tools[0], toolPitch = tool && tool.pitch > 0 ? tool.pitch : null;   /* 菱の線の間隔は、目打ちカードで選んでいる工具のピッチと比べる */
+  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap, toolPitch });
+  const noPiece = $('adSize').checked && !autoDimCounts(plan).size && plan.info?.biggest ? ' ' + t('adNoPiece', { n: plan.info.clusters, w: plan.info.biggest.w, h: plan.info.biggest.h, why: t('adWhy_' + (plan.info.biggest.why || 'exists')) }) : '';   /* 全体の幅・高さが1本も入らなかったとき：いちばん大きいかたまりの大きさと理由（不具合の切り分け用） */
+  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
   const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
   cancel(); commit(() => { for (const d of plan) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, ...d }); ids.push(id); } });
   selected = new Set(ids); refreshInfo(); draw();
-  $('hint').textContent = t('adDone', { n: plan.length }); $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan));
+  $('hint').textContent = t('adDone', { n: plan.length }) + noPiece; $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan)) + noPiece;
 }
 function clearAutoDims() {
   const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim); if (!gone.length) { $('hint').textContent = t('adNoneToClear'); return; }
