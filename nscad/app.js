@@ -2379,15 +2379,28 @@ function renderColors() {
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
 const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
-const paintName = b => b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+const paintName = b => b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
-function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
+function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = brush.kind === 'erase' ? t('metalEraseStart') : t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
 const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
 const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > q.y) !== (ps[j].y > q.y) && q.x < (ps[j].x - ps[i].x) * (q.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
 const fillContains = (fl, q) => insideRing(q, fl.points) && !(fl.holes || []).some(h => insideRing(q, h));
 /** 点を含む領域の塗り（小さいものが上） */
 function fillAt(q) { return (doc.fills || []).filter(fl => fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null; }
+/** 金属の色を消すモード（事業主の指摘 2026-10-19「塗った金属の色を削除できない」）：「金属の色を解除」を図形を選ばずに押すと入る。クリックした線なら、その線と同じまとまり（一周＝metalGroup・金具のグループ）の金属の色を消す。
+ *  線から離れた所なら、そこを塗っている「線で囲まれた場所の塗り」のうち金属のもの（いちばん小さいもの）を消す。革色・質感の塗りは触らない。消した数を返す。 */
+const metalFillAt = q => (doc.fills || []).filter(fl => fl.metal && fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null;
+function eraseMetalAt(p, s) {
+  if (s && s.metal) {
+    const g = groupIdOf(s), ids = new Set(doc.shapes.filter(x => x.metal && editable(x) && (x.id === s.id || (s.metalGroup && x.metalGroup === s.metalGroup) || (g && groupIdOf(x) === g))).map(x => x.id));
+    commit(() => { for (const x of doc.shapes) if (ids.has(x.id)) { delete x.metal; delete x.metalGroup; delete x.metalStyle; } });
+    $('hint').textContent = t('metalCleared', { n: ids.size }); return ids.size;
+  }
+  const fl = metalFillAt(p);
+  if (fl) { commit(() => { doc.fills = (doc.fills || []).filter(x => x !== fl); }); $('hint').textContent = t('metalEraseFill'); return 1; }
+  $('hint').textContent = t(s ? 'metalEraseNoneShape' : 'metalEraseNone'); return 0;
+}
 /** 領域の塗りの中身：金属（と光沢の形）・質感（同じ領域に革色があれば残す）・革色。 */
 function fillPayload(brush, ids) {
   if (brush.kind === 'metal') return { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) };
@@ -2437,6 +2450,7 @@ function paintClick(p, eyedrop) {
     if (paintBrush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = paintBrush.style; $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
   }
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
+  if (paintBrush.kind === 'erase') { eraseMetalAt(p, s); draw(); return; }   /* 金属の色を消すモード */
   let painted = 0;
   if (s) {
     const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
@@ -2527,7 +2541,7 @@ function drawMetalFills(vis = visible) {
   for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
 function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
-  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id, style }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (!doc.shapes.some(s => selected.has(s.id))) startPaint(id ? { kind: 'metal', id, style } : { kind: 'erase' }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 解除も、選ばずに押すと「金属の色を消す」モード（事業主の指摘 2026-10-19） */   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
   let unclosed = 0, loopsMade = 0; const openLeft = [];   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数・一周にできなかった線の id */
   commit(() => {
     for (const s of doc.shapes) if (ids.has(s.id)) { if (id) { s.metal = id; if (style === 'radial') s.metalStyle = 'radial'; else delete s.metalStyle; } else { delete s.metal; delete s.metalGroup; delete s.metalStyle; } }

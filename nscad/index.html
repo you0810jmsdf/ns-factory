@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 07:15 · c1edfa7</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 07:27 · a7a9dec</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -655,8 +655,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ceca6b02","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=fe6b1399","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=589a48ee","./help/ja.js":"./help/ja.js?v=c9c6851f","./i18n.js":"./i18n.js?v=bff239f7","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=1e167ead","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=ceca6b02"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=f48d580b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=b16c2343","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=9c84a00a","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=1285ca8c","./help/ja.js":"./help/ja.js?v=f082fa8a","./i18n.js":"./i18n.js?v=1562a12b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=1e167ead","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=f48d580b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2085,11 +2085,15 @@ return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY
 __mods['autodim'] = (function(){
 // 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。
 // 純粋関数：図面（doc）と対象の図形（cand）から「作る寸法線の一覧」を返す。図面には触らない。画面側（app.js）が一覧を doc.shapes に足す。
-// 入れるもの（チェックで選ぶ）：①型紙（端がつながった一周の線）ごとの全体の幅と高さ ②まっすぐな辺ごとの長さ ③円の直径 ④縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）。
+// 入れるもの（チェックで選ぶ）：①型紙（端がつながった一周の線）ごとの全体の幅と高さ（いちばん広い所＝外接の枠） ②まっすぐな辺ごとの長さ ③円の直径 ④縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）。
+// 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。
 // 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
-const { distance, bboxOf, chainShapes, flattenShape, arcLength, pointAtLength, resolvePath, pathSegments } = __mods['geometry'];
-const AD_EQ = 0.01;   /* 同じ点とみなす距離（mm） */
-const AD_MIN = 1;     /* これより短い寸法は入れない（mm） */
+const { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon } = __mods['geometry'];
+const AD_EQ = 0.01;    /* 同じ点とみなす距離（mm） */
+const AD_MIN = 1;      /* これより短い寸法は入れない（mm） */
+const AD_MIN_EDGE = 3; /* 辺の寸法は、これより短い辺には入れない（丸角のつなぎなど小さな辺の数字が散らばらないように） */
+const AD_TINY = 3;     /* 外接の枠がこれ以下の小さな一周（小さな穴など）には、全体の幅・高さを入れない（mm） */
+const AD_TYPES = ['line', 'polyline', 'path', 'arc', 'bezier', 'circle'];
 const adRound = v => Math.round(v * 100) / 100;
 const adSame = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) <= AD_EQ;
 const adSamePair = (d, p, q) => { const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }; return (adSame(a, p) && adSame(b, q)) || (adSame(a, q) && adSame(b, p)); };
@@ -2103,13 +2107,8 @@ function adPointInPolygon(pt, poly) {
   }
   return inside;
 }
-/** ひとつながり（chainShapes の1件）を、端どうしをつないだ点列にする（閉じていれば多角形）。 */
-function adChainPoints(chain) {
-  const out = [];
-  for (const it of chain.items) { let pts = flattenShape(it.shape, 0.05); if (it.reversed) pts = [...pts].reverse(); for (const p of pts) if (!out.length || distance(out.at(-1), p) > 1e-6) out.push({ x: p.x, y: p.y }); }
-  if (out.length > 1 && distance(out[0], out.at(-1)) <= 1e-6) out.pop();
-  return out;
-}
+/** 菱目（菱の線）か：小さな4点の一周（diamondLoopSizes が菱形と判定するもの）。寸法を入れない。 */
+const adIsDiamond = s => s?.type === 'polyline' && diamondLoopSizes([s]).length > 0;
 /** 図形のまっすぐな辺 [[p, q], …]（直線・折れ線の各辺・ペンの直線区間。円弧・曲線は無し）。 */
 function adStraightEdges(s) {
   if (s.type === 'line') return [[{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]];
@@ -2123,13 +2122,28 @@ function adEdgeOffset(p, q, poly, gap) {
   const len = distance(p, q) || 1, n = { x: (q.y - p.y) / len, y: -(q.x - p.x) / len }, mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 };
   return adPointInPolygon({ x: mid.x + n.x * 0.5, y: mid.y + n.y * 0.5 }, poly) ? -gap : gap;
 }
-const adBoundsOf = list => { let b = null; for (const s of list) { const x = bboxOf(s); if (!x) continue; b = b ? { minX: Math.min(b.minX, x.minX), minY: Math.min(b.minY, x.minY), maxX: Math.max(b.maxX, x.maxX), maxY: Math.max(b.maxY, x.maxY) } : { ...x }; } return b; };
+const adBoundsOf = list => { let b = null; for (const s of list) { const x = s && bboxOf(s); if (!x) continue; b = b ? { minX: Math.min(b.minX, x.minX), minY: Math.min(b.minY, x.minY), maxX: Math.max(b.maxX, x.maxX), maxY: Math.max(b.maxY, x.maxY) } : { ...x }; } return b; };
 /** 辺 p→q が、全体の幅（上下の辺で長さが幅と同じ）か全体の高さ（左右の辺で長さが高さと同じ）と同じ寸法になるか。同じなら辺の寸法は入れない（全体の寸法と二重になる）。 */
 function adIsBoxEdge(p, q, b) {
   const horiz = Math.abs(p.y - q.y) <= AD_EQ, vert = Math.abs(p.x - q.x) <= AD_EQ;
   if (horiz && Math.abs(Math.abs(q.x - p.x) - (b.maxX - b.minX)) <= AD_EQ) return true;
   if (vert && Math.abs(Math.abs(q.y - p.y) - (b.maxY - b.minY)) <= AD_EQ) return true;
   return false;
+}
+/** 型紙（一周の線）を見つける：大きい図形から順に、端がつながった一周をたどる（outlinePolygon：0.2mm までの隙間を越え、分岐では枝に入らない＝取り込んだ図面の外形でも一周になる）。
+ *  見つかった一周の図形は使用済みにして、同じ図形を2つの型紙に数えない。返す値：[{ ids, points（多角形）, box（外接の枠＝いちばん広い所）, circle }] */
+function adPieces(geo) {
+  const size = s => { const b = bboxOf(s); return b ? Math.max(b.maxX - b.minX, b.maxY - b.minY) : 0; };
+  const order = [...geo].sort((a, b) => size(b) - size(a)), used = new Set(), pieces = [];
+  for (const s of order) {
+    if (used.has(s.id)) continue;
+    let poly = null; try { poly = outlinePolygon(geo, s.id); } catch { poly = null; }
+    if (!poly || !Array.isArray(poly.points) || poly.points.length < 3 || poly.ids.some(id => used.has(id))) continue;
+    for (const id of poly.ids) used.add(id);
+    const list = poly.ids.map(id => geo.find(x => x.id === id)), box = adBoundsOf(list); if (!box) continue;
+    pieces.push({ ids: poly.ids, points: poly.points, box, circle: list.length === 1 && list[0].type === 'circle' });
+  }
+  return pieces;
 }
 
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す。
@@ -2138,24 +2152,22 @@ function adIsBoxEdge(p, q, b) {
 function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8 } = {}) {
   const existing = (doc.shapes || []).filter(s => s.type === 'dimension'), out = [];
   const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
-  const add = (p, q, offset, kind) => { if (!(distance(p, q) >= AD_MIN) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind }); };
-  const geo = (cand || []).filter(s => s && ['line', 'polyline', 'path', 'arc', 'bezier', 'circle'].includes(s.type));
-  const polyOfShape = new Map();   /* 辺の図形 id → それが属する型紙の多角形（穴の間隔の置く側にも使う） */
-  for (const ch of chainShapes(geo)) {
-    const list = ch.shapeIds.map(id => geo.find(s => s.id === id)), isCircle = list.length === 1 && list[0].type === 'circle';
-    const poly = ch.closed && !isCircle ? adChainPoints(ch) : null, b = adBoundsOf(list);
-    if (poly && poly.length >= 3) for (const s of list) polyOfShape.set(s.id, poly);
-    if (size && poly && b) {
-      add({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, gap, 'size');    /* 全体の幅：上の辺の上（左→右の左側＝上） */
-      add({ x: b.minX, y: b.minY }, { x: b.minX, y: b.maxY }, -gap, 'size');   /* 全体の高さ：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
+  const add = (p, q, offset, kind) => { if (!(distance(p, q) >= (kind === 'edge' ? AD_MIN_EDGE : AD_MIN)) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind }); };
+  const geo = (cand || []).filter(s => s && AD_TYPES.includes(s.type) && !adIsDiamond(s));   /* 菱目（菱の線）は対象外 */
+  const pieces = adPieces(geo), pieceOf = new Map(); for (const pc of pieces) for (const id of pc.ids) pieceOf.set(id, pc);
+  for (const pc of pieces) {
+    const b = pc.box;
+    if (pc.circle) { if (circles) { const c = geo.find(s => s.id === pc.ids[0]); add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); } continue; }   /* 直径：円の上に */
+    if (size && Math.max(b.maxX - b.minX, b.maxY - b.minY) > AD_TINY) {
+      add({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, gap, 'size');    /* 全体の幅（いちばん広い所）：上の辺の上（左→右の左側＝上） */
+      add({ x: b.minX, y: b.minY }, { x: b.minX, y: b.maxY }, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
     }
-    if (circles && isCircle) { const c = list[0]; add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); }   /* 直径：円の上に */
-    if (edges) for (const s of list) for (const [p, q] of adStraightEdges(s)) { if (size && poly && b && adIsBoxEdge(p, q, b)) continue; add(p, q, adEdgeOffset(p, q, poly, gap), 'edge'); }
   }
+  if (edges) for (const s of geo) { const pc = pieceOf.get(s.id), poly = pc && !pc.circle ? pc.points : null; for (const [p, q] of adStraightEdges(s)) { if (size && poly && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, poly, gap), 'edge'); } }
   if (holes) for (const path of doc.paths || []) {
     if (!path.shapeIds.every(id => geo.some(s => s.id === id))) continue;
     const hs = (doc.holes || []).filter(h => h.pathId === path.id).sort((a, b) => a.s - b.s); if (hs.length < 2) continue;
-    const route = resolvePath(doc, path), poly = polyOfShape.get(path.shapeIds[0]) || null, off = (p, q) => adEdgeOffset(p, q, poly, gap);
+    const route = resolvePath(doc, path), pc = pieceOf.get(path.shapeIds[0]), poly = pc && !pc.circle ? pc.points : null, off = (p, q) => adEdgeOffset(p, q, poly, gap);
     if (route && !path.closed) { const a = pointAtLength(route, 0), z = pointAtLength(route, arcLength(route)); if (a) add(a, hs[0], off(a, hs[0]), 'hole'); if (z) add(hs.at(-1), z, off(hs.at(-1), z), 'hole'); }   /* 端から最初の穴・最後の穴から端 */
     let last = null;
     for (let i = 0; i + 1 < hs.length; i++) { const d = distance(hs[i], hs[i + 1]); if (last === null || Math.abs(d - last) > 0.05) { add(hs[i], hs[i + 1], off(hs[i], hs[i + 1]), 'hole'); last = d; } }   /* 穴と穴：間隔が変わる所だけ */
@@ -2165,7 +2177,7 @@ function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = tru
 /** 一覧の種類ごとの本数 { size, edge, circle, hole }。 */
 function autoDimCounts(plan) { const c = { size: 0, edge: 0, circle: 0, hole: 0 }; for (const d of plan || []) if (d.autoDim in c) c[d.autoDim]++; return c; }
 
-return {adPointInPolygon, autoDimensionPlan, autoDimCounts};
+return {adPointInPolygon, adIsDiamond, adPieces, autoDimensionPlan, autoDimCounts};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -3156,7 +3168,7 @@ const MESSAGES = {
     "help": "ヘルプ (?)",
     "guideBtn": "図解ガイド",
     "metalTitle": "金具の色（金属）",
-    "metalHow": "金具の図形を選んで、金属の色をクリック。選ばずに押すと塗りモード（図形をクリックで塗る・Alt＋クリックで色を拾う）。革の色・質感とは別に、線の色と3Dの金具の色になります。",
+    "metalHow": "金具の図形を選んで、金属の色をクリック。選ばずに押すと塗りモード（図形をクリックで塗る・Alt＋クリックで色を拾う）。革の色・質感とは別に、線の色と3Dの金具の色になります。「金属の色を解除」を選ばずに押すと、クリックした所の金属の色を消すモードになります。",
     "metal.gold": "ゴールド",
     "metal.silver": "シルバー",
     "metal.pinkgold": "ピンクゴールド",
@@ -3164,6 +3176,11 @@ const MESSAGES = {
     "metalClear": "金属の色を解除",
     "metalApplied": "{n} 個の図形に金属の色「{name}」を付けました",
     "metalCleared": "{n} 個の図形の金属の色を解除しました",
+    "metalEraseName": "金属の色を消す",
+    "metalEraseStart": "金属の色を消すモードにしました。消したい金具の線か、金色などに塗った場所をクリックしてください。Esc で終わります。",
+    "metalEraseFill": "塗った場所の金属の色を消しました。続けてクリックできます。",
+    "metalEraseNone": "ここには金属の色がありません。金色などになっている線か、塗った場所をクリックしてください。",
+    "metalEraseNoneShape": "この線には金属の色が付いていません。金色などになっている線か、塗った場所をクリックしてください。",
     "metalNeedSelect": "金具など、色を付ける図形を先に選んでください（ロックしたレイヤーの図形は選べません）",
     "metalLineOnly": "（一周つながっていない線 {n} 本は、線の色だけ付きました）",
     "metalStyle": "光沢の形",
@@ -4789,7 +4806,7 @@ const MESSAGES = {
     "help": "Help (?)",
     "guideBtn": "Illustrated guide",
     "metalTitle": "Hardware color (metal)",
-    "metalHow": "Select the hardware shapes, then click a metal color. Click without selecting for paint mode (click shapes to paint, Alt+click to pick a color). Separate from leather color and texture: it sets the line color and the 3D hardware color.",
+    "metalHow": "Select the hardware shapes, then click a metal color. Click without selecting for paint mode (click shapes to paint, Alt+click to pick a color). Separate from leather color and texture: it sets the line color and the 3D hardware color. Click \u201cClear metal color\u201d without selecting to enter erase mode: click a line or a painted area to remove its metal color.",
     "metal.gold": "Gold",
     "metal.silver": "Silver",
     "metal.pinkgold": "Pink gold",
@@ -4797,6 +4814,11 @@ const MESSAGES = {
     "metalClear": "Clear metal color",
     "metalApplied": "Applied the metal color \"{name}\" to {n} shapes",
     "metalCleared": "Cleared the metal color of {n} shapes",
+    "metalEraseName": "Erase metal color",
+    "metalEraseStart": "Erase mode for metal colors. Click a hardware line, or a painted area, whose metal color you want to remove. Esc to finish.",
+    "metalEraseFill": "Removed the metal color of the painted area. You can keep clicking.",
+    "metalEraseNone": "No metal color here. Click a line shown in gold etc., or a painted area.",
+    "metalEraseNoneShape": "This line has no metal color. Click a line shown in gold etc., or a painted area.",
     "metalNeedSelect": "Select the shapes to color first (shapes on locked layers cannot be selected)",
     "metalLineOnly": "({n} line(s) that do not close a loop got the line color only)",
     "metalStyle": "Gloss shape",
@@ -21065,7 +21087,7 @@ const HELP_JA = {
     {
       "id": "colors",
       "title": "カラーシミュレーション",
-      "body": "「塗りの色（革・糸・金具）」カードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は空欄なら写真ごとの実寸（革ごとに記録した値・無い革は 30mm）、数値を入れると全部の質感をその大きさで貼ります（文書ごとに保存）。マルゴーフォグは取引先の元写真から作り直し、隣り合う切れ端を任意の角度で回して境目をぼかした大きな1枚（約330mm四方）なので、同じ模様が規則的に並びません。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D にも写真を貼ります（板の表と裏・三面図から組み立てた立体の面。板の側面と、WebGL が使えない環境は平均色）。4分割の三面図ではほかの紙にも貼り、「上と右の図を作る」で作った外形には正面の形の質感が付きます。右上の小さな立体は平均色です。"
+      "body": "「塗りの色（革・糸・金具）」カードで、部品ごとの革色（16 色の見本か #RRGGBB）と、縫い経路ごとの糸色（ビニモ MBT 92 色・色番と和名で検索・よく使う色はピン留め）を選べます。2D では部品の閉図形が半透明で塗られ、穴が糸色になります。3D でも板の面色に反映されます。\n色の組み合わせは名前を付けて文書に保存し、切り替えられます。「色付き SVG」は塗りと糸色付きで書き出し、「3D を PNG」は 3D 表示をそのまま画像にします。革の質感：カラーカードの「革の質感」で革の名前（例：ALASKA ピンク）を探して選び、部品（図形）を選んで「選んだ部品に質感を付ける」を押すと、継ぎ目なしの革写真（カワムラレザーの革 280 種）が繰り返し貼られます。「質感1枚の大きさ (mm)」は空欄なら写真ごとの実寸（革ごとに記録した値・無い革は 30mm）、数値を入れると全部の質感をその大きさで貼ります（文書ごとに保存）。マルゴーフォグは取引先の元写真から作り直し、隣り合う切れ端を任意の角度で回して境目をぼかした大きな1枚（約330mm四方）なので、同じ模様が規則的に並びません。「なし」を付けると革色に戻ります。部品に入っていない閉じた図形には図形自身に付きます（図形の指定が部品より優先）。「色付き SVG」には写真ごと埋め込まれます。3D にも写真を貼ります（板の表と裏・三面図から組み立てた立体の面。板の側面と、WebGL が使えない環境は平均色）。4分割の三面図ではほかの紙にも貼り、「上と右の図を作る」で作った外形には正面の形の質感が付きます。右上の小さな立体は平均色です。\n金属の色を消す：「金属の色を解除」を図形を選ばずに押すと、消すモードになります。金色などになっている線をクリックすると、その線のまとまり（一周・金具のグループ）の金属の色が消え、塗った場所をクリックすると、そこの金属の塗りが消えます（革色の塗りは残る）。Esc で終わります。"
     },
     {
       "id": "shortcuts",
@@ -21219,7 +21241,7 @@ const HELP_EN = {
     {
       "id": "colors",
       "title": "Color simulation",
-      "body": "In the “Fill colors (leather, thread, hardware)” card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Fill colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\": leave it blank to use each photo’s own real size (recorded per leather; 30 mm when unknown), or enter a number to tile every texture at that size (saved per document). MARGOT FOG was rebuilt from the supplier’s original photos as one large sheet (about 330 mm) of randomly rotated, edge-blended pieces, so the same pattern does not repeat in a regular grid. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D shows the photo too (the top and bottom of each panel, and the faces of a solid built from the three views; panel edges and non-WebGL browsers use the average color). In the 4-pane three-view mode the other sheets are textured as well, and outlines made by \"Make top and right views\" inherit the front shape’s texture. The small solid in the corner uses the average color."
+      "body": "In the “Fill colors (leather, thread, hardware)” card choose a leather color per part (16 swatches or #RRGGBB) and a thread color per stitched path (92 Vinymo MBT colors, searchable by number and Japanese name, pin favorites). In 2D closed part shapes are tinted and holes take the thread color; 3D uses the part color on panels.\nColor sets can be saved by name in the document and switched. “Colored SVG” exports fills and thread colors; “3D as PNG” saves the current 3D view. Leather texture: in the Fill colors card’s \"Leather texture\", search a leather by name (e.g. ALASKA pink), select a part’s shape and press \"Apply texture to selected parts\"; a seamless leather photo (280 Kawamura leathers) is tiled over it. \"Texture tile size (mm)\": leave it blank to use each photo’s own real size (recorded per leather; 30 mm when unknown), or enter a number to tile every texture at that size (saved per document). MARGOT FOG was rebuilt from the supplier’s original photos as one large sheet (about 330 mm) of randomly rotated, edge-blended pieces, so the same pattern does not repeat in a regular grid. Apply \"None\" to return to the flat color. A closed shape outside any part gets the texture itself (a shape’s own texture wins over its part’s). \"Colored SVG\" embeds the photos; 3D shows the photo too (the top and bottom of each panel, and the faces of a solid built from the three views; panel edges and non-WebGL browsers use the average color). In the 4-pane three-view mode the other sheets are textured as well, and outlines made by \"Make top and right views\" inherit the front shape’s texture. The small solid in the corner uses the average color.\nErasing metal colors: click \"Clear metal color\" without selecting anything to enter erase mode. Click a line shown in a metal color to clear that line’s group (the loop or the hardware group), or click a painted area to remove its metal fill (leather fills stay). Esc to finish."
     },
     {
       "id": "shortcuts",
@@ -23647,15 +23669,28 @@ function renderColors() {
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
 const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
-const paintName = b => b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+const paintName = b => b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
-function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = t('paintStart', { name: paintName(brush) }); draw(); }
+function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = brush.kind === 'erase' ? t('metalEraseStart') : t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
 const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
 const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > q.y) !== (ps[j].y > q.y) && q.x < (ps[j].x - ps[i].x) * (q.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
 const fillContains = (fl, q) => insideRing(q, fl.points) && !(fl.holes || []).some(h => insideRing(q, h));
 /** 点を含む領域の塗り（小さいものが上） */
 function fillAt(q) { return (doc.fills || []).filter(fl => fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null; }
+/** 金属の色を消すモード（事業主の指摘 2026-10-19「塗った金属の色を削除できない」）：「金属の色を解除」を図形を選ばずに押すと入る。クリックした線なら、その線と同じまとまり（一周＝metalGroup・金具のグループ）の金属の色を消す。
+ *  線から離れた所なら、そこを塗っている「線で囲まれた場所の塗り」のうち金属のもの（いちばん小さいもの）を消す。革色・質感の塗りは触らない。消した数を返す。 */
+const metalFillAt = q => (doc.fills || []).filter(fl => fl.metal && fillContains(fl, q)).sort((x, y) => (x.area || 0) - (y.area || 0))[0] || null;
+function eraseMetalAt(p, s) {
+  if (s && s.metal) {
+    const g = groupIdOf(s), ids = new Set(doc.shapes.filter(x => x.metal && editable(x) && (x.id === s.id || (s.metalGroup && x.metalGroup === s.metalGroup) || (g && groupIdOf(x) === g))).map(x => x.id));
+    commit(() => { for (const x of doc.shapes) if (ids.has(x.id)) { delete x.metal; delete x.metalGroup; delete x.metalStyle; } });
+    $('hint').textContent = t('metalCleared', { n: ids.size }); return ids.size;
+  }
+  const fl = metalFillAt(p);
+  if (fl) { commit(() => { doc.fills = (doc.fills || []).filter(x => x !== fl); }); $('hint').textContent = t('metalEraseFill'); return 1; }
+  $('hint').textContent = t(s ? 'metalEraseNoneShape' : 'metalEraseNone'); return 0;
+}
 /** 領域の塗りの中身：金属（と光沢の形）・質感（同じ領域に革色があれば残す）・革色。 */
 function fillPayload(brush, ids) {
   if (brush.kind === 'metal') return { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) };
@@ -23705,6 +23740,7 @@ function paintClick(p, eyedrop) {
     if (paintBrush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = paintBrush.style; $('hint').textContent = t('paintPicked', { name: paintName(paintBrush) }); return;
   }
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
+  if (paintBrush.kind === 'erase') { eraseMetalAt(p, s); draw(); return; }   /* 金属の色を消すモード */
   let painted = 0;
   if (s) {
     const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
@@ -23795,7 +23831,7 @@ function drawMetalFills(vis = visible) {
   for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
 function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
-  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (id && !doc.shapes.some(s => selected.has(s.id))) startPaint({ kind: 'metal', id, style }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
+  const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (!doc.shapes.some(s => selected.has(s.id))) startPaint(id ? { kind: 'metal', id, style } : { kind: 'erase' }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 解除も、選ばずに押すと「金属の色を消す」モード（事業主の指摘 2026-10-19） */   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
   let unclosed = 0, loopsMade = 0; const openLeft = [];   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数・一周にできなかった線の id */
   commit(() => {
     for (const s of doc.shapes) if (ids.has(s.id)) { if (id) { s.metal = id; if (style === 'radial') s.metalStyle = 'radial'; else delete s.metalStyle; } else { delete s.metal; delete s.metalGroup; delete s.metalStyle; } }
