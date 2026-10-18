@@ -321,6 +321,8 @@ export function validateDoc(d) {
   const texOk = x => x.texture === undefined || x.texture === null || (typeof x.texture === 'string' && x.texture.length > 0 && x.texture.length <= 40); /* 革の質感（テクスチャ）の id。部品にも図形にも付けられる（図形の指定が優先） */
   if (!d.shapes.every(x => x.groupId === undefined || (typeof x.groupId === 'string' && x.groupId.length > 0 && x.groupId.length <= 40))) return false; /* グループ（同じ groupId の図形をまとめて扱う） */
   if (!d.parts.every(texOk) || !d.shapes.every(texOk) || (d.textureMm !== undefined && d.textureMm !== null && !(Number.isFinite(d.textureMm) && d.textureMm > 0))) return false;
+  const leatherOk = x => x.leather === undefined || x.leather === null || /^#[0-9a-fA-F]{6}$/.test(String(x.leather)), leatherGroupOk = x => x.leatherGroup === undefined || x.leatherGroup === null || (typeof x.leatherGroup === 'string' && x.leatherGroup.length > 0 && x.leatherGroup.length <= 40); /* 型紙に直接付けた革色（部品を作らなくても塗れる・2026-10-18）と、端がつながった線の一周をまとめる印 */
+  if (!d.shapes.every(x => leatherOk(x) && leatherGroupOk(x))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
@@ -643,6 +645,20 @@ export function contourChain(shapes, startId, { tol = 0.01, gapTol = 0.2 } = {})
   }
   const first = items[0], last = items.at(-1), closed = distance(end(first.shape, first.reversed), end(last.shape, !last.reversed)) <= tol;
   return { items, shapeIds: ids, closed, reversed: false };
+}
+/** 型紙の輪郭を、塗りつぶし用の多角形にする（革色を部品を作らずに付けるため・2026-10-18）。
+ *  startId が閉じた図形（円・閉じた折れ線など）ならそれ自身。開いた線なら、端がつながった線を一周たどり（contourChain・すき間 gapTol まで越える）、出発点へ戻ってこなければ null。
+ *  戻り値 { ids: 一周に入った図形の id, points: 多角形の点（mm・円弧やベジェは折れ線にする・最後の点は最初と重ねない） }。 */
+export function outlinePolygon(shapes, startId, { tol = 0.01, gapTol = 0.2, flat = 0.05 } = {}) {
+  const start = shapes.find(s => s.id === startId); if (!start) return null;
+  const tidy = pts => { const out = []; for (const q of pts) if (!out.length || distance(out.at(-1), q) > 1e-6) out.push({ x: q.x, y: q.y }); if (out.length > 1 && distance(out[0], out.at(-1)) <= 1e-6) out.pop(); return out.length >= 3 ? out : null; };
+  if (start.type === 'circle' || start.closed) { const pts = tidy(flattenShape(start, flat)); return pts ? { ids: [start.id], points: pts } : null; }
+  const ch = contourChain(shapes, startId, { tol, gapTol });
+  if (!ch || ch.items.length < 2) { const raw = flattenShape(start, flat); if (raw.length >= 3 && distance(raw[0], raw.at(-1)) <= gapTol) { const pts = tidy(raw); return pts ? { ids: [start.id], points: pts } : null; } return null; } /* 1本の開いた線でも、端どうしが重なっていれば一周 */
+  const raw = [];
+  for (const it of ch.items) { const p = flattenShape(it.shape, flat).slice(); if (it.reversed) p.reverse(); raw.push(...p); }
+  if (raw.length < 3 || distance(raw[0], raw.at(-1)) > gapTol) return null;
+  const pts = tidy(raw); return pts ? { ids: ch.shapeIds, points: pts } : null;
 }
 /** contourFrom で選んだ輪郭 ids の、先へ進めなかった端のうち「分岐」で止まった所を返す：端のすぐそば（tol 以内）に、輪郭に入っていない別の図形の端がある所。
  *  すき間（離れて見える所）は含めない（画面の橙の輪で出ている）。戻り値は [{ x, y }]。 */
