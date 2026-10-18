@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 07:53 · 140867a</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 08:02 · 8b8870c</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -656,8 +656,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=68d57458","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=b16c2343","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=21c820ce","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=1285ca8c","./help/ja.js":"./help/ja.js?v=f082fa8a","./i18n.js":"./i18n.js?v=1af98331","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=68d57458"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=ab4311dc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=c8608069","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=21c820ce","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=fb3a419f","./geometry.js":"./geometry.js?v=ba41f8e0","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=ac81ac44","./help/ja.js":"./help/ja.js?v=167625d9","./i18n.js":"./i18n.js?v=a305a898","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=8640a575","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=ab4311dc"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -2086,18 +2086,22 @@ return {distance, dot, rotate, warpX, translate, scaleGeometry, mirrorX, mirrorY
 __mods['autodim'] = (function(){
 // 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。
 // 純粋関数：図面（doc）と対象の図形（cand）から「作る寸法線の一覧」を返す。図面には触らない。画面側（app.js）が一覧を doc.shapes に足す。
-// 入れるもの（チェックで選ぶ）：①型紙（端がつながった一周の線）ごとの全体の幅と高さ（いちばん広い所＝外接の枠） ②まっすぐな辺ごとの長さ ③円の直径 ④縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）。
-// 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。
+// 入れるもの（チェックで選ぶ）：①型紙ごとの全体の幅と高さ（いちばん広い所＝外接の枠） ②まっすぐな辺ごとの長さ ③円の直径 ④縫い穴の間隔（端から最初の穴・穴と穴・最後の穴から端）。
+// 型紙＝端どうしが 0.5mm 以内でつながっている線のかたまり（取り込んだ図面の小さな隙間・分岐・丸角＝直線＋円弧でも1つにまとまる・事業主指摘 2026-10-19「縦横の最大値寸法が入っていない」）。
+// 型紙の中にある小さなかたまり（スロット・窓・穴）には全体の幅・高さを入れない（辺の長さ・円の直径は入れる）。
+// 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。上下・左右で対称な辺は片側だけに入れる（事業主指摘 2026-10-19「上下左右対称な部分はどちらかに寸法を入れること」）。
 // 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
 const { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon } = __mods['geometry'];
 const AD_EQ = 0.01;    /* 同じ点とみなす距離（mm） */
 const AD_MIN = 1;      /* これより短い寸法は入れない（mm） */
 const AD_MIN_EDGE = 3; /* 辺の寸法は、これより短い辺には入れない（丸角のつなぎなど小さな辺の数字が散らばらないように） */
-const AD_TINY = 3;     /* 外接の枠がこれ以下の小さな一周（小さな穴など）には、全体の幅・高さを入れない（mm） */
+const AD_TINY = 3;     /* 外接の枠がこれ以下の小さなかたまり（小さな穴など）には、全体の幅・高さを入れない（mm） */
+const AD_JOIN = 0.5;   /* 端どうしがこの距離以内なら「つながっている」とみなす（取り込んだ図面の小さな隙間を越える・mm） */
+const AD_MIRROR = 0.1; /* 対称（鏡写し）とみなす位置の差（mm） */
 const AD_TYPES = ['line', 'polyline', 'path', 'arc', 'bezier', 'circle'];
 const adRound = v => Math.round(v * 100) / 100;
-const adSame = (p, q) => Math.hypot(p.x - q.x, p.y - q.y) <= AD_EQ;
-const adSamePair = (d, p, q) => { const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }; return (adSame(a, p) && adSame(b, q)) || (adSame(a, q) && adSame(b, p)); };
+const adSame = (p, q, tol = AD_EQ) => Math.hypot(p.x - q.x, p.y - q.y) <= tol;
+const adSamePair = (d, p, q, tol = AD_EQ) => { const a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }; return (adSame(a, p, tol) && adSame(b, q, tol)) || (adSame(a, q, tol) && adSame(b, p, tol)); };
 
 /** 多角形（点列）の中に点があるか（辺をまたぐ回数の偶奇で決める）。 */
 function adPointInPolygon(pt, poly) {
@@ -2117,13 +2121,15 @@ function adStraightEdges(s) {
   if (s.type === 'path') return pathSegments(s).filter(seg => seg.type === 'line').map(seg => [{ x: seg.x1, y: seg.y1 }, { x: seg.x2, y: seg.y2 }]);
   return [];
 }
-/** 辺 p→q の寸法線を置く側：型紙（多角形）があれば外側、無ければ進む向きの左。dimension() の offset は、進む向きの左が正。 */
-function adEdgeOffset(p, q, poly, gap) {
-  if (!poly) return gap;
+/** 辺 p→q の寸法線を置く側：型紙の多角形があれば外側、無ければかたまりの真ん中から遠い側、それも無ければ進む向きの左。dimension() の offset は、進む向きの左が正。 */
+function adEdgeOffset(p, q, pc, gap) {
   const len = distance(p, q) || 1, n = { x: (q.y - p.y) / len, y: -(q.x - p.x) / len }, mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 };
-  return adPointInPolygon({ x: mid.x + n.x * 0.5, y: mid.y + n.y * 0.5 }, poly) ? -gap : gap;
+  if (pc?.points) return adPointInPolygon({ x: mid.x + n.x * 0.5, y: mid.y + n.y * 0.5 }, pc.points) ? -gap : gap;
+  if (pc?.box) { const c = { x: (pc.box.minX + pc.box.maxX) / 2, y: (pc.box.minY + pc.box.maxY) / 2 }; return n.x * (mid.x - c.x) + n.y * (mid.y - c.y) >= 0 ? gap : -gap; }
+  return gap;
 }
 const adBoundsOf = list => { let b = null; for (const s of list) { const x = s && bboxOf(s); if (!x) continue; b = b ? { minX: Math.min(b.minX, x.minX), minY: Math.min(b.minY, x.minY), maxX: Math.max(b.maxX, x.maxX), maxY: Math.max(b.maxY, x.maxY) } : { ...x }; } return b; };
+const adSize = s => { const b = bboxOf(s); return b ? Math.max(b.maxX - b.minX, b.maxY - b.minY) : 0; };
 /** 辺 p→q が、全体の幅（上下の辺で長さが幅と同じ）か全体の高さ（左右の辺で長さが高さと同じ）と同じ寸法になるか。同じなら辺の寸法は入れない（全体の寸法と二重になる）。 */
 function adIsBoxEdge(p, q, b) {
   const horiz = Math.abs(p.y - q.y) <= AD_EQ, vert = Math.abs(p.x - q.x) <= AD_EQ;
@@ -2131,24 +2137,55 @@ function adIsBoxEdge(p, q, b) {
   if (vert && Math.abs(Math.abs(q.y - p.y) - (b.maxY - b.minY)) <= AD_EQ) return true;
   return false;
 }
-/** 型紙（一周の線）を見つける：大きい図形から順に、端がつながった一周をたどる（outlinePolygon：0.2mm までの隙間を越え、分岐では枝に入らない＝取り込んだ図面の外形でも一周になる）。
- *  見つかった一周の図形は使用済みにして、同じ図形を2つの型紙に数えない。返す値：[{ ids, points（多角形）, box（外接の枠＝いちばん広い所）, circle }] */
+/** 開いた図形の両端（円・閉じた図形は無し）。 */
+function adEnds(s) {
+  if (s.type === 'circle' || s.closed) return [];
+  let len = 0; try { len = arcLength(s); } catch { return []; }
+  if (!(len > 1e-9)) return [];
+  return [pointAtLength(s, 0), pointAtLength(s, len)].filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.y)).map(p => ({ x: p.x, y: p.y }));
+}
+/** 端どうしが AD_JOIN 以内でつながっている図形を、かたまりにまとめる（分岐があってもよい・一周していなくてもよい）。返す値：図形の配列の配列。 */
+function adClusters(geo) {
+  const parent = geo.map((_, i) => i), find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; }, union = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[a] = b; };
+  const key = (x, y) => Math.floor(x / AD_JOIN) + ',' + Math.floor(y / AD_JOIN), grid = new Map(), ends = geo.map(adEnds);
+  ends.forEach((ps, i) => { for (const p of ps) { const k = key(p.x, p.y); if (!grid.has(k)) grid.set(k, []); grid.get(k).push({ i, p }); } });
+  ends.forEach((ps, i) => { for (const p of ps) { const cx = Math.floor(p.x / AD_JOIN), cy = Math.floor(p.y / AD_JOIN); for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const o of grid.get((cx + dx) + ',' + (cy + dy)) || []) if (o.i !== i && distance(o.p, p) <= AD_JOIN) union(i, o.i); } });
+  const groups = new Map(); geo.forEach((s, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(s); });
+  return [...groups.values()];
+}
+/** 型紙（かたまり）の一覧：[{ ids, list, box（外接の枠＝いちばん広い所）, w, h, circle（円1つだけ）, piece（全体の幅・高さを入れる型紙か）, inner（別のかたまりの中にある＝スロット・窓・穴）, points（一周の多角形・内外の判定用・無ければ null） }]。
+ *  piece＝別のかたまりの中に無く、外接の枠が AD_TINY より大きく、2つ以上の図形か・閉じた図形か・縦横とも AD_TINY より大きい1つの図形（1本の直線だけは型紙にしない）。 */
 function adPieces(geo) {
-  const size = s => { const b = bboxOf(s); return b ? Math.max(b.maxX - b.minX, b.maxY - b.minY) : 0; };
-  const order = [...geo].sort((a, b) => size(b) - size(a)), used = new Set(), pieces = [];
-  for (const s of order) {
-    if (used.has(s.id)) continue;
-    let poly = null; try { poly = outlinePolygon(geo, s.id); } catch { poly = null; }
-    if (!poly || !Array.isArray(poly.points) || poly.points.length < 3 || poly.ids.some(id => used.has(id))) continue;
-    for (const id of poly.ids) used.add(id);
-    const list = poly.ids.map(id => geo.find(x => x.id === id)), box = adBoundsOf(list); if (!box) continue;
-    pieces.push({ ids: poly.ids, points: poly.points, box, circle: list.length === 1 && list[0].type === 'circle' });
+  const cl = adClusters(geo).map(list => { const box = adBoundsOf(list); return box ? { list, ids: list.map(s => s.id), box, w: box.maxX - box.minX, h: box.maxY - box.minY, circle: list.length === 1 && list[0].type === 'circle', points: null, inner: false, piece: false } : null; }).filter(Boolean);
+  for (const c of cl) c.inner = cl.some(o => o !== c && (o.w > c.w + AD_EQ || o.h > c.h + AD_EQ) && o.box.minX - AD_JOIN <= c.box.minX && o.box.minY - AD_JOIN <= c.box.minY && o.box.maxX + AD_JOIN >= c.box.maxX && o.box.maxY + AD_JOIN >= c.box.maxY);
+  for (const c of cl) {
+    const one = c.list.length === 1 ? c.list[0] : null;
+    c.piece = !c.inner && !c.circle && Math.max(c.w, c.h) > AD_TINY && (!one || one.type === 'circle' || !!one.closed || Math.min(c.w, c.h) > AD_TINY);
+    if (c.circle) continue;
+    const start = [...c.list].sort((a, b) => adSize(b) - adSize(a))[0];
+    try { const poly = outlinePolygon(c.list, start.id, { gapTol: AD_JOIN }); if (poly && Array.isArray(poly.points) && poly.points.length >= 3) c.points = poly.points; } catch { c.points = null; }   /* 一周がたどれれば、辺の外側を正しく決められる。たどれなくても、かたまりの真ん中から遠い側で決める */
   }
-  return pieces;
+  return cl;
+}
+/** 上下・左右で対称な寸法を片側だけにする：同じ種類・同じ長さで、両方を含むかたまりの真ん中の縦線か横線で鏡写しにすると重なる寸法は、先のもの（上・左）だけ残す。
+ *  落とした寸法も「見た」に数える（鏡写しの鏡写し＝点対称の所も片側だけになる）。出力の並びは元のまま。全体の幅・高さは対象外。 */
+function adDedupeMirror(dims, pieces) {
+  const inBox = (c, d) => [[d.x1, d.y1], [d.x2, d.y2]].every(([x, y]) => x >= c.box.minX - AD_JOIN && x <= c.box.maxX + AD_JOIN && y >= c.box.minY - AD_JOIN && y <= c.box.maxY + AD_JOIN);
+  const order = (a, b) => Math.min(a.y1, a.y2) - Math.min(b.y1, b.y2) || Math.min(a.x1, a.x2) - Math.min(b.x1, b.x2);
+  const boxes = new Map(dims.map(d => [d, pieces.filter(c => inBox(c, d))])), lenKey = d => Math.round(distance({ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }) / AD_MIRROR);
+  const mirrored = (x, c, a, b) => { const cx = (c.box.minX + c.box.maxX) / 2, cy = (c.box.minY + c.box.maxY) / 2; return adSamePair(x, { x: 2 * cx - a.x, y: a.y }, { x: 2 * cx - b.x, y: b.y }, AD_MIRROR) || adSamePair(x, { x: a.x, y: 2 * cy - a.y }, { x: b.x, y: 2 * cy - b.y }, AD_MIRROR); };
+  const seen = new Map(), drop = new Set();
+  for (const d of [...dims].sort(order)) {
+    if (d.autoDim === 'size') continue;
+    const k = lenKey(d), near = [-1, 0, 1].flatMap(o => seen.get(k + o) || []).filter(x => x.autoDim === d.autoDim), a = { x: d.x1, y: d.y1 }, b = { x: d.x2, y: d.y2 }, mine = boxes.get(d);
+    if (near.some(x => { const theirs = boxes.get(x); return mine.some(c => theirs.includes(c) && mirrored(x, c, a, b)); })) drop.add(d);
+    if (!seen.has(k)) seen.set(k, []); seen.get(k).push(d);
+  }
+  return dims.filter(d => !drop.has(d));
 }
 
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す。
- *  doc：図面（既存の寸法・穴・経路を見る）。cand：対象の図形（画面側で「見えている・ガイドの層でない・金具でない」に絞ったもの。選んでいればその図形だけ）。
+ *  doc：図面（既存の寸法・穴・経路を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。 */
 function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8 } = {}) {
   const existing = (doc.shapes || []).filter(s => s.type === 'dimension'), out = [];
@@ -2158,27 +2195,27 @@ function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = tru
   const pieces = adPieces(geo), pieceOf = new Map(); for (const pc of pieces) for (const id of pc.ids) pieceOf.set(id, pc);
   for (const pc of pieces) {
     const b = pc.box;
-    if (pc.circle) { if (circles) { const c = geo.find(s => s.id === pc.ids[0]); add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); } continue; }   /* 直径：円の上に */
-    if (size && Math.max(b.maxX - b.minX, b.maxY - b.minY) > AD_TINY) {
+    if (pc.circle) { if (circles) { const c = pc.list[0]; add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); } continue; }   /* 直径：円の上に */
+    if (size && pc.piece) {
       add({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, gap, 'size');    /* 全体の幅（いちばん広い所）：上の辺の上（左→右の左側＝上） */
       add({ x: b.minX, y: b.minY }, { x: b.minX, y: b.maxY }, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
     }
   }
-  if (edges) for (const s of geo) { const pc = pieceOf.get(s.id), poly = pc && !pc.circle ? pc.points : null; for (const [p, q] of adStraightEdges(s)) { if (size && poly && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, poly, gap), 'edge'); } }
+  if (edges) for (const s of geo) { const pc = pieceOf.get(s.id); for (const [p, q] of adStraightEdges(s)) { if (size && pc?.piece && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, pc, gap), 'edge'); } }
   if (holes) for (const path of doc.paths || []) {
     if (!path.shapeIds.every(id => geo.some(s => s.id === id))) continue;
     const hs = (doc.holes || []).filter(h => h.pathId === path.id).sort((a, b) => a.s - b.s); if (hs.length < 2) continue;
-    const route = resolvePath(doc, path), pc = pieceOf.get(path.shapeIds[0]), poly = pc && !pc.circle ? pc.points : null, off = (p, q) => adEdgeOffset(p, q, poly, gap);
+    const route = resolvePath(doc, path), pc = pieceOf.get(path.shapeIds[0]), off = (p, q) => adEdgeOffset(p, q, pc, gap);
     if (route && !path.closed) { const a = pointAtLength(route, 0), z = pointAtLength(route, arcLength(route)); if (a) add(a, hs[0], off(a, hs[0]), 'hole'); if (z) add(hs.at(-1), z, off(hs.at(-1), z), 'hole'); }   /* 端から最初の穴・最後の穴から端 */
     let last = null;
     for (let i = 0; i + 1 < hs.length; i++) { const d = distance(hs[i], hs[i + 1]); if (last === null || Math.abs(d - last) > 0.05) { add(hs[i], hs[i + 1], off(hs[i], hs[i + 1]), 'hole'); last = d; } }   /* 穴と穴：間隔が変わる所だけ */
   }
-  return out;
+  return adDedupeMirror(out, pieces);   /* 上下・左右で対称な辺・円・穴の間隔は片側だけ */
 }
 /** 一覧の種類ごとの本数 { size, edge, circle, hole }。 */
 function autoDimCounts(plan) { const c = { size: 0, edge: 0, circle: 0, hole: 0 }; for (const d of plan || []) if (d.autoDim in c) c[d.autoDim]++; return c; }
 
-return {adPointInPolygon, adIsDiamond, adPieces, autoDimensionPlan, autoDimCounts};
+return {adPointInPolygon, adIsDiamond, adClusters, adPieces, adDedupeMirror, autoDimensionPlan, autoDimCounts};
 })();
 __mods['hardware'] = (function(){
 // 金具ライブラリ：寸法パラメータから 2D の外形記号・取り付け穴・3D 簡易立体を作る。純粋関数。
@@ -3704,7 +3741,7 @@ const MESSAGES = {
     "drawOptions": "作図オプション",
     "dimOffset": "寸法線のずらし (mm)",
     "autoDimTitle": "寸法線を自動で入れる",
-    "adNote": "図形を選んでいればその図形だけ、選んでいなければ図面の全部に、寸法線をまとめて入れます（ガイドの層の線・金具は除く）。同じ所にもう寸法があれば入れません。",
+    "adNote": "図形を選んでいればその図形だけ、選んでいなければ図面の全部に、寸法線をまとめて入れます（ガイドの層・点線・目印・金具は除く）。全体の幅と高さは、型紙（つながった線のかたまり）ごとに、いちばん広い所で入れます。型紙の中のスロットや穴には全体を入れません。上下・左右で対称な辺は片側だけです。同じ所にもう寸法があれば入れません。",
     "adSize": "型紙ごとの全体の幅と高さ",
     "adEdges": "辺ごとの長さ（まっすぐな辺）",
     "adCircles": "円の直径",
@@ -5352,7 +5389,7 @@ const MESSAGES = {
     "drawOptions": "Drawing options",
     "dimOffset": "Dimension offset (mm)",
     "autoDimTitle": "Auto dimensions",
-    "adNote": "Adds dimension lines to the selected shapes, or to the whole drawing when nothing is selected (lines on the Guide layer and hardware are skipped). Places that already have a dimension are left alone.",
+    "adNote": "Adds dimension lines to the selected shapes, or to the whole drawing when nothing is selected (Guide layer, dashed lines, marks and hardware are skipped). Overall width and height are taken at the widest point of each piece (connected lines); slots and holes inside a piece get no overall size. Symmetric edges are dimensioned on one side only. Places that already have a dimension are left alone.",
     "adSize": "Overall width and height of each piece",
     "adEdges": "Length of each straight edge",
     "adCircles": "Circle diameters",
@@ -21052,7 +21089,7 @@ const HELP_JA = {
     {
       "id": "text-dimension",
       "title": "文字と寸法",
-      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n「寸法線を自動で入れる」カード：型紙ごとの全体の幅と高さ・まっすぐな辺ごとの長さ・円の直径・縫い穴の間隔を、チェックで選んでまとめて入れます（図形を選んでいればその図形だけ・同じ所にあれば入れない）。入れた寸法線は、ドラッグすると線だけが動きます（測る点は動かず、近くの寸法線にそろいます）。情報カードの「ずらし (mm)」でも直せます。寸法ごと動かすときは Shift を押しながらドラッグ。「自動で入れた寸法を全部消す」で、手で描いた寸法を残して消せます。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。\n「定型句」カードに、よく使う文（屋号・作品名・サイズ・日付など。複数行可）を名前付きで保存できます（保存先はこの PC のブラウザ）。「図面に置く（クリック）」で、クリックした位置に 1 行ずつ文字として置きます（ガイドの層）。「書き出す」で phrases.json に保存し、別の PC で「読み込む」と合流します（同じ名前は置き換え）。"
+      "body": "文字ツールは位置をクリックして文字を入力します。大きさ・角度は情報カードで変えられます。\n寸法ツールは2点をクリックすると寸法線と数値（mm）が入ります。ずらし量は作図オプションで指定し、あとから情報カードで直せます。文字と寸法は目打ちやオフセットの対象になりません。\n「寸法線を自動で入れる」カード：型紙ごとの全体の幅と高さ・まっすぐな辺ごとの長さ・円の直径・縫い穴の間隔を、チェックで選んでまとめて入れます（図形を選んでいればその図形だけ・同じ所にあれば入れない・全体の幅と高さは型紙＝つながった線のかたまりごとにいちばん広い所・型紙の中のスロットや穴には全体を入れない・上下左右で対称な辺は片側だけ・点線と目印の層は対象外）。入れた寸法線は、ドラッグすると線だけが動きます（測る点は動かず、近くの寸法線にそろいます）。情報カードの「ずらし (mm)」でも直せます。寸法ごと動かすときは Shift を押しながらドラッグ。「自動で入れた寸法を全部消す」で、手で描いた寸法を残して消せます。\n定規ツールは始点と終点をクリックすると、距離・横・縦・角度を表示します（端点・中心点に吸い付きます。Shift で水平・垂直）。図面には何も残りません。\n「定型句」カードに、よく使う文（屋号・作品名・サイズ・日付など。複数行可）を名前付きで保存できます（保存先はこの PC のブラウザ）。「図面に置く（クリック）」で、クリックした位置に 1 行ずつ文字として置きます（ガイドの層）。「書き出す」で phrases.json に保存し、別の PC で「読み込む」と合流します（同じ名前は置き換え）。"
     },
     {
       "id": "numeric",
@@ -21206,7 +21243,7 @@ const HELP_EN = {
     {
       "id": "text-dimension",
       "title": "Text and dimensions",
-      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe \"Auto dimensions\" card adds, in one go, the overall width and height of each piece, the length of each straight edge, circle diameters and stitch hole spacing (tick what you want; only the selected shapes when something is selected; places that already have a dimension are skipped). Drag a dimension line to move only the line (the measured points stay and it aligns with nearby dimension lines); the offset can also be typed in the Info card. Hold Shift while dragging to move the whole dimension. \"Remove all auto dimensions\" keeps the ones you drew by hand.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing.\nThe \"Phrases\" card stores reusable text (brand, item name, size, date; multi-line) by name in this browser. \"Place on drawing (click)\" puts it at the clicked point, one text shape per line, on the Guide layer.\"Export\" saves phrases.json; \"Import\" on another PC merges it (same names are replaced)."
+      "body": "The Text tool asks for the text after you click its position. Size and angle are edited in the Info card.\nThe Dimension tool takes two clicks and draws a dimension line with the value in mm. The offset is set in Drawing options and can be edited later. Text and dimensions are ignored by stitching and offsetting.\nThe \"Auto dimensions\" card adds, in one go, the overall width and height of each piece, the length of each straight edge, circle diameters and stitch hole spacing (tick what you want; only the selected shapes when something is selected; places that already have a dimension are skipped; overall width and height at the widest point of each piece = connected lines; no overall size for slots and holes inside a piece; symmetric edges on one side only; dashed lines and the marks layer are skipped). Drag a dimension line to move only the line (the measured points stay and it aligns with nearby dimension lines); the offset can also be typed in the Info card. Hold Shift while dragging to move the whole dimension. \"Remove all auto dimensions\" keeps the ones you drew by hand.\nThe Ruler tool shows the distance, horizontal, vertical and angle between a start and an end point you click (it snaps to endpoints and centers; Shift = horizontal / vertical). Nothing is added to the drawing.\nThe \"Phrases\" card stores reusable text (brand, item name, size, date; multi-line) by name in this browser. \"Place on drawing (click)\" puts it at the clicked point, one text shape per line, on the Guide layer.\"Export\" saves phrases.json; \"Import\" on another PC merges it (same names are replaced)."
     },
     {
       "id": "numeric",
@@ -25564,7 +25601,7 @@ function dimOffPreview(g, cur) {
 }
 const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
 /** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
-function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
 function runAutoDims() {
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap });

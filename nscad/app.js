@@ -4224,7 +4224,7 @@ function dimOffPreview(g, cur) {
 }
 const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
 /** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
-function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed' && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)), picked = all.filter(s => ids.has(s.id)); return picked.length ? picked : all; }   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
 function runAutoDims() {
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap });
