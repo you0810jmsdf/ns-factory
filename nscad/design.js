@@ -728,6 +728,22 @@ export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', outerHoles
   };
   return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
 }
+/** 断面図の、折りの内側の隙間が、リング外径以上かを調べる（事業主の指摘 2026-10-19「リング外径が22mmくらいあるので、間のスペースをそれ以上にしないといけないです」・案A）。plan＝foldStackPlan の結果。tO・tI＝表・裏の厚み。pitch＝目打ちのピッチ（省略可）。
+ *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ G＝π×半径 → 裏の曲げ＝G−π×裏の厚み/2・表の曲げ＝G＋π×表の厚み/2（180°の折りとして）。
+ *  返り値：{ ringD, ok, gaps:[{ k, gap, short, ok }]（図面の左から）, need:{ innerRadius, inner, outer }, byPitch:{ pitch, n, inner, outer, gap }｜null（ピッチの倍数で、足りる最小の長さ。裏＝n×ピッチ・表＝裏＋1ピッチ）, extra:{ inner[], outer[], innerTotal, outerTotal }｜null（いまの曲げから増える長さ・足りている折りは 0）}。
+ *  外径が数でない・0 以下・plan が失敗のときは null。 */
+export function foldRingCheck(plan, { ringD, tO, tI, pitch } = {}) {
+  if (!plan?.ok || !(typeof ringD === 'number' && ringD > 0) || !(tO > 0) || !(tI > 0)) return null;
+  const gaps = plan.radii.map((r, k) => { const gap = 2 * r.inner; return { k: k + 1, gap, short: Math.max(0, ringD - gap), ok: gap >= ringD - 1e-9 }; });
+  const G = Math.PI * (ringD / 2 + tI), need = { innerRadius: ringD / 2, inner: G - Math.PI * tI / 2, outer: G + Math.PI * tO / 2 };
+  let byPitch = null, extra = null;
+  if (typeof pitch === 'number' && pitch > 0) {
+    const n = Math.max(1, Math.ceil(need.inner / pitch - 1e-9)), inner = n * pitch, outer = inner + pitch, gap = 2 * ((inner + Math.PI * tI / 2) / Math.PI - tI); byPitch = { pitch, n, inner, outer, gap };
+    const up = (target, now) => Math.max(0, target - now), bi = plan.report.bends.map(b => up(inner, b.inner)), bo = plan.report.bends.map(b => up(outer, b.outer)), sum = a => a.reduce((x, y) => x + y, 0);
+    extra = { inner: bi, outer: bo, innerTotal: sum(bi), outerTotal: sum(bo) };
+  }
+  return { ringD, ok: gaps.every(g => g.ok), gaps, need, byPitch, extra };
+}
 /** 断面の厚み t の2本線（role: edgeL＝折りの内側・edgeR＝外側）と、両端のふた（cap0＝始点・cap1＝終点）。origin は中心線の始点の図面上の位置。直線と円弧（図面の円弧は角度が増える向き）の配列。 */
 export function foldSectionShapes(path, t, origin, plies = 1, glueK) {
   const out = [], h = t / 2;
