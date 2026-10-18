@@ -33,7 +33,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, partBox } from './laminate.js';
+import { laminateCheck, laminateNow, partBox } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1339,6 +1339,15 @@ function renderLaminateParts() {
     for (const el of [name, info, pick, del]) row.appendChild(el); box.appendChild(row);
   }
 }
+/** 「もう一方の全長（目標）」の欄のすぐ上に、いまの全長（表・裏）・差・曲げを、部品を選んだ時点で自動で出す（事業主の質問 2026-10-18「選択した時点で自動算出できないのか」）。目標を入れても、ここは「いまの長さ」のまま。 */
+function renderLaminateNow() {
+  const box = $('lamNow'); if (!box) return;
+  const o = $('lamOuter').value, i = $('lamInner').value; if (doc.parts.length < 2) { box.textContent = t('lamNowNeedParts'); return; } if (o && o === i) { box.textContent = t('lamNowSame'); return; }
+  /* 厚みは、手で直していれば欄の数字、直していなければ部品の厚み（欄は書き換えない：入力の途中の数字を消さないため） */
+  const axis = $('lamAxis').value, r = laminateNow(doc, o, i, { tOuter: lamTouched.o ? Number($('lamTOuter').value) : undefined, tInner: lamTouched.i ? Number($('lamTInner').value) : undefined, axis: axis === 'x' || axis === 'y' ? axis : 'auto' }); if (!r) { box.textContent = t('lamNowNeedParts'); return; }
+  const f2 = v => (+v).toFixed(2), b = r.bend, head = t('lamNowLine', { o: f2(r.outerLen), i: f2(r.innerLen), dl: f2(r.diff) });
+  box.textContent = head + ' ' + (b.curl === 'none' ? t('lamNowNone') : b.ok ? t('lamNowBend', { r: f2(b.radius), a: b.thetaDeg.toFixed(1), side: t(b.curl === 'outer' ? 'lamSideOuter' : 'lamSideInner') }) : t('lamNowTooMuch'));
+}
 function laminateThickFromPart(which) {
   const part = doc.parts.find(p => p.id === $(which === 'o' ? 'lamOuter' : 'lamInner').value); lamTouched[which] = false; if (part) $(which === 'o' ? 'lamTOuter' : 'lamTInner').value = String(part.thickness);
 }
@@ -1568,8 +1577,8 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = runLaminate; $('lamAutoParts').onclick = makeFoldUnfoldParts; $('lamOuter').addEventListener('change', () => laminateThickFromPart('o')); $('lamInner').addEventListener('change', () => laminateThickFromPart('i'));
-  $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; }); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) fillLaminateParts(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
   for (const id of ['rb-ax', 'rb-ay', 'rb-bx', 'rb-by']) $(id).addEventListener('input', rulerFromBar);
@@ -3929,7 +3938,7 @@ function selectedLineHoleStats() {
   return { len, holes };
 }
 function updateUI() {
-  refreshLaminateParts();
+  refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));

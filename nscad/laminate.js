@@ -63,6 +63,15 @@ function lamZonesFromDashes(pos) {
   const k = pos.length % 3 === 0 && pos.length ? 3 : pos.length % 2 === 0 && pos.length ? 2 : 0, out = [];
   for (let i = 0; k && i < pos.length; i += k) out.push([pos[i], pos[i + k - 1]]); return out;
 }
+/** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
+ *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
+export function laminateNow(doc, outerId, innerId, opts = {}) {
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return null;
+  const tO = Number(opts.tOuter ?? po.thickness), tI = Number(opts.tInner ?? pi.thickness); if (!(tO > 0 && tI > 0)) return null;
+  const bo = partBox(doc, po), bi = partBox(doc, pi); if (!bo || !bi) return null;
+  const axis = axisOf(bo, bi, opts.axis || 'auto'), horizontal = axis === 'x', len = b => horizontal ? b.maxX - b.minX : b.maxY - b.minY;
+  const outerLen = len(bo), innerLen = len(bi); return { ok: true, axis, outerLen, innerLen, diff: Math.abs(outerLen - innerLen), bend: bendOf(outerLen, innerLen, tO, tI), tOuter: tO, tInner: tI };
+}
 /** 検証の本体。opts：{ tOuter, tInner, axis('auto'|'x'|'y'), holeTol(mm) }。
  *  返り値：{ ok:false, error } か { ok:true, axis, outer, inner, bend, issues:[{ level:'error'|'warn', code, side, text, suggest? }] }。 */
 export function laminateCheck(doc, outerId, innerId, opts = {}) {
