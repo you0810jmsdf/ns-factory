@@ -93,6 +93,39 @@ export function lamFoldSpec(doc, part, { axis = 'x' } = {}) {
   const best = rows.reduce((a, r) => !a || r.pos.length > a.pos.length ? r : a, null);
   return { ok: true, source, axis: horizontal ? 'x' : 'y', length, flats: [a1, a2 - b1, length - b2], bends: [b1 - a1, b2 - a2], zones, holes: best ? [...best.pos] : [], edge: horizontal ? box.minX : box.minY };
 }
+/** 外周の菱目（菱の線）の列：部品の図形のうち、小さな菱形（smallLoopCenters）の中心を、曲がる向き（along）の位置で並べた列。同じ高さ（±ROW_GAP）の菱形が20個以上あり、いちばん多い列の半分以上ある列だけ＝外周の直線の列（角・短い辺の菱形は入らない）。 */
+function rimRows(doc, part, along) {
+  const key = along === 'y' ? 'y' : 'x', cross = key === 'x' ? 'y' : 'x', items = [];
+  for (const s of doc.shapes) { if (!part.shapeIds.includes(s.id) || !lamOwnShape(part, s)) continue; const c = smallLoopCenters([s])[0]; if (c) items.push({ id: s.id, a: c[key], c: c[cross] }); }
+  items.sort((p, q) => p.c - q.c); const rows = [];
+  for (const it of items) { const last = rows.at(-1); if (last && Math.abs(it.c - last.at) <= ROW_GAP) { last.items.push(it); last.sum += it.c; last.at = last.sum / last.items.length; } else rows.push({ at: it.c, sum: it.c, items: [it] }); }
+  const max = Math.max(0, ...rows.map(r => r.items.length)); return rows.filter(r => r.items.length >= Math.max(20, max / 2)).map(r => ({ at: r.at, items: r.items.sort((p, q) => p.a - q.a) }));
+}
+/** 外周の菱目（菱の線）を、指定したピッチに並べ直す計画（事業主の選択 2026-10-19・案A。「平らなピッチは指定したピッチに合わせる（初期値は目打ち工具の 3.95）」「曲げの範囲が菱目間隔の倍数になるように調整する」）。図面は変えない（計画だけ）。
+ *  表（外側）と裏（内側）の外周の直線の列（上下など）を1個ずつ突き合わせ、間隔が違う範囲（誤差 tol まで同じとみなす）を曲げ部とする。並べ直し：平らな所＝ピッチ・曲げ部＝裏はピッチ×間隔の数・表は（間隔の数＋δ）ピッチ（δ＝いまの表−裏の範囲の差÷ピッチを丸めた数・1以上）。
+ *  最初の菱目は動かさない。列の右端が、表・裏とも元の位置を越えない範囲で、平らな間隔を m 個ずつ増やす（菱目を足す）。角・短い辺の菱目は対象外。
+ *  opts：{ pitch（0.5mm 以上）, axis:'x'｜'y'（曲がる向き）, tol（既定 0.1mm）}。
+ *  返り値：{ ok:true, pitch, axis, rows（列の数）, counts:[いまの個数, 並べ直し後の個数], zones:[{ k, n（間隔の数）, delta, outerOld, innerOld, outerNew, innerNew, outerGap, innerGap }], extra（増やす個数）, span:{ outer:[今, 後], inner:[今, 後] }（列の端から端）, remainder:{ outer, inner }（右端の余り）,
+ *  moves:{ outer:[{ id, d }], inner:[…] }（図形 id と、曲がる向きへ動かす量）, adds:{ outer:[{ from, d }], inner:[…] }（from の図形を複製して、曲がる向きへ d だけ動かした位置に足す。d は元の位置からの量）}。
+ *  失敗：{ ok:false, error:'badPitch'｜'pickTwo'｜'noRim'（外周の列が無い）｜'rowMismatch'（表と裏で列の数・個数が違う）｜'rowDiffer'（上と下の列で間隔の並びが違う）｜'noBend'（表と裏で間隔が違う所が無い）｜'bendReversed'（裏のほうが長い曲げ部がある）}。 */
+export function lamRimRelayout(doc, outerId, innerId, { pitch, axis = 'x', tol = 0.1 } = {}) {
+  if (!(typeof pitch === 'number' && Number.isFinite(pitch) && pitch >= 0.5)) return { ok: false, error: 'badPitch' };
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', ro = rimRows(doc, po, along), ri = rimRows(doc, pi, along); if (!ro.length || !ri.length) return { ok: false, error: 'noRim' };
+  if (ro.length !== ri.length || ro.some((r, k) => r.items.length !== ri[k].items.length)) return { ok: false, error: 'rowMismatch' };
+  const gapsOf = r => r.items.slice(1).map((it, k) => it.a - r.items[k].a), sum = a => a.reduce((x, y) => x + y, 0), go = gapsOf(ro[0]), gi = gapsOf(ri[0]);
+  for (let k = 1; k < ro.length; k++) if (gapsOf(ro[k]).some((g, i) => Math.abs(g - go[i]) > tol) || gapsOf(ri[k]).some((g, i) => Math.abs(g - gi[i]) > tol)) return { ok: false, error: 'rowDiffer' };
+  const zones = []; let st = -1;
+  go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { const e = off ? k : k - 1, outerOld = sum(go.slice(st, e + 1)), innerOld = sum(gi.slice(st, e + 1)); zones.push({ s: st, e, n: e - st + 1, outerOld, innerOld }); st = -1; } });
+  if (!zones.length) return { ok: false, error: 'noBend' }; if (zones.some(z => z.outerOld <= z.innerOld)) return { ok: false, error: 'bendReversed' };
+  for (const z of zones) { z.delta = Math.max(1, Math.round((z.outerOld - z.innerOld) / pitch)); z.innerNew = z.n * pitch; z.outerNew = (z.n + z.delta) * pitch; z.outerGap = z.outerNew / z.n; z.innerGap = pitch; }
+  const layGaps = ply => go.map((_, k) => { const z = zones.find(q => k >= q.s && k <= q.e); return z ? (ply === 'inner' ? z.innerGap : z.outerGap) : pitch; });
+  const newO = sum(layGaps('outer')), newI = sum(layGaps('inner')), oldO = sum(go), oldI = sum(gi);
+  const m = Math.max(0, Math.min(Math.floor((oldO - newO) / pitch + 1e-9), Math.floor((oldI - newI) / pitch + 1e-9)));   /* 右端が、表・裏とも元の位置を越えない個数 */
+  const plan = (rows, ply) => { const gaps = [...layGaps(ply), ...Array(m).fill(pitch)], moves = [], adds = []; for (const r of rows) { const pos = [r.items[0].a]; for (const g of gaps) pos.push(pos.at(-1) + g); r.items.forEach((it, i) => moves.push({ id: it.id, d: pos[i] - it.a })); const last = r.items.at(-1); for (let j = 0; j < m; j++) adds.push({ from: last.id, d: pos[r.items.length + j] - last.a }); } return { moves, adds }; };
+  const pO = plan(ro, 'outer'), pI = plan(ri, 'inner');
+  return { ok: true, pitch, axis: along, rows: ro.length, counts: [ro[0].items.length, ro[0].items.length + m], zones: zones.map((z, k) => ({ k: k + 1, n: z.n, delta: z.delta, outerOld: z.outerOld, innerOld: z.innerOld, outerNew: z.outerNew, innerNew: z.innerNew, outerGap: z.outerGap, innerGap: z.innerGap })), extra: m, span: { outer: [oldO, newO + m * pitch], inner: [oldI, newI + m * pitch] }, remainder: { outer: oldO - newO - m * pitch, inner: oldI - newI - m * pitch }, moves: { outer: pO.moves, inner: pI.moves }, adds: { outer: pO.adds, inner: pI.adds } };
+}
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
 export function laminateNow(doc, outerId, innerId, opts = {}) {
