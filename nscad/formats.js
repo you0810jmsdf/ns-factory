@@ -55,6 +55,7 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const x0 = b.minX - marginMm, y0 = b.minY - marginMm, w = b.maxX - b.minX + 2 * marginMm, h = b.maxY - b.minY + 2 * marginMm;
   const usedTex = new Set(); /* 画像を埋め込んだ質感の id（<defs> に pattern を作る） */
+  const texPaint = (texId, color) => { const tex = texId && textures ? textures[texId] : null; if (tex?.href) { usedTex.add(texId); return `url(#tex-${safeId(texId)})`; } return tex ? safeColor(tex.avg) : (color ? safeColor(color) : null); };   /* 質感の塗り：画像（pattern）、無ければ平均色、それも無ければ革色 */
   const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(fontFamily)}" fill="#000" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;
@@ -71,10 +72,10 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
   }).join('');
   const threadHex = h => { const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
   const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h))).join('')}</g>` : '';
-  const leatherGroups = new Map(); if (fill) for (const s of shapes) if (s.leather && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
-  const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id); return poly ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${safeColor(list[0].leather)}" stroke="none"/>` : ''; }).join('');
+  const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
+  const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
-  const regionFill = fill ? (doc.fills || []).map(r => { const color = r.leather ? safeColor(r.leather) : r.metal ? safeColor((metalColor && metalColor(r.metal)) || METAL_FALLBACK[r.metal], '#c9a96e') : null; return color ? `<path d="${[r.points, ...(r.holes || [])].map(ringD).join('')}" fill="${color}" fill-rule="evenodd" stroke="none"/>` : ''; }).join('') : '';   /* 線で囲まれた場所の塗り（くり抜きは evenodd） */
+  const regionFill = fill ? (doc.fills || []).map(r => { const color = r.texture ? texPaint(r.texture, r.leather) : r.leather ? safeColor(r.leather) : r.metal ? safeColor((metalColor && metalColor(r.metal)) || METAL_FALLBACK[r.metal], '#c9a96e') : null; return color ? `<path d="${[r.points, ...(r.holes || [])].map(ringD).join('')}" fill="${color}" fill-rule="evenodd" stroke="none"/>` : ''; }).join('') : '';   /* 線で囲まれた場所の塗り（くり抜きは evenodd） */
   const inner = `<g fill="none" stroke="#000" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${leatherFill || regionFill ? `<g id="leather-fill">${regionFill}${leatherFill}</g>` : ''}${groups}${holeGroup}</g>`;
   const mmOf = id => (Number(textures[id].mm) > 0 ? Number(textures[id].mm) : textureMm > 0 ? textureMm : 30); /* 質感の繰り返し模様：1 ユーザー単位＝1mm。写真ごとの実寸（mm）があればそれ、無ければ textureMm */
   const defs = usedTex.size ? `<defs>${[...usedTex].map(id => { const mm = f(mmOf(id)); return `<pattern id="tex-${safeId(id)}" patternUnits="userSpaceOnUse" width="${mm}" height="${mm}"><image href="${esc(textures[id].href)}" x="0" y="0" width="${mm}" height="${mm}" preserveAspectRatio="none"/></pattern>`; }).join('')}</defs>` : '';
