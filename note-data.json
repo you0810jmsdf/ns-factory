@@ -1,8 +1,17 @@
 {
- "generatedAt": "2026-10-18T23:32:13",
+ "generatedAt": "2026-10-19T22:10:33",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 310,
+ "count": 311,
  "items": [
+  {
+   "title": "2026-10-19（月） - CADの使い勝手と自動売買の初取引",
+   "url": "https://note.com/you0810jmsdf/n/n646c109eac9b",
+   "date": "2026-10-19",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-10-19_ig.jpg",
+   "key": "n646c109eac9b",
+   "imageSource": "sns",
+   "summary": "CADの柄カードに「アーガイルの斜めの線の角度」欄が追加され、表現の幅が広がった。CADのメニュー整理や出力機能の改善、自動売買の初取引と機能追加があった。"
+  },
   {
    "title": "報告の項目と定期取得処理を修正｜Jarvis日記 2026.10.18（日）",
    "url": "https://note.com/you0810jmsdf/n/n1bcb06938850",
