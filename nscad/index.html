@@ -142,7 +142,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 18:47 · cae8603</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 22:37 · 68b4ae7</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -657,6 +657,11 @@
 <label><input id="patchStitch" type="checkbox" checked><span data-i18n="patchStitch"></span></label>
 <label><span data-i18n="patchInset"></span><input id="patchInset" type="number" min="0.5" step="0.5" value="2.5"></label>
 <label><input id="patchEdgeBan" type="checkbox" checked><span data-i18n="patchEdgeBan"></span></label>
+<label><input id="patchRim" type="checkbox" checked><span data-i18n="patchRim"></span></label>
+<label><span data-i18n="patchRimOffset"></span><input id="patchRimOffset" type="number" min="0.5" step="0.5" value="2.5"></label>
+<label><span data-i18n="patchRimPitch"></span><input id="patchRimPitch" type="number" min="1" step="0.1" value="4"></label>
+<label><span data-i18n="patchRimRadius"></span><input id="patchRimRadius" type="number" min="0" step="0.5" value="8"></label>
+<p class="note" data-i18n="patchRimNote"></p>
 <button id="patchFill" data-i18n="patchFill"></button>
 </div></details>
 </div>
@@ -685,8 +690,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=8d6d6539","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f0c37381","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c2b7b0da","./help/ja.js":"./help/ja.js?v=2a2832a0","./i18n.js":"./i18n.js?v=8a540260","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=8d6d6539"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=a5b023ba","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=deee2b98","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=b55a589d","./help/ja.js":"./help/ja.js?v=c28cf623","./i18n.js":"./i18n.js?v=a5a9a22d","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=a5b023ba"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -4051,6 +4056,16 @@ const MESSAGES = {
     "patchStitch": "縫い合わせと縫い穴も付ける",
     "patchInset": "縫い線の縁からの距離 (mm・クロスステッチ用)",
     "patchEdgeBan": "縁から2.5mm以内に菱目を置かない（外すと解除）",
+    "patchRim": "外周にも縫い穴を打つ（図形の縁から内側へ寄せた線の上）",
+    "patchRimOffset": "外周の縫い線の、縁からの距離 (mm)",
+    "patchRimPitch": "外周の菱目の間隔 (mm・一周がきれいに閉じるよう少しだけ調整)",
+    "patchRimRadius": "外周の縫い線の、角の丸め半径 (mm・0で丸めない)",
+    "patchRimNote": "「縫い合わせと縫い穴も付ける」にチェックがあるときだけ働きます。外周の穴は、図形の線・柄のピースの線・ほかの穴と重ならないよう、少し動かしたり省いたりします。",
+    "patchRimMade": "外周：縁から {d}mm の線（角の丸め半径 {r}mm）に、縫い穴を {n} 個打ちました。",
+    "patchRimRadiusCut": "丸め半径 {R}mm は図形に対して大きすぎるため、{r}mm にしました。",
+    "patchRimFail": "外周の縫い線を作れません（図形が小さすぎるか、縁からの距離が大きすぎます）。縁からの距離を小さくしてください。",
+    "patchRimTooClose": "外周の縫い線が縁に近すぎて、菱目が縁の線と重なります。縁からの距離を {m}mm より大きくしてください。",
+    "patchRimNone": "外周には、線と重ならずに打てる位置がありませんでした。",
     "patchHole": "縫い穴の種類（自動で打つ穴）",
     "patchHoleTool": "使用中の工具のまま",
     "patchEdgeBanned": "縫い線を縁から {d}mm にすると、菱目が縁から {m}mm 以内に入るため作れません。{m}mm 以上にするか、「縁から2.5mm以内に菱目を置かない」を外してください。",
@@ -5821,6 +5836,16 @@ const MESSAGES = {
     "patchStitch": "Also add seams and stitch holes",
     "patchInset": "Stitch line distance from edge (mm; for cross-stitch)",
     "patchEdgeBan": "No diamond holes within 2.5 mm of an edge (uncheck to allow)",
+    "patchRim": "Also punch stitch holes around the outer edge (on a line moved inward from the edge)",
+    "patchRimOffset": "Outer stitch line: distance from the edge (mm)",
+    "patchRimPitch": "Outer diamond hole spacing (mm; adjusted slightly so it closes evenly)",
+    "patchRimRadius": "Outer stitch line: corner rounding radius (mm; 0 = no rounding)",
+    "patchRimNote": "Works only while \"Also add seams and stitch holes\" is checked. Outer holes are nudged or left out so they never touch the shape's lines, the pattern pieces' lines or other holes.",
+    "patchRimMade": "Outer edge: punched {n} holes on a line {d} mm from the edge (corner radius {r} mm).",
+    "patchRimRadiusCut": "A corner radius of {R} mm is too large for this shape, so {r} mm was used.",
+    "patchRimFail": "The outer stitch line cannot be made (the shape is too small or the distance from the edge is too large). Use a smaller distance.",
+    "patchRimTooClose": "The outer stitch line is too close to the edge, so the diamond holes would touch the edge line. Use a distance larger than {m} mm.",
+    "patchRimNone": "There was no spot on the outer edge where a hole fits without touching a line.",
     "patchHole": "Stitch hole type (punched automatically)",
     "patchHoleTool": "Keep the current tool",
     "patchEdgeBanned": "A stitch line {d} mm from the edge would put diamond holes within {m} mm of the edge, so it was not made. Use {m} mm or more, or uncheck \"No diamond holes within 2.5 mm of an edge\".",
@@ -7432,6 +7457,81 @@ function patchInsetStitch(polys, d, opts = {}) {
   return { insets, seams };
 }
 
+/** 外周の縫い線：図形の外周（閉じた多角形の頂点列）を縁から d mm 内側へ寄せ、角を半径 R mm で丸めた閉じた折れ線 { points, radius } を返す。
+ *  縁から d mm だけ内側へ寄せた線のうち、尖った角（外側へ曲がる角）を半径 R の円弧にする：(d+R) 内側へ寄せてから R 外側へ戻す。
+ *  R が大きすぎて図形に収まらないときは、収まる大きさまで小さくして作る（radius が実際の半径・最後は丸めなし）。作れないとき（距離が 0 以下・図形が小さすぎるなど）は null。 */
+function rimLine(outline, d, R = 0, { tolerance = 0.003 } = {}) {
+  if (!Array.isArray(outline) || outline.length < 3 || !Number.isFinite(d) || !(d > 0) || !Number.isFinite(R) || !(R >= 0)) return null;
+  const shape = { type: 'polyline', closed: true, points: outline }, area0 = Math.abs(areaOf(outline));
+  const slack = 4 * tolerance + 1e-3, /* 円弧を折れ線で近似する誤差の分（へこんだ角の円弧は、折れ線の辺が円弧よりわずかに縁へ寄る） */
+    valid = pts => pts.length >= 3 && Math.abs(areaOf(pts)) < area0 && pts.every(q => insidePolygon(q, outline) && distToShape(shape, q) >= d - slack);
+  const radii = []; for (let r = R; r >= 0.2 && radii.length < 14; r *= 0.7) radii.push(r); radii.push(0);
+  for (const r of radii) {
+    const core = offsetPolyline(outline, -(d + r), true, { join: 'round', tolerance }); if (core.length < 3) continue;
+    const out = r > 0 ? offsetPolyline(core, r, true, { join: 'round', tolerance }) : core;
+    if (valid(out)) return { points: out.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), radius: r };
+  }
+  return null;
+}
+/** 閉じた折れ線 points（最後の点から最初の点へも辺がある）の、始点から弧長 s（mm・一周で元に戻る）の点 {x, y} を返す道具 { total, at(s) }。位置を何千回も求める所のために、辺の長さの累計を一度だけ作る。 */
+function loopSampler(points) {
+  const n = points.length, cum = [0]; for (let i = 0; i < n; i++) cum.push(cum[i] + distance(points[i], points[(i + 1) % n]));
+  const total = cum[n];
+  const at = s => {
+    const t = total > 0 ? ((s % total) + total) % total : 0; let lo = 0, hi = n - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (cum[mid] <= t) lo = mid; else hi = mid - 1; }
+    const a = points[lo], b = points[(lo + 1) % n], seg = cum[lo + 1] - cum[lo], f = seg > 0 ? (t - cum[lo]) / seg : 0;
+    return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+  };
+  const nearest = q => { /* 線にいちばん近い位置 { s: 始点からの弧長, dist: 線までの距離 } */
+    let best = { s: 0, dist: Infinity };
+    for (let i = 0; i < n; i++) {
+      const a = points[i], b = points[(i + 1) % n], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy, f = L2 > 0 ? Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / L2)) : 0, dd = Math.hypot(q.x - a.x - dx * f, q.y - a.y - dy * f);
+      if (dd < best.dist) best = { dist: dd, s: cum[i] + f * Math.sqrt(L2) };
+    }
+    return best;
+  };
+  return { total, at, nearest };
+}
+/** 外周の穴の位置（一周の長さ len の線に沿った弧長の配列）。isFree(s) が false の所（線と重なる所など）には置かず、近くのあいた所へずらす。
+ *  ずらせる範囲は間隔の 40% まで・ずらしても隣と間隔の半分以上あけ、置けない穴は省く。
+ *  anchors（外周の線の上にすでにある穴の弧長）が無ければ、len を pitch でほぼ等分して穴の数を決め（一周がきれいに閉じる）、等分の始まりを16通り試して、ずらす量・省く穴がいちばん少ないものを選ぶ。
+ *  anchors があれば、その穴どうしの間を、それぞれ pitch でほぼ等分して埋める（すでにある穴はそのまま・その上には重ねない）。戻り値は新しく打つ穴だけ。 */
+function rimHolePositions(len, pitch, isFree, { step = 0.1, maxShift = 0.4, minGap = 0.5, anchors = [] } = {}) {
+  if (!Number.isFinite(len) || !Number.isFinite(pitch) || !(len > 0) || !(pitch > 0) || typeof isFree !== 'function') return [];
+  const wrap = s => ((s % len) + len) % len, ticks = P => { const tries = [0]; for (let j = 1; j <= Math.floor(maxShift * P / step); j++) tries.push(j, -j); return tries; };
+  const fixed = [...new Set((anchors || []).filter(Number.isFinite).map(s => +wrap(s).toFixed(6)))].sort((x, y) => x - y);
+  if (fixed.length) {
+    const out = [];
+    for (let i = 0; i < fixed.length; i++) {
+      const a = fixed[i], b = i + 1 < fixed.length ? fixed[i + 1] : fixed[0] + len, m = Math.max(0, Math.round((b - a) / pitch) - 1); if (!m) continue;
+      const sp = (b - a) / (m + 1), tries = ticks(sp); let prev = a;
+      for (let k = 1; k <= m; k++) {
+        const t = a + sp * k; let hit = null;
+        for (const j of tries) { const v = t + j * step; if (v - prev >= minGap * sp - 1e-9 && b - v >= minGap * sp - 1e-9 && isFree(wrap(v))) { hit = v; break; } }
+        if (hit !== null) { out.push(wrap(hit)); prev = hit; }
+      }
+    }
+    return out.sort((x, y) => x - y);
+  }
+  const n = Math.max(3, Math.round(len / pitch)), P = len / n, tries = ticks(P);
+  let best = null;
+  for (let k = 0; k < 16; k++) {
+    const phase = P * k / 16, found = []; let moved = 0, dropped = 0;
+    for (let i = 0; i < n; i++) {
+      const t = phase + i * P; let hit = null;
+      for (const j of tries) if (isFree(wrap(t + j * step))) { hit = wrap(t + j * step); moved += Math.abs(j) * step; break; }
+      if (hit === null) dropped++; else found.push(hit);
+    }
+    const score = dropped * 1000 + moved; if (!best || score < best.score) best = { score, found };
+    if (score === 0) break;
+  }
+  const sorted = best.found.sort((a, b) => a - b), out = [];
+  for (const v of sorted) if (!out.length || v - out.at(-1) >= minGap * P - 1e-9) out.push(v);
+  while (out.length > 1 && out[0] + len - out.at(-1) < minGap * P - 1e-9) out.pop();
+  return out;
+}
+
 /* ---- 交点の表示：端点どうしで接している点（結合）／途中で交差している点（未結合）---- */
 /** 図形の端点（線・折れ線の頂点・円弧の両端・ベジェの両端・パスの節点）。円には端点が無い。 */
 function shapeEndpoints(s) {
@@ -7929,7 +8029,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, rimLine, loopSampler, rimHolePositions, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -21644,7 +21744,7 @@ const HELP_JA = {
     {
       "id": "design",
       "title": "厚み・折り代・駒合わせ・パッチワーク",
-      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。【どちらの穴が残るか】どちらにも目打ちがなければ、ピッチから数を決めて A・B の両方に並べます。片方にだけ目打ちがあるときは、その目打ちはそのまま残し、もう片方に同じ数を長さの割合で並べます（クリックの順は問いません。向き合う線が逆向きに引かれていても、始点と終点が近い側どうしを対応させ、曲がり角の数が同じなら角ごとに対応させます）。両方に目打ちがあるときは、どちらも作り直します。1回目のクリックの後、画面の案内に「A の目打ち n 個を写します」などと出ます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。マスは図形の中心を基準に並べるので、端の半端なピースは上下・左右で同じ大きさになります（図形の幅や高さが1マスの整数倍なら半端は出ません）。アーガイルの斜めの線の角度は、「アーガイルの斜めの線の角度」の欄（水平から何度か・20〜80度・初めは56.3度＝幅2：高さ3のいつものひし形）で変えられます。大きくすると縦に細長く、小さくすると横に広いひし形になります（45度は正方形を斜めに置いた形）。空にすると56.3度に戻り、範囲の外の数字では作りません。市松は使いません。バランスを見て柄を上下左右へずらしたいときは、「柄の位置：左右・上下 (mm)」（＋で右・下）に数字を入れるか、← → ↑ ↓ のボタンを押します（1回で動く量は「ボタン1回で動かす量」・初めは0.5mm）。柄ぜんたいが図形のふち（輪郭）で切られたままずれ、柄を描いたあとでもその場で描きなおします（取り消しは1回分のまま）。「柄の位置を0に戻す」で上下左右対称に戻ります。描いたあとにキーボードの矢印で動かすと、柄が図形からはみ出すので、柄の位置はここで直します。「柄の質感A／B」で革写真を選んでおくと、2色のピースにそれぞれ貼られます（あとから変えると作りなおします）。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
+      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。【どちらの穴が残るか】どちらにも目打ちがなければ、ピッチから数を決めて A・B の両方に並べます。片方にだけ目打ちがあるときは、その目打ちはそのまま残し、もう片方に同じ数を長さの割合で並べます（クリックの順は問いません。向き合う線が逆向きに引かれていても、始点と終点が近い側どうしを対応させ、曲がり角の数が同じなら角ごとに対応させます）。両方に目打ちがあるときは、どちらも作り直します。1回目のクリックの後、画面の案内に「A の目打ち n 個を写します」などと出ます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。マスは図形の中心を基準に並べるので、端の半端なピースは上下・左右で同じ大きさになります（図形の幅や高さが1マスの整数倍なら半端は出ません）。アーガイルの斜めの線の角度は、「アーガイルの斜めの線の角度」の欄（水平から何度か・20〜80度・初めは56.3度＝幅2：高さ3のいつものひし形）で変えられます。大きくすると縦に細長く、小さくすると横に広いひし形になります（45度は正方形を斜めに置いた形）。空にすると56.3度に戻り、範囲の外の数字では作りません。市松は使いません。バランスを見て柄を上下左右へずらしたいときは、「柄の位置：左右・上下 (mm)」（＋で右・下）に数字を入れるか、← → ↑ ↓ のボタンを押します（1回で動く量は「ボタン1回で動かす量」・初めは0.5mm）。柄ぜんたいが図形のふち（輪郭）で切られたままずれ、柄を描いたあとでもその場で描きなおします（取り消しは1回分のまま）。「柄の位置を0に戻す」で上下左右対称に戻ります。描いたあとにキーボードの矢印で動かすと、柄が図形からはみ出すので、柄の位置はここで直します。「柄の質感A／B」で革写真を選んでおくと、2色のピースにそれぞれ貼られます（あとから変えると作りなおします）。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。外周の縫い穴：「外周にも縫い穴を打つ」にチェックがあれば（既定・「縫い合わせと縫い穴も付ける」もチェックのとき）、図形の外周を「外周の縫い線の縁からの距離」（初めは2.5mm）だけ内側へ寄せた線（黄色の点線）を作り、その上に菱目を打ちます。線の角は「角の丸め半径」（初めは8mm・0で丸めない）で丸め、穴の間隔は「外周の菱目の間隔」（初めは4mm・一周がきれいに閉じるよう少しだけ調整）です。柄のピースの縫い合わせの端にすでにある穴はそのまま使い、その間を等間隔に埋めます。外周の穴は、図形の線・柄のピースの線・円などの実線と重ならないように、近くへずらすか省きます（点線の縫い線は除く）。丸め半径が図形に対して大きすぎるときは、作れる大きさまで小さくします。縁に近すぎる距離（穴が縁の線と重なる）や、菱目を縁から2.5mm以内に置かない設定での2.5mm未満は作りません。"
     },
     {
       "id": "formats",
@@ -21798,7 +21898,7 @@ const HELP_EN = {
     {
       "id": "design",
       "title": "Thickness, folds, box stitch, patchwork",
-      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Which holes stay: if neither line has stitching holes, holes are placed on both by pitch. If only one has them, they are kept and the same number is placed on the other in proportion to length (the order of clicks does not matter; if the facing lines were drawn in opposite directions, the ends that are closer are matched, and with the same number of corners the spans are matched corner by corner). If both have holes, both are redone. After the first click the hint says, for example, that the n holes of A will be copied. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Cells are laid out from the center of the shape, so partial pieces at the edges come out the same size on the left and right, and on the top and bottom (no partial pieces when the width and height are whole multiples of the cell). The angle of Argyle's slanted lines is set in \"Argyle slanted-line angle\" (degrees from horizontal, 20-80; it starts at 56.3 = the usual diamond, width 2 : height 3). A larger angle makes taller, narrower diamonds and a smaller one makes wider, flatter diamonds (45 degrees = a square turned on its corner). Empty goes back to 56.3, and a number outside the range makes nothing. Ichimatsu does not use it. To slide the whole pattern up, down, left or right and balance how it looks, type a number in \"Pattern position: left-right / up-down (mm)\" (+ = right / down) or press the ← → ↑ ↓ buttons (each press moves by \"Amount per button press\", 0.5 mm at first). The pattern stays cut at the outline of the shape, and if it is already drawn it is redrawn on the spot (still one undo step). \"Reset pattern position to 0\" brings back the symmetric layout. Moving a drawn pattern with the keyboard arrows would push it past the shape, so adjust the position here instead. Choose \"Pattern texture A / B\" to tile a leather photo on each of the two colors (changing it later regenerates the pieces). Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
+      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Which holes stay: if neither line has stitching holes, holes are placed on both by pitch. If only one has them, they are kept and the same number is placed on the other in proportion to length (the order of clicks does not matter; if the facing lines were drawn in opposite directions, the ends that are closer are matched, and with the same number of corners the spans are matched corner by corner). If both have holes, both are redone. After the first click the hint says, for example, that the n holes of A will be copied. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Cells are laid out from the center of the shape, so partial pieces at the edges come out the same size on the left and right, and on the top and bottom (no partial pieces when the width and height are whole multiples of the cell). The angle of Argyle's slanted lines is set in \"Argyle slanted-line angle\" (degrees from horizontal, 20-80; it starts at 56.3 = the usual diamond, width 2 : height 3). A larger angle makes taller, narrower diamonds and a smaller one makes wider, flatter diamonds (45 degrees = a square turned on its corner). Empty goes back to 56.3, and a number outside the range makes nothing. Ichimatsu does not use it. To slide the whole pattern up, down, left or right and balance how it looks, type a number in \"Pattern position: left-right / up-down (mm)\" (+ = right / down) or press the ← → ↑ ↓ buttons (each press moves by \"Amount per button press\", 0.5 mm at first). The pattern stays cut at the outline of the shape, and if it is already drawn it is redrawn on the spot (still one undo step). \"Reset pattern position to 0\" brings back the symmetric layout. Moving a drawn pattern with the keyboard arrows would push it past the shape, so adjust the position here instead. Choose \"Pattern texture A / B\" to tile a leather photo on each of the two colors (changing it later regenerates the pieces). Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches. Outer-edge holes: while \"Also punch stitch holes around the outer edge\" is checked (default; \"Also add seams and stitch holes\" must be checked too), a line (yellow dashed) is made by moving the shape's outer edge inward by \"Outer stitch line: distance from the edge\" (2.5 mm at first), and diamond holes are punched on it. The corners of that line are rounded by \"Corner rounding radius\" (8 mm at first; 0 = no rounding), and the hole spacing is \"Outer diamond hole spacing\" (4 mm at first; adjusted slightly so it closes evenly). Holes that already sit at the ends of the pattern pieces' seams on that line are kept, and the gaps between them are filled evenly. Outer holes are nudged aside or left out so they never touch solid lines (the shape's lines, the pieces' lines, circles; dashed stitch lines do not count). If the corner radius is too large for the shape it is made smaller until it fits. A distance so small that holes would touch the edge line, or under 2.5 mm while \"No diamond holes within 2.5 mm of an edge\" is checked, makes nothing."
     },
     {
       "id": "formats",
@@ -21957,7 +22057,7 @@ const { createRegistration, regIsOwner } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, rimLine, rimHolePositions, loopSampler, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -23812,6 +23912,24 @@ function nudgePatch(dx, dy) {
   $('patchShiftX').value = fmt(cur.x + dx * step); $('patchShiftY').value = fmt(cur.y + dy * step); regenPatch();
 }
 function resetPatchShift() { $('patchShiftX').value = '0'; $('patchShiftY').value = '0'; regenPatch(); }
+/** 外周の穴が実線から離れていなければならない距離（mm）：穴の大きい方の寸法の半分＋0.3mm。 */
+const patchHoleClearR = tool => Math.max(tool.holeW, tool.holeH) / 2 + 0.3;
+/** 外周の穴がよける相手：見えている実線の図形（柄のピース・図形の外形・円など）。点線（縫い線・案内）は除く。r は箱の余白（早く除くため）。 */
+function patchObstacles(r) {
+  return doc.shapes.filter(s => visibleData(s) && stitchable(s) && s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)).map(s => { const b = bboxOf(s); return { s, minX: b.minX - r, maxX: b.maxX + r, minY: b.minY - r, maxY: b.maxY + r }; });
+}
+/** 穴を、大きさ cell の升目ごとに分けておく（近くの穴だけを調べるため）。 */
+function holeGrid(holes, cell) {
+  const grid = new Map(); for (const h of holes) { const k = Math.floor(h.x / cell) + ',' + Math.floor(h.y / cell), a = grid.get(k); if (a) a.push(h); else grid.set(k, [h]); }
+  return { grid, cell };
+}
+/** 点 q に外周の穴を置いてよいか：実線から r 以上、ほかの穴から gap（＝升目の大きさ）以上はなれている。 */
+function rimSpotFree(q, others, r, near) {
+  for (const o of others) if (q.x >= o.minX && q.x <= o.maxX && q.y >= o.minY && q.y <= o.maxY && distToShape(o.s, q) < r) return false;
+  const cx = Math.floor(q.x / near.cell), cy = Math.floor(q.y / near.cell), g2 = near.cell * near.cell;
+  for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) for (const h of near.grid.get(i + ',' + j) || []) if ((h.x - q.x) ** 2 + (h.y - q.y) ** 2 < g2) return false;
+  return true;
+}
 let lastPatch = null; /* 直前の柄の塗りつぶし {p: クリックした点, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
 /** 柄の設定を変えたとき、直前の柄の塗りつぶしを取り消して同じ場所に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。 */
 function regenPatch() {
@@ -23835,7 +23953,12 @@ function patchFillAt(p) {
   const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
   if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
-  let stitched = null; const depth0 = undo.length;
+  const rimOn = !!tool && $('patchRim').checked, rimOffset = Number($('patchRimOffset').value), rimPitch = Number($('patchRimPitch').value), rimRadius = Number($('patchRimRadius').value);
+  if (rimOn && !(rimOffset > 0 && rimPitch > 0 && rimRadius >= 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
+  if (rimOn && rimOffset <= patchHoleClearR(tool)) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleClearR(tool).toFixed(1) }); return; } /* 穴が縁の線と重なる近さ */
+  const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
+  let stitched = null, rimInfo = null; const depth0 = undo.length;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
@@ -23856,10 +23979,20 @@ function patchFillAt(p) {
         if (drop.size) { doc.holes = doc.holes.filter(h => !drop.has(h.id)); banned = drop.size; holes -= banned; }
       }
       stitched = { seams: stitch.seams.length, holes, banned, inset };
+      if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ */
+        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed' });
+        const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool' }; doc.paths.push(saved);
+        const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(doc.holes, rimPitch * 0.5), loop = loopSampler(rim.points);
+        const anchors = doc.holes.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（柄の縫い合わせの端の穴）＝そのまま使い、間を埋める */
+        const spots = route ? rimHolePositions(loop.total, rimPitch, s => rimSpotFree(loop.at(s), others, clearR, near), { anchors }).map(s => { const want = loop.at(s), q = pointAtLength(route, s); return distance(q, want) < 1e-3 ? q : projectOnPath(route, want); }) : []; /* 位置は軽い道具で探し、経路上の弧長・向きへ直す（経路の向き・始点が違うときだけ投影で求める） */
+        if (route && spots.length) placeHoles(saved, route, spots, { ...tool, pitch: rimPitch });
+        rimInfo = { n: spots.length, d: rimOffset, r: rim.radius };
+      }
     }
   });
   renderSeams(); if (undo.length > depth0) lastPatch = { p, before: undo.at(-1) };
-  $('hint').textContent = stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped });
+  const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
+  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + rimNote;
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
@@ -23883,7 +24016,7 @@ function initDesign() {
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
-  for (const id of ['patchAngle', 'patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchAngle', 'patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
