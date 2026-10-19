@@ -142,7 +142,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-20 07:41 · cf2d1ec</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-20 08:09 · fc81d74</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -691,8 +691,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=47284315","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=deee2b98","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=b55a589d","./help/ja.js":"./help/ja.js?v=c28cf623","./i18n.js":"./i18n.js?v=604d7192","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=47284315"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=015638bf","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=b55a589d","./help/ja.js":"./help/ja.js?v=c28cf623","./i18n.js":"./i18n.js?v=5d00262b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=015638bf"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3098,6 +3098,11 @@ const MESSAGES = {
     "fdMake": "断面を作る（ボタン線から）",
     "fdH": "平面図の高さ (mm)",
     "fdBtnD": "ボタン穴の直径 (mm・両端の2枚だけ)",
+    "fdSecW": "全幅",
+    "fdSecH": "全高",
+    "fdSecT": "厚み",
+    "fdSecTO": "表",
+    "fdSecTI": "裏",
     "fdDiagramNote": "サンプル図（上下反転の向き・縮尺は実寸ではありません）。①〜⑫は、下の欄の頭の番号と同じ寸法です。欄を選ぶ（または欄の上にマウスを置く）と、図の該当する寸法が金色に光ります。青の点線がボタン線です。図をクリックすると大きく表示します（もう一度クリックか Esc で閉じます）。",
     "fdFlip": "断面を上下反転する（机に置いた向き・左右は変わりません）",
     "fdTO": "⑧表（外側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
@@ -4880,6 +4885,11 @@ const MESSAGES = {
     "fdMake": "Make section (from button line)",
     "fdH": "Height of flat drawing (mm)",
     "fdBtnD": "Button hole diameter (mm, outer 2 layers only)",
+    "fdSecW": "Width",
+    "fdSecH": "Height",
+    "fdSecT": "Thickness",
+    "fdSecTO": "outer",
+    "fdSecTI": "inner",
     "fdDiagramNote": "Sample diagram (upside-down orientation, not to scale). The numbers (1)-(12) match the numbers at the start of the fields below. Select a field (or hover over it) and the matching dimension lights up in gold. The blue dotted line is the button line. Click the diagram to enlarge it (click again or press Esc to close).",
     "fdFlip": "Flip the section upside down (as it lies on a desk; left and right do not change)",
     "fdTO": "(8) Thickness of the outer leather (mm; blank = \"Thickness of one leather\")",
@@ -7792,6 +7802,24 @@ function foldDimensions(d, key, { refill = null } = {}) {
   }
   return items;
 }
+/** 断面を直すときに常に見せる寸法（事業主指示 2026-10-20「断面の修正をする際に全体寸法、革の厚みがわかるとよい。動かすと寸法も追従させる」・画面だけの表示）。
+ *  全幅（③と同じ線）・全高（大きい方の折りの外径）・厚み（表＋裏）を、数字（mm・小数2桁まで）つきの寸法線で返す。数字は d（doc.foldDesign）から毎回計算するので、設計が変われば追従する。
+ *  opts：labels＝{ w, h, t, to, ti }（文字・省略時は空）、px＝画面の1ピクセルが図面の何mmか（既定1・文字のずらしに使う）。
+ *  返り値 [{ key:'w'|'h'|'t', value（mm）, items }]。items は foldDimensions と同じ形で、type:'text' には align（'left'｜'right'）が付くことがある。計画が成り立たない・origin が無いとき null。 */
+function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
+  if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
+  const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
+  const vTop = 2 * rc1 + T / 2, H = 2 * Math.max(rc1, rc2) + T, vLow = vTop - H, hx = lo - 14 * px;   /* 全高の寸法線は図の左（縦）。厚みの文字は図の右端の外 */
+  const W = n(d.dL + d.dR), tO = n(p.tO), tI = n(p.tI), TT = n(p.tO + p.tI);
+  const wItems = (foldDimensions(d, 'w') ?? []).map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${W} mm` } : it);
+  const thickLines = ['to', 'ti'].flatMap(k => (foldDimensions(d, k) ?? []).filter(it => it.type !== 'text'));
+  return [
+    { key: 'w', value: W, items: wItems },
+    { key: 'h', value: n(H), items: [line([hx, vLow], [hx, vTop], 'both'), line([lo, vTop], [hx - 4 * px, vTop], 'none', true), line([lo, vLow], [hx - 4 * px, vLow], 'none', true), { type: 'text', ...pt(hx - 6 * px, (vTop + vLow) / 2), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
+    { key: 't', value: TT, items: [...thickLines, { type: 'text', ...pt(hi + 10 * px, rc1), text: `${nm('t')} ${nm('to')} ${tO} + ${nm('ti')} ${tI} = ${TT} mm`, align: 'left' }] },
+  ];
+}
 /** 三つ折りの設計の取っ手（実際の断面の上で、つかんで横へドラッグすると欄の数値が変わる点・事業主指示 2026-10-15）。図面の座標（mm）。
  *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
 function foldHandles(d) {
@@ -8034,7 +8062,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, rimLine, loopSampler, rimHolePositions, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, rimLine, loopSampler, rimHolePositions, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldSectionDims, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -22062,7 +22090,7 @@ const { createRegistration, regIsOwner } = __mods['registration'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, rimLine, rimHolePositions, loopSampler, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, rimLine, rimHolePositions, loopSampler, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -25978,16 +26006,24 @@ function revealFdDims(items) {
   if (x1 - x0 > width - 2 * m || y1 - y0 > height - 2 * m) return;
   const dx = x0 < m ? m - x0 : x1 > width - m ? width - m - x1 : 0, dy = y0 < m ? m - y0 : y1 > height - m ? height - m - y1 : 0; if (dx || dy) { origin.x += dx; origin.y += dy; }
 }
-function drawFoldDims() {
-  const items = fdDimItems(fdDimKey); if (!items) return;
-  const gold = '#f0b429', k = 1 / scale, head = (x, y, ang) => { const L = 9 * k, W = 4.5 * k, c = Math.cos(ang), n = Math.sin(ang); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L * c + W * n, y - L * n - W * c); ctx.lineTo(x - L * c - W * n, y - L * n + W * c); ctx.closePath(); ctx.fill(); };
+function drawFoldDims() { const items = fdDimItems(fdDimKey); if (items) drawFdItems(items); }   /* 触っている寸法（欄・取っ手）を金色で強調する */
+/** 寸法の図形（foldDimensions／foldSectionDims の形）を重ねて描く。color・lineW（実線の太さpx）・font（文字の大きさpx）。文字の寄せは it.align（既定は中央）。 */
+function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn = false } = {}) {   /* keepIn＝文字が画面の端で切れないように、画面の中へ寄せる（幅が画面より広いときは寄せない） */
+  const gold = color, k = 1 / scale, head = (x, y, ang) => { const L = 9 * k, W = 4.5 * k, c = Math.cos(ang), n = Math.sin(ang); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L * c + W * n, y - L * n - W * c); ctx.lineTo(x - L * c - W * n, y - L * n + W * c); ctx.closePath(); ctx.fill(); };
   ctx.save(); ctx.strokeStyle = gold; ctx.fillStyle = gold; ctx.lineJoin = 'round';
   for (const it of items) {
     if (it.type === 'line') {
-      ctx.setLineDash(it.dash ? [4 * k, 3 * k] : []); ctx.lineWidth = (it.dash ? 1.2 : 2.2) * k; ctx.beginPath(); ctx.moveTo(it.a.x, it.a.y); ctx.lineTo(it.b.x, it.b.y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.setLineDash(it.dash ? [4 * k, 3 * k] : []); ctx.lineWidth = (it.dash ? 1.2 : lineW) * k; ctx.beginPath(); ctx.moveTo(it.a.x, it.a.y); ctx.lineTo(it.b.x, it.b.y); ctx.stroke(); ctx.setLineDash([]);
       const ang = Math.atan2(it.b.y - it.a.y, it.b.x - it.a.x); if (it.arrows !== 'none') head(it.b.x, it.b.y, ang); if (it.arrows === 'both') head(it.a.x, it.a.y, ang + Math.PI);
     } else if (it.type === 'dot') { ctx.beginPath(); ctx.arc(it.x, it.y, 3.5 * k, 0, Math.PI * 2); ctx.fill(); }
-    else { ctx.font = `700 ${22 * k}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 4 * k; ctx.strokeStyle = '#000'; ctx.strokeText(it.text, it.x, it.y); ctx.fillStyle = gold; ctx.fillText(it.text, it.x, it.y); ctx.strokeStyle = gold; }
+    else {
+      ctx.font = `700 ${font * k}px sans-serif`; ctx.textAlign = it.align || 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 4 * k; ctx.strokeStyle = '#000'; let tx = it.x, ty = it.y;
+      if (keepIn) {
+        const w = ctx.measureText?.(it.text)?.width ?? 0, m = 6 * k, h = (font / 2 + 3) * k, x0 = -origin.x / scale + m, x1 = (width - origin.x) / scale - m, y0 = -origin.y / scale + h, y1 = (height - origin.y) / scale - h;
+        const left = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; if (w <= x1 - x0) tx += Math.min(Math.max(left, x0), x1 - w) - left; if (y1 > y0) ty = Math.min(Math.max(ty, y0), y1);
+      }
+      ctx.strokeText(it.text, tx, ty); ctx.fillStyle = gold; ctx.fillText(it.text, tx, ty); ctx.strokeStyle = gold;
+    }
   }
   ctx.restore();
 }
@@ -26006,6 +26042,9 @@ function drawFoldHandles() {
   for (const h of list) { const sz = (h.key === a ? 6 : 4.5) * k; ctx.fillStyle = h.key === a ? '#f0b429' : 'rgba(240,180,41,.55)'; ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.rect(h.x - sz, h.y - sz, 2 * sz, 2 * sz); ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
+/** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
+const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: { w: t('fdSecW'), h: t('fdSecH'), t: t('fdSecT'), to: t('fdSecTO'), ti: t('fdSecTI') } }) ?? []) : [];
+function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdItems(g.items, { color: '#4fb3ff', lineW: 1.6, font: 15, keepIn: true }); }
 /** 図面に保存されている三つ折りの設計の値を、設計カードの数値欄へ書き戻す。図面を開いた・前回の続きを開いた・タブを切り替えた・元に戻したときなど、欄が図面の設計とずれていると、
  *  取っ手のドラッグや欄の入力で断面を作り直すときに、ずれた欄の値（ほかの寸法・厚み・リング）を読んでしまい、寸法が変わらない・別の形になる（事業主指摘 2026-10-15）。 */
 let foldSyncDoc = null;
@@ -27599,7 +27638,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
   updateUI();
 }
 function resize() {
@@ -27613,7 +27652,7 @@ function zoom(factor, at = { x: viewW() / 2 + paneOff().x, y: viewH() / 2 + pane
 function fit() {
   const shapes = doc.shapes.filter(visible), b = bboxOfDoc({ ...doc, shapes, holes: doc.holes.filter(holeVisible) });
   if (!b) { scale = 4; origin = { x: 80, y: 80 }; }
-  else { const vw = viewW(), vh = viewH(); scale = Math.max(0.1, Math.min(100, (vw - 80) / Math.max(1, b.maxX - b.minX), (vh - 80) / Math.max(1, b.maxY - b.minY))); origin = { x: vw / 2 - (b.minX + b.maxX) / 2 * scale, y: vh / 2 - (b.minY + b.maxY) / 2 * scale }; }
+  else { const vw = viewW(), vh = viewH(), sideM = foldSectionDimList().length ? 340 : 0; /* 断面の寸法（全高・厚みの文字）が出ているときは、左右に文字の分（170pxずつ）の余白をあける */ scale = Math.max(0.1, Math.min(100, (vw - 80 - sideM) / Math.max(1, b.maxX - b.minX), (vh - 80) / Math.max(1, b.maxY - b.minY))); origin = { x: vw / 2 - (b.minX + b.maxX) / 2 * scale, y: vh / 2 - (b.minY + b.maxY) / 2 * scale }; }
   draw();
 }
 /* ── 操作の記録（不具合調査用・事業主指示 2026-10-13）：スクショにはポインタが映らないので、クリックの位置・当たった図形・選択の結果を、最近300件だけメモリに持つ。外部へは送らず、「不具合記録」ボタンでファイルに保存するだけ。 ── */

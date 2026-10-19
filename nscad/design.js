@@ -669,6 +669,24 @@ export function foldDimensions(d, key, { refill = null } = {}) {
   }
   return items;
 }
+/** 断面を直すときに常に見せる寸法（事業主指示 2026-10-20「断面の修正をする際に全体寸法、革の厚みがわかるとよい。動かすと寸法も追従させる」・画面だけの表示）。
+ *  全幅（③と同じ線）・全高（大きい方の折りの外径）・厚み（表＋裏）を、数字（mm・小数2桁まで）つきの寸法線で返す。数字は d（doc.foldDesign）から毎回計算するので、設計が変われば追従する。
+ *  opts：labels＝{ w, h, t, to, ti }（文字・省略時は空）、px＝画面の1ピクセルが図面の何mmか（既定1・文字のずらしに使う）。
+ *  返り値 [{ key:'w'|'h'|'t', value（mm）, items }]。items は foldDimensions と同じ形で、type:'text' には align（'left'｜'right'）が付くことがある。計画が成り立たない・origin が無いとき null。 */
+export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
+  if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
+  const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
+  const vTop = 2 * rc1 + T / 2, H = 2 * Math.max(rc1, rc2) + T, vLow = vTop - H, hx = lo - 14 * px;   /* 全高の寸法線は図の左（縦）。厚みの文字は図の右端の外 */
+  const W = n(d.dL + d.dR), tO = n(p.tO), tI = n(p.tI), TT = n(p.tO + p.tI);
+  const wItems = (foldDimensions(d, 'w') ?? []).map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${W} mm` } : it);
+  const thickLines = ['to', 'ti'].flatMap(k => (foldDimensions(d, k) ?? []).filter(it => it.type !== 'text'));
+  return [
+    { key: 'w', value: W, items: wItems },
+    { key: 'h', value: n(H), items: [line([hx, vLow], [hx, vTop], 'both'), line([lo, vTop], [hx - 4 * px, vTop], 'none', true), line([lo, vLow], [hx - 4 * px, vLow], 'none', true), { type: 'text', ...pt(hx - 6 * px, (vTop + vLow) / 2), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
+    { key: 't', value: TT, items: [...thickLines, { type: 'text', ...pt(hi + 10 * px, rc1), text: `${nm('t')} ${nm('to')} ${tO} + ${nm('ti')} ${tI} = ${TT} mm`, align: 'left' }] },
+  ];
+}
 /** 三つ折りの設計の取っ手（実際の断面の上で、つかんで横へドラッグすると欄の数値が変わる点・事業主指示 2026-10-15）。図面の座標（mm）。
  *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
 export function foldHandles(d) {
