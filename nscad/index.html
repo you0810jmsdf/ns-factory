@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 17:30 · 45113c6</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 17:40 · d41c21e</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -660,8 +660,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=132f341f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f058141b","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=bc77f17e","./help/ja.js":"./help/ja.js?v=d0fb19f3","./i18n.js":"./i18n.js?v=996ca8ac","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ac9df122","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=132f341f"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=fbfac2bf","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f058141b","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=bc77f17e","./help/ja.js":"./help/ja.js?v=d0fb19f3","./i18n.js":"./i18n.js?v=be3b1c62","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=fbfac2bf"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3496,6 +3496,8 @@ const MESSAGES = {
     "lamBendReportPlain": "曲げ{k}：表 {o}／裏 {i}（点線の間の長さ）",
     "lamBendFitOk": "入る",
     "lamBendFitNg": "入らない",
+    "lamRelayApex": "頂点の円を {n} 個、まん中の点線（曲げのまん中）に合わせました。",
+    "lamRelayApexLocked": "ロックされた層の頂点の円 {n} 個は動かしませんでした。",
     "lamRingD": "リング外径（mm・断面図で、折りの内側の隙間が足りるか調べる。空なら見ない）",
     "lamRingOk": "リング外径 {d} mm：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（どちらも入ります）。",
     "lamRingShort": "リング外径 {d} mm が入りません：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（不足 {sa}・{sb} mm）。",
@@ -5221,6 +5223,8 @@ const MESSAGES = {
     "lamBendReportPlain": "Bend {k}: outer {o} / inner {i} (length between the dashed lines)",
     "lamBendFitOk": "fits",
     "lamBendFitNg": "does not fit",
+    "lamRelayApex": "Moved {n} circles at the bend apex to the middle of the bend (the middle dashed line).",
+    "lamRelayApexLocked": "{n} apex circles on a locked layer were not moved.",
     "lamRingD": "Ring outer diameter (mm; the section checks the inner gap of the folds; empty = not checked)",
     "lamRingOk": "Ring outer diameter {d} mm: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (both fit).",
     "lamRingShort": "A ring of {d} mm does not fit: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (short by {sa} and {sb} mm).",
@@ -9315,6 +9319,25 @@ function lamRimBendZones(doc, outerId, innerId, { axis = 'x', tol = 0.1 } = {}) 
   if (!idx.length) return { ok: false, error: 'noBend' };
   return { ok: true, outer: { zones: idx.map(([x, y]) => [a[x].a - eO, a[y + 1].a - eO]), pos: a.map(it => it.a - eO) }, inner: { zones: idx.map(([x, y]) => [b[x].a - eI, b[y + 1].a - eI]), pos: b.map(it => it.a - eI) } };
 }
+/** 頂点の円を、並べ直し後の曲げのまん中へ動かす計画（事業主の決定 2026-10-19「整える・並べ直しのとき、頂点の円も、まん中の点線に合わせて動かしてください」）。図面は変えない（計画だけ）。
+ *  曲げ部＝外周の菱目の列から（lamRimBendZones と同じ見方）。曲げごとに、旧い曲げの始め・終わりの菱目（A・B）と、並べ直しでの動き（relay.moves）から、新しいまん中を求める。
+ *  頂点の円＝部品の円のうち、中心が旧い曲げの中（A〜B）で、旧いまん中から曲げの長さの frac（既定 10%）以内にあるもの。ボタンの穴・取付穴など、頂点にない円は動かさない。動かす量＝新しいまん中−円の中心（曲げ向きの座標）。
+ *  opts：{ axis, tol（曲げ部を見つける間隔の誤差・既定 0.1）, frac }。relay＝lamRimRelayout の結果（無い・動きが無ければ円は動かない）。
+ *  返り値：{ ok:true, axis, outer／inner:{ zones:[{ k, oldMid, newMid }], moves:[{ id, d, k }]（動かす円） } }｜{ ok:false, error:'pickTwo'｜'noRim' }。 */
+function lamApexPlan(doc, outerId, innerId, relay, { axis = 'x', tol = 0.1, frac = 0.1 } = {}) {
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', ro = rimRows(doc, po, along), ri = rimRows(doc, pi, along); if (!ro.length || !ri.length || ro[0].items.length !== ri[0].items.length) return { ok: false, error: 'noRim' };
+  const a = ro[0].items, b = ri[0].items, go = a.slice(1).map((it, k) => it.a - a[k].a), gi = b.slice(1).map((it, k) => it.a - b[k].a), idx = []; let st = -1;
+  go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { idx.push([st, off ? k : k - 1]); st = -1; } });   /* 間隔が違う範囲（曲げ部） */
+  if (!idx.length) return { ok: false, error: 'noRim' };
+  const mv = new Map([...(relay?.moves?.outer || []), ...(relay?.moves?.inner || [])].map(m => [m.id, m.d])), side = (part, items) => {
+    const circles = doc.shapes.filter(q => q.type === 'circle' && part.shapeIds.includes(q.id) && lamOwnShape(part, q)), zones = [], moves = [];
+    idx.forEach(([x, y], k) => { const A = items[x], B = items[y + 1], oldMid = (A.a + B.a) / 2, len = B.a - A.a, newMid = (A.a + (mv.get(A.id) || 0) + B.a + (mv.get(B.id) || 0)) / 2; zones.push({ k: k + 1, oldMid, newMid });
+      for (const c of circles) { const u = along === 'x' ? c.cx : c.cy; if (u >= A.a - 1e-9 && u <= B.a + 1e-9 && Math.abs(u - oldMid) <= frac * len + 1e-9 && Math.abs(newMid - u) > 1e-9) moves.push({ id: c.id, d: newMid - u, k: k + 1 }); } });
+    return { zones, moves };
+  };
+  return { ok: true, axis: along, outer: side(po, a), inner: side(pi, b) };
+}
 /** 部品の端から u の位置（曲がる向き）を、区間（平ら・丸折り）ごとに比例して、もう一方の部品の端からの位置に写す（事業主の選択 2026-10-19・案A）。from・to＝lamFoldSpec の結果（flats[3]・bends[2]）。範囲外は端に丸める。 */
 function lamAlongMap(from, to, u) {
   const seg = sp => [sp.flats[0], sp.bends[0], sp.flats[1], sp.bends[1], sp.flats[2]], cum = a => a.reduce((r, v) => [...r, r.at(-1) + v], [0]), sf = seg(from), st = seg(to), cf = cum(sf), ct = cum(st);
@@ -9498,7 +9521,7 @@ function laminateCheck(doc, outerId, innerId, opts = {}) {
   return { ok: true, axis, mode, zoneSource, zones, base: baseOuter ? 'outer' : 'inner', target: { side: baseOuter ? 'inner' : 'outer', current: otherLen, want: hasTarget ? wantLen : null }, outer: { length: Lo, width: Wo, thickness: tO }, inner: { length: Li, width: Wi, thickness: tI }, bend: bendU, holes, issues, errors: issues.filter(i => i.level === 'error').length, warns: issues.filter(i => i.level === 'warn').length };
 }
 
-return {partBox, bendOf, lamZonesFromHoles, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamAlongMap, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, laminateNow, laminateCheck};
+return {partBox, bendOf, lamZonesFromHoles, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamApexPlan, lamAlongMap, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, laminateNow, laminateCheck};
 })();
 __mods['bugdir'] = (function(){
 // 不具合記録の保存先（共有フォルダ）。Chrome・Edge の「フォルダを選ぶ」で、OneDrive の中のフォルダをいちど選ぶと、次からそこへ直接保存する（ほかの PC からも同じフォルダを見られる）。
@@ -21785,7 +21808,7 @@ const { TUTORIALS_OUTPUT } = __mods['tutorials/output'];
 const { DATA_STITCH_COLORS } = __mods['data/stitch-colors'];
 const { putImage, getImage, deleteImage, shrinkDataUrl } = __mods['imgstore'];
 const { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } = __mods['undostore'];
-const { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides } = __mods['laminate'];
+const { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, lamApexPlan } = __mods['laminate'];
 const { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } = __mods['bugdir'];
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
@@ -23357,15 +23380,18 @@ function relayRim() {
   const plan = lamRimRelayout(doc, po.id, pi.id, { pitch: lamPitchValue(), axis }); if (!plan.ok) { fail('lamRelayErr_' + plan.error); return; }
   const ids = new Set([...plan.moves.outer, ...plan.moves.inner].map(m => m.id)), locked = doc.shapes.filter(s => ids.has(s.id) && !editable(s)).length; if (locked) { fail('lamRelayErr_locked', { n: locked }); return; }
   const vec = d => plan.axis === 'x' ? { x: d, y: 0 } : { x: 0, y: d };
+  const apex = lamApexPlan(doc, po.id, pi.id, plan, { axis: plan.axis }), apexAll = apex.ok ? [...apex.outer.moves, ...apex.inner.moves] : [], apexOf = m => doc.shapes.find(q => q.id === m.id), apexMoves = apexAll.filter(m => apexOf(m) && editable(apexOf(m))), apexLocked = apexAll.filter(m => apexOf(m) && !editable(apexOf(m))).length;   /* 頂点の円：曲げが動くので、新しいまん中へ（ロックされた円は動かさない）（事業主の決定 2026-10-19） */
   commit(() => {
     const byId = new Map(doc.shapes.map(s => [s.id, s])), moved = new Map(), added = [];
     for (const m of [...plan.moves.outer, ...plan.moves.inner]) { const s = byId.get(m.id), v = vec(m.d); if (s && m.d !== 0) moved.set(m.id, translate(s, v.x, v.y)); }
+    for (const m of apexMoves) { const s = byId.get(m.id), v = vec(m.d); if (s) moved.set(m.id, translate(s, v.x, v.y)); }
     for (const [part, adds] of [[po, plan.adds.outer], [pi, plan.adds.inner]]) for (const a of adds) { const src = byId.get(a.from), v = vec(a.d); if (!src) continue; const { id: _old, ...rest } = translate(src, v.x, v.y), id = freshId([...doc.shapes, ...added], 's'); added.push({ ...rest, id }); part.shapeIds.push(id); }   /* 足す菱目は、列の最後の菱目の複製（元の位置から動かした量で置く）。部品にも入れる */
     doc.shapes = [...doc.shapes.map(s => moved.get(s.id) || s), ...added];
   });
   const f2 = v => (+v).toFixed(2), z = plan.zones, done = t('lamRelayDone', { p: String(+plan.pitch.toFixed(3)), rows: plan.rows, z: z.length, m: plan.extra }); line(done); $('hint').textContent = done;
   for (const q of z) line(t('lamRelayZone', { k: q.k, n: q.n, oOld: f2(q.outerOld), oNew: f2(q.outerNew), oGap: f2(q.outerGap), iOld: f2(q.innerOld), iNew: f2(q.innerNew), iGap: f2(q.innerGap) }));
   line(plan.stretchSkipped ? t('lamRelayNoStretch') : plan.stretch > 1e-9 ? t('lamRelayFlat', { g: (+plan.flatGap).toFixed(3), p: String(+plan.pitch.toFixed(3)), d: (plan.stretch / plan.pitch * 100).toFixed(1) }) : t('lamRelayFlatExact', { p: String(+plan.pitch.toFixed(3)) })); line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
+  if (apexMoves.length) line(t('lamRelayApex', { n: apexMoves.length })); if (apexLocked) line(t('lamRelayApexLocked', { n: apexLocked }), 'lam-warn');
   rebuildSnaps(); draw();
 }
 /* ───────── 整える（事業主の指示 2026-10-19「並べ直し→曲げを伸ばす→断面図→展開を1回にまとめる整えるボタンを作る」）：①菱目を並べ直す ②リングが入らない曲げを伸ばす ③ボタンの穴を表と裏でそろえる（展開） ④表と裏から断面図を作る。
