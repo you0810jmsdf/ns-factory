@@ -51,7 +51,7 @@ function holeRows(doc, box, axis, part) {
 function lamDashPositions(doc, box, axis, part) {
   const horizontal = axis === 'x', span = horizontal ? box.maxY - box.minY : box.maxX - box.minX, a0 = horizontal ? box.minX : box.minY, pad = 0.5, out = [];
   for (const s of doc.shapes) {
-    if (s.type !== 'line' || s.lineStyle !== 'dashed' || !lamOwnShape(part, s)) continue;
+    if (s.type !== 'line' || s.lineStyle !== 'dashed' || s.lamBendGuide || !lamOwnShape(part, s)) continue;   /* lamBendGuide＝展開・整えるが入れる表示だけの点線（曲げ部の検出には使わない） */
     const along = horizontal ? [s.x1, s.x2] : [s.y1, s.y2], across = horizontal ? [s.y1, s.y2] : [s.x1, s.x2], cLo = horizontal ? box.minY : box.minX, cHi = horizontal ? box.maxY : box.maxX;
     if (Math.abs(along[0] - along[1]) > 0.01 || Math.abs(across[0] - across[1]) < span * 0.8 || Math.min(...across) < cLo - pad || Math.max(...across) > cHi + pad) continue;
     const p = along[0] - a0; if (p >= -0.01 && p <= (horizontal ? box.maxX - box.minX : box.maxY - box.minY) + 0.01 && !out.some(q => Math.abs(q - p) < 0.01)) out.push(p);
@@ -214,6 +214,17 @@ export function lamBendGrowApply(doc, outerId, innerId, plan) {
 export function lamPartCircles(doc, part, spec) {
   if (!spec?.ok) return [];
   return doc.shapes.filter(s => s.type === 'circle' && part.shapeIds.includes(s.id) && lamOwnShape(part, s)).map(s => ({ u: (spec.axis === 'y' ? s.cy : s.cx) - spec.edge, r: s.r }));
+}
+/** 展開（整える）の終わりに入れる、曲げの範囲の点線（事業主の希望 2026-10-19「展開したときに曲げの範囲を６本の点線で表示して」）。表の部品・裏の部品それぞれに、曲げ2か所×（始め・まん中・終わり）＝縦の点線6本（曲がる向きが y のときは横の線）。
+ *  位置＝lamFoldSpec の zones（部品の端からの位置）。ガイド層・点線・部品の高さ（曲がらない向き）いっぱい・表＝黄・裏＝青・印 lamBendGuide＝`表の部品id:裏の部品id:outer｜inner`（置き換えの目印・曲げ部の検出には使わない）。
+ *  opts：{ axis, specs:{ outer, inner }（lamFoldSpec の結果）}。返り値：{ ok:true, outer:[線のデータ（id なし）×6], inner:[…×6] }｜{ ok:false, error:'pickTwo' }。 */
+export function lamBendGuides(doc, outerId, innerId, { axis = 'x', specs } = {}) {
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi || !specs?.outer?.ok || !specs?.inner?.ok) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', make = (part, spec, side, color) => {
+    const box = partBox(doc, part); if (!box) return []; const key = `${outerId}:${innerId}:${side}`;
+    return spec.zones.flatMap(([a, b]) => [a, (a + b) / 2, b]).map(p => { const v = spec.edge + p; return along === 'x' ? { type: 'line', layer: 'guide', lineStyle: 'dashed', color, x1: v, y1: box.minY, x2: v, y2: box.maxY, lamBendGuide: key } : { type: 'line', layer: 'guide', lineStyle: 'dashed', color, x1: box.minX, y1: v, x2: box.maxX, y2: v, lamBendGuide: key }; });
+  };
+  const outer = make(po, specs.outer, 'outer', 'yellow'), inner = make(pi, specs.inner, 'inner', 'blue'); return outer.length && inner.length ? { ok: true, outer, inner } : { ok: false, error: 'pickTwo' };
 }
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
