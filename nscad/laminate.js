@@ -1,6 +1,6 @@
 // 貼り合わせの曲げ検証（事業主指示 2026-10-17）：表と裏を別々に作図した図面（図面の「部品」2つ）を貼り合わせたとき、どのくらい曲がるかを、革の厚みから求める。
 // あわせて、①寸法の過不足（足りない寸法の案つき）②菱目の数と位置が表と裏で合うか、を調べる。ブラウザにも Node にも依存しない（図面の JSON だけを見る）。
-import { bboxOf, distance, smallLoopCenters } from './geometry.js';
+import { bboxOf, distance, smallLoopCenters, translate, warpX, warpY } from './geometry.js';
 
 const DIM_TOL = 0.05, ROW_GAP = 0.5, EDGE_PAD = 1;   /* 寸法の一致の許容（mm）・同じ列とみなす幅（mm）・部品の外枠から寸法の端が出てよい幅（mm） */
 
@@ -161,6 +161,54 @@ export function lamButtonPlan(doc, baseId, otherId, { axis = 'x', specs, near = 
     if (best) { used.add(best.m.id); if (best.dist <= same) sameL.push({ from: c.id, id: best.m.id }); else moves.push({ from: c.id, id: best.m.id, x: r4(pos.x), y: r4(pos.y), dist: best.dist }); } else adds.push({ from: c.id, x: r4(pos.x), y: r4(pos.y), r: c.r });
   }
   return { ok: true, base: baseId, other: otherId, same: sameL, moves, adds };
+}
+/** 「曲げを伸ばす」の計画（事業主の選択 2026-10-19・A 伸ばすだけ：「リングが入らない曲げだけ、必要な長さ（菱目の間隔の倍数）まで表・裏とも伸ばす。曲げの中の菱目は並べ直し、右側の図形は伸ばした分ずらす（全長は伸びる）」）。図面は変えない（計画だけ）。
+ *  外周の菱目の列（lamRimRelayout と同じ見方）から曲げ部を左から数え、grow の曲げだけを n 個の間隔に伸ばす。長さの決まりは「並べ直し」と同じ：裏の曲げ＝n×ピッチ・表の曲げ＝（n＋δ）×ピッチ（δ＝いまの表−裏の差÷ピッチを丸めた数・1以上）。縮める（いまより短くなる）指定は不可。
+ *  opts：{ pitch（0.5mm 以上）, axis:'x'｜'y'（曲がる向き）, grow:[{ k（曲げの番号・1から）, n（伸ばしたあとの間隔の数）}], tol（既定 0.1mm）}。
+ *  返り値：{ ok:true, pitch, axis, rows, zones:[{ k, nOld, n, delta, outerOld, innerOld, outerNew, innerNew, shiftOuter, shiftInner }], outer／inner:{ rim:{ moves:[{ id, d }], adds:[{ from, d }] }, rimIds, warp:{ zones:[{ a, b, len, newLen }] }, shift（全長ののび） } }。
+ *  rim＝外周の菱目の動かし方（曲げの中は n 個の間隔に並べ直し・足す菱目は from の複製を d だけ動かした位置・曲げの後ろは伸びた分ずらす）。warp＝それ以外の図形の伸ばし方（曲げの範囲 a〜b を len から newLen に・後ろは伸びた分ずらす）。
+ *  失敗：{ ok:false, error:'badPitch'｜'pickTwo'｜'noRim'｜'rowMismatch'｜'rowDiffer'｜'noBend'｜'bendReversed'（lamRimRelayout と同じ）｜'badGrow'（指定が空・曲げの番号が無い・同じ番号が2つ・縮める） }。 */
+export function lamBendGrowPlan(doc, outerId, innerId, { pitch, axis = 'x', grow = [], tol = 0.1 } = {}) {
+  if (!(typeof pitch === 'number' && Number.isFinite(pitch) && pitch >= 0.5)) return { ok: false, error: 'badPitch' };
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', ro = rimRows(doc, po, along), ri = rimRows(doc, pi, along); if (!ro.length || !ri.length) return { ok: false, error: 'noRim' };
+  if (ro.length !== ri.length || ro.some((r, k) => r.items.length !== ri[k].items.length)) return { ok: false, error: 'rowMismatch' };
+  const gapsOf = r => r.items.slice(1).map((it, k) => it.a - r.items[k].a), sum = a => a.reduce((x, y) => x + y, 0), go = gapsOf(ro[0]), gi = gapsOf(ri[0]);
+  for (let k = 1; k < ro.length; k++) if (gapsOf(ro[k]).some((g, i) => Math.abs(g - go[i]) > tol) || gapsOf(ri[k]).some((g, i) => Math.abs(g - gi[i]) > tol)) return { ok: false, error: 'rowDiffer' };
+  const all = []; let st = -1;
+  go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { const e = off ? k : k - 1; all.push({ s: st, e, nOld: e - st + 1, outerOld: sum(go.slice(st, e + 1)), innerOld: sum(gi.slice(st, e + 1)) }); st = -1; } });
+  if (!all.length) return { ok: false, error: 'noBend' }; if (all.some(z => z.outerOld <= z.innerOld)) return { ok: false, error: 'bendReversed' };
+  const list = Array.isArray(grow) ? grow : [], ks = list.map(g => g?.k); if (!list.length || new Set(ks).size !== ks.length || list.some(g => !Number.isInteger(g?.k) || g.k < 1 || g.k > all.length || !Number.isInteger(g.n) || g.n < all[g.k - 1].nOld)) return { ok: false, error: 'badGrow' };
+  const zones = [];
+  for (const g of [...list].sort((p, q) => p.k - q.k)) { const z = all[g.k - 1], delta = Math.max(1, Math.round((z.outerOld - z.innerOld) / pitch)), innerNew = g.n * pitch, outerNew = (g.n + delta) * pitch; if (innerNew < z.innerOld - 1e-9 || outerNew < z.outerOld - 1e-9) return { ok: false, error: 'badGrow' }; zones.push({ ...z, k: g.k, n: g.n, delta, innerNew, outerNew, shiftOuter: outerNew - z.outerOld, shiftInner: innerNew - z.innerOld }); }
+  const plan = (rows, ply) => {
+    const len = z => ply === 'outer' ? z.outerNew : z.innerNew, old = z => ply === 'outer' ? z.outerOld : z.innerOld, shiftOf = (j) => sum(zones.filter(z => z.e + 1 <= j).map(z => len(z) - old(z))), moves = [], adds = [], rimIds = [];
+    for (const r of rows) for (let j = 0; j < r.items.length; j++) {
+      const it = r.items[j], z = zones.find(q => j > q.s && j <= q.e); rimIds.push(it.id);
+      const d = z ? r.items[z.s].a + shiftOf(z.s) + (j - z.s) * len(z) / z.n - it.a : shiftOf(j); if (Math.abs(d) > 1e-12) moves.push({ id: it.id, d });
+    }
+    for (const r of rows) for (const z of zones) for (let t = z.nOld; t < z.n; t++) adds.push({ from: r.items[z.s].id, d: shiftOf(z.s) + t * len(z) / z.n });   /* 足す菱目：曲げの始めの菱目の複製を、始めから t 間隔のところへ */
+    const first = rows[0].items, warpZones = zones.map(z => ({ a: first[z.s].a, b: first[z.e + 1].a, len: old(z), newLen: len(z) }));
+    return { rim: { moves, adds }, rimIds, warp: { zones: warpZones }, shift: sum(zones.map(z => len(z) - old(z))) };
+  };
+  return { ok: true, pitch, axis: along, rows: ro.length, zones: zones.map(({ s: _s, e: _e, ...z }) => z), outer: plan(ro, 'outer'), inner: plan(ri, 'inner') };
+}
+/** lamBendGrowPlan の計画を、図形の新しいデータにする（図面は変えない）。返り値：{ replace: Map（図形 id → 動かしたあとの図形）, adds:{ outer:[…], inner:[…] }（足す菱目・id なし。呼ぶ側が id をつけて部品に入れる）}。
+ *  外周の菱目の列は計画どおり。それ以外の部品の図形は、曲げの範囲を比例して伸ばし・後ろをずらす（単独の菱目は形を変えずに、中心だけ同じ量ずらす）。 */
+export function lamBendGrowApply(doc, outerId, innerId, plan) {
+  const replace = new Map(), adds = { outer: [], inner: [] }, along = plan.axis, vec = d => along === 'x' ? [d, 0] : [0, d], warp = along === 'x' ? warpX : warpY;
+  for (const [ply, partId] of [['outer', outerId], ['inner', innerId]]) {
+    const part = doc.parts.find(p => p.id === partId), pp = plan[ply], rim = new Set(pp.rimIds), moveBy = new Map(pp.rim.moves.map(m => [m.id, m.d]));
+    const F = x => { let sh = 0; for (const z of pp.warp.zones) { if (x <= z.a) return x + sh; if (x < z.b) return z.a + sh + (x - z.a) * z.newLen / z.len; sh += z.newLen - z.len; } return x + sh; };
+    for (const s of doc.shapes) {
+      if (!part.shapeIds.includes(s.id) || !lamOwnShape(part, s)) continue;
+      if (rim.has(s.id)) { const d = moveBy.get(s.id); if (d) replace.set(s.id, translate(s, ...vec(d))); continue; }
+      const c = smallLoopCenters([s])[0]; if (c) { const d = F(c[along]) - c[along]; if (Math.abs(d) > 1e-12) replace.set(s.id, translate(s, ...vec(d))); continue; }
+      const w = warp(s, F); if (JSON.stringify(w) !== JSON.stringify(s)) replace.set(s.id, w);
+    }
+    for (const a of pp.rim.adds) { const src = doc.shapes.find(s => s.id === a.from); if (src) { const { id: _old, ...rest } = translate(src, ...vec(a.d)); adds[ply].push(rest); } }
+  }
+  return { replace, adds };
 }
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
