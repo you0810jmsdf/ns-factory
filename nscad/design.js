@@ -177,24 +177,29 @@ export function komaStitchLine(edge, thicknessB, inward = 1) {
 /* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
 const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
 const TILE_EPS = 1e-6; /* マスの数を決めるときの浮動小数の誤差（マス数に対する比） */
-/** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
+/** パッチワークの柄の登録表。tiles(bbox, cell, off) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。
+ *  off={x,y}（mm・＋は右・下）は柄の基準の中心を枠の中心からずらす量（既定 0＝上下左右対称）。period(cell) は柄（色まで含めて）がぴったり重なるずらし量 {x,y}。 */
 export const PATCH_PATTERNS = {
   ichimatsu: {
     ja: '市松', en: 'Ichimatsu (checker)',
-    tiles(b, cell) {
+    period: cell => ({ x: 2 * cell, y: 2 * cell }),
+    tiles(b, cell, off = { x: 0, y: 0 }) {
       /* 図形の中心を基準に並べる＝端の半端なピースが左右・上下で同じ大きさになる（左上から並べると右と下にだけ半端が集まる）。
          幅がちょうど整数倍のとき浮動小数の誤差で列が1つ増える（＝全部が半端にずれる）のを TILE_EPS で防ぐ */
       const cols = Math.max(1, Math.ceil((b.maxX - b.minX) / cell - TILE_EPS)), rows = Math.max(1, Math.ceil((b.maxY - b.minY) / cell - TILE_EPS)), out = [];
-      const x0 = (b.minX + b.maxX) / 2 - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 - rows * cell / 2;
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      const x0 = (b.minX + b.maxX) / 2 + off.x - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 + off.y - rows * cell / 2;
+      /* ずらしても枠が隙間なく覆われるよう、枠にかかるマスの番号だけを並べる（ずらし量 0 なら 0〜cols-1・0〜rows-1 と同じ）。色は基準のマスからの番号の偶奇＝ずらすとマスは色ごと動く */
+      const i0 = Math.floor((b.minX - x0) / cell + TILE_EPS), i1 = Math.ceil((b.maxX - x0) / cell - TILE_EPS), j0 = Math.floor((b.minY - y0) / cell + TILE_EPS), j1 = Math.ceil((b.maxY - y0) / cell - TILE_EPS);
+      for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (((i + j) % 2) + 2) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
       return out;
     },
   },
   argyle: {
     ja: 'アーガイル', en: 'Argyle',
-    tiles(b, cell) {
-      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる */
-      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2, cy0 = (b.minY + b.maxY) / 2, kMax = Math.ceil((b.maxY - b.minY) / 2 / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / 2 / w) + 1, out = [];
+    period: cell => ({ x: cell, y: cell * 1.5 }),
+    tiles(b, cell, off = { x: 0, y: 0 }) {
+      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる（ずらし量があれば、その分だけ中心を動かす。並べる範囲もずらし量の分だけ広げる） */
+      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2 + off.x, cy0 = (b.minY + b.maxY) / 2 + off.y, kMax = Math.ceil(((b.maxY - b.minY) / 2 + Math.abs(off.y)) / (h / 2)) + 1, iMax = Math.ceil(((b.maxX - b.minX) / 2 + Math.abs(off.x)) / w) + 1, out = [];
       for (let k = -kMax; k <= kMax; k++) for (let i = -iMax; i <= iMax; i++) {
         const odd = ((k % 2) + 2) % 2, cx = cx0 + i * w + odd * w / 2, cy = cy0 + k * h / 2;
         if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
@@ -249,11 +254,17 @@ const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.le
 export function regionAt(shapes, p, tol = 0.01) {
   return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
 }
-/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。 */
-export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+/** 柄のずらし量 {x,y}（mm・＋は右・下）を整える：数にならない値は 0。柄がぴったり重なる周期より大きい分は捨てる（結果は同じで、並べる範囲が広がりすぎない）。 */
+export function patchShiftOf(pattern, cell, shift) {
+  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0, per = pattern.period(cell);
+  return { x: num(shift?.x) % per.x, y: num(shift?.y) % per.y };
+}
+/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。
+ *  shift={x,y}（mm・＋は右・下）は柄ぜんたいを図形の中心からずらす量（既定 0）。ずらしても柄は図形の輪郭で切られたまま。 */
+export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000, shift = null } = {}) {
   const pattern = PATCH_PATTERNS[patternId]; if (!pattern || !(cell > 0) || !region) return null;
   const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), box = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
-  const tiles = pattern.tiles(box, cell); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
+  const tiles = pattern.tiles(box, cell, patchShiftOf(pattern, cell, shift)); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
   const pieces = []; let dropped = 0;
   for (const tile of tiles) {
     const clipped = clipPolygonByConvex(region.points, tile.points); if (!clipped.length) continue;
