@@ -148,12 +148,14 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
   const add = (p, q, offset, kind) => { if (!adFinite(p) || !adFinite(q) || !(distance(p, q) >= (kind === 'edge' ? AD_MIN_EDGE : AD_MIN)) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind }); };
   const geo = (cand || []).filter(s => s && AD_TYPES.includes(s.type) && !adIsDiamond(s));   /* 菱目（菱の線）は対象外 */
   const pieces = adPieces(geo), pieceOf = new Map(); for (const pc of pieces) for (const id of pc.ids) pieceOf.set(id, pc);
+  const sizeExists = (p, q, box) => { const len = distance(p, q), horiz = Math.abs(p.y - q.y) <= AD_EQ, inb = (x, y) => x >= box.minX - 1 && x <= box.maxX + 1 && y >= box.minY - 1 && y <= box.maxY + 1; return existing.some(d => Math.abs(distance({ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }) - len) <= 0.02 && (horiz ? Math.abs(d.y1 - d.y2) <= 0.05 : Math.abs(d.x1 - d.x2) <= 0.05) && inb(d.x1, d.y1) && inb(d.x2, d.y2)); };   /* 手で引いた全体の寸法（同じ長さの水平／垂直の寸法が型紙の枠の中にある）があれば、同じ向きの全体は入れない（事業主が手で 283.54・125.00 を入れている図面で二重にしない） */
   for (const pc of pieces) {
     const b = pc.box;
     if (pc.circle) { if (circles) { const c = pc.list[0]; add({ x: c.cx - c.r, y: c.cy }, { x: c.cx + c.r, y: c.cy }, c.r + gap, 'circle'); } continue; }   /* 直径：円の上に */
     if (size && pc.piece) {
-      add({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, gap, 'size');    /* 全体の幅（いちばん広い所）：上の辺の上（左→右の左側＝上） */
-      add({ x: b.minX, y: b.minY }, { x: b.minX, y: b.maxY }, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
+      const w1 = { x: b.minX, y: b.minY }, w2 = { x: b.maxX, y: b.minY }, h2 = { x: b.minX, y: b.maxY };
+      if (!sizeExists(w1, w2, b)) add(w1, w2, gap, 'size');    /* 全体の幅（いちばん広い所）：上の辺の上（左→右の左側＝上） */
+      if (!sizeExists(w1, h2, b)) add(w1, h2, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
     }
   }
   if (edges) for (const s of geo) { const pc = pieceOf.get(s.id); for (const [p, q] of adStraightEdges(s)) { if (size && pc?.piece && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, pc, gap), 'edge'); } }
