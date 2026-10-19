@@ -339,6 +339,81 @@ export function patchInsetStitch(polys, d, opts = {}) {
   return { insets, seams };
 }
 
+/** 外周の縫い線：図形の外周（閉じた多角形の頂点列）を縁から d mm 内側へ寄せ、角を半径 R mm で丸めた閉じた折れ線 { points, radius } を返す。
+ *  縁から d mm だけ内側へ寄せた線のうち、尖った角（外側へ曲がる角）を半径 R の円弧にする：(d+R) 内側へ寄せてから R 外側へ戻す。
+ *  R が大きすぎて図形に収まらないときは、収まる大きさまで小さくして作る（radius が実際の半径・最後は丸めなし）。作れないとき（距離が 0 以下・図形が小さすぎるなど）は null。 */
+export function rimLine(outline, d, R = 0, { tolerance = 0.003 } = {}) {
+  if (!Array.isArray(outline) || outline.length < 3 || !Number.isFinite(d) || !(d > 0) || !Number.isFinite(R) || !(R >= 0)) return null;
+  const shape = { type: 'polyline', closed: true, points: outline }, area0 = Math.abs(areaOf(outline));
+  const slack = 4 * tolerance + 1e-3, /* 円弧を折れ線で近似する誤差の分（へこんだ角の円弧は、折れ線の辺が円弧よりわずかに縁へ寄る） */
+    valid = pts => pts.length >= 3 && Math.abs(areaOf(pts)) < area0 && pts.every(q => insidePolygon(q, outline) && distToShape(shape, q) >= d - slack);
+  const radii = []; for (let r = R; r >= 0.2 && radii.length < 14; r *= 0.7) radii.push(r); radii.push(0);
+  for (const r of radii) {
+    const core = offsetPolyline(outline, -(d + r), true, { join: 'round', tolerance }); if (core.length < 3) continue;
+    const out = r > 0 ? offsetPolyline(core, r, true, { join: 'round', tolerance }) : core;
+    if (valid(out)) return { points: out.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), radius: r };
+  }
+  return null;
+}
+/** 閉じた折れ線 points（最後の点から最初の点へも辺がある）の、始点から弧長 s（mm・一周で元に戻る）の点 {x, y} を返す道具 { total, at(s) }。位置を何千回も求める所のために、辺の長さの累計を一度だけ作る。 */
+export function loopSampler(points) {
+  const n = points.length, cum = [0]; for (let i = 0; i < n; i++) cum.push(cum[i] + distance(points[i], points[(i + 1) % n]));
+  const total = cum[n];
+  const at = s => {
+    const t = total > 0 ? ((s % total) + total) % total : 0; let lo = 0, hi = n - 1;
+    while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (cum[mid] <= t) lo = mid; else hi = mid - 1; }
+    const a = points[lo], b = points[(lo + 1) % n], seg = cum[lo + 1] - cum[lo], f = seg > 0 ? (t - cum[lo]) / seg : 0;
+    return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f };
+  };
+  const nearest = q => { /* 線にいちばん近い位置 { s: 始点からの弧長, dist: 線までの距離 } */
+    let best = { s: 0, dist: Infinity };
+    for (let i = 0; i < n; i++) {
+      const a = points[i], b = points[(i + 1) % n], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy, f = L2 > 0 ? Math.max(0, Math.min(1, ((q.x - a.x) * dx + (q.y - a.y) * dy) / L2)) : 0, dd = Math.hypot(q.x - a.x - dx * f, q.y - a.y - dy * f);
+      if (dd < best.dist) best = { dist: dd, s: cum[i] + f * Math.sqrt(L2) };
+    }
+    return best;
+  };
+  return { total, at, nearest };
+}
+/** 外周の穴の位置（一周の長さ len の線に沿った弧長の配列）。isFree(s) が false の所（線と重なる所など）には置かず、近くのあいた所へずらす。
+ *  ずらせる範囲は間隔の 40% まで・ずらしても隣と間隔の半分以上あけ、置けない穴は省く。
+ *  anchors（外周の線の上にすでにある穴の弧長）が無ければ、len を pitch でほぼ等分して穴の数を決め（一周がきれいに閉じる）、等分の始まりを16通り試して、ずらす量・省く穴がいちばん少ないものを選ぶ。
+ *  anchors があれば、その穴どうしの間を、それぞれ pitch でほぼ等分して埋める（すでにある穴はそのまま・その上には重ねない）。戻り値は新しく打つ穴だけ。 */
+export function rimHolePositions(len, pitch, isFree, { step = 0.1, maxShift = 0.4, minGap = 0.5, anchors = [] } = {}) {
+  if (!Number.isFinite(len) || !Number.isFinite(pitch) || !(len > 0) || !(pitch > 0) || typeof isFree !== 'function') return [];
+  const wrap = s => ((s % len) + len) % len, ticks = P => { const tries = [0]; for (let j = 1; j <= Math.floor(maxShift * P / step); j++) tries.push(j, -j); return tries; };
+  const fixed = [...new Set((anchors || []).filter(Number.isFinite).map(s => +wrap(s).toFixed(6)))].sort((x, y) => x - y);
+  if (fixed.length) {
+    const out = [];
+    for (let i = 0; i < fixed.length; i++) {
+      const a = fixed[i], b = i + 1 < fixed.length ? fixed[i + 1] : fixed[0] + len, m = Math.max(0, Math.round((b - a) / pitch) - 1); if (!m) continue;
+      const sp = (b - a) / (m + 1), tries = ticks(sp); let prev = a;
+      for (let k = 1; k <= m; k++) {
+        const t = a + sp * k; let hit = null;
+        for (const j of tries) { const v = t + j * step; if (v - prev >= minGap * sp - 1e-9 && b - v >= minGap * sp - 1e-9 && isFree(wrap(v))) { hit = v; break; } }
+        if (hit !== null) { out.push(wrap(hit)); prev = hit; }
+      }
+    }
+    return out.sort((x, y) => x - y);
+  }
+  const n = Math.max(3, Math.round(len / pitch)), P = len / n, tries = ticks(P);
+  let best = null;
+  for (let k = 0; k < 16; k++) {
+    const phase = P * k / 16, found = []; let moved = 0, dropped = 0;
+    for (let i = 0; i < n; i++) {
+      const t = phase + i * P; let hit = null;
+      for (const j of tries) if (isFree(wrap(t + j * step))) { hit = wrap(t + j * step); moved += Math.abs(j) * step; break; }
+      if (hit === null) dropped++; else found.push(hit);
+    }
+    const score = dropped * 1000 + moved; if (!best || score < best.score) best = { score, found };
+    if (score === 0) break;
+  }
+  const sorted = best.found.sort((a, b) => a - b), out = [];
+  for (const v of sorted) if (!out.length || v - out.at(-1) >= minGap * P - 1e-9) out.push(v);
+  while (out.length > 1 && out[0] + len - out.at(-1) < minGap * P - 1e-9) out.pop();
+  return out;
+}
+
 /* ---- 交点の表示：端点どうしで接している点（結合）／途中で交差している点（未結合）---- */
 /** 図形の端点（線・折れ線の頂点・円弧の両端・ベジェの両端・パスの節点）。円には端点が無い。 */
 export function shapeEndpoints(s) {
