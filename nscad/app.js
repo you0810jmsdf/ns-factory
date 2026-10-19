@@ -2024,7 +2024,9 @@ function initDesign() {
   $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
-  $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」カード末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
+  $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」の小窓の末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
+  const setFlowWin = on => { $('foldFlowDialog').open = on; $('foldFlowInfo').classList?.toggle('on', on); $('foldFlowInfo').setAttribute?.('aria-expanded', String(on)); };   /* 三つ折りタブ末尾のⓘ：手順（①〜⑤とボタン）の小窓を開け閉めする。モーダルにしないので、開いたまま図面を触れる（事業主指示 2026-10-20「手順カードを一覧から外し…小窓で開く」） */
+  $('foldFlowInfo').onclick = () => setFlowWin(!$('foldFlowDialog').open); $('foldFlowClose').onclick = () => setFlowWin(false);
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
@@ -5772,12 +5774,13 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldFlowCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'foldFlowInfoRow', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
   if (!SIDE_TABS.includes(name)) name = 'shape'; sideTab = name;
   for (const c of document.querySelectorAll('#side details.card') || []) c.classList?.toggle('tab-off', sideGroupOf(c) !== name);
+  for (const c of document.querySelectorAll('#side .side-info') || []) c.classList?.toggle('tab-off', sideGroupOf(c) !== name);   /* ⓘの行（三つ折りの手順の小窓を開く）も、分類のタブに合わせる */
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.setAttribute?.('aria-selected', String(b.dataset?.sideTab === name));
   if (save) try { localStorage.setItem(SIDE_TAB_KEY, name); } catch { /* 保存できなくても続ける */ }
 }
