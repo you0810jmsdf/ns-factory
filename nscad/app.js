@@ -1676,6 +1676,16 @@ function growBends() {
   for (const z of gp.zones) line(t('lamGrowZone', { k: z.k, oOld: f2(z.outerOld), oNew: f2(z.outerNew), iOld: f2(z.innerOld), iNew: f2(z.innerNew), nOld: z.nOld, n: z.n, gOld: f2(ring.gaps[z.k - 1].gap), gNew: f2(ring.byPitch[z.k - 1].gap), aOld: (plan.angles[z.k - 1] * 180 / Math.PI).toFixed(1), aNew: ((z.outerNew - z.innerNew) / ((tO + tI) / 2) * 180 / Math.PI).toFixed(1) }));
   line(t('lamGrowNote')); rebuildSnaps(); draw();
 }
+/* ───────── 三つ折りの手順（事業主の指示 2026-10-19「右メニューがかなりわかりにくく」→ 分類タブ＋三つ折りは手順画面）：どの手順まで済んでいるかを、図面の状態から出す。
+   ①断面＝foldSec 'fd' の図形（三つ折りの設計の断面）②平面＝foldFlat 'fd' の図形（FIX の投影）④貼り合わせ検証の断面＝foldSections の lam ⑤展開＝曲げの範囲の点線（lamBendGuide）か 表・裏の展開図（foldFlat 'fdu'）。③設計を直すは目印が無いので、④か⑤に進んだら済。 ───────── */
+function foldFlowStates(d = doc) {
+  const sh = d.shapes || [], has = f => sh.some(f), s1 = has(s => s.foldSec === 'fd'), s2 = has(s => s.foldFlat === 'fd'), s4 = Object.values(d.foldSections || {}).some(m => m && m.lam), s5 = has(s => s.lamBendGuide || s.foldFlat === 'fdu'), s3 = s4 || s5;
+  return [s1, s2, s3, s4, s5];
+}
+function renderFoldFlow() {
+  const st = foldFlowStates(doc), now = st.indexOf(false);
+  for (let i = 0; i < 5; i++) { const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue; const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text; }
+}
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
   if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
@@ -1945,7 +1955,9 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
+  for (const [from, to] of [['flowMake', 'fdMake'], ['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
+  const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
@@ -4528,7 +4540,7 @@ function selectedLineHoleStats() {
   return { len, holes };
 }
 function updateUI() {
-  refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
+  renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
@@ -5712,7 +5724,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldFlowCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
