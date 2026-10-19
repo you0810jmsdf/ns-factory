@@ -2042,16 +2042,16 @@ const ASK_WHERE_KEY = 'leather-cad.askWhere';
 function restoreAskWhere() { try { const v = localStorage.getItem(ASK_WHERE_KEY); if ((v === '0' || v === '1') && $('outAskWhere')) $('outAskWhere').checked = v === '1'; } catch { /* 保存できない環境でも続ける */ } }
 function exportFile(name, data, mime, onDone) {
   const askWhere = !!$('outAskWhere')?.checked && typeof globalThis.showSaveFilePicker === 'function';
-  const plain = async () => { const v = await data; download(name, v, mime, false); onDone(null); };
+  const plain = async () => { try { const v = await data; if (!v) return; download(name, v, mime, false); onDone(null); } catch { /* 画像ができなかった：従来どおり、何もしない */ } };   /* 画像（Promise）が空・失敗でも、拒否された Promise を放置しない（放置すると、ブラウザ・テストで未処理のエラーになる） */
   if (!askWhere) { if (data && typeof data.then === 'function') { plain(); return; } download(name, data, mime, false); onDone(null); return; }
   const ext = (name.match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
   let picking; try { picking = globalThis.showSaveFilePicker({ suggestedName: name, id: 'ncad-export', types: [{ description: (ext.slice(1) || 'file').toUpperCase(), accept: { [mime]: [ext || '.bin'] } }] }); } catch (err) { picking = Promise.reject(err); }   /* 利用者の操作の直後に、同期で窓を開く */
   (async () => {
     try {
-      const handle = await picking, v = await data, w = await handle.createWritable(); await w.write(v instanceof Blob ? v : new Blob([v], { type: mime })); await w.close(); onDone(handle.name || name);
+      const handle = await picking, v = await data; if (!v) { $('hint').textContent = t('pngUnavailable'); return; } const w = await handle.createWritable(); await w.write(v instanceof Blob ? v : new Blob([v], { type: mime })); await w.close(); onDone(handle.name || name);
     } catch (err) {
       if (err?.name === 'AbortError') { $('hint').textContent = t('exportCanceled'); return; }
-      try { const v = await data; download(name, v, mime, false); onDone(null); $('hint').textContent += ' ' + t('exportFallback'); } catch { $('hint').textContent = t('saveFailed', { message: err?.message || String(err) }); }
+      try { const v = await data; if (!v) { $('hint').textContent = t('pngUnavailable'); return; } download(name, v, mime, false); onDone(null); $('hint').textContent += ' ' + t('exportFallback'); } catch { $('hint').textContent = t('saveFailed', { message: err?.message || String(err) }); }
     }
   })();
 }
@@ -2096,7 +2096,7 @@ function exportPng() {
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
   finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; draw(); }
   if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
-  exportFile('leather-pattern.png', new Promise((res, rej) => off.toBlob(b => b ? res(b) : rej(new Error('png')), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved); });
+  exportFile('leather-pattern.png', new Promise(res => off.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved); });
 }
 /** 取り込んだ図形群を文書に足す（id・レイヤーを割り当て、validateDoc で壊れた要素を捨てて件数を報告）。 */
 function importShapes(list, { layersFrom = [] } = {}) {
@@ -2795,7 +2795,7 @@ function loadPattern() {
 function exportPng3d() {
   if (!regGuard('png', 'view3d')) return;
   if (!view3d || typeof canvas3d.toBlob !== 'function') { $('hint').textContent = t('need3d'); return; }
-  render3d(); exportFile('leather-3d.png', new Promise((res, rej) => canvas3d.toBlob(b => b ? res(b) : rej(new Error('png')), 'image/png')), 'image/png', saved => { $('hint').textContent = t('exported', { name: 'PNG (3D)' }) + savedTo(saved); });
+  render3d(); exportFile('leather-3d.png', new Promise(res => canvas3d.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('exported', { name: 'PNG (3D)' }) + savedTo(saved); });
 }
 function initColors() {
   loadPins(); renderColors();
