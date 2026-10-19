@@ -14,7 +14,8 @@ const AD_MIN_EDGE = 3;   /* 辺の寸法は、これより短い辺には入れ�
 const AD_TINY = 3;       /* 外接の枠がこれ以下の小さなかたまり（小さな穴など）には、全体の幅・高さを入れない（mm） */
 const AD_JOIN = 0.5;     /* 端どうしがこの距離以内なら「つながっている」とみなす（取り込んだ図面の小さな隙間を越える・mm） */
 const AD_MIRROR = 0.1;   /* 対称（鏡写し）とみなす位置の差（mm） */
-const AD_PITCH_TOL = 0.05; /* 菱目の間隔が工具のピッチと「同じ」とみなす差（mm） */
+const AD_PITCH_TOL = 0.05; /* 菱目の間隔（範囲の平均）が工具のピッチと「同じ」とみなす差（mm） */
+const AD_PITCH_GROUP = 0.15; /* 隣り合う菱目の間隔がこの差以内なら「同じ間隔の範囲」として1つにまとめる（取り込んだ図面の小さなばらつきを吸収・mm） */
 const AD_TYPES = ['line', 'polyline', 'path', 'arc', 'bezier', 'circle'];
 const adRound = v => Math.round(v * 100) / 100;
 const adFinite = p => p && Number.isFinite(p.x) && Number.isFinite(p.y);
@@ -125,16 +126,17 @@ function adInwardOffset(p, q, pc, gap) {
   const len = distance(p, q) || 1, n = { x: (q.y - p.y) / len, y: -(q.x - p.x) / len }, mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 }, c = { x: (pc.box.minX + pc.box.maxX) / 2, y: (pc.box.minY + pc.box.maxY) / 2 };
   return n.x * (mid.x - c.x) + n.y * (mid.y - c.y) >= 0 ? -gap : gap;
 }
-/** 菱目の列（pts：並び順の中心。pitch＝その点の工具のピッチ）から、工具のピッチと違う区間ごとに代表1本（区間の最初の2点）を入れる。 */
-function adPitchDims(runs, add, gap) {
+/** 菱目の列（pts：並び順の中心。pitch＝その点の工具のピッチ）を「同じ間隔の範囲」に分け、工具のピッチと違う範囲ごとに、範囲の最初から最後までの寸法線1本（文字は labelOf(平均の間隔, 間隔の数)＝「菱目 ○○mm ×n」）を入れる（事業主の希望 2026-10-19「同じ菱目間隔の範囲を特定し、まとめて菱目〇〇mmという表記に」）。 */
+function adPitchDims(runs, add, gap, labelOf) {
   for (const r of runs) {
-    const pts = r.pts, off = (p, q) => adInwardOffset(p, q, r.pc, gap);   /* 型紙の中では内側へ（辺の寸法と重ならない） */
+    const pts = r.pts, off = (p, q) => adInwardOffset(p, q, r.pc, gap); if (pts.length < 2) continue;   /* 型紙の中では内側へ（辺の寸法と重ならない） */
+    const gaps = []; for (let k = 0; k + 1 < pts.length; k++) gaps.push(distance(pts[k], pts[k + 1]));
     let i = 0;
-    while (i + 1 < pts.length) {
-      const d = distance(pts[i], pts[i + 1]), ref = pts[i].pitch ?? pts[i + 1].pitch;
-      if (!(ref > 0) || Math.abs(d - ref) <= AD_PITCH_TOL) { i++; continue; }
-      let j = i + 1; while (j + 1 < pts.length && Math.abs(distance(pts[j], pts[j + 1]) - d) <= AD_PITCH_TOL) j++;   /* 同じ間隔が続く所は1つの区間 */
-      add(pts[i], pts[i + 1], off(pts[i], pts[i + 1]), 'hole'); i = j;
+    while (i < gaps.length) {
+      let j = i, sum = gaps[i]; while (j + 1 < gaps.length && Math.abs(gaps[j + 1] - sum / (j - i + 1)) <= AD_PITCH_GROUP) { j++; sum += gaps[j]; }   /* 同じ間隔（平均との差 0.15mm 以内）が続く所を1つの範囲に */
+      const cnt = j - i + 1, avg = sum / cnt, ref = pts[i].pitch ?? pts[i + 1].pitch;
+      if (ref > 0 && Math.abs(avg - ref) > AD_PITCH_TOL + 1e-9) add(pts[i], pts[j + 1], off(pts[i], pts[j + 1]), 'hole', { label: labelOf(avg, cnt) });   /* 範囲の最初から最後までの線に「菱目 ○○mm ×n」 */
+      i = j + 1;
     }
   }
 }
@@ -142,10 +144,11 @@ function adPitchDims(runs, add, gap) {
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。toolPitch：菱の線（工具を持たない菱目）に使う、指定した工具のピッチ（mm・無ければ菱の線の間隔は見ない）。 */
-export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8, toolPitch = null } = {}) {
-  const existing = (doc.shapes || []).filter(s => s.type === 'dimension'), out = [];
+export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8, toolPitch = null, pitchLabel = null } = {}) {
+  const visLayer = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id)), existing = (doc.shapes || []).filter(s => s.type === 'dimension' && (!doc.layers || visLayer.has(s.layer))), out = [];   /* 「もうある寸法」は見えている層のものだけ（隠した層の手描きの寸法で全体を止めない） */
+  const labelOf = typeof pitchLabel === 'function' ? pitchLabel : (p, n) => `${p.toFixed(2)}mm ×${n}`;
   const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
-  const add = (p, q, offset, kind) => { if (!adFinite(p) || !adFinite(q) || !(distance(p, q) >= (kind === 'edge' ? AD_MIN_EDGE : AD_MIN)) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind }); };
+  const add = (p, q, offset, kind, extra = null) => { if (!adFinite(p) || !adFinite(q) || !(distance(p, q) >= (kind === 'edge' ? AD_MIN_EDGE : AD_MIN)) || has(p, q)) return; out.push({ type: 'dimension', x1: adRound(p.x), y1: adRound(p.y), x2: adRound(q.x), y2: adRound(q.y), offset: adRound(offset), autoDim: kind, ...(extra || {}) }); };
   const geo = (cand || []).filter(s => s && AD_TYPES.includes(s.type) && !adIsDiamond(s));   /* 菱目（菱の線）は対象外 */
   const pieces = adPieces(geo), pieceOf = new Map(); for (const pc of pieces) for (const id of pc.ids) pieceOf.set(id, pc);
   const sizeExists = (p, q, box) => { const len = distance(p, q), horiz = Math.abs(p.y - q.y) <= AD_EQ, inb = (x, y) => x >= box.minX - 1 && x <= box.maxX + 1 && y >= box.minY - 1 && y <= box.maxY + 1; return existing.some(d => Math.abs(distance({ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }) - len) <= 0.02 && (horiz ? Math.abs(d.y1 - d.y2) <= 0.05 : Math.abs(d.x1 - d.x2) <= 0.05) && inb(d.x1, d.y1) && inb(d.x2, d.y2)); };   /* 手で引いた全体の寸法（同じ長さの水平／垂直の寸法が型紙の枠の中にある）があれば、同じ向きの全体は入れない（事業主が手で 283.54・125.00 を入れている図面で二重にしない） */
@@ -171,7 +174,7 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
       const pieceAt = p => pieces.filter(c => c.piece && p.x >= c.box.minX - AD_JOIN && p.x <= c.box.maxX + AD_JOIN && p.y >= c.box.minY - AD_JOIN && p.y <= c.box.maxY + AD_JOIN).sort((a, b) => a.w * a.h - b.w * b.h)[0] || null;
       for (const chain of adDiamondChains(centers, toolPitch * 1.6)) runs.push({ pts: chain.map(c => ({ ...c, pitch: toolPitch })), pc: pieceAt(chain[Math.floor(chain.length / 2)]) });
     }
-    adPitchDims(runs, add, gap);
+    adPitchDims(runs, add, gap, labelOf);
   }
   const result = adDedupeMirror(out, pieces);   /* 上下・左右で対称な辺・円・穴の間隔は片側だけ */
   const big = [...pieces].filter(c => !c.circle).sort((a, b) => b.w * b.h - a.w * a.h)[0] || null;

@@ -4267,7 +4267,7 @@ function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.
 function runAutoDims() {
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const tool = doc.tools.find(x => x.id === $('stitchTool')?.value) || doc.tools[0], toolPitch = tool && tool.pitch > 0 ? tool.pitch : null;   /* 菱の線の間隔は、目打ちカードで選んでいる工具のピッチと比べる */
-  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap, toolPitch });
+  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) });
   const noPiece = $('adSize').checked && !autoDimCounts(plan).size && plan.info?.biggest ? ' ' + t('adNoPiece', { n: plan.info.clusters, w: plan.info.biggest.w, h: plan.info.biggest.h, why: t('adWhy_' + (plan.info.biggest.why || 'exists')) }) : '';   /* 全体の幅・高さが1本も入らなかったとき：いちばん大きいかたまりの大きさと理由（不具合の切り分け用） */
   if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : $('adSelOnly')?.checked ? 'adSelNone' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
   const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
@@ -5161,7 +5161,7 @@ const SHAPE_DRAW_COLOR = { blue: '#4da6ff', green: '#4ecb6b', red: '#ff5a5a', wh
 /** 寸法の数字の置き場所（画面での中心 x,y・向き・文字の大きさ px・文字）。描くときとクリックの判定で同じ式を使う。数字は寸法線から離れて描かれるので、判定にも数字の枠を含める（事業主指摘 2026-10-16）。 */
 function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset)) {
   const px = Math.max(2.5, 12 / scale), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale;
-  return { x: (d.a.x + d.b.x) / 2 + nx / nl * gap, y: (d.a.y + d.b.y) / 2 + ny / nl * gap, angleDeg: d.angleDeg, px, label: d.value.toFixed(2) };
+  return { x: (d.a.x + d.b.x) / 2 + nx / nl * gap, y: (d.a.y + d.b.y) / 2 + ny / nl * gap, angleDeg: d.angleDeg, px, label: typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2) };   /* label があれば数字の代わりにその文字（菱目の間隔「菱目 ○○mm ×n」） */
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
 function distTo(s, p) {
