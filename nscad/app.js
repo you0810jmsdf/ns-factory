@@ -2025,8 +2025,7 @@ function initDesign() {
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
   $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」の小窓の末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
-  const setFlowWin = on => { $('foldFlowDialog').open = on; $('foldFlowInfo').classList?.toggle('on', on); $('foldFlowInfo').setAttribute?.('aria-expanded', String(on)); };   /* 三つ折りタブ末尾のⓘ：手順（①〜⑤とボタン）の小窓を開け閉めする。モーダルにしないので、開いたまま図面を触れる（事業主指示 2026-10-20「手順カードを一覧から外し…小窓で開く」） */
-  $('foldFlowInfo').onclick = () => setFlowWin(!$('foldFlowDialog').open); $('foldFlowClose').onclick = () => setFlowWin(false);
+  $('foldFlowClose').onclick = () => setFlowWin(false);   /* 手順の小窓の✕（開くのは右クリックメニューの三つ折りの分類の末尾のⓘ・fillCtxCards） */
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
@@ -5774,13 +5773,12 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'foldFlowInfoRow', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
   if (!SIDE_TABS.includes(name)) name = 'shape'; sideTab = name;
   for (const c of document.querySelectorAll('#side details.card') || []) c.classList?.toggle('tab-off', sideGroupOf(c) !== name);
-  for (const c of document.querySelectorAll('#side .side-info') || []) c.classList?.toggle('tab-off', sideGroupOf(c) !== name);   /* ⓘの行（三つ折りの手順の小窓を開く）も、分類のタブに合わせる */
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.setAttribute?.('aria-selected', String(b.dataset?.sideTab === name));
   if (save) try { localStorage.setItem(SIDE_TAB_KEY, name); } catch { /* 保存できなくても続ける */ }
 }
@@ -5792,11 +5790,13 @@ function initSideTabs() {
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
+function setFlowWin(on) { $('foldFlowDialog').open = on; }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
 function fillCtxCards() {
   const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
-  for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; } const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
-  $('ctxCardsTitle').hidden = !cards.length; return cards.length;
+  const addFlowInfo = () => { if (lastGroup !== 'fold') return; const i = document.createElement('button'); i.type = 'button'; i.className = 'ctx-info'; i.textContent = 'ⓘ'; i.title = t('foldFlowInfoTip'); i.setAttribute?.('aria-label', t('foldFlowInfoTip')); i.onclick = () => { hideCtxMenu(); setFlowWin(true); }; box.appendChild(i); };   /* 三つ折りの分類の末尾：手順の小窓を開くⓘ（事業主指示 2026-10-20「手順は〇iでマークだけ」「末尾にℹ」・右メニュー＝右クリックメニュー） */
+  for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { addFlowInfo(); const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; } const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+  addFlowInfo(); $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
   const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1;
