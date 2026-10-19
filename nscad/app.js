@@ -5843,6 +5843,28 @@ async function save(asNew = false) {
   if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; }
   clean(); $('hint').textContent = t(overwrote ? 'savedOverwrite' : 'savedNew', { name: handle.name || fileName });
 }
+/** 選んだ図形だけの図面を作る（事業主の希望 2026-10-19「選択した図形だけを保存したい」）：選んだ図形＋その図形で完結する経路と縫い穴＋部品（選んだ図形の分だけ）＋縫い合わせ（両側の経路が残るもの）＋領域の塗り（囲む図形が全部選ばれているもの）＋層・工具・単位などの設定。座標は動かさない。
+ *  何も選んでいなければ null。検査（validateDoc）に通らなければ null。 */
+function selectedDoc() {
+  const ids = selectedShapeIds(); if (!ids.size) return null;
+  const sel = extractSelection(doc, ids, { originAtBbox: false }), pathIds = new Set(sel.paths.map(p => p.id)), copy = v => JSON.parse(JSON.stringify(v));
+  const out = { ...newDoc(), unit: doc.unit, mark: doc.mark, dotD: doc.dotD, ...(doc.textureMm !== undefined && doc.textureMm !== null ? { textureMm: doc.textureMm } : {}), layers: copy(doc.layers), tools: copy(doc.tools), shapes: sel.shapes, holes: sel.holes, paths: sel.paths, parts: sel.parts.filter(p => p.shapeIds.length), seams: copy((doc.seams || []).filter(m => pathIds.has(m?.a?.pathId) && pathIds.has(m?.b?.pathId))), fills: copy((doc.fills || []).filter(f => Array.isArray(f.ids) && f.ids.length && f.ids.every(id => ids.has(id)))) };
+  for (const s of out.shapes) if (s.type === 'dimension' && Array.isArray(s.anchors)) { s.anchors = s.anchors.map(a => a && ids.has(a.id) ? a : null); if (!s.anchors.some(Boolean)) delete s.anchors; }   /* 選んでいない図形への追従の覚えは外す */
+  healDoc(out); return validateDoc(out) ? out : null;
+}
+/** 「保存 ▾」→「選んだ図形だけを別名で保存」：常に名前を付けて保存（Ctrl+S の上書き先・いまの図面・保存済みの印は変えない）。 */
+async function saveSelectedAs() {
+  if (!selectedShapeIds().size) { $('hint').textContent = t('saveSelectedNone'); return; }
+  const d = selectedDoc(); if (!d) { $('hint').textContent = t('saveInvalid'); return; }
+  if (!regGuard('json', 'save')) return;
+  const text = JSON.stringify(d, null, 2), fileName = (tabs[activeTab]?.name ? tabs[activeTab].name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + t('saveSelectedSuffix') + '.json';
+  if (typeof globalThis.showSaveFilePicker !== 'function') { download(fileName, text, 'application/json', false); $('hint').textContent = t('savedSelected', { n: d.shapes.length, name: fileName }); return; }
+  try {
+    const handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });
+    const w = await handle.createWritable(); await w.write(text); await w.close();
+    $('hint').textContent = t('savedSelected', { n: d.shapes.length, name: handle.name || fileName });
+  } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); }
+}
 /** 「開く」：Chrome／Edge はファイル選択で開き、N's CAD 形式（.json）なら場所を覚える（Ctrl+S でそのファイルへ上書き）。それ以外の形式（.lcc・.svg・.dxf・画像）は覚えない（元のファイルを JSON で壊さない）。選択窓の無いブラウザは従来の入力欄。 */
 async function openDialog() {
   if (typeof globalThis.showOpenFilePicker !== 'function') { $('file').click(); return; }
@@ -5864,6 +5886,7 @@ try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory'
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
+$('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
 /** 保存メニューの外をクリックしたら閉じる。「保存 ▾」ボタンの中の文字（span・kbd）のクリックは、ボタンの中なので閉じない（事業主指摘 2026-10-18：文字をクリックすると、開いた直後に閉じて、メニューが見えなかった）。 */
 function closeSaveMenuOnOutsideClick(e) { const m = $('saveMenu'), sv = $('save'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && !sv.contains(e.target)) m.hidden = true; }
