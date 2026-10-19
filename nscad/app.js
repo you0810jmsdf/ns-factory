@@ -388,10 +388,11 @@ const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fi
 const isHardwareShape = s => s.layer === 'hardware' || !!s.hw || !!s.metal;
 const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
-const outSelOnly = () => !!$('outSelOnly')?.checked;   /* 出力カード「選んだ図形だけを出力（印刷・SVG・PDF・DXF）」（事業主の希望 2026-10-19「選択した図形のみ印刷したい」） */
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); if (outSelOnly()) { const ids = selectedShapeIds(); shapes = shapes.filter(s => ids.has(s.id)); } return shapes === doc.shapes ? doc : { ...doc, shapes }; };   /* 縫い穴は、残った図形に付いているものだけが docToSvg/docToPdf 側（holesOnShapes）で選ばれる */
-/** 出力の前の確認：「選んだ図形だけを出力」が入なのに何も選んでいなければ、案内して false（何も出さない）。 */
-function outputScopeOk() { if (!outSelOnly() || selectedShapeIds().size) return true; $('hint').textContent = t('outSelNone'); return false; }
+/** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
+const outputSelIds = () => selectedShapeIds();
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); return shapes === doc.shapes ? doc : { ...doc, shapes }; };   /* 縫い穴は、残った図形に付いているものだけが docToSvg/docToPdf 側（holesOnShapes）で選ばれる */
+/** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
+const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
 try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; } catch { /* 保存できない環境でも操作を続ける */ }
@@ -2030,19 +2031,17 @@ function exportIsEmpty(shapes, holes) { if (bboxOfDoc({ ...doc, shapes, holes })
 /** SVG・PDF が書き出す対象（docToSvg / docToPdf と同じ選び方：表示中のレイヤー・穴をつなぐ補助の線（holeLink）以外・穴は「穴を入れる」の設定どおり） */
 function exportTargets(includeHoles) { const layerShapes = outputDoc().shapes.filter(layerVisible), shapes = layerShapes.filter(s => !s.holeLink); return { shapes, holes: includeHoles ? holesOnShapes(doc, layerShapes) : [] }; }
 function exportSvg() {
-  if (!outputScopeOk()) return;
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
   const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
-  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
+  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote();
 }
 function exportPdf() {
-  if (!outputScopeOk()) return;
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
   const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
-  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
+  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote();
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
@@ -2125,12 +2124,11 @@ async function openFile(file) {
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
 }
 function exportDxf() {
-  if (!outputScopeOk()) return;
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(outputDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(outputDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
   if (!regGuard('dxf', 'dl')) return;
-  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
+  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote();
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
@@ -2146,7 +2144,7 @@ function drawPrintOverlay() {
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target, { dots = true } = {}) {
-  if (target === undefined) { if (!outputScopeOk()) return null; target = outputDoc(); }   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
+  const own = target === undefined; if (own) target = outputDoc();   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
   if (!regGuard('print', 'pages')) return null;
   const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
@@ -2157,9 +2155,9 @@ function printPages(target, { dots = true } = {}) {
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
-  $('hint').textContent = t('printHint', { n: layout.pages.length });
+  $('hint').textContent = t('printHint', { n: layout.pages.length }) + (own ? outScopeNote() : '');
   measuredCalibration = { fx: calib?.fx ?? 1, fy: calib?.fy ?? 1 };
-  if (typeof window.alert === 'function') window.alert(t('printHint', { n: layout.pages.length }));
+  if (typeof window.alert === 'function') window.alert(t('printHint', { n: layout.pages.length }) + (own ? outScopeNote() : ''));
   if (typeof window.print === 'function') window.print();
   return layout;
 }

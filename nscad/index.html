@@ -135,7 +135,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 10:15 · 5775844</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 10:34 · d16ba2b</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -557,7 +557,6 @@
 <details class="card" id="outputCard"><summary data-i18n="output"></summary><div class="body">
 <label><span data-i18n="paper"></span><select id="paper"><option value="a4">A4</option><option value="a4l" data-i18n="paperA4L"></option><option value="a3">A3</option><option value="a3l" data-i18n="paperA3L"></option></select></label>
 <label><input id="outHoles" type="checkbox" checked><span data-i18n="outHoles"></span></label>
-<label><input id="outSelOnly" type="checkbox"><span data-i18n="outSelOnly"></span></label>
 <label data-i18n-title="printDotsTip"><input id="printDots" type="checkbox"><span data-i18n="printDots"></span></label>
 <label data-i18n-title="printDotsTip"><span data-i18n="printDotD"></span><input id="printDotD" type="number" step="0.1" min="0.1" value="1"></label>
 <label><input id="dotAsPoint" type="checkbox"><span data-i18n="dotAsPoint"></span></label>
@@ -659,8 +658,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=55edf4fc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f058141b","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=d8b87d0c","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=74750809","./help/ja.js":"./help/ja.js?v=9510966e","./i18n.js":"./i18n.js?v=18297221","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=714d3483","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=55edf4fc"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=9b6fb910","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f058141b","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=d8b87d0c","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=8f9f9064","./help/ja.js":"./help/ja.js?v=aa68f1f2","./i18n.js":"./i18n.js?v=0c6cf26b","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=714d3483","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=9b6fb910"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3895,8 +3894,8 @@ const MESSAGES = {
     "output": "出力",
     "paper": "用紙",
     "outHoles": "縫い穴を含める",
-    "outSelOnly": "選んだ図形だけを出力（印刷・SVG・PDF・DXF）",
-    "outSelNone": "図形を選んでいません。「選んだ図形だけを出力」を切るか、図形を選んでから押してください。",
+    "outScopeSel": "（選んだ図形 {n} 個だけを出しました。全部を出すときは、何も選ばずに押してください）",
+    "outScopeAll": "（図面の全部を出しました。一部だけ出すときは、先に図形を選んでください）",
     "printDots": "縫い穴を点で印刷する（印刷・PDF）",
     "printDotD": "点の直径 (mm)",
     "printDotsTip": "印刷と PDF で、菱目（目打ちの穴と、図面の菱形の線）を、それぞれの真ん中の丸い点に置き換えます。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。SVG・DXF・PNG と、工具のテスト片の印刷は今までどおりです。",
@@ -5602,8 +5601,8 @@ const MESSAGES = {
     "output": "Output",
     "paper": "Paper",
     "outHoles": "Include stitching holes",
-    "outSelOnly": "Output selected shapes only (print, SVG, PDF, DXF)",
-    "outSelNone": "Nothing is selected. Untick \u201cOutput selected shapes only\u201d or select shapes first.",
+    "outScopeSel": "(only the {n} selected shape(s); to output everything, press with nothing selected)",
+    "outScopeAll": "(the whole drawing; to output a part, select shapes first)",
     "printDots": "Print stitching holes as dots (print and PDF)",
     "printDotD": "Dot diameter (mm)",
     "printDotsTip": "In print and PDF, each diamond hole (punched holes and diamond-shaped lines in the drawing) is replaced by a filled dot at its center. Set the size with “Dot diameter”. The screen and the saved data do not change. SVG, DXF, PNG and the tool test strip print as before.",
@@ -21415,7 +21414,7 @@ const HELP_JA = {
     {
       "id": "output",
       "title": "出力と印刷",
-      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。点は DXF の POINT にもできます。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n「縫い穴を点で印刷する」を入れると、印刷と PDF では菱目（目打ちの穴と、図面の菱形の線）が真ん中の丸い点になります。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。\n「選んだ図形だけを出力」を入れると、選んでいる図形（とその縫い穴）だけを印刷・SVG・PDF・DXF に出します（既定は切＝図面の全部。何も選んでいないと案内が出ます）。工具のテスト片と校正スケールの印刷は、このチェックに関係なく出ます。"
+      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。点は DXF の POINT にもできます。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n「縫い穴を点で印刷する」を入れると、印刷と PDF では菱目（目打ちの穴と、図面の菱形の線）が真ん中の丸い点になります。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。\n\n図形を選んでいれば、選んだ図形（とその縫い穴）だけを印刷・SVG・PDF・DXF に出します（選んでいなければ図面の全部）。出力のあとの案内に、どちらを出したかが出ます。何も選んでいないと案内が出ます）。工具のテスト片と校正スケールの印刷は、このチェックに関係なく出ます。"
     },
     {
       "id": "design",
@@ -21569,7 +21568,7 @@ const HELP_EN = {
     {
       "id": "output",
       "title": "Output and printing",
-      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nWith “Print stitching holes as dots” on, print and PDF replace each diamond hole (punched holes and diamond-shaped lines in the drawing) with a filled dot at its center; set the size with “Dot diameter”. The screen and the saved data do not change.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm.\nTick \"Output selected shapes only\" to print or export (SVG, PDF, DXF) just the selected shapes and their stitching holes (off = the whole drawing; with nothing selected you get a notice). The tool test strip and the calibration scale always print."
+      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nWith “Print stitching holes as dots” on, print and PDF replace each diamond hole (punched holes and diamond-shaped lines in the drawing) with a filled dot at its center; set the size with “Dot diameter”. The screen and the saved data do not change.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm.\n\nWhen shapes are selected, print and export (SVG, PDF, DXF) output only the selected shapes and their stitching holes (nothing selected = the whole drawing); the notice after output says which. The tool test strip and the calibration scale always print."
     },
     {
       "id": "design",
@@ -22071,10 +22070,11 @@ const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fi
 const isHardwareShape = s => s.layer === 'hardware' || !!s.hw || !!s.metal;
 const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
-const outSelOnly = () => !!$('outSelOnly')?.checked;   /* 出力カード「選んだ図形だけを出力（印刷・SVG・PDF・DXF）」（事業主の希望 2026-10-19「選択した図形のみ印刷したい」） */
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); if (outSelOnly()) { const ids = selectedShapeIds(); shapes = shapes.filter(s => ids.has(s.id)); } return shapes === doc.shapes ? doc : { ...doc, shapes }; };   /* 縫い穴は、残った図形に付いているものだけが docToSvg/docToPdf 側（holesOnShapes）で選ばれる */
-/** 出力の前の確認：「選んだ図形だけを出力」が入なのに何も選んでいなければ、案内して false（何も出さない）。 */
-function outputScopeOk() { if (!outSelOnly() || selectedShapeIds().size) return true; $('hint').textContent = t('outSelNone'); return false; }
+/** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
+const outputSelIds = () => selectedShapeIds();
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); return shapes === doc.shapes ? doc : { ...doc, shapes }; };   /* 縫い穴は、残った図形に付いているものだけが docToSvg/docToPdf 側（holesOnShapes）で選ばれる */
+/** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
+const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
 try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; } catch { /* 保存できない環境でも操作を続ける */ }
@@ -23713,19 +23713,17 @@ function exportIsEmpty(shapes, holes) { if (bboxOfDoc({ ...doc, shapes, holes })
 /** SVG・PDF が書き出す対象（docToSvg / docToPdf と同じ選び方：表示中のレイヤー・穴をつなぐ補助の線（holeLink）以外・穴は「穴を入れる」の設定どおり） */
 function exportTargets(includeHoles) { const layerShapes = outputDoc().shapes.filter(layerVisible), shapes = layerShapes.filter(s => !s.holeLink); return { shapes, holes: includeHoles ? holesOnShapes(doc, layerShapes) : [] }; }
 function exportSvg() {
-  if (!outputScopeOk()) return;
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
   const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
-  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' });
+  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote();
 }
 function exportPdf() {
-  if (!outputScopeOk()) return;
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
   const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
-  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText });
+  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote();
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
@@ -23808,12 +23806,11 @@ async function openFile(file) {
   } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; }
 }
 function exportDxf() {
-  if (!outputScopeOk()) return;
   const preset = $('exportPreset').value;
   const dxf = preset === 'leathercraft' ? leathercraftDxf(outputDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(outputDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
   if (!regGuard('dxf', 'dl')) return;
-  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' });
+  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote();
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
@@ -23829,7 +23826,7 @@ function drawPrintOverlay() {
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target, { dots = true } = {}) {
-  if (target === undefined) { if (!outputScopeOk()) return null; target = outputDoc(); }   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
+  const own = target === undefined; if (own) target = outputDoc();   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
   if (!regGuard('print', 'pages')) return null;
   const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
@@ -23840,9 +23837,9 @@ function printPages(target, { dots = true } = {}) {
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
-  $('hint').textContent = t('printHint', { n: layout.pages.length });
+  $('hint').textContent = t('printHint', { n: layout.pages.length }) + (own ? outScopeNote() : '');
   measuredCalibration = { fx: calib?.fx ?? 1, fy: calib?.fy ?? 1 };
-  if (typeof window.alert === 'function') window.alert(t('printHint', { n: layout.pages.length }));
+  if (typeof window.alert === 'function') window.alert(t('printHint', { n: layout.pages.length }) + (own ? outScopeNote() : ''));
   if (typeof window.print === 'function') window.print();
   return layout;
 }
