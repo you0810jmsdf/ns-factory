@@ -48,7 +48,7 @@
     {
       "id": "formats",
       "title": "File formats (import and export)",
-      "body": "Open or drag-and-drop: .json (this CAD's document), .svg (path, line, rect, circle, ellipse, polyline, polygon, text, transforms, mm/cm/in/px units), .dxf (LINE, CIRCLE, ARC, LWPOLYLINE/POLYLINE with bulge, SPLINE, TEXT/MTEXT, INSERT blocks, $INSUNITS). Imported shapes are added to the current drawing; broken elements are dropped and counted. SVG <g id> becomes a layer.\nExport: SVG (mm, per-layer groups, optional fill), DXF R12, PDF (A4/A3, tiling, calibration, ASCII text only), PNG (dpi, optional transparency, up to 50 M pixels), JSON."
+      "body": "Open or drag-and-drop: .json (this CAD's document), .svg (path, line, rect, circle, ellipse, polyline, polygon, text, transforms, mm/cm/in/px units), .dxf (LINE, CIRCLE, ARC, LWPOLYLINE/POLYLINE with bulge, SPLINE, TEXT/MTEXT, INSERT blocks, $INSUNITS). Imported shapes are added to the current drawing; broken elements are dropped and counted. SVG <g id> becomes a layer.\nExport: SVG (mm, per-layer groups, optional fill), DXF R12, PDF (A4/A3, tiling, calibration, ASCII text only), PNG (dpi, optional transparency, up to 50 M pixels), JSON.\n\"Save selected shapes as\" in the Save menu writes only the selected shapes (with their stitching holes, paths, parts and fills) to a new file with a name you choose. The current drawing and its Ctrl+S target stay as they are."
     },
     {
       "id": "interop",

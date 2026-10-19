@@ -49,7 +49,7 @@ export const HELP_JA = {
     {
       "id": "formats",
       "title": "ファイル形式（取り込み・書き出し）",
-      "body": "開く／ドラッグ＆ドロップ：.json（この CAD の文書）、.svg（path・line・rect・circle・ellipse・polyline・polygon・text、transform、mm/cm/in/px の単位）、.dxf（LINE・CIRCLE・ARC・LWPOLYLINE/POLYLINE の bulge・SPLINE・TEXT/MTEXT・INSERT のブロック展開・$INSUNITS）。取り込んだ図形は現在の図面に足し、壊れた要素は捨てて件数を知らせます。SVG の <g id> はレイヤーになります。\n書き出し：SVG（mm・レイヤー別・塗りあり／なし）、DXF R12、PDF（A4/A3・分割・印刷補正・文字は英数字のみ）、PNG（dpi 指定・透明背景可・5,000 万画素まで）、JSON。"
+      "body": "開く／ドラッグ＆ドロップ：.json（この CAD の文書）、.svg（path・line・rect・circle・ellipse・polyline・polygon・text、transform、mm/cm/in/px の単位）、.dxf（LINE・CIRCLE・ARC・LWPOLYLINE/POLYLINE の bulge・SPLINE・TEXT/MTEXT・INSERT のブロック展開・$INSUNITS）。取り込んだ図形は現在の図面に足し、壊れた要素は捨てて件数を知らせます。SVG の <g id> はレイヤーになります。\n書き出し：SVG（mm・レイヤー別・塗りあり／なし）、DXF R12、PDF（A4/A3・分割・印刷補正・文字は英数字のみ）、PNG（dpi 指定・透明背景可・5,000 万画素まで）、JSON。\n「保存 ▾」の「選んだ図形だけを別名で保存」は、選んでいる図形（とその縫い穴・経路・部品・塗り）だけを、別のファイルに名前を付けて保存します。いまの図面と Ctrl+S の上書き先は変わりません。"
     },
     {
       "id": "interop",
