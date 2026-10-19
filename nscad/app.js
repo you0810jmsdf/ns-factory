@@ -1616,6 +1616,33 @@ function relayRim() {
   line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
   rebuildSnaps(); draw();
 }
+/* ───────── 整える（事業主の指示 2026-10-19「並べ直し→曲げを伸ばす→断面図→展開を1回にまとめる整えるボタンを作る」）：①菱目を並べ直す ②リングが入らない曲げを伸ばす ③ボタンの穴を表と裏でそろえる（展開） ④表と裏から断面図を作る。
+   展開を断面図の前にするのは、展開で足した円も断面に入れるため。既存の4つの操作をそのまま順に呼ぶ。元に戻すは1回（途中の記録は1つにまとめる）・途中で失敗したら全部もとにもどす・リング外径が空なら②を飛ばす（円が無い・曲げが縦の点線から決まる、のときも②③を飛ばして続ける） ───────── */
+function tidyLaminate() {
+  const box = $('lamResult'), grab = () => [...(box.children || [])].map(c => ({ text: c.textContent || '', cls: c.className || '' })), ringRaw = String($('lamRingD').value ?? '').trim();
+  const defs = [
+    { key: 'lamTidyStep1', run: relayRim },
+    { key: 'lamTidyStep2', run: growBends, skipText: ringRaw === '' ? t('lamTidySkipNoRing') : null, okErrors: [t('lamGrowErr_notRim')] },
+    { key: 'lamTidyStep3', run: unfoldButtons, okErrors: [t('lamUnfoldErr_noButtons')] },
+    { key: 'lamTidyStep4', run: makeLamSection }];
+  const savedUndo = undo, savedRedo = redo, steps = []; let failed = null; undo = [];   /* 途中の元に戻す記録は、いったん別の置き場へ（最後に1つにまとめる） */
+  try {
+    for (const d of defs) {
+      if (d.skipText) { steps.push({ key: d.key, status: 'skip', rows: [{ text: d.skipText, cls: 'lam-warn' }] }); continue; }
+      const before = JSON.stringify(doc); d.run(); const rows = grab(), errs = rows.filter(r => r.cls.includes('lam-error'));
+      if (errs.length && !errs.every(r => (d.okErrors || []).includes(r.text))) { failed = { key: d.key, rows }; break; }
+      steps.push({ key: d.key, status: errs.length ? 'skip' : JSON.stringify(doc) !== before ? 'ok' : 'same', rows });
+    }
+  } finally {
+    const scratch = undo; undo = savedUndo;
+    if (failed) { if (scratch.length) { const tmp = [scratch[0]]; history(tmp, []); } redo = savedRedo; }   /* 失敗：最初の記録（＝整える前の図面）へ戻して、記録は増やさない */
+    else if (scratch.length) { undo.push(scratch[0]); if (undo.length > 100) undo.shift(); }   /* 成功：整える前の図面だけを1つ残す */
+  }
+  box.textContent = ''; const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, show = st => { line(t(st.key), 'lam-step'); st.rows.forEach(r => line(r.text, r.cls)); };
+  if (failed) { const m = t('lamTidyFail', { n: t(failed.key) }); line(m, 'lam-error'); show(failed); $('hint').textContent = m; return; }
+  const word = k => t(k === 'ok' ? 'lamTidyOk' : k === 'same' ? 'lamTidySame' : 'lamTidySkip'), done = t('lamTidyDone', { a: word(steps[0].status), b: word(steps[1].status), c: word(steps[2].status), d: word(steps[3].status) });
+  line(done); steps.forEach(show); $('hint').textContent = done; draw();
+}
 /* ───────── 曲げを伸ばす（事業主の選択 2026-10-19・A 伸ばすだけ）：リングが入らない曲げだけ、必要な長さ（菱目の間隔の倍数）まで表・裏とも伸ばす。入る曲げ・折りの角度は変えない ───────── */
 function growBends() {
   const box = $('lamResult'); box.textContent = '';
@@ -1878,7 +1905,7 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
