@@ -34,7 +34,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, lamApexPlan } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1607,15 +1607,18 @@ function relayRim() {
   const plan = lamRimRelayout(doc, po.id, pi.id, { pitch: lamPitchValue(), axis }); if (!plan.ok) { fail('lamRelayErr_' + plan.error); return; }
   const ids = new Set([...plan.moves.outer, ...plan.moves.inner].map(m => m.id)), locked = doc.shapes.filter(s => ids.has(s.id) && !editable(s)).length; if (locked) { fail('lamRelayErr_locked', { n: locked }); return; }
   const vec = d => plan.axis === 'x' ? { x: d, y: 0 } : { x: 0, y: d };
+  const apex = lamApexPlan(doc, po.id, pi.id, plan, { axis: plan.axis }), apexAll = apex.ok ? [...apex.outer.moves, ...apex.inner.moves] : [], apexOf = m => doc.shapes.find(q => q.id === m.id), apexMoves = apexAll.filter(m => apexOf(m) && editable(apexOf(m))), apexLocked = apexAll.filter(m => apexOf(m) && !editable(apexOf(m))).length;   /* 頂点の円：曲げが動くので、新しいまん中へ（ロックされた円は動かさない）（事業主の決定 2026-10-19） */
   commit(() => {
     const byId = new Map(doc.shapes.map(s => [s.id, s])), moved = new Map(), added = [];
     for (const m of [...plan.moves.outer, ...plan.moves.inner]) { const s = byId.get(m.id), v = vec(m.d); if (s && m.d !== 0) moved.set(m.id, translate(s, v.x, v.y)); }
+    for (const m of apexMoves) { const s = byId.get(m.id), v = vec(m.d); if (s) moved.set(m.id, translate(s, v.x, v.y)); }
     for (const [part, adds] of [[po, plan.adds.outer], [pi, plan.adds.inner]]) for (const a of adds) { const src = byId.get(a.from), v = vec(a.d); if (!src) continue; const { id: _old, ...rest } = translate(src, v.x, v.y), id = freshId([...doc.shapes, ...added], 's'); added.push({ ...rest, id }); part.shapeIds.push(id); }   /* 足す菱目は、列の最後の菱目の複製（元の位置から動かした量で置く）。部品にも入れる */
     doc.shapes = [...doc.shapes.map(s => moved.get(s.id) || s), ...added];
   });
   const f2 = v => (+v).toFixed(2), z = plan.zones, done = t('lamRelayDone', { p: String(+plan.pitch.toFixed(3)), rows: plan.rows, z: z.length, m: plan.extra }); line(done); $('hint').textContent = done;
   for (const q of z) line(t('lamRelayZone', { k: q.k, n: q.n, oOld: f2(q.outerOld), oNew: f2(q.outerNew), oGap: f2(q.outerGap), iOld: f2(q.innerOld), iNew: f2(q.innerNew), iGap: f2(q.innerGap) }));
   line(plan.stretchSkipped ? t('lamRelayNoStretch') : plan.stretch > 1e-9 ? t('lamRelayFlat', { g: (+plan.flatGap).toFixed(3), p: String(+plan.pitch.toFixed(3)), d: (plan.stretch / plan.pitch * 100).toFixed(1) }) : t('lamRelayFlatExact', { p: String(+plan.pitch.toFixed(3)) })); line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
+  if (apexMoves.length) line(t('lamRelayApex', { n: apexMoves.length })); if (apexLocked) line(t('lamRelayApexLocked', { n: apexLocked }), 'lam-warn');
   rebuildSnaps(); draw();
 }
 /* ───────── 整える（事業主の指示 2026-10-19「並べ直し→曲げを伸ばす→断面図→展開を1回にまとめる整えるボタンを作る」）：①菱目を並べ直す ②リングが入らない曲げを伸ばす ③ボタンの穴を表と裏でそろえる（展開） ④表と裏から断面図を作る。

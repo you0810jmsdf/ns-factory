@@ -141,6 +141,25 @@ export function lamRimBendZones(doc, outerId, innerId, { axis = 'x', tol = 0.1 }
   if (!idx.length) return { ok: false, error: 'noBend' };
   return { ok: true, outer: { zones: idx.map(([x, y]) => [a[x].a - eO, a[y + 1].a - eO]), pos: a.map(it => it.a - eO) }, inner: { zones: idx.map(([x, y]) => [b[x].a - eI, b[y + 1].a - eI]), pos: b.map(it => it.a - eI) } };
 }
+/** 頂点の円を、並べ直し後の曲げのまん中へ動かす計画（事業主の決定 2026-10-19「整える・並べ直しのとき、頂点の円も、まん中の点線に合わせて動かしてください」）。図面は変えない（計画だけ）。
+ *  曲げ部＝外周の菱目の列から（lamRimBendZones と同じ見方）。曲げごとに、旧い曲げの始め・終わりの菱目（A・B）と、並べ直しでの動き（relay.moves）から、新しいまん中を求める。
+ *  頂点の円＝部品の円のうち、中心が旧い曲げの中（A〜B）で、旧いまん中から曲げの長さの frac（既定 10%）以内にあるもの。ボタンの穴・取付穴など、頂点にない円は動かさない。動かす量＝新しいまん中−円の中心（曲げ向きの座標）。
+ *  opts：{ axis, tol（曲げ部を見つける間隔の誤差・既定 0.1）, frac }。relay＝lamRimRelayout の結果（無い・動きが無ければ円は動かない）。
+ *  返り値：{ ok:true, axis, outer／inner:{ zones:[{ k, oldMid, newMid }], moves:[{ id, d, k }]（動かす円） } }｜{ ok:false, error:'pickTwo'｜'noRim' }。 */
+export function lamApexPlan(doc, outerId, innerId, relay, { axis = 'x', tol = 0.1, frac = 0.1 } = {}) {
+  const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi) return { ok: false, error: 'pickTwo' };
+  const along = axis === 'y' ? 'y' : 'x', ro = rimRows(doc, po, along), ri = rimRows(doc, pi, along); if (!ro.length || !ri.length || ro[0].items.length !== ri[0].items.length) return { ok: false, error: 'noRim' };
+  const a = ro[0].items, b = ri[0].items, go = a.slice(1).map((it, k) => it.a - a[k].a), gi = b.slice(1).map((it, k) => it.a - b[k].a), idx = []; let st = -1;
+  go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { idx.push([st, off ? k : k - 1]); st = -1; } });   /* 間隔が違う範囲（曲げ部） */
+  if (!idx.length) return { ok: false, error: 'noRim' };
+  const mv = new Map([...(relay?.moves?.outer || []), ...(relay?.moves?.inner || [])].map(m => [m.id, m.d])), side = (part, items) => {
+    const circles = doc.shapes.filter(q => q.type === 'circle' && part.shapeIds.includes(q.id) && lamOwnShape(part, q)), zones = [], moves = [];
+    idx.forEach(([x, y], k) => { const A = items[x], B = items[y + 1], oldMid = (A.a + B.a) / 2, len = B.a - A.a, newMid = (A.a + (mv.get(A.id) || 0) + B.a + (mv.get(B.id) || 0)) / 2; zones.push({ k: k + 1, oldMid, newMid });
+      for (const c of circles) { const u = along === 'x' ? c.cx : c.cy; if (u >= A.a - 1e-9 && u <= B.a + 1e-9 && Math.abs(u - oldMid) <= frac * len + 1e-9 && Math.abs(newMid - u) > 1e-9) moves.push({ id: c.id, d: newMid - u, k: k + 1 }); } });
+    return { zones, moves };
+  };
+  return { ok: true, axis: along, outer: side(po, a), inner: side(pi, b) };
+}
 /** 部品の端から u の位置（曲がる向き）を、区間（平ら・丸折り）ごとに比例して、もう一方の部品の端からの位置に写す（事業主の選択 2026-10-19・案A）。from・to＝lamFoldSpec の結果（flats[3]・bends[2]）。範囲外は端に丸める。 */
 export function lamAlongMap(from, to, u) {
   const seg = sp => [sp.flats[0], sp.bends[0], sp.flats[1], sp.bends[1], sp.flats[2]], cum = a => a.reduce((r, v) => [...r, r.at(-1) + v], [0]), sf = seg(from), st = seg(to), cf = cum(sf), ct = cum(st);
