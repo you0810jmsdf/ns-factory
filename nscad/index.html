@@ -51,6 +51,11 @@
     #threeViewNotice { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 5px 12px; background: #3a2a10e6; border: 1px solid #e0a93f; border-radius: 6px; font-size: 12px; color: #ffd27f; pointer-events: none; white-space: nowrap; } #threeViewNotice[hidden] { display: none; }
     #side { overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid var(--line); background: #181818; }
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 1px 3px #0006; }
+    #sideTabs { display: flex; flex-wrap: wrap; gap: 4px; position: sticky; top: -10px; z-index: 3; margin: -10px -10px 0; padding: 8px 10px 6px; background: #181818; border-bottom: 1px solid var(--line); }   /* side-panel category tabs: stay on top while scrolling */
+    #sideTabs button { flex: 1 1 28%; padding: 6px 4px; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: #c8c8c8; cursor: pointer; white-space: nowrap; }
+    #sideTabs button[aria-selected="true"] { background: var(--accent); color: #181818; border-color: var(--accent); font-weight: 700; }
+    #side details.card.tab-off { display: none; }   /* hide cards of the tabs that are not selected */
+    #ctxCards .ctx-group { margin: 6px 0 2px; padding: 0 8px; font-size: 11px; color: #9a8a5a; letter-spacing: .04em; }
     .card > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-weight: 600; color: var(--accent); user-select: none; }
     .card > summary::-webkit-details-marker { display: none; }
     .card > summary::after { content: ""; margin-left: auto; width: 7px; height: 7px; border-right: 1.5px solid #777; border-bottom: 1.5px solid #777; transform: rotate(-45deg); transition: transform .15s; }
@@ -135,7 +140,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 17:40 · d41c21e</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 18:02 · 13b3d8e</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -167,7 +172,8 @@
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-lib" data-i18n="ctxLib"></button><div id="ctxCardsTitle" class="ctx-title" data-i18n="ctxCardsTitle"></div><div id="ctxCards" class="ctx-cards"></div></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-side"><option value="cursor" data-i18n="ofCursor"></option><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option><option value="left" data-i18n="ofLeft"></option><option value="right" data-i18n="ofRight"></option><option value="up" data-i18n="ofUp"></option><option value="down" data-i18n="ofDown"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="detourFloat" class="floatbox" hidden><label><span data-i18n="dfClear"></span><input id="df-clear" type="number" min="0" step="0.5" value="3"></label><label><span data-i18n="dfRadius"></span><input id="df-radius" type="number" min="0" step="0.5" value="2"></label><button id="df-run" data-i18n="dfRun"></button><button id="df-close" data-i18n="ofClose" aria-label="close"></button><output id="df-out"></output></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="circleBar" class="floatbox" data-i18n-title="circleBarTip" hidden><label><span data-i18n="circleR"></span><input id="circleR" type="number" min="0" step="0.5"></label><label><span data-i18n="circleD"></span><input id="circleD" type="number" min="0" step="0.5"></label></div>
 <div id="dupBar" class="floatbox" hidden><span id="dupInfo"></span><button id="dupMerge" data-i18n="dupMerge" data-i18n-title="dupMergeTip"></button></div><div id="restoreBar" class="floatbox" hidden><span id="restoreInfo"></span><button id="restoreApply" data-i18n="restoreApply"></button><button id="restoreDiscard" data-i18n="restoreDiscard"></button></div><div id="modHelp" hidden></div><div id="tutCursor" hidden></div><canvas id="canvas" tabindex="0" data-i18n-aria="canvas"></canvas><canvas id="canvas3d" hidden></canvas><div id="threeViewNotice" hidden data-i18n="threeViewNotice"></div><output id="status"></output></div>
 <div id="side"><button id="sideToggle" class="side-toggle" data-i18n="sideToggleOpen" aria-expanded="false"></button>
-<details class="card" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
+<div id="sideTabs" role="tablist"><button type="button" role="tab" data-side-tab="shape" data-i18n="sideTab_shape" data-i18n-title="sideTabTip_shape"></button><button type="button" role="tab" data-side-tab="stitch" data-i18n="sideTab_stitch" data-i18n-title="sideTabTip_stitch"></button><button type="button" role="tab" data-side-tab="color" data-i18n="sideTab_color" data-i18n-title="sideTabTip_color"></button><button type="button" role="tab" data-side-tab="fold" data-i18n="sideTab_fold" data-i18n-title="sideTabTip_fold"></button><button type="button" role="tab" data-side-tab="parts" data-i18n="sideTab_parts" data-i18n-title="sideTabTip_parts"></button><button type="button" role="tab" data-side-tab="out" data-i18n="sideTab_out" data-i18n-title="sideTabTip_out"></button></div>
+<details class="card" data-side="shape" id="infoCard" open><summary data-i18n="infoPanel"></summary><div class="body" id="infoBody">
 <label id="l-type"><span data-i18n="kind"></span><output id="info-type"></output></label>
 <label id="l-totalLength" hidden><span data-i18n="totalLength"></span><output id="info-totalLength"></output></label>
 <label id="l-holeCount" hidden><span data-i18n="holeCount"></span><output id="info-holeCount"></output></label>
@@ -201,7 +207,7 @@
 <label id="l-partOrder"><span data-i18n="partOrder"></span><input id="info-partOrder" type="number" step="1"></label>
 <label id="l-layer"><span data-i18n="layer"></span><select id="info-layer"></select></label>
 </div></details>
-<details class="card" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body"><div id="hwEditMain">
+<details class="card" data-side="shape" id="hwEditCard" open hidden><summary data-i18n="hwEditTitle"></summary><div class="body"><div id="hwEditMain">
 <label id="l-hwSpec"><span data-i18n="hwEditSpec"></span><select id="hwEditSpec"></select></label>
 <label id="l-hwRing"><span data-i18n="hwEditRing"></span><input id="hwEditRing" type="number" step="0.5" min="1"><small id="hwEditOuter"></small></label>
 <label><span data-i18n="hwEditAngle"></span><input id="hwEditAngle" type="number" step="1"></label>
@@ -211,7 +217,7 @@
 <div id="hwSectionRow" hidden><div class="row"><button id="hwSectionMake" data-i18n="hwSectionMake"></button><button id="hwSectionApply" data-i18n="hwSectionApply"></button><button id="hwSectionCopy" data-i18n="hwSectionCopy"></button></div><div class="hint" data-i18n="hwSectionNote"></div></div>
 <div class="hint" id="hwEditNote"></div>
 </div></details>
-<details class="card" id="moveCard" open hidden><summary data-i18n="moveTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="moveCard" open hidden><summary data-i18n="moveTitle"></summary><div class="body">
 <label><span data-i18n="moveDx"></span><input id="moveDx" type="number" step="0.1" placeholder="0"></label>
 <label><span data-i18n="moveDy"></span><input id="moveDy" type="number" step="0.1" placeholder="0"></label>
 <div class="row"><button id="moveApply" data-i18n="moveApply"></button></div>
@@ -219,7 +225,7 @@
 <div class="row"><button id="attachStart" data-i18n="attachBtn"></button></div>
 <label><input id="attachRotate" type="checkbox"><span data-i18n="attachRotate"></span></label>
 </div></details>
-<details class="card" id="scaleCard" open hidden><summary data-i18n="scaleTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="scaleCard" open hidden><summary data-i18n="scaleTitle"></summary><div class="body">
 <div class="hint" id="scaleSize"></div>
 <label><span data-i18n="scaleAnchor"></span><select id="scaleAnchor"><option value="center" data-i18n="scaleCenter"></option><option value="topLeft" data-i18n="scaleTL"></option><option value="topRight" data-i18n="scaleTR"></option><option value="bottomLeft" data-i18n="scaleBL"></option><option value="bottomRight" data-i18n="scaleBR"></option></select></label>
 <label><span data-i18n="scaleX"></span><input id="scaleX" type="number" step="1" min="1" value="100"></label>
@@ -230,11 +236,11 @@
 <div class="row"><button id="scaleApply" data-i18n="scaleApply"></button></div>
 <div class="hint" data-i18n="scaleNote"></div>
 </div></details>
-<details class="card" id="vertexCard" open hidden><summary data-i18n="vertexTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="vertexCard" open hidden><summary data-i18n="vertexTitle"></summary><div class="body">
 <div class="hint" data-i18n="vertexUnit"></div><div id="vertexRows"></div>
 <div class="hint" id="vertexNote" hidden></div>
 </div></details>
-<details class="card" id="arrayCard" open hidden><summary data-i18n="arrayTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="arrayCard" open hidden><summary data-i18n="arrayTitle"></summary><div class="body">
 <label><span data-i18n="arrayNx"></span><input id="arrayNx" type="number" min="1" max="200" step="1" value="2"></label>
 <label><span data-i18n="arrayNy"></span><input id="arrayNy" type="number" min="1" max="200" step="1" value="1"></label>
 <label><span data-i18n="arrayDx"></span><input id="arrayDx" type="number" step="any" value="10"></label>
@@ -242,13 +248,13 @@
 <div class="hint" data-i18n="arrayNote"></div>
 <div class="row"><button id="arrayApply" data-i18n="arrayApply"></button></div>
 </div></details>
-<details class="card" id="alignCard" open hidden><summary data-i18n="alignTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="alignCard" open hidden><summary data-i18n="alignTitle"></summary><div class="body">
 <div class="row"><button id="alignLeft" data-i18n="alignLeft"></button><button id="alignCenterX" data-i18n="alignCenterX"></button><button id="alignRight" data-i18n="alignRight"></button></div>
 <div class="row"><button id="alignTop" data-i18n="alignTop"></button><button id="alignCenterY" data-i18n="alignCenterY"></button><button id="alignBottom" data-i18n="alignBottom"></button></div>
 <div class="row"><button id="distributeX" data-i18n="distributeX" disabled></button><button id="distributeY" data-i18n="distributeY" disabled></button></div>
 <div class="hint" data-i18n="alignNote"></div>
 </div></details>
-<details class="card" id="layerCard"><summary data-i18n="layers"></summary><div class="body">
+<details class="card" data-side="shape" id="layerCard"><summary data-i18n="layers"></summary><div class="body">
 <label><span data-i18n="activeLayer"></span><select id="layerList"></select></label>
 <label><span data-i18n="layerName"></span><input id="layerName" type="text" maxlength="40"></label>
 <div class="row"><label><input id="layerVisible" type="checkbox" checked><span data-i18n="visible"></span></label><label><input id="layerLocked" type="checkbox"><span data-i18n="locked"></span></label></div>
@@ -260,7 +266,7 @@
 <div class="row"><button id="addLayer" data-i18n="addLayer"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
 <div class="row"><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
 </div></details>
-<details class="card" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
+<details class="card" data-side="stitch" id="stitchCard"><summary data-i18n="stitchSettings"></summary><div class="body" id="stitchPanel">
 <label id="l-markDiv" data-i18n-title="markDivTip" hidden><span data-i18n="markDiv"></span><input id="markDiv" type="number" step="1" min="1" max="100" value="1"></label><label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
 <label><span data-i18n="stitchTool"></span><select id="stitchTool"></select></label>
 <label class="slantSwitch" data-i18n-title="slantTip"><input id="reverseSlant" type="checkbox"><span class="s-fwd" data-i18n="slantFwd"></span><span class="s-rev" data-i18n="slantRev"></span></label>
@@ -305,7 +311,7 @@
 <div class="row"><button id="toolReassign" data-i18n="toolReassign"></button><button id="toolReassignSel" data-i18n="toolReassignSel"></button></div></details>
 </details>
 </div></details>
-<details class="card" id="presetCard"><summary data-i18n="presetCard"></summary><div class="body">
+<details class="card" data-side="stitch" id="presetCard"><summary data-i18n="presetCard"></summary><div class="body">
 <p class="note" data-i18n="presetNote"></p>
 <label><span data-i18n="presetList"></span><select id="presetList"></select></label>
 <div class="row"><button id="presetLoad" data-i18n="presetLoad"></button><button id="presetDelete" data-i18n="presetDelete"></button></div>
@@ -313,7 +319,7 @@
 <div class="row"><button id="presetSave" data-i18n="presetSave"></button></div>
 <div class="row"><button id="presetExport" data-i18n="presetExport"></button><button id="presetImport" data-i18n="presetImport"></button><input id="presetFile" type="file" accept=".json,application/json" hidden></div>
 </div></details>
-<details class="card" id="colorCard"><summary data-i18n="colors"></summary><div class="body">
+<details class="card" data-side="color" id="colorCard"><summary data-i18n="colors"></summary><div class="body">
 <p class="note" data-i18n="colorHow"></p>
 <div id="leatherGrid" class="swatches"></div>
 <label><span data-i18n="leatherHex"></span><input id="leatherHex" type="text" maxlength="7" placeholder="#RRGGBB"></label>
@@ -343,7 +349,7 @@
 </details>
 <div class="row"><button id="exportSvgFill" data-i18n="exportSvgFill"></button><button id="exportPng3d" data-i18n="exportPng3d"></button></div>
 </div></details>
-<details class="card" id="card3d"><summary data-i18n="sim3d"></summary><div class="body">
+<details class="card" data-side="fold" id="card3d"><summary data-i18n="sim3d"></summary><div class="body">
 <label><span data-i18n="foldT"></span><input id="foldT" type="range" min="0" max="100" step="1" value="0"></label>
 <div class="row"><button id="play" data-i18n="play"></button><button id="resetCam" data-i18n="resetCam"></button></div>
 <label><input id="ghost3d" type="checkbox"><span data-i18n="ghost3d"></span></label><label><span data-i18n="viewMode"></span><select id="viewMode"><option value="free" data-i18n="viewFree"></option><option value="quad" data-i18n="viewQuad"></option></select></label>
@@ -352,7 +358,7 @@
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
 </div></details>
-<details class="card" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
+<details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
 <g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
 <g class="dim" data-k="dr"><line class="ext" x1="352" y1="82" x2="352" y2="176"/><line x1="190" y1="152" x2="352" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="271" y="148">②</text></g>
 <g class="dim" data-k="w"><line x1="30" y1="172" x2="352" y2="172" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="191" y="168">③</text></g>
@@ -365,8 +371,8 @@
 <g class="dim" data-k="shift"><line x1="190" y1="-2" x2="170" y2="-2" marker-end="url(#fdArr)"/><line x1="190" y1="-2" x2="210" y2="-2" marker-end="url(#fdArr)"/><text x="228" y="2">⑩</text></g>
 <g class="dim" data-k="ring"><path d="M349.1,59.5 A60,60 0 0 1 349.1,96.5" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><circle cx="352" cy="78" r="2.5"/><text x="376" y="82">⑪</text></g>
 <g class="dim" data-k="stack"><circle cx="318" cy="78" r="14"/><rect x="170" y="74" width="140" height="8"/><line x1="156" y1="74" x2="156" y2="82" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="144" y="82">⑫</text></g>
-</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
-<details class="card" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
+</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" data-side="fold" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
+<details class="card" data-side="out" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
 <div class="row"><button id="imgImport" data-i18n="imgImport"></button><button id="imgRemove" data-i18n="imgRemove"></button></div>
 <input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
 <label><span data-i18n="imgDpi"></span><input id="imgDpi" type="number" step="1" value="300"></label>
@@ -384,7 +390,7 @@
 <div class="row"><button id="tracePreview" data-i18n="tracePreview"></button><button id="traceApply" data-i18n="traceApply"></button><button id="traceClear" data-i18n="traceClear"></button></div>
 </details>
 </div></details>
-<details class="card" id="recipeCard"><summary data-i18n="recipe"></summary><div class="body">
+<details class="card" data-side="out" id="recipeCard"><summary data-i18n="recipe"></summary><div class="body">
 <label><span data-i18n="recipeKind"></span><select id="recipeKind"><option value="passcase" data-i18n="kind.passcase"></option><option value="cardcase" data-i18n="kind.cardcase"></option><option value="notebook" data-i18n="kind.notebook"></option><option value="coincase" data-i18n="kind.coincase"></option></select></label>
 <label id="l-recipeCards"><span data-i18n="recipeCards"></span><input id="recipeCards" type="number" step="1" min="1" value="2"></label>
 <label id="l-recipeRefill" hidden><span data-i18n="recipeRefill"></span><select id="recipeRefill"><option value="m5">Micro5</option><option value="mini6" selected>Mini6</option><option value="a6">A6</option><option value="bible">Bible</option><option value="a5">A5</option><option value="a5slim">A5 Slim</option></select></label>
@@ -398,14 +404,14 @@
 <div class="row"><button id="recipeGenerate" data-i18n="recipeGenerate"></button><button id="recipeCheck" data-i18n="recipeCheck"></button><button id="recipePrint" data-i18n="recipePrint"></button></div>
 <label><span data-i18n="checkList"></span><select id="checkList"></select></label>
 </div></details>
-<details class="card" id="voiceCard"><summary data-i18n="voice"></summary><div class="body">
+<details class="card" data-side="out" id="voiceCard"><summary data-i18n="voice"></summary><div class="body">
 <div class="row"><button id="voiceBtn" type="button" class="mic" data-i18n-title="voiceHold">🎤</button><progress id="voiceLevel" max="100" value="0"></progress><select id="voiceMode"><option value="hold" data-i18n="voiceHold"></option><option value="toggle" data-i18n="voiceToggle"></option></select></div>
 <div id="voiceHeard" class="muted"></div><div id="voiceOut" role="status"></div><div id="voiceCandidates" class="row" hidden></div>
 <div class="row"><input id="voiceText" type="text" data-i18n-placeholder="voicePlaceholder" autocomplete="off"><button id="voiceGo" type="button" data-i18n="voiceGo"></button></div>
 <label><input id="voiceSpeak" type="checkbox"><span data-i18n="voiceSpeak"></span></label>
 <p class="muted" data-i18n="voicePrivacy"></p>
 </div></details>
-<details class="card" id="aiCard"><summary data-i18n="ai"></summary><div class="body">
+<details class="card" data-side="out" id="aiCard"><summary data-i18n="ai"></summary><div class="body">
 <div id="aiLog" class="ailog"></div>
 <div class="row"><button id="aiPresetCheck" data-i18n="preset.check"></button><button id="aiPresetAllowance" data-i18n="preset.allowance"></button></div>
 <div class="row"><button id="aiPresetDraft" data-i18n="preset.draft"></button><button id="aiPresetHow" data-i18n="preset.how"></button></div>
@@ -427,7 +433,7 @@
 <button id="aiSaveSettings" data-i18n="aiSave"></button>
 </details>
 </div></details>
-<details class="card" id="calcCard"><summary data-i18n="calcCard"></summary><div class="body">
+<details class="card" data-side="out" id="calcCard"><summary data-i18n="calcCard"></summary><div class="body">
 <label><span data-i18n="calcExprLabel"></span><input id="calcExpr" type="text" autocomplete="off" maxlength="300" data-i18n-placeholder="calcPlaceholder"></label>
 <output id="calcResult" class="calcResult"></output>
 <label><span data-i18n="calcNoteLabel"></span><input id="calcNote" type="text" maxlength="100" autocomplete="off"></label>
@@ -435,7 +441,7 @@
 <p id="calcEmptyMsg" class="note" data-i18n="calcEmpty"></p>
 <ul id="calcList" class="calcList"></ul>
 </div></details>
-<details class="card" id="phraseCard"><summary data-i18n="phraseCard"></summary><div class="body">
+<details class="card" data-side="out" id="phraseCard"><summary data-i18n="phraseCard"></summary><div class="body">
 <label><span data-i18n="phraseSavedList"></span><select id="phraseSel"></select></label>
 <label><span data-i18n="phraseName"></span><input id="phraseName" type="text"></label>
 <textarea id="phraseText" rows="6" data-i18n-placeholder="phrasePlaceholder"></textarea>
@@ -443,7 +449,7 @@
 <div class="row"><button id="phraseSave" data-i18n="phraseSave"></button><button id="phraseDelete" data-i18n="phraseDelete"></button><button id="phrasePlace" data-i18n="phrasePlace"></button></div>
 <div class="row"><button id="phraseExport" data-i18n="phraseExport"></button><button id="phraseImport" data-i18n="phraseImport"></button><input id="phraseFile" type="file" accept=".json,application/json" hidden></div>
 <output class="note" data-i18n="phraseNote"></output></div></details>
-<details class="card" id="libCard"><summary data-i18n="library"></summary><div class="body">
+<details class="card" data-side="parts" id="libCard"><summary data-i18n="library"></summary><div class="body">
 <input id="libSearch" type="text" data-i18n-placeholder="libSearch" autocomplete="off">
 <label><span data-i18n="libItem"></span><select id="libItem"></select></label>
 <div id="libVars" class="body" style="padding:0"></div>
@@ -477,7 +483,7 @@
 <textarea id="pasteBox" rows="2" style="width:100%;background:#111;color:#ccc;border:1px solid #3a3a3c;border-radius:6px;font-size:11px"></textarea>
 </details>
 </div></details>
-<details class="card" id="binderCard"><summary data-i18n="binderCard"></summary><div class="body">
+<details class="card" data-side="parts" id="binderCard"><summary data-i18n="binderCard"></summary><div class="body">
 <label><span data-i18n="binderSpec"></span><select id="binderSpecSel"></select></label>
 <label><span data-i18n="ringD"></span><select id="ringD"></select></label>
 <label><span data-i18n="hwAngle"></span><input id="binderAngle" type="number" step="1" value="0"></label>
@@ -502,7 +508,7 @@
 <div class="row"><button id="spCalib" data-i18n="spCalib"></button><button id="spApply" data-i18n="spApply"></button></div>
 </details>
 </div></details>
-<details class="card" id="hwCard"><summary data-i18n="hardware"></summary><div class="body">
+<details class="card" data-side="parts" id="hwCard"><summary data-i18n="hardware"></summary><div class="body">
 <label><span data-i18n="hwCategory"></span><select id="hwCategory"></select></label>
 <label id="l-hwItem"><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
 <div id="hwParams" class="body" style="padding:0"></div>
@@ -510,7 +516,7 @@
 <label><span data-i18n="hwAngle"></span><input id="hwAngle" type="number" step="1" value="0"></label>
 <button id="hwPlace" data-i18n="hwPlace"></button>
 </div></details>
-<details class="card" id="designCard"><summary data-i18n="design"></summary><div class="body">
+<details class="card" data-side="fold" id="designCard"><summary data-i18n="design"></summary><div class="body">
 <label><span data-i18n="thickness"></span><input id="partThickness" type="number" step="0.1" min="0" value="1.5"></label>
 <button id="newPart" data-i18n="newPart"></button>
 <details class="sub" id="lamSubCard"><summary data-i18n="lamTitle"></summary>
@@ -554,7 +560,7 @@
 <button id="makeKomaLine" data-i18n="makeKomaLine"></button>
 </details>
 </div></details>
-<details class="card" id="outputCard"><summary data-i18n="output"></summary><div class="body">
+<details class="card" data-side="out" id="outputCard"><summary data-i18n="output"></summary><div class="body">
 <label><span data-i18n="paper"></span><select id="paper"><option value="a4">A4</option><option value="a4l" data-i18n="paperA4L"></option><option value="a3">A3</option><option value="a3l" data-i18n="paperA3L"></option></select></label>
 <label><input id="outHoles" type="checkbox" checked><span data-i18n="outHoles"></span></label>
 <label data-i18n-title="printDotsTip"><input id="printDots" type="checkbox"><span data-i18n="printDots"></span></label>
@@ -582,7 +588,7 @@
 <div class="row"><button id="restartCalib" data-i18n="restartCalib"></button><button id="verifyCalib" data-i18n="verifyCalib"></button></div>
 </details>
 </div></details>
-<details class="card" id="drawCard"><summary data-i18n="drawOptions"></summary><div class="body">
+<details class="card" data-side="shape" id="drawCard"><summary data-i18n="drawOptions"></summary><div class="body">
 <label><span data-i18n="sizeMm"></span><input id="textSize" type="number" step="0.5" value="5"></label>
 <label><span data-i18n="dimOffset"></span><input id="dimOffset" type="number" step="0.5" value="8"></label>
 <label><span data-i18n="offsetDist"></span><input id="offsetDist" type="number" min="0" step="0.5" value="2.5"></label>
@@ -596,7 +602,7 @@
 <label><span data-i18n="snapDist"></span><input id="snapDist" type="number" min="0" max="60" step="1" value="10"></label>
 <label><input id="showJunctions" type="checkbox" checked><span data-i18n="showJunctions"></span></label>
 </div></details>
-<details class="card" id="autoDimCard"><summary data-i18n="autoDimTitle"></summary><div class="body">
+<details class="card" data-side="shape" id="autoDimCard"><summary data-i18n="autoDimTitle"></summary><div class="body">
 <p class="note" data-i18n="adNote"></p>
 <label><input id="adSize" type="checkbox" checked><span data-i18n="adSize"></span></label>
 <label><input id="adEdges" type="checkbox"><span data-i18n="adEdges"></span></label>
@@ -608,7 +614,7 @@
 <output id="adInfo"></output>
 <p class="note" data-i18n="adAdjustNote"></p>
 </div></details>
-<details class="card" id="patchCard" data-lock="patchwork"><summary data-i18n="patchSection"></summary><div class="body">
+<details class="card" data-side="stitch" id="patchCard" data-lock="patchwork"><summary data-i18n="patchSection"></summary><div class="body">
 <label><span data-i18n="seamStyle"></span><select id="seamStyle"><option value="butt" data-i18n="styleButt"></option><option value="overlap" data-i18n="styleOverlap"></option><option value="felled" data-i18n="styleFelled"></option></select></label>
 <label><span data-i18n="patchPitch"></span><input id="patchPitch" type="number" step="0.1" value="4"></label>
 <label><span data-i18n="patchTol"></span><input id="patchTol" type="number" step="1" value="15"></label>
@@ -626,6 +632,11 @@
 <button id="makeGrid" data-i18n="makeGrid"></button>
 <label><span data-i18n="patchPattern"></span><select id="patchPattern"><option value="argyle" data-i18n="patchArgyle"></option><option value="ichimatsu" data-i18n="patchIchimatsu"></option></select></label>
 <label><span data-i18n="patchCell"></span><input id="patchCell" type="number" min="2" step="1" value="20"></label>
+<label><span data-i18n="patchShiftX"></span><input id="patchShiftX" type="number" step="0.5" value="0"></label>
+<label><span data-i18n="patchShiftY"></span><input id="patchShiftY" type="number" step="0.5" value="0"></label>
+<label><span data-i18n="patchShiftStep"></span><input id="patchShiftStep" type="number" min="0.1" step="0.1" value="0.5"></label>
+<div class="row"><button id="patchShiftL" data-i18n-title="patchShiftLTip" data-i18n-aria="patchShiftLTip">←</button><button id="patchShiftR" data-i18n-title="patchShiftRTip" data-i18n-aria="patchShiftRTip">→</button><button id="patchShiftU" data-i18n-title="patchShiftUTip" data-i18n-aria="patchShiftUTip">↑</button><button id="patchShiftD" data-i18n-title="patchShiftDTip" data-i18n-aria="patchShiftDTip">↓</button><button id="patchShiftReset" data-i18n="patchShiftReset"></button></div>
+<p class="note" data-i18n="patchShiftNote"></p>
 <label><span data-i18n="patchTexA"></span><select id="patchTexA"></select></label>
 <label><span data-i18n="patchTexB"></span><select id="patchTexB"></select></label>
 <label><span data-i18n="patchHole"></span><select id="patchHole"><option value="tool" data-i18n="patchHoleTool"></option><option value="diamond" data-i18n="diamond"></option><option value="round" data-i18n="round"></option></select></label>
@@ -660,8 +671,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=fbfac2bf","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=f058141b","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=bc77f17e","./help/ja.js":"./help/ja.js?v=d0fb19f3","./i18n.js":"./i18n.js?v=be3b1c62","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=fbfac2bf"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=386e87df","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=285dcc4d","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=8a586c8d","./help/ja.js":"./help/ja.js?v=ef5345d6","./i18n.js":"./i18n.js?v=5029b14c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=386e87df"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3989,6 +4000,15 @@ const MESSAGES = {
     "patchArgyle": "アーガイル",
     "patchIchimatsu": "市松",
     "patchCell": "1マスの大きさ (mm・アーガイルは菱形の幅)",
+    "patchShiftX": "柄の位置：左右 (mm・＋で右)",
+    "patchShiftY": "柄の位置：上下 (mm・＋で下)",
+    "patchShiftStep": "ボタン1回で動かす量 (mm)",
+    "patchShiftLTip": "柄を左へ、1回の量だけずらす",
+    "patchShiftRTip": "柄を右へ、1回の量だけずらす",
+    "patchShiftUTip": "柄を上へ、1回の量だけずらす",
+    "patchShiftDTip": "柄を下へ、1回の量だけずらす",
+    "patchShiftReset": "柄の位置を0に戻す",
+    "patchShiftNote": "柄ぜんたいを上下左右へ少しずつずらして、見た目のバランスを整えます。ずらしても、柄は図形のふち（輪郭）で切られたままです。柄を描いたあとに数字やボタンを変えると、その場で描きなおします。描いたあとにキーボードの矢印で動かすと図形からはみ出すので、柄の位置はここで直してください。",
     "patchTexA": "柄の質感A（1色目の革写真）",
     "patchTexB": "柄の質感B（2色目の革写真）",
     "patchFill": "囲まれた図形に柄を描く",
@@ -4028,6 +4048,18 @@ const MESSAGES = {
     "partName_default": "部品 {n}",
     "outFill": "閉図形を塗る（SVG）",
     "outMono": "白黒で出力（SVG）",
+    "sideTab_shape": "図形",
+    "sideTab_stitch": "目打ち",
+    "sideTab_color": "色",
+    "sideTab_fold": "三つ折り",
+    "sideTab_parts": "金具",
+    "sideTab_out": "出力ほか",
+    "sideTabTip_shape": "図形・寸法（情報・移動・拡大縮小・整列・レイヤー・作図オプション・寸法線の自動配置）",
+    "sideTabTip_stitch": "目打ち・柄（目打ち・穴編集・設定セット・パッチワーク）",
+    "sideTabTip_color": "色・質感（塗りの色：革・糸・金具）",
+    "sideTabTip_fold": "三つ折り・貼り合わせ（三つ折りの設計・断面図・設計（厚み）・3D）",
+    "sideTabTip_parts": "金具・部品（リングバインダー・その他の金具・部品ライブラリ）",
+    "sideTabTip_out": "出力・その他（出力・下絵・レシピ・音声・AI 相談・計算メモ・定型句）",
     "outAskWhere": "書き出すとき保存先を選ぶ（SVG・PDF・DXF・PNG）",
     "outAskWhereTip": "入れると、書き出しのたびに保存の窓が開き、保存する場所と名前を選べます（前回の場所を覚えています）。切にすると、ブラウザの「ダウンロード」の場所に保存します。ブラウザが対応していない（Safari・Firefox など）ときは、入れていても今までどおり「ダウンロード」になります。",
     "exportSavedTo": "（保存先：{name}）",
@@ -5716,6 +5748,15 @@ const MESSAGES = {
     "patchArgyle": "Argyle",
     "patchIchimatsu": "Ichimatsu (checker)",
     "patchCell": "Cell size (mm; Argyle = diamond width)",
+    "patchShiftX": "Pattern position: left-right (mm; + = right)",
+    "patchShiftY": "Pattern position: up-down (mm; + = down)",
+    "patchShiftStep": "Amount per button press (mm)",
+    "patchShiftLTip": "Move the pattern left by one step",
+    "patchShiftRTip": "Move the pattern right by one step",
+    "patchShiftUTip": "Move the pattern up by one step",
+    "patchShiftDTip": "Move the pattern down by one step",
+    "patchShiftReset": "Reset pattern position to 0",
+    "patchShiftNote": "Slide the whole pattern up, down, left or right a little at a time to balance how it looks. The pattern stays cut at the outline of the shape. After you draw a pattern, changing a number or pressing a button redraws it on the spot. Moving it afterwards with the keyboard arrows would push it past the shape, so adjust the position here instead.",
     "patchTexA": "Pattern texture A (1st color)",
     "patchTexB": "Pattern texture B (2nd color)",
     "patchFill": "Fill enclosed shape with pattern",
@@ -5755,6 +5796,18 @@ const MESSAGES = {
     "partName_default": "Part {n}",
     "outFill": "Fill closed shapes (SVG)",
     "outMono": "Black and white (SVG)",
+    "sideTab_shape": "Shapes",
+    "sideTab_stitch": "Stitching",
+    "sideTab_color": "Colors",
+    "sideTab_fold": "Folds",
+    "sideTab_parts": "Hardware",
+    "sideTab_out": "Output+",
+    "sideTabTip_shape": "Shapes and dimensions (info, move, scale, align, layers, drawing options, auto dimensions)",
+    "sideTabTip_stitch": "Stitching and patterns (stitching and hole editing, presets, patchwork)",
+    "sideTabTip_color": "Colors and textures (leather, thread and hardware colors)",
+    "sideTabTip_fold": "Triple folds and lamination (fold design, section, design (thickness), 3D)",
+    "sideTabTip_parts": "Hardware and parts (ring binder, other hardware, parts library)",
+    "sideTabTip_out": "Output and more (output, underlay, recipe, voice, AI, calc memo, phrases)",
     "outAskWhere": "Choose where to save on export (SVG, PDF, DXF, PNG)",
     "outAskWhereTip": "When on, a save window opens on every export so you can choose the folder and file name (it remembers the last place). When off, files go to the browser\u2019s Downloads folder. In browsers without support (Safari, Firefox), it falls back to Downloads even when on.",
     "exportSavedTo": "(saved to: {name})",
@@ -7159,24 +7212,29 @@ function komaStitchLine(edge, thicknessB, inward = 1) {
 /* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
 const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
 const TILE_EPS = 1e-6; /* マスの数を決めるときの浮動小数の誤差（マス数に対する比） */
-/** パッチワークの柄の登録表。tiles(bbox, cell) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。 */
+/** パッチワークの柄の登録表。tiles(bbox, cell, off) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。
+ *  off={x,y}（mm・＋は右・下）は柄の基準の中心を枠の中心からずらす量（既定 0＝上下左右対称）。period(cell) は柄（色まで含めて）がぴったり重なるずらし量 {x,y}。 */
 const PATCH_PATTERNS = {
   ichimatsu: {
     ja: '市松', en: 'Ichimatsu (checker)',
-    tiles(b, cell) {
+    period: cell => ({ x: 2 * cell, y: 2 * cell }),
+    tiles(b, cell, off = { x: 0, y: 0 }) {
       /* 図形の中心を基準に並べる＝端の半端なピースが左右・上下で同じ大きさになる（左上から並べると右と下にだけ半端が集まる）。
          幅がちょうど整数倍のとき浮動小数の誤差で列が1つ増える（＝全部が半端にずれる）のを TILE_EPS で防ぐ */
       const cols = Math.max(1, Math.ceil((b.maxX - b.minX) / cell - TILE_EPS)), rows = Math.max(1, Math.ceil((b.maxY - b.minY) / cell - TILE_EPS)), out = [];
-      const x0 = (b.minX + b.maxX) / 2 - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 - rows * cell / 2;
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (i + j) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
+      const x0 = (b.minX + b.maxX) / 2 + off.x - cols * cell / 2, y0 = (b.minY + b.maxY) / 2 + off.y - rows * cell / 2;
+      /* ずらしても枠が隙間なく覆われるよう、枠にかかるマスの番号だけを並べる（ずらし量 0 なら 0〜cols-1・0〜rows-1 と同じ）。色は基準のマスからの番号の偶奇＝ずらすとマスは色ごと動く */
+      const i0 = Math.floor((b.minX - x0) / cell + TILE_EPS), i1 = Math.ceil((b.maxX - x0) / cell - TILE_EPS), j0 = Math.floor((b.minY - y0) / cell + TILE_EPS), j1 = Math.ceil((b.maxY - y0) / cell - TILE_EPS);
+      for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) { const x = x0 + i * cell, y = y0 + j * cell; out.push({ parity: (((i + j) % 2) + 2) % 2, points: [{ x, y }, { x: x + cell, y }, { x: x + cell, y: y + cell }, { x, y: y + cell }] }); }
       return out;
     },
   },
   argyle: {
     ja: 'アーガイル', en: 'Argyle',
-    tiles(b, cell) {
-      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる */
-      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2, cy0 = (b.minY + b.maxY) / 2, kMax = Math.ceil((b.maxY - b.minY) / 2 / (h / 2)) + 1, iMax = Math.ceil((b.maxX - b.minX) / 2 / w) + 1, out = [];
+    period: cell => ({ x: cell, y: cell * 1.5 }),
+    tiles(b, cell, off = { x: 0, y: 0 }) {
+      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる（ずらし量があれば、その分だけ中心を動かす。並べる範囲もずらし量の分だけ広げる） */
+      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2 + off.x, cy0 = (b.minY + b.maxY) / 2 + off.y, kMax = Math.ceil(((b.maxY - b.minY) / 2 + Math.abs(off.y)) / (h / 2)) + 1, iMax = Math.ceil(((b.maxX - b.minX) / 2 + Math.abs(off.x)) / w) + 1, out = [];
       for (let k = -kMax; k <= kMax; k++) for (let i = -iMax; i <= iMax; i++) {
         const odd = ((k % 2) + 2) % 2, cx = cx0 + i * w + odd * w / 2, cy = cy0 + k * h / 2;
         if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
@@ -7231,11 +7289,17 @@ const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.le
 function regionAt(shapes, p, tol = 0.01) {
   return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
 }
-/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。 */
-function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+/** 柄のずらし量 {x,y}（mm・＋は右・下）を整える：数にならない値は 0。柄がぴったり重なる周期より大きい分は捨てる（結果は同じで、並べる範囲が広がりすぎない）。 */
+function patchShiftOf(pattern, cell, shift) {
+  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0, per = pattern.period(cell);
+  return { x: num(shift?.x) % per.x, y: num(shift?.y) % per.y };
+}
+/** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。
+ *  shift={x,y}（mm・＋は右・下）は柄ぜんたいを図形の中心からずらす量（既定 0）。ずらしても柄は図形の輪郭で切られたまま。 */
+function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000, shift = null } = {}) {
   const pattern = PATCH_PATTERNS[patternId]; if (!pattern || !(cell > 0) || !region) return null;
   const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), box = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
-  const tiles = pattern.tiles(box, cell); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
+  const tiles = pattern.tiles(box, cell, patchShiftOf(pattern, cell, shift)); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
   const pieces = []; let dropped = 0;
   for (const tile of tiles) {
     const clipped = clipPolygonByConvex(region.points, tile.points); if (!clipped.length) continue;
@@ -7795,7 +7859,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, patchInsetStitch, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -21510,7 +21574,7 @@ const HELP_JA = {
     {
       "id": "design",
       "title": "厚み・折り代・駒合わせ・パッチワーク",
-      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。【どちらの穴が残るか】どちらにも目打ちがなければ、ピッチから数を決めて A・B の両方に並べます。片方にだけ目打ちがあるときは、その目打ちはそのまま残し、もう片方に同じ数を長さの割合で並べます（クリックの順は問いません。向き合う線が逆向きに引かれていても、始点と終点が近い側どうしを対応させ、曲がり角の数が同じなら角ごとに対応させます）。両方に目打ちがあるときは、どちらも作り直します。1回目のクリックの後、画面の案内に「A の目打ち n 個を写します」などと出ます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。マスは図形の中心を基準に並べるので、端の半端なピースは上下・左右で同じ大きさになります（図形の幅や高さが1マスの整数倍なら半端は出ません）。「柄の質感A／B」で革写真を選んでおくと、2色のピースにそれぞれ貼られます（あとから変えると作りなおします）。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
+      "body": "部品：図形を選んで「選択を部品にする」。部品は厚み（mm）と重ね順を持ち、情報カードで変えられます。\n折り線：2点をクリック。折り角・内側の向き・中立係数 K は設計カード。折り線を選んで「折り代を足す」と、折り線をまたぐ閉じた図形を ΔL = θ×(r+K×t) だけ伸ばした図形を作ります（元は残す）。\n重ね補正：重ね順が最大の部品を外側として、内側の厚みの合計ぶん外へオフセットした図形を作ります（折りで包む＝θ×Σt、箱＝Σt）。\n駒合わせ：A（面に穴）と B（コバに穴）の縫い線を順にクリックすると穴数を揃えて配置します。A の縫い線は「A の縫い線を作る」で辺から B の厚み/2 内側に作れます。区間（角・曲線の継ぎ目）ごとにピッチを合わせ、差が許容を超えると警告します。対応する穴は薄い線で結びます。【どちらの穴が残るか】どちらにも目打ちがなければ、ピッチから数を決めて A・B の両方に並べます。片方にだけ目打ちがあるときは、その目打ちはそのまま残し、もう片方に同じ数を長さの割合で並べます（クリックの順は問いません。向き合う線が逆向きに引かれていても、始点と終点が近い側どうしを対応させ、曲がり角の数が同じなら角ごとに対応させます）。両方に目打ちがあるときは、どちらも作り直します。1回目のクリックの後、画面の案内に「A の目打ち n 個を写します」などと出ます。\nパッチワーク：縫い合わせ（隣り合う辺の組）は、「格子を作る」や「囲まれた図形に柄を描く」で自動的に作られます（手動で辺を組にするツールはありません）。「最適化」で共有辺の穴数を揃え、交点から空きを取り、ピッチを許容内に収めます。「寸法を提案」はピッチの整数倍で正方形に近い裁断寸法を 3 案出し、「格子を作る」は縫い合わせ付きのピース群を一度に作ります。\n柄（アーガイル・市松）：設計カードのパッチワークで柄と1マスの大きさ（mm）を選び、「囲まれた図形に柄を描く」を押してから、実線で閉じた図形（連結した線・閉じた折れ線・円）の内側をクリックします。図形がマスで切り分けられ、ピースが閉じた折れ線として描かれます。マスは図形の中心を基準に並べるので、端の半端なピースは上下・左右で同じ大きさになります（図形の幅や高さが1マスの整数倍なら半端は出ません）。バランスを見て柄を上下左右へずらしたいときは、「柄の位置：左右・上下 (mm)」（＋で右・下）に数字を入れるか、← → ↑ ↓ のボタンを押します（1回で動く量は「ボタン1回で動かす量」・初めは0.5mm）。柄ぜんたいが図形のふち（輪郭）で切られたままずれ、柄を描いたあとでもその場で描きなおします（取り消しは1回分のまま）。「柄の位置を0に戻す」で上下左右対称に戻ります。描いたあとにキーボードの矢印で動かすと、柄が図形からはみ出すので、柄の位置はここで直します。「柄の質感A／B」で革写真を選んでおくと、2色のピースにそれぞれ貼られます（あとから変えると作りなおします）。点線の図形は囲みに使いません。端の小さすぎる切れ端（マス面積の5%未満）は省きます。「縫い合わせと縫い穴も付ける」にチェックがあれば（既定）、クロスステッチ用に、各ピースの縁から「縫い線の縁からの距離」（既定2.5mm）内側へ縮めた縫い線（黄色の点線・目印レイヤー）を作り、その上に縫い穴を打ちます。穴は境界の上には置かず、境界をはさんで向かい合う穴を対にします（隣り合う縫い線どうしを縫い合わせとして登録し、「最適化」と同じ計算でピッチを合わせます）。「縁から2.5mm以内に菱目を置かない」にチェックがあれば（既定）、菱目の目打ちでは縁から2.5mm未満の距離を指定しても作りません。外すと解除でき、丸目など菱目以外の目打ちには適用しません。"
     },
     {
       "id": "formats",
@@ -21664,7 +21728,7 @@ const HELP_EN = {
     {
       "id": "design",
       "title": "Thickness, folds, box stitch, patchwork",
-      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Which holes stay: if neither line has stitching holes, holes are placed on both by pitch. If only one has them, they are kept and the same number is placed on the other in proportion to length (the order of clicks does not matter; if the facing lines were drawn in opposite directions, the ends that are closer are matched, and with the same number of corners the spans are matched corner by corner). If both have holes, both are redone. After the first click the hint says, for example, that the n holes of A will be copied. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Cells are laid out from the center of the shape, so partial pieces at the edges come out the same size on the left and right, and on the top and bottom (no partial pieces when the width and height are whole multiples of the cell). Choose \"Pattern texture A / B\" to tile a leather photo on each of the two colors (changing it later regenerates the pieces). Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
+      "body": "Parts: select shapes and press Make part from selection. A part has a thickness and a stack order, editable in the Info card.\nFold lines: click two points. Angle, inner side and the neutral factor K are in the Design card. Select a fold and press Add fold allowance to create a copy extended by dL = theta x (r + K x t).\nStack correction: the part with the highest order is the outer one; its closed shapes are offset outward by the sum of inner thicknesses (folded: theta x sum t, box: sum t).\nBox stitch: click stitch line A (holes through the face) then B (holes through the edge). Hole counts are matched per span (corners, curve joints) and a warning appears when the pitch differs beyond tolerance. Paired holes are connected by thin lines. Which holes stay: if neither line has stitching holes, holes are placed on both by pitch. If only one has them, they are kept and the same number is placed on the other in proportion to length (the order of clicks does not matter; if the facing lines were drawn in opposite directions, the ends that are closer are matched, and with the same number of corners the spans are matched corner by corner). If both have holes, both are redone. After the first click the hint says, for example, that the n holes of A will be copied. Make stitch line A offsets a selected edge inward by half of B's thickness.\nPatchwork: seams (pairs of neighboring edges) are created automatically by \"Make grid\" and \"Fill enclosed shape with pattern\" (there is no manual tool for pairing edges). Optimize equalizes hole counts on shared edges, keeps a gap at junctions and keeps pitches within tolerance. Suggest sizes lists three near-square cut sizes in pitch multiples; Make grid creates the pieces with seams.\nPatterns (Argyle, Ichimatsu): in the Patchwork section of the Design card, choose a pattern and cell size (mm), press \"Fill enclosed shape with pattern\", then click inside a shape closed by solid lines (connected lines, a closed polyline or a circle). The shape is cut by the cells and the pieces are drawn as closed polylines. Cells are laid out from the center of the shape, so partial pieces at the edges come out the same size on the left and right, and on the top and bottom (no partial pieces when the width and height are whole multiples of the cell). To slide the whole pattern up, down, left or right and balance how it looks, type a number in \"Pattern position: left-right / up-down (mm)\" (+ = right / down) or press the ← → ↑ ↓ buttons (each press moves by \"Amount per button press\", 0.5 mm at first). The pattern stays cut at the outline of the shape, and if it is already drawn it is redrawn on the spot (still one undo step). \"Reset pattern position to 0\" brings back the symmetric layout. Moving a drawn pattern with the keyboard arrows would push it past the shape, so adjust the position here instead. Choose \"Pattern texture A / B\" to tile a leather photo on each of the two colors (changing it later regenerates the pieces). Dashed shapes are not used as boundaries. Tiny scraps (under 5% of a cell) are skipped. If \"Also add seams and stitch holes\" is checked (default), for cross-stitching each piece gets a stitch line (yellow dashed, Marks layer) shrunk inward from its edge by the \"Stitch line distance from edge\" (default 2.5 mm), and the stitch holes go on it. Holes are never placed on the boundary; holes facing each other across the boundary are paired (neighboring stitch lines are registered as seams, and the pitch is matched with the same calculation as Optimize). If \"No diamond holes within 2.5 mm of an edge\" is checked (default), nothing is made when a distance under 2.5 mm is given for a diamond punch. Uncheck it to allow; it does not apply to round or other non-diamond punches."
     },
     {
       "id": "formats",
@@ -22929,7 +22993,7 @@ function initLayers() {
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
-  restoreAskWhere(); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
+  initSideTabs(); restoreAskWhere(); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
   $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
@@ -23051,7 +23115,7 @@ function applyHoleToolEdit(all = false) {
 function loadHoleToolToEditor() {
   const h = doc.holes.find(x => selected.has(x.id)); if (!h) return; const tool = doc.tools.find(x => x.id === h.toolId);
   if (!tool) { $('hint').textContent = t('holeToolMissing'); return; }
-  $('stitchTool').value = tool.id; fillTool(); const ed = $('toolEditorCard'); if (ed) { for (let p = ed; p; p = p.parentElement) if (p.tagName === 'DETAILS') p.open = true; ed.scrollIntoView?.({ block: 'nearest' }); }
+  $('stitchTool').value = tool.id; fillTool(); const ed = $('toolEditorCard'); if (ed) { for (let p = ed; p; p = p.parentElement) if (p.tagName === 'DETAILS') p.open = true; revealCard(ed); ed.scrollIntoView?.({ block: 'nearest' }); }
   $('hint').textContent = t('holeToolLoaded', { name: tool.name });
 }
 function refreshInfo() {
@@ -23658,6 +23722,14 @@ function patchHoleTool() {
   const same = doc.tools.filter(x => x.kind === kind), near = same.find(x => x.pitch === cur.pitch && x.teeth === cur.teeth) || same.find(x => x.pitch === cur.pitch) || same[0];
   return near || { ...cur, id: 'patch-' + kind, name: 'patch-' + kind, kind, holeW: kind === 'round' ? 1 : 2, holeH: kind === 'round' ? 1 : 0.8, angleDeg: kind === 'round' ? 0 : 45 };
 }
+/** 柄のずらし量 {x,y}（mm・＋は右・下）。欄が空・数でないときは 0（＝上下左右対称）。 */
+const patchShiftNow = () => ({ x: Number($('patchShiftX').value) || 0, y: Number($('patchShiftY').value) || 0 });
+/** 柄の位置のボタン（←→↑↓）：欄の値を「1回の量」（既定 0.5mm）だけ動かし、描いた柄があればその場で輪郭で切ったまま作りなおす。dx・dy は -1／0／1。 */
+function nudgePatch(dx, dy) {
+  const step = Math.abs(Number($('patchShiftStep').value)) || 0.5, cur = patchShiftNow(), fmt = v => String(+v.toFixed(4)); /* 小数の足し算の誤差（0.1+0.2）を残さない */
+  $('patchShiftX').value = fmt(cur.x + dx * step); $('patchShiftY').value = fmt(cur.y + dy * step); regenPatch();
+}
+function resetPatchShift() { $('patchShiftX').value = '0'; $('patchShiftY').value = '0'; regenPatch(); }
 let lastPatch = null; /* 直前の柄の塗りつぶし {p: クリックした点, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
 /** 柄の設定を変えたとき、直前の柄の塗りつぶしを取り消して同じ場所に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。 */
 function regenPatch() {
@@ -23673,7 +23745,7 @@ function patchFillAt(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
   if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value) });
+  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value), shift: patchShiftNow() });
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
@@ -23725,7 +23797,8 @@ function initDesign() {
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
-  for (const id of ['patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
+  for (const id of ['patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
@@ -24232,7 +24305,7 @@ function renderVoiceCandidates() {
 function execVoice(r) {
   const lang = voiceLang();
   if (r.ask) { voiceCandidates = r.ask; renderVoiceCandidates(); voiceSay(t('voiceWhich')); return; }
-  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; $('aiCard').open = true; voiceSay(($('aiUrl').value || '').trim() ? t('voiceToAi') : t('voiceAiUnset')); return; }
+  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; $('aiCard').open = true; revealCard($('aiCard')); voiceSay(($('aiUrl').value || '').trim() ? t('voiceToAi') : t('voiceAiUnset')); return; }
   if (r.confirm && !r.confirmed) { voicePending = r; voiceSay(t('voiceConfirm', { what: labelOf(r, lang) })); return; }
   voicePending = null; const a = r.args || {};
   const done = extra => voiceSay(t('voiceDid', { what: labelOf(r, lang) + (extra ? ' ' + extra : '') }));
@@ -24689,7 +24762,7 @@ function gotoCheck() {
 }
 function initRecipe() {
   $('recipeGenerate').onclick = generateRecipe; $('recipeCheck').onclick = runCheck; $('checkList').addEventListener('change', gotoCheck);
-  $('recipePrint').onclick = () => { $('outputCard').open = true; printPages(); };
+  $('recipePrint').onclick = () => { $('outputCard').open = true; revealCard($('outputCard')); printPages(); };
   $('recipeKind').addEventListener('change', () => { const nb = $('recipeKind').value === 'notebook'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || $('recipeKind').value === 'coincase'; });
 }
 
@@ -26423,6 +26496,7 @@ function syncToolCards() {
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
   const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
+  if (shown) revealCard(shown);   /* ツールに対応するカードの分類のタブへ切り替える（隠れたままだと見えない） */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
 function setMode(next) {
@@ -27471,10 +27545,31 @@ canvas.addEventListener('pointermove', e => {
 /** 右クリック：曲線（ペン・ベジェ）の経由点を、その場で足す／消す。点の上＝その点を削除、曲線の上＝そこに経由点を追加。描いている途中は何もしない。 */
 /** 右クリックのメニュー（選んだ図形を部品ライブラリに登録する）を、クリックした位置のそばに出す。 */
 /** 右メニュー（右の細長い列）の項目＝見えているカード。右クリックのメニューに並べて、長い列をスクロールせずに開けるようにする。 */
-const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary'));
+/* ───────── 右メニューの分類タブ（事業主の決定 2026-10-19「右メニューがわかりにくい。情報量が多いので」→ 分類タブ＋三つ折りは手順画面）。28 枚のカードを6つの分類（data-side）に分け、選んだ分類のカードだけを出す。ツールを選ぶ・右クリックで開くと、そのカードの分類へ自動で切り替える。 ───────── */
+const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
+let sideTab = 'shape';
+/** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
+const sideGroupOf = c => c?.dataset?.side || null;
+function showSideTab(name, { save = true } = {}) {
+  if (!SIDE_TABS.includes(name)) name = 'shape'; sideTab = name;
+  for (const c of document.querySelectorAll('#side details.card') || []) c.classList?.toggle('tab-off', sideGroupOf(c) !== name);
+  for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.setAttribute?.('aria-selected', String(b.dataset?.sideTab === name));
+  if (save) try { localStorage.setItem(SIDE_TAB_KEY, name); } catch { /* 保存できなくても続ける */ }
+}
+/** カード（または、その中の部品）を見せる：そのカードの分類のタブへ切り替える。分類の無い（古い・別の）カードは何もしない。 */
+function revealCard(el) { let c = el; while (c && !(c.tagName === 'DETAILS' && sideGroupOf(c))) c = c.parentElement; const g = sideGroupOf(c); if (g && g !== sideTab) showSideTab(g); }
+function initSideTabs() {
+  orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
+  showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
+  for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
+}
+const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function fillCtxCards() {
   const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
-  for (const c of cards) { const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+  let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
+  for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; } const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
