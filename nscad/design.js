@@ -502,6 +502,18 @@ export function foldHoleMarks(path, ss, t, origin, r = 0.35) {
     for (const [side, k] of [['outer', -h], ['inner', h]]) { const c = foldDoc(origin, q.u + k * nu, q.v + k * nv); out.push({ type: 'circle', role: 'hole', side, s, cx: c.x, cy: c.y, r }); } }
   return out;
 }
+/** 円の穴（ボタンの穴・取付穴）の目印：円ごとに、中心線上の s±r（穴の幅＝直径）を、その革の層に四角で囲む（事業主の指示 2026-10-19「〇穴を断面図に追加してほしい」）。side＝'outer'（表の革：外側の面〜貼り合わせ線）｜'inner'（裏の革：貼り合わせ線〜内側の面）。
+ *  glueK＝貼り合わせ線の位置（中心線から内側へ＋・foldStackPlan の glueK）。list＝[{ s, r }]。返り値：[{ type:'polyline', closed:true, role:'btn', side, s, r, points:[4つの角] }]。曲げの中では、四角は半径方向の線で囲まれたくさび形になる。 */
+export function foldCircleMarks(path, list, t, origin, glueK, side) {
+  const h = t / 2, [k0, k1] = side === 'inner' ? [glueK, h] : [-h, glueK], at = (s, k) => { const q = pointOnFoldPath(path, s), nu = -Math.sin(q.heading), nv = Math.cos(q.heading); return foldDoc(origin, q.u + k * nu, q.v + k * nv); };
+  return (list || []).map(({ s, r }) => ({ type: 'polyline', closed: true, role: 'btn', side: side === 'inner' ? 'inner' : 'outer', s, r, points: [at(s - r, k0), at(s - r, k1), at(s + r, k1), at(s + r, k0)] }));
+}
+/** 断面の両端の文字（事業主の指示 2026-10-19「展開図の左右がどちらかわかりにくい」）：始点側・終点側に1つずつ、端から進む向きの延長線上（始点は反対側）へ 3＋文字の幅/2 だけ離して置く。文字の幅は 文字数×大きさ（近似）。
+ *  opts：{ startText, endText, sizeMm（既定 3.5）}。返り値：[{ type:'text', role:'end', side:'start'｜'end', x, y, text, sizeMm, angleDeg:0 }]（x・y は文字の左下の基準点）。 */
+export function foldEndLabels(path, origin, { startText = '', endText = '', sizeMm = 3.5 } = {}) {
+  const ends = [['start', startText, pointOnFoldPath(path, 0), -1], ['end', endText, pointOnFoldPath(path, path.length), 1]];
+  return ends.map(([side, text, q, dir]) => { const w = String(text).length * sizeMm, d = 3 + w / 2, c = foldDoc(origin, q.u + dir * d * Math.cos(q.heading), q.v + dir * d * Math.sin(q.heading)); return { type: 'text', role: 'end', side, x: c.x - w / 2, y: c.y + sizeMm / 3, text, sizeMm, angleDeg: 0 }; });
+}
 /** 三つ折りの設計：完成形の断面を、ボタンが3枚を通る縦線（ボタン線）を基準に決める。dL・dR＝ボタン線から左・右の折りの外側までの距離、cL・cR＝左・右の革の切り口までの距離、rinL・rinR＝左・右の折りの内側の半径、t＝革1枚の厚み（plies 枚貼り合わせ）。
  *  折りの中心線の半径＝内側の半径＋合計の厚みの半分。折りの中心のボタン線からの距離＝外側までの距離−内側の半径−合計の厚み。平らは 1枚目＝cL＋右の折りの中心・2枚目＝両方の折りの中心の間・3枚目＝左の折りの中心＋cR。
  *  返り値：{ ok, T, flats[3], bends[2]（右の折り・左の折りの順＝革を端からたどる順）, rc[2]（中心線の半径）, a[2]（右・左の折りの中心のボタン線からの距離）, length, warnings[] }。
@@ -706,13 +718,13 @@ export function foldPlyLengths(path, t, plies = 1) {
 }
 /** 表（外側の革）と裏（内側の革）の図面から、1枚の断面図の形を求める（事業主の選択 2026-10-19・案A）。
  *  outer・inner＝{ flats:[3], bends:[2] }（図面の左から：平ら・丸折り・平ら・丸折り・平ら。図面に描いた長さ＝革の中立面の長さ）。tO・tI＝表・裏の厚み。base＝'outer'｜'inner'（基準にするほう。断面の形は基準から求め、もう一方は差を出す）。
- *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。
+ *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。outerCircles・innerCircles＝図面の左端からの円（ボタンの穴など）の位置と半径 [{ u, r }]（事業主の指示 2026-10-19「〇穴を断面図に追加してほしい」）。
  *  angleMode：'half'（既定）＝折りはどちらも180°（三つ折りのC型）。'data'＝折りごとの角度 θ を、表と裏の曲げの差から求める（事業主の指示 2026-10-19「180°前提をやめて」）：θ＝（表の曲げ−裏の曲げ）÷（（表の厚み＋裏の厚み）/2）。
  *  考え方：平らは、表も裏も同じ長さ。折り k（角度 θ）：貼り合わせ線での長さ G＝θ×半径 rg。表の曲げ＝G＋θ×表の厚み/2・裏の曲げ＝G−θ×裏の厚み/2。貼り合わせ線は、断面の中心から（表−裏）/2 だけ内側へずれる。
  *  返り値：{ ok, flip, T, glueK, glueLen（貼り合わせ線の全長）, angleMode, angles（図面の左から・ラジアン）, pathAngles（中心線の順・flip のときは逆）, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・中心線の順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
- *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner, wantOther, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順） }。
+ *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner, wantOther, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順）, outerC・innerC（円の中心線上の位置と半径 [{ s, r }]・s の昇順） }。
  *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ（'data' では、曲げの差は角度を決めるのに使うので 0）。失敗：'badNumber'｜'tight'（index＝図面の左から数えた折りの番号・内側の面の半径が 0.05 以下）｜'bendReversed'（'data' で、表の曲げが裏の曲げより長くない）｜'angleTooBig'（'data' で、角度が 360° を超える）。 */
-export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode = 'half', outerHoles = [], innerHoles = [] } = {}) {
+export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode = 'half', outerHoles = [], innerHoles = [], outerCircles = [], innerCircles = [] } = {}) {
   const num = (a, n, min) => Array.isArray(a) && a.length === n && a.every(v => Number.isFinite(v) && v >= min);
   if (!outer || !inner || !num(outer.flats, 3, 0) || !num(inner.flats, 3, 0) || !num(outer.bends, 2, FOLD_EPS) || !num(inner.bends, 2, FOLD_EPS) || ![tO, tI].every(v => Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
   const baseOuter = base !== 'inner', mode = angleMode === 'data' ? 'data' : 'half', dAvg = (tO + tI) / 2;
@@ -727,11 +739,13 @@ export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode 
   const lenOuter = sum(outer.flats) + sum(outer.bends), lenInner = sum(inner.flats) + sum(inner.bends), wantOther = sum(fB) + sum(wantBend);
   /* 菱目：図面の位置を、その革の図面の区間（平ら・丸折り）ごとに、断面の中心線の同じ区間へ比例して写す */
   const segC = [flats[0], bends[0], flats[1], bends[1], flats[2]], cumC = segC.reduce((a, v) => [...a, a.at(-1) + v], [0]);
-  const mapHoles = (list, ply) => {
+  const mapHoles = (list, ply) => mapPos(list, ply).sort((a, b) => a - b);
+  const mapCircles = (list, ply) => { const cs = (list || []).filter(c => Number.isFinite(c?.u) && c.r > 0), ss = mapPos(cs.map(c => c.u), ply); return cs.map((c, i) => ({ s: ss[i], r: c.r })).sort((p, q) => p.s - q.s); };
+  const mapPos = (list, ply) => {
     const segD = [ply.flats[0], ply.bends[0], ply.flats[1], ply.bends[1], ply.flats[2]], d = flip ? [...segD].reverse() : segD, L = sum(segD), cumD = d.reduce((a, v) => [...a, a.at(-1) + v], [0]);
-    return (list || []).filter(Number.isFinite).map(u => { const x = Math.max(0, Math.min(L, flip ? L - u : u)); let k = 0; while (k < 4 && x > cumD[k + 1] + 1e-9) k++; const f = d[k] > 0 ? (x - cumD[k]) / d[k] : 0; return cumC[k] + Math.max(0, Math.min(1, f)) * segC[k]; }).sort((a, b) => a - b);
+    return (list || []).filter(Number.isFinite).map(u => { const x = Math.max(0, Math.min(L, flip ? L - u : u)); let k = 0; while (k < 4 && x > cumD[k + 1] + 1e-9) k++; const f = d[k] > 0 ? (x - cumD[k]) / d[k] : 0; return cumC[k] + Math.max(0, Math.min(1, f)) * segC[k]; });
   };
-  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), angleMode: mode, angles: th, pathAngles, path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner) };
+  return { ok: true, flip, T, glueK: kg, glueLen: sum(fB) + sum(gB), angleMode: mode, angles: th, pathAngles, path, flats, bends, radii: rg.map(r => ({ glue: r, inner: r - tI, outer: r + tO })), report: { base: baseOuter ? 'outer' : 'inner', flats: rf, bends: rb, lenOuter, lenInner, wantOther, diffTotal: (baseOuter ? lenInner : lenOuter) - wantOther }, outerS: mapHoles(outerHoles, outer), innerS: mapHoles(innerHoles, inner), outerC: mapCircles(outerCircles, outer), innerC: mapCircles(innerCircles, inner) };
 }
 /** 断面図の、折りの内側の隙間が、リング外径以上かを調べる（事業主の指摘 2026-10-19「リング外径が22mmくらいあるので、間のスペースをそれ以上にしないといけないです」・案A）。plan＝foldStackPlan の結果。tO・tI＝表・裏の厚み。pitch＝目打ちのピッチ（省略可）。
  *  内側の隙間＝折りの内側の面の半径×2。リング外径 D に必要な内側の半径＝D/2 → 貼り合わせ線の半径＝D/2＋裏の厚み → 貼り合わせ線での長さ＝θ×半径 → 裏の曲げ＝θ×（D/2＋裏の厚み/2）・表の曲げ＝裏の曲げ＋θ×（表の厚み＋裏の厚み）/2。θ＝折りごとの角度（plan.angles・180°の断面は π）。
@@ -758,7 +772,8 @@ export function foldSectionSvg(shapes) {
   const arcPts = a => { const e = a.endDeg < a.startDeg ? a.endDeg + 360 : a.endDeg, n = Math.max(12, Math.ceil((e - a.startDeg) / 3)); return Array.from({ length: n + 1 }, (_, i) => { const t = (a.startDeg + (e - a.startDeg) * i / n) * Math.PI / 180; return { x: a.cx + a.r * Math.cos(t), y: a.cy + a.r * Math.sin(t) }; }); };
   const paths = [...list.filter(q => q?.type === 'line').map(q => ({ role: q.role, pts: [{ x: q.x1, y: q.y1 }, { x: q.x2, y: q.y2 }] })), ...list.filter(q => q?.type === 'arc' && [q.cx, q.cy, q.r, q.startDeg, q.endDeg].every(ok)).map(q => ({ role: q.role, pts: arcPts(q) }))].filter(p => p.pts.every(q => ok(q.x) && ok(q.y)));
   const circles = list.filter(q => q?.type === 'circle' && [q.cx, q.cy, q.r].every(ok)); if (!paths.length) return '';
-  const all = [...paths.flatMap(p => p.pts), ...circles.flatMap(c => [{ x: c.cx - c.r, y: c.cy - c.r }, { x: c.cx + c.r, y: c.cy + c.r }])], x0 = Math.min(...all.map(p => p.x)), x1 = Math.max(...all.map(p => p.x)), y0 = Math.min(...all.map(p => p.y)), y1 = Math.max(...all.map(p => p.y));
+  const polys = list.filter(q => q?.type === 'polyline' && Array.isArray(q.points) && q.points.length >= 3 && q.points.every(p => ok(p.x) && ok(p.y))), texts = list.filter(q => q?.type === 'text' && q.text && [q.x, q.y, q.sizeMm].every(ok)), esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');   /* 穴の四角・両端の文字 */
+  const all = [...paths.flatMap(p => p.pts), ...circles.flatMap(c => [{ x: c.cx - c.r, y: c.cy - c.r }, { x: c.cx + c.r, y: c.cy + c.r }]), ...polys.flatMap(p => p.points), ...texts.flatMap(q => [{ x: q.x, y: q.y - q.sizeMm }, { x: q.x + String(q.text).length * q.sizeMm, y: q.y }])], x0 = Math.min(...all.map(p => p.x)), x1 = Math.max(...all.map(p => p.x)), y0 = Math.min(...all.map(p => p.y)), y1 = Math.max(...all.map(p => p.y));
   const m = Math.max(x1 - x0, y1 - y0) * 0.04 + 1, vx = x0 - m, vy = y0 - m, vw = x1 - x0 + 2 * m, vh = y1 - y0 + 2 * m, dot = Math.max(0.6, vw / 260), COLOR = { edgeL: '#78c8ff', edgeR: '#ffbe5a', glue: '#bebebe', cap0: '#ffffff', cap1: '#ffffff' };
   const parts = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${f(vx)} ${f(vy)} ${f(vw)} ${f(vh)}" preserveAspectRatio="xMidYMid meet" role="img" style="background:#161616">`];
   for (const p of paths) parts.push(`<path d="M${p.pts.map(q => `${f(q.x)} ${f(q.y)}`).join(' L')}" fill="none" stroke="${COLOR[p.role] || '#d8d8d8'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`);
@@ -766,6 +781,8 @@ export function foldSectionSvg(shapes) {
     if (c.role === 'hole') parts.push(`<circle data-role="hole" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(Math.max(c.r, dot))}" fill="${c.side === 'outer' ? '#ffbe5a' : '#78c8ff'}" stroke="#ffe14d" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`);
     else if (c.role === 'ring') parts.push(`<circle data-role="ring" cx="${f(c.cx)}" cy="${f(c.cy)}" r="${f(c.r)}" fill="none" stroke="${c.color === 'red' ? '#ff5050' : '#5adc78'}" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`);
   }
+  for (const p of polys) if (p.role === 'btn') parts.push(`<polygon data-role="btn" data-side="${p.side === 'inner' ? 'inner' : 'outer'}" points="${p.points.map(q => `${f(q.x)},${f(q.y)}`).join(' ')}" fill="${p.side === 'inner' ? 'rgba(120,200,255,0.35)' : 'rgba(255,190,90,0.35)'}" stroke="${p.side === 'inner' ? '#78c8ff' : '#ffbe5a'}" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`);
+  for (const q of texts) parts.push(`<text data-role="${esc(q.role || 'text')}" x="${f(q.x)}" y="${f(q.y)}" font-size="${f(q.sizeMm)}" font-family="sans-serif" fill="#ffffff">${esc(q.text)}</text>`);
   parts.push('</svg>'); return parts.join('');
 }
 /** 断面の中心線の、いちばん高い点の v（始点を 0 とした高さ）。折りの角度が 180° でなくても、断面を図面の下へ置く高さを決めるのに使う。 */
