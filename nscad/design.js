@@ -178,7 +178,16 @@ export function komaStitchLine(edge, thicknessB, inward = 1) {
 const signedAreaOf = ps => ps.reduce((s, q, i) => { const r = ps[(i + 1) % ps.length]; return s + q.x * r.y - r.x * q.y; }, 0) / 2;
 const TILE_EPS = 1e-6; /* マスの数を決めるときの浮動小数の誤差（マス数に対する比） */
 /** パッチワークの柄の登録表。tiles(bbox, cell, off) は bbox を隙間なく覆う凸多角形（辺で接する）の配列 [{points, parity}] を返す。
- *  off={x,y}（mm・＋は右・下）は柄の基準の中心を枠の中心からずらす量（既定 0＝上下左右対称）。period(cell) は柄（色まで含めて）がぴったり重なるずらし量 {x,y}。 */
+ *  off={x,y}（mm・＋は右・下）は柄の基準の中心を枠の中心からずらす量（既定 0＝上下左右対称）。ratio はひし形の高さ÷幅（アーガイルだけが使う・既定 1.5＝幅2：高さ3）。
+ *  period(cell, ratio) は柄（色まで含めて）がぴったり重なるずらし量 {x,y}。usesAngle の柄は、斜めの線の角度（patchAngleRatio）を使う。 */
+export const PATCH_ARGYLE_RATIO = 1.5, PATCH_ANGLE_MIN = 20, PATCH_ANGLE_MAX = 80;
+/** アーガイルの斜めの線の角度（水平から・度）→ ひし形の高さ÷幅。未指定（null・undefined）と、いままでの 56.3度（幅2：高さ3）は 1.5 ちょうど。20〜80度の外・数でない値は null（作れない）。 */
+export function patchAngleRatio(angleDeg) {
+  if (angleDeg === null || angleDeg === undefined) return PATCH_ARGYLE_RATIO;
+  if (typeof angleDeg !== 'number' || !Number.isFinite(angleDeg) || angleDeg < PATCH_ANGLE_MIN || angleDeg > PATCH_ANGLE_MAX) return null;
+  if (Math.abs(angleDeg - Math.atan(PATCH_ARGYLE_RATIO) * 180 / Math.PI) <= 0.05) return PATCH_ARGYLE_RATIO; /* 56.3度と入れても、いままでと同じ形（誤差で形が少し変わらない） */
+  return Math.tan(angleDeg * Math.PI / 180);
+}
 export const PATCH_PATTERNS = {
   ichimatsu: {
     ja: '市松', en: 'Ichimatsu (checker)',
@@ -196,10 +205,11 @@ export const PATCH_PATTERNS = {
   },
   argyle: {
     ja: 'アーガイル', en: 'Argyle',
-    period: cell => ({ x: cell, y: cell * 1.5 }),
-    tiles(b, cell, off = { x: 0, y: 0 }) {
-      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる（ずらし量があれば、その分だけ中心を動かす。並べる範囲もずらし量の分だけ広げる） */
-      const w = cell, h = cell * 1.5, cx0 = (b.minX + b.maxX) / 2 + off.x, cy0 = (b.minY + b.maxY) / 2 + off.y, kMax = Math.ceil(((b.maxY - b.minY) / 2 + Math.abs(off.y)) / (h / 2)) + 1, iMax = Math.ceil(((b.maxX - b.minX) / 2 + Math.abs(off.x)) / w) + 1, out = [];
+    usesAngle: true,
+    period: (cell, ratio = PATCH_ARGYLE_RATIO) => ({ x: cell, y: cell * ratio }),
+    tiles(b, cell, off = { x: 0, y: 0 }, ratio = PATCH_ARGYLE_RATIO) {
+      /* 図形の中心にひし形の中心を置き、そこから上下左右へ並べる＝端の半端なひし形が左右・上下で対称になる（ずらし量があれば、その分だけ中心を動かす。並べる範囲もずらし量の分だけ広げる）。幅＝1マスの大きさ・高さ＝幅×ratio（斜めの線の傾きの tan） */
+      const w = cell, h = cell * ratio, cx0 = (b.minX + b.maxX) / 2 + off.x, cy0 = (b.minY + b.maxY) / 2 + off.y, kMax = Math.ceil(((b.maxY - b.minY) / 2 + Math.abs(off.y)) / (h / 2)) + 1, iMax = Math.ceil(((b.maxX - b.minX) / 2 + Math.abs(off.x)) / w) + 1, out = [];
       for (let k = -kMax; k <= kMax; k++) for (let i = -iMax; i <= iMax; i++) {
         const odd = ((k % 2) + 2) % 2, cx = cx0 + i * w + odd * w / 2, cy = cy0 + k * h / 2;
         if (cx + w / 2 < b.minX || cx - w / 2 > b.maxX || cy + h / 2 < b.minY || cy - h / 2 > b.maxY) continue;
@@ -255,16 +265,18 @@ export function regionAt(shapes, p, tol = 0.01) {
   return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
 }
 /** 柄のずらし量 {x,y}（mm・＋は右・下）を整える：数にならない値は 0。柄がぴったり重なる周期より大きい分は捨てる（結果は同じで、並べる範囲が広がりすぎない）。 */
-export function patchShiftOf(pattern, cell, shift) {
-  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0, per = pattern.period(cell);
+export function patchShiftOf(pattern, cell, shift, ratio) {
+  const num = v => Number.isFinite(Number(v)) ? Number(v) : 0, per = pattern.period(cell, ratio);
   return { x: num(shift?.x) % per.x, y: num(shift?.y) % per.y };
 }
 /** 囲まれた図形（closedRegions の要素）を柄のマスで切り分け、ピース多角形を返す。マスの面積比が minAreaRatio 未満の端切れは除く。
- *  shift={x,y}（mm・＋は右・下）は柄ぜんたいを図形の中心からずらす量（既定 0）。ずらしても柄は図形の輪郭で切られたまま。 */
-export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000, shift = null } = {}) {
+ *  shift={x,y}（mm・＋は右・下）は柄ぜんたいを図形の中心からずらす量（既定 0）。ずらしても柄は図形の輪郭で切られたまま。
+ *  angle（度）はアーガイルの斜めの線の水平からの角度（既定 56.3＝幅2：高さ3）。20〜80度の外・数でない値は null（作れない）。市松は使わない。 */
+export function fillRegionPattern(region, patternId, { cell = 20, minAreaRatio = 0.05, maxTiles = 4000, shift = null, angle = null } = {}) {
   const pattern = PATCH_PATTERNS[patternId]; if (!pattern || !(cell > 0) || !region) return null;
+  const ratio = pattern.usesAngle ? patchAngleRatio(angle) : PATCH_ARGYLE_RATIO; if (ratio === null) return null;
   const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), box = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
-  const tiles = pattern.tiles(box, cell, patchShiftOf(pattern, cell, shift)); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
+  const tiles = pattern.tiles(box, cell, patchShiftOf(pattern, cell, shift, ratio), ratio); if (tiles.length > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: tiles.length };
   const pieces = []; let dropped = 0;
   for (const tile of tiles) {
     const clipped = clipPolygonByConvex(region.points, tile.points); if (!clipped.length) continue;
