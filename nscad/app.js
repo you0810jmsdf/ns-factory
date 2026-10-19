@@ -1673,21 +1673,34 @@ function growBends() {
   for (const z of gp.zones) line(t('lamGrowZone', { k: z.k, oOld: f2(z.outerOld), oNew: f2(z.outerNew), iOld: f2(z.innerOld), iNew: f2(z.innerNew), nOld: z.nOld, n: z.n, gOld: f2(ring.gaps[z.k - 1].gap), gNew: f2(ring.byPitch[z.k - 1].gap), aOld: (plan.angles[z.k - 1] * 180 / Math.PI).toFixed(1), aNew: ((z.outerNew - z.innerNew) / ((tO + tI) / 2) * 180 / Math.PI).toFixed(1) }));
   line(t('lamGrowNote')); rebuildSnaps(); draw();
 }
+/* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
+function bendGuideInfo(po, pi, axis, specs) {
+  if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+  const tO = Number($('lamTOuter').value), tI = Number($('lamTInner').value), ringRaw = String($('lamRingD').value ?? '').trim(), ringD = ringRaw === '' ? 0 : Number(ringRaw), rows = specs.outer.bends.map((o, k) => ({ k: k + 1, o, i: specs.inner.bends[k], need: null, gap: null, ok: null })); let ring = null;
+  if (tO > 0 && tI > 0 && ringD > 0) { const plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base: $('lamBase').value === 'inner' ? 'inner' : 'outer', angleMode: 'data' }); if (plan.ok) { ring = foldRingCheck(plan, { ringD, tO, tI, pitch: lamPitchValue() }); if (ring) ring.gaps.forEach((g, k) => { rows[k].need = ring.needs[k].inner; rows[k].gap = g.gap; rows[k].ok = g.ok; }); } }
+  return { rows, ringD: ring ? ringD : 0 };
+}
+/** 曲げの範囲の確認の行（結果欄用）：[{ text, cls }]。リング外径が使えるときは先頭に見出し。 */
+function bendGuideLines(info) {
+  const f2 = v => (+v).toFixed(2), out = []; if (info.ringD > 0) out.push({ text: t('lamBendReportHead', { d: String(+info.ringD.toFixed(2)) }), cls: '' });
+  for (const r of info.rows) out.push(r.need == null ? { text: t('lamBendReportPlain', { k: r.k, o: f2(r.o), i: f2(r.i) }), cls: '' } : { text: t('lamBendReportRing', { k: r.k, o: f2(r.o), i: f2(r.i), need: f2(r.need), gap: r.gap.toFixed(1), fit: t(r.ok ? 'lamBendFitOk' : 'lamBendFitNg') }), cls: r.ok ? 'lam-ok' : 'lam-warn' });
+  return out;
+}
 /* ───────── 曲げの範囲の点線（事業主の希望 2026-10-19「展開したときに曲げの範囲を６本の点線で表示して」）：表・裏の部品それぞれに、曲げ2か所×（始め・まん中・終わり）＝6本をガイド層へ。前回の線は置き換える。commit の中で呼ぶ。返り値：{ o, i }（入れた本数） ───────── */
-function placeBendGuides(po, pi, axis, specs) {
-  const g = lamBendGuides(doc, po.id, pi.id, { axis, specs }); if (!g.ok) return { o: 0, i: 0 };
-  const prefix = `${po.id}:${pi.id}:`; doc.shapes = doc.shapes.filter(s => !(typeof s.lamBendGuide === 'string' && s.lamBendGuide.startsWith(prefix)));   /* 前回の線を置き換える */
-  const layer = ensureLayer(doc, 'guide'), added = []; for (const l of [...g.outer, ...g.inner]) added.push({ ...l, layer, id: freshId([...doc.shapes, ...added], 's') }); doc.shapes.push(...added); return { o: g.outer.length, i: g.inner.length };
+function placeBendGuides(po, pi, axis, specs, info = null) {
+  const f2 = v => (+v).toFixed(2), g = lamBendGuides(doc, po.id, pi.id, { axis, specs, label: (side, k, len, need) => { const l1 = t('lamBendLabel', { k, len: f2(len) }); return need != null ? [l1, t('lamBendLabelNeed', { need: f2(need) })] : [l1]; }, needInner: info && info.ringD > 0 ? info.rows.map(r => r.need) : null }); if (!g.ok) return { o: 0, i: 0 };
+  const prefix = `${po.id}:${pi.id}:`; doc.shapes = doc.shapes.filter(s => !((typeof s.lamBendGuide === 'string' && s.lamBendGuide.startsWith(prefix)) || (typeof s.lamBendLabel === 'string' && s.lamBendLabel.startsWith(prefix))));   /* 前回の線・文字を置き換える */
+  const layer = ensureLayer(doc, 'guide'), added = []; for (const l of [...g.outer, ...g.inner, ...g.labels.outer, ...g.labels.inner]) added.push({ ...l, layer, id: freshId([...doc.shapes, ...added], 's') }); doc.shapes.push(...added); return { o: g.outer.length, i: g.inner.length };
 }
 /** 展開が飛ばされた（円が無い）ときも、曲げの範囲の点線だけは入れる（整える用）。結果欄には足して書く（空にしない）。曲げの範囲が見つからなければ何もしない。 */
 function placeBendGuidesOnly() {
   const box = $('lamResult'); fillLaminateParts(); const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value); if (!po || !pi || po === pi) return;
   const axisSel = $('lamAxis').value, bx = partBox(doc, po), axis = axisSel === 'x' || axisSel === 'y' ? axisSel : (bx && bx.maxY - bx.minY > bx.maxX - bx.minX ? 'y' : 'x'), rimZ = lamRimBendZones(doc, po.id, pi.id, { axis }), specs = {};
   for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) return; specs[side] = r; }
-  let gc = null; commit(() => { gc = placeBendGuides(po, pi, axis, specs); }); if (gc?.o) { const d = document.createElement('div'); d.textContent = t('lamGuideDone', { o: gc.o, i: gc.i }); box.appendChild(d); }
+  const gInfo = bendGuideInfo(po, pi, axis, specs), add = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); };
+  let gc = null; commit(() => { gc = placeBendGuides(po, pi, axis, specs, gInfo); }); if (gc?.o) { add(t('lamGuideDone', { o: gc.o, i: gc.i })); bendGuideLines(gInfo).forEach(r => add(r.text, r.cls)); }
 }
-/* ───────── 展開：ボタンの穴を、表と裏でそろえる（
-事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
+/* ───────── 展開：ボタンの穴を、表と裏でそろえる（事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
 function unfoldButtons() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, fail = (key, p) => { const m = t(key, p); line(m, 'lam-error'); $('hint').textContent = m; }, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner');
@@ -1699,14 +1712,14 @@ function unfoldButtons() {
   const baseOuter = $('lamBase').value !== 'inner', [bp, op] = baseOuter ? [po, pi] : [pi, po], plan = lamButtonPlan(doc, bp.id, op.id, { axis, specs: { base: baseOuter ? specs.outer : specs.inner, other: baseOuter ? specs.inner : specs.outer } });
   if (!plan.ok) { fail('lamUnfoldErr_' + plan.error); return; }
   const srcOf = id => doc.shapes.find(q => q.id === id), blocked = [...plan.adds.map(a => srcOf(a.from)), ...plan.moves.map(m => srcOf(m.id))].filter(q => q && !editable(q)).length; if (blocked) { fail('lamUnfoldErr_locked', { n: blocked }); return; }
-  let gc = null; commit(() => {   /* 円の変更が無くても、曲げの範囲の点線は入れ直す（変わらなければ記録は増えない） */
+  const gInfo = bendGuideInfo(po, pi, axis, specs); let gc = null; commit(() => {   /* 円の変更が無くても、曲げの範囲の点線は入れ直す（変わらなければ記録は増えない） */
     for (const m of plan.moves) { const q = doc.shapes.find(x => x.id === m.id); if (q) { q.cx = m.x; q.cy = m.y; } }
     const added = []; for (const a of plan.adds) { const src = srcOf(a.from), id = freshId([...doc.shapes, ...added], 's'); added.push({ ...src, id, cx: a.x, cy: a.y }); op.shapeIds.push(id); }   /* 足す円は、基準の円の複製（半径・層・色はそのまま）。部品にも入れる */
     doc.shapes.push(...added);
-    gc = placeBendGuides(po, pi, axis, specs);
+    gc = placeBendGuides(po, pi, axis, specs, gInfo);
   });
   const done = t('lamUnfoldDone', { s: plan.same.length, m: plan.moves.length, a: plan.adds.length }); line(done); $('hint').textContent = done;
-  line(t('lamUnfoldNote', { base: sideName(baseOuter ? 'outer' : 'inner'), other: sideName(baseOuter ? 'inner' : 'outer') })); if (gc?.o) line(t('lamGuideDone', { o: gc.o, i: gc.i })); rebuildSnaps(); draw();
+  line(t('lamUnfoldNote', { base: sideName(baseOuter ? 'outer' : 'inner'), other: sideName(baseOuter ? 'inner' : 'outer') })); if (gc?.o) { line(t('lamGuideDone', { o: gc.o, i: gc.i })); bendGuideLines(gInfo).forEach(r => line(r.text, r.cls || undefined)); } rebuildSnaps(); draw();
 }
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';

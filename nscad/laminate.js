@@ -220,14 +220,21 @@ export function lamPartCircles(doc, part, spec) {
 }
 /** 展開（整える）の終わりに入れる、曲げの範囲の点線（事業主の希望 2026-10-19「展開したときに曲げの範囲を６本の点線で表示して」）。表の部品・裏の部品それぞれに、曲げ2か所×（始め・まん中・終わり）＝縦の点線6本（曲がる向きが y のときは横の線）。
  *  位置＝lamFoldSpec の zones（部品の端からの位置）。ガイド層・点線・部品の高さ（曲がらない向き）いっぱい・表＝黄・裏＝青・印 lamBendGuide＝`表の部品id:裏の部品id:outer｜inner`（置き換えの目印・曲げ部の検出には使わない）。
- *  opts：{ axis, specs:{ outer, inner }（lamFoldSpec の結果）}。返り値：{ ok:true, outer:[線のデータ（id なし）×6], inner:[…×6] }｜{ ok:false, error:'pickTwo' }。 */
-export function lamBendGuides(doc, outerId, innerId, { axis = 'x', specs } = {}) {
+ *  opts：{ axis, specs:{ outer, inner }（lamFoldSpec の結果）, label（省略可＝曲げごとの長さの文字を作る関数 (side, k, 長さ, 必要な裏の曲げ|null) → 文字列か配列）, needInner（省略可＝リングに必要な裏の曲げの長さ [曲げ1, 曲げ2]）}。
+ *  返り値：{ ok:true, outer:[線のデータ（id なし）×6], inner:[…×6], labels:{ outer:[文字], inner:[文字] }（label が無ければ空）}｜{ ok:false, error:'pickTwo' }。文字は text・ガイド層・色は線と同じ・大きさ 3.5・印 lamBendLabel（点線の lamBendGuide とは別）。事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A。 */
+export function lamBendGuides(doc, outerId, innerId, { axis = 'x', specs, label = null, needInner = null } = {}) {
   const po = doc.parts.find(p => p.id === outerId), pi = doc.parts.find(p => p.id === innerId); if (!po || !pi || po === pi || !specs?.outer?.ok || !specs?.inner?.ok) return { ok: false, error: 'pickTwo' };
   const along = axis === 'y' ? 'y' : 'x', make = (part, spec, side, color) => {
     const box = partBox(doc, part); if (!box) return []; const key = `${outerId}:${innerId}:${side}`;
     return spec.zones.flatMap(([a, b]) => [a, (a + b) / 2, b]).map(p => { const v = spec.edge + p; return along === 'x' ? { type: 'line', layer: 'guide', lineStyle: 'dashed', color, x1: v, y1: box.minY, x2: v, y2: box.maxY, lamBendGuide: key } : { type: 'line', layer: 'guide', lineStyle: 'dashed', color, x1: box.minX, y1: v, x2: box.maxX, y2: v, lamBendGuide: key }; });
   };
-  const outer = make(po, specs.outer, 'outer', 'yellow'), inner = make(pi, specs.inner, 'inner', 'blue'); return outer.length && inner.length ? { ok: true, outer, inner } : { ok: false, error: 'pickTwo' };
+  const SZ = 3.5, makeLabels = (part, spec, side, color) => {   /* 曲げごとの長さの文字（label＝(side, k, 長さ, 必要な裏の曲げ|null) → 文字列か文字列の配列）。点線の上（曲がる向きが y のときは左）に、曲げの真ん中を中心に。2行目はその上 */
+    if (typeof label !== 'function') return []; const box = partBox(doc, part); if (!box) return []; const key = `${outerId}:${innerId}:${side}`, out = [];
+    spec.zones.forEach(([a, b], k) => { const lines = [].concat(label(side, k + 1, b - a, side === 'inner' && Array.isArray(needInner) ? needInner[k] ?? null : null)).filter(Boolean), mid = spec.edge + (a + b) / 2;
+      lines.forEach((text, n) => { const w = String(text).length * SZ; out.push(along === 'x' ? { type: 'text', layer: 'guide', color, x: mid - w / 2, y: box.minY - 3 - n * 4.5, text, sizeMm: SZ, angleDeg: 0, lamBendLabel: key } : { type: 'text', layer: 'guide', color, x: box.minX - 3 - w, y: mid + SZ / 3 - n * 4.5, text, sizeMm: SZ, angleDeg: 0, lamBendLabel: key }); }); });
+    return out;
+  };
+  const outer = make(po, specs.outer, 'outer', 'yellow'), inner = make(pi, specs.inner, 'inner', 'blue'); return outer.length && inner.length ? { ok: true, outer, inner, labels: { outer: makeLabels(po, specs.outer, 'outer', 'yellow'), inner: makeLabels(pi, specs.inner, 'inner', 'blue') } } : { ok: false, error: 'pickTwo' };
 }
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
