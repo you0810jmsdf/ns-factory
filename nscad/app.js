@@ -1156,6 +1156,7 @@ function initLayers() {
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
+  restoreAskWhere(); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
   $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
@@ -2021,6 +2022,26 @@ async function doRegCheck() {
   if (r.status === 'ok') { $('regCheck').hidden = true; regMsg('regOk', {}, 'ok'); syncLockMarks(); showRegNow(); return; }
   regMsg(r.status === 'pending' ? 'regPending' : r.status === 'error' ? 'regErrNet' : 'regErrNone', {}, r.status === 'pending' ? '' : 'ng');
 }
+/** 書き出したファイルの保存（事業主の希望 2026-10-19「保存場所を指定して保存したい」）：「書き出すとき保存先を選ぶ」（#outAskWhere・既定は入）が入で、ブラウザが保存先の選択（showSaveFilePicker）に対応していれば、保存の窓を開いて、選んだ場所に書く（前回の場所を覚える）。
+ *  切・非対応・書き込みの失敗のときは、今までどおりダウンロード（失敗のときは案内を足す）。窓を閉じた（やめた）ときは何も保存しない。data は、文字列・バイト列・Blob、または Blob になる Promise（PNG：窓を先に開いて、画像ができるのを待つ＝窓が開けなくなるのを防ぐ）。onDone(保存したファイル名 or null) は保存できたあとの案内の組み立て。 */
+const ASK_WHERE_KEY = 'leather-cad.askWhere';
+function restoreAskWhere() { try { const v = localStorage.getItem(ASK_WHERE_KEY); if ((v === '0' || v === '1') && $('outAskWhere')) $('outAskWhere').checked = v === '1'; } catch { /* 保存できない環境でも続ける */ } }
+function exportFile(name, data, mime, onDone) {
+  const askWhere = !!$('outAskWhere')?.checked && typeof globalThis.showSaveFilePicker === 'function';
+  const plain = async () => { const v = await data; download(name, v, mime, false); onDone(null); };
+  if (!askWhere) { if (data && typeof data.then === 'function') { plain(); return; } download(name, data, mime, false); onDone(null); return; }
+  const ext = (name.match(/\.[A-Za-z0-9]+$/) || [''])[0].toLowerCase();
+  let picking; try { picking = globalThis.showSaveFilePicker({ suggestedName: name, id: 'ncad-export', types: [{ description: (ext.slice(1) || 'file').toUpperCase(), accept: { [mime]: [ext || '.bin'] } }] }); } catch (err) { picking = Promise.reject(err); }   /* 利用者の操作の直後に、同期で窓を開く */
+  (async () => {
+    try {
+      const handle = await picking, v = await data, w = await handle.createWritable(); await w.write(v instanceof Blob ? v : new Blob([v], { type: mime })); await w.close(); onDone(handle.name || name);
+    } catch (err) {
+      if (err?.name === 'AbortError') { $('hint').textContent = t('exportCanceled'); return; }
+      try { const v = await data; download(name, v, mime, false); onDone(null); $('hint').textContent += ' ' + t('exportFallback'); } catch { $('hint').textContent = t('saveFailed', { message: err?.message || String(err) }); }
+    }
+  })();
+}
+const savedTo = n => n ? ' ' + t('exportSavedTo', { name: n }) : '';
 function download(name, text, type, gate = true) {
   if (gate && !regGuard(regFeatureOf(name), 'dl')) { setTimeout(() => { $('hint').textContent = t('regNeed'); }, 0); return false; }   /* 呼び出し側の「書き出しました」の案内を、登録が必要の案内に直す。gate=false は、不具合記録（登録なしで出せる）か、呼び出し側が入口の確認をすませたとき */
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -2035,13 +2056,13 @@ function exportSvg() {
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
   const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
-  download(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', false); $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote();
+  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + savedTo(saved); });
 }
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
   const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
-  download('leather-pattern.pdf', bytes, 'application/pdf', false); $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote();
+  exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 function exportPng() {
@@ -2060,8 +2081,8 @@ function exportPng() {
   exportColor = $('pngColor').checked && viewShow.colors; exportFilter = only ? { vis, hvis, ids: selIds } : null;
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
   finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; draw(); }
-  const done = blob => { if (!blob) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'leather-pattern.png'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : ''); };
-  if (typeof off.toBlob === 'function') off.toBlob(done, 'image/png'); else $('hint').textContent = t('pngUnavailable');
+  if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
+  exportFile('leather-pattern.png', new Promise((res, rej) => off.toBlob(b => b ? res(b) : rej(new Error('png')), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved); });
 }
 /** 取り込んだ図形群を文書に足す（id・レイヤーを割り当て、validateDoc で壊れた要素を捨てて件数を報告）。 */
 function importShapes(list, { layersFrom = [] } = {}) {
@@ -2128,7 +2149,7 @@ function exportDxf() {
   const dxf = preset === 'leathercraft' ? leathercraftDxf(outputDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(outputDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
   if (!regGuard('dxf', 'dl')) return;
-  download(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', false); $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote();
+  exportFile(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', saved => { $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote() + savedTo(saved); });
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
@@ -2303,7 +2324,7 @@ function togglePlay() {
   let dir = foldT >= 100 ? -1 : 1; $('play').textContent = t('pause');
   playing = setInterval(() => { foldT = Math.max(0, Math.min(100, foldT + dir * 4)); if (foldT === 0 || foldT === 100) dir = -dir; $('foldT').value = String(foldT); render3d(); }, 40);
 }
-function exportViews() { if (!regGuard('svg', 'views')) return; const { faces } = scene3d(); download('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml', false); $('hint').textContent = t('exported', { name: t('views') }); }
+function exportViews() { if (!regGuard('svg', 'views')) return; const { faces } = scene3d(); exportFile('leather-views.svg', viewsToSvg(faces, { scale: 1 }), 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: t('views') }) + savedTo(saved); }); }
 /** 展開図：折り線で繋がる板を平面に戻し、縫い代付きの型紙を新しいタブに作る。 */
 function makeUnfold() {
   const panels = buildPanels(doc, { colorOf: partPanelColor, textureOf: (part, s) => s.texture || part.texture || null }), fl = folds(); if (!panels.length) { $('hint').textContent = t('noPanels'); return; }
@@ -2760,7 +2781,7 @@ function loadPattern() {
 function exportPng3d() {
   if (!regGuard('png', 'view3d')) return;
   if (!view3d || typeof canvas3d.toBlob !== 'function') { $('hint').textContent = t('need3d'); return; }
-  render3d(); canvas3d.toBlob(blob => { if (!blob) return; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'leather-3d.png'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); $('hint').textContent = t('exported', { name: 'PNG (3D)' }); }, 'image/png');
+  render3d(); exportFile('leather-3d.png', new Promise((res, rej) => canvas3d.toBlob(b => b ? res(b) : rej(new Error('png')), 'image/png')), 'image/png', saved => { $('hint').textContent = t('exported', { name: 'PNG (3D)' }) + savedTo(saved); });
 }
 function initColors() {
   loadPins(); renderColors();
@@ -2776,7 +2797,7 @@ function initColors() {
     if (v > 0 ? doc.textureMm !== v : doc.textureMm !== undefined) commit(() => { if (v > 0) doc.textureMm = v; else delete doc.textureMm; });
   });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
-  $('exportSvgFill').onclick = () => { if (!regGuard('svg', 'color')) return; download('leather-pattern-color.svg', docToSvg(outputDoc(), { includeHoles: true, fill: true }), 'image/svg+xml', false); $('hint').textContent = t('exported', { name: 'SVG (color)' }); };
+  $('exportSvgFill').onclick = () => { if (!regGuard('svg', 'color')) return; exportFile('leather-pattern-color.svg', docToSvg(outputDoc(), { includeHoles: true, fill: true }), 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: 'SVG (color)' }) + savedTo(saved); }); };
 }
 
 // ---- 下絵（スキャン画像）とトレース ----
