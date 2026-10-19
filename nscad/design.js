@@ -437,6 +437,7 @@ export function detourPath(base, obstacle, { clearance = 3, radius = 2 } = {}) {
 
 /* ───────── 三つ折り（C型・内側へ巻く）の断面：平面図の点線から断面を作り、断面で決めた位置を平面図へ戻す。目的は、断面から革の長さを決めること。 ───────── */
 const FOLD_EPS = 1e-6;
+const FOLD_FLIP_TIE = 0.01;   /* 断面を反転する／しないの境目：左右の折りの貼り合わせ線の半径の差がこの値（mm）以下なら「同じ」＝反転しない（事業主の指示 2026-10-19「左右の折りの半径がほぼ同じときは、断面を反転しない決まりに直してください」） */
 /** 縦の点線（まっすぐな線 or 2点の折れ線）の x。縦でない・点線でないものは null。 */
 function dashedVertical(s) {
   if (!s || s.lineStyle !== 'dashed') return null;
@@ -721,7 +722,7 @@ export function foldPlyLengths(path, t, plies = 1) {
  *  outerHoles・innerHoles＝図面の左端からの菱目の位置（mm）。outerCircles・innerCircles＝図面の左端からの円（ボタンの穴など）の位置と半径 [{ u, r }]（事業主の指示 2026-10-19「〇穴を断面図に追加してほしい」）。
  *  angleMode：'half'（既定）＝折りはどちらも180°（三つ折りのC型）。'data'＝折りごとの角度 θ を、表と裏の曲げの差から求める（事業主の指示 2026-10-19「180°前提をやめて」）：θ＝（表の曲げ−裏の曲げ）÷（（表の厚み＋裏の厚み）/2）。
  *  考え方：平らは、表も裏も同じ長さ。折り k（角度 θ）：貼り合わせ線での長さ G＝θ×半径 rg。表の曲げ＝G＋θ×表の厚み/2・裏の曲げ＝G−θ×裏の厚み/2。貼り合わせ線は、断面の中心から（表−裏）/2 だけ内側へずれる。
- *  返り値：{ ok, flip, T, glueK, glueLen（貼り合わせ線の全長）, angleMode, angles（図面の左から・ラジアン）, pathAngles（中心線の順・flip のときは逆）, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・中心線の順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
+ *  返り値：{ ok, flip（左の折りの半径が右より 0.01 mm を超えて小さいときだけ true）, T, glueK, glueLen（貼り合わせ線の全長）, angleMode, angles（図面の左から・ラジアン）, pathAngles（中心線の順・flip のときは逆）, path（断面の中心線・foldSectionPath）, flats[3]・bends[2]（中心線の長さ・中心線の順）, radii[2]（図面の左から：貼り合わせ線・内側の面・外側の面の半径）,
  *  report:{ base, flats:[{outer,inner,want,diff}], bends:[{outer,inner,want,diff}]（図面の左から）, lenOuter, lenInner, wantOther, diffTotal }, outerS・innerS（菱目の中心線上の s・昇順）, outerC・innerC（円の中心線上の位置と半径 [{ s, r }]・s の昇順） }。
  *  差（diff）＝もう一方（基準でないほう）の実際の長さ − あるべき長さ（'data' では、曲げの差は角度を決めるのに使うので 0）。失敗：'badNumber'｜'tight'（index＝図面の左から数えた折りの番号・内側の面の半径が 0.05 以下）｜'bendReversed'（'data' で、表の曲げが裏の曲げより長くない）｜'angleTooBig'（'data' で、角度が 360° を超える）。 */
 export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode = 'half', outerHoles = [], innerHoles = [], outerCircles = [], innerCircles = [] } = {}) {
@@ -732,7 +733,7 @@ export function foldStackPlan({ outer, inner, tO, tI, base = 'outer', angleMode 
   if (th.some(x => !(x > 1e-6))) return { ok: false, error: 'bendReversed' }; if (th.some(x => x > 2 * Math.PI + 1e-9)) return { ok: false, error: 'angleTooBig' };
   const gO = outer.bends.map((b, i) => b - th[i] * tO / 2), gI = inner.bends.map((b, i) => b + th[i] * tI / 2), gB = baseOuter ? gO : gI, fB = baseOuter ? outer.flats : inner.flats;   /* gO・gI＝表・裏それぞれから求めた、貼り合わせ線での折りの長さ */
   const rg = gB.map((g, i) => g / th[i]), tight = rg.findIndex(r => !(r - tI > 0.05)); if (tight >= 0) return { ok: false, error: 'tight', index: tight + 1 };
-  const flip = rg[0] < rg[1], orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
+  const flip = rg[0] < rg[1] - FOLD_FLIP_TIE, orient = a => flip ? [...a].reverse() : [...a], kg = (tO - tI) / 2, T = tO + tI;
   const flats = orient(fB), pathAngles = orient(th), bends = orient(rg.map((r, i) => th[i] * (r + kg))), path = foldSectionPath({ flats, bends, angles: pathAngles });
   const sum = a => a.reduce((x, y) => x + y, 0), wantBend = baseOuter ? gO.map((g, i) => g - th[i] * tI / 2) : gI.map((g, i) => g + th[i] * tO / 2), other = baseOuter ? inner : outer;
   const rf = outer.flats.map((o, i) => ({ outer: o, inner: inner.flats[i], want: fB[i], diff: other.flats[i] - fB[i] })), rb = outer.bends.map((o, i) => ({ outer: o, inner: inner.bends[i], want: wantBend[i], diff: other.bends[i] - wantBend[i] }));
