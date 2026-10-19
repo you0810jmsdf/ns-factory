@@ -34,7 +34,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1610,7 +1610,36 @@ function relayRim() {
   line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
   rebuildSnaps(); draw();
 }
-/* ───────── 展開：ボタンの穴を、表と裏でそろえる（事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
+/* ───────── 曲げを伸ばす（事業主の選択 2026-10-19・A 伸ばすだけ）：リングが入らない曲げだけ、必要な長さ（菱目の間隔の倍数）まで表・裏とも伸ばす。入る曲げ・折りの角度は変えない ───────── */
+function growBends() {
+  const box = $('lamResult'); box.textContent = '';
+  const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, fail = (key, p) => { const m = t(key, p); line(m, 'lam-error'); $('hint').textContent = m; }, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), f2 = v => (+v).toFixed(2);
+  if (doc.parts.length < 2) { fail('lamNeedParts'); return; }
+  fillLaminateParts(); const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value); if (!po || !pi || po === pi) { fail('lamErr_pickTwo'); return; }
+  if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
+  const tO = Number($('lamTOuter').value), tI = Number($('lamTInner').value), axisSel = $('lamAxis').value, now = laminateNow(doc, po.id, pi.id, { tOuter: tO, tInner: tI, axis: axisSel === 'x' || axisSel === 'y' ? axisSel : 'auto' });
+  if (!(tO > 0 && tI > 0)) { fail('lamErr_thickness'); return; } if (!now) { fail('lamErr_emptyPart'); return; }
+  const ringRaw = String($('lamRingD').value ?? '').trim(), ringD = ringRaw === '' ? 0 : Number(ringRaw); if (!(ringD > 0)) { fail(ringRaw === '' ? 'lamGrowErr_noRing' : 'lamRingErr_bad'); return; }
+  const pitch = lamPitchValue(); if (!(pitch >= 0.5)) { fail('lamRelayErr_badPitch'); return; }
+  const specs = {}, rimZ = lamRimBendZones(doc, po.id, pi.id, { axis: now.axis });
+  for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis: now.axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
+  if (specs.outer.source !== 'rim' || specs.inner.source !== 'rim') { fail('lamGrowErr_notRim'); return; }   /* 曲げの範囲が外周の菱目から決まっているときだけ（菱目を並べ直すため） */
+  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, angleMode: 'data', outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
+  if (!plan.ok) { fail('lamSecErr_' + plan.error, { k: plan.index ?? 0 }); return; }
+  const ring = foldRingCheck(plan, { ringD, tO, tI, pitch }), bad = ring.gaps.filter(g => !g.ok);
+  if (!bad.length) { const m = t('lamGrowNone', { d: String(+ringD.toFixed(2)) }); line(m); $('hint').textContent = m; return; }
+  const gp = lamBendGrowPlan(doc, po.id, pi.id, { pitch, axis: now.axis, grow: bad.map(g => ({ k: g.k, n: ring.byPitch[g.k - 1].n })) }); if (!gp.ok) { fail(gp.error === 'badGrow' ? 'lamGrowErr_badGrow' : 'lamRelayErr_' + gp.error); return; }
+  const res = lamBendGrowApply(doc, po.id, pi.id, gp), locked = [...res.replace.keys()].filter(id => { const s = doc.shapes.find(q => q.id === id); return s && !editable(s); }).length; if (locked) { fail('lamGrowErr_locked', { n: locked }); return; }
+  commit(() => {
+    const added = []; for (const [part, list] of [[po, res.adds.outer], [pi, res.adds.inner]]) for (const sh of list) { const id = freshId([...doc.shapes, ...added], 's'); added.push({ ...sh, id }); part.shapeIds.push(id); }   /* 足す菱目は、曲げの始めの菱目の複製。部品にも入れる */
+    doc.shapes = [...doc.shapes.map(s => res.replace.get(s.id) || s), ...added];
+  });
+  const m = gp.outer.rim.adds.length + gp.inner.rim.adds.length, done = t('lamGrowDone', { z: gp.zones.length, m, o: f2(gp.outer.shift), i: f2(gp.inner.shift) }); line(done); $('hint').textContent = done;
+  for (const z of gp.zones) line(t('lamGrowZone', { k: z.k, oOld: f2(z.outerOld), oNew: f2(z.outerNew), iOld: f2(z.innerOld), iNew: f2(z.innerNew), nOld: z.nOld, n: z.n, gOld: f2(ring.gaps[z.k - 1].gap), gNew: f2(ring.byPitch[z.k - 1].gap), aOld: (plan.angles[z.k - 1] * 180 / Math.PI).toFixed(1), aNew: ((z.outerNew - z.innerNew) / ((tO + tI) / 2) * 180 / Math.PI).toFixed(1) }));
+  line(t('lamGrowNote')); rebuildSnaps(); draw();
+}
+/* ───────── 展開：ボタンの穴を、表と裏でそろえる（
+事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
 function unfoldButtons() {
   const box = $('lamResult'); box.textContent = '';
   const line = (text, cls) => { const d = document.createElement('div'); d.textContent = text; if (cls) d.className = cls; box.appendChild(d); }, fail = (key, p) => { const m = t(key, p); line(m, 'lam-error'); $('hint').textContent = m; }, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner');
@@ -1843,7 +1872,7 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();

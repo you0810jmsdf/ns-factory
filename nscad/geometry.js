@@ -30,6 +30,8 @@ function transformGeometry(s, point, angle = a => a, reflected = false) {
 /** 図形／点／穴と mm の移動量から新しい同型データを返す。 */
 /** 図形／点／穴を、横方向だけ mapX(x) で動かした新データ（縦は変えない）。座標の持ち方は translate と同じ全項目（端点・中心・ベジェの制御点・節点とそのハンドル・折れ線の頂点）。 */
 export function warpX(s, mapX) { return transformGeometry(s, p => ({ x: mapX(p.x), y: p.y })); }
+/** warpX の縦版：横は変えず、縦方向だけ mapY(y) で動かした新データ。 */
+export function warpY(s, mapY) { return transformGeometry(s, p => ({ x: p.x, y: mapY(p.y) })); }
 export function translate(s, dx, dy) { return transformGeometry(s, p => ({ x: p.x + dx, y: p.y + dy })); }
 /** 図形／点／穴を、基準点 origin を動かさずに横 sx 倍・縦 sy 倍へ伸縮した新データを返す（倍率は正の数。そうでなければ RangeError）。
  *  縦横が同じ倍率なら円・円弧は半径が変わるだけ。縦横が違うと円・円弧は折れ線（円は閉じた形・円弧は開いた線）になる。文字の大きさは同じ倍率（縦横が違えば幾何平均）、画像は幅と高さ、寸法はずらし量も伸縮する。 */
