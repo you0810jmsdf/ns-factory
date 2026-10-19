@@ -31,7 +31,7 @@
 <div class="wrap">
 <h1>N's CAD 図解ガイド</h1>
 <p class="lead">ヘルプを読んでも分かりにくいところを、絵で説明します。最初は「レイヤー」。そのあと主な機能を順番に。</p>
-<nav class="toc"><a href="#layer">1 レイヤー</a><a href="#screen">2 画面の見かた</a><a href="#stitch">3 目打ちと目印</a><a href="#offset">4 オフセット</a><a href="#ruler">5 定規</a><a href="#patch">6 柄（パッチワーク）</a><a href="#refill">7 リフィルの型紙</a><a href="#views">8 手帳の3面図</a><a href="#save">9 保存と書き出し</a><a href="#threeview">10 三面図から立体へ</a></nav>
+<nav class="toc"><a href="#layer">1 レイヤー</a><a href="#screen">2 画面の見かた</a><a href="#stitch">3 目打ちと目印</a><a href="#offset">4 オフセット</a><a href="#ruler">5 定規</a><a href="#patch">6 柄（パッチワーク）</a><a href="#refill">7 リフィルの型紙</a><a href="#views">8 手帳の3面図</a><a href="#save">9 保存と書き出し</a><a href="#threeview">10 三面図から立体へ</a><a href="#fold">11 三つ折りの手順</a></nav>
 
 <h2 id="layer">1 レイヤーとは</h2>
 <p class="lead">一言でいうと、<b>「透明なシートを何枚か重ねて描く」</b>仕組みです。シートごとに「見せる・隠す」「触れないようにする」ができます。</p>
@@ -301,6 +301,130 @@
 <div class="step"><b class="n">4</b><div>上の<b>「3D」</b>を押す。三面図から組み立てた立体が出ます。左ドラッグで回転。右の「3D（折りたたみ）」カードで<b>「4分割」</b>にすると、正面・上・右から見た図と並べて比べられます。</div></div>
 <p class="note">もう1つの方式「<b>三面図（4分割）</b>」もあります。正面・上・右を別々の紙（タブ）に描き、画面を4つに分けて同時に見ます（左上＝上・左下＝正面・右下＝右・右上＝立体）。枠や45°の線はなく、紙どうしのつながりは点線だけです。描きたい区画をクリックしてから描きます。くわしくは「ヘルプ(?)」の「三面図（4分割）」を見てください。</p>
 <p class="note">枠は目安で図形ではなく、保存や書き出しには入りません。枠は描いた形に合わせて自動で広がります。枠を自分で決めたいときは、まっすぐな四角を描いて選び<b>「選んだ四角を枠にする」</b>を押します（正面・上・右のどこに描いたかで決まり、残りの枠は奥行きから作られます）。細かいくぼみ・穴・複数の部品は、まだ立体にできません（作っている途中の機能です）。</p>
+
+<h2 id="fold">11 三つ折りの手順</h2>
+<p class="lead">三つ折り（内側へ巻く形）の型紙は、<b>5つの手順</b>で作ります。右メニューの<b>「三つ折り」タブの先頭にある「三つ折りの手順」カード</b>に、同じ5つの手順とボタンが並んでいます。いまの手順には<b>「いまここ」</b>、できた手順には<b>「済」</b>が付きます（図面の状態から判断するので、目安です）。③と④は、形が合うまで何度でもくり返せます。</p>
+<div class="card">
+<svg viewBox="0 0 760 170" role="img" aria-label="三つ折りの5つの手順の流れ：断面を作る、平面に展開する、設計を直す、断面をもう一度作る、型紙に展開する。③と④は何度でもくり返す">
+  <defs><marker id="fl-ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9z" fill="var(--accent)"/></marker></defs>
+  <rect x="14" y="10" width="732" height="150" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="28" y="34" width="126" height="70" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+  <rect x="174" y="34" width="126" height="70" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+  <rect x="320" y="34" width="126" height="70" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+  <rect x="466" y="34" width="126" height="70" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+  <rect x="612" y="34" width="126" height="70" rx="10" fill="var(--card)" stroke="var(--accent)" stroke-width="2"/>
+  <circle cx="46" cy="34" r="13" fill="var(--accent)"/><circle cx="192" cy="34" r="13" fill="var(--accent)"/><circle cx="338" cy="34" r="13" fill="var(--accent)"/><circle cx="484" cy="34" r="13" fill="var(--accent)"/><circle cx="630" cy="34" r="13" fill="var(--accent)"/>
+  <g font-size="14" text-anchor="middle" style="font-weight:bold;fill:var(--bg)"><text x="46" y="39" style="fill:var(--bg)">①</text><text x="192" y="39" style="fill:var(--bg)">②</text><text x="338" y="39" style="fill:var(--bg)">③</text><text x="484" y="39" style="fill:var(--bg)">④</text><text x="630" y="39" style="fill:var(--bg)">⑤</text></g>
+  <g font-size="13" text-anchor="middle"><text x="91" y="66">三つ折りの</text><text x="91" y="86">断面を作る</text><text x="237" y="66">平面に</text><text x="237" y="86">展開する</text><text x="383" y="76">設計を直す</text><text x="529" y="66">断面を</text><text x="529" y="86">もう一度作る</text><text x="675" y="66">型紙に</text><text x="675" y="86">展開する</text></g>
+  <g stroke="var(--accent)" stroke-width="2.2" fill="none"><path d="M156 69 h16" marker-end="url(#fl-ar)"/><path d="M302 69 h16" marker-end="url(#fl-ar)"/><path d="M448 69 h16" marker-end="url(#fl-ar)"/><path d="M594 69 h16" marker-end="url(#fl-ar)"/><path d="M529 108 q-73 36 -146 0" marker-end="url(#fl-ar)"/></g>
+  <text x="456" y="152" font-size="12" text-anchor="middle" class="s">③と④は、形が合うまで何度でも</text>
+</svg>
+</div>
+
+<h3 id="fold1">① 三つ折りの断面を作る</h3>
+<div class="card">
+<svg viewBox="0 0 760 210" role="img" aria-label="三つ折りの断面の図：革が3枚重なり、ボタン線が3枚を通る。ボタン線から左右の折りの外側までの距離を入れる">
+  <rect x="14" y="10" width="732" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <path d="M150 52 H560 A17 17 0 0 1 560 86 H200 A17 17 0 0 0 200 120 H520" fill="none" stroke="var(--pat)" stroke-width="7" stroke-linecap="round"/>
+  <line x1="330" y1="30" x2="330" y2="146" stroke="var(--guide)" stroke-width="2.2" stroke-dasharray="7 5"/>
+  <g fill="none" stroke="var(--mark)" stroke-width="2.4"><circle cx="330" cy="52" r="7"/><circle cx="330" cy="120" r="7"/></g>
+  <text x="338" y="28" font-size="13" class="a">ボタン線</text>
+  <text x="420" y="42" font-size="13" class="s">1枚目</text><text x="420" y="78" font-size="13" class="s">2枚目</text><text x="420" y="142" font-size="13" class="s">3枚目</text>
+  <text x="596" y="74" font-size="13">右の折り</text><text x="100" y="108" font-size="13">左の折り</text>
+  <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="183" y1="172" x2="330" y2="172"/><line x1="183" y1="166" x2="183" y2="178"/><line x1="330" y1="166" x2="330" y2="178"/><line x1="330" y1="172" x2="577" y2="172"/><line x1="577" y1="166" x2="577" y2="178"/></g>
+  <text x="256" y="192" font-size="12" text-anchor="middle" class="a">左の折りの外側まで</text><text x="453" y="192" font-size="12" text-anchor="middle" class="a">右の折りの外側まで</text>
+</svg>
+</div>
+<p><span class="tag">押すボタン</span>「断面を作る（ボタン線から）」（右メニュー「三つ折り」→「三つ折りの設計」カード）</p>
+<div class="step"><b class="n">1</b><div>ボタン線（ボタンが3枚を通る縦線）から、<b>左右の折りの外側までの距離</b>・<b>左右の革の切り口までの距離</b>・<b>左右の折りの内側の半径</b>を入れます。表・裏の革の厚みも入れます（空欄なら「革1枚の厚み」で、2枚貼り合わせにします）。</div></div>
+<div class="step"><b class="n">2</b><div><b>「断面を作る（ボタン線から）」</b>を押します。</div></div>
+<div class="say"><b>できあがり：</b>巻いた形（完成形）の断面が、図面の下にできます。平らな所が1枚目・2枚目・3枚目、丸く折る所が右と左に1つずつです。</div>
+<div class="say"><b>よくある失敗：</b>警告が出たとき。右の折りの内側の半径が左より小さい（厚みの半分以上大きくない）と、1枚目と3枚目が重なります。3枚目の右の切り口が右の折りを突き抜けるときも警告が出ます。距離か半径を直して、もう一度押します（作り直すと置き換わります）。</div>
+
+<h3 id="fold2">② 平面に展開する</h3>
+<div class="card">
+<svg viewBox="0 0 760 210" role="img" aria-label="平らに広げた図：折りの点線6本（左3本・右3本）、ボタン穴の〇2つ、菱目打ちラインの上下2本">
+  <rect x="14" y="10" width="732" height="190" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="40" y="48" width="680" height="100" fill="var(--card)" stroke="var(--pat)" stroke-width="2.6"/>
+  <g stroke="var(--guide)" stroke-width="2" stroke-dasharray="7 5"><line x1="170" y1="48" x2="170" y2="148"/><line x1="200" y1="48" x2="200" y2="148"/><line x1="230" y1="48" x2="230" y2="148"/><line x1="530" y1="48" x2="530" y2="148"/><line x1="560" y1="48" x2="560" y2="148"/><line x1="590" y1="48" x2="590" y2="148"/></g>
+  <g stroke="var(--mark)" stroke-width="2" stroke-dasharray="2 6"><line x1="56" y1="62" x2="704" y2="62"/><line x1="56" y1="134" x2="704" y2="134"/></g>
+  <g fill="none" stroke="var(--mark)" stroke-width="2.4"><circle cx="330" cy="98" r="9"/><circle cx="440" cy="98" r="9"/></g>
+  <text x="118" y="38" font-size="13" class="a">左の折り：点線3本</text><text x="480" y="38" font-size="13" class="a">右の折り：点線3本</text>
+  <text x="150" y="172" font-size="12" class="s">始め・まん中・終わり</text><text x="510" y="172" font-size="12" class="s">始め・まん中・終わり</text>
+  <text x="270" y="86" font-size="13" class="s">菱目打ちライン（上下2本）</text>
+  <text x="330" y="192" font-size="13" class="s">ボタン穴の〇2つ</text>
+</svg>
+</div>
+<p><span class="tag">押すボタン</span>「確定して平面へ投影（FIX）」　そのあと「菱目打ちラインを描く（上下2本）」（どちらも「三つ折りの設計」カード）</p>
+<div class="step"><b class="n">1</b><div>「平面図の高さ」「ボタン穴の直径」などの欄を入れて、<b>「確定して平面へ投影（FIX）」</b>を押します。</div></div>
+<div class="step"><b class="n">2</b><div>縫い穴も作るときは、<b>「菱目打ちラインを描く（上下2本）」</b>を押します（縁からの距離・菱目のピッチ・革の端からの余白の欄を使います）。</div></div>
+<div class="say"><b>できあがり：</b>革を広げた平らな図（帯）が、図面の下にできます。<b>折りの点線6本</b>（左3本・右3本）と、ボタン穴の〇2つが入ります。菱目打ちラインを押すと、帯の上と下に縫い線の点線と菱目の穴が並びます。数字を変えて押し直すと、置き換わります。</div>
+<div class="say"><b>よくある失敗：</b>「先に断面を作ってください」と出たときは、①をまだしていません。「平面図の高さは0より大きい数で入れてください」と出たときは、高さの欄が空か0です。数字を入れて、もう一度押します。</div>
+
+<h3 id="fold3">③ 設計を直す</h3>
+<div class="card">
+<svg viewBox="0 0 760 250" role="img" aria-label="設計を直す絵：曲げが短くてリングが入らない（前）と、曲げを伸ばしてリングが入る（後）">
+  <rect x="14" y="10" width="320" height="230" rx="12" fill="var(--soft)" stroke="var(--line)"/><rect x="426" y="10" width="320" height="230" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <text x="28" y="34" font-size="13" class="a">前（曲げが短い）</text><text x="440" y="34" font-size="13" class="a">後（曲げを伸ばした）</text>
+  <rect x="28" y="52" width="292" height="26" fill="var(--card)" stroke="var(--mark)" stroke-width="2"/><rect x="150" y="52" width="30" height="26" fill="var(--mark)" opacity=".28"/>
+  <rect x="28" y="92" width="292" height="26" fill="var(--card)" stroke="var(--guide)" stroke-width="2"/><rect x="154" y="92" width="26" height="26" fill="var(--guide)" opacity=".28"/>
+  <rect x="440" y="52" width="292" height="26" fill="var(--card)" stroke="var(--mark)" stroke-width="2"/><rect x="480" y="52" width="60" height="26" fill="var(--mark)" opacity=".28"/>
+  <rect x="440" y="92" width="292" height="26" fill="var(--card)" stroke="var(--guide)" stroke-width="2"/><rect x="484" y="92" width="52" height="26" fill="var(--guide)" opacity=".28"/>
+  <text x="34" y="70" font-size="12" class="s">表</text><text x="34" y="110" font-size="12" class="s">裏</text><text x="446" y="70" font-size="12" class="s">表</text><text x="446" y="110" font-size="12" class="s">裏</text>
+  <path d="M60 178 H170 A12 12 0 0 1 170 202 H60" fill="none" stroke="var(--pat)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="170" cy="190" r="20" fill="none" stroke="var(--warn)" stroke-width="3"/><text x="200" y="196" font-size="13" style="fill:var(--warn);font-weight:bold">リングが入らない</text>
+  <path d="M472 168 H582 A22 22 0 0 1 582 212 H472" fill="none" stroke="var(--pat)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="582" cy="190" r="20" fill="none" stroke="var(--ok)" stroke-width="3"/><text x="614" y="196" font-size="13" style="fill:var(--ok);font-weight:bold">リングが入る</text>
+  <path d="M340 125 h80" stroke="var(--accent)" stroke-width="2.4" fill="none" marker-end="url(#fl-ar)"/><text x="380" y="110" font-size="12" text-anchor="middle" class="a">曲げを伸ばす</text>
+</svg>
+</div>
+<p><span class="tag">押すボタン</span>「三つ折りの展開の表・裏を、部品にする」→「外周の菱目を、ピッチに並べ直す」→「曲げを伸ばす（リングが入るように）」（右メニュー「三つ折り」→「設計（厚み）」カード。厚み・ピッチ・リング外径は、その中の「貼り合わせの曲げ検証」に入れます）</p>
+<div class="step"><b class="n">1</b><div><b>「三つ折りの展開の表・裏を、部品にする」</b>で、表と裏を部品にします（別々に描いた図面なら、図形を選んで「選んだ図形を、表の部品にする」「選んだ図形を、裏の部品にする」）。</div></div>
+<div class="step"><b class="n">2</b><div>「貼り合わせの曲げ検証」で、表の部品・裏の部品・革の厚み・菱目のピッチ（目打ちの値）・<b>リング外径</b>を入れます。</div></div>
+<div class="step"><b class="n">3</b><div><b>「外周の菱目を、ピッチに並べ直す」</b>を押します。続けて、リングが入らないときは<b>「曲げを伸ばす（リングが入るように）」</b>を押します。</div></div>
+<div class="say"><b>できあがり：</b>平らな所の菱目は、目打ちのピッチどおりに並びます。曲げの長さは菱目の間隔の倍数になります。曲げを伸ばすと、リングが入らなかった曲げだけが、必要な長さまで表・裏とも伸びます（全長は伸びます。入る曲げは触りません）。結果の欄に、曲げごとの「必要な長さ・いまの長さ・リングの隙間・入る／入らない」が出ます。</div>
+<div class="say"><b>よくある失敗：</b>「リング外径の欄に数字を入れてください」と出たときは、リング外径が空です。入れてから押します。曲げの範囲が縦の点線から決まっている図面では、菱目を並べ直せないので「曲げを伸ばす」は使えません。「表と裏に、別々の部品を選んでください」と出たときは、表と裏に同じ部品を選んでいます。</div>
+
+<h3 id="fold4">④ 断面をもう一度作る</h3>
+<div class="card">
+<svg viewBox="0 0 760 230" role="img" aria-label="断面をもう一度作った絵：円の穴の四角、リングの円、両端の「展開図の左端」「展開図の右端」の文字">
+  <rect x="14" y="10" width="732" height="210" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <path d="M150 52 H560 A17 17 0 0 1 560 86 H200 A17 17 0 0 0 200 120 H520" fill="none" stroke="var(--pat)" stroke-width="7" stroke-linecap="round"/>
+  <rect x="322" y="42" width="16" height="20" fill="var(--mark)" opacity=".45" stroke="var(--mark)" stroke-width="1.6"/><rect x="322" y="110" width="16" height="20" fill="var(--guide)" opacity=".4" stroke="var(--guide)" stroke-width="1.6"/>
+  <circle cx="562" cy="69" r="11" fill="none" stroke="var(--ok)" stroke-width="2.6"/><circle cx="198" cy="103" r="11" fill="none" stroke="var(--ok)" stroke-width="2.6"/>
+  <text x="20" y="58" font-size="13" class="a">展開図の左端</text><text x="532" y="126" font-size="13" class="a">展開図の右端</text>
+  <text x="40" y="170" font-size="13" class="s">橙の四角＝表の円の穴・青の四角＝裏の円の穴（幅は穴の直径）</text>
+  <text x="40" y="194" font-size="13" class="s">緑の円＝リングが入る（入らない曲げは赤）</text>
+</svg>
+</div>
+<p><span class="tag">押すボタン</span>「表と裏から断面図を作る」（「設計（厚み）」カードの「貼り合わせの曲げ検証」）</p>
+<div class="step"><b class="n">1</b><div>表の部品・裏の部品・革の厚み（・リング外径）を確かめて、<b>「表と裏から断面図を作る」</b>を押します。</div></div>
+<div class="say"><b>できあがり：</b>直した表と裏から、断面図ができます。表の<b>円の穴</b>は橙の四角、裏の円の穴は青の四角で、穴の幅（直径）ぶんが出ます。リングの円は、入る曲げが緑・入らない曲げが赤です。両端に<b>「展開図の左端」「展開図の右端」</b>の文字が入るので、断面のどちらが展開図の左右かが分かります（左右の折りの半径がほぼ同じなら、断面は反転しません）。カードの中にも、同じ断面の絵が出ます。</div>
+<div class="say"><b>よくある失敗：</b>「曲げ部が見つかりません」と出たときは、外周の菱目（菱の線）か穴の間隔が変わる範囲、または縦の点線（4本か6本）が要ります。③で菱目を並べ直すか、縦の点線を6本引きます。リングが赤のときは、③の「曲げを伸ばす」をします。表と裏で厚みが違って見えるときは、厚みの欄を確かめます（欄に入れた値は、その部品の厚みにも保存されます）。</div>
+
+<h3 id="fold5">⑤ 型紙に展開する</h3>
+<div class="card">
+<svg viewBox="0 0 760 300" role="img" aria-label="型紙に展開した絵：表の展開図に黄の点線6本、裏の展開図に青の点線6本。点線の上に曲げの長さの文字が付く">
+  <rect x="14" y="10" width="732" height="284" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <rect x="40" y="50" width="680" height="80" fill="var(--card)" stroke="var(--pat)" stroke-width="2.6"/>
+  <g stroke="var(--mark)" stroke-width="2.4" stroke-dasharray="7 5"><line x1="170" y1="50" x2="170" y2="130"/><line x1="202" y1="50" x2="202" y2="130"/><line x1="234" y1="50" x2="234" y2="130"/><line x1="500" y1="50" x2="500" y2="130"/><line x1="532" y1="50" x2="532" y2="130"/><line x1="564" y1="50" x2="564" y2="130"/></g>
+  <text x="202" y="42" font-size="13" text-anchor="middle" class="a">曲げ1 31.60</text><text x="532" y="42" font-size="13" text-anchor="middle" class="a">曲げ2 31.60</text>
+  <g fill="none" stroke="var(--pat)" stroke-width="2.2"><circle cx="532" cy="78" r="8"/><circle cx="532" cy="106" r="8"/></g>
+  <text x="574" y="96" font-size="12" class="s">頂点の円</text><text x="50" y="76" font-size="14">表</text>
+  <rect x="40" y="170" width="680" height="80" fill="var(--card)" stroke="var(--pat)" stroke-width="2.6"/>
+  <g stroke="var(--guide)" stroke-width="2.4" stroke-dasharray="7 5"><line x1="172" y1="170" x2="172" y2="250"/><line x1="198" y1="170" x2="198" y2="250"/><line x1="224" y1="170" x2="224" y2="250"/><line x1="504" y1="170" x2="504" y2="250"/><line x1="530" y1="170" x2="530" y2="250"/><line x1="556" y1="170" x2="556" y2="250"/></g>
+  <text x="198" y="148" font-size="12" text-anchor="middle" class="s">リング必要 24.30 以上</text><text x="198" y="162" font-size="13" text-anchor="middle" class="a">曲げ1 27.65</text><text x="530" y="148" font-size="12" text-anchor="middle" class="s">リング必要 24.30 以上</text><text x="530" y="162" font-size="13" text-anchor="middle" class="a">曲げ2 27.65</text>
+  <g fill="none" stroke="var(--pat)" stroke-width="2.2"><circle cx="530" cy="198" r="8"/><circle cx="530" cy="226" r="8"/></g>
+  <text x="566" y="216" font-size="12" class="s">頂点の円</text><text x="50" y="196" font-size="14">裏</text>
+  <text x="40" y="282" font-size="12" class="s">黄の点線6本＝表の曲げの範囲／青の点線6本＝裏の曲げの範囲（始め・まん中・終わり×2か所）</text>
+</svg>
+</div>
+<p><span class="tag">押すボタン</span>「表・裏の展開図を作る（菱目ピッチ付き）」（「三つ折りの設計」カード）　「展開：ボタンの穴を、表と裏でそろえる」（「設計（厚み）」カード）　近道「整える（並べ直し→曲げを伸ばす→展開→断面図）」</p>
+<div class="step"><b class="n">1</b><div>表・裏の展開図が要るときは、<b>「表・裏の展開図を作る（菱目ピッチ付き）」</b>を押します（図面の下に表と裏が並びます）。</div></div>
+<div class="step"><b class="n">2</b><div><b>「展開：ボタンの穴を、表と裏でそろえる」</b>を押します。基準の部品（表か裏）の円を、もう一方の部品の「貼り合わせたとき重なる位置」にそろえます（無ければ足します）。</div></div>
+<div class="say"><b>できあがり：</b>表の図面に<b>黄の点線6本</b>、裏の図面に<b>青の点線6本</b>（曲げ2か所×始め・まん中・終わり）が、ガイドの層に入ります。点線の上には、曲げの長さの文字（リング外径を入れていれば、リングに必要な長さも）が付きます。頂点の円は、まん中の点線の上に来ます（並べ直しをしたとき）。</div>
+<div class="say"><b>近道：</b>「整える」を押すと、<b>菱目の並べ直し → 曲げを伸ばす → 展開 → 断面図</b>が、順に1回で済みます。途中で失敗したら何も変えません（元に戻すも1回です）。リング外径の欄が空のときは「曲げを伸ばす」を飛ばします。</div>
+<div class="say"><b>よくある失敗：</b>「円（ボタンの穴）が見つかりません」と出たときは、基準の部品に円が無いので、ボタンの穴はそろえられません（「整える」では飛ばして続け、点線だけ入れます）。点線は、やり直すたびに前の線が置き換わるので、増え続けることはありません。表と裏の位置がずれるときは、先に③で菱目を並べ直してから展開します。</div>
 
 <hr style="border:0;border-top:1px solid var(--line);margin:40px 0 14px">
 <p class="note">このガイドは N's CAD の画面と同じ言葉で書いています。分からない点があれば、画面のスクリーンショットを添えて教えてください。説明を足します。</p>
