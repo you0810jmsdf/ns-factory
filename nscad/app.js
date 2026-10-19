@@ -34,7 +34,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -1625,7 +1625,7 @@ function tidyLaminate() {
   const defs = [
     { key: 'lamTidyStep1', run: relayRim },
     { key: 'lamTidyStep2', run: growBends, skipText: ringRaw === '' ? t('lamTidySkipNoRing') : null, okErrors: [t('lamGrowErr_notRim')] },
-    { key: 'lamTidyStep3', run: unfoldButtons, okErrors: [t('lamUnfoldErr_noButtons')] },
+    { key: 'lamTidyStep3', run: () => { unfoldButtons(); if (grab().some(r => r.cls.includes('lam-error') && r.text === t('lamUnfoldErr_noButtons'))) placeBendGuidesOnly(); }, okErrors: [t('lamUnfoldErr_noButtons')] },   /* 円が無くて展開を飛ばしても、曲げの範囲の点線は入れる */
     { key: 'lamTidyStep4', run: makeLamSection }];
   const savedUndo = undo, savedRedo = redo, steps = []; let failed = null; undo = [];   /* 途中の元に戻す記録は、いったん別の置き場へ（最後に1つにまとめる） */
   try {
@@ -1673,6 +1673,19 @@ function growBends() {
   for (const z of gp.zones) line(t('lamGrowZone', { k: z.k, oOld: f2(z.outerOld), oNew: f2(z.outerNew), iOld: f2(z.innerOld), iNew: f2(z.innerNew), nOld: z.nOld, n: z.n, gOld: f2(ring.gaps[z.k - 1].gap), gNew: f2(ring.byPitch[z.k - 1].gap), aOld: (plan.angles[z.k - 1] * 180 / Math.PI).toFixed(1), aNew: ((z.outerNew - z.innerNew) / ((tO + tI) / 2) * 180 / Math.PI).toFixed(1) }));
   line(t('lamGrowNote')); rebuildSnaps(); draw();
 }
+/* ───────── 曲げの範囲の点線（事業主の希望 2026-10-19「展開したときに曲げの範囲を６本の点線で表示して」）：表・裏の部品それぞれに、曲げ2か所×（始め・まん中・終わり）＝6本をガイド層へ。前回の線は置き換える。commit の中で呼ぶ。返り値：{ o, i }（入れた本数） ───────── */
+function placeBendGuides(po, pi, axis, specs) {
+  const g = lamBendGuides(doc, po.id, pi.id, { axis, specs }); if (!g.ok) return { o: 0, i: 0 };
+  const prefix = `${po.id}:${pi.id}:`; doc.shapes = doc.shapes.filter(s => !(typeof s.lamBendGuide === 'string' && s.lamBendGuide.startsWith(prefix)));   /* 前回の線を置き換える */
+  const layer = ensureLayer(doc, 'guide'), added = []; for (const l of [...g.outer, ...g.inner]) added.push({ ...l, layer, id: freshId([...doc.shapes, ...added], 's') }); doc.shapes.push(...added); return { o: g.outer.length, i: g.inner.length };
+}
+/** 展開が飛ばされた（円が無い）ときも、曲げの範囲の点線だけは入れる（整える用）。結果欄には足して書く（空にしない）。曲げの範囲が見つからなければ何もしない。 */
+function placeBendGuidesOnly() {
+  const box = $('lamResult'); fillLaminateParts(); const po = doc.parts.find(p => p.id === $('lamOuter').value), pi = doc.parts.find(p => p.id === $('lamInner').value); if (!po || !pi || po === pi) return;
+  const axisSel = $('lamAxis').value, bx = partBox(doc, po), axis = axisSel === 'x' || axisSel === 'y' ? axisSel : (bx && bx.maxY - bx.minY > bx.maxX - bx.minX ? 'y' : 'x'), rimZ = lamRimBendZones(doc, po.id, pi.id, { axis }), specs = {};
+  for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) return; specs[side] = r; }
+  let gc = null; commit(() => { gc = placeBendGuides(po, pi, axis, specs); }); if (gc?.o) { const d = document.createElement('div'); d.textContent = t('lamGuideDone', { o: gc.o, i: gc.i }); box.appendChild(d); }
+}
 /* ───────── 展開：ボタンの穴を、表と裏でそろえる（
 事業主の選択 2026-10-19・案A＋「折りが約100〜120°になってもボタン位置が合えば大丈夫」）。基準の部品の円を、もう一方の部品の「貼り合わせたとき重なる位置」に足す・動かす ───────── */
 function unfoldButtons() {
@@ -1686,13 +1699,14 @@ function unfoldButtons() {
   const baseOuter = $('lamBase').value !== 'inner', [bp, op] = baseOuter ? [po, pi] : [pi, po], plan = lamButtonPlan(doc, bp.id, op.id, { axis, specs: { base: baseOuter ? specs.outer : specs.inner, other: baseOuter ? specs.inner : specs.outer } });
   if (!plan.ok) { fail('lamUnfoldErr_' + plan.error); return; }
   const srcOf = id => doc.shapes.find(q => q.id === id), blocked = [...plan.adds.map(a => srcOf(a.from)), ...plan.moves.map(m => srcOf(m.id))].filter(q => q && !editable(q)).length; if (blocked) { fail('lamUnfoldErr_locked', { n: blocked }); return; }
-  if (plan.adds.length || plan.moves.length) commit(() => {
+  let gc = null; commit(() => {   /* 円の変更が無くても、曲げの範囲の点線は入れ直す（変わらなければ記録は増えない） */
     for (const m of plan.moves) { const q = doc.shapes.find(x => x.id === m.id); if (q) { q.cx = m.x; q.cy = m.y; } }
     const added = []; for (const a of plan.adds) { const src = srcOf(a.from), id = freshId([...doc.shapes, ...added], 's'); added.push({ ...src, id, cx: a.x, cy: a.y }); op.shapeIds.push(id); }   /* 足す円は、基準の円の複製（半径・層・色はそのまま）。部品にも入れる */
     doc.shapes.push(...added);
+    gc = placeBendGuides(po, pi, axis, specs);
   });
   const done = t('lamUnfoldDone', { s: plan.same.length, m: plan.moves.length, a: plan.adds.length }); line(done); $('hint').textContent = done;
-  line(t('lamUnfoldNote', { base: sideName(baseOuter ? 'outer' : 'inner'), other: sideName(baseOuter ? 'inner' : 'outer') })); rebuildSnaps(); draw();
+  line(t('lamUnfoldNote', { base: sideName(baseOuter ? 'outer' : 'inner'), other: sideName(baseOuter ? 'inner' : 'outer') })); if (gc?.o) line(t('lamGuideDone', { o: gc.o, i: gc.i })); rebuildSnaps(); draw();
 }
 function runLaminate() {
   const box = $('lamResult'); box.textContent = '';
