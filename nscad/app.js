@@ -34,7 +34,7 @@ import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
-import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply } from './laminate.js';
+import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
@@ -49,7 +49,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1549,7 +1549,7 @@ function makeLamSection() {
   const ringRaw = String($('lamRingD').value ?? '').trim(), ringD = ringRaw === '' ? 0 : Number(ringRaw); if (ringRaw !== '' && !(ringD > 0)) { fail('lamRingErr_bad'); return; }   /* リング外径（空なら見ない） */
   const specs = {}, sideName = k => t(k === 'outer' ? 'lamSideOuter' : 'lamSideInner'), rimZ = lamRimBendZones(doc, po.id, pi.id, { axis: now.axis });   /* 外周の菱の線の曲げ部（点線が無いとき・穴より先に使う） */
   for (const [side, part] of [['outer', po], ['inner', pi]]) { const r = lamFoldSpec(doc, part, { axis: now.axis, rim: rimZ.ok ? rimZ[side] : null }); if (!r.ok) { fail('lamSecErr_' + r.error, { side: sideName(side), n: r.count ?? 0 }); return; } specs[side] = r; }
-  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, angleMode: 'data', outerHoles: specs.outer.holes, innerHoles: specs.inner.holes });
+  const base = $('lamBase').value === 'inner' ? 'inner' : 'outer', plan = foldStackPlan({ outer: specs.outer, inner: specs.inner, tO, tI, base, angleMode: 'data', outerHoles: specs.outer.holes, innerHoles: specs.inner.holes, outerCircles: lamPartCircles(doc, po, specs.outer), innerCircles: lamPartCircles(doc, pi, specs.inner) });
   if (!plan.ok) { fail('lamSecErr_' + plan.error, { k: plan.index ?? 0 }); return; }
   const ring = ringD > 0 ? foldRingCheck(plan, { ringD, tO, tI, pitch: lamPitchValue() }) : null;   /* 折りの内側の隙間が、リング外径以上か */
   const b = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec), holes: [] }) || { maxY: 0 }, x0 = partBox(doc, po)?.minX ?? 0, origin = { x: x0, y: b.maxY + 40 + foldPathVMax(plan.path) + plan.T }, key = `lam:${po.id}:${pi.id}`;
@@ -1561,6 +1561,8 @@ function makeLamSection() {
     doc.foldSections[secId] = { key, flats: plan.flats, bends: plan.bends, flip: plan.flip, angles: plan.pathAngles, t: plan.T / 2, plies: FOLD_SEC_PLIES, T: plan.T, glueK: plan.glueK, x0, x1: x0 + specs.outer.length, lam: true };
     for (const sh of foldSectionShapes(plan.path, plan.T, origin, FOLD_SEC_PLIES, plan.T / 2 - tI)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: secId });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から */
     for (const [ss, side] of [[plan.outerS, 'outer'], [plan.innerS, 'inner']]) for (const hm of foldHoleMarks(plan.path, ss, plan.T, origin).filter(m => m.side === side)) doc.shapes.push({ ...hm, id: freshId(doc.shapes, 's'), layer: 'section', color: 'blue', foldSec: secId });   /* 表の菱目は外側の面・裏の菱目は内側の面 */
+    for (const [list, side] of [[plan.outerC, 'outer'], [plan.innerC, 'inner']]) for (const m of foldCircleMarks(plan.path, list, plan.T, origin, plan.glueK, side)) doc.shapes.push({ ...m, id: freshId(doc.shapes, 's'), layer: 'section', color: side === 'outer' ? 'yellow' : 'blue', foldSec: secId });   /* 円の穴：表の円は外側の層・裏の円は内側の層に、穴の幅（直径）ぶんの四角（事業主の指示 2026-10-19「〇穴を断面図に追加してほしい」） */
+    for (const lb of foldEndLabels(plan.path, origin, { startText: t(plan.flip ? 'lamSecEndRight' : 'lamSecEndLeft'), endText: t(plan.flip ? 'lamSecEndLeft' : 'lamSecEndRight'), sizeMm: 3.5 })) doc.shapes.push({ ...lb, id: freshId(doc.shapes, 's'), layer: 'section', color: 'white', foldSec: secId });   /* 断面の両端：表・裏の図面（展開図）の左端・右端（flip のときは始点が右端）（事業主の指示 2026-10-19「展開図の左右がどちらかわかりにくい」） */
     if (ring) plan.path.pieces.filter(q => q.kind === 'arc').forEach((pc, ai) => doc.shapes.push({ type: 'circle', cx: origin.x + pc.c.u, cy: origin.y - pc.c.v, r: ring.ringD / 2, id: freshId(doc.shapes, 's'), layer: 'section', color: ring.gaps[plan.flip ? 1 - ai : ai].ok ? 'green' : 'red', foldSec: secId, role: 'ring' }));   /* リングの円：2か所の折りの中心に置く目安（足りなければ赤） */
   });
   const f2 = v => (+v).toFixed(2), r = plan.report, baseName = sideName(r.base), otherName = sideName(r.base === 'outer' ? 'inner' : 'outer'), src = k => t('lamSecSrc_' + specs[k].source), warn = d => Math.abs(d) > 0.05 ? 'lam-warn' : '';
@@ -1572,6 +1574,7 @@ function makeLamSection() {
   r.flats.forEach((f, k) => line(t('lamSecFlat', { k: k + 1, o: f2(f.outer), i: f2(f.inner), d: lamSecDiff(f.diff) }), warn(f.diff)));
   r.bends.forEach((bd, k) => line(t('lamSecBendA', { k: k + 1, o: f2(bd.outer), i: f2(bd.inner), d: f2(bd.outer - bd.inner), a: (plan.angles[k] * 180 / Math.PI).toFixed(1), r: f2(plan.radii[k].glue) })));
   line(t('lamSecTotal2', { o: f2(r.lenOuter), i: f2(r.lenInner), d: f2(r.lenOuter - r.lenInner) }));
+  if (plan.outerC.length + plan.innerC.length) line(t('lamSecMarks', { n: plan.outerC.length + plan.innerC.length, o: plan.outerC.length, i: plan.innerC.length }));   /* 断面に入れた円の穴の数 */
   if (ring) {   /* リング外径：折りの内側の隙間が足りるか・足りない折りは、折りごとの角度での必要な曲げの長さ */
     const g1 = x => x.toFixed(1), d = String(+ring.ringD.toFixed(2)), ga = ring.gaps[0], gb = ring.gaps[1], sideLabel = k => t(k === 0 ? 'lamRingLeft' : 'lamRingRight');
     line(ring.ok ? t('lamRingOk', { d, a: g1(ga.gap), b: g1(gb.gap) }) : t('lamRingShort', { d, a: g1(ga.gap), b: g1(gb.gap), sa: g1(ga.short), sb: g1(gb.short) }), ring.ok ? 'lam-ok' : 'lam-warn');

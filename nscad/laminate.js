@@ -210,6 +210,11 @@ export function lamBendGrowApply(doc, outerId, innerId, plan) {
   }
   return { replace, adds };
 }
+/** 部品の円（ボタンの穴・取付穴）の、部品の端（spec.edge）からの位置（曲がる向き）と半径 [{ u, r }]（事業主の指示 2026-10-19「〇穴を断面図に追加してほしい」）。spec＝lamFoldSpec の結果（axis・edge を使う）。失敗した spec なら空。 */
+export function lamPartCircles(doc, part, spec) {
+  if (!spec?.ok) return [];
+  return doc.shapes.filter(s => s.type === 'circle' && part.shapeIds.includes(s.id) && lamOwnShape(part, s)).map(s => ({ u: (spec.axis === 'y' ? s.cy : s.cx) - spec.edge, r: s.r }));
+}
 /** 部品を2つ選んだ時点の「いまの全長」：表・裏それぞれの、曲がる向きの全長と、その差、貼り合わせたときの曲げ。検証を押す前に、画面へ出すための軽い計算（寸法・菱目は見ない・目標の全長も見ない）。
  *  opts：{ tOuter, tInner, axis('auto'|'x'|'y') }。選べていない（同じ部品・見つからない・図形が無い・厚みが正でない）ときは null。返り値：{ ok:true, axis, outerLen, innerLen, diff（長さの差の大きさ）, bend（bendOf の結果）, tOuter, tInner }。 */
 export function laminateNow(doc, outerId, innerId, opts = {}) {
