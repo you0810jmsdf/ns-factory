@@ -103,10 +103,10 @@ function rimRows(doc, part, along) {
 }
 /** 外周の菱目（菱の線）を、指定したピッチに並べ直す計画（事業主の選択 2026-10-19・案A。「平らなピッチは指定したピッチに合わせる（初期値は目打ち工具の 3.95）」「曲げの範囲が菱目間隔の倍数になるように調整する」）。図面は変えない（計画だけ）。
  *  表（外側）と裏（内側）の外周の直線の列（上下など）を1個ずつ突き合わせ、間隔が違う範囲（誤差 tol まで同じとみなす）を曲げ部とする。並べ直し：平らな所＝ピッチ・曲げ部＝裏はピッチ×間隔の数・表は（間隔の数＋δ）ピッチ（δ＝いまの表−裏の範囲の差÷ピッチを丸めた数・1以上）。
- *  最初の菱目は動かさない。列の右端が、表・裏とも元の位置を越えない範囲で、平らな間隔を m 個ずつ増やす（菱目を足す）。角・短い辺の菱目は対象外。
+ *  最初の菱目は動かさない。列の右端が、表・裏とも元の位置を越えない範囲で、平らな間隔を m 個ずつ増やす（菱目を足す）。そのあとの右端の余り（表・裏の平均）は、平らな間隔（足した分も）へ均等に配って、右端を元の位置に合わせる（動かさない角の菱目との間に飛びを出さない・配る量はピッチの3%まで）。角・短い辺の菱目は対象外。
  *  opts：{ pitch（0.5mm 以上）, axis:'x'｜'y'（曲がる向き）, tol（既定 0.1mm）}。
  *  返り値：{ ok:true, pitch, axis, rows（列の数）, counts:[いまの個数, 並べ直し後の個数], zones:[{ k, n（間隔の数）, delta, outerOld, innerOld, outerNew, innerNew, outerGap, innerGap }], extra（増やす個数）, span:{ outer:[今, 後], inner:[今, 後] }（列の端から端）, remainder:{ outer, inner }（右端の余り）,
- *  moves:{ outer:[{ id, d }], inner:[…] }（図形 id と、曲がる向きへ動かす量）, adds:{ outer:[{ from, d }], inner:[…] }（from の図形を複製して、曲がる向きへ d だけ動かした位置に足す。d は元の位置からの量）}。
+ *  flatGap（平らな実際の間隔）・stretch（ピッチに足した量）・stretchSkipped（配る量が大きすぎて配らなかった）、moves:{ outer:[{ id, d }], inner:[…] }（図形 id と、曲がる向きへ動かす量）, adds:{ outer:[{ from, d }], inner:[…] }（from の図形を複製して、曲がる向きへ d だけ動かした位置に足す。d は元の位置からの量）}。
  *  失敗：{ ok:false, error:'badPitch'｜'pickTwo'｜'noRim'（外周の列が無い）｜'rowMismatch'（表と裏で列の数・個数が違う）｜'rowDiffer'（上と下の列で間隔の並びが違う）｜'noBend'（表と裏で間隔が違う所が無い）｜'bendReversed'（裏のほうが長い曲げ部がある）}。 */
 export function lamRimRelayout(doc, outerId, innerId, { pitch, axis = 'x', tol = 0.1 } = {}) {
   if (!(typeof pitch === 'number' && Number.isFinite(pitch) && pitch >= 0.5)) return { ok: false, error: 'badPitch' };
@@ -119,12 +119,15 @@ export function lamRimRelayout(doc, outerId, innerId, { pitch, axis = 'x', tol =
   go.forEach((g, k) => { const off = Math.abs(g - gi[k]) > tol; if (off && st < 0) st = k; if ((!off || k === go.length - 1) && st >= 0) { const e = off ? k : k - 1, outerOld = sum(go.slice(st, e + 1)), innerOld = sum(gi.slice(st, e + 1)); zones.push({ s: st, e, n: e - st + 1, outerOld, innerOld }); st = -1; } });
   if (!zones.length) return { ok: false, error: 'noBend' }; if (zones.some(z => z.outerOld <= z.innerOld)) return { ok: false, error: 'bendReversed' };
   for (const z of zones) { z.delta = Math.max(1, Math.round((z.outerOld - z.innerOld) / pitch)); z.innerNew = z.n * pitch; z.outerNew = (z.n + z.delta) * pitch; z.outerGap = z.outerNew / z.n; z.innerGap = pitch; }
-  const layGaps = ply => go.map((_, k) => { const z = zones.find(q => k >= q.s && k <= q.e); return z ? (ply === 'inner' ? z.innerGap : z.outerGap) : pitch; });
-  const newO = sum(layGaps('outer')), newI = sum(layGaps('inner')), oldO = sum(go), oldI = sum(gi);
+  const layGaps = (ply, st = 0) => go.map((_, k) => { const z = zones.find(q => k >= q.s && k <= q.e); return z ? (ply === 'inner' ? z.innerGap : z.outerGap) : pitch + st; });   /* st＝平らな間隔に足す量（右端の余りを配る） */
+  const newO = sum(layGaps('outer')), newI = sum(layGaps('inner')), oldO = sum(go), oldI = sum(gi), flatN = go.filter((_, k) => !zones.some(q => k >= q.s && k <= q.e)).length;
   const m = Math.max(0, Math.min(Math.floor((oldO - newO) / pitch + 1e-9), Math.floor((oldI - newI) / pitch + 1e-9)));   /* 右端が、表・裏とも元の位置を越えない個数 */
-  const plan = (rows, ply) => { const gaps = [...layGaps(ply), ...Array(m).fill(pitch)], moves = [], adds = []; for (const r of rows) { const pos = [r.items[0].a]; for (const g of gaps) pos.push(pos.at(-1) + g); r.items.forEach((it, i) => moves.push({ id: it.id, d: pos[i] - it.a })); const last = r.items.at(-1); for (let j = 0; j < m; j++) adds.push({ from: last.id, d: pos[r.items.length + j] - last.a }); } return { moves, adds }; };
+  /* 右端の余り（表・裏の平均）を、平らな間隔（足した菱目の間隔も）へ均等に配る：つなぎ目（動かさない角の菱目との間）に飛びが出ないように（事業主の決定 2026-10-19「平らな所を少し広げる」）。広げる量が ピッチの 3% を超えるときは配らない（平らな所が短すぎる）。 */
+  const remO0 = oldO - newO - m * pitch, remI0 = oldI - newI - m * pitch; let stretch = flatN + m > 0 ? (remO0 + remI0) / 2 / (flatN + m) : 0, stretchSkipped = false;
+  if (stretch > pitch * 0.03) { stretch = 0; stretchSkipped = true; } if (stretch < 0) stretch = 0;
+  const plan = (rows, ply) => { const gaps = [...layGaps(ply, stretch), ...Array(m).fill(pitch + stretch)], moves = [], adds = []; for (const r of rows) { const pos = [r.items[0].a]; for (const g of gaps) pos.push(pos.at(-1) + g); r.items.forEach((it, i) => moves.push({ id: it.id, d: pos[i] - it.a })); const last = r.items.at(-1); for (let j = 0; j < m; j++) adds.push({ from: last.id, d: pos[r.items.length + j] - last.a }); } return { moves, adds }; };
   const pO = plan(ro, 'outer'), pI = plan(ri, 'inner');
-  return { ok: true, pitch, axis: along, rows: ro.length, counts: [ro[0].items.length, ro[0].items.length + m], zones: zones.map((z, k) => ({ k: k + 1, n: z.n, delta: z.delta, outerOld: z.outerOld, innerOld: z.innerOld, outerNew: z.outerNew, innerNew: z.innerNew, outerGap: z.outerGap, innerGap: z.innerGap })), extra: m, span: { outer: [oldO, newO + m * pitch], inner: [oldI, newI + m * pitch] }, remainder: { outer: oldO - newO - m * pitch, inner: oldI - newI - m * pitch }, moves: { outer: pO.moves, inner: pI.moves }, adds: { outer: pO.adds, inner: pI.adds } };
+  return { ok: true, pitch, axis: along, rows: ro.length, counts: [ro[0].items.length, ro[0].items.length + m], zones: zones.map((z, k) => ({ k: k + 1, n: z.n, delta: z.delta, outerOld: z.outerOld, innerOld: z.innerOld, outerNew: z.outerNew, innerNew: z.innerNew, outerGap: z.outerGap, innerGap: z.innerGap })), extra: m, flatGap: pitch + stretch, stretch, stretchSkipped, span: { outer: [oldO, newO + m * pitch + (flatN + m) * stretch], inner: [oldI, newI + m * pitch + (flatN + m) * stretch] }, remainder: { outer: oldO - newO - m * pitch - (flatN + m) * stretch, inner: oldI - newI - m * pitch - (flatN + m) * stretch }, moves: { outer: pO.moves, inner: pI.moves }, adds: { outer: pO.adds, inner: pI.adds } };
 }
 /** 表と裏の外周の菱目（菱の線）の列から、曲げ部を見つける（事業主の指示 2026-10-19「外周の菱目だけ見てください」・指摘「断面図が作れない」）。最初の列どうしを1個ずつ突き合わせ、間隔が違う範囲を、表・裏それぞれの部品の端からの位置で返す。
  *  返り値：{ ok:true, outer:{ zones:[[a,b]…], pos:[菱目の位置…] }, inner:{…} }（位置は部品の端から・mm）か { ok:false, error:'pickTwo'｜'noRim'｜'rowMismatch'｜'noBend' }。lamFoldSpec の opts.rim に、outer／inner を渡す。 */

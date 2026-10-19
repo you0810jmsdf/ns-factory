@@ -1615,7 +1615,7 @@ function relayRim() {
   });
   const f2 = v => (+v).toFixed(2), z = plan.zones, done = t('lamRelayDone', { p: String(+plan.pitch.toFixed(3)), rows: plan.rows, z: z.length, m: plan.extra }); line(done); $('hint').textContent = done;
   for (const q of z) line(t('lamRelayZone', { k: q.k, n: q.n, oOld: f2(q.outerOld), oNew: f2(q.outerNew), oGap: f2(q.outerGap), iOld: f2(q.innerOld), iNew: f2(q.innerNew), iGap: f2(q.innerGap) }));
-  line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
+  line(plan.stretchSkipped ? t('lamRelayNoStretch') : plan.stretch > 1e-9 ? t('lamRelayFlat', { g: (+plan.flatGap).toFixed(3), p: String(+plan.pitch.toFixed(3)), d: (plan.stretch / plan.pitch * 100).toFixed(1) }) : t('lamRelayFlatExact', { p: String(+plan.pitch.toFixed(3)) })); line(t('lamRelaySpan', { oOld: f2(plan.span.outer[0]), oNew: f2(plan.span.outer[1]), iOld: f2(plan.span.inner[0]), iNew: f2(plan.span.inner[1]), ro: f2(plan.remainder.outer), ri: f2(plan.remainder.inner) })); line(t('lamRelayNote'));
   rebuildSnaps(); draw();
 }
 /* ───────── 整える（事業主の指示 2026-10-19「並べ直し→曲げを伸ばす→断面図→展開を1回にまとめる整えるボタンを作る」）：①菱目を並べ直す ②リングが入らない曲げを伸ばす ③ボタンの穴を表と裏でそろえる（展開） ④表と裏から断面図を作る。
