@@ -49,7 +49,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1895,6 +1895,8 @@ function patchHoleTool() {
   const same = doc.tools.filter(x => x.kind === kind), near = same.find(x => x.pitch === cur.pitch && x.teeth === cur.teeth) || same.find(x => x.pitch === cur.pitch) || same[0];
   return near || { ...cur, id: 'patch-' + kind, name: 'patch-' + kind, kind, holeW: kind === 'round' ? 1 : 2, holeH: kind === 'round' ? 1 : 0.8, angleDeg: kind === 'round' ? 0 : 45 };
 }
+/** アーガイルの斜めの線の角度（度）。欄が空なら null（＝いつもの 56.3度）・数でなければ NaN。 */
+const patchAngleNow = () => { const raw = String($('patchAngle').value ?? '').trim(); return raw === '' ? null : Number(raw); };
 /** 柄のずらし量 {x,y}（mm・＋は右・下）。欄が空・数でないときは 0（＝上下左右対称）。 */
 const patchShiftNow = () => ({ x: Number($('patchShiftX').value) || 0, y: Number($('patchShiftY').value) || 0 });
 /** 柄の位置のボタン（←→↑↓）：欄の値を「1回の量」（既定 0.5mm）だけ動かし、描いた柄があればその場で輪郭で切ったまま作りなおす。dx・dy は -1／0／1。 */
@@ -1918,7 +1920,8 @@ function patchFillAt(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
   if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value), shift: patchShiftNow() });
+  if (PATCH_PATTERNS[$('patchPattern').value]?.usesAngle && patchAngleRatio(patchAngleNow()) === null) { $('hint').textContent = t('patchAngleRange'); return; } /* 斜めの線の角度が 20〜80度の外なら、図面は変えずに案内だけ */
+  const fill = fillRegionPattern(region, $('patchPattern').value, { cell: Number($('patchCell').value), shift: patchShiftNow(), angle: patchAngleNow() });
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
@@ -1973,7 +1976,7 @@ function initDesign() {
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
-  for (const id of ['patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  for (const id of ['patchAngle', 'patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
