@@ -54,7 +54,9 @@
     #sideTabs { display: flex; flex-wrap: wrap; gap: 4px; position: sticky; top: -10px; z-index: 3; margin: -10px -10px 0; padding: 8px 10px 6px; background: #181818; border-bottom: 1px solid var(--line); }   /* side-panel category tabs: stay on top while scrolling */
     #sideTabs button { flex: 1 1 28%; padding: 6px 4px; font-size: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: #c8c8c8; cursor: pointer; white-space: nowrap; }
     #sideTabs button[aria-selected="true"] { background: var(--accent); color: #181818; border-color: var(--accent); font-weight: 700; }
-    #side details.card.tab-off { display: none; }   /* hide cards of the tabs that are not selected */
+    #side details.card.tab-off { display: none; }
+    .flow-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 8px; } .flow-steps li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; } .flow-steps li[data-state="now"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: rgba(201, 169, 110, .08); } .flow-steps li[data-state="done"] { opacity: .85; }
+    .flow-head { display: flex; align-items: center; gap: 6px; } .flow-no { font-weight: 700; color: var(--accent); } .flow-state { margin-left: auto; font-size: 12px; } .flow-steps li[data-state="now"] .flow-state { color: var(--accent); font-weight: 600; } .flow-steps li[data-state="done"] .flow-state { color: #7ed07e; } .flow-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }   /* hide cards of the tabs that are not selected */
     #ctxCards .ctx-group { margin: 6px 0 2px; padding: 0 8px; font-size: 11px; color: #9a8a5a; letter-spacing: .04em; }
     .card > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-weight: 600; color: var(--accent); user-select: none; }
     .card > summary::-webkit-details-marker { display: none; }
@@ -140,7 +142,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 18:02 · 13b3d8e</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-19 18:31 · 423e520</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -357,6 +359,16 @@
 <div class="row"><button id="exportViews" data-i18n="exportViews"></button><button id="printViews" data-i18n="printViews"></button></div>
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
+</div></details>
+<details class="card" data-side="fold" id="foldFlowCard" open><summary data-i18n="foldFlowTitle"></summary><div class="body"><p class="note" data-i18n="foldFlowNote"></p>
+<ol id="foldFlowSteps" class="flow-steps">
+<li id="foldFlowStep1" data-state="todo"><div class="flow-head"><span class="flow-no">①</span><b data-i18n="foldFlowStep1"></b><span id="foldFlowState1" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText1"></p><div class="flow-btns"><button id="flowMake" type="button" data-i18n="fdMake"></button></div></li>
+<li id="foldFlowStep2" data-state="todo"><div class="flow-head"><span class="flow-no">②</span><b data-i18n="foldFlowStep2"></b><span id="foldFlowState2" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText2"></p><div class="flow-btns"><button id="flowFix" type="button" data-i18n="fdFix"></button><button id="flowStitch" type="button" data-i18n="fdStitch"></button></div></li>
+<li id="foldFlowStep3" data-state="todo"><div class="flow-head"><span class="flow-no">③</span><b data-i18n="foldFlowStep3"></b><span id="foldFlowState3" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText3"></p><div class="flow-btns"><button id="flowRelay" type="button" data-i18n="lamRelay"></button><button id="flowGrow" type="button" data-i18n="lamGrow"></button></div></li>
+<li id="foldFlowStep4" data-state="todo"><div class="flow-head"><span class="flow-no">④</span><b data-i18n="foldFlowStep4"></b><span id="foldFlowState4" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText4"></p><div class="flow-btns"><button id="flowSection" type="button" data-i18n="lamSection"></button></div></li>
+<li id="foldFlowStep5" data-state="todo"><div class="flow-head"><span class="flow-no">⑤</span><b data-i18n="foldFlowStep5"></b><span id="foldFlowState5" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText5"></p><div class="flow-btns"><button id="flowUnfoldPlan" type="button" data-i18n="fdUnfold"></button><button id="flowUnfold" type="button" data-i18n="lamUnfold"></button></div><p class="note" data-i18n="foldFlowShortcut"></p><div class="flow-btns"><button id="flowTidy" type="button" data-i18n="lamTidy"></button></div></li>
+</ol>
+<details class="sub" id="foldFlowMore"><summary data-i18n="foldFlowMore"></summary><p class="note" data-i18n="foldFlowMoreNote"></p><div class="flow-btns"><button id="flowOpenDesign" type="button" data-i18n="foldFlowOpenDesign"></button><button id="flowOpenLam" type="button" data-i18n="foldFlowOpenLam"></button></div></details>
 </div></details>
 <details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
 <g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
@@ -671,8 +683,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=386e87df","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=285dcc4d","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=8a586c8d","./help/ja.js":"./help/ja.js?v=ef5345d6","./i18n.js":"./i18n.js?v=5029b14c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=386e87df"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=04cdca07","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=928b3bfb","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=285dcc4d","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=c93fb2f3","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=8a586c8d","./help/ja.js":"./help/ja.js?v=ef5345d6","./i18n.js":"./i18n.js?v=55a92291","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=04cdca07"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3509,6 +3521,25 @@ const MESSAGES = {
     "lamBendFitNg": "入らない",
     "lamRelayApex": "頂点の円を {n} 個、まん中の点線（曲げのまん中）に合わせました。",
     "lamRelayApexLocked": "ロックされた層の頂点の円 {n} 個は動かしませんでした。",
+    "foldFlowTitle": "三つ折りの手順",
+    "foldFlowNote": "上から順に進めます。いまの手順には「いまここ」、できた手順には「済」が付きます（図面の状態から判断します）。ボタンは、下の各カードにあるボタンと同じものです。",
+    "foldFlowStep1": "三つ折りの断面を作る",
+    "foldFlowText1": "ボタン線から、左右の折りまでの距離などを入れて、巻いた形（断面）を先に作ります。数字は、下の「くわしい設定」から開くカードで入れます。",
+    "foldFlowStep2": "平面に展開する",
+    "foldFlowText2": "断面で決めた長さを、革を広げた平らな図にします。確定すると、縫い穴の線（菱目打ちライン）も引けます。",
+    "foldFlowStep3": "設計を直す",
+    "foldFlowText3": "表と裏の図面を見比べて、縫い穴（菱目）の並びと、曲げの長さを直します。リングが入らないときは、曲げを伸ばします。",
+    "foldFlowStep4": "断面をもう一度作る",
+    "foldFlowText4": "直した表と裏から、断面をもう一度作って、形を確かめます。円の穴と、展開図の左端・右端の文字も入ります。",
+    "foldFlowStep5": "型紙に展開する",
+    "foldFlowText5": "表と裏のボタンの穴をそろえ、曲げの範囲の点線6本（始め・まん中・終わり×2か所。表＝黄・裏＝青）を入れます。表・裏の展開図も作れます。",
+    "foldFlowShortcut": "近道：菱目の並べ直し → 曲げを伸ばす → 展開 → 断面図を、順に1回で行います。",
+    "foldFlowNow": "いまここ",
+    "foldFlowDone": "済",
+    "foldFlowMore": "くわしい設定（厚み・ピッチ・リング外径など）",
+    "foldFlowMoreNote": "数字や細かい設定は、下の2つのカードにあります。上のボタンは、そこに入れた数字を使います。",
+    "foldFlowOpenDesign": "三つ折りの設計の数字を開く",
+    "foldFlowOpenLam": "厚み・ピッチ・リング外径の設定を開く",
     "lamRingD": "リング外径（mm・断面図で、折りの内側の隙間が足りるか調べる。空なら見ない）",
     "lamRingOk": "リング外径 {d} mm：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（どちらも入ります）。",
     "lamRingShort": "リング外径 {d} mm が入りません：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（不足 {sa}・{sb} mm）。",
@@ -5257,6 +5288,25 @@ const MESSAGES = {
     "lamBendFitNg": "does not fit",
     "lamRelayApex": "Moved {n} circles at the bend apex to the middle of the bend (the middle dashed line).",
     "lamRelayApexLocked": "{n} apex circles on a locked layer were not moved.",
+    "foldFlowTitle": "Three-fold steps",
+    "foldFlowNote": "Go from the top. The current step shows \"You are here\" and finished steps show \"Done\" (judged from the drawing). The buttons are the same as the ones in the cards below.",
+    "foldFlowStep1": "Make the three-fold section",
+    "foldFlowText1": "Enter the distances from the button line to the folds and so on, and make the rolled-up shape (the section) first. Enter the numbers in the card you open from \"Detailed settings\" below.",
+    "foldFlowStep2": "Unfold to a flat drawing",
+    "foldFlowText2": "Turn the lengths decided in the section into a flat drawing of the opened-out leather. After you confirm, you can also draw the stitch-hole lines.",
+    "foldFlowStep3": "Fix the design",
+    "foldFlowText3": "Compare the outer and inner drawings and fix the layout of the stitch holes and the length of the bends. If the ring does not fit, lengthen the bends.",
+    "foldFlowStep4": "Make the section again",
+    "foldFlowText4": "Make the section again from the fixed outer and inner and check the shape. Round holes and the left / right end texts of the drawing are added too.",
+    "foldFlowStep5": "Unfold to the pattern",
+    "foldFlowText5": "Line up the button holes of outer and inner and add 6 dashed lines for the bend ranges (start, middle and end of 2 bends; yellow = outer, blue = inner). You can also make the outer / inner flat patterns.",
+    "foldFlowShortcut": "Shortcut: re-lay the stitch holes → lengthen bends → unfold → section, in order, in one press.",
+    "foldFlowNow": "You are here",
+    "foldFlowDone": "Done",
+    "foldFlowMore": "Detailed settings (thickness, pitch, ring outer diameter, ...)",
+    "foldFlowMoreNote": "Numbers and fine settings are in the two cards below. The buttons above use the numbers you enter there.",
+    "foldFlowOpenDesign": "Open the three-fold design numbers",
+    "foldFlowOpenLam": "Open thickness / pitch / ring settings",
     "lamRingD": "Ring outer diameter (mm; the section checks the inner gap of the folds; empty = not checked)",
     "lamRingOk": "Ring outer diameter {d} mm: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (both fit).",
     "lamRingShort": "A ring of {d} mm does not fit: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (short by {sa} and {sb} mm).",
@@ -23513,6 +23563,16 @@ function growBends() {
   for (const z of gp.zones) line(t('lamGrowZone', { k: z.k, oOld: f2(z.outerOld), oNew: f2(z.outerNew), iOld: f2(z.innerOld), iNew: f2(z.innerNew), nOld: z.nOld, n: z.n, gOld: f2(ring.gaps[z.k - 1].gap), gNew: f2(ring.byPitch[z.k - 1].gap), aOld: (plan.angles[z.k - 1] * 180 / Math.PI).toFixed(1), aNew: ((z.outerNew - z.innerNew) / ((tO + tI) / 2) * 180 / Math.PI).toFixed(1) }));
   line(t('lamGrowNote')); rebuildSnaps(); draw();
 }
+/* ───────── 三つ折りの手順（事業主の指示 2026-10-19「右メニューがかなりわかりにくく」→ 分類タブ＋三つ折りは手順画面）：どの手順まで済んでいるかを、図面の状態から出す。
+   ①断面＝foldSec 'fd' の図形（三つ折りの設計の断面）②平面＝foldFlat 'fd' の図形（FIX の投影）④貼り合わせ検証の断面＝foldSections の lam ⑤展開＝曲げの範囲の点線（lamBendGuide）か 表・裏の展開図（foldFlat 'fdu'）。③設計を直すは目印が無いので、④か⑤に進んだら済。 ───────── */
+function foldFlowStates(d = doc) {
+  const sh = d.shapes || [], has = f => sh.some(f), s1 = has(s => s.foldSec === 'fd'), s2 = has(s => s.foldFlat === 'fd'), s4 = Object.values(d.foldSections || {}).some(m => m && m.lam), s5 = has(s => s.lamBendGuide || s.foldFlat === 'fdu'), s3 = s4 || s5;
+  return [s1, s2, s3, s4, s5];
+}
+function renderFoldFlow() {
+  const st = foldFlowStates(doc), now = st.indexOf(false);
+  for (let i = 0; i < 5; i++) { const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue; const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text; }
+}
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
   if (!lamTouched.o) laminateThickFromPart('o'); if (!lamTouched.i) laminateThickFromPart('i');
@@ -23782,7 +23842,9 @@ function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
-  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate; $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
+  $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
+  for (const [from, to] of [['flowMake', 'fdMake'], ['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
+  const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
   $('offsetRun').onclick = () => runOffset();
@@ -26365,7 +26427,7 @@ function selectedLineHoleStats() {
   return { len, holes };
 }
 function updateUI() {
-  refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
+  renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
@@ -27549,7 +27611,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldFlowCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
