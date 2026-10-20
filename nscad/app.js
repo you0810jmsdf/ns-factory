@@ -77,6 +77,8 @@ let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジ�
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分岐で止まった端の位置（選択が変わったら出さない） */
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
+let stitchPreview = null; /* 目打ち：始点をクリックしたあと、マウスの位置を終点にしたときに打つ穴の位置（打つ前の薄い表示）。{ points, tool, wrap } */
+let stitchRouteIds = null; /* 目打ち：いまの経路（つながった線）の図形の id。打つ前に、薄く光らせる */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
@@ -561,6 +563,7 @@ function stitchPointCandidates(w) {
     const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
     for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); } /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
+    for (const o of others) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > STITCH_FOOT_MAX_MM + 14 / scale) continue; const pr = projectOnPath(route, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) cands.push(pr.s); } /* 近くの別の図形（外形など）の端・中心から、この経路へ垂直に降ろした点にも吸い付く（事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側の点線は中心へ吸い付かない） */
     if (!state.fresh) for (const sg of saved.segments) cands.push(sg.from, sg.to); /* 前に打った区間の始まり・終わり（つなぎ目）も吸着の点：隣のピッチの位置より、ちょうどそこをクリックしたときは、そこが優先される */
     if (!state.fresh) { const cur = doc.tools.find(x => x.id === $('stitchTool').value); for (const h of doc.holes) if (h.pathId === saved.id) { cands.push(h.s); /* 隣のピッチの位置（穴の位置 ± ピッチ）にも吸い付く：前の続きを、同じ固定幅でぴったり続けられる（事業主指摘 2026-10-17：均等化した場所だけで、隣のピッチからだとずれる） */ for (const pt of new Set([cur?.pitch, doc.tools.find(x => x.id === h.toolId)?.pitch].filter(v => Number.isFinite(v) && v > 0))) for (const q of [h.s - pt, h.s + pt]) if (q > 1e-6 && q < len - 1e-6) cands.push(q); } }
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
@@ -606,7 +609,7 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
   const joinPrev = saved.segments.find(sg => Math.abs(sg.to - lo) < 1e-6 && sg.toolId); /* 反対側の隣の区間（終点が、今打つ区間の始点側 lo にある）：今の区間を反対側（hi）から数えると、lo にぴったり穴が来ないので、つなぎ目が目落ちする（事業主指摘 2026-10-17：続きで目打ちをするとかならず目落ちする） */
   const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
   const apply = () => {
-    if (fresh) { if (doc.paths.some(q => q.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); } /* 新しい経路の id は、計画を立てたときに決めたもの。つなぎ目を越えて2本とも新しい経路のとき、同じ id になるので、重なるときは付け直す（不具合記録 2026-10-17：後半の菱目が抜けた） */
+    if (fresh && !doc.paths.includes(saved)) { if (doc.paths.some(q => q.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); } /* 新しい経路の id は、計画を立てたときに決めたもの。つなぎ目を越えて2本とも新しい経路のとき、同じ id になるので、重なるときは付け直す（不具合記録 2026-10-17：後半の菱目が抜けた）。同じ経路の2区間（閉じた経路の始まりをまたぐとき）は、同じ saved を共有するので、2回目は足さない */
     /* 指定した区間の中にあった同じ線の穴は、打ち直す。ただし区間の両端（つなぎ目）の穴は、新しい穴がそこに来るときだけ置き換える。固定ピッチは終点ぴったりには打たないので、両端まで消すと、隣の区間の端の穴が消えて歯抜けになる（事業主指摘 2026-10-16） */
     const posOf = p => saved.closed && Math.abs(p.s - len) < 1e-7 ? 0 : p.s, newPos = points.map(posOf), atEdge = h => (Math.abs(h.s - lo) < 1e-7 || Math.abs(h.s - hi) < 1e-7) && !(opt.jointS !== undefined && Math.abs(h.s - opt.jointS) < 1e-7);   /* つなぎ目（別の経路との境）の穴は、ピッチが変わるので前のものを消す */
     doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7 || (atEdge(h) && !newPos.some(q => Math.abs(q - h.s) < 1e-5)));
@@ -651,28 +654,58 @@ function stitchNearestGap(list1, list2) {
   return best;
 }
 /** つなぎ目を越えて打つ：始点（経路A）→接している端→終点（経路B）。固定ピッチ専用。区間1（始点→接点）の最後の穴から、ピッチを続けて区間2（接点→終点）を打つ。2区間の計画を先に作り、1回の commit で打つ（元に戻すは1回）。 */
-function stitchJointPunch(c1, c2, joint, kind, n, tool) {
+/** つなぎ目を越えて打つ計画（固定ピッチ）：区間1（始点→接点）と区間2（接点→終点）の2つの計画を作る。図面は変えない。失敗は { error }。same＝同じ経路の始まり（s=0 と周の長さ）をまたぐ場合（閉じた経路）：ぴったり続くときは、区間1が打った始まりの穴を、区間2が消さない。 */
+function stitchJointPlans(c1, c2, joint, kind, n, tool, same = false) {
   const { j1, j2 } = joint, plans = []; let r = 0;
-  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); r = (p1.info.leftover ?? 0) + (joint.d ?? 0); }
+  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) return { error: p1.error }; plans.push(p1); r = (p1.info.leftover ?? 0) + (joint.d ?? 0); }
   if (Math.abs(c2.s - j2) > 1e-6) {
     const L2 = arcLength(c2.state.route), keep = plans.length > 0, exact = keep && r < 0.005, anchorS = !keep ? undefined : exact ? j2 : j2 === 0 ? -r : L2 + r;
-    const p2 = stitchRangePlan({ first: { key: c2.key, s: j2, anchorS }, c: c2 }, kind, n, tool, { noStartOffset: true, forceAnchor: exact, jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2);
+    const p2 = stitchRangePlan({ first: { key: c2.key, s: j2, anchorS }, c: c2 }, kind, n, tool, { noStartOffset: true, forceAnchor: exact, jointS: same && exact ? undefined : j2 }); if (p2.error) return { error: p2.error }; plans.push(p2);
   }
+  return { plans };
+}
+function stitchJointPunch(c1, c2, joint, kind, n, tool) {
+  const { j1, j2 } = joint, res = stitchJointPlans(c1, c2, joint, kind, n, tool); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans } = res;
   if (!plans.length) { $('hint').textContent = t('countSame'); return; }
   countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
   const last = plans.at(-1).info, total = plans.reduce((sum, p) => sum + p.info.points.length, 0), left = last.leftover ?? 0;
   $('hint').textContent = t('rangeJointPlaced', { n: total, pitch: last.pitch.toFixed(2), a: Math.abs(c1.s - j1).toFixed(2), b: Math.abs(c2.s - j2).toFixed(2) }) + ' ' + (left < 0.005 ? t('rangeLeftNone') : t('rangeLeft', { r: left.toFixed(2) })); draw();
 }
 /** つなぎ目を越えて、個数指定で打つ：始点（経路A）→接している端→終点（経路B）に、両端を含めて n 個を等間隔に打つ。間隔は、始点から終点までの長さ（つなぎ目のすき間も含む）を n−1 等分。穴の位置は、始点から k×間隔 の所（経路A の接点までに入る分は経路A・残りは経路B）。 */
-function stitchJointCount(c1, c2, joint, n, tool) {
+/** つなぎ目を越えて、個数指定で打つ計画：図面は変えない。失敗は { error }。same＝同じ経路の始まりをまたぐ場合（区間2は、始まりの穴を消さない）。 */
+function stitchJointCountPlans(c1, c2, joint, n, tool, same = false) {
   const { j1, j2 } = joint, gap = joint.d ?? 0, a = Math.abs(c1.s - j1), b = Math.abs(c2.s - j2), T = a + gap + b;
-  if (!(n >= 2) || !(T > 1e-9)) { $('hint').textContent = t('invalidRange'); return; }
+  if (!(n >= 2) || !(T > 1e-9)) return { error: t('invalidRange') };
   const P = T / (n - 1), dir1 = j1 >= c1.s ? 1 : -1, dir2 = c2.s >= j2 ? 1 : -1, plans = [];
   const n1 = a < 1e-6 ? 0 : b < 1e-6 && gap < 1e-9 ? n : Math.min(n - 1, Math.floor(a / P + 1e-9) + 1), n2 = n - n1;   /* 経路A に入る個数（始点が接点なら 0・終点が接点なら全部） */
-  if (n1 > 0) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: c1.s + dir1 * (n1 - 1) * P } }, 'count', n1, tool, { jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); }
-  if (n2 > 0) { const off = Math.max(0, n1 * P - a - gap), p2 = stitchRangePlan({ first: { key: c2.key, s: j2 + dir2 * off }, c: c2 }, 'count', n2, tool, { jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2); }
+  if (n1 > 0) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: c1.s + dir1 * (n1 - 1) * P } }, 'count', n1, tool, { jointS: j1 }); if (p1.error) return { error: p1.error }; plans.push(p1); }
+  if (n2 > 0) { const off = Math.max(0, n1 * P - a - gap), p2 = stitchRangePlan({ first: { key: c2.key, s: j2 + dir2 * off }, c: c2 }, 'count', n2, tool, { jointS: same ? undefined : j2 }); if (p2.error) return { error: p2.error }; plans.push(p2); }
+  return { plans, P, a, b };
+}
+function stitchJointCount(c1, c2, joint, n, tool) {
+  const res = stitchJointCountPlans(c1, c2, joint, n, tool); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans, P, a, b } = res;
   countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
   $('hint').textContent = t('rangeJointPlaced', { n, pitch: P.toFixed(2), a: a.toFixed(2), b: b.toFixed(2) }); draw();
+}
+/** 閉じた経路（ぐるっと一周する線）の上の2点（始点 first・終点 c）の間には、2つの区間がある：経路の始まり（s=0）をまたがない区間（direct）と、またぐ区間（wrap）。
+ *  打つのは、まだ穴が無い（少ない）ほう。同じなら短いほう。flip（終点を Shift＋クリック）で逆側（事業主指摘 2026-10-21：右半分を打ったあと、同じ経路しか選ばれず左半分が打てない）。wrap なら true。 */
+function stitchClosedWrap(first, c, flip) {
+  const { saved, route } = c.state, len = arcLength(route), lo = Math.min(first.s, c.s), hi = Math.max(first.s, c.s), eps = 1e-6;
+  const mine = doc.holes.filter(h => h.pathId === saved.id).map(h => len - h.s < eps ? 0 : h.s);
+  const inDirect = mine.filter(s => s > lo + eps && s < hi - eps).length, inWrap = mine.filter(s => s < lo - eps || s > hi + eps).length;
+  const wrap = inWrap < inDirect || (inWrap === inDirect && len - (hi - lo) < (hi - lo) - 1e-9);
+  return flip ? !wrap : wrap;
+}
+/** 始点・終点（同じ経路の上）から、打つ計画の一覧を作る（図面は変えない）。閉じた経路で、経路の始まりをまたぐ側を打つときは、2つの区間の計画（ピッチは始まりを越えても続く）。失敗は { error }。 */
+function stitchPlansForPair(pair, kind, n, tool, flip = false) {
+  const { saved, route } = pair.c.state;
+  if (!saved.closed || !stitchClosedWrap(pair.first, pair.c, flip)) { const p = stitchRangePlan(pair, kind, n, tool); return p.error ? { error: p.error } : { plans: [p], wrap: false, closed: !!saved.closed }; }
+  const len = arcLength(route), fwd = pair.first.s > pair.c.s, joint = { j1: fwd ? len : 0, j2: fwd ? 0 : len, d: 0 }, c1 = { ...pair.first, state: pair.c.state }, total = len - (Math.max(pair.first.s, pair.c.s) - Math.min(pair.first.s, pair.c.s));
+  if (kind === 'fixed') { const r = stitchJointPlans(c1, pair.c, joint, kind, n, tool, true); return r.error ? r : { plans: r.plans, wrap: true, closed: true }; }
+  const count = kind === 'count' ? n : Math.max(2, Math.round(total / tool.pitch) + 1), r = stitchJointCountPlans(c1, pair.c, joint, count, tool, true);   /* 間隔をそろえる方式も、またぐ側では、両端を含めて等間隔（個数＝長さ÷ピッチ＋1） */
+  return r.error ? r : { plans: r.plans, wrap: true, closed: true, count, pitch: r.P };
 }
 /** 始点と同じ場所をもう一度クリックしたとき：その点（経路 c の位置 c.s）に菱目を1つだけ打つ。そこにすでに菱目があれば、増やさずに案内する。 */
 function stitchSingleAt(c, tool) {
@@ -685,7 +718,7 @@ function stitchSingleAt(c, tool) {
   });
   $('hint').textContent = t('singleDone'); draw();
 }
-function rangeStitchClick(w) {
+function rangeStitchClick(w, flip = false) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
   if (kind === 'count' && !n) { $('hint').textContent = t('countNeedN'); return; }
@@ -698,11 +731,11 @@ function rangeStitchClick(w) {
     }
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
-  countStage = null;
-  const plan = stitchRangePlan(pair, kind, n, tool); if (plan.error) { $('hint').textContent = plan.error; return; }
-  const { points, pitch, leftover, anchoredHole, lo, hi } = plan.info;
-  commit(() => { selected = new Set(plan.apply()); });
-  $('hint').textContent = (kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) })) + (leftover === null ? '' : ' ' + (leftover < 0.005 ? t(anchoredHole ? 'rangeAnchorLeftNone' : 'rangeLeftNone') : t(anchoredHole ? 'rangeAnchorLeft' : 'rangeLeft', { r: leftover.toFixed(2) }))); draw();
+  countStage = null; stitchPreview = null;
+  const res = stitchPlansForPair(pair, kind, n, tool, flip); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans } = res, last = plans.at(-1).info, { leftover } = last, anchoredHole = last.anchoredHole && !res.wrap /* 始まりをまたぐときの2区間目は、ピッチを続けるための数え方で、既存の穴への吸着ではない */, nPts = plans.reduce((sum, p) => sum + p.info.points.length, 0), span = plans.reduce((sum, p) => sum + p.info.hi - p.info.lo, 0), pitch = res.pitch ?? last.pitch;
+  commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
+  $('hint').textContent = (res.wrap ? t('rangeWrapPlaced', { n: nPts, pitch: pitch.toFixed(2), len: span.toFixed(2) }) : kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: span.toFixed(2) }) : t('rangePlaced', { n: nPts, pitch: pitch.toFixed(2), len: span.toFixed(2) })) + (leftover === null || leftover === undefined ? '' : ' ' + (leftover < 0.005 ? t(anchoredHole ? 'rangeAnchorLeftNone' : 'rangeLeftNone') : t(anchoredHole ? 'rangeAnchorLeft' : 'rangeLeft', { r: leftover.toFixed(2) }))) + (res.closed ? ' ' + t('rangeClosedNote') : ''); draw();
 }
 function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
   if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
@@ -712,14 +745,66 @@ function drawChainStops() { /* 分岐で止まった端に青い印（選択が�
 }
 /** 目打ち：マウスの近く（画面14px以内）にある、吸い付く点（端・線の中心・線と線の交点・すでにある穴）のうち、いちばん近いもの。なければ null。マウスを動かすたびに計算するので、近くの線（最大12本）だけで求める。 */
 let stitchHover = null;
+/** 目打ちの吸着：近くの別の図形（外形など）の端・中心から、経路へ垂直に降ろした点にも吸い付く、その降ろす距離の上限（mm）。
+ *  事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側に引いた点線は、自分の端・中点・交点にしか吸い付かず、外形の中心へ吸い付かなかった。 */
+const STITCH_FOOT_MAX_MM = 12;
+/** 図形の端と中心（中点）。 */
+function stitchSpecialPoints(s) { const len = arcLength(s); return [pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)]; }
 function stitchHoverAt(w) {
-  const reach = 14 / scale, near = doc.shapes.filter(s => visible(s) && editable(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, w) <= reach * 1.5).slice(0, 12), pts = [];
-  for (const s of near) { const len = arcLength(s); pts.push(pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)); }
+  const reach = 14 / scale, foot = STITCH_FOOT_MAX_MM + reach, cand = [];
+  for (const s of doc.shapes) { if (!(visible(s) && editable(s) && stitchable(s)) || ['text', 'dimension', 'image'].includes(s.type)) continue; const d = distTo(s, w); if (d <= foot) cand.push({ s, d }); }
+  const near = cand.filter(c => c.d <= reach * 1.5).slice(0, 12).map(c => c.s), pts = [];
+  for (const s of near) pts.push(...stitchSpecialPoints(s));
+  for (const { s: o } of cand) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > foot) continue; for (const s of near) { if (s === o) continue; const pr = projectOnPath(s, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) pts.push({ x: pr.x, y: pr.y }); } }   /* 外形の中心などを、近くの線へ垂直に降ろした点 */
   if (near.length >= 2) pts.push(...allIntersections(near));
   for (const h of doc.holes) if (holeVisible(h) && Math.hypot(h.x - w.x, h.y - w.y) <= reach) pts.push({ x: h.x, y: h.y });
   let best = null, bd = reach; for (const q of pts) { const d = distance(w, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
 }
 function drawStitchHover() { if (mode !== 'stitch' || !stitchHover || exporting) return; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(80,200,255,.95)'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(stitchHover.x, stitchHover.y, 5 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+/** 目打ち：打つ前の薄い表示（事業主指示 2026-10-21「菱目打ちルートを薄く、確定する前に表示してほしい」）。
+ *  始点を決めたあと＝マウスの位置を終点にしたら打たれる穴の位置（クリックで確定するときと同じ計画・図面は変えない）。決める前・決めたあと＝マウスの近くの線がつながった経路（どこまでが同じ経路か）。 */
+function stitchPreviewAt(w, flip) {
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN();
+  if (!countStage || !tool || (kind === 'count' && !n)) return null;
+  const near = stitchPointCandidates(w), pair = near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6);
+  if (pair) { const res = stitchPlansForPair(pair, kind, n, tool, flip); return res.error ? null : { points: res.plans.flatMap(p => p.info.points), tool, wrap: !!res.wrap }; }
+  for (const c2 of near) for (const c1 of countStage.list) {   /* 別の線へ：端が接していれば、つなぎ目を越える分も（クリックと同じ） */
+    const joint = stitchJoint(c1, c2); if (!joint) continue;
+    const res = kind === 'count' ? stitchJointCountPlans(c1, c2, joint, n, tool) : kind === 'fixed' ? stitchJointPlans(c1, c2, joint, kind, n, tool) : null;
+    return res && !res.error ? { points: res.plans.flatMap(p => p.info.points), tool, wrap: false } : null;
+  }
+  return null;
+}
+let stitchPreviewKey = '', stitchRouteKey = '', stitchRouteCache = null;
+function syncStitchPreview(w, flip) {
+  const ver = [undo.length, redo.length, doc.shapes.length, doc.holes.length].join(',');
+  const key = [ver, countStage ? countStage.list.map(c => c.key + ':' + c.s.toFixed(3)).join(';') : '', Math.round(w.x * scale / 2), Math.round(w.y * scale / 2), flip ? 1 : 0, $('stitchTool').value, $('placement').value, $('stitchCount').value, $('chain').checked].join('|');
+  if (key === stitchPreviewKey) return; stitchPreviewKey = key;   /* 同じ場所・同じ状態では、計算し直さない（マウスを動かすたびに交点を数えないため） */
+  stitchPreview = stitchPreviewAt(w, flip);
+  let ids = null;
+  if (countStage) ids = countStage.list[0].state.saved.shapeIds;
+  else {
+    const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, w) <= 8 / scale);
+    if (hit) { const rk = [hit.id, ver, $('chain').checked].join('|'); if (rk !== stitchRouteKey) { stitchRouteKey = rk; stitchRouteCache = routeForHit(hit)?.saved.shapeIds ?? null; } ids = stitchRouteCache; }
+  }
+  stitchRouteIds = ids ? [...ids] : null;
+}
+function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; }
+function drawStitchPreview() {
+  if (mode !== 'stitch' || exporting) return;
+  if (stitchRouteIds?.length) { ctx.save(); ctx.lineWidth = 8 / scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.18; for (const id of stitchRouteIds) strokeShape(doc.shapes.find(x => x.id === id), '#c9a96e'); ctx.restore(); }   /* 経路：太く薄く */
+  if (!stitchPreview?.points.length) return;
+  ctx.save(); ctx.globalAlpha = 0.5; ctx.setLineDash([]);
+  for (const p of stitchPreview.points) {   /* 打たれる穴：本物の穴と同じ形を、薄く */
+    const a = holeAppearance({ toolId: stitchPreview.tool.id, mark: 'tool' }, doc); if (!a) continue;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((($('followTangent').checked ? p.angleDeg : 0) + slantOf(stitchPreview.tool)) * Math.PI / 180); ctx.beginPath(); ctx.fillStyle = ctx.strokeStyle = '#ffe3a3';
+    if (a.kind === 'circle' || a.kind === 'dot') { ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); ctx.fill(); }
+    else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); ctx.lineWidth = a.height; ctx.stroke(); }
+    else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+  }
+  ctx.restore();
+}
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
@@ -4803,7 +4888,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; clearStitchPreview(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
@@ -5651,7 +5736,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -5776,7 +5861,7 @@ canvas.addEventListener('pointerdown', e => {
   if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p)); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p), e.shiftKey); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
@@ -5865,6 +5950,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
   stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
+  if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
