@@ -6,10 +6,15 @@
 // 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。上下・左右で対称な辺は片側だけに入れる（事業主指摘 2026-10-19「上下左右対称な部分はどちらかに寸法を入れること」）。
 // 菱目の間隔は、指定した工具のピッチと違う所だけ、区間ごとに代表1本（事業主指示 2026-10-19「菱目のピッチが指定した工具と異なる部分があれば代表で入れること」）。
 // 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
-import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon, arcSweep, circlePoint } from './geometry.js';
+import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon, arcSweep, circlePoint, flattenShape } from './geometry.js';
 
-const AD_RADIUS_TOL = 0.05; /* 半径が「同じ」とみなす差（mm）：同じ半径の角・円弧は、型紙ごとに1本にまとめて「R5 ×4」 */
-const AD_ARC_SLACK = 0.5;   /* 丸めた角・円弧（180°以下）とみなす余裕（度） */
+const AD_RADIUS_TOL = 0.1;   /* 半径が「同じ」とみなす差（mm）：同じ半径の角は、型紙ごとに1本にまとめて「R5 ×4」（ベジェ・折れ線は円へのあてはめなので、少しの誤差を許す） */
+const AD_SAME_CORNER = 0.2;  /* 中心・半径がこの差以内の曲線は「同じ角」とみなす（1つの角が 74°＋16° のように2本の曲線に分かれていても、角は1つ・mm） */
+const AD_ARC_SLACK = 0.5;    /* 丸めた角・円弧（180°以下）とみなす余裕（度） */
+const AD_R_MAX = 100;        /* これより大きな半径の緩い曲線は「丸めた角」とみなさない（mm） */
+const AD_FIT_MIN_SWEEP = 20; /* ベジェ・折れ線の丸みは、この角度以上のものだけ半径を取る（度） */
+const AD_FIT_TOL = 0.05, AD_FIT_REL = 0.01; /* 円とみなせる条件：点と円のずれの最大が max(0.05mm, 半径の1%) 以内 */
+const AD_TURN_MIN = 0.5, AD_TURN_MAX = 30;  /* 折れ線で「丸みの続き」とみなす、頂点ごとの曲がり（度）：これより小さければ直線・大きければ鋭い角（面取りなど） */
 const AD_EQ = 0.01;     /* 同じ点とみなす距離（mm） */
 const AD_MIN = 1;        /* これより短い寸法は入れない（mm） */
 const AD_MIN_EDGE = 3;   /* 辺の寸法は、これより短い辺には入れない（丸角のつなぎなど小さな辺の数字が散らばらないように） */
@@ -143,6 +148,45 @@ function adPitchDims(runs, add, gap, labelOf) {
   }
 }
 
+/** 円のあてはめ（最小二乗・Kåsa 法）：点の並び → { cx, cy, r, dev（点と円のずれの最大・mm） }。3点未満・一直線のときは null。 */
+function adFitCircle(pts) {
+  const n = pts.length; if (n < 3) return null;
+  let mx = 0, my = 0; for (const p of pts) { mx += p.x; my += p.y; } mx /= n; my /= n;   /* 平均を原点にして、桁落ちを避ける（図面の座標が数千のことがある） */
+  let suu = 0, svv = 0, suv = 0, suuu = 0, svvv = 0, suvv = 0, svuu = 0;
+  for (const p of pts) { const u = p.x - mx, v = p.y - my; suu += u * u; svv += v * v; suv += u * v; suuu += u * u * u; svvv += v * v * v; suvv += u * v * v; svuu += v * u * u; }
+  const det = suu * svv - suv * suv; if (Math.abs(det) < 1e-9) return null;
+  const uc = (svv * (suuu + suvv) - suv * (svvv + svuu)) / (2 * det), vc = (suu * (svvv + svuu) - suv * (suuu + suvv)) / (2 * det), cx = mx + uc, cy = my + vc, r = Math.sqrt(uc * uc + vc * vc + (suu + svv) / n);
+  if (!Number.isFinite(r)) return null; let dev = 0; for (const p of pts) dev = Math.max(dev, Math.abs(Math.hypot(p.x - cx, p.y - cy) - r));
+  return { cx, cy, r, dev };
+}
+const adNormDeg = d => { while (d > 180) d -= 360; while (d <= -180) d += 360; return d; };
+/** 点の並びが円の上を回る角度の合計（度・向きによらず正）。 */
+function adSweepAlong(pts, c) { let sum = 0; for (let i = 1; i < pts.length; i++) sum += adNormDeg((Math.atan2(pts[i].y - c.cy, pts[i].x - c.cx) - Math.atan2(pts[i - 1].y - c.cy, pts[i - 1].x - c.cx)) * 180 / Math.PI); return Math.abs(sum); }
+/** 図形の中の「丸めた角」（円弧状の丸み）の一覧 [{ cx, cy, r, mid（曲線の真ん中の点）, exact（円弧そのもの） }]。
+ *  円弧（arc）はそのまま。ベジェ曲線・折れ線（ペンの線も）は、曲がりが続く所（頂点ごとに 0.5°〜30°・同じ向き）を円にあてはめ、円とみなせて（ずれが max(0.05mm, 半径の1%)）・20°以上・半径 1〜100mm のものだけ。
+ *  事業主のウォレットの図面は、丸めた角がすべてベジェ曲線（半径10の正確な円弧）だった（2026-10-20「まだダメでした」）。 */
+function adRoundings(s) {
+  if (s.type === 'arc') { if (!(s.r > 0)) return []; const sw = arcSweep(s); return sw <= 180 + AD_ARC_SLACK ? [{ cx: s.cx, cy: s.cy, r: s.r, mid: circlePoint(s, s.startDeg + sw / 2), exact: true }] : []; }
+  let pts = null; if (s.type === 'polyline') pts = s.points; else if (s.type === 'bezier' || s.type === 'path') { try { pts = flattenShape(s, 0.02); } catch { pts = null; } }
+  if (!Array.isArray(pts) || pts.length < 4) return [];
+  const turnAt = (a, i) => { const p = a[i - 1], q = a[i], r = a[i + 1]; return adNormDeg((Math.atan2(r.y - q.y, r.x - q.x) - Math.atan2(q.y - p.y, q.x - p.x)) * 180 / Math.PI); };
+  const arcLike = d => Math.abs(d) >= AD_TURN_MIN && Math.abs(d) <= AD_TURN_MAX;
+  const kappa = (a, i) => { const d = Math.hypot(a[i + 1].x - a[i].x, a[i + 1].y - a[i].y) + Math.hypot(a[i].x - a[i - 1].x, a[i].y - a[i - 1].y); return d > 0 ? Math.abs(turnAt(a, i)) / (d / 2) : 0; };   /* 曲がり（度/mm）：円の上なら 1/半径 に比例して一定。長い直線につながる頂点は小さくなる */
+  if (s.type === 'polyline' && s.closed) {   /* 閉じた折れ線は、丸みの途中で切れないよう、曲がりがいちばん小さい頂点（長い直線の端）から数え始める */
+    const m = pts.length, ring = [pts[m - 1], ...pts, pts[0]]; let k = 0, best = Infinity; for (let i = 1; i <= m; i++) { const v = kappa(ring, i); if (v < best) { best = v; k = i - 1; } }
+    pts = [...pts.slice(k), ...pts.slice(0, k), pts[k]];
+  }
+  const n = pts.length, out = []; let run = [], kPrev = 0;
+  const flush = () => {
+    if (run.length >= 3) {
+      const i0 = run[0] === 1 ? 0 : run[0], i1 = run.at(-1) === n - 2 ? n - 1 : run.at(-1), sub = pts.slice(i0, i1 + 1), f = adFitCircle(sub);
+      if (f && f.r >= AD_MIN && f.r <= AD_R_MAX && f.dev <= Math.max(AD_FIT_TOL, AD_FIT_REL * f.r)) { const sw = adSweepAlong(sub, f); if (sw >= AD_FIT_MIN_SWEEP && sw <= 180 + AD_ARC_SLACK) out.push({ cx: f.cx, cy: f.cy, r: f.r, mid: sub[(sub.length - 1) >> 1], exact: false }); }
+    }
+    run = [];
+  };
+  for (let i = 1; i < n - 1; i++) { const d = turnAt(pts, i), ok = arcLike(d), kp = ok ? kappa(pts, i) : 0; if (ok && run.length && (Math.sign(d) !== Math.sign(turnAt(pts, run.at(-1))) || kp > 2.5 * kPrev || kp < kPrev / 2.5)) flush(); if (ok) { run.push(i); kPrev = kp; } else flush(); }   /* 向きが変わる・曲がりの強さが急に変わる（直線の端・別の角）所で区切る */
+  flush(); return out;
+}
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。toolPitch：菱の線（工具を持たない菱目）に使う、指定した工具のピッチ（mm・無ければ菱の線の間隔は見ない）。 */
@@ -163,13 +207,14 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
       if (!sizeExists(w1, h2, b)) add(w1, h2, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
     }
   }
-  if (radii) {   /* 丸めた角・円弧の半径（事業主の要望 2026-10-20「丸めた R 寸法も入れたい」）：型紙ごとに、同じ半径は1本にまとめて「R5 ×4」。円弧の中心から、円弧の真ん中の点へ（半径そのものを測る）。180°以下・半径 1mm 以上・小さなかたまりは除く */
+  if (radii) {   /* 丸めた角・円弧の半径（事業主の要望 2026-10-20「丸めた R 寸法も入れたい」）：型紙ごとに、同じ半径は1本にまとめて「R5 ×4」。円弧・ベジェ曲線・折れ線の丸みを円にあてはめて半径を取る。同じ中心・同じ半径に分かれた曲線（74°＋16° など）は1つの角。中心から、曲線の真ん中の点へ（半径そのものを測る）。半径 1〜100mm・小さなかたまりは除く */
     const rLabel = typeof radiusLabel === 'function' ? radiusLabel : (r, n) => n > 1 ? `R${r} ×${n}` : `R${r}`;
     for (const pc of pieces) {
       if (pc.circle || pc.why === 'tiny') continue;
-      const groups = [];
-      for (const s of pc.list) { if (s.type !== 'arc' || !(s.r >= AD_MIN) || arcSweep(s) > 180 + AD_ARC_SLACK) continue; const g = groups.find(x => Math.abs(x.r - s.r) <= AD_RADIUS_TOL); if (g) g.list.push(s); else groups.push({ r: s.r, list: [s] }); }
-      for (const g of groups.sort((a, b) => a.r - b.r)) { const s = [...g.list].sort((a, b) => a.cy - b.cy || a.cx - b.cx)[0]; add({ x: s.cx, y: s.cy }, circlePoint(s, s.startDeg + arcSweep(s) / 2), 0, 'radius', { label: rLabel(adRound(s.r), g.list.length) }); }
+      const found = pc.list.flatMap(adRoundings).filter(f => f.r >= AD_MIN).sort((a, b) => a.cy - b.cy || a.cx - b.cx), corners = [];
+      for (const f of found) if (!corners.some(x => Math.abs(x.cx - f.cx) <= AD_SAME_CORNER && Math.abs(x.cy - f.cy) <= AD_SAME_CORNER && Math.abs(x.r - f.r) <= AD_SAME_CORNER)) corners.push(f);
+      const groups = []; for (const c of corners) { const g = groups.find(x => Math.abs(x.r - c.r) <= AD_RADIUS_TOL); if (g) g.list.push(c); else groups.push({ r: c.r, list: [c] }); }
+      for (const g of groups.sort((a, b) => a.r - b.r)) { const c = g.list[0]; add({ x: c.cx, y: c.cy }, c.mid, 0, 'radius', { label: rLabel(c.exact ? adRound(c.r) : Math.round(c.r * 10) / 10, g.list.length) }); }
     }
   }
   if (edges) for (const s of geo) { const pc = pieceOf.get(s.id); for (const [p, q] of adStraightEdges(s)) { if (size && pc?.piece && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, pc, gap), 'edge'); } }
