@@ -6,9 +6,11 @@
 // 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。上下・左右で対称な辺は片側だけに入れる（事業主指摘 2026-10-19「上下左右対称な部分はどちらかに寸法を入れること」）。
 // 菱目の間隔は、指定した工具のピッチと違う所だけ、区間ごとに代表1本（事業主指示 2026-10-19「菱目のピッチが指定した工具と異なる部分があれば代表で入れること」）。
 // 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
-import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon } from './geometry.js';
+import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon, arcSweep, circlePoint } from './geometry.js';
 
-const AD_EQ = 0.01;      /* 同じ点とみなす距離（mm） */
+const AD_RADIUS_TOL = 0.05; /* 半径が「同じ」とみなす差（mm）：同じ半径の角・円弧は、型紙ごとに1本にまとめて「R5 ×4」 */
+const AD_ARC_SLACK = 0.5;   /* 丸めた角・円弧（180°以下）とみなす余裕（度） */
+const AD_EQ = 0.01;     /* 同じ点とみなす距離（mm） */
 const AD_MIN = 1;        /* これより短い寸法は入れない（mm） */
 const AD_MIN_EDGE = 3;   /* 辺の寸法は、これより短い辺には入れない（丸角のつなぎなど小さな辺の数字が散らばらないように） */
 const AD_TINY = 3;       /* 外接の枠がこれ以下の小さなかたまり（小さな穴など）には、全体の幅・高さを入れない（mm） */
@@ -144,7 +146,7 @@ function adPitchDims(runs, add, gap, labelOf) {
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。toolPitch：菱の線（工具を持たない菱目）に使う、指定した工具のピッチ（mm・無ければ菱の線の間隔は見ない）。 */
-export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, gap = 8, toolPitch = null, pitchLabel = null } = {}) {
+export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, radii = false, gap = 8, toolPitch = null, pitchLabel = null, radiusLabel = null } = {}) {
   const visLayer = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id)), existing = (doc.shapes || []).filter(s => s.type === 'dimension' && (!doc.layers || visLayer.has(s.layer))), out = [];   /* 「もうある寸法」は見えている層のものだけ（隠した層の手描きの寸法で全体を止めない） */
   const labelOf = typeof pitchLabel === 'function' ? pitchLabel : (p, n) => `${p.toFixed(2)}mm ×${n}`;
   const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
@@ -159,6 +161,15 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
       const w1 = { x: b.minX, y: b.minY }, w2 = { x: b.maxX, y: b.minY }, h2 = { x: b.minX, y: b.maxY };
       if (!sizeExists(w1, w2, b)) add(w1, w2, gap, 'size');    /* 全体の幅（いちばん広い所）：上の辺の上（左→右の左側＝上） */
       if (!sizeExists(w1, h2, b)) add(w1, h2, -gap, 'size');   /* 全体の高さ（いちばん高い所）：左の辺の左（上→下の左側は右＝内側なので、負で外へ） */
+    }
+  }
+  if (radii) {   /* 丸めた角・円弧の半径（事業主の要望 2026-10-20「丸めた R 寸法も入れたい」）：型紙ごとに、同じ半径は1本にまとめて「R5 ×4」。円弧の中心から、円弧の真ん中の点へ（半径そのものを測る）。180°以下・半径 1mm 以上・小さなかたまりは除く */
+    const rLabel = typeof radiusLabel === 'function' ? radiusLabel : (r, n) => n > 1 ? `R${r} ×${n}` : `R${r}`;
+    for (const pc of pieces) {
+      if (pc.circle || pc.why === 'tiny') continue;
+      const groups = [];
+      for (const s of pc.list) { if (s.type !== 'arc' || !(s.r >= AD_MIN) || arcSweep(s) > 180 + AD_ARC_SLACK) continue; const g = groups.find(x => Math.abs(x.r - s.r) <= AD_RADIUS_TOL); if (g) g.list.push(s); else groups.push({ r: s.r, list: [s] }); }
+      for (const g of groups.sort((a, b) => a.r - b.r)) { const s = [...g.list].sort((a, b) => a.cy - b.cy || a.cx - b.cx)[0]; add({ x: s.cx, y: s.cy }, circlePoint(s, s.startDeg + arcSweep(s) / 2), 0, 'radius', { label: rLabel(adRound(s.r), g.list.length) }); }
     }
   }
   if (edges) for (const s of geo) { const pc = pieceOf.get(s.id); for (const [p, q] of adStraightEdges(s)) { if (size && pc?.piece && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, pc, gap), 'edge'); } }
@@ -182,4 +193,4 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
   return result;
 }
 /** 一覧の種類ごとの本数 { size, edge, circle, hole }。 */
-export function autoDimCounts(plan) { const c = { size: 0, edge: 0, circle: 0, hole: 0 }; for (const d of plan || []) if (d.autoDim in c) c[d.autoDim]++; return c; }
+export function autoDimCounts(plan) { const c = { size: 0, edge: 0, circle: 0, hole: 0, radius: 0 }; for (const d of plan || []) if (d.autoDim in c) c[d.autoDim]++; return c; }
