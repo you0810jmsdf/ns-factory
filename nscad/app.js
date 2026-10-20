@@ -390,7 +390,7 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); return shapes === doc.shapes ? doc : { ...doc, shapes }; };   /* 縫い穴は、残った図形に付いているものだけが docToSvg/docToPdf 側（holesOnShapes）で選ばれる */
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.id)) : null; return shapes === doc.shapes ? doc : { ...doc, shapes, ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
