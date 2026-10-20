@@ -2015,6 +2015,7 @@ function initDesign() {
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
+  $('ctx-move').onclick = () => { hideCtxMenu(); const c = $('moveCard'); c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
     if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
@@ -3307,11 +3308,13 @@ function applyArray() {
   copySelectedOffsets(offsets); $('hint').textContent = t('arrayDone');
 }
 $('arrayApply').onclick = applyArray;
-function refreshMoveCard() { $('moveCard').hidden = !selectedShapeIds().size; }
+/** 移動できる選択があるか：図形、または、図形を選ばず菱目（穴）だけを選んでいる（事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」：以前は図形だけを数えていて、菱目だけを選ぶと移動カードが隠れ・押しても動かなかった）。 */
+const hasMoveTarget = () => selectedShapeIds().size > 0 || doc.holes.some(h => selected.has(h.id) && holeEditable(h));
+function refreshMoveCard() { $('moveCard').hidden = !hasMoveTarget(); }
 function applyMove() {
   const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
   if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
-  if (!selectedShapeIds().size || (dx === 0 && dy === 0)) return;
+  if (!hasMoveTarget() || (dx === 0 && dy === 0)) return;
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
 }
 $('moveApply').onclick = applyMove;
@@ -5801,7 +5804,7 @@ function fillCtxCards() {
   addFlowInfo(); $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1;
+  const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget();
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
