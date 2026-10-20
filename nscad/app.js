@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { autoDimensionPlan, autoDimCounts, adIsDiamond } from './autodim.js';
+import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -4471,12 +4471,22 @@ function clearAutoDims() {
   cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
   $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
 }
-function dimToolClick(pt) {
+/** 寸法ツール（D）の1回目のクリックが、丸めた角（円弧・ベジェ・折れ線の丸み）の上なら、その角の R の寸法をその場で作る（事業主の希望 2026-10-20「直線距離しかでない・Rの寸法をお願いします」＝選んだ形 A「角を1回クリックで R」）。
+ *  手で作った寸法なので自動寸法の印は付けない（「自動で入れた寸法を全部消す」では消えない）。スナップが入で、クリックがその角の曲線の端（直線とのつなぎ目）に吸い付く位置のときだけ、今までどおり距離の始点（曲線の端を始点にできるように）。
+ *  ほかの図形の点（菱目・中心など）が近くにあっても R を優先する（縫い目の菱目が外周に沿って並ぶ図面で、角の近くはどこも吸い付く点だらけになるため・実画面で確認 2026-10-20）。 */
+function dimRadiusAt(raw) {
+  const f = adRoundingNear(doc.shapes.filter(s => visible(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type) && !isHardwareShape(s)), raw, 8 / scale); if (!f) return false;
+  if ($('snap').checked && f.ends.some(e => distance(raw, e) < 9 / scale)) return false;
+  const r4 = v => Math.round(v * 1e4) / 1e4;
+  stage = null; addShape({ type: 'dimension', x1: r4(f.cx), y1: r4(f.cy), x2: r4(f.qx), y2: r4(f.qy), offset: 0, label: f.label });
+  $('hint').textContent = t('dimRadiusMade', { r: f.label }); lastPoint = raw; draw(); return true;
+}
+function dimToolClick(pt, raw = pt) {
   if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
     const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
     const sh = doc.shapes.find(x => x.id === [...selected][0]); if (sh?.type === 'dimension') $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); lastPoint = pt; draw(); return;
   }
-  if (stage?.kind !== 'dim') { stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }
+  if (stage?.kind !== 'dim') { if (dimRadiusAt(raw)) return; stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }   /* 1回目：丸めた角なら R の寸法。そうでなければ、2点で測る始点 */
   const a = stage.a; stage = distance(a, pt) > 1e-8 ? { kind: 'dimPlace', a, b: pt } : null; lastPoint = pt;   /* 2点目：まだ図面には何も作らない */
   $('hint').textContent = stage ? rulerText({ a, b: pt }) + ' ' + t('dimPlaceHint') : t('rulerSecond'); draw();
 }
@@ -5692,7 +5702,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
   if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
-  if (mode === 'dimension') { dimToolClick(cursor); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る */
+  if (mode === 'dimension') { dimToolClick(cursor, world(p)); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る（1回目が丸めた角の上なら、その角の R の寸法） */
   if (mode === 'mirror') {
     const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distTo(s, world(p)) <= 7 / scale);
     if (stage?.kind === 'mirrorMid') { /* 2本目の線：1本目との真ん中を軸にする */
