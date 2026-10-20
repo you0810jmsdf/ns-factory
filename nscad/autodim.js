@@ -12,6 +12,7 @@ const AD_RADIUS_TOL = 0.1;   /* 半径が「同じ」とみなす差（mm）：�
 const AD_SAME_CORNER = 0.2;  /* 中心・半径がこの差以内の曲線は「同じ角」とみなす（1つの角が 74°＋16° のように2本の曲線に分かれていても、角は1つ・mm） */
 const AD_ARC_SLACK = 0.5;    /* 丸めた角・円弧（180°以下）とみなす余裕（度） */
 const AD_R_MAX = 100;        /* これより大きな半径の緩い曲線は「丸めた角」とみなさない（mm） */
+const AD_CLICK_MIN_SWEEP = 10;   /* 手動で角をクリックしたとき：ベジェ・折れ線の丸みは、この角度以上から半径を取る（度・自動より短い丸みも拾う） */
 const AD_FIT_MIN_SWEEP = 20; /* ベジェ・折れ線の丸みは、この角度以上のものだけ半径を取る（度） */
 const AD_FIT_TOL = 0.05, AD_FIT_REL = 0.01; /* 円とみなせる条件：点と円のずれの最大が max(0.05mm, 半径の1%) 以内 */
 const AD_TURN_MIN = 0.5, AD_TURN_MAX = 30;  /* 折れ線で「丸みの続き」とみなす、頂点ごとの曲がり（度）：これより小さければ直線・大きければ鋭い角（面取りなど） */
@@ -165,8 +166,8 @@ function adSweepAlong(pts, c) { let sum = 0; for (let i = 1; i < pts.length; i++
 /** 図形の中の「丸めた角」（円弧状の丸み）の一覧 [{ cx, cy, r, mid（曲線の真ん中の点）, exact（円弧そのもの） }]。
  *  円弧（arc）はそのまま。ベジェ曲線・折れ線（ペンの線も）は、曲がりが続く所（頂点ごとに 0.5°〜30°・同じ向き）を円にあてはめ、円とみなせて（ずれが max(0.05mm, 半径の1%)）・20°以上・半径 1〜100mm のものだけ。
  *  事業主のウォレットの図面は、丸めた角がすべてベジェ曲線（半径10の正確な円弧）だった（2026-10-20「まだダメでした」）。 */
-function adRoundings(s) {
-  if (s.type === 'arc') { if (!(s.r > 0)) return []; const sw = arcSweep(s); return sw <= 180 + AD_ARC_SLACK ? [{ cx: s.cx, cy: s.cy, r: s.r, mid: circlePoint(s, s.startDeg + sw / 2), exact: true }] : []; }
+function adRoundings(s, minSweep = AD_FIT_MIN_SWEEP) {
+  if (s.type === 'arc') { if (!(s.r > 0)) return []; const sw = arcSweep(s), m = Math.max(2, Math.ceil(sw / 5)); return sw <= 180 + AD_ARC_SLACK ? [{ cx: s.cx, cy: s.cy, r: s.r, mid: circlePoint(s, s.startDeg + sw / 2), exact: true, pts: Array.from({ length: m + 1 }, (_, i) => circlePoint(s, s.startDeg + sw * i / m)) }] : []; }
   let pts = null; if (s.type === 'polyline') pts = s.points; else if (s.type === 'bezier' || s.type === 'path') { try { pts = flattenShape(s, 0.02); } catch { pts = null; } }
   if (!Array.isArray(pts) || pts.length < 4) return [];
   const turnAt = (a, i) => { const p = a[i - 1], q = a[i], r = a[i + 1]; return adNormDeg((Math.atan2(r.y - q.y, r.x - q.x) - Math.atan2(q.y - p.y, q.x - p.x)) * 180 / Math.PI); };
@@ -180,12 +181,27 @@ function adRoundings(s) {
   const flush = () => {
     if (run.length >= 3) {
       const i0 = run[0] === 1 ? 0 : run[0], i1 = run.at(-1) === n - 2 ? n - 1 : run.at(-1), sub = pts.slice(i0, i1 + 1), f = adFitCircle(sub);
-      if (f && f.r >= AD_MIN && f.r <= AD_R_MAX && f.dev <= Math.max(AD_FIT_TOL, AD_FIT_REL * f.r)) { const sw = adSweepAlong(sub, f); if (sw >= AD_FIT_MIN_SWEEP && sw <= 180 + AD_ARC_SLACK) out.push({ cx: f.cx, cy: f.cy, r: f.r, mid: sub[(sub.length - 1) >> 1], exact: false }); }
+      if (f && f.r >= AD_MIN && f.r <= AD_R_MAX && f.dev <= Math.max(AD_FIT_TOL, AD_FIT_REL * f.r)) { const sw = adSweepAlong(sub, f); if (sw >= minSweep && sw <= 180 + AD_ARC_SLACK) out.push({ cx: f.cx, cy: f.cy, r: f.r, mid: sub[(sub.length - 1) >> 1], exact: false, pts: sub }); }
     }
     run = [];
   };
   for (let i = 1; i < n - 1; i++) { const d = turnAt(pts, i), ok = arcLike(d), kp = ok ? kappa(pts, i) : 0; if (ok && run.length && (Math.sign(d) !== Math.sign(turnAt(pts, run.at(-1))) || kp > 2.5 * kPrev || kp < kPrev / 2.5)) flush(); if (ok) { run.push(i); kPrev = kp; } else flush(); }   /* 向きが変わる・曲がりの強さが急に変わる（直線の端・別の角）所で区切る */
   flush(); return out;
+}
+const adSegDist = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0; return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)); };
+/** 手動の寸法ツール（D）用：クリックした点 pt の近く（曲線から tol mm 以内）にある「丸めた角」を1つ探す（事業主の希望 2026-10-20「Rの寸法をお願いします」＝角を1回クリックで R）。
+ *  円弧・ベジェ曲線・折れ線の丸みを、自動寸法と同じ adRoundings で見つける（短い丸みは 10° から。1つの角が 74°＋16° に分かれていても、どちらを押しても同じ角）。
+ *  返り値：{ cx, cy, r, qx, qy（クリックの向きの、円の上の点）, exact, ends（その丸みの両端の点＝直線とのつなぎ目）, label（「R10」）}。無ければ null。shapes：対象の図形（菱目は除く）。 */
+export function adRoundingNear(shapes, pt, tol) {
+  let best = null;
+  for (const s of shapes || []) {
+    if (!s || !AD_TYPES.includes(s.type) || adIsDiamond(s)) continue;
+    const b = bboxOf(s); if (!b || pt.x < b.minX - tol || pt.x > b.maxX + tol || pt.y < b.minY - tol || pt.y > b.maxY + tol) continue;
+    for (const f of adRoundings(s, AD_CLICK_MIN_SWEEP)) { let d = Infinity; for (let i = 1; i < f.pts.length; i++) d = Math.min(d, adSegDist(pt, f.pts[i - 1], f.pts[i])); if (d <= tol && (!best || d < best.d)) best = { d, f }; }
+  }
+  if (!best) return null;
+  const f = best.f, dx = pt.x - f.cx, dy = pt.y - f.cy, len = Math.hypot(dx, dy); if (!(len > 1e-9)) return null;
+  return { cx: f.cx, cy: f.cy, r: f.r, qx: f.cx + f.r * dx / len, qy: f.cy + f.r * dy / len, exact: f.exact, ends: [f.pts[0], f.pts[f.pts.length - 1]], label: `R${f.exact ? adRound(f.r) : Math.round(f.r * 10) / 10}` };
 }
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
@@ -211,7 +227,7 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
     const rLabel = typeof radiusLabel === 'function' ? radiusLabel : (r, n) => n > 1 ? `R${r} ×${n}` : `R${r}`;
     for (const pc of pieces) {
       if (pc.circle || pc.why === 'tiny') continue;
-      const found = pc.list.flatMap(adRoundings).filter(f => f.r >= AD_MIN).sort((a, b) => a.cy - b.cy || a.cx - b.cx), corners = [];
+      const found = pc.list.flatMap(s => adRoundings(s)).filter(f => f.r >= AD_MIN).sort((a, b) => a.cy - b.cy || a.cx - b.cx), corners = [];
       for (const f of found) if (!corners.some(x => Math.abs(x.cx - f.cx) <= AD_SAME_CORNER && Math.abs(x.cy - f.cy) <= AD_SAME_CORNER && Math.abs(x.r - f.r) <= AD_SAME_CORNER)) corners.push(f);
       const groups = []; for (const c of corners) { const g = groups.find(x => Math.abs(x.r - c.r) <= AD_RADIUS_TOL); if (g) g.list.push(c); else groups.push({ r: c.r, list: [c] }); }
       for (const g of groups.sort((a, b) => a.r - b.r)) { const c = g.list[0]; add({ x: c.cx, y: c.cy }, c.mid, 0, 'radius', { label: rLabel(c.exact ? adRound(c.r) : Math.round(c.r * 10) / 10, g.list.length) }); }
