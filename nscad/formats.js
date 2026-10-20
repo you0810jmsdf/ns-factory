@@ -8,7 +8,7 @@ export function flipFormatY(shape) { return mirrorY(shape); }
 export function svgSweep() { return 1; }
 
 const f = n => (Math.round(n * 1000) / 1000).toString();
-export function holesOnShapes(doc, shapes) { const ids = new Set(shapes.map(s => s.id)), guide = new Set(doc.shapes.filter(s => s.layer === 'guide').map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id) || guide.has(id))).map(p => p.id)); /* ガイドの線に乗った穴は、ガイドを隠しても出す（画面と同じ） */ const own = ownHolePathIds(doc); return doc.holes.filter(h => holeIsOwn(h, own) || okPaths.has(h.pathId)); }
+export function holesOnShapes(doc, shapes) { const ids = new Set(shapes.map(s => s.id)), guide = new Set(doc.shapes.filter(s => s.layer === 'guide').map(s => s.id)), okPaths = new Set(doc.paths.filter(p => p.shapeIds.every(id => ids.has(id) || guide.has(id))).map(p => p.id)); /* ガイドの線に乗った穴は、ガイドを隠しても出す（画面と同じ） */ const own = ownHolePathIds(doc), picked = doc.outHoleIds; /* picked：「選んだ図形だけ出力」で、選んだ菱目（穴）の id。乗っている補助の線が選ばれていなくても出す（2026-10-20 事業主：囲み選択で上の菱目だけ SVG に出なかった） */ return doc.holes.filter(h => holeIsOwn(h, own) || okPaths.has(h.pathId) || (picked && picked.has(h.id))); }
 /** 図形の色（5色）→ 出力用の色。SVG/PDF は 16進・CSS 名、DXF は ACI（AutoCAD Color Index）番号。 */
 export const SHAPE_COLOR_HEX = { blue: '#2060ff', green: '#2a9d3f', red: '#e02020', white: '#ffffff', yellow: '#e6c300' };
 export const SHAPE_COLOR_ACI = { blue: 5, green: 3, red: 1, white: 7, yellow: 2 };
