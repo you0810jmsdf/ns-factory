@@ -145,7 +145,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 08:15 · 36efeeb</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 08:43 · 03335c6</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -705,8 +705,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=cb436526","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=9043d1c6","./help/ja.js":"./help/ja.js?v=f5664d2f","./i18n.js":"./i18n.js?v=728141f5","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=cb436526"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=37f7ab1c","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=fe72c3c7","./help/ja.js":"./help/ja.js?v=356851b1","./i18n.js":"./i18n.js?v=110c26d9","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=37f7ab1c"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3342,6 +3342,8 @@ const MESSAGES = {
     "rangeGapNote": "（2本の端のあいだに、すき間が {gap} mm あります。「隙間を閉じる」で線をつなぐと、続けて打てます）",
     "rangeJointFixedOnly": "つなぎ目を越えて打てるのは、固定ピッチ・個数指定だけです。終点を始点と同じ線の上でクリックするか、固定ピッチか個数指定にしてください。",
     "rangeJointPlaced": "つなぎ目を越えて {n} 個を打ちました（ピッチ {pitch} mm・{a} mm＋{b} mm）。つなぎ目でも間隔は続きます。",
+    "rangeWrapPlaced": "線の始まり（一周の継ぎ目）をまたいで {n} 個を打ちました（ピッチ {pitch} mm・区間 {len} mm）。継ぎ目でも間隔は続きます。",
+    "rangeClosedNote": "（ぐるっと一周する線なので、まだ打っていない側を選びました。両方まだなら短い側。逆側にするには、Shift を押しながら終点をクリックします。）",
     "rangePlaced": "{n}個を打ちました（ピッチ {pitch} mm・区間 {len} mm）。同じ位置の穴は1つにまとめています。",
     "countPlaced": "{n}個を等間隔（{pitch} mm）で打ちました（区間の長さ {len} mm）。同じ位置の穴は1つにまとめています。",
     "cornerMode": "30°超の角",
@@ -5157,6 +5159,8 @@ const MESSAGES = {
     "rangeGapNote": "(There is a gap of {gap} mm between the two line ends. Use Close gaps to join them, then you can punch across.)",
     "rangeJointFixedOnly": "Only fixed pitch and count can punch across a joint between two lines. Click the end on the same line as the start, or switch to fixed pitch or count.",
     "rangeJointPlaced": "Placed {n} holes across the joint ({pitch} mm pitch, {a} mm + {b} mm). The spacing continues over the joint.",
+    "rangeWrapPlaced": "Placed {n} holes across the start of the loop ({pitch} mm pitch, span {len} mm). The spacing continues over the seam.",
+    "rangeClosedNote": "(This line runs all the way around, so the side with no holes yet was chosen; if both are empty, the shorter side. To use the other side, hold Shift while clicking the end point.)",
     "rangePlaced": "Placed {n} holes ({pitch} mm pitch over {len} mm). Overlapping holes were merged.",
     "countPlaced": "Placed {n} holes evenly ({pitch} mm apart) over {len} mm. Overlapping holes were merged.",
     "cornerMode": "Corners over 30°",
@@ -21902,7 +21906,7 @@ const HELP_JA = {
     {
       "id": "stitching",
       "title": "目打ちの配置・編集",
-      "body": "目打ちは、線の上で始点→終点の順に2回クリックして、その間に打ちます（点は線上のどこでもよく、端・交点・すでにある穴の近くでは吸着します。つながった線は経路としてたどります）。配置方法は3つ：「固定ピッチ」＝始点からピッチずつ、終点を超えない所まで（終点ぴったりには打ちません）／「可変ピッチ」＝始点と終点の両方に穴が来るよう間隔をそろえて均等に／「個数指定」＝「菱目の数」（両端の穴を含む）を入れて、その数を等間隔に。始終端の余白や、区間の s（逆向き指定後の始点からの距離）も指定できます。同じ区間に打ち直すと穴は置き換わり、区間だけを再配置して工具を混在させられます。Alt/⌥+クリックはその場所に1穴。閉経路の穴は重複しません。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。\n目印ツール：線や曲線の上をクリックすると、その位置に点の目印を1つ打ちます（始点を自分で決められ、線上のどこにでも打てます）。つながった線は結合点をまたいで1本の線として扱い、結合点も通過点になります。目印は縫い穴と同じ経路上の点で、点の直径は目打ちカードの「点の直径」で変えられます。選択して削除や移動もできます。\n距離で目印を打つ：目打ちカードの「基準の点から線に沿って (mm)」に 1 以上の数を入れると、目印を「基準の点から線に沿って○mm」の場所に打てます。基準にする点（線の端・角）をクリックし、次に進みたい向きの線の上をクリックします（打てる場所の候補が小さな丸で出ます）。開いた線の端を基準にしたときは、向きが線の内側に決まるので 1 回のクリックで打てます。つながった線は結合点をまたいで測り、閉じた線は 1 周して戻ります。線の長さをはみ出すときは打ちません。0 に戻すと、クリックした場所に打つ使い方に戻ります。\n菱目の角度と菱目・丸目の選択：「目打ち・穴編集」の「工具の登録・更新」で、種類（菱目・欧州目打ち・丸目）、刃の傾き（角度・度で数値指定）、菱目の幅と高さ、丸目の直径、刃の数、ピッチを決めて「追加」（または「更新」）します。登録した工具は「使用する工具」から選べます。配置済みの穴の向きは「穴の編集」の「穴の角度」で数値指定できます。\n設定セット：右の「設定セット（保存・呼び出し）」で、目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存できます（このブラウザに最大30件・新しい順）。「選んだ設定を呼び出す」で戻り（工具の変更は元に戻すで戻せます）、「設定ファイルに書き出す」「設定ファイルを読み込む」で JSON ファイルとして別のパソコンへ持ち出せます。\n順目と逆目：新しく置く菱目は、既定が順目（左から右へ引いた線で「／」の向き）です。「使用する工具」の下の切り替えで「逆目（＼）」を選ぶと逆目（「＼」の向き）になります。刃の傾きの大きさは、工具の登録・更新の「角度」を数値で指定します（順目はその符号を反転した向き）。線の向きが縦や斜めのときは、接線に合わせて回ります。"
+      "body": "目打ちは、線の上で始点→終点の順に2回クリックして、その間に打ちます（点は線上のどこでもよく、端・交点・すでにある穴の近くでは吸着します。つながった線は経路としてたどります）。配置方法は3つ：「固定ピッチ」＝始点からピッチずつ、終点を超えない所まで（終点ぴったりには打ちません）／「可変ピッチ」＝始点と終点の両方に穴が来るよう間隔をそろえて均等に／「個数指定」＝「菱目の数」（両端の穴を含む）を入れて、その数を等間隔に。始終端の余白や、区間の s（逆向き指定後の始点からの距離）も指定できます。同じ区間に打ち直すと穴は置き換わり、区間だけを再配置して工具を混在させられます。Alt/⌥+クリックはその場所に1穴。閉経路の穴は重複しません。始点をクリックしたあと、マウスを動かすと、その位置を終点にしたら打たれる穴の位置が薄く出ます（クリックすると、見えたとおりに打たれます）。線にマウスを近づけると、つながった経路全体が薄く光ります。ぐるっと一周する線（閉じた経路）では、始点と終点の間に2つの区間があります。まだ穴が無い側を自動で選び（両方まだなら短い側）、一周の継ぎ目をまたぐ側でもピッチは続きます。逆側にしたいときは、Shift を押しながら終点をクリックします。外形の内側に引いた点線に打つときは、外形の端・中心から垂直に降ろした点（12mm 以内）にも吸着し、マウスを近づけると輪の印が出ます。返し縫いで2〜3目を重ねる場合も穴は共有します。\n選択ツールで穴を選んでドラッグ（線上拘束／自由）。Shift で複数選択。角度・逆目・削除は選択穴、または選択図形の経路全体に適用。図形の移動・コピーは縫い経路全体を対象にします。ロックされたレイヤーの穴は変更しません。\n点の既定径は0.5mm。形は穴→経路→全体→工具の順で解決します。丸目は工具の穴径、circle指定はholeWを使用。工具更新は寸法を更新し、既存穴のピッチと角度は維持します（再配置で反映）。工具設定をブラウザに、全工具と穴を文書JSONにも保存。駒合わせはSTEP 6、SVG/PDF/DXF出力は後続STEP。\n現物の菱目に合わせる：目打ちカードの工具欄で穴の幅・高さ（刃の長さ）・傾きを実測値にして「更新」。「テスト片を印刷」で 10 穴と 50mm 目盛りを実寸印刷し、現物の刃を当てて確かめます。読み込んだ図面（.lcc など）の穴が描画用の小さな工具になっているときは「付け替え」で登録済みの工具に移すと、穴の大きさが現物どおりになります。\n目印ツール：線や曲線の上をクリックすると、その位置に点の目印を1つ打ちます（始点を自分で決められ、線上のどこにでも打てます）。つながった線は結合点をまたいで1本の線として扱い、結合点も通過点になります。目印は縫い穴と同じ経路上の点で、点の直径は目打ちカードの「点の直径」で変えられます。選択して削除や移動もできます。\n距離で目印を打つ：目打ちカードの「基準の点から線に沿って (mm)」に 1 以上の数を入れると、目印を「基準の点から線に沿って○mm」の場所に打てます。基準にする点（線の端・角）をクリックし、次に進みたい向きの線の上をクリックします（打てる場所の候補が小さな丸で出ます）。開いた線の端を基準にしたときは、向きが線の内側に決まるので 1 回のクリックで打てます。つながった線は結合点をまたいで測り、閉じた線は 1 周して戻ります。線の長さをはみ出すときは打ちません。0 に戻すと、クリックした場所に打つ使い方に戻ります。\n菱目の角度と菱目・丸目の選択：「目打ち・穴編集」の「工具の登録・更新」で、種類（菱目・欧州目打ち・丸目）、刃の傾き（角度・度で数値指定）、菱目の幅と高さ、丸目の直径、刃の数、ピッチを決めて「追加」（または「更新」）します。登録した工具は「使用する工具」から選べます。配置済みの穴の向きは「穴の編集」の「穴の角度」で数値指定できます。\n設定セット：右の「設定セット（保存・呼び出し）」で、目打ち・パッチワーク・オフセットなどの設定値と、登録した工具をまとめて名前を付けて保存できます（このブラウザに最大30件・新しい順）。「選んだ設定を呼び出す」で戻り（工具の変更は元に戻すで戻せます）、「設定ファイルに書き出す」「設定ファイルを読み込む」で JSON ファイルとして別のパソコンへ持ち出せます。\n順目と逆目：新しく置く菱目は、既定が順目（左から右へ引いた線で「／」の向き）です。「使用する工具」の下の切り替えで「逆目（＼）」を選ぶと逆目（「＼」の向き）になります。刃の傾きの大きさは、工具の登録・更新の「角度」を数値で指定します（順目はその符号を反転した向き）。線の向きが縦や斜めのときは、接線に合わせて回ります。"
     },
     {
       "id": "pen",
@@ -22056,7 +22060,7 @@ const HELP_EN = {
     {
       "id": "stitching",
       "title": "Stitching and editing",
-      "body": "With Stitching, click a start point and then an end point on a line to place holes between them (the points can be anywhere on the line and snap to ends, intersections and existing holes; connected lines are followed as one path). Three placement methods: Fixed pitch = from the start, every pitch, up to but not past the end (no hole is forced onto the end); Variable pitch = holes at both the start and the end with the spacing evened out; Count = enter the number of holes (both ends included) and they are spaced evenly. Margins and an s section measured from the chosen start direction can also be set. Placing again over the same span replaces its holes, and replacing only a section allows mixed tools. Alt/⌥+click places one hole at the clicked position. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron.\nMark tool: click on a line or curve to drop a dot mark at that spot, one at a time (you choose the start and can mark anywhere along the line). Connected lines are treated as one path and their joints are passed through. Marks are points on the same path as stitch holes; the size is \"Dot diameter\" in the Stitching card. You can select, move or delete them.\nMarking by distance: enter 1 or more in \"From the base point along the line (mm)\" in the Stitching card to drop a mark that far along the line from a base point. Click the base point (a line end or corner), then click the line in the direction you want (small circles show the possible spots). For the end of an open line the direction is fixed (into the line), so one click is enough. Distance is measured through joints of connected lines, and wraps around on a closed line. Nothing is placed past the end of the line. Set it back to 0 to drop marks where you click.\nDiamond angle and diamond / round choice: in Stitching > \"Tool editor\", set the kind (diamond, European, round), the blade slant (angle in degrees), the diamond width and height, the round diameter, the number of teeth and the pitch, then press Add (or Update). Registered tools appear in \"Tool to use\". The direction of holes already placed can be set numerically with \"Hole angle\" in \"Hole editing\".\nSettings sets: in the \"Settings sets (save / recall)\" card on the right, save the punching, patchwork, offset and other settings together with your registered tools under a name (up to 30 in this browser, newest first). \"Recall the selected settings\" restores them (tool changes can be undone), and \"Export to a settings file\" / \"Import a settings file\" carry them to another computer as a JSON file.\nForward and reverse slant: newly placed diamond holes default to forward slant (\"/\" on a line drawn left to right). Pick \"Reverse (＼)\" in the switch under \"Tool\" for reverse (\"\\\\\" direction). Set the size of the slant as a number in the tool editor Angle (forward uses the opposite sign). On vertical or diagonal lines the holes rotate with the tangent."
+      "body": "With Stitching, click a start point and then an end point on a line to place holes between them (the points can be anywhere on the line and snap to ends, intersections and existing holes; connected lines are followed as one path). Three placement methods: Fixed pitch = from the start, every pitch, up to but not past the end (no hole is forced onto the end); Variable pitch = holes at both the start and the end with the spacing evened out; Count = enter the number of holes (both ends included) and they are spaced evenly. Margins and an s section measured from the chosen start direction can also be set. Placing again over the same span replaces its holes, and replacing only a section allows mixed tools. Alt/⌥+click places one hole at the clicked position. After you click a start point, moving the mouse shows faintly where the holes would go if that position were the end point (clicking places them exactly as shown), and hovering a line lights up the whole connected path. On a line that runs all the way around (a closed path) there are two spans between the start and the end: the side with no holes yet is chosen automatically (the shorter side if both are empty), and the pitch carries on across the seam; hold Shift while clicking the end point to use the other side. When stitching along a dashed line drawn inside an outline, the start and end also snap to points dropped straight down from the outline's ends and center (within 12 mm), and a ring appears as you approach. Closed paths never duplicate the seam hole; backstitching reuses 2–3 holes.\nUse Select to drag holes freely or constrained to the path. Shift selects multiple holes. Angle, slant and deletion affect selected holes or the selected shape’s whole path. Shape moves and copies include the entire stitch path. Locked layers are protected.\nDots default to 0.5mm diameter. Mark precedence is hole, path, document, tool. Round tools use holeD; an explicit circle mark uses holeW. Tool updates change dimensions but keep existing hole pitch and angle; replace holes to apply these settings. Tools persist in browser storage and document JSON. Matched stitching is STEP 6; SVG/PDF/DXF exports are later steps.\nMatching the real iron: in the Stitch card set hole width, height (blade length) and slant to measured values and press Update. \"Print test strip\" prints 10 holes with a 50 mm scale at actual size to compare with the iron. If an imported drawing (.lcc etc.) uses a small drawing-only tool, reassign its holes to a registered tool so the hole size matches the real iron.\nMark tool: click on a line or curve to drop a dot mark at that spot, one at a time (you choose the start and can mark anywhere along the line). Connected lines are treated as one path and their joints are passed through. Marks are points on the same path as stitch holes; the size is \"Dot diameter\" in the Stitching card. You can select, move or delete them.\nMarking by distance: enter 1 or more in \"From the base point along the line (mm)\" in the Stitching card to drop a mark that far along the line from a base point. Click the base point (a line end or corner), then click the line in the direction you want (small circles show the possible spots). For the end of an open line the direction is fixed (into the line), so one click is enough. Distance is measured through joints of connected lines, and wraps around on a closed line. Nothing is placed past the end of the line. Set it back to 0 to drop marks where you click.\nDiamond angle and diamond / round choice: in Stitching > \"Tool editor\", set the kind (diamond, European, round), the blade slant (angle in degrees), the diamond width and height, the round diameter, the number of teeth and the pitch, then press Add (or Update). Registered tools appear in \"Tool to use\". The direction of holes already placed can be set numerically with \"Hole angle\" in \"Hole editing\".\nSettings sets: in the \"Settings sets (save / recall)\" card on the right, save the punching, patchwork, offset and other settings together with your registered tools under a name (up to 30 in this browser, newest first). \"Recall the selected settings\" restores them (tool changes can be undone), and \"Export to a settings file\" / \"Import a settings file\" carry them to another computer as a JSON file.\nForward and reverse slant: newly placed diamond holes default to forward slant (\"/\" on a line drawn left to right). Pick \"Reverse (＼)\" in the switch under \"Tool\" for reverse (\"\\\\\" direction). Set the size of the slant as a number in the tool editor Angle (forward uses the opposite sign). On vertical or diagonal lines the holes rotate with the tangent."
     },
     {
       "id": "pen",
@@ -22277,6 +22281,8 @@ let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジ�
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分岐で止まった端の位置（選択が変わったら出さない） */
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
+let stitchPreview = null; /* 目打ち：始点をクリックしたあと、マウスの位置を終点にしたときに打つ穴の位置（打つ前の薄い表示）。{ points, tool, wrap } */
+let stitchRouteIds = null; /* 目打ち：いまの経路（つながった線）の図形の id。打つ前に、薄く光らせる */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
@@ -22761,6 +22767,7 @@ function stitchPointCandidates(w) {
     const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
     for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); } /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
+    for (const o of others) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > STITCH_FOOT_MAX_MM + 14 / scale) continue; const pr = projectOnPath(route, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) cands.push(pr.s); } /* 近くの別の図形（外形など）の端・中心から、この経路へ垂直に降ろした点にも吸い付く（事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側の点線は中心へ吸い付かない） */
     if (!state.fresh) for (const sg of saved.segments) cands.push(sg.from, sg.to); /* 前に打った区間の始まり・終わり（つなぎ目）も吸着の点：隣のピッチの位置より、ちょうどそこをクリックしたときは、そこが優先される */
     if (!state.fresh) { const cur = doc.tools.find(x => x.id === $('stitchTool').value); for (const h of doc.holes) if (h.pathId === saved.id) { cands.push(h.s); /* 隣のピッチの位置（穴の位置 ± ピッチ）にも吸い付く：前の続きを、同じ固定幅でぴったり続けられる（事業主指摘 2026-10-17：均等化した場所だけで、隣のピッチからだとずれる） */ for (const pt of new Set([cur?.pitch, doc.tools.find(x => x.id === h.toolId)?.pitch].filter(v => Number.isFinite(v) && v > 0))) for (const q of [h.s - pt, h.s + pt]) if (q > 1e-6 && q < len - 1e-6) cands.push(q); } }
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
@@ -22806,7 +22813,7 @@ function stitchRangePlan(pair, kind, n, tool, opt = {}) {
   const joinPrev = saved.segments.find(sg => Math.abs(sg.to - lo) < 1e-6 && sg.toolId); /* 反対側の隣の区間（終点が、今打つ区間の始点側 lo にある）：今の区間を反対側（hi）から数えると、lo にぴったり穴が来ないので、つなぎ目が目落ちする（事業主指摘 2026-10-17：続きで目打ちをするとかならず目落ちする） */
   const joinNext = saved.segments.find(sg => Math.abs(sg.from - hi) < 1e-6 && sg.toolId); /* 隣の区間（始点が、今打つ区間の終点にある）。つなぎ目の穴の補いに使う（区間を切り分ける前の状態で調べる） */
   const apply = () => {
-    if (fresh) { if (doc.paths.some(q => q.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); } /* 新しい経路の id は、計画を立てたときに決めたもの。つなぎ目を越えて2本とも新しい経路のとき、同じ id になるので、重なるときは付け直す（不具合記録 2026-10-17：後半の菱目が抜けた） */
+    if (fresh && !doc.paths.includes(saved)) { if (doc.paths.some(q => q.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); } /* 新しい経路の id は、計画を立てたときに決めたもの。つなぎ目を越えて2本とも新しい経路のとき、同じ id になるので、重なるときは付け直す（不具合記録 2026-10-17：後半の菱目が抜けた）。同じ経路の2区間（閉じた経路の始まりをまたぐとき）は、同じ saved を共有するので、2回目は足さない */
     /* 指定した区間の中にあった同じ線の穴は、打ち直す。ただし区間の両端（つなぎ目）の穴は、新しい穴がそこに来るときだけ置き換える。固定ピッチは終点ぴったりには打たないので、両端まで消すと、隣の区間の端の穴が消えて歯抜けになる（事業主指摘 2026-10-16） */
     const posOf = p => saved.closed && Math.abs(p.s - len) < 1e-7 ? 0 : p.s, newPos = points.map(posOf), atEdge = h => (Math.abs(h.s - lo) < 1e-7 || Math.abs(h.s - hi) < 1e-7) && !(opt.jointS !== undefined && Math.abs(h.s - opt.jointS) < 1e-7);   /* つなぎ目（別の経路との境）の穴は、ピッチが変わるので前のものを消す */
     doc.holes = doc.holes.filter(h => h.pathId !== saved.id || h.s < lo - 1e-7 || h.s > hi + 1e-7 || (atEdge(h) && !newPos.some(q => Math.abs(q - h.s) < 1e-5)));
@@ -22851,28 +22858,58 @@ function stitchNearestGap(list1, list2) {
   return best;
 }
 /** つなぎ目を越えて打つ：始点（経路A）→接している端→終点（経路B）。固定ピッチ専用。区間1（始点→接点）の最後の穴から、ピッチを続けて区間2（接点→終点）を打つ。2区間の計画を先に作り、1回の commit で打つ（元に戻すは1回）。 */
-function stitchJointPunch(c1, c2, joint, kind, n, tool) {
+/** つなぎ目を越えて打つ計画（固定ピッチ）：区間1（始点→接点）と区間2（接点→終点）の2つの計画を作る。図面は変えない。失敗は { error }。same＝同じ経路の始まり（s=0 と周の長さ）をまたぐ場合（閉じた経路）：ぴったり続くときは、区間1が打った始まりの穴を、区間2が消さない。 */
+function stitchJointPlans(c1, c2, joint, kind, n, tool, same = false) {
   const { j1, j2 } = joint, plans = []; let r = 0;
-  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); r = (p1.info.leftover ?? 0) + (joint.d ?? 0); }
+  if (Math.abs(c1.s - j1) > 1e-6) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: j1 } }, kind, n, tool, { noEndOffset: true, jointS: j1 }); if (p1.error) return { error: p1.error }; plans.push(p1); r = (p1.info.leftover ?? 0) + (joint.d ?? 0); }
   if (Math.abs(c2.s - j2) > 1e-6) {
     const L2 = arcLength(c2.state.route), keep = plans.length > 0, exact = keep && r < 0.005, anchorS = !keep ? undefined : exact ? j2 : j2 === 0 ? -r : L2 + r;
-    const p2 = stitchRangePlan({ first: { key: c2.key, s: j2, anchorS }, c: c2 }, kind, n, tool, { noStartOffset: true, forceAnchor: exact, jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2);
+    const p2 = stitchRangePlan({ first: { key: c2.key, s: j2, anchorS }, c: c2 }, kind, n, tool, { noStartOffset: true, forceAnchor: exact, jointS: same && exact ? undefined : j2 }); if (p2.error) return { error: p2.error }; plans.push(p2);
   }
+  return { plans };
+}
+function stitchJointPunch(c1, c2, joint, kind, n, tool) {
+  const { j1, j2 } = joint, res = stitchJointPlans(c1, c2, joint, kind, n, tool); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans } = res;
   if (!plans.length) { $('hint').textContent = t('countSame'); return; }
   countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
   const last = plans.at(-1).info, total = plans.reduce((sum, p) => sum + p.info.points.length, 0), left = last.leftover ?? 0;
   $('hint').textContent = t('rangeJointPlaced', { n: total, pitch: last.pitch.toFixed(2), a: Math.abs(c1.s - j1).toFixed(2), b: Math.abs(c2.s - j2).toFixed(2) }) + ' ' + (left < 0.005 ? t('rangeLeftNone') : t('rangeLeft', { r: left.toFixed(2) })); draw();
 }
 /** つなぎ目を越えて、個数指定で打つ：始点（経路A）→接している端→終点（経路B）に、両端を含めて n 個を等間隔に打つ。間隔は、始点から終点までの長さ（つなぎ目のすき間も含む）を n−1 等分。穴の位置は、始点から k×間隔 の所（経路A の接点までに入る分は経路A・残りは経路B）。 */
-function stitchJointCount(c1, c2, joint, n, tool) {
+/** つなぎ目を越えて、個数指定で打つ計画：図面は変えない。失敗は { error }。same＝同じ経路の始まりをまたぐ場合（区間2は、始まりの穴を消さない）。 */
+function stitchJointCountPlans(c1, c2, joint, n, tool, same = false) {
   const { j1, j2 } = joint, gap = joint.d ?? 0, a = Math.abs(c1.s - j1), b = Math.abs(c2.s - j2), T = a + gap + b;
-  if (!(n >= 2) || !(T > 1e-9)) { $('hint').textContent = t('invalidRange'); return; }
+  if (!(n >= 2) || !(T > 1e-9)) return { error: t('invalidRange') };
   const P = T / (n - 1), dir1 = j1 >= c1.s ? 1 : -1, dir2 = c2.s >= j2 ? 1 : -1, plans = [];
   const n1 = a < 1e-6 ? 0 : b < 1e-6 && gap < 1e-9 ? n : Math.min(n - 1, Math.floor(a / P + 1e-9) + 1), n2 = n - n1;   /* 経路A に入る個数（始点が接点なら 0・終点が接点なら全部） */
-  if (n1 > 0) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: c1.s + dir1 * (n1 - 1) * P } }, 'count', n1, tool, { jointS: j1 }); if (p1.error) { $('hint').textContent = p1.error; return; } plans.push(p1); }
-  if (n2 > 0) { const off = Math.max(0, n1 * P - a - gap), p2 = stitchRangePlan({ first: { key: c2.key, s: j2 + dir2 * off }, c: c2 }, 'count', n2, tool, { jointS: j2 }); if (p2.error) { $('hint').textContent = p2.error; return; } plans.push(p2); }
+  if (n1 > 0) { const p1 = stitchRangePlan({ first: c1, c: { ...c1, s: c1.s + dir1 * (n1 - 1) * P } }, 'count', n1, tool, { jointS: j1 }); if (p1.error) return { error: p1.error }; plans.push(p1); }
+  if (n2 > 0) { const off = Math.max(0, n1 * P - a - gap), p2 = stitchRangePlan({ first: { key: c2.key, s: j2 + dir2 * off }, c: c2 }, 'count', n2, tool, { jointS: same ? undefined : j2 }); if (p2.error) return { error: p2.error }; plans.push(p2); }
+  return { plans, P, a, b };
+}
+function stitchJointCount(c1, c2, joint, n, tool) {
+  const res = stitchJointCountPlans(c1, c2, joint, n, tool); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans, P, a, b } = res;
   countStage = null; commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
   $('hint').textContent = t('rangeJointPlaced', { n, pitch: P.toFixed(2), a: a.toFixed(2), b: b.toFixed(2) }); draw();
+}
+/** 閉じた経路（ぐるっと一周する線）の上の2点（始点 first・終点 c）の間には、2つの区間がある：経路の始まり（s=0）をまたがない区間（direct）と、またぐ区間（wrap）。
+ *  打つのは、まだ穴が無い（少ない）ほう。同じなら短いほう。flip（終点を Shift＋クリック）で逆側（事業主指摘 2026-10-21：右半分を打ったあと、同じ経路しか選ばれず左半分が打てない）。wrap なら true。 */
+function stitchClosedWrap(first, c, flip) {
+  const { saved, route } = c.state, len = arcLength(route), lo = Math.min(first.s, c.s), hi = Math.max(first.s, c.s), eps = 1e-6;
+  const mine = doc.holes.filter(h => h.pathId === saved.id).map(h => len - h.s < eps ? 0 : h.s);
+  const inDirect = mine.filter(s => s > lo + eps && s < hi - eps).length, inWrap = mine.filter(s => s < lo - eps || s > hi + eps).length;
+  const wrap = inWrap < inDirect || (inWrap === inDirect && len - (hi - lo) < (hi - lo) - 1e-9);
+  return flip ? !wrap : wrap;
+}
+/** 始点・終点（同じ経路の上）から、打つ計画の一覧を作る（図面は変えない）。閉じた経路で、経路の始まりをまたぐ側を打つときは、2つの区間の計画（ピッチは始まりを越えても続く）。失敗は { error }。 */
+function stitchPlansForPair(pair, kind, n, tool, flip = false) {
+  const { saved, route } = pair.c.state;
+  if (!saved.closed || !stitchClosedWrap(pair.first, pair.c, flip)) { const p = stitchRangePlan(pair, kind, n, tool); return p.error ? { error: p.error } : { plans: [p], wrap: false, closed: !!saved.closed }; }
+  const len = arcLength(route), fwd = pair.first.s > pair.c.s, joint = { j1: fwd ? len : 0, j2: fwd ? 0 : len, d: 0 }, c1 = { ...pair.first, state: pair.c.state }, total = len - (Math.max(pair.first.s, pair.c.s) - Math.min(pair.first.s, pair.c.s));
+  if (kind === 'fixed') { const r = stitchJointPlans(c1, pair.c, joint, kind, n, tool, true); return r.error ? r : { plans: r.plans, wrap: true, closed: true }; }
+  const count = kind === 'count' ? n : Math.max(2, Math.round(total / tool.pitch) + 1), r = stitchJointCountPlans(c1, pair.c, joint, count, tool, true);   /* 間隔をそろえる方式も、またぐ側では、両端を含めて等間隔（個数＝長さ÷ピッチ＋1） */
+  return r.error ? r : { plans: r.plans, wrap: true, closed: true, count, pitch: r.P };
 }
 /** 始点と同じ場所をもう一度クリックしたとき：その点（経路 c の位置 c.s）に菱目を1つだけ打つ。そこにすでに菱目があれば、増やさずに案内する。 */
 function stitchSingleAt(c, tool) {
@@ -22885,7 +22922,7 @@ function stitchSingleAt(c, tool) {
   });
   $('hint').textContent = t('singleDone'); draw();
 }
-function rangeStitchClick(w) {
+function rangeStitchClick(w, flip = false) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
   if (kind === 'count' && !n) { $('hint').textContent = t('countNeedN'); return; }
@@ -22898,11 +22935,11 @@ function rangeStitchClick(w) {
     }
     countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
-  countStage = null;
-  const plan = stitchRangePlan(pair, kind, n, tool); if (plan.error) { $('hint').textContent = plan.error; return; }
-  const { points, pitch, leftover, anchoredHole, lo, hi } = plan.info;
-  commit(() => { selected = new Set(plan.apply()); });
-  $('hint').textContent = (kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) }) : t('rangePlaced', { n: points.length, pitch: pitch.toFixed(2), len: (hi - lo).toFixed(2) })) + (leftover === null ? '' : ' ' + (leftover < 0.005 ? t(anchoredHole ? 'rangeAnchorLeftNone' : 'rangeLeftNone') : t(anchoredHole ? 'rangeAnchorLeft' : 'rangeLeft', { r: leftover.toFixed(2) }))); draw();
+  countStage = null; stitchPreview = null;
+  const res = stitchPlansForPair(pair, kind, n, tool, flip); if (res.error) { $('hint').textContent = res.error; return; }
+  const { plans } = res, last = plans.at(-1).info, { leftover } = last, anchoredHole = last.anchoredHole && !res.wrap /* 始まりをまたぐときの2区間目は、ピッチを続けるための数え方で、既存の穴への吸着ではない */, nPts = plans.reduce((sum, p) => sum + p.info.points.length, 0), span = plans.reduce((sum, p) => sum + p.info.hi - p.info.lo, 0), pitch = res.pitch ?? last.pitch;
+  commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
+  $('hint').textContent = (res.wrap ? t('rangeWrapPlaced', { n: nPts, pitch: pitch.toFixed(2), len: span.toFixed(2) }) : kind === 'count' ? t('countPlaced', { n, pitch: pitch.toFixed(2), len: span.toFixed(2) }) : t('rangePlaced', { n: nPts, pitch: pitch.toFixed(2), len: span.toFixed(2) })) + (leftover === null || leftover === undefined ? '' : ' ' + (leftover < 0.005 ? t(anchoredHole ? 'rangeAnchorLeftNone' : 'rangeLeftNone') : t(anchoredHole ? 'rangeAnchorLeft' : 'rangeLeft', { r: leftover.toFixed(2) }))) + (res.closed ? ' ' + t('rangeClosedNote') : ''); draw();
 }
 function drawChainStops() { /* 分岐で止まった端に青い印（選択がそのままのときだけ） */
   if (!chainStops || chainStops.ids.size !== selected.size || ![...selected].every(id => chainStops.ids.has(id))) return;
@@ -22912,14 +22949,66 @@ function drawChainStops() { /* 分岐で止まった端に青い印（選択が�
 }
 /** 目打ち：マウスの近く（画面14px以内）にある、吸い付く点（端・線の中心・線と線の交点・すでにある穴）のうち、いちばん近いもの。なければ null。マウスを動かすたびに計算するので、近くの線（最大12本）だけで求める。 */
 let stitchHover = null;
+/** 目打ちの吸着：近くの別の図形（外形など）の端・中心から、経路へ垂直に降ろした点にも吸い付く、その降ろす距離の上限（mm）。
+ *  事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側に引いた点線は、自分の端・中点・交点にしか吸い付かず、外形の中心へ吸い付かなかった。 */
+const STITCH_FOOT_MAX_MM = 12;
+/** 図形の端と中心（中点）。 */
+function stitchSpecialPoints(s) { const len = arcLength(s); return [pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)]; }
 function stitchHoverAt(w) {
-  const reach = 14 / scale, near = doc.shapes.filter(s => visible(s) && editable(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, w) <= reach * 1.5).slice(0, 12), pts = [];
-  for (const s of near) { const len = arcLength(s); pts.push(pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)); }
+  const reach = 14 / scale, foot = STITCH_FOOT_MAX_MM + reach, cand = [];
+  for (const s of doc.shapes) { if (!(visible(s) && editable(s) && stitchable(s)) || ['text', 'dimension', 'image'].includes(s.type)) continue; const d = distTo(s, w); if (d <= foot) cand.push({ s, d }); }
+  const near = cand.filter(c => c.d <= reach * 1.5).slice(0, 12).map(c => c.s), pts = [];
+  for (const s of near) pts.push(...stitchSpecialPoints(s));
+  for (const { s: o } of cand) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > foot) continue; for (const s of near) { if (s === o) continue; const pr = projectOnPath(s, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) pts.push({ x: pr.x, y: pr.y }); } }   /* 外形の中心などを、近くの線へ垂直に降ろした点 */
   if (near.length >= 2) pts.push(...allIntersections(near));
   for (const h of doc.holes) if (holeVisible(h) && Math.hypot(h.x - w.x, h.y - w.y) <= reach) pts.push({ x: h.x, y: h.y });
   let best = null, bd = reach; for (const q of pts) { const d = distance(w, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
 }
 function drawStitchHover() { if (mode !== 'stitch' || !stitchHover || exporting) return; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(80,200,255,.95)'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(stitchHover.x, stitchHover.y, 5 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+/** 目打ち：打つ前の薄い表示（事業主指示 2026-10-21「菱目打ちルートを薄く、確定する前に表示してほしい」）。
+ *  始点を決めたあと＝マウスの位置を終点にしたら打たれる穴の位置（クリックで確定するときと同じ計画・図面は変えない）。決める前・決めたあと＝マウスの近くの線がつながった経路（どこまでが同じ経路か）。 */
+function stitchPreviewAt(w, flip) {
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN();
+  if (!countStage || !tool || (kind === 'count' && !n)) return null;
+  const near = stitchPointCandidates(w), pair = near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6);
+  if (pair) { const res = stitchPlansForPair(pair, kind, n, tool, flip); return res.error ? null : { points: res.plans.flatMap(p => p.info.points), tool, wrap: !!res.wrap }; }
+  for (const c2 of near) for (const c1 of countStage.list) {   /* 別の線へ：端が接していれば、つなぎ目を越える分も（クリックと同じ） */
+    const joint = stitchJoint(c1, c2); if (!joint) continue;
+    const res = kind === 'count' ? stitchJointCountPlans(c1, c2, joint, n, tool) : kind === 'fixed' ? stitchJointPlans(c1, c2, joint, kind, n, tool) : null;
+    return res && !res.error ? { points: res.plans.flatMap(p => p.info.points), tool, wrap: false } : null;
+  }
+  return null;
+}
+let stitchPreviewKey = '', stitchRouteKey = '', stitchRouteCache = null;
+function syncStitchPreview(w, flip) {
+  const ver = [undo.length, redo.length, doc.shapes.length, doc.holes.length].join(',');
+  const key = [ver, countStage ? countStage.list.map(c => c.key + ':' + c.s.toFixed(3)).join(';') : '', Math.round(w.x * scale / 2), Math.round(w.y * scale / 2), flip ? 1 : 0, $('stitchTool').value, $('placement').value, $('stitchCount').value, $('chain').checked].join('|');
+  if (key === stitchPreviewKey) return; stitchPreviewKey = key;   /* 同じ場所・同じ状態では、計算し直さない（マウスを動かすたびに交点を数えないため） */
+  stitchPreview = stitchPreviewAt(w, flip);
+  let ids = null;
+  if (countStage) ids = countStage.list[0].state.saved.shapeIds;
+  else {
+    const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, w) <= 8 / scale);
+    if (hit) { const rk = [hit.id, ver, $('chain').checked].join('|'); if (rk !== stitchRouteKey) { stitchRouteKey = rk; stitchRouteCache = routeForHit(hit)?.saved.shapeIds ?? null; } ids = stitchRouteCache; }
+  }
+  stitchRouteIds = ids ? [...ids] : null;
+}
+function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; }
+function drawStitchPreview() {
+  if (mode !== 'stitch' || exporting) return;
+  if (stitchRouteIds?.length) { ctx.save(); ctx.lineWidth = 8 / scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.18; for (const id of stitchRouteIds) strokeShape(doc.shapes.find(x => x.id === id), '#c9a96e'); ctx.restore(); }   /* 経路：太く薄く */
+  if (!stitchPreview?.points.length) return;
+  ctx.save(); ctx.globalAlpha = 0.5; ctx.setLineDash([]);
+  for (const p of stitchPreview.points) {   /* 打たれる穴：本物の穴と同じ形を、薄く */
+    const a = holeAppearance({ toolId: stitchPreview.tool.id, mark: 'tool' }, doc); if (!a) continue;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate((($('followTangent').checked ? p.angleDeg : 0) + slantOf(stitchPreview.tool)) * Math.PI / 180); ctx.beginPath(); ctx.fillStyle = ctx.strokeStyle = '#ffe3a3';
+    if (a.kind === 'circle' || a.kind === 'dot') { ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); ctx.fill(); }
+    else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); ctx.lineWidth = a.height; ctx.stroke(); }
+    else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); ctx.fill(); }
+    ctx.restore();
+  }
+  ctx.restore();
+}
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
@@ -27003,7 +27092,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; clearStitchPreview(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
@@ -27851,7 +27940,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -27976,7 +28065,7 @@ canvas.addEventListener('pointerdown', e => {
   if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
-  if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p)); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p), e.shiftKey); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { patchFillAt(world(p)); return; }
@@ -28065,6 +28154,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
   stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
+  if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
