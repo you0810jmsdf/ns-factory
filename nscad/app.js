@@ -4130,6 +4130,31 @@ function drawRectHandles() {
   rectHandlePoints(b).forEach((h, i) => { const z = (g || i === rectHot ? 6 : 4.5) * k; ctx.fillStyle = g || i === rectHot ? '#f0b429' : 'rgba(240,180,41,.6)'; ctx.strokeStyle = '#000'; ctx.fillRect(h.x - z, h.y - z, 2 * z, 2 * z); ctx.strokeRect(h.x - z, h.y - z, 2 * z, 2 * z); });
   ctx.restore();
 }
+/** 縫い穴が付いている矩形か（穴を壊さないよう、大きさを変えない）。 */
+const rectHasHoles = sh => doc.paths.some(pt => pt.shapeIds.includes(sh.id) && doc.holes.some(h => h.pathId === pt.id));
+/** 矩形の大きさの小窓（事業主指示 2026-10-21「矩形を選択したら寸法を指定できる窓」）：縦横に平らな矩形を1つだけ選んでいる間、画面上部に「幅・高さ（mm）」を出す。
+ *  数字を入れて Enter（または欄を出る）と、「動かさない点」（左上の角／中心）を固定したまま、その大きさになる（元に戻すは1回）。縫い穴が付いた矩形は取っ手と同じく断る。
+ *  欄の数字は常に実際の寸法：取っ手で変えても追従し、入れかけの数字は描き直しでは消えない。Esc で入れた数字を取り消す。入れた数字は、窓を出した矩形（rectEditId）にしか使わない。 */
+let rectEditKey = '', rectEditId = null;
+function refreshRectEdit() {
+  const sh = selectedRect(); $('rectEditBar').hidden = !sh; if (!sh) { rectEditKey = ''; rectEditId = null; return; }
+  const b = rectBoxOf(sh), w = b.x1 - b.x0, h = b.y1 - b.y0, key = JSON.stringify([sh.id, w, h]); if (key === rectEditKey) return;
+  rectEditKey = key; rectEditId = sh.id; $('rectEditW').value = circleNum(w); $('rectEditH').value = circleNum(h);
+}
+function applyRectEdit() {
+  const sh = selectedRect(); if (!sh || sh.id !== rectEditId) return;
+  const b = rectBoxOf(sh), w = Number($('rectEditW').value), h = Number($('rectEditH').value), back = () => { rectEditKey = ''; refreshRectEdit(); };   /* 断ったら、欄を実際の寸法に戻す */
+  if (!(Number.isFinite(w) && Number.isFinite(h) && w >= 0.05 && h >= 0.05)) { $('hint').textContent = t('rectEditInvalid'); back(); return; }
+  if (Math.abs(w - (b.x1 - b.x0)) < 1e-9 && Math.abs(h - (b.y1 - b.y0)) < 1e-9) return;
+  if (rectHasHoles(sh)) { $('hint').textContent = t('rectHoles'); back(); return; }
+  const r4 = v => +v.toFixed(4), center = $('rectEditAnchor').value === 'center', x0 = center ? (b.x0 + b.x1) / 2 - w / 2 : b.x0, y0 = center ? (b.y0 + b.y1) / 2 - h / 2 : b.y0;
+  commit(() => { sh.points = rectShape({ x: r4(x0), y: r4(y0) }, { x: r4(x0 + w), y: r4(y0 + h) }).points; });
+  $('hint').textContent = t('rectResized', { w: circleNum(w), h: circleNum(h) });
+}
+for (const id of ['rectEditW', 'rectEditH']) {
+  $(id).addEventListener('change', applyRectEdit);
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyRectEdit(); } else if (e.key === 'Escape') { rectEditKey = ''; refreshRectEdit(); } });   /* Esc＝入れかけを取り消す（このあと欄を出ても、変更は起きない） */
+}
 function setFdDimKey(key) { if (fdDimKey === key) return; fdDimKey = key; const items = fdDimItems(key); if (items) revealFdDims(items); draw(); }
 function highlightFoldDiagram(id) {
   const key = FD_DIAGRAM[id]; if (!key) return false; setFdDimKey(key);
@@ -4666,7 +4691,7 @@ function updateUI() {
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard();
+  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -5796,7 +5821,7 @@ canvas.addEventListener('pointerdown', e => {
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
     const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
     if (rh) {
-      if (doc.paths.some(pt => pt.shapeIds.includes(rh.shape.id) && doc.holes.some(h => h.pathId === pt.id))) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
+      if (rectHasHoles(rh.shape)) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
       const b = rectBoxOf(rh.shape); gesture = { kind: 'rectR', id: rh.shape.id, h: rh.h, box0: b, box: b }; $('hint').textContent = t('rectDrag', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); draw(); return;
     }
     const le = handleOk ? lineEndHit(cursor) : null;
