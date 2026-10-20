@@ -4484,7 +4484,7 @@ function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.
 function runAutoDims() {
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const tool = doc.tools.find(x => x.id === $('stitchTool')?.value) || doc.tools[0], toolPitch = tool && tool.pitch > 0 ? tool.pitch : null;   /* 菱の線の間隔は、目打ちカードで選んでいる工具のピッチと比べる */
-  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, radii: $('adRadius').checked, gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) });
+  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, radii: $('adRadius').checked, radiusSide: $('adRadiusSide')?.value === 'out' ? 'out' : 'in', gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) });
   const noPiece = $('adSize').checked && !autoDimCounts(plan).size && plan.info?.biggest ? ' ' + t('adNoPiece', { n: plan.info.clusters, w: plan.info.biggest.w, h: plan.info.biggest.h, why: t('adWhy_' + (plan.info.biggest.why || 'exists')) }) : '';   /* 全体の幅・高さが1本も入らなかったとき：いちばん大きいかたまりの大きさと理由（不具合の切り分け用） */
   if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : $('adSelOnly')?.checked ? 'adSelNone' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
   const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
