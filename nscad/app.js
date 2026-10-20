@@ -1,7 +1,7 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear } from './autodim.js';
+import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -4497,36 +4497,38 @@ function clearAutoDims() {
   cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
   $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
 }
-/** 寸法ツール（D）の1回目のクリックが、丸めた角（円弧・ベジェ・折れ線の丸み）の上なら、その角の R の寸法をその場で作る（事業主の希望 2026-10-20「直線距離しかでない・Rの寸法をお願いします」＝選んだ形 A「角を1回クリックで R」）。
- *  手で作った寸法なので自動寸法の印は付けない（「自動で入れた寸法を全部消す」では消えない）。スナップが入で、クリックがその角の曲線の端（直線とのつなぎ目）に吸い付く位置のときだけ、今までどおり距離の始点（曲線の端を始点にできるように）。
- *  ほかの図形の点（菱目・中心など）が近くにあっても R を優先する（縫い目の菱目が外周に沿って並ぶ図面で、角の近くはどこも吸い付く点だらけになるため・実画面で確認 2026-10-20）。 */
-let radiusHover = null, radiusHoverAt = 0;   /* 寸法ツール中、マウスが角に近いとき「クリックしたらできる R」（{ dim, outside, label }）を先に見せる（2026-10-20 事業主「まだ内側にしか R が描けない」＝内外の境目が見えない） */
-function dimRadiusPlan(raw) {
+/** 寸法ツール（D）で丸めた角（円弧・ベジェ・折れ線の丸み）をクリックして R の寸法を作る（事業主の希望 2026-10-20「Rの寸法をお願いします」→「クリックで寸法線を呼び出し、次のクリックの位置で内外を決めたい」）。
+ *  1回目のクリック＝角を選ぶだけ（stage＝radius・まだ作らない）／2回目のクリックの位置＝円の内側なら中心から曲線へ、円の外側なら曲線の外へ引き出す（方向も2回目の点の向き・adRadiusDimension）。手で作った寸法なので自動寸法の印は付けない。
+ *  スナップが入で、1回目がその角の曲線の端（直線とのつなぎ目）に吸い付く位置のときだけ、今までどおり距離の始点。ほかの図形の点（菱目・中心など）が近くにあっても角を選ぶ（縫い目の菱目が外周に沿って並ぶ図面で、角の近くは吸い付く点だらけになるため・実画面で確認）。 */
+let radiusCorner = null, radiusHover = null, radiusHoverAt = 0;   /* radiusCorner：1回目の前に、マウスが近い角（強調する）／radiusHover：角を選んだあとの、できる R のプレビュー（{ dim, outside, label }） */
+function dimRadiusPick(raw) {
   const f = adRoundingNear(doc.shapes.filter(s => visible(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type) && !isHardwareShape(s)), raw, 8 / scale); if (!f) return null;
-  if ($('snap').checked && f.ends.some(e => distance(raw, e) < 9 / scale)) return null;
-  const r4 = v => Math.round(v * 1e4) / 1e4;
-  const out = f.outside, len = Math.abs(Number($('dimOffset')?.value)) || 8, ux = (f.qx - f.cx) / f.r, uy = (f.qy - f.cy) / f.r;   /* 外側（クリックが曲線のすぐ外側）：曲線の上の点から、中心と反対の向きへ、ずらしの長さだけ引き出す（数字が図形に重ならない）。内側（すぐ内側）：中心から曲線へ（2026-10-20 事業主「マウスの位置で内か外か決めたい」） */
-  const dim = out ? { type: 'dimension', x1: r4(f.qx), y1: r4(f.qy), x2: r4(f.qx + ux * len), y2: r4(f.qy + uy * len), offset: 0, label: f.label } : { type: 'dimension', x1: r4(f.cx), y1: r4(f.cy), x2: r4(f.qx), y2: r4(f.qy), offset: 0, label: f.label };
-  return { dim, outside: out, label: f.label };
+  return $('snap').checked && f.ends.some(e => distance(raw, e) < 9 / scale) ? null : f;
 }
-function dimRadiusAt(raw) {
-  const plan = dimRadiusPlan(raw); if (!plan) return false;
-  stage = null; radiusHover = null; addShape(plan.dim);
-  $('hint').textContent = t('dimRadiusMade', { r: plan.label }); lastPoint = raw; draw(); return true;
-}
-/** マウスを動かしたとき：寸法ツールで、まだ1点も打っていなければ、角に近いかを調べてプレビューを更新する（40ms ごとに1回）。変わったら案内も変える。 */
+const dimRadiusLen = () => Math.abs(Number($('dimOffset')?.value)) || 8;
+/** マウスを動かしたとき：寸法ツールで、(1) まだ1点も打っていなければ、選ばれる角を強調する（40ms ごとに1回）。(2) 角を選んだあとは、マウスの位置でできる R（内側＝水色／外側＝だいだい色）を先に見せる。変わったら案内も変える。 */
 function updateRadiusHover(raw) {
-  if (mode !== 'dimension' || stage || gesture) { radiusHover = null; return; }
+  if (mode !== 'dimension' || gesture) { radiusCorner = null; radiusHover = null; return; }
+  if (stage?.kind === 'radius') {
+    radiusCorner = null; const h = adRadiusDimension(stage.f, raw, dimRadiusLen()); if (JSON.stringify(h.dim) === JSON.stringify(radiusHover?.dim)) return;
+    radiusHover = h; $('hint').textContent = t(h.outside ? 'dimRadiusHoverOut' : 'dimRadiusHoverIn', { r: h.label }); return;
+  }
+  radiusHover = null; if (stage) { radiusCorner = null; return; }
   const now = Date.now(); if (now - radiusHoverAt < 40) return; radiusHoverAt = now;
-  const h = dimRadiusPlan(raw), was = radiusHover; if (JSON.stringify(h?.dim) === JSON.stringify(was?.dim)) return;
-  radiusHover = h; $('hint').textContent = h ? t(h.outside ? 'dimRadiusHoverOut' : 'dimRadiusHoverIn', { r: h.label }) : t('hint.dimension');
+  const f = dimRadiusPick(raw), key = c => c ? [c.cx, c.cy, c.r].map(v => v.toFixed(2)).join(',') : '';
+  if (key(f) === key(radiusCorner)) return;
+  radiusCorner = f ? { cx: f.cx, cy: f.cy, r: f.r, pts: f.pts, label: f.label } : null; $('hint').textContent = f ? t('dimRadiusHoverPick', { r: f.label }) : t('hint.dimension');
 }
 function dimToolClick(pt, raw = pt) {
+  if (stage?.kind === 'radius') {   /* 2回目：円の内側なら中心から曲線へ・外側なら外へ引き出す R の寸法を作る */
+    const plan = adRadiusDimension(stage.f, raw, dimRadiusLen()); stage = null; radiusHover = null; radiusCorner = null; addShape(plan.dim);
+    $('hint').textContent = t('dimRadiusMade', { r: plan.label }); lastPoint = raw; draw(); return;
+  }
   if (stage?.kind === 'dimPlace') {   /* 3点目：ここで初めて寸法を作る（数値の位置＝3点目） */
     const g = stage; stage = null; addShape({ type: 'dimension', x1: g.a.x, y1: g.a.y, x2: g.b.x, y2: g.b.y, offset: dimOffsetFor(g.a, g.b, pt) });
     const sh = doc.shapes.find(x => x.id === [...selected][0]); if (sh?.type === 'dimension') $('hint').textContent = t('dimPlaced', { off: Math.abs(sh.offset).toFixed(1) }); lastPoint = pt; draw(); return;
   }
-  if (stage?.kind !== 'dim') { if (dimRadiusAt(raw)) return; stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }   /* 1回目：丸めた角なら R の寸法。そうでなければ、2点で測る始点 */
+  if (stage?.kind !== 'dim') { const f = dimRadiusPick(raw); if (f) { stage = { kind: 'radius', f }; radiusCorner = null; radiusHover = null; $('hint').textContent = t('dimRadiusPicked', { r: f.label }); lastPoint = raw; draw(); return; } stage = { kind: 'dim', a: pt }; lastPoint = pt; draw(); return; }   /* 1回目：丸めた角ならその角を選ぶ（次のクリックの位置で内外を決める）。そうでなければ、2点で測る始点 */
   const a = stage.a; stage = distance(a, pt) > 1e-8 ? { kind: 'dimPlace', a, b: pt } : null; lastPoint = pt;   /* 2点目：まだ図面には何も作らない */
   $('hint').textContent = stage ? rulerText({ a, b: pt }) + ' ' + t('dimPlaceHint') : t('rulerSecond'); draw();
 }
@@ -5655,7 +5657,8 @@ function drawSheetBody(lo, hi) {
   }
   if (stage?.kind === 'dimPlace') { const di = dimOffsetInfo(stage.a, stage.b, cursor); strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: stage.b.x, y2: stage.b.y, offset: di.offset }, '#f0b429'); if (di.snap) strokeShape({ type: 'line', x1: di.snap[0].x, y1: di.snap[0].y, x2: di.snap[1].x, y2: di.snap[1].y }, '#7ee787'); }   /* 近くの寸法線にそろうときは、そろえる相手を緑の線で示す */   /* 3点目で作られる寸法の見本 */
   if (stage?.kind === 'dim') strokeShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y, offset: Number($('dimOffset').value) || 8 }, '#c9a96e');
-  else if (mode === 'dimension' && !stage && radiusHover) strokeShape(radiusHover.dim, radiusHover.outside ? '#ff9f43' : '#4fd0ff');   /* クリックしたらできる R：内側＝水色・外側＝だいだい色 */
+  else if (mode === 'dimension' && stage?.kind === 'radius') { strokeShape({ type: 'polyline', points: stage.f.pts, closed: false }, '#4fd0ff'); if (radiusHover) strokeShape(radiusHover.dim, radiusHover.outside ? '#ff9f43' : '#4fd0ff'); }   /* 角を選んだあと：選んだ角の曲線と、できる R（内側＝水色・外側＝だいだい色） */
+  else if (mode === 'dimension' && !stage && radiusCorner) strokeShape({ type: 'polyline', points: radiusCorner.pts, closed: false }, '#4fd0ff');   /* 1回目の前：選ばれる角の曲線を強調 */
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
   else if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
@@ -6145,7 +6148,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }

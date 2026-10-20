@@ -201,7 +201,21 @@ export function adRoundingNear(shapes, pt, tol) {
   }
   if (!best) return null;
   const f = best.f, dx = pt.x - f.cx, dy = pt.y - f.cy, len = Math.hypot(dx, dy); if (!(len > 1e-9)) return null;
-  return { cx: f.cx, cy: f.cy, r: f.r, qx: f.cx + f.r * dx / len, qy: f.cy + f.r * dy / len, exact: f.exact, outside: len > f.r + 1e-9, ends: [f.pts[0], f.pts[f.pts.length - 1]], label: `R${f.exact ? adRound(f.r) : Math.round(f.r * 10) / 10}` };
+  return { cx: f.cx, cy: f.cy, r: f.r, qx: f.cx + f.r * dx / len, qy: f.cy + f.r * dy / len, exact: f.exact, outside: len > f.r + 1e-9, ends: [f.pts[0], f.pts[f.pts.length - 1]], pts: f.pts, label: `R${f.exact ? adRound(f.r) : Math.round(f.r * 10) / 10}` };
+}
+/** 手動の R の寸法（2026-10-20 事業主「クリックで寸法線を呼び出し、次のクリックの位置で内外を決めたい」）：1回目のクリックで選んだ角 f（adRoundingNear の返り値）と、2回目の点 m から、作る寸法を決める。
+ *  m が円の内側 → 中心から、m の方向の曲線の上の点へ（長さ＝半径）。円の外側 → 曲線の上の点から、同じ方向へ len（寸法線のずらし）だけ引き出す。m の方向が円弧の範囲の外なら、いちばん近い円弧の端の点を使う。
+ *  返り値：{ dim（寸法の図形）, outside, label }。 */
+export function adRadiusDimension(f, m, len = 8) {
+  const r4 = v => Math.round(v * 1e4) / 1e4;
+  let dx = m.x - f.cx, dy = m.y - f.cy, d = Math.hypot(dx, dy);
+  if (!(d > 1e-9)) { dx = f.qx - f.cx; dy = f.qy - f.cy; d = Math.hypot(dx, dy) || 1; }   /* 中心ちょうど：1回目の向き */
+  let ux = dx / d, uy = dy / d, q = { x: f.cx + ux * f.r, y: f.cy + uy * f.r }, near = Infinity;
+  for (let i = 1; i < f.pts.length; i++) near = Math.min(near, adSegDist(q, f.pts[i - 1], f.pts[i]));
+  if (near > 0.5) { const e = [f.pts[0], f.pts[f.pts.length - 1]].reduce((b, c) => distance(q, c) < distance(q, b) ? c : b); q = { x: e.x, y: e.y }; ux = (q.x - f.cx) / f.r; uy = (q.y - f.cy) / f.r; }
+  const outside = d > f.r + 1e-9;
+  const dim = outside ? { type: 'dimension', x1: r4(q.x), y1: r4(q.y), x2: r4(q.x + ux * len), y2: r4(q.y + uy * len), offset: 0, label: f.label } : { type: 'dimension', x1: r4(f.cx), y1: r4(f.cy), x2: r4(q.x), y2: r4(q.y), offset: 0, label: f.label };
+  return { dim, outside, label: f.label };
 }
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
