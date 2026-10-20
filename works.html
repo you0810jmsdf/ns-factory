@@ -2065,6 +2065,43 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     const WORKS_LOG_URL = 'https://script.google.com/macros/s/AKfycbw-ghhuzw8WYH7w4Png96Qt3s5EYbVaK_P32UJvqvhr28Ck2mxQJkedbAimogVHExeouw/exec';
 
+    // ===== この端末が「自分（事業主）のもの」かの見分け（2026-10-20 事業主指示：通知メールのほとんどが自分の操作で届くため除外） =====
+    // ・?owner=1 付きで開くと、この端末を自分用に登録する（localStorage nsf_owner）。?owner=0 で解除。
+    // ・管理者ログイン中（sessionStorage nsf_admin_key）と、管理画面で除外済みの端末（nsf_ga_optout=1）も自分の端末として扱う。
+    // ・自分の端末は、アクセス記録の送信に owner=1 を付ける。サーバー（GAS）はこの印があると購入意思の通知メールを送らない（記録は従来どおり残る）。
+    function isOwnerDevice() {
+      try {
+        if (localStorage.getItem('nsf_owner') === '1') return true;
+        if (localStorage.getItem('nsf_ga_optout') === '1') return true;
+        if (sessionStorage.getItem('nsf_admin_key')) return true;
+      } catch (e) {}
+      return false;
+    }
+    function ownerParam() { return isOwnerDevice() ? '&owner=1' : ''; }
+    (function applyOwnerParam() {
+      try {
+        const q = new URLSearchParams(location.search);
+        const o = q.get('owner');
+        if (o !== '1' && o !== '0') return;
+        if (o === '1') localStorage.setItem('nsf_owner', '1'); else localStorage.removeItem('nsf_owner');
+        q.delete('owner');
+        const rest = q.toString();
+        history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+        const show = () => {
+          const el = document.createElement('div');
+          el.id = 'nsf-owner-toast';
+          el.setAttribute('role', 'status');
+          el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;max-width:min(92vw,420px);padding:14px 18px;border-radius:12px;background:#222;color:#fff;font-size:14px;line-height:1.6;box-shadow:0 6px 24px rgba(0,0,0,.35)';
+          el.textContent = o === '1'
+            ? 'この端末を「自分用」にしました。この端末の操作では、商品ページの通知メールが届かなくなります。（解除：このページを ?owner=0 付きで開く）'
+            : 'この端末の「自分用」を解除しました。';
+          document.body.appendChild(el);
+          setTimeout(() => { el.remove(); }, 8000);
+        };
+        if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+      } catch (e) {}
+    })();
+
     // ===== 注目度ランキング（2026-08-30 追加） =====
     // 公開APIは順位と先週比だけを返す。人数はサイトに出さない。
     let rankMap = {};      // 商品ID → { rank, change }
@@ -2325,7 +2362,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           + '&id=' + encodeURIComponent(work.id || '')
           + '&name=' + encodeURIComponent(work.title || '')
           + '&vid=' + encodeURIComponent(getVisitorId())
-          + '&status=' + encodeURIComponent(status);
+          + '&status=' + encodeURIComponent(status)
+          + ownerParam();
         s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
         document.body.appendChild(s);
       } catch(e) {}
@@ -2341,7 +2379,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           + '&id=' + encodeURIComponent(work.id || '')
           + '&name=' + encodeURIComponent(work.title || '')
           + '&detail=' + encodeURIComponent(action)
-          + '&vid=' + encodeURIComponent(getVisitorId());
+          + '&vid=' + encodeURIComponent(getVisitorId())
+          + ownerParam();
         s.onload = s.onerror = () => { if (s.parentNode) s.remove(); };
         document.body.appendChild(s);
       } catch(e) {}
