@@ -3137,7 +3137,8 @@ function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { d
 function renderTabs() {
   scheduleAutosave();
   const bar = $('tabBar'); bar.textContent = '';
-  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1) { const x = document.createElement('span'); x.className = 'tabX'; x.textContent = '×'; x.title = t('tabClose'); x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
+  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip'); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1) { const x = document.createElement('span'); x.className = 'tabX'; x.textContent = '×'; x.title = t('tabClose'); x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
+  bar.ondblclick = e => { const t0 = e?.target, b = t0?.closest ? t0.closest('button') : t0; if (!b || t0?.className === 'tabX' || t0?.closest?.('.tabX')) return; const i = [...bar.children].indexOf(b); return i >= 0 ? openTabFolder(tabs[i]) : undefined; };   /* ダブルクリックは、タブの並び全体で受ける（1回目のクリックでタブを描き直すため、ボタンごとに付けると取りこぼす） */
   $('tabName').value = tabs[activeTab]?.name || '';
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
 }
@@ -6014,9 +6015,15 @@ async function saveSelectedAs() {
   } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); }
 }
 /** 「開く」：Chrome／Edge はファイル選択で開き、N's CAD 形式（.json）なら場所を覚える（Ctrl+S でそのファイルへ上書き）。それ以外の形式（.lcc・.svg・.dxf・画像）は覚えない（元のファイルを JSON で壊さない）。選択窓の無いブラウザは従来の入力欄。 */
-async function openDialog() {
+/** タブをダブルクリック：その図面の保存先のフォルダで「開く」の窓を開く（事業主の要望 2026-10-20）。ブラウザは保存先のパスを教えず、エクスプローラーも開けないので、ファイルを選ぶ窓を、保存先のファイルのフォルダ（startIn）から開く形にした。 */
+async function openTabFolder(tab) {
+  if (typeof globalThis.showOpenFilePicker !== 'function') { $('hint').textContent = t('tabFolderUnsupported'); return; }
+  if (!tab?.fileHandle) { $('hint').textContent = t('tabFolderNoFile'); return; }
+  await openDialog(tab.fileHandle);
+}
+async function openDialog(startIn = null) {   /* startIn：窓を開く場所（ファイルのハンドル）。ボタン・Ctrl+O では渡さない */
   if (typeof globalThis.showOpenFilePicker !== 'function') { $('file').click(); return; }
-  let handle; try { [handle] = await globalThis.showOpenFilePicker({ types: [{ description: "N's CAD・図面・画像", accept: { 'application/json': ['.json'], 'text/plain': ['.lcc', '.dxf'], 'image/svg+xml': ['.svg'], 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] } }] }); } catch (err) { if (err?.name !== 'AbortError') $('hint').textContent = t('loadFailed', { message: err?.message || String(err) }); return; }
+  let handle; try { [handle] = await globalThis.showOpenFilePicker({ ...(startIn ? { startIn } : {}), types: [{ description: "N's CAD・図面・画像", accept: { 'application/json': ['.json'], 'text/plain': ['.lcc', '.dxf'], 'image/svg+xml': ['.svg'], 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] } }] }); } catch (err) { if (err?.name !== 'AbortError') $('hint').textContent = t('loadFailed', { message: err?.message || String(err) }); return; }
   if (!handle) return;
   const res = await openFile(await handle.getFile());
   if (res && /\.json$/i.test(handle.name || '') && tabs[activeTab]) tabs[activeTab].fileHandle = handle;
@@ -6038,7 +6045,7 @@ $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
 /** 保存メニューの外をクリックしたら閉じる。「保存 ▾」ボタンの中の文字（span・kbd）のクリックは、ボタンの中なので閉じない（事業主指摘 2026-10-18：文字をクリックすると、開いた直後に閉じて、メニューが見えなかった）。 */
 function closeSaveMenuOnOutsideClick(e) { const m = $('saveMenu'), sv = $('save'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && !sv.contains(e.target)) m.hidden = true; }
-document.addEventListener?.('click', closeSaveMenuOnOutsideClick); $('open').onclick = openDialog; $('shortcutsBtn').onclick = () => showHelp(true);
+document.addEventListener?.('click', closeSaveMenuOnOutsideClick); $('open').onclick = () => openDialog(); $('shortcutsBtn').onclick = () => showHelp(true);
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
