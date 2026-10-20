@@ -3234,7 +3234,16 @@ function normalizeWorkItem(item){
     folderId: String(item.folderId || '').trim(),
     // 購入者の声（saveVoice で記録済みの評価日・コメント）。お礼動画の欄へ自動で入れる（2026-10-04）
     voiceDate: String(item.voiceDate || '').trim(),
-    voiceComment: String(item.voiceComment || '').trim()
+    voiceComment: String(item.voiceComment || '').trim(),
+    voiceVideoId: String(item.voiceVideoId || '').trim(),
+    // 声が2件以上ある作品の全件（1件目を含む・2026-10-20）。どの声でお礼動画を作るかの選び方は pickVoiceForVideo
+    voices: Array.isArray(item.voices)
+      ? item.voices.map(v => ({
+          date: String((v && v.date) || '').trim(),
+          comment: String((v && v.comment) || '').trim(),
+          videoId: String((v && v.videoId) || '').trim()
+        }))
+      : []
   };
 }
 
@@ -3903,8 +3912,21 @@ const VOICE_BGM_LEVEL_MAX_GAIN = 3;
 
 // 記録済みの購入者の声を、空欄（または前に自動で入れたまま）のときだけ入れる。手で打った内容は上書きしない。
 // 自動で入れた欄は data-auto="1"。利用者が書き換えると input で外れる
+// お礼動画の元にする声を選ぶ（2026-10-20：1作品に声が複数件）。
+//   まだ動画の無い声のうち一番新しい（最後の）もの。全部に動画があれば最後の声。声が無ければ null。
+//   2件目以降が無い作品は、従来どおり1件目（voiceDate/voiceComment）になる。
+function pickVoiceForVideo(work){
+  const list = (work.voices && work.voices.length)
+    ? work.voices
+    : [{date: work.voiceDate, comment: work.voiceComment, videoId: work.voiceVideoId}];
+  const withComment = list.filter(v => v && v.comment);
+  if(!withComment.length) return null;
+  const noVideo = withComment.filter(v => !v.videoId);
+  return (noVideo.length ? noVideo : withComment).slice(-1)[0];
+}
 function fillVoiceFromWork(work){
-  [[els.voiceRatingDate, work.voiceDate, new Date().toISOString().slice(0, 10)], [els.voiceComment, work.voiceComment, '']].forEach(([el, value, fallback]) => {
+  const picked = pickVoiceForVideo(work) || {date: '', comment: ''};
+  [[els.voiceRatingDate, picked.date, new Date().toISOString().slice(0, 10)], [els.voiceComment, picked.comment, '']].forEach(([el, value, fallback]) => {
     if(!el) return;
     if(el.value && el.dataset.auto !== '1') return;
     el.value = value || fallback;
@@ -6558,7 +6580,9 @@ async function saveVoiceRating(videoId){
     id: currentWork.id,
     date: voiceRatingDateValue(),
     comment,
-    videoId: videoId || ''
+    videoId: videoId || '',
+    // 同じコメントの声があればその声に動画などを紐付け、無ければ新しい声として追加する（1作品に複数件・2026-10-20）
+    upsert: true
   };
   setLog('評価を保存しています…');
   try{
@@ -6570,7 +6594,9 @@ async function saveVoiceRating(videoId){
     if(text.trim().startsWith('<')) throw new Error('Google側の一時障害です。少し待ってもう一度お試しください。');
     const data = JSON.parse(text);
     if(!data.ok) throw new Error(data.error === 'unauthorized' ? '管理者の鍵が違います。' : (data.error === 'product_not_found' ? `作品番号 ${currentWork.id} が見つかりません。` : (data.error || '保存に失敗しました。')));
-    setLog(`評価を保存しました（作品番号 ${currentWork.id}）。`);
+    // count は声の操作に対応したGASだけが返す。無いときは古いGASで、1件目が上書きされた可能性がある
+    if(data.count === undefined) setLog(`評価を保存しました（作品番号 ${currentWork.id}）。※ GASが複数件に未対応の版です。1件目を上書きした可能性があります。`);
+    else setLog(`評価を保存しました（作品番号 ${currentWork.id}・${data.index + 1}件目／全${data.count}件）。`);
     return data;
   }catch(err){
     setLog(`評価の保存に失敗しました: ${err.message}`);

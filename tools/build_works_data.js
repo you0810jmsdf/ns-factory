@@ -34,6 +34,7 @@ const ALLOWED_KEYS = [
   'price', 'soldout', 'noRestock', 'stock', 'date',
   'shortDesc', 'longDesc', 'status', 'folderId', 'mainPhoto',
   'voiceDate', 'voiceComment', 'voiceVideoId',
+  'voices', // 購入者の声が2件以上ある作品だけ（全件・1件目を含む。2026-10-20）
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

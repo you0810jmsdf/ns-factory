@@ -886,6 +886,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       background: #000;
     }
     .customer-voice-video-wrap[hidden] { display: none; }
+    /* 声が2件以上のときの区切り（2026-10-20） */
+    .customer-voice-item + .customer-voice-item {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(201, 169, 110, .35);
+    }
     .customer-voice-video {
       position: absolute;
       inset: 0;
@@ -1535,11 +1541,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </div>
       <h3 id="customer-voice-title" class="customer-voice-title" data-i18n="modal.customerVoiceTitle">購入者からの声</h3>
       <p id="customer-voice-work" class="customer-voice-work"></p>
-      <div id="customer-voice-video-wrap" class="customer-voice-video-wrap" hidden>
-        <iframe id="customer-voice-video" class="customer-voice-video" src="" title="購入者からの声（動画）" allow="autoplay; fullscreen" allowfullscreen></iframe>
-      </div>
-      <div id="customer-voice-date" class="customer-voice-date"></div>
-      <div id="customer-voice-comment" class="customer-voice-comment"></div>
+      <!-- 声は1作品に複数件（2026-10-20）。件数ぶんの .customer-voice-item（動画・日付・コメント）を JS が入れる -->
+      <div id="customer-voice-list" class="customer-voice-list"></div>
     </div>
   </div>
 
@@ -2047,7 +2050,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
             : '<span class="thumb-placeholder">' + T('gallery.loadingPhoto', '写真を読み込み中') + '</span>'}
           <span class="card-body">
             ${work.id ? `<span class="work-id" data-id="${esc(work.id)}" onclick="copyWorkId(event, this)" title="クリックでIDをコピー">ID: ${esc(work.id)}</span>` : ''}
-            <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}${hasCustomerVoice(work) ? '<span class="badge-voice" role="button" tabindex="0">' + T('badge.customerVoice', '💬 購入者の声') + '</span>' : ''}</span>
+            <span class="work-title">${esc(work.title)}${badge}${work.videos && work.videos.length ? '<span class="badge-video">🎬 動画</span>' : ''}${hasCustomerVoice(work) ? '<span class="badge-voice" role="button" tabindex="0">' + esc(customerVoiceBadgeLabel(work)) + '</span>' : ''}</span>
             <span class="work-details">
               ${compact([work.category, work.material, work.color]) ? `<span>${esc(compact([work.category, work.material, work.color]))}</span>` : ''}
               ${compact([work.size, formatPrice(work.price)]) ? `<span>${esc(compact([work.size, formatPrice(work.price)]))}</span>` : ''}
@@ -2598,13 +2601,33 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     const customerVoiceOverlay = document.getElementById('customer-voice-overlay');
     const customerVoiceClose = document.getElementById('customer-voice-close');
     const customerVoiceWork = document.getElementById('customer-voice-work');
-    const customerVoiceVideoWrap = document.getElementById('customer-voice-video-wrap');
-    const customerVoiceVideo = document.getElementById('customer-voice-video');
-    const customerVoiceDate = document.getElementById('customer-voice-date');
-    const customerVoiceComment = document.getElementById('customer-voice-comment');
+    const customerVoiceList = document.getElementById('customer-voice-list');
+    const customerVoicePanel = document.getElementById('customer-voice-panel');
+
+    // 作品の声を { date, comment, videoId } の配列にそろえる（2026-10-20：1作品に複数件）。
+    //   work.voices があればそれ（1件目を含む全件）。無ければ従来の voiceDate/voiceComment/voiceVideoId の1件。
+    //   コメントも動画も無い声は数えない。
+    function getCustomerVoices(work) {
+      if (!work) return [];
+      const pick = (v) => ({
+        date: String((v && v.date) || '').trim(),
+        comment: String((v && v.comment) || '').trim(),
+        videoId: String((v && v.videoId) || '').trim(),
+      });
+      const list = (Array.isArray(work.voices) && work.voices.length)
+        ? work.voices.map(pick)
+        : [pick({ date: work.voiceDate, comment: work.voiceComment, videoId: work.voiceVideoId })];
+      return list.filter((v) => v.comment || v.videoId);
+    }
 
     function hasCustomerVoice(work) {
-      return !!(work && (work.voiceComment || work.voiceVideoId));
+      return getCustomerVoices(work).length > 0;
+    }
+
+    // カードの札の文言。2件以上は「×件数」を添える
+    function customerVoiceBadgeLabel(work) {
+      const n = getCustomerVoices(work).length;
+      return T('badge.customerVoice', '💬 購入者の声') + (n > 1 ? ' ×' + n : '');
     }
 
     // "YYYY-MM-DD" → "2026年9月29日"。形式が違えば空文字（無理に表示しない）。
@@ -2618,23 +2641,54 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     function closeCustomerVoicePanel() {
       if (!customerVoiceOverlay) return;
       customerVoiceOverlay.hidden = true;
-      if (customerVoiceVideo) customerVoiceVideo.src = '';
-      if (customerVoiceVideoWrap) customerVoiceVideoWrap.hidden = true;
+      if (customerVoiceList) customerVoiceList.textContent = ''; // iframeごと外して再生を止める
+    }
+
+    // 声の件数ぶん「動画（あれば）・日付・コメント」を縦に並べる。
+    //   innerHTML は使わない（コメントに書かれたHTMLをそのまま実行させないため。改行はCSSの white-space:pre-wrap で保持）。
+    function renderCustomerVoiceList(voices) {
+      if (!customerVoiceList) return;
+      customerVoiceList.textContent = '';
+      voices.forEach((voice, index) => {
+        const item = document.createElement('section');
+        item.className = 'customer-voice-item';
+        if (voice.videoId) {
+          const wrap = document.createElement('div');
+          wrap.className = 'customer-voice-video-wrap';
+          const frame = document.createElement('iframe');
+          frame.className = 'customer-voice-video';
+          frame.title = '購入者からの声（動画）' + (voices.length > 1 ? ' ' + (index + 1) : '');
+          frame.allow = 'autoplay; fullscreen';
+          frame.allowFullscreen = true;
+          if (index > 0) frame.loading = 'lazy'; // 2件目以降は画面に近づくまで読まない
+          frame.src = 'https://drive.google.com/file/d/' + encodeURIComponent(voice.videoId) + '/preview';
+          wrap.appendChild(frame);
+          item.appendChild(wrap);
+        }
+        const dateText = formatVoiceDate(voice.date);
+        if (dateText) {
+          const dateEl = document.createElement('div');
+          dateEl.className = 'customer-voice-date';
+          dateEl.textContent = dateText;
+          item.appendChild(dateEl);
+        }
+        if (voice.comment) {
+          const commentEl = document.createElement('div');
+          commentEl.className = 'customer-voice-comment';
+          commentEl.textContent = voice.comment;
+          item.appendChild(commentEl);
+        }
+        customerVoiceList.appendChild(item);
+      });
     }
 
     function openCustomerVoicePanel(work) {
-      if (!hasCustomerVoice(work) || !customerVoiceOverlay) return;
+      const voices = getCustomerVoices(work);
+      if (!voices.length || !customerVoiceOverlay) return;
       if (customerVoiceWork) customerVoiceWork.textContent = displayVoiceWorkName(work);
-      if (customerVoiceDate) customerVoiceDate.textContent = formatVoiceDate(work.voiceDate);
-      // innerHTML にしない（改行はCSSのwhite-space:pre-wrapで保持する。コメントに書かれたHTMLをそのまま実行させないため）
-      if (customerVoiceComment) customerVoiceComment.textContent = work.voiceComment || '';
-      if (work.voiceVideoId && customerVoiceVideo && customerVoiceVideoWrap) {
-        customerVoiceVideo.src = 'https://drive.google.com/file/d/' + encodeURIComponent(work.voiceVideoId) + '/preview';
-        customerVoiceVideoWrap.hidden = false;
-      } else if (customerVoiceVideoWrap) {
-        customerVoiceVideoWrap.hidden = true;
-      }
+      renderCustomerVoiceList(voices);
       customerVoiceOverlay.hidden = false;
+      if (customerVoicePanel) customerVoicePanel.scrollTop = 0;
       if (customerVoiceClose) customerVoiceClose.focus();
     }
 
@@ -2648,7 +2702,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     //   （作り直し前の古い声の動画がフォルダに残っていても紹介動画に混ざらないように）。
     function isCustomerVoiceVideo(work, item) {
       if (!item) return false;
-      if (work && work.voiceVideoId && item.videoId === work.voiceVideoId) return true;
+      if (work && item.videoId && getCustomerVoices(work).some((voice) => voice.videoId === item.videoId)) return true;
       return /^購入者の声_/.test(String(item.name || ''));
     }
 
@@ -2828,6 +2882,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           voiceDate: item.voiceDate || '',
           voiceComment: item.voiceComment || '',
           voiceVideoId: item.voiceVideoId || '',
+          // 声が2件以上ある作品の全件（2026-10-20）。ここで写さないと複数件が落ちて1件目だけになる
+          voices: Array.isArray(item.voices) ? item.voices : [],
           videos: [],
           photosLoaded: !item.folderId,
           photosLoading: false,
