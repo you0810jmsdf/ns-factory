@@ -2115,6 +2115,13 @@ function initDesign() {
   $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」の小窓の末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
   $('foldFlowClose').onclick = () => setFlowWin(false);   /* 手順の小窓の✕（開くのは右クリックメニューの三つ折りの分類の末尾のⓘ・fillCtxCards） */
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
+  $('patchWinClose').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); setMode('select'); });   /* 柄の窓の×：窓を閉じる＝柄のツールをやめる（見出し summary の開閉は起こさない） */
+  { const head = $('patchWinHead'); let drag = null;   /* 柄の窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
+    const isWin = () => $('patchCard').dataset.win === '1';
+    head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
+    head.addEventListener('pointerdown', e => { if (!isWin() || e.target?.closest?.('button')) return; const r = $('patchCard').getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, w: r.width }; head.setPointerCapture?.(e.pointerId); });
+    head.addEventListener('pointermove', e => { if (drag) placePatchWin(e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
+    const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag); }
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
@@ -4889,14 +4896,30 @@ function commit(fn) {
   draw();
 }
 function cancel() { countStage = null; clearStitchPreview(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
-/** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード、柄＝パッチワークのカード。ほかのツールでは両方閉じる。 */
+/** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
+function setPatchWin(on) {
+  const c = $('patchCard'); if (on) c.dataset.win = '1'; else delete c.dataset.win;
+  c.open = on; if (on) keepPatchWinInView();
+}
+/** 柄の窓を (left, top) に置く：画面の中へ収め、下端がはみ出さないよう高さを詰める（中身はスクロール）。右基準をやめて左上基準にする。 */
+function placePatchWin(left, top, width) {
+  const st = $('patchCard').style, vw = typeof innerWidth === 'number' ? innerWidth : 1e9, vh = typeof innerHeight === 'number' ? innerHeight : 1e9;
+  const y = Math.round(Math.min(Math.max(0, top), Math.max(0, vh - 120)));
+  st.left = Math.round(Math.min(Math.max(0, left), Math.max(0, vw - width))) + 'px'; st.top = y + 'px'; st.right = 'auto'; st.maxHeight = Math.max(120, vh - y - 8) + 'px';
+}
+/** 覚えている窓の位置が、画面を小さくしたあとで外へはみ出していたら、中へ戻す（一度も動かしていなければ、CSS の初期位置のまま）。 */
+function keepPatchWinInView() {
+  const c = $('patchCard'); if (!c.style.left) return;
+  placePatchWin(parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0, c.getBoundingClientRect().width);
+}
+/** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード。ほかのツールでは閉じる。柄は右列でなく窓（setPatchWin）。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
-  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; $('patchCard').open = mode === 'patchfill'; $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
+  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; setPatchWin(mode === 'patchfill'); $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
-  const shown = mode === 'patchfill' ? $('patchCard') : mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる */
+  const shown = mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる（柄は窓なので寄せない・右列のタブも切り替えない） */
   if (shown) revealCard(shown);   /* ツールに対応するカードの分類のタブへ切り替える（隠れたままだと見えない） */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
@@ -5990,7 +6013,7 @@ function fillCtxCards() {
   const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   const addFlowInfo = () => { if (lastGroup !== 'fold') return; const i = document.createElement('button'); i.type = 'button'; i.className = 'ctx-info'; i.textContent = 'ⓘ'; i.title = t('foldFlowInfoTip'); i.setAttribute?.('aria-label', t('foldFlowInfoTip')); i.onclick = () => { hideCtxMenu(); setFlowWin(true); }; box.appendChild(i); };   /* 三つ折りの分類の末尾：手順の小窓を開くⓘ（事業主指示 2026-10-20「手順は〇iでマークだけ」「末尾にℹ」・右メニュー＝右クリックメニュー） */
-  for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { addFlowInfo(); const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; } const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { for (const o of ctxCardList()) o.open = o === c; revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+  for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { addFlowInfo(); const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; } const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; b.onclick = () => { if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
   addFlowInfo(); $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
