@@ -191,7 +191,7 @@ function adRoundings(s, minSweep = AD_FIT_MIN_SWEEP) {
 const adSegDist = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0; return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)); };
 /** 手動の寸法ツール（D）用：クリックした点 pt の近く（曲線から tol mm 以内）にある「丸めた角」を1つ探す（事業主の希望 2026-10-20「Rの寸法をお願いします」＝角を1回クリックで R）。
  *  円弧・ベジェ曲線・折れ線の丸みを、自動寸法と同じ adRoundings で見つける（短い丸みは 10° から。1つの角が 74°＋16° に分かれていても、どちらを押しても同じ角）。
- *  返り値：{ cx, cy, r, qx, qy（クリックの向きの、円の上の点）, exact, ends（その丸みの両端の点＝直線とのつなぎ目）, label（「R10」）}。無ければ null。shapes：対象の図形（菱目は除く）。 */
+ *  返り値：{ cx, cy, r, qx, qy（クリックの向きの、円の上の点）, exact, ends（その丸みの両端の点＝直線とのつなぎ目）, outside（クリックが曲線のすぐ外側＝中心と反対の側なら true）, label（「R10」）}。無ければ null。shapes：対象の図形（菱目は除く）。 */
 export function adRoundingNear(shapes, pt, tol) {
   let best = null;
   for (const s of shapes || []) {
@@ -201,7 +201,7 @@ export function adRoundingNear(shapes, pt, tol) {
   }
   if (!best) return null;
   const f = best.f, dx = pt.x - f.cx, dy = pt.y - f.cy, len = Math.hypot(dx, dy); if (!(len > 1e-9)) return null;
-  return { cx: f.cx, cy: f.cy, r: f.r, qx: f.cx + f.r * dx / len, qy: f.cy + f.r * dy / len, exact: f.exact, ends: [f.pts[0], f.pts[f.pts.length - 1]], label: `R${f.exact ? adRound(f.r) : Math.round(f.r * 10) / 10}` };
+  return { cx: f.cx, cy: f.cy, r: f.r, qx: f.cx + f.r * dx / len, qy: f.cy + f.r * dy / len, exact: f.exact, outside: len > f.r + 1e-9, ends: [f.pts[0], f.pts[f.pts.length - 1]], label: `R${f.exact ? adRound(f.r) : Math.round(f.r * 10) / 10}` };
 }
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
