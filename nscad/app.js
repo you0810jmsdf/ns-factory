@@ -3332,7 +3332,7 @@ function attachClick(p) {
   const pts = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && visible(s) && !['text', 'dimension', 'image', 'fold'].includes(s.type)).flatMap(s => flattenShape(s, 0.05));
   const r = attachToLine(pts, line, { rotate: $('attachRotate').checked }); if (!r) { $('hint').textContent = t('attachNoLine'); return; }
   if (Math.abs(r.gap) < 0.005 && !r.angleDeg) { setMode('select'); $('hint').textContent = t('attachAlready'); return; }
-  const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy));
+  const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy), { rotates: !!r.angleDeg });
   setMode('select'); $('hint').textContent = r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) });
 }
 $('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
@@ -4667,6 +4667,8 @@ function dimStraighten(pts, axis, old, anchored = []) {
 }
 /** 作り直しで消える図形（ids）に付いていた寸法の追従を外す。同じ id の新しい図形が同じ操作の中でできるので、残すと寸法が新しい図形へ付き直して飛ぶ（位置はそのまま）。 */
 function dropDimAnchorsTo(ids) { for (const d of doc.shapes) if (d.type === 'dimension' && d.anchors) { d.anchors = d.anchors.map(a => a && ids.has(a.id) ? null : a); if (!d.anchors.some(Boolean)) delete d.anchors; } }
+/** 回転の確定中（transformSelected(fn, { rotates: true })）だけ true。回すと水平・垂直の寸法も向きが変わるので、「傾けない」（水平・垂直へ戻す）を使わず、図形といっしょに回して追従させる（事業主の指摘 2026-10-20「寸法線入りの図を回転させたら寸法表記がおかしい」：以前は回した寸法の端が水平・垂直へ引き戻されて、長さが縮んでいた）。 */
+let dimRotating = false;
 function syncDimensions(before) {
   for (const d of doc.shapes) {
     if (d.type !== 'dimension' || d.foldSec) continue; const old = before.get(d.id), cur = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }];
@@ -4678,7 +4680,7 @@ function syncDimensions(before) {
     }
     if (!d.anchors) { const an = cur.map(dimAnchorFor); if (an.some(Boolean)) d.anchors = an; }
     const oldPts = old ? [{ x: old[0], y: old[1] }, { x: old[2], y: old[3] }] : null, now = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }], axis = (oldPts && dimAxisOf(oldPts[0], oldPts[1])) || dimAxisOf(now[0], now[1]);
-    if (axis) { const [p, q] = dimStraighten(now, axis, oldPts, (d.anchors || []).map(Boolean)); if (p.x !== d.x1 || p.y !== d.y1 || q.x !== d.x2 || q.y !== d.y2) { d.x1 = p.x; d.y1 = p.y; d.x2 = q.x; d.y2 = q.y; } } /* 傾けない */
+    if (axis && !dimRotating) { const [p, q] = dimStraighten(now, axis, oldPts, (d.anchors || []).map(Boolean)); if (p.x !== d.x1 || p.y !== d.y1 || q.x !== d.x2 || q.y !== d.y2) { d.x1 = p.x; d.y1 = p.y; d.x2 = q.x; d.y2 = q.y; } } /* 傾けない */
   }
 }
 /** 領域の塗り（doc.fills）が囲んでいる図形の形（種類・位置・大きさ・点）の見張り。色・線の種類・層などの見た目は含めない。 */
@@ -4795,11 +4797,11 @@ function freshId(items, prefix) {
   let n = 1; while (used.has(prefix + n)) n++;
   return prefix + n;
 }
-function transformSelected(fn) {
+function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転のとき true：寸法を「傾けない」で引き戻さず、図形といっしょに回す */
   const ids = selectedShapeIds();
   for (const p of doc.paths) { const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (shs.length && shs.every(s => s && s.layer === 'guide' && !editable(s)) && doc.holes.some(h => h.pathId === p.id && selected.has(h.id) && holeEditable(h))) p.shapeIds.forEach(id => ids.add(id)); } /* 選んだ菱目がついた、非表示のガイド層の線は、菱目といっしょに動かす（取り残して、菱目が線から外れないように） */
-  cancel();
-  commit(() => {
+  cancel(); dimRotating = rotates;
+  try { commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
     if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => fl.ids.length && fl.ids.every(id => ids.has(id)) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : fl); }   /* 囲む図形を全部動かしたら、領域の塗りもついていく */
@@ -4820,7 +4822,7 @@ function transformSelected(fn) {
       });
     }
     manualNext=null;
-  });
+  }); } finally { dimRotating = false; }
 }
 function copySelected() { copySelectedOffsets([{ dx: 5, dy: 5 }]); }
 function copySelectedOffsets(offsets) {
@@ -4847,7 +4849,7 @@ function transformAboutCenter(kind) {
   const b = bboxOfDoc({ shapes, holes: [] }), center = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   const angle = kind === 'rotate' ? askNumber('rotation', 90) : 0;
   if (angle === null) return;
-  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s));
+  transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s), { rotates: kind === 'rotate' });
   if (kind !== 'rotate' && doc.shapes.some(s => selected.has(s.id) && partOf(s))) { const ids = new Set(selected); commit(() => flipMark(ids)); }
 }
 /** 数の入力ダイアログ。remember（丸め・面取りなど）を渡すと、前回入れた数を初期値にする（ブラウザに保存・事業主指示 2026-10-17）。キャンセル・不正な入力では前回の値を変えない。 */
@@ -5858,7 +5860,7 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
-  if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c)); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
+  if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c), { rotates: true }); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
