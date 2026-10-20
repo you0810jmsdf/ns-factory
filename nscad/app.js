@@ -1012,7 +1012,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 /* ---- 設定セット：設定値と登録した工具をまとめて名前を付けて保存・呼び出し（ブラウザ内の一覧＋JSON ファイル） ---- */
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
-  'textSize', 'dimOffset', 'dimRadiusSide', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
+  'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
   'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchTexA', 'patchTexB',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
@@ -4504,7 +4504,7 @@ function dimRadiusAt(raw) {
   const f = adRoundingNear(doc.shapes.filter(s => visible(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type) && !isHardwareShape(s)), raw, 8 / scale); if (!f) return false;
   if ($('snap').checked && f.ends.some(e => distance(raw, e) < 9 / scale)) return false;
   const r4 = v => Math.round(v * 1e4) / 1e4;
-  const out = $('dimRadiusSide')?.value === 'out', len = Math.abs(Number($('dimOffset')?.value)) || 8, ux = (f.qx - f.cx) / f.r, uy = (f.qy - f.cy) / f.r;   /* 外側：曲線の上の点から、中心と反対の向きへ、ずらしの長さだけ引き出す（数字が図形に重ならない） */
+  const out = f.outside, len = Math.abs(Number($('dimOffset')?.value)) || 8, ux = (f.qx - f.cx) / f.r, uy = (f.qy - f.cy) / f.r;   /* 外側（クリックが曲線のすぐ外側）：曲線の上の点から、中心と反対の向きへ、ずらしの長さだけ引き出す（数字が図形に重ならない）。内側（すぐ内側）：中心から曲線へ（2026-10-20 事業主「マウスの位置で内か外か決めたい」） */
   stage = null; addShape(out ? { type: 'dimension', x1: r4(f.qx), y1: r4(f.qy), x2: r4(f.qx + ux * len), y2: r4(f.qy + uy * len), offset: 0, label: f.label } : { type: 'dimension', x1: r4(f.cx), y1: r4(f.cy), x2: r4(f.qx), y2: r4(f.qy), offset: 0, label: f.label });
   $('hint').textContent = t('dimRadiusMade', { r: f.label }); lastPoint = raw; draw(); return true;
 }
@@ -4841,14 +4841,28 @@ function freshId(items, prefix) {
   let n = 1; while (used.has(prefix + n)) n++;
   return prefix + n;
 }
+/** 領域の塗り（doc.fills）の輪郭に、実際に接している（生きている）図形の id。塗りが覚えている一覧（fl.ids）には、あとで消えた図形・輪郭から離れた図形が残ることがある（事業主の図面：消えた 3〜4 個＋離れた 1 個）ので、数えない。輪郭の点が 0.5mm 以内に 2 つ以上ある図形を「接している」とする。 */
+function fillBoundaryIds(fl, shapeById) {
+  const pts = [fl.points || [], ...(fl.holes || [])].flat(), out = []; if (!pts.length) return out;
+  for (const id of fl.ids || []) {
+    const s = shapeById.get(id); if (!s) continue; let line = null; try { line = flattenShape(s, 0.05); } catch { line = null; } if (!Array.isArray(line) || line.length < 2) continue;
+    let n = 0;
+    for (const p of pts) { let d = Infinity; for (let i = 1; i < line.length; i++) { const a = line[i - 1], b = line[i], dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, u = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0; d = Math.min(d, Math.hypot(p.x - (a.x + u * dx), p.y - (a.y + u * dy))); } if (d <= 0.5 && ++n >= 2) break; }
+    if (n >= 2) out.push(id);
+  }
+  return out;
+}
+/** 動かす図形（ids）に、領域の塗りがついていくか：一覧が全部動くか、輪郭に接している図形が全部動くとき。 */
+const fillFollows = (fl, ids, shapeById) => { if ((fl.ids || []).length && fl.ids.every(id => ids.has(id))) return true; const b = fillBoundaryIds(fl, shapeById); return b.length > 0 && b.every(id => ids.has(id)); };
 function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転のとき true：寸法を「傾けない」で引き戻さず、図形といっしょに回す */
   const ids = selectedShapeIds();
   for (const p of doc.paths) { const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (shs.length && shs.every(s => s && s.layer === 'guide' && !editable(s)) && doc.holes.some(h => h.pathId === p.id && selected.has(h.id) && holeEditable(h))) p.shapeIds.forEach(id => ids.add(id)); } /* 選んだ菱目がついた、非表示のガイド層の線は、菱目といっしょに動かす（取り残して、菱目が線から外れないように） */
   cancel(); dimRotating = rotates;
   try { commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
+    const followFills = new Set((doc.fills || []).filter(fl => fillFollows(fl, ids, new Map(doc.shapes.map(s => [s.id, s])))).map(fl => fl.id));   /* 動かす前の図形で決める（動かしたあとでは輪郭の位置が変わる） */
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
-    if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => fl.ids.length && fl.ids.every(id => ids.has(id)) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : fl); }   /* 囲む図形を全部動かしたら、領域の塗りもついていく */
+    if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => followFills.has(fl.id) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : fl); }   /* 囲む図形（輪郭に接している生きている図形）を全部動かしたら、領域の塗りもついていく */
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>p.id));
     const alone=h=>!paths.has(h.pathId)&&selected.has(h.id)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
     doc.holes=doc.holes.map(h=>paths.has(h.pathId)||alone(h)?fn(h):h);
