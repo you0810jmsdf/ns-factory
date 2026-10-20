@@ -4642,7 +4642,7 @@ function updateUI() {
   renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
-  for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
+  for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
@@ -5991,6 +5991,12 @@ function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes
 function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
+/** 左の「選択中」の「拡大縮小」：右の拡大縮小カードを開き（分類のタブも切り替え）、横（%）の欄へ移る（事業主の指摘 2026-10-20「拡大縮小がどこにあるかわからない」）。何も選んでいなければ案内だけ。 */
+function openScaleCard() {
+  refreshScaleCard(); const c = $('scaleCard'); if (!selectedShapeIds().size || c.hidden) { $('hint').textContent = t('scaleOpenNone'); return; }
+  revealCard(c); c.open = true; c.scrollIntoView?.({ block: 'nearest' }); const x = $('scaleX'); x.focus?.(); x.select?.(); $('hint').textContent = t('scaleOpened');
+}
+$('scaleOpen').onclick = openScaleCard;
 $('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
 $('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR').value = $('circleD').value.trim() === '' || !Number.isFinite(d) ? '' : circleNum(d / 2); draw(); };
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
