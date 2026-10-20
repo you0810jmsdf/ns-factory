@@ -3400,7 +3400,7 @@ function refreshScaleCard(reset = false) {
   const w = b.maxX - b.minX, h = b.maxY - b.minY, key = JSON.stringify([[...selectedShapeIds()].sort(), w, h]);
   $('scaleSize').textContent = t('scaleNow', { w: w.toFixed(2), h: h.toFixed(2) });
   $('scaleW').disabled = w === 0; $('scaleH').disabled = h === 0;
-  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
+  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleAngle').value = '0'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
   scaleCardKey = key;
 }
 /** 入れた方向をもとに寸法と倍率をそろえる。大きさ0の方向の寸法入力は無視する。 */
@@ -3419,15 +3419,17 @@ function syncScaleInput(id) {
   }
 }
 function applyScale() {
-  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value);
-  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
-  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1) return;
+  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value), angleText = String($('scaleAngle')?.value ?? '').trim(), angle = angleText === '' ? 0 : Number(angleText);   /* 角度（°）：空欄は 0（事業主の希望 2026-10-20「拡大縮小回転」＝拡大縮小のあと、同じ基準点のまわりに回す） */
+  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(angle) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
+  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1 && angle === 0) return;
   const a = $('scaleAnchor').value, o = { x: /Right$/.test(a) ? b.maxX : /Left$/.test(a) ? b.minX : (b.minX + b.maxX) / 2, y: /^bottom/.test(a) ? b.maxY : /^top/.test(a) ? b.minY : (b.minY + b.maxY) / 2 };
   const ids = selectedShapeIds(), curved = Math.abs(sx - sy) > 1e-12 && doc.shapes.some(s => ids.has(s.id) && (s.type === 'circle' || s.type === 'arc'));
   const all = quadAllSelected();
-  transformSelected(s => scaleGeometry(s, sx, sy, o));
-  if (all) quadFollowScale(sx, sy, o);
-  $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
+  const scales = sx !== 1 || sy !== 1;
+  transformSelected(s => { const m = scales ? scaleGeometry(s, sx, sy, o) : s; return angle ? rotate(m, angle, o) : m; }, { rotates: angle !== 0 });   /* 拡大縮小してから、同じ基準点のまわりに回す（1回で元に戻せる） */
+  if (all && scales) quadFollowScale(sx, sy, o);
+  $('scaleX').value = $('scaleY').value = '100'; $('scaleAngle').value = '0';
+  $('hint').textContent = !angle ? t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }) : scales ? t('scaledRotated', { x: px, y: py, a: angle }) : t('rotDone', { a: angle }); refreshScaleCard(true);
 }
 $('scaleApply').onclick = applyScale; $('dupMerge').onclick = mergeOverlaps;
 for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
