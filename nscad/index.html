@@ -145,7 +145,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-20 15:57 · 812d4ef</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-20 18:10 · d24fa36</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -236,6 +236,7 @@
 <label><span data-i18n="scaleW"></span><input id="scaleW" type="number" step="0.01" min="0" value="0"></label>
 <label><span data-i18n="scaleH"></span><input id="scaleH" type="number" step="0.01" min="0" value="0"></label>
 <label><input id="scaleKeep" type="checkbox" checked><span data-i18n="scaleKeep"></span></label>
+<label><span data-i18n="scaleAngle"></span><input id="scaleAngle" type="number" step="1" value="0"></label>
 <div class="row"><button id="scaleApply" data-i18n="scaleApply"></button></div>
 <div class="hint" data-i18n="scaleNote"></div>
 </div></details>
@@ -704,8 +705,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=a631f07f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=4eca8904","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=f247b3dc","./help/ja.js":"./help/ja.js?v=6bd07608","./i18n.js":"./i18n.js?v=d3430e47","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=a631f07f"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=cc68b12e","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=4eca8904","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=f247b3dc","./help/ja.js":"./help/ja.js?v=6bd07608","./i18n.js":"./i18n.js?v=d509ad62","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=739b265d","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=cc68b12e"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -4332,10 +4333,12 @@ const MESSAGES = {
     "scaleX": "横 (%)",
     "scaleY": "縦 (%)",
     "scaleKeep": "縦横比を保つ",
+    "scaleAngle": "角度 (°)（基準点のまわりに回す）",
     "scaleApply": "拡大縮小する",
-    "scaleNote": "100% で変わりません。円・円弧は、縦横の倍率が違うと折れ線に変わります（元に戻せます）",
+    "scaleNote": "100% で変わりません。円・円弧は、縦横の倍率が違うと折れ線に変わります。角度を入れると、拡大縮小のあとに基準点のまわりに回します（元に戻せます）",
     "scaleInvalid": "倍率・寸法は 0 より大きい数で入れてください",
     "scaled": "拡大縮小しました（横 {x}%・縦 {y}%）",
+    "scaledRotated": "拡大縮小し（横 {x}%・縦 {y}%）、{a}° 回しました。",
     "scaleToPoly": "拡大縮小しました。円・円弧は折れ線に変わりました（横 {x}%・縦 {y}%）",
     "ghost3d": "革を透かして見る",
     "viewFree": "自由視点",
@@ -6134,10 +6137,12 @@ const MESSAGES = {
     "scaleX": "Width (%)",
     "scaleY": "Height (%)",
     "scaleKeep": "Keep aspect ratio",
+    "scaleAngle": "Angle (°) (rotate around the anchor)",
     "scaleApply": "Scale",
-    "scaleNote": "100% leaves it unchanged. Circles and arcs become polylines when width and height differ (undoable)",
+    "scaleNote": "100% leaves it unchanged. Circles and arcs become polylines when width and height differ. An angle rotates around the anchor after scaling (undoable)",
     "scaleInvalid": "Enter a scale or size greater than 0",
     "scaled": "Scaled (width {x}%, height {y}%)",
+    "scaledRotated": "Scaled (width {x}%, height {y}%) and rotated by {a}°.",
     "scaleToPoly": "Scaled. Circles and arcs became polylines (width {x}%, height {y}%)",
     "ghost3d": "See through the leather",
     "viewFree": "Free",
@@ -25555,7 +25560,7 @@ function refreshScaleCard(reset = false) {
   const w = b.maxX - b.minX, h = b.maxY - b.minY, key = JSON.stringify([[...selectedShapeIds()].sort(), w, h]);
   $('scaleSize').textContent = t('scaleNow', { w: w.toFixed(2), h: h.toFixed(2) });
   $('scaleW').disabled = w === 0; $('scaleH').disabled = h === 0;
-  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
+  if (reset || key !== scaleCardKey) { $('scaleX').value = $('scaleY').value = '100'; $('scaleAngle').value = '0'; $('scaleW').value = w.toFixed(2); $('scaleH').value = h.toFixed(2); scaleBadInputs.clear(); }
   scaleCardKey = key;
 }
 /** 入れた方向をもとに寸法と倍率をそろえる。大きさ0の方向の寸法入力は無視する。 */
@@ -25574,15 +25579,17 @@ function syncScaleInput(id) {
   }
 }
 function applyScale() {
-  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value);
-  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
-  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1) return;
+  const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value), angleText = String($('scaleAngle')?.value ?? '').trim(), angle = angleText === '' ? 0 : Number(angleText);   /* 角度（°）：空欄は 0（事業主の希望 2026-10-20「拡大縮小回転」＝拡大縮小のあと、同じ基準点のまわりに回す） */
+  if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(angle) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
+  const sx = px / 100, sy = py / 100; if (sx === 1 && sy === 1 && angle === 0) return;
   const a = $('scaleAnchor').value, o = { x: /Right$/.test(a) ? b.maxX : /Left$/.test(a) ? b.minX : (b.minX + b.maxX) / 2, y: /^bottom/.test(a) ? b.maxY : /^top/.test(a) ? b.minY : (b.minY + b.maxY) / 2 };
   const ids = selectedShapeIds(), curved = Math.abs(sx - sy) > 1e-12 && doc.shapes.some(s => ids.has(s.id) && (s.type === 'circle' || s.type === 'arc'));
   const all = quadAllSelected();
-  transformSelected(s => scaleGeometry(s, sx, sy, o));
-  if (all) quadFollowScale(sx, sy, o);
-  $('scaleX').value = $('scaleY').value = '100'; $('hint').textContent = t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }); refreshScaleCard(true);
+  const scales = sx !== 1 || sy !== 1;
+  transformSelected(s => { const m = scales ? scaleGeometry(s, sx, sy, o) : s; return angle ? rotate(m, angle, o) : m; }, { rotates: angle !== 0 });   /* 拡大縮小してから、同じ基準点のまわりに回す（1回で元に戻せる） */
+  if (all && scales) quadFollowScale(sx, sy, o);
+  $('scaleX').value = $('scaleY').value = '100'; $('scaleAngle').value = '0';
+  $('hint').textContent = !angle ? t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }) : scales ? t('scaledRotated', { x: px, y: py, a: angle }) : t('rotDone', { a: angle }); refreshScaleCard(true);
 }
 $('scaleApply').onclick = applyScale; $('dupMerge').onclick = mergeOverlaps;
 for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
