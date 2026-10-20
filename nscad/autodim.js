@@ -220,7 +220,7 @@ export function adRadiusDimension(f, m, len = 8) {
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。toolPitch：菱の線（工具を持たない菱目）に使う、指定した工具のピッチ（mm・無ければ菱の線の間隔は見ない）。 */
-export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, radii = false, gap = 8, toolPitch = null, pitchLabel = null, radiusLabel = null } = {}) {
+export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, radii = false, radiusSide = 'in', gap = 8, toolPitch = null, pitchLabel = null, radiusLabel = null } = {}) {
   const visLayer = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id)), existing = (doc.shapes || []).filter(s => s.type === 'dimension' && (!doc.layers || visLayer.has(s.layer))), out = [];   /* 「もうある寸法」は見えている層のものだけ（隠した層の手描きの寸法で全体を止めない） */
   const labelOf = typeof pitchLabel === 'function' ? pitchLabel : (p, n) => `${p.toFixed(2)}mm ×${n}`;
   const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
@@ -244,7 +244,11 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
       const found = pc.list.flatMap(s => adRoundings(s)).filter(f => f.r >= AD_MIN).sort((a, b) => a.cy - b.cy || a.cx - b.cx), corners = [];
       for (const f of found) if (!corners.some(x => Math.abs(x.cx - f.cx) <= AD_SAME_CORNER && Math.abs(x.cy - f.cy) <= AD_SAME_CORNER && Math.abs(x.r - f.r) <= AD_SAME_CORNER)) corners.push(f);
       const groups = []; for (const c of corners) { const g = groups.find(x => Math.abs(x.r - c.r) <= AD_RADIUS_TOL); if (g) g.list.push(c); else groups.push({ r: c.r, list: [c] }); }
-      for (const g of groups.sort((a, b) => a.r - b.r)) { const c = g.list[0]; add({ x: c.cx, y: c.cy }, c.mid, 0, 'radius', { label: rLabel(c.exact ? adRound(c.r) : Math.round(c.r * 10) / 10, g.list.length) }); }
+      for (const g of groups.sort((a, b) => a.r - b.r)) {
+        const c = g.list[0], label = rLabel(c.exact ? adRound(c.r) : Math.round(c.r * 10) / 10, g.list.length), d = Math.hypot(c.mid.x - c.cx, c.mid.y - c.cy) || 1;
+        if (radiusSide === 'out') add(c.mid, { x: c.mid.x + (c.mid.x - c.cx) / d * gap, y: c.mid.y + (c.mid.y - c.cy) / d * gap }, 0, 'radius', { label });   /* 外側（2026-10-21 事業主「自動寸法の R にも、内側・外側を選べるように」）：曲線の真ん中の点から、中心と反対の向きへ、線から離す距離だけ引き出す */
+        else add({ x: c.cx, y: c.cy }, c.mid, 0, 'radius', { label });   /* 内側：中心から曲線の真ん中へ */
+      }
     }
   }
   if (edges) for (const s of geo) { const pc = pieceOf.get(s.id); for (const [p, q] of adStraightEdges(s)) { if (size && pc?.piece && adIsBoxEdge(p, q, pc.box)) continue; add(p, q, adEdgeOffset(p, q, pc, gap), 'edge'); } }
