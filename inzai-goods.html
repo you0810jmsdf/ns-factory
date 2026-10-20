@@ -301,6 +301,12 @@ function getVisitorId(){
   } catch (e) { return ''; }
 }
 
+// 自分用の端末（works.html の ?owner=1 で登録・または管理者ログイン中）の記録には owner=1 を付ける。GAS はこの印があると通知メールを送らない（2026-10-20）
+function ownerParam(){
+  try { if (localStorage.getItem('nsf_owner') === '1' || sessionStorage.getItem('nsf_admin_key')) return '&owner=1'; } catch (e) {}
+  return '';
+}
+
 function isOptedOut(){
   try { return localStorage.getItem('nsf_ga_optout') === '1'; } catch (e) { return false; }
 }
@@ -314,7 +320,8 @@ function sendLog(type, id, name, detail){
       + '&id=' + encodeURIComponent(id || '')
       + '&name=' + encodeURIComponent(name || '')
       + '&detail=' + encodeURIComponent(detail || '')
-      + '&vid=' + encodeURIComponent(getVisitorId());
+      + '&vid=' + encodeURIComponent(getVisitorId())
+      + ownerParam();
     s.onload = s.onerror = function(){ if (s.parentNode) s.remove(); };
     document.body.appendChild(s);
   } catch (e) {}
