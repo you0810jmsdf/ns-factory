@@ -590,8 +590,8 @@ export function pointAtLength(shape, position) {
  *  through を true にすると、3本以上が集まる点（十字・T字）でも、いま進んでいる線にまっすぐ（THROUGH_STRAIGHT_DEG 以内）つながる線が1本だけで、
  *  ほかの枝がどれも THROUGH_BRANCH_DEG 以上ずれているなら、そのまま通り抜けて1本の経路にする（目打ちの経路用：左右の線の真ん中に交わる印の線があっても、周りを1周する点線を1本の経路として打てる）。 */
 export const THROUGH_STRAIGHT_DEG=25, THROUGH_BRANCH_DEG=45;
-export function chainShapes(shapes,tol=0.01,{through=false}={}) {
-  const remaining=new Set(shapes), out=[];
+export function chainShapes(shapes,tol=0.01,{through=false,exclude=null}={}) {
+  const remaining=new Set(exclude?shapes.filter(s=>!exclude.has(s.id)):shapes), out=[];   /* exclude（図形の id の集合）：経路に入れない図形。ただし、つながる点の数え方（次数・枝）には入れる＝打ち済みの線が接する点は、角ではなく分かれ道のまま */
   const end=(s,last)=>pointAtLength(s,last?arcLength(s):0);
   const open=through?shapes.filter(s=>s.type!=='circle'&&!s.closed):[];
   /* 端 last から外へ出ていく向き／その端から線の中へ入っていく向き（度） */
