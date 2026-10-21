@@ -5146,7 +5146,7 @@ function syncToolCards() {
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
-  setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill');   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
+  setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
   const shown = mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる（窓にした柄・目打ち・目印・円弧・文字は寄せない・右列のタブも切り替えない） */
   if (shown) revealCard(shown);   /* ツールに対応するカードの分類のタブへ切り替える（隠れたままだと見えない） */
