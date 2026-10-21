@@ -586,21 +586,37 @@ export function pointAtLength(shape, position) {
   for(let i=1;i<ps.length;i++) {const a=ps[i-1],b=ps[i],n=distance(a,b); if(left<=n+EPS || i===ps.length-1){const f=n?Math.min(1,left/n):0;return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,s,angleDeg:norm(Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI)};} left-=n;}
   return {...ps[0],s,angleDeg:0};
 }
-/** 未整列図形と端点公差から経路の配列を返す。分岐では停止し、円・閉図形は独立。入力不変。 */
-export function chainShapes(shapes,tol=0.01) {
+/** 未整列図形と端点公差から経路の配列を返す。分岐では停止し、円・閉図形は独立。入力不変。
+ *  through を true にすると、3本以上が集まる点（十字・T字）でも、いま進んでいる線にまっすぐ（THROUGH_STRAIGHT_DEG 以内）つながる線が1本だけで、
+ *  ほかの枝がどれも THROUGH_BRANCH_DEG 以上ずれているなら、そのまま通り抜けて1本の経路にする（目打ちの経路用：左右の線の真ん中に交わる印の線があっても、周りを1周する点線を1本の経路として打てる）。 */
+export const THROUGH_STRAIGHT_DEG=25, THROUGH_BRANCH_DEG=45;
+export function chainShapes(shapes,tol=0.01,{through=false}={}) {
   const remaining=new Set(shapes), out=[];
   const end=(s,last)=>pointAtLength(s,last?arcLength(s):0);
+  const open=through?shapes.filter(s=>s.type!=='circle'&&!s.closed):[];
+  /* 端 last から外へ出ていく向き／その端から線の中へ入っていく向き（度） */
+  const outward=(s,last)=>last?end(s,true).angleDeg:end(s,false).angleDeg+180, inward=(s,last)=>last?end(s,true).angleDeg+180:end(s,false).angleDeg;
+  const turn=(a,b)=>Math.abs(((a-b+540)%360)-180);
+  /** 点 p の枝のうち、edge（端 last から出る）にまっすぐつながる線が、残りの図形のなかに1本だけあれば、その item。 */
+  const straightItem=(p,edge,last,prepend)=>{
+    const travel=outward(edge.shape,last), arms=[];
+    for(const s of open) for(const e of [false,true]) { if(s===edge.shape&&e===last)continue; if(distance(p,end(s,e))<=tol)arms.push({shape:s,last:e,turn:turn(travel,inward(s,e))}); }
+    arms.sort((a,b)=>a.turn-b.turn);
+    const best=arms[0]; if(!best||!(best.turn<=THROUGH_STRAIGHT_DEG)||(arms[1]&&!(arms[1].turn>=THROUGH_BRANCH_DEG))||!remaining.has(best.shape))return null;   /* 向きが数にならないとき（NaN）は通り抜けない */
+    return {shape:best.shape,reversed:prepend?!best.last:best.last};
+  };
   while(remaining.size) {
     const first=remaining.values().next().value; remaining.delete(first);
     const items=[{shape:first,reversed:false}]; let closed=first.type==='circle' || !!first.closed || (arcLength(first)>EPS && distance(end(first,0),end(first,1))<=tol);
     if(!closed) for(const prepend of [false,true]) {
       while(true) {
-        const edge=prepend?items[0]:items.at(-1), p=end(edge.shape,prepend?edge.reversed:!edge.reversed);
+        const edge=prepend?items[0]:items.at(-1), lastEnd=prepend?edge.reversed:!edge.reversed, p=end(edge.shape,lastEnd);
         const candidates=[...remaining].filter(s=>s.type!=='circle'&&!s.closed).flatMap(s=>[false,true].filter(last=>distance(p,end(s,last))<=tol).map(last=>({shape:s,reversed:prepend?!last:last})));
         // 元図形群で次数3以上の端点をまたがない。
         const degree=shapes.filter(s=>s.type!=='circle'&&!s.closed).reduce((n,s)=>n+Number(distance(p,end(s,0))<=tol)+Number(distance(p,end(s,1))<=tol),0);
-        if(candidates.length!==1 || degree>2)break;
-        const item=candidates[0];remaining.delete(item.shape); if(prepend)items.unshift(item);else items.push(item);
+        const item=candidates.length===1&&degree<=2?candidates[0]:through?straightItem(p,edge,lastEnd,prepend):null;
+        if(!item)break;
+        remaining.delete(item.shape); if(prepend)items.unshift(item);else items.push(item);
       }
       closed=distance(end(items[0].shape,items[0].reversed),end(items.at(-1).shape,!items.at(-1).reversed))<=tol;
       if(closed)break;
