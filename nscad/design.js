@@ -293,6 +293,18 @@ export function gridFillRegion(region, cols, rows, { minAreaRatio = 0.05, maxTil
   }
   return { pieces, dropped, tiles: nc * nr, cell: { w, h }, margin: { x: x00 - minX, y: y00 - minY } };
 }
+/** 格子（斜めの2方向のひし形）：囲み（region）の外枠の幅を cols 等分した幅 w のひし形を、囲みの中心を基準に、上下左右対称に並べ、囲みの形で切り抜く（並べ方はアーガイルと同じ）。
+ *  列＝真ん中の段に並ぶ完全なひし形の数（列が偶数のときは、枠の中心にひし形の頂点が来るよう半マスずらす）。
+ *  angle（度）が null・空のとき：ひし形の高さ h＝外枠の高さ÷行数（斜めの線の角度は、列・行から決まる）。angle が数のとき：その角度（h＝w×tan・行は目安になる）。20〜80度の外は { badAngle: true, theta }。
+ *  shift={x,y}（mm）は、さらに柄ぜんたいをずらす量（既定 0）。戻り値は fillRegionPattern と同じ形に、spec={ w, h, theta, auto }（theta＝水平から測った斜めの線の角度・度）を足したもの。 */
+export function diamondGridFill(region, cols, rows, { angle = null, shift = null, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+  const nc = Math.round(cols), nr = Math.round(rows); if (!region || !(nc >= 1) || !(nr >= 1)) return null;
+  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), bw = Math.max(...xs) - Math.min(...xs), bh = Math.max(...ys) - Math.min(...ys); if (!(bw > 0) || !(bh > 0)) return null;
+  const w = bw / nc, auto = angle === null || angle === undefined || angle === '', theta = auto ? Math.atan((bh / nr) / w) * 180 / Math.PI : Number(angle);
+  const ratio = patchAngleRatio(theta); if (ratio === null) return { badAngle: true, theta, pieces: [], dropped: 0, tiles: 0 };
+  const fill = fillRegionPattern(region, 'argyle', { cell: w, angle: theta, shift: { x: (nc % 2 === 0 ? w / 2 : 0) + (Number(shift?.x) || 0), y: Number(shift?.y) || 0 }, minAreaRatio, maxTiles }); if (!fill) return null;
+  return { ...fill, spec: { w, h: w * ratio, theta, auto } };
+}
 /** 1マス（長方形 cell={x,y,w,h}）の穴の格子点：縁から pitch/2 だけ内側の長方形の周りを、左上の角から時計回りに、pitch おきに並べた点。
  *  マスの辺が pitch の整数倍なら、角にも穴が来て、周りの穴の間隔は、角をまわっても、すべて pitch ちょうど。隣のマスの穴とは、境をはさんで pitch はなれ、境に沿った位置がそろう（4つの穴が1辺 pitch の正方形の角になる）。 */
 export function gridRingPoints(cell, pitch) {
