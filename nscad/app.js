@@ -2032,9 +2032,17 @@ function rimBoundaryCheck() {
   selected = new Set(r.bad.map(h => h.id)); $('hint').textContent = r.bad.length ? t('rimCheckBad', { n: r.bad.length, total: r.total }) : t('rimCheckOk', { total: r.total }); draw();
 }
 /** 選んだ図形の囲み（つながった閉じた線・点線も可）の中を、列×行のマスで埋める。囲みが無い・2つ以上あるときは、理由を出して何もしない。縫い合わせ・縫い穴・外周の穴は、柄の塗りつぶしと同じ設定（カードのチェック）に従う。 */
+let gapAlert = null;   /* 格子の枠の隙間を知らせる橙の丸印：{ ids（調べた図形）, pts: [{x, y, d}] }。図形が変わる（rebuildSnaps）か、その図形の選択を外すと消える */
 function gridInSelection(cols, rows) {
-  const ids = selectedShapeIds(), regions = outerRegions(closedRegions(doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), 0.01, { dashed: true }));
-  if (!regions.length) { $('hint').textContent = t('gridNoArea'); return; }
+  gapAlert = null;
+  const ids = selectedShapeIds(), mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s));
+  const regions = outerRegions(closedRegions(mine, 0.01, { dashed: true }));
+  if (!regions.length) {
+    /* 枠が閉じていないとき、線の端が離れている所（2mm 以内）があれば、橙の丸印と隙間の長さで知らせ、「隙間を閉じる」で枠そのものを直してもらう（事業主指示 2026-10-21「隙間があるならそもそもそこを修正したい」「丸印で警告するのではなかったか」・不具合記録 1902：端が最大 0.16mm 離れた所が2か所で、枠を選んでいるのに格子が作れなかった）。許容してつなぐことはしない */
+    const mineGaps = gaps.filter(g => ids.has(g.a.id) || ids.has(g.b.id));
+    if (mineGaps.length) { gapAlert = { ids: new Set(ids), pts: mineGaps.map(g => ({ x: g.x, y: g.y, d: g.d })) }; $('hint').textContent = t('gridOpen', { n: mineGaps.length, d: Math.max(...mineGaps.map(g => g.d)).toFixed(2) }); draw(); return; }
+    $('hint').textContent = t('gridNoArea'); return;
+  }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const pitch = Number($('patchPitch').value); if (!(pitch > 0)) { $('hint').textContent = t('invalidNumber'); return; }
@@ -4926,6 +4934,13 @@ function drawJunctions() {
   for (const p of gapNear) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.9, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + r * 2.4, p.y - r * 2.4); }
   ctx.restore();
 }
+/** 格子の枠の隙間の警告：橙の丸印と隙間の長さ。枠の図形を選んでいる間だけ（ポインタを近づけなくても出す）。 */
+function drawGapAlert() {
+  if (!gapAlert || ![...gapAlert.ids].some(id => selected.has(id))) return;
+  const r = 3.5 / scale; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff9a1f'; ctx.fillStyle = '#ff9a1f'; ctx.lineWidth = 2.5 / scale; ctx.font = `${12 / scale}px sans-serif`;
+  for (const p of gapAlert.pts) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.6, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + r * 3.2, p.y - r * 3.2); }
+  ctx.restore();
+}
 function drawCenterMarks() {
   const pts = centerMarkPoints(), near = guideMarkPoints(); if (!pts.length && !near.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = 'rgba(138,180,248,0.95)'; ctx.lineWidth = 1.5 / scale; ctx.beginPath();
@@ -4944,7 +4959,7 @@ function rebuildSnaps() {
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
-  gaps = findGaps(shapes.filter(s => !s.holeLink));
+  gaps = findGaps(shapes.filter(s => !s.holeLink)); gapAlert = null;
   dupGroups = findOverlaps(shapes.filter(s => !s.holeLink)); updateDupBar();
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
@@ -6070,7 +6085,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
