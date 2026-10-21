@@ -4049,7 +4049,30 @@ function unfoldFoldDesign() {
 }
 function fixFoldDesign() { projectFoldDesign(false); }
 /** 設計カードに、曲げ部の菱目ピッチ（外側の面・内側の面・差）を数字で出す。基準の平らな間隔は「菱目のピッチ」の欄（指定する前提）。数値・厚み・ピッチのどれを変えても、その場で更新する。 */
+/** 三つ折りの設計の「全高」（事業主指示 2026-10-21「高さ（フラップ曲げ部）を25mmに合わせるのがかなりむつかしい」→ 全高を直接入れる欄）。
+ *  全高＝2×大きいほうの折りの中心線の半径＋厚み＝2×大きいほうの内側の半径＋厚みの2倍（断面図の「全高」の寸法と同じ・design.js foldSectionDims）。欄はいつも実際の全高を表し、入れて Enter／Tab で、大きいほうの折りの内側の半径（⑥⑦の欄）を書き換えて合わせる。 */
+function foldHeightNow() {
+  const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), rl = num('fdRL'), rr = num('fdRR'), v = foldThicknessVals(), T = v.tOuter + v.tInner;
+  if (![rl, rr, T].every(Number.isFinite) || !(rl > 0) || !(rr > 0) || !(T > 0)) return null;
+  return { T, rl, rr, h: 2 * Math.max(rl, rr) + 2 * T };
+}
+function refreshFoldHeight(force = false) {
+  const el = $('fdTotalH'); if (!el || (!force && typeof document.activeElement !== 'undefined' && document.activeElement === el)) return;   /* 入れている途中は書き換えない */
+  const n = foldHeightNow(); el.value = n ? String(+n.h.toFixed(2)) : '';
+}
+function setFoldHeight() {
+  const el = $('fdTotalH'), raw = (el.value ?? '').trim(), h = Number(raw), n = foldHeightNow(), back = () => refreshFoldHeight(true);   /* 断ったら、欄を実際の全高に戻す */
+  if (!n) { $('hint').textContent = t('foldHeightNeedR'); back(); return; }
+  const r = (h - 2 * n.T) / 2; if (raw === '' || !Number.isFinite(h) || !(r > 0)) { $('hint').textContent = t('foldHeightSmall', { min: +(2 * n.T).toFixed(2) }); back(); return; }
+  const bigId = n.rr >= n.rl ? 'fdRR' : 'fdRL', other = bigId === 'fdRR' ? n.rl : n.rr;
+  if (other > r + 1e-9) { $('hint').textContent = t('foldHeightOther', { o: +other.toFixed(2), r: +r.toFixed(2) }); back(); return; }
+  $(bigId).value = String(+r.toFixed(3)); refreshFoldPitch();
+  const before = $('hint').textContent; liveFoldDesign(); const summary = $('hint').textContent !== before ? ' ' + $('hint').textContent : '';
+  $('hint').textContent = t('foldHeightSet', { h: +h.toFixed(2), side: t(bigId === 'fdRR' ? 'foldSideR' : 'foldSideL'), r: +r.toFixed(3) }) + summary; refreshFoldHeight(true);
+}
+$('fdTotalH').addEventListener('change', setFoldHeight);
 function refreshFoldPitch() {
+  refreshFoldHeight();   /* 半径・厚みが変わるたびに、全高の欄も実際の値にする */
   const el = $('fdPitchOut'); if (!el) return;
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), pitch = num('fdPitch'), f2 = v => v.toFixed(2);
   if (!(pitch > 0)) { el.textContent = t('foldPitchNeed'); return; }
