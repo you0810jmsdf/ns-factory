@@ -75,6 +75,7 @@ let dupGroups = []; /* 同じ形・同じ層・同じ線種で重なった図形
 let gaps = []; /* 切れ目：2mm 以内で触れていない端点の組（橙の輪・ダブルクリックの案内・隙間を閉じる） */
 let junctions = { joined: [], loose: [] }; /* 交点の表示：ポインタが近いときだけ。結合＝赤い点／未結合＝白い縁の赤い点 */
 let magnetGuide = []; /* ガイドの点：直線・折れ線の各辺・ベジェ/曲線の各区間・円弧の「中点と両端」、円の上下左右と斜め45度の8点、縫い穴・点の目印の中心（ポインタが近づくと印が出て、端点・中心と同じ磁石で吸い付く） */
+let magnetMids = [], snapAlign = null; /* 「中心」の点（辺の中点など）と、直前の吸着で、中心の点の縦・横にそろえたときの情報 */
 let magnetEnds = [], magnetCenters = []; /* 端点・円/円弧の中心：スナップのチェックと無関係に吸い付く候補 */
 let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分岐で止まった端の位置（選択が変わったら出さない） */
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
@@ -1083,8 +1084,13 @@ async function attachSavedUndo(info, base) {
 /** 「前回の続き」で復元したタブに、保存したファイルの行き先を付け直す（Ctrl+S が、窓を出さずにそのファイルへ上書きになる）。自動保存と同じ時刻の保管だけ使う（ずれた保管で、別のファイルを上書きしないため）。タブ名は変えない。 */
 async function attachSavedFiles(info, base) {
   try {
-    const rec = await loadFilesRecord(); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.handles)) return;
-    for (let i = 0; i < info.tabs.length; i++) { const h = rec.handles[i], tb = tabs[base + i]; if (h && tb && !tb.fileHandle && typeof h.createWritable === 'function' && h.kind !== 'directory') tb.fileHandle = h; }
+    const rec = await loadFilesRecord(); if (!rec || !Array.isArray(rec.handles)) return;
+    const ok = h => h && typeof h.createWritable === 'function' && h.kind !== 'directory', nameOf = h => String(h.name || '').replace(/\.json$/i, '').trim().slice(0, 60), strict = rec.savedAt === info.savedAt;
+    for (let i = 0; i < info.tabs.length; i++) {
+      const tb = tabs[base + i]; if (!tb || tb.fileHandle) continue;
+      if (strict) { if (ok(rec.handles[i])) tb.fileHandle = rec.handles[i]; continue; }   /* 保管の時刻が合うとき：タブの順で */
+      const same = rec.handles.filter(h => ok(h) && nameOf(h) === tb.name); if (same.length === 1) tb.fileHandle = same[0];   /* 合わないとき（保管の直前に閉じた等）：タブ名（保存したファイル名）が同じで、1つに決まるときだけ */
+    }
   } catch { /* 行き先が読めなくても、図面の復元はそのまま（保存のときに選び直す） */ }
 }
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
@@ -4808,11 +4814,11 @@ function drawRuler({ a, b }) {
 }
 /** 磁石の候補：端点（線・折れ線の頂点・円弧の両端・ベジェ両端・パス節点）と、円・円弧の中心。 */
 function magnetPointsOf(shapes) {
-  const ends = [], centers = [], guide = [], runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* inRun：1本の辺が途中で分かれている線（中点は辺全体の1つだけ） */
+  const ends = [], centers = [], guide = [], mids = [], runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* inRun：1本の辺が途中で分かれている線（中点は辺全体の1つだけ） */
   for (const s of shapes) {
     const segs = s.type === 'line' || s.type === 'bezier' ? [s] : s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((q, i) => ({ type: 'line', x1: q.x, y1: q.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : s.type === 'path' ? pathSegments(s) : [];
-    for (const g of segs) guide.push({ x: g.x1, y: g.y1 }, ...(inRun.has(s.id) ? [] : [g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2)]), { x: g.x2, y: g.y2 }); /* 各区間の「中点（長さの真ん中）と両端」 */
-    if (s.type === 'arc') guide.push(circlePoint(s, s.startDeg), circlePoint(s, s.startDeg + arcSweep(s) / 2), circlePoint(s, s.endDeg));
+    for (const g of segs) { const m = inRun.has(s.id) ? null : g.type === 'line' ? { x: (g.x1 + g.x2) / 2, y: (g.y1 + g.y2) / 2 } : pointAtLength(g, arcLength(g) / 2); guide.push({ x: g.x1, y: g.y1 }, ...(m ? [m] : []), { x: g.x2, y: g.y2 }); if (m) mids.push(m); } /* 各区間の「中点（長さの真ん中）と両端」 */
+    if (s.type === 'arc') { guide.push(circlePoint(s, s.startDeg), circlePoint(s, s.startDeg + arcSweep(s) / 2), circlePoint(s, s.endDeg)); mids.push(circlePoint(s, s.startDeg + arcSweep(s) / 2)); }
     if (s.type === 'line') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'polyline') ends.push(...s.points.map(p => ({ x: p.x, y: p.y })));
     else if (s.type === 'bezier') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
@@ -4820,9 +4826,9 @@ function magnetPointsOf(shapes) {
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
     else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push(circlePoint(s, k * 45)); }
   }
-  guide.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
-  guide.push(...smallLoopCenters(shapes));   /* 小さな菱形・四角の中心（ガイドの点＝近づくと印が出る。常時の十字は出さない・事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」） */
-  return { ends, centers, guide };
+  guide.push(...runs.map(r => ({ ...r.mid }))); mids.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
+  { const sl = smallLoopCenters(shapes); guide.push(...sl); mids.push(...sl); }   /* 小さな菱形・四角の中心（ガイドの点＝近づくと印が出る。常時の十字は出さない・事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」） */
+  return { ends, centers, guide, mids };   /* mids：辺の中点・円弧の中点・分かれた辺全体の中点・小さな輪の中心（「中心」の点。縦横のそろえに使う） */
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
@@ -4867,7 +4873,7 @@ function rebuildSnaps() {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s));
   const runs = straightRuns(shapes), inRun = new Set(runs.flatMap(r => r.ids));   /* 1本の辺が途中で分かれている線：中点は、辺全体の中点だけ（1本ごとの中点は、上下対称のはずの辺とずれる・事業主の指摘 2026-10-18） */
   snapCache = shapes.flatMap(s => inRun.has(s.id) ? snapPoints(s).slice(0, 2) : snapPoints(s)); snapCache.push(...runs.map(r => ({ ...r.mid }))); snapCache.push(...smallLoopCenters(shapes));
-  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers;
+  const magnet = magnetPointsOf(shapes); magnetEnds = magnet.ends; magnetCenters = magnet.centers; magnetMids = magnet.mids;
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
@@ -5023,7 +5029,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
@@ -5582,8 +5588,17 @@ function intersectionSnapAt(p) {
   const reach = 9 / scale, near = doc.shapes.filter(s => visible(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 2).slice(0, 12); if (near.length < 2) return null;
   let best = null, bd = reach; for (const q of allIntersections(near)) { const d = distance(p, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
 }
+/** 作図中のカーソル p が、「中心」の点（辺の中点・円弧の中点・円や円弧の中心・小さな輪の中心）の近く（画面で 40px 以内＝ひし形の印が出る範囲）にあるとき、その点の縦の線・横の線に 10px（吸着距離）以内なら、そろえる（事業主指摘 2026-10-21「どうみても中心点からずれる」：印から離れた所では、1mm 刻みのグリッドに丸められて、中心から 0.4mm ずれていた）。縦（x）と横（y）は別々。端点にはそろえない。 */
+function alignToCenters(p) {
+  const reach = magnetRadiusMm(); if (!(reach > 0)) return null; const see = 40 / scale; let bx = null, by = null;
+  for (const c of [...magnetMids, ...magnetCenters]) {
+    if (distance(p, c) > see) continue; const dx = Math.abs(p.x - c.x), dy = Math.abs(p.y - c.y);
+    if (dx <= reach && (!bx || dx < bx.d)) bx = { d: dx, c }; if (dy <= reach && (!by || dy < by.d)) by = { d: dy, c };
+  }
+  return bx || by ? { ...(bx ? { x: bx.c.x, fromX: bx.c } : {}), ...(by ? { y: by.c.y, fromY: by.c } : {}) } : null;
+}
 function snapped(p, shift, anchor) {
-  snap = null;
+  snap = null; snapAlign = null;
   let result = { ...p };
   const reach = magnetRadiusMm();
   if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters, ...magnetGuide]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
@@ -5602,7 +5617,8 @@ function snapped(p, shift, anchor) {
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
   if (!snap && (mode === 'ruler' || mode === 'dimension' || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
-  if ($('snap').checked && !snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
+  const al = !snap && MAGNET_DRAW_MODES.includes(mode) ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
+  if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
@@ -5997,6 +6013,12 @@ function drawSheetBody(lo, hi) {
     ctx.fillRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y); ctx.strokeRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y);
   }
   ctx.setLineDash([]);
+  if (snapAlign && mode !== 'select' && !exporting) {   /* 中心の点にそろえているとき：その点から、そろえた位置まで、細い水色の点線 */
+    ctx.save(); ctx.setLineDash([5 / scale, 4 / scale]); ctx.strokeStyle = '#4fd0ff'; ctx.lineWidth = 1 / scale; ctx.beginPath();
+    if (snapAlign.x !== undefined) { ctx.moveTo(snapAlign.fromX.x, snapAlign.fromX.y); ctx.lineTo(snapAlign.x, cursor.y); }
+    if (snapAlign.y !== undefined) { ctx.moveTo(snapAlign.fromY.x, snapAlign.fromY.y); ctx.lineTo(cursor.x, snapAlign.y); }
+    ctx.stroke(); ctx.restore();
+  }
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
   drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawRotateHandle();
   updateUI();
@@ -6381,7 +6403,8 @@ async function save(asNew = false) {
   const docsToCheck = payload === doc ? [doc] : [payload, payload.threeViewSheets?.top, payload.threeViewSheets?.side].filter(Boolean);
   for (const d of docsToCheck) healDoc(d);
   if (!docsToCheck.every(d => validateDoc(d))) { $('hint').textContent = t('saveInvalid'); return; }
-  if (!asNew && tab?.fileHandle && typeof globalThis.showSaveFilePicker === 'function' && !(await canWriteHandle(tab.fileHandle))) tab.fileHandle = null;   /* 覚えていたファイルへの書き込みの許可を、Ctrl+S の押下の中で確かめる（再起動の直後は「確認」に戻っている）。断られたら選び直す */
+  let why = '';   /* 前に保存したファイルへ上書きできなかった理由（選び直しの保存のあとに知らせる） */
+  if (!asNew && tab?.fileHandle && typeof globalThis.showSaveFilePicker === 'function' && !(await canWriteHandle(tab.fileHandle))) { tab.fileHandle = null; why = t('saveWhyPermission'); }   /* 覚えていたファイルへの書き込みの許可を、Ctrl+S の押下の中で確かめる（再起動の直後は「確認」に戻っている）。断られたら選び直す */
   const keep = Number($('saveHistory').value) || 0, withHistory = keep && payload === doc && (undo.length || redo.length); /* 元に戻す履歴も一緒に保存（事業主指示 2026-10-17・既定100回・三面図の紙分けは対象外） */
   const text = JSON.stringify(withHistory ? { ...payload, undoHistory: await encodeStacks({ undo, redo }, { keep }) } : payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
   const clean = () => { for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs(); };
@@ -6392,15 +6415,15 @@ async function save(asNew = false) {
   }
   const write = async handle => { const w = await handle.createWritable(); await w.write(text); await w.close(); };
   let handle = asNew ? null : tab?.fileHandle, overwrote = false;
-  if (handle) { try { await write(handle); overwrote = true; } catch { handle = null; if (tab) tab.fileHandle = null; /* 消された・動かされた・許可が切れた：選び直す */ } }
+  if (handle) { try { await write(handle); overwrote = true; } catch (err) { handle = null; if (tab) tab.fileHandle = null; why = t('saveWhyWrite', { message: err?.name ? err.name + (err.message ? '：' + err.message : '') : String(err?.message || err) }); /* 消された・動かされた・許可が切れた：選び直す */ } }
   if (!handle) {
     try {
       handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });
       await write(handle);
     } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); return; }
   }
-  if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; scheduleAutosave(); /* 行き先を保管に入れる */ }
-  clean(); $('hint').textContent = t(overwrote ? 'savedOverwrite' : 'savedNew', { name: handle.name || fileName });
+  if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; scheduleAutosave(); /* 行き先を保管に入れる */ saveFilesRecord({ savedAt: lastAutosaveAt, handles: tabs.map(tb => tb.fileHandle || null) }).catch(() => {}); /* 自動保存の保管を待たず、いまのうちにも覚える（すぐ閉じても残るように） */ }
+  clean(); $('hint').textContent = t(overwrote ? 'savedOverwrite' : 'savedNew', { name: handle.name || fileName }) + (!overwrote && why ? ' ' + why : '');
 }
 /** 選んだ図形だけの図面を作る（事業主の希望 2026-10-19「選択した図形だけを保存したい」）：選んだ図形＋その図形で完結する経路と縫い穴＋部品（選んだ図形の分だけ）＋縫い合わせ（両側の経路が残るもの）＋領域の塗り（囲む図形が全部選ばれているもの）＋層・工具・単位などの設定。座標は動かさない。
  *  何も選んでいなければ null。検査（validateDoc）に通らなければ null。 */
