@@ -149,7 +149,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 09:39 · 67b24e8</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 09:46 · 23b65f2</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -709,8 +709,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=11314501","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=8d09e153","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=4d478685","./help/ja.js":"./help/ja.js?v=41e65d8a","./i18n.js":"./i18n.js?v=6293923a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=6fa749b2","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=11314501"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=e7d91de8","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=4c4181e5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=4d478685","./help/ja.js":"./help/ja.js?v=41e65d8a","./i18n.js":"./i18n.js?v=8a5bb532","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=6fa749b2","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=4ebb3634","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=e7d91de8"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1620,6 +1620,22 @@ function attachToLine(points, line, { rotate: doRotate = false } = {}) {
   }
   const gap = Math.min(...pts2.map(sd)); return { dx: -gap * nx, dy: -gap * ny, angleDeg, pivot, gap };
 }
+/** 2本の線に同時に着ける（事業主指示 2026-10-21「上辺、右辺とぴったり重なりあうように線どうしがくっつく機能」）：図形（points）の、line1 に近い側と line2 に近い側が、それぞれの線にぴったり乗る動き { dx, dy } を返す（回さない）。
+ *  線ごとの「着く向き」は attachToLine と同じ（図形の中心のある側）。2本の線の法線 n1・n2 について、n1·d = −gap1・n2·d = −gap2 を解く。2本が平行（法線のなす角が 5° 未満）なら解が決まらないので、
+ *  both:false と、line1 だけに着ける動きを返す。返り値 { both, dx, dy, gap1, gap2 }。点が足りない・線が点なら null。 */
+function attachToLines(points, line1, line2) {
+  const pts = (points || []).filter(q => Number.isFinite(q?.x) && Number.isFinite(q?.y)); if (pts.length < 2 || !line1?.a || !line1?.b || !line2?.a || !line2?.b) return null;
+  const cx = pts.reduce((m, q) => m + q.x, 0) / pts.length, cy = pts.reduce((m, q) => m + q.y, 0) / pts.length;
+  const side = line => {
+    const ux0 = line.b.x - line.a.x, uy0 = line.b.y - line.a.y, len = Math.hypot(ux0, uy0); if (!(len > 1e-9)) return null;
+    const ux = ux0 / len, uy = uy0 / len, up = (-uy * (cx - line.a.x) + ux * (cy - line.a.y)) >= 0, nx = up ? -uy : uy, ny = up ? ux : -ux;
+    return { nx, ny, gap: Math.min(...pts.map(q => nx * (q.x - line.a.x) + ny * (q.y - line.a.y))) };
+  };
+  const s1 = side(line1), s2 = side(line2); if (!s1 || !s2) return null;
+  const det = s1.nx * s2.ny - s1.ny * s2.nx;
+  if (Math.abs(det) < Math.sin(5 * Math.PI / 180)) return { both: false, dx: -s1.gap * s1.nx, dy: -s1.gap * s1.ny, gap1: s1.gap, gap2: s2.gap };
+  return { both: true, dx: (-s1.gap * s2.ny + s1.ny * s2.gap) / det, dy: (-s1.nx * s2.gap + s2.nx * s1.gap) / det, gap1: s1.gap, gap2: s2.gap };
+}
 /** 線で囲まれた場所（領域）を、点 p から「塗りつぶし」で求める（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。
  *  取り込んだ図面の輪郭は、線の端が別の線の途中に付く形（T字）や、0.3mm ほどの隙間があり、端と端をたどる方式では閉じて見えない。ここでは、線を細い帯（幅 gap）にして画素に描き、p から塗りつぶす：
  *  帯より狭い隙間・T字は、閉じたものとして越える。窓（p を中心にした正方形）の端に届いたら「囲まれていない」とみなし、もっと大きい窓で試す。最初の隙間（0.8mm）で漏れるときは、2.5mm まで広げて試す（bridged）。
@@ -2136,7 +2152,7 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
 
-return {distance, dot, rotate, warpX, warpY, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, diamondLoopSizes, resizeDiamondLoop, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
+return {distance, dot, rotate, warpX, warpY, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, attachToLines, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, diamondLoopSizes, resizeDiamondLoop, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
 })();
 __mods['autodim'] = (function(){
 // 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。
@@ -4334,15 +4350,19 @@ const MESSAGES = {
     "moveDx": "右へ (mm)",
     "moveDy": "下へ (mm)",
     "moveApply": "動かす",
-    "attachBtn": "線に着ける（金具を本体の線にぴったり）",
-    "attachRotate": "向きも線に合わせる（金具の、線に近い辺が線と平行になるよう回す）",
+    "attachBtn": "線に着ける（選んだ図形・金具を、本体の線にぴったり。2本続けると2辺ぴったり）",
+    "attachRotate": "向きも線に合わせる（図形の、線に近い辺が線と平行になるよう回す）",
     "attachNeedSelect": "先に、本体に着ける金具（図形）を選んでください。",
-    "attachStart": "金具を着ける本体の線をクリックしてください。Esc でやめます。",
-    "hint.attach": "金具を着ける本体の線をクリックしてください。選んだ金具が、線にぴったり着くよう動きます。Esc でやめます。",
+    "attachStart": "選んだ図形（金具など）を着ける本体の線をクリックしてください。続けて2本目の線をクリックすると、2辺ぴったり着きます。Esc でやめます。",
+    "hint.attach": "選んだ図形（金具など）を着ける本体の線をクリックしてください。図形が、線にぴったり着くよう動きます。続けて2本目（上辺に着けたなら右辺など）をクリックすると、2辺ぴったり着きます。Esc でやめます。",
     "attachNoLine": "その近くに本体の線がありません。線の近くをクリックしてください。",
-    "attachDone": "金具を本体の線に着けました（{gap} mm 動かしました）。",
-    "attachDoneRot": "金具を本体の線に着けました（{gap} mm 動かし、{angle}° 回しました）。",
-    "attachAlready": "金具は、もう線にぴったり着いています。",
+    "attachDone": "図形を本体の線に着けました（{gap} mm 動かしました）。",
+    "attachDoneRot": "図形を本体の線に着けました（{gap} mm 動かし、{angle}° 回しました）。",
+    "attachAlready": "図形は、もう線にぴったり着いています。",
+    "attachNext": "続けて、2本目の線（上辺に着けたなら右辺など）をクリックすると、2辺ともぴったり重なります。ここで終わるなら Esc。",
+    "attachBoth": "2本の線に着けました（2本目へ {gap} mm 動かしました）。元に戻すは1回で、2本ぶん戻ります。",
+    "attachBothAlready": "図形は、もう2本の線にぴったり着いています。",
+    "attachParallel": "2本目が1本目と平行（または同じ線）なので、2本目には着けられません。別の向きの線（上辺に着けたなら右辺など）をクリックするか、Esc で終わります（1本目には着いています）。",
     "moveNote": "マイナスの数で左・上へ動きます。矢印キーでも動かせます（1mm・Shift で 10mm・Ctrl で 0.1mm）",
     "alignTitle": "整列",
     "alignLeft": "左揃え",
@@ -6165,15 +6185,19 @@ const MESSAGES = {
     "moveDx": "Right (mm)",
     "moveDy": "Down (mm)",
     "moveApply": "Move",
-    "attachBtn": "Attach to a line (snug against the body line)",
-    "attachRotate": "Also align the direction (turn so the hardware edge nearest the line is parallel to it)",
+    "attachBtn": "Attach to a line (selected shape or hardware snug against the body line; click two lines to fit two edges)",
+    "attachRotate": "Also align the direction (turn so the edge nearest the line is parallel to it)",
     "attachNeedSelect": "First select the hardware (shapes) to attach to the body.",
-    "attachStart": "Click the body line to attach the hardware to. Esc to cancel.",
-    "hint.attach": "Click the body line to attach to. The selected hardware moves snug against it. Esc to cancel.",
+    "attachStart": "Click the body line to attach the selection (hardware etc.) to. Then click a second line to fit two edges snugly. Esc to cancel.",
+    "hint.attach": "Click the body line to attach the selection (hardware etc.) to. It moves snug against the line. Then click a second line (for example the right edge after the top edge) to fit two edges. Esc to cancel.",
     "attachNoLine": "No body line near there. Click near a line.",
-    "attachDone": "Attached the hardware to the body line (moved {gap} mm).",
-    "attachDoneRot": "Attached the hardware to the body line (moved {gap} mm, turned {angle}°).",
-    "attachAlready": "The hardware is already snug against the line.",
+    "attachDone": "Attached the shape to the body line (moved {gap} mm).",
+    "attachDoneRot": "Attached the shape to the body line (moved {gap} mm, turned {angle}°).",
+    "attachAlready": "The shape is already snug against the line.",
+    "attachNext": "Now click a second line (for example the right edge after the top edge) to fit both edges. Press Esc to stop here.",
+    "attachBoth": "Attached to both lines (moved {gap} mm for the second). One Undo reverts both.",
+    "attachBothAlready": "The shape is already snug against both lines.",
+    "attachParallel": "The second line is parallel to (or the same as) the first, so it cannot be attached to. Click a line in another direction (for example the right edge after the top edge), or press Esc (it is attached to the first line).",
     "moveNote": "Use negative numbers to move left / up. Arrow keys also move (1 mm, Shift 10 mm, Ctrl 0.1 mm)",
     "alignTitle": "Align",
     "alignLeft": "Align left",
@@ -22242,7 +22266,7 @@ const { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } = __m
 const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } = __mods['autodim'];
-const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
+const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
 const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
@@ -22318,6 +22342,7 @@ let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let stitchPreview = null; /* 目打ち：始点をクリックしたあと、マウスの位置を終点にしたときに打つ穴の位置（打つ前の薄い表示）。{ points, tool, wrap } */
 let stitchRouteIds = null; /* 目打ち：いまの経路（つながった線）の図形の id。打つ前に、薄く光らせる */
+let attachState = null; /* 線に着ける：1本目に着けたあと、2本目を待つ状態 { key（選んだ図形の id）, line（1本目の線）, undoLen（1本目のあとの履歴の数）, moved（1本目で動いたか） } */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
@@ -25685,10 +25710,20 @@ function attachClick(p) {
   let target = null; for (const s of doc.shapes) { if (ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type)) continue; const d = distToShape(s, p); if (d <= 12 / scale && (!target || d < target.d)) target = { s, d }; }   /* 着ける線：金具以外で、クリックにいちばん近い線（ロックしたレイヤーの線でもよい） */
   const line = target && nearestSegmentOf(target.s, p); if (!line) { $('hint').textContent = t('attachNoLine'); return; }
   const pts = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && visible(s) && !['text', 'dimension', 'image', 'fold'].includes(s.type)).flatMap(s => flattenShape(s, 0.05));
+  const fmt = v => (+v).toFixed(2), key = [...ids].sort().join(',');
+  if (attachState?.key === key) {   /* 2本目（事業主指示 2026-10-21「上辺、右辺とぴったり重なりあうように線どうしがくっつく」）：1本目に着いたまま、2本目の線にも着く（動くのは1本目の線に沿う方向だけ）。平行で着けられないときは、1本目だけのまま案内する */
+    const r2 = attachToLines(pts, attachState.line, line); if (!r2) { $('hint').textContent = t('attachNoLine'); return; }
+    if (!r2.both) { $('hint').textContent = t('attachParallel'); return; }
+    if (Math.hypot(r2.dx, r2.dy) < 0.005) { setMode('select'); $('hint').textContent = t('attachBothAlready'); return; }
+    const { undoLen, moved } = attachState; transformSelected(s => translate(s, r2.dx, r2.dy));
+    if (moved && undo.length === undoLen + 1) undo.splice(undoLen, 1);   /* 元に戻すは1回で、2本ぶん戻る（1本目の動きの履歴に、2本目の動きを含める） */
+    setMode('select'); $('hint').textContent = t('attachBoth', { gap: fmt(Math.hypot(r2.dx, r2.dy)) }); return;
+  }
   const r = attachToLine(pts, line, { rotate: $('attachRotate').checked }); if (!r) { $('hint').textContent = t('attachNoLine'); return; }
-  if (Math.abs(r.gap) < 0.005 && !r.angleDeg) { setMode('select'); $('hint').textContent = t('attachAlready'); return; }
-  const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy), { rotates: !!r.angleDeg });
-  setMode('select'); $('hint').textContent = r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) });
+  const already = Math.abs(r.gap) < 0.005 && !r.angleDeg;
+  if (!already) transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy), { rotates: !!r.angleDeg });
+  attachState = { key, line, undoLen: undo.length, moved: !already };   /* 着けたあとも着ける状態のまま：続けて2本目の線をクリックできる（Esc・別のツールで終わり） */
+  $('hint').textContent = (already ? t('attachAlready') : r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) })) + ' ' + t('attachNext');
 }
 $('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
@@ -27159,7 +27194,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) {
   const c = $('patchCard'); if (on) c.dataset.win = '1'; else delete c.dataset.win;

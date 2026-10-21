@@ -686,6 +686,22 @@ export function attachToLine(points, line, { rotate: doRotate = false } = {}) {
   }
   const gap = Math.min(...pts2.map(sd)); return { dx: -gap * nx, dy: -gap * ny, angleDeg, pivot, gap };
 }
+/** 2本の線に同時に着ける（事業主指示 2026-10-21「上辺、右辺とぴったり重なりあうように線どうしがくっつく機能」）：図形（points）の、line1 に近い側と line2 に近い側が、それぞれの線にぴったり乗る動き { dx, dy } を返す（回さない）。
+ *  線ごとの「着く向き」は attachToLine と同じ（図形の中心のある側）。2本の線の法線 n1・n2 について、n1·d = −gap1・n2·d = −gap2 を解く。2本が平行（法線のなす角が 5° 未満）なら解が決まらないので、
+ *  both:false と、line1 だけに着ける動きを返す。返り値 { both, dx, dy, gap1, gap2 }。点が足りない・線が点なら null。 */
+export function attachToLines(points, line1, line2) {
+  const pts = (points || []).filter(q => Number.isFinite(q?.x) && Number.isFinite(q?.y)); if (pts.length < 2 || !line1?.a || !line1?.b || !line2?.a || !line2?.b) return null;
+  const cx = pts.reduce((m, q) => m + q.x, 0) / pts.length, cy = pts.reduce((m, q) => m + q.y, 0) / pts.length;
+  const side = line => {
+    const ux0 = line.b.x - line.a.x, uy0 = line.b.y - line.a.y, len = Math.hypot(ux0, uy0); if (!(len > 1e-9)) return null;
+    const ux = ux0 / len, uy = uy0 / len, up = (-uy * (cx - line.a.x) + ux * (cy - line.a.y)) >= 0, nx = up ? -uy : uy, ny = up ? ux : -ux;
+    return { nx, ny, gap: Math.min(...pts.map(q => nx * (q.x - line.a.x) + ny * (q.y - line.a.y))) };
+  };
+  const s1 = side(line1), s2 = side(line2); if (!s1 || !s2) return null;
+  const det = s1.nx * s2.ny - s1.ny * s2.nx;
+  if (Math.abs(det) < Math.sin(5 * Math.PI / 180)) return { both: false, dx: -s1.gap * s1.nx, dy: -s1.gap * s1.ny, gap1: s1.gap, gap2: s2.gap };
+  return { both: true, dx: (-s1.gap * s2.ny + s1.ny * s2.gap) / det, dy: (-s1.nx * s2.gap + s2.nx * s1.gap) / det, gap1: s1.gap, gap2: s2.gap };
+}
 /** 線で囲まれた場所（領域）を、点 p から「塗りつぶし」で求める（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。
  *  取り込んだ図面の輪郭は、線の端が別の線の途中に付く形（T字）や、0.3mm ほどの隙間があり、端と端をたどる方式では閉じて見えない。ここでは、線を細い帯（幅 gap）にして画素に描き、p から塗りつぶす：
  *  帯より狭い隙間・T字は、閉じたものとして越える。窓（p を中心にした正方形）の端に届いたら「囲まれていない」とみなし、もっと大きい窓で試す。最初の隙間（0.8mm）で漏れるときは、2.5mm まで広げて試す（bridged）。
