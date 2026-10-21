@@ -575,7 +575,7 @@ function stitchPointCandidates(w) {
     let anchorS, ah = null, adist = Infinity;
     for (const h of doc.holes) { if (h.pathId === saved.id) continue; const dh = Math.hypot(h.x - w.x, h.y - w.y); if (dh > 14 / scale || dh >= adist) continue; if (best !== null && bd <= 14 / scale && dh >= bd - 1e-9) continue; const pr = projectOnPath(route, h); if (distance(pr, h) > 1.5) continue; ah = { h, pr }; adist = dh; }
     let sUse = s; if (ah) { const { h, pr } = ah; if (pr.s <= 1e-6) { anchorS = -distance(pointAtLength(route, 0), h); sUse = 0; } else if (pr.s >= len - 1e-6) { anchorS = len + distance(pointAtLength(route, len), h); sUse = len; } else { anchorS = pr.s; sUse = pr.s; } }
-    out.push({ key, state, s: sUse, anchorS, p: pointAtLength(route, sUse) });
+    out.push({ key, state, s: sUse, anchorS, p: pointAtLength(route, sUse), dist: Math.min(...mine.map(sh => distTo(sh, w))) });   /* dist：クリックから、その経路のいちばん近い線までの距離（終点で、打つ経路を選ぶのに使う） */
   }
   return out;
 }
@@ -721,20 +721,29 @@ function stitchSingleAt(c, tool) {
   });
   $('hint').textContent = t('singleDone'); draw();
 }
+/** 目打ちの終点（2回目のクリック・下見）：始点と同じ経路の候補の中から、打つ経路の組を決める（事業主要望 2026-10-21「任意の点線に沿って打ちたいけど、最短距離のルートしか選べない」：始点・終点の両方を含む経路が複数あると、最後に描いた線が必ず選ばれていた）。
+ *  クリックの位置に近い線の経路を優先（0.5px 刻み）。つなぎ目ぴったりなど、同じ近さの候補が複数あるときは、Tab キーで切り替える（stitchTab）。候補の数・いま何番目かは stitchRouteChoices。 */
+let stitchTab = 0, stitchRouteChoices = { n: 1, i: 0 }, stitchLastW = null;
+function pickStitchPair(near) {
+  const all = near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).filter(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6);
+  if (!all.length) { stitchRouteChoices = { n: 1, i: 0 }; return null; }
+  const tier = x => Math.round(x.c.dist * scale * 2), top = Math.min(...all.map(tier)), tied = all.filter(x => tier(x) === top), i = ((stitchTab % tied.length) + tied.length) % tied.length;
+  stitchRouteChoices = { n: tied.length, i }; return tied[i];
+}
 function rangeStitchClick(w, flip = false) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
   if (kind === 'count' && !n) { $('hint').textContent = t('countNeedN'); return; }
-  const pair = countStage ? near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6) : null;
+  const pair = countStage ? pickStitchPair(near) : null;
   if (!pair) { /* 始点（交点では重なった線の全部を候補にして、2回目のクリックで同じ線に当たったものを使う） */
     if (countStage) { const same = near.find(c => countStage.list.some(f => f.key === c.key && Math.abs(f.s - c.s) < 1e-6)); if (same) { stitchSingleAt(same, tool); return; } } /* 始点と同じ場所（交点など）をもう一度クリック：そこに菱目を1つだけ打つ（事業主指示 2026-10-17） */
     if (countStage) { /* 始点とは別の線をクリックした：端が接している線どうしなら、つなぎ目を越えて打つ（固定ピッチだけ）。接していなければ、ここを新しい始点にして、そのことを案内する */
       for (const c2 of near) for (const c1 of countStage.list) { const joint = stitchJoint(c1, c2); if (joint) { if (kind === 'count') { stitchJointCount(c1, c2, joint, n, tool); return; } if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; } }
-      const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
+      const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; stitchTab = 0; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
     }
-    countStage = { list: near }; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
+    countStage = { list: near }; stitchTab = 0; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
-  countStage = null; stitchPreview = null;
+  countStage = null; stitchPreview = null; stitchTab = 0; stitchRouteChoices = { n: 1, i: 0 };
   const res = stitchPlansForPair(pair, kind, n, tool, flip); if (res.error) { $('hint').textContent = res.error; return; }
   const { plans } = res, last = plans.at(-1).info, { leftover } = last, anchoredHole = last.anchoredHole && !res.wrap /* 始まりをまたぐときの2区間目は、ピッチを続けるための数え方で、既存の穴への吸着ではない */, nPts = plans.reduce((sum, p) => sum + p.info.points.length, 0), span = plans.reduce((sum, p) => sum + p.info.hi - p.info.lo, 0), pitch = res.pitch ?? last.pitch;
   commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
@@ -767,10 +776,11 @@ function drawStitchHover() { if (mode !== 'stitch' || !stitchHover || exporting)
 /** 目打ち：打つ前の薄い表示（事業主指示 2026-10-21「菱目打ちルートを薄く、確定する前に表示してほしい」）。
  *  始点を決めたあと＝マウスの位置を終点にしたら打たれる穴の位置（クリックで確定するときと同じ計画・図面は変えない）。決める前・決めたあと＝マウスの近くの線がつながった経路（どこまでが同じ経路か）。 */
 function stitchPreviewAt(w, flip) {
+  stitchRouteChoices = { n: 1, i: 0 };
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN();
   if (!countStage || !tool || (kind === 'count' && !n)) return null;
-  const near = stitchPointCandidates(w), pair = near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).find(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6);
-  if (pair) { const res = stitchPlansForPair(pair, kind, n, tool, flip); return res.error ? null : { points: res.plans.flatMap(p => p.info.points), tool, wrap: !!res.wrap }; }
+  const near = stitchPointCandidates(w), pair = pickStitchPair(near);
+  if (pair) { const res = stitchPlansForPair(pair, kind, n, tool, flip); return res.error ? null : { points: res.plans.flatMap(p => p.info.points), tool, wrap: !!res.wrap, routeIds: pair.c.state.saved.shapeIds }; }
   for (const c2 of near) for (const c1 of countStage.list) {   /* 別の線へ：端が接していれば、つなぎ目を越える分も（クリックと同じ） */
     const joint = stitchJoint(c1, c2); if (!joint) continue;
     const res = kind === 'count' ? stitchJointCountPlans(c1, c2, joint, n, tool) : kind === 'fixed' ? stitchJointPlans(c1, c2, joint, kind, n, tool) : null;
@@ -781,18 +791,18 @@ function stitchPreviewAt(w, flip) {
 let stitchPreviewKey = '', stitchRouteKey = '', stitchRouteCache = null;
 function syncStitchPreview(w, flip) {
   const ver = [undo.length, redo.length, doc.shapes.length, doc.holes.length].join(',');
-  const key = [ver, countStage ? countStage.list.map(c => c.key + ':' + c.s.toFixed(3)).join(';') : '', Math.round(w.x * scale / 2), Math.round(w.y * scale / 2), flip ? 1 : 0, $('stitchTool').value, $('placement').value, $('stitchCount').value, $('chain').checked].join('|');
+  const key = [ver, countStage ? countStage.list.map(c => c.key + ':' + c.s.toFixed(3)).join(';') : '', Math.round(w.x * scale / 2), Math.round(w.y * scale / 2), flip ? 1 : 0, stitchTab, $('stitchTool').value, $('placement').value, $('stitchCount').value, $('chain').checked].join('|');
   if (key === stitchPreviewKey) return; stitchPreviewKey = key;   /* 同じ場所・同じ状態では、計算し直さない（マウスを動かすたびに交点を数えないため） */
   stitchPreview = stitchPreviewAt(w, flip);
   let ids = null;
-  if (countStage) ids = countStage.list[0].state.saved.shapeIds;
+  if (countStage) { ids = stitchPreview?.routeIds || countStage.list[0].state.saved.shapeIds; if (stitchRouteChoices.n > 1) $('hint').textContent = t('stitchRoutePick', { n: stitchRouteChoices.n, i: stitchRouteChoices.i + 1 }); }   /* 打てる経路が複数あるとき：下見は、選ばれた経路で。Tab で切り替え */
   else {
     const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, w) <= 8 / scale);
     if (hit) { const rk = [hit.id, ver, $('chain').checked].join('|'); if (rk !== stitchRouteKey) { stitchRouteKey = rk; stitchRouteCache = routeForHit(hit)?.saved.shapeIds ?? null; } ids = stitchRouteCache; }
   }
   stitchRouteIds = ids ? [...ids] : null;
 }
-function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; }
+function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; stitchRouteChoices = { n: 1, i: 0 }; }
 function drawStitchPreview() {
   if (mode !== 'stitch' || exporting) return;
   if (stitchRouteIds?.length) { ctx.save(); ctx.lineWidth = 8 / scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.18; for (const id of stitchRouteIds) strokeShape(doc.shapes.find(x => x.id === id), '#c9a96e'); ctx.restore(); }   /* 経路：太く薄く */
@@ -5029,7 +5039,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
@@ -6226,7 +6236,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
   stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
-  if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
+  if (mode === 'stitch' && !gesture) { stitchLastW = world(p); syncStitchPreview(stitchLastW, e.shiftKey); } else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
   else cursor = gesture?.kind === 'move' ? (gesture.moved ||= distance(p, gesture.screen) >= 4) ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : { ...gesture.start } :   /* つかんで 4px 動くまでは、動かさない（クリック・ダブルクリックのぶれで、吸着の分だけ一瞬ずれていた）。4px は、離したときに動かすか決める値と同じ */ mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
@@ -6540,6 +6550,7 @@ window.addEventListener('keydown', e => {
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
   if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
+  if (e.key === 'Tab' && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }   /* 目打ち：打てる経路が複数あるとき、Tab で切り替える */
   const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
   if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
