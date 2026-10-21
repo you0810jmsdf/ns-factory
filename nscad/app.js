@@ -978,6 +978,15 @@ function drawGapMarks() {
   for (const m of list) { ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, Math.PI * 2); ctx.stroke(); }
   ctx.restore();
 }
+/** 辺どうしが吸い付いている間（gesture.edgeSnap）、合っている縦線・横線を、画面いっぱいに細い水色で引く（ドラッグ中だけ）。 */
+function drawEdgeSnap() {
+  const e = gesture?.kind === 'move' ? gesture.edgeSnap : null; if (exporting || !e) return;
+  const a = world({ x: 0, y: 0 }), b = world({ x: canvas.width / (window.devicePixelRatio || 1), y: canvas.height / (window.devicePixelRatio || 1) });
+  ctx.save(); ctx.setLineDash([6 / scale, 4 / scale]); ctx.strokeStyle = '#4fd0ff'; ctx.lineWidth = 1 / scale;
+  if (e.x !== undefined) { ctx.beginPath(); ctx.moveTo(e.x, a.y); ctx.lineTo(e.x, b.y); ctx.stroke(); }
+  if (e.y !== undefined) { ctx.beginPath(); ctx.moveTo(a.x, e.y); ctx.lineTo(b.x, e.y); ctx.stroke(); }
+  ctx.restore();
+}
 function refreshGapCount() {
   const key = [...selected].join(',') + '|' + undo.length + '|' + redo.length + '|' + doc.holes.length + '|' + activeTab + '|' + t('checkHoles'); if (key === gapKey) return; gapKey = key;
   const gs = selected.size ? findHoleGaps() : { gapCount: 0, add: [] }, n = gs.gapCount, changed = gs.add.length !== selGapMarks.length || gs.add.some((m, i) => Math.abs(m.x - selGapMarks[i].x) > 1e-6 || Math.abs(m.y - selGapMarks[i].y) > 1e-6); selGapMarks = gs.add;
@@ -5420,11 +5429,28 @@ function beginMoveSnap(g) {
   const all = m => [...m.ends, ...m.centers, ...m.guide], mine = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && g.ids.has(s.id))));
   let near = reach, base = null; for (const c of mine) { const d = distance(g.start, c); if (d < near) { near = d; base = c; } }
   g.mine = mine; g.targets = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id))));
+  g.edges = moveEdgesOf(g.ids);
   if (base) { g.start = { ...base }; g.hasBase = true; } /* 基点が無い（点から離れた所をつかんだ）ときも、動かす図形の端・中点・中心が、相手の点に合う（movePosition） */
+}
+/** 動かす図形（グループ・複数選択を含む）の外形の上下左右（own）と、動かさない図形の辺の位置（xs＝左右・ys＝上下）。辺どうしの吸着に使う（事業主指示 2026-10-21：グループ化した図形の上辺・右辺が、基準の線にぴったり重なってほしい）。文字・寸法・画像は、辺の位置の対象にしない。 */
+function moveEdgesOf(ids) {
+  const edge = s => visible(s) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image' && s.type !== 'fold' && !s.holeLink;
+  const mine = doc.shapes.filter(s => edge(s) && ids.has(s.id)), others = doc.shapes.filter(s => edge(s) && !ids.has(s.id)); if (!mine.length || !others.length) return null;
+  const box = list => list.map(bboxOf).reduce((b, c) => b ? { minX: Math.min(b.minX, c.minX), minY: Math.min(b.minY, c.minY), maxX: Math.max(b.maxX, c.maxX), maxY: Math.max(b.maxY, c.maxY) } : { ...c }, null);
+  const xs = [], ys = []; for (const s of others) { const b = bboxOf(s); xs.push(b.minX, b.maxX); ys.push(b.minY, b.maxY); }
+  return { own: box(mine), xs, ys };
+}
+/** ドラッグ中の位置 d（動かした量）に対し、動かす図形の左右の辺・上下の辺が、ほかの辺の位置に近ければ、縦と横を別々に合わせる。合った辺は gesture.edgeSnap（{x,y}）に覚えて、目安線を描く。lockX／lockY：その向きは動かさない（Shift）。 */
+function snapEdges(d, lockX, lockY) {
+  const e = gesture.edges, reach = magnetRadiusMm(); gesture.edgeSnap = null; if (!e || !(reach > 0)) return d;
+  const pick = (cands, targets) => { let best = null, bd = reach; for (const c of cands) for (const t of targets) { const dd = Math.abs(t - c.v); if (dd < bd) { bd = dd; best = { fix: t - c.v, at: t }; } } return best; };
+  const bx = lockX ? null : pick([{ v: e.own.minX + d.x }, { v: e.own.maxX + d.x }], e.xs), by = lockY ? null : pick([{ v: e.own.minY + d.y }, { v: e.own.maxY + d.y }], e.ys);
+  if (bx || by) gesture.edgeSnap = { x: bx ? bx.at : undefined, y: by ? by.at : undefined };
+  return { x: d.x + (bx ? bx.fix : 0), y: d.y + (by ? by.fix : 0) };
 }
 function moveDelta() { return { x: cursor.x - gesture.start.x, y: cursor.y - gesture.start.y }; }
 function movePosition(p, shift) {
-  const start = gesture.start;
+  const start = gesture.start; gesture.edgeSnap = null;
   if (gesture.hasBase && gesture.targets?.length && !shift) { const reach = magnetRadiusMm(); let near = reach, hit = null; for (const c of gesture.targets) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } if (hit) { snap = hit; return { ...hit }; } } /* 基点を持って動かしているとき：相手の点の近くでは、基点がその点にぴたりと合う */
   const own = gesture.mine, tg = gesture.targets, reachMm = magnetRadiusMm();
   if (own?.length && tg?.length && reachMm > 0 && own.length * tg.length <= 4e5 && (!gesture.hasBase || shift)) { /* 動かす図形の点（端・中点・中心）のどれかが、相手の点に近づいたら、ぴたりと合わせる。Shift（水平・垂直）のときは、動かせる向きの位置だけを合わせる */
@@ -5443,7 +5469,9 @@ function movePosition(p, shift) {
       if (d < best) { best = d; result = { ...target }; }
     }
   }
-  if (shift) { if (Math.abs(p.x - start.x) >= Math.abs(p.y - start.y)) result.y = start.y; else result.x = start.x; }
+  let lockX = false, lockY = false;
+  if (shift) { if (Math.abs(p.x - start.x) >= Math.abs(p.y - start.y)) { result.y = start.y; lockY = true; } else { result.x = start.x; lockX = true; } }
+  if (gesture.edges) { const d = snapEdges({ x: result.x - start.x, y: result.y - start.y }, lockX, lockY); result = { x: start.x + d.x, y: start.y + d.y }; }   /* 辺どうしの吸着（点どうしの磁石が先。グリッドの吸着が入っていても、辺が吸着距離内ならそちらへ合わせる＝既定でグリッド入りのため） */
   return result;
 }
 /** ドラッグ中の図形の見た目（動かす・線の端・節点・矩形の取っ手・回す）。寸法が追従する端の位置を、ドラッグ中の位置から求めるために使う。 */
@@ -5827,7 +5855,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
