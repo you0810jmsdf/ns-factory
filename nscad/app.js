@@ -4279,6 +4279,35 @@ function drawRectHandles() {
   rectHandlePoints(b).forEach((h, i) => { const z = (g || i === rectHot ? 6 : 4.5) * k; ctx.fillStyle = g || i === rectHot ? '#f0b429' : 'rgba(240,180,41,.6)'; ctx.strokeStyle = '#000'; ctx.fillRect(h.x - z, h.y - z, 2 * z, 2 * z); ctx.strokeRect(h.x - z, h.y - z, 2 * z, 2 * z); });
   ctx.restore();
 }
+/** 文字の取っ手（事業主要望 2026-10-21「入力後のテキストを図で直接拡大縮小したい」）：文字を1つだけ選んでいる間（選択・文字ツール）、文字の枠（点線）と右上の角に取っ手が出る。
+ *  角をつかんで引くと、左下の基準点（文字の置き場所）を固定したまま、角が対角線の方向に付いてくる大きさ（0.1mm 単位・最小 0.5mm）になる。離すと確定（元に戻すは1回）。回転した文字は、角も一緒に回る。 */
+function textWidthMm(s) {
+  let w = NaN; try { ctx.save(); ctx.font = `${s.sizeMm}px system-ui, sans-serif`; w = ctx.measureText?.(s.text)?.width; ctx.restore(); } catch { /* 測れない環境では概算 */ }
+  return Number.isFinite(w) && w > 0 ? w : Math.max(0.6, 0.6 * [...s.text].length) * s.sizeMm;   /* 描くときと同じ書体で実測する（日本語は1文字が大きさと同じ幅） */
+}
+const selectedText = () => (mode === 'select' || mode === 'text') && !exporting && selected.size === 1 ? (sh => sh && sh.type === 'text' ? sh : null)(doc.shapes.find(x => selected.has(x.id) && editable(x))) : null;
+/** 文字の枠の4つの角（左下の基準点から見て 左上・右上・右下・左下）を、回転も含めた図面の座標で。大きさ size は、枠をその大きさに縮尺したときのもの（幅は大きさに比例）。 */
+function textFrame(s, size = s.sizeMm) {
+  const w = textWidthMm(s) * size / s.sizeMm, at = (dx, dy) => rotate({ x: s.x + dx, y: s.y + dy }, s.angleDeg, s);
+  return { tl: at(0, -size), tr: at(w, -size), br: at(w, size * 0.25), bl: at(0, size * 0.25) };
+}
+function textHandleHit(w) {
+  const sh = selectedText(); if (!sh) return null; const corner = textFrame(sh).tr;
+  return distance(corner, w) <= 9 / scale ? { shape: sh, corner } : null;
+}
+/** つかんだ角の位置から、新しい大きさ：基準点からカーソルへの向きを、はじめの対角線（基準点→角）に射影した割合を、元の大きさにかける。 */
+function textSizeFrom(g, sh, c) {
+  const v = { x: c.x - sh.x, y: c.y - sh.y }, d = g.d0, k = (v.x * d.x + v.y * d.y) / (d.x * d.x + d.y * d.y);
+  return Math.max(0.5, Math.round(g.size0 * k * 10) / 10);
+}
+let textHot = false;
+function drawTextHandle() {
+  const g = gesture?.kind === 'textR' ? gesture : null, sh = g ? doc.shapes.find(x => x.id === g.id) : selectedText(); if (!sh) return; const k = 1 / scale, f = textFrame(sh, g ? g.size : sh.sizeMm);
+  ctx.save(); ctx.setLineDash([4 * k, 3 * k]); ctx.lineWidth = 1 * k; ctx.strokeStyle = g ? '#f0b429' : 'rgba(240,180,41,.55)';
+  ctx.beginPath(); ctx.moveTo(f.tl.x, f.tl.y); ctx.lineTo(f.tr.x, f.tr.y); ctx.lineTo(f.br.x, f.br.y); ctx.lineTo(f.bl.x, f.bl.y); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+  const z = (g || textHot ? 6 : 4.5) * k; ctx.fillStyle = g || textHot ? '#f0b429' : 'rgba(240,180,41,.6)'; ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5 * k; ctx.fillRect(f.tr.x - z, f.tr.y - z, 2 * z, 2 * z); ctx.strokeRect(f.tr.x - z, f.tr.y - z, 2 * z, 2 * z);
+  ctx.restore();
+}
 /** 縫い穴が付いている矩形か（穴を壊さないよう、大きさを変えない）。 */
 const rectHasHoles = sh => doc.paths.some(pt => pt.shapeIds.includes(sh.id) && doc.holes.some(h => h.pathId === pt.id));
 /** 矩形の大きさの小窓（事業主指示 2026-10-21「矩形を選択したら寸法を指定できる窓」）：縦横に平らな矩形を1つだけ選んでいる間、画面上部に「幅・高さ（mm）」を出す。
@@ -5501,6 +5530,7 @@ function liveDimension(d) {
   return { ...d, x1: p.x, y1: p.y, x2: q.x, y2: q.y };
 }
 function previewMoved(s, owner = s.id) {
+  if (gesture?.kind === 'textR' && gesture.id === s.id) return { ...s, sizeMm: gesture.size };   /* 文字の取っ手を引いている間の大きさ */
   if (gesture?.kind !== 'move' || !gesture.ids.has(owner)) return s;
   const d = moveDelta(); return translate(s, d.x, d.y);
 }
@@ -5920,7 +5950,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawRotateHandle();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawRotateHandle();
   updateUI();
 }
 function resize() {
@@ -5984,6 +6014,7 @@ canvas.addEventListener('pointerdown', e => {
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if ((mode === 'select' || mode === 'text') && e.button === 0) { const th = textHandleHit(world(p)); if (th) { const sh = th.shape; gesture = { kind: 'textR', id: sh.id, size0: sh.sizeMm, size: sh.sizeMm, d0: { x: th.corner.x - sh.x, y: th.corner.y - sh.y } }; $('hint').textContent = t('textDrag', { size: circleNum(sh.sizeMm) }); draw(); return; } }   /* 文字の取っ手：文字ツールでも、新しい文字を置かずに大きさを変える */
   if (mode === 'paint') { paintClick(world(p), e.altKey); return; }   /* 塗りモード：クリックで塗る・Alt＋クリックで色を拾う */
   if (mode === 'attach') { attachClick(world(p)); return; }   /* 線に着ける：クリックした本体の線に、選んだ金具を着ける */
   if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
@@ -6072,7 +6103,9 @@ canvas.addEventListener('pointermove', e => {
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
   if (gesture?.kind === 'rotate') { const c = world(p); cursor = c; gesture.cursor = c; gesture.angle = rotateAngleNow(gesture, c, e.shiftKey); $('hint').textContent = t('rotDrag', { a: gesture.angle }); draw(); return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
+  if (gesture?.kind === 'textR') { const c = world(p), sh = doc.shapes.find(x => x.id === gesture.id); cursor = c; if (sh) { gesture.size = textSizeFrom(gesture, sh, c); $('hint').textContent = t('textDrag', { size: circleNum(gesture.size) }); } draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
+  if (!gesture && (mode === 'select' || mode === 'text')) { const hot = !!textHandleHit(world(p)); if (hot !== textHot) { textHot = hot; canvas.style.cursor = hot ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = circleHandleHit(world(p))?.k ?? null; if (hot !== circleHot) { circleHot = hot; canvas.style.cursor = hot !== null ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
@@ -6178,6 +6211,7 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
   if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c), { rotates: true }); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
+  if (g.kind === 'textR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.size - sh.sizeMm) > 1e-9) { commit(() => { sh.sizeMm = g.size; }); $('hint').textContent = t('textResized', { size: circleNum(g.size) }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
   if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
   } else if (g.kind === 'pen') {
