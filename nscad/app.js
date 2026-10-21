@@ -5258,6 +5258,8 @@ function roundPolylineCorners(poly, only, r, kind) {
 const holeIsMark = h => { const p = doc.paths.find(q => q.id === h.pathId), tool = doc.tools.find(q => q.id === h.toolId); return !![h.mark, p?.mark, doc.mark, tool?.mark].find(m => m && m !== 'tool'); };
 /** 丸め・面取りでできない理由：対象の線に、縫い穴（目印でない穴）がある。目印だけなら丸められる（目印は残る）。 */
 /** 丸め・面取りの前に、菱目（縫い穴）の付いた経路の、今の形を覚える（事業主要望 2026-10-21「点線の角を丸められない」：菱目が1つ付いているだけで断っていた）。断らない：菱目は今の位置のまま残し、角を切り取った部分の菱目だけ消す（reattachMarks）。経路の区間（from・to）は、この形をもとに、新しい長さへ直す。 */
+/** 丸め・面取りで、作り直す・足す図形が引き継ぐ、元の図形の見た目（線種・色・グループ）。事業主指摘 2026-10-21「菱目を打った瞬間に実線に変わった」：丸めで作り直した線・円弧が、点線・色を引き継がず、実線になっていた。 */
+const roundStyle = s => ({ ...(s?.color ? { color: s.color } : {}), ...(s?.lineStyle ? { lineStyle: s.lineStyle } : {}), ...(s?.groupId ? { groupId: s.groupId } : {}) });
 let roundOldRoutes = new Map(), roundHoleChoice = null, roundHolePending = null;
 /** 縫い穴（菱目）の付いた線を丸め・面取りするときは、実行の前に小さな窓で聞く（事業主決定 2026-10-21 C案）：そのまま残す／打ち直す／消す／やめる。again＝選んだあとに、同じ操作をもう一度やり直す関数。窓を出したら true（呼び出し元は、そこで止める）。 */
 function roundPrepare(pathIds, again) {
@@ -5310,7 +5312,7 @@ function roundPolylineAt(poly, p) {
   if (!shapes) { $('hint').textContent = t('impossible'); return; }
   commit(() => {
     doc.shapes = doc.shapes.filter(s => s.id !== poly.id);
-    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...s, id, layer: poly.layer }); return id; }); reattachMarks(affected, new Map([[poly.id, ids]]));
+    const ids = shapes.map(s => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...roundStyle(poly), ...s, id, layer: poly.layer }); return id; }); reattachMarks(affected, new Map([[poly.id, ids]]));
     for (const part of doc.parts) if (part.shapeIds.includes(poly.id)) part.shapeIds = [...part.shapeIds.filter(x => x !== poly.id), ...ids];
     selected = new Set(ids);
   });
@@ -5443,7 +5445,7 @@ function reroundArc(arc) {
   const upd = (n, pt) => back(n.o, { ...n.l, ['x' + n.end]: pt.x, ['y' + n.end]: pt.y });
   commit(() => {
     const id = freshId(doc.shapes.filter(x => x.id !== arc.id), 's'); const a2 = upd(A, pa), b2 = upd(B, pb);
-    doc.shapes = doc.shapes.filter(x => x.id !== arc.id).map(x => x.id === A.o.id ? a2 : x.id === B.o.id ? b2 : x); doc.shapes.push({ ...na, id, layer: arc.layer });
+    doc.shapes = doc.shapes.filter(x => x.id !== arc.id).map(x => x.id === A.o.id ? a2 : x.id === B.o.id ? b2 : x); doc.shapes.push({ ...roundStyle(arc), ...na, id, layer: arc.layer });
     for (const part of doc.parts) if (part.shapeIds.includes(arc.id)) part.shapeIds = part.shapeIds.map(x => x === arc.id ? id : x);
     reattachMarks(affected, new Map([[arc.id, [id]]])); selected = new Set([A.o.id, B.o.id, id]);
   });
@@ -5459,8 +5461,8 @@ function curveFillet(first, pFirst, hit, p) {
   cancel();
   commit(() => {
     const id = freshId(doc.shapes, 's');
-    doc.shapes = doc.shapes.map(x => x.id === first.id ? { ...res.a, id: first.id, layer: first.layer } : x.id === hit.id ? { ...res.b, id: hit.id, layer: hit.layer } : x);
-    doc.shapes.push({ ...res.arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
+    doc.shapes = doc.shapes.map(x => x.id === first.id ? { ...roundStyle(first), ...res.a, id: first.id, layer: first.layer } : x.id === hit.id ? { ...roundStyle(hit), ...res.b, id: hit.id, layer: hit.layer } : x);
+    doc.shapes.push({ ...roundStyle(first), ...res.arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id);
     reattachMarks(affected);
   });
@@ -5483,7 +5485,7 @@ function applyRoundChain(first, hit, res, ch, affectedPaths) {
   cancel();
   commit(() => {
     doc.shapes = doc.shapes.filter(s => !removed.has(s.id)).map(s => edits.has(s.id) ? trimmed(s) : s);
-    doc.shapes.push({ ...res.arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id].filter(x => !removed.has(x)));
+    doc.shapes.push({ ...roundStyle(first), ...res.arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id].filter(x => !removed.has(x)));
     for (const q of doc.paths) { if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); q.shapeIds = q.shapeIds.filter(x => !removed.has(x)); }
     doc.paths = doc.paths.filter(q => q.shapeIds.length);
     reattachMarks(affectedPaths);
@@ -5535,7 +5537,7 @@ function editAt(p) {
   commit(() => {
     doc.shapes = doc.shapes.map(s => s.id === first.id ? a : s.id === hit.id ? b : s);
     if (old) { doc.shapes = doc.shapes.filter(s => s.id !== old.id); for (const part of doc.parts) if (part.shapeIds.includes(old.id)) part.shapeIds = part.shapeIds.filter(x => x !== old.id); for (const q of doc.paths) if (q.shapeIds.includes(old.id)) q.shapeIds = q.shapeIds.filter(x => x !== old.id); }
-    doc.shapes.push({ ...arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
+    doc.shapes.push({ ...roundStyle(first), ...arc, id, layer: first.layer }); selected = new Set([first.id, hit.id, id]);
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); /* 2本が同じ線なら、間にできた円弧も同じ線に入れる */
     reattachMarks(affectedPaths);
   });
