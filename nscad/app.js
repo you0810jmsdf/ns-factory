@@ -727,7 +727,9 @@ let stitchTab = 0, stitchRouteChoices = { n: 1, i: 0 }, stitchLastW = null;
 function pickStitchPair(near) {
   const all = near.map(c => ({ c, first: countStage.list.find(f => f.key === c.key) })).filter(x => x.first && Math.abs(x.first.s - x.c.s) > 1e-6);
   if (!all.length) { stitchRouteChoices = { n: 1, i: 0 }; return null; }
-  const tier = x => Math.round(x.c.dist * scale * 2), top = Math.min(...all.map(tier)), tied = all.filter(x => tier(x) === top), i = ((stitchTab % tied.length) + tied.length) % tied.length;
+  /* 前の続き：始点が、その経路にすでに打った穴・区間の端になっているもの（事業主指摘 2026-10-21「菱目を打った終点の続きから打つとき、思うガイドライン上に打てない」：つなぎ目で同じ近さの経路が複数あると、後から引いた線が選ばれ、前に打った経路の続きに打てなかった）。同じ近さのなかでは、先にする。 */
+  const cont = x => { const st = x.first.state; return st.fresh === false && (doc.holes.some(h => h.pathId === st.saved.id && distance(h, x.first.p) < 0.5) || st.saved.segments.some(sg => Math.abs(sg.to - x.first.s) < 0.05 || Math.abs(sg.from - x.first.s) < 0.05)); };
+  const tier = x => Math.round(x.c.dist * scale * 2), top = Math.min(...all.map(tier)), tied = all.filter(x => tier(x) === top).sort((p, q) => cont(q) - cont(p)), i = ((stitchTab % tied.length) + tied.length) % tied.length;
   stitchRouteChoices = { n: tied.length, i }; return tied[i];
 }
 function rangeStitchClick(w, flip = false) {
