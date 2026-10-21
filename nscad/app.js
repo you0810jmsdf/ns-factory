@@ -49,7 +49,7 @@ import { createRegistration, regIsOwner } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, fillRegionPattern, patchAngleRatio, rimLine, rimHolePositions, loopSampler, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, gridFillRegion, fillRegionPattern, patchAngleRatio, rimLine, rimHolePositions, loopSampler, PATCH_PATTERNS, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1997,11 +1997,28 @@ function suggestSizes() {
   const list = suggestPatchSize({ targetW: Number($('patchTargetW').value) || 40, targetH: Number($('patchTargetH').value) || 40, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5 });
   $('patchSuggest').textContent = list.map((c, i) => t('patchCandidate', { i: i + 1, nw: c.nW, nh: c.nH, fw: c.finishedW.toFixed(1), fh: c.finishedH.toFixed(1), cw: c.cutW.toFixed(1), ch: c.cutH.toFixed(1), sq: (c.squareness * 100).toFixed(0) })).join('\n');
 }
+/** 選んだ図形の囲み（つながった閉じた線・点線も可）の中を、列×行のマスで埋める。囲みが無い・2つ以上あるときは、理由を出して何もしない。縫い合わせ・縫い穴・外周の穴は、柄の塗りつぶしと同じ設定（カードのチェック）に従う。 */
+function gridInSelection(cols, rows) {
+  const ids = selectedShapeIds(), regions = outerRegions(closedRegions(doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), 0.01, { dashed: true }));
+  if (!regions.length) { $('hint').textContent = t('gridNoArea'); return; }
+  if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
+  const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
+  const fill = gridFillRegion(regions[0], cols, rows);
+  if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
+  if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
+  if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  patchFillApply(regions[0], fill, layer, null);
+}
 function makeGrid() {
   const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
   if (!(cols >= 1) || !(rows >= 1)) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); return; }   /* マイナスの数で 0 ピースを「作りました」と出さない（事業主指摘 2026-10-21 不具合記録 1532「パッチワークの格子が作図できない」） */
-  const grid = patchGrid({ cols, rows, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, pieceW: Number($('patchTargetW').value) || 40, pieceH: Number($('patchTargetH').value) || 40, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5, origin: { x: 0, y: 0 } });
+  /* 図形を選んでいるときは、その囲み（つながった閉じた線）の中を、列×行のマスで埋める（事業主指示 2026-10-21「格子を作りたいエリア（線）を選んだのに、関係ない所に別のピースができた」案 A）。何も選んでいないときは、別々のピースを画面の中央に作る */
+  if (selectedShapeIds().size) { gridInSelection(cols, rows); return; }
+  const gridArgs = { cols, rows, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, pieceW: Number($('patchTargetW').value) || 40, pieceH: Number($('patchTargetH').value) || 40, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5, gapMm: 6 };
+  let grid = patchGrid({ ...gridArgs, origin: { x: 0, y: 0 } });
   if (!grid) { $('hint').textContent = t('invalidNumber'); return; }
+  const centre = world({ x: width / 2, y: height / 2 }), totalW = Math.ceil(cols) * (grid.size.cutW + 6) - 6, totalH = Math.ceil(rows) * (grid.size.cutH + 6) - 6;   /* 画面の中央に、全体の真ん中が来るように置く（以前は図面の原点＝関係ない遠い所にできた） */
+  grid = patchGrid({ ...gridArgs, origin: { x: +(centre.x - totalW / 2).toFixed(3), y: +(centre.y - totalH / 2).toFixed(3) } });
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
   cancel();
   commit(() => {
@@ -2075,6 +2092,10 @@ function patchFillAt(p) {
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  patchFillApply(region, fill, layer, p);
+}
+/** 柄・格子のピース（fill）を、囲み（region）の中に描く。縫い合わせ（縫い線・縫い穴）・外周の穴は、カードの設定に従う。p は柄の塗りつぶしでクリックした点（数値を変えたときの作りなおし用）。格子は null。 */
+function patchFillApply(region, fill, layer, p) {
   const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
   if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
@@ -2115,7 +2136,7 @@ function patchFillAt(p) {
       }
     }
   });
-  renderSeams(); if (undo.length > depth0) lastPatch = { p, before: undo.at(-1) };
+  renderSeams(); if (p && undo.length > depth0) lastPatch = { p, before: undo.at(-1) };
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + rimNote;
 }
@@ -6325,13 +6346,17 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
     const inGroup = doc.shapes.filter(x => visible(x) && editable(x)).reverse().find(x => groupIdOf(x) && selected.has(x.id) && distTo(x, w) <= 7 / scale);
-    if (inGroup && selected.size > 1) { selected = new Set([inGroup.id]); nodeSel = null; draw(); return; } /* グループ全体を選んでいるときのダブルクリック＝中の1つだけを選ぶ */
+    const groupMode = !!inGroup && selected.size > 1;   /* グループ全体を選んでいるときのダブルクリック */
     const s = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
-    const hit = doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distTo(x, w) <= 7 / scale);
+    const hit = groupMode ? inGroup : doc.shapes.filter(x => visible(x) && editable(x) && stitchable(x)).reverse().find(x => distTo(x, w) <= 7 / scale);
     const dashedOf = x => x.lineStyle === 'dashed' || x.layer === 'guide', pool = hit ? doc.shapes.filter(x => visible(x) && stitchable(x) && (!dashedOf(hit) || dashedOf(x))) : [];   /* 点線（ガイド）をダブルクリックしたときは、つながった点線だけ（実線の外形にはつながっていても広げない） */
     const dups = dedupeShapeGroups(pool), repOf = id => dups.repOf.get(id) ?? id;   /* 同じ形で重なった線は1本として数える（重なっていると、つながりがそこで止まるため）。選ぶときは、重なった線も全部 */
     const chainIds = hit ? contourFrom(dups.reps, repOf(hit.id)) : []; /* 分岐点では真っ直ぐ続く線を選んで先へ進み、枝には入らない。端が 0.2mm 以内で離れた所も越える */
     const chain = hit ? { shapeIds: chainIds.flatMap(id => dups.groups.get(id) ?? [id]) } : null;
+    if (groupMode) { /* その線がほかの線とつながっていれば、つながった輪郭全体を選ぶ（事業主指示 2026-10-21 不具合記録 1551「囲みの線をダブルクリックしたのに選べない」「菱目の線をダブルクリックして菱目を消したが半分消えない」：グループの線は中の1つだけになり、輪郭の片側しか選べなかった）。すでにその輪郭を選んでいるとき・つながった線が無いときは、今までどおり中の1つだけ */
+      const ids = (chain?.shapeIds || []).filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); });
+      if (!(ids.length > 1 && !(ids.length === selected.size && ids.every(id => selected.has(id))))) { selected = new Set([inGroup.id]); nodeSel = null; draw(); return; }
+    }
     if (s && !nodeHit(s, w) && distTo(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
       const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : '') + (chainStops ? ' ' + t('chainBranchNote', { n: chainStops.stops.length }) : ''); draw(); }

@@ -248,8 +248,8 @@ export function clipPolygonByConvex(subject, clip) {
   return out.length >= 3 && Math.abs(signedAreaOf(out)) > 1e-9 ? out : [];
 }
 /** 実線だけで囲まれた閉じた経路（連結した線・閉じた折れ線・円など）の多角形を返す。点線（lineStyle 'dashed'）は辺に使わない。 */
-export function closedRegions(shapes, tol = 0.01) {
-  const solid = shapes.filter(s => s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)), out = [];
+export function closedRegions(shapes, tol = 0.01, { dashed = false } = {}) {   /* dashed を true にすると、点線も辺に使う（選んだ線を囲みとして使うとき） */
+  const solid = shapes.filter(s => (dashed || s.lineStyle !== 'dashed') && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)), out = [];
   for (const chain of chainShapes(solid, tol)) {
     if (!chain.closed) continue;
     const pts = [];
@@ -263,6 +263,24 @@ const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.le
 /** 点 p を内側に含む、最も内側（面積最小）の囲まれた図形。無ければ null。 */
 export function regionAt(shapes, p, tol = 0.01) {
   return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;
+}
+/** 閉じた領域（closedRegions の要素）のうち、ほかの領域の内側に入っていない、いちばん外の囲みだけ。 */
+export function outerRegions(regions) { return regions.filter(r => !regions.some(o => o !== r && o.area > r.area + 1e-9 && insidePolygon(r.points[0], o.points))); }
+/** 囲まれた図形（closedRegions の要素）の外枠を、列数 × 行数のマスに等分して、囲みの形で切り抜いたピースを返す（fillRegionPattern と同じ形）。
+ *  マスは長方形で、大きさは「外枠の幅÷列数」×「外枠の高さ÷行数」。囲みが長方形ならちょうど列×行のピース、丸みのある囲みなら、角のピースは丸みの形で切れる。マスの面積比が minAreaRatio 未満の端切れは除く。parity は市松の2色用（(列+行) の偶奇）。 */
+export function gridFillRegion(region, cols, rows, { minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+  const nc = Math.round(cols), nr = Math.round(rows); if (!region || !(nc >= 1) || !(nr >= 1)) return null;
+  if (nc * nr > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: nc * nr };
+  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys), w = (maxX - minX) / nc, h = (maxY - minY) / nr;
+  const pieces = []; let dropped = 0;
+  for (let j = 0; j < nr; j++) for (let i = 0; i < nc; i++) {
+    const x0 = minX + i * w, y0 = minY + j * h, tile = [{ x: x0, y: y0 }, { x: x0 + w, y: y0 }, { x: x0 + w, y: y0 + h }, { x: x0, y: y0 + h }];
+    const clipped = clipPolygonByConvex(region.points, tile); if (!clipped.length) continue;
+    const area = areaOf(clipped), full = w * h;
+    if (area < full * minAreaRatio) { dropped++; continue; }
+    pieces.push({ points: clipped, area, parity: (i + j) % 2, whole: Math.abs(area - full) < 1e-6 });
+  }
+  return { pieces, dropped, tiles: nc * nr };
 }
 /** 柄のずらし量 {x,y}（mm・＋は右・下）を整える：数にならない値は 0。柄がぴったり重なる周期より大きい分は捨てる（結果は同じで、並べる範囲が広がりすぎない）。 */
 export function patchShiftOf(pattern, cell, shift, ratio) {
