@@ -464,7 +464,7 @@
       document.getElementById('doc-type').value         = doc.type;
       document.getElementById('doc-number').value       = doc.number;
       document.getElementById('doc-number-badge').textContent = doc.number;
-      document.getElementById('doc-issue-date').value   = doc.issueDate;
+      document.getElementById('doc-issue-date').value   = toDateInput(doc.issueDate);
       document.getElementById('doc-status').value       = doc.status || '下書き';
       document.getElementById('doc-subject').value      = doc.subject || '';
       document.getElementById('customer-name').value    = doc.customerName || '';
@@ -793,12 +793,38 @@
     }
     try {
       fillPrintArea();
+      setPrintTitle();
       // 印刷ダイアログを起動（ユーザーがPDFとして保存することを想定）
       window.print();
     } catch (e) {
       showToast('印刷プレビュー生成エラー: ' + e.message, 'error');
     }
   }
+
+  // ---- 印刷時のファイル名 ----
+  // 「PDFとして保存」のファイル名は document.title が初期値になる（2026-10-21 事業主指示）。
+  // 例: 20261021_請求書_株式会社ハドル_I-2026-037（年月日は発行日。空なら今日）。
+  // Ctrl+P で印刷したときも同じ名前になるよう beforeprint でも付け、印刷後に元の題名へ戻す。
+  let titleBeforePrint = null;
+  function printFileName() {
+    const doc = buildDocObject();
+    const ymd = (toDateInput(doc.issueDate) || todayStr()).replace(/-/g, '');
+    const label = CONFIG.TYPE_LABEL[doc.type] || '書類';
+    return [ymd, label, doc.customerName, doc.number]
+      .map(s => String(s || '').trim()).filter(Boolean).join('_')
+      .replace(/[\\/:*?"<>|\r\n\t]+/g, '').slice(0, 120);
+  }
+  function setPrintTitle() {
+    if (titleBeforePrint === null) titleBeforePrint = document.title;
+    document.title = printFileName();
+  }
+  function restorePrintTitle() {
+    if (titleBeforePrint === null) return;
+    document.title = titleBeforePrint;
+    titleBeforePrint = null;
+  }
+  window.addEventListener('beforeprint', setPrintTitle);
+  window.addEventListener('afterprint', restorePrintTitle);
 
   // PDF保存ボタンも実体は同じ（印刷ダイアログから「PDFとして保存」を選ぶ）
   function downloadPdf() {
@@ -819,6 +845,22 @@
   }
 
   // ---- ヘルパー ----
+  // 台帳の発行日は Sheets が日付として持つため「Wed Oct 21 2026 00:00:00 GMT+0900 (日本標準時)」の形で返る。
+  // <input type="date"> は YYYY-MM-DD しか受け付けず空欄になり、登録済みの書類を開いて印刷すると
+  // 発行日なしの書類になっていた（2026-10-21 I-2026-037）。読める形なら YYYY-MM-DD にそろえる。
+  function toDateInput(v) {
+    const s = String(v || '').trim();
+    if (!s) return '';
+    let m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+    if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+    const MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+    m = s.match(/^[A-Za-z]{3} ([A-Za-z]{3}) (\d{1,2}) (\d{4})/);
+    if (m && MON[m[1]]) return m[3] + '-' + String(MON[m[1]]).padStart(2, '0') + '-' + m[2].padStart(2, '0');
+    const d = new Date(s);
+    if (isNaN(d)) return '';
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
   function todayStr() {
     const d = new Date();
     const y = d.getFullYear();
