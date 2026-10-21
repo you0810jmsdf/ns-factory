@@ -340,10 +340,14 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   body { background: #fff !important; margin: 0; padding: 0; }
 
   /* 印刷エリアを表示 */
+  /* 余白は @page ではなく書類の内側に持つ（2026-10-21 事業主決定）。
+     @page に余白があると、ブラウザがそこへ日時・題名・URL（ヘッダーとフッター）を印字する。
+     ページ余白を0にすれば印字する場所がなくなり、印刷画面の設定を変えなくて済む。 */
   #print-area {
     display: block !important;
     width: 100%;
-    padding: 0;
+    box-sizing: border-box;
+    padding: 18mm 16mm 14mm 16mm;
     margin: 0;
     color: #000;
     font-family: 'Zen Old Mincho', 'Noto Sans JP', sans-serif;
@@ -353,7 +357,7 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
 
   @page {
     size: A4 portrait;
-    margin: 18mm 16mm 14mm 16mm;
+    margin: 0;
   }
 }
 
