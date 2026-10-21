@@ -5591,7 +5591,9 @@ function intersectionSnapAt(p) {
 /** 作図中のカーソル p が、「中心」の点（辺の中点・円弧の中点・円や円弧の中心・小さな輪の中心）の近く（画面で 40px 以内＝ひし形の印が出る範囲）にあるとき、その点の縦の線・横の線に 10px（吸着距離）以内なら、そろえる（事業主指摘 2026-10-21「どうみても中心点からずれる」：印から離れた所では、1mm 刻みのグリッドに丸められて、中心から 0.4mm ずれていた）。縦（x）と横（y）は別々。端点にはそろえない。 */
 function alignToCenters(p) {
   const reach = magnetRadiusMm(); if (!(reach > 0)) return null; const see = 40 / scale; let bx = null, by = null;
+  const self = gesture?.kind === 'lineEnd' ? doc.shapes.find(x => x.id === gesture.id) : null, ownMid = self?.type === 'line' ? { x: (self.x1 + self.x2) / 2, y: (self.y1 + self.y2) / 2 } : null;   /* 端を引いている線の、自分の（元の）中点にはそろえない */
   for (const c of [...magnetMids, ...magnetCenters]) {
+    if (ownMid && Math.abs(c.x - ownMid.x) < 1e-6 && Math.abs(c.y - ownMid.y) < 1e-6) continue;
     if (distance(p, c) > see) continue; const dx = Math.abs(p.x - c.x), dy = Math.abs(p.y - c.y);
     if (dx <= reach && (!bx || dx < bx.d)) bx = { d: dx, c }; if (dy <= reach && (!by || dy < by.d)) by = { d: dy, c };
   }
@@ -5617,7 +5619,7 @@ function snapped(p, shift, anchor) {
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
   if (!snap && (mode === 'ruler' || mode === 'dimension' || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
-  const al = !snap && MAGNET_DRAW_MODES.includes(mode) ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
+  const al = !snap && (MAGNET_DRAW_MODES.includes(mode) || gesture?.kind === 'lineEnd') ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
   if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
@@ -5824,8 +5826,17 @@ function lineEndRetracted(s, g) {
   return doc.shapes.some(x => x.id !== s.id && visible(x) && !['text', 'dimension', 'image'].includes(x.type) && distTo(x, g.fixed) <= 1e-3);
 }
 /** 端をドラッグ中のカーソル位置。Shift：直線＝動かさない側の端から元の向きの線の上（水平・垂直の線なら水平・垂直のまま）、折れ線の角＝元の位置から水平か垂直（近い方）だけ。円弧は角度だけが変わる。 */
+/** 中心にそろったとき（事業主決定 2026-10-21 B案「端の取っ手も中心へそろえる」）：延長線が、そろえた縦線（x）・横線（y）と交わる点で、カーソルの近く（12px 以内）なら、その点（線はまっすぐなまま）。交わらない・遠いとき（斜めの線を中心の縦線へ引き寄せるなど）は null＝そろえた位置そのまま。 */
+function alignOnExtension(g, w, al) {
+  if ((al.x === undefined) === (al.y === undefined)) return null;   /* 縦横の両方がそろったとき（点そのもの）は、そのまま */
+  const k = al.x !== undefined ? 'x' : 'y'; if (!(Math.abs(g.dir[k]) > 1e-6)) return null;
+  const t = (al[k] - g.fixed[k]) / g.dir[k], q = { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t };
+  return distance(q, w) <= 12 / scale ? q : null;
+}
 function lineEndCursor(g, w, shift) {
-  const sp = snapped(w, false, null); if (!shift) return g.dir ? extensionSnap(g.fixed, g.dir, w, sp) : sp;
+  const sp = snapped(w, false, null);
+  if (!shift && g.dir && snapAlign) return alignOnExtension(g, w, snapAlign) || sp;   /* 中心にそろったときは、元の向きより中心を優先 */
+  if (!shift) return g.dir ? extensionSnap(g.fixed, g.dir, w, sp) : sp;
   if (g.dir) { const t = (sp.x - g.fixed.x) * g.dir.x + (sp.y - g.fixed.y) * g.dir.y; return { x: g.fixed.x + g.dir.x * t, y: g.fixed.y + g.dir.y * t }; }
   if (g.orig) return Math.abs(sp.x - g.orig.x) >= Math.abs(sp.y - g.orig.y) ? { x: sp.x, y: g.orig.y } : { x: g.orig.x, y: sp.y };
   return sp;
@@ -6013,7 +6024,7 @@ function drawSheetBody(lo, hi) {
     ctx.fillRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y); ctx.strokeRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y);
   }
   ctx.setLineDash([]);
-  if (snapAlign && mode !== 'select' && !exporting) {   /* 中心の点にそろえているとき：その点から、そろえた位置まで、細い水色の点線 */
+  if (snapAlign && (mode !== 'select' || gesture?.kind === 'lineEnd') && !exporting) {   /* 中心の点にそろえているとき：その点から、そろえた位置まで、細い水色の点線 */
     ctx.save(); ctx.setLineDash([5 / scale, 4 / scale]); ctx.strokeStyle = '#4fd0ff'; ctx.lineWidth = 1 / scale; ctx.beginPath();
     if (snapAlign.x !== undefined) { ctx.moveTo(snapAlign.fromX.x, snapAlign.fromX.y); ctx.lineTo(snapAlign.x, cursor.y); }
     if (snapAlign.y !== undefined) { ctx.moveTo(snapAlign.fromY.x, snapAlign.fromY.y); ctx.lineTo(cursor.x, snapAlign.y); }
