@@ -18,6 +18,9 @@
  * 守り
  *   - 値は画面に出さない（文字数だけ）。画面の文字はすべて textContent で入れる（封筒の中身を HTML として解釈しない）。
  *   - 自動で取り込まない。更新（既存のパスワードの差し替え）は最初は未チェック。
+ *   - メモ専用（payload.mode === 'memo'・2026-10-21）: パスワードを持たない。同名の既存項目に、種別「メモ・注意」の履歴行を足すだけ
+ *     （既存の行・パスワードは変えない）。同名が無いときは新規を作らず、最初は未チェックで警告する。メモの全文は確認画面に出す
+ *     （伏せるのは秘密の値だけ）。古いアプリはこの形を「開けない封筒」として箱に残す（パスワードも ID も無いため）。
  *   - 開けない封筒は箱に残す（自動で消さない）。
  *   - 同期が成功していないときは、鍵を作らず箱も見ない。公開鍵を登録するのは、鍵を含む金庫を中継へ送れたあと。
  *   - Worker に登録されている公開鍵が自分の鍵でなければ警告する（公開鍵の差し替えの検知）。
@@ -32,6 +35,8 @@ const Inbox = (() => {
   const SALT = 'pn-inbox-v1';
   const PAD_BLOCK = 512;
   const SEEN_MAX = 300;
+  const MEMO_NOTE_MAX = 2000;   // メモ専用の1行の長さ（秘密の値のメモは500字のまま）
+  const MEMO_ROWS_MAX = 5;
   const TYPES = ['website', 'app', 'service', 'other'];
   const te = new TextEncoder();
   const td = new TextDecoder();
@@ -126,16 +131,26 @@ const Inbox = (() => {
     if (!p || typeof p !== 'object' || Array.isArray(p)) return null;
     const title = cleanStr(p.title, 100).trim();
     if (!title) return null;
-    if (!Array.isArray(p.history) || p.history.length < 1 || p.history.length > 30) return null;
+    if (p.mode !== undefined && p.mode !== 'memo') return null;   // 知らない種類は開けない封筒として箱に残す
+    const memo = p.mode === 'memo';
+    if (!Array.isArray(p.history) || p.history.length < 1 || p.history.length > (memo ? MEMO_ROWS_MAX : 30)) return null;
     const history = [];
     for (const h of p.history) {
       if (!h || typeof h !== 'object') return null;
       const password = typeof h.password === 'string' ? h.password : '';
       if (password.length > 8000) return null;
-      history.push({ username: cleanStr(h.username, 200), password, note: cleanStr(h.note, 500) });
+      if (memo) {
+        // メモ専用の行には ID もパスワードも入れない（入っていたら、秘密として扱うべき内容なので受けない）
+        const note = cleanStr(h.note, MEMO_NOTE_MAX).replace(/\r\n?/g, '\n').trim();
+        if (!note || password || cleanStr(h.username, 200)) return null;
+        history.push({ username: '', password: '', note });
+      } else {
+        history.push({ username: cleanStr(h.username, 200), password, note: cleanStr(h.note, 500) });
+      }
     }
-    if (!history.some(h => h.password || h.username)) return null;
+    if (!memo && !history.some(h => h.password || h.username)) return null;
     return {
+      ...(memo ? { mode: 'memo' } : {}),
       title,
       type: TYPES.includes(p.type) ? p.type : 'service',
       url: cleanStr(p.url, 300).trim(),
@@ -217,9 +232,37 @@ const Inbox = (() => {
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
-  /** 既存の項目（サービス名が同じ）と照らして new / changed / same を返す */
+  /** メモ専用の項目名の照合用（全角半角・空白・大文字小文字の違いを吸収） */
+  function titleKey(t) { return String(t || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase(); }
+
+  /** 取り込み先の既存の項目。秘密は従来どおり完全一致。メモ専用は完全一致を先に、なければ表記ゆれを吸収して探す。 */
+  function findEntry(item) {
+    const entries = vault.entries || [];
+    const exact = entries.find(e => e.title === item.title) || null;
+    if (exact || item.mode !== 'memo') return exact;
+    const k = titleKey(item.title);
+    return k ? (entries.find(e => titleKey(e.title) === k) || null) : null;
+  }
+
+  /** 同名の項目が無いとき、名前の近い既存の項目（最大3件）。名前の違いに気付けるように画面へ出す。 */
+  function similarTitles(title) {
+    const k = titleKey(title);
+    if (k.length < 2) return [];
+    return (vault.entries || []).map(e => e.title).filter(t => { const tk = titleKey(t); return tk && (tk.includes(k) || k.includes(tk)); }).slice(0, 3);
+  }
+
+  const lf = v => String(v || '').replace(/\r\n?/g, '\n');
+
+  /** 既存の項目（サービス名が同じ）と照らして new / changed / same を返す。メモ専用は memo-add / memo-new / same。 */
   function classify(item) {
-    const entry = (vault.entries || []).find(e => e.title === item.title) || null;
+    if (item.mode === 'memo') {
+      const e = findEntry(item);
+      if (!e) return { status: 'memo-new', entryId: null, similar: similarTitles(item.title) };
+      // 同じメモがもう履歴にある（取り込み後の送り直し・手で貼ったあと）なら、変更なし
+      const have = item.history.every(m => (e.history || []).some(h => lf(h.note).startsWith(m.note)));
+      return { status: have ? 'same' : 'memo-add', entryId: e.id };
+    }
+    const entry = findEntry(item);
     if (!entry) return { status: 'new', entryId: null };
     const cur = typeof getLatestCreds === 'function' ? getLatestCreds(entry) : null;
     const last = item.history[item.history.length - 1];
@@ -229,11 +272,26 @@ const Inbox = (() => {
 
   function provenance(item, today) { return '受け取り箱から（出所：' + item.src + '・' + today + '）'; }
 
-  /** 1件を金庫に反映する（保存は呼び出し側）。同名のサービスは履歴に「パスワード変更」の行を足す。 */
+  /** 1件を金庫に反映する（保存は呼び出し側）。同名のサービスは履歴に「パスワード変更」の行を足す。メモ専用は「メモ・注意」の行を足す。 */
   function applyOne(r, today) {
     const item = r.item;
     const prov = provenance(item, today);
-    const entry = (vault.entries || []).find(e => e.title === item.title) || null;
+    const entry = findEntry(item);
+    if (item.mode === 'memo') {
+      const rows = item.history.map(h => ({ id: uuid(), date: today, type: 'other', username: '', password: '', note: h.note + '\n' + prov }));
+      if (!entry) {
+        vault.entries.unshift({
+          id: uuid(), type: item.type, title: item.title, owner: item.owner, url: item.url,
+          description: item.description ? item.description + '\n' + prov : prov,
+          createdAt: now(), updatedAt: now(), history: rows,
+        });
+        return 'added';
+      }
+      entry.history = entry.history || [];
+      for (const row of rows) entry.history.push(row);   // 既存の行・パスワード・説明は変えない
+      entry.updatedAt = now();
+      return 'memo';
+    }
     if (!entry) {
       vault.entries.unshift({
         id: uuid(), type: item.type, title: item.title, owner: item.owner, url: item.url,
@@ -326,7 +384,7 @@ const Inbox = (() => {
       if (!item) { unreadable++; continue; }
       const c = classify(item);
       if (c.status === 'same') { cleanupSame.push(it.id); continue; }   // 金庫にすでに同じ値がある
-      ready.push({ id: it.id, item, status: c.status });
+      ready.push({ id: it.id, item, status: c.status, similar: c.similar });
     }
 
     // 片付け: すでに同じ値が金庫にあるもの／取り込み済みで削除し損ねたもの（同期が済んでいるときだけ）
@@ -365,8 +423,8 @@ const Inbox = (() => {
   async function doImport(chosen, leftCount) {
     if (!enabled()) return;
     const today = localToday();
-    let added = 0, changed = 0;
-    for (const r of chosen) { if (applyOne(r, today) === 'added') added++; else changed++; }
+    let added = 0, changed = 0, memos = 0;
+    for (const r of chosen) { const k = applyOne(r, today); if (k === 'added') added++; else if (k === 'memo') memos++; else changed++; }
     const box = ib();
     for (const r of chosen) if (!box.seen.includes(r.id)) box.seen.push(r.id);
     box.seen = box.seen.slice(-SEEN_MAX);
@@ -378,7 +436,7 @@ const Inbox = (() => {
     }
     if (typeof renderList === 'function') renderList();
     const clean = await Sync.flushNow();
-    let msg = '受け取り箱から取り込みました（新規 ' + added + '件・更新 ' + changed + '件）';
+    let msg = '受け取り箱から取り込みました（新規 ' + added + '件・更新 ' + changed + '件' + (memos ? '・メモ追加 ' + memos + '件' : '') + '）';
     if (clean) await drop(chosen.map(r => r.id));
     else msg += '。同期が終わったら箱を片付けます';
     if (leftCount) msg += '。未チェックの ' + leftCount + '件は箱に残しました';
@@ -438,14 +496,18 @@ const Inbox = (() => {
     const x = el('button', { type: 'button', class: 'btn-icon', title: 'あとで' }, '×');
     head.appendChild(x);
     const body = el('div', { class: 'modal-body', style: 'gap:12px' });
+    const hasMemo = rows.some(r => r.item.mode === 'memo');
     body.appendChild(el('p', { style: 'font-size:0.85rem;color:var(--text-muted);margin:0' },
-      '新しく届いた内容です。値は伏せています。「取り込む」を押すと金庫に追加され、箱から消えます。心当たりのないものは、チェックを外すか「捨てる」を選んでください。'));
+      '新しく届いた内容です。パスワードなどの値は伏せています' + (hasMemo ? '（メモは全文を表示します）' : '') + '。「取り込む」を押すと金庫に追加され、箱から消えます。心当たりのないものは、チェックを外すか「捨てる」を選んでください。'));
     const list = el('div', { class: 'env-rows' });
     const cbs = [];
     for (const r of rows) {
-      const label = el('label', { class: 'env-row ' + (r.status === 'new' ? 'env-new' : 'env-changed') });
+      const isMemo = r.item.mode === 'memo';
+      const label = el('label', { class: 'env-row ' + (r.status === 'new' || r.status === 'memo-add' ? 'env-new' : 'env-changed') });
+      if (isMemo) label.style.gridTemplateColumns = 'auto minmax(0, 1fr) auto';   // メモ行は本文を横いっぱいに（読みやすさ優先）
       const cb = el('input', { type: 'checkbox' });
-      cb.checked = r.status === 'new';       // 新規は最初からチェック。更新（差し替え）は最初は未チェック
+      // 新規・既存へのメモ追加は最初からチェック。更新（差し替え）と、同名が無いメモは最初は未チェック
+      cb.checked = r.status === 'new' || r.status === 'memo-add';
       cbs.push(cb);
       const key = el('span', { class: 'env-key' }, r.item.title);
       key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--text-muted)' },
@@ -455,10 +517,30 @@ const Inbox = (() => {
         'URL：' + u.host + (u.secure ? '' : '　⚠ https ではありません')));
       if (r.status === 'changed') key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--warning)' },
         '⚠ 既存のパスワードを差し替えます（古い値は履歴に残ります）'));
-      const badge = el('span', { class: 'env-badge' }, r.status === 'new' ? '新規' : '更新');
+      if (r.status === 'memo-add') key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--text-muted)' },
+        '既存の「' + r.item.title + '」に、種別「メモ・注意」の履歴を足します（既存の行・パスワードは変わりません）'));
+      if (r.status === 'memo-new') {
+        key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--warning)' },
+          '⚠ 同じ名前の項目が見つかりません。チェックすると新しい項目として作ります。名前が違うだけなら、チェックを外して手で貼ってください'));
+        if (r.similar && r.similar.length) key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--text-muted)' },
+          '近い名前の項目：' + r.similar.join('／')));
+      }
+      if (isMemo) {
+        for (const m of r.item.history) {
+          key.appendChild(el('pre', { style: 'display:block;white-space:pre-wrap;overflow-wrap:anywhere;max-height:14em;overflow:auto;margin:6px 0 0;padding:6px 8px;' +
+            'background:var(--surface2,#222);border:1px solid var(--border,#444);border-radius:6px;font:inherit;font-size:0.85rem;font-weight:400;color:var(--text,#eee)' }, m.note));
+        }
+      }
+      const badge = el('span', { class: 'env-badge' }, r.status === 'new' ? '新規' : r.status === 'memo-add' ? 'メモ追加' : r.status === 'memo-new' ? 'メモ（同名なし）' : '更新');
       const last = r.item.history[r.item.history.length - 1];
-      const val = el('span', { class: 'env-val' }, '●●●●（' + last.password.length + '文字）' + (r.item.history.length > 1 ? '×' + r.item.history.length + '行' : ''));
-      label.append(cb, key, badge, val);
+      if (isMemo) {
+        key.appendChild(el('small', { style: 'display:block;font-weight:400;color:var(--text-muted);margin-top:2px' },
+          'メモ ' + r.item.history.length + '行・' + r.item.history.reduce((n, h) => n + h.note.length, 0) + '文字'));
+        label.append(cb, key, badge);
+      } else {
+        const val = el('span', { class: 'env-val' }, '●●●●（' + last.password.length + '文字）' + (r.item.history.length > 1 ? '×' + r.item.history.length + '行' : ''));
+        label.append(cb, key, badge, val);
+      }
       list.appendChild(label);
     }
     body.appendChild(list);
@@ -520,7 +602,7 @@ const Inbox = (() => {
     const box = el('div', { style: 'display:flex;flex-direction:column;gap:8px;margin-top:8px' });
     sec.appendChild(box);
     box.appendChild(el('p', { style: 'font-size:0.8rem;color:var(--text-muted);margin:0' },
-      'Claude などが「書き込み専用」で入れた新しい秘密を、確認してから金庫に取り込む機能です。入れた側は箱も金庫も読めません。'));
+      'Claude などが「書き込み専用」で入れた新しい秘密やメモを、確認してから金庫に取り込む機能です。入れた側は箱も金庫も読めません。'));
     const act = activeKey();
     const pubText = {
       ok: '公開鍵：登録済み',
@@ -560,7 +642,7 @@ const Inbox = (() => {
 
   const api = { generateKeyPair, seal, open, kidOf, normalizePayload, mergeInbox, canonInbox, restoreInto, onSynced, check, renderSection };
   // 試験用（アプリ本体からは使わない）
-  api._test = { classify, applyOne, urlInfo, doImport, drop, ensureKey, syncPubkey, wipeIfLocked, hasMem: () => !!mem, state: () => ({ ...st }) };
+  api._test = { classify, applyOne, findEntry, urlInfo, doImport, drop, ensureKey, syncPubkey, wipeIfLocked, hasMem: () => !!mem, state: () => ({ ...st }) };
   return api;
 })();
 
