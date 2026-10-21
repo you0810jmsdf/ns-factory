@@ -5062,8 +5062,8 @@ function removeSelectedKeepHoles() {
   }); renderSeams();
   $('hint').textContent = t('holesKept', { n: lines, h: kept });
 }
-function removeSelected() {
-  const ids = selectedShapeIds();
+function removeSelected(onlyIds = null) {
+  const ids = onlyIds || selectedShapeIds();   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
   cancel(); commit(() => { const own=ownHolePathIds(doc), paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
 }
 function addShape(shape) {
@@ -5559,7 +5559,7 @@ function snapped(p, shift, anchor) {
     const hit = threeViewSnap(p, threeViewMarksCache, 9 / scale, threeViewLayout);
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
-  if (!snap && (mode === 'ruler' || mode === 'dimension')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
+  if (!snap && (mode === 'ruler' || mode === 'dimension' || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
   if ($('snap').checked && !snap) { const grid = Number($('spacing').value) || 1; result = { x: Math.round(p.x / grid) * grid, y: Math.round(p.y / grid) * grid }; snap = result; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
@@ -5759,6 +5759,11 @@ function extensionSnap(fixed, dir, w, sp) {
   if (!dir) return sp;
   const perp = Math.abs((w.x - fixed.x) * dir.y - (w.y - fixed.y) * dir.x); if (perp > 12 / scale) return sp;
   const t = (sp.x - fixed.x) * dir.x + (sp.y - fixed.y) * dir.y; return { x: fixed.x + dir.x * t, y: fixed.y + dir.y * t };
+}
+/** 交点から先へ飛び出していた線の端を、交点まで引き戻して長さ 0 になるとき（事業主要望 2026-10-21「飛び出た端点を交点まで戻したい」）：動かさない側の端（g.fixed）がほかの図形に接していれば、その線は「はみ出した部分」なので、消してよい。縫い穴が付いた線・何にも接していない孤立した線は、消さずに断る。 */
+function lineEndRetracted(s, g) {
+  if (s.type !== 'line' || !g.fixed || doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id))) return false;
+  return doc.shapes.some(x => x.id !== s.id && visible(x) && !['text', 'dimension', 'image'].includes(x.type) && distTo(x, g.fixed) <= 1e-3);
 }
 /** 端をドラッグ中のカーソル位置。Shift：直線＝動かさない側の端から元の向きの線の上（水平・垂直の線なら水平・垂直のまま）、折れ線の角＝元の位置から水平か垂直（近い方）だけ。円弧は角度だけが変わる。 */
 function lineEndCursor(g, w, shift) {
@@ -6219,7 +6224,7 @@ canvas.addEventListener('pointerup', e => {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'lineEnd') {
     const s = doc.shapes.find(s => s.id === g.id);
-    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = handleMoved(s, g.h, cursor); if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) $('hint').textContent = t('lineEndZero'); else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next); $('hint').textContent = s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
+    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = handleMoved(s, g.h, cursor); if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) { if (lineEndRetracted(s, g)) { removeSelected(new Set([s.id])); $('hint').textContent = t('lineEndRetracted'); } else $('hint').textContent = t('lineEndZero'); } else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next); $('hint').textContent = s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
