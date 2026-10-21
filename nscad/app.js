@@ -4579,31 +4579,73 @@ function dedupeShapeGroups(list) {
   for (const s of list) { const k = key(s), first = k ? seen.get(k) : null; if (first) { groups.get(first.id).push(s.id); repOf.set(s.id, first.id); } else { if (k) seen.set(k, s); reps.push(s); groups.set(s.id, [s.id]); repOf.set(s.id, s.id); } }
   return { reps, groups, repOf };
 }
-/** 同じ形・同じ層・同じ線種・同じ色で重なっている図形の組を返す（[{ ids }]・2本以上の組だけ）。 */
+/** 同じ直線の上で重なった線の判定の許容（事業主要望 2026-10-21「重複した線は、ボタンで一括して統合したい」）：直線からのずれ 0.05mm・角度 0.1°。まとめるとき、端の違いが 0.15mm 以内なら、残す線の端は動かさない。 */
+const DUP_LINE_TOL = 0.05, DUP_ANGLE_DEG = 0.1, DUP_END_TOL = 0.15;
+/** 直線（line）と、2点の開いた折れ線の、両端と向き。それ以外・長さ 0 は null。th＝向きの角度（0〜180°・向きの反対は同じ）。 */
+function straightInfo(s) {
+  const e = s.type === 'line' ? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }] : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? [{ x: s.points[0].x, y: s.points[0].y }, { x: s.points[1].x, y: s.points[1].y }] : null; if (!e) return null;
+  const dx = e[1].x - e[0].x, dy = e[1].y - e[0].y, len = Math.hypot(dx, dy); if (!(len > 1e-6)) return null;
+  return { s, a: e[0], b: e[1], len, u: { x: dx / len, y: dy / len }, th: (((Math.atan2(dy, dx) * 180 / Math.PI) % 180) + 180) % 180 };
+}
+/** 2本の直線が、同じ直線の上にあって、長さの途中が重なっているか（端がちょうど接するだけは、重なりでない）。 */
+function collinearOverlap(A, B) {
+  const off = q => Math.abs((q.x - A.a.x) * A.u.y - (q.y - A.a.y) * A.u.x); if (off(B.a) > DUP_LINE_TOL || off(B.b) > DUP_LINE_TOL) return false;
+  const t1 = (B.a.x - A.a.x) * A.u.x + (B.a.y - A.a.y) * A.u.y, t2 = (B.b.x - A.a.x) * A.u.x + (B.b.y - A.a.y) * A.u.y;
+  return Math.min(A.len, Math.max(t1, t2)) - Math.max(0, Math.min(t1, t2)) > 0.01;
+}
+/** 同じ層・同じ線種・同じ色で重なっている図形の組を返す（[{ ids }]・2本以上の組だけ）。座標がまったく同じ図形（線・円弧・円・2点の折れ線）に加え、同じ直線の上で長さの途中が重なった線（直線・2点の折れ線）も、同じ組にする（A と B、B と C が重なれば A・B・C で1組）。 */
 function findOverlaps(list) {
   const byStyle = new Map(); for (const s of list) { const k = [s.layer, s.lineStyle || '', s.color || ''].join('|'); if (!byStyle.has(k)) byStyle.set(k, []); byStyle.get(k).push(s); }
-  const out = []; for (const sub of byStyle.values()) { const g = dedupeShapeGroups(sub); for (const ids of g.groups.values()) if (ids.length > 1) out.push({ ids }); } return out;
+  const out = [];
+  for (const sub of byStyle.values()) {
+    const g = dedupeShapeGroups(sub), parent = new Map(sub.map(s => [s.id, s.id])), find = id => { while (parent.get(id) !== id) { parent.set(id, parent.get(parent.get(id))); id = parent.get(id); } return id; }, join = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(rb, ra); };
+    for (const ids of g.groups.values()) for (const id of ids.slice(1)) join(ids[0], id);
+    const segs = sub.map(straightInfo).filter(Boolean).sort((p, q) => p.th - q.th), n = segs.length, tryJoin = (A, B) => { if (find(A.s.id) !== find(B.s.id) && collinearOverlap(A, B)) join(A.s.id, B.s.id); };
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n && segs[j].th - segs[i].th <= DUP_ANGLE_DEG; j++) tryJoin(segs[i], segs[j]);
+      if (segs[i].th <= DUP_ANGLE_DEG) for (let j = n - 1; j > i && 180 - segs[j].th + segs[i].th <= DUP_ANGLE_DEG; j--) tryJoin(segs[i], segs[j]);   /* 0° と 180° のまたぎ（ほぼ水平の線） */
+    }
+    const comps = new Map(); for (const s of sub) { const r = find(s.id); if (!comps.has(r)) comps.set(r, []); comps.get(r).push(s.id); }
+    for (const ids of comps.values()) if (ids.length > 1) out.push({ ids });
+  }
+  return out;
 }
 function updateDupBar() { const bar = $('dupBar'); if (!bar) return; bar.hidden = !dupGroups.length || exporting; if (dupGroups.length) $('dupInfo').textContent = t('dupInfo', { n: dupGroups.length }); }
 /** 重なった図形を、赤く太く描く（警告）。 */
 function drawOverlaps() {
   if (!dupGroups.length) return; ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 0.6; ctx.lineWidth = 5 / scale;
-  for (const g of dupGroups) { const s = doc.shapes.find(x => x.id === g.ids[0]); if (s) strokeShape(s, '#ff3b3b', false); }
+  for (const g of dupGroups) for (const id of g.ids) { const s = doc.shapes.find(x => x.id === id); if (s) strokeShape(s, '#ff3b3b', false); }
   ctx.restore();
 }
-/** 重なった図形を1本にまとめる。菱目の経路・部品が重なった図形の1つを使っていたら、残す1本につけ替える。元に戻すは1回。 */
+/** 重なった図形を1本にまとめる（事業主要望 2026-10-21）。座標がまったく同じ図形は、今までどおり1つ残す。同じ直線の上で重なった線は、重なった全体の範囲の1本にする（残す線の端が 0.15mm 以内の違いなら動かさない）。
+ *  残す1本：菱目の経路が付いた線＞ほかの図形とつながっている端が多い線＞長い線。経路が付いた線を延ばす必要があるとき・経路が付いた線が（同じ形でなく）2本以上あるときは、経路がずれるので、その組はそのままにして知らせる。元に戻すは1回。 */
 function mergeOverlaps() {
   const groups = dupGroups.filter(g => g.ids.every(id => { const s = doc.shapes.find(x => x.id === id); return s && editable(s); })); if (!groups.length) return;
+  const hasPath = s => doc.paths.some(p => p.shapeIds.includes(s.id)), sameShape = (p, q) => dedupeShapeGroups([p, q]).reps.length === 1, plan = []; let skipped = 0;
+  for (const g of groups) {
+    const members = g.ids.map(id => doc.shapes.find(x => x.id === id)).filter(Boolean); if (members.length < 2) continue;
+    const pathMembers = members.filter(hasPath); if (pathMembers.some(m => !sameShape(m, pathMembers[0]))) { skipped++; continue; }
+    if (members.every(m => sameShape(m, members[0]))) { const keep = pathMembers[0] ?? members[0]; plan.push({ keep, drop: new Set(members.filter(m => m !== keep).map(m => m.id)), ext0: 0, ext1: 0 }); continue; }   /* 同じ形：今までどおり */
+    const infos = new Map(members.map(m => [m.id, straightInfo(m)])); if ([...infos.values()].some(v => !v)) { skipped++; continue; }
+    const others = magnetPointsOf(doc.shapes.filter(x => visible(x) && !g.ids.includes(x.id))).ends, linked = m => { const I = infos.get(m.id); return [I.a, I.b].filter(q => others.some(o => Math.hypot(o.x - q.x, o.y - q.y) <= 1e-3)).length; };
+    const keep = pathMembers[0] ?? [...members].sort((p, q) => linked(q) - linked(p) || infos.get(q.id).len - infos.get(p.id).len)[0], K = infos.get(keep.id);
+    const ts = members.flatMap(m => { const I = infos.get(m.id); return [I.a, I.b].map(q => (q.x - K.a.x) * K.u.x + (q.y - K.a.y) * K.u.y); });
+    let ext0 = Math.max(0, -Math.min(0, ...ts)), ext1 = Math.max(0, Math.max(K.len, ...ts) - K.len); if (ext0 <= DUP_END_TOL) ext0 = 0; if (ext1 <= DUP_END_TOL) ext1 = 0;
+    if (pathMembers.length && (ext0 > 0 || ext1 > 0)) { skipped++; continue; }
+    plan.push({ keep, drop: new Set(members.filter(m => m !== keep).map(m => m.id)), ext0, ext1, K });
+  }
+  if (!plan.length) { $('hint').textContent = t('dupMergeNone', { s: skipped }); return; }
   cancel(); let removed = 0;
   commit(() => {
-    for (const g of groups) {
-      const keep = g.ids.find(id => doc.paths.some(p => p.shapeIds.includes(id))) ?? g.ids[0], drop = new Set(g.ids.filter(id => id !== keep)); removed += drop.size;
-      for (const p of doc.paths) if (p.shapeIds.some(id => drop.has(id))) p.shapeIds = [...new Set(p.shapeIds.map(id => drop.has(id) ? keep : id))];
-      for (const part of doc.parts) if (part.shapeIds.some(id => drop.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => drop.has(id) ? keep : id))];
+    for (const { keep, drop, ext0, ext1, K } of plan) {
+      removed += drop.size;
+      if (ext0 > 0 || ext1 > 0) { const a = { x: K.a.x - K.u.x * ext0, y: K.a.y - K.u.y * ext0 }, b = { x: K.b.x + K.u.x * ext1, y: K.b.y + K.u.y * ext1 }; if (keep.type === 'line') Object.assign(keep, { x1: a.x, y1: a.y, x2: b.x, y2: b.y }); else keep.points = [a, b]; }
+      for (const p of doc.paths) if (p.shapeIds.some(id => drop.has(id))) p.shapeIds = [...new Set(p.shapeIds.map(id => drop.has(id) ? keep.id : id))];
+      for (const part of doc.parts) if (part.shapeIds.some(id => drop.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => drop.has(id) ? keep.id : id))];
       doc.shapes = doc.shapes.filter(s => !drop.has(s.id)); selected = new Set([...selected].filter(id => !drop.has(id)));
     }
   });
-  $('hint').textContent = t('dupMerged', { k: removed, n: groups.length });
+  $('hint').textContent = t(skipped ? 'dupMergedSkip' : 'dupMerged', { k: removed, n: plan.length, s: skipped });
 }
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
@@ -6120,7 +6162,7 @@ canvas.addEventListener('pointermove', e => {
   if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
-  else cursor = gesture?.kind === 'move' ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  else cursor = gesture?.kind === 'move' ? (gesture.moved ||= distance(p, gesture.screen) >= 4) ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : { ...gesture.start } :   /* つかんで 4px 動くまでは、動かさない（クリック・ダブルクリックのぶれで、吸着の分だけ一瞬ずれていた）。4px は、離したときに動かすか決める値と同じ */ mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   updateRadiusHover(world(p));
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
@@ -6267,7 +6309,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
       if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
-      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
+      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) { runCommand(`${cursor.x},${cursor.y}`); stage = null; lastPoint = cursor; $('hint').textContent = t('hint.line'); } /* 終点のクリックで1本できて終わり（ペンのような連続線にしない・事業主要望 2026-10-21）。始点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
@@ -6420,7 +6462,7 @@ $('file').addEventListener('change', async e => {
 });
 /** 動かしている途中に Alt を押した・離したとき、マウスを動かさなくても、すぐ吸着なし／ありに切り替える（そのとき Alt だけでメニューが開かないように、キーの既定の動作は止める）。 */
 function refreshMoveFree(e) {
-  if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.lastWorld) return; e.preventDefault?.();
+  if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.moved || !gesture.lastWorld) return; e.preventDefault?.();
   cursor = movePosition(gesture.lastWorld, e.shiftKey, e.altKey); draw();
 }
 window.addEventListener('keydown', e => {

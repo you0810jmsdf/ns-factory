@@ -155,7 +155,7 @@
     .fdDia .dim text { fill: #e6e9ec; font: 700 22px sans-serif; text-anchor: middle; } .fdDia .dim.hl line, .fdDia .dim.hl path, .fdDia .dim.hl circle, .fdDia .dim.hl rect { stroke: #f0b429; stroke-width: 3.4; } .fdDia .dim.hl text { fill: #f0b429; font-weight: 700; }
   </style><style id="pageSize"></style></head>
 <body data-prototype="1">
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 12:00 · bf73c34</span>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-21 12:17 · e3c0708</span>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -710,8 +710,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=54def0d4","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=4c4181e5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=16fd4f0d","./help/ja.js":"./help/ja.js?v=50a664e6","./i18n.js":"./i18n.js?v=87b38bed","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=54def0d4"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=77c7ce8a","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=a9d0c9c3","./designs.js":"./designs.js?v=0e6bc839","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=4c4181e5","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=1757f7df","./help/ja.js":"./help/ja.js?v=8b4e2252","./i18n.js":"./i18n.js?v=4686a181","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=56cd9156","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=77c7ce8a"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3345,7 +3345,7 @@ const MESSAGES = {
     "segmentFrom": "区間の開始 s (mm)",
     "segmentTo": "区間の終了 s (空欄＝末尾)",
     "modHelp.select": "クリック：交点から交点までの区間を選ぶ（線はそこで分かれます）\nダブルクリック：つながった線をすべて選ぶ（ペンの線は節点を足す）\nドラッグ：図形を動かす／空白をドラッグで囲み選択\nShift＋クリック：選択に追加・解除\nShift＋ドラッグ：水平・垂直だけに動かす\n動かしている間 Alt：吸着なし（つかんだあとに押す）\nAlt＋クリック：菱目と菱目の間だけを選ぶ\nShift＋Alt＋クリック：菱目の間を選択に追加\nAlt＋ドラッグ：矩形は角だけ動かす（ペンのハンドルは片側だけ折る）",
-    "modHelp.line": "ドラッグ：始点から終点へ\nダブルクリック：連続線を確定\nShift＋ドラッグ：水平・垂直に固定",
+    "modHelp.line": "クリック→クリック（またはドラッグ）：始点から終点へ\nShift＋クリック／ドラッグ：水平・垂直に固定",
     "modHelp.rect": "ドラッグ：対角の2点で矩形\nShift＋ドラッグ：正方形",
     "modHelp.ruler": "クリック：始点→終点で距離を測る\nShift＋クリック：水平・垂直に固定",
     "modHelp.stitch": "クリック：始点→終点の順に2回クリックして、その間に打つ（端・交点・穴に吸着）\n固定ピッチ：始点から終点を超えない所まで／可変ピッチ：両端に合わせて均等／個数指定：両端を含めてN個\nAlt＋クリック：1穴だけ打つ",
@@ -3941,7 +3941,7 @@ const MESSAGES = {
     "countLine": "・長さ {len} mm・菱目 {holes} 個",
     "status": "X {x}　Y {y} mm　｜ {zoom}%",
     "hint.select": "クリックで選択、図形をドラッグして移動（Shift を押しながらで、水平・垂直だけに動く）。空白で囲み選択。Shift で追加・解除。",
-    "hint.line": "始点から終点へドラッグ。Shift で水平・垂直固定。",
+    "hint.line": "始点→終点の順にクリック（またはドラッグ）。Shift で水平・垂直固定。",
     "hint.circle": "中心から円周へドラッグ。上の欄に半径か直径を入れると、クリックした位置にその大きさの円を置きます。",
     "hint.arcHalf": "半円：始点をクリック → 終点をクリック（2点を直径とする半円・膨らむ側は作図オプションの「円弧の向き」・Esc で中止）。",
     "hint.arc3": "円弧：始点をクリック → 通過点をクリック → 終点をクリック（3点を通る円弧・Esc で中止）。",
@@ -4003,10 +4003,12 @@ const MESSAGES = {
     "hint.mirror": "選択してから軸の直線をクリック、または2点で軸を指定。Shift+クリックで、平行な2本の線の真ん中を軸にできます。",
     "mirrorMid1": "1本目の線を選びました。2本目の（平行な）線をクリックすると、その真ん中が軸になります。",
     "stitchSpanNote": "（交点から交点まで：線に沿って {a}〜{b} mm の区間だけ）",
-    "dupInfo": "⚠ 同じ形で重なった線が {n} か所あります（図面では赤く太く表示）。選ぶ・つなぐ・菱目打ちが、そこで止まる原因になります。",
+    "dupInfo": "⚠ 重なった線が {n} か所あります（同じ形、または同じ直線の上で重なっている線。図面では赤く太く表示）。選ぶ・つなぐ・菱目打ちが、そこで止まる原因になります。",
     "dupMerge": "重なりを1本にまとめる",
-    "dupMergeTip": "同じ形・同じ層・同じ線種で重なった線を、1本にします（菱目の経路は残す1本につけ替えます）。元に戻すは1回です。",
+    "dupMergeTip": "同じ層・同じ線種・同じ色で重なった線（同じ形、または同じ直線の上で長さの途中が重なった線）を、重なった全体の範囲の1本にします（菱目の経路は残す1本につけ替えます・経路の付いた線を延ばす必要があるときは、そのままにします）。元に戻すは1回です。",
     "dupMerged": "重なった線 {k} 本を、{n} か所で1本にまとめました。",
+    "dupMergedSkip": "重なった線 {k} 本を、{n} か所で1本にまとめました。菱目の経路の都合で、そのままにした所が {s} か所あります。",
+    "dupMergeNone": "まとめられませんでした。菱目の経路が付いた線を延ばす必要がある所（または経路が付いた線が2本以上ある所）が {s} か所あり、そのままにしています。",
     "mirrorNotParallel": "2本の線が平行ではありません。平行な2本の線を選んでください。",
     "circleLive": "半径 {r}・直径 {d} mm",
     "editing": "編集",
@@ -4865,7 +4867,7 @@ const MESSAGES = {
     "spineCalibrated": "すき間を {play} mm にしました。",
     "spineApplied": "レシピの背幅を {spine} mm にしました。",
     "prototype": "試作中",
-    "lineChainHint": "クリックで続けて線を引けます。Shift を押している間は水平・垂直に固定。終点でダブルクリックか Enter で確定（Esc でも終了・右ドラッグで画面を移動）。"
+    "lineChainHint": "終点をクリックすると線ができます（Esc で取り消し・右ドラッグで画面を移動）。Shift を押している間は水平・垂直に固定。"
   },
   "en": {
     "offsetDist": "Offset distance (mm)",
@@ -5188,7 +5190,7 @@ const MESSAGES = {
     "segmentFrom": "Section start s (mm)",
     "segmentTo": "Section end s (blank = end)",
     "modHelp.select": "Click: select the part between intersections (the line is split there)\nDouble-click: select all connected lines (a pen line gets a node)\nDrag: move shapes / drag empty space to box-select\nShift+click: add to / remove from the selection\nShift+drag: move only horizontally or vertically\nAlt while dragging: no snapping (press it after grabbing)\nAlt+click: select only between two stitch holes\nShift+Alt+click: add the between-holes part to the selection\nAlt+drag: move only a rectangle's corner (a pen handle: bend one side only)",
-    "modHelp.line": "Drag: from start to end\nDouble-click: finish the connected line\nShift+drag: lock horizontal / vertical",
+    "modHelp.line": "Click, then click (or drag): from start to end\nShift+click / drag: lock horizontal / vertical",
     "modHelp.rect": "Drag: two opposite corners\nShift+drag: make a square",
     "modHelp.ruler": "Click: start, then end, to measure\nShift+click: lock horizontal / vertical",
     "modHelp.stitch": "Click: start point, then end point, to place holes between them (snaps to ends, intersections, holes)\nFixed: from the start up to the end / Variable: fit evenly between both / Count: N holes, ends included\nAlt+click: place a single hole",
@@ -5784,7 +5786,7 @@ const MESSAGES = {
     "countLine": " · length {len} mm · {holes} stitch holes",
     "status": "X {x}  Y {y} mm | {zoom}%",
     "hint.select": "Click to select; drag a shape to move (hold Shift to move only horizontally or vertically). Drag empty space to box-select. Shift adds or removes.",
-    "hint.line": "Drag from start to end. Shift locks horizontal / vertical.",
+    "hint.line": "Click the start, then the end (or drag). Shift locks horizontal / vertical.",
     "hint.circle": "Drag from center to circumference. Or enter a radius or diameter above and click to place a circle of that size.",
     "hint.arcHalf": "Semicircle: click the start, then the end (a semicircle with the 2 points as its diameter; the bulging side follows the Arc direction option; Esc cancels).",
     "hint.arc3": "Arc: click the start, a point on the arc, then the end (an arc through 3 points; Esc cancels).",
@@ -5846,10 +5848,12 @@ const MESSAGES = {
     "hint.mirror": "Select shapes, then click an axis line or two points. Shift+click picks the middle of two parallel lines as the axis.",
     "mirrorMid1": "First line picked. Click a second (parallel) line; the axis will be exactly halfway between them.",
     "stitchSpanNote": "(between intersections only: {a}–{b} mm along the line)",
-    "dupInfo": "⚠ {n} place(s) have lines of the same shape stacked on top of each other (shown thick red). They can stop selecting, joining and stitching.",
+    "dupInfo": "⚠ {n} place(s) have lines stacked on top of each other (same shape, or overlapping along the same straight line; shown thick red). They can stop selecting, joining and stitching.",
     "dupMerge": "Merge stacked lines into one",
-    "dupMergeTip": "Merges lines with the same shape, layer and style into one (stitch paths are moved to the line that stays). One undo step.",
+    "dupMergeTip": "Merges lines with the same layer, style and color that are stacked (same shape, or overlapping along the same straight line) into one covering the whole stretch (stitch paths are moved to the line that stays; if a line with a stitch path would have to be extended, that group is left alone). One undo step.",
     "dupMerged": "Merged {k} stacked line(s) at {n} place(s).",
+    "dupMergedSkip": "Merged {k} stacked line(s) at {n} place(s). {s} place(s) were left alone because of stitch paths.",
+    "dupMergeNone": "Nothing merged: {s} place(s) would need a line with a stitch path to be extended (or have two or more lines with stitch paths), so they were left alone.",
     "mirrorNotParallel": "The two lines are not parallel. Pick two parallel lines.",
     "circleLive": "Radius {r} / Diameter {d} mm",
     "editing": "Edit",
@@ -6708,7 +6712,7 @@ const MESSAGES = {
     "spineCalibrated": "Clearance set to {play} mm.",
     "spineApplied": "Recipe spine set to {spine} mm.",
     "prototype": "PROTOTYPE",
-    "lineChainHint": "Click to keep adding lines. Hold Shift to lock horizontal / vertical. Double-click at the end point or press Enter to finish (Esc also ends; right-drag pans)."
+    "lineChainHint": "Click the end point to make the line (Esc cancels; right-drag pans). Hold Shift to lock horizontal / vertical."
   }
 };
 let language = 'ja';
@@ -21987,7 +21991,7 @@ const HELP_JA = {
     {
       "id": "drawing",
       "title": "作図と座標",
-      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。直線・折れ線の各辺・ベジェや曲線（ペン）の各区間の中点と両端、円弧の中点（弧の真ん中）と両端、円の上下左右と斜め45度の8か所、目打ちの縫い穴と目印の中心（画面に見えている穴）にも、同じ距離で吸い付きます（定規で穴の間隔を測るときに使えます）（これらはスナップのチェックと関係なく効きます。曲線の中点は長さの真ん中です）。作図ツールでポインタがこれらの点に近づく（約40px以内）と、その点が小さなひし形の印で出ます。図形をドラッグして動かすときは、動かす図形（グループ・複数選択を含む）の上下左右の辺が、ほかの図形の辺の位置に近づくと吸い付きます（縦と横は別々・合った位置に水色の点線）。引っかかるときは、つかんだあとに Alt を押している間だけ、点どうしの磁石と辺どうしの吸着が切れます（Alt を離すとまた効きます・Shift の水平・垂直固定はそのまま）。作図オプションの吸着距離を 0 にしても切れます。直線を選んで端の取っ手をドラッグするときは、ほかの線との交点にも吸い付きます。交点から先へはみ出していた線（交点で分かれた短い線）の端を交点まで引くと、その線は消えます（元に戻すで戻せます。縫い穴が付いた線や、何にも接していない線は消えません）。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、窓に入れた半径（C 寸法）で丸め（切り取り）ます。「丸め」「面取り」を選ぶと、画面の上に半径（C 寸法）を入れる小窓が出ます。数字は変えるまで残り、次に開いたときも引き継ぎます（丸めと面取りは別々）。0 以下や空では実行しません。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。大きさを指定して描くには、「矩形」ツールを選ぶと画面の上に出る「幅 (mm)」「高さ (mm)」の欄に数字を入れ、置きたい位置をクリックします。その位置を矩形の「左上の角」にするか「中心」にするかは「基準」で選べます。何度でも続けて置け、クリックには端点などの磁石・スナップが効きます。置く前にカーソルへ薄い仮の矩形が付いてきます。幅か高さを空にすると、これまでのドラッグで自由に描く動きに戻ります。描いた矩形の大きさを数字で変えるには、選択ツールで矩形を1つ選びます。画面の上に「選んだ矩形の大きさ」の窓が出るので、「幅 (mm)」「高さ (mm)」に数字を入れて Enter を押す（または Tab キーで次の欄へ移る）と、その大きさになります。「動かさない点」で、大きさを変えても動かない場所（左上の角か中心）を選べます。Esc で入れた数字を取り消せます。四隅の取っ手をドラッグして変えると、窓の数字もついてきます。縦横に平らな矩形だけが対象で、縫い穴が付いた矩形は変えられません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
+      "body": "内部座標は x 右・y 下、mm。円弧・回転は時計回りが正。C 面は両辺を指定距離で切り取り、丸め (R) は接円弧を作ります。オフセットは閉図形と円では外が正、開経路は画面で進行方向の左が正。円弧は半径増加が正。\n円弧は作図オプションの「円弧の描き方」で選べます。「中心と半径」は、中心から始点へドラッグ→終点方向をクリック。半径欄に数値（mm）を入れておくと半径がその値に固定され、中心をクリック→始点方向をクリック→終点方向をクリックで描けます。「3点」は始点→通過点→終点の順にクリックすると、3点を通る円弧を作ります（一直線上の3点は作れません・Esc で中止）。\n端点・中心の磁石：作図ツールでは、他の図形の端点と、円・円弧の中心に、スナップのチェックと関係なく吸い付きます（円・円弧の中心は作図ツール中だけ薄い十字で自動表示）。吸い付く距離は作図オプションの「端点・中心の吸着距離 (px)」で変えられます（既定10・0で磁石を切る・設定は保存されます）。中点・交点・格子は従来どおりスナップのチェックに従います。直線・折れ線の各辺・ベジェや曲線（ペン）の各区間の中点と両端、円弧の中点（弧の真ん中）と両端、円の上下左右と斜め45度の8か所、目打ちの縫い穴と目印の中心（画面に見えている穴）にも、同じ距離で吸い付きます（定規で穴の間隔を測るときに使えます）（これらはスナップのチェックと関係なく効きます。曲線の中点は長さの真ん中です）。作図ツールでポインタがこれらの点に近づく（約40px以内）と、その点が小さなひし形の印で出ます。図形をドラッグして動かすときは、動かす図形（グループ・複数選択を含む）の上下左右の辺が、ほかの図形の辺の位置に近づくと吸い付きます（縦と横は別々・合った位置に水色の点線）。引っかかるときは、つかんだあとに Alt を押している間だけ、点どうしの磁石と辺どうしの吸着が切れます（Alt を離すとまた効きます・Shift の水平・垂直固定はそのまま）。作図オプションの吸着距離を 0 にしても切れます。直線を選んで端の取っ手をドラッグするときは、ほかの線との交点にも吸い付きます。交点から先へはみ出していた線（交点で分かれた短い線）の端を交点まで引くと、その線は消えます（元に戻すで戻せます。縫い穴が付いた線や、何にも接していない線は消えません）。重なった線（同じ形、または同じ直線の上で長さの途中が重なった線・同じ層と線種と色）があると、画面の上に警告が出て、重なりが赤く太く表示されます。「重なりを1本にまとめる」ボタンで、すべての重なりを、重なった全体の範囲の1本に一括して統合できます（元に戻すは1回・菱目の経路が付いた線を延ばす必要がある所はそのままにして知らせます）。\n丸め (R)・面取り (C) は、端点を共有する2本の直線を順にクリックするほか、折れ線（矩形など）を1回クリックして使えます。折れ線の角の近くをクリックするとその角だけ、辺の途中をクリックすると全部の角を、窓に入れた半径（C 寸法）で丸め（切り取り）ます。「丸め」「面取り」を選ぶと、画面の上に半径（C 寸法）を入れる小窓が出ます。数字は変えるまで残り、次に開いたときも引き継ぎます（丸めと面取りは別々）。0 以下や空では実行しません。結果は直線と円弧の連なりになり、元に戻すで一度に戻せます。半径が大きく隣の角と重なる場合や、開いた折れ線の端は作れません。縫い穴付きの図形は先に穴を取り除いてください。\n矩形：ツールバーの「矩形」で、対角の2点をドラッグ（またはクリック→クリック）すると、閉じた折れ線（4点）の四角形を描きます。Shift を押すと正方形になります。入力欄では、1点目に「x,y」、2点目に「@幅,高さ」と打てます。幅か高さが0のときは作りません。大きさを指定して描くには、「矩形」ツールを選ぶと画面の上に出る「幅 (mm)」「高さ (mm)」の欄に数字を入れ、置きたい位置をクリックします。その位置を矩形の「左上の角」にするか「中心」にするかは「基準」で選べます。何度でも続けて置け、クリックには端点などの磁石・スナップが効きます。置く前にカーソルへ薄い仮の矩形が付いてきます。幅か高さを空にすると、これまでのドラッグで自由に描く動きに戻ります。描いた矩形の大きさを数字で変えるには、選択ツールで矩形を1つ選びます。画面の上に「選んだ矩形の大きさ」の窓が出るので、「幅 (mm)」「高さ (mm)」に数字を入れて Enter を押す（または Tab キーで次の欄へ移る）と、その大きさになります。「動かさない点」で、大きさを変えても動かない場所（左上の角か中心）を選べます。Esc で入れた数字を取り消せます。四隅の取っ手をドラッグして変えると、窓の数字もついてきます。縦横に平らな矩形だけが対象で、縫い穴が付いた矩形は変えられません。\nオフセット：先に作図オプションで「オフセット距離」と「向き」（外側／内側）を決めておきます。図形をクリックすると、他の図形との交点から交点までの区間を選び（橙色で表示）、ダブルクリックするとつながった図形全体（閉じていれば閉じた図形）を選びます。Enter か「選んだ範囲をオフセット」で実行します。つながった線は結合点をまたいで1つとして扱います。閉じた図形は外側と内側、開いた線は進行方向の左（外側）と右（内側）。結果は黄色の点線で、色と線種は情報カードで変えられます。"
     },
     {
       "id": "stitching",
@@ -22141,7 +22145,7 @@ const HELP_EN = {
     {
       "id": "drawing",
       "title": "Drawing and coordinates",
-      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox. The midpoint and both ends of a line, of each side of a polyline and of each span of a Bezier or pen curve (the midpoint of a curve is the middle of its length), the midpoint (middle of the curve) and both ends of an arc, the 8 points of a circle (top, bottom, left, right and the four 45° points), and the center of each visible stitching hole and mark also attract the cursor at the same distance (so the Ruler can measure the pitch between holes), regardless of the Snap checkbox; with a drawing tool, these points appear as small diamonds when the pointer comes within about 40 px. When you drag shapes to move them, the left/right and top/bottom edges of what you move (groups and multiple selections included) snap to the edges of other shapes, horizontally and vertically on their own (a thin cyan dotted line shows the match). If it catches too much, hold Alt after grabbing: point magnets and edge snapping are off while Alt is held (release to get them back; Shift for horizontal / vertical still works). Setting the snap distance to 0 turns them off as well. When you drag an end handle of a selected line, it also snaps to intersections with other lines. Pulling the end of a line that protruded past an intersection (a short line split off at the intersection) back to the intersection removes that line (Undo brings it back; lines with stitch holes and lines touching nothing are kept).\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) in the box. Choosing Fillet or Chamfer shows a small box at the top of the canvas for the radius (C distance); the number stays until you change it and is remembered next time (separately for fillet and chamfer). Nothing happens if it is empty or 0 or less. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0. To draw a rectangle of a given size, choose the Rectangle tool, enter Width (mm) and Height (mm) in the bar at the top of the canvas, and click where you want it. Anchor chooses whether the click is the top-left corner or the center. You can keep placing it, and magnets and snapping work on the click. A faint preview follows the cursor. Leave Width or Height empty to go back to dragging freely. To change the size of a rectangle you already drew, select it with the Select tool. A “Size of the selected rectangle” box appears at the top of the canvas; enter Width (mm) and Height (mm) and press Enter (or Tab to the next box) to resize it. “Fixed point” chooses the spot that stays put when the size changes (top-left corner or center). Press Esc to discard what you typed. Dragging a corner handle also updates the numbers. Only axis-aligned rectangles qualify, and a rectangle with stitch holes cannot be resized.\nOffset:first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
+      "body": "Coordinates are x right, y down, in mm. Arcs and rotations are clockwise-positive. Chamfer trims both edges by the given distance; fillet creates a tangent arc. Positive offset is outward on closed shapes/circles, left of travel on open paths; arc offset increases radius.\nArcs: choose Arc method in Drawing options. \"Center and radius\": drag from the center to the start, then click the end direction. Enter a value in the radius box (mm) to fix the radius; then click the center, the start direction and the end direction. \"3 points\": click the start, a point on the arc, then the end to make the arc through them (collinear points cannot make an arc; Esc cancels).\nEnd and center magnet: while drawing, the cursor sticks to other shapes' endpoints and to circle/arc centers regardless of the Snap checkbox (centers show as faint crosses only while a drawing tool is active). Set the distance with \"Magnet distance to ends/centers (px)\" in Drawing options (default 10; 0 turns it off; saved). Midpoints, intersections and the grid still follow the Snap checkbox. The midpoint and both ends of a line, of each side of a polyline and of each span of a Bezier or pen curve (the midpoint of a curve is the middle of its length), the midpoint (middle of the curve) and both ends of an arc, the 8 points of a circle (top, bottom, left, right and the four 45° points), and the center of each visible stitching hole and mark also attract the cursor at the same distance (so the Ruler can measure the pitch between holes), regardless of the Snap checkbox; with a drawing tool, these points appear as small diamonds when the pointer comes within about 40 px. When you drag shapes to move them, the left/right and top/bottom edges of what you move (groups and multiple selections included) snap to the edges of other shapes, horizontally and vertically on their own (a thin cyan dotted line shows the match). If it catches too much, hold Alt after grabbing: point magnets and edge snapping are off while Alt is held (release to get them back; Shift for horizontal / vertical still works). Setting the snap distance to 0 turns them off as well. When you drag an end handle of a selected line, it also snaps to intersections with other lines. Pulling the end of a line that protruded past an intersection (a short line split off at the intersection) back to the intersection removes that line (Undo brings it back; lines with stitch holes and lines touching nothing are kept). When lines are stacked (same shape, or overlapping along the same straight line, on the same layer, style and color), a warning appears at the top and the overlap is drawn thick red. The \"Merge stacked lines into one\" button merges all of them at once, each into one line covering the whole stretch (one undo step; places where a line with a stitch path would have to be extended are left alone and reported).\nFillet (R) and Chamfer (C) work on two lines sharing an endpoint, or on a polyline (e.g. a rectangle) with one click: click near a corner to round just that corner, or along an edge to round every corner with the radius (C distance) in the box. Choosing Fillet or Chamfer shows a small box at the top of the canvas for the radius (C distance); the number stays until you change it and is remembered next time (separately for fillet and chamfer). Nothing happens if it is empty or 0 or less. The result is a chain of lines and arcs, and Undo restores it in one step. It cannot be made when the radius would overlap a neighboring corner, or at the ends of an open polyline. Remove stitching holes from the shape first.\nRectangle: with the Rectangle tool, drag between two opposite corners (or click, then click) to draw a closed 4-point polyline. Hold Shift for a square. In the entry box, type \"x,y\" for the first corner and \"@width,height\" for the second. Nothing is made when the width or height is 0. To draw a rectangle of a given size, choose the Rectangle tool, enter Width (mm) and Height (mm) in the bar at the top of the canvas, and click where you want it. Anchor chooses whether the click is the top-left corner or the center. You can keep placing it, and magnets and snapping work on the click. A faint preview follows the cursor. Leave Width or Height empty to go back to dragging freely. To change the size of a rectangle you already drew, select it with the Select tool. A “Size of the selected rectangle” box appears at the top of the canvas; enter Width (mm) and Height (mm) and press Enter (or Tab to the next box) to resize it. “Fixed point” chooses the spot that stays put when the size changes (top-left corner or center). Press Esc to discard what you typed. Dragging a corner handle also updates the numbers. Only axis-aligned rectangles qualify, and a rectangle with stitch holes cannot be resized.\nOffset:first set the Offset distance and Side (outside / inside) in Drawing options. Click a shape to select the part between intersections with other shapes (shown in orange); double-click to select the whole connected shape (a closed shape if it is closed). Press Enter or the Offset button to run it. Connected lines are treated as one, passing through their joints. Closed shapes go outside or inside; open lines go to the left (outside) or right (inside) of travel. The result is a yellow dashed line; change color and line style in the Info card."
     },
     {
       "id": "stitching",
@@ -26869,31 +26873,73 @@ function dedupeShapeGroups(list) {
   for (const s of list) { const k = key(s), first = k ? seen.get(k) : null; if (first) { groups.get(first.id).push(s.id); repOf.set(s.id, first.id); } else { if (k) seen.set(k, s); reps.push(s); groups.set(s.id, [s.id]); repOf.set(s.id, s.id); } }
   return { reps, groups, repOf };
 }
-/** 同じ形・同じ層・同じ線種・同じ色で重なっている図形の組を返す（[{ ids }]・2本以上の組だけ）。 */
+/** 同じ直線の上で重なった線の判定の許容（事業主要望 2026-10-21「重複した線は、ボタンで一括して統合したい」）：直線からのずれ 0.05mm・角度 0.1°。まとめるとき、端の違いが 0.15mm 以内なら、残す線の端は動かさない。 */
+const DUP_LINE_TOL = 0.05, DUP_ANGLE_DEG = 0.1, DUP_END_TOL = 0.15;
+/** 直線（line）と、2点の開いた折れ線の、両端と向き。それ以外・長さ 0 は null。th＝向きの角度（0〜180°・向きの反対は同じ）。 */
+function straightInfo(s) {
+  const e = s.type === 'line' ? [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }] : s.type === 'polyline' && !s.closed && s.points?.length === 2 ? [{ x: s.points[0].x, y: s.points[0].y }, { x: s.points[1].x, y: s.points[1].y }] : null; if (!e) return null;
+  const dx = e[1].x - e[0].x, dy = e[1].y - e[0].y, len = Math.hypot(dx, dy); if (!(len > 1e-6)) return null;
+  return { s, a: e[0], b: e[1], len, u: { x: dx / len, y: dy / len }, th: (((Math.atan2(dy, dx) * 180 / Math.PI) % 180) + 180) % 180 };
+}
+/** 2本の直線が、同じ直線の上にあって、長さの途中が重なっているか（端がちょうど接するだけは、重なりでない）。 */
+function collinearOverlap(A, B) {
+  const off = q => Math.abs((q.x - A.a.x) * A.u.y - (q.y - A.a.y) * A.u.x); if (off(B.a) > DUP_LINE_TOL || off(B.b) > DUP_LINE_TOL) return false;
+  const t1 = (B.a.x - A.a.x) * A.u.x + (B.a.y - A.a.y) * A.u.y, t2 = (B.b.x - A.a.x) * A.u.x + (B.b.y - A.a.y) * A.u.y;
+  return Math.min(A.len, Math.max(t1, t2)) - Math.max(0, Math.min(t1, t2)) > 0.01;
+}
+/** 同じ層・同じ線種・同じ色で重なっている図形の組を返す（[{ ids }]・2本以上の組だけ）。座標がまったく同じ図形（線・円弧・円・2点の折れ線）に加え、同じ直線の上で長さの途中が重なった線（直線・2点の折れ線）も、同じ組にする（A と B、B と C が重なれば A・B・C で1組）。 */
 function findOverlaps(list) {
   const byStyle = new Map(); for (const s of list) { const k = [s.layer, s.lineStyle || '', s.color || ''].join('|'); if (!byStyle.has(k)) byStyle.set(k, []); byStyle.get(k).push(s); }
-  const out = []; for (const sub of byStyle.values()) { const g = dedupeShapeGroups(sub); for (const ids of g.groups.values()) if (ids.length > 1) out.push({ ids }); } return out;
+  const out = [];
+  for (const sub of byStyle.values()) {
+    const g = dedupeShapeGroups(sub), parent = new Map(sub.map(s => [s.id, s.id])), find = id => { while (parent.get(id) !== id) { parent.set(id, parent.get(parent.get(id))); id = parent.get(id); } return id; }, join = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(rb, ra); };
+    for (const ids of g.groups.values()) for (const id of ids.slice(1)) join(ids[0], id);
+    const segs = sub.map(straightInfo).filter(Boolean).sort((p, q) => p.th - q.th), n = segs.length, tryJoin = (A, B) => { if (find(A.s.id) !== find(B.s.id) && collinearOverlap(A, B)) join(A.s.id, B.s.id); };
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n && segs[j].th - segs[i].th <= DUP_ANGLE_DEG; j++) tryJoin(segs[i], segs[j]);
+      if (segs[i].th <= DUP_ANGLE_DEG) for (let j = n - 1; j > i && 180 - segs[j].th + segs[i].th <= DUP_ANGLE_DEG; j--) tryJoin(segs[i], segs[j]);   /* 0° と 180° のまたぎ（ほぼ水平の線） */
+    }
+    const comps = new Map(); for (const s of sub) { const r = find(s.id); if (!comps.has(r)) comps.set(r, []); comps.get(r).push(s.id); }
+    for (const ids of comps.values()) if (ids.length > 1) out.push({ ids });
+  }
+  return out;
 }
 function updateDupBar() { const bar = $('dupBar'); if (!bar) return; bar.hidden = !dupGroups.length || exporting; if (dupGroups.length) $('dupInfo').textContent = t('dupInfo', { n: dupGroups.length }); }
 /** 重なった図形を、赤く太く描く（警告）。 */
 function drawOverlaps() {
   if (!dupGroups.length) return; ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 0.6; ctx.lineWidth = 5 / scale;
-  for (const g of dupGroups) { const s = doc.shapes.find(x => x.id === g.ids[0]); if (s) strokeShape(s, '#ff3b3b', false); }
+  for (const g of dupGroups) for (const id of g.ids) { const s = doc.shapes.find(x => x.id === id); if (s) strokeShape(s, '#ff3b3b', false); }
   ctx.restore();
 }
-/** 重なった図形を1本にまとめる。菱目の経路・部品が重なった図形の1つを使っていたら、残す1本につけ替える。元に戻すは1回。 */
+/** 重なった図形を1本にまとめる（事業主要望 2026-10-21）。座標がまったく同じ図形は、今までどおり1つ残す。同じ直線の上で重なった線は、重なった全体の範囲の1本にする（残す線の端が 0.15mm 以内の違いなら動かさない）。
+ *  残す1本：菱目の経路が付いた線＞ほかの図形とつながっている端が多い線＞長い線。経路が付いた線を延ばす必要があるとき・経路が付いた線が（同じ形でなく）2本以上あるときは、経路がずれるので、その組はそのままにして知らせる。元に戻すは1回。 */
 function mergeOverlaps() {
   const groups = dupGroups.filter(g => g.ids.every(id => { const s = doc.shapes.find(x => x.id === id); return s && editable(s); })); if (!groups.length) return;
+  const hasPath = s => doc.paths.some(p => p.shapeIds.includes(s.id)), sameShape = (p, q) => dedupeShapeGroups([p, q]).reps.length === 1, plan = []; let skipped = 0;
+  for (const g of groups) {
+    const members = g.ids.map(id => doc.shapes.find(x => x.id === id)).filter(Boolean); if (members.length < 2) continue;
+    const pathMembers = members.filter(hasPath); if (pathMembers.some(m => !sameShape(m, pathMembers[0]))) { skipped++; continue; }
+    if (members.every(m => sameShape(m, members[0]))) { const keep = pathMembers[0] ?? members[0]; plan.push({ keep, drop: new Set(members.filter(m => m !== keep).map(m => m.id)), ext0: 0, ext1: 0 }); continue; }   /* 同じ形：今までどおり */
+    const infos = new Map(members.map(m => [m.id, straightInfo(m)])); if ([...infos.values()].some(v => !v)) { skipped++; continue; }
+    const others = magnetPointsOf(doc.shapes.filter(x => visible(x) && !g.ids.includes(x.id))).ends, linked = m => { const I = infos.get(m.id); return [I.a, I.b].filter(q => others.some(o => Math.hypot(o.x - q.x, o.y - q.y) <= 1e-3)).length; };
+    const keep = pathMembers[0] ?? [...members].sort((p, q) => linked(q) - linked(p) || infos.get(q.id).len - infos.get(p.id).len)[0], K = infos.get(keep.id);
+    const ts = members.flatMap(m => { const I = infos.get(m.id); return [I.a, I.b].map(q => (q.x - K.a.x) * K.u.x + (q.y - K.a.y) * K.u.y); });
+    let ext0 = Math.max(0, -Math.min(0, ...ts)), ext1 = Math.max(0, Math.max(K.len, ...ts) - K.len); if (ext0 <= DUP_END_TOL) ext0 = 0; if (ext1 <= DUP_END_TOL) ext1 = 0;
+    if (pathMembers.length && (ext0 > 0 || ext1 > 0)) { skipped++; continue; }
+    plan.push({ keep, drop: new Set(members.filter(m => m !== keep).map(m => m.id)), ext0, ext1, K });
+  }
+  if (!plan.length) { $('hint').textContent = t('dupMergeNone', { s: skipped }); return; }
   cancel(); let removed = 0;
   commit(() => {
-    for (const g of groups) {
-      const keep = g.ids.find(id => doc.paths.some(p => p.shapeIds.includes(id))) ?? g.ids[0], drop = new Set(g.ids.filter(id => id !== keep)); removed += drop.size;
-      for (const p of doc.paths) if (p.shapeIds.some(id => drop.has(id))) p.shapeIds = [...new Set(p.shapeIds.map(id => drop.has(id) ? keep : id))];
-      for (const part of doc.parts) if (part.shapeIds.some(id => drop.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => drop.has(id) ? keep : id))];
+    for (const { keep, drop, ext0, ext1, K } of plan) {
+      removed += drop.size;
+      if (ext0 > 0 || ext1 > 0) { const a = { x: K.a.x - K.u.x * ext0, y: K.a.y - K.u.y * ext0 }, b = { x: K.b.x + K.u.x * ext1, y: K.b.y + K.u.y * ext1 }; if (keep.type === 'line') Object.assign(keep, { x1: a.x, y1: a.y, x2: b.x, y2: b.y }); else keep.points = [a, b]; }
+      for (const p of doc.paths) if (p.shapeIds.some(id => drop.has(id))) p.shapeIds = [...new Set(p.shapeIds.map(id => drop.has(id) ? keep.id : id))];
+      for (const part of doc.parts) if (part.shapeIds.some(id => drop.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => drop.has(id) ? keep.id : id))];
       doc.shapes = doc.shapes.filter(s => !drop.has(s.id)); selected = new Set([...selected].filter(id => !drop.has(id)));
     }
   });
-  $('hint').textContent = t('dupMerged', { k: removed, n: groups.length });
+  $('hint').textContent = t(skipped ? 'dupMergedSkip' : 'dupMerged', { k: removed, n: plan.length, s: skipped });
 }
 function mirrorCopy(a, b) {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
@@ -28410,7 +28456,7 @@ canvas.addEventListener('pointermove', e => {
   if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
-  else cursor = gesture?.kind === 'move' ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  else cursor = gesture?.kind === 'move' ? (gesture.moved ||= distance(p, gesture.screen) >= 4) ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : { ...gesture.start } :   /* つかんで 4px 動くまでは、動かさない（クリック・ダブルクリックのぶれで、吸着の分だけ一瞬ずれていた）。4px は、離したときに動かすか決める値と同じ */ mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   updateRadiusHover(world(p));
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
@@ -28557,7 +28603,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
       if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
-      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) runCommand(`${cursor.x},${cursor.y}`); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
+      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) { runCommand(`${cursor.x},${cursor.y}`); stage = null; lastPoint = cursor; $('hint').textContent = t('hint.line'); } /* 終点のクリックで1本できて終わり（ペンのような連続線にしない・事業主要望 2026-10-21）。始点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
@@ -28710,7 +28756,7 @@ $('file').addEventListener('change', async e => {
 });
 /** 動かしている途中に Alt を押した・離したとき、マウスを動かさなくても、すぐ吸着なし／ありに切り替える（そのとき Alt だけでメニューが開かないように、キーの既定の動作は止める）。 */
 function refreshMoveFree(e) {
-  if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.lastWorld) return; e.preventDefault?.();
+  if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.moved || !gesture.lastWorld) return; e.preventDefault?.();
   cursor = movePosition(gesture.lastWorld, e.shiftKey, e.altKey); draw();
 }
 window.addEventListener('keydown', e => {
