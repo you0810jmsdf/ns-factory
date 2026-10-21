@@ -1998,7 +1998,9 @@ function suggestSizes() {
   $('patchSuggest').textContent = list.map((c, i) => t('patchCandidate', { i: i + 1, nw: c.nW, nh: c.nH, fw: c.finishedW.toFixed(1), fh: c.finishedH.toFixed(1), cw: c.cutW.toFixed(1), ch: c.cutH.toFixed(1), sq: (c.squareness * 100).toFixed(0) })).join('\n');
 }
 function makeGrid() {
-  const grid = patchGrid({ cols: Number($('patchCols').value) || 2, rows: Number($('patchRows').value) || 2, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, pieceW: Number($('patchTargetW').value) || 40, pieceH: Number($('patchTargetH').value) || 40, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5, origin: { x: 0, y: 0 } });
+  const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
+  if (!(cols >= 1) || !(rows >= 1)) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); return; }   /* マイナスの数で 0 ピースを「作りました」と出さない（事業主指摘 2026-10-21 不具合記録 1532「パッチワークの格子が作図できない」） */
+  const grid = patchGrid({ cols, rows, pitch: Number($('patchPitch').value) || 4, seamAllowanceMm: Number($('patchAllowance').value) || 3, pieceW: Number($('patchTargetW').value) || 40, pieceH: Number($('patchTargetH').value) || 40, style: seamStyleValue(), thickness: Number($('partThickness').value) || 1.5, origin: { x: 0, y: 0 } });
   if (!grid) { $('hint').textContent = t('invalidNumber'); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
   cancel();
