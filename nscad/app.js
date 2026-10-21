@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -79,6 +79,7 @@ let chainStops = null; /* ダブルクリックで輪郭を選んだとき、分
 let countStage = null; /* 個数指定の目打ち：始点の交点をクリックしたあと終点を待つ状態 */
 let stitchPreview = null; /* 目打ち：始点をクリックしたあと、マウスの位置を終点にしたときに打つ穴の位置（打つ前の薄い表示）。{ points, tool, wrap } */
 let stitchRouteIds = null; /* 目打ち：いまの経路（つながった線）の図形の id。打つ前に、薄く光らせる */
+let attachState = null; /* 線に着ける：1本目に着けたあと、2本目を待つ状態 { key（選んだ図形の id）, line（1本目の線）, undoLen（1本目のあとの履歴の数）, moved（1本目で動いたか） } */
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
@@ -3446,10 +3447,20 @@ function attachClick(p) {
   let target = null; for (const s of doc.shapes) { if (ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type)) continue; const d = distToShape(s, p); if (d <= 12 / scale && (!target || d < target.d)) target = { s, d }; }   /* 着ける線：金具以外で、クリックにいちばん近い線（ロックしたレイヤーの線でもよい） */
   const line = target && nearestSegmentOf(target.s, p); if (!line) { $('hint').textContent = t('attachNoLine'); return; }
   const pts = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && visible(s) && !['text', 'dimension', 'image', 'fold'].includes(s.type)).flatMap(s => flattenShape(s, 0.05));
+  const fmt = v => (+v).toFixed(2), key = [...ids].sort().join(',');
+  if (attachState?.key === key) {   /* 2本目（事業主指示 2026-10-21「上辺、右辺とぴったり重なりあうように線どうしがくっつく」）：1本目に着いたまま、2本目の線にも着く（動くのは1本目の線に沿う方向だけ）。平行で着けられないときは、1本目だけのまま案内する */
+    const r2 = attachToLines(pts, attachState.line, line); if (!r2) { $('hint').textContent = t('attachNoLine'); return; }
+    if (!r2.both) { $('hint').textContent = t('attachParallel'); return; }
+    if (Math.hypot(r2.dx, r2.dy) < 0.005) { setMode('select'); $('hint').textContent = t('attachBothAlready'); return; }
+    const { undoLen, moved } = attachState; transformSelected(s => translate(s, r2.dx, r2.dy));
+    if (moved && undo.length === undoLen + 1) undo.splice(undoLen, 1);   /* 元に戻すは1回で、2本ぶん戻る（1本目の動きの履歴に、2本目の動きを含める） */
+    setMode('select'); $('hint').textContent = t('attachBoth', { gap: fmt(Math.hypot(r2.dx, r2.dy)) }); return;
+  }
   const r = attachToLine(pts, line, { rotate: $('attachRotate').checked }); if (!r) { $('hint').textContent = t('attachNoLine'); return; }
-  if (Math.abs(r.gap) < 0.005 && !r.angleDeg) { setMode('select'); $('hint').textContent = t('attachAlready'); return; }
-  const fmt = v => (+v).toFixed(2); transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy), { rotates: !!r.angleDeg });
-  setMode('select'); $('hint').textContent = r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) });
+  const already = Math.abs(r.gap) < 0.005 && !r.angleDeg;
+  if (!already) transformSelected(s => translate(r.angleDeg ? rotate(s, r.angleDeg, r.pivot) : s, r.dx, r.dy), { rotates: !!r.angleDeg });
+  attachState = { key, line, undoLen: undo.length, moved: !already };   /* 着けたあとも着ける状態のまま：続けて2本目の線をクリックできる（Esc・別のツールで終わり） */
+  $('hint').textContent = (already ? t('attachAlready') : r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) })) + ' ' + t('attachNext');
 }
 $('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
@@ -4920,7 +4931,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) {
   const c = $('patchCard'); if (on) c.dataset.win = '1'; else delete c.dataset.win;
