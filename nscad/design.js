@@ -266,21 +266,46 @@ export function regionAt(shapes, p, tol = 0.01) {
 }
 /** 閉じた領域（closedRegions の要素）のうち、ほかの領域の内側に入っていない、いちばん外の囲みだけ。 */
 export function outerRegions(regions) { return regions.filter(r => !regions.some(o => o !== r && o.area > r.area + 1e-9 && insidePolygon(r.points[0], o.points))); }
-/** 囲まれた図形（closedRegions の要素）の外枠を、列数 × 行数のマスに等分して、囲みの形で切り抜いたピースを返す（fillRegionPattern と同じ形）。
- *  マスは長方形で、大きさは「外枠の幅÷列数」×「外枠の高さ÷行数」。囲みが長方形ならちょうど列×行のピース、丸みのある囲みなら、角のピースは丸みの形で切れる。マスの面積比が minAreaRatio 未満の端切れは除く。parity は市松の2色用（(列+行) の偶奇）。 */
-export function gridFillRegion(region, cols, rows, { minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+/** 囲まれた図形（closedRegions の要素）の外枠を、列数 × 行数のマスに分けて、囲みの形で切り抜いたピースを返す（fillRegionPattern と同じ形）。
+ *  pitch を渡さないとき：マスは長方形で、大きさは「外枠の幅÷列数」×「外枠の高さ÷行数」。
+ *  pitch（穴の間隔 mm）を渡すとき：マスの1辺を pitch の整数倍にする（外枠からはみ出さない側へ丸める・最小 2 倍）。格子全体は外枠の中央に置き、外枠の縁には余白が残る。
+ *  どちらも、囲みの外には出ない（囲みの形で切り抜く）。囲みが長方形ならちょうど列×行のピース、丸みのある囲みなら、角のピースは丸みの形で切れる。
+ *  マスの面積比が minAreaRatio 未満の端切れは除く。parity は市松の2色用（(列+行) の偶奇）。各ピースの cell は、切り抜く前の長方形のマス {x,y,w,h}（穴の格子点の基準）。
+ *  pitch が大きすぎて、1マスが pitch の2倍未満にしかならないときは { tooSmall: true } を返す。 */
+export function gridFillRegion(region, cols, rows, { minAreaRatio = 0.05, maxTiles = 4000, pitch = null } = {}) {
   const nc = Math.round(cols), nr = Math.round(rows); if (!region || !(nc >= 1) || !(nr >= 1)) return null;
   if (nc * nr > maxTiles) return { tooMany: true, pieces: [], dropped: 0, tiles: nc * nr };
-  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys), w = (maxX - minX) / nc, h = (maxY - minY) / nr;
+  const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys), bw = maxX - minX, bh = maxY - minY;
+  let w = bw / nc, h = bh / nr, x00 = minX, y00 = minY;
+  if (pitch !== null && pitch !== undefined) {
+    if (!(pitch > 0)) return null;
+    const kx = Math.floor(bw / nc / pitch + 1e-9), ky = Math.floor(bh / nr / pitch + 1e-9);
+    if (kx < 2 || ky < 2) return { tooSmall: true, pieces: [], dropped: 0, tiles: nc * nr };
+    w = kx * pitch; h = ky * pitch; x00 = minX + (bw - nc * w) / 2; y00 = minY + (bh - nr * h) / 2;
+  }
   const pieces = []; let dropped = 0;
   for (let j = 0; j < nr; j++) for (let i = 0; i < nc; i++) {
-    const x0 = minX + i * w, y0 = minY + j * h, tile = [{ x: x0, y: y0 }, { x: x0 + w, y: y0 }, { x: x0 + w, y: y0 + h }, { x: x0, y: y0 + h }];
+    const x0 = x00 + i * w, y0 = y00 + j * h, tile = [{ x: x0, y: y0 }, { x: x0 + w, y: y0 }, { x: x0 + w, y: y0 + h }, { x: x0, y: y0 + h }];
     const clipped = clipPolygonByConvex(region.points, tile); if (!clipped.length) continue;
     const area = areaOf(clipped), full = w * h;
     if (area < full * minAreaRatio) { dropped++; continue; }
-    pieces.push({ points: clipped, area, parity: (i + j) % 2, whole: Math.abs(area - full) < 1e-6 });
+    pieces.push({ points: clipped, area, parity: (i + j) % 2, whole: Math.abs(area - full) < 1e-6, cell: { x: x0, y: y0, w, h }, col: i, row: j });
   }
-  return { pieces, dropped, tiles: nc * nr };
+  return { pieces, dropped, tiles: nc * nr, cell: { w, h }, margin: { x: x00 - minX, y: y00 - minY } };
+}
+/** 1マス（長方形 cell={x,y,w,h}）の穴の格子点：縁から pitch/2 だけ内側の長方形の周りを、左上の角から時計回りに、pitch おきに並べた点。
+ *  マスの辺が pitch の整数倍なら、角にも穴が来て、周りの穴の間隔は、角をまわっても、すべて pitch ちょうど。隣のマスの穴とは、境をはさんで pitch はなれ、境に沿った位置がそろう（4つの穴が1辺 pitch の正方形の角になる）。 */
+export function gridRingPoints(cell, pitch) {
+  const a = cell.w - pitch, b = cell.h - pitch, h2 = pitch / 2; if (!(pitch > 0) || a < -1e-9 || b < -1e-9) return [];
+  const n = Math.max(1, Math.round((2 * a + 2 * b) / pitch)), out = [];
+  for (let k = 0; k < n; k++) {
+    const s = k * pitch;
+    if (s < a - 1e-9) out.push({ x: cell.x + h2 + s, y: cell.y + h2 });
+    else if (s < a + b - 1e-9) out.push({ x: cell.x + cell.w - h2, y: cell.y + h2 + (s - a) });
+    else if (s < 2 * a + b - 1e-9) out.push({ x: cell.x + cell.w - h2 - (s - a - b), y: cell.y + cell.h - h2 });
+    else out.push({ x: cell.x + h2, y: cell.y + cell.h - h2 - (s - 2 * a - b) });
+  }
+  return out;
 }
 /** 柄のずらし量 {x,y}（mm・＋は右・下）を整える：数にならない値は 0。柄がぴったり重なる周期より大きい分は捨てる（結果は同じで、並べる範囲が広がりすぎない）。 */
 export function patchShiftOf(pattern, cell, shift, ratio) {
