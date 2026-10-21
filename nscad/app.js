@@ -4783,7 +4783,7 @@ function updateUI() {
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit();
+  refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -4895,7 +4895,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { countStage = null; clearStitchPreview(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { countStage = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) {
   const c = $('patchCard'); if (on) c.dataset.win = '1'; else delete c.dataset.win;
@@ -4916,6 +4916,7 @@ function keepPatchWinInView() {
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
+  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('stitchCard').open = mode === 'stitch' || mode === 'mark'; setPatchWin(mode === 'patchfill'); $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
@@ -5049,18 +5050,40 @@ function copySelectedOffsets(offsets) {
     selected = ids;
   });
 }
-function transformAboutCenter(kind) {
+/** 回転の小窓（事業主指示 2026-10-21）：回転ボタン（キー Q）で出る。角度を入れて Enter か「回す」で、選んだ図形全体の中心まわりに回す。声で角度を先に言ったときは、窓を出さずにすぐ回す。 */
+function openRotateBar() { $('rotateBar').hidden = false; $('rotateA').focus?.(); $('rotateA').select?.(); }
+function closeRotateBar() { $('rotateBar').hidden = true; }
+function applyRotate() {
+  const angle = Number($('rotateA').value);
+  if (String($('rotateA').value).trim() === '' || !Number.isFinite(angle)) { $('hint').textContent = t('invalidNumber'); return; }
+  closeRotateBar(); transformAboutCenter('rotate', angle); $('hint').textContent = t('rotDone', { a: angle });
+}
+$('rotateRun').onclick = applyRotate; $('rotateClose').onclick = closeRotateBar;
+$('rotateA').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyRotate(); } else if (e.key === 'Escape') closeRotateBar(); });
+function refreshRotateBar() { if (!$('rotateBar').hidden && !doc.shapes.some(s => selected.has(s.id) && editable(s))) closeRotateBar(); }   /* 選んだ図形が無くなったら、窓も閉じる */
+function transformAboutCenter(kind, angleDeg) {
   const shapes = doc.shapes.filter(s => selected.has(s.id) && editable(s));
   if (!shapes.length) return;
+  if (kind === 'rotate' && angleDeg === undefined && voiceAskNumber === null) { openRotateBar(); return; }
   const b = bboxOfDoc({ shapes, holes: [] }), center = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
-  const angle = kind === 'rotate' ? askNumber('rotation', 90) : 0;
+  const angle = kind === 'rotate' ? (angleDeg ?? askNumber('rotation', 90)) : 0;
   if (angle === null) return;
   transformSelected(s => kind === 'rotate' ? rotate(s, angle, center) : keepHoleSlant(kind === 'mirrorX' ? mirrorX(s, center.x) : mirrorY(s, center.y), s), { rotates: kind === 'rotate' });
   if (kind !== 'rotate' && doc.shapes.some(s => selected.has(s.id) && partOf(s))) { const ids = new Set(selected); commit(() => flipMark(ids)); }
 }
-/** 数の入力ダイアログ。remember（丸め・面取りなど）を渡すと、前回入れた数を初期値にする（ブラウザに保存・事業主指示 2026-10-17）。キャンセル・不正な入力では前回の値を変えない。 */
+/** 丸め・面取りの数字は、画面上部の小窓（filletR・chamferD）に置く（事業主指示 2026-10-21「メニューを押して数値指定できるものは窓を出して」）。以前は、角をクリックするたびにダイアログで聞いていた。
+ *  小窓の数字が「前回の値」：変えるまで残り、ブラウザにも保存して、開き直しても引き継ぐ（丸めと面取りは別々・事業主指示 2026-10-17）。声の操作で先に数字を言ったときは、そちらを1回だけ使う。 */
+const ROUND_FIELDS = { radius: ['filletR', 'fillet'], chamferSize: ['chamferD', 'chamfer'] };
+for (const [id, name] of Object.values(ROUND_FIELDS)) {
+  let saved = null; try { const raw = localStorage.getItem('leather-cad.ask.' + name); if (raw !== null && Number.isFinite(Number(raw)) && Number(raw) > 0) saved = raw; } catch { /* 保存を読めなくても、既定の 3 で続ける */ }
+  $(id).value = saved ?? '3';
+  $(id).addEventListener('change', () => { const v = Number($(id).value); if (String($(id).value).trim() !== '' && Number.isFinite(v) && v > 0) { try { localStorage.setItem('leather-cad.ask.' + name, String(v)); } catch { /* 保存できなくても続ける */ } } });
+}
+/** 数の入力。丸め・面取り（ROUND_FIELDS）は小窓の数字を読む（空・0 以下・不正なら案内して null）。それ以外は、ダイアログで聞く。remember を渡すと、前回入れた数を初期値にする。 */
 function askNumber(key, initial, remember) {
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; return v; }
+  const round = ROUND_FIELDS[key];
+  if (round) { const el = $(round[0]), v = Number(el.value); if (String(el.value).trim() === '' || !Number.isFinite(v) || !(v > 0)) { $('hint').textContent = t('roundNeedValue'); el.focus?.(); return null; } return v; }
   let start = initial; if (remember) { try { const saved = localStorage.getItem('leather-cad.ask.' + remember); if (saved !== null && Number.isFinite(Number(saved))) start = Number(saved); } catch { /* 保存を読めなくても、既定の値で続ける */ } }
   const raw = window.prompt(t(key), String(start));
   if (raw === null) return null;
@@ -5293,7 +5316,7 @@ function applyRoundChain(first, hit, res, ch, affectedPaths) {
     doc.paths = doc.paths.filter(q => q.shapeIds.length);
     reattachMarks(affectedPaths);
   });
-  $('hint').textContent = t('hint.chamfer');
+  $('hint').textContent = t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
 }
 /** 2本の直線 first・second の角に、前に丸めた（面取りした）円弧・直線が残っているか：2本を延ばして交わる角から近いほうの端どうしが離れていて、その2つの端をつなぐ円弧か直線があれば、それ（古いつなぎ）を返す。初めての角（端が同じ点）や平行な2本、つなぐものが無いときは null。三角形の斜めの辺のような、ほかの図形は、近いほうの端をつないでいないので対象にならない。 */
 function oldCornerConnector(first, second) {
@@ -5344,7 +5367,7 @@ function editAt(p) {
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); /* 2本が同じ線なら、間にできた円弧も同じ線に入れる */
     reattachMarks(affectedPaths);
   });
-  $('hint').textContent = t('hint.chamfer');
+  $('hint').textContent = t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
 }
 /** 動かす図形の「基点」：掴んだ所の近く（磁石の吸着距離内）にある、選んだ図形の端・中点・中心。見つかれば gesture.start をその点に置き換え、相手の候補（動かさない図形の端・中点・中心）を gesture.targets に持つ（事業主指示 2026-10-13：選んだ矩形の中心と、くっつけたい図形の中心を合わせたい）。 */
 function beginMoveSnap(g) {
