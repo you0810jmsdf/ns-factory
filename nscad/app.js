@@ -944,11 +944,17 @@ function unifySlantOfSelection(kind) {
 const regularGap = (g, pitch) => g === null || Math.abs(g - pitch) <= 0.15 * pitch;
 const MAX_GAP_HOLES = 3; /* 歯抜けは最大3個続きまで。それより長い空きは、わざと打っていない区間 */
 const isGapLike = (g, pitch) => { const n = Math.round(g / pitch) - 1; return n >= 1 && n <= MAX_GAP_HOLES && Math.abs(g - (n + 1) * pitch) <= 0.3 * pitch; };
+/** 点 p が、図形 s の近く（tol 未満）にあるか。外接枠の外の点は、距離を測らずに「遠い」とする（選んだ図形が多いとき、全部の穴と全部の図形の組を測ると、画面が数秒止まる）。 */
+function nearShapeFn(shapes, tol, dist) {
+  const boxes = shapes.map(s => { try { const b = bboxOf(s); return b && [b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite) ? b : null; } catch { return null; } });
+  return p => shapes.some((s, i) => { const b = boxes[i]; return (!b || (p.x >= b.minX - tol && p.x <= b.maxX + tol && p.y >= b.minY - tol && p.y <= b.maxY + tol)) && dist(s, p) < tol; });
+}
 function findHoleGaps(wholeDoc = false) {
   /* 対象：選んだ図形の経路と、選んだ菱目の経路。さらに、選んだ線の上（0.5mm以内）に穴が乗っている経路（穴の付いた線に、別の線が重なっているとき、上の線を選んでも点検できる）。後者は、選んだ線の上にある歯抜けだけを補う（事業主指摘 2026-10-16 「反応なし」） */
   const ids = new Set(), onlyNear = new Set(), sel = doc.shapes.filter(s => selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension' && s.type !== 'image');
   for (const p of doc.paths) if (wholeDoc || p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
-  for (const p of doc.paths) if (!wholeDoc && !ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && sel.some(s => distToShape(s, h) < 0.5))) { ids.add(p.id); onlyNear.add(p.id); }
+  const nearSel = nearShapeFn(sel, 0.5, distToShape);
+  for (const p of doc.paths) if (!wholeDoc && !ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && nearSel(h))) { ids.add(p.id); onlyNear.add(p.id); }
   const add = []; let gapCount = 0;
   for (const pid of ids) {
     const path = doc.paths.find(p => p.id === pid), route = path && resolvePath(doc, path); if (!route) continue;
@@ -959,7 +965,7 @@ function findHoleGaps(wholeDoc = false) {
       const iv = k => k >= 1 && k < hs.length ? hs[k].s - hs[k - 1].s : null; let lo = i, hi = i; /* 続けて歯抜けの間隔（ピッチの整数倍）が並ぶ範囲を求め、その外側の間隔がピッチどおりのときだけ歯抜けとする */
       while (iv(lo - 1) !== null && isGapLike(iv(lo - 1), tool.pitch)) lo--; while (iv(hi + 1) !== null && isGapLike(iv(hi + 1), tool.pitch)) hi++;
       const fl = iv(lo - 1), fr = iv(hi + 1); if ((fl === null && fr === null) || !regularGap(fl, tool.pitch) || !regularGap(fr, tool.pitch)) continue; /* もともと2倍ピッチで並ぶ列・ピッチが途中で変わる列は、対象外 */
-      const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !sel.some(s => distToShape(s, mid) < 0.5)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
+      const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !nearSel(mid)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
       gapCount++; const gid = gapCount, dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
       for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, gapId: gid, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
     }
@@ -1044,7 +1050,7 @@ function deleteSelectedHoles() {
 }
 function affectedHoles(all=false) {
   const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>selected.has(id))).map(p=>p.id));
-  return doc.holes.filter(h=>holeEditable(h)&&(all||selected.has(h.id)||paths.has(h.pathId)));
+  return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId))&&holeEditable(h));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
 }
 function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
@@ -1143,7 +1149,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
-  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchTexA', 'patchTexB',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchTexA', 'patchTexB',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
@@ -1985,8 +1991,9 @@ function optimizePatch() {
   const pathIds = new Set([...result.holesByPath.keys()]);
   cancel();
   commit(() => {
+    const toolIdOf = new Map(); for (const h of doc.holes) if (!toolIdOf.has(h.pathId)) toolIdOf.set(h.pathId, h.toolId);   /* いまの穴の種類を覚える（縫い合わせの丸ギリを、使用中の菱目に変えない） */
     doc.holes = doc.holes.filter(h => !pathIds.has(h.pathId));
-    for (const [pathId, points] of result.holesByPath) { const saved = doc.paths.find(p => p.id === pathId); const route = resolvePath(doc, saved); if (route) placeHoles(saved, route, points, { ...tool, pitch }); }
+    for (const [pathId, points] of result.holesByPath) { const saved = doc.paths.find(p => p.id === pathId); const route = resolvePath(doc, saved), own = doc.tools.find(x => x.id === toolIdOf.get(pathId)); if (route) placeHoles(saved, route, points, { ...(own || tool), pitch }); }
   });
   const point = ref => { const saved = doc.paths.find(p => p.id === ref.pathId); const route = saved && resolvePath(doc, saved); return route ? pointAtLength(route, ref.s) : null; };
   pairLines = result.pairs.map(pr => [point(pr.a), point(pr.b)]).filter(l => l[0] && l[1]);
@@ -2020,6 +2027,7 @@ let gapAlert = null;   /* 格子の枠の隙間を知らせる橙の丸印：{ i
 function gridInSelection(cols, rows) {
   const prevAlert = gapAlert; gapAlert = null;
   const ids = selectedShapeIds(), mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s));
+  if (!regenBusy && lastPatch && undo.at(-1) === lastPatch.before && ((lastPatch.frameIds.length === ids.size && lastPatch.frameIds.every(id => ids.has(id))) || (ids.size && [...ids].every(id => lastPatch.allIds?.includes(id))))) { gapAlert = prevAlert; regenPatch(true); return; }   /* 同じ枠にもう一度押したときは、二重の格子にせず、いまの数で作りなおす */
   const regions = outerRegions(closedRegions(mine, 0.01, { dashed: true }));
   if (!regions.length) {
     /* 枠が閉じていないとき、線の端が離れている所（2mm 以内）があれば、橙の丸印と隙間の長さで知らせ、「隙間を閉じる」で枠そのものを直してもらう（事業主指示 2026-10-21「隙間があるならそもそもそこを修正したい」「丸印で警告するのではなかったか」・不具合記録 1902：端が最大 0.16mm 離れた所が2か所で、枠を選んでいるのに格子が作れなかった）。許容してつなぐことはしない */
@@ -2034,13 +2042,13 @@ function gridInSelection(cols, rows) {
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const pitch = Number($('patchPitch').value); if (!(pitch > 0)) { $('hint').textContent = t('invalidNumber'); return; }
-  const angleRaw = String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(regions[0], cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow() });   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
+  const angleRaw = String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(regions[0], cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
   if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
   if (fill.badAngle) { $('hint').textContent = t('gridBadAngle', { a: +fill.theta.toFixed(1), min: 20, max: 80 }); return; }
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
-  if (fill.spec.w < 2 * pitch - 1e-9 || fill.spec.h < 2 * pitch - 1e-9) { $('hint').textContent = t('gridTooSmall', { p: pitch }); return; }   /* ひし形が小さすぎて、縫い線を内側に引けない */
+  if (fill.tooSmall) { $('hint').textContent = t('gridTooSmall', { p: pitch }); return; }   /* ひし形が小さすぎて、縫い穴を置けない */
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
-  patchFillApply(regions[0], fill, layer, { exactPitch: pitch, frameIds: [...ids], note: t('gridSpec', { w: +fill.spec.w.toFixed(2), h: +fill.spec.h.toFixed(2), a: +fill.spec.theta.toFixed(1), auto: fill.spec.auto ? t('gridAngleAuto') : t('gridAngleSet') }) });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
+  patchFillApply(regions[0], fill, layer, { exactPitch: pitch, frameIds: [...ids], note: t('gridSpec', { w: +fill.spec.w.toFixed(2), h: +fill.spec.h.toFixed(2), a: +fill.spec.theta.toFixed(1), auto: fill.spec.auto ? t('gridAngleAuto') : t('gridAngleSet') }) + (fill.spec.adjusted ? ' ' + t('gridAdjusted', { p: pitch }) : '') + ($('patchStitch').checked && Math.abs(fill.spec.theta - 45) > 1.5 ? ' ' + t('gridNot45') : '') + ($('patchStitch').checked && fill.spec.bad > 0 ? ' ' + t('gridBadPieces', { n: fill.spec.bad }) : '') });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
 }
 function makeGrid() {
   const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
@@ -2049,12 +2057,23 @@ function makeGrid() {
   gridInSelection(cols, rows);
 }
 /** 縫い合わせ（doc.seams）に沿って共有辺の縫い穴を最適化して置く（「最適化」ボタンと同じ計算）。置いた穴の数を返す。commit の中で呼ぶ。 */
-function autoPatchHoles(tool) {
-  const pitch = Number($('patchPitch').value) || tool.pitch, tolerancePct = Number($('patchTol').value) || 15, raw = Number($('patchClear').value), junctionClearMm = Number.isFinite(raw) && raw >= 0 ? raw : null;
-  const result = optimizePatchHoles(doc, { pitch, tolerancePct, junctionClearMm }), pathIds = new Set([...result.holesByPath.keys()]);
-  doc.holes = doc.holes.filter(h => !pathIds.has(h.pathId));
-  for (const [pathId, points] of result.holesByPath) { const saved = doc.paths.find(p => p.id === pathId), route = saved && resolvePath(doc, saved); if (route) placeHoles(saved, route, points, { ...tool, pitch }); }
-  return [...result.holesByPath.values()].reduce((a, b) => a + b.length, 0);
+/** 格子（ひし形）の縫い穴を、縫い合わせごとに、向かい合う2本の縫い線（縁から pitch/2 内側）の上へ、同じ位置にそろえて、pitch おきに置く（45度なら、4つの穴が1辺 pitch の正方形の角になる＝クロスステッチが正方形）。
+ *  2本の縫い線が重なる範囲の両端に穴を置き、間を等分する。穴が無い部分が出ないよう、「最適化」のように歯抜けにしない。置いた穴の数を返す。commit の中で呼ぶ。 */
+function latticeSeamHoles(stitch, pathOfPiece, tool, pitch) {
+  const info = new Map(), want = new Map();
+  const routeOf = pid => { if (!info.has(pid)) { const saved = doc.paths.find(p => p.id === pid), r = saved && resolvePath(doc, saved); info.set(pid, r ? { saved, route: r, len: arcLength(r) } : null); } return info.get(pid); };
+  const put = (pid, q) => { const it = routeOf(pid); if (!it) return; let pr = projectOnPath(it.route, q); if (!pr || distance(pr, q) > 0.05) return; if (pr.s >= it.len - 1e-6) pr = { ...pr, s: 0 }; const m = want.get(pid) || want.set(pid, new Map()).get(pid), key = Math.round(pr.s * 100); if (m.has(key)) return; for (const o of m.values()) if (distance(o, pr) < 0.7 * pitch) return; m.set(key, pr); };   /* 枠で切れたピースの尖った角では、近すぎる穴は置かない */
+  for (const sm of stitch.seams) {
+    const pa = pathOfPiece[sm.a.piece], pb = pathOfPiece[sm.b.piece], ia = pa && routeOf(pa), ib = pb && routeOf(pb); if (!ia || !ib) continue;
+    const A0 = pointAtLength(ia.route, sm.a.from), A1 = pointAtLength(ia.route, sm.a.to), B0 = pointAtLength(ib.route, sm.b.from), B1 = pointAtLength(ib.route, sm.b.to), La = distance(A0, A1); if (!(La > 1e-6)) continue;
+    const e = { x: (A1.x - A0.x) / La, y: (A1.y - A0.y) / La }, along = q => (q.x - A0.x) * e.x + (q.y - A0.y) * e.y, tb0 = along(B0), tb1 = along(B1);
+    const t0 = Math.max(0, Math.min(tb0, tb1)), t1 = Math.min(La, Math.max(tb0, tb1)), len = t1 - t0; if (len < -1e-6) continue;
+    const off = { x: B0.x - A0.x - e.x * tb0, y: B0.y - A0.y - e.y * tb0 };   /* A の縫い線から B の縫い線へ（垂直に） */
+    const m = Math.round(len / pitch), ts = m >= 1 ? Array.from({ length: m + 1 }, (_, k) => t0 + len * k / m) : len >= 0.4 * pitch ? [(t0 + t1) / 2] : [];
+    for (const t of ts) { const qa = { x: A0.x + e.x * t, y: A0.y + e.y * t }; put(pa, qa); put(pb, { x: qa.x + off.x, y: qa.y + off.y }); }
+  }
+  let n = 0; for (const [pid, m] of want) { const it = routeOf(pid), pts = [...m.values()].sort((p, q) => p.s - q.s); if (it && pts.length) { placeHoles(it.saved, it.route, pts, tool); n += pts.length; } }
+  return n;
 }
 /** パッチワークで自動に打つ穴の工具。「使用中の工具のまま」か、使用中の工具が選んだ種類（菱目／丸目）ならそれ。違えば同じ種類の登録工具、無ければ使用中の工具から作る。 */
 function patchHoleTool(forceKind = null) {   /* forceKind：種類を決めて工具を得る（格子の縫い穴は 'round'） */
@@ -2089,27 +2108,38 @@ function rimSpotFree(q, others, r, near) {
   for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) for (const h of near.grid.get(i + ',' + j) || []) if ((h.x - q.x) ** 2 + (h.y - q.y) ** 2 < g2) return false;
   return true;
 }
+let commitSeq = 0;   /* commit が図面を変えた回数（格子の連動の記録を付けるかの判定に使う） */
 let lastPatch = null; /* 直前の格子 {frameIds: 元の枠の図形の id, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
-let regenTimer = null, regenDelayMs = 250;   /* 数値の欄を押しっぱなし・打ちかけにしている間は作りなおさず、最後の変化の 250ms 後に1回だけ作りなおす（事業主「数値がとまらない」：1段ごとに作りなおすと画面が止まり、矢印を離しても数が進み続けた）。数値の欄（type=number）だけ。選択・チェックはすぐ */
-function regenSoon(fn, el) { clearTimeout(regenTimer); regenTimer = null; if (el.type !== 'number' || !(regenDelayMs > 0)) { fn(); return; } regenTimer = setTimeout(() => { regenTimer = null; fn(); }, regenDelayMs); }
+let regenTimer = null, regenDelayMs = 250, regenBusy = false;   /* 数値の欄を押しっぱなし・打ちかけにしている間は作りなおさず、最後の変化の 250ms 後に1回だけ作りなおす（事業主「数値がとまらない」：1段ごとに作りなおすと画面が止まり、矢印を離しても数が進み続けた）。数値の欄（type=number）だけ。選択・チェックはすぐ。0 以下なら、すぐ（テスト用） */
+function regenSoon(fn, el) {
+  clearTimeout(regenTimer); regenTimer = null; if (el.type !== 'number' || !(regenDelayMs > 0)) { fn(); return; }
+  const run = () => { regenTimer = null; if (gesture || stage) { regenTimer = setTimeout(run, regenDelayMs); return; } fn(); };   /* ドラッグ・作図の途中は、操作を壊さないよう、終わるまで待つ */
+  regenTimer = setTimeout(run, regenDelayMs);
+}
+/** 格子の設定の値の組（これが前回の作りなおしと同じなら、作りなおさない：欄を離れたときの change で、同じ値のまま、もう一度作りなおすのを防ぐ）。 */
+function regenSig() { return JSON.stringify(['patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim'].map(id => !!$(id)?.checked))); }
 /** 列・行・ひし形の角度を変えたとき：直前が格子なら作りなおす。作りなおす図が無いとき（読み込み直した後・別の操作のあと）は、何も起きない理由と、押す操作を案内する（事業主「列と行の数字を変えてもなにも図形に変化が出ない」）。 */
 function gridFieldChanged() {
   if (lastPatch && undo.at(-1) === lastPatch.before) { regenPatch(); return; }
   $('hint').textContent = t('gridFieldsNoFigure');
 }
-/** 格子の設定を変えたとき、直前の格子を取り消して同じ枠に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。 */
-function regenPatch() {
+/** 格子の設定を変えたとき、直前の格子を取り消して同じ枠に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。force＝同じ設定でも作りなおす（ピースの上をクリックしたとき）。 */
+function regenPatch(force = false) {
   if (!lastPatch || undo.at(-1) !== lastPatch.before) return; /* 塗りつぶしの後に別の操作をしていれば何もしない */
-  const snap = JSON.stringify(doc), savedUndo = undo.slice(), savedRedo = redo.slice(), frameIds = lastPatch.frameIds;
-  history(undo, redo, true); const depth = undo.length; selected = new Set(frameIds); makeGrid();   /* 格子は、元の枠を選びなおして作りなおす（事業主「数値を変更したら図もそれに追従する仕様だったのに壊れています」） */
-  if (undo.length === depth) { /* 作れなかった：画面の記録を元に戻す（案内の文言は残す） */
-    const msg = $('hint').textContent; doc = JSON.parse(snap); undo = savedUndo; redo = savedRedo; selected.clear(); refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw(); $('hint').textContent = msg;
+  if (gesture || stage) return;   /* ドラッグ・作図の途中は、操作を壊さない（取り消しが cancel() を呼ぶため） */
+  if (!force && lastPatch.sig === regenSig()) return;   /* 設定が前回と同じなら、作りなおさない */
+  const snap = JSON.stringify(doc), savedUndo = undo.slice(), savedRedo = redo.slice(), frameIds = lastPatch.frameIds, prevSel = new Set(selected);
+  history(undo, redo, true); const depth = undo.length; selected = new Set(frameIds); let ok = false;
+  regenBusy = true; try { makeGrid(); ok = undo.length > depth; } catch (e) { ok = false; console.error(e); } finally { regenBusy = false; }   /* 格子は、元の枠を選びなおして作りなおす（事業主「数値を変更したら図もそれに追従する仕様だったのに壊れています」） */
+  if (!ok) { /* 作れなかった（例外も）：画面の記録を元に戻す（案内の文言・選択は残す） */
+    const msg = $('hint').textContent; doc = JSON.parse(snap); undo = savedUndo; redo = savedRedo; selected = prevSel; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw(); $('hint').textContent = msg;
   }
 }
 /** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックしたとき：その枠に「格子を作る」と同じ処理をする（列・行・角度のひし形）。柄（アーガイル・市松）の塗りつぶしは廃止（事業主 2026-10-21 案 A「ひし形は『格子を作る』に一本化」）。 */
 function gridAtPoint(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
   if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
+  if (lastPatch && undo.at(-1) === lastPatch.before && region.shapeIds.every(id => lastPatch.pieceIds?.includes(id))) { regenPatch(true); return; }   /* 直前の格子のピースの上をクリックしたとき：ピースの中に入れ子の格子は作らず、同じ枠を、いまの数で作りなおす（事業主「途中で連動しなくなる」） */
   selected = new Set(region.shapeIds); makeGrid();
 }
 /** 柄・格子のピース（fill）を、囲み（region）の中に描く。縫い合わせ（縫い線・縫い穴）・外周の穴は、カードの設定に従う。p は柄の塗りつぶしでクリックした点（数値を変えたときの作りなおし用）。格子は null。 */
@@ -2123,25 +2153,26 @@ function patchFillApply(region, fill, layer, opts = {}) {
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
   if (rimOn && rimOffset <= patchHoleClearR(tool)) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleClearR(tool).toFixed(1) }); return; } /* 穴が縁の線と重なる近さ */
   const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
-  let stitched = null, rimInfo = null; const depth0 = undo.length;
+  let stitched = null, rimInfo = null, pieceIds = [], allIds = []; const depth0 = undo.length, seq0 = commitSeq;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
-    const ids = polys.map((points, i) => { const id = freshId(doc.shapes, 's'), tex = fill.pieces[i].parity ? texB : texA; doc.shapes.push({ id, layer, type: 'polyline', closed: true, points, ...(tex ? { texture: tex } : {}) }); return id; });
+    const extraIds = [];   /* 縫い線・外周線の図形（見えない補助の線）：選択に入れて、削除・移動・コピーで穴が取り残されないようにする */
+    const ids = pieceIds = polys.map((points, i) => { const id = freshId(doc.shapes, 's'), tex = fill.pieces[i].parity ? texB : texA; doc.shapes.push({ id, layer, type: 'polyline', closed: true, points, ...(tex ? { texture: tex } : {}) }); return id; });
     selected = new Set(ids);
     for (const tl of [tool, seamTool]) if (tl && !doc.tools.some(x => x.id === tl.id)) doc.tools.push({ ...tl }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
       const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
       const pathOfPiece = stitch.insets.map(pts => {
         if (!pts) return null;
-        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: pts.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed', holeLink: true });   /* 見えない補助の線（事業主「菱目ラインをつなぐ点線の意味がわからない。不要です」） */
-        const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid;
+        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: pts.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })), color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);   /* 見えない補助の線（事業主「菱目ラインをつなぐ点線の意味がわからない。不要です」） */
+        const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', grid: true }); return pid;   /* grid：格子が作った縫い線の経路（消すときは、穴も一緒に消す） */
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      let holes = !stitch.seams.length ? 0 : autoPatchHoles(seamTool), banned = 0;
+      let holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact), banned = 0;
       stitched = { seams: stitch.seams.length, holes, banned, inset };
       if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ */
-        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true });
+        const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved);   /* rim：外周の穴の経路（点検で使う） */
         const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(doc.holes, rimPitch * 0.5), loop = loopSampler(rim.points);
         const anchors = doc.holes.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（柄の縫い合わせの端の穴）＝そのまま使い、間を埋める */
@@ -2150,8 +2181,9 @@ function patchFillApply(region, fill, layer, opts = {}) {
         rimInfo = { n: spots.length, d: rimOffset, r: rim.radius };
       }
     }
+    allIds = [...ids, ...extraIds]; selected = new Set(allIds);
   });
-  renderSeams(); if (opts.frameIds && undo.length > depth0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1) };
+  renderSeams(); if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig() };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
   $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + rimNote + rimCheckNote;
@@ -4971,7 +5003,7 @@ function selectedLineHoleStats() {
   if (!lines.length || lines.length > 60) return null;
   let len = 0; for (const s of lines) { let l = NaN; try { l = arcLength(s); } catch { l = NaN; } if (Number.isFinite(l)) { len += l; withLen.push(s); } }
   if (!withLen.length) return null;
-  const holes = doc.holes.filter(h => holeVisible(h) && withLen.some(s => distTo(s, { x: h.x, y: h.y }) < 0.3)).length;
+  const nearLine = nearShapeFn(withLen, 0.3, distTo), holes = doc.holes.filter(h => holeVisible(h) && nearLine(h)).length;
   return { len, holes };
 }
 function updateUI() {
@@ -5095,7 +5127,7 @@ function commit(fn) {
   fn(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
   const staleFills = refollowFills(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
   const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
-  if (before !== JSON.stringify(doc)) { undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
+  if (before !== JSON.stringify(doc)) { commitSeq++; undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
 }
@@ -5142,7 +5174,7 @@ function setMode(next) {
 }
 function history(from, to, quiet = false) {
   if (!from.length) return; scheduleAutosave();
-  to.push(JSON.stringify(doc)); doc = migrateDoc(JSON.parse(from.pop())); /* 保存した履歴は古い版の図面かもしれないので、版上げしてから戻す */ selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); if (!quiet) { rebuildSnaps(); draw(); }   /* quiet：作りなおしの途中の取り消し（すぐあとの commit が、当たり判定の作りなおしと再描画をする） */
+  to.push(JSON.stringify(doc)); doc = quiet ? JSON.parse(from.pop()) : migrateDoc(JSON.parse(from.pop())); /* 保存した履歴は古い版の図面かもしれないので、版上げしてから戻す */ selected.clear(); cancel(); manualNext = null; nodeSel = null; pairLines = []; refreshTools(); persistTools(); renderLayers(); renderSeams(); if (!quiet) { rebuildSnaps(); draw(); }   /* quiet：作りなおしの途中の取り消し（すぐあとの commit が、当たり判定の作りなおしと再描画をする） */
 }
 /** 分解：選んだ矩形・折れ線（閉じた図形を含む）を、辺ごとの独立した直線にばらす。層・色・線種・部品の所属は引き継ぐ。目打ち（縫い穴）が付いた図形は穴が壊れるので分解しない。 */
 function explodeSelection() {
@@ -5182,7 +5214,8 @@ function removeSelectedKeepHoles() {
 }
 function removeSelected(onlyIds = null) {
   const ids = onlyIds || selectedShapeIds();   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
-  cancel(); commit(() => { const own=ownHolePathIds(doc), paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
+  cancel(); commit(() => { const own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
+    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
 }
 function addShape(shape) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
