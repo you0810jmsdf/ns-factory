@@ -592,7 +592,7 @@ export function pointAtLength(shape, position) {
 export const THROUGH_STRAIGHT_DEG=25, THROUGH_BRANCH_DEG=45;
 export function chainShapes(shapes,tol=0.01,{through=false,exclude=null}={}) {
   const remaining=new Set(exclude?shapes.filter(s=>!exclude.has(s.id)):shapes), out=[];   /* exclude（図形の id の集合）：経路に入れない図形。ただし、つながる点の数え方（次数・枝）には入れる＝打ち済みの線が接する点は、角ではなく分かれ道のまま */
-  const end=(s,last)=>pointAtLength(s,last?arcLength(s):0);
+  const endMemo=new Map(), end=(s,last)=>{ let m=endMemo.get(s); if(!m){ m=[null,null]; endMemo.set(s,m); } const k=last?1:0; return m[k]||(m[k]=pointAtLength(s,last?arcLength(s):0)); };   /* 端点を毎回 flatten しない（実図面で 5.2秒→0.5秒・出力は同じ） */
   const open=through?shapes.filter(s=>s.type!=='circle'&&!s.closed):[];
   /* 端 last から外へ出ていく向き／その端から線の中へ入っていく向き（度） */
   const outward=(s,last)=>last?end(s,true).angleDeg:end(s,false).angleDeg+180, inward=(s,last)=>last?end(s,true).angleDeg+180:end(s,false).angleDeg;
