@@ -320,7 +320,7 @@ export const MESSAGES = {
     "segmentFrom": "区間の開始 s (mm)",
     "segmentTo": "区間の終了 s (空欄＝末尾)",
     "modHelp.select": "クリック：交点から交点までの区間を選ぶ（線はそこで分かれます）\nダブルクリック：つながった線をすべて選ぶ（ペンの線は節点を足す）\nドラッグ：図形を動かす／空白をドラッグで囲み選択\nShift＋クリック：選択に追加・解除\nShift＋ドラッグ：水平・垂直だけに動かす\n動かしている間 Alt：吸着なし（つかんだあとに押す）\nAlt＋クリック：菱目と菱目の間だけを選ぶ\nShift＋Alt＋クリック：菱目の間を選択に追加\nAlt＋ドラッグ：矩形は角だけ動かす（ペンのハンドルは片側だけ折る）",
-    "modHelp.line": "ドラッグ：始点から終点へ\nダブルクリック：連続線を確定\nShift＋ドラッグ：水平・垂直に固定",
+    "modHelp.line": "クリック→クリック（またはドラッグ）：始点から終点へ\nShift＋クリック／ドラッグ：水平・垂直に固定",
     "modHelp.rect": "ドラッグ：対角の2点で矩形\nShift＋ドラッグ：正方形",
     "modHelp.ruler": "クリック：始点→終点で距離を測る\nShift＋クリック：水平・垂直に固定",
     "modHelp.stitch": "クリック：始点→終点の順に2回クリックして、その間に打つ（端・交点・穴に吸着）\n固定ピッチ：始点から終点を超えない所まで／可変ピッチ：両端に合わせて均等／個数指定：両端を含めてN個\nAlt＋クリック：1穴だけ打つ",
@@ -916,7 +916,7 @@ export const MESSAGES = {
     "countLine": "・長さ {len} mm・菱目 {holes} 個",
     "status": "X {x}　Y {y} mm　｜ {zoom}%",
     "hint.select": "クリックで選択、図形をドラッグして移動（Shift を押しながらで、水平・垂直だけに動く）。空白で囲み選択。Shift で追加・解除。",
-    "hint.line": "始点から終点へドラッグ。Shift で水平・垂直固定。",
+    "hint.line": "始点→終点の順にクリック（またはドラッグ）。Shift で水平・垂直固定。",
     "hint.circle": "中心から円周へドラッグ。上の欄に半径か直径を入れると、クリックした位置にその大きさの円を置きます。",
     "hint.arcHalf": "半円：始点をクリック → 終点をクリック（2点を直径とする半円・膨らむ側は作図オプションの「円弧の向き」・Esc で中止）。",
     "hint.arc3": "円弧：始点をクリック → 通過点をクリック → 終点をクリック（3点を通る円弧・Esc で中止）。",
@@ -978,10 +978,12 @@ export const MESSAGES = {
     "hint.mirror": "選択してから軸の直線をクリック、または2点で軸を指定。Shift+クリックで、平行な2本の線の真ん中を軸にできます。",
     "mirrorMid1": "1本目の線を選びました。2本目の（平行な）線をクリックすると、その真ん中が軸になります。",
     "stitchSpanNote": "（交点から交点まで：線に沿って {a}〜{b} mm の区間だけ）",
-    "dupInfo": "⚠ 同じ形で重なった線が {n} か所あります（図面では赤く太く表示）。選ぶ・つなぐ・菱目打ちが、そこで止まる原因になります。",
+    "dupInfo": "⚠ 重なった線が {n} か所あります（同じ形、または同じ直線の上で重なっている線。図面では赤く太く表示）。選ぶ・つなぐ・菱目打ちが、そこで止まる原因になります。",
     "dupMerge": "重なりを1本にまとめる",
-    "dupMergeTip": "同じ形・同じ層・同じ線種で重なった線を、1本にします（菱目の経路は残す1本につけ替えます）。元に戻すは1回です。",
+    "dupMergeTip": "同じ層・同じ線種・同じ色で重なった線（同じ形、または同じ直線の上で長さの途中が重なった線）を、重なった全体の範囲の1本にします（菱目の経路は残す1本につけ替えます・経路の付いた線を延ばす必要があるときは、そのままにします）。元に戻すは1回です。",
     "dupMerged": "重なった線 {k} 本を、{n} か所で1本にまとめました。",
+    "dupMergedSkip": "重なった線 {k} 本を、{n} か所で1本にまとめました。菱目の経路の都合で、そのままにした所が {s} か所あります。",
+    "dupMergeNone": "まとめられませんでした。菱目の経路が付いた線を延ばす必要がある所（または経路が付いた線が2本以上ある所）が {s} か所あり、そのままにしています。",
     "mirrorNotParallel": "2本の線が平行ではありません。平行な2本の線を選んでください。",
     "circleLive": "半径 {r}・直径 {d} mm",
     "editing": "編集",
@@ -1840,7 +1842,7 @@ export const MESSAGES = {
     "spineCalibrated": "すき間を {play} mm にしました。",
     "spineApplied": "レシピの背幅を {spine} mm にしました。",
     "prototype": "試作中",
-    "lineChainHint": "クリックで続けて線を引けます。Shift を押している間は水平・垂直に固定。終点でダブルクリックか Enter で確定（Esc でも終了・右ドラッグで画面を移動）。"
+    "lineChainHint": "終点をクリックすると線ができます（Esc で取り消し・右ドラッグで画面を移動）。Shift を押している間は水平・垂直に固定。"
   },
   "en": {
     "offsetDist": "Offset distance (mm)",
@@ -2163,7 +2165,7 @@ export const MESSAGES = {
     "segmentFrom": "Section start s (mm)",
     "segmentTo": "Section end s (blank = end)",
     "modHelp.select": "Click: select the part between intersections (the line is split there)\nDouble-click: select all connected lines (a pen line gets a node)\nDrag: move shapes / drag empty space to box-select\nShift+click: add to / remove from the selection\nShift+drag: move only horizontally or vertically\nAlt while dragging: no snapping (press it after grabbing)\nAlt+click: select only between two stitch holes\nShift+Alt+click: add the between-holes part to the selection\nAlt+drag: move only a rectangle's corner (a pen handle: bend one side only)",
-    "modHelp.line": "Drag: from start to end\nDouble-click: finish the connected line\nShift+drag: lock horizontal / vertical",
+    "modHelp.line": "Click, then click (or drag): from start to end\nShift+click / drag: lock horizontal / vertical",
     "modHelp.rect": "Drag: two opposite corners\nShift+drag: make a square",
     "modHelp.ruler": "Click: start, then end, to measure\nShift+click: lock horizontal / vertical",
     "modHelp.stitch": "Click: start point, then end point, to place holes between them (snaps to ends, intersections, holes)\nFixed: from the start up to the end / Variable: fit evenly between both / Count: N holes, ends included\nAlt+click: place a single hole",
@@ -2759,7 +2761,7 @@ export const MESSAGES = {
     "countLine": " · length {len} mm · {holes} stitch holes",
     "status": "X {x}  Y {y} mm | {zoom}%",
     "hint.select": "Click to select; drag a shape to move (hold Shift to move only horizontally or vertically). Drag empty space to box-select. Shift adds or removes.",
-    "hint.line": "Drag from start to end. Shift locks horizontal / vertical.",
+    "hint.line": "Click the start, then the end (or drag). Shift locks horizontal / vertical.",
     "hint.circle": "Drag from center to circumference. Or enter a radius or diameter above and click to place a circle of that size.",
     "hint.arcHalf": "Semicircle: click the start, then the end (a semicircle with the 2 points as its diameter; the bulging side follows the Arc direction option; Esc cancels).",
     "hint.arc3": "Arc: click the start, a point on the arc, then the end (an arc through 3 points; Esc cancels).",
@@ -2821,10 +2823,12 @@ export const MESSAGES = {
     "hint.mirror": "Select shapes, then click an axis line or two points. Shift+click picks the middle of two parallel lines as the axis.",
     "mirrorMid1": "First line picked. Click a second (parallel) line; the axis will be exactly halfway between them.",
     "stitchSpanNote": "(between intersections only: {a}–{b} mm along the line)",
-    "dupInfo": "⚠ {n} place(s) have lines of the same shape stacked on top of each other (shown thick red). They can stop selecting, joining and stitching.",
+    "dupInfo": "⚠ {n} place(s) have lines stacked on top of each other (same shape, or overlapping along the same straight line; shown thick red). They can stop selecting, joining and stitching.",
     "dupMerge": "Merge stacked lines into one",
-    "dupMergeTip": "Merges lines with the same shape, layer and style into one (stitch paths are moved to the line that stays). One undo step.",
+    "dupMergeTip": "Merges lines with the same layer, style and color that are stacked (same shape, or overlapping along the same straight line) into one covering the whole stretch (stitch paths are moved to the line that stays; if a line with a stitch path would have to be extended, that group is left alone). One undo step.",
     "dupMerged": "Merged {k} stacked line(s) at {n} place(s).",
+    "dupMergedSkip": "Merged {k} stacked line(s) at {n} place(s). {s} place(s) were left alone because of stitch paths.",
+    "dupMergeNone": "Nothing merged: {s} place(s) would need a line with a stitch path to be extended (or have two or more lines with stitch paths), so they were left alone.",
     "mirrorNotParallel": "The two lines are not parallel. Pick two parallel lines.",
     "circleLive": "Radius {r} / Diameter {d} mm",
     "editing": "Edit",
@@ -3683,7 +3687,7 @@ export const MESSAGES = {
     "spineCalibrated": "Clearance set to {play} mm.",
     "spineApplied": "Recipe spine set to {spine} mm.",
     "prototype": "PROTOTYPE",
-    "lineChainHint": "Click to keep adding lines. Hold Shift to lock horizontal / vertical. Double-click at the end point or press Enter to finish (Esc also ends; right-drag pans)."
+    "lineChainHint": "Click the end point to make the line (Esc cancels; right-drag pans). Hold Shift to lock horizontal / vertical."
   }
 };
 let language = 'ja';
