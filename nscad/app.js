@@ -490,11 +490,12 @@ function stitchOptions() {
 function routeForHit(hit) {
   let saved=doc.paths.find(p=>p.shapeIds.includes(hit.id));
   if(saved)return {saved,route:resolvePath(doc,saved),fresh:false};
-  const candidates=$('chain').checked?doc.shapes.filter(s=>editable(s)&&stitchable(s)):[hit], chain=chainShapes(candidates).find(p=>p.shapeIds.includes(hit.id));
+  /* 十字・T字に線が交わる所でも、まっすぐ続く線は通り抜けて1本の経路にする（through：事業主指摘 2026-10-21「真ん中の中心線ではなく左を迂回するガイドライン上に菱目を打ちたい」：左まわりの点線が、左端の十字の目印線で3つに切れ、中心線と右側の2つしか選べなかった） */
+  const candidates=$('chain').checked?doc.shapes.filter(s=>editable(s)&&stitchable(s)):[hit], through={through:true}, chain=chainShapes(candidates,0.01,through).find(p=>p.shapeIds.includes(hit.id));
   if(!chain)return null;
-  // 既に別の縫い経路に属する図形へは経路をまたがせない。
+  // 既に別の縫い経路に属する図形へは経路をまたがせない：打ち済みの図形を除いて、つながる分だけを経路にする。
   const owned=new Set(doc.paths.flatMap(p=>p.shapeIds));
-  const route=chain.shapeIds.some(id=>owned.has(id))?chainShapes([hit])[0]:chain;
+  const route=chain.shapeIds.some(id=>owned.has(id))?(chainShapes(candidates.filter(s=>!owned.has(s.id)),0.01,through).find(p=>p.shapeIds.includes(hit.id))||chainShapes([hit])[0]):chain;
   saved={id:freshId(doc.paths,'p'),shapeIds:route.shapeIds,reversed:$('reversePath').checked,closed:route.closed,segments:[],mark:'tool'};
   return {saved,route:{...route,reversed:saved.reversed},fresh:true};
 }
