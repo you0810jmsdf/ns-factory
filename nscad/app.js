@@ -2032,15 +2032,20 @@ function rimBoundaryCheck() {
   selected = new Set(r.bad.map(h => h.id)); $('hint').textContent = r.bad.length ? t('rimCheckBad', { n: r.bad.length, total: r.total }) : t('rimCheckOk', { total: r.total }); draw();
 }
 /** 選んだ図形の囲み（つながった閉じた線・点線も可）の中を、列×行のマスで埋める。囲みが無い・2つ以上あるときは、理由を出して何もしない。縫い合わせ・縫い穴・外周の穴は、柄の塗りつぶしと同じ設定（カードのチェック）に従う。 */
+const GAP_FOCUS_SCALE = 8;   /* 隙間へ画面を移すときの最小の拡大率（px/mm） */
 let gapAlert = null;   /* 格子の枠の隙間を知らせる橙の丸印：{ ids（調べた図形）, pts: [{x, y, d}] }。図形が変わる（rebuildSnaps）か、その図形の選択を外すと消える */
 function gridInSelection(cols, rows) {
-  gapAlert = null;
+  const prevAlert = gapAlert; gapAlert = null;
   const ids = selectedShapeIds(), mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s));
   const regions = outerRegions(closedRegions(mine, 0.01, { dashed: true }));
   if (!regions.length) {
     /* 枠が閉じていないとき、線の端が離れている所（2mm 以内）があれば、橙の丸印と隙間の長さで知らせ、「隙間を閉じる」で枠そのものを直してもらう（事業主指示 2026-10-21「隙間があるならそもそもそこを修正したい」「丸印で警告するのではなかったか」・不具合記録 1902：端が最大 0.16mm 離れた所が2か所で、枠を選んでいるのに格子が作れなかった）。許容してつなぐことはしない */
     const mineGaps = gaps.filter(g => ids.has(g.a.id) || ids.has(g.b.id));
-    if (mineGaps.length) { gapAlert = { ids: new Set(ids), pts: mineGaps.map(g => ({ x: g.x, y: g.y, d: g.d })) }; $('hint').textContent = t('gridOpen', { n: mineGaps.length, d: Math.max(...mineGaps.map(g => g.d)).toFixed(2) }); draw(); return; }
+    if (mineGaps.length) {
+      /* 隙間は 0.1mm ほどで線の上では見えず、画面の外にあることもある（記録 1902：2か所のうち1か所は画面の上の外）。→ 隙間の所へ画面を移して拡大し、もう一度押すと、次の隙間へ（事業主「隙間が見つけられない」） */
+      const same = prevAlert && prevAlert.ids.size === ids.size && [...ids].every(id => prevAlert.ids.has(id)), i = same ? (prevAlert.i + 1) % mineGaps.length : 0, at = mineGaps[i];
+      gapAlert = { ids: new Set(ids), pts: mineGaps.map(g => ({ x: g.x, y: g.y, d: g.d })), i }; scale = Math.max(scale, GAP_FOCUS_SCALE); origin = { x: viewW() / 2 - at.x * scale, y: viewH() / 2 - at.y * scale }; $('hint').textContent = t('gridOpen', { n: mineGaps.length, k: i + 1, d: Math.max(...mineGaps.map(g => g.d)).toFixed(2) }); draw(); return;
+    }
     $('hint').textContent = t('gridNoArea'); return;
   }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
@@ -4937,8 +4942,8 @@ function drawJunctions() {
 /** 格子の枠の隙間の警告：橙の丸印と隙間の長さ。枠の図形を選んでいる間だけ（ポインタを近づけなくても出す）。 */
 function drawGapAlert() {
   if (!gapAlert || ![...gapAlert.ids].some(id => selected.has(id))) return;
-  const r = 3.5 / scale; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff9a1f'; ctx.fillStyle = '#ff9a1f'; ctx.lineWidth = 2.5 / scale; ctx.font = `${12 / scale}px sans-serif`;
-  for (const p of gapAlert.pts) { ctx.beginPath(); ctx.arc(p.x, p.y, r * 2.6, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + r * 3.2, p.y - r * 3.2); }
+  const px = 1 / scale; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff9a1f'; ctx.fillStyle = '#ff9a1f'; ctx.lineWidth = 3 * px; ctx.font = `bold ${14 * px}px sans-serif`;   /* 画面で見つけやすいよう、半径 14px と 22px の二重の輪 */
+  for (const p of gapAlert.pts) { for (const rr of [14, 22]) { ctx.beginPath(); ctx.arc(p.x, p.y, rr * px, 0, Math.PI * 2); ctx.stroke(); } ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + 26 * px, p.y - 26 * px); }
   ctx.restore();
 }
 function drawCenterMarks() {
