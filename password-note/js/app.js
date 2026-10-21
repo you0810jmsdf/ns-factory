@@ -720,6 +720,7 @@ function renderHistoryForm(history) {
         </div>
       </div>
       <textarea class="h-note" rows="3" placeholder="メモ・家族への注意">${escHtml(h.note || '')}</textarea>
+      <button type="button" class="btn-memo-toggle" aria-expanded="false" onclick="toggleMemoExpand(this)">展開 ▼</button>
     </div>
   `).join('');
 }
@@ -754,8 +755,26 @@ function addHistoryRow() {
       </div>
     </div>
     <textarea class="h-note" rows="3" placeholder="メモ・家族への注意"></textarea>
+    <button type="button" class="btn-memo-toggle" aria-expanded="false" onclick="toggleMemoExpand(this)">展開 ▼</button>
   `;
   cont.appendChild(div);
+}
+
+// メモ欄の展開・折りたたみ。展開すると記載内容の全文が収まる高さまで広げ、折りたたむと3行に戻す。
+function fitMemo(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight + 2) + 'px';
+}
+
+function toggleMemoExpand(btn) {
+  const row = btn.closest('.history-row');
+  const ta = row && row.querySelector('.h-note');
+  if (!ta) return;
+  const open = !ta.classList.contains('expanded');
+  ta.classList.toggle('expanded', open);
+  if (open) fitMemo(ta); else ta.style.height = '';
+  btn.textContent = open ? '折りたたむ ▲' : '展開 ▼';
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 function removeHistoryRow(idx) {
@@ -928,6 +947,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('entry-form').addEventListener('submit', saveEntry);
   document.getElementById('e-type').addEventListener('change', e => toggleUrlField(e.target.value));
   document.getElementById('add-history-btn').addEventListener('click', addHistoryRow);
+  document.getElementById('history-form').addEventListener('input', e => {
+    if (e.target.classList && e.target.classList.contains('h-note') && e.target.classList.contains('expanded')) fitMemo(e.target);
+  });
   document.getElementById('delete-btn').addEventListener('click', deleteEntry);
   document.getElementById('close-modal-btn').addEventListener('click', closeModal);
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);

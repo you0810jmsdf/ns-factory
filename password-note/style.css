@@ -562,6 +562,18 @@ a.url-open-btn:hover {
   white-space: pre-wrap;
 }
 .h-note::placeholder { color: var(--text2); }
+.btn-memo-toggle {
+  align-self: flex-end;
+  padding: 0.25rem 0.7rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.btn-memo-toggle:hover { border-color: var(--accent); }
+.h-note.expanded { overflow-y: hidden; }
 
 /* ── Buttons ── */
 .btn-icon {
@@ -788,6 +800,7 @@ html { -webkit-text-size-adjust: 100%; }
   .modal-footer .btn-save { flex: 1; min-height: 48px; font-size: 1rem; }
   .modal-footer .btn-cancel { min-height: 48px; }
   .btn-add-history { min-height: 40px; }
+  .btn-memo-toggle { min-height: 40px; }
   .btn-icon { min-height: 36px; }
   #toast-container { left: 1rem; right: 1rem; bottom: calc(5.5rem + env(safe-area-inset-bottom)); align-items: stretch; }
   .toast { max-width: none; }
