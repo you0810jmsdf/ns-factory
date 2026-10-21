@@ -5487,11 +5487,12 @@ function snapEdges(d, lockX, lockY) {
   return { x: d.x + (bx ? bx.fix : 0), y: d.y + (by ? by.fix : 0) };
 }
 function moveDelta() { return { x: cursor.x - gesture.start.x, y: cursor.y - gesture.start.y }; }
-function movePosition(p, shift) {
+/** free：Alt を押している間は「吸着なし」（事業主決定 2026-10-21 A案）：端・中点・中心の点どうしの磁石と、辺どうしの吸着を切る。グリッドのスナップ（「スナップ」のチェック）と Shift の固定は、そのまま。 */
+function movePosition(p, shift, free = false) {
   const start = gesture.start; gesture.edgeSnap = null;
-  if (gesture.hasBase && gesture.targets?.length && !shift) { const reach = magnetRadiusMm(); let near = reach, hit = null; for (const c of gesture.targets) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } if (hit) { snap = hit; return { ...hit }; } } /* 基点を持って動かしているとき：相手の点の近くでは、基点がその点にぴたりと合う */
+  if (!free && gesture.hasBase && gesture.targets?.length && !shift) { const reach = magnetRadiusMm(); let near = reach, hit = null; for (const c of gesture.targets) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } if (hit) { snap = hit; return { ...hit }; } } /* 基点を持って動かしているとき：相手の点の近くでは、基点がその点にぴたりと合う */
   const own = gesture.mine, tg = gesture.targets, reachMm = magnetRadiusMm();
-  if (own?.length && tg?.length && reachMm > 0 && own.length * tg.length <= 4e5 && (!gesture.hasBase || shift)) { /* 動かす図形の点（端・中点・中心）のどれかが、相手の点に近づいたら、ぴたりと合わせる。Shift（水平・垂直）のときは、動かせる向きの位置だけを合わせる */
+  if (!free && own?.length && tg?.length && reachMm > 0 && own.length * tg.length <= 4e5 && (!gesture.hasBase || shift)) { /* 動かす図形の点（端・中点・中心）のどれかが、相手の点に近づいたら、ぴたりと合わせる。Shift（水平・垂直）のときは、動かせる向きの位置だけを合わせる */
     const d0 = { x: p.x - start.x, y: p.y - start.y }; let axis = null; if (shift) { axis = Math.abs(d0.x) >= Math.abs(d0.y) ? 'x' : 'y'; if (axis === 'x') d0.y = 0; else d0.x = 0; }
     let best = null, bd = reachMm;
     for (const m of own) for (const c of tg) { const ex = c.x - (m.x + d0.x), ey = c.y - (m.y + d0.y), d = axis === 'x' ? (Math.abs(ey) < reachMm ? Math.abs(ex) : Infinity) : axis === 'y' ? (Math.abs(ex) < reachMm ? Math.abs(ey) : Infinity) : Math.hypot(ex, ey); if (d < bd) { bd = d; best = { c, ex, ey }; } }
@@ -5509,7 +5510,7 @@ function movePosition(p, shift) {
   }
   let lockX = false, lockY = false;
   if (shift) { if (Math.abs(p.x - start.x) >= Math.abs(p.y - start.y)) { result.y = start.y; lockY = true; } else { result.x = start.x; lockX = true; } }
-  if (gesture.edges) { const d = snapEdges({ x: result.x - start.x, y: result.y - start.y }, lockX, lockY); result = { x: start.x + d.x, y: start.y + d.y }; }   /* 辺どうしの吸着（点どうしの磁石が先。グリッドの吸着が入っていても、辺が吸着距離内ならそちらへ合わせる＝既定でグリッド入りのため） */
+  if (gesture.edges && !free) { const d = snapEdges({ x: result.x - start.x, y: result.y - start.y }, lockX, lockY); result = { x: start.x + d.x, y: start.y + d.y }; }   /* 辺どうしの吸着（点どうしの磁石が先。グリッドの吸着が入っていても、辺が吸着距離内ならそちらへ合わせる＝既定でグリッド入りのため） */
   return result;
 }
 /** ドラッグ中の図形の見た目（動かす・線の端・節点・矩形の取っ手・回す）。寸法が追従する端の位置を、ドラッグ中の位置から求めるために使う。 */
@@ -6114,7 +6115,7 @@ canvas.addEventListener('pointermove', e => {
   if (mode === 'stitch' && !gesture) syncStitchPreview(world(p), e.shiftKey); else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
   if (gesture?.kind === 'spin') { miniCam = { yaw: gesture.yaw + (p.x - gesture.screen.x) * 0.5, pitch: Math.max(-89, Math.min(89, gesture.pitch - (p.y - gesture.screen.y) * 0.5)) }; draw(); return; }
   if (gesture?.kind === 'pan') { origin = { x: gesture.origin.x + p.x - gesture.screen.x, y: gesture.origin.y + p.y - gesture.screen.y }; cursor = world(p); }
-  else cursor = gesture?.kind === 'move' ? movePosition(world(p), e.shiftKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  else cursor = gesture?.kind === 'move' ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   updateRadiusHover(world(p));
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
@@ -6203,7 +6204,7 @@ canvas.addEventListener('dblclick', e => {
 canvas.addEventListener('pointerup', e => {
   if (!gesture) return;
   const g = gesture, p = local(e);
-  cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey, e.altKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey || !!g.holed);
   gesture = null; if (g.kind === 'pan' && distance(p, g.screen) >= 4) lastPanDragAt = Date.now();
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
@@ -6412,7 +6413,13 @@ $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
 });
+/** 動かしている途中に Alt を押した・離したとき、マウスを動かさなくても、すぐ吸着なし／ありに切り替える（そのとき Alt だけでメニューが開かないように、キーの既定の動作は止める）。 */
+function refreshMoveFree(e) {
+  if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.lastWorld) return; e.preventDefault?.();
+  cursor = movePosition(gesture.lastWorld, e.shiftKey, e.altKey); draw();
+}
 window.addEventListener('keydown', e => {
+  refreshMoveFree(e);
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save(e.shiftKey) : openDialog(); return; }
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
@@ -6441,7 +6448,7 @@ $('cmd').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); runCommand($('cmd').value); }
   else if (e.key === 'Escape') { e.preventDefault(); $('cmd').value = ''; setMode('select'); canvas.focus(); }
 });
-window.addEventListener('keyup', e => { if (e.code === 'Space') space = false; });
+window.addEventListener('keyup', e => { refreshMoveFree(e); if (e.code === 'Space') space = false; });
 window.addEventListener('blur', () => { space = false; gesture = null; draw(); });
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
