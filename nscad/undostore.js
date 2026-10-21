@@ -1,7 +1,7 @@
 // 「元に戻す」の履歴を残す：自動保存と同じ時に IndexedDB へ（再起動しても戻れる）・保存ファイルにも入れられる（別のPCでも戻れる）。
 // 履歴は「操作前の図面の JSON」の並び（最大100）。まるごと圧縮（gzip）して文字列にする。圧縮が使えない環境では、そのままの JSON 文字列（r1:）。
 export const UNDO_KEEP_MAX = 100;
-const UST_DB = 'leather-cad-undo', UST_STORE = 'stacks', UST_KEY = 'current';
+const UST_DB = 'leather-cad-undo', UST_STORE = 'stacks', UST_KEY = 'current', UST_FILES_KEY = 'files';
 const ustMemory = () => (globalThis.__lcUndoMem ??= new Map());
 /** 履歴の1件は、図面の JSON 文字列（{ で始まる・5000万文字未満）だけを通す。壊れたファイルで「元に戻す」が落ちないように。 */
 const ustValid = a => Array.isArray(a) && a.every(s => typeof s === 'string' && s.charCodeAt(0) === 123 && s.length < 50_000_000);
@@ -44,6 +44,16 @@ export async function loadUndoRecord() {
   const r = await new Promise(resolve => { const req = db.transaction(UST_STORE, 'readonly').objectStore(UST_STORE).get(UST_KEY); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); db.close(); return r;
 }
 export async function clearUndoRecord() {
-  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().delete(UST_KEY); return; }
-  await new Promise(resolve => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).delete(UST_KEY); tx.oncomplete = resolve; tx.onerror = resolve; }); db.close();
+  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().delete(UST_KEY); ustMemory().delete(UST_FILES_KEY); return; }
+  await new Promise(resolve => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).delete(UST_KEY); tx.objectStore(UST_STORE).delete(UST_FILES_KEY); tx.oncomplete = resolve; tx.onerror = resolve; }); db.close();
+}
+/** 保存したファイルの行き先（FileSystemFileHandle）の保管（事業主指示 2026-10-21「上書き保存機能はないのか？」：再読み込みで行き先を忘れ、毎回「名前を付けて保存」になっていた）：{ savedAt, handles: [ハンドル | null, …] }（タブの順）。
+ *  履歴とは別の項目にする：ハンドルを保管できない環境でも、履歴の保管は巻き込まない。自動保存と同じ時刻（savedAt）が合うときだけ使う。 */
+export async function saveFilesRecord(record) {
+  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().set(UST_FILES_KEY, record); return; }
+  await new Promise((resolve, reject) => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).put(record, UST_FILES_KEY); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }).catch(() => {}); db.close();
+}
+export async function loadFilesRecord() {
+  const db = await ustOpen().catch(() => null); if (!db) return ustMemory().get(UST_FILES_KEY) || null;
+  const r = await new Promise(resolve => { const req = db.transaction(UST_STORE, 'readonly').objectStore(UST_STORE).get(UST_FILES_KEY); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); db.close(); return r;
 }

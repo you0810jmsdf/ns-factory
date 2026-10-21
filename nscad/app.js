@@ -33,7 +33,7 @@ import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
-import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord } from './undostore.js';
+import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord } from './undostore.js';
 import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, lamApexPlan } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
@@ -64,6 +64,7 @@ const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
 let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
+let lastAutosaveAt = ''; /* 最後の自動保存の時刻（復元のあとの保管し直しに使う） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
@@ -1054,7 +1055,7 @@ function flushAutosave() {
   if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; scheduleUndoSave(r.savedAt); }
+    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); }
     else if (r.status === 'empty') { localStorage.removeItem(AUTOSAVE_KEY); clearUndoRecord().catch(() => {}); }
     else if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); }
   } catch { if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
@@ -1063,7 +1064,8 @@ function flushAutosave() {
 function scheduleUndoSave(savedAt) {
   if (undoAttaching || typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(undoSaveTimer);
   const stacks = tabs.map(tb => ({ undo: tb.undo.slice(), redo: tb.redo.slice() })); /* その時点の履歴を控える（2秒のあいだに増えても、この時刻の図面に合う分だけ） */
-  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }); } catch { /* 保管できない環境では何もしない */ } }, 2000);
+  const handles = tabs.map(tb => tb.fileHandle || null); /* 保存したファイルの行き先も、同じ時刻の分を控える */
+  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }); } catch { /* 保管できない環境では何もしない */ } try { await saveFilesRecord({ savedAt, handles }); } catch { /* 行き先を保管できなくても、履歴・図面はそのまま */ } }, 2000);
 }
 /** 「前回の続き」で復元したタブに、保管した履歴を戻す。時刻が合わない・もう編集を始めた（履歴が空でない）タブには戻さない。 */
 async function attachSavedUndo(info, base) {
@@ -1078,6 +1080,13 @@ async function attachSavedUndo(info, base) {
     updateUI();
   } catch { /* 履歴が読めなくても、図面の復元はそのまま */ } finally { undoAttaching = false; }
 }
+/** 「前回の続き」で復元したタブに、保存したファイルの行き先を付け直す（Ctrl+S が、窓を出さずにそのファイルへ上書きになる）。自動保存と同じ時刻の保管だけ使う（ずれた保管で、別のファイルを上書きしないため）。タブ名は変えない。 */
+async function attachSavedFiles(info, base) {
+  try {
+    const rec = await loadFilesRecord(); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.handles)) return;
+    for (let i = 0; i < info.tabs.length; i++) { const h = rec.handles[i], tb = tabs[base + i]; if (h && tb && !tb.fileHandle && typeof h.createWritable === 'function' && h.kind !== 'directory') tb.fileHandle = h; }
+  } catch { /* 行き先が読めなくても、図面の復元はそのまま（保存のときに選び直す） */ }
+}
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
 function offerRestore() {
   let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
@@ -1091,7 +1100,7 @@ function restoreAutosave() {
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
-  activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; attachSavedUndo(info, base); flushAutosave();
+  activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
 }
 function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } clearUndoRecord().catch(() => {}); flushAutosave(); }
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
@@ -6277,6 +6286,8 @@ $('quadView').addEventListener('change', () => { if ($('quadView').checked && !l
 $('threeViewMake').onclick = makeThreeViewOutlines;
 $('threeViewFrame').onclick = setThreeViewFrame; $('threeViewFrameReset').onclick = resetThreeViewFrame;
 $('threeViewDepthIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); makeThreeViewOutlines(); } });
+/** 覚えていたファイルへ書く許可があるか。再起動のあとは許可が「確認」に戻るので、保存の操作の中で聞く。許可の仕組みが無い（古い）ハンドルは、そのまま書いてみる。 */
+async function canWriteHandle(h) { try { if (typeof h.queryPermission !== 'function') return true; let p = await h.queryPermission({ mode: 'readwrite' }); if (p !== 'granted' && typeof h.requestPermission === 'function') p = await h.requestPermission({ mode: 'readwrite' }); return p === 'granted'; } catch { return false; } }
 /** 保存：Chrome／Edge は、最初の保存でファイルの場所を選び（タブが覚える）、次からは同じファイルへ上書きする（事業主指摘 2026-10-16：毎回新規保存でファイルが増える）。
  *  asNew=true（名前を付けて保存）は毎回選び直す。選択窓の無いブラウザ（Firefox・Safari）は、従来どおりダウンロード（同名は (1)(2) が付く）。 */
 async function save(asNew = false) {
@@ -6288,6 +6299,7 @@ async function save(asNew = false) {
   const docsToCheck = payload === doc ? [doc] : [payload, payload.threeViewSheets?.top, payload.threeViewSheets?.side].filter(Boolean);
   for (const d of docsToCheck) healDoc(d);
   if (!docsToCheck.every(d => validateDoc(d))) { $('hint').textContent = t('saveInvalid'); return; }
+  if (!asNew && tab?.fileHandle && typeof globalThis.showSaveFilePicker === 'function' && !(await canWriteHandle(tab.fileHandle))) tab.fileHandle = null;   /* 覚えていたファイルへの書き込みの許可を、Ctrl+S の押下の中で確かめる（再起動の直後は「確認」に戻っている）。断られたら選び直す */
   const keep = Number($('saveHistory').value) || 0, withHistory = keep && payload === doc && (undo.length || redo.length); /* 元に戻す履歴も一緒に保存（事業主指示 2026-10-17・既定100回・三面図の紙分けは対象外） */
   const text = JSON.stringify(withHistory ? { ...payload, undoHistory: await encodeStacks({ undo, redo }, { keep }) } : payload, null, 2), fileName = (tab?.name ? tab.name.replace(/[\\/:*?"<>|]+/g, '_') : 'leather-pattern') + '.json';
   const clean = () => { for (const tb of (doc.threeViewSheet ? Object.values(sheets) : [tabs[activeTab]])) if (tb) tb.dirty = false; renderTabs(); };
@@ -6305,7 +6317,7 @@ async function save(asNew = false) {
       await write(handle);
     } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); return; }
   }
-  if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; }
+  if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; scheduleAutosave(); /* 行き先を保管に入れる */ }
   clean(); $('hint').textContent = t(overwrote ? 'savedOverwrite' : 'savedNew', { name: handle.name || fileName });
 }
 /** 選んだ図形だけの図面を作る（事業主の希望 2026-10-19「選択した図形だけを保存したい」）：選んだ図形＋その図形で完結する経路と縫い穴＋部品（選んだ図形の分だけ）＋縫い合わせ（両側の経路が残るもの）＋領域の塗り（囲む図形が全部選ばれているもの）＋層・工具・単位などの設定。座標は動かさない。
@@ -6342,7 +6354,7 @@ async function openDialog(startIn = null) {   /* startIn：窓を開く場所（
   let handle; try { [handle] = await globalThis.showOpenFilePicker({ ...(startIn ? { startIn } : {}), types: [{ description: "N's CAD・図面・画像", accept: { 'application/json': ['.json'], 'text/plain': ['.lcc', '.dxf'], 'image/svg+xml': ['.svg'], 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] } }] }); } catch (err) { if (err?.name !== 'AbortError') $('hint').textContent = t('loadFailed', { message: err?.message || String(err) }); return; }
   if (!handle) return;
   const res = await openFile(await handle.getFile());
-  if (res && /\.json$/i.test(handle.name || '') && tabs[activeTab]) tabs[activeTab].fileHandle = handle;
+  if (res && /\.json$/i.test(handle.name || '') && tabs[activeTab]) { tabs[activeTab].fileHandle = handle; scheduleAutosave(); }
 }
 /** 読み込んだ正面の紙に上・右の紙が入っていれば、それぞれのタブを作って同じ組にする。 */
 function restoreSheets(extra, id) {
