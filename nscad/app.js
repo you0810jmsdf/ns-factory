@@ -2056,7 +2056,7 @@ function gridInSelection(cols, rows) {
   if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
   if (fill.tooSmall) { $('hint').textContent = t('gridTooSmall', { p: pitch }); return; }
   if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
-  patchFillApply(regions[0], fill, layer, null, { exactPitch: pitch });
+  patchFillApply(regions[0], fill, layer, null, { exactPitch: pitch, frameIds: [...ids] });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
 }
 function makeGrid() {
   const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
@@ -2073,8 +2073,8 @@ function autoPatchHoles(tool) {
   return [...result.holesByPath.values()].reduce((a, b) => a + b.length, 0);
 }
 /** パッチワークで自動に打つ穴の工具。「使用中の工具のまま」か、使用中の工具が選んだ種類（菱目／丸目）ならそれ。違えば同じ種類の登録工具、無ければ使用中の工具から作る。 */
-function patchHoleTool() {
-  const cur = stitchToolCurrent(), kind = $('patchHole').value;
+function patchHoleTool(forceKind = null) {   /* forceKind：種類を決めて工具を得る（格子の縫い穴は 'round'） */
+  const cur = stitchToolCurrent(), kind = forceKind || $('patchHole').value;
   if ((kind !== 'diamond' && kind !== 'round') || cur.kind === kind) return cur;
   const same = doc.tools.filter(x => x.kind === kind), near = same.find(x => x.pitch === cur.pitch && x.teeth === cur.teeth) || same.find(x => x.pitch === cur.pitch) || same[0];
   return near || { ...cur, id: 'patch-' + kind, name: 'patch-' + kind, kind, holeW: kind === 'round' ? 1 : 2, holeH: kind === 'round' ? 1 : 0.8, angleDeg: kind === 'round' ? 0 : 45 };
@@ -2111,8 +2111,8 @@ let lastPatch = null; /* 直前の柄の塗りつぶし {p: クリックした�
 /** 柄の設定を変えたとき、直前の柄の塗りつぶしを取り消して同じ場所に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。 */
 function regenPatch() {
   if (!lastPatch || undo.at(-1) !== lastPatch.before) return; /* 塗りつぶしの後に別の操作をしていれば何もしない */
-  const snap = JSON.stringify(doc), savedUndo = undo.slice(), savedRedo = redo.slice(), p = lastPatch.p;
-  history(undo, redo); const depth = undo.length; patchFillAt(p);
+  const snap = JSON.stringify(doc), savedUndo = undo.slice(), savedRedo = redo.slice(), p = lastPatch.p, frameIds = lastPatch.frameIds;
+  history(undo, redo); const depth = undo.length; if (frameIds) { selected = new Set(frameIds); makeGrid(); } else patchFillAt(p);   /* 格子は、元の枠を選びなおして作りなおす（事業主「数値を変更したら図もそれに追従する仕様だったのに壊れています」） */
   if (undo.length === depth) { /* 作れなかった：画面の記録を元に戻す（案内の文言は残す） */
     const msg = $('hint').textContent; doc = JSON.parse(snap); undo = savedUndo; redo = savedRedo; selected.clear(); refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw(); $('hint').textContent = msg;
   }
@@ -2133,8 +2133,9 @@ function patchFillAt(p) {
 function patchFillApply(region, fill, layer, p, opts = {}) {
   const exact = opts.exactPitch > 0 ? opts.exactPitch : null;   /* 格子：穴の間隔がすべて exact（縫い線は縁から exact/2 内側・境をまたいだ向かいの穴も exact） */
   const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = exact ? exact / 2 : Number($('patchInset').value), banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
+  const seamTool = tool && exact ? patchHoleTool('round') : tool, banSeam = $('patchEdgeBan').checked && seamTool?.kind === 'diamond';   /* 格子の縫い穴は、いつも丸目（事業主「しかも菱目で打たれています」：隣り合う丸穴の間隔が一定、外周は菱目）。外周の穴は、穴の種類の設定のまま */
   if (tool && !(inset > 0)) { $('hint').textContent = t('invalidNumber'); return; }
-  if (banEdge && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
+  if (banSeam && inset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: inset, m: PATCH_EDGE_MIN_MM }); return; } /* 菱目は縁から2.5mm以内に置かない（外すと解除） */
   const rimOn = !!tool && $('patchRim').checked, rimOffset = Number($('patchRimOffset').value), rimPitch = Number($('patchRimPitch').value), rimRadius = Number($('patchRimRadius').value);
   if (rimOn && !(rimOffset > 0 && rimPitch > 0 && rimRadius >= 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
@@ -2146,7 +2147,7 @@ function patchFillApply(region, fill, layer, p, opts = {}) {
     const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
     const ids = polys.map((points, i) => { const id = freshId(doc.shapes, 's'), tex = fill.pieces[i].parity ? texB : texA; doc.shapes.push({ id, layer, type: 'polyline', closed: true, points, ...(tex ? { texture: tex } : {}) }); return id; });
     selected = new Set(ids);
-    if (tool && !doc.tools.some(x => x.id === tool.id)) doc.tools.push({ ...tool }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
+    for (const tl of [tool, seamTool]) if (tl && !doc.tools.some(x => x.id === tl.id)) doc.tools.push({ ...tl }); /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     if (tool) { /* クロスステッチ：穴は境界の上ではなく、各ピースの縁から inset mm 内側の縫い線（黄色の点線）の上に打ち、境界をはさんで向かい合う穴を対にする */
       const stitch = patchInsetStitch(polys, inset), stitchLayer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || layer, style = seamStyleValue();
       const pathOfPiece = stitch.insets.map(pts => {
@@ -2155,8 +2156,8 @@ function patchFillApply(region, fill, layer, p, opts = {}) {
         const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool' }); return pid;
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      let holes = !stitch.seams.length ? 0 : exact ? gridLatticeHoles(fill, stitch, pathOfPiece, tool, exact) : autoPatchHoles(tool), banned = 0;
-      if (banEdge) { /* 念のための検査：縁から2.5mm未満の菱目は取り除く（座標を4桁に丸める誤差 0.001mm は許す） */
+      let holes = !stitch.seams.length ? 0 : exact ? gridLatticeHoles(fill, stitch, pathOfPiece, seamTool, exact) : autoPatchHoles(tool), banned = 0;
+      if (banSeam) { /* 念のための検査：縁から2.5mm未満の菱目は取り除く（座標を4桁に丸める誤差 0.001mm は許す） */
         const drop = new Set(doc.holes.filter(h => { const i = pathOfPiece.indexOf(h.pathId); return i >= 0 && distTo({ type: 'polyline', closed: true, points: polys[i] }, h) < PATCH_EDGE_MIN_MM - 1e-3; }).map(h => h.id));
         if (drop.size) { doc.holes = doc.holes.filter(h => !drop.has(h.id)); banned = drop.size; holes -= banned; }
       }
@@ -2172,7 +2173,7 @@ function patchFillApply(region, fill, layer, p, opts = {}) {
       }
     }
   });
-  renderSeams(); if (p && undo.length > depth0) lastPatch = { p, before: undo.at(-1) };
+  renderSeams(); if ((p || opts.frameIds) && undo.length > depth0) lastPatch = { p, frameIds: opts.frameIds, before: undo.at(-1) };
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
   $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + rimNote + rimCheckNote;
@@ -2199,7 +2200,7 @@ function initDesign() {
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
-  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchAngle', 'patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
+  for (const id of ['patchCols', 'patchRows', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchAngle', 'patchShiftX', 'patchShiftY', 'patchPattern', 'patchCell', 'patchStitch', 'patchHole', 'patchInset', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { $(id).addEventListener('input', regenPatch); $(id).addEventListener('change', regenPatch); }
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
