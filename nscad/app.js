@@ -2041,14 +2041,20 @@ function gridInSelection(cols, rows) {
   }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const pitch = Number($('patchPitch').value); if (!(pitch > 0)) { $('hint').textContent = t('invalidNumber'); return; }
-  const angleRaw = String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(regions[0], cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
-  if (!fill) { $('hint').textContent = t('invalidNumber'); return; }
-  if (fill.badAngle) { $('hint').textContent = t('gridBadAngle', { a: +fill.theta.toFixed(1), min: 20, max: 80 }); return; }
-  if (fill.tooMany) { $('hint').textContent = t('patchTooMany', { n: fill.tiles }); return; }
-  if (fill.tooSmall) { $('hint').textContent = t('gridTooSmall', { p: pitch }); return; }   /* ひし形が小さすぎて、縫い穴を置けない */
-  if (!fill.pieces.length) { $('hint').textContent = t('impossible'); return; }
+  const plan = gridPlan(regions[0], cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; return; }
+  const { fill, pitch } = plan;
   patchFillApply(regions[0], fill, layer, { exactPitch: pitch, frameIds: [...ids], note: t('gridSpec', { w: +fill.spec.w.toFixed(2), h: +fill.spec.h.toFixed(2), a: +fill.spec.theta.toFixed(1), auto: fill.spec.auto ? t('gridAngleAuto') : t('gridAngleSet') }) + (fill.spec.adjusted ? ' ' + t('gridAdjusted', { p: pitch }) : '') + ($('patchStitch').checked && Math.abs(fill.spec.theta - 45) > 1.5 ? ' ' + t('gridNot45') : '') + ($('patchStitch').checked && fill.spec.bad > 0 ? ' ' + t('gridBadPieces', { n: fill.spec.bad }) : '') });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
+}
+/** 枠 region の中に作るひし形の計画（「格子を作る」と、確定前の下見で共通）。作れないときは { msg: 理由 }、作れるときは { fill, pitch }。図面は変えない。 */
+function gridPlan(region, cols, rows) {
+  const pitch = Number($('patchPitch').value); if (!(pitch > 0)) return { msg: t('invalidNumber') };
+  const angleRaw = String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(region, cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
+  if (!fill) return { msg: t('invalidNumber') };
+  if (fill.badAngle) return { msg: t('gridBadAngle', { a: +fill.theta.toFixed(1), min: 20, max: 80 }) };
+  if (fill.tooMany) return { msg: t('patchTooMany', { n: fill.tiles }) };
+  if (fill.tooSmall) return { msg: t('gridTooSmall', { p: pitch }) };   /* ひし形が小さすぎて、縫い穴を置けない */
+  if (!fill.pieces.length) return { msg: t('impossible') };
+  return { fill, pitch };
 }
 function makeGrid() {
   const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
@@ -2110,18 +2116,22 @@ function rimSpotFree(q, others, r, near) {
 }
 let commitSeq = 0;   /* commit が図面を変えた回数（格子の連動の記録を付けるかの判定に使う） */
 let lastPatch = null; /* 直前の格子 {frameIds: 元の枠の図形の id, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
-let regenTimer = null, regenDelayMs = 250, regenBusy = false;   /* 数値の欄を押しっぱなし・打ちかけにしている間は作りなおさず、最後の変化の 250ms 後に1回だけ作りなおす（事業主「数値がとまらない」：1段ごとに作りなおすと画面が止まり、矢印を離しても数が進み続けた）。数値の欄（type=number）だけ。選択・チェックはすぐ。0 以下なら、すぐ（テスト用） */
-function regenSoon(fn, el) {
-  clearTimeout(regenTimer); regenTimer = null; if (el.type !== 'number' || !(regenDelayMs > 0)) { fn(); return; }
-  const run = () => { regenTimer = null; if (gesture || stage) { regenTimer = setTimeout(run, regenDelayMs); return; } fn(); };   /* ドラッグ・作図の途中は、操作を壊さないよう、終わるまで待つ */
-  regenTimer = setTimeout(run, regenDelayMs);
+let regenTimer = null, regenYield = null, regenDelayMs = 250, regenBusy = false;   /* 数値の欄を押しっぱなし・打ちかけにしている間は作りなおさず、最後の変化の 250ms 後に1回だけ作りなおす（事業主「数値がとまらない」：1段ごとに作りなおすと画面が止まり、矢印を離しても数が進み続けた）。数値の欄（type=number）だけ。選択・チェックはすぐ。0 以下なら、すぐ（テスト用） */
+const REGEN_PREVIEW_FACTOR = 4;   /* 列・行・角度は、変えた瞬間に下見（gridPreviewUpdate）が出るので、確定までの待ちを通常の4倍（約1秒）にする。連続して押している間は下見だけが動く。regenDelayMs が 0（テスト）ならすぐ */
+function regenSoon(fn, el, ms = regenDelayMs) {
+  clearTimeout(regenTimer); regenTimer = null; clearTimeout(regenYield); regenYield = null; if (el.type !== 'number' || !(regenDelayMs > 0)) { fn(); return; }
+  const run = () => {
+    regenTimer = null; if (gesture || stage) { regenTimer = setTimeout(run, ms); return; }   /* ドラッグ・作図の途中は、操作を壊さないよう、終わるまで待つ */
+    if (lastPatch && undo.at(-1) === lastPatch.before && lastPatch.sig !== regenSig()) { $('hint').textContent = t('gridRebuilding'); regenYield = setTimeout(() => { regenYield = null; fn(); }, 30); return; }   /* 作りなおしの計算の間は画面が止まる。先に「作りなおし中」を1回描かせてから始める */
+    fn();
+  };
+  regenTimer = setTimeout(run, ms);
 }
 /** 格子の設定の値の組（これが前回の作りなおしと同じなら、作りなおさない：欄を離れたときの change で、同じ値のまま、もう一度作りなおすのを防ぐ）。 */
 function regenSig() { return JSON.stringify(['patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim'].map(id => !!$(id)?.checked))); }
-/** 列・行・ひし形の角度を変えたとき：直前が格子なら作りなおす。作りなおす図が無いとき（読み込み直した後・別の操作のあと）は、何も起きない理由と、押す操作を案内する（事業主「列と行の数字を変えてもなにも図形に変化が出ない」）。 */
+/** 列・行・ひし形の角度を変えたとき：直前が格子なら作りなおす。作りなおす図が無いとき（読み込み直した後・別の操作のあと）は、下見（gridPreviewUpdate）が、何も起きない理由と押す操作を案内する（事業主「列と行の数字を変えてもなにも図形に変化が出ない」）。 */
 function gridFieldChanged() {
-  if (lastPatch && undo.at(-1) === lastPatch.before) { regenPatch(); return; }
-  $('hint').textContent = t('gridFieldsNoFigure');
+  if (lastPatch && undo.at(-1) === lastPatch.before) regenPatch();
 }
 /** 格子の設定を変えたとき、直前の格子を取り消して同じ枠に作りなおす（取り消しは1回分のまま）。作れない値のときは元のまま。force＝同じ設定でも作りなおす（ピースの上をクリックしたとき）。 */
 function regenPatch(force = false) {
@@ -2138,9 +2148,62 @@ function regenPatch(force = false) {
 /** 囲まれた図形（実線で閉じた経路・点線は除く）の内側をクリックしたとき：その枠に「格子を作る」と同じ処理をする（列・行・角度のひし形）。柄（アーガイル・市松）の塗りつぶしは廃止（事業主 2026-10-21 案 A「ひし形は『格子を作る』に一本化」）。 */
 function gridAtPoint(p) {
   const region = regionAt(doc.shapes.filter(s => visible(s) && stitchable(s)), p);
-  if (!region) { $('hint').textContent = t('patchNoRegion'); return; }
+  if (!region) { if (!gridRescueAt(p)) $('hint').textContent = t('patchNoRegion'); return; }   /* 枠が閉じていないだけなら、隙間を示して「閉じて作る」へ導く */
   if (lastPatch && undo.at(-1) === lastPatch.before && region.shapeIds.every(id => lastPatch.pieceIds?.includes(id))) { regenPatch(true); return; }   /* 直前の格子のピースの上をクリックしたとき：ピースの中に入れ子の格子は作らず、同じ枠を、いまの数で作りなおす（事業主「途中で連動しなくなる」） */
   selected = new Set(region.shapeIds); makeGrid();
+}
+let gridPreview = null;   /* 確定前の下見：{ pieces: [[{x,y}…]…]（ひし形の輪郭）, text, follow（作りなおす格子があるか）, ids（枠の図形）}。図面が変わる（rebuildSnaps）か Esc で消える。画面に薄い輪郭で描く */
+/** 列・行・角度を打っている最中の下見（事業主 2026-10-21 案 A ①）：作りなおす（または作る）枠を、いまの数で割った輪郭と「ひし形 幅×高さ・枚数」をすぐ出す。計算だけで、図面は変えない（約 5ms）。枠は、作りなおせる直前の格子の枠か、いま選んでいる閉じた枠。確定は Enter・約1秒の停止・「格子を作る」。 */
+function gridPreviewUpdate() {
+  gridPreview = null;
+  const follow = !!lastPatch && undo.at(-1) === lastPatch.before, ids = follow ? new Set(lastPatch.frameIds) : selectedShapeIds();
+  if (follow && lastPatch.sig === regenSig()) { $('hint').textContent = t('gridPreviewSame'); draw(); return; }   /* いま作ってある格子と同じ数（欄を離れたときの change など） */
+  const mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), regions = mine.length ? outerRegions(closedRegions(mine, 0.01, { dashed: true })) : [];
+  if (regions.length !== 1) { $('hint').textContent = t('gridFieldsNoFigure'); draw(); return; }   /* 枠が1つに決まらない（選んでいない・ピースだけ選んでいる）ときは、下見は出さず、押す操作を案内する */
+  const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;   /* makeGrid と同じ読み方 */
+  if (!(cols >= 1) || !(rows >= 1)) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); draw(); return; }
+  const plan = gridPlan(regions[0], cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; draw(); return; }
+  const sp = plan.fill.spec;
+  gridPreview = { pieces: plan.fill.pieces.map(pc => pc.points), follow, ids, text: t(follow ? 'gridPreview' : 'gridPreviewNew', { w: +sp.w.toFixed(2), h: +sp.h.toFixed(2), a: +sp.theta.toFixed(1), n: plan.fill.pieces.length }) };
+  $('hint').textContent = gridPreview.text; draw();
+}
+/** 下見の薄い輪郭（水色の点線）。作りなおす格子があるか、枠を選んでいる間だけ。 */
+function drawGridPreview() {
+  if (!gridPreview || exporting) return;
+  if (gridPreview.follow ? !(lastPatch && undo.at(-1) === lastPatch.before) : ![...gridPreview.ids].some(id => selected.has(id))) return;
+  const px = 1 / scale; ctx.save(); ctx.strokeStyle = 'rgba(94,200,255,0.95)'; ctx.lineWidth = 1.5 * px; ctx.setLineDash([5 * px, 3 * px]); ctx.beginPath();
+  for (const ps of gridPreview.pieces) { ps.forEach((q, i) => { if (i) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y); }); ctx.closePath(); }
+  ctx.stroke(); ctx.restore();
+}
+/** Enter：待たずに、いまの数で確定する（作りなおせる格子があれば作りなおし・無ければ、選んでいる枠に作る）。予約済みの作りなおしは取り消す。 */
+function gridConfirmNow() {
+  clearTimeout(regenTimer); regenTimer = null; clearTimeout(regenYield); regenYield = null;
+  if (lastPatch && undo.at(-1) === lastPatch.before) { regenPatch(); return; }
+  makeGrid();
+}
+/** Esc：下見をやめ、予約していた作りなおしも取り消す（図面は、数字を変える前のまま。欄の数字はそのまま残る）。Esc は欄を離れさせる（change が作りなおしを予約し直す）ので、そのあとで呼ぶ。 */
+function gridPreviewCancel() {
+  const text = gridPreview?.text; gridPreview = null; clearTimeout(regenTimer); regenTimer = null; clearTimeout(regenYield); regenYield = null;
+  if (text !== undefined) { if ($('hint').textContent === text) $('hint').textContent = ''; draw(); }
+}
+/** 失敗クリックの救済（事業主 2026-10-21 案 A ②）：クリックした所を囲む閉じた図形が無いとき、2mm 以内の隙間を（計算の上で）閉じたら囲めるなら、その枠を選び、隙間に橙の丸印を出して「閉じて作る」へ導く（図面は変えない）。救済できたら true。 */
+function gridRescueAt(p) {
+  if (!gaps.length) return false;
+  const editableIds = new Set(doc.shapes.filter(s => editable(s)).map(s => s.id)), all = doc.shapes.filter(s => visible(s) && stitchable(s));
+  const r = closeGaps(all.filter(s => !s.holeLink), new Set(gaps.flatMap(g => [g.a.id, g.b.id])), 2, 0.01, editableIds); if (!r.closed) return false;
+  const m = new Map(r.changes.map(c => [c.id, c.next])), region = regionAt(all.map(s => m.get(s.id) || s), p); if (!region) return false;
+  const ids = new Set(region.shapeIds), mine = gaps.filter(g => ids.has(g.a.id) || ids.has(g.b.id)); if (!mine.length) return false;
+  selected = new Set(ids); gridPreview = null;
+  gapAlert = { ids: new Set(ids), pts: mine.map(g => ({ x: g.x, y: g.y, d: g.d })), i: 0 };
+  $('hint').textContent = t('gridRescue', { n: mine.length, d: Math.max(...mine.map(g => g.d)).toFixed(2) }); draw(); return true;
+}
+/** 「閉じて作る」：選んだ枠の隙間を閉じてから、いまの列・行・角度で格子を作る（取り消しは2回：格子→隙間）。閉じられなかったとき（2mm より大きい・ロック）は、格子を作らない。 */
+function closeGapsAndMakeGrid() {
+  if (!gapAlert) return;
+  selected = new Set(gapAlert.ids);
+  if (!closeSelectedGaps()) return;
+  const msg = $('hint').textContent, seq = commitSeq; makeGrid();
+  if (commitSeq > seq) $('hint').textContent = msg + ' ' + $('hint').textContent;
 }
 /** 柄・格子のピース（fill）を、囲み（region）の中に描く。縫い合わせ（縫い線・縫い穴）・外周の穴は、カードの設定に従う。p は柄の塗りつぶしでクリックした点（数値を変えたときの作りなおし用）。格子は null。 */
 function patchFillApply(region, fill, layer, opts = {}) {
@@ -2211,7 +2274,7 @@ function initDesign() {
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
   for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
-  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => regenSoon(gridFieldChanged, el); el.addEventListener('input', go); el.addEventListener('change', go); }   /* 列・行・角度は「格子を作る」用 */
+  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
@@ -2242,7 +2305,7 @@ function initDesign() {
     head.addEventListener('pointermove', e => { if (drag) placeCardWin(card, e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
     const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
   }
-  $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
+  $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
   renderSeams();
@@ -4033,11 +4096,11 @@ function mergeSelectedLines() {
   $('hint').textContent = t('mergeLinesDone', { k: total, n: made });
 }
 function closeSelectedGaps() {
-  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('closeGapsNoSel'); return; }
+  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('closeGapsNoSel'); return 0; }
   const editableIds = new Set(doc.shapes.filter(s => editable(s)).map(s => s.id)), r = closeGaps(doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink), ids, 2, 0.01, editableIds);
-  if (!r.closed && !r.skipped) { $('hint').textContent = t('closeGapsNone', { max: 2 }); return; }
+  if (!r.closed && !r.skipped) { $('hint').textContent = t('closeGapsNone', { max: 2 }); return 0; }
   if (r.closed) commit(() => { const m = new Map(r.changes.map(c => [c.id, c.next])); doc.shapes = doc.shapes.map(s => m.get(s.id) || s); });
-  $('hint').textContent = (r.closed ? t('closeGapsDone', { n: r.closed, max: r.maxGap.toFixed(2) }) : '') + (r.skipped ? (r.closed ? ' ' : '') + t('closeGapsSkipped', { k: r.skipped }) : ''); rebuildSnaps(); draw();
+  $('hint').textContent = (r.closed ? t('closeGapsDone', { n: r.closed, max: r.maxGap.toFixed(2) }) : '') + (r.skipped ? (r.closed ? ' ' : '') + t('closeGapsSkipped', { k: r.skipped }) : ''); rebuildSnaps(); draw(); return r.closed;
 }
 /** 三つ折りの設計：ボタン線を基準にした距離と内側の半径から、完成形の断面を先に作る。重なり・突き抜けは作ったうえで警告する。前の設計の断面は置き換える（元に戻すは1回）。 */
 let designUndoLen = -1; /* 数値変更のライブ更新を、元に戻す1回にまとめるための印（断面を作った直後の undo の数） */
@@ -4956,7 +5019,9 @@ function drawJunctions() {
 }
 /** 格子の枠の隙間の警告：橙の丸印と隙間の長さ。枠の図形を選んでいる間だけ（ポインタを近づけなくても出す）。 */
 function drawGapAlert() {
-  if (!gapAlert || ![...gapAlert.ids].some(id => selected.has(id))) return;
+  const live = !!gapAlert && [...gapAlert.ids].some(id => selected.has(id)), bar = $('gapBar');
+  if (bar) { bar.hidden = !live || exporting; if (live) { const info = t('gapBarInfo', { n: gapAlert.pts.length, d: Math.max(...gapAlert.pts.map(q => q.d)).toFixed(2) }); if ($('gapInfo').textContent !== info) $('gapInfo').textContent = info; } }   /* 「閉じて作る」のバー：丸印と同じ間だけ */
+  if (!live) return;
   const px = 1 / scale; ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff9a1f'; ctx.fillStyle = '#ff9a1f'; ctx.lineWidth = 3 * px; ctx.font = `bold ${14 * px}px sans-serif`;   /* 画面で見つけやすいよう、半径 14px と 22px の二重の輪 */
   for (const p of gapAlert.pts) { for (const rr of [14, 22]) { ctx.beginPath(); ctx.arc(p.x, p.y, rr * px, 0, Math.PI * 2); ctx.stroke(); } ctx.fillText(`${p.d.toFixed(2)} mm`, p.x + 26 * px, p.y - 26 * px); }
   ctx.restore();
@@ -4979,7 +5044,7 @@ function rebuildSnaps() {
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
-  gaps = findGaps(shapes.filter(s => !s.holeLink)); gapAlert = null;
+  gaps = findGaps(shapes.filter(s => !s.holeLink)); gapAlert = null; gridPreview = null;
   dupGroups = findOverlaps(shapes.filter(s => !s.holeLink)); updateDupBar();
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
@@ -5131,7 +5196,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
@@ -6106,7 +6171,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -6657,7 +6722,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
