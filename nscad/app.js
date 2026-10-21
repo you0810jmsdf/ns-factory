@@ -2101,7 +2101,7 @@ function initDesign() {
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
-  $('ctx-move').onclick = () => { hideCtxMenu(); const c = $('moveCard'); c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
+  $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
     if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
@@ -2116,13 +2116,16 @@ function initDesign() {
   $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」の小窓の末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
   $('foldFlowClose').onclick = () => setFlowWin(false);   /* 手順の小窓の✕（開くのは右クリックメニューの三つ折りの分類の末尾のⓘ・fillCtxCards） */
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
-  $('patchWinClose').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); setMode('select'); });   /* 柄の窓の×：窓を閉じる＝柄のツールをやめる（見出し summary の開閉は起こさない） */
-  { const head = $('patchWinHead'); let drag = null;   /* 柄の窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
-    const isWin = () => $('patchCard').dataset.win === '1';
+  /* 窓の×と、見出しのドラッグ（柄・目打ち・拡大縮小・移動の窓で共通）。×＝柄・目打ちは、そのツールをやめる（選択ツールへ）／拡大縮小・移動は、窓を右列のカードへ戻す（見出し summary の開閉は起こさない）。
+     窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
+  for (const [card, { head: headId, close: closeId, tool }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false } })) {
+    $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, true); });
+    const head = $(headId); let drag = null; const isWin = () => $(card).dataset.win === '1';
     head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
-    head.addEventListener('pointerdown', e => { if (!isWin() || e.target?.closest?.('button')) return; const r = $('patchCard').getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, w: r.width }; head.setPointerCapture?.(e.pointerId); });
-    head.addEventListener('pointermove', e => { if (drag) placePatchWin(e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
-    const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag); }
+    head.addEventListener('pointerdown', e => { if (!isWin() || e.target?.closest?.('button')) return; const r = $(card).getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, w: r.width }; head.setPointerCapture?.(e.pointerId); });
+    head.addEventListener('pointermove', e => { if (drag) placeCardWin(card, e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
+    const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
+  }
   $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
@@ -3428,7 +3431,7 @@ function applyArray() {
 $('arrayApply').onclick = applyArray;
 /** 移動できる選択があるか：図形、または、図形を選ばず菱目（穴）だけを選んでいる（事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」：以前は図形だけを数えていて、菱目だけを選ぶと移動カードが隠れ・押しても動かなかった）。 */
 const hasMoveTarget = () => selectedShapeIds().size > 0 || doc.holes.some(h => selected.has(h.id) && holeEditable(h));
-function refreshMoveCard() { $('moveCard').hidden = !hasMoveTarget(); }
+function refreshMoveCard() { const none = !hasMoveTarget(); $('moveCard').hidden = none; if (none && $('moveCard').dataset.win === '1') setCardWin('moveCard', false, true); }   /* 動かす図形が無くなったら、窓も閉じる */
 function applyMove() {
   const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
   if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
@@ -3462,7 +3465,7 @@ function attachClick(p) {
   attachState = { key, line, undoLen: undo.length, moved: !already };   /* 着けたあとも着ける状態のまま：続けて2本目の線をクリックできる（Esc・別のツールで終わり） */
   $('hint').textContent = (already ? t('attachAlready') : r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) })) + ' ' + t('attachNext');
 }
-$('attachStart').onclick = attachStart; $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
+$('attachStart').onclick = attachStart; $('attachLeft').onclick = attachStart;   /* 左メニューの「線に着ける」も同じ（Shift+A） */ $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
   const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
@@ -3499,7 +3502,7 @@ function selectionBox() {
 }
 let scaleCardKey = '', scaleBadInputs = new Set();
 function refreshScaleCard(reset = false) {
-  const b = selectionBox(); $('scaleCard').hidden = !b; if (!b) { scaleCardKey = ''; scaleBadInputs.clear(); return; }
+  const b = selectionBox(); $('scaleCard').hidden = !b; if (!b) { scaleCardKey = ''; scaleBadInputs.clear(); if ($('scaleCard').dataset.win === '1') setCardWin('scaleCard', false, true); return; }   /* 選んだ図形が無くなったら、窓も閉じる（また選んでも勝手には出ない） */
   const w = b.maxX - b.minX, h = b.maxY - b.minY, key = JSON.stringify([[...selectedShapeIds()].sort(), w, h]);
   $('scaleSize').textContent = t('scaleNow', { w: w.toFixed(2), h: h.toFixed(2) });
   $('scaleW').disabled = w === 0; $('scaleH').disabled = h === 0;
@@ -4810,7 +4813,7 @@ function updateUI() {
   renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size;
-  for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
+  for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
@@ -4933,30 +4936,36 @@ function commit(fn) {
 }
 function cancel() { countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
-function setPatchWin(on) {
-  const c = $('patchCard'); if (on) c.dataset.win = '1'; else delete c.dataset.win;
-  c.open = on; if (on) keepPatchWinInView();
+function setPatchWin(on) { setCardWin('patchCard', on); }
+/** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
+ *  on＝窓にする／しない。openAfter＝窓をやめたとき、右列のカードを開いたままにするか（柄・目打ちは閉じる／拡大縮小・移動は、いつも開いている）。拡大縮小と移動の窓は、同時には出さない（片方を出すと、もう片方は右列へ戻る）。 */
+function setCardWin(id, on, openAfter = false) {
+  const c = $(id); if (on) { c.dataset.win = '1'; const other = id === 'scaleCard' ? 'moveCard' : id === 'moveCard' ? 'scaleCard' : null; if (other && $(other).dataset.win === '1') setCardWin(other, false, true); } else delete c.dataset.win;
+  c.open = on || openAfter; if (on) keepCardWinInView(id);
 }
-/** 柄の窓を (left, top) に置く：画面の中へ収め、下端がはみ出さないよう高さを詰める（中身はスクロール）。右基準をやめて左上基準にする。 */
-function placePatchWin(left, top, width) {
-  const st = $('patchCard').style, vw = typeof innerWidth === 'number' ? innerWidth : 1e9, vh = typeof innerHeight === 'number' ? innerHeight : 1e9;
+/** 窓を (left, top) に置く：画面の中へ収め、下端がはみ出さないよう高さを詰める（中身はスクロール）。右基準をやめて左上基準にする。 */
+function placeCardWin(id, left, top, width) {
+  const st = $(id).style, vw = typeof innerWidth === 'number' ? innerWidth : 1e9, vh = typeof innerHeight === 'number' ? innerHeight : 1e9;
   const y = Math.round(Math.min(Math.max(0, top), Math.max(0, vh - 120)));
   st.left = Math.round(Math.min(Math.max(0, left), Math.max(0, vw - width))) + 'px'; st.top = y + 'px'; st.right = 'auto'; st.maxHeight = Math.max(120, vh - y - 8) + 'px';
 }
 /** 覚えている窓の位置が、画面を小さくしたあとで外へはみ出していたら、中へ戻す（一度も動かしていなければ、CSS の初期位置のまま）。 */
-function keepPatchWinInView() {
-  const c = $('patchCard'); if (!c.style.left) return;
-  placePatchWin(parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0, c.getBoundingClientRect().width);
+function keepCardWinInView(id) {
+  const c = $(id); if (!c.style.left) return;
+  placeCardWin(id, parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0, c.getBoundingClientRect().width);
 }
+function placePatchWin(left, top, width) { placeCardWin('patchCard', left, top, width); }
+function keepPatchWinInView() { keepCardWinInView('patchCard'); }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード。ほかのツールでは閉じる。柄は右列でなく窓（setPatchWin）。 */
 function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
-  $('stitchCard').open = mode === 'stitch' || mode === 'mark'; setPatchWin(mode === 'patchfill'); $('drawCard').open = mode === 'arc'; /* 円弧は、描き方（3点／中心と半径）と半径が作図オプションにある */
+  $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
+  setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill');   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
-  const shown = mode === 'stitch' || mode === 'mark' ? $('stitchCard') : mode === 'arc' ? $('drawCard') : mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる（柄は窓なので寄せない・右列のタブも切り替えない） */
+  const shown = mode === 'dimension' ? $('autoDimCard') : null; /* 開いたカードが画面外なら見える位置まで寄せる（窓にした柄・目打ち・目印・円弧・文字は寄せない・右列のタブも切り替えない） */
   if (shown) revealCard(shown);   /* ツールに対応するカードの分類のタブへ切り替える（隠れたままだと見えない） */
   if (shown?.scrollIntoView) shown.scrollIntoView({ block: 'nearest' });
 }
@@ -6221,7 +6230,7 @@ for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transfo
 /** 左の「選択中」の「拡大縮小」：右の拡大縮小カードを開き（分類のタブも切り替え）、横（%）の欄へ移る（事業主の指摘 2026-10-20「拡大縮小がどこにあるかわからない」）。何も選んでいなければ案内だけ。 */
 function openScaleCard() {
   refreshScaleCard(); const c = $('scaleCard'); if (!selectedShapeIds().size || c.hidden) { $('hint').textContent = t('scaleOpenNone'); return; }
-  revealCard(c); c.open = true; c.scrollIntoView?.({ block: 'nearest' }); const x = $('scaleX'); x.focus?.(); x.select?.(); $('hint').textContent = t('scaleOpened');
+  setCardWin('scaleCard', true); const x = $('scaleX'); x.focus?.(); x.select?.(); $('hint').textContent = t('scaleOpened');   /* 拡大縮小のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */
 }
 $('scaleOpen').onclick = openScaleCard;
 $('circleR').oninput = () => { const r = Number($('circleR').value); $('circleD').value = $('circleR').value.trim() === '' || !Number.isFinite(r) ? '' : circleNum(r * 2); draw(); };   /* 半径と直径は連動 */
