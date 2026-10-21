@@ -6376,7 +6376,9 @@ canvas.addEventListener('pointerup', e => {
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
-      selected = expandToGroups(doc.shapes, selected); /* 囲んだ図形がグループなら全体を選ぶ */
+      /* 囲みの中の図形だけを選ぶ。グループ全体になるのは、アプリが作った一式（金具・折り目の断面図）だけ：一部だけ動かすと壊れるため。自分で「グループ化」した型紙・点線のグループは、囲みの中の図形だけ（事業主指示 2026-10-21：右の図形だけ囲んだのに、同じグループの左の点線の輪・菱目まで動いた・消えた。不具合記録 1528・1530）。クリックは今までどおりグループ全体 */
+      const wholeGroups = new Set(doc.shapes.filter(s => groupIdOf(s) && (isHardwareShape(s) || s.hwSection || s.hwFor || s.foldSec || s.layer === 'section')).map(groupIdOf));
+      if (wholeGroups.size) { const hit = new Set(doc.shapes.filter(s => selected.has(s.id) && wholeGroups.has(groupIdOf(s))).map(groupIdOf)); for (const s of doc.shapes) if (hit.has(groupIdOf(s))) selected.add(s.id); }
       for (const h of doc.holes) if (holeVisible(h) && holeEditable(h) && !markHidden(h) && h.x >= minX && h.x <= maxX && h.y >= minY && h.y <= maxY) selected.add(h.id); /* 囲んだ範囲の穴（菱目）も選ぶ（事業主指示 2026-10-16）。中心が範囲の中にあるもの */
     }
   } else if (g.kind === 'draw' && mode === 'arc' && arcHalf()) {
