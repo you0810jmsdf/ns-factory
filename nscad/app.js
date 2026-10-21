@@ -5029,7 +5029,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
+function cancel() { hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
@@ -5257,21 +5257,53 @@ function roundPolylineCorners(poly, only, r, kind) {
 /** 穴が「目印」か（縫い穴ではないか）。穴の見た目を決める規則と同じ。 */
 const holeIsMark = h => { const p = doc.paths.find(q => q.id === h.pathId), tool = doc.tools.find(q => q.id === h.toolId); return !![h.mark, p?.mark, doc.mark, tool?.mark].find(m => m && m !== 'tool'); };
 /** 丸め・面取りでできない理由：対象の線に、縫い穴（目印でない穴）がある。目印だけなら丸められる（目印は残る）。 */
-const roundHoleBlock = pathIds => doc.holes.some(h => pathIds.has(h.pathId) && !holeIsMark(h));
+/** 丸め・面取りの前に、菱目（縫い穴）の付いた経路の、今の形を覚える（事業主要望 2026-10-21「点線の角を丸められない」：菱目が1つ付いているだけで断っていた）。断らない：菱目は今の位置のまま残し、角を切り取った部分の菱目だけ消す（reattachMarks）。経路の区間（from・to）は、この形をもとに、新しい長さへ直す。 */
+let roundOldRoutes = new Map(), roundHoleChoice = null, roundHolePending = null;
+/** 縫い穴（菱目）の付いた線を丸め・面取りするときは、実行の前に小さな窓で聞く（事業主決定 2026-10-21 C案）：そのまま残す／打ち直す／消す／やめる。again＝選んだあとに、同じ操作をもう一度やり直す関数。窓を出したら true（呼び出し元は、そこで止める）。 */
+function roundPrepare(pathIds, again) {
+  roundOldRoutes = new Map(); for (const id of pathIds) { const q = doc.paths.find(x => x.id === id), r = q && resolvePath(doc, q); if (r) roundOldRoutes.set(id, r); }
+  const holed = [...pathIds].some(id => doc.holes.some(h => h.pathId === id && !holeIsMark(h)));
+  if (!holed || roundHoleChoice || !again) return false;
+  roundHolePending = again; $('roundHoleBar').hidden = false; $('hint').textContent = t('roundHoleAsk'); return true;
+}
+function hideRoundHoleBar() { roundHolePending = null; if ($('roundHoleBar')) $('roundHoleBar').hidden = true; }
+function pickRoundHole(choice) {
+  const again = roundHolePending; hideRoundHoleBar(); if (!again) return;
+  roundHoleChoice = choice; try { again(); } finally { roundHoleChoice = null; }
+}
+for (const [id, c] of [['roundHoleKeep', 'keep'], ['roundHoleRestitch', 'restitch'], ['roundHoleRemove', 'remove']]) $(id).onclick = () => pickRoundHole(c);
+$('roundHoleCancel').onclick = () => { hideRoundHoleBar(); cancel(); $('hint').textContent = t('roundHoleCanceled'); };
 /** 丸め・面取りのあと、目印だけが付いていた線を作り直す：図形の入れ替え（swap: 古い図形の id → 新しい図形の id の列）を線に反映し、目印を新しい線の上へ置き直す（つながらなければ、その線の目印は外す）。目印のない線は消す。commit の中で、図形を入れ替えたあとに呼ぶ。 */
 function reattachMarks(pathIds, swap = new Map()) {
+  const olds = roundOldRoutes, choice = roundHoleChoice || 'keep'; roundOldRoutes = new Map();
   doc.paths = doc.paths.filter(q => !pathIds.has(q.id) || doc.holes.some(h => h.pathId === q.id));
   for (const q of doc.paths.filter(x => pathIds.has(x.id))) {
     q.shapeIds = q.shapeIds.flatMap(id => swap.has(id) ? swap.get(id) : [id]); const route = resolvePath(doc, q);
     if (!route) { doc.holes = doc.holes.filter(h => h.pathId !== q.id); doc.paths = doc.paths.filter(x => x.id !== q.id); continue; }
-    for (const h of doc.holes.filter(x => x.pathId === q.id)) { const sPos = projectOnPath(route, { x: h.x, y: h.y }).s, pt = pointAtLength(route, sPos); h.s = sPos; h.x = pt.x; h.y = pt.y; }
+    const len = arcLength(route), keep = new Set(), old = olds.get(q.id), oldLen = old ? arcLength(old) : 0, mapped = v => old ? projectOnPath(route, pointAtLength(old, Math.min(Math.max(v, 0), oldLen))).s : v;
+    const autoSegs = choice === 'restitch' && old ? q.segments.filter(sg => sg.mode !== 'manual' && doc.tools.some(tl => tl.id === sg.toolId)) : [];   /* 打ち直す区間：固定ピッチ・等分（手で打った穴の区間はそのまま） */
+    for (const h of doc.holes.filter(x => x.pathId === q.id)) {
+      const pr = projectOnPath(route, { x: h.x, y: h.y });
+      if (holeIsMark(h)) { const pt = pointAtLength(route, pr.s); h.s = pr.s; h.x = pt.x; h.y = pt.y; keep.add(h.id); continue; }   /* 目印：新しい線の上へ置き直す */
+      if (choice === 'remove') continue;   /* 縫い穴は消す */
+      if (autoSegs.length) { const os = projectOnPath(old, { x: h.x, y: h.y }).s; if (autoSegs.some(sg => os >= sg.from - 0.05 && os <= sg.to + 0.05)) continue; }   /* 打ち直す区間の穴は、いったん消して、あとで打ち直す */
+      if (distance(pr, h) <= 0.02 && pr.s >= -1e-6 && pr.s <= len + 1e-6) { h.s = pr.s; keep.add(h.id); }   /* 今の位置のまま（まだ線の上にあるものだけ。角を切り取った部分のものは消える） */
+    }
+    const segsNew = q.segments.map(seg => { const a = Math.min(len, Math.max(0, mapped(seg.from))), b = Math.min(len, Math.max(0, mapped(seg.to))); return { ...seg, from: Math.min(a, b), to: Math.max(a, b) }; });   /* 区間を、新しい経路の長さへ */
+    doc.holes = doc.holes.filter(h => h.pathId !== q.id || keep.has(h.id)); q.segments = segsNew;
+    if (autoSegs.length) for (const sg of q.segments.filter(x => x.mode !== 'manual')) {   /* 打ち直し：同じ工具・同じピッチ・同じ区間（等分は両端に穴が来るように） */
+      const tool = doc.tools.find(tl => tl.id === sg.toolId); if (!tool || !(sg.to > sg.from) || !(sg.pitch > 0)) continue;
+      const pts = pointsAlongShape(route, sg.pitch, { offsetStart: sg.from, offsetEnd: Math.max(0, len - sg.to), variable: sg.mode !== 'fixed' });
+      for (const p of pts) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: q.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool' }); }
+    }
+    if (!doc.holes.some(h => h.pathId === q.id)) doc.paths = doc.paths.filter(x => x.id !== q.id);   /* 穴が全部なくなった経路は消す */
   }
 }
 /** 折れ線をクリック：頂点の近くならその角だけ、辺の途中なら全部の角を丸める／面取りする。 */
 function roundPolylineAt(poly, p) {
   cancel();
   const affected = new Set(doc.paths.filter(q => q.shapeIds.includes(poly.id)).map(q => q.id));
-  if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); return; }
+  if (roundPrepare(affected, () => roundPolylineAt(poly, p))) return;
   const near = poly.points.map((v, i) => [distance(v, p), i]).filter(([d]) => d <= 9 / scale).sort((x, y) => x[0] - y[0])[0];
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3, mode === 'fillet' ? 'fillet' : 'chamfer'); if (r === null) return;
   const shapes = roundPolylineCorners(poly, near ? [near[1]] : null, r, mode);
@@ -5404,7 +5436,7 @@ function reroundArc(arc) {
   const den = da.x * db.y - da.y * db.x; if (Math.abs(den) < 1e-9) { $('hint').textContent = t('impossible'); return true; }
   const tt = ((fb.x - fa.x) * db.y - (fb.y - fa.y) * db.x) / den, C = { x: fa.x + da.x * tt, y: fa.y + da.y * tt }; if (!(tt >= 1 - 1e-6)) { $('hint').textContent = t('impossible'); return true; }
   const affected = new Set(doc.paths.filter(q => q.shapeIds.some(id => [arc.id, A.o.id, B.o.id].includes(id))).map(q => q.id));
-  if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); return true; }
+  if (roundPrepare(affected, () => reroundArc(arc))) return true;
   const r = askNumber('radius', Math.round(arc.r * 100) / 100); if (r === null) return true;
   const VA = { type: 'line', x1: fa.x, y1: fa.y, x2: C.x, y2: C.y }, VB = { type: 'line', x1: fb.x, y1: fb.y, x2: C.x, y2: C.y }, na = filletCorner(VA, VB, r); if (!na) { $('hint').textContent = t('impossible'); return true; }
   const ne = [circlePoint(na, na.startDeg), circlePoint(na, na.endDeg)], pa = ne.reduce((m, q) => distTo(VA, m) <= distTo(VA, q) ? m : q), pb = ne.find(q => q !== pa);
@@ -5421,7 +5453,7 @@ const curveType = x => ['arc', 'bezier', 'path', 'circle'].includes(x?.type);
 /** 曲線（円弧・円・ベジェ・ペン）と、曲線または線の交点を、半径を入れた円弧でなめらかにつなぐ。first・hit は、それぞれ残したい側でクリックした図形（pFirst・p はそのクリック位置）。 */
 function curveFillet(first, pFirst, hit, p) {
   const affected = new Set(doc.paths.filter(q => q.shapeIds.some(id => id === first.id || id === hit.id)).map(q => q.id));
-  if (roundHoleBlock(affected)) { $('hint').textContent = t('holeChamfer'); cancel(); return; }
+  if (roundPrepare(affected, () => curveFillet(first, pFirst, hit, p))) return;
   const r = askNumber('radius', 3, 'fillet'); if (r === null) { cancel(); return; }
   const res = filletCurves(first, pFirst, hit, p, r); if (!res) { $('hint').textContent = t('impossible'); cancel(); return; }
   cancel();
@@ -5485,11 +5517,11 @@ function editAt(p) {
   const first0 = doc.shapes.find(s => s.id === stage.id && editable(s)), lineOf = x => twoPt(x) ? { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y } : x, first = first0 && lineOf(first0), backOf = (orig, ln) => twoPt(orig) ? { ...orig, points: [{ x: ln.x1, y: ln.y1 }, { x: ln.x2, y: ln.y2 }] } : ln;
   if (!first) { cancel(); return; }
   const affectedPaths=new Set(doc.paths.filter(p=>p.shapeIds.includes(first.id)||p.shapeIds.includes(hit.id)).map(p=>p.id));
-  if (roundHoleBlock(affectedPaths)) { $('hint').textContent = t('holeChamfer'); return; }
+  if (roundPrepare(affectedPaths, () => editAt(p))) return;
   const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3, mode === 'fillet' ? 'fillet' : 'chamfer'); if (r === null) return;
   let arc = (mode === 'fillet' ? filletCorner : chamferCorner)(first, lineOf(hit), r), gen = null;
   if (!arc) { gen = stage.click ? roundLinesAt(first, stage.click, lineOf(hit), p, r, mode) : null; arc = gen?.arc; } /* 端がつながっていない・交わっていない・鈍角などの2本は、のばした交点を角にして、のばす／切り詰めて丸める */
-  if (!arc) { const ch = chainAround(first, lineOf(hit)); if (ch) { if (roundHoleBlock(new Set(doc.paths.filter(q => [...ch.ids].some(id => q.shapeIds.includes(id))).map(q => q.id)))) { $('hint').textContent = t('holeChamfer'); return; } const res = roundChainAt(first, ch.c1, lineOf(hit), ch.c2, r, mode); if (res) { applyRoundChain(first, hit, res, ch, affectedPaths); return; } } } /* 角の線が短くて入らないときは、同じ直線上につながった続きの線（層が違ってもよい）まで1本の辺として丸める（不具合記録 2026-10-17） */
+  if (!arc) { const ch = chainAround(first, lineOf(hit)); if (ch) { if (roundPrepare(new Set(doc.paths.filter(q => [...ch.ids].some(id => q.shapeIds.includes(id))).map(q => q.id)), () => editAt(p))) return; const res = roundChainAt(first, ch.c1, lineOf(hit), ch.c2, r, mode); if (res) { applyRoundChain(first, hit, res, ch, affectedPaths); return; } } } /* 角の線が短くて入らないときは、同じ直線上につながった続きの線（層が違ってもよい）まで1本の辺として丸める（不具合記録 2026-10-17） */
   if (!arc) { const ch = chainAround(first, lineOf(hit)), lim = stage.click ? (ch ? cornerLimit(ch.M1, stage.click, ch.M2, p, mode) : cornerLimit(first, stage.click, lineOf(hit), p, mode)) : null; $('hint').textContent = lim && r > lim.max + 1e-9 ? t('roundTooBig', { r: +r.toFixed(2), max: Math.floor(lim.max * 100 + 1e-6) / 100, short: +lim.short.toFixed(2) }) : t('impossible'); return; } /* 半径が大きすぎるときは、入る最大の半径を知らせる */
   const endpoints = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{x:arc.x1,y:arc.y1},{x:arc.x2,y:arc.y2}];
   const trim = (line, other) => {
@@ -6087,7 +6119,7 @@ document.addEventListener?.('keydown', keyLog, true);
 function clickLogNow(e) { const b = e.target?.closest?.('button, select, input, summary, label'); if (!b) return; const form = b.tagName === 'INPUT' || b.tagName === 'SELECT' || b.tagName === 'TEXTAREA'; logOp('click', { id: b.id || '', cls: String(b.className || '').slice(0, 40), data: { ...(b.dataset || {}) }, text: form ? '' : String(b.textContent || '').trim().slice(0, 20), nSel: selected.size, mode, hint: $('hint')?.textContent ?? '' }); }
 document.addEventListener?.('click', e => setTimeout(() => clickLogNow(e), 0), true); /* 押した直後の状態（選択数・メッセージ）を残す */
 canvas.addEventListener('pointerdown', e => {
-  hideCtxMenu(); /* 右クリックのメニューは、ほかをクリックしたら閉じる */
+  hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
