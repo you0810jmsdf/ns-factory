@@ -6108,7 +6108,7 @@ function exportBehindDark(s) {
 }
 function draw() {
 
-  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; syncFoldFields(); syncFoldCutField(); } /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
+  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (!exporting) { ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, width, height); }
   if (quadOn() && !exporting) { drawQuad(dpr); return; }
