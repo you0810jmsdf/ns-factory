@@ -160,6 +160,7 @@
     .fdDia { width: 100%; height: auto; display: block; background: #080808; border: 1px solid #3a3a3a; border-radius: 6px; margin: 4px 0; color: #9aa0a6; cursor: zoom-in; position: sticky; top: 0; z-index: 4; }   /* sticky: stays visible at the top of the right panel while the fields below are scrolled and edited */
     #fdDiagramBig .fdDia { position: static; cursor: zoom-out; border: 0; }
     .fdDia .lth { stroke: #c9a45c; stroke-width: 8; fill: none; opacity: .85; } .fdDia .glue { stroke: #6b5120; stroke-width: 1; fill: none; } .fdDia .btn { stroke: #4aa3ff; stroke-width: 2; stroke-dasharray: 5 4; }
+    [data-trifold-only][hidden], [data-bifold-only][hidden] { display:none !important; }
     #fdDiagramBig { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(94vw, 980px); max-height: 92vh; overflow: auto; z-index: 50; background: #080808; border: 1px solid #f0b429; border-radius: 10px; padding: 12px; cursor: zoom-out; box-shadow: 0 8px 40px rgba(0,0,0,.7); }
     #fdDiagramBig svg { width: 100%; height: auto; display: block; } #fdDiagramBig ol { margin: 8px 0 0; padding-left: 0; list-style: none; columns: 2; column-gap: 20px; font-size: 14px; color: #dfe3e6; } #fdDiagramBig li { padding: 3px 0; break-inside: avoid; } #fdDiagramBig li.hl { color: #f0b429; font-weight: 700; }
     .fdDia .dim line, .fdDia .dim path, .fdDia .dim circle, .fdDia .dim rect { stroke: #9aa0a6; stroke-width: 1.8; fill: none; } .fdDia .dim .ext { stroke-dasharray: 3 3; stroke-width: 1; } .fdDia .dim rect { stroke-dasharray: 3 2; }
@@ -168,7 +169,7 @@
 <body data-prototype="1">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-22 12:32 · c4c5050</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 04:18 · 9550542</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -385,7 +386,7 @@
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
 </div></details>
-<details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><p class="note" data-i18n="foldDesignNote"></p><svg id="fdDiagram" class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
+<details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><label><span data-i18n="fdMode"></span><select id="fdMode"><option value="trifold" data-i18n="fdModeTri"></option><option value="bifold" data-i18n="fdModeBi"></option></select></label><p class="note" data-trifold-only data-i18n="foldDesignNote"></p><p class="note" data-bifold-only hidden data-i18n="bifoldNote"></p><label data-bifold-only hidden><span data-i18n="fdBiW"></span><input id="fdBiW" type="number" min="1" step="0.1" value="100"></label><svg id="fdDiagram" data-trifold-only class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
 <g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
 <g class="dim" data-k="dr"><line class="ext" x1="352" y1="82" x2="352" y2="176"/><line x1="190" y1="152" x2="352" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="271" y="148">②</text></g>
 <g class="dim" data-k="w"><line x1="30" y1="172" x2="352" y2="172" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="191" y="168">③</text></g>
@@ -398,7 +399,7 @@
 <g class="dim" data-k="shift"><line x1="190" y1="-2" x2="170" y2="-2" marker-end="url(#fdArr)"/><line x1="190" y1="-2" x2="210" y2="-2" marker-end="url(#fdArr)"/><text x="228" y="2">⑩</text></g>
 <g class="dim" data-k="ring"><path d="M349.1,59.5 A60,60 0 0 1 349.1,96.5" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><circle cx="352" cy="78" r="2.5"/><text x="376" y="82">⑪</text></g>
 <g class="dim" data-k="stack"><circle cx="318" cy="78" r="14"/><rect x="170" y="74" width="140" height="8"/><line x1="156" y1="74" x2="156" y2="82" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="144" y="82">⑫</text></g>
-</svg><p class="note" data-i18n="fdDiagramNote"></p><label><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTotalH"></span><input id="fdTotalH" type="number" min="0" step="0.1"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row"><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" data-side="fold" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecClear" data-i18n="foldSecClear" data-i18n-title="foldSecClearTip"></button><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
+</svg><p class="note" data-trifold-only data-i18n="fdDiagramNote"></p><label data-trifold-only><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label data-trifold-only><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTotalH"></span><input id="fdTotalH" type="number" min="0" step="0.1"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label data-trifold-only><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row" data-trifold-only><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label data-trifold-only><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" data-side="fold" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecClear" data-i18n="foldSecClear" data-i18n-title="foldSecClearTip"></button><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
 <details class="card" data-side="out" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
 <div class="row"><button id="imgImport" data-i18n="imgImport"></button><button id="imgRemove" data-i18n="imgRemove"></button></div>
 <input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
@@ -432,11 +433,17 @@
 <label><span data-i18n="checkList"></span><select id="checkList"></select></label>
 </div></details>
 <details class="card" data-side="out" id="voiceCard"><summary data-i18n="voice"></summary><div class="body">
+<label><span data-i18n="voiceTarget"></span><select id="voiceTarget"><option value="command" data-i18n="voiceTargetCommand"></option><option value="design" data-i18n="voiceTargetDesign"></option></select></label>
 <div class="row"><button id="voiceBtn" type="button" class="mic" data-i18n-title="voiceHold">🎤</button><progress id="voiceLevel" max="100" value="0"></progress><select id="voiceMode"><option value="hold" data-i18n="voiceHold"></option><option value="toggle" data-i18n="voiceToggle"></option></select></div>
 <div id="voiceHeard" class="muted"></div><div id="voiceOut" role="status"></div><div id="voiceCandidates" class="row" hidden></div>
 <div class="row"><input id="voiceText" type="text" data-i18n-placeholder="voicePlaceholder" autocomplete="off"><button id="voiceGo" type="button" data-i18n="voiceGo"></button></div>
 <label><input id="voiceSpeak" type="checkbox"><span data-i18n="voiceSpeak"></span></label>
-<p class="muted" data-i18n="voicePrivacy"></p>
+<p class="muted" data-i18n="voicePrivacy"></p><hr><p class="note" data-i18n="localDesignNote"></p>
+<label><span data-i18n="localDesignLearn"></span><input id="localDesignLearn" type="file" multiple accept=".lcc,.json,.nscadlearn"></label>
+<button id="localDesignForget" type="button" data-i18n="localDesignForget"></button>
+<textarea id="localDesignPrompt" rows="3" data-i18n-placeholder="localDesignExample"></textarea>
+<div class="row"><button id="localDesignSuggest" type="button" data-i18n="localDesignSuggest"></button><button id="localDesignCreate" type="button" disabled data-i18n="localDesignCreate"></button></div>
+<p id="localDesignStatus" class="note" role="status"></p><div id="localDesignResults" class="row"></div>
 </div></details>
 <details class="card" data-side="out" id="aiCard"><summary data-i18n="ai"></summary><div class="body">
 <div id="aiLog" class="ailog"></div>
@@ -721,8 +728,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=5e4e6255","./ai_schema.js":"./ai_schema.js?v=d35edd45","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=55d37fe5","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=5ef161bb","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=3d7c6463","./designs.js":"./designs.js?v=55cc9caf","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=18b24034","./imgstore.js":"./imgstore.js?v=972d5023","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=00a7aaaa","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=6e5c10a6","./tutorial.js":"./tutorial.js?v=6320674e","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=3fd9f0ec","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=55d37fe5"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=b9f55c1f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=fd859e95","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=fb4c977a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=b9f55c1f"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3249,7 +3256,35 @@ const MESSAGES = {
     "foldSecTitle": "三つ折り断面図（革の長さ）",
     "foldSecNote": "縦の点線（左3本・右3本）がある図面から、三つ折り（内側へ巻く形）の断面図を、いまの図面の下に作ります。三つ折りは2枚を貼り合わせる前提で、厚みは革1枚ぶんを入れます（貼り合わせ線も描きます）。断面でボタン（〇）の目印を動かして「平面図へ戻す」を押すと、〇の位置が平面図に反映されます。作る前に、1枚分を範囲選択してください。断面を取る位置を決めたいときは、下の「断面の位置」に高さ（mm）を入れるか「図面をクリックして指定」を押してください（その高さにかかる〇だけが断面に出ます。紙を横切る実線の横線を1本、選んだ範囲に含める方法も使えますが、指定があれば指定が優先です）。その線の高さに並ぶ縫い穴は、断面の外側・内側の面に落とし、折りごとの間隔の差を案内に出します（穴の位置は変わりません）。",
     "foldSecThickness": "革1枚の厚み (mm)（2枚貼り合わせ）",
-    "foldDesignTitle": "三つ折りの設計（ボタン線から断面を先に作る）",
+    "voiceTarget": "音声の用途",
+    "voiceTargetCommand": "CADを操作",
+    "voiceTargetDesign": "型紙をデザイン（ローカル）",
+    "localDesignNote": "過去作品の参照と作風分析は、このPC・ブラウザ内で行います。外部AIに図面を送らず、API料金もかかりません。生成は対応した寸法・種類のルールに基づく下書きです。参考作品を開く場合は、元の形状・穴位置を保ちます。",
+    "localDesignLearn": "過去のCADを読み込む（複数選択可・LCC / JSON / 学習パック）",
+    "localDesignForget": "ブラウザに読み込んだ参考データを解除",
+    "localDesignExample": "幅100mm、高さ90mm、内半径6mmの2つ折り財布を作って",
+    "localDesignSuggest": "依頼を読み取る・参考作品を探す",
+    "localDesignCreate": "寸法から新しい型紙を作る",
+    "localDesignCount": "参照できる過去作品：{n}件。",
+    "localDesignReferenceOpened": "「{name}」を新しい図面に開きました。元の形状・穴位置を保持しています。依頼した新寸法への変更はしていません。",
+    "localDesignInvalid": "寸法が不正、または折りが成立しません。幅・高さ・革厚・半径・ピッチを確認してください。",
+    "localDesignProposal": "参考候補 {n} 件。作品名を押すと元の型紙を開きます。「寸法から新しい型紙を作る」は2つ折り・手帳・カードケース・パスケース・コインケースに対応します。その他の自由な形状の指示は反映されません。",
+    "localDesignBifoldDefaults": "生成寸法：幅{w} / 高さ{h} / 内半径{r} / 革1枚{t} / ピッチ{p} mm（省略した値は既定値）。",
+    "localDesignRecipeDims": "幅・高さ・半径を直接指定した新規生成は、現在2つ折りで対応しています。その他は参考型紙を開いて寸法を調整してください。",
+    "localDesignCreated": "新しい図面に型紙を作りました。縫い穴ピッチ {p} mm。試作前に寸法・リングの干渉をご確認ください。",
+    "localDesignLearning": "ローカルで過去作品を読み取り中…",
+    "localDesignNoFiles": "読み取れるCADデータがありません。LCC・N’s CAD JSON・学習パックを選んでください。",
+    "localDesignMemoryOnly": "ブラウザへの保存ができず、この画面を閉じるまでの一時参照になりました。",
+    "localDesignFailed": "読み取れなかったファイル：{n}件。",
+    "fdMode": "折り方",
+    "fdModeTri": "3つ折り",
+    "fdModeBi": "2つ折り（財布・ノート型手帳）",
+    "fdBiW": "閉じたときの幅 (mm)",
+    "bifoldNote": "表紙と裏表紙が同じ幅の2つ折りです。⑦で背の内半径、全高で閉じたときの厚さを指定します。財布はリングなし、手帳はリングありで設計できます。ボタン穴は作りません。",
+    "bifoldDesignDone": "2つ折りの断面を作りました。表紙 {f1} mm・裏表紙 {f2} mm、背の曲げ {b1} mm、中心線の全長 {len} mm。",
+    "bifoldFixDone": "確定しました。2つ折りの平面図（全長 {len} mm）と背の点線3本を作りました。",
+    "foldSideSpine": "背",
+    "foldDesignTitle": "2\u3064\u6298\u308a\u30fb3\u3064\u6298\u308a\u306e\u8a2d\u8a08",
     "foldDesignNote": "巻いた形（完成形）の断面を先に作ります。ボタンが3枚を通る縦線（ボタン線）から、左右の折りの外側までの距離・左右の革の切り口までの距離・左右の折りの内側の半径を入れて押してください。表・裏の革の厚みは、下の「表（外側の革）の厚み」「裏（内側の革）の厚み」に入れます（空欄なら「革1枚の厚み」を使い、2枚貼り合わせ）。最左端から最右端までの距離（全幅）は、左右の距離の合計です。全幅の欄に入れると、左の距離はそのままで右の距離が合います。ボタンの位置は、ずらす量を入れて「ボタンを左へ／右へ」で動かせます（4つの距離の欄が書き換わり、全幅は変わりません）。折りが重なる・3枚目が折りを突き抜ける寸法は、作ったうえで警告を出します。",
     "fdDL": "①ボタン線→左の折りの外側 (mm)",
     "fdDR": "②ボタン線→右の折りの外側 (mm)",
@@ -4386,7 +4421,7 @@ const MESSAGES = {
     "sideTab_shape": "図形",
     "sideTab_stitch": "目打ち",
     "sideTab_color": "色",
-    "sideTab_fold": "三つ折り",
+    "sideTab_fold": "2・3つ折り",
     "sideTab_parts": "金具",
     "sideTab_out": "出力ほか",
     "sideTabTip_shape": "図形・寸法（情報・移動・拡大縮小・整列・レイヤー・作図オプション・寸法）",
@@ -5147,7 +5182,35 @@ const MESSAGES = {
     "foldSecTitle": "Tri-fold section (leather length)",
     "foldSecNote": "From a drawing with vertical dashed lines (3 on the left, 3 on the right), this makes a section of a C-fold (wrapping inward) below the drawing. Move a button (circle) mark in the section, then press the Apply button to move the circles in the flat drawing. Tri-folds assume two glued layers, so enter the thickness of one leather (the glue line is drawn too). Select one panel before making it. To choose where the section is taken, enter a height (mm) in the 'Section position' field below or press 'Specify by clicking the drawing' (only circles touching that height are shown). Including one solid horizontal line across the panel in the selection also works, but a specified height takes priority. Stitch holes at that height are projected onto the outer and inner faces and the spacing difference per fold is reported (the holes are not moved).",
     "foldSecThickness": "Thickness of one leather (mm) (2 glued)",
-    "foldDesignTitle": "Tri-fold design (make the section first from the button line)",
+    "voiceTarget": "Voice purpose",
+    "voiceTargetCommand": "CAD commands",
+    "voiceTargetDesign": "Design patterns (local)",
+    "localDesignNote": "References and style analysis stay on this computer/browser. Drawings are not sent to an external AI; there are no API fees. Draft generation uses supported dimensions and product rules. Reference patterns retain original geometry and hole positions.",
+    "localDesignLearn": "Import past designs (LCC / JSON / learning pack, multiple files)",
+    "localDesignForget": "Clear imported browser references",
+    "localDesignExample": "Make a bifold wallet width 100 mm height 90 mm radius 6 mm",
+    "localDesignSuggest": "Read request / find references",
+    "localDesignCreate": "Create a new dimensioned draft",
+    "localDesignCount": "Available references: {n}.",
+    "localDesignReferenceOpened": "Opened {name} in a new drawing with original geometry and holes. Requested new dimensions have not been applied.",
+    "localDesignInvalid": "Invalid dimensions or fold. Check width, height, thickness, radius and pitch.",
+    "localDesignProposal": "{n} reference candidates. Click a name to open its original pattern. New drafts support bifolds, notebooks, card cases, pass cases and coin cases. Other free-form shape requests are not applied.",
+    "localDesignBifoldDefaults": "Draft: width {w}, height {h}, inner radius {r}, each leather {t}, pitch {p} mm (defaults for omitted values).",
+    "localDesignRecipeDims": "Direct width, height and radius are supported for bifolds. For other products, open a reference and edit dimensions.",
+    "localDesignCreated": "Created a draft in a new drawing; stitch pitch {p} mm. Check dimensions and hardware clearance before prototyping.",
+    "localDesignLearning": "Reading local references…",
+    "localDesignNoFiles": "No readable CAD data. Select LCC, N’s CAD JSON or a learning pack.",
+    "localDesignMemoryOnly": "Storage unavailable: references remain available only until this page closes.",
+    "localDesignFailed": "Unreadable files: {n}.",
+    "fdMode": "Fold type",
+    "fdModeTri": "Tri-fold",
+    "fdModeBi": "Bi-fold (wallet / notebook)",
+    "fdBiW": "Closed width (mm)",
+    "bifoldNote": "Equal-width front and back covers. Set the spine inner radius in (7), or set the closed thickness using overall height. Enable rings for a planner; leave them off for a wallet. No button holes are added.",
+    "bifoldDesignDone": "Bi-fold section created. Covers {f1} / {f2} mm, spine bend {b1} mm, centerline length {len} mm.",
+    "bifoldFixDone": "Bi-fold flat pattern created: length {len} mm, with 3 spine guide lines.",
+    "foldSideSpine": "Spine",
+    "foldDesignTitle": "Bi-fold / tri-fold design",
     "foldDesignNote": "Make the section of the finished (wrapped) shape first. Enter, from the button line (the vertical line the button passes through all 3 layers), the distance to the outside of each fold, the distance to each cut end of the leather, and the inner radius of each fold, then press the button. Enter the thickness of the outer and the inner leather in the two thickness fields below (blank = 'Thickness of one leather'; 2 glued). The overall width (leftmost to rightmost) is the sum of the left and right distances; entering it keeps the left distance and adjusts the right one. Move the button with the Button left/right buttons (they rewrite the four distance fields; the overall width does not change). Sizes where folds overlap or the third layer pokes through a fold are still made, with a warning.",
     "fdDL": "(1) Button line → outside of left fold (mm)",
     "fdDR": "(2) Button line → outside of right fold (mm)",
@@ -8218,7 +8281,15 @@ function foldEndLabels(path, origin, { startText = '', endText = '', sizeMm = 3.
  *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
 /** tOuter・tInner＝表（外側の革）・裏（内側の革）それぞれの厚み（省略時はどちらも t）。合計 T＝表＋裏（どちらも省略なら t×plies）。dO・dI＝積み重ねの中心線から、表の革の中心・裏の革の中心までのずれ（表は外へ＋・裏は内へ−）。
  *  積み重ねの中心線の半径 rc＝内側の半径＋T/2。裏の革の中心の半径＝内側の半径＋tI/2・表の革の中心の半径＝内側の半径＋tI＋tO/2 なので、dO＝tI/2・dI＝−tO/2（両方 t なら ±t/2）。 */
-function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+function foldDesignPlan({ mode, width, t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+  if (mode === 'bifold') {
+    const tO = tOuter ?? t, tI = tInner ?? t;
+    if (![width, rinR, t, tO, tI].every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
+    const T = tO + tI, rc = rinR + T / 2, flat = width - rinR - T;
+    if (!(flat > FOLD_EPS)) return { ok: false, error: 'flatShort', flats: [flat, flat] };
+    const bends = [Math.PI * rc];
+    return { ok: true, mode, width, T, tO, tI, dO: tI / 2, dI: -tO / 2, flats: [flat, flat], bends, rc: [rc], a: [flat], cEff: [0, 0], length: 2 * flat + bends[0], warnings: [] };
+  }
   const pos = [dL, dR, rinL, rinR];
   if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
   if (typeof shift !== 'number' || !Number.isFinite(shift)) return { ok: false, error: 'badNumber' };
@@ -8233,12 +8304,27 @@ function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, ri
   return { ok: true, T, tO: tOuter === undefined && tInner === undefined ? T / plies : tO, tI: tOuter === undefined && tInner === undefined ? T / plies : tI, dO: (tOuter === undefined && tInner === undefined ? T / plies : tI) / 2, dI: -(tOuter === undefined && tInner === undefined ? T / plies : tO) / 2, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
 const FD_NUMS = { dl: '①', dr: '②', w: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
+/** 二つ折りの断面は左に揃えた切り口と右の丸い背で構成する。 */
+function bifoldPoint(d, p) {
+  return (u, v) => ({ x: d.origin.x + u, y: d.flipV !== false ? d.origin.y - 2 * p.rc[0] + v : d.origin.y - v });
+}
+function bifoldDimensions(d, p, key, num, refill) {
+  const pt = bifoldPoint(d, p), out = [], line = (a, b, arrows = 'both') => out.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false }), text = (u, v) => out.push({ type: 'text', ...pt(u, v), text: num });
+  const f = p.flats[0], r = p.rc[0], rad = (radius, a) => [f + radius * Math.cos(a), r + radius * Math.sin(a)];
+  if (key === 'w' || key === 'dr') { line([0, -p.T / 2 - 10], [d.width, -p.T / 2 - 10]); text(d.width / 2, -p.T / 2 - 16); }
+  else if (key === 'rr') { line([f, r], rad(d.rinR, -Math.PI / 4), 'end'); text(...rad(d.rinR + 5, -Math.PI / 4)); }
+  else if (key === 'to' || key === 'ti') { const a = key === 'to' ? 0.4 : -0.4, lo = key === 'to' ? d.rinR + p.tI : d.rinR, hi = key === 'to' ? d.rinR + p.T : d.rinR + p.tI; line(rad(lo, a), rad(hi, a)); text(...rad(hi + 5, a)); }
+  else if (key === 'ring') { const path = foldSectionPath(p), s = d.ring?.s ?? f + p.bends[0] / 2, q = pointOnFoldPath(path, s), nx = -Math.sin(q.heading), ny = Math.cos(q.heading), u = q.u + nx * p.T / 2, v = q.v + ny * p.T / 2; line([u - nx * 6, v - ny * 6], [u + nx * 6, v + ny * 6]); text(u - nx * 11, v - ny * 11); }
+  else if (key === 'stack' && refill?.length >= 2) { const [a, b] = refill; out.push({ type: 'line', a, b, arrows: 'both', dash: false }, { type: 'text', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 5, text: num }); }
+  return out;
+}
 /** 三つ折りの設計の寸法線（欄の番号①〜⑫）。いま描いている断面の上に重ねて見せる図形を、図面の座標（mm）で返す（事業主指示 2026-10-15：欄を選ぶと実際の図で該当する寸法が分かるように）。
  *  d＝doc.foldDesign（dL・dR・cL・cR・rinL・rinR・tOuter・tInner・origin・flipV・ring）。key＝'dl' など（FD_NUMS のキー）。refill＝リフィルの束の短い辺の2点（図面の座標）。⑫に使う。
  *  返り値 [{ type:'line', a, b, arrows:'none'|'end'|'both', dash }, { type:'dot', x, y }, { type:'text', x, y, text }]。計画が成り立たないとき・知らない key は null。 */
 function foldDimensions(d, key, { refill = null } = {}) {
   const num = FD_NUMS[key]; if (!d || !num || !d.origin) return null;
   const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') return bifoldDimensions(d, p, key, num, refill);
   const { T } = p, tI = p.tI, tO = p.tO, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
   const items = [], line = (a, b, arrows = 'none', dash = false) => items.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash }), text = (u, v) => items.push({ type: 'text', ...pt(u, v), text: num });
@@ -8273,6 +8359,15 @@ function foldDimensions(d, key, { refill = null } = {}) {
  *  返り値 [{ key:'w'|'h'|'t', value（mm）, items }]。items は foldDimensions と同じ形で、type:'text' には align（'left'｜'right'）が付くことがある。計画が成り立たない・origin が無いとき null。 */
 function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') {
+    const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -14 * px;
+    const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
+    return [
+      { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
+      { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
+      { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(d.width + 10 * px, p.rc[0]), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm`, align: 'left' }) },
+    ];
+  }
   const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
   const vTop = 2 * rc1 + T / 2, H = 2 * Math.max(rc1, rc2) + T, vLow = vTop - H, hx = lo - 14 * px;   /* 全高の寸法線は図の左（縦）。厚みの文字は図の右端の外 */
@@ -8289,6 +8384,7 @@ function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
  *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
 function foldHandles(d) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') { const pt = bifoldPoint(d, p); return [{ key: 'w', dim: 'w', ...pt(d.width, p.rc[0]) }, { key: 'rr', dim: 'rr', ...pt(p.flats[0] + d.rinR, p.rc[0]) }]; }
   const { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
   return [
@@ -8312,6 +8408,17 @@ function foldBendPitch(plan, pitch, plies = 2) {
  *  返り値：[{ key:'outer'|'inner', delta, length, xs[6], holes[]（革の左端からの位置）, flatStep, rowFrom, rowTo, buttons[], bends:[{ side:'right'|'left', count, firstIndex, pitch, flat }] }]（表・裏の順）。入力が不正なときは null。 */
 function foldUnfoldPlan(p, { pitch, margin, buttons = [], plies = 2 } = {}) {
   if (!p || !p.ok || !(typeof pitch === 'number' && pitch > 0) || !(typeof margin === 'number' && margin >= 0) || !(margin * 2 < p.length)) return null;
+  if (p.mode === 'bifold') {
+    if (![pitch, margin].every(Number.isFinite)) return null;
+    const f = p.flats[0], b = p.bends[0], usable = p.length - 2 * margin, n = Math.floor(usable / pitch + 1e-9);
+    if (n < 1) return null;
+    const lead = margin + (usable - n * pitch) / 2, base = Array.from({ length: n + 1 }, (_, i) => lead + i * pitch);
+    return [['outer', p.dO], ['inner', p.dI]].map(([key, delta]) => {
+      const nb = Math.PI * (p.rc[0] + delta), map = s => s <= f ? s : s <= f + b ? f + (s - f) * nb / b : s + nb - b;
+      const indices = base.map((s, i) => s >= f - 1e-9 && s <= f + b + 1e-9 ? i : -1).filter(i => i >= 0);
+      return { key, delta, length: p.length + nb - b, xs: [f, f + nb / 2, f + nb], holes: base.map(map), flatStep: pitch, rowFrom: map(margin), rowTo: map(p.length - margin), buttons: buttons.map(map), bends: [{ side: 'right', count: indices.length, firstIndex: indices.length >= 2 ? indices[0] : -1, pitch: pitch * nb / b, flat: pitch }] };
+    });
+  }
   const [f1, f2] = p.flats, [b1, b2] = p.bends, xsBase = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   /* 菱目は、実際の目打ちのピッチ pitch のまま（平らな所は pitch ちょうど）。端の余り（行の長さを pitch で割った余り）は両端へ等分する。曲げ部は、革の中心線で pitch の間隔にした穴を、各革の半径で割り当てる（表は広く・裏は狭く・平均は pitch）。 */
   const usable = p.length - 2 * margin, n = Math.floor(usable / pitch + 1e-9), step = pitch, lead = margin + (usable - n * pitch) / 2, EPS = 1e-9; if (n < 1) return null;
@@ -8400,8 +8507,8 @@ function foldSectionPath({ flats, bends, angles }) {
   const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0; const ang = i => Array.isArray(angles) && Number.isFinite(angles[i]) && angles[i] > 0 ? angles[i] : Math.PI;
   const line = len => { if (!(len > FOLD_EPS)) return; const q = { u: p.u + len * Math.cos(th), v: p.v + len * Math.sin(th) }; pieces.push({ kind: 'line', p0: p, p1: q, th, s0: s, s1: s + len }); s += len; p = q; };
   const turn = (len, a) => { const r = len / a, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + a, ang: a, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + a), v: c.v + r * Math.sin(a0 + a) }; th += a; };
-  line(flats[0]); turn(bends[0], ang(0)); line(flats[1]); turn(bends[1], ang(1)); line(flats[2]);
-  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: [ang(0), ang(1)] };
+  line(flats[0]); bends.forEach((bend, i) => { turn(bend, ang(i)); line(flats[i + 1]); });
+  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: bends.map((_, i) => ang(i)) };
 }
 /** 中心線の s の位置の点と向き：{ u, v, heading }（heading はラジアン）。s は 0〜length に丸める。 */
 function pointOnFoldPath(path, s) {
@@ -10828,8 +10935,79 @@ function filterDesigns(items, query = '') {
   const q = String(query || '').toLowerCase().trim(); if (!q) return items;
   return items.filter(it => [it.name, it.folder, ...(it.tags || [])].some(v => String(v || '').toLowerCase().includes(q)));
 }
+const { parseLcc, lccToDoc, lccStats, aggregateStyle } = __mods['lcc'];
+const { validateDoc, migrateDoc } = __mods['geometry'];
+/** Local-only retrieval. No remote inference or network request is made here. */
+const DESIGN_TERMS = [
+  ['wallet', /財布|ウォレット|wallet/i], ['notebook', /手帳|ノート|notebook|planner|binder/i],
+  ['cardcase', /名刺|カード|card.?case/i], ['passcase', /パスケース|定期|pass.?case/i],
+  ['coincase', /小銭|コイン|coin/i], ['bifold', /2つ折|２つ折|二つ折|2折|bifold|bi-fold/i],
+  ['trifold', /3つ折|３つ折|三つ折|trifold|tri-fold/i], ['m5', /micro\s*5|m5|マイクロ5|マイクロファイブ/i],
+  ['mini6', /mini\s*6|ミニ6|ミニ６/i], ['bible', /聖書|バイブル|bible/i], ['a5', /a5|Ａ５/i], ['a6', /a6|Ａ６/i],
+  ['flap', /フラップ|flap/i], ['round', /ラウンド|丸|round/i]
+];
+function designTerms(text) { return DESIGN_TERMS.filter(([, re]) => re.test(String(text))).map(([k]) => k); }
+function rankLocalDesigns(items, query, limit = 5) {
+  const terms = designTerms(query), words = String(query).toLowerCase().split(/[\s、。]+/).filter(w => w.length > 1);
+  if (!terms.length && !words.length) return [];
+  return items.map(item => {
+    const text = [item.name, item.folder, ...(item.tags || [])].join(' ').toLowerCase(), tags = designTerms(text);
+    const score = terms.reduce((n, k) => n + (tags.includes(k) ? (['m5','mini6','a5','a6','bible'].includes(k) ? 6 : 4) : 0), 0) + words.reduce((n, w) => n + (text.includes(w) ? 2 : 0), 0);
+    return { item, score };
+  }).filter(x => x.score > 0).sort((a,b) => b.score - a.score || String(a.item.id).localeCompare(String(b.item.id))).slice(0, limit);
+}
+/** Dimensions are explicit mm only; omitted dimensions stay unset, never inferred from reference bounding boxes. */
+function localDesignRequest(text) {
+  const q = String(text).normalize('NFKC'), terms = designTerms(q);
+  const num = words => { const m = q.match(new RegExp('(?:'+words+')\\s*(?:は|を|が|:)?\\s*(\\d+(?:\\.\\d+)?)\\s*(cm|センチ|mm|ミリ)?','i')); return m ? Number(m[1]) * (/cm|センチ/.test(m[2] || '') ? 10 : 1) : undefined; };
+  const request = { text: q, terms, bifold: terms.includes('bifold'), width: num('幅|横|width'), height: num('高さ|縦|height'), radius: num('内半径|半径|radius'), pitch: num('ピッチ|pitch'), thickness: num('革厚|革の厚み|thickness'), ringD: num('リング径|リング直径|ring diameter') };
+  request.refill = ['m5','mini6','bible','a5','a6'].find(k => terms.includes(k));
+  request.kind = ['notebook','passcase','cardcase','coincase'].find(k => terms.includes(k));
+  request.invalid = ['width','height','radius','pitch','thickness','ringD'].some(k => request[k] !== undefined && (!Number.isFinite(request[k]) || request[k] <= 0 || request[k] > 2000));
+  return request;
+}
+/** Keep source files on this browser only. Parse statistics now, convert full geometry only when used. */
+async function learnLocalFiles(files) {
+  const items = [], stats = [], failed = []; let packStyle = null;
+  for (const file of files) {
+    if (/\.nscadlearn$/i.test(file.name)) {
+      try {
+        if (file.size > 256 * 1024 * 1024) throw new Error('pack-too-large');
+        const pack=JSON.parse(await file.text()); if(pack.version!==1 || !Array.isArray(pack.items) || pack.items.length>5000) throw new Error('invalid-pack');
+        const nested=await learnLocalFiles(pack.items.map((it,i)=>{if(!['lcc','json'].includes(it.format)||typeof it.raw!=='string')throw new Error('invalid-pack-item');return {name:(it.name||String(i))+'.'+it.format,webkitRelativePath:String(it.id||i),size:it.raw.length*2,text:async()=>it.raw};}));
+        items.push(...nested.items); if(pack.style?.files) packStyle=pack.style; else if(nested.style.files) stats.push(...nested.items.filter(it=>it.format==='lcc').map(it=>lccStats(parseLcc(it.raw)))); failed.push(...nested.failed, ...(Array.isArray(pack.failed) ? pack.failed : []));
+      } catch(error){failed.push({name:file.name,error:error.message});}
+      continue;
+    }
+    if (!/\.(lcc|json)$/i.test(file.name)) continue;
+    try {
+      if (file.size > 32 * 1024 * 1024) throw new Error('file-too-large');
+      const raw = await file.text(), name = file.name.replace(/\.(lcc|json)$/i,''), id = file.webkitRelativePath || file.name;
+      if (/\.lcc$/i.test(file.name)) { const parsed = parseLcc(raw); if (!parsed) throw new Error('invalid-lcc'); const st = lccStats(parsed); stats.push(st); items.push({ id, name, folder: id, raw, format:'lcc', pitch: Object.entries(st.pitch).sort((a,b)=>b[1]-a[1])[0]?.[0] }); }
+      else { const doc = migrateDoc(JSON.parse(raw)); if (!validateDoc(doc)) throw new Error('invalid-doc'); items.push({ id, name, folder:id, raw, format:'json', pitch: doc.tools?.[0]?.pitch }); }
+    } catch (error) { failed.push({ name:file.name, error:error.message }); }
+  }
+  return { version:1, items, style: packStyle && stats.length === 0 ? packStyle : aggregateStyle(stats), failed, learnedAt:new Date().toISOString() };
+}
+function localReferenceDoc(item) {
+  const doc = item.format === 'lcc' ? lccToDoc(parseLcc(item.raw), { name:item.name }).doc : migrateDoc(JSON.parse(item.raw));
+  if (!validateDoc(doc)) throw new Error('invalid-doc'); return doc;
+}
+/** IndexedDB stores the private corpus, never localStorage or a public asset. */
+function localDesignStore(value) {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === 'undefined') { resolve(null); return; }
+    const req = indexedDB.open('nscad-private-designs', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('corpus');
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => { const db=req.result, tx=db.transaction('corpus', value === undefined ? 'readonly':'readwrite'), store=tx.objectStore('corpus'); let result=null;
+      const op = value === undefined ? store.get('owner') : value === null ? store.delete('owner') : store.put(value,'owner');
+      op.onsuccess=()=>{ result=op.result; }; tx.oncomplete=()=>{db.close();resolve(result);}; tx.onerror=()=>{db.close();reject(tx.error);}; tx.onabort=()=>{db.close();reject(tx.error || new Error('storage-aborted'));};
+    };
+  });
+}
 
-return {loadDesign, filterDesigns};
+return {loadDesign, filterDesigns, designTerms, rankLocalDesigns, localDesignRequest, learnLocalFiles, localReferenceDoc, localDesignStore};
 })();
 __mods['data/designs'] = (function(){
 const DATA_DESIGNS = {"_comment":"公開版には事業主の設計カタログを含めない","generatedAt":"","source":"","items":[]};
@@ -22540,7 +22718,7 @@ const { DATA_TEXTURES } = __mods['data/textures'];
 const { createPlayer } = __mods['tutorial'];
 const { parseVoice, labelOf } = __mods['voice'];
 const { lccToDoc, styleSummary } = __mods['lcc'];
-const { loadDesign, filterDesigns } = __mods['designs'];
+const { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, learnLocalFiles, localReferenceDoc, localDesignStore } = __mods['designs'];
 const { DATA_DESIGNS } = __mods['data/designs'];
 const { DATA_STYLE } = __mods['data/style'];
 const { TUTORIALS_BASICS } = __mods['tutorials/basics'];
@@ -25310,6 +25488,67 @@ function initDesigns() {
   $('styleNote').textContent = styleSummary(DATA_STYLE, document.documentElement.lang === 'en' ? 'en' : 'ja');
 }
 
+// Local designer: private retrieval and dimension-driven drafting, without an external AI call.
+let privateDesignCorpus = null, localDesignPending = null;
+function localDesignerStatus() {
+  const count = privateDesignCorpus?.items?.length ?? DATA_DESIGNS.items?.length ?? 0;
+  $('localDesignStatus').textContent = t('localDesignCount', { n: count }) + ' ' + styleSummary(privateDesignCorpus?.style || DATA_STYLE, voiceLang());
+}
+function localDesignSuggest(text) {
+  const r = localDesignRequest(text), items = privateDesignCorpus?.items || DATA_DESIGNS.items || [];
+  localDesignPending = r; $('localDesignPrompt').value = text;
+  $('localDesignResults').textContent = ''; $('localDesignCreate').disabled = r.invalid || (!r.bifold && !r.kind);
+  const matches = rankLocalDesigns(items, text);
+  const matchedPitch = Number(matches[0]?.item?.pitch); if (matchedPitch >= 3 && matchedPitch <= 5) r.referencePitch = +matchedPitch.toFixed(2);
+  for (const { item } of matches) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = item.name;
+    b.onclick = async () => { b.disabled = true; try {
+      const next = item.raw ? localReferenceDoc(item) : await loadDesign(item);
+      if (!next) throw new Error(t('designsNeedServer')); if (!validateDoc(next)) throw new Error(t('invalidDoc'));
+      newTab(item.name); commit(() => { doc = migrateDoc(next); selected.clear(); refreshTools(); }); tabs[activeTab].doc = doc; renderLayers(); renderSeams(); fit();
+      $('localDesignStatus').textContent = t('localDesignReferenceOpened', { name:item.name });
+    } catch(e) { $('localDesignStatus').textContent = e.message; } finally { b.disabled = false; } };
+    $('localDesignResults').appendChild(b);
+  }
+  $('localDesignStatus').textContent = r.invalid ? t('localDesignInvalid') : t('localDesignProposal', { n:matches.length }) + (r.bifold ? ' ' + t('localDesignBifoldDefaults', { w:r.width ?? 100, h:r.height ?? 90, r:r.radius ?? 6, t:r.thickness ?? 1.5, p:r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2) }) : '');
+  $('voiceCard').open = true; revealCard($('voiceCard'));
+}
+function localDesignCreate() {
+  const r=localDesignPending; if (!r || r.invalid) return;
+  const pitch=r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2);
+  if (r.bifold) {
+    const vals={mode:'bifold',width:r.width ?? 100,rinR:r.radius ?? 6,t:r.thickness ?? 1.5};
+    if (!foldDesignPlan(vals).ok || !(pitch > 0)) { $('localDesignStatus').textContent=t('localDesignInvalid'); return; }
+    newTab(t('fdModeBi'));
+    for (const [id,v] of Object.entries({fdMode:'bifold',fdBiW:vals.width,fdRR:vals.rinR,foldSecT:vals.t,fdTO:vals.t,fdTI:vals.t,fdH:r.height ?? 90,fdPitch:pitch,fdEdge:3,fdMargin:5})) $(id).value=String(v);
+    $('fdRingOn').checked=r.terms.includes('notebook'); $('fdRingPos').value='0'; $('fdStackT').value='6';
+    if (r.refill) { $('fdRingSpec').value=r.refill; $('fdRingSpec').onchange(); }
+    if (r.ringD) { $('fdRingDia').value=String(r.ringD); $('fdRingDia').onchange(); }
+    syncFoldModeUI(); makeFoldDesign(false); projectFoldDesign(false); unfoldFoldDesign(); fit();
+  } else if (r.kind) {
+    // Arbitrary width/height cannot safely scale stitching or hardware on a fixed recipe.
+    if (r.width || r.height || r.radius) { $('localDesignStatus').textContent=t('localDesignRecipeDims'); return; }
+    const recipe={...defaultRecipe(r.kind),pitch,...(r.refill?{refill:r.refill}:{}),...(r.ringD?{ringD:r.ringD}:{}),...(r.thickness?{thickness:r.thickness}:{})};
+    const built=buildDoc(recipe,{tools:loadTools()}); if (!built || !validateDoc(built.doc)) { $('localDesignStatus').textContent=t('localDesignInvalid');return; }
+    newTab(t('recipeTab',{kind:t('kind.'+r.kind)})); commit(()=>{doc=built.doc; selected.clear();refreshTools();}); tabs[activeTab].doc=doc;renderLayers();renderSeams();fit();
+  } else return;
+  $('localDesignStatus').textContent=t('localDesignCreated',{p:pitch});
+}
+function initLocalDesigner() {
+  $('localDesignSuggest').onclick=()=>localDesignSuggest($('localDesignPrompt').value);
+  $('localDesignCreate').onclick=localDesignCreate;
+  $('localDesignLearn').onchange=async()=>{
+    const files=Array.from($('localDesignLearn').files || []); if(!files.length)return;
+    $('localDesignStatus').textContent=t('localDesignLearning'); $('localDesignLearn').disabled=true;
+    try { const learned=await learnLocalFiles(files); if(!learned.items.length) throw new Error(t('localDesignNoFiles'));
+      privateDesignCorpus=learned; try { await localDesignStore(learned); localDesignerStatus(); } catch(e) { localDesignerStatus(); $('localDesignStatus').textContent+=' '+t('localDesignMemoryOnly'); }
+      if(learned.failed.length) $('localDesignStatus').textContent+=' '+t('localDesignFailed',{n:learned.failed.length});
+    } catch(e) { $('localDesignStatus').textContent=e.message; } finally { $('localDesignLearn').disabled=false; $('localDesignLearn').value=''; }
+  };
+  $('localDesignForget').onclick=async()=>{ try { await localDesignStore(null);privateDesignCorpus=null;localDesignPending=null;$('localDesignResults').textContent='';localDesignerStatus(); }catch(e){$('localDesignStatus').textContent=e.message;} };
+  localDesignerStatus(); localDesignStore().then(v=>{if(v?.version===1 && Array.isArray(v.items)){privateDesignCorpus=v;localDesignerStatus();}}).catch(()=>{});
+}
+
 // ---- 音声操作（Web Speech API・長押しで聞く・テキスト欄は同じ文法）----
 let voicePending = null, voiceCandidates = [], voiceRec = null, voiceAskNumber = null, voiceLevelStop = null;
 const voiceLang = () => ($('language').value || 'ja') === 'en' ? 'en' : 'ja';
@@ -25348,7 +25587,7 @@ function execVoice(r) {
   }
   done('');
 }
-function execVoiceText(text) { $('voiceHeard').textContent = text; execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
+function execVoiceText(text) { $('voiceHeard').textContent = text; if ($('voiceTarget').value === 'design') { localDesignSuggest(text); return; } execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
 function voiceStart() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $('voiceOut').textContent = t('voiceUnsupported'); $('voiceText').focus?.(); return; }
@@ -25356,7 +25595,7 @@ function voiceStart() {
   let finalText = ''; $('voiceBtn').classList.add('active'); $('voiceHeard').textContent = '…'; $('voiceOut').textContent = '';
   rec.onresult = e => { let s = ''; for (const r of e.results) { s += r[0].transcript; if (r.isFinal) finalText = s; } $('voiceHeard').textContent = s; };
   rec.onerror = e => { $('voiceOut').textContent = e.error === 'not-allowed' ? t('voiceNoPermission') : e.error === 'no-speech' ? t('voiceNoSound') : t('voiceError'); };
-  rec.onend = () => { voiceRec = null; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); else if (!$('voiceOut').textContent) $('voiceOut').textContent = t('voiceNoSound'); };
+  rec.onend = () => { voiceRec = null; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoiceText(text); else if (!$('voiceOut').textContent) $('voiceOut').textContent = t('voiceNoSound'); };
   try { rec.start(); } catch { voiceRec = null; }
   voiceLevelStart();
 }
@@ -26675,9 +26914,15 @@ function foldRingShapes(path, T, origin, ring) {
   for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
   return { shapes, s };
 }
+function foldIsBifold() { return $('fdMode')?.value === 'bifold'; }
+function syncFoldModeUI() {
+  const bi = foldIsBifold();
+  for (const el of document.querySelectorAll('[data-trifold-only]')) el.hidden = bi;
+  for (const el of document.querySelectorAll('[data-bifold-only]')) el.hidden = !bi;
+}
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
-  const vals = { t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
+  const vals = { ...(foldIsBifold() ? { mode: 'bifold', width: num('fdBiW') } : {}), t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
@@ -26688,12 +26933,12 @@ function makeFoldDesign(live = false) {
     const gid = nextGroupId(doc.shapes);
     const flip = shapes => flipOn ? flipSectionV(shapes, origin.y - p.rc[0]) : shapes;   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15・切り替えできる）。右の丸折りの中心の高さを軸にするので、範囲は変わらない。左右は変わらない */
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
-    for (const sh of flip([{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
+    for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
     doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2);
-  $('hint').textContent = t('foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2]), b1: f2(p.bends[0]), b2: f2(p.bends[1]), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
+  $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
     + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
 }
 /** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
@@ -26703,7 +26948,7 @@ function liveFoldDesign() { makeFoldDesign(true); }   /* 数値が正しけれ�
 function projectFoldDesign(withStitch) {
   const d = doc.foldDesign; if (!d) { $('hint').textContent = t('foldFixNone'); return; }
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
-  const btnD = Number($('fdBtnD').value); if (!(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
+  const btnD = Number($('fdBtnD').value); if (d.mode !== 'bifold' && !(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
   const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   let st = d.stitch || null;
   if (withStitch) {
@@ -26712,8 +26957,8 @@ function projectFoldDesign(withStitch) {
     if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
     st = { edge, pitch, margin };
   }
-  const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
-  const buttons = [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
+  const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = d.mode === 'bifold' ? [f1, f1 + b1 / 2, f1 + b1] : [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
+  const buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
   const mounts = (d.ring && binderSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
@@ -26721,7 +26966,7 @@ function projectFoldDesign(withStitch) {
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
     add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + p.length, y: fy }, { x: fx + p.length, y: fy + h }, { x: fx, y: fy + h }] });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
-    for (const x of [buttons[0], buttons[2]]) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
+    for (const x of (d.mode === 'bifold' ? [] : [buttons[0], buttons[2]])) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
     for (const rv of mounts) add({ type: 'circle', layer, cx: fx + d.ring.s + rv.yMm, cy: fy + h / 2 + rv.xMm, r: rv.dMm / 2 });   /* リング取付穴（台座の長さの向きが平面図の縦・横が革に沿った向き） */
     if (st) for (const y of [fy + st.edge, fy + h - st.edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（端の余白を空け、ピッチは均等に調整） */
       const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + st.margin, y1: y, x2: fx + p.length - st.margin, y2: y });
@@ -26732,18 +26977,18 @@ function projectFoldDesign(withStitch) {
     doc.foldDesign = { ...doc.foldDesign, ...(st ? { stitch: st } : {}) };
   });
   const f2s = v => v.toFixed(2);
-  $('hint').textContent = t('foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0]), s3: f2s(buttons[2]) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n }) : ''); rebuildSnaps(); draw();
+  $('hint').textContent = t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n }) : ''); rebuildSnaps(); draw();
 }
 /** 表（折りの外側の革）・裏（内側の革）の展開図を、図面に並べる（FIX の平面図の下に、表→裏の順）。それぞれに、折りの点線・ボタン穴・菱目打ちライン（菱目の穴）を描き、平らな部分と曲げ部の菱目間の寸法（数字つき）を書き込む。
  *  菱目は同じ個数・同じ位置（革の長さに沿った割り当て）で、曲げ部の間隔だけが革ごとに違う。前の展開図は置き換える（元に戻すは1回）。 */
 function unfoldFoldDesign() {
   const d = doc.foldDesign; if (!d) { $('hint').textContent = t('foldFixNone'); return; }
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
-  const btnD = Number($('fdBtnD').value); if (!(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
+  const btnD = Number($('fdBtnD').value); if (d.mode !== 'bifold' && !(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
   const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t('foldDesignErr_' + p.error); return; }
   const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value);
   const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null; if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
-  const [f1, f2] = p.flats, [b1, b2] = p.bends, buttons = [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];
+  const [f1, f2] = p.flats, [b1, b2] = p.bends, buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];
   const plies = foldUnfoldPlan(p, { pitch, margin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
   const tool = stitchToolCurrent(), fx = d.origin.x, f2s = v => v.toFixed(2); let fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60;
   { /* 置き場所に別の図形（財布の部品など）が重なるときは、その下の空いた所へずらす。重ならないときは今までの位置（事業主指摘 2026-10-18） */
@@ -26759,7 +27004,12 @@ function unfoldFoldDesign() {
       add({ type: 'text', layer: guide, x: fx, y: fy - 5, text: t('unfoldTitle', { name, len: f2s(u.length) }), sizeMm: 4, angleDeg: 0 });
       add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + u.length, y: fy }, { x: fx + u.length, y: fy + h }, { x: fx, y: fy + h }] });
       for (const x of u.xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
-      for (const x of [u.buttons[0], u.buttons[2]]) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
+      for (const x of (d.mode === 'bifold' ? [] : [u.buttons[0], u.buttons[2]])) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
+      if (d.mode === 'bifold' && d.ring) {
+        const f = p.flats[0], b = p.bends[0], nb = Math.PI * (p.rc[0] + u.delta);
+        const map = x => x <= f ? x : x <= f + b ? f + (x - f) * nb / b : x + nb - b;
+        for (const rv of binderSpec(d.ring.specId)?.rivets || []) add({ type: 'circle', layer, cx: fx + map(d.ring.s + rv.yMm), cy: fy + h / 2 + rv.xMm, r: rv.dMm / 2 });
+      }
       for (const y of [fy + edge, fy + h - edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（この革の長さに沿った位置） */
         const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + u.rowFrom, y1: y, x2: fx + u.rowTo, y2: y }), len = u.rowTo - u.rowFrom;
         const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: u.flatStep, mode: 'manual' }], mark: 'tool', foldFlat: 'fdu', ply: u.key }; doc.paths.push(saved);
@@ -26775,14 +27025,14 @@ function unfoldFoldDesign() {
   });
   commit(() => { for (const p of doc.parts) if (p.autoPly) p.shapeIds = foldUnfoldPartIds(p.autoPly); });   /* 「表・裏を部品にする」で作った部品は、新しい展開の図形で作り直す */
   const [o, ii] = plies;
-  $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t('foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }); rebuildSnaps(); draw();
+  $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }); rebuildSnaps(); draw();
 }
 function fixFoldDesign() { projectFoldDesign(false); }
 /** 設計カードに、曲げ部の菱目ピッチ（外側の面・内側の面・差）を数字で出す。基準の平らな間隔は「菱目のピッチ」の欄（指定する前提）。数値・厚み・ピッチのどれを変えても、その場で更新する。 */
 /** 三つ折りの設計の「全高」（事業主指示 2026-10-21「高さ（フラップ曲げ部）を25mmに合わせるのがかなりむつかしい」→ 全高を直接入れる欄）。
  *  全高＝2×大きいほうの折りの中心線の半径＋厚み＝2×大きいほうの内側の半径＋厚みの2倍（断面図の「全高」の寸法と同じ・design.js foldSectionDims）。欄はいつも実際の全高を表し、入れて Enter／Tab で、大きいほうの折りの内側の半径（⑥⑦の欄）を書き換えて合わせる。 */
 function foldHeightNow() {
-  const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), rl = num('fdRL'), rr = num('fdRR'), v = foldThicknessVals(), T = v.tOuter + v.tInner;
+  const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), rl = foldIsBifold() ? num('fdRR') : num('fdRL'), rr = num('fdRR'), v = foldThicknessVals(), T = v.tOuter + v.tInner;
   if (![rl, rr, T].every(Number.isFinite) || !(rl > 0) || !(rr > 0) || !(T > 0)) return null;
   return { T, rl, rr, h: 2 * Math.max(rl, rr) + 2 * T };
 }
@@ -26795,7 +27045,7 @@ function setFoldHeight() {
   if (!n) { $('hint').textContent = t('foldHeightNeedR'); back(); return; }
   const r = (h - 2 * n.T) / 2; if (raw === '' || !Number.isFinite(h) || !(r > 0)) { $('hint').textContent = t('foldHeightSmall', { min: +(2 * n.T).toFixed(2) }); back(); return; }
   const bigId = n.rr >= n.rl ? 'fdRR' : 'fdRL', other = bigId === 'fdRR' ? n.rl : n.rr;
-  if (other > r + 1e-9) { $('hint').textContent = t('foldHeightOther', { o: +other.toFixed(2), r: +r.toFixed(2) }); back(); return; }
+  if (!foldIsBifold() && other > r + 1e-9) { $('hint').textContent = t('foldHeightOther', { o: +other.toFixed(2), r: +r.toFixed(2) }); back(); return; }
   $(bigId).value = String(+r.toFixed(3)); refreshFoldPitch();
   const before = $('hint').textContent; liveFoldDesign(); const summary = $('hint').textContent !== before ? ' ' + $('hint').textContent : '';
   $('hint').textContent = t('foldHeightSet', { h: +h.toFixed(2), side: t(bigId === 'fdRR' ? 'foldSideR' : 'foldSideL'), r: +r.toFixed(3) }) + summary; refreshFoldHeight(true);
@@ -26806,9 +27056,9 @@ function refreshFoldPitch() {
   const el = $('fdPitchOut'); if (!el) return;
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value), pitch = num('fdPitch'), f2 = v => v.toFixed(2);
   if (!(pitch > 0)) { el.textContent = t('foldPitchNeed'); return; }
-  const r = foldBendPitch(foldDesignPlan({ t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }), pitch, FOLD_SEC_PLIES);
+  const r = foldBendPitch(foldDesignPlan({ ...(foldIsBifold() ? { mode: 'bifold', width: num('fdBiW') } : {}), t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }), pitch, FOLD_SEC_PLIES);
   if (!r) { el.textContent = t('foldPitchBad'); return; }
-  el.textContent = t('foldPitchHead', { p: f2(pitch) }) + r.map(b => '\n' + t('foldPitchBend', { side: t(b.side === 'right' ? 'foldSideR' : 'foldSideL'), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff), deg: b.angleDeg.toFixed(1), n: b.count.toFixed(1) })).join('');
+  el.textContent = t('foldPitchHead', { p: f2(pitch) }) + r.map(b => '\n' + t('foldPitchBend', { side: t(foldIsBifold() ? 'foldSideSpine' : b.side === 'right' ? 'foldSideR' : 'foldSideL'), outer: f2(b.outer), inner: f2(b.inner), diff: f2(b.diff), deg: b.angleDeg.toFixed(1), n: b.count.toFixed(1) })).join('');
 }
 /** 全幅（最左端〜最右端の距離）＝ボタン線→左の折りの外側＋ボタン線→右の折りの外側。2つの距離を変えると、合計を自動で出す。 */
 function refreshFoldWidth() { const l = Number($('fdDL').value), r = Number($('fdDR').value); $('fdW').value = ($('fdDL').value ?? '').trim() !== '' && ($('fdDR').value ?? '').trim() !== '' && l > 0 && r > 0 ? String(+(l + r).toFixed(2)) : ''; }
@@ -26830,7 +27080,7 @@ function nudgeFoldButton(dir) {
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
 }
 /** 三つ折りの設計のサンプル図：欄（または欄の上のマウス）に対応する寸法を金色に光らせる（事業主指示 2026-10-15）。図の data-k と欄の対応。 */
-const FD_DIAGRAM = { fdDL: 'dl', fdDR: 'dr', fdW: 'w', fdCL: 'cl', fdCR: 'cr', fdRL: 'rl', fdRR: 'rr', fdTO: 'to', fdTI: 'ti', fdShift: 'shift', fdNudgeL: 'shift', fdNudgeR: 'shift', fdRingOn: 'ring', fdRingSpec: 'ring', fdRingDia: 'ring', fdRingPos: 'ring', fdStackT: 'stack', fdRefillDir: 'stack' };
+const FD_DIAGRAM = { fdBiW: 'w', fdDL: 'dl', fdDR: 'dr', fdW: 'w', fdCL: 'cl', fdCR: 'cr', fdRL: 'rl', fdRR: 'rr', fdTO: 'to', fdTI: 'ti', fdShift: 'shift', fdNudgeL: 'shift', fdNudgeR: 'shift', fdRingOn: 'ring', fdRingSpec: 'ring', fdRingDia: 'ring', fdRingPos: 'ring', fdStackT: 'stack', fdRefillDir: 'stack' };
 /** 三つ折りの設計の欄を選んでいる間、いま描いている断面の上に、対応する寸法線（矢印と番号）を金色で重ねる（事業主指示 2026-10-15）。座標は design.js の foldDimensions。 */
 let fdDimKey = null;
 function fdDimItems(key) {
@@ -26888,6 +27138,7 @@ function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdIte
 let foldSyncDoc = null;
 function syncFoldFields() {
   const d = doc.foldDesign; if (!d) return; const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null && String(el.value) !== String(v)) el.value = String(v); };
+  set('fdMode', d.mode === 'bifold' ? 'bifold' : 'trifold'); set('fdBiW', d.width); syncFoldModeUI();
   for (const [id, k] of FD_HANDLE_FIELDS) set(id, d[k]);
   set('foldSecT', d.t); set('fdTO', d.tOuter); set('fdTI', d.tInner); if ($('fdFlip')) $('fdFlip').checked = d.flipV !== false;
   if ($('fdRingOn')) $('fdRingOn').checked = !!d.ring;
@@ -26896,12 +27147,13 @@ function syncFoldFields() {
 }
 function startFoldHandleDrag(h, w) {
   syncFoldFields(); const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
-  gesture = { kind: 'foldHandle', h, start: w, vals: Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])) }; setFdDimKey(h.dim);
+  gesture = { kind: 'foldHandle', h, start: w, vals: { ...Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])), width: d.width } }; setFdDimKey(h.dim);
   $('hint').textContent = t('foldHandleDrag'); draw();
 }
 function dragFoldHandle(w) {
   const g = gesture, v = g.vals; let dx = Math.round((w.x - g.start.x) * 10) / 10; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
   switch (g.h.key) {
+    case 'w': set('fdBiW', Math.max(1, v.width + dx)); break;
     case 'btn': { dx = Math.max(-Math.min(v.dL - 0.1, v.cL), Math.min(dx, Math.min(v.dR - 0.1, v.cR))); set('fdDL', v.dL + dx); set('fdDR', v.dR - dx); set('fdCL', v.cL + dx); set('fdCR', v.cR - dx); break; }   /* ボタン線を右へ dx：左の距離は＋dx・右の距離は−dx（全幅は変わらない） */
     case 'dl': set('fdDL', Math.max(0.1, v.dL - dx)); break;
     case 'dr': set('fdDR', Math.max(0.1, v.dR + dx)); break;
@@ -26914,7 +27166,7 @@ function dragFoldHandle(w) {
 }
 /** ドラッグを離したとき：成り立たない寸法で断面が作り直せなかったときは、欄を直前の正しい値へ戻す。 */
 function endFoldHandleDrag() {
-  const d = doc.foldDesign; if (d) for (const [id, k] of FD_HANDLE_FIELDS) if (Number($(id).value) !== d[k]) $(id).value = String(d[k]);
+  const d = doc.foldDesign; if (d?.mode === 'bifold') $('fdBiW').value = String(d.width); if (d) for (const [id, k] of FD_HANDLE_FIELDS) if (Number($(id).value) !== d[k]) $(id).value = String(d[k]);
   refreshFoldWidth(); refreshFoldPitch(); setFdDimKey(null);
 }
 /** 円の点（0°・45°…の8か所）：円を1つだけ選んでいるとき、その点をつかんでドラッグすると、中心はそのままで半径が変わる（離したとき確定・元に戻すは1回・磁石に吸い付く）。事業主指示 2026-10-15 */
@@ -27047,7 +27299,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); makeFoldDesign(false); }; $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
@@ -29289,7 +29541,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 /* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
