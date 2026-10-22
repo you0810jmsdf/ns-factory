@@ -2059,7 +2059,7 @@ function gridPlan(region, cols, rows) {
   return { fill, pitch };
 }
 function makeGrid() {
-  const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;
+  const cols = Number($('patchCols').value), rows = Number($('patchRows').value);
   if (!(cols >= 1) || !(rows >= 1)) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); return; }   /* マイナスの数で 0 ピースを「作りました」と出さない（事業主指摘 2026-10-21 不具合記録 1532） */
   /* 格子は、選んだ囲み（つながった閉じた線）の中だけに作る。囲みを選んでいないときは、どこにも作らない（事業主指示 2026-10-21「格子は囲んだ枠以外に絶対に作らないで」：以前は、枠と関係ない所に別々のピースを作っていた） */
   gridInSelection(cols, rows);
@@ -2162,7 +2162,7 @@ function gridPreviewUpdate() {
   if (follow && lastPatch.sig === regenSig()) { $('hint').textContent = t('gridPreviewSame'); draw(); return; }   /* いま作ってある格子と同じ数（欄を離れたときの change など） */
   const mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), regions = mine.length ? outerRegions(closedRegions(mine, 0.01, { dashed: true })) : [];
   if (regions.length !== 1) { $('hint').textContent = t('gridFieldsNoFigure'); draw(); return; }   /* 枠が1つに決まらない（選んでいない・ピースだけ選んでいる）ときは、下見は出さず、押す操作を案内する */
-  const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2;   /* makeGrid と同じ読み方 */
+  const cols = Number($('patchCols').value), rows = Number($('patchRows').value);   /* makeGrid と同じ読み方 */
   if (!(cols >= 1) || !(rows >= 1)) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); draw(); return; }
   const plan = gridPlan(regions[0], cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; draw(); return; }
   const sp = plan.fill.spec;
@@ -2278,8 +2278,8 @@ function initDesign() {
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
-  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
-  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
+  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); if (el.type !== 'number') el.addEventListener('input', go); el.addEventListener('change', go); }
+  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', gridPreviewUpdate); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
