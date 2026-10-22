@@ -2165,6 +2165,13 @@ function gridAtPoint(p) {
 }
 let gridPreview = null;   /* 確定前の下見：{ pieces: [[{x,y}…]…]（ひし形の輪郭）, text, follow（作りなおす格子があるか）, ids（枠の図形）}。図面が変わる（rebuildSnaps）か Esc で消える。画面に薄い輪郭で描く */
 /** 列・行・角度を打っている最中の下見（事業主 2026-10-21 案 A ①）：作りなおす（または作る）枠を、いまの数で割った輪郭と「ひし形 幅×高さ・枚数」をすぐ出す。計算だけで、図面は変えない（約 5ms）。枠は、作りなおせる直前の格子の枠か、いま選んでいる閉じた枠。確定は Enter・約1秒の停止・「格子を作る」。 */
+/** 列・行・角度の欄が変わったとき、下見（gridPreviewUpdate）を、最後の変化の 250ms 後に1回だけ出す。下見は枠の計算と全体の再描画で、実図面（475図形・穴918個）では 1回 200〜300ms かかり、矢印キー・▲▼の押しっぱなし（毎秒 20〜30 回）に追いつかず、離したあとも数値が増え続け・減り続けた（事業主 2026-10-23「数値がずっと増え続けたり、減り続けたりする」「矢印も同じ」）。数値の欄（type=number）だけ。テスト（regenDelayMs が 0 以下・数値の欄でない）では、すぐ。 */
+let gridPreviewTimer = null;
+function gridPreviewSoon(el) {
+  clearTimeout(gridPreviewTimer); gridPreviewTimer = null;
+  if (el.type !== 'number' || !(regenDelayMs > 0)) { gridPreviewUpdate(); return; }
+  gridPreviewTimer = setTimeout(() => { gridPreviewTimer = null; if (gesture || stage) return; gridPreviewUpdate(); }, 250);
+}
 function gridPreviewUpdate() {
   gridPreview = null;
   const follow = !!lastPatch && undo.at(-1) === lastPatch.before, ids = follow ? new Set(lastPatch.frameIds) : selectedShapeIds();
@@ -2194,6 +2201,7 @@ function gridConfirmNow() {
 }
 /** Esc：下見をやめ、予約していた作りなおしも取り消す（図面は、数字を変える前のまま。欄の数字はそのまま残る）。Esc は欄を離れさせる（change が作りなおしを予約し直す）ので、そのあとで呼ぶ。 */
 function gridPreviewCancel() {
+  clearTimeout(gridPreviewTimer); gridPreviewTimer = null;   /* 出す予約も取り消す */
   const text = gridPreview?.text; gridPreview = null; clearTimeout(regenTimer); regenTimer = null; clearTimeout(regenYield); regenYield = null;
   if (text !== undefined) { if ($('hint').textContent === text) $('hint').textContent = ''; draw(); }
 }
@@ -2288,7 +2296,7 @@ function initDesign() {
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
   for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
-  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
+  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
