@@ -689,7 +689,15 @@ export function foldEndLabels(path, origin, { startText = '', endText = '', size
  *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
 /** tOuter・tInner＝表（外側の革）・裏（内側の革）それぞれの厚み（省略時はどちらも t）。合計 T＝表＋裏（どちらも省略なら t×plies）。dO・dI＝積み重ねの中心線から、表の革の中心・裏の革の中心までのずれ（表は外へ＋・裏は内へ−）。
  *  積み重ねの中心線の半径 rc＝内側の半径＋T/2。裏の革の中心の半径＝内側の半径＋tI/2・表の革の中心の半径＝内側の半径＋tI＋tO/2 なので、dO＝tI/2・dI＝−tO/2（両方 t なら ±t/2）。 */
-export function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+export function foldDesignPlan({ mode, width, t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+  if (mode === 'bifold') {
+    const tO = tOuter ?? t, tI = tInner ?? t;
+    if (![width, rinR, t, tO, tI].every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
+    const T = tO + tI, rc = rinR + T / 2, flat = width - rinR - T;
+    if (!(flat > FOLD_EPS)) return { ok: false, error: 'flatShort', flats: [flat, flat] };
+    const bends = [Math.PI * rc];
+    return { ok: true, mode, width, T, tO, tI, dO: tI / 2, dI: -tO / 2, flats: [flat, flat], bends, rc: [rc], a: [flat], cEff: [0, 0], length: 2 * flat + bends[0], warnings: [] };
+  }
   const pos = [dL, dR, rinL, rinR];
   if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
   if (typeof shift !== 'number' || !Number.isFinite(shift)) return { ok: false, error: 'badNumber' };
@@ -704,12 +712,27 @@ export function foldDesignPlan({ t, plies = 2, tOuter, tInner, dL, dR, cL, cR, r
   return { ok: true, T, tO: tOuter === undefined && tInner === undefined ? T / plies : tO, tI: tOuter === undefined && tInner === undefined ? T / plies : tI, dO: (tOuter === undefined && tInner === undefined ? T / plies : tI) / 2, dI: -(tOuter === undefined && tInner === undefined ? T / plies : tO) / 2, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
 const FD_NUMS = { dl: '①', dr: '②', w: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
+/** 二つ折りの断面は左に揃えた切り口と右の丸い背で構成する。 */
+function bifoldPoint(d, p) {
+  return (u, v) => ({ x: d.origin.x + u, y: d.flipV !== false ? d.origin.y - 2 * p.rc[0] + v : d.origin.y - v });
+}
+function bifoldDimensions(d, p, key, num, refill) {
+  const pt = bifoldPoint(d, p), out = [], line = (a, b, arrows = 'both') => out.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false }), text = (u, v) => out.push({ type: 'text', ...pt(u, v), text: num });
+  const f = p.flats[0], r = p.rc[0], rad = (radius, a) => [f + radius * Math.cos(a), r + radius * Math.sin(a)];
+  if (key === 'w' || key === 'dr') { line([0, -p.T / 2 - 10], [d.width, -p.T / 2 - 10]); text(d.width / 2, -p.T / 2 - 16); }
+  else if (key === 'rr') { line([f, r], rad(d.rinR, -Math.PI / 4), 'end'); text(...rad(d.rinR + 5, -Math.PI / 4)); }
+  else if (key === 'to' || key === 'ti') { const a = key === 'to' ? 0.4 : -0.4, lo = key === 'to' ? d.rinR + p.tI : d.rinR, hi = key === 'to' ? d.rinR + p.T : d.rinR + p.tI; line(rad(lo, a), rad(hi, a)); text(...rad(hi + 5, a)); }
+  else if (key === 'ring') { const path = foldSectionPath(p), s = d.ring?.s ?? f + p.bends[0] / 2, q = pointOnFoldPath(path, s), nx = -Math.sin(q.heading), ny = Math.cos(q.heading), u = q.u + nx * p.T / 2, v = q.v + ny * p.T / 2; line([u - nx * 6, v - ny * 6], [u + nx * 6, v + ny * 6]); text(u - nx * 11, v - ny * 11); }
+  else if (key === 'stack' && refill?.length >= 2) { const [a, b] = refill; out.push({ type: 'line', a, b, arrows: 'both', dash: false }, { type: 'text', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 5, text: num }); }
+  return out;
+}
 /** 三つ折りの設計の寸法線（欄の番号①〜⑫）。いま描いている断面の上に重ねて見せる図形を、図面の座標（mm）で返す（事業主指示 2026-10-15：欄を選ぶと実際の図で該当する寸法が分かるように）。
  *  d＝doc.foldDesign（dL・dR・cL・cR・rinL・rinR・tOuter・tInner・origin・flipV・ring）。key＝'dl' など（FD_NUMS のキー）。refill＝リフィルの束の短い辺の2点（図面の座標）。⑫に使う。
  *  返り値 [{ type:'line', a, b, arrows:'none'|'end'|'both', dash }, { type:'dot', x, y }, { type:'text', x, y, text }]。計画が成り立たないとき・知らない key は null。 */
 export function foldDimensions(d, key, { refill = null } = {}) {
   const num = FD_NUMS[key]; if (!d || !num || !d.origin) return null;
   const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') return bifoldDimensions(d, p, key, num, refill);
   const { T } = p, tI = p.tI, tO = p.tO, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
   const items = [], line = (a, b, arrows = 'none', dash = false) => items.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash }), text = (u, v) => items.push({ type: 'text', ...pt(u, v), text: num });
@@ -744,6 +767,15 @@ export function foldDimensions(d, key, { refill = null } = {}) {
  *  返り値 [{ key:'w'|'h'|'t', value（mm）, items }]。items は foldDimensions と同じ形で、type:'text' には align（'left'｜'right'）が付くことがある。計画が成り立たない・origin が無いとき null。 */
 export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') {
+    const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -14 * px;
+    const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
+    return [
+      { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
+      { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
+      { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(d.width + 10 * px, p.rc[0]), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm`, align: 'left' }) },
+    ];
+  }
   const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
   const vTop = 2 * rc1 + T / 2, H = 2 * Math.max(rc1, rc2) + T, vLow = vTop - H, hx = lo - 14 * px;   /* 全高の寸法線は図の左（縦）。厚みの文字は図の右端の外 */
@@ -760,6 +792,7 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
  *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
 export function foldHandles(d) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
+  if (d.mode === 'bifold') { const pt = bifoldPoint(d, p); return [{ key: 'w', dim: 'w', ...pt(d.width, p.rc[0]) }, { key: 'rr', dim: 'rr', ...pt(p.flats[0] + d.rinR, p.rc[0]) }]; }
   const { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
   return [
@@ -783,6 +816,17 @@ export function foldBendPitch(plan, pitch, plies = 2) {
  *  返り値：[{ key:'outer'|'inner', delta, length, xs[6], holes[]（革の左端からの位置）, flatStep, rowFrom, rowTo, buttons[], bends:[{ side:'right'|'left', count, firstIndex, pitch, flat }] }]（表・裏の順）。入力が不正なときは null。 */
 export function foldUnfoldPlan(p, { pitch, margin, buttons = [], plies = 2 } = {}) {
   if (!p || !p.ok || !(typeof pitch === 'number' && pitch > 0) || !(typeof margin === 'number' && margin >= 0) || !(margin * 2 < p.length)) return null;
+  if (p.mode === 'bifold') {
+    if (![pitch, margin].every(Number.isFinite)) return null;
+    const f = p.flats[0], b = p.bends[0], usable = p.length - 2 * margin, n = Math.floor(usable / pitch + 1e-9);
+    if (n < 1) return null;
+    const lead = margin + (usable - n * pitch) / 2, base = Array.from({ length: n + 1 }, (_, i) => lead + i * pitch);
+    return [['outer', p.dO], ['inner', p.dI]].map(([key, delta]) => {
+      const nb = Math.PI * (p.rc[0] + delta), map = s => s <= f ? s : s <= f + b ? f + (s - f) * nb / b : s + nb - b;
+      const indices = base.map((s, i) => s >= f - 1e-9 && s <= f + b + 1e-9 ? i : -1).filter(i => i >= 0);
+      return { key, delta, length: p.length + nb - b, xs: [f, f + nb / 2, f + nb], holes: base.map(map), flatStep: pitch, rowFrom: map(margin), rowTo: map(p.length - margin), buttons: buttons.map(map), bends: [{ side: 'right', count: indices.length, firstIndex: indices.length >= 2 ? indices[0] : -1, pitch: pitch * nb / b, flat: pitch }] };
+    });
+  }
   const [f1, f2] = p.flats, [b1, b2] = p.bends, xsBase = [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   /* 菱目は、実際の目打ちのピッチ pitch のまま（平らな所は pitch ちょうど）。端の余り（行の長さを pitch で割った余り）は両端へ等分する。曲げ部は、革の中心線で pitch の間隔にした穴を、各革の半径で割り当てる（表は広く・裏は狭く・平均は pitch）。 */
   const usable = p.length - 2 * margin, n = Math.floor(usable / pitch + 1e-9), step = pitch, lead = margin + (usable - n * pitch) / 2, EPS = 1e-9; if (n < 1) return null;
@@ -871,8 +915,8 @@ export function foldSectionPath({ flats, bends, angles }) {
   const pieces = []; let s = 0, p = { u: 0, v: 0 }, th = 0; const ang = i => Array.isArray(angles) && Number.isFinite(angles[i]) && angles[i] > 0 ? angles[i] : Math.PI;
   const line = len => { if (!(len > FOLD_EPS)) return; const q = { u: p.u + len * Math.cos(th), v: p.v + len * Math.sin(th) }; pieces.push({ kind: 'line', p0: p, p1: q, th, s0: s, s1: s + len }); s += len; p = q; };
   const turn = (len, a) => { const r = len / a, c = { u: p.u - r * Math.sin(th), v: p.v + r * Math.cos(th) }, a0 = th - Math.PI / 2; pieces.push({ kind: 'arc', c, r, a0, a1: a0 + a, ang: a, s0: s, s1: s + len }); s += len; p = { u: c.u + r * Math.cos(a0 + a), v: c.v + r * Math.sin(a0 + a) }; th += a; };
-  line(flats[0]); turn(bends[0], ang(0)); line(flats[1]); turn(bends[1], ang(1)); line(flats[2]);
-  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: [ang(0), ang(1)] };
+  line(flats[0]); bends.forEach((bend, i) => { turn(bend, ang(i)); line(flats[i + 1]); });
+  return { pieces, length: s, flats: [...flats], bends: [...bends], angles: bends.map((_, i) => ang(i)) };
 }
 /** 中心線の s の位置の点と向き：{ u, v, heading }（heading はラジアン）。s は 0〜length に丸める。 */
 export function pointOnFoldPath(path, s) {
