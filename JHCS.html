@@ -117,6 +117,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .curriculum-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
     .curriculum-num { color: var(--tan); font-weight: 700; font-size: 13px; white-space: nowrap; }
     .curriculum-title { color: var(--charcoal); font-size: 14px; margin-left: 10px; }
+    .curriculum-wip-tag { margin-left: 8px; padding: 1px 8px; border: 1px solid var(--amber); border-radius: 999px; color: var(--amber); font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .curriculum-wip { font-size: 14px; line-height: 1.7; color: var(--gray); margin-bottom: 4px; }
     .curriculum-fields { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(220px, .85fr); gap: 14px; }
     .curriculum-fields input[readonly], .curriculum-fields textarea[readonly] { background: transparent; border-color: transparent; padding-left: 0; padding-right: 0; }
     .curriculum-fields textarea { min-height: 150px; }
@@ -886,8 +888,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     { num:"06A", title:"眼鏡ケース（選択A）", summary:"立体成形とマチ縫いの基本をマスターします。ばねホック留めの革製眼鏡ケースを1日で完成させます。", pdf:"第06回A_眼鏡ケース.pdf" },
     { num:"06B", title:"馬蹄型コインケース（選択B）", summary:"折り部の縫製処理と菱目穴間隔の調整方法をマスターします。ばねホックまたはジャンパーホック留めのコインケースを完成させます。", pdf:"第06回B_馬蹄型コインケース.pdf" },
     { num:"07", title:"サコッシュ", summary:"CADでバッグ型紙を設計し、Dカン・ショルダー紐取り付けまで含めた小型バッグを完成させます。本格的なバッグ制作への入口です。", pdf:"第07回_サコッシュ.pdf" },
-    { num:"08", title:"ラウンドファスナーポーチ（前編）", summary:"正確な型枠を作成し、CADで曲線型紙を設計して革を裁断します。次回のファスナー取り付けに備える前編です。", pdf:"第08回_ラウンドファスナーポーチ（前編）.pdf" },
-    { num:"09", title:"ラウンドファスナーポーチ（後編）", summary:"ファスナーを正確に取り付け、駒合わせ縫いで曲線パーツを縫い合わせてポーチを完成させます。", pdf:"第09回_ラウンドファスナーポーチ（後編）.pdf" },
+    // 第08・09回は課題を入れ替え中（2026-10-23 事業主指示）。wip:true の回は公開側を「整備中」にし、テキストの取得ボタンも出さない。
+    // 内容と資料がそろったら summary を書き、wip を外す（技法名は課題名に入れず、テキストにだけ入れる）
+    { num:"08", title:"ラウンドファスナーペンケース", summary:"整備中", pdf:"", wip:true },
+    { num:"09", title:"カードケース", summary:"整備中", pdf:"", wip:true },
     { num:"10", title:"ハーフウォレット（インレイ選択）", summary:"カード・紙幣収納の構造を理解し、スナップ開閉のハーフウォレットを完成させます。希望者はインレイ技法も習得できます。", pdf:"第10回_ハーフウォレット（インレイ選択）.pdf" },
     { num:"11A", title:"ペンケース・駒合わせ縫い（選択A）", summary:"駒合わせ縫いで曲線パーツを正確に縫い合わせ、立体ペンケースを完成させます。ファスナー取り付けも習得します。", pdf:"第11回A_ペンケース（駒合わせ縫い）.pdf" },
     { num:"11B", title:"名刺入れ・駒合わせ縫い（選択B）", summary:"駒合わせ縫いの技術を習得するため、駒合わせ縫いで革製の名刺入れを製作します。型紙付き。", pdf:"" },
@@ -1436,16 +1440,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     if (isNewFormat) {
       function itemCard(item) {
         const numLabel = item.num;
-        const dlBtn = dlButtonsHtml(numLabel);
+        const dlBtn = item.wip ? '' : dlButtonsHtml(numLabel);
         return `
           <details class="curriculum-row" data-lesson="${escAttr(numLabel)}">
             <summary>
               <span class="curriculum-num">第${esc(numLabel)}回</span>
-              <span class="curriculum-title">${esc(item.title)}</span>
+              <span class="curriculum-title">${esc(item.title)}</span>${item.wip ? '<span class="curriculum-wip-tag">整備中</span>' : ''}
             </summary>
             <div class="curriculum-body">
               <div class="curriculum-head"><div class="notice-meta"></div><div></div></div>
-              <div style="font-size:14px; line-height:1.7; margin-bottom:10px;">${esc(item.summary)}</div>
+              ${item.wip ? '<div class="curriculum-wip">🛠 整備中です。内容と資料は、準備ができ次第公開します。</div>' : `<div style="font-size:14px; line-height:1.7; margin-bottom:10px;">${esc(item.summary)}</div>`}
               ${dlBtn}
             </div>
           </details>`;
