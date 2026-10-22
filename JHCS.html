@@ -199,6 +199,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .prog-pop-btn.prog-nodate { border-color: #A5D6A7; background: var(--green-light); color: var(--green); }
     .prog-pop-btn.prog-clear { color: var(--amber); }
     .prog-cell.done.nodate { font-weight: 700; letter-spacing: .05em; }
+    .prog-cell.none { border: 1px solid #ef9a9a; background: #ffebee; color: #c62828; font-weight: 700; letter-spacing: .05em; }
+    .prog-cell.none:hover { border-color: #c62828; }
+    .prog-pop-btn.prog-none { border-color: #ef9a9a; background: #ffebee; color: #c62828; }
     .att-badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .att-badge.upcoming { background: var(--blue-light); color: var(--blue); }
     .att-badge.today { background: var(--amber-light); color: var(--amber); }
@@ -758,7 +761,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <!-- 受講生の進捗マトリクス（2026-10-07）: 管理者表示のときだけ出す。順番を変える生徒がいるため、各マスは完了日 -->
   <details class="section" id="progress-section" style="display:none;" open>
     <summary><h2>受講生の進捗</h2></summary>
-    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと選択ウィンドウが開きます（日付が分からない完了は「済」ボタン、日付を選ぶと日付で記録、「未完了に戻す」で空に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
+    <p class="att-lead">各マスに、その講座を完了した日を入れます。マスを押すと選択ウィンドウが開きます（日付が分からない完了は「済」ボタン、その人が受講しない講座は「無」ボタン（赤で表示・完了数に数えません）、日付を選ぶと日付で記録、「未完了に戻す」で空に戻ります）。順番を変えて進める生徒も、日付で追えます。</p>
     <div class="prog-wrap"><table class="prog-table"><thead><tr id="prog-head"></tr></thead><tbody id="prog-body"></tbody></table></div>
     <div id="prog-msg" class="att-msg"></div>
     <details class="prog-legend" open>
@@ -1084,12 +1087,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
   // 日付が分からない完了は日付の代わりに「済」を入れる（GAS の PROGRESS_DONE_NO_DATE と同じ文字）
   const PROG_DONE = '済';
+  // 受講しない（その人には不要な講座）は「無」（GAS の PROGRESS_NOT_NEEDED と同じ文字）。完了数には数えず、分母からも外す
+  const PROG_NONE = '無';
 
   function progKey(name, item) { return String(name).replace(/\s+/g, '') + '|' + item; }
 
   function progShortDate(ymd) {
     const m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m ? `${Number(m[2])}/${Number(m[3])}` : (ymd === PROG_DONE ? PROG_DONE : '');
+    return m ? `${Number(m[2])}/${Number(m[3])}` : (ymd === PROG_DONE || ymd === PROG_NONE ? ymd : '');
   }
 
   function renderProgress(pd) {
@@ -1119,15 +1124,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       return;
     }
     body.innerHTML = members.map((name, mi) => {
-      let n = 0;
+      let n = 0, skip = 0;
       const cells = items.map((it, ii) => {
         const d = done[progKey(name, it)] || '';
-        if (d) n++;
+        const none = d === PROG_NONE;
+        if (none) skip++; else if (d) n++;
         const label = d ? progShortDate(d) : '＋';
-        const tip = (titles[it] || '') + (d === PROG_DONE ? '（完了・日付不明）' : d ? '（完了 ' + d + '）' : '（未完了）');
-        return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d ? ' done' : ''}${d === PROG_DONE ? ' nodate' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
+        const tip = (titles[it] || '') + (none ? '（受講しない）' : d === PROG_DONE ? '（完了・日付不明）' : d ? '（完了 ' + d + '）' : '（未完了）');
+        return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d && !none ? ' done' : ''}${d === PROG_DONE ? ' nodate' : ''}${none ? ' none' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
       }).join('');
-      return `<tr><td class="prog-name">${esc(name)}</td>${cells}<td class="prog-count">${n}/${items.length}</td></tr>`;
+      return `<tr><td class="prog-name">${esc(name)}</td>${cells}<td class="prog-count">${n}/${items.length - skip}</td></tr>`;
     }).join('');
   }
 
@@ -1158,8 +1164,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     pop.className = 'prog-pop';
     pop.innerHTML =
       `<div class="prog-pop-title">${esc(name)}</div>` +
-      `<div class="prog-pop-sub">第${esc(item)}回 ${esc(titles[item] || '')}<br>いまの状態: ${cur === PROG_DONE ? '済（日付不明）' : cur ? esc(cur) + ' 完了' : '未完了'}</div>` +
+      `<div class="prog-pop-sub">第${esc(item)}回 ${esc(titles[item] || '')}<br>いまの状態: ${cur === PROG_DONE ? '済（日付不明）' : cur === PROG_NONE ? '無（受講しない）' : cur ? esc(cur) + ' 完了' : '未完了'}</div>` +
       `<button type="button" class="prog-pop-btn prog-nodate">${PROG_DONE}（日付が分からない完了）</button>` +
+      `<button type="button" class="prog-pop-btn prog-none">${PROG_NONE}（受講しない）</button>` +
       `<label>完了日を選ぶ</label>` +
       `<input type="date" class="prog-input" value="${/^\d{4}-/.test(cur) ? cur : ''}">` +
       `<button type="button" class="prog-pop-btn prog-clear">未完了に戻す</button>` +
@@ -1178,6 +1185,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (value !== cur) saveProgressCell(name, item, value);
     };
     pop.querySelector('.prog-nodate').addEventListener('click', () => done(PROG_DONE));
+    pop.querySelector('.prog-none').addEventListener('click', () => done(PROG_NONE));
     pop.querySelector('.prog-clear').addEventListener('click', () => done(''));
     pop.querySelector('.prog-close').addEventListener('click', closeProgressPop);
     pop.querySelector('.prog-input').addEventListener('change', ev => { if (ev.target.value) done(ev.target.value); });
@@ -1198,7 +1206,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (!data.ok) throw new Error(data.error === 'Invalid admin password' ? '管理者パスワードが違います' : (data.error || '不明なエラー'));
       progressData.progress = (progressData.progress || []).filter(p => progKey(p.name, p.item) !== key);
       if (date) progressData.progress.push({ name, item, date });
-      msg.textContent = date === PROG_DONE ? `${name}さんの第${item}回を「済」（日付不明の完了）で保存しました。`
+      msg.textContent = date === PROG_NONE ? `${name}さんの第${item}回を「無」（受講しない）で保存しました。`
+        : date === PROG_DONE ? `${name}さんの第${item}回を「済」（日付不明の完了）で保存しました。`
         : date ? `${name}さんの第${item}回を ${date} 完了で保存しました。` : `${name}さんの第${item}回を未完了に戻しました。`;
       setTimeout(() => { if (/保存しました|戻しました/.test(msg.textContent)) msg.textContent = ''; }, 4000);
     } catch (e) {
