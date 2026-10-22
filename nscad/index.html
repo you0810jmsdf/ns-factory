@@ -169,7 +169,7 @@
 <body data-prototype="1">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 04:18 · 9550542</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 05:33 · 65b47f7</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -438,7 +438,7 @@
 <div id="voiceHeard" class="muted"></div><div id="voiceOut" role="status"></div><div id="voiceCandidates" class="row" hidden></div>
 <div class="row"><input id="voiceText" type="text" data-i18n-placeholder="voicePlaceholder" autocomplete="off"><button id="voiceGo" type="button" data-i18n="voiceGo"></button></div>
 <label><input id="voiceSpeak" type="checkbox"><span data-i18n="voiceSpeak"></span></label>
-<p class="muted" data-i18n="voicePrivacy"></p><hr><p class="note" data-i18n="localDesignNote"></p>
+<p class="muted" data-i18n="voicePrivacy"></p><hr><p class="note" data-i18n="lockVoiceDesign"></p><p class="note" data-i18n="localDesignNote"></p>
 <label><span data-i18n="localDesignLearn"></span><input id="localDesignLearn" type="file" multiple accept=".lcc,.json,.nscadlearn"></label>
 <button id="localDesignForget" type="button" data-i18n="localDesignForget"></button>
 <textarea id="localDesignPrompt" rows="3" data-i18n-placeholder="localDesignExample"></textarea>
@@ -728,8 +728,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=b9f55c1f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=fd859e95","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=fb4c977a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=b9f55c1f"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=38ff734b","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=fd859e95","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=4bf9e09a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=38ff734b"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3602,6 +3602,7 @@ const MESSAGES = {
     "regNeed": "印刷・保存・書き出しは、利用登録が必要です。表示された画面から登録してください。",
     "lockPatchwork": "パッチワーク（有料版の機能）",
     "lockFold": "三つ折りの設計・断面図（有料版の機能）",
+    "lockVoiceDesign": "音声・文章からの型紙デザインと過去作品の参照（有料版予定・現在はオーナー限定）",
     "lockThreeView": "三面図（有料版の機能）",
     "lockBody": "この機能は、将来の有料版でお使いいただけます。有料版の公開まで、しばらくお待ちください。",
     "lockOwnerNote": "開発者の端末は、利用登録（メール確認）を済ませると、ロックが自動で外れます。",
@@ -5528,6 +5529,7 @@ const MESSAGES = {
     "regNeed": "Printing, saving and exporting require registration. Please register in the window that opened.",
     "lockPatchwork": "Patchwork (paid-version feature)",
     "lockFold": "Tri-fold design and section (paid-version feature)",
+    "lockVoiceDesign": "Pattern design from voice or text and past-work references (future paid feature; owner only for now)",
     "lockThreeView": "Three views (paid-version feature)",
     "lockBody": "This feature will be available in the paid version. Please wait until it is released.",
     "lockOwnerNote": "On the developer's devices the lock is lifted automatically once usage registration (email confirmation) is done.",
@@ -25045,7 +25047,7 @@ function regGuard(feature, kind = '') {
 }
 /** 有料版の機能のロック（パッチワーク・三つ折り・三面図）。インターネットの公開版（登録サーバーが使えるとき）だけロックがかかり、確認済みのオーナーのメールで利用登録した端末では外れる。
  *  手元で開いたファイル（file://）や開発中（http://localhost）は、ロックしない。 */
-const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView' };
+const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView', voiceDesign: 'lockVoiceDesign' };
 function featureLocked() { return registration.enabled() && !regIsOwner(registration.state()); }
 /** ロックされた機能を使おうとしたとき：使ってよければ true。ロック中なら、🔒の案内を出して false。 */
 function lockGate(feature) {
@@ -25057,6 +25059,10 @@ function lockGate(feature) {
 function syncLockMarks() {
   const locked = featureLocked();
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
+  const designOption = $('voiceTarget')?.querySelector?.('option[value="design"]');
+  if (designOption) designOption.disabled = locked;
+  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'command';
+  if ($('localDesignCreate')) $('localDesignCreate').disabled = locked || !localDesignPending || localDesignPending.invalid;
 }
 /** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップだけ抑えて、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
 let numberJustFocused = null;
@@ -25495,6 +25501,7 @@ function localDesignerStatus() {
   $('localDesignStatus').textContent = t('localDesignCount', { n: count }) + ' ' + styleSummary(privateDesignCorpus?.style || DATA_STYLE, voiceLang());
 }
 function localDesignSuggest(text) {
+  if (!lockGate('voiceDesign')) return;
   const r = localDesignRequest(text), items = privateDesignCorpus?.items || DATA_DESIGNS.items || [];
   localDesignPending = r; $('localDesignPrompt').value = text;
   $('localDesignResults').textContent = ''; $('localDesignCreate').disabled = r.invalid || (!r.bifold && !r.kind);
@@ -25502,7 +25509,7 @@ function localDesignSuggest(text) {
   const matchedPitch = Number(matches[0]?.item?.pitch); if (matchedPitch >= 3 && matchedPitch <= 5) r.referencePitch = +matchedPitch.toFixed(2);
   for (const { item } of matches) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = item.name;
-    b.onclick = async () => { b.disabled = true; try {
+    b.onclick = async () => { if (!lockGate('voiceDesign')) return; b.disabled = true; try {
       const next = item.raw ? localReferenceDoc(item) : await loadDesign(item);
       if (!next) throw new Error(t('designsNeedServer')); if (!validateDoc(next)) throw new Error(t('invalidDoc'));
       newTab(item.name); commit(() => { doc = migrateDoc(next); selected.clear(); refreshTools(); }); tabs[activeTab].doc = doc; renderLayers(); renderSeams(); fit();
@@ -25514,6 +25521,7 @@ function localDesignSuggest(text) {
   $('voiceCard').open = true; revealCard($('voiceCard'));
 }
 function localDesignCreate() {
+  if (!lockGate('voiceDesign')) return;
   const r=localDesignPending; if (!r || r.invalid) return;
   const pitch=r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2);
   if (r.bifold) {
@@ -25538,15 +25546,16 @@ function initLocalDesigner() {
   $('localDesignSuggest').onclick=()=>localDesignSuggest($('localDesignPrompt').value);
   $('localDesignCreate').onclick=localDesignCreate;
   $('localDesignLearn').onchange=async()=>{
+    if (!lockGate('voiceDesign')) { $('localDesignLearn').value=''; return; }
     const files=Array.from($('localDesignLearn').files || []); if(!files.length)return;
     $('localDesignStatus').textContent=t('localDesignLearning'); $('localDesignLearn').disabled=true;
-    try { const learned=await learnLocalFiles(files); if(!learned.items.length) throw new Error(t('localDesignNoFiles'));
+    try { const learned=await learnLocalFiles(files); if (!lockGate('voiceDesign')) return; if(!learned.items.length) throw new Error(t('localDesignNoFiles'));
       privateDesignCorpus=learned; try { await localDesignStore(learned); localDesignerStatus(); } catch(e) { localDesignerStatus(); $('localDesignStatus').textContent+=' '+t('localDesignMemoryOnly'); }
       if(learned.failed.length) $('localDesignStatus').textContent+=' '+t('localDesignFailed',{n:learned.failed.length});
     } catch(e) { $('localDesignStatus').textContent=e.message; } finally { $('localDesignLearn').disabled=false; $('localDesignLearn').value=''; }
   };
-  $('localDesignForget').onclick=async()=>{ try { await localDesignStore(null);privateDesignCorpus=null;localDesignPending=null;$('localDesignResults').textContent='';localDesignerStatus(); }catch(e){$('localDesignStatus').textContent=e.message;} };
-  localDesignerStatus(); localDesignStore().then(v=>{if(v?.version===1 && Array.isArray(v.items)){privateDesignCorpus=v;localDesignerStatus();}}).catch(()=>{});
+  $('localDesignForget').onclick=async()=>{ if (!lockGate('voiceDesign')) return; try { await localDesignStore(null);privateDesignCorpus=null;localDesignPending=null;$('localDesignResults').textContent='';localDesignerStatus(); }catch(e){$('localDesignStatus').textContent=e.message;} };
+  localDesignerStatus(); if (!featureLocked()) localDesignStore().then(v=>{if(!featureLocked() && v?.version===1 && Array.isArray(v.items)){privateDesignCorpus=v;localDesignerStatus();}}).catch(()=>{});
 }
 
 // ---- 音声操作（Web Speech API・長押しで聞く・テキスト欄は同じ文法）----

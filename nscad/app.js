@@ -2352,7 +2352,7 @@ function regGuard(feature, kind = '') {
 }
 /** 有料版の機能のロック（パッチワーク・三つ折り・三面図）。インターネットの公開版（登録サーバーが使えるとき）だけロックがかかり、確認済みのオーナーのメールで利用登録した端末では外れる。
  *  手元で開いたファイル（file://）や開発中（http://localhost）は、ロックしない。 */
-const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView' };
+const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView', voiceDesign: 'lockVoiceDesign' };
 function featureLocked() { return registration.enabled() && !regIsOwner(registration.state()); }
 /** ロックされた機能を使おうとしたとき：使ってよければ true。ロック中なら、🔒の案内を出して false。 */
 function lockGate(feature) {
@@ -2364,6 +2364,10 @@ function lockGate(feature) {
 function syncLockMarks() {
   const locked = featureLocked();
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
+  const designOption = $('voiceTarget')?.querySelector?.('option[value="design"]');
+  if (designOption) designOption.disabled = locked;
+  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'command';
+  if ($('localDesignCreate')) $('localDesignCreate').disabled = locked || !localDesignPending || localDesignPending.invalid;
 }
 /** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップだけ抑えて、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
 let numberJustFocused = null;
@@ -2802,6 +2806,7 @@ function localDesignerStatus() {
   $('localDesignStatus').textContent = t('localDesignCount', { n: count }) + ' ' + styleSummary(privateDesignCorpus?.style || DATA_STYLE, voiceLang());
 }
 function localDesignSuggest(text) {
+  if (!lockGate('voiceDesign')) return;
   const r = localDesignRequest(text), items = privateDesignCorpus?.items || DATA_DESIGNS.items || [];
   localDesignPending = r; $('localDesignPrompt').value = text;
   $('localDesignResults').textContent = ''; $('localDesignCreate').disabled = r.invalid || (!r.bifold && !r.kind);
@@ -2809,7 +2814,7 @@ function localDesignSuggest(text) {
   const matchedPitch = Number(matches[0]?.item?.pitch); if (matchedPitch >= 3 && matchedPitch <= 5) r.referencePitch = +matchedPitch.toFixed(2);
   for (const { item } of matches) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = item.name;
-    b.onclick = async () => { b.disabled = true; try {
+    b.onclick = async () => { if (!lockGate('voiceDesign')) return; b.disabled = true; try {
       const next = item.raw ? localReferenceDoc(item) : await loadDesign(item);
       if (!next) throw new Error(t('designsNeedServer')); if (!validateDoc(next)) throw new Error(t('invalidDoc'));
       newTab(item.name); commit(() => { doc = migrateDoc(next); selected.clear(); refreshTools(); }); tabs[activeTab].doc = doc; renderLayers(); renderSeams(); fit();
@@ -2821,6 +2826,7 @@ function localDesignSuggest(text) {
   $('voiceCard').open = true; revealCard($('voiceCard'));
 }
 function localDesignCreate() {
+  if (!lockGate('voiceDesign')) return;
   const r=localDesignPending; if (!r || r.invalid) return;
   const pitch=r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2);
   if (r.bifold) {
@@ -2845,15 +2851,16 @@ function initLocalDesigner() {
   $('localDesignSuggest').onclick=()=>localDesignSuggest($('localDesignPrompt').value);
   $('localDesignCreate').onclick=localDesignCreate;
   $('localDesignLearn').onchange=async()=>{
+    if (!lockGate('voiceDesign')) { $('localDesignLearn').value=''; return; }
     const files=Array.from($('localDesignLearn').files || []); if(!files.length)return;
     $('localDesignStatus').textContent=t('localDesignLearning'); $('localDesignLearn').disabled=true;
-    try { const learned=await learnLocalFiles(files); if(!learned.items.length) throw new Error(t('localDesignNoFiles'));
+    try { const learned=await learnLocalFiles(files); if (!lockGate('voiceDesign')) return; if(!learned.items.length) throw new Error(t('localDesignNoFiles'));
       privateDesignCorpus=learned; try { await localDesignStore(learned); localDesignerStatus(); } catch(e) { localDesignerStatus(); $('localDesignStatus').textContent+=' '+t('localDesignMemoryOnly'); }
       if(learned.failed.length) $('localDesignStatus').textContent+=' '+t('localDesignFailed',{n:learned.failed.length});
     } catch(e) { $('localDesignStatus').textContent=e.message; } finally { $('localDesignLearn').disabled=false; $('localDesignLearn').value=''; }
   };
-  $('localDesignForget').onclick=async()=>{ try { await localDesignStore(null);privateDesignCorpus=null;localDesignPending=null;$('localDesignResults').textContent='';localDesignerStatus(); }catch(e){$('localDesignStatus').textContent=e.message;} };
-  localDesignerStatus(); localDesignStore().then(v=>{if(v?.version===1 && Array.isArray(v.items)){privateDesignCorpus=v;localDesignerStatus();}}).catch(()=>{});
+  $('localDesignForget').onclick=async()=>{ if (!lockGate('voiceDesign')) return; try { await localDesignStore(null);privateDesignCorpus=null;localDesignPending=null;$('localDesignResults').textContent='';localDesignerStatus(); }catch(e){$('localDesignStatus').textContent=e.message;} };
+  localDesignerStatus(); if (!featureLocked()) localDesignStore().then(v=>{if(!featureLocked() && v?.version===1 && Array.isArray(v.items)){privateDesignCorpus=v;localDesignerStatus();}}).catch(()=>{});
 }
 
 // ---- 音声操作（Web Speech API・長押しで聞く・テキスト欄は同じ文法）----
