@@ -5186,10 +5186,15 @@ function refollowFills(snap) {
   });
   return stale;
 }
+/** 断面図の情報（doc.foldSections）のうち、図形が1つも残っていないものを消す。断面図の図形を選んで削除すると、情報だけが残って、寸法（全幅・全高・厚み）と取っ手が画面に残り続けた（不具合記録 2026-10-22：三つ折り断面図を消せない）。 */
+function pruneFoldSections() {
+  const meta = doc.foldSections; if (!meta) return;
+  for (const id of Object.keys(meta)) if (!doc.shapes.some(s => s.foldSec === id)) delete meta[id];
+}
 function commit(fn) {
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
   const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
-  fn(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
+  fn(); pruneFoldSections(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
   const staleFills = refollowFills(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
   const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { commitSeq++; undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
