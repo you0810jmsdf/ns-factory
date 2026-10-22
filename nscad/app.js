@@ -46,6 +46,7 @@ const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 import { track } from './analytics.js';
 import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
+import { parseBuild, latestBuild, isNewerBuild } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
@@ -69,6 +70,7 @@ let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned 
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
+let offsetLast = null; /* 最後にクリックして選んだ位置（選ぶ範囲を切り替えたとき、同じ場所で選び直す） */
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
 const opLog = []; /* 操作の記録（不具合調査用・最近300件） */
 let dupGroups = []; /* 同じ形・同じ層・同じ線種で重なった図形の組（[{ ids }]）。赤く太く表示し、警告と「1本にまとめる」を出す */
@@ -2265,6 +2267,9 @@ function initDesign() {
   /* 図形のそばの入力欄：右のカードの距離・向きと値を共有する */
   $('of-dist').addEventListener('input', () => { $('offsetDist').value = $('of-dist').value; draw(); });
   $('of-side').addEventListener('change', () => { $('offsetSide').value = $('of-side').value; draw(); });
+  const reapplyOffsetScope = () => { if (offsetSelection && offsetLast && mode === 'offset') offsetClick(offsetLast, false); else draw(); }; /* 選ぶ範囲（交点間・1辺・全体）を替えたら、同じ場所を選び直す */
+  $('of-scope').addEventListener('change', () => { $('offsetScope').value = $('of-scope').value; reapplyOffsetScope(); });
+  $('offsetScope').addEventListener('change', () => { $('of-scope').value = $('offsetScope').value; reapplyOffsetScope(); });
   $('offsetDist').addEventListener('input', () => { $('of-dist').value = $('offsetDist').value; draw(); });
   $('offsetSide').addEventListener('change', () => { $('of-side').value = $('offsetSide').value; draw(); });
   for (const id of ['of-dist', 'of-side']) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
@@ -5531,8 +5536,8 @@ function offsetEdgeSel(hit, p) {
 function offsetClick(p, whole) {
   const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distTo(s, p) <= 7 / scale);
   if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
-  const edge = offsetAlt && !whole ? offsetEdgeSel(hit, p) : null; if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
-  const sel = offsetSpan(shapes, hit, p, whole); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
+  offsetLast = p; const scope = whole ? 'whole' : offsetAlt ? 'edge' : $('offsetScope').value, edge = scope === 'edge' ? (offsetEdgeSel(hit, p) || (hit.type !== 'polyline' ? offsetSpan([hit], hit, p, true) : null)) : null; /* 線・円弧・曲線は、その1本が1辺（つながった別の図形は含めない） */ /* 選ぶ範囲：交点から交点まで／1辺だけ（Alt＋クリックでも）／つながった全体（ダブルクリックでも） */ if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
+  const sel = offsetSpan(shapes, hit, p, scope === 'whole'); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
   offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; /* 向き「カーソルの側」：1回クリックでは、別々の線でつながっていても、クリックした1本の線だけをずらす（全体はダブルクリック。矩形・折れ線は従来どおり全体） */ if ($('offsetSide').value === 'cursor' && !whole && hit.type === 'line' && sel.points.length > 2) { const es = offsetEdgeOfHit(offsetSelection); if (es) offsetSelection = { ...es, hit, click: p }; } $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
   const info = t('offsetSpanInfo', { len: offsetSpanLength(sel).toFixed(2), n: sel.shapeIds?.length ?? 1, state: t(sel.closed ? 'offsetClosedShape' : 'offsetOpenLine') }); /* 選んだ範囲の全長・本数・閉じているか（外周が全部選ばれたかの確認用） */
@@ -6765,6 +6770,19 @@ if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = c
 doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
+/* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
+let updateDismissed = '', lastVersionCheck = 0;
+async function checkNewVersion() {
+  const mine = parseBuild($('buildVer')?.textContent); if (!mine || typeof globalThis.fetch !== 'function' || globalThis.location?.protocol !== 'https:') return false;
+  lastVersionCheck = Date.now();
+  const v = await latestBuild(globalThis.fetch.bind(globalThis)); if (!isNewerBuild(mine, v) || updateDismissed === v.id) return false;
+  $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
+}
+$('updateNow').onclick = () => { try { flushAutosave(); } catch { /* 自動保存できなくても更新はできる */ } location.reload(); };
+$('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id || ''; $('updateBar').hidden = true; };
+if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
+if (typeof setInterval === 'function') setInterval(checkNewVersion, 300000);
+document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > 60000) checkNewVersion(); });
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting();
 offerRestore(); autosaveReady = true;
