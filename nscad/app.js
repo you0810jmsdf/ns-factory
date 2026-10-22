@@ -2241,7 +2241,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved);   /* rim：外周の穴の経路（点検で使う） */
         const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(doc.holes, rimPitch * 0.5), loop = loopSampler(rim.points);
         const anchors = doc.holes.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（柄の縫い合わせの端の穴）＝そのまま使い、間を埋める */
-        const spots = route ? rimHolePositions(loop.total, rimPitch, s => rimSpotFree(loop.at(s), others, clearR, near), { anchors }).map(s => { const want = loop.at(s), q = pointAtLength(route, s); return distance(q, want) < 1e-3 ? q : projectOnPath(route, want); }) : []; /* 位置は軽い道具で探し、経路上の弧長・向きへ直す（経路の向き・始点が違うときだけ投影で求める） */
+        const spots = route ? rimHolePositions(loop.total, rimPitch, s => { const q = loop.at(s); if (!rimSpotFree(q, others, clearR, near)) return false; return doc.holes.every(h => { const other = doc.tools.find(t => t.id === h.toolId), clearance = clearR + (other ? patchHoleClearR(other) : 0.8); return distance(q, h) >= clearance; }); }, { anchors }).map(s => { const want = loop.at(s), q = pointAtLength(route, s); return distance(q, want) < 1e-3 ? q : projectOnPath(route, want); }) : []; /* 位置は軽い道具で探し、経路上の弧長・向きへ直す（経路の向き・始点が違うときだけ投影で求める） */
         if (route && spots.length) placeHoles(saved, route, spots, { ...tool, pitch: rimPitch });
         rimInfo = { n: spots.length, d: rimOffset, r: rim.radius };
       }
