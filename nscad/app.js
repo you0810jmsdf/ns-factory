@@ -2070,7 +2070,7 @@ function makeGrid() {
 function latticeSeamHoles(stitch, pathOfPiece, tool, pitch) {
   const info = new Map(), want = new Map();
   const routeOf = pid => { if (!info.has(pid)) { const saved = doc.paths.find(p => p.id === pid), r = saved && resolvePath(doc, saved); info.set(pid, r ? { saved, route: r, len: arcLength(r) } : null); } return info.get(pid); };
-  const put = (pid, q) => { const it = routeOf(pid); if (!it) return; let pr = projectOnPath(it.route, q); if (!pr || distance(pr, q) > 0.05) return; if (pr.s >= it.len - 1e-6) pr = { ...pr, s: 0 }; const m = want.get(pid) || want.set(pid, new Map()).get(pid), key = Math.round(pr.s * 100); if (m.has(key)) return; for (const o of m.values()) if (distance(o, pr) < 0.7 * pitch) return; m.set(key, pr); };   /* 枠で切れたピースの尖った角では、近すぎる穴は置かない */
+  const put = (pid, q) => { const it = routeOf(pid); if (!it) return; let pr = projectOnPath(it.route, q); if (!pr || distance(pr, q) > 0.05) return; if (pr.s >= it.len - 1e-6) pr = { ...pr, s: 0 }; const m = want.get(pid) || want.set(pid, new Map()).get(pid), key = Math.round(pr.s * 100); if (m.has(key)) return; for (const o of m.values()) if (distance(o, pr) < 0.5 * pitch) return; m.set(key, pr); };   /* 枠で切れたピースの尖った角では、近すぎる穴は置かない */
   for (const sm of stitch.seams) {
     const pa = pathOfPiece[sm.a.piece], pb = pathOfPiece[sm.b.piece], ia = pa && routeOf(pa), ib = pb && routeOf(pb); if (!ia || !ib) continue;
     const A0 = pointAtLength(ia.route, sm.a.from), A1 = pointAtLength(ia.route, sm.a.to), B0 = pointAtLength(ib.route, sm.b.from), B1 = pointAtLength(ib.route, sm.b.to), La = distance(A0, A1); if (!(La > 1e-6)) continue;
