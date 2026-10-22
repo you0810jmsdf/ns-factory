@@ -49,6 +49,7 @@ import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
 import { parseBuild, latestBuild, isNewerBuild } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
+import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
@@ -66,6 +67,8 @@ let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
 let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
 let lastAutosaveAt = ''; /* 最後の自動保存の時刻（復元のあとの保管し直しに使う） */
+let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ storage: localStorage }); } catch { /* 保存を読めない環境では、タブの取り合いを見ない（いつも主＝今までどおり保存する） */ }   /* 別のブラウザのタブでも開いているとき、保存してよいのは主のタブだけ（tablock.js・事業主 2026-10-23） */
+const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
@@ -1082,7 +1085,7 @@ function showHelp(shortcuts = false, pageId = null) {
 /** 自動保存：変更の1.5秒後に、全タブの図面を localStorage へ入れる。復元するか決める前は、前回の保存を上書きしない。 */
 function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
 function flushAutosave() {
-  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
+  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore || !tabIsPrimary()) return;   /* 副のタブは保存しない（主のタブの自動保存・履歴を上書き・削除しない） */
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
     if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); }
@@ -1137,7 +1140,24 @@ function restoreAutosave() {
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
 }
-function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } clearUndoRecord().catch(() => {}); flushAutosave(); }
+function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; if (!tabIsPrimary()) return; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } clearUndoRecord().catch(() => {}); flushAutosave(); }
+/** 別のブラウザのタブでも開いているとき（このタブが副）の警告。副のタブは、自動保存・履歴の保管・「捨てる」をしない。 */
+function syncMultiTabBar() { const bar = $('multiTabBar'); if (bar) bar.hidden = tabIsPrimary(); }
+/** 主／副が替わったとき：副→主なら、見送っていた「前回の続き」を出す（なければ、いまの図面を保存する）。 */
+function onTabRole(was) {
+  const now = tabIsPrimary(); syncMultiTabBar();
+  if (now && !was) { if (restoreSkipped) { restoreSkipped = false; offerRestore(); } else scheduleAutosave(); }
+}
+function tabWatchTick() { if (!tabLock) return; const was = tabLock.isPrimary(); tabLock.check(); onTabRole(was); }
+function startTabWatch() {
+  if (!tabLock) return;
+  $('multiTabTakeOver').onclick = () => { const was = tabLock.isPrimary(); tabLock.takeOver(); onTabRole(was); };
+  if (typeof setInterval === 'function') setInterval(tabWatchTick, 2000);
+  window.addEventListener('storage', e => { if (e?.key === TAB_LOCK_KEY) tabWatchTick(); });   /* 別のタブが主を替えたら、すぐ気づく */
+  document.addEventListener?.('visibilitychange', () => { if (!document.hidden) tabWatchTick(); });
+  window.addEventListener('pagehide', () => tabLock.release());   /* 閉じるとき：主なら譲る */
+  window.addEventListener('pageshow', () => tabWatchTick());   /* 戻る・進むで復元されたとき（閉じるときに印を消しているので、主に戻る） */
+}
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
@@ -3054,7 +3074,7 @@ function paintClick(p, eyedrop) {
   if (s) {
     const g = groupIdOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る */
     if (!(s.closed || s.type === 'circle') && (paintBrush.kind === 'leather' || !g)) for (const id of contourFrom(doc.shapes.filter(x => editable(x) && visible(x) && !x.holeLink), s.id)) ids.add(id);   /* 型紙の輪郭は、端がつながった線を一周まとめて */
-    selected = ids; try { painted = paintBrush.kind === 'metal' ? applyMetal(paintBrush.id, paintBrush.style) : applyLeather(paintBrush.hex, true); } finally { selected = new Set(); }
+    selected = ids; try { painted = paintBrush.kind === 'metal' ? applyMetal(paintBrush.id, paintBrush.style) : paintBrush.kind === 'texture' ? applyTexture(paintBrush.id, true) : applyLeather(paintBrush.hex, true); } finally { selected = new Set(); }
   }
   if (!painted) addRegionFill(p, paintBrush);   /* 線から離れた所・閉じた形にならない線：線で囲まれた場所を塗る（T字・すき間があっても） */
   draw();
@@ -3223,16 +3243,17 @@ function renderTextures() {
   $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; /* 空欄＝写真ごとの実寸 */
 }
 /** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
-function applyTexture(id) {
+function applyTexture(id, quiet = false) {   /* quiet：塗りモードのクリックから呼ぶとき。付けられなければ案内を出さず 0 を返す（そのあと囲まれた場所を塗る）。返り値：付けた数 */
+  if (id && !quiet && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'texture', id }); return 0; }   /* 何も選んでいなければ、その質感を持って塗りモードに（色の見本と同じ・事業主 2026-10-23「革の質感を図形に貼れない」「パッチワークの各ピースに塗る予定」：ピースの内側クリックでは選べず、0件で押していた） */
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(i => okIds.has(i)));
   const loose = doc.shapes.filter(sh => okIds.has(sh.id) && (sh.closed || sh.type === 'circle') && !doc.parts.some(p => p.shapeIds.includes(sh.id)));
   const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), open = doc.shapes.filter(sh => okIds.has(sh.id) && !sh.hw && !sh.holeLink && !inPart.has(sh.id) && !(sh.closed || sh.type === 'circle') && !['text', 'dimension', 'image', 'fold'].includes(sh.type));   /* 端と端が一周する線・囲まれた場所＝型紙（部品でなくてよい・事業主の指摘 2026-10-18「囲まれた矩形にホースバットが載せられない」） */
-  if (!parts.length && !loose.length && !open.length) { $('hint').textContent = t('selectPartFirst'); return; }
+  if (!parts.length && !loose.length && !open.length) { if (!quiet) $('hint').textContent = t('selectPartFirst'); return 0; }
   const x = id ? textureById(id) : null; if (id && !x) return;
   const loops = [], rest = new Set(open.map(sh => sh.id)), left = [];   /* 一周にできた線のまとまり・一周にできなかった線 */
   while (rest.size) { const pool = open.filter(sh => rest.has(sh.id)), startId = pool[0].id, poly = outlinePolygon(pool, startId); if (poly) { loops.push(poly.ids); for (const i of poly.ids) rest.delete(i); } else { for (const i of contourFrom(pool, startId)) if (rest.delete(i)) left.push(i); if (rest.delete(startId)) left.push(startId); } }
   const canDo = parts.length || loose.length || loops.length || (x ? left.length && enclosedAreasAround(regionShapes(), new Set(left)).length : open.some(sh => sh.texture) || (doc.fills || []).some(f => f.texture && f.ids.filter(i => okIds.has(i)).length * 2 >= f.ids.length));   /* 何も付けられない（囲めない線だけ）なら、今までの案内 */
-  if (!canDo) { $('hint').textContent = t('selectPartFirst'); return; }
+  if (!canDo) { if (!quiet) $('hint').textContent = t('selectPartFirst'); return 0; }
   const used = new Set(doc.shapes.map(sh => sh.leatherGroup).filter(Boolean)); let seq = 0; const nextGroup = () => { do seq++; while (used.has('lg' + seq)); used.add('lg' + seq); return 'lg' + seq; };
   commit(() => {
     for (const p of parts) p.texture = x ? x.id : null; for (const sh of loose) sh.texture = x ? x.id : null;
@@ -3248,6 +3269,7 @@ function applyTexture(id) {
   });
   const made = x && left.length ? addSelectionRegionFills({ kind: 'texture', id: x.id }, new Set(left)) : 0, n = parts.length + loose.length + loops.length + made;   /* 端と端で一周しなくても、まわりの線と合わせて囲まれた場所があれば付ける */
   $('hint').textContent = x ? t('textureApplied', { n, name: x.name }) : t('textureCleared', { n });
+  return n;
 }
 function applyThread() {
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === $('threadSel').value); if (!th) return;
@@ -3277,6 +3299,7 @@ function initColors() {
   $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
+  $('textureSel').addEventListener('change', () => { if (mode === 'paint' && paintBrush?.kind === 'texture' && $('textureSel').value) { paintBrush = { kind: 'texture', id: $('textureSel').value }; $('hint').textContent = t('paintStart', { name: paintName(paintBrush) }); } });   /* 塗りモードの途中で質感を選び直したら、その質感で塗る */
   $('textureMm').addEventListener('change', () => { /* 数値＝全部その大きさ・空欄＝写真ごとの実寸に戻す・数でなければ元の表示に戻す */
     const raw = String($('textureMm').value ?? '').trim(), v = Number(raw);
     if (raw !== '' && !(v > 0)) { $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; return; }
@@ -6890,6 +6913,7 @@ if (typeof setInterval === 'function') setInterval(checkNewVersion, 300000);
 document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > 60000) checkNewVersion(); });
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting();
-offerRestore(); autosaveReady = true;
+tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else restoreSkipped = true;   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
+autosaveReady = true; startTabWatch();
 showTour();
 }
