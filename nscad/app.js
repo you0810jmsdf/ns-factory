@@ -5455,6 +5455,13 @@ const holeIsMark = h => { const p = doc.paths.find(q => q.id === h.pathId), tool
 const roundStyle = s => ({ ...(s?.color ? { color: s.color } : {}), ...(s?.lineStyle ? { lineStyle: s.lineStyle } : {}), ...(s?.groupId ? { groupId: s.groupId } : {}) });
 let roundOldRoutes = new Map(), roundHoleChoice = null, roundHolePending = null;
 /** 縫い穴（菱目）の付いた線を丸め・面取りするときは、実行の前に小さな窓で聞く（事業主決定 2026-10-21 C案）：そのまま残す／打ち直す／消す／やめる。again＝選んだあとに、同じ操作をもう一度やり直す関数。窓を出したら true（呼び出し元は、そこで止める）。 */
+/** 丸め・面取りで、2本の線の色や線種が違うときの一言：できる円弧・線は、先にクリックした線の色・線種になる。同じなら ''。 */
+function roundStyleNote(first, hit) {
+  const col = s => s?.color || '', dash = s => s?.lineStyle === 'dashed';
+  if (!first || !hit || (col(first) === col(hit) && dash(first) === dash(hit))) return '';
+  const c = col(first), cname = c ? t('color' + c[0].toUpperCase() + c.slice(1)) : t('colorNone');
+  return t('roundStyleNote', { color: cname, line: t(dash(first) ? 'roundStyleDashed' : 'roundStyleSolid') }) + ' ';
+}
 function roundPrepare(pathIds, again) {
   roundOldRoutes = new Map(); for (const id of pathIds) { const q = doc.paths.find(x => x.id === id), r = q && resolvePath(doc, q); if (r) roundOldRoutes.set(id, r); }
   const holed = [...pathIds].some(id => doc.holes.some(h => h.pathId === id && !holeIsMark(h)));
@@ -5659,7 +5666,7 @@ function curveFillet(first, pFirst, hit, p) {
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id);
     reattachMarks(affected);
   });
-  $('hint').textContent = t('hint.fillet');
+  $('hint').textContent = roundStyleNote(first, hit) + t('hint.fillet');
 }
 /** 丸め・面取りの角の2本（端を共有）の先に、同じ直線上でつながった線があれば { c1, c2, M1, M2, ids }（c＝続きの線の列・M＝角から先端までを1本にした直線・ids＝続きの線の id の集合）。無ければ null。 */
 function chainAround(first, hitL) {
@@ -5683,7 +5690,7 @@ function applyRoundChain(first, hit, res, ch, affectedPaths) {
     doc.paths = doc.paths.filter(q => q.shapeIds.length);
     reattachMarks(affectedPaths);
   });
-  $('hint').textContent = t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
+  $('hint').textContent = roundStyleNote(first, hit) + t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
 }
 /** 2本の直線 first・second の角に、前に丸めた（面取りした）円弧・直線が残っているか：2本を延ばして交わる角から近いほうの端どうしが離れていて、その2つの端をつなぐ円弧か直線があれば、それ（古いつなぎ）を返す。初めての角（端が同じ点）や平行な2本、つなぐものが無いときは null。三角形の斜めの辺のような、ほかの図形は、近いほうの端をつないでいないので対象にならない。 */
 function oldCornerConnector(first, second) {
@@ -5734,7 +5741,7 @@ function editAt(p) {
     for (const q of doc.paths) if (q.shapeIds.includes(first.id) && q.shapeIds.includes(hit.id)) q.shapeIds.push(id); /* 2本が同じ線なら、間にできた円弧も同じ線に入れる */
     reattachMarks(affectedPaths);
   });
-  $('hint').textContent = t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
+  $('hint').textContent = roundStyleNote(first, hit) + t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
 }
 /** 動かす図形の「基点」：掴んだ所の近く（磁石の吸着距離内）にある、選んだ図形の端・中点・中心。見つかれば gesture.start をその点に置き換え、相手の候補（動かさない図形の端・中点・中心）を gesture.targets に持つ（事業主指示 2026-10-13：選んだ矩形の中心と、くっつけたい図形の中心を合わせたい）。 */
 function beginMoveSnap(g) {
