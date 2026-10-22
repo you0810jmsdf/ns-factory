@@ -45,7 +45,7 @@ import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEd
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 import { track } from './analytics.js';
-import { createRegistration, regIsOwner } from './registration.js';
+import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
@@ -2338,9 +2338,11 @@ let registration = createRegistration({ storage: (() => { try { return localStor
 const REG_EXT = { svg: 'svg', dxf: 'dxf', pdf: 'pdf', png: 'png', json: 'json', csv: 'csv' };
 const regFeatureOf = name => REG_EXT[String(name).split('.').pop().toLowerCase()] || 'file';
 /** 印刷・保存・書き出しの入口で呼ぶ。使ってよければ true（登録済みなら利用を記録する）。未登録なら登録の小窓を開いて false。 */
+let regGateOn = REG_GATE_ON; /* false の間は、未登録でも保存・書き出し・印刷を通す（一時解除。registration.js の REG_GATE_ON） */
 function regGuard(feature, kind = '') {
   if (!registration.enabled()) return true;
   if (registration.allowed()) { registration.track(feature, kind); registration.refresh(); return true; }
+  if (!regGateOn) return true;
   openRegistration(); return false;
 }
 /** 有料版の機能のロック（パッチワーク・三つ折り・三面図）。インターネットの公開版（登録サーバーが使えるとき）だけロックがかかり、確認済みのオーナーのメールで利用登録した端末では外れる。

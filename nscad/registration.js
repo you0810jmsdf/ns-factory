@@ -1,6 +1,9 @@
 // 利用登録：印刷・ファイル保存・書き出しの前に、登録（メールの確認リンク）を求める。登録者の利用（いつ・どの機能か）だけを、運営者のサーバー（GAS のスプレッドシート）へ記録する（事業主指示 2026-10-14）。
 // 送るのは、登録のときの「メール・ニックネーム・同意」と、利用のときの「機能名（短い英数字）」だけ。図形・文字・ファイル名・寸法は送らない。
 // ⛔ ブラウザの中で動くので、プログラムを書き換えられる人は外せる。「普通の利用者に登録を促し、利用を数える」ための仕組み。
+/** 保存・書き出し・印刷のとき、利用登録（メール確認）を求めるか。false の間は、登録していなくても通す（登録済みの人の利用記録は、これまでどおり取る）。有料版の機能のロック（パッチワーク・三つ折り・三面図）には影響しない。
+ *  一時解除（2026-10-22 事業主指示：初回の方に確認メールが届かないため）。戻すときは true にして公開する。 */
+export const REG_GATE_ON = false;
 export const REG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx4nv5oEVFqb_kmamGFFEjqQwJs4Hl4h89TlzDJ0R_SaHp0AEdcX91ShU8E5Eo27slZbQ/exec';   /* 登録サーバー（GAS の /exec・ncad-registration）の URL。空にすると、登録を求めず誰でも使える（止めたいときはここを空にして公開する） */
 const REG_KEY = 'leather-cad.reg', REG_QUEUE_KEY = 'leather-cad.reg.queue', REG_DAY = 24 * 3600 * 1000, REG_QUEUE_MAX = 50;
 export const REG_FEATURE_RE = /^[a-z0-9_]{1,24}$/, REG_KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
