@@ -50,7 +50,7 @@ import { parseBuild, latestBuild, isNewerBuild } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -441,6 +441,7 @@ function refreshTools() {
   $('stitchTool').value=doc.tools.some(t=>t.id===current)?current:defaultToolId()||doc.tools[0]?.id||'';   /* 選んでいた工具が無い図面でも、図面の先頭（4mm など）ではなく既定の工具（3.95mm か、「既定にする」で決めた工具）にする */
   const to=$('toolReassignTo'), keepTo=to.value; to.textContent=''; for(const tool of doc.tools){const o=document.createElement('option');o.value=tool.id;o.textContent=tool.name===tool.id?t('toolSummary',{kind:t(tool.kind),pitch:tool.pitch,teeth:tool.teeth}):tool.name;to.appendChild(o);} if(doc.tools.some(t=>t.id===keepTo))to.value=keepTo;
   fillTool();
+  if (stitchToolCurrent()?.id !== patchPitchToolId) syncPatchPitch();   /* 工具が替わったときだけ（欄に打った値を、工具が同じままのときは消さない） */
 }
 /** 穴の工具を付け替える（fromId の穴を toId へ。onlySelected なら選択中の穴だけ）。戻り値は付け替えた穴数。 */
 function reassignTool(fromId, toId, onlySelected = false) {
@@ -1208,7 +1209,7 @@ function initStitch() {
   for(const [id,value]of Object.entries(values))$(id).value=value;
   for(const id of ['chain','followTangent','constrainHole'])$(id).checked=true;
   for(const id of ['reversePath','reverseSlant'])$(id).checked=false;
-  $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();});
+  $('stitchTool').addEventListener('change',()=>{manualNext=null;fillTool();syncPatchPitch();});
   $('toolFitDiamond').onclick=()=>fitToolsToDiamondLines(); $('toolStrip').onclick=()=>printToolStrip(); $('toolReassign').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,false); $('toolReassignSel').onclick=()=>reassignTool($('stitchTool').value,$('toolReassignTo').value,true); $('addTool').onclick=()=>registerTool(false);$('updateTool').onclick=()=>registerTool(true);
   $('resetManual').onclick=()=>{manualNext=null;draw();};
   $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
@@ -1936,6 +1937,9 @@ function flipMark(ids) {
 
 // ---- 駒合わせ・パッチワーク ----
 function stitchToolCurrent() { return doc.tools.find(t => t.id === $('stitchTool').value) || doc.tools[0]; }
+/** パッチワークの「基準ピッチ」欄を、選んでいる穴の工具のピッチに合わせる（事業主 2026-10-23「1辺3.95mm（選択した菱目工具）」：欄が 4 のまま、工具の 3.95 と食い違い、丸目が 4mm 間隔で打たれていた）。工具を替えたときだけ合わせ、欄に打った値は、工具が同じ間は残す。 */
+let patchPitchToolId = null;
+function syncPatchPitch() { const tool = stitchToolCurrent(); if (!tool || !(tool.pitch > 0)) return; patchPitchToolId = tool.id; $('patchPitch').value = String(tool.pitch); }
 function placeHoles(saved, route, points, tool) {
   for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool' }); }
   saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
@@ -2066,18 +2070,23 @@ function makeGrid() {
 }
 /** 縫い合わせ（doc.seams）に沿って共有辺の縫い穴を最適化して置く（「最適化」ボタンと同じ計算）。置いた穴の数を返す。commit の中で呼ぶ。 */
 /** 格子（ひし形）の縫い穴を、縫い合わせごとに、向かい合う2本の縫い線（縁から pitch/2 内側）の上へ、同じ位置にそろえて、pitch おきに置く（45度なら、4つの穴が1辺 pitch の正方形の角になる＝クロスステッチが正方形）。
- *  2本の縫い線が重なる範囲の両端に穴を置き、間を等分する。穴が無い部分が出ないよう、「最適化」のように歯抜けにしない。置いた穴の数を返す。commit の中で呼ぶ。 */
-function latticeSeamHoles(stitch, pathOfPiece, tool, pitch) {
+ *  2本の縫い線が重なる範囲を、交点の側から pitch ちょうどで並べ（隣り合う4つが一辺 pitch の正方形）、外周側に 1.5mm 以上余ったら、外周の側の端に1個足す（seamHoleOffsets）。外周の側は、枠（frame）に近い端。
+ *  すでにある菱目（外周の穴など）と重なる位置には置かない＝菱目を優先する（事業主 2026-10-23「菱目と丸目が重なる位置は、菱目を優先する」）。置いた穴の数を返す。commit の中で呼ぶ。 */
+function latticeSeamHoles(stitch, pathOfPiece, tool, pitch, frame = null) {
   const info = new Map(), want = new Map();
+  const toolOf = new Map(doc.tools.map(x => [x.id, x])), roundR = Math.max(tool.holeW, tool.holeH) / 2;
+  const diamonds = doc.holes.map(h => { const x = toolOf.get(h.toolId); return x && x.kind !== 'round' ? { x: h.x, y: h.y, reach: roundR + Math.max(x.holeW, x.holeH) / 2 + 0.4 } : null; }).filter(Boolean);   /* 菱目など、丸目ではない穴 */
+  const onDiamond = q => diamonds.some(o => Math.abs(o.x - q.x) < o.reach && Math.abs(o.y - q.y) < o.reach && Math.hypot(o.x - q.x, o.y - q.y) < o.reach);
   const routeOf = pid => { if (!info.has(pid)) { const saved = doc.paths.find(p => p.id === pid), r = saved && resolvePath(doc, saved); info.set(pid, r ? { saved, route: r, len: arcLength(r) } : null); } return info.get(pid); };
-  const put = (pid, q) => { const it = routeOf(pid); if (!it) return; let pr = projectOnPath(it.route, q); if (!pr || distance(pr, q) > 0.05) return; if (pr.s >= it.len - 1e-6) pr = { ...pr, s: 0 }; const m = want.get(pid) || want.set(pid, new Map()).get(pid), key = Math.round(pr.s * 100); if (m.has(key)) return; for (const o of m.values()) if (distance(o, pr) < 0.7 * pitch) return; m.set(key, pr); };   /* 枠で切れたピースの尖った角では、近すぎる穴は置かない */
+  const put = (pid, q) => { const it = routeOf(pid); if (!it) return; if (onDiamond(q)) return; let pr = projectOnPath(it.route, q); if (!pr || distance(pr, q) > 0.05) return; if (pr.s >= it.len - 1e-6) pr = { ...pr, s: 0 }; const m = want.get(pid) || want.set(pid, new Map()).get(pid), key = Math.round(pr.s * 100); if (m.has(key)) return; for (const o of m.values()) if (distance(o, pr) < 0.7 * pitch) return; m.set(key, pr); };   /* 枠で切れたピースの尖った角では、近すぎる穴は置かない */
   for (const sm of stitch.seams) {
     const pa = pathOfPiece[sm.a.piece], pb = pathOfPiece[sm.b.piece], ia = pa && routeOf(pa), ib = pb && routeOf(pb); if (!ia || !ib) continue;
     const A0 = pointAtLength(ia.route, sm.a.from), A1 = pointAtLength(ia.route, sm.a.to), B0 = pointAtLength(ib.route, sm.b.from), B1 = pointAtLength(ib.route, sm.b.to), La = distance(A0, A1); if (!(La > 1e-6)) continue;
     const e = { x: (A1.x - A0.x) / La, y: (A1.y - A0.y) / La }, along = q => (q.x - A0.x) * e.x + (q.y - A0.y) * e.y, tb0 = along(B0), tb1 = along(B1);
     const t0 = Math.max(0, Math.min(tb0, tb1)), t1 = Math.min(La, Math.max(tb0, tb1)), len = t1 - t0; if (len < -1e-6) continue;
     const off = { x: B0.x - A0.x - e.x * tb0, y: B0.y - A0.y - e.y * tb0 };   /* A の縫い線から B の縫い線へ（垂直に） */
-    const m = Math.round(len / pitch), ts = m >= 1 ? Array.from({ length: m + 1 }, (_, k) => t0 + len * k / m) : len >= 0.4 * pitch ? [(t0 + t1) / 2] : [];
+    const at = t => ({ x: A0.x + e.x * t, y: A0.y + e.y * t }), d0 = frame ? frame.nearest(at(t0)).dist : Infinity, d1 = frame ? frame.nearest(at(t1)).dist : Infinity, outer = Math.min(d0, d1) < 2 * pitch ? (d1 < d0 ? 'end' : 'start') : null;   /* 枠に近い端＝外周の側 */
+    const ts = seamHoleOffsets(t0, t1, pitch, outer);
     for (const t of ts) { const qa = { x: A0.x + e.x * t, y: A0.y + e.y * t }; put(pa, qa); put(pb, { x: qa.x + off.x, y: qa.y + off.y }); }
   }
   let n = 0; for (const [pid, m] of want) { const it = routeOf(pid), pts = [...m.values()].sort((p, q) => p.s - q.s); if (it && pts.length) { placeHoles(it.saved, it.route, pts, tool); n += pts.length; } }
@@ -2234,9 +2243,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', grid: true }); return pid;   /* grid：格子が作った縫い線の経路（消すときは、穴も一緒に消す） */
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      let holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact), banned = 0;
-      stitched = { seams: stitch.seams.length, holes, banned, inset };
-      if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ */
+      if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ。縫い合わせの丸目より先に打つ（重なる所は菱目を優先・事業主 2026-10-23） */
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved);   /* rim：外周の穴の経路（点検で使う） */
         const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(doc.holes, rimPitch * 0.5), loop = loopSampler(rim.points);
@@ -2245,6 +2252,8 @@ function patchFillApply(region, fill, layer, opts = {}) {
         if (route && spots.length) placeHoles(saved, route, spots, { ...tool, pitch: rimPitch });
         rimInfo = { n: spots.length, d: rimOffset, r: rim.radius };
       }
+      const holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact, loopSampler(region.points)), banned = 0;   /* region.points＝枠の輪郭（外周に近い端の見分けに使う） */
+      stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
   });
