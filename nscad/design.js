@@ -311,7 +311,7 @@ export function diamondGridFill(region, cols, rows, { angle = null, shift = null
     if (n0 < 1) return { tooSmall: true, pieces: [], dropped: 0, tiles: 0, spec: { w, h: h0, theta, auto, adjusted: false } };
     for (const n of [n0, n0 + 1, n0 - 1]) {
       if (n < 1) continue; const w2 = w * (n * pitch + pitch * cot) / L, f = fillRegionPattern(region, 'argyle', { cell: w2, angle: theta, shift: shiftOf(w2), minAreaRatio, maxTiles }); if (!f || f.tooMany) continue;
-      const b = f.pieces.filter(pc => !insetPolygon(pc.points, pitch / 2)).length;
+      const b = f.pieces.filter(pc => !insetPolygonFit(pc.points, pitch / 2)).length;   /* 枠の角の丸みで頂点が減るピースも、縫い線が引けるものとして数える */
       if (!best || b < best.bad || (b === best.bad && Math.abs(w2 - w) < Math.abs(best.w - w) - 1e-9)) best = { w: w2, fill: f, bad: b };
     }
     if (!best) return null; adjusted = Math.abs(best.w - w) > 1e-9; w = best.w; bad = best.bad;
@@ -390,22 +390,56 @@ export function insetPolygon(points, d) {
   for (let i = 0; i < points.length; i++) { const a = points[i], b = points[(i + 1) % points.length], c = r[i], e = r[(i + 1) % r.length]; if ((b.x - a.x) * (e.x - c.x) + (b.y - a.y) * (e.y - c.y) <= 0) return null; }
   return r;
 }
+/** insetPolygon で引けないときの引き直し：縁から d mm 内側へ寄せた形を、頂点の数が変わってもよいものとして作る（事業主 2026-10-23「四隅の格子付近に丸目がつかない」：枠の角の丸みの細かい辺が、寄せると潰れて頂点が減り、角のピース8個に縫い線が引けなかった）。
+ *  寄せた形は、ピースの中に収まり、縁から d（0.02mm の誤差まで）以上はなれているときだけ返す。頂点の数が同じなのに insetPolygon が断ったもの（辺が裏返る）は、ここでも断る。 */
+export function insetPolygonFit(points, d) {
+  const strict = insetPolygon(points, d); if (strict) return strict;
+  if (!(d > 0) || points.length < 3) return null;
+  const r = offsetPolyline(points, -d, true); if (r.length < 3 || r.length === points.length) return null;
+  if (!(areaOf(r) > 1e-6) || areaOf(r) >= areaOf(points) - 1e-9) return null;
+  const shape = { type: 'polyline', closed: true, points };
+  return r.every(q => insidePolygon(q, points) && distToShape(shape, q) >= d - 0.02) ? r : null;
+}
+/** ピース O の辺 k（まっすぐな辺）に対応する、縫い線 I の辺の番号。頂点の数が同じなら辺の番号そのまま。違うとき（insetPolygonFit で頂点が減った）は、向きが同じで、辺から d はなれた平行な辺のうち、重なりがいちばん長いもの。無ければ null。 */
+function insetEdgeIndex(O, I, k, d) {
+  if (I.length === O.length) return k;
+  const o0 = O[k], o1 = O[(k + 1) % O.length], len = distance(o0, o1); if (len < DEPS) return null;
+  const ux = (o1.x - o0.x) / len, uy = (o1.y - o0.y) / len; let best = null;
+  for (let m = 0; m < I.length; m++) {
+    const i0 = I[m], i1 = I[(m + 1) % I.length], l = distance(i0, i1); if (l < DEPS) continue;
+    if (((i1.x - i0.x) * ux + (i1.y - i0.y) * uy) / l < 0.9999) continue;   /* 向きが同じ */
+    if (Math.abs(Math.abs((i0.x - o0.x) * -uy + (i0.y - o0.y) * ux) - d) > 0.02) continue;   /* 辺から d はなれている */
+    const a0 = (i0.x - o0.x) * ux + (i0.y - o0.y) * uy, a1 = (i1.x - o0.x) * ux + (i1.y - o0.y) * uy, overlap = Math.min(len, a1) - Math.max(0, a0);
+    if (overlap > 0 && (!best || overlap > best.overlap)) best = { m, overlap };
+  }
+  return best ? best.m : null;
+}
 /** パッチワークのクロスステッチ用の縫い線：各ピースの縁から d mm 内側の縫い線（insets）と、隣り合うピースの縫い線どうしの縫い合わせ（seams）を返す。
  *  seams は縫い線の経路上の道のり（from/to）で、共有辺（外形）の重なりを縫い線へ垂直に写したもの。縫い線がつぶれたピースは対象外。 */
 export function patchInsetStitch(polys, d, opts = {}) {
-  const insets = polys.map(p => insetPolygon(p, d)?.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) }))), cumOf = ps => { const c = [0]; for (let i = 0; i < ps.length; i++) c.push(c[i] + distance(ps[i], ps[(i + 1) % ps.length])); return c; };
+  const insets = polys.map(p => insetPolygonFit(p, d)?.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) }))), cumOf = ps => { const c = [0]; for (let i = 0; i < ps.length; i++) c.push(c[i] + distance(ps[i], ps[(i + 1) % ps.length])); return c; };
   const cums = insets.map(ps => ps && cumOf(ps));
   const mapSide = (side) => {
-    const O = polys[side.piece], I = insets[side.piece], k = side.edge, o0 = O[k], o1 = O[(k + 1) % O.length], i0 = I[k], i1 = I[(k + 1) % I.length];
-    const lenO = distance(o0, o1), lenI = distance(i0, i1); if (lenO < DEPS || lenI < DEPS) return null;
+    const O = polys[side.piece], I = insets[side.piece], k = side.edge, o0 = O[k], o1 = O[(k + 1) % O.length], m = insetEdgeIndex(O, I, k, d); if (m === null) return null;
+    const i0 = I[m], i1 = I[(m + 1) % I.length], lenO = distance(o0, o1), lenI = distance(i0, i1); if (lenO < DEPS || lenI < DEPS) return null;
     const ux = (o1.x - o0.x) / lenO, uy = (o1.y - o0.y) / lenO, wx = (i1.x - i0.x) / lenI, wy = (i1.y - i0.y) / lenI;
     const along = t => { const px = o0.x + ux * t, py = o0.y + uy * t; return Math.max(0, Math.min(lenI, (px - i0.x) * wx + (py - i0.y) * wy)); };
-    const s0 = cums[side.piece][k] + along(side.lo), s1 = cums[side.piece][k] + along(side.hi), from = Math.min(s0, s1), to = Math.max(s0, s1);
+    const s0 = cums[side.piece][m] + along(side.lo), s1 = cums[side.piece][m] + along(side.hi), from = Math.min(s0, s1), to = Math.max(s0, s1);
     return to - from > (opts.minOverlap ?? 0.5) ? { piece: side.piece, from, to } : null;
   };
   const seams = [];
   for (const s of patchSeamsFromPieces(polys, opts)) { if (!insets[s.a.piece] || !insets[s.b.piece]) continue; const a = mapSide(s.a), b = mapSide(s.b); if (a && b) seams.push({ a, b, reversed: s.reversed }); }
   return { insets, seams };
+}
+/** 縫い合わせ1本の丸目の位置（縫い線の上の道のり・小さい順）。向かい合う2本の縫い線が重なる範囲 [t0, t1] を、pitch ちょうどの間隔で並べる（隣り合う4つの穴が1辺 pitch の正方形になる）。
+ *  outer＝外周に近い側の端（'start'＝t0 側・'end'＝t1 側・null＝どちらでもない）。並べはじめは、外周でない（交点の）側の端。外周側に minAdd mm 以上余ったときは、最後の1個を外周側の端に足す（外周の菱目ラインまで届かせる・事業主 2026-10-23）。
+ *  範囲が 0.4×pitch 以上 pitch 未満なら、真ん中に1個。それより短いと置かない。 */
+export function seamHoleOffsets(t0, t1, pitch, outer = null, { minAdd = 1.5 } = {}) {
+  const len = t1 - t0; if (!(pitch > 0) || !(len >= -1e-6)) return [];
+  const m = Math.floor(len / pitch + 1e-6); if (m < 1) return len >= 0.4 * pitch ? [(t0 + t1) / 2] : [];
+  const fromEnd = outer === 'start', rest = len - m * pitch, out = Array.from({ length: m + 1 }, (_, k) => fromEnd ? t1 - k * pitch : t0 + k * pitch);
+  if (rest >= minAdd - 1e-9) out.push(fromEnd ? t0 : t1);
+  return out.sort((a, b) => a - b);
 }
 
 /** 外周の縫い線：図形の外周（閉じた多角形の頂点列）を縁から d mm 内側へ寄せ、角を半径 R mm で丸めた閉じた折れ線 { points, radius } を返す。
