@@ -1,6 +1,6 @@
 // 印刷ズレ補正＋テスト印刷（公開リフィル印刷ツール共通・2026-09-11／2026-09-12 表裏別に対応）
 // 使い方: 各ツールで window.NSF_PRINT_GEOMETRY を定義してからこのファイルを読み込む。
-//   NSF_PRINT_GEOMETRY = { sheet:[幅mm,高さmm], slots:[{x,y,w,h,holeSide:'left'|'right'}], holes:[上端からの穴中心mm...], holeEdge:綴じ側端からの穴中心mm, holeD:穴径mm, cuts:[{x}|{y}] }
+//   NSF_PRINT_GEOMETRY = { sheet:[幅mm,高さmm], slots:[{x,y,w,h,holeSide:'left'|'right'|'top'}], holes:[上端からの穴中心mm...（holeSide:'top' のときは左端から）], holeEdge:綴じ側端からの穴中心mm, holeD:穴径mm, cuts:[{x}|{y}] }
 // 補正は「表面のずれ（X/Y）」と「裏面の追加ずれ（X/Y）」の2系統。裏面の実際のずらし量 ＝ 表面 ＋ 追加。
 //   両面印刷は裏面だけ別方向にずれることが多い（用紙を反転して引き込むため）ので、裏面は表面に対する差分で持つ。
 // 印刷時は .sheet-wrap（1枚の用紙）ごとに translate でずらす。表裏は sheet-label の「裏」「裏面」で判定して data-side を付ける。
@@ -60,13 +60,16 @@
     });
     (G.slots || []).forEach((s, i) => {
       // 裏面は列が左右反転して印刷されるので、穴も反対側に描く
+      // holeSide:'top' は上端（短辺）の穴。G.holes は左端からの穴中心mm、G.holeEdge は上端から穴中心まで。裏面でも上端のまま
+      const holeTop = s.holeSide === 'top';
       const holeRight = isBack ? s.holeSide !== 'right' : s.holeSide === 'right';
       const hx = holeRight ? s.x + s.w - (G.holeEdge || 6) : s.x + (G.holeEdge || 6);
       inner += `<div style="position:absolute;left:${s.x}mm;top:${s.y}mm;width:${s.w}mm;height:${s.h}mm;border:0.3mm solid #444;box-sizing:border-box"></div>`;
-      (G.holes || []).forEach(hy => {
-        inner += `<div style="position:absolute;left:${hx}mm;top:${s.y + hy}mm;width:${G.holeD || 5}mm;height:${G.holeD || 5}mm;border:0.3mm solid #444;border-radius:50%;transform:translate(-50%,-50%);box-sizing:border-box"></div>`;
+      (G.holes || []).forEach(h => {
+        const cx = holeTop ? s.x + h : hx, cy = holeTop ? s.y + (G.holeEdge || 6) : s.y + h;
+        inner += `<div style="position:absolute;left:${cx}mm;top:${cy}mm;width:${G.holeD || 5}mm;height:${G.holeD || 5}mm;border:0.3mm solid #444;border-radius:50%;transform:translate(-50%,-50%);box-sizing:border-box"></div>`;
       });
-      inner += `<div style="position:absolute;left:${s.x + s.w / 2}mm;top:${s.y + s.h / 2}mm;transform:translate(-50%,-50%);font:3mm/1.4 sans-serif;color:#444;text-align:center;white-space:nowrap">${isBack ? '裏面' : '表面'} テスト ${i + 1}<br><span style="font-size:2.2mm">${s.w}×${s.h}mm ／ 穴は${holeRight ? '右' : '左'}</span></div>`;
+      inner += `<div style="position:absolute;left:${s.x + s.w / 2}mm;top:${s.y + s.h / 2}mm;transform:translate(-50%,-50%);font:3mm/1.4 sans-serif;color:#444;text-align:center;white-space:nowrap">${isBack ? '裏面' : '表面'} テスト ${i + 1}<br><span style="font-size:2.2mm">${s.w}×${s.h}mm ／ 穴は${holeTop ? '上' : (holeRight ? '右' : '左')}</span></div>`;
     });
     // 定規（10mm刻み）を左上に。紙の端からのズレをそのまま補正値に入れられる
     for (let m = 10; m < Math.min(W, 60); m += 10) inner += `<div style="position:absolute;left:${m}mm;top:0;width:0;height:3mm;border-left:0.2mm solid #444"></div><div style="position:absolute;left:${m + 0.5}mm;top:3mm;font:1.8mm sans-serif;color:#444">${m}</div>`;
