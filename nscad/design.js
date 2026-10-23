@@ -298,26 +298,31 @@ export function gridFillRegion(region, cols, rows, { minAreaRatio = 0.05, maxTil
  *  angle（度）が null・空のとき：ひし形の高さ h＝外枠の高さ÷行数（斜めの線の角度は、列・行から決まる）。angle が数のとき：その角度（h＝w×tan・行は目安になる）。20〜80度の外は { badAngle: true, theta }。
  *  pitch（穴の間隔 mm）を渡すと、ひし形の1辺を調整して、縫い線（縁から pitch/2 内側）の上の穴が、向かい合う2本のあいだで、同じ位置に pitch おきにちょうど並ぶようにする（45度なら、4つの穴が1辺 pitch の正方形の角になる）。小さすぎて1か所も置けないときは { tooSmall: true }。
  *  shift={x,y}（mm）は、さらに柄ぜんたいをずらす量（既定 0）。戻り値は fillRegionPattern と同じ形に、spec={ w, h, theta, auto, adjusted }（theta＝水平から測った斜めの線の角度・度）を足したもの。 */
-export function diamondGridFill(region, cols, rows, { angle = null, shift = null, pitch = null, minAreaRatio = 0.05, maxTiles = 4000 } = {}) {
+export function diamondGridFill(region, cols, rows, { angle = null, shift = null, pitch = null, minAreaRatio = 0.05, maxTiles = 4000, preferNear = false } = {}) {
   if (!region || !(cols >= 1) || !(rows >= 1)) return null;
   const xs = region.points.map(q => q.x), ys = region.points.map(q => q.y), bw = Math.max(...xs) - Math.min(...xs), bh = Math.max(...ys) - Math.min(...ys); if (!(bw > 0) || !(bh > 0)) return null;
   let w = bw / cols; const auto = angle === null || angle === undefined || angle === '', theta = auto ? Math.atan((bh / rows) / w) * 180 / Math.PI : Number(angle);
   const ratio = patchAngleRatio(theta); if (ratio === null) return { badAngle: true, theta, pieces: [], dropped: 0, tiles: 0 };
-  let adjusted = false, bad = 0;
+  let adjusted = false, bad = 0, steps = null;
   const shiftOf = ww => ({ x: (Math.round(cols) % 2 === 0 ? ww / 2 : 0) + (Number(shift?.x) || 0), y: Number(shift?.y) || 0 });
   let best = null;
   if (pitch > 0) {   /* 1辺 L のひし形で、縫い線の上の穴が置ける範囲は L − pitch×cot(鋭角/2)。これを pitch の整数倍にする。n の候補（四捨五入した n と、その前後）から、縫い線を引けないピース（細すぎて縮められない）がいちばん少ないものを選ぶ（同じなら、もとの幅にいちばん近いもの） */
     const h0 = w * ratio, L = Math.hypot(w / 2, h0 / 2), cot = Math.max(w, h0) / Math.min(w, h0), n0 = Math.round((L - pitch * cot) / pitch);
     if (n0 < 1) return { tooSmall: true, pieces: [], dropped: 0, tiles: 0, spec: { w, h: h0, theta, auto, adjusted: false } };
+    const cands = [];
     for (const n of [n0, n0 + 1, n0 - 1]) {
       if (n < 1) continue; const w2 = w * (n * pitch + pitch * cot) / L, f = fillRegionPattern(region, 'argyle', { cell: w2, angle: theta, shift: shiftOf(w2), minAreaRatio, maxTiles }); if (!f || f.tooMany) continue;
       const b = f.pieces.filter(pc => !insetPolygonFit(pc.points, pitch / 2)).length;   /* 枠の角の丸みで頂点が減るピースも、縫い線が引けるものとして数える */
-      if (!best || b < best.bad || (b === best.bad && Math.abs(w2 - w) < Math.abs(best.w - w) - 1e-9)) best = { w: w2, fill: f, bad: b };
+      cands.push({ w: w2, fill: f, bad: b });
     }
+    /* 選び方：既定は、縫い線を引けないピースがいちばん少ない段階（同じなら目標に近い方）。preferNear のときは、目標にいちばん近い段階（同じなら、引けないピースが少ない方）＝段階の飛びが小さい（事業主 2026-10-23「菱の高さ53と54・幅48と49の差が激しい」→ 決定A：切り替えを足す） */
+    const dist = c => Math.abs(c.w - w), better = (a, b) => preferNear ? (dist(a) < dist(b) - 1e-9 || (Math.abs(dist(a) - dist(b)) <= 1e-9 && a.bad < b.bad)) : (a.bad < b.bad || (a.bad === b.bad && dist(a) < dist(b) - 1e-9));
+    for (const c of cands) if (!best || better(c, best)) best = c;
     if (!best) return null; adjusted = Math.abs(best.w - w) > 1e-9; w = best.w; bad = best.bad;
+    steps = cands.slice().sort((a, b) => a.w - b.w).map(c => ({ w: c.w, h: c.w * ratio, bad: c.bad, pieces: c.fill.pieces.length, chosen: c === best }));   /* 選べる大きさの段階（案内に出す） */
   }
   const fill = best?.fill || fillRegionPattern(region, 'argyle', { cell: w, angle: theta, shift: shiftOf(w), minAreaRatio, maxTiles }); if (!fill) return null;
-  return { ...fill, spec: { w, h: w * ratio, theta, auto, adjusted, bad } };
+  return { ...fill, spec: { w, h: w * ratio, theta, auto, adjusted, bad, ...(steps ? { steps } : {}) } };
 }
 /** 1マス（長方形 cell={x,y,w,h}）の穴の格子点：縁から pitch/2 だけ内側の長方形の周りを、左上の角から時計回りに、pitch おきに並べた点。
  *  マスの辺が pitch の整数倍なら、角にも穴が来て、周りの穴の間隔は、角をまわっても、すべて pitch ちょうど。隣のマスの穴とは、境をはさんで pitch はなれ、境に沿った位置がそろう（4つの穴が1辺 pitch の正方形の角になる）。 */
