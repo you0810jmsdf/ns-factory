@@ -1172,7 +1172,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
-  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchTexA', 'patchTexB',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchTexA', 'patchTexB',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
@@ -2088,7 +2088,13 @@ function makeGridInRegion(region, ids, replace, cols, rows) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id; if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const plan = gridPlan(region, cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; return; }
   const { fill, pitch } = plan;
-  patchFillApply(region, fill, layer, { exactPitch: pitch, frameIds: [...ids], replace, note: t('gridSpec', { w: +fill.spec.w.toFixed(2), h: +fill.spec.h.toFixed(2), a: +fill.spec.theta.toFixed(1), auto: fill.spec.auto ? t('gridAngleAuto') : t('gridAngleSet') }) + (fill.spec.adjusted ? ' ' + t('gridAdjusted', { p: pitch }) : '') + ($('patchStitch').checked && Math.abs(fill.spec.theta - 45) > 1.5 ? ' ' + t('gridNot45') : '') + ($('patchStitch').checked && fill.spec.bad > 0 ? ' ' + t('gridBadPieces', { n: fill.spec.bad }) : '') });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
+  patchFillApply(region, fill, layer, { exactPitch: pitch, frameIds: [...ids], replace, note: t('gridSpec', { w: +fill.spec.w.toFixed(2), h: +fill.spec.h.toFixed(2), a: +fill.spec.theta.toFixed(1), auto: fill.spec.auto ? t('gridAngleAuto') : t('gridAngleSet') }) + (fill.spec.adjusted ? ' ' + t('gridAdjusted', { p: pitch }) : '') + ($('patchStitch').checked && Math.abs(fill.spec.theta - 45) > 1.5 ? ' ' + t('gridNot45') : '') + ($('patchStitch').checked && fill.spec.bad > 0 ? ' ' + t('gridBadPieces', { n: fill.spec.bad }) : '') + gridStepsNote(fill.spec) });   /* frameIds：数値を変えたとき、同じ枠で作りなおすため（regenPatch） */
+}
+/** ひし形の大きさの段階の案内：縫い穴の間隔にそろえるため、大きさは段階になる。選べる段階と、いまの段階（★）、縫い線を引けない細いピースの数を出す。段階が1つしかなければ出さない。 */
+function gridStepsNote(spec) {
+  const st = spec?.steps; if (!st || st.length < 2) return '';
+  const f = v => +v.toFixed(1);
+  return ' ' + t('gridSteps', { list: st.map(s => f(s.w) + '×' + f(s.h) + (s.bad ? t('gridStepBad', { n: s.bad }) : '') + (s.chosen ? '★' : '')).join(' / ') });
 }
 /** 枠 region の中に作るひし形の計画（「格子を作る」と、確定前の下見で共通）。作れないときは { msg: 理由 }、作れるときは { fill, pitch }。図面は変えない。 */
 function gridPlan(region, cols0, rows0) {
@@ -2096,7 +2102,7 @@ function gridPlan(region, cols0, rows0) {
   const gp = gridParamsFor(region, cols0, rows0), cols = gp.cols, rows = gp.rows;
   if (gp.bad) return { msg: t('invalidNumber') };
   if (gridTargetMode && (!(cols >= 1) || !(rows >= 1))) return { msg: t('gridTargetTooBig', { w: +gp.tw.toFixed(1), h: +gp.th.toFixed(1), bw: +gp.bw.toFixed(1), bh: +gp.bh.toFixed(1) }) };   /* 目標の大きさが、枠より大きい */
-  const angleRaw = gp.angle !== undefined ? String(gp.angle) : String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(region, cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
+  const angleRaw = gp.angle !== undefined ? String(gp.angle) : String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(region, cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null, preferNear: !!$('patchPreferNear')?.checked });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
   if (!fill) return { msg: t('invalidNumber') };
   if (fill.badAngle) return { msg: t('gridBadAngle', { a: +fill.theta.toFixed(1), min: 20, max: 80 }) };
   if (fill.tooMany) return { msg: t('patchTooMany', { n: fill.tiles }) };
@@ -2212,7 +2218,7 @@ function regenSoon(fn, el, ms = regenDelayMs) {
   regenTimer = setTimeout(run, ms);
 }
 /** 格子の設定の値の組（これが前回の作りなおしと同じなら、作りなおさない：欄を離れたときの change で、同じ値のまま、もう一度作りなおすのを防ぐ）。 */
-function regenSig() { return JSON.stringify(['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim'].map(id => !!$(id)?.checked)).concat(gridTargetMode)); }
+function regenSig() { return JSON.stringify(['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear'].map(id => !!$(id)?.checked)).concat(gridTargetMode)); }
 /** 列・行・ひし形の角度を変えたとき：直前が格子なら作りなおす。作りなおす図が無いとき（読み込み直した後・別の操作のあと）は、下見（gridPreviewUpdate）が、何も起きない理由と押す操作を案内する（事業主「列と行の数字を変えてもなにも図形に変化が出ない」）。 */
 function gridFieldChanged() {
   if (gridsTouchedBySelection().length || (lastPatch && undo.at(-1) === lastPatch.before)) regenPatch();
@@ -2235,7 +2241,7 @@ function regenPatch(force = false) {
  *  「格子を作る」ごとに、枠・できた図形・経路・動かした外周の穴の元の位置・設定を図面に残す。パッチの線を1本選ぶか、枠の線を全部選ぶと、その格子が対象になり、設定が欄に出る。
  *  列・行・角度・位置・ピッチ・外周などの欄を変えると、その格子だけが、記録のものを消して作りなおされる（直前に作った1つだけは、今までどおり取り消して作りなおす）。複数の格子を選べば、一斉に変わる（取り消しは1回）。
  *  「内側すべて」ではなく、その枠から作った図形だけを消す（枠の中の文字・目印・金具の穴などを巻き込まない）。 */
-const GRID_SETTING_IDS = ['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'], GRID_CHECK_IDS = ['patchStitch', 'patchEdgeBan', 'patchRim'];
+const GRID_SETTING_IDS = ['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool'], GRID_CHECK_IDS = ['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear'];
 let gridApplyDone = 0, gridSelKey = '', gridSelSeq = -1, gridArmSeq = -1, gridSelSig = '';   /* gridArmSeq：格子を選びなおしたときの commitSeq。そのあと図面を変える操作が入ったら、選びなおすまで、欄の変更で作りなおさない（選択が残っているだけで、あとの作業を消さない） */
 /** いまの格子の設定（欄の値）。記録に入れる。 */
 function gridSettingsNow() { const fields = {}, checks = {}; for (const id of GRID_SETTING_IDS) fields[id] = String($(id)?.value ?? ''); for (const id of GRID_CHECK_IDS) checks[id] = !!$(id)?.checked; checks.targetMode = gridTargetMode; return { fields, checks, sig: regenSig() }; }
@@ -2274,16 +2280,18 @@ function legacyGridInRegion(region, frameIds) {
   const pieceIds = pieces.map(s => s.id);
   return { pieceIds, pathIds: paths.map(p => p.id), ids: [...pieceIds, ...new Set(paths.flatMap(p => p.shapeIds))] };
 }
-/** 記録の無い古いピースだけを選んでいるとき：そのピースが敷きつめられた枠を探し、見つかれば、その場で格子の記録にする。見つからなければ何もしない（同じ選択・同じ図面では、探しなおさない）。 */
+/** 記録の無い古い格子のものを選んでいるとき（ピース・縫い線・穴・枠の線など、どれでも）：選んだものが入っている枠に、ピースが敷きつめられていれば、その場で格子の記録にする（事業主 2026-10-23「右のパッチワークが反応しない」：穴や線を選んでいると、古い格子と気づけなかった）。見つからなければ何もしない（同じ選択・同じ図面では、探しなおさない）。 */
 function adoptLegacyGrid() {
   if (!selected.size) return;
-  const recorded = new Set((doc.grids || []).flatMap(g => g.ids)); for (const id of selected) if (recorded.has(id)) return;
+  const recorded = new Set((doc.grids || []).flatMap(g => g.ids)), recordedPaths = new Set((doc.grids || []).flatMap(g => g.pathIds)); for (const id of selected) if (recorded.has(id)) return;
   const key = commitSeq + ':' + selected.size + ':' + [...selected][0]; if (key === legacyTried) return; legacyTried = key;
-  const seeds = doc.shapes.filter(s => selected.has(s.id)); if (!seeds.length || !seeds.every(s => s.type === 'polyline' && s.closed && s.points?.length >= 3 && s.points.length <= 80)) return;
+  const pts = [], shapeById = new Map(doc.shapes.map(s => [s.id, s])), holeById = new Map(doc.holes.map(h => [h.id, h]));   /* 選んだものの位置：図形は外接の中心・穴は穴の位置 */
+  for (const id of selected) { const s = shapeById.get(id); if (s) { try { const b = bboxOf(s); pts.push({ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }); } catch { /* 位置が取れない図形は数えない */ } continue; } const h = holeById.get(id); if (h) { if (recordedPaths.has(h.pathId)) return; pts.push({ x: h.x, y: h.y }); } }
+  if (!pts.length) return;
   const frameCand = doc.shapes.filter(s => visible(s) && stitchable(s) && !(s.type === 'polyline' && s.closed && s.points.length <= 80)); if (!frameCand.length) return;
-  const c = seeds[0].points.reduce((m, q) => ({ x: m.x + q.x / seeds[0].points.length, y: m.y + q.y / seeds[0].points.length }), { x: 0, y: 0 });
+  const c = { x: pts.reduce((m, q) => m + q.x, 0) / pts.length, y: pts.reduce((m, q) => m + q.y, 0) / pts.length };
   for (const region of outerRegions(closedRegions(frameCand, 0.05)).filter(r => insidePolygon(c, r.points)).sort((x, y) => x.area - y.area)) {
-    const lg = legacyGridInRegion(region, new Set(region.shapeIds)); if (!lg || !seeds.every(s => lg.pieceIds.includes(s.id))) continue;
+    const lg = legacyGridInRegion(region, new Set(region.shapeIds)); if (!lg || !pts.every(q => insidePolygon(q, region.points) || loopSampler(region.points).nearest(q).dist < 0.05)) continue;
     const rec = { id: freshId(doc.grids || [], 'g'), frameIds: [...region.shapeIds], ids: lg.ids, pieceIds: lg.pieceIds, pathIds: lg.pathIds, restore: [], settings: { fields: {}, checks: { targetMode: gridTargetMode } } };
     doc.grids = [...(doc.grids || []), rec]; gridArmSeq = commitSeq; gridFps.set(rec.id, gridFpOf(rec)); return;
   }
@@ -2293,8 +2301,8 @@ function adoptLegacyGrid() {
 function gridsTouchedBySelection(armedOnly = true) {
   if (!selected.size) return []; if (armedOnly) adoptLegacyGrid();   /* 欄を変えるとき、記録の無い古い格子のピースを選んでいれば、その場で記録にする */
   const gs = doc.grids; if (!gs?.length) return [];
-  const live = new Set(doc.shapes.map(s => s.id)), armed = commitSeq === gridArmSeq;
-  return gs.filter(g => g.pieceIds.some(id => live.has(id)) && (g.ids.some(id => selected.has(id)) || (g.frameIds.length > 0 && g.frameIds.every(id => selected.has(id)))) && (!armedOnly || armed || gridFps.get(g.id) === gridFpOf(g)));
+  const live = new Set(doc.shapes.map(s => s.id)), armed = commitSeq === gridArmSeq, holePaths = new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.pathId));   /* 穴（菱目・丸目）だけを選んでいても、その穴が属す格子が対象 */
+  return gs.filter(g => g.pieceIds.some(id => live.has(id)) && (g.ids.some(id => selected.has(id)) || g.pathIds.some(pid => holePaths.has(pid)) || (g.frameIds.length > 0 && g.frameIds.every(id => selected.has(id)))) && (!armedOnly || armed || gridFps.get(g.id) === gridFpOf(g)));
 }
 /** 選んでいるのは記録のある格子の図形だが、選んだあとに、その格子の図形が手で変えられている（自動の作りなおしで手直しが消えるので、作りなおさない）。 */
 function gridsStaleBySelection() { const ok = new Set(gridsTouchedBySelection(true).map(g => g.id)); return gridsTouchedBySelection(false).filter(g => !ok.has(g.id)); }
@@ -2387,7 +2395,7 @@ function gridPreviewUpdate() {
       const { regions } = gridTargetRegions(); if (!regions.length) { $('hint').textContent = t('gridRebuildNoFrame'); draw(); return; }
       const cols = Number($('patchCols').value) || 2, rows = Number($('patchRows').value) || 2; if (!gridTargetMode && (!(cols >= 1) || !(rows >= 1))) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); draw(); return; }
       const pieces = []; let first = null; for (const rg of regions) { const plan = gridPlan(rg, cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; draw(); return; } first = first || plan; pieces.push(...plan.fill.pieces.map(pc => pc.points)); }
-      const sp = first.fill.spec; gridPreview = { pieces, follow: false, ids: new Set(gs.flatMap(g => g.ids)), text: t('gridPreview', { w: +sp.w.toFixed(2), h: +sp.h.toFixed(2), a: +sp.theta.toFixed(1), n: pieces.length }) + (gs.length > 1 ? ' ' + t('gridPickedMany', { k: gs.length }) : '') };
+      const sp = first.fill.spec; gridPreview = { pieces, follow: false, ids: new Set(gs.flatMap(g => g.ids)), text: t('gridPreview', { w: +sp.w.toFixed(2), h: +sp.h.toFixed(2), a: +sp.theta.toFixed(1), n: pieces.length }) + gridStepsNote(sp) + (gs.length > 1 ? ' ' + t('gridPickedMany', { k: gs.length }) : '') };
       $('hint').textContent = gridPreview.text; draw(); return;
     } }
   const follow = !!lastPatch && undo.at(-1) === lastPatch.before, ids = follow ? new Set(lastPatch.frameIds) : selectedShapeIds();
@@ -2399,7 +2407,7 @@ function gridPreviewUpdate() {
   if (!gridTargetMode && (!(cols >= 1) || !(rows >= 1))) { $('hint').textContent = t('gridNeedColsRows', { c: cols, r: rows }); draw(); return; }
   const plan = gridPlan(regions[0], cols, rows); if (plan.msg) { $('hint').textContent = plan.msg; draw(); return; }
   const sp = plan.fill.spec;
-  gridPreview = { pieces: plan.fill.pieces.map(pc => pc.points), follow, ids, text: t(follow ? 'gridPreview' : 'gridPreviewNew', { w: +sp.w.toFixed(2), h: +sp.h.toFixed(2), a: +sp.theta.toFixed(1), n: plan.fill.pieces.length }) };
+  gridPreview = { pieces: plan.fill.pieces.map(pc => pc.points), follow, ids, text: t(follow ? 'gridPreview' : 'gridPreviewNew', { w: +sp.w.toFixed(2), h: +sp.h.toFixed(2), a: +sp.theta.toFixed(1), n: plan.fill.pieces.length }) + gridStepsNote(sp) };
   $('hint').textContent = gridPreview.text; draw();
 }
 /** 下見の薄い輪郭（水色の点線）。作りなおす格子があるか、枠を選んでいる間だけ。 */
@@ -2519,7 +2527,7 @@ function initDesign() {
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
-  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
+  for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
   for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   for (const id of ['patchTargetW', 'patchTargetH']) { const el = $(id), go = () => gridTargetSoon(el); el.addEventListener('input', go); el.addEventListener('change', go); }   /* 目標 幅・高さ＝ひし形1枚の大きさ：入れると、列・行・角度を決めて格子を作りなおす */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
