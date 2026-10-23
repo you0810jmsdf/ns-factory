@@ -170,7 +170,7 @@
 <body data-prototype="1">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 08:53 · b68a070</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 09:06 · 9865c21</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -729,8 +729,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=efefc5df","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=7249a801","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=9b03ae9d","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=efefc5df"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=72a1f17f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=d212f715","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=04f229ee","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=ceae9d31","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
+<script type="module" src="app.js?v=72a1f17f"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -4404,6 +4404,9 @@ const MESSAGES = {
     "patchRimFail": "外周の縫い線を作れません（図形が小さすぎるか、縁からの距離が大きすぎます）。縁からの距離を小さくしてください。",
     "patchRimTooClose": "外周の縫い線が縁に近すぎて、菱目が縁の線と重なります。縁からの距離を {m}mm より大きくしてください。",
     "patchRimNone": "外周には、線と重ならずに打てる位置がありませんでした。",
+    "ringShiftDone": "すでにある外周の菱目のうち {n} 個が、パッチの境目に重なっていたので、線に沿って最大 {d}mm ずらしました。",
+    "ringShiftMirror": "同じ並びの別の外周（裏面など）の穴 {m} 個も、同じだけ動かしました。",
+    "ringShiftStuck": "ずらしても境目から離せない外周の菱目が {n} 個あります（手で動かしてください）。",
     "patchHole": "外周の穴の種類（縫い合わせの穴は、いつも丸ギリ）",
     "patchHoleTool": "使用中の工具のまま",
     "patchEdgeBanned": "縫い線を縁から {d}mm にすると、菱目が縁から {m}mm 以内に入るため作れません。{m}mm 以上にするか、「縁から2.5mm以内に菱目を置かない」を外してください。",
@@ -6334,6 +6337,9 @@ const MESSAGES = {
     "patchRimFail": "The outer stitch line cannot be made (the shape is too small or the distance from the edge is too large). Use a smaller distance.",
     "patchRimTooClose": "The outer stitch line is too close to the edge, so the diamond holes would touch the edge line. Use a distance larger than {m} mm.",
     "patchRimNone": "There was no spot on the outer edge where a hole fits without touching a line.",
+    "ringShiftDone": "{n} existing outer-edge diamond holes sat on a patch boundary, so they were slid up to {d} mm along the line.",
+    "ringShiftMirror": "{m} holes of the matching outer edge (e.g. the back side) were moved by the same amount.",
+    "ringShiftStuck": "{n} outer-edge diamond holes could not be moved clear of a boundary (move them by hand).",
     "patchHole": "Rim hole type (seam holes are always round)",
     "patchHoleTool": "Keep the current tool",
     "patchEdgeBanned": "A stitch line {d} mm from the edge would put diamond holes within {m} mm of the edge, so it was not made. Use {m} mm or more, or uncheck \"No diamond holes within 2.5 mm of an edge\".",
@@ -8154,6 +8160,45 @@ function rimHolePositions(len, pitch, isFree, { step = 0.1, maxShift = 0.4, minG
   return out;
 }
 
+/** 外周の穴を、パッチの境目（実線）から離す（事業主 2026-10-23「外周は菱目。パッチの境界に重ねてしまうとパッチが固定できないので、菱目をずらす」）。
+ *  len＝一周の長さ。holes＝[{ id, s }]（線の上の位置）。at(s)→点。isFree(点)→そこに穴を置いてよいか（境目から離れているか）。
+ *  置けない穴だけ、線に沿って近い順（step ずつ・前後）に maxShift mm まで動かす。動かした先は、ほかの穴から minGap mm 以上はなす。置き場が無い穴はそのまま（stuck）。
+ *  戻り値 { moved: [{ id, s0, s1 }], stuck: [id] }。 */
+function shiftHolesClear(len, holes, at, isFree, { maxShift = 1.6, step = 0.05, minGap = 2.4 } = {}) {
+  if (!(len > 0)) return { moved: [], stuck: [] };
+  const wrap = s => ((s % len) + len) % len, cur = holes.map(h => ({ id: h.id, s: wrap(h.s) })), moved = [], stuck = [];
+  const gapOK = (i, s) => cur.every((o, k) => { if (k === i) return true; const d = wrap(s - o.s); return Math.min(d, len - d) >= minGap - 1e-9; });
+  cur.forEach((h, i) => {
+    if (isFree(at(h.s))) return;
+    for (let j = 1; j * step <= maxShift + 1e-9; j++) for (const sg of [1, -1]) { const s1 = wrap(h.s + sg * j * step); if (isFree(at(s1)) && gapOK(i, s1)) { moved.push({ id: h.id, s0: h.s, s1 }); h.s = s1; return; } }
+    stuck.push(h.id);
+  });
+  return { moved, stuck };
+}
+/** 同じ並びの別の外周（裏面など）を見つける。front・other＝[{ x, y, angleDeg }]（穴の位置と向き）。
+ *  other の穴が、front の穴を「平行移動」「左右反転」「上下反転」「180°回転」のどれかで写した位置（0.3mm 以内）にあり、向きも写した向き（180°の違いは同じ）になっていれば、その写し方と、front の i 番目に対応する other の番号 map[i]、新しい位置を写す apply({x,y}) を返す。
+ *  穴の数が違う・写せない（位相が違うなど）ときは null。左右対称の外周では、複数の写し方で位置は合うので、向きで見分ける（鏡像の面は、向きが 180−角度）。 */
+function ringCounterpart(front, other, tol = 0.3) {
+  if (!front.length || front.length !== other.length) return null;
+  const box = hs => { const xs = hs.map(h => h.x), ys = hs.map(h => h.y); return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }; }, A = box(front), B = box(other);
+  const kinds = {
+    translate: { pos: p => ({ x: p.x - A.x0 + B.x0, y: p.y - A.y0 + B.y0 }), ang: a => a },
+    flipX: { pos: p => ({ x: B.x1 - (p.x - A.x0), y: p.y - A.y0 + B.y0 }), ang: a => 180 - a },
+    flipY: { pos: p => ({ x: p.x - A.x0 + B.x0, y: B.y1 - (p.y - A.y0) }), ang: a => -a },
+    rot180: { pos: p => ({ x: B.x1 - (p.x - A.x0), y: B.y1 - (p.y - A.y0) }), ang: a => a + 180 },
+  };
+  const angOK = (u, v) => { const d = (((u - v) % 180) + 180) % 180; return Math.min(d, 180 - d) < 3; };
+  for (const [kind, f] of Object.entries(kinds)) {
+    const map = []; let ok = true;
+    for (const h of front) {
+      const q = f.pos(h); let best = -1, bd = Infinity; other.forEach((o, j) => { const d = Math.hypot(o.x - q.x, o.y - q.y); if (d < bd) { bd = d; best = j; } });
+      if (bd > tol || !angOK(other[best].angleDeg, f.ang(h.angleDeg))) { ok = false; break; } map.push(best);
+    }
+    if (ok && new Set(map).size === map.length) return { kind, map, apply: f.pos };
+  }
+  return null;
+}
+
 /* ---- 交点の表示：端点どうしで接している点（結合）／途中で交差している点（未結合）---- */
 /** 図形の端点（線・折れ線の頂点・円弧の両端・ベジェの両端・パスの節点）。円には端点が無い。 */
 function shapeEndpoints(s) {
@@ -8713,7 +8758,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, outerRegions, gridFillRegion, diamondGridFill, gridRingPoints, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, insetPolygonFit, patchInsetStitch, seamHoleOffsets, rimLine, loopSampler, rimHolePositions, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldSectionDims, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, komaStitchLine, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, closedRegions, regionAt, outerRegions, gridFillRegion, diamondGridFill, gridRingPoints, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, insetPolygonFit, patchInsetStitch, seamHoleOffsets, rimLine, loopSampler, rimHolePositions, shiftHolesClear, ringCounterpart, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldSectionDims, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -22824,7 +22869,7 @@ const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { createTabLock, TAB_LOCK_KEY } = __mods['tablock'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -24905,6 +24950,37 @@ const patchHoleClearR = tool => Math.max(tool.holeW, tool.holeH) / 2 + 0.3;
 function patchObstacles(r) {
   return doc.shapes.filter(s => visibleData(s) && stitchable(s) && s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)).map(s => { const b = bboxOf(s); return { s, minX: b.minX - r, maxX: b.maxX + r, minY: b.minY - r, maxY: b.maxY + r }; });
 }
+/** 外周の穴（枠の縁から 0.5〜(外周の距離＋2.5)mm の帯にある、丸目でない穴の閉じた並び）のうち、パッチの境目（実線）に重なるものを、線に沿って最大 ピッチの40% までずらす。
+ *  同じ並びの別の外周（裏面など・平行移動／左右反転／上下反転／180°回転で写せて向きも合うもの）の穴も、同じだけ動かす（事業主 2026-10-23「菱目をずらしたときに裏面の菱目の位置も追従させる必要がある」）。commit の中で呼ぶ。戻り値 { moved, stuck, mirrored, maxD }。 */
+function shiftRingHolesOffBoundaries(outlinePts, rimOffset) {
+  const toolOf = new Map(doc.tools.map(x => [x.id, x])), outline = loopSampler(outlinePts), skip = new Set(doc.paths.filter(p => p.grid || p.rim).map(p => p.id)), norm = a => ((a % 360) + 360) % 360;
+  const isDia = h => { const x = toolOf.get(h.toolId); return !!x && x.kind !== 'round'; };
+  const byPath = new Map();
+  for (const h of doc.holes) { if (!isDia(h) || skip.has(h.pathId) || !insideRing(h, outlinePts)) continue; const d = outline.nearest(h).dist; if (d < 0.5 || d > rimOffset + 2.5) continue; (byPath.get(h.pathId) || byPath.set(h.pathId, []).get(h.pathId)).push(h); }
+  const res = { moved: 0, stuck: 0, mirrored: 0, maxD: 0 }, follow = $('followTangent').checked;
+  for (const [pid, band] of byPath) {
+    const saved = doc.paths.find(p => p.id === pid); if (!saved || !saved.closed) continue; const route = resolvePath(doc, saved); if (!route) continue;
+    const tl = toolOf.get(band[0].toolId), len = arcLength(route), clearR = patchHoleClearR(tl), others = patchObstacles(clearR);
+    const isFree = q => !others.some(o => q.x >= o.minX && q.x <= o.maxX && q.y >= o.minY && q.y <= o.maxY && distToShape(o.s, q) < clearR - 1e-9);
+    const sorted = band.slice().sort((a, b) => a.s - b.s), r = shiftHolesClear(len, sorted.map(h => ({ id: h.id, s: h.s })), s => pointAtLength(route, s), isFree, { maxShift: 0.4 * tl.pitch, minGap: 0.6 * tl.pitch });
+    res.stuck += r.stuck.length; if (!r.moved.length) continue;
+    const before = sorted.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg })), sibs = [];   /* 動かす前の位置と向きで、同じ並びの外周を探す */
+    for (const q of doc.paths) {
+      if (q.id === pid || !q.closed || skip.has(q.id) || byPath.has(q.id)) continue;
+      const qh = doc.holes.filter(h => h.pathId === q.id && isDia(h)).sort((a, b) => a.s - b.s); if (qh.length !== sorted.length) continue;
+      const cp = ringCounterpart(before, qh.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg }))), routeQ = cp && resolvePath(doc, q); if (cp && routeQ) sibs.push({ cp, qh, routeQ });
+    }
+    for (const m of r.moved) {
+      const i = sorted.findIndex(h => h.id === m.id), h = sorted[i], p0 = pointAtLength(route, h.s), p1 = pointAtLength(route, m.s1); res.moved++; { const dd = Math.abs(m.s1 - m.s0); res.maxD = Math.max(res.maxD, Math.min(dd, len - dd)); }
+      h.x = p1.x; h.y = p1.y; h.s = m.s1; if (follow) h.angleDeg = norm(h.angleDeg + p1.angleDeg - p0.angleDeg);
+      for (const { cp, qh, routeQ } of sibs) {
+        const j = qh[cp.map[i]], target = cp.apply({ x: p1.x, y: p1.y }), pr = projectOnPath(routeQ, target); if (!j || !pr || distance(pr, target) > 0.3) continue;
+        const t0 = pointAtLength(routeQ, j.s).angleDeg, t1 = pointAtLength(routeQ, pr.s).angleDeg; j.x = pr.x; j.y = pr.y; j.s = pr.s; if (follow) j.angleDeg = norm(j.angleDeg + t1 - t0); res.mirrored++;
+      }
+    }
+  }
+  return res;
+}
 /** 穴を、大きさ cell の升目ごとに分けておく（近くの穴だけを調べるため）。 */
 function holeGrid(holes, cell) {
   const grid = new Map(); for (const h of holes) { const k = Math.floor(h.x / cell) + ',' + Math.floor(h.y / cell), a = grid.get(k); if (a) a.push(h); else grid.set(k, [h]); }
@@ -25027,7 +25103,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
   if (rimOn && rimOffset <= patchHoleClearR(tool)) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleClearR(tool).toFixed(1) }); return; } /* 穴が縁の線と重なる近さ */
   const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
-  let stitched = null, rimInfo = null, pieceIds = [], allIds = []; const depth0 = undo.length, seq0 = commitSeq;
+  let stitched = null, rimInfo = null, ringShift = null, pieceIds = [], allIds = []; const depth0 = undo.length, seq0 = commitSeq;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
@@ -25043,6 +25119,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', grid: true }); return pid;   /* grid：格子が作った縫い線の経路（消すときは、穴も一緒に消す） */
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
+      if (rimOn) ringShift = shiftRingHolesOffBoundaries(region.points, rimOffset);   /* すでにある外周の菱目が、パッチの境目に重なっていたら、線に沿ってずらす（裏面も同じだけ）。先に動かして、そのあとの新しい外周・縫い合わせの丸目が避ける */
       if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ。縫い合わせの丸目より先に打つ（重なる所は菱目を優先・事業主 2026-10-23） */
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved);   /* rim：外周の穴の経路（点検で使う） */
@@ -25058,9 +25135,10 @@ function patchFillApply(region, fill, layer, opts = {}) {
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
   });
   renderSeams(); if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig() };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
+  const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
-  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + rimNote + rimCheckNote;
+  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + ringShiftNote + rimNote + rimCheckNote;
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);

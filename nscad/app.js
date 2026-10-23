@@ -51,7 +51,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2133,6 +2133,37 @@ const patchHoleClearR = tool => Math.max(tool.holeW, tool.holeH) / 2 + 0.3;
 function patchObstacles(r) {
   return doc.shapes.filter(s => visibleData(s) && stitchable(s) && s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)).map(s => { const b = bboxOf(s); return { s, minX: b.minX - r, maxX: b.maxX + r, minY: b.minY - r, maxY: b.maxY + r }; });
 }
+/** 外周の穴（枠の縁から 0.5〜(外周の距離＋2.5)mm の帯にある、丸目でない穴の閉じた並び）のうち、パッチの境目（実線）に重なるものを、線に沿って最大 ピッチの40% までずらす。
+ *  同じ並びの別の外周（裏面など・平行移動／左右反転／上下反転／180°回転で写せて向きも合うもの）の穴も、同じだけ動かす（事業主 2026-10-23「菱目をずらしたときに裏面の菱目の位置も追従させる必要がある」）。commit の中で呼ぶ。戻り値 { moved, stuck, mirrored, maxD }。 */
+function shiftRingHolesOffBoundaries(outlinePts, rimOffset) {
+  const toolOf = new Map(doc.tools.map(x => [x.id, x])), outline = loopSampler(outlinePts), skip = new Set(doc.paths.filter(p => p.grid || p.rim).map(p => p.id)), norm = a => ((a % 360) + 360) % 360;
+  const isDia = h => { const x = toolOf.get(h.toolId); return !!x && x.kind !== 'round'; };
+  const byPath = new Map();
+  for (const h of doc.holes) { if (!isDia(h) || skip.has(h.pathId) || !insideRing(h, outlinePts)) continue; const d = outline.nearest(h).dist; if (d < 0.5 || d > rimOffset + 2.5) continue; (byPath.get(h.pathId) || byPath.set(h.pathId, []).get(h.pathId)).push(h); }
+  const res = { moved: 0, stuck: 0, mirrored: 0, maxD: 0 }, follow = $('followTangent').checked;
+  for (const [pid, band] of byPath) {
+    const saved = doc.paths.find(p => p.id === pid); if (!saved || !saved.closed) continue; const route = resolvePath(doc, saved); if (!route) continue;
+    const tl = toolOf.get(band[0].toolId), len = arcLength(route), clearR = patchHoleClearR(tl), others = patchObstacles(clearR);
+    const isFree = q => !others.some(o => q.x >= o.minX && q.x <= o.maxX && q.y >= o.minY && q.y <= o.maxY && distToShape(o.s, q) < clearR - 1e-9);
+    const sorted = band.slice().sort((a, b) => a.s - b.s), r = shiftHolesClear(len, sorted.map(h => ({ id: h.id, s: h.s })), s => pointAtLength(route, s), isFree, { maxShift: 0.4 * tl.pitch, minGap: 0.6 * tl.pitch });
+    res.stuck += r.stuck.length; if (!r.moved.length) continue;
+    const before = sorted.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg })), sibs = [];   /* 動かす前の位置と向きで、同じ並びの外周を探す */
+    for (const q of doc.paths) {
+      if (q.id === pid || !q.closed || skip.has(q.id) || byPath.has(q.id)) continue;
+      const qh = doc.holes.filter(h => h.pathId === q.id && isDia(h)).sort((a, b) => a.s - b.s); if (qh.length !== sorted.length) continue;
+      const cp = ringCounterpart(before, qh.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg }))), routeQ = cp && resolvePath(doc, q); if (cp && routeQ) sibs.push({ cp, qh, routeQ });
+    }
+    for (const m of r.moved) {
+      const i = sorted.findIndex(h => h.id === m.id), h = sorted[i], p0 = pointAtLength(route, h.s), p1 = pointAtLength(route, m.s1); res.moved++; { const dd = Math.abs(m.s1 - m.s0); res.maxD = Math.max(res.maxD, Math.min(dd, len - dd)); }
+      h.x = p1.x; h.y = p1.y; h.s = m.s1; if (follow) h.angleDeg = norm(h.angleDeg + p1.angleDeg - p0.angleDeg);
+      for (const { cp, qh, routeQ } of sibs) {
+        const j = qh[cp.map[i]], target = cp.apply({ x: p1.x, y: p1.y }), pr = projectOnPath(routeQ, target); if (!j || !pr || distance(pr, target) > 0.3) continue;
+        const t0 = pointAtLength(routeQ, j.s).angleDeg, t1 = pointAtLength(routeQ, pr.s).angleDeg; j.x = pr.x; j.y = pr.y; j.s = pr.s; if (follow) j.angleDeg = norm(j.angleDeg + t1 - t0); res.mirrored++;
+      }
+    }
+  }
+  return res;
+}
 /** 穴を、大きさ cell の升目ごとに分けておく（近くの穴だけを調べるため）。 */
 function holeGrid(holes, cell) {
   const grid = new Map(); for (const h of holes) { const k = Math.floor(h.x / cell) + ',' + Math.floor(h.y / cell), a = grid.get(k); if (a) a.push(h); else grid.set(k, [h]); }
@@ -2255,7 +2286,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
   if (rimOn && rimOffset <= patchHoleClearR(tool)) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleClearR(tool).toFixed(1) }); return; } /* 穴が縁の線と重なる近さ */
   const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
-  let stitched = null, rimInfo = null, pieceIds = [], allIds = []; const depth0 = undo.length, seq0 = commitSeq;
+  let stitched = null, rimInfo = null, ringShift = null, pieceIds = [], allIds = []; const depth0 = undo.length, seq0 = commitSeq;
   commit(() => {
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
     const texA = textureById($('patchTexA').value)?.id || null, texB = textureById($('patchTexB').value)?.id || null; /* 柄の2色に貼る革の質感（選んでいなければ貼らない） */
@@ -2271,6 +2302,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', grid: true }); return pid;   /* grid：格子が作った縫い線の経路（消すときは、穴も一緒に消す） */
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
+      if (rimOn) ringShift = shiftRingHolesOffBoundaries(region.points, rimOffset);   /* すでにある外周の菱目が、パッチの境目に重なっていたら、線に沿ってずらす（裏面も同じだけ）。先に動かして、そのあとの新しい外周・縫い合わせの丸目が避ける */
       if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ。縫い合わせの丸目より先に打つ（重なる所は菱目を優先・事業主 2026-10-23） */
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved);   /* rim：外周の穴の経路（点検で使う） */
@@ -2286,9 +2318,10 @@ function patchFillApply(region, fill, layer, opts = {}) {
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
   });
   renderSeams(); if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig() };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
+  const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
-  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + rimNote + rimCheckNote;
+  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + ringShiftNote + rimNote + rimCheckNote;
 }
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
