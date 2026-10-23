@@ -2439,13 +2439,14 @@ function syncLockMarks() {
   if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'command';
   if ($('localDesignCreate')) $('localDesignCreate').disabled = locked || !localDesignPending || localDesignPending.invalid;
 }
-/** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップだけ抑えて、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
+/** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップのあとで全選択し直して、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
 let numberJustFocused = null;
 /** 数値の欄にカーソルがある（フォーカス中）ときにホイールを回すと、数値が勝手に増減して止まらなくなる（事業主「数値がとまらない」）→ ホイールを回したら、欄からフォーカスを外し、カード・ページのスクロールにする。 */
 function blurNumberOnWheel(e) { const el = e?.target; if (el?.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) el.blur(); }
 document.addEventListener?.('wheel', blurNumberOnWheel, { passive: true });
 document.addEventListener?.('focusin', e => { const el = e?.target; if (el?.tagName === 'INPUT' && el.type === 'number') { numberJustFocused = el; setTimeout(() => { try { el.select?.(); } catch { /* 選べない欄は、そのまま */ } }, 0); } else numberJustFocused = null; });
-document.addEventListener?.('mouseup', e => { if (numberJustFocused && e?.target === numberJustFocused) { e.preventDefault?.(); numberJustFocused = null; } });
+/** マウスで入った最初のマウスアップ：以前は preventDefault で止めて全選択を保っていたが、▲▼（スピンボタン）の「押し終わり」まで止めてしまい、フォーカスの無い欄の▲を1回クリックしただけで、数値が毎秒20ずつ増え続け、別の所をクリックするまで止まらなかった（事業主 2026-10-23「数値が止まらない」・実ブラウザ（公開版）で再現し、この処理を外すと1回で止まることを確認）。止めずに、マウスアップのあとで全選択し直す（全選択が外れない見た目は同じ）。 */
+document.addEventListener?.('mouseup', e => { const el = numberJustFocused; if (el && e?.target === el) { numberJustFocused = null; setTimeout(() => { try { el.select?.(); } catch { /* 選べない欄は、そのまま */ } }, 0); } });
 document.addEventListener?.('click', e => { const sm = e.target?.closest?.('details[data-lock].locked > summary'); if (sm) { e.preventDefault(); lockGate(sm.parentElement.dataset.lock); } }, true);
 /** 「いまの登録」の1行：なし／確認待ち／確認済み、と、オーナーかどうか（オーナーなら、有料版の機能のロックが外れる）。 */
 function regNowText() {
