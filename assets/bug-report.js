@@ -7,6 +7,7 @@
   const MAX_PHOTOS = 3;
   // 読み込む <script> の data-label / data-title / data-placeholder で文言を差し替えられる（N's refill 販売ページは「様式の改善意見」・2026-09-17 事業主指示）
   const CFG = (document.currentScript && document.currentScript.dataset) || {};
+  const SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '';
   const LABEL = CFG.label || '💡 改善要望';
   const TITLE = CFG.title || '改善要望・不具合を送る';
   const PLACEHOLDER = CFG.placeholder || '例：A4横で印刷したら左右が3mmずれる／◯◯の機能がほしい';
@@ -118,8 +119,9 @@
   function close() { overlay.style.display = 'none'; }
 
   // === 送った要望と開発者からの返信 ===
-  // 送信時に受付番号(rid)を端末へ残し、GAS の ?action=myReports で返信を取りにいく。連絡先が未記入でも返信が届く。
-  // ⛔ GAS が未対応（ok でない／HTML が返る）のときは「返信確認は準備中」と出し、返信なしとは言い切らない。
+  // 送信時に受付番号(rid)と要望の冒頭を端末へ残し、assets/feedback-replies.json の返信と突き合わせて表示する。連絡先が未記入でも返信が届く。
+  // 返信は GAS を使わずリポジトリのファイルに書く（スマホからでも更新できる）。形式と書き方は docs/notes/feedback-replies.md。
+  // ⛔ 読み込みに失敗したときは「確認できませんでした」と出し、返信なしとは言い切らない。このファイルは公開される（個人情報を書かない）。
   const MINE_KEY = 'nsf-bug-mine', SEEN_KEY = 'nsf-bug-seen', MAX_MINE = 30;
   function lsGet(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -132,15 +134,20 @@
   let replyFetched = false;
   async function fetchReplies() {
     const mine = loadMine();
-    if (!mine.length) return null;
+    if (!mine.length || !SCRIPT_SRC) return null;
     try {
-      const res = await fetch(GAS_URL + '?action=myReports&rids=' + encodeURIComponent(mine.map(m => m.rid).join(',')), { cache: 'no-store' });
-      const txt = await res.text();
-      if (!txt || txt.trim().charAt(0) === '<') return null;
-      const data = JSON.parse(txt);
-      if (!data || data.ok !== true || !Array.isArray(data.items)) return null;
+      const res = await fetch(new URL('feedback-replies.json', SCRIPT_SRC).href, { cache: 'no-cache' });
+      if (!res.ok) return null;
+      const data = JSON.parse(await res.text());
+      const list = data && Array.isArray(data.replies) ? data.replies : null;
+      if (!list) return null;
+      // 要望の冒頭(m.msg)に match の文字列が含まれ、page が指定されていれば一致するものを、新しい返信から順に採用する
       const map = {};
-      data.items.forEach(it => { if (it && it.rid) map[it.rid] = it; });
+      mine.forEach(m => {
+        const hit = list.filter(r => r && r.match && (m.msg || '').indexOf(r.match) >= 0 && (!r.page || r.page.replace(/^\/+/, '') === String(m.page || '').replace(/^\/+/, '')))
+          .sort((a, b) => String(b.replyAt || '').localeCompare(String(a.replyAt || '')))[0];
+        map[m.rid] = hit ? { rid: m.rid, reply: hit.reply || '', replyAt: hit.replyAt || '', done: !!hit.done } : { rid: m.rid, reply: '', replyAt: '', done: false };
+      });
       return map;
     } catch (e) { return null; }
   }
@@ -172,7 +179,7 @@
     if (!mine.length) { box.style.display = 'none'; return; }
     box.innerHTML = '';
     if (!replyFetched) box.appendChild(el('div', 'font-size:12px;color:#6e6e73;', '返信を確認しています…'));
-    else if (!replyMap) box.appendChild(el('div', 'font-size:11px;color:#8a7362;margin-bottom:6px;', '返信の確認機能は準備中です。いまは送った内容のみ表示します。'));
+    else if (!replyMap) box.appendChild(el('div', 'font-size:11px;color:#8a7362;margin-bottom:6px;', '返信を確認できませんでした。いまは送った内容のみ表示します。'));
     mine.forEach(m => {
       const it = replyMap && replyMap[m.rid];
       const row = el('div', 'padding:8px 0;border-top:1px solid #efe5d6;');
