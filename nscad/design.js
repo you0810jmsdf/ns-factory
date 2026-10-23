@@ -259,7 +259,7 @@ export function closedRegions(shapes, tol = 0.01, { dashed = false } = {}) {   /
   }
   return out;
 }
-const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) inside = !inside; return inside; };
+export const insidePolygon = (p, ps) => { let inside = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) inside = !inside; return inside; };
 /** 点 p を内側に含む、最も内側（面積最小）の囲まれた図形。無ければ null。 */
 export function regionAt(shapes, p, tol = 0.01) {
   return closedRegions(shapes, tol).filter(r => insidePolygon(p, r.points)).sort((a, b) => a.area - b.area)[0] || null;

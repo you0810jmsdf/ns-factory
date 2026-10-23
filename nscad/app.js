@@ -51,7 +51,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, insidePolygon, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2076,7 +2076,10 @@ function gridInSelection(cols, rows) {
   }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
   const rec = (doc.grids || []).find(g => g.frameIds.length > 0 && g.frameIds.length === ids.size && g.frameIds.every(id => ids.has(id)) && g.pieceIds.some(id => doc.shapes.some(s => s.id === id)));   /* 記録のある格子と同じ枠なら、二重の格子にせず、その格子を作りなおす（手で変えたあとも、押したときは作りなおす） */
-  makeGridInRegion(regions[0], ids, rec || null, cols, rows);
+  let replace = rec || null, frameIds = ids, legacyN = 0;
+  if (!rec) { const lg = legacyGridInRegion(regions[0], new Set(regions[0].shapeIds)); if (lg) { replace = { id: freshId(doc.grids || [], 'g'), frameIds: [...regions[0].shapeIds], ids: lg.ids, pieceIds: lg.pieceIds, pathIds: lg.pathIds, restore: [] }; frameIds = new Set(regions[0].shapeIds); legacyN = lg.pieceIds.length; } }   /* 記録の無い古い格子が枠の中にあれば、重ならないよう、消して作る */
+  const n0 = gridApplyDone; makeGridInRegion(regions[0], frameIds, replace, cols, rows);
+  if (legacyN && gridApplyDone > n0) $('hint').textContent += ' ' + t('gridLegacyReplaced', { n: legacyN });
 }
 /** 枠 region の中に格子を作る（replace があれば、その格子の記録のものを消して作りなおす）。gridInSelection と、格子ごとの作りなおし（rebuildGrids）で共通。 */
 function makeGridInRegion(region, ids, replace, cols, rows) {
@@ -2253,10 +2256,39 @@ function gridFpOf(g) {
   for (const s of doc.shapes) { if (!set.has(s.id)) continue; n++; const str = JSON.stringify(s); for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; }
   const fp = n + ':' + h; gridFpNow.set(g.id, fp); return fp;
 }
+/* ---- 作りなおしの記録が無い古い格子（記録の機能を入れる前の図面・事業主 2026-10-23「パッチの大きさがかわりません」「全体を選んで格子を作ると重なる」）----
+ *  枠の中に、ピース（閉じた折れ線）が敷きつめられていれば（3枚以上・面積の7割以上）、それを古い格子とみなす。ピースと、その縫い線・外周の経路（paths の grid・rim）・穴・縫い合わせが、その格子の持ち物。
+ *  ①枠を選んで「格子を作る」→古い格子を消して作る（重ならない・元に戻せる）。②古いピースを選んで数字を変える→その場で記録にして、その格子だけ作りなおす。 */
+let legacyTried = '';
+function legacyGridInRegion(region, frameIds) {
+  const recorded = new Set((doc.grids || []).flatMap(g => g.ids)), recordedPaths = new Set((doc.grids || []).flatMap(g => g.pathIds)), loop = loopSampler(region.points), ins = p => insidePolygon(p, region.points) || loop.nearest(p).dist < 0.05;
+  const pathShapes = new Set(doc.paths.flatMap(p => p.shapeIds || []));   /* 縫い線の経路が通る図形（格子の縫い線・外周の線・ふつうの部品の縫い線）は、ピースに数えない */
+  const pieces = doc.shapes.filter(s => s.type === 'polyline' && s.closed && !s.holeLink && s.points?.length >= 3 && s.points.length <= 80 && !frameIds.has(s.id) && !recorded.has(s.id) && !pathShapes.has(s.id) && visible(s) && s.points.every(ins));
+  if (pieces.length < 3) return null;
+  const area = pieces.reduce((sum, s) => sum + Math.abs(s.points.reduce((t, q, i) => t + q.x * s.points[(i + 1) % s.points.length].y - s.points[(i + 1) % s.points.length].x * q.y, 0)) / 2, 0); if (area < region.area * 0.7) return null;
+  const byId = new Map(doc.shapes.map(s => [s.id, s])), paths = doc.paths.filter(p => (p.grid || p.rim) && !recordedPaths.has(p.id) && p.shapeIds?.length && p.shapeIds.every(id => { const s = byId.get(id); return s?.points && s.points.every(ins); }));
+  const pieceIds = pieces.map(s => s.id);
+  return { pieceIds, pathIds: paths.map(p => p.id), ids: [...pieceIds, ...new Set(paths.flatMap(p => p.shapeIds))] };
+}
+/** 記録の無い古いピースだけを選んでいるとき：そのピースが敷きつめられた枠を探し、見つかれば、その場で格子の記録にする。見つからなければ何もしない（同じ選択・同じ図面では、探しなおさない）。 */
+function adoptLegacyGrid() {
+  if (!selected.size) return;
+  const recorded = new Set((doc.grids || []).flatMap(g => g.ids)); for (const id of selected) if (recorded.has(id)) return;
+  const key = commitSeq + ':' + selected.size + ':' + [...selected][0]; if (key === legacyTried) return; legacyTried = key;
+  const seeds = doc.shapes.filter(s => selected.has(s.id)); if (!seeds.length || !seeds.every(s => s.type === 'polyline' && s.closed && s.points?.length >= 3 && s.points.length <= 80)) return;
+  const frameCand = doc.shapes.filter(s => visible(s) && stitchable(s) && !(s.type === 'polyline' && s.closed && s.points.length <= 80)); if (!frameCand.length) return;
+  const c = seeds[0].points.reduce((m, q) => ({ x: m.x + q.x / seeds[0].points.length, y: m.y + q.y / seeds[0].points.length }), { x: 0, y: 0 });
+  for (const region of outerRegions(closedRegions(frameCand, 0.05)).filter(r => insidePolygon(c, r.points)).sort((x, y) => x.area - y.area)) {
+    const lg = legacyGridInRegion(region, new Set(region.shapeIds)); if (!lg || !seeds.every(s => lg.pieceIds.includes(s.id))) continue;
+    const rec = { id: freshId(doc.grids || [], 'g'), frameIds: [...region.shapeIds], ids: lg.ids, pieceIds: lg.pieceIds, pathIds: lg.pathIds, restore: [], settings: { fields: {}, checks: { targetMode: gridTargetMode } } };
+    doc.grids = [...(doc.grids || []), rec]; gridArmSeq = commitSeq; gridFps.set(rec.id, gridFpOf(rec)); return;
+  }
+}
 /** いま選んでいる図形が触れている格子の記録：できた図形（パッチの線・ピース）を1つでも選んでいるか、枠の図形を全部選んでいる格子。
  *  armedOnly＝欄の変更で作りなおしてよい格子だけ：選びなおしたあと、図面を変える操作が入っていないか、入っていても、この格子の図形が選んだときのまま変わっていないもの（事業主 2026-10-23「パッチワークの図が数値変更に連動しません」：ピースを選んだあとに別の操作が入ると、選択が新しい枠として扱われて「枠より大きいので作れません」と出ていた）。 */
 function gridsTouchedBySelection(armedOnly = true) {
-  const gs = doc.grids; if (!gs?.length || !selected.size) return [];
+  if (!selected.size) return []; if (armedOnly) adoptLegacyGrid();   /* 欄を変えるとき、記録の無い古い格子のピースを選んでいれば、その場で記録にする */
+  const gs = doc.grids; if (!gs?.length) return [];
   const live = new Set(doc.shapes.map(s => s.id)), armed = commitSeq === gridArmSeq;
   return gs.filter(g => g.pieceIds.some(id => live.has(id)) && (g.ids.some(id => selected.has(id)) || (g.frameIds.length > 0 && g.frameIds.every(id => selected.has(id)))) && (!armedOnly || armed || gridFps.get(g.id) === gridFpOf(g)));
 }
