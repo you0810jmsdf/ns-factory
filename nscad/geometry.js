@@ -1012,6 +1012,23 @@ export function smallLoopCenters(list, { maxMm = 12 } = {}) {
   }
   return out;
 }
+/** 閉じた図形の「中央」＝図形を囲む枠（外接する長方形）の真ん中。閉じた折れ線・ペン、つながって一周する線・円弧・ベジェ（角丸の長方形など）が対象。
+ *  （事業主の指摘 2026-10-23「図形の中央を始点にしたいのに、スナップが変なところに出る」：円には中心のスナップがあるが、角丸の長方形などには、辺の中点・円弧の中心・端点しか無く、図形の中央に吸い付かなかった）。
+ *  円（中心の点が既にある）・大きさが minMm 未満の輪（菱穴などは smallLoopCenters が扱う）・開いた線は対象外。同じ位置の中央は1つにまとめる。戻り値は [{ x, y }]。 */
+export function loopCenters(list, { tol = 0.01, minMm = 3, maxShapes = 600 } = {}) {
+  const shapes = (list || []).filter(s => s && ['line', 'arc', 'bezier', 'polyline', 'path'].includes(s.type));
+  if (!shapes.length || shapes.length > maxShapes) return [];   /* 600本を超える図面では、つなぎ直しが重くなる（1600本で約0.3秒・図形を直すたびに作り直す）ので、中央は出さない */
+  const byId = new Map(shapes.map(s => [s.id, s])), out = [];
+  for (const ch of chainShapes(shapes, tol)) {
+    if (!ch.closed) continue;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const id of ch.shapeIds) { const s = byId.get(id); if (!s) continue; const b = bboxOf(s); x0 = Math.min(x0, b.minX); y0 = Math.min(y0, b.minY); x1 = Math.max(x1, b.maxX); y1 = Math.max(y1, b.maxY); }
+    if (![x0, y0, x1, y1].every(Number.isFinite) || !(Math.max(x1 - x0, y1 - y0) >= minMm)) continue;
+    const c = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+    if (!out.some(o => Math.hypot(o.x - c.x, o.y - c.y) < 1e-6)) out.push(c);
+  }
+  return out;
+}
 /** 小さな菱形・四角（4つの頂点で一周する折れ線・大きさ maxMm 以下）の大きさ：長いほうの対角線＝幅 w・短いほうの対角線＝高さ h と、中心。目打ちの穴の大きさ（holeW・holeH）に合わせるために使う。
  *  （事業主の指摘 2026-10-18「菱目の大きさがバラバラ・外周と同じ大きさにしたい」：外周の菱の線は 1.1×0.4mm・目打ちの穴は 2×0.8mm だった）。対象は smallLoopCenters と同じ。戻り値 [{ w, h, x, y }]。 */
 export function diamondLoopSizes(list, { maxMm = 12 } = {}) {
