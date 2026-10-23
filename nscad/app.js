@@ -2140,7 +2140,7 @@ function shiftRingHolesOffBoundaries(outlinePts, rimOffset) {
   const isDia = h => { const x = toolOf.get(h.toolId); return !!x && x.kind !== 'round'; };
   const byPath = new Map();
   for (const h of doc.holes) { if (!isDia(h) || skip.has(h.pathId) || !insideRing(h, outlinePts)) continue; const d = outline.nearest(h).dist; if (d < 0.5 || d > rimOffset + 2.5) continue; (byPath.get(h.pathId) || byPath.set(h.pathId, []).get(h.pathId)).push(h); }
-  const res = { moved: 0, stuck: 0, mirrored: 0, maxD: 0 }, follow = $('followTangent').checked;
+  const res = { moved: 0, stuck: 0, mirrored: 0, ambiguous: 0, maxD: 0 }, follow = $('followTangent').checked, amb = new Set();   /* amb：同じ並びだが、反転コピー（順目）か平行コピーか区別できず、動かさなかった外周 */
   for (const [pid, band] of byPath) {
     const saved = doc.paths.find(p => p.id === pid); if (!saved || !saved.closed) continue; const route = resolvePath(doc, saved); if (!route) continue;
     const tl = toolOf.get(band[0].toolId), len = arcLength(route), clearR = patchHoleClearR(tl), others = patchObstacles(clearR);
@@ -2151,7 +2151,7 @@ function shiftRingHolesOffBoundaries(outlinePts, rimOffset) {
     for (const q of doc.paths) {
       if (q.id === pid || !q.closed || skip.has(q.id) || byPath.has(q.id)) continue;
       const qh = doc.holes.filter(h => h.pathId === q.id && isDia(h)).sort((a, b) => a.s - b.s); if (qh.length !== sorted.length) continue;
-      const cp = ringCounterpart(before, qh.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg }))), routeQ = cp && resolvePath(doc, q); if (cp && routeQ) sibs.push({ cp, qh, routeQ });
+      const cp = ringCounterpart(before, qh.map(h => ({ x: h.x, y: h.y, angleDeg: h.angleDeg }))); if (cp?.ambiguous) { amb.add(q.id); continue; } const routeQ = cp && resolvePath(doc, q); if (cp && routeQ) sibs.push({ cp, qh, routeQ });
     }
     for (const m of r.moved) {
       const i = sorted.findIndex(h => h.id === m.id), h = sorted[i], p0 = pointAtLength(route, h.s), p1 = pointAtLength(route, m.s1); res.moved++; { const dd = Math.abs(m.s1 - m.s0); res.maxD = Math.max(res.maxD, Math.min(dd, len - dd)); }
@@ -2162,7 +2162,7 @@ function shiftRingHolesOffBoundaries(outlinePts, rimOffset) {
       }
     }
   }
-  return res;
+  res.ambiguous = amb.size; return res;
 }
 /** 穴を、大きさ cell の升目ごとに分けておく（近くの穴だけを調べるため）。 */
 function holeGrid(holes, cell) {
@@ -2318,7 +2318,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
   });
   renderSeams(); if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig() };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
-  const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
+  const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') + (ringShift.ambiguous ? ' ' + t('ringShiftAmbig', { n: ringShift.ambiguous }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
   $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + ringShiftNote + rimNote + rimCheckNote;

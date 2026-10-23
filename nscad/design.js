@@ -534,27 +534,35 @@ export function shiftHolesClear(len, holes, at, isFree, { maxShift = 1.6, step =
   return { moved, stuck };
 }
 /** 同じ並びの別の外周（裏面など）を見つける。front・other＝[{ x, y, angleDeg }]（穴の位置と向き）。
- *  other の穴が、front の穴を「平行移動」「左右反転」「上下反転」「180°回転」のどれかで写した位置（0.3mm 以内）にあり、向きも写した向き（180°の違いは同じ）になっていれば、その写し方と、front の i 番目に対応する other の番号 map[i]、新しい位置を写す apply({x,y}) を返す。
- *  穴の数が違う・写せない（位相が違うなど）ときは null。左右対称の外周では、複数の写し方で位置は合うので、向きで見分ける（鏡像の面は、向きが 180−角度）。 */
+ *  other の穴が、front の穴を次のどれかで写した位置（0.3mm 以内）・向き（3°以内・360°で比べる）にあるものを探す：
+ *  translate（平行移動）・rot180（180°回転）・flipX／flipY（左右／上下反転＝逆目：向きが 180−角度／−角度）・flipXkeep／flipYkeep（反転して菱目の傾きは保つ＝順目：向きは同じ）。
+ *  ちょうど1通りだけ合えば { kind, map（front の i 番目に対応する other の番号）, apply（新しい位置を写す） } を返す。穴の数が違う・位相が違う（どれも合わない）ときは null。
+ *  2通り以上合う（例：左右対称の外周を、順目で反転したコピーか、平行コピーか区別できない）ときは { ambiguous: true }：別の穴を動かして縫い合わせの穴がずれないよう、呼び出し側は動かさない。
+ *  鏡像の面（逆目）は、向きが 180−角度なので、位置が対称な外周でも、左右反転（上下反転としても合うときは左右反転）に決まる。 */
 export function ringCounterpart(front, other, tol = 0.3) {
   if (!front.length || front.length !== other.length) return null;
   const box = hs => { const xs = hs.map(h => h.x), ys = hs.map(h => h.y); return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }; }, A = box(front), B = box(other);
+  const fx = p => ({ x: B.x1 - (p.x - A.x0), y: p.y - A.y0 + B.y0 }), fy = p => ({ x: p.x - A.x0 + B.x0, y: B.y1 - (p.y - A.y0) });
   const kinds = {
     translate: { pos: p => ({ x: p.x - A.x0 + B.x0, y: p.y - A.y0 + B.y0 }), ang: a => a },
-    flipX: { pos: p => ({ x: B.x1 - (p.x - A.x0), y: p.y - A.y0 + B.y0 }), ang: a => 180 - a },
-    flipY: { pos: p => ({ x: p.x - A.x0 + B.x0, y: B.y1 - (p.y - A.y0) }), ang: a => -a },
     rot180: { pos: p => ({ x: B.x1 - (p.x - A.x0), y: B.y1 - (p.y - A.y0) }), ang: a => a + 180 },
+    flipX: { pos: fx, ang: a => 180 - a }, flipY: { pos: fy, ang: a => -a },
+    flipXkeep: { pos: fx, ang: a => a }, flipYkeep: { pos: fy, ang: a => a },
   };
-  const angOK = (u, v) => { const d = (((u - v) % 180) + 180) % 180; return Math.min(d, 180 - d) < 3; };
+  const angOK = (u, v) => { const d = (((u - v) % 360) + 360) % 360; return Math.min(d, 360 - d) < 3; };
+  const found = [];
   for (const [kind, f] of Object.entries(kinds)) {
     const map = []; let ok = true;
     for (const h of front) {
       const q = f.pos(h); let best = -1, bd = Infinity; other.forEach((o, j) => { const d = Math.hypot(o.x - q.x, o.y - q.y); if (d < bd) { bd = d; best = j; } });
       if (bd > tol || !angOK(other[best].angleDeg, f.ang(h.angleDeg))) { ok = false; break; } map.push(best);
     }
-    if (ok && new Set(map).size === map.length) return { kind, map, apply: f.pos };
+    if (ok && new Set(map).size === map.length) found.push({ kind, map, apply: f.pos });
   }
-  return null;
+  /* 上下左右ともに対称な外周（四角い外周など）を左右反転した裏面は、上下反転としても合う（flipX と flipY が両方合う）。「左右反転」で裏面を作る運用（事業主 2026-10-23）なので、左右反転を採る（順目の flipXkeep／flipYkeep も同じ） */
+  const has = k => found.some(f => f.kind === k), pair = (a, b) => found.length === 2 && has(a) && has(b);
+  const list = pair('flipX', 'flipY') ? found.filter(f => f.kind === 'flipX') : pair('flipXkeep', 'flipYkeep') ? found.filter(f => f.kind === 'flipXkeep') : found;
+  return list.length === 1 ? list[0] : list.length ? { ambiguous: true } : null;
 }
 
 /* ---- 交点の表示：端点どうしで接している点（結合）／途中で交差している点（未結合）---- */
