@@ -170,7 +170,7 @@
 <body data-prototype="1">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 10:59 · 427fc1b</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-23 11:31 · abebe3a</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label>
 <button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button>
@@ -434,10 +434,11 @@
 <label><span data-i18n="checkList"></span><select id="checkList"></select></label>
 </div></details>
 <details class="card" data-side="out" id="voiceCard"><summary data-i18n="voice"></summary><div class="body">
-<label><span data-i18n="voiceTarget"></span><select id="voiceTarget"><option value="command" data-i18n="voiceTargetCommand"></option><option value="design" data-i18n="voiceTargetDesign"></option></select></label>
+<label><span data-i18n="voiceTarget"></span><select id="voiceTarget"><option value="auto" data-i18n="voiceTargetAuto"></option><option value="command" data-i18n="voiceTargetCommand"></option><option value="design" data-i18n="voiceTargetDesign"></option></select></label>
 <div class="row"><button id="voiceBtn" type="button" class="mic" data-i18n-title="voiceHold">🎤</button><progress id="voiceLevel" max="100" value="0"></progress><select id="voiceMode"><option value="hold" data-i18n="voiceHold"></option><option value="toggle" data-i18n="voiceToggle"></option></select></div>
 <div id="voiceHeard" class="muted"></div><div id="voiceOut" role="status"></div><div id="voiceCandidates" class="row" hidden></div>
 <div class="row"><input id="voiceText" type="text" data-i18n-placeholder="voicePlaceholder" autocomplete="off"><button id="voiceGo" type="button" data-i18n="voiceGo"></button></div>
+<p class="note" data-i18n="voiceExamples"></p>
 <label><input id="voiceSpeak" type="checkbox"><span data-i18n="voiceSpeak"></span></label>
 <p class="muted" data-i18n="voicePrivacy"></p><hr><p class="note" data-i18n="lockVoiceDesign"></p><p class="note" data-i18n="localDesignNote"></p>
 <label><span data-i18n="localDesignLearn"></span><input id="localDesignLearn" type="file" multiple accept=".lcc,.json,.nscadlearn"></label>
@@ -695,16 +696,18 @@
 <div id="printArea" data-pages="0"></div>
 <dialog id="foldFlowDialog" class="flow-win" aria-labelledby="foldFlowDialogTitle">
 <div class="flow-win-head"><h3 id="foldFlowDialogTitle" data-i18n="foldFlowTitle"></h3><button id="foldFlowClose" type="button" class="info-close" data-i18n-title="closeHelp">✕</button></div>
+<label class="flow-mode"><span data-i18n="fdMode"></span><select id="flowFoldMode"><option value="trifold" data-i18n="fdModeTri"></option><option value="bifold" data-i18n="fdModeBi"></option></select></label>
+<p class="note" data-bifold-only hidden data-i18n="foldFlowBiNote"></p>
 <p class="note" data-i18n="foldFlowNote"></p>
 <ol id="foldFlowSteps" class="flow-steps">
-<li id="foldFlowStep1" data-state="todo"><div class="flow-head"><span class="flow-no">①</span><b data-i18n="foldFlowStep1"></b><span id="foldFlowState1" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText1"></p><div class="flow-btns"><button id="flowMake" type="button" data-i18n="fdMake"></button></div></li>
-<li id="foldFlowStep2" data-state="todo"><div class="flow-head"><span class="flow-no">②</span><b data-i18n="foldFlowStep2"></b><span id="foldFlowState2" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText2"></p><div class="flow-btns"><button id="flowFix" type="button" data-i18n="fdFix"></button><button id="flowStitch" type="button" data-i18n="fdStitch"></button></div></li>
-<li id="foldFlowStep3" data-state="todo"><div class="flow-head"><span class="flow-no">③</span><b data-i18n="foldFlowStep3"></b><span id="foldFlowState3" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText3"></p><div class="flow-btns"><button id="flowRelay" type="button" data-i18n="lamRelay"></button><button id="flowGrow" type="button" data-i18n="lamGrow"></button></div></li>
-<li id="foldFlowStep4" data-state="todo"><div class="flow-head"><span class="flow-no">④</span><b data-i18n="foldFlowStep4"></b><span id="foldFlowState4" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText4"></p><div class="flow-btns"><button id="flowSection" type="button" data-i18n="lamSection"></button></div></li>
-<li id="foldFlowStep5" data-state="todo"><div class="flow-head"><span class="flow-no">⑤</span><b data-i18n="foldFlowStep5"></b><span id="foldFlowState5" class="flow-state"></span></div><p class="note" data-i18n="foldFlowText5"></p><div class="flow-btns"><button id="flowUnfoldPlan" type="button" data-i18n="fdUnfold"></button><button id="flowUnfold" type="button" data-i18n="lamUnfold"></button></div><p class="note" data-i18n="foldFlowShortcut"></p><div class="flow-btns"><button id="flowTidy" type="button" data-i18n="lamTidy"></button></div></li>
+<li id="foldFlowStep1" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo1">①</span><b id="foldFlowName1" data-i18n="foldFlowStep1"></b><span id="foldFlowState1" class="flow-state"></span></div><p class="note" id="foldFlowText1" data-i18n="foldFlowText1"></p><div class="flow-btns"><button id="flowMake" type="button" data-i18n="fdMake"></button></div></li>
+<li id="foldFlowStep2" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo2">②</span><b id="foldFlowName2" data-i18n="foldFlowStep2"></b><span id="foldFlowState2" class="flow-state"></span></div><p class="note" id="foldFlowText2" data-i18n="foldFlowText2"></p><div class="flow-btns"><button id="flowFix" type="button" data-i18n="fdFix"></button><button id="flowStitch" type="button" data-i18n="fdStitch"></button></div></li>
+<li id="foldFlowStep3" data-trifold-only data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo3">③</span><b id="foldFlowName3" data-i18n="foldFlowStep3"></b><span id="foldFlowState3" class="flow-state"></span></div><p class="note" id="foldFlowText3" data-i18n="foldFlowText3"></p><div class="flow-btns"><button id="flowRelay" type="button" data-i18n="lamRelay"></button><button id="flowGrow" type="button" data-i18n="lamGrow"></button></div></li>
+<li id="foldFlowStep4" data-trifold-only data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo4">④</span><b id="foldFlowName4" data-i18n="foldFlowStep4"></b><span id="foldFlowState4" class="flow-state"></span></div><p class="note" id="foldFlowText4" data-i18n="foldFlowText4"></p><div class="flow-btns"><button id="flowSection" type="button" data-i18n="lamSection"></button></div></li>
+<li id="foldFlowStep5" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo5">⑤</span><b id="foldFlowName5" data-i18n="foldFlowStep5"></b><span id="foldFlowState5" class="flow-state"></span></div><p class="note" id="foldFlowText5" data-i18n="foldFlowText5"></p><div class="flow-btns"><button id="flowUnfoldPlan" type="button" data-i18n="fdUnfold"></button><button id="flowUnfold" type="button" data-trifold-only data-i18n="lamUnfold"></button></div><p class="note" data-trifold-only data-i18n="foldFlowShortcut"></p><div class="flow-btns" data-trifold-only><button id="flowTidy" type="button" data-i18n="lamTidy"></button></div></li>
 </ol>
-<details class="sub" id="foldFlowMore"><summary data-i18n="foldFlowMore"></summary><p class="note" data-i18n="foldFlowMoreNote"></p><div class="flow-btns"><button id="flowOpenDesign" type="button" data-i18n="foldFlowOpenDesign"></button><button id="flowOpenLam" type="button" data-i18n="foldFlowOpenLam"></button></div></details>
-<div class="flow-btns"><button id="flowGuide" type="button" data-i18n="foldFlowGuide" data-i18n-title="foldFlowGuideTip"></button></div>
+<details class="sub" id="foldFlowMore"><summary data-i18n="foldFlowMore"></summary><p class="note" data-i18n="foldFlowMoreNote"></p><div class="flow-btns"><button id="flowOpenDesign" type="button" data-i18n="foldFlowOpenDesign"></button><button id="flowOpenLam" type="button" data-trifold-only data-i18n="foldFlowOpenLam"></button></div></details>
+<div class="flow-btns" data-trifold-only><button id="flowGuide" type="button" data-i18n="foldFlowGuide" data-i18n-title="foldFlowGuideTip"></button></div>
 </dialog>
 <dialog id="lockDialog" class="fb"><h3 id="lockTitle"></h3><p data-i18n="lockBody"></p><p id="lockNow" class="bd-note" role="status"></p><p class="bd-note" data-i18n="lockOwnerNote"></p><div class="row"><button id="lockRegister" data-i18n="lockRegister"></button><button id="lockClose" data-i18n="lockClose"></button></div></dialog>
 <dialog id="regDialog" class="fb"><h3 data-i18n="regTitle"></h3><p id="regNow" class="bd-note" role="status"></p><p data-i18n="regWhy"></p><label class="fb-f"><span data-i18n="regEmailL"></span><input id="regEmail" type="email" maxlength="254" autocomplete="email"></label><label class="fb-f"><span data-i18n="regNickL"></span><input id="regNick" type="text" maxlength="30" autocomplete="nickname"></label><p class="bd-note" data-i18n="regPrivacy"></p><label class="fb-ctx-on"><input id="regConsent" type="checkbox"><span data-i18n="regConsentL"></span></label><output id="regStatus" class="fb-status" role="status"></output><div class="row"><button id="regSend" data-i18n="regSend"></button><button id="regCheck" data-i18n="regCheck" hidden></button><button id="regClose" data-i18n="regClose"></button></div></dialog>
@@ -729,8 +732,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=0dceffa6","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=ec277e18","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=82f744eb","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=a729fafa","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=62554efe"}}</script>
-<script type="module" src="app.js?v=0dceffa6"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=790adf0d","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=394a04f8","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=0d9906cb","./data/leather-colors.js":"./data/leather-colors.js?v=157c1396","./data/library.js":"./data/library.js?v=c268d41b","./data/stitch-colors.js":"./data/stitch-colors.js?v=0be43cbd","./data/style.js":"./data/style.js?v=0e4015ec","./data/textures.js":"./data/textures.js?v=406e1090","./design.js":"./design.js?v=ec277e18","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=82f744eb","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=d8e3082a","./help/ja.js":"./help/ja.js?v=aa3fbfd2","./i18n.js":"./i18n.js?v=cd285d5d","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=ade4ccab","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=39bbc4ee","./tutorials/output.js":"./tutorials/output.js?v=424fd479","./tutorials/pen.js":"./tutorials/pen.js?v=059a361a","./tutorials/stitch.js":"./tutorials/stitch.js?v=ac78d45a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=790adf0d"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3300,6 +3303,24 @@ const MESSAGES = {
     "foldSecThickness": "革1枚の厚み (mm)（2枚貼り合わせ）",
     "voiceTarget": "音声の用途",
     "voiceTargetCommand": "CADを操作",
+    "voiceTargetAuto": "おまかせ（おすすめ）",
+    "voiceExamples": "言い方の例：「幅100 高さ50の長方形」「直径20の円」「半径15の円」「右に100 上に50 左に100 閉じる」「原点から右に120」「元に戻す」「2つ折りの財布を作って」。長さはミリ（センチも言えます）。右・左・上・下は画面で見える向きで、描く位置は「いまの点」（最初は原点・直前に描いた図形の端）です。",
+    "voiceDrew": "{what}を描きました（{from}）。",
+    "voiceDrewRect": "長方形 幅{w}×高さ{h}",
+    "voiceDrewCircle": "円 直径{d}（半径{r}）",
+    "voiceDrewLines": "線 {n}本",
+    "voiceFromOrigin": "原点から",
+    "voiceFromHere": "いまの点（{x}, {y}）から",
+    "voiceNeed_rectSize": "長方形の大きさが足りません。「幅100 高さ50の長方形」のように、幅と高さを言ってください。",
+    "voiceNeed_moveLen": "長さが0です。「右に100」のように、長さ（ミリ）を言ってください。",
+    "voiceNothingDrawn": "描くものがありませんでした。",
+    "voiceDesignMade": "「{what}」の型紙を、新しいタブに作りました。数字を変えるときは、開いた「折りシミュレーション」の窓から。",
+    "voiceDesignMadeKind": "「{what}」の型紙を、新しいタブに作りました。",
+    "voiceDesignNoRecipe": "その種類は、まだ自動では作れません（作れるのは、2つ折り・手帳・カードケース・パスケース・コインケース）。参考にできる型紙を、下に出しました。",
+    "voiceListening": "聞いています…話してください（話し終えると、自動で実行します）",
+    "voiceNoMic": "マイクが見つかりません。パソコンの「サウンドの入力」で、実際につながっているマイクが既定になっているか確認してください。",
+    "voiceNetwork": "音声認識の通信に失敗しました。インターネットにつながっているか確認してください（音声認識は、ブラウザのクラウド認識を使います）。",
+    "voiceLangNo": "このブラウザは、この言語の音声認識に対応していません。下の欄に文字で入れてください。",
     "voiceTargetDesign": "型紙をデザイン（ローカル）",
     "localDesignNote": "過去作品の参照と作風分析は、このPC・ブラウザ内で行います。外部AIに図面を送らず、API料金もかかりません。生成は対応した寸法・種類のルールに基づく下書きです。参考作品を開く場合は、元の形状・穴位置を保ちます。",
     "localDesignLearn": "過去のCADを読み込む（複数選択可・LCC / JSON / 学習パック）",
@@ -3643,7 +3664,7 @@ const MESSAGES = {
     "regPending": "まだ確認できていません。メールのリンクを開いてから、もう一度押してください。",
     "regNeed": "印刷・保存・書き出しは、利用登録が必要です。表示された画面から登録してください。",
     "lockPatchwork": "パッチワーク（有料版の機能）",
-    "lockFold": "三つ折りの設計・断面図（有料版の機能）",
+    "lockFold": "2つ折り・3つ折りの設計・断面図（有料版の機能）",
     "lockVoiceDesign": "音声・文章からの型紙デザインと過去作品の参照（有料版予定・現在はオーナー限定）",
     "lockThreeView": "三面図（有料版の機能）",
     "lockBody": "この機能は、将来の有料版でお使いいただけます。有料版の公開まで、しばらくお待ちください。",
@@ -3817,8 +3838,8 @@ const MESSAGES = {
     "lamBendFitNg": "入らない",
     "lamRelayApex": "頂点の円を {n} 個、まん中の点線（曲げのまん中）に合わせました。",
     "lamRelayApexLocked": "ロックされた層の頂点の円 {n} 個は動かしませんでした。",
-    "foldFlowTitle": "三つ折りシミュレーション",
-    "ctxFoldSim": "三つ折りシミュレーション",
+    "foldFlowTitle": "折りシミュレーション（3つ折り・2つ折り）",
+    "ctxFoldSim": "折りシミュレーション（2つ折り・3つ折り）",
     "foldFlowNote": "上から順に進めます。いまの手順には「いまここ」、できた手順には「済」が付きます（図面の状態から判断します）。ボタンは、下の各カードにあるボタンと同じものです。",
     "foldFlowStep1": "三つ折りの断面を作る",
     "foldFlowText1": "ボタン線から、左右の折りまでの距離などを入れて、巻いた形（断面）を先に作ります。数字は、下の「くわしい設定」から開くカードで入れます。",
@@ -3830,6 +3851,15 @@ const MESSAGES = {
     "foldFlowText4": "直した表と裏から、断面をもう一度作って、形を確かめます。円の穴と、展開図の左端・右端の文字も入ります。",
     "foldFlowStep5": "型紙に展開する",
     "foldFlowText5": "表と裏のボタンの穴をそろえ、曲げの範囲の点線6本（始め・まん中・終わり×2か所。表＝黄・裏＝青）を入れます。表・裏の展開図も作れます。",
+    "foldFlowBiNote": "2つ折り（財布・ノート型の手帳）は、①断面 → ②平面 → ③展開の3段階です。3つ折りの「表と裏の貼り合わせ検証」は、曲げが2か所の形用なので、2つ折りでは使いません。",
+    "foldFlowBiStep1": "2つ折りの断面を作る",
+    "foldFlowBiText1": "閉じたときの幅（表紙1枚ぶんの幅）、背の曲げの内側の半径、革の厚みを入れて、折った形（断面）を先に作ります。数字は、下の「くわしい設定」から開くカードに入れます。",
+    "foldFlowBiStep2": "平面に展開する",
+    "foldFlowBiText2": "断面で決めた長さを、革を広げた平らな図にします。高さ・縫い穴の縁からの距離・ピッチは「くわしい設定」で入れます。確定すると、縫い穴の線（菱目打ちライン）も引けます。",
+    "foldFlowBiStep5": "表と裏の展開図を作る",
+    "foldFlowBiText5": "折りの外側の革（表）と内側の革（裏）の展開図を、別々に並べます。背（曲げ部）の菱目の間隔が、表と裏でどれだけ変わるかも数字で出ます。",
+    "foldFlowBiOpenDesign": "2つ折りの設計の数字を開く",
+    "foldFlowBiMake": "断面を作る",
     "foldFlowShortcut": "近道：菱目の並べ直し → 曲げを伸ばす → 展開 → 断面図を、順に1回で行います。",
     "foldFlowNow": "いまここ",
     "foldFlowDone": "済",
@@ -3839,7 +3869,7 @@ const MESSAGES = {
     "foldFlowOpenLam": "厚み・ピッチ・リング外径の設定を開く",
     "foldFlowGuide": "はじめての方へ：図で見る三つ折りの手順",
     "foldFlowGuideTip": "図解ガイドの「三つ折りの手順」を、別のタブで開きます（絵つきで5つの手順を説明しています）",
-    "foldFlowInfoTip": "三つ折りの手順（①〜⑤とボタン）を小窓で開きます。断面図・設計・3Dは、この窓のボタンから進めます",
+    "foldFlowInfoTip": "折りの手順を小窓で開きます（3つ折りは①〜⑤、2つ折り＝財布・ノート型手帳は①〜③）。窓の上の「折り方」で切り替えます。断面図・設計・展開は、この窓のボタンから進めます",
     "lamRingD": "リング外径（mm・断面図で、折りの内側の隙間が足りるか調べる。空なら見ない）",
     "lamRingOk": "リング外径 {d} mm：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（どちらも入ります）。",
     "lamRingShort": "リング外径 {d} mm が入りません：折りの内側の隙間は、左の折り {a} mm・右の折り {b} mm（不足 {sa}・{sb} mm）。",
@@ -4482,7 +4512,7 @@ const MESSAGES = {
     "sideTabTip_shape": "図形・寸法（情報・移動・拡大縮小・整列・レイヤー・作図オプション・寸法）",
     "sideTabTip_stitch": "目打ち・柄（目打ち・穴編集・設定セット・パッチワーク）",
     "sideTabTip_color": "色・質感（塗りの色：革・糸・金具）",
-    "sideTabTip_fold": "三つ折り・貼り合わせ（三つ折りの設計・断面図・設計（厚み）・3D）",
+    "sideTabTip_fold": "2つ折り・3つ折り・貼り合わせ（折りの設計・断面図・設計（厚み）・3D）",
     "sideTabTip_parts": "金具・部品（リングバインダー・その他の金具・部品ライブラリ）",
     "sideTabTip_out": "出力・その他（出力・下絵・レシピ・音声・AI 相談・計算メモ・定型句）",
     "outAskWhere": "書き出すとき保存先を選ぶ（SVG・PDF・DXF・PNG）",
@@ -4982,10 +5012,10 @@ const MESSAGES = {
     "voicePlaceholder": "同じ命令を文字で（例：直線 100 角度 30）",
     "voiceGo": "実行",
     "voiceSpeak": "実行した操作を読み上げる",
-    "voicePrivacy": "音声はブラウザの認識機能で処理されます（Chrome／Edge／Safari はブラウザ側でクラウド認識を使います）。マイクの許可は最初の長押しで求めます。",
+    "voicePrivacy": "音声はブラウザの認識機能で処理されます（Chrome／Edge／Safari はブラウザ側でクラウド認識を使います）。マイクの許可は、最初にマイクのボタンを押したときに求めます。短く押すと、話し終えるまで聞き続けます（長押しにすると、押している間だけ聞きます）。",
     "voiceWhich": "どれですか？",
     "voiceToAi": "AI相談に渡しました。送信ボタンで聞けます。",
-    "voiceAiUnset": "文法にない言葉です。AIが未設定なので AI相談カードで接続先を入れてください。",
+    "voiceAiUnset": "文法にない言葉です。例：「幅100 高さ50の長方形」「直径20の円」「右に100 上に50 左に100 閉じる」「2つ折りの財布を作って」。（AIは未設定です。AI相談カードで接続先を入れると、自由な文も送れます）",
     "voiceConfirm": "{what}しますか？「はい」で実行します。",
     "voiceDid": "{what} を実行しました。",
     "voiceCancelled": "取りやめました。",
@@ -5242,6 +5272,24 @@ const MESSAGES = {
     "foldSecThickness": "Thickness of one leather (mm) (2 glued)",
     "voiceTarget": "Voice purpose",
     "voiceTargetCommand": "CAD commands",
+    "voiceTargetAuto": "Automatic (recommended)",
+    "voiceExamples": "Examples: \"rectangle width 100 height 50\", \"circle diameter 20\", \"circle radius 15\", \"right 100 up 50 left 100 close\", \"undo\", \"make a bi-fold wallet\". Lengths are in mm (cm also works). Right / left / up / down are as you see them on screen, and shapes start from the current point (the origin at first, then the end of the last shape).",
+    "voiceDrew": "Drew {what} (from {from}).",
+    "voiceDrewRect": "rectangle {w} x {h}",
+    "voiceDrewCircle": "circle diameter {d} (radius {r})",
+    "voiceDrewLines": "{n} line(s)",
+    "voiceFromOrigin": "the origin",
+    "voiceFromHere": "the current point ({x}, {y})",
+    "voiceNeed_rectSize": "The rectangle size is missing. Say both, like \"rectangle width 100 height 50\".",
+    "voiceNeed_moveLen": "The length is 0. Say a length in mm, like \"right 100\".",
+    "voiceNothingDrawn": "Nothing to draw.",
+    "voiceDesignMade": "Made a \"{what}\" pattern in a new tab. Change the numbers in the Fold simulation window that just opened.",
+    "voiceDesignMadeKind": "Made a \"{what}\" pattern in a new tab.",
+    "voiceDesignNoRecipe": "That kind cannot be made automatically yet (bi-fold, notebook, card case, pass case and coin case can). Reference patterns are listed below.",
+    "voiceListening": "Listening... speak now (it runs automatically when you stop talking)",
+    "voiceNoMic": "No microphone was found. In the computer's sound input settings, check that the default input is a microphone that is really connected.",
+    "voiceNetwork": "Speech recognition could not connect. Check your internet connection (recognition uses the browser's cloud service).",
+    "voiceLangNo": "This browser does not support speech recognition in this language. Type the command in the box below.",
     "voiceTargetDesign": "Design patterns (local)",
     "localDesignNote": "References and style analysis stay on this computer/browser. Drawings are not sent to an external AI; there are no API fees. Draft generation uses supported dimensions and product rules. Reference patterns retain original geometry and hole positions.",
     "localDesignLearn": "Import past designs (LCC / JSON / learning pack, multiple files)",
@@ -5585,7 +5633,7 @@ const MESSAGES = {
     "regPending": "Not confirmed yet. Open the link in the email, then press again.",
     "regNeed": "Printing, saving and exporting require registration. Please register in the window that opened.",
     "lockPatchwork": "Patchwork (paid-version feature)",
-    "lockFold": "Tri-fold design and section (paid-version feature)",
+    "lockFold": "Bi-fold / tri-fold design and section (paid-version feature)",
     "lockVoiceDesign": "Pattern design from voice or text and past-work references (future paid feature; owner only for now)",
     "lockThreeView": "Three views (paid-version feature)",
     "lockBody": "This feature will be available in the paid version. Please wait until it is released.",
@@ -5759,8 +5807,8 @@ const MESSAGES = {
     "lamBendFitNg": "does not fit",
     "lamRelayApex": "Moved {n} circles at the bend apex to the middle of the bend (the middle dashed line).",
     "lamRelayApexLocked": "{n} apex circles on a locked layer were not moved.",
-    "foldFlowTitle": "Three-fold simulation",
-    "ctxFoldSim": "Three-fold simulation",
+    "foldFlowTitle": "Fold simulation (tri-fold / bi-fold)",
+    "ctxFoldSim": "Fold simulation (bi-fold / tri-fold)",
     "foldFlowNote": "Go from the top. The current step shows \"You are here\" and finished steps show \"Done\" (judged from the drawing). The buttons are the same as the ones in the cards below.",
     "foldFlowStep1": "Make the three-fold section",
     "foldFlowText1": "Enter the distances from the button line to the folds and so on, and make the rolled-up shape (the section) first. Enter the numbers in the card you open from \"Detailed settings\" below.",
@@ -5772,6 +5820,15 @@ const MESSAGES = {
     "foldFlowText4": "Make the section again from the fixed outer and inner and check the shape. Round holes and the left / right end texts of the drawing are added too.",
     "foldFlowStep5": "Unfold to the pattern",
     "foldFlowText5": "Line up the button holes of outer and inner and add 6 dashed lines for the bend ranges (start, middle and end of 2 bends; yellow = outer, blue = inner). You can also make the outer / inner flat patterns.",
+    "foldFlowBiNote": "Bi-fold (wallet / notebook cover) has three steps: 1 section -> 2 flat -> 3 unfold. The tri-fold \"outer / inner lamination check\" is for shapes with two bends, so it is not used for bi-fold.",
+    "foldFlowBiStep1": "Make the bi-fold section",
+    "foldFlowBiText1": "Enter the closed width (one cover), the inner radius of the spine bend and the leather thickness, and make the folded shape (the section) first. Enter the numbers in the card you open from \"Detailed settings\".",
+    "foldFlowBiStep2": "Unfold to a flat drawing",
+    "foldFlowBiText2": "Turn the lengths decided in the section into a flat drawing of the opened-out leather. Enter the height, the stitch edge distance and the pitch in \"Detailed settings\". After you confirm, you can also draw the stitch-hole lines.",
+    "foldFlowBiStep5": "Make the outer and inner unfolded drawings",
+    "foldFlowBiText5": "Lays out the unfolded drawing of the outer leather and of the inner leather separately. The change of the stitch-hole spacing at the spine bend between outer and inner is shown in numbers too.",
+    "foldFlowBiOpenDesign": "Open the bi-fold design numbers",
+    "foldFlowBiMake": "Make the section",
     "foldFlowShortcut": "Shortcut: re-lay the stitch holes → lengthen bends → unfold → section, in order, in one press.",
     "foldFlowNow": "You are here",
     "foldFlowDone": "Done",
@@ -5781,7 +5838,7 @@ const MESSAGES = {
     "foldFlowOpenLam": "Open thickness / pitch / ring settings",
     "foldFlowGuide": "New here? See the three-fold steps with pictures",
     "foldFlowGuideTip": "Opens \"Three-fold steps\" of the illustrated guide in another tab (the guide is in Japanese only)",
-    "foldFlowInfoTip": "Opens the three-fold steps (1-5 and their buttons) in a small window. The section, design and 3D steps are started from the buttons in that window",
+    "foldFlowInfoTip": "Opens the fold steps in a small window (tri-fold: 1-5, bi-fold wallet / notebook: 1-3). Switch with \"Fold type\" at the top. The section, design and unfold steps are started from the buttons in that window",
     "lamRingD": "Ring outer diameter (mm; the section checks the inner gap of the folds; empty = not checked)",
     "lamRingOk": "Ring outer diameter {d} mm: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (both fit).",
     "lamRingShort": "A ring of {d} mm does not fit: inner gap of the folds is {a} mm (left fold) and {b} mm (right fold) (short by {sa} and {sb} mm).",
@@ -6424,7 +6481,7 @@ const MESSAGES = {
     "sideTabTip_shape": "Shapes and dimensions (info, move, scale, align, layers, drawing options, dimensions)",
     "sideTabTip_stitch": "Stitching and patterns (stitching and hole editing, presets, patchwork)",
     "sideTabTip_color": "Colors and textures (leather, thread and hardware colors)",
-    "sideTabTip_fold": "Triple folds and lamination (fold design, section, design (thickness), 3D)",
+    "sideTabTip_fold": "Bi-folds, tri-folds and lamination (fold design, section, design (thickness), 3D)",
     "sideTabTip_parts": "Hardware and parts (ring binder, other hardware, parts library)",
     "sideTabTip_out": "Output and more (output, underlay, recipe, voice, AI, calc memo, phrases)",
     "outAskWhere": "Choose where to save on export (SVG, PDF, DXF, PNG)",
@@ -6924,10 +6981,10 @@ const MESSAGES = {
     "voicePlaceholder": "Type the same command (e.g. line 100 angle 30)",
     "voiceGo": "Run",
     "voiceSpeak": "Read back what was done",
-    "voicePrivacy": "Speech is processed by the browser's recognition (Chrome/Edge/Safari use cloud recognition on their side). Microphone permission is requested on the first hold.",
+    "voicePrivacy": "Voice is processed by the browser recognizer (Chrome / Edge / Safari use cloud recognition). The microphone permission is asked the first time you press the mic button. A short press keeps listening until you stop talking (hold it to listen only while pressed).",
     "voiceWhich": "Which one?",
     "voiceToAi": "Sent to the AI panel. Press Send to ask.",
-    "voiceAiUnset": "Not a known command. AI is not set up; enter the endpoint in the AI card.",
+    "voiceAiUnset": "Not a known phrase. Examples: \"rectangle width 100 height 50\", \"circle diameter 20\", \"right 100 up 50 left 100 close\", \"make a bi-fold wallet\". (No AI is set; add one in the AI card to send free text too.)",
     "voiceConfirm": "{what}? Say \"yes\" to run.",
     "voiceDid": "Done: {what}.",
     "voiceCancelled": "Cancelled.",
@@ -10838,6 +10895,7 @@ const TOOL_WORDS = {
   select: { ja: ['選択', 'せんたく', '矢印'], en: ['select', 'selection', 'arrow', 'pointer'] },
   line: { ja: ['直線', '線', 'ライン'], en: ['line', 'straight'] },
   circle: { ja: ['円', 'まる', '丸', 'サークル'], en: ['circle', 'round'] },
+  rect: { ja: ['長方形', '四角形', '四角', '矩形', 'レクタングル'], en: ['rectangle', 'rect'] },
   arc: { ja: ['円弧', '弧', 'アーク'], en: ['arc'] },
   bezier: { ja: ['ベジェ', 'ベジエ', '曲線'], en: ['bezier', 'bézier', 'curve'] },
   path: { ja: ['ペン', 'パス', '折れ線', 'おれせん', 'ポリライン'], en: ['pen', 'path', 'polyline', 'polygon'] }, /* 折れ線ツールは無い（ペンで、クリックだけなら直線）。言い方だけペンへ */
@@ -10878,7 +10936,7 @@ const ACTION_WORDS = {
 const YES = { ja: ['はい', 'うん', 'おーけー', 'ok', 'オッケー', '実行', 'やって'], en: ['yes', 'ok', 'okay', 'yep', 'sure', 'do it', 'confirm'] };
 const NO = { ja: ['いいえ', 'やめる', 'キャンセル', '中止', 'ちがう', '違う'], en: ['no', 'cancel', 'nope', 'stop'] };
 /** 全角→半角・小文字・空白圧縮。 */
-function normalizeVoice(text) { return String(text || '').replace(/[Ａ-Ｚａ-ｚ０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[、。,.!！?？]/g, ' ').toLowerCase().replace(/\s+/g, ' ').trim(); }
+function normalizeVoice(text) { return String(text || '').replace(/[Ａ-Ｚａ-ｚ０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[、。,!！?？]|(?<!\d)\.|\.(?!\d)/g, ' ').toLowerCase().replace(/\s+/g, ' ').trim(); }
 /** 文中の数値を抜く：{length, angle, radius, value, side, placement}。 */
 function extractNumbers(text, lang) {
   const t = normalizeVoice(text), nums = [...t.matchAll(/(-?\d+(?:\.\d+)?)/g)].map(m => Number(m[1]));
@@ -10905,14 +10963,64 @@ function similar(table, t, lang) {
   }
   return out.sort((a, b) => b.score - a.score).slice(0, 3);
 }
+/* ───────── 描く文法（事業主 2026-10-23「音声作図機能は相変わらず何も機能しない」）：「幅100高さ50の長方形」「直径20の円」「右に100 上に50 左に100 閉じる」のように、数字つきで言えば、いまの点から直接描く。
+   向き：右・左・上・下は、画面で見える向き（図面の座標は下向きが＋なので、実行側で上下を合わせる）。単位：ミリ（mm）が標準・センチは10倍。 */
+const VOICE_KANJI_DIGIT = { 〇: 0, 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+function voiceKanjiNum(s) {
+  if (/^[〇零一二三四五六七八九]+$/.test(s)) return Number([...s].map(c => VOICE_KANJI_DIGIT[c]).join(''));
+  let total = 0, cur = 0;
+  for (const ch of s) { if (ch in VOICE_KANJI_DIGIT) cur = VOICE_KANJI_DIGIT[ch]; else { const m = { 十: 10, 百: 100, 千: 1000 }[ch]; if (!m) return NaN; total += (cur || 1) * m; cur = 0; } }
+  return total + cur;
+}
+/** 「百二十ミリ」「半径五十」のような漢数字を算用数字にする（単位・「半径」「右に」などの直前直後だけ。「二つ折り」「三つ折り」は変えない）。 */
+function kanjiNumbersToArabic(t) {
+  const K = '〇零一二三四五六七八九十百千';
+  return String(t).replace(new RegExp(`([${K}]+)(?=\\s*(?:ミリ|センチ|mm|cm|度))|(?<=(?:半径|直径|幅|高さ|横|縦|長さ|角度|[右左上下][にへ]))([${K}]+)`, 'g'), (m, a, b) => { const n = voiceKanjiNum(a || b); return Number.isFinite(n) ? String(n) : m; });
+}
+const DRAW_NUM = '(\\d+(?:\\.\\d+)?)', DRAW_UNIT = '\\s*(ミリメートル|ミリ|mm|センチメートル|センチ|cm|millimeters?|centimeters?)?';
+const drawToMm = (v, u) => Math.round((/センチ|cm|centi/.test(u || '') ? Number(v) * 10 : Number(v)) * 1e4) / 1e4;
+const DRAW_DIR = { 右: 'right', 左: 'left', 上: 'up', 下: 'down', right: 'right', left: 'left', up: 'up', down: 'down' };
+/** 描く文法。描く内容があれば { cmd:'draw', ops:[{op:'origin'}|{op:'rect',w,h}|{op:'circle',r}|{op:'move',dir,len}|{op:'close'}] }、大きさが足りないときは { cmd:'draw', ops:[], need:'rectSize' }、無ければ null。 */
+function parseDraw(t, lang = 'ja') {
+  const ja = lang === 'ja', ops = [];
+  const sz = re => { const m = new RegExp(re).exec(t); return m ? drawToMm(m[1], m[2]) : undefined; };
+  const origin = ja ? /原点|げんてん/.test(t) : /\borigin\b/.test(t);
+  if (origin) ops.push({ op: 'origin' });
+  const square = ja ? /正方形|せいほうけい|スクエア/.test(t) : /\bsquare\b/.test(t), rectW = ja ? /長方形|四角形|四角|矩形|レクタングル/.test(t) : /\b(rectangle|rect|box)\b/.test(t);
+  if (square || rectW) {
+    let w = sz(`(?:幅|はば|横|よこ|width|wide)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`), h = sz(`(?:高さ|たかさ|縦|たて|height|high|tall)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`);
+    const nums = [...t.matchAll(new RegExp(DRAW_NUM + DRAW_UNIT, 'g'))].map(m => drawToMm(m[1], m[2]));
+    if (square && !rectW) { const side = w ?? h ?? nums[0]; return side > 0 ? { cmd: 'draw', ops: [...ops, { op: 'rect', w: side, h: side }] } : null; }
+    if (w === undefined && h === undefined) { const pair = new RegExp(`${DRAW_NUM}${DRAW_UNIT}\\s*(?:x|×|掛け|かけ|by|と)\\s*${DRAW_NUM}${DRAW_UNIT}`).exec(t); if (pair) { w = drawToMm(pair[1], pair[2]); h = drawToMm(pair[3], pair[4]); } else if (nums.length >= 2) { w = nums[0]; h = nums[1]; } }
+    if (w === undefined && h === undefined && nums.length === 0) return null;   /* 数字が無い：「長方形」だけ→ツールを選ぶ */
+    if (!(w > 0 && h > 0)) return { cmd: 'draw', ops: [], need: 'rectSize' };
+    return { cmd: 'draw', ops: [...ops, { op: 'rect', w, h }] };
+  }
+  const circle = ja ? /円|丸|まる|サークル/.test(t) : /\bcircle\b/.test(t), diameter = ja ? /直径|ちょっけい/.test(t) : /\bdiameter\b/.test(t);
+  if (circle && diameter) { const d = sz(`(?:直径|ちょっけい|diameter)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`) ?? sz(DRAW_NUM + DRAW_UNIT); return d > 0 ? { cmd: 'draw', ops: [...ops, { op: 'circle', r: Math.round(d / 2 * 1e4) / 1e4 }] } : null; }
+  const dirA = ja ? '([右左上下])(?![右左上下])\\s*(?:に|へ|方向に|方向へ|方向)?' : '\\b(right|left|up|down)\\b\\s*(?:by\\s*)?', dirB = ja ? '\\s*(?:だけ)?\\s*([右左上下])(?![右左上下])(?:に|へ|方向に|方向へ|方向)?' : '\\s*(?:to\\s*the\\s*)?\\b(right|left|up|down)\\b';
+  const re = new RegExp(`${dirA}${DRAW_NUM}${DRAW_UNIT}|${DRAW_NUM}${DRAW_UNIT}${dirB}`, 'g'); let m, moves = 0;
+  while ((m = re.exec(t))) { const A = m[1] !== undefined; ops.push({ op: 'move', dir: DRAW_DIR[A ? m[1] : m[6]], len: drawToMm(A ? m[2] : m[4], A ? m[3] : m[5]) }); moves++; }
+  if (!moves) {   /* 「100ミリの線を右に引いて」：向きと数字が離れている→線の語があり、数字が1つ、向きが1つのときだけ */
+    const lineW = ja ? /線|ライン/.test(t) : /\bline\b/.test(t), nums = [...t.matchAll(new RegExp(DRAW_NUM + DRAW_UNIT, 'g'))], dirs = ja ? [...t.matchAll(/[右左上下](?![右左上下])/g)].filter(x => !/左右|上下/.test(t.slice(Math.max(0, x.index - 1), x.index + 2))) : [...t.matchAll(/\b(right|left|up|down)\b/g)];
+    if (lineW && nums.length === 1 && dirs.length === 1 && drawToMm(nums[0][1], nums[0][2]) > 0) { ops.push({ op: 'move', dir: DRAW_DIR[dirs[0][0]], len: drawToMm(nums[0][1], nums[0][2]) }); moves++; }
+  }
+  if (!moves) return null;
+  if (ops.some(o => o.op === 'move' && !(o.len > 0))) return { cmd: 'draw', ops: [], need: 'moveLen' };
+  if (ja ? /閉じ|とじ/.test(t) : /\bclose\b/.test(t)) ops.push({ op: 'close' });
+  return { cmd: 'draw', ops };
+}
+/** 文が「描く言い方」か（数字つきの長方形・円・向きと長さ）：デザインの依頼と取り違えないための判定（「A5の長方形を作って」は描く言い方）。 */
+function voiceIsDraw(text, lang = 'ja') { return !!parseDraw(kanjiNumbersToArabic(normalizeVoice(text)), lang); }
 /** 命令の説明ラベル（候補表示用）。 */
 function labelOf(result, lang) { if (result.tool) return (TOOL_WORDS[result.tool]?.[lang] || [result.tool])[0]; return (ACTION_WORDS[result.cmd]?.[lang] || [result.cmd])[0]; }
 /** 認識文・言語・状態から命令を返す。確認が要る命令は confirm:true（state.pending があり「はい」なら confirmed:true で返す）。 */
 function parseVoice(text, lang = 'ja', state = {}) {
-  const t = normalizeVoice(text); if (!t) return { free: '' };
+  const t = kanjiNumbersToArabic(normalizeVoice(text)); if (!t) return { free: '' };
   const isYes = YES[lang].some(w => t === w || t.startsWith(w + ' ')), isNo = NO[lang].some(w => t === w);
   if (state.pending) { if (isYes) return { ...state.pending, confirmed: true }; if (isNo) return { cmd: 'cancel', args: {} }; }
   else if (isYes) return { cmd: 'noop', args: {} };
+  const drawn = parseDraw(t, lang); if (drawn) return drawn;   /* 長方形・正方形・直径の円・「右に100」・閉じる（数字つきで描ける言い方） */
   const nums = extractNumbers(t, lang);
   let action = findWord(ACTION_WORDS, t, lang), tool = findWord(TOOL_WORDS, t, lang);
   const longText = lang === 'ja' ? t.length > 12 : t.split(' ').length > 6; // 長い文で命令語が文頭にないものは自由文（AI 行き）
@@ -10933,7 +11041,7 @@ function parseVoice(text, lang = 'ja', state = {}) {
 /** ヘルプ用：言語ごとの命令一覧（キー → 代表語）。 */
 function voiceCommandList(lang) { return { tools: Object.entries(TOOL_WORDS).map(([k, d]) => ({ key: k, words: d[lang] })), actions: Object.entries(ACTION_WORDS).map(([k, d]) => ({ key: k, words: d[lang], confirm: !!d.confirm })) }; }
 
-return {normalizeVoice, extractNumbers, labelOf, parseVoice, voiceCommandList};
+return {normalizeVoice, extractNumbers, kanjiNumbersToArabic, parseDraw, voiceIsDraw, labelOf, parseVoice, voiceCommandList};
 })();
 __mods['lcc'] = (function(){
 // Leathercraft CAD の保存形式 .lcc（UTF-8 JSON：meta／layers／shapes／backdrops／printareas）を N's CAD 文書へ変換する。
@@ -22872,9 +22980,9 @@ const { traceImage, scaleFromTwoPoints, scaleFromDpi } = __mods['trace'];
 const { DATA_LEATHER_COLORS } = __mods['data/leather-colors'];
 const { DATA_TEXTURES } = __mods['data/textures'];
 const { createPlayer } = __mods['tutorial'];
-const { parseVoice, labelOf } = __mods['voice'];
+const { parseVoice, labelOf, voiceIsDraw } = __mods['voice'];
 const { lccToDoc, styleSummary } = __mods['lcc'];
-const { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, learnLocalFiles, localReferenceDoc, localDesignStore } = __mods['designs'];
+const { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } = __mods['designs'];
 const { DATA_DESIGNS } = __mods['data/designs'];
 const { DATA_STYLE } = __mods['data/style'];
 const { TUTORIALS_BASICS } = __mods['tutorials/basics'];
@@ -24691,8 +24799,17 @@ function foldFlowStates(d = doc) {
   return [s1, s2, s3, s4, s5];
 }
 function renderFoldFlow() {
-  const st = foldFlowStates(doc), now = st.indexOf(false);
-  for (let i = 0; i < 5; i++) { const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue; const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text; }
+  const bi = foldIsBifold(), st = foldFlowStates(doc), shown = bi ? [0, 1, 4] : [0, 1, 2, 3, 4], now = shown.find(i => !st[i]) ?? -1, marks = '①②③④⑤';   /* 2つ折りは、貼り合わせ検証（③④）を使わず ①断面→②平面→③展開 */
+  const sel = $('flowFoldMode'), want = bi ? 'bifold' : 'trifold'; if (sel && sel.value !== want) sel.value = want;
+  const setText = (id, text) => { const el = $(id); if (el && el.textContent !== text) el.textContent = text; };
+  for (let i = 0; i < 5; i++) {
+    const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue;
+    const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text;
+    const k = shown.indexOf(i); if (k >= 0) setText('foldFlowNo' + (i + 1), marks[k]);
+    if (bi && [0, 1, 4].includes(i)) { setText('foldFlowName' + (i + 1), t('foldFlowBiStep' + (i + 1))); setText('foldFlowText' + (i + 1), t('foldFlowBiText' + (i + 1))); }
+    else { setText('foldFlowName' + (i + 1), t('foldFlowStep' + (i + 1))); setText('foldFlowText' + (i + 1), t('foldFlowText' + (i + 1))); }
+  }
+  setText('flowOpenDesign', t(bi ? 'foldFlowBiOpenDesign' : 'foldFlowOpenDesign')); setText('flowMake', t(bi ? 'foldFlowBiMake' : 'fdMake'));   /* 2つ折りにはボタン線が無いので、「（ボタン線から）」を付けない */
 }
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
@@ -25285,6 +25402,7 @@ function initDesign() {
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
+  $('flowFoldMode').onchange = () => { $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
   for (const [from, to] of [['flowMake', 'fdMake'], ['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
   const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
@@ -25394,7 +25512,7 @@ function syncLockMarks() {
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
   const designOption = $('voiceTarget')?.querySelector?.('option[value="design"]');
   if (designOption) designOption.disabled = locked;
-  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'command';
+  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'auto';
   if ($('localDesignCreate')) $('localDesignCreate').disabled = locked || !localDesignPending || localDesignPending.invalid;
 }
 /** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップのあとで全選択し直して、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
@@ -25834,9 +25952,10 @@ function localDesignerStatus() {
   const count = privateDesignCorpus?.items?.length ?? DATA_DESIGNS.items?.length ?? 0;
   $('localDesignStatus').textContent = t('localDesignCount', { n: count }) + ' ' + styleSummary(privateDesignCorpus?.style || DATA_STYLE, voiceLang());
 }
-function localDesignSuggest(text) {
+function localDesignSuggest(text, opts = {}) {
   if (!lockGate('voiceDesign')) return;
   const r = localDesignRequest(text), items = privateDesignCorpus?.items || DATA_DESIGNS.items || [];
+  if (opts.fromVoice && r.terms.includes('wallet') && !r.bifold && !r.kind && !r.terms.includes('trifold')) r.bifold = true;   /* 声で「財布」とだけ言ったときは、いま作れる2つ折りの財布にする（折り方を言えばそちらを優先） */
   localDesignPending = r; $('localDesignPrompt').value = text;
   $('localDesignResults').textContent = ''; $('localDesignCreate').disabled = r.invalid || (!r.bifold && !r.kind);
   const matches = rankLocalDesigns(items, text);
@@ -25853,10 +25972,16 @@ function localDesignSuggest(text) {
   }
   $('localDesignStatus').textContent = r.invalid ? t('localDesignInvalid') : t('localDesignProposal', { n:matches.length }) + (r.bifold ? ' ' + t('localDesignBifoldDefaults', { w:r.width ?? 100, h:r.height ?? 90, r:r.radius ?? 6, t:r.thickness ?? 1.5, p:r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2) }) : '');
   $('voiceCard').open = true; revealCard($('voiceCard'));
+  if (opts.fromVoice) {   /* 声で頼んだとき：作れる依頼（2つ折り・手帳・カードケース・パスケース・コインケース）は、押さなくてもそのまま新しいタブに作る（元の図面は残る） */
+    if (r.invalid) { voiceSay(t('localDesignInvalid')); return; }
+    if (!(r.bifold || r.kind)) { voiceSay(t('voiceDesignNoRecipe')); return; }
+    if (localDesignCreate()) { voiceSay(t(r.bifold ? 'voiceDesignMade' : 'voiceDesignMadeKind', { what: r.bifold ? t('fdModeBi') : t('kind.' + r.kind) })); if (r.bifold) setFlowWin(true); }
+    else voiceSay($('localDesignStatus').textContent);
+  }
 }
 function localDesignCreate() {
-  if (!lockGate('voiceDesign')) return;
-  const r=localDesignPending; if (!r || r.invalid) return;
+  if (!lockGate('voiceDesign')) return false;
+  const r=localDesignPending; if (!r || r.invalid) return false;
   const pitch=r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2);
   if (r.bifold) {
     const vals={mode:'bifold',width:r.width ?? 100,rinR:r.radius ?? 6,t:r.thickness ?? 1.5};
@@ -25869,12 +25994,12 @@ function localDesignCreate() {
     syncFoldModeUI(); makeFoldDesign(false); projectFoldDesign(false); unfoldFoldDesign(); fit();
   } else if (r.kind) {
     // Arbitrary width/height cannot safely scale stitching or hardware on a fixed recipe.
-    if (r.width || r.height || r.radius) { $('localDesignStatus').textContent=t('localDesignRecipeDims'); return; }
+    if (r.width || r.height || r.radius) { $('localDesignStatus').textContent=t('localDesignRecipeDims'); return false; }
     const recipe={...defaultRecipe(r.kind),pitch,...(r.refill?{refill:r.refill}:{}),...(r.ringD?{ringD:r.ringD}:{}),...(r.thickness?{thickness:r.thickness}:{})};
     const built=buildDoc(recipe,{tools:loadTools()}); if (!built || !validateDoc(built.doc)) { $('localDesignStatus').textContent=t('localDesignInvalid');return; }
     newTab(t('recipeTab',{kind:t('kind.'+r.kind)})); commit(()=>{doc=built.doc; selected.clear();refreshTools();}); tabs[activeTab].doc=doc;renderLayers();renderSeams();fit();
-  } else return;
-  $('localDesignStatus').textContent=t('localDesignCreated',{p:pitch});
+  } else return false;
+  $('localDesignStatus').textContent=t('localDesignCreated',{p:pitch}); return true;
 }
 function initLocalDesigner() {
   $('localDesignSuggest').onclick=()=>localDesignSuggest($('localDesignPrompt').value);
@@ -25893,17 +26018,42 @@ function initLocalDesigner() {
 }
 
 // ---- 音声操作（Web Speech API・長押しで聞く・テキスト欄は同じ文法）----
-let voicePending = null, voiceCandidates = [], voiceRec = null, voiceAskNumber = null, voiceLevelStop = null;
+let voicePending = null, voiceCandidates = [], voiceRec = null, voiceAskNumber = null, voiceLevelStop = null, voiceKeepListening = false;
+const VOICE_ERR = { 'not-allowed': 'voiceNoPermission', 'service-not-allowed': 'voiceNoPermission', 'no-speech': 'voiceNoSound', 'audio-capture': 'voiceNoMic', network: 'voiceNetwork', 'language-not-supported': 'voiceLangNo' };
 const voiceLang = () => ($('language').value || 'ja') === 'en' ? 'en' : 'ja';
 function voiceSay(text) { $('voiceOut').textContent = text; if ($('voiceSpeak').checked && typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance === 'function') { const u = new SpeechSynthesisUtterance(text); u.lang = voiceLang() === 'en' ? 'en-US' : 'ja-JP'; speechSynthesis.speak(u); } }
 function renderVoiceCandidates() {
   const box = $('voiceCandidates'); box.textContent = ''; box.hidden = !voiceCandidates.length;
   voiceCandidates.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.textContent = labelOf(c, voiceLang()); b.onclick = () => { voiceCandidates = []; renderVoiceCandidates(); execVoice(c); }; box.appendChild(b); });
 }
+/** 声で描く（voice.js の parseDraw の ops）：いまの点（lastPoint・最初は原点）から、順に描く。右・左・上・下は画面で見える向き（図面は下が＋なので、上は −y）。
+ *  長方形はいまの点から右下へ・円は中心がいまの点・線は1本ずつの直線（「閉じる」で、最初の点へ戻る線を足す）。描いたあと、画面の外に出ていたら全体を表示する。 */
+function voiceDraw(ops) {
+  const r4 = v => +v.toFixed(4), box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }, grow = (x, y) => { box.minX = Math.min(box.minX, x); box.minY = Math.min(box.minY, y); box.maxX = Math.max(box.maxX, x); box.maxY = Math.max(box.maxY, y); };
+  let p = { x: lastPoint.x, y: lastPoint.y }, chain = null, p0 = null, lines = 0; const parts = [], begin = () => { if (!p0) { p0 = { ...p }; grow(p.x, p.y); } };
+  const line = q => { addShape({ type: 'line', x1: p.x, y1: p.y, x2: q.x, y2: q.y }); lines++; grow(q.x, q.y); p = q; };
+  for (const o of ops) {
+    if (o.op === 'origin') { p = { x: 0, y: 0 }; chain = null; continue; }
+    if (o.op === 'rect') { begin(); const q = { x: r4(p.x + o.w), y: r4(p.y + o.h) }, rect = rectShape(p, q); if (!rect) continue; addShape(rect); grow(q.x, q.y); parts.push(t('voiceDrewRect', { w: o.w, h: o.h })); p = q; chain = null; continue; }
+    if (o.op === 'circle') { begin(); addShape({ type: 'circle', cx: r4(p.x), cy: r4(p.y), r: o.r }); grow(p.x - o.r, p.y - o.r); grow(p.x + o.r, p.y + o.r); parts.push(t('voiceDrewCircle', { d: r4(o.r * 2), r: o.r })); chain = null; continue; }
+    if (o.op === 'move' || o.op === 'polar') {
+      begin(); if (!chain) chain = { ...p };
+      const v = o.op === 'polar' ? [Math.cos(o.deg * Math.PI / 180), -Math.sin(o.deg * Math.PI / 180)] : { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] }[o.dir];   /* 角度は、右が0°・上が90°（画面で見える反時計回り） */
+      line({ x: r4(p.x + v[0] * o.len), y: r4(p.y + v[1] * o.len) }); continue;
+    }
+    if (o.op === 'close') { if (chain && Math.hypot(p.x - chain.x, p.y - chain.y) > 1e-6) line({ ...chain }); chain = null; }
+  }
+  if (!p0) { voiceSay(t('voiceNothingDrawn')); return; }
+  if (lines) parts.push(t('voiceDrewLines', { n: lines }));
+  lastPoint = p; const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
+  if (box.minX < lo.x || box.minY < lo.y || box.maxX > hi.x || box.maxY > hi.y) fit();   /* 画面の外に描いたときは、全体を表示する */
+  draw(); voiceSay(t('voiceDrew', { what: parts.join('・'), from: ops.some(o => o.op === 'origin') ? t('voiceFromOrigin') : t('voiceFromHere', { x: r4(p0.x), y: r4(p0.y) }) }));
+}
 function execVoice(r) {
   const lang = voiceLang();
   if (r.ask) { voiceCandidates = r.ask; renderVoiceCandidates(); voiceSay(t('voiceWhich')); return; }
-  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; $('aiCard').open = true; revealCard($('aiCard')); voiceSay(($('aiUrl').value || '').trim() ? t('voiceToAi') : t('voiceAiUnset')); return; }
+  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; if (($('aiUrl').value || '').trim()) { $('aiCard').open = true; revealCard($('aiCard')); voiceSay(t('voiceToAi')); } else voiceSay(t('voiceAiUnset')); return; }   /* AI が未設定なら、AI のカードへ飛ばさず、言い方の例を出す */
+  if (r.cmd === 'draw') { voiceCandidates = []; renderVoiceCandidates(); if (r.need) voiceSay(t('voiceNeed_' + r.need)); else voiceDraw(r.ops); return; }
   if (r.confirm && !r.confirmed) { voicePending = r; voiceSay(t('voiceConfirm', { what: labelOf(r, lang) })); return; }
   voicePending = null; const a = r.args || {};
   const done = extra => voiceSay(t('voiceDid', { what: labelOf(r, lang) + (extra ? ' ' + extra : '') }));
@@ -25911,7 +26061,7 @@ function execVoice(r) {
     case 'noop': case 'cancel': voiceCandidates = []; renderVoiceCandidates(); if (r.cmd === 'cancel') { cancel(); voiceSay(t('voiceCancelled')); } return;
     case 'tool': {
       if (mode !== r.tool) setMode(r.tool);
-      if (r.tool === 'line' && a.value !== undefined) runCommand(a.value + '<' + (a.angle ?? 0));
+      if (r.tool === 'line' && a.value !== undefined) { voiceDraw([{ op: 'polar', len: a.value, deg: a.angle ?? 0 }]); return; }   /* 長さを言えば、いまの点からその場で1本引く（これまでは始点を置くだけで線が出なかった） */
       else if (r.tool === 'circle' && a.radius !== undefined) { runCommand(lastPoint.x + ',' + lastPoint.y); runCommand(String(a.radius)); }
       else if (r.tool === 'stitch') { if (a.value !== undefined) { const tool = doc.tools.find(x => Math.abs(x.pitch - a.value) < 0.05); if (tool) { $('stitchTool').value = tool.id; $('stitchTool').listeners?.change?.(); } } if (a.placement) $('placement').value = a.placement; $('stitchCard').open = true; }
       else if (['offset', 'chamfer', 'fillet'].includes(r.tool) && a.value !== undefined) voiceAskNumber = r.tool === 'offset' && a.side === 'inside' ? -Math.abs(a.value) : a.value;
@@ -25930,16 +26080,21 @@ function execVoice(r) {
   }
   done('');
 }
-function execVoiceText(text) { $('voiceHeard').textContent = text; if ($('voiceTarget').value === 'design') { localDesignSuggest(text); return; } execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
+/** 型紙のデザインを頼む言い方か：財布・手帳・カードケース・2つ折り などの名前があり、「作って」「設計」などの頼む言葉もあるとき（描く言い方・ツール名だけの言い方は、CAD の操作として扱う）。 */
+function voiceLooksLikeDesign(text) {
+  const q = String(text).normalize('NFKC'), terms = designTerms(q);
+  return terms.some(k => ['wallet', 'notebook', 'cardcase', 'passcase', 'coincase', 'bifold', 'trifold', 'm5', 'mini6', 'bible', 'a5', 'a6'].includes(k)) && /作って|作る|作成|つくって|つくる|設計|デザイン|下書き|お願い|ください|make|create|design|draft/i.test(q);
+}
+function execVoiceText(text) { $('voiceHeard').textContent = text; const target = $('voiceTarget').value; if (target === 'design' || (target !== 'command' && voiceLooksLikeDesign(text) && !voiceIsDraw(text, voiceLang()))) { localDesignSuggest(text, { fromVoice: true }); return; } execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
 function voiceStart() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $('voiceOut').textContent = t('voiceUnsupported'); $('voiceText').focus?.(); return; }
   if (voiceRec) return; const rec = new SR(); voiceRec = rec; rec.lang = voiceLang() === 'en' ? 'en-US' : 'ja-JP'; rec.interimResults = true; rec.continuous = false;
-  let finalText = ''; $('voiceBtn').classList.add('active'); $('voiceHeard').textContent = '…'; $('voiceOut').textContent = '';
+  let finalText = '', failed = false; $('voiceBtn').classList.add('active'); $('voiceHeard').textContent = '…'; $('voiceOut').textContent = t('voiceListening');
   rec.onresult = e => { let s = ''; for (const r of e.results) { s += r[0].transcript; if (r.isFinal) finalText = s; } $('voiceHeard').textContent = s; };
-  rec.onerror = e => { $('voiceOut').textContent = e.error === 'not-allowed' ? t('voiceNoPermission') : e.error === 'no-speech' ? t('voiceNoSound') : t('voiceError'); };
-  rec.onend = () => { voiceRec = null; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoiceText(text); else if (!$('voiceOut').textContent) $('voiceOut').textContent = t('voiceNoSound'); };
-  try { rec.start(); } catch { voiceRec = null; }
+  rec.onerror = e => { if (e.error === 'aborted') return; failed = true; const key = VOICE_ERR[e.error]; $('voiceOut').textContent = key ? t(key) : t('voiceError') + ' (' + e.error + ')'; };   /* 失敗の理由を、種類ごとに出す */
+  rec.onend = () => { voiceRec = null; voiceKeepListening = false; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoiceText(text); else if (!failed) $('voiceOut').textContent = t('voiceNoSound'); };
+  try { rec.start(); } catch { voiceRec = null; $('voiceBtn').classList.remove('active'); $('voiceOut').textContent = t('voiceError'); return; }   /* 開始できなかったときも、理由なしに黙らない */
   voiceLevelStart();
 }
 function voiceStop() { if (voiceRec) { try { voiceRec.stop(); } catch { /* 二重停止は無視 */ } } }
@@ -25953,9 +26108,10 @@ function voiceLevelStart() {
   }).catch(() => { $('voiceOut').textContent = t('voiceNoPermission'); });
 }
 function initVoice() {
-  const btn = $('voiceBtn'); let toggled = false;
-  btn.addEventListener('pointerdown', e => { e.preventDefault(); if ($('voiceMode').value === 'toggle') { toggled = !toggled; if (toggled) voiceStart(); else voiceStop(); } else voiceStart(); });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, () => { if ($('voiceMode').value !== 'toggle') voiceStop(); });
+  const btn = $('voiceBtn');
+  let pressAt = 0;
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); if ($('voiceMode').value === 'toggle') { if (voiceRec) voiceStop(); else voiceStart(); return; } if (voiceRec && voiceKeepListening) { voiceKeepListening = false; voiceStop(); return; } pressAt = Date.now(); voiceStart(); });   /* 聞き続けている間にもう一度押すと止める。トグルは、自動で終わったあとも1回の押しで始まる */
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, () => { if ($('voiceMode').value === 'toggle' || voiceKeepListening) return; if (ev === 'pointerup' && voiceRec && Date.now() - pressAt < 450) { voiceKeepListening = true; $('voiceOut').textContent = t('voiceListening'); return; } voiceStop(); });   /* 短く押した（クリック）ときは、離しても止めず、話し終えるまで聞き続ける（これまでは、クリックすると直後に止まって「聞き取れませんでした」になった） */
   btn.addEventListener('contextmenu', e => e.preventDefault());
   $('voiceText').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); execVoiceText($('voiceText').value); $('voiceText').value = ''; } });
   $('voiceGo').onclick = () => { execVoiceText($('voiceText').value); $('voiceText').value = ''; };
@@ -27265,6 +27421,7 @@ function syncFoldModeUI() {
   const bi = foldIsBifold();
   for (const el of document.querySelectorAll('[data-trifold-only]')) el.hidden = bi;
   for (const el of document.querySelectorAll('[data-bifold-only]')) el.hidden = !bi;
+  renderFoldFlow();   /* 折りシミュレーションの小窓も、折り方に合わせる */
 }
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
