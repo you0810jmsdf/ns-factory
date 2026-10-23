@@ -776,14 +776,14 @@ export function foldEndLabels(path, origin, { startText = '', endText = '', size
  *  warnings：gapBottom＝1枚目と3枚目が重なる（右の内側の半径が左より厚みの半分以上大きくない）、pierceRight＝3枚目の右の切り口が右の折りを突き抜ける。失敗は { ok:false, error: 'badNumber' | 'flatShort' }。 */
 /** tOuter・tInner＝表（外側の革）・裏（内側の革）それぞれの厚み（省略時はどちらも t）。合計 T＝表＋裏（どちらも省略なら t×plies）。dO・dI＝積み重ねの中心線から、表の革の中心・裏の革の中心までのずれ（表は外へ＋・裏は内へ−）。
  *  積み重ねの中心線の半径 rc＝内側の半径＋T/2。裏の革の中心の半径＝内側の半径＋tI/2・表の革の中心の半径＝内側の半径＋tI＋tO/2 なので、dO＝tI/2・dI＝−tO/2（両方 t なら ±t/2）。 */
-export function foldDesignPlan({ mode, width, t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
+export function foldDesignPlan({ mode, width, widthB, t, plies = 2, tOuter, tInner, dL, dR, cL, cR, rinL, rinR, shift = 0 } = {}) {
   if (mode === 'bifold') {
-    const tO = tOuter ?? t, tI = tInner ?? t;
-    if (![width, rinR, t, tO, tI].every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
-    const T = tO + tI, rc = rinR + T / 2, flat = width - rinR - T;
-    if (!(flat > FOLD_EPS)) return { ok: false, error: 'flatShort', flats: [flat, flat] };
+    const tO = tOuter ?? t, tI = tInner ?? t, wB = widthB ?? width;   /* widthB＝裏表紙（革をたどった先の側）の幅。省略は表紙と同じ（事業主 2026-10-23「革の端部が延長できない」→ 端ごとに延ばせる） */
+    if (![width, wB, rinR, t, tO, tI].every(v => typeof v === 'number' && Number.isFinite(v) && v > 0)) return { ok: false, error: 'badNumber' };
+    const T = tO + tI, rc = rinR + T / 2, flat = width - rinR - T, flatB = wB - rinR - T;
+    if (!(flat > FOLD_EPS) || !(flatB > FOLD_EPS)) return { ok: false, error: 'flatShort', flats: [flat, flatB] };
     const bends = [Math.PI * rc];
-    return { ok: true, mode, width, T, tO, tI, dO: tI / 2, dI: -tO / 2, flats: [flat, flat], bends, rc: [rc], a: [flat], cEff: [0, 0], length: 2 * flat + bends[0], warnings: [] };
+    return { ok: true, mode, width, widthB: wB, T, tO, tI, dO: tI / 2, dI: -tO / 2, flats: [flat, flatB], bends, rc: [rc], a: [flat], cEff: [0, 0], length: flat + flatB + bends[0], warnings: [] };
   }
   const pos = [dL, dR, rinL, rinR];
   if (![t, ...pos, cL, cR].every(v => typeof v === 'number' && Number.isFinite(v)) || !(t > 0) || !pos.every(v => v > 0) || cL < 0 || cR < 0) return { ok: false, error: 'badNumber' };
@@ -798,7 +798,7 @@ export function foldDesignPlan({ mode, width, t, plies = 2, tOuter, tInner, dL, 
   if (dx > 0 && Math.max(Math.hypot(dx, v3 + T / 2), Math.hypot(dx, v3 - T / 2)) > rinR + 1e-9) warnings.push('pierceRight');
   return { ok: true, T, tO: tOuter === undefined && tInner === undefined ? T / plies : tO, tI: tOuter === undefined && tInner === undefined ? T / plies : tI, dO: (tOuter === undefined && tInner === undefined ? T / plies : tI) / 2, dI: -(tOuter === undefined && tInner === undefined ? T / plies : tO) / 2, flats, bends, rc: [rc1, rc2], a: [a1, a2], cEff: [cl, cr], length: flats.reduce((x, y) => x + y, 0) + bends[0] + bends[1], warnings };
 }
-const FD_NUMS = { dl: '①', dr: '②', w: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
+const FD_NUMS = { dl: '①', dr: '②', w: '③', wB: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
 /** 二つ折りの断面は左に揃えた切り口と右の丸い背で構成する。 */
 function bifoldPoint(d, p) {
   return (u, v) => ({ x: d.origin.x + u, y: d.flipV !== false ? d.origin.y - 2 * p.rc[0] + v : d.origin.y - v });
@@ -807,6 +807,7 @@ function bifoldDimensions(d, p, key, num, refill) {
   const pt = bifoldPoint(d, p), out = [], line = (a, b, arrows = 'both') => out.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false }), text = (u, v) => out.push({ type: 'text', ...pt(u, v), text: num });
   const f = p.flats[0], r = p.rc[0], rad = (radius, a) => [f + radius * Math.cos(a), r + radius * Math.sin(a)];
   if (key === 'w' || key === 'dr') { line([0, -p.T / 2 - 10], [d.width, -p.T / 2 - 10]); text(d.width / 2, -p.T / 2 - 16); }
+  else if (key === 'wB') { const u0 = f - p.flats[1], v = 2 * r + p.T / 2 + 10; line([u0, v], [d.width, v]); text((u0 + d.width) / 2, v + 6); }   /* 裏表紙の幅：先の端（u0）から背の外側まで・図の上側に */
   else if (key === 'rr') { line([f, r], rad(d.rinR, -Math.PI / 4), 'end'); text(...rad(d.rinR + 5, -Math.PI / 4)); }
   else if (key === 'to' || key === 'ti') { const a = key === 'to' ? 0.4 : -0.4, lo = key === 'to' ? d.rinR + p.tI : d.rinR, hi = key === 'to' ? d.rinR + p.T : d.rinR + p.tI; line(rad(lo, a), rad(hi, a)); text(...rad(hi + 5, a)); }
   else if (key === 'ring') { const path = foldSectionPath(p), s = d.ring?.s ?? f + p.bends[0] / 2, q = pointOnFoldPath(path, s), nx = -Math.sin(q.heading), ny = Math.cos(q.heading), u = q.u + nx * p.T / 2, v = q.v + ny * p.T / 2; line([u - nx * 6, v - ny * 6], [u + nx * 6, v + ny * 6]); text(u - nx * 11, v - ny * 11); }
@@ -857,8 +858,10 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
   if (d.mode === 'bifold') {
     const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -14 * px;
     const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
+    const wBItems = Math.abs(p.widthB - d.width) > 0.005 ? [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }] : [];   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
     return [
       { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
+      ...wBItems,
       { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(d.width + 10 * px, p.rc[0]), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm`, align: 'left' }) },
     ];
@@ -879,7 +882,12 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
  *  返り値 [{ key, dim, x, y }]：key＝取っ手の種類（btn＝ボタン線・dl／dr＝左／右の折りの外側・cl／cr＝左／右の切り口・rl／rr＝左／右の折りの内側の半径）、dim＝光らせる寸法線の key（foldDimensions）。計画が成り立たないとき null。 */
 export function foldHandles(d) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
-  if (d.mode === 'bifold') { const pt = bifoldPoint(d, p); return [{ key: 'w', dim: 'w', ...pt(d.width, p.rc[0]) }, { key: 'rr', dim: 'rr', ...pt(p.flats[0] + d.rinR, p.rc[0]) }]; }
+  if (d.mode === 'bifold') {
+    /* 取っ手：w＝全幅（両方の端を同時に）・rr＝背の内側の半径・endA／endB＝表紙・裏表紙それぞれの端・ring＝リングの中心（ドラッグで革に沿って動かす）。リングが無いときは ring は出ない */
+    const pt = bifoldPoint(d, p), rc = p.rc[0], f = p.flats[0], fB = p.flats[1], out = [{ key: 'w', dim: 'w', ...pt(d.width, rc) }, { key: 'rr', dim: 'rr', ...pt(f + d.rinR, rc) }, { key: 'endA', dim: 'w', ...pt(0, 0) }, { key: 'endB', dim: 'wB', ...pt(f - fB, 2 * rc) }];
+    if (d.ring && Number.isFinite(d.ring.s) && Number.isFinite(d.ring.h)) { const q = pointOnFoldPath(foldSectionPath({ flats: p.flats, bends: p.bends }), d.ring.s), off = p.T / 2 + d.ring.h; out.push({ key: 'ring', dim: 'ring', ...pt(q.u - Math.sin(q.heading) * off, q.v + Math.cos(q.heading) * off) }); }
+    return out;
+  }
   const { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, f1 = p.flats[0], u2 = p.flats[0] - p.flats[1], v2 = 2 * rc1 - rc2, flipY = d.flipV !== false;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; };
   return [
