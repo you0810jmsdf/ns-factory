@@ -433,10 +433,11 @@ export function patchInsetStitch(polys, d, opts = {}) {
 }
 /** 縫い合わせ1本の丸目の位置（縫い線の上の道のり・小さい順）。向かい合う2本の縫い線が重なる範囲 [t0, t1] を、pitch ちょうどの間隔で並べる（隣り合う4つの穴が1辺 pitch の正方形になる）。
  *  outer＝外周に近い側の端（'start'＝t0 側・'end'＝t1 側・null＝どちらでもない）。並べはじめは、外周でない（交点の）側の端。外周側に minAdd mm 以上余ったときは、最後の1個を外周側の端に足す（外周の菱目ラインまで届かせる・事業主 2026-10-23）。
- *  範囲が 0.4×pitch 以上 pitch 未満なら、真ん中に1個。それより短いと置かない。 */
+ *  範囲が pitch 未満でも、交点の側の端に1個（外周側に 1.5mm 以上あれば、外周側の端にも1個）。0.4×pitch より短いと置かない。 */
 export function seamHoleOffsets(t0, t1, pitch, outer = null, { minAdd = 1.5 } = {}) {
   const len = t1 - t0; if (!(pitch > 0) || !(len >= -1e-6)) return [];
-  const m = Math.floor(len / pitch + 1e-6); if (m < 1) return len >= 0.4 * pitch ? [(t0 + t1) / 2] : [];
+  if (len < 0.4 * pitch - 1e-9) return [];   /* 短すぎる（隣の縫い合わせが、角の穴を置く） */
+  const m = Math.floor(len / pitch + 1e-6);   /* m＝0（pitch より短い）でも、交点の側の端に必ず1個置く：枠に近い小さなピースの角でも、交点のまわりの4つが正方形になる（事業主 2026-10-23「パッチが交差するところは特に正方形に」・午前の変更で、短い縫い合わせは真ん中に1個になり、交点の角に穴が無くなっていた） */
   const fromEnd = outer === 'start', rest = len - m * pitch, out = Array.from({ length: m + 1 }, (_, k) => fromEnd ? t1 - k * pitch : t0 + k * pitch);
   if (rest >= minAdd - 1e-9) out.push(fromEnd ? t0 : t1);
   return out.sort((a, b) => a - b);
