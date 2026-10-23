@@ -2820,8 +2820,6 @@ export const BINDER_SPECS = [
    "ja": "Mini6 / M6",
    "en": "Mini6 / M6",
    "aliases": [
-    "ロルバーン M",
-    "Rollbahn M",
     "ミニ6穴",
     "ポケット",
     "Filofax Pocket"
@@ -3043,5 +3041,228 @@ export const BINDER_SPECS = [
    "confidence": null
   },
   "sourceNote": null
+ },
+ {
+  "id": "rollbahn-m",
+  "names": {
+   "ja": "ロルバーン M",
+   "en": "Rollbahn M",
+   "aliases": []
+  },
+  "holes": {
+   "count": 13,
+   "pitchMm": [
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5,
+    9.5
+   ],
+   "centerPitchMm": 9.5,
+   "span1toLastMm": 114
+  },
+  "refill": {
+   "wMm": 107,
+   "hMm": 138
+  },
+  "rings": {
+   "diameterOptionsMm": [
+    11,
+    13,
+    15,
+    19,
+    20,
+    25,
+    30
+   ],
+   "shape": "round",
+   "countPerSide": 13,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "outerDiameterMm": 15,
+     "innerDiameterMm": 11,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 17,
+     "innerDiameterMm": 13,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 19,
+     "innerDiameterMm": 15,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 23,
+     "innerDiameterMm": 19,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "outerDiameterMm": 24,
+     "innerDiameterMm": 20,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": null,
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 25,
+     "outerDiameterMm": 29,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    },
+    {
+     "innerDiameterMm": 30,
+     "outerDiameterMm": 34,
+     "wireDiameterMm": 2,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": null,
+     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
+     "wireSource": "assumed"
+    }
+   ]
+  },
+  "plate": {
+   "lengthMm": 120,
+   "widthMm": 24,
+   "thicknessMm": 2,
+   "cornerRMm": 3,
+   "confidence": "estimated"
+  },
+  "rivets": [
+   {
+    "xMm": -54,
+    "yMm": 0,
+    "dMm": 3.5
+   },
+   {
+    "xMm": 54,
+    "yMm": 0,
+    "dMm": 3.5
+   }
+  ],
+  "mechanism": {
+   "heightClosedMm": null,
+   "heightOpenMm": null,
+   "leverPos": "end",
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": 56,
+     "yMm": 0,
+     "widthMm": 8,
+     "lengthMm": 16,
+     "heightMm": 6,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    },
+    {
+     "xMm": -56,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": 4,
+     "diameterMm": 7,
+     "kind": "button",
+     "note": "叩き台（推定）：実測で置き換える",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    }
+   ]
+  },
+  "solid": {
+   "type": "binder",
+   "params": {
+    "plateLengthMm": 120,
+    "plateWidthMm": 24,
+    "plateThicknessMm": 2
+   }
+  },
+  "sources": [],
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    },
+    {
+     "xMm": 54,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 3.5,
+     "kind": "rivet",
+     "note": null,
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    }
+   ],
+   "confidence": null
+  },
+  "sourceNote": "ロルバーン M の紙の大きさ（幅107×高さ138）は事業主の指定（2026-10-24）。リングの穴は13個・間隔9.5mm・左端から6mm（公式写真からの推定・事業主の指示）。金具・リングは Mini6 のものを引き継ぐ。部品ライブラリの「リフィル型紙 ロルバーン M」と同じ寸法（tools/gen_rollbahn_part.mjs が、この規格から作る）。",
+  "parent": "mini6"
  }
 ];
