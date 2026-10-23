@@ -1547,7 +1547,7 @@ export const DATA_LIBRARY = {
         "H": 138,
         "R": 5,
         "P": 9.5,
-        "E": 5,
+        "E": 6,
         "Dw": 6,
         "Dh": 5,
         "Y": 0
