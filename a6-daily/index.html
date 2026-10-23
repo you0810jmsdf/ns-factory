@@ -87,6 +87,11 @@ body.panel-open #preview { margin-left: 280px; }
 .hole-strip.right { border-left: 0.3mm solid #e0e0e0; order: 1; }
 .hole { position: absolute; left: 50%; transform: translate(-50%, -50%); width: 4mm; height: 4mm; border: 0.3mm solid #c8c8c8; border-radius: 50%; background: white; }
 .hole-bisector { position: absolute; top: 74mm; left: 0; width: 2mm; height: 0; border-top: 0.2mm dashed #bbb; pointer-events: none; }
+/* 穴を短辺（A6の上端・105mm側）に置くとき: 穴ストリップを上に横長で置き、中身は残り138mmに収める */
+.daily-page.hole-top { flex-direction: column; }
+.hole-strip.top { width: 100%; height: 10mm; border-bottom: 0.3mm solid #e0e0e0; order: -1; }
+.hole-strip.top .hole { top: 50%; }
+.hole-bisector.top { top: 0; left: 52.5mm; width: 0; height: 2mm; border-top: none; border-left: 0.2mm dashed #bbb; }
 
 /* === MODULE: デイリーページ === */
 .daily-page { width: 100%; height: 100%; display: flex; position: relative; min-height: 0; overflow: hidden; }
@@ -219,6 +224,12 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-toggle" id="btnLandscape" onclick="setOrient(true)">上下見開き</button>
     </div>
     <div style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">左右見開き＝リングが左（通常）。上下見開き＝リングが上（手帳を時計回りに90°回して使う）で、見開き1面に1日（上：日付＋時間軸の前半／下：時間軸の後半＋メモ）。</div>
+    <div class="ctrl-row">
+      <label>穴の位置</label>
+      <button class="btn-toggle on" id="btnHoleLong" onclick="setHoleEdge('long')">長辺（左右）</button>
+      <button class="btn-toggle" id="btnHoleShort" onclick="setHoleEdge('short')">短辺（上）</button>
+    </div>
+    <div id="holeEdgeNote" style="font-size:9px;color:#888;line-height:1.5;margin:-2px 0 5px;">長辺＝A6の左右の端（148mm側）に6穴（通常）。短辺＝A6の上端（105mm側）に6穴・19mmピッチ・端から5mmで、中央に並べます。両面とも上端なので、表裏で穴の側は入れ替わりません。</div>
     <div class="ctrl-row dated-only" style="display:none">
       <label>モード</label>
       <select id="printMode" onchange="togglePrintMode()">
@@ -437,6 +448,14 @@ body.panel-open #preview { margin-left: 280px; }
         <li>穴は6穴（上端から 14.75 / 33.75 / 52.75 / 90.75 / 109.75 / 128.75 mm、綴じ側の端から5mm。旧A6印刷ツールと同じ位置（穴径4mm））</li>
         <li>※ 両面の面付けは実物での組み立て確認が済んでいません。まず1枚で試してから本番印刷をおすすめします</li>
       </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 穴を短い辺（上端）に開けたい場合</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>「印刷モード」の <b>穴の位置</b> で「短辺（上）」を選ぶと、A6の上端（105mm側）に穴が並びます</li>
+        <li>6穴・19mmピッチを中央に配置（左端から 5 / 24 / 43 / 62 / 81 / 100mm、穴径4mm）。上端から穴の中心まで5mm。中身は穴の下の138mmに収まります</li>
+        <li>両面とも上端に穴があるので、表裏で穴の側は入れ替わりません（両面は長辺綴じのまま）</li>
+        <li>「上下見開き」と組み合わせたときは、穴は長辺のままです</li>
+        <li>※ 「📖 綴じ後プレビュー」は左綴じの見開き表示のままです。上綴じの見え方とは異なります</li>
+      </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>サイズが合わない → 用紙の向き（横）と印刷倍率100%を再確認</li>
@@ -472,6 +491,23 @@ const SLOT_MAP = { front: { P0: 0, P1: 2, P2: 4, P3: 6 }, back: { P0: 3, P1: 1, 
 const PER_SHEET = 8; // 1枚の用紙に載るページ数（表裏）
 // 穴はページの役割で決める: 表面（奇数日＝右ページ）は左穴、裏面（偶数日＝左ページ）は右穴。A6月間・バイブル週間と同じ
 const HOLE_SIDE_BY_FACE = { front: 'left', back: 'right' };
+// 穴を短辺（A6の上端・幅105mm）に置くとき: 6穴・19mmピッチを中央に（端から 5 / 24 / 43 / 62 / 81 / 100mm）、上端から穴中心まで5mm
+const HOLE_POSITIONS_SHORT_MM = [5, 24, 43, 62, 81, 100];
+// 上下見開き（リングが上）は中身を90°回す配置なので、穴の位置は長辺のまま
+function holeEdgeNow() { return (!opts.landscape && opts.holeEdge === 'short') ? 'short' : 'long'; }
+function holeSideFor(side) { return holeEdgeNow() === 'short' ? 'top' : HOLE_SIDE_BY_FACE[side]; }
+function holesInnerHTML(holeSide) {
+  return holeSide === 'top'
+    ? HOLE_POSITIONS_SHORT_MM.map(pos => `<div class="hole" style="left:${pos}mm;"></div>`).join('')
+    : HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm;"></div>`).join('');
+}
+// 印刷ズレ補正のテスト印刷（assets/print-adjust.js）が使う形状を、穴の位置に合わせて書き換える
+function updatePrintGeometry() {
+  const G = window.NSF_PRINT_GEOMETRY; if (!G) return;
+  const short = holeEdgeNow() === 'short';
+  G.slots.forEach(sl => { sl.holeSide = short ? 'top' : 'left'; });
+  G.holes = short ? HOLE_POSITIONS_SHORT_MM.slice() : HOLE_POSITIONS_MM.slice();
+}
 
 // ロゴ透かしは assets/logo-wm.png（2026-09-17）。以前ここにあった OWL_PATH は欠けたデータだったため削除
 
@@ -485,7 +521,7 @@ let opts = {
   showLogo: true, showMonthAbbr: true, showTextWm: false, showImgWm: false, showMonthCal: false,
   showDateNum: true, showDateWd: true, showDateYm: true,
   showTimeLabel: true, showTimeLine: true, showHoliday: true,
-  undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false
+  undated: false, ghostStyle: 'seg', ghostWeekday: true, landscape: false, holeEdge: 'long'
 };
 
 // === MODULE: Utility ===
@@ -495,7 +531,18 @@ function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n)
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function toggleSidebar() { document.getElementById('controls').classList.toggle('open'); document.body.classList.toggle('panel-open'); }
 function setLang(en) { isEN = en; document.getElementById('btnJA').classList.toggle('on', !isEN); document.getElementById('btnEN').classList.toggle('on', isEN); render(); }
-function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); render(); }
+function setOrient(ls) { opts.landscape = ls; document.getElementById('btnPortrait').classList.toggle('on', !ls); document.getElementById('btnLandscape').classList.toggle('on', ls); syncHoleEdgeUI(); render(); }
+function setHoleEdge(edge) { opts.holeEdge = edge === 'short' ? 'short' : 'long'; syncHoleEdgeUI(); render(); }
+function syncHoleEdgeUI() {
+  const short = opts.holeEdge === 'short';
+  document.getElementById('btnHoleLong').classList.toggle('on', !short);
+  document.getElementById('btnHoleShort').classList.toggle('on', short);
+  const note = document.getElementById('holeEdgeNote');
+  note.style.color = (short && opts.landscape) ? '#e0a040' : '#888';
+  note.textContent = (short && opts.landscape)
+    ? '※ 上下見開きでは穴は長辺のままです（短辺の穴は「左右見開き」で使えます）。'
+    : '長辺＝A6の左右の端（148mm側）に6穴（通常）。短辺＝A6の上端（105mm側）に6穴・19mmピッチ・端から5mmで、中央に並べます。両面とも上端なので、表裏で穴の側は入れ替わりません。';
+}
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; document.getElementById(btnId).classList.toggle('on', opts[key]); render(); }
 function setUndated(u) {
   opts.undated = !!u;
@@ -651,9 +698,9 @@ function buildDailyPage(date, pageNum, holeSide, p) {
     ymStr = `${date.getFullYear()}.${pad(date.getMonth()+1)}`;
     wdLabel = isEN ? WD_EN[wd] : `${WD_JA[wd]}曜日`;
   }
-  const bisectorHTML = (p.showHoleBisect && holeSide === 'left') ? '<div class="hole-bisector"></div>' : '';
+  const bisectorHTML = (p.showHoleBisect && (holeSide === 'left' || holeSide === 'top')) ? `<div class="hole-bisector${holeSide === 'top' ? ' top' : ''}"></div>` : '';
   const holeStripStyle = !p.showHoles ? 'visibility:hidden' : (!p.showHoleLine ? 'border:none' : '');
-  const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripStyle ? ` style="${holeStripStyle}"` : ''}>${bisectorHTML}${HOLE_POSITIONS_MM.map(pos => `<div class="hole" style="top:${pos}mm;"></div>`).join('')}</div>`;
+  const holesHTML = `<div class="hole-strip ${holeSide}"${holeStripStyle ? ` style="${holeStripStyle}"` : ''}>${bisectorHTML}${holesInnerHTML(holeSide)}</div>`;
   const watermarkHTML = p.showLogo ? `<img class="watermark-logo" src="../assets/logo-wm.png" alt="">` : '';
   const textWmHTML = p.showTextWm ? `<div class="text-watermark">${escapeHTML(p.textWmContent)}</div>` : '';
   const imgWmHTML = (p.showImgWm && customImgDataUrl) ? `<img class="img-wm" src="${customImgDataUrl}" alt="">` : '';
@@ -672,8 +719,8 @@ function buildDailyPage(date, pageNum, holeSide, p) {
   if (p.showDateNum) dateNumHTML = U ? (opts.ghostStyle === 'seg' ? `<div class="date-num">${segGhostHTML(2)}</div>` : '') : `<div class="date-num">${date.getDate()}</div>`;
   let wdHTML = '';
   if (p.showDateWd) wdHTML = U ? (opts.ghostWeekday ? `<div class="date-wd">${weekdayGhostHTML()}</div>` : '') : `<div class="date-wd">${wdLabel}</div>`;
-  return `<div class="daily-page ${wdClass}">
-  ${holeSide === 'left' ? holesHTML : ''}
+  return `<div class="daily-page ${wdClass}${holeSide === 'top' ? ' hole-top' : ''}">
+  ${(holeSide === 'left' || holeSide === 'top') ? holesHTML : ''}
   <div class="page-body">
     ${watermarkHTML}${imgWmHTML}${textWmHTML}${monthHTML}
     <div class="date-header">
@@ -779,7 +826,7 @@ function buildSheet(side, sheetIndex, dates, p) {
     const idx = sheetIndex * PER_SHEET + map[pos];
     if (idx < dates.length) {
       const it = dates[idx];
-      slots[pos] = (opts.landscape && it && it.kind) ? buildDailyLandscapePage(it, idx + 1, HOLE_SIDE_BY_FACE[side], p) : buildDailyPage(opts.undated ? null : it, idx + 1, HOLE_SIDE_BY_FACE[side], p);
+      slots[pos] = (opts.landscape && it && it.kind) ? buildDailyLandscapePage(it, idx + 1, HOLE_SIDE_BY_FACE[side], p) : buildDailyPage(opts.undated ? null : it, idx + 1, holeSideFor(side), p);
     }
     // 綴じ後プレビュー用: 通し idx → 紙 floor(idx/2)、偶数が表・奇数が裏。片面だけ実在する紙の裏も白紙として印を付ける
     const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
@@ -803,6 +850,7 @@ function renderDates(dates) {
   }
   if (!html) html = '<p style="color:#666;font-size:12px;">用紙面（表面／裏面）を選択してください</p>';
   document.getElementById('preview').dataset.orient = opts.landscape ? 'landscape' : 'portrait';
+  updatePrintGeometry();
   document.getElementById('preview').innerHTML = html;
   saveSettings();
 }
@@ -889,6 +937,7 @@ function loadSettings() {
   if (s.opts) {
     const btnMap = { showCutLines: 'btnCutLines', showHoleLine: 'btnHoleLine', showHoles: 'btnHoles', showHoleBisect: 'btnHoleBisect', showLogo: 'btnLogo', showMonthAbbr: 'btnMonthAbbr', showTextWm: 'btnTextWm', showImgWm: 'btnImgWm', showMonthCal: 'btnMonthCal', showDateNum: 'btnDateNum', showDateWd: 'btnDateWd', showDateYm: 'btnDateYm', showTimeLabel: 'btnTimeLabel', showTimeLine: 'btnTimeLine', showHoliday: 'btnHoliday', ghostWeekday: 'btnGhostWd' };
     for (const [key, btnId] of Object.entries(btnMap)) { if (s.opts[key] != null) { opts[key] = s.opts[key]; const btn = document.getElementById(btnId); if (btn) btn.classList.toggle('on', !!s.opts[key]); } }
+    if (s.opts.holeEdge != null) { opts.holeEdge = s.opts.holeEdge === 'short' ? 'short' : 'long'; syncHoleEdgeUI(); }
     if (s.opts.ghostStyle != null) { opts.ghostStyle = s.opts.ghostStyle; const el = document.getElementById('ghostStyle'); if (el) el.value = opts.ghostStyle; }
     if (s.opts.undated != null) {
       opts.undated = !!s.opts.undated;
@@ -921,6 +970,8 @@ const HISTORY_ENTRIES = [
     detail: '透かしに使っていたロゴのデータがフクロウ本体と文字の一部だけの欠けたものでした。完全なロゴ画像に差し替えました。位置・大きさ・不透明度の設定はそのまま使えます。' },
   { date: '2026-09-17', type: 'improve', title: 'ロゴ透かしの既定を10%に・日次はロゴ既定ON',
     detail: 'ロゴ透かしの既定の濃さを 7%→10% にし、読みやすいロゴ（N\'s Factory・胸のN・Since 2018）が既定で入るようにしました（「ロゴ透かし」ボタンで外せます）。保存済みの設定がある方はそのままです。' },
+  { date: '2026-10-23', type: 'feat', title: '穴を短い辺（A6の上端）に開けられるようにしました',
+    detail: '「印刷モード」に「穴の位置」を追加しました。「短辺（上）」を選ぶと、A6の上端（105mm側）に6穴・19mmピッチを中央に並べます（左端から 5 / 24 / 43 / 62 / 81 / 100mm・上端から穴の中心まで5mm・穴径4mm）。「長辺（左右）」は今までどおりで、既定も変わりません。ご要望をいただいて追加しました。実物での確認は未了なので、まず1枚で穴の位置を確かめてからお使いください。テスト印刷にも上端の穴を反映します。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
@@ -989,6 +1040,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）
 window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [{ x: 0, y: 0.5, w: 105, h: 148, holeSide: 'left' }, { x: 105, y: 0.5, w: 105, h: 148, holeSide: 'left' }, { x: 0, y: 148.5, w: 105, h: 148, holeSide: 'left' }, { x: 105, y: 148.5, w: 105, h: 148, holeSide: 'left' }], holes: [14.75, 33.75, 52.75, 90.75, 109.75, 128.75], holeEdge: 5, holeD: 4, cuts: [{ x: 0 }, { x: 105 }, { x: 210 }, { y: 0.5 }, { y: 148.5 }, { y: 296.5 }] };
 </script>
+<script>if (typeof updatePrintGeometry === 'function') updatePrintGeometry();</script>
 <script src="../assets/print-adjust.js"></script>
 <script src="../assets/flip-sim.js"></script>
 </body>
