@@ -2550,6 +2550,7 @@ function initDesign() {
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
   $('flowFoldMode').onchange = () => { if (!lockGate('fold')) { renderFoldFlow(); return; } $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); if (foldIsBifold()) $('foldFlowMore').open = true; renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
   $('flowBook').onchange = () => setFoldBook({ kind: $('flowBook').value }); $('flowRingSpec').onchange = () => setFoldBook({ spec: $('flowRingSpec').value, dia: '' }); $('flowRingDia').onchange = () => setFoldBook({ dia: $('flowRingDia').value }); $('flowStackT').oninput = () => setFoldBook({ stack: $('flowStackT').value });   /* ⓪：リングとリフィルを、断面を作る前に決める */
+  $('fhbVal').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyFoldHandleBar(); } else if (e.key === 'Escape') { e.stopPropagation?.(); closeFoldHandleBar(); } }); $('fhbSame').onclick = () => applyFoldHandleBar(true); $('fhbClose').onclick = closeFoldHandleBar;   /* 断面の取っ手の数字の小窓 */
   $('flowMake').onclick = () => { const s = foldBookState(); if (!foldBookComplete(s)) { $('hint').textContent = t(s.kind === 'book' ? 'foldFlowBookIncomplete' : 'foldFlowBookFirst'); $('flowBook').focus?.(); return; } applyFoldBook(false); $('fdMake').click(); };   /* ⓪が決まるまで①は進めない（案内を出す）。決まっていれば、⓪の値を欄に写してから、今までの「断面を作る」を押す */
   for (const [from, to] of [['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
   const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
@@ -4551,8 +4552,11 @@ function foldRingInput() {
   return { spec, ringD: tp.ringD, pos, stackT, parts, dir: $('fdRefillDir')?.value === 'v' ? 'v' : 'h' };
 }
 /** リング・台座・リフィルを、右の丸折りの頂点から革に沿って pos(mm) の位置の、革の内側の面に立てる（面に垂直に内側へ）。断面の図形と、取付穴の位置 s（革の端から中心線に沿った長さ）を返す。 */
+/** 2つ折りで、リングを革の端から飛び出させない範囲（中心線に沿った位置 s）：リングの外半径ぶん、端から内側へ（事業主 2026-10-23「そもそもリング飛び出しすぎ」）。 */
+const foldRingLimits = (path, rOut) => ({ lo: Math.min(rOut, path.length / 2), hi: Math.max(path.length - rOut, path.length / 2) });
 function foldRingShapes(path, T, origin, ring) {
-  const arc = path.pieces.find(pc => pc.kind === 'arc'), s = Math.max(0, Math.min(path.length, (arc.s0 + arc.s1) / 2 + ring.pos)), q = pointOnFoldPath(path, s), tx = Math.cos(q.heading), ty = Math.sin(q.heading), nx = -ty, ny = tx, fu = q.u + nx * T / 2, fv = q.v + ny * T / 2;
+  const arc = path.pieces.find(pc => pc.kind === 'arc'), arcMid = (arc.s0 + arc.s1) / 2, rOut = Math.max(0, ...ring.parts.shapes.filter(sh => sh.role === 'ring-outer' && Number.isFinite(sh.r)).map(sh => sh.r)), want = arcMid + ring.pos;
+  const lim = foldRingLimits(path, rOut), bi = foldIsBifold(), s = bi ? Math.max(lim.lo, Math.min(lim.hi, want)) : Math.max(0, Math.min(path.length, want)), clamped = bi && Math.abs(s - want) > 1e-9, q = pointOnFoldPath(path, s), tx = Math.cos(q.heading), ty = Math.sin(q.heading), nx = -ty, ny = tx, fu = q.u + nx * T / 2, fv = q.v + ny * T / 2;
   const at = (h, w) => ({ x: origin.x + fu + nx * h + tx * w, y: origin.y - (fv + ny * h + ty * w) });   /* (面からの高さ h, 面に沿った横 w) → 図面の座標 */
   const shapes = ring.parts.shapes.map(sh => {
     if (sh.type === 'circle') { const c = at(sh.h, sh.w); return { type: 'circle', role: sh.role, cx: c.x, cy: c.y, r: sh.r }; }
@@ -4565,7 +4569,7 @@ function foldRingShapes(path, T, origin, ring) {
   const P = (t, k) => vert ? { x: c.x + k * hh, y: c.y + e.y * t } : { x: c.x + e.x * t, y: c.y + k * hh };   /* t＝リングの中心から向き e への距離・k＝厚みの向き（−1・＋1） */
   shapes.push({ type: 'polyline', role: 'refills', closed: true, points: [P(rf.t0, -1), P(rf.t1, -1), P(rf.t1, 1), P(rf.t0, 1)] });
   for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
-  return { shapes, s };
+  return { shapes, s, rOut, clamped, ...(clamped ? { pos: s - arcMid } : {}) };   /* clamped＝端から飛び出さないよう位置をとどめた（そのときの pos は、とどめたあとの値） */
 }
 function foldIsBifold() { return $('fdMode')?.value === 'bifold'; }
 /** 断面・平面・展開の案内の文言：2つ折りには「ボタン線」が無いので、幅・内半径・厚みの言い方（Bi）にする。 */
@@ -4576,12 +4580,14 @@ function syncFoldModeUI() {
   for (const el of document.querySelectorAll('[data-bifold-only]')) el.hidden = !bi;
   renderFoldFlow();   /* 折りシミュレーションの小窓も、折り方に合わせる */
 }
+let foldPend = null;   /* 断面を作り直す1回だけ、欄に無い値（widthB・shiftX）を上書きする */
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);
-  const vals = { ...(foldIsBifold() ? { mode: 'bifold', width: num('fdBiW') } : {}), t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
+  const prevD = doc.foldDesign, pend = foldPend || {}, biNow = foldIsBifold() && (!prevD || prevD.mode === 'bifold' || 'widthB' in pend), widthB = !biNow ? undefined : 'widthB' in pend ? pend.widthB : prevD?.widthB, shiftX = !biNow ? 0 : 'shiftX' in pend ? pend.shiftX : prevD?.shiftX ?? 0;   /* 裏表紙の幅 widthB・断面の横ずらし shiftX は欄に無い値：取っ手のドラッグ・数字の小窓から foldPend で渡し、無ければ今の断面の値を引き継ぐ */
+  const vals = { ...(foldIsBifold() ? { mode: 'bifold', width: num('fdBiW'), ...(Number.isFinite(widthB) ? { widthB } : {}) } : {}), t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t(foldErrKey(p.error, vals.mode)); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
-  const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
+  const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX + shiftX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
   const flipOn = $('fdFlip')?.checked !== false, ringIn = foldRingInput(), ring = ringIn && !ringIn.error ? { ...ringIn, ...foldRingShapes(path, p.T, origin, ringIn) } : null;
   const prevStitch = doc.foldDesign?.stitch;   /* 平面図の縫い穴の設定は、断面を作り直しても引き継ぐ */
   designCommit(() => {
@@ -4592,11 +4598,11 @@ function makeFoldDesign(live = false) {
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
     for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
-    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
+    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(shiftX ? { shiftX } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
   }, live);
-  const f2 = v => v.toFixed(2);
+  const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
   $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
-    + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
+    + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) + (ring.clamped ? ' ' + t('foldRingClamped', { pos: f2(ring.pos), r: f2(ring.rOut) }) : '') : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
   foldFollowSoon();   /* できている平面図・展開図も、新しい数字で作りなおす */
 }
 /** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
@@ -4791,7 +4797,7 @@ function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn 
 }
 /** 取っ手：実際の断面の上の金色の小さな四角。つかんで横へドラッグすると、欄の数値が変わり断面が作り直される（元に戻すは1回）。「三つ折りの設計」カードを開いていて、選択モードのときだけ出る。 */
 const FD_HANDLE_FIELDS = [['fdDL', 'dL'], ['fdDR', 'dR'], ['fdCL', 'cL'], ['fdCR', 'cR'], ['fdRL', 'rinL'], ['fdRR', 'rinR']];
-const foldHandleList = () => mode === 'select' && !exporting && doc.foldDesign && ($('foldDesignCard')?.open === true || doc.shapes.some(s => s.foldSec === 'fd' && selected.has(s.id))) ? (foldHandles(doc.foldDesign) ?? []) : []; /* 設計カードを開いているか、断面を選んでいるとき、断面の寸法の取っ手が出る */
+const foldHandleList = () => mode === 'select' && !exporting && doc.foldDesign && ($('foldDesignCard')?.open === true || $('foldFlowDialog')?.open === true || doc.shapes.some(s => s.foldSec === 'fd' && selected.has(s.id))) ? (foldHandles(doc.foldDesign) ?? []) : []; /* 設計カードか折りの流れの小窓を開いているか、断面を選んでいるとき、断面の寸法の取っ手が出る（事業主 2026-10-23「断面の変形はどうやって再開すればよいですか？」→ 小窓を開いている間は出したまま） */
 function foldHandleAt(p) {
   const w = world(p), r = 10 / scale; let best = null, bd = Infinity;
   for (const h of foldHandleList()) { const dd = Math.hypot(h.x - w.x, h.y - w.y); if (dd <= r && dd < bd) { best = h; bd = dd; } }
@@ -4805,7 +4811,7 @@ function drawFoldHandles() {
   ctx.restore();
 }
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
-const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: { w: t('fdSecW'), h: t('fdSecH'), t: t('fdSecT'), to: t('fdSecTO'), ti: t('fdSecTI') } }) ?? []) : [];
+const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: { w: t('fdSecW'), wb: t('fdSecWB'), h: t('fdSecH'), t: t('fdSecT'), to: t('fdSecTO'), ti: t('fdSecTI') } }) ?? []) : [];
 function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdItems(g.items, { color: '#4fb3ff', lineW: 1.6, font: 15, keepIn: true }); }
 /** 図面に保存されている三つ折りの設計の値を、設計カードの数値欄へ書き戻す。図面を開いた・前回の続きを開いた・タブを切り替えた・元に戻したときなど、欄が図面の設計とずれていると、
  *  取っ手のドラッグや欄の入力で断面を作り直すときに、ずれた欄の値（ほかの寸法・厚み・リング）を読んでしまい、寸法が変わらない・別の形になる（事業主指摘 2026-10-15）。 */
@@ -4819,15 +4825,26 @@ function syncFoldFields() {
   if (d.ring) { set('fdRingPos', d.ring.pos); set('fdStackT', d.ring.stackT); set('fdRefillDir', d.ring.dir === 'v' ? 'v' : 'h'); if ([...($('binderSpecSel')?.options || [])].some?.(o => o.value === d.ring.specId)) { set('binderSpecSel', d.ring.specId); const sp = binderSpec(d.ring.specId); if (sp && $('ringD')) fillRingOptions($('ringD'), sp); } /* 規格を替えたら、リング径の選択肢もその規格の一覧に作り直す（前の規格の一覧が残ると、Micro5 なのに 25〜40 が出て 20 が選べなかった・事業主指摘 2026-10-17） */ set('ringD', d.ring.ringD); if ($('ringD') && !Array.from($('ringD').children || []).some(o => o.value === $('ringD').value)) { const sp = binderSpec($('binderSpecSel').value); if (sp) $('ringD').value = String(sp.rings.diameterOptionsMm[0]); } syncFoldRingSelects(); }
   refreshFoldWidth(); refreshFoldPitch();
 }
-function startFoldHandleDrag(h, w) {
+function startFoldHandleDrag(h, w, p = null) {
   syncFoldFields(); const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
-  gesture = { kind: 'foldHandle', h, start: w, vals: { ...Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])), width: d.width } }; setFdDimKey(h.dim);
+  gesture = { kind: 'foldHandle', h, start: w, d0: { ...d }, vals: { ...Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])), width: d.width, widthB: d.widthB, shiftX: d.shiftX ?? 0 } }; setFdDimKey(h.dim);
+  if (p) gesture.start = world(p);   /* 寸法線が画面の外に出るときは、つかんだ瞬間に表示位置がずれる：動かした量は、ずれたあとの位置から測る（ずれる前の位置から測ると、つかんだだけで寸法が動く） */
   $('hint').textContent = t('foldHandleDrag'); draw();
 }
+/** 図面の点 (x, y) → 2つ折りの断面の座標 (u, v)（origin と上下反転から逆算）。計画が成り立たないとき null。 */
+function foldLocal(d, x, y) { const p = foldDesignPlan(d); return p.ok && d.origin ? { p, u: x - d.origin.x, v: d.flipV !== false ? y - d.origin.y + 2 * p.rc[0] : d.origin.y - y } : null; }
 function dragFoldHandle(w) {
-  const g = gesture, v = g.vals; let dx = Math.round((w.x - g.start.x) * 10) / 10; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
+  const g = gesture, v = g.vals; if (!g.moved) { if (Math.hypot(w.x - g.start.x, w.y - g.start.y) * scale > 3) g.moved = true; else return; }   /* 3ピクセル以上動かしてからドラッグ（それまでは何も変えない）。動かさずに離したら、数字の小窓を開く */ let dx = Math.round((w.x - g.start.x) * 10) / 10; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
   switch (g.h.key) {
-    case 'w': set('fdBiW', Math.max(1, v.width + dx)); break;
+    case 'w': set('fdBiW', Math.max(1, v.width + dx)); if (Number.isFinite(v.widthB)) foldPend = { widthB: Math.max(1, v.widthB + dx), shiftX: v.shiftX }; break;   /* 全幅：両方の端を同じだけ（裏表紙の幅を別に決めてあれば、それも同じだけ） */
+    case 'endA': { const nw = Math.max(1, v.width - dx); set('fdBiW', nw); foldPend = { widthB: v.widthB ?? v.width, shiftX: v.shiftX + (v.width - nw) }; break; }   /* 表紙の端：背（頂点）は動かさず、端だけが動く。裏表紙の幅は今のまま */
+    case 'endB': foldPend = { widthB: Math.max(1, (v.widthB ?? v.width) - dx), shiftX: v.shiftX }; break;   /* 裏表紙の端 */
+    case 'ring': {   /* リング：つかんだ所に近い革の位置へ（端から飛び出さない範囲）。上の革・下の革の真ん中をつかむと、どちらの側か決まらないので、今の側（頂点なら表紙側）に付けたまま動かす */
+      const L = foldLocal(g.d0, w.x, w.y); if (!L) break;
+      const path = foldSectionPath({ flats: L.p.flats, bends: L.p.bends }), arc = path.pieces.find(pc => pc.kind === 'arc'), mid = (arc.s0 + arc.s1) / 2, rc = L.p.rc[0], lim = foldRingLimits(path, g.d0.ring?.rOut ?? 0);
+      const sideB = L.v > rc + 1e-9 ? true : L.v < rc - 1e-9 ? false : (g.d0.ring?.pos ?? 0) > 1e-9, pieces = path.pieces.filter(pc => sideB ? pc.s1 > mid : pc.s0 < mid);
+      let sNew = projectOnFoldPath({ pieces }, L.u, L.v).s; sNew = sideB ? Math.max(sNew, mid) : Math.min(sNew, mid); sNew = Math.max(lim.lo, Math.min(lim.hi, sNew)); set('fdRingPos', sNew - mid); break;
+    }
     case 'btn': { dx = Math.max(-Math.min(v.dL - 0.1, v.cL), Math.min(dx, Math.min(v.dR - 0.1, v.cR))); set('fdDL', v.dL + dx); set('fdDR', v.dR - dx); set('fdCL', v.cL + dx); set('fdCR', v.cR - dx); break; }   /* ボタン線を右へ dx：左の距離は＋dx・右の距離は−dx（全幅は変わらない） */
     case 'dl': set('fdDL', Math.max(0.1, v.dL - dx)); break;
     case 'dr': set('fdDR', Math.max(0.1, v.dR + dx)); break;
@@ -4836,12 +4853,34 @@ function dragFoldHandle(w) {
     case 'rl': set('fdRL', Math.max(0.1, v.rinL - dx)); break;
     case 'rr': set('fdRR', Math.max(0.1, v.rinR + dx)); break;
   }
-  refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign();
+  refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); foldPend = null;
 }
 /** ドラッグを離したとき：成り立たない寸法で断面が作り直せなかったときは、欄を直前の正しい値へ戻す。 */
-function endFoldHandleDrag() {
+function endFoldHandleDrag(g) {
   const d = doc.foldDesign; if (d?.mode === 'bifold') $('fdBiW').value = String(d.width); if (d) for (const [id, k] of FD_HANDLE_FIELDS) if (Number($(id).value) !== d[k]) $(id).value = String(d[k]);
   refreshFoldWidth(); refreshFoldPitch(); setFdDimKey(null);
+  if (g && !g.moved) openFoldHandleBar(g.h);   /* 動かさずに離した＝クリック：その寸法の数字を入れる小窓を開く */
+}
+/* ───────── 断面の取っ手をクリック：その寸法の数字を入れる小窓（事業主 2026-10-23「寸法指定の窓がどこにあるか見つからない」）。Enter で確定・Esc で閉じる ───────── */
+const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0] };
+let fhbKey = null;
+function openFoldHandleBar(h) {
+  const d = doc.foldDesign, spec = FHB[h?.key]; if (!d || !spec || d.mode !== 'bifold' || !$('foldHandleBar')) return; fhbKey = h.key;
+  $('fhbLabel').textContent = t(spec[0]); $('fhbVal').value = String(+Number(spec[1](d)).toFixed(2)); $('fhbSame').hidden = h.key !== 'endB'; $('foldHandleBar').hidden = false; $('fhbVal').focus?.(); $('fhbVal').select?.();
+  $('hint').textContent = t('fhbOpened');
+}
+function closeFoldHandleBar() { fhbKey = null; if ($('foldHandleBar')) $('foldHandleBar').hidden = true; }
+/** 小窓の数字を断面に反映する。same が真なら、裏表紙の幅を表紙と同じに戻す。 */
+function applyFoldHandleBar(same = false) {
+  const d = doc.foldDesign, key = fhbKey, raw = ($('fhbVal').value ?? '').trim(), val = Number(raw); if (!d || !key) return;
+  if (!same && (raw === '' || !Number.isFinite(val) || (key !== 'ring' && !(val > 0)))) { $('hint').textContent = t('fhbBad'); return; }
+  syncFoldFields(); const sx = d.shiftX ?? 0;
+  if (key === 'w') { $('fdBiW').value = String(val); foldPend = { widthB: undefined, shiftX: sx }; }   /* 全幅：表紙・裏表紙とも同じ長さに */
+  else if (key === 'endA') { $('fdBiW').value = String(val); foldPend = { widthB: d.widthB ?? d.width, shiftX: sx + (d.width - val) }; }   /* 表紙の端：背は動かさない・裏表紙は今のまま */
+  else if (key === 'endB') foldPend = { widthB: same ? undefined : val, shiftX: sx };
+  else if (key === 'rr') $('fdRR').value = String(val);
+  else if (key === 'ring') $('fdRingPos').value = String(val);
+  refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); foldPend = null; closeFoldHandleBar();
 }
 /** 円の点（0°・45°…の8か所）：円を1つだけ選んでいるとき、その点をつかんでドラッグすると、中心はそのままで半径が変わる（離したとき確定・元に戻すは1回・磁石に吸い付く）。事業主指示 2026-10-15 */
 let circleHot = null;
@@ -5687,6 +5726,7 @@ function placePatchWin(left, top, width) { placeCardWin('patchCard', left, top, 
 function keepPatchWinInView() { keepCardWinInView('patchCard'); }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード。ほかのツールでは閉じる。柄は右列でなく窓（setPatchWin）。 */
 function syncToolCards() {
+  if ($('foldHandleBar') && !$('foldHandleBar').hidden && !foldHandleList().length) closeFoldHandleBar();   /* 取っ手が出ていないときは、数字の小窓も閉じる */
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
@@ -6443,6 +6483,7 @@ function distTo(s, p) {
   const hw = L.label.length * L.px * 0.6 / 2, hh = L.px / 2, ex = Math.max(Math.abs(lx) - hw, 0), ey = Math.max(Math.abs(ly) - hh, 0);
   return Math.min(g, Math.hypot(ex, ey));
 }
+const SELECT_HALO = 'rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
   ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
@@ -6618,6 +6659,7 @@ function drawSheetBody(lo, hi) {
   if (viewShow.colors) drawMetalFills(); /* 金属の色が付いた金具のべた塗り（線の下） */
   const strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image'), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
+  if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of strokeList) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
   for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
   ctx.setLineDash([]);
@@ -6809,7 +6851,7 @@ canvas.addEventListener('pointerdown', e => {
     gesture = { kind: 'pen', start: cursor, screen: p }; draw(); return;
   }
   if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) { const gm = gapMarkAt(cursor); if (gm) { fillOneGap(gm); return; } } /* 赤い輪（歯抜けの印）のクリックは、下の線の選択より優先 */
-  if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p)); return; } }
+  if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p), p); return; } }
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
@@ -6995,7 +7037,7 @@ canvas.addEventListener('pointerup', e => {
   gesture = null; if (g.kind === 'pan' && distance(p, g.screen) >= 4) lastPanDragAt = Date.now();
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
-  if (g.kind === 'foldHandle') { endFoldHandleDrag(); draw(); return; }
+  if (g.kind === 'foldHandle') { endFoldHandleDrag(g); draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
   if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c), { rotates: true }); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
   if (g.kind === 'textR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.size - sh.sizeMm) > 1e-9) { commit(() => { sh.sizeMm = g.size; }); $('hint').textContent = t('textResized', { size: circleNum(g.size) }); } draw(); return; }
