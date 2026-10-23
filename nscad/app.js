@@ -3905,7 +3905,8 @@ function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
 /** 規格の選択肢を入れる。製品（parent あり）は親の規格の下にまとめて出す（規格 → 製品の2段）。親の行は規格そのもの。 */
 function fillBinderSpecOptions(sel, placeholder = false) {
   if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
-  const nameOf = s => document.documentElement.lang === 'en' ? s.names.en : s.names.ja, opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = nameOf(s); into.appendChild(o); };
+  const en = document.documentElement.lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, aliasOf = s => (s.names.aliases || []).filter(a => typeof a === 'string' && a), labelOf = s => aliasOf(s).length ? (en ? `${nameOf(s)} (${aliasOf(s).join(', ')})` : `${nameOf(s)}（${aliasOf(s).join('・')}）`) : nameOf(s);   /* 別名（ロルバーン M・Filofax Pocket など）を名前のあとに添える：一覧で探せるように */
+  const opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = labelOf(s); into.appendChild(o); };
   for (const s of BINDER_SPECS.filter(s => !s.parent)) { const kids = BINDER_SPECS.filter(k => k.parent === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
 }
 function renderHardware() {

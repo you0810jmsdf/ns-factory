@@ -2820,6 +2820,8 @@ export const BINDER_SPECS = [
    "ja": "Mini6 / M6",
    "en": "Mini6 / M6",
    "aliases": [
+    "ロルバーン M",
+    "Rollbahn M",
     "ミニ6穴",
     "ポケット",
     "Filofax Pocket"
