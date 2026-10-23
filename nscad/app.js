@@ -4490,6 +4490,7 @@ function makeFoldDesign(live = false) {
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
   const flipOn = $('fdFlip')?.checked !== false, ringIn = foldRingInput(), ring = ringIn && !ringIn.error ? { ...ringIn, ...foldRingShapes(path, p.T, origin, ringIn) } : null;
+  const prevStitch = doc.foldDesign?.stitch;   /* 平面図の縫い穴の設定は、断面を作り直しても引き継ぐ */
   designCommit(() => {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
@@ -4498,14 +4499,31 @@ function makeFoldDesign(live = false) {
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
     for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
-    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
+    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2);
   $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
     + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
+  foldFollowSoon();   /* できている平面図・展開図も、新しい数字で作りなおす */
 }
 /** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
 function liveFoldDesign() { makeFoldDesign(true); }   /* 数値が正しければ、断面を作る前でも変えた時点で描く（元に戻すは1回） */
+/** 数字を変えて断面を作り直したあと、すでに平面図（②）・展開図（③）ができていれば、数字が止まってから1回だけ、同じ手順で作りなおす（事業主 2026-10-23「数字を変えたら平面図も自動で作り直す」）。
+ *  断面と合わせて「元に戻す」は1回。平面図・展開図に手で足したもの（直した菱目など）は、②③を押し直したときと同じく、作りなおしで消える。 */
+let foldFollowTimer = null;
+function foldFollowSoon() {
+  clearTimeout(foldFollowTimer); foldFollowTimer = null;
+  if (!doc.foldDesign || !doc.shapes.some(s => s.foldFlat === 'fd' || s.foldFlat === 'fdu')) return;
+  foldFollowTimer = setTimeout(() => { foldFollowTimer = null; if (!gesture && !stage) foldFollowNow(); }, 240);   /* 数字を打っている間は待つ（展開図は穴が多く、1回が重い）。最後の変化の 0.24 秒後に1回 */
+}
+function foldFollowNow() {
+  const hasFlat = doc.shapes.some(s => s.foldFlat === 'fd'), hasUnfold = doc.shapes.some(s => s.foldFlat === 'fdu'); if (!doc.foldDesign || !(hasFlat || hasUnfold)) return;
+  const keep = designUndoLen === undo.length ? undo.length : -1, before = undo.length, note = $('hint').textContent;
+  if (hasFlat) projectFoldDesign(false); if (hasUnfold) unfoldFoldDesign();
+  if (undo.length === before) return;   /* 作れなかった（高さが空など）：案内はそのまま */
+  if (keep >= 0) { undo.splice(keep); designUndoLen = keep; }   /* 断面と合わせて、取り消しは1回 */
+  $('hint').textContent = note + ' ' + t('foldFollowDone');
+}
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
 function projectFoldDesign(withStitch) {
@@ -6782,12 +6800,26 @@ function showSideTab(name, { save = true } = {}) {
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.setAttribute?.('aria-selected', String(b.dataset?.sideTab === name));
   if (save) try { localStorage.setItem(SIDE_TAB_KEY, name); } catch { /* 保存できなくても続ける */ }
 }
-/** カード（または、その中の部品）を見せる：そのカードの分類のタブへ切り替える。分類の無い（古い・別の）カードは何もしない。 */
-function revealCard(el) { let c = el; while (c && !(c.tagName === 'DETAILS' && sideGroupOf(c))) c = c.parentElement; const g = sideGroupOf(c); if (g && g !== sideTab) showSideTab(g); }
+/** カード（または、その中の部品）を見せる：そのカードの分類のタブへ切り替え、閉じている右の列を、そのカード1枚だけで開く。分類の無い（古い・別の）カードは何もしない。 */
+function revealCard(el) { let c = el; while (c && !(c.tagName === 'DETAILS' && sideGroupOf(c))) c = c.parentElement; const g = sideGroupOf(c); if (g && g !== sideTab) showSideTab(g); if (c && g) openSidePanel(c); }
+/** 右の列（パネル）は普段は閉じる（body.side-closed）。card があれば、そのカード1枚だけ（body.side-single・カードに data-only）、無ければ分類タブつきの全部を出す。窓（data-win）として出ているカードは、右の列を開かない。 */
+function sidePanelOpen() { return !document.body?.classList?.contains('side-closed'); }
+function clearSideOnly() { for (const c of document.querySelectorAll('#side details.card') || []) { if (c.dataset) delete c.dataset.only; } }
+function openSidePanel(card = null) {
+  const b = document.body; if (!b?.classList || card?.dataset?.win === '1') return;
+  b.classList.remove('side-closed'); clearSideOnly();
+  if (card) { card.dataset.only = '1'; card.open = true; b.classList.add('side-single'); $('sideHeadTitle').textContent = card.querySelector?.('summary')?.textContent || ''; } else { b.classList.remove('side-single'); $('sideHeadTitle').textContent = ''; }
+  $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'true'); resize();
+}
+function closeSidePanel() {
+  const b = document.body; if (!b?.classList) return;
+  b.classList.add('side-closed'); b.classList.remove('side-single'); clearSideOnly(); $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'false'); resize();
+}
 function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
   showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
+  $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
@@ -7063,7 +7095,19 @@ function restoreSheets(extra, id) {
 }
 window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { e.preventDefault(); e.returnValue = ''; } });
 /* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
-$('save').onclick = () => { $('saveMenu').hidden = !$('saveMenu').hidden; };
+/** 上の段の「表示」「その他」メニュー（チェック欄・ズーム・ヘルプ類をまとめた開け閉め）。開いている間は、中のチェックを続けて変えられ、外をクリックか Esc で閉じる。中のボタン（ヘルプなど）を押したら閉じる。 */
+const HDR_MENUS = [['viewBtn', 'viewMenu'], ['otherBtn', 'otherMenu']];
+function closeHdrMenus(except = null) { for (const [b, m] of HDR_MENUS) { if (m === except) continue; const el = $(m); if (el && !el.hidden) { el.hidden = true; $(b).setAttribute?.('aria-expanded', 'false'); } } }
+function initHdrMenus() {
+  for (const [b, m] of HDR_MENUS) {
+    $(b).onclick = () => { const el = $(m), open = el.hidden; closeHdrMenus(m); $('saveMenu').hidden = true; el.hidden = !open; $(b).setAttribute?.('aria-expanded', String(open)); };
+    for (const x of ($(m).querySelectorAll ? $(m).querySelectorAll('button') : [])) x.addEventListener('click', () => { if (m === 'otherMenu' || x.id === 'autoSolid') closeHdrMenus(); });
+  }
+  document.addEventListener?.('click', e => { if (!(e.target instanceof Node)) return; for (const [b, m] of HDR_MENUS) { const el = $(m); if (el && !el.hidden && !el.contains(e.target) && !$(b).contains(e.target)) { el.hidden = true; $(b).setAttribute?.('aria-expanded', 'false'); } } });
+  document.addEventListener?.('keydown', e => { if (e.key === 'Escape') closeHdrMenus(); });
+}
+$('save').onclick = () => { closeHdrMenus(); $('saveMenu').hidden = !$('saveMenu').hidden; };
+initHdrMenus();
 try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
