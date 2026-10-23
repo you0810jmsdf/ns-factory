@@ -1530,6 +1530,188 @@
           "r": "D/2"
         }
       ]
+    },
+    {
+      "id": "notebook-rollbahn-m",
+      "name": "リフィル型紙 ロルバーン M（111×138・リング13）",
+      "name_en": "Refill pattern Rollbahn M (111×138, 13 rings)",
+      "tags": [
+        "refill",
+        "notebook",
+        "rollbahn"
+      ],
+      "desc": "ロルバーン ポケット付メモ M の型紙（外形とリングの穴）。W=幅 H=高さ（公式：横111×縦138mm） R=右側の角の丸み（左側は直角） P=リングの間隔 E=穴の中心から左端 D=穴の径 Y=リングの列を中心の線から下へずらす量（0＝上下対称）。リングは左側に13個（真ん中の1個が中心の線の上）。寸法は公式の商品ページ、リングの間隔・位置・穴の径は公式の写真から測った推定（実物で確かめて、P・E・D で直してください）。ロルバーン M には Mini6 のリフィル（穴6個・間隔19.2mm＝リング2つぶん）がそのまま使えます（事業主 2026-10-23）。断面の設計では、リフィルの規格に Mini6 を選んでください。",
+      "vars": {
+        "W": 111,
+        "H": 138,
+        "R": 5,
+        "P": 9.5,
+        "E": 5,
+        "D": 3.6,
+        "Y": 0
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "R": 0.5,
+        "P": 0.05,
+        "E": 0.1,
+        "D": 0.1,
+        "Y": 0.1
+      },
+      "varLimits": {
+        "R": [
+          1,
+          15
+        ],
+        "E": [
+          2,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": 0,
+          "y1": 0,
+          "x2": "W-R",
+          "y2": 0
+        },
+        {
+          "type": "arc",
+          "layer": "pattern",
+          "cx": "W-R",
+          "cy": "R",
+          "r": "R",
+          "startDeg": 270,
+          "endDeg": 360
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": "W",
+          "y1": "R",
+          "x2": "W",
+          "y2": "H-R"
+        },
+        {
+          "type": "arc",
+          "layer": "pattern",
+          "cx": "W-R",
+          "cy": "H-R",
+          "r": "R",
+          "startDeg": 0,
+          "endDeg": 90
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": "W-R",
+          "y1": "H",
+          "x2": 0,
+          "y2": "H"
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": 0,
+          "y1": "H",
+          "x2": 0,
+          "y2": 0
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-6*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-5*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-4*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-3*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-2*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y-1*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+1*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+2*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+3*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+4*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+5*P",
+          "r": "D/2"
+        },
+        {
+          "type": "circle",
+          "layer": "pattern",
+          "cx": "E",
+          "cy": "H/2+Y+6*P",
+          "r": "D/2"
+        }
+      ]
     }
   ]
 }
