@@ -22,9 +22,9 @@ import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
 import { DATA_LEATHER_COLORS } from './data/leather-colors.js';
 import { DATA_TEXTURES } from './data/textures.js';
 import { createPlayer } from './tutorial.js';
-import { parseVoice, labelOf } from './voice.js';
+import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
-import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, learnLocalFiles, localReferenceDoc, localDesignStore } from './designs.js';
+import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } from './designs.js';
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
 import { TUTORIALS_BASICS } from './tutorials/basics.js';
@@ -1842,8 +1842,17 @@ function foldFlowStates(d = doc) {
   return [s1, s2, s3, s4, s5];
 }
 function renderFoldFlow() {
-  const st = foldFlowStates(doc), now = st.indexOf(false);
-  for (let i = 0; i < 5; i++) { const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue; const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text; }
+  const bi = foldIsBifold(), st = foldFlowStates(doc), shown = bi ? [0, 1, 4] : [0, 1, 2, 3, 4], now = shown.find(i => !st[i]) ?? -1, marks = '①②③④⑤';   /* 2つ折りは、貼り合わせ検証（③④）を使わず ①断面→②平面→③展開 */
+  const sel = $('flowFoldMode'), want = bi ? 'bifold' : 'trifold'; if (sel && sel.value !== want) sel.value = want;
+  const setText = (id, text) => { const el = $(id); if (el && el.textContent !== text) el.textContent = text; };
+  for (let i = 0; i < 5; i++) {
+    const li = $('foldFlowStep' + (i + 1)), tag = $('foldFlowState' + (i + 1)); if (!li || !tag) continue;
+    const v = st[i] ? 'done' : i === now ? 'now' : 'todo', text = v === 'done' ? t('foldFlowDone') : v === 'now' ? t('foldFlowNow') : ''; if (li.dataset.state !== v) li.dataset.state = v; if (tag.textContent !== text) tag.textContent = text;
+    const k = shown.indexOf(i); if (k >= 0) setText('foldFlowNo' + (i + 1), marks[k]);
+    if (bi && [0, 1, 4].includes(i)) { setText('foldFlowName' + (i + 1), t('foldFlowBiStep' + (i + 1))); setText('foldFlowText' + (i + 1), t('foldFlowBiText' + (i + 1))); }
+    else { setText('foldFlowName' + (i + 1), t('foldFlowStep' + (i + 1))); setText('foldFlowText' + (i + 1), t('foldFlowText' + (i + 1))); }
+  }
+  setText('flowOpenDesign', t(bi ? 'foldFlowBiOpenDesign' : 'foldFlowOpenDesign')); setText('flowMake', t(bi ? 'foldFlowBiMake' : 'fdMake'));   /* 2つ折りにはボタン線が無いので、「（ボタン線から）」を付けない */
 }
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
@@ -2436,6 +2445,7 @@ function initDesign() {
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
+  $('flowFoldMode').onchange = () => { $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
   for (const [from, to] of [['flowMake', 'fdMake'], ['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
   const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
@@ -2545,7 +2555,7 @@ function syncLockMarks() {
   document.querySelectorAll('[data-lock]').forEach(el => { el.classList.toggle('locked', locked); const body = el.querySelector?.(':scope > .body'); if (body) { if (locked) body.setAttribute('inert', ''); else body.removeAttribute('inert'); } });
   const designOption = $('voiceTarget')?.querySelector?.('option[value="design"]');
   if (designOption) designOption.disabled = locked;
-  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'command';
+  if (locked && $('voiceTarget')?.value === 'design') $('voiceTarget').value = 'auto';
   if ($('localDesignCreate')) $('localDesignCreate').disabled = locked || !localDesignPending || localDesignPending.invalid;
 }
 /** 数値の欄は、すべて共通で、入ったとき（クリック・Tab）に中身を全選択にする。初期値が 0 の欄（向き(°) など）に 90 と打つと 090 になるのを防ぐ（事業主指示 2026-10-17）。マウスで入ったときは、最初のマウスアップのあとで全選択し直して、選択が外れないようにする（2回目以降のクリックは通常どおり、途中にカーソルを置ける）。 */
@@ -2985,9 +2995,10 @@ function localDesignerStatus() {
   const count = privateDesignCorpus?.items?.length ?? DATA_DESIGNS.items?.length ?? 0;
   $('localDesignStatus').textContent = t('localDesignCount', { n: count }) + ' ' + styleSummary(privateDesignCorpus?.style || DATA_STYLE, voiceLang());
 }
-function localDesignSuggest(text) {
+function localDesignSuggest(text, opts = {}) {
   if (!lockGate('voiceDesign')) return;
   const r = localDesignRequest(text), items = privateDesignCorpus?.items || DATA_DESIGNS.items || [];
+  if (opts.fromVoice && r.terms.includes('wallet') && !r.bifold && !r.kind && !r.terms.includes('trifold')) r.bifold = true;   /* 声で「財布」とだけ言ったときは、いま作れる2つ折りの財布にする（折り方を言えばそちらを優先） */
   localDesignPending = r; $('localDesignPrompt').value = text;
   $('localDesignResults').textContent = ''; $('localDesignCreate').disabled = r.invalid || (!r.bifold && !r.kind);
   const matches = rankLocalDesigns(items, text);
@@ -3004,10 +3015,16 @@ function localDesignSuggest(text) {
   }
   $('localDesignStatus').textContent = r.invalid ? t('localDesignInvalid') : t('localDesignProposal', { n:matches.length }) + (r.bifold ? ' ' + t('localDesignBifoldDefaults', { w:r.width ?? 100, h:r.height ?? 90, r:r.radius ?? 6, t:r.thickness ?? 1.5, p:r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2) }) : '');
   $('voiceCard').open = true; revealCard($('voiceCard'));
+  if (opts.fromVoice) {   /* 声で頼んだとき：作れる依頼（2つ折り・手帳・カードケース・パスケース・コインケース）は、押さなくてもそのまま新しいタブに作る（元の図面は残る） */
+    if (r.invalid) { voiceSay(t('localDesignInvalid')); return; }
+    if (!(r.bifold || r.kind)) { voiceSay(t('voiceDesignNoRecipe')); return; }
+    if (localDesignCreate()) { voiceSay(t(r.bifold ? 'voiceDesignMade' : 'voiceDesignMadeKind', { what: r.bifold ? t('fdModeBi') : t('kind.' + r.kind) })); if (r.bifold) setFlowWin(true); }
+    else voiceSay($('localDesignStatus').textContent);
+  }
 }
 function localDesignCreate() {
-  if (!lockGate('voiceDesign')) return;
-  const r=localDesignPending; if (!r || r.invalid) return;
+  if (!lockGate('voiceDesign')) return false;
+  const r=localDesignPending; if (!r || r.invalid) return false;
   const pitch=r.pitch ?? r.referencePitch ?? +(Number((privateDesignCorpus?.style || DATA_STYLE).pitch?.[0]?.value) || 4).toFixed(2);
   if (r.bifold) {
     const vals={mode:'bifold',width:r.width ?? 100,rinR:r.radius ?? 6,t:r.thickness ?? 1.5};
@@ -3020,12 +3037,12 @@ function localDesignCreate() {
     syncFoldModeUI(); makeFoldDesign(false); projectFoldDesign(false); unfoldFoldDesign(); fit();
   } else if (r.kind) {
     // Arbitrary width/height cannot safely scale stitching or hardware on a fixed recipe.
-    if (r.width || r.height || r.radius) { $('localDesignStatus').textContent=t('localDesignRecipeDims'); return; }
+    if (r.width || r.height || r.radius) { $('localDesignStatus').textContent=t('localDesignRecipeDims'); return false; }
     const recipe={...defaultRecipe(r.kind),pitch,...(r.refill?{refill:r.refill}:{}),...(r.ringD?{ringD:r.ringD}:{}),...(r.thickness?{thickness:r.thickness}:{})};
     const built=buildDoc(recipe,{tools:loadTools()}); if (!built || !validateDoc(built.doc)) { $('localDesignStatus').textContent=t('localDesignInvalid');return; }
     newTab(t('recipeTab',{kind:t('kind.'+r.kind)})); commit(()=>{doc=built.doc; selected.clear();refreshTools();}); tabs[activeTab].doc=doc;renderLayers();renderSeams();fit();
-  } else return;
-  $('localDesignStatus').textContent=t('localDesignCreated',{p:pitch});
+  } else return false;
+  $('localDesignStatus').textContent=t('localDesignCreated',{p:pitch}); return true;
 }
 function initLocalDesigner() {
   $('localDesignSuggest').onclick=()=>localDesignSuggest($('localDesignPrompt').value);
@@ -3044,17 +3061,42 @@ function initLocalDesigner() {
 }
 
 // ---- 音声操作（Web Speech API・長押しで聞く・テキスト欄は同じ文法）----
-let voicePending = null, voiceCandidates = [], voiceRec = null, voiceAskNumber = null, voiceLevelStop = null;
+let voicePending = null, voiceCandidates = [], voiceRec = null, voiceAskNumber = null, voiceLevelStop = null, voiceKeepListening = false;
+const VOICE_ERR = { 'not-allowed': 'voiceNoPermission', 'service-not-allowed': 'voiceNoPermission', 'no-speech': 'voiceNoSound', 'audio-capture': 'voiceNoMic', network: 'voiceNetwork', 'language-not-supported': 'voiceLangNo' };
 const voiceLang = () => ($('language').value || 'ja') === 'en' ? 'en' : 'ja';
 function voiceSay(text) { $('voiceOut').textContent = text; if ($('voiceSpeak').checked && typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance === 'function') { const u = new SpeechSynthesisUtterance(text); u.lang = voiceLang() === 'en' ? 'en-US' : 'ja-JP'; speechSynthesis.speak(u); } }
 function renderVoiceCandidates() {
   const box = $('voiceCandidates'); box.textContent = ''; box.hidden = !voiceCandidates.length;
   voiceCandidates.forEach(c => { const b = document.createElement('button'); b.type = 'button'; b.textContent = labelOf(c, voiceLang()); b.onclick = () => { voiceCandidates = []; renderVoiceCandidates(); execVoice(c); }; box.appendChild(b); });
 }
+/** 声で描く（voice.js の parseDraw の ops）：いまの点（lastPoint・最初は原点）から、順に描く。右・左・上・下は画面で見える向き（図面は下が＋なので、上は −y）。
+ *  長方形はいまの点から右下へ・円は中心がいまの点・線は1本ずつの直線（「閉じる」で、最初の点へ戻る線を足す）。描いたあと、画面の外に出ていたら全体を表示する。 */
+function voiceDraw(ops) {
+  const r4 = v => +v.toFixed(4), box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }, grow = (x, y) => { box.minX = Math.min(box.minX, x); box.minY = Math.min(box.minY, y); box.maxX = Math.max(box.maxX, x); box.maxY = Math.max(box.maxY, y); };
+  let p = { x: lastPoint.x, y: lastPoint.y }, chain = null, p0 = null, lines = 0; const parts = [], begin = () => { if (!p0) { p0 = { ...p }; grow(p.x, p.y); } };
+  const line = q => { addShape({ type: 'line', x1: p.x, y1: p.y, x2: q.x, y2: q.y }); lines++; grow(q.x, q.y); p = q; };
+  for (const o of ops) {
+    if (o.op === 'origin') { p = { x: 0, y: 0 }; chain = null; continue; }
+    if (o.op === 'rect') { begin(); const q = { x: r4(p.x + o.w), y: r4(p.y + o.h) }, rect = rectShape(p, q); if (!rect) continue; addShape(rect); grow(q.x, q.y); parts.push(t('voiceDrewRect', { w: o.w, h: o.h })); p = q; chain = null; continue; }
+    if (o.op === 'circle') { begin(); addShape({ type: 'circle', cx: r4(p.x), cy: r4(p.y), r: o.r }); grow(p.x - o.r, p.y - o.r); grow(p.x + o.r, p.y + o.r); parts.push(t('voiceDrewCircle', { d: r4(o.r * 2), r: o.r })); chain = null; continue; }
+    if (o.op === 'move' || o.op === 'polar') {
+      begin(); if (!chain) chain = { ...p };
+      const v = o.op === 'polar' ? [Math.cos(o.deg * Math.PI / 180), -Math.sin(o.deg * Math.PI / 180)] : { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] }[o.dir];   /* 角度は、右が0°・上が90°（画面で見える反時計回り） */
+      line({ x: r4(p.x + v[0] * o.len), y: r4(p.y + v[1] * o.len) }); continue;
+    }
+    if (o.op === 'close') { if (chain && Math.hypot(p.x - chain.x, p.y - chain.y) > 1e-6) line({ ...chain }); chain = null; }
+  }
+  if (!p0) { voiceSay(t('voiceNothingDrawn')); return; }
+  if (lines) parts.push(t('voiceDrewLines', { n: lines }));
+  lastPoint = p; const lo = world({ x: 0, y: 0 }), hi = world({ x: width, y: height });
+  if (box.minX < lo.x || box.minY < lo.y || box.maxX > hi.x || box.maxY > hi.y) fit();   /* 画面の外に描いたときは、全体を表示する */
+  draw(); voiceSay(t('voiceDrew', { what: parts.join('・'), from: ops.some(o => o.op === 'origin') ? t('voiceFromOrigin') : t('voiceFromHere', { x: r4(p0.x), y: r4(p0.y) }) }));
+}
 function execVoice(r) {
   const lang = voiceLang();
   if (r.ask) { voiceCandidates = r.ask; renderVoiceCandidates(); voiceSay(t('voiceWhich')); return; }
-  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; $('aiCard').open = true; revealCard($('aiCard')); voiceSay(($('aiUrl').value || '').trim() ? t('voiceToAi') : t('voiceAiUnset')); return; }
+  if (r.free !== undefined) { if (!r.free) return; $('aiInput').value = r.free; if (($('aiUrl').value || '').trim()) { $('aiCard').open = true; revealCard($('aiCard')); voiceSay(t('voiceToAi')); } else voiceSay(t('voiceAiUnset')); return; }   /* AI が未設定なら、AI のカードへ飛ばさず、言い方の例を出す */
+  if (r.cmd === 'draw') { voiceCandidates = []; renderVoiceCandidates(); if (r.need) voiceSay(t('voiceNeed_' + r.need)); else voiceDraw(r.ops); return; }
   if (r.confirm && !r.confirmed) { voicePending = r; voiceSay(t('voiceConfirm', { what: labelOf(r, lang) })); return; }
   voicePending = null; const a = r.args || {};
   const done = extra => voiceSay(t('voiceDid', { what: labelOf(r, lang) + (extra ? ' ' + extra : '') }));
@@ -3062,7 +3104,7 @@ function execVoice(r) {
     case 'noop': case 'cancel': voiceCandidates = []; renderVoiceCandidates(); if (r.cmd === 'cancel') { cancel(); voiceSay(t('voiceCancelled')); } return;
     case 'tool': {
       if (mode !== r.tool) setMode(r.tool);
-      if (r.tool === 'line' && a.value !== undefined) runCommand(a.value + '<' + (a.angle ?? 0));
+      if (r.tool === 'line' && a.value !== undefined) { voiceDraw([{ op: 'polar', len: a.value, deg: a.angle ?? 0 }]); return; }   /* 長さを言えば、いまの点からその場で1本引く（これまでは始点を置くだけで線が出なかった） */
       else if (r.tool === 'circle' && a.radius !== undefined) { runCommand(lastPoint.x + ',' + lastPoint.y); runCommand(String(a.radius)); }
       else if (r.tool === 'stitch') { if (a.value !== undefined) { const tool = doc.tools.find(x => Math.abs(x.pitch - a.value) < 0.05); if (tool) { $('stitchTool').value = tool.id; $('stitchTool').listeners?.change?.(); } } if (a.placement) $('placement').value = a.placement; $('stitchCard').open = true; }
       else if (['offset', 'chamfer', 'fillet'].includes(r.tool) && a.value !== undefined) voiceAskNumber = r.tool === 'offset' && a.side === 'inside' ? -Math.abs(a.value) : a.value;
@@ -3081,16 +3123,21 @@ function execVoice(r) {
   }
   done('');
 }
-function execVoiceText(text) { $('voiceHeard').textContent = text; if ($('voiceTarget').value === 'design') { localDesignSuggest(text); return; } execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
+/** 型紙のデザインを頼む言い方か：財布・手帳・カードケース・2つ折り などの名前があり、「作って」「設計」などの頼む言葉もあるとき（描く言い方・ツール名だけの言い方は、CAD の操作として扱う）。 */
+function voiceLooksLikeDesign(text) {
+  const q = String(text).normalize('NFKC'), terms = designTerms(q);
+  return terms.some(k => ['wallet', 'notebook', 'cardcase', 'passcase', 'coincase', 'bifold', 'trifold', 'm5', 'mini6', 'bible', 'a5', 'a6'].includes(k)) && /作って|作る|作成|つくって|つくる|設計|デザイン|下書き|お願い|ください|make|create|design|draft/i.test(q);
+}
+function execVoiceText(text) { $('voiceHeard').textContent = text; const target = $('voiceTarget').value; if (target === 'design' || (target !== 'command' && voiceLooksLikeDesign(text) && !voiceIsDraw(text, voiceLang()))) { localDesignSuggest(text, { fromVoice: true }); return; } execVoice(parseVoice(text, voiceLang(), { pending: voicePending })); }
 function voiceStart() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { $('voiceOut').textContent = t('voiceUnsupported'); $('voiceText').focus?.(); return; }
   if (voiceRec) return; const rec = new SR(); voiceRec = rec; rec.lang = voiceLang() === 'en' ? 'en-US' : 'ja-JP'; rec.interimResults = true; rec.continuous = false;
-  let finalText = ''; $('voiceBtn').classList.add('active'); $('voiceHeard').textContent = '…'; $('voiceOut').textContent = '';
+  let finalText = '', failed = false; $('voiceBtn').classList.add('active'); $('voiceHeard').textContent = '…'; $('voiceOut').textContent = t('voiceListening');
   rec.onresult = e => { let s = ''; for (const r of e.results) { s += r[0].transcript; if (r.isFinal) finalText = s; } $('voiceHeard').textContent = s; };
-  rec.onerror = e => { $('voiceOut').textContent = e.error === 'not-allowed' ? t('voiceNoPermission') : e.error === 'no-speech' ? t('voiceNoSound') : t('voiceError'); };
-  rec.onend = () => { voiceRec = null; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoiceText(text); else if (!$('voiceOut').textContent) $('voiceOut').textContent = t('voiceNoSound'); };
-  try { rec.start(); } catch { voiceRec = null; }
+  rec.onerror = e => { if (e.error === 'aborted') return; failed = true; const key = VOICE_ERR[e.error]; $('voiceOut').textContent = key ? t(key) : t('voiceError') + ' (' + e.error + ')'; };   /* 失敗の理由を、種類ごとに出す */
+  rec.onend = () => { voiceRec = null; voiceKeepListening = false; $('voiceBtn').classList.remove('active'); voiceLevelStop?.(); voiceLevelStop = null; const text = finalText || $('voiceHeard').textContent; if (text && text !== '…') execVoiceText(text); else if (!failed) $('voiceOut').textContent = t('voiceNoSound'); };
+  try { rec.start(); } catch { voiceRec = null; $('voiceBtn').classList.remove('active'); $('voiceOut').textContent = t('voiceError'); return; }   /* 開始できなかったときも、理由なしに黙らない */
   voiceLevelStart();
 }
 function voiceStop() { if (voiceRec) { try { voiceRec.stop(); } catch { /* 二重停止は無視 */ } } }
@@ -3104,9 +3151,10 @@ function voiceLevelStart() {
   }).catch(() => { $('voiceOut').textContent = t('voiceNoPermission'); });
 }
 function initVoice() {
-  const btn = $('voiceBtn'); let toggled = false;
-  btn.addEventListener('pointerdown', e => { e.preventDefault(); if ($('voiceMode').value === 'toggle') { toggled = !toggled; if (toggled) voiceStart(); else voiceStop(); } else voiceStart(); });
-  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, () => { if ($('voiceMode').value !== 'toggle') voiceStop(); });
+  const btn = $('voiceBtn');
+  let pressAt = 0;
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); if ($('voiceMode').value === 'toggle') { if (voiceRec) voiceStop(); else voiceStart(); return; } if (voiceRec && voiceKeepListening) { voiceKeepListening = false; voiceStop(); return; } pressAt = Date.now(); voiceStart(); });   /* 聞き続けている間にもう一度押すと止める。トグルは、自動で終わったあとも1回の押しで始まる */
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) btn.addEventListener(ev, () => { if ($('voiceMode').value === 'toggle' || voiceKeepListening) return; if (ev === 'pointerup' && voiceRec && Date.now() - pressAt < 450) { voiceKeepListening = true; $('voiceOut').textContent = t('voiceListening'); return; } voiceStop(); });   /* 短く押した（クリック）ときは、離しても止めず、話し終えるまで聞き続ける（これまでは、クリックすると直後に止まって「聞き取れませんでした」になった） */
   btn.addEventListener('contextmenu', e => e.preventDefault());
   $('voiceText').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); execVoiceText($('voiceText').value); $('voiceText').value = ''; } });
   $('voiceGo').onclick = () => { execVoiceText($('voiceText').value); $('voiceText').value = ''; };
@@ -4416,6 +4464,7 @@ function syncFoldModeUI() {
   const bi = foldIsBifold();
   for (const el of document.querySelectorAll('[data-trifold-only]')) el.hidden = bi;
   for (const el of document.querySelectorAll('[data-bifold-only]')) el.hidden = !bi;
+  renderFoldFlow();   /* 折りシミュレーションの小窓も、折り方に合わせる */
 }
 function makeFoldDesign(live = false) {
   const num = id => ($(id).value ?? '').trim() === '' ? NaN : Number($(id).value);

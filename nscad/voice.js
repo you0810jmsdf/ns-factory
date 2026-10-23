@@ -4,6 +4,7 @@ const TOOL_WORDS = {
   select: { ja: ['選択', 'せんたく', '矢印'], en: ['select', 'selection', 'arrow', 'pointer'] },
   line: { ja: ['直線', '線', 'ライン'], en: ['line', 'straight'] },
   circle: { ja: ['円', 'まる', '丸', 'サークル'], en: ['circle', 'round'] },
+  rect: { ja: ['長方形', '四角形', '四角', '矩形', 'レクタングル'], en: ['rectangle', 'rect'] },
   arc: { ja: ['円弧', '弧', 'アーク'], en: ['arc'] },
   bezier: { ja: ['ベジェ', 'ベジエ', '曲線'], en: ['bezier', 'bézier', 'curve'] },
   path: { ja: ['ペン', 'パス', '折れ線', 'おれせん', 'ポリライン'], en: ['pen', 'path', 'polyline', 'polygon'] }, /* 折れ線ツールは無い（ペンで、クリックだけなら直線）。言い方だけペンへ */
@@ -44,7 +45,7 @@ const ACTION_WORDS = {
 const YES = { ja: ['はい', 'うん', 'おーけー', 'ok', 'オッケー', '実行', 'やって'], en: ['yes', 'ok', 'okay', 'yep', 'sure', 'do it', 'confirm'] };
 const NO = { ja: ['いいえ', 'やめる', 'キャンセル', '中止', 'ちがう', '違う'], en: ['no', 'cancel', 'nope', 'stop'] };
 /** 全角→半角・小文字・空白圧縮。 */
-export function normalizeVoice(text) { return String(text || '').replace(/[Ａ-Ｚａ-ｚ０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[、。,.!！?？]/g, ' ').toLowerCase().replace(/\s+/g, ' ').trim(); }
+export function normalizeVoice(text) { return String(text || '').replace(/[Ａ-Ｚａ-ｚ０-９．]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/[、。,!！?？]|(?<!\d)\.|\.(?!\d)/g, ' ').toLowerCase().replace(/\s+/g, ' ').trim(); }
 /** 文中の数値を抜く：{length, angle, radius, value, side, placement}。 */
 export function extractNumbers(text, lang) {
   const t = normalizeVoice(text), nums = [...t.matchAll(/(-?\d+(?:\.\d+)?)/g)].map(m => Number(m[1]));
@@ -71,14 +72,64 @@ function similar(table, t, lang) {
   }
   return out.sort((a, b) => b.score - a.score).slice(0, 3);
 }
+/* ───────── 描く文法（事業主 2026-10-23「音声作図機能は相変わらず何も機能しない」）：「幅100高さ50の長方形」「直径20の円」「右に100 上に50 左に100 閉じる」のように、数字つきで言えば、いまの点から直接描く。
+   向き：右・左・上・下は、画面で見える向き（図面の座標は下向きが＋なので、実行側で上下を合わせる）。単位：ミリ（mm）が標準・センチは10倍。 */
+const VOICE_KANJI_DIGIT = { 〇: 0, 零: 0, 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+function voiceKanjiNum(s) {
+  if (/^[〇零一二三四五六七八九]+$/.test(s)) return Number([...s].map(c => VOICE_KANJI_DIGIT[c]).join(''));
+  let total = 0, cur = 0;
+  for (const ch of s) { if (ch in VOICE_KANJI_DIGIT) cur = VOICE_KANJI_DIGIT[ch]; else { const m = { 十: 10, 百: 100, 千: 1000 }[ch]; if (!m) return NaN; total += (cur || 1) * m; cur = 0; } }
+  return total + cur;
+}
+/** 「百二十ミリ」「半径五十」のような漢数字を算用数字にする（単位・「半径」「右に」などの直前直後だけ。「二つ折り」「三つ折り」は変えない）。 */
+export function kanjiNumbersToArabic(t) {
+  const K = '〇零一二三四五六七八九十百千';
+  return String(t).replace(new RegExp(`([${K}]+)(?=\\s*(?:ミリ|センチ|mm|cm|度))|(?<=(?:半径|直径|幅|高さ|横|縦|長さ|角度|[右左上下][にへ]))([${K}]+)`, 'g'), (m, a, b) => { const n = voiceKanjiNum(a || b); return Number.isFinite(n) ? String(n) : m; });
+}
+const DRAW_NUM = '(\\d+(?:\\.\\d+)?)', DRAW_UNIT = '\\s*(ミリメートル|ミリ|mm|センチメートル|センチ|cm|millimeters?|centimeters?)?';
+const drawToMm = (v, u) => Math.round((/センチ|cm|centi/.test(u || '') ? Number(v) * 10 : Number(v)) * 1e4) / 1e4;
+const DRAW_DIR = { 右: 'right', 左: 'left', 上: 'up', 下: 'down', right: 'right', left: 'left', up: 'up', down: 'down' };
+/** 描く文法。描く内容があれば { cmd:'draw', ops:[{op:'origin'}|{op:'rect',w,h}|{op:'circle',r}|{op:'move',dir,len}|{op:'close'}] }、大きさが足りないときは { cmd:'draw', ops:[], need:'rectSize' }、無ければ null。 */
+export function parseDraw(t, lang = 'ja') {
+  const ja = lang === 'ja', ops = [];
+  const sz = re => { const m = new RegExp(re).exec(t); return m ? drawToMm(m[1], m[2]) : undefined; };
+  const origin = ja ? /原点|げんてん/.test(t) : /\borigin\b/.test(t);
+  if (origin) ops.push({ op: 'origin' });
+  const square = ja ? /正方形|せいほうけい|スクエア/.test(t) : /\bsquare\b/.test(t), rectW = ja ? /長方形|四角形|四角|矩形|レクタングル/.test(t) : /\b(rectangle|rect|box)\b/.test(t);
+  if (square || rectW) {
+    let w = sz(`(?:幅|はば|横|よこ|width|wide)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`), h = sz(`(?:高さ|たかさ|縦|たて|height|high|tall)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`);
+    const nums = [...t.matchAll(new RegExp(DRAW_NUM + DRAW_UNIT, 'g'))].map(m => drawToMm(m[1], m[2]));
+    if (square && !rectW) { const side = w ?? h ?? nums[0]; return side > 0 ? { cmd: 'draw', ops: [...ops, { op: 'rect', w: side, h: side }] } : null; }
+    if (w === undefined && h === undefined) { const pair = new RegExp(`${DRAW_NUM}${DRAW_UNIT}\\s*(?:x|×|掛け|かけ|by|と)\\s*${DRAW_NUM}${DRAW_UNIT}`).exec(t); if (pair) { w = drawToMm(pair[1], pair[2]); h = drawToMm(pair[3], pair[4]); } else if (nums.length >= 2) { w = nums[0]; h = nums[1]; } }
+    if (w === undefined && h === undefined && nums.length === 0) return null;   /* 数字が無い：「長方形」だけ→ツールを選ぶ */
+    if (!(w > 0 && h > 0)) return { cmd: 'draw', ops: [], need: 'rectSize' };
+    return { cmd: 'draw', ops: [...ops, { op: 'rect', w, h }] };
+  }
+  const circle = ja ? /円|丸|まる|サークル/.test(t) : /\bcircle\b/.test(t), diameter = ja ? /直径|ちょっけい/.test(t) : /\bdiameter\b/.test(t);
+  if (circle && diameter) { const d = sz(`(?:直径|ちょっけい|diameter)\\s*(?:は|が|を|:|of)?\\s*${DRAW_NUM}${DRAW_UNIT}`) ?? sz(DRAW_NUM + DRAW_UNIT); return d > 0 ? { cmd: 'draw', ops: [...ops, { op: 'circle', r: Math.round(d / 2 * 1e4) / 1e4 }] } : null; }
+  const dirA = ja ? '([右左上下])(?![右左上下])\\s*(?:に|へ|方向に|方向へ|方向)?' : '\\b(right|left|up|down)\\b\\s*(?:by\\s*)?', dirB = ja ? '\\s*(?:だけ)?\\s*([右左上下])(?![右左上下])(?:に|へ|方向に|方向へ|方向)?' : '\\s*(?:to\\s*the\\s*)?\\b(right|left|up|down)\\b';
+  const re = new RegExp(`${dirA}${DRAW_NUM}${DRAW_UNIT}|${DRAW_NUM}${DRAW_UNIT}${dirB}`, 'g'); let m, moves = 0;
+  while ((m = re.exec(t))) { const A = m[1] !== undefined; ops.push({ op: 'move', dir: DRAW_DIR[A ? m[1] : m[6]], len: drawToMm(A ? m[2] : m[4], A ? m[3] : m[5]) }); moves++; }
+  if (!moves) {   /* 「100ミリの線を右に引いて」：向きと数字が離れている→線の語があり、数字が1つ、向きが1つのときだけ */
+    const lineW = ja ? /線|ライン/.test(t) : /\bline\b/.test(t), nums = [...t.matchAll(new RegExp(DRAW_NUM + DRAW_UNIT, 'g'))], dirs = ja ? [...t.matchAll(/[右左上下](?![右左上下])/g)].filter(x => !/左右|上下/.test(t.slice(Math.max(0, x.index - 1), x.index + 2))) : [...t.matchAll(/\b(right|left|up|down)\b/g)];
+    if (lineW && nums.length === 1 && dirs.length === 1 && drawToMm(nums[0][1], nums[0][2]) > 0) { ops.push({ op: 'move', dir: DRAW_DIR[dirs[0][0]], len: drawToMm(nums[0][1], nums[0][2]) }); moves++; }
+  }
+  if (!moves) return null;
+  if (ops.some(o => o.op === 'move' && !(o.len > 0))) return { cmd: 'draw', ops: [], need: 'moveLen' };
+  if (ja ? /閉じ|とじ/.test(t) : /\bclose\b/.test(t)) ops.push({ op: 'close' });
+  return { cmd: 'draw', ops };
+}
+/** 文が「描く言い方」か（数字つきの長方形・円・向きと長さ）：デザインの依頼と取り違えないための判定（「A5の長方形を作って」は描く言い方）。 */
+export function voiceIsDraw(text, lang = 'ja') { return !!parseDraw(kanjiNumbersToArabic(normalizeVoice(text)), lang); }
 /** 命令の説明ラベル（候補表示用）。 */
 export function labelOf(result, lang) { if (result.tool) return (TOOL_WORDS[result.tool]?.[lang] || [result.tool])[0]; return (ACTION_WORDS[result.cmd]?.[lang] || [result.cmd])[0]; }
 /** 認識文・言語・状態から命令を返す。確認が要る命令は confirm:true（state.pending があり「はい」なら confirmed:true で返す）。 */
 export function parseVoice(text, lang = 'ja', state = {}) {
-  const t = normalizeVoice(text); if (!t) return { free: '' };
+  const t = kanjiNumbersToArabic(normalizeVoice(text)); if (!t) return { free: '' };
   const isYes = YES[lang].some(w => t === w || t.startsWith(w + ' ')), isNo = NO[lang].some(w => t === w);
   if (state.pending) { if (isYes) return { ...state.pending, confirmed: true }; if (isNo) return { cmd: 'cancel', args: {} }; }
   else if (isYes) return { cmd: 'noop', args: {} };
+  const drawn = parseDraw(t, lang); if (drawn) return drawn;   /* 長方形・正方形・直径の円・「右に100」・閉じる（数字つきで描ける言い方） */
   const nums = extractNumbers(t, lang);
   let action = findWord(ACTION_WORDS, t, lang), tool = findWord(TOOL_WORDS, t, lang);
   const longText = lang === 'ja' ? t.length > 12 : t.split(' ').length > 6; // 長い文で命令語が文頭にないものは自由文（AI 行き）
