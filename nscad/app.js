@@ -4533,6 +4533,15 @@ function designCommit(fn, live) {
   if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
   commit(fn); designUndoLen = undo.length;
 }
+/** 図形の一覧を、縦の線 x=xm を軸に左右反転する（x を折り返し・円弧は角度を 180° から引く）。背を左にする断面に使う（事業主 2026-10-24「断面を左右反転させてたい。実際に使う向きと逆」）。 */
+function flipSectionH(shapes, xm) {
+  const f = x => 2 * xm - x;
+  return shapes.map(sh => {
+    const o = { ...sh }; if ('x1' in o) { o.x1 = f(o.x1); o.x2 = f(o.x2); } if ('cx' in o) o.cx = f(o.cx); if (o.points) o.points = o.points.map(q => ({ ...q, x: f(q.x) }));
+    if (o.type === 'arc') { const a = o.startDeg, b = o.endDeg; o.startDeg = 180 - b; o.endDeg = 180 - a; }
+    return o;
+  });
+}
 /** 図形の一覧を、高さ ym の水平線を軸に上下反転する（y を折り返し・円弧は角度の向きを入れ替える）。 */
 function flipSectionV(shapes, ym) {
   const f = y => 2 * ym - y;
@@ -4572,6 +4581,8 @@ function foldRingShapes(path, T, origin, ring) {
   return { shapes, s, rOut, clamped, ...(clamped ? { pos: s - arcMid } : {}) };   /* clamped＝端から飛び出さないよう位置をとどめた（そのときの pos は、とどめたあとの値） */
 }
 function foldIsBifold() { return $('fdMode')?.value === 'bifold'; }
+/** 断面の背（折り目）の向き：設計カードの欄と、折りの小窓の欄を同じにして、選んだ向きをブラウザに覚える（次の断面もその向きで作る）。 */
+function setFoldSide(v, save = true) { const side = v === 'left' ? 'left' : 'right'; if ($('fdSide')) $('fdSide').value = side; if ($('flowSide')) $('flowSide').value = side; if (save) { try { localStorage.setItem('leather-cad.foldSide', side); } catch { /* 保存できなくても続ける */ } } }
 /** 断面・平面・展開の案内の文言：2つ折りには「ボタン線」が無いので、幅・内半径・厚みの言い方（Bi）にする。 */
 const foldErrKey = (err, mode) => 'foldDesignErr_' + err + (mode === 'bifold' && (err === 'badNumber' || err === 'flatShort') ? 'Bi' : '');
 function syncFoldModeUI() {
@@ -4588,17 +4599,18 @@ function makeFoldDesign(live = false) {
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t(foldErrKey(p.error, vals.mode)); return; }
   const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
   const path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX + shiftX, y: base.maxY + 40 + 2 * p.rc[0] + p.T }, axisX = origin.x + p.cEff[0];
-  const flipOn = $('fdFlip')?.checked !== false, ringIn = foldRingInput(), ring = ringIn && !ringIn.error ? { ...ringIn, ...foldRingShapes(path, p.T, origin, ringIn) } : null;
+  const flipOn = $('fdFlip')?.checked !== false, sideLeft = vals.mode === 'bifold' && $('fdSide')?.value === 'left', flipDx = !sideLeft ? undefined : prevD?.flipH && Number.isFinite(prevD.flipDx) ? prevD.flipDx : (Math.min(0, p.flats[0] - p.flats[1]) + vals.width) / 2;   /* 背を左にする：軸は、そうした時点の断面の真ん中（origin からの距離で持つ＝あとで幅を変えても、断面が飛ばない） */
+  const ringIn = foldRingInput(), ring = ringIn && !ringIn.error ? { ...ringIn, ...foldRingShapes(path, p.T, origin, ringIn) } : null;
   const prevStitch = doc.foldDesign?.stitch;   /* 平面図の縫い穴の設定は、断面を作り直しても引き継ぐ */
   designCommit(() => {
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
     const gid = nextGroupId(doc.shapes);
-    const flip = shapes => flipOn ? flipSectionV(shapes, origin.y - p.rc[0]) : shapes;   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15・切り替えできる）。右の丸折りの中心の高さを軸にするので、範囲は変わらない。左右は変わらない */
+    const flip = shapes => { const v = flipOn ? flipSectionV(shapes, origin.y - p.rc[0]) : shapes; return sideLeft ? flipSectionH(v, origin.x + flipDx) : v; };   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15・切り替えできる）。右の丸折りの中心の高さを軸にするので、範囲は変わらない。左右は変わらない */
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
     for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
-    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(shiftX ? { shiftX } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
+    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(sideLeft ? { flipH: true, flipDx } : {}), ...(shiftX ? { shiftX } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
   $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
@@ -4822,6 +4834,7 @@ function syncFoldFields() {
   for (const [id, k] of FD_HANDLE_FIELDS) set(id, d[k]);
   set('foldSecT', d.t); set('fdTO', d.tOuter); set('fdTI', d.tInner); if ($('fdFlip')) $('fdFlip').checked = d.flipV !== false;
   if ($('fdRingOn')) $('fdRingOn').checked = !!d.ring;
+  if (d.mode === 'bifold') setFoldSide(d.flipH ? 'left' : 'right');
   if (d.ring) { set('fdRingPos', d.ring.pos); set('fdStackT', d.ring.stackT); set('fdRefillDir', d.ring.dir === 'v' ? 'v' : 'h'); if ([...($('binderSpecSel')?.options || [])].some?.(o => o.value === d.ring.specId)) { set('binderSpecSel', d.ring.specId); const sp = binderSpec(d.ring.specId); if (sp && $('ringD')) fillRingOptions($('ringD'), sp); } /* 規格を替えたら、リング径の選択肢もその規格の一覧に作り直す（前の規格の一覧が残ると、Micro5 なのに 25〜40 が出て 20 が選べなかった・事業主指摘 2026-10-17） */ set('ringD', d.ring.ringD); if ($('ringD') && !Array.from($('ringD').children || []).some(o => o.value === $('ringD').value)) { const sp = binderSpec($('binderSpecSel').value); if (sp) $('ringD').value = String(sp.rings.diameterOptionsMm[0]); } syncFoldRingSelects(); }
   refreshFoldWidth(); refreshFoldPitch();
 }
@@ -4832,9 +4845,9 @@ function startFoldHandleDrag(h, w, p = null) {
   $('hint').textContent = t('foldHandleDrag'); draw();
 }
 /** 図面の点 (x, y) → 2つ折りの断面の座標 (u, v)（origin と上下反転から逆算）。計画が成り立たないとき null。 */
-function foldLocal(d, x, y) { const p = foldDesignPlan(d); return p.ok && d.origin ? { p, u: x - d.origin.x, v: d.flipV !== false ? y - d.origin.y + 2 * p.rc[0] : d.origin.y - y } : null; }
+function foldLocal(d, x, y) { const p = foldDesignPlan(d); return p.ok && d.origin ? { p, u: (d.flipH ? 2 * (d.origin.x + (d.flipDx ?? 0)) - x : x) - d.origin.x, v: d.flipV !== false ? y - d.origin.y + 2 * p.rc[0] : d.origin.y - y } : null; }
 function dragFoldHandle(w) {
-  const g = gesture, v = g.vals; if (!g.moved) { if (Math.hypot(w.x - g.start.x, w.y - g.start.y) * scale > 3) g.moved = true; else return; }   /* 3ピクセル以上動かしてからドラッグ（それまでは何も変えない）。動かさずに離したら、数字の小窓を開く */ let dx = Math.round((w.x - g.start.x) * 10) / 10; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
+  const g = gesture, v = g.vals; if (!g.moved) { if (Math.hypot(w.x - g.start.x, w.y - g.start.y) * scale > 3) g.moved = true; else return; }   /* 3ピクセル以上動かしてからドラッグ（それまでは何も変えない）。動かさずに離したら、数字の小窓を開く */ let dx = Math.round((w.x - g.start.x) * 10) / 10; if (g.d0?.flipH) dx = -dx; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
   switch (g.h.key) {
     case 'w': set('fdBiW', Math.max(1, v.width + dx)); if (Number.isFinite(v.widthB)) foldPend = { widthB: Math.max(1, v.widthB + dx), shiftX: v.shiftX }; break;   /* 全幅：両方の端を同じだけ（裏表紙の幅を別に決めてあれば、それも同じだけ） */
     case 'endA': { const nw = Math.max(1, v.width - dx); set('fdBiW', nw); foldPend = { widthB: v.widthB ?? v.width, shiftX: v.shiftX + (v.width - nw) }; break; }   /* 表紙の端：背（頂点）は動かさず、端だけが動く。裏表紙の幅は今のまま */
@@ -5012,7 +5025,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
@@ -6971,6 +6984,10 @@ function makeDraggable(head, { box, start, move, done, reset }) {
   const end = () => { if (d?.moved && d.pos) done(d.pos); d = null; }; head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
   head.addEventListener('dblclick', e => { if (e.target?.closest?.('button, select, input')) return; reset(); });
 }
+/** 折りの小窓の細かい説明（グレーの注）を、出す・隠す。初期は隠す（窓が大きすぎる・事業主 2026-10-24）。選んだ状態はブラウザに覚える。 */
+const FLOW_NOTES_KEY = 'leather-cad.flowNotes';
+function setFlowNotes(show, save = true) { const d = $('foldFlowDialog'); if (d?.dataset) d.dataset.notes = show ? 'show' : 'hide'; $('foldFlowNotes')?.setAttribute?.('aria-pressed', String(!!show)); if (save) { try { localStorage.setItem(FLOW_NOTES_KEY, show ? '1' : '0'); } catch { /* 保存できなくても切り替えはできる */ } } }
+function initFlowNotes() { let v = null; try { v = localStorage.getItem(FLOW_NOTES_KEY); } catch { /* 読めなければ、隠したまま */ } setFlowNotes(v === '1', false); $('foldFlowNotes').onclick = () => setFlowNotes($('foldFlowDialog').dataset.notes !== 'show'); }
 function initWinDrag() {
   makeDraggable($('sideHead'), { box: () => $('side'), start: d => { if (!document.body?.classList?.contains('side-float')) floatSide({ left: d.left, top: d.top }); }, move: placeSide, done: p => saveWinPos(SIDE_POS_KEY, p), reset: unfloatSide });
   makeDraggable($('foldFlowHead'), { box: () => $('foldFlowDialog'), move: placeFlowWin, done: p => saveWinPos(FLOW_POS_KEY, p), reset: unplaceFlowWin });
@@ -6979,7 +6996,7 @@ function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
   showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
-  initWinDrag(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
+  initWinDrag(); initFlowNotes(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
@@ -7286,13 +7303,20 @@ function refreshMoveFree(e) {
   if (e.key !== 'Alt' || gesture?.kind !== 'move' || !gesture.moved || !gesture.lastWorld) return; e.preventDefault?.();
   cursor = movePosition(gesture.lastWorld, e.shiftKey, e.altKey); draw();
 }
+/** 閉じるまで図面を触れない（モーダルな）ダイアログが開いているか。折りの手順の小窓（flow-win）は、開いたまま図面を触る窓なので数えない：
+ *  数えると、小窓を開いている間は、Delete・元に戻す（Ctrl+Z）・反転（H）など、キー操作が全部効かなくなる（事業主 2026-10-24「削除ができない」「Undo押しても戻せない」「反転できない」・不具合記録で、キーは届いているのに何も起きていなかった）。 */
+function modalDialogOpen() {
+  const first = document.querySelector?.('dialog[open]'); if (!first) return false;
+  const all = document.querySelectorAll?.('dialog[open]'), list = all && all.length ? [...all] : [first];
+  return list.some(d => !d.classList?.contains?.('flow-win'));
+}
 window.addEventListener('keydown', e => {
   refreshMoveFree(e);
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save(e.shiftKey) : openDialog(); return; }
-  if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !document.querySelector?.('dialog[open]')) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
+  if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !modalDialogOpen()) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
-  if (document.querySelector?.('dialog[open]')) return; // ダイアログ内の Esc/Space はダイアログのもの
+  if (modalDialogOpen()) return; // ダイアログ内の Esc/Space はダイアログのもの（折りの小窓は除く）
   if (e.key === 'Tab' && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }   /* 目打ち：打てる経路が複数あるとき、Tab で切り替える */
   const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
   if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }

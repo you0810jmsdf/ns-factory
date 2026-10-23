@@ -801,7 +801,8 @@ export function foldDesignPlan({ mode, width, widthB, t, plies = 2, tOuter, tInn
 const FD_NUMS = { dl: '①', dr: '②', w: '③', wB: '③', cl: '④', cr: '⑤', rl: '⑥', rr: '⑦', to: '⑧', ti: '⑨', shift: '⑩', ring: '⑪', stack: '⑫' };
 /** 二つ折りの断面は左に揃えた切り口と右の丸い背で構成する。 */
 function bifoldPoint(d, p) {
-  return (u, v) => ({ x: d.origin.x + u, y: d.flipV !== false ? d.origin.y - 2 * p.rc[0] + v : d.origin.y - v });
+  const fx = d.flipH ? u => 2 * (d.flipDx ?? 0) - u : u => u;   /* 背を左にする（左右反転）：軸 origin.x＋flipDx を折り返す（事業主 2026-10-24「断面を左右反転させてたい。実際に使う向きと逆」） */
+  return (u, v) => ({ x: d.origin.x + fx(u), y: d.flipV !== false ? d.origin.y - 2 * p.rc[0] + v : d.origin.y - v });
 }
 function bifoldDimensions(d, p, key, num, refill) {
   const pt = bifoldPoint(d, p), out = [], line = (a, b, arrows = 'both') => out.push({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false }), text = (u, v) => out.push({ type: 'text', ...pt(u, v), text: num });
@@ -859,12 +860,13 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
     const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -14 * px;
     const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
     const wBItems = Math.abs(p.widthB - d.width) > 0.005 ? [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }] : [];   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
-    return [
+    const swap = list => d.flipH ? list.map(g => ({ ...g, items: g.items.map(it => it.align ? { ...it, align: it.align === 'left' ? 'right' : 'left' } : it) })) : list;   /* 左右反転すると、文字を置く側も入れ替わる（外側へのばす） */
+    return swap([
       { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
       ...wBItems,
       { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(d.width + 10 * px, p.rc[0]), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm`, align: 'left' }) },
-    ];
+    ]);
   }
   const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
