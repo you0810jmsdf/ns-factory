@@ -5879,7 +5879,7 @@ $('rotateA').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preve
 function refreshRotateBar() { if (!$('rotateBar').hidden && !doc.shapes.some(s => selected.has(s.id) && editable(s))) closeRotateBar(); }   /* 選んだ図形が無くなったら、窓も閉じる */
 function transformAboutCenter(kind, angleDeg) {
   const shapes = doc.shapes.filter(s => selected.has(s.id) && editable(s));
-  if (!shapes.length) return;
+  if (!shapes.length) { $('hint').textContent = t(doc.shapes.some(s => selected.has(s.id)) ? 'transformLocked' : 'selectFirst'); return; }   /* 何も起きない理由を出す（事業主 2026-10-24「図形の左右反転できない」：選んだ図形が、鍵のかかった層・非表示の層にあるときも、黙って何もしなかった） */
   if (kind === 'rotate' && angleDeg === undefined && voiceAskNumber === null) { openRotateBar(); return; }
   const b = bboxOfDoc({ shapes, holes: [] }), center = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   const angle = kind === 'rotate' ? (angleDeg ?? askNumber('rotation', 90)) : 0;
@@ -6945,20 +6945,44 @@ function openSidePanel(card = null) {
   const b = document.body; if (!b?.classList || card?.dataset?.win === '1') return;
   b.classList.remove('side-closed'); clearSideOnly();
   if (card) { card.dataset.only = '1'; card.open = true; b.classList.add('side-single'); $('sideHeadTitle').textContent = card.querySelector?.('summary')?.textContent || ''; } else { b.classList.remove('side-single'); $('sideHeadTitle').textContent = ''; }
-  $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'true'); resize();
+  $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'true'); const sp = readWinPos(SIDE_POS_KEY); if (sp) floatSide(sp); else resize();   /* 動かしたことがあれば、覚えている位置に浮かせて出す */
 }
 function closeSidePanel() {
   const b = document.body; if (!b?.classList) return;
   b.classList.add('side-closed'); b.classList.remove('side-single'); clearSideOnly(); $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'false'); resize();
 }
+/* ───────── 右の列・折りの小窓を、自分の好きな位置へ動かせる（事業主 2026-10-24「自分で右クリックメニューのカード位置を動かせるようにしたい」「メニューが邪魔で押せない」）：見出しをつかんで動かす（画面の外へは出さない）。
+   位置はブラウザに覚え、開き直したときも同じ所に出す。ダブルクリックで元の位置へ。右の列は、動かすと「浮く」（作業の場所を広く使える形・ほかの窓と同じ） ───────── */
+const SIDE_POS_KEY = 'leather-cad.sidePos', FLOW_POS_KEY = 'leather-cad.flowPos';
+function readWinPos(key) { try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return v && Number.isFinite(v.left) && Number.isFinite(v.top) ? v : null; } catch { return null; } }
+function saveWinPos(key, pos) { try { if (pos) localStorage.setItem(key, JSON.stringify(pos)); else localStorage.removeItem(key); } catch { /* 保存できなくても、動かすことはできる */ } }
+/** 窓の左上が、画面の中に収まる位置にする（幅 w の窓・上は80px 以上、画面に残す）。 */
+function clampWinPos(left, top, w) { const vw = typeof innerWidth === 'number' ? innerWidth : 1e9, vh = typeof innerHeight === 'number' ? innerHeight : 1e9; return { left: Math.round(Math.min(Math.max(0, left), Math.max(0, vw - Math.min(w, vw)))), top: Math.round(Math.min(Math.max(0, top), Math.max(0, vh - 80))) }; }
+function placeSide(left, top) { const p = clampWinPos(left, top, 288), st = $('side').style; st.left = p.left + 'px'; st.top = p.top + 'px'; st.right = 'auto'; return p; }
+function floatSide(pos = null) { if (pos) placeSide(pos.left, pos.top); document.body?.classList?.add('side-float'); resize(); }
+function unfloatSide() { const st = $('side').style; document.body?.classList?.remove('side-float'); st.left = st.top = st.right = ''; saveWinPos(SIDE_POS_KEY, null); resize(); }
+function placeFlowWin(left, top) { const p = clampWinPos(left, top, 320), st = $('foldFlowDialog').style; st.left = p.left + 'px'; st.top = p.top + 'px'; st.right = 'auto'; st.maxHeight = Math.max(160, (typeof innerHeight === 'number' ? innerHeight : 800) - p.top - 8) + 'px'; return p; }
+function unplaceFlowWin() { const st = $('foldFlowDialog').style; st.left = st.top = st.right = st.maxHeight = ''; saveWinPos(FLOW_POS_KEY, null); }
+/** 見出し head をつかんで box を動かす共通の処理。4ピクセル動かしてから動き出す（クリック・ボタンは邪魔しない）。 */
+function makeDraggable(head, { box, start, move, done, reset }) {
+  let d = null;
+  head.addEventListener('pointerdown', e => { if (e.target?.closest?.('button, select, input')) return; const r = box().getBoundingClientRect(); d = { dx: e.clientX - r.left, dy: e.clientY - r.top, x0: e.clientX, y0: e.clientY, left: r.left, top: r.top, moved: false, pos: null }; head.setPointerCapture?.(e.pointerId); });
+  head.addEventListener('pointermove', e => { if (!d) return; if (!d.moved) { if (Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 4) return; d.moved = true; start?.(d); } d.pos = move(e.clientX - d.dx, e.clientY - d.dy); });
+  const end = () => { if (d?.moved && d.pos) done(d.pos); d = null; }; head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+  head.addEventListener('dblclick', e => { if (e.target?.closest?.('button, select, input')) return; reset(); });
+}
+function initWinDrag() {
+  makeDraggable($('sideHead'), { box: () => $('side'), start: d => { if (!document.body?.classList?.contains('side-float')) floatSide({ left: d.left, top: d.top }); }, move: placeSide, done: p => saveWinPos(SIDE_POS_KEY, p), reset: unfloatSide });
+  makeDraggable($('foldFlowHead'), { box: () => $('foldFlowDialog'), move: placeFlowWin, done: p => saveWinPos(FLOW_POS_KEY, p), reset: unplaceFlowWin });
+}
 function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
   showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
-  $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
+  initWinDrag(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
-function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
+function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
 function fillCtxCards() {
   const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
