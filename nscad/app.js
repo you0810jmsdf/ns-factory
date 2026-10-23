@@ -1841,8 +1841,49 @@ function foldFlowStates(d = doc) {
   const sh = d.shapes || [], has = f => sh.some(f), s1 = has(s => s.foldSec === 'fd'), s2 = has(s => s.foldFlat === 'fd'), s4 = Object.values(d.foldSections || {}).some(m => m && m.lam), s5 = has(s => s.lamBendGuide || s.foldFlat === 'fdu'), s3 = s4 || s5;
   return [s1, s2, s3, s4, s5];
 }
+/* ───────── ⓪ リングとリフィル（事業主 2026-10-23「２つ折りの断面図描画時にリフィルとリングが勝手に決まっている。どちらも断面図を決める前に情報として設定したい」「全てが手帳というわけではない。２つ折りか３つ折りを決定し…直前でリングとリフィルを決めて、断面図ボタンの流れがよい」）
+   断面を作る前に、手帳（kind 'book'）か手帳ではない（'plain'）かを自分で決める。手帳なら、リフィルの規格 spec・リング内径 dia・束の厚み stack も（どれも最初は空で、勝手に決まらない）。
+   図面に doc.foldBook として残す（図面ファイルと一緒に保存）。断面がすでにあって doc.foldBook が無いときは、断面の中身（doc.foldDesign.ring の有無）から読む。値は、金具カード・設計カードの今ある欄（binderSpecSel・ringD・fdStackT・fdRingOn）に写して使う。 ───────── */
+const FOLD_BOOK_NONE = { kind: '', spec: '', dia: '', stack: '' };
+function foldBookState() {
+  const b = doc.foldBook, d = doc.foldDesign, str = v => typeof v === 'string' ? v.slice(0, 40) : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
+  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), dia: str(b.dia), stack: str(b.stack) };
+  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), dia: str(d.ring.ringD), stack: str(d.ring.stackT) } : { kind: 'plain', spec: '', dia: '', stack: '' };
+  return FOLD_BOOK_NONE;
+}
+const foldBookComplete = s => s.kind === 'plain' || (s.kind === 'book' && s.spec !== '' && s.dia !== '' && Number(s.stack) > 0);
+/** 手帳か・規格・リング内径・束の厚みのどれかを変える。手帳でなくなるときは、規格などを空に戻す。そろったら、今ある欄に写す（断面があれば作り直す）。 */
+function setFoldBook(patch) {
+  const next = { ...foldBookState(), ...patch }; if (next.kind !== 'book') { next.spec = ''; next.dia = ''; next.stack = ''; }
+  doc.foldBook = next; if (tabs[activeTab]) tabs[activeTab].dirty = true;
+  if (foldBookComplete(next)) applyFoldBook(true);
+  renderFoldFlow();   /* ⓪が決まったら①が「いまここ」になる・欄の表示も更新 */
+}
+/** ⓪で決めた値を、リング・リフィルの今ある欄に写す。remake が真で断面がすでにあれば、断面を作り直す（断面が無いときは、まだ描かない＝①のボタンで作る）。そろっていなければ何もしない。 */
+function applyFoldBook(remake) {
+  const s = foldBookState(); if (!foldBookComplete(s)) return false;
+  $('fdRingOn').checked = s.kind === 'book';
+  if (s.kind === 'book') {
+    $('binderSpecSel').value = s.spec; const sp = binderSpec(s.spec); if (sp) fillRingOptions($('ringD'), sp); $('ringD').value = s.dia; $('fdStackT').value = s.stack; syncFoldRingSelects();
+    if (remake && doc.foldDesign) onBinderChange(); else { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); }
+  } else if (remake && doc.foldDesign) liveFoldDesign();
+  return true;
+}
+/** ⓪の段の表示：選んだ種類・規格・リング内径・束の厚み。規格の一覧と、規格に合うリング内径の一覧は、表示するときだけ作り直す（入力中に欄を壊さない）。 */
+function renderFoldBook(done = foldBookComplete(foldBookState())) {
+  const kind = $('flowBook'); if (!kind) return;
+  const s = foldBookState(), li = $('foldFlowBook'), tag = $('foldFlowBookState'), lang = document.documentElement.lang || 'ja';
+  if (kind.value !== s.kind) kind.value = s.kind; $('flowBookRows').hidden = s.kind !== 'book';
+  if (s.kind === 'book') {
+    const spec = $('flowRingSpec'), dia = $('flowRingDia'), stack = $('flowStackT'), sp = s.spec ? binderSpec(s.spec) : null;
+    if (spec.dataset.key !== lang) { spec.textContent = ''; fillBinderSpecOptions(spec, true); spec.dataset.key = lang; }
+    const dkey = lang + '|' + (sp ? sp.id : ''); if (dia.dataset.key !== dkey) { fillRingOptions(dia, sp, true); dia.dataset.key = dkey; } dia.disabled = !sp;
+    if (spec.value !== s.spec) spec.value = s.spec; if (dia.value !== s.dia) dia.value = s.dia; if (document.activeElement !== stack && stack.value !== s.stack) stack.value = s.stack;
+  }
+  const v = done ? 'done' : 'now', text = t(done ? 'foldFlowDone' : 'foldFlowNow'); if (li && li.dataset.state !== v) li.dataset.state = v; if (tag && tag.textContent !== text) tag.textContent = text;
+}
 function renderFoldFlow() {
-  const bi = foldIsBifold(), st = foldFlowStates(doc), shown = bi ? [0, 1, 4] : [0, 1, 2, 3, 4], now = shown.find(i => !st[i]) ?? -1, marks = '①②③④⑤';   /* 2つ折りは、貼り合わせ検証（③④）を使わず ①断面→②平面→③展開 */
+  const bi = foldIsBifold(), st = foldFlowStates(doc), bookDone = foldBookComplete(foldBookState()), shown = bi ? [0, 1, 4] : [0, 1, 2, 3, 4], now = bookDone ? (shown.find(i => !st[i]) ?? -1) : -1, marks = '①②③④⑤';   /* 2つ折りは、貼り合わせ検証（③④）を使わず ①断面→②平面→③展開。⓪を決めるまでは、「いまここ」は⓪ */
   const sel = $('flowFoldMode'), want = bi ? 'bifold' : 'trifold'; if (sel && sel.value !== want) sel.value = want;
   const setText = (id, text) => { const el = $(id); if (el && el.textContent !== text) el.textContent = text; };
   for (let i = 0; i < 5; i++) {
@@ -1853,6 +1894,7 @@ function renderFoldFlow() {
     else { setText('foldFlowName' + (i + 1), t('foldFlowStep' + (i + 1))); setText('foldFlowText' + (i + 1), t('foldFlowText' + (i + 1))); }
   }
   setText('flowOpenDesign', t(bi ? 'foldFlowBiOpenDesign' : 'foldFlowOpenDesign')); setText('flowMake', t(bi ? 'foldFlowBiMake' : 'fdMake'));   /* 2つ折りにはボタン線が無いので、「（ボタン線から）」を付けない */
+  renderFoldBook(bookDone);
 }
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
@@ -2507,7 +2549,9 @@ function initDesign() {
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
   $('flowFoldMode').onchange = () => { if (!lockGate('fold')) { renderFoldFlow(); return; } $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); if (foldIsBifold()) $('foldFlowMore').open = true; renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
-  for (const [from, to] of [['flowMake', 'fdMake'], ['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
+  $('flowBook').onchange = () => setFoldBook({ kind: $('flowBook').value }); $('flowRingSpec').onchange = () => setFoldBook({ spec: $('flowRingSpec').value, dia: '' }); $('flowRingDia').onchange = () => setFoldBook({ dia: $('flowRingDia').value }); $('flowStackT').oninput = () => setFoldBook({ stack: $('flowStackT').value });   /* ⓪：リングとリフィルを、断面を作る前に決める */
+  $('flowMake').onclick = () => { const s = foldBookState(); if (!foldBookComplete(s)) { $('hint').textContent = t(s.kind === 'book' ? 'foldFlowBookIncomplete' : 'foldFlowBookFirst'); $('flowBook').focus?.(); return; } applyFoldBook(false); $('fdMake').click(); };   /* ⓪が決まるまで①は進めない（案内を出す）。決まっていれば、⓪の値を欄に写してから、今までの「断面を作る」を押す */
+  for (const [from, to] of [['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
   const openFlowCard = id => { const c = $(id); if (!c) return; c.open = true; revealCard(c); c.scrollIntoView?.({ block: 'nearest' }); }; $('flowOpenDesign').onclick = () => openFlowCard('foldDesignCard'); $('flowOpenLam').onclick = () => { $('lamSubCard').open = true; openFlowCard('designCard'); };   /* 「くわしい設定」：数字を入れるカードを開く */ $('lamAutoParts').onclick = () => { makeFoldUnfoldParts(); renderLaminateNow(); }; $('lamMakeOuter').onclick = () => makeLamPart('o'); $('lamMakeInner').onclick = () => makeLamPart('i'); $('lamOuter').addEventListener('change', () => { laminateThickFromPart('o'); renderLaminateNow(); }); $('lamInner').addEventListener('change', () => { laminateThickFromPart('i'); renderLaminateNow(); });
   $('lamTOuter').addEventListener('input', () => { lamTouched.o = true; renderLaminateNow(); }); $('lamTOuter').addEventListener('change', () => saveLamThickness('o')); $('lamTInner').addEventListener('change', () => saveLamThickness('i')); $('lamTInner').addEventListener('input', () => { lamTouched.i = true; renderLaminateNow(); }); $('lamAxis').addEventListener('change', renderLaminateNow); $('lamSubCard').addEventListener('toggle', () => { if ($('lamSubCard').open) { fillLaminateParts(); renderLaminateNow(); } });
   $('newPart').onclick = newPart; $('addFold').onclick = addFoldAllowance; $('applyStack').onclick = applyStack;
@@ -3859,7 +3903,8 @@ function hwCurrent() { return hwPlaceKind === 'binder' ? binderItem() : (DATA_HA
 const hwAngleValue = () => Number($(hwPlaceKind === 'binder' ? 'binderAngle' : 'hwAngle').value) || 0;
 function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
 /** 規格の選択肢を入れる。製品（parent あり）は親の規格の下にまとめて出す（規格 → 製品の2段）。親の行は規格そのもの。 */
-function fillBinderSpecOptions(sel) {
+function fillBinderSpecOptions(sel, placeholder = false) {
+  if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
   const nameOf = s => document.documentElement.lang === 'en' ? s.names.en : s.names.ja, opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = nameOf(s); into.appendChild(o); };
   for (const s of BINDER_SPECS.filter(s => !s.parent)) { const kids = BINDER_SPECS.filter(k => k.parent === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
 }
@@ -3874,9 +3919,10 @@ function renderHardware() {
   const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs);
   renderBinder();
 }
-function fillRingOptions(rd, spec) {
+function fillRingOptions(rd, spec, placeholder = false) {
   rd.textContent = '';
-  for (const d of spec.rings.diameterOptionsMm) { const o = document.createElement('option'); o.value = String(d); const size = ringSizeOf(spec, d); o.textContent = t('ringSizeLabel', { inner: size.inner, outer: ringOuterLabel(size) }); rd.appendChild(o); }
+  if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = t('foldFlowBookPick'); rd.appendChild(o); }
+  for (const d of spec?.rings?.diameterOptionsMm ?? []) { const o = document.createElement('option'); o.value = String(d); const size = ringSizeOf(spec, d); o.textContent = t('ringSizeLabel', { inner: size.inner, outer: ringOuterLabel(size) }); rd.appendChild(o); }
 }
 /** 三つ折りの設計カードの規格・リング径の選択欄を、金具カードの欄（正本）と同じ中身・同じ選択にそろえる。 */
 function syncFoldRingSelects() {
@@ -4926,7 +4972,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); makeFoldDesign(false); }; $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
