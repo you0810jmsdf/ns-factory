@@ -328,6 +328,10 @@ export function validateDoc(d) {
   const ringOk = r => Array.isArray(r) && r.length >= 3 && r.length <= 20000 && r.every(q => obj(q) && Number.isFinite(q.x) && Number.isFinite(q.y));
   const fillOk = f => obj(f) && id(f.id) && f.id.length <= 40 && ringOk(f.points) && Array.isArray(f.holes ?? []) && (f.holes ?? []).length <= 500 && (f.holes ?? []).every(ringOk) && Array.isArray(f.ids) && f.ids.length <= 5000 && f.ids.every(x => typeof x === 'string') && (((typeof f.leather === 'string' && /^#[0-9a-fA-F]{6}$/.test(f.leather)) || (typeof f.texture === 'string' && f.texture.length > 0 && f.texture.length <= 40)) !== (typeof f.metal === 'string' && f.metal.length > 0 && f.metal.length <= 20)) && (f.texture === undefined || (typeof f.texture === 'string' && f.texture.length > 0 && f.texture.length <= 40)) && (f.area === undefined || Number.isFinite(f.area)) && (f.style === undefined || f.style === 'linear' || f.style === 'radial');   /* 領域の塗り（線で囲まれた場所・2026-10-18）：金属の色か、（革色・質感）のどちらか */
   if (!(d.fills === undefined || (Array.isArray(d.fills) && d.fills.length <= 2000 && d.fills.every(fillOk)))) return false;
+  /* 格子の記録（doc.grids・2026-10-23）：「格子を作る」ごとに、枠・できた図形・経路・動かした外周の穴の元の位置・設定を残す。パッチの線や枠を選ぶと、その格子だけを、設定を変えて作りなおせる */
+  const strIds = a => Array.isArray(a) && a.length <= 20000 && a.every(x => typeof x === 'string' && x.length > 0 && x.length <= 40);
+  const gridOk = g => obj(g) && id(g.id) && g.id.length <= 40 && strIds(g.frameIds) && strIds(g.ids) && strIds(g.pieceIds) && strIds(g.pathIds) && (g.restore === undefined || (Array.isArray(g.restore) && g.restore.length <= 5000 && g.restore.every(r => obj(r) && id(r.id) && Number.isFinite(r.x) && Number.isFinite(r.y) && Number.isFinite(r.s) && Number.isFinite(r.angleDeg)))) && obj(g.settings) && obj(g.settings.fields) && obj(g.settings.checks) && Object.values(g.settings.fields).every(v => typeof v === 'string' && v.length <= 80) && Object.values(g.settings.checks).every(v => typeof v === 'boolean');
+  if (!(d.grids === undefined || (Array.isArray(d.grids) && d.grids.length <= 200 && d.grids.every(gridOk)))) return false;
   const layers = new Set(d.layers.map(l => l.id)), shapes = new Set(d.shapes.map(s => s.id)), tools = new Set(d.tools.map(t => t.id));
   if (!d.shapes.every(s => {
     if (!layers.has(s.layer)) return false;
@@ -360,6 +364,7 @@ export function healDoc(d) {
   }
   { /* 領域の塗り：囲む図形が全部消えた塗りは、掃除で消す（2026-10-18） */
     const ids = new Set(d.shapes.map(s => s.id)); if (Array.isArray(d.fills)) { const keep = d.fills.filter(f => Array.isArray(f?.ids) && f.ids.some(id => ids.has(id))); if (keep.length !== d.fills.length) { fixed += d.fills.length - keep.length; d.fills = keep; } }
+    if (Array.isArray(d.grids)) { const keep = d.grids.filter(g => Array.isArray(g?.pieceIds) && g.pieceIds.some(id => ids.has(id))); if (keep.length !== d.grids.length) { fixed += d.grids.length - keep.length; d.grids = keep; } }   /* 格子の記録：ピースが全部消えた格子は、記録も消す */
   }
   { /* 同じ id の経路が2つ以上ある図面（つなぎ目を越えて新しい2本に打ったときの不具合・2026-10-17）：2つ目以降に新しい id を付け、同じ id の菱目は、いちばん近い経路に付け直す（経路の上の位置 s も取り直す） */
     const seen = new Map(); for (const p of d.paths) { if (!seen.has(p.id)) seen.set(p.id, []); seen.get(p.id).push(p); }
