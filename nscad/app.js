@@ -2063,6 +2063,8 @@ function gridInSelection(cols, rows) {
   const prevAlert = gapAlert; gapAlert = null;
   const ids = selectedShapeIds(), mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s));
   if (!regenBusy && lastPatch && undo.at(-1) === lastPatch.before && ((lastPatch.frameIds.length === ids.size && lastPatch.frameIds.every(id => ids.has(id))) || (ids.size && [...ids].every(id => lastPatch.allIds?.includes(id))))) { gapAlert = prevAlert; regenPatch(true); return; }   /* 同じ枠にもう一度押したときは、二重の格子にせず、いまの数で作りなおす */
+  { const owners = (doc.grids || []).filter(g => g.pieceIds.some(id => doc.shapes.some(s => s.id === id)) && g.ids.some(id => ids.has(id)));   /* 格子のピース・縫い線だけを選んでいる：その格子を、いまの数で作りなおす（選んだピースを「枠」にして、中に新しい格子を作らない） */
+    if (ids.size && owners.length && [...ids].every(id => owners.some(g => g.ids.includes(id)))) { gapAlert = prevAlert; rebuildGrids(owners, true); return; } }
   const regions = outerRegions(closedRegions(mine, 0.01, { dashed: true }));
   if (!regions.length) {
     /* 枠が閉じていないとき、線の端が離れている所（2mm 以内）があれば、橙の丸印と隙間の長さで知らせ、「隙間を閉じる」で枠そのものを直してもらう（事業主指示 2026-10-21「隙間があるならそもそもそこを修正したい」「丸印で警告するのではなかったか」・不具合記録 1902：端が最大 0.16mm 離れた所が2か所で、枠を選んでいるのに格子が作れなかった）。許容してつなぐことはしない */
@@ -2075,8 +2077,8 @@ function gridInSelection(cols, rows) {
     $('hint').textContent = t('gridNoArea'); return;
   }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
-  const rec = (doc.grids || []).find(g => g.frameIds.length > 0 && g.frameIds.length === ids.size && g.frameIds.every(id => ids.has(id)) && g.pieceIds.some(id => doc.shapes.some(s => s.id === id)));   /* 記録のある格子と同じ枠なら、二重の格子にせず、その格子を作りなおす（手で変えたあとも、押したときは作りなおす） */
-  let replace = rec || null, frameIds = ids, legacyN = 0;
+  const rec = (doc.grids || []).find(g => g.frameIds.length > 0 && g.frameIds.every(id => ids.has(id)) && g.pieceIds.some(id => doc.shapes.some(s => s.id === id)));   /* 記録のある格子と同じ枠なら、二重の格子にせず、その格子を作りなおす（手で変えたあとも、押したときは作りなおす） */
+  let replace = rec || null, frameIds = rec ? new Set(rec.frameIds) : ids, legacyN = 0;   /* 置き換える格子の枠は、記録の枠だけ（いっしょに選んだ古いピースを枠に入れない） */
   if (!rec) { const lg = legacyGridInRegion(regions[0], new Set(regions[0].shapeIds)); if (lg) { replace = { id: freshId(doc.grids || [], 'g'), frameIds: [...regions[0].shapeIds], ids: lg.ids, pieceIds: lg.pieceIds, pathIds: lg.pathIds, restore: [] }; frameIds = new Set(regions[0].shapeIds); legacyN = lg.pieceIds.length; } }   /* 記録の無い古い格子が枠の中にあれば、重ならないよう、消して作る */
   const n0 = gridApplyDone; makeGridInRegion(regions[0], frameIds, replace, cols, rows);
   if (legacyN && gridApplyDone > n0) $('hint').textContent += ' ' + t('gridLegacyReplaced', { n: legacyN });
@@ -2249,6 +2251,8 @@ function removeGridItems(g) {
 }
 /** 格子の図形の指紋（できた図形の中身を文字にして混ぜた数）。選んだときと同じなら、そのあとの操作は、この格子の図形に触れていない。commitSeq ごとに1回だけ計算する。 */
 const gridFps = new Map(); let gridFpSeq = -1, gridFpNow = new Map();
+/** 格子（id の一覧）を、いまの図形のまま「作りなおしてよい」状態にする：選びなおしたことにして、指紋も覚えなおす。自分で作った・作りなおした直後に呼ぶ。 */
+function rearmGrids(idList) { gridArmSeq = commitSeq; for (const id of idList) { const g = (doc.grids || []).find(x => x.id === id); if (g) gridFps.set(g.id, gridFpOf(g)); } }
 function gridFpOf(g) {
   if (gridFpSeq !== commitSeq) { gridFpNow = new Map(); gridFpSeq = commitSeq; }
   if (gridFpNow.has(g.id)) return gridFpNow.get(g.id);
@@ -2323,7 +2327,8 @@ function rebuildGrids(gs, force = false) {
   } catch (e) { ok = false; console.error(e); } finally { regenBusy = false; }
   if (!ok) { const msg = $('hint').textContent; doc = JSON.parse(snap); undo = savedUndo; redo = savedRedo; selected = prevSel; refreshTools(); persistTools(); renderLayers(); renderSeams(); rebuildSnaps(); draw(); $('hint').textContent = msg; return; }
   undo.splice(depth0 + 1);   /* 何枚作りなおしても、取り消しは1回 */
-  lastPatch = null; selected = newIds; gridSelKey = ''; if (made > 1) $('hint').textContent = t('gridRebuiltMany', { k: made }) + ' ' + $('hint').textContent; draw();
+  lastPatch = null; selected = newIds; gridSelKey = ''; rearmGrids(gs.map(g => g.id));   /* 作りなおした格子は、すぐ、続けて追従できる状態にする（事業主 2026-10-23「途中で止まる」：同じ数のピースが続けてできると、選択が変わらず、手で変えたと誤判定していた） */
+  if (made > 1) $('hint').textContent = t('gridRebuiltMany', { k: made }) + ' ' + $('hint').textContent; draw();
 }
 /* ---- 目標 幅・高さ＝ひし形1枚の大きさ（事業主 2026-10-23「目標の幅と高さを変えても図面が追従しない」→「A：ひし形を1枚の大きさ」）----
  *  欄に入れると、枠（選んだ枠・作った格子の枠・選んだ格子の枠）の大きさから、列＝枠の幅÷目標幅・角度＝atan(目標高さ÷目標幅) を決めて、格子を作りなおす（列・行・角度を変えたときと同じ追従）。
@@ -2480,7 +2485,8 @@ function patchFillApply(region, fill, layer, opts = {}) {
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
     if (opts.frameIds) { gridRecId = opts.replace?.id || freshId(doc.grids || [], 'g'); doc.grids = (doc.grids || []).filter(g => g.id !== gridRecId); doc.grids.push({ id: gridRecId, frameIds: [...opts.frameIds], ids: allIds.slice(), pieceIds: ids.slice(), pathIds: gridPathIds.slice(), restore: ringShift?.restore || [], settings: gridSettingsNow() }); }   /* 格子の記録：どの枠から、何を作り、どんな設定か（パッチの線や枠を選んだとき、その格子だけを作りなおせる） */
   });
-  renderSeams(); if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig(), gridId: gridRecId };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
+  renderSeams(); if (gridRecId && commitSeq !== seq0) rearmGrids([gridRecId]);   /* 作った直後の格子も、続けて数字に追従できる状態に */
+  if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig(), gridId: gridRecId };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
   const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') + (ringShift.ambiguous ? ' ' + t('ringShiftAmbig', { n: ringShift.ambiguous }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
