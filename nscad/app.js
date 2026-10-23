@@ -2075,7 +2075,8 @@ function gridInSelection(cols, rows) {
     $('hint').textContent = t('gridNoArea'); return;
   }
   if (regions.length > 1) { $('hint').textContent = t('gridManyAreas', { n: regions.length }); return; }
-  makeGridInRegion(regions[0], ids, null, cols, rows);
+  const rec = (doc.grids || []).find(g => g.frameIds.length > 0 && g.frameIds.length === ids.size && g.frameIds.every(id => ids.has(id)) && g.pieceIds.some(id => doc.shapes.some(s => s.id === id)));   /* 記録のある格子と同じ枠なら、二重の格子にせず、その格子を作りなおす（手で変えたあとも、押したときは作りなおす） */
+  makeGridInRegion(regions[0], ids, rec || null, cols, rows);
 }
 /** 枠 region の中に格子を作る（replace があれば、その格子の記録のものを消して作りなおす）。gridInSelection と、格子ごとの作りなおし（rebuildGrids）で共通。 */
 function makeGridInRegion(region, ids, replace, cols, rows) {
@@ -2243,17 +2244,29 @@ function removeGridItems(g) {
   doc.seams = (doc.seams || []).filter(s => !pathDrop.has(s.a?.pathId) && !pathDrop.has(s.b?.pathId)); doc.paths = doc.paths.filter(p => !pathDrop.has(p.id));
   doc.grids = (doc.grids || []).filter(x => x.id !== g.id);
 }
-/** いま選んでいる図形が触れている格子の記録：できた図形（パッチの線・ピース）を1つでも選んでいるか、枠の図形を全部選んでいる格子。 */
-function gridsTouchedBySelection(armedOnly = true) {
-  const gs = doc.grids; if (!gs?.length || !selected.size || (armedOnly && commitSeq !== gridArmSeq)) return [];
-  const live = new Set(doc.shapes.map(s => s.id));
-  return gs.filter(g => g.pieceIds.some(id => live.has(id)) && (g.ids.some(id => selected.has(id)) || (g.frameIds.length > 0 && g.frameIds.every(id => selected.has(id)))));
+/** 格子の図形の指紋（できた図形の中身を文字にして混ぜた数）。選んだときと同じなら、そのあとの操作は、この格子の図形に触れていない。commitSeq ごとに1回だけ計算する。 */
+const gridFps = new Map(); let gridFpSeq = -1, gridFpNow = new Map();
+function gridFpOf(g) {
+  if (gridFpSeq !== commitSeq) { gridFpNow = new Map(); gridFpSeq = commitSeq; }
+  if (gridFpNow.has(g.id)) return gridFpNow.get(g.id);
+  const set = new Set(g.ids); let h = 0, n = 0;
+  for (const s of doc.shapes) { if (!set.has(s.id)) continue; n++; const str = JSON.stringify(s); for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; }
+  const fp = n + ':' + h; gridFpNow.set(g.id, fp); return fp;
 }
+/** いま選んでいる図形が触れている格子の記録：できた図形（パッチの線・ピース）を1つでも選んでいるか、枠の図形を全部選んでいる格子。
+ *  armedOnly＝欄の変更で作りなおしてよい格子だけ：選びなおしたあと、図面を変える操作が入っていないか、入っていても、この格子の図形が選んだときのまま変わっていないもの（事業主 2026-10-23「パッチワークの図が数値変更に連動しません」：ピースを選んだあとに別の操作が入ると、選択が新しい枠として扱われて「枠より大きいので作れません」と出ていた）。 */
+function gridsTouchedBySelection(armedOnly = true) {
+  const gs = doc.grids; if (!gs?.length || !selected.size) return [];
+  const live = new Set(doc.shapes.map(s => s.id)), armed = commitSeq === gridArmSeq;
+  return gs.filter(g => g.pieceIds.some(id => live.has(id)) && (g.ids.some(id => selected.has(id)) || (g.frameIds.length > 0 && g.frameIds.every(id => selected.has(id)))) && (!armedOnly || armed || gridFps.get(g.id) === gridFpOf(g)));
+}
+/** 選んでいるのは記録のある格子の図形だが、選んだあとに、その格子の図形が手で変えられている（自動の作りなおしで手直しが消えるので、作りなおさない）。 */
+function gridsStaleBySelection() { const ok = new Set(gridsTouchedBySelection(true).map(g => g.id)); return gridsTouchedBySelection(false).filter(g => !ok.has(g.id)); }
 /** 選んだ格子（1つ）の設定を欄に出す。選びなおしたときだけ（欄を打っている最中は触らない）。 */
 function syncGridSettingsToSelection() {
   if (!doc.grids?.length) { gridSelKey = ''; return; }
   let hs = selected.size; for (const id of selected) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0; hs = (hs + h) | 0; }   /* 選んでいる図形の指紋（順番に関係ない）：選びなおしたかを見分ける */
-  const sig = selected.size + ':' + hs, reselected = sig !== gridSelSig; gridSelSig = sig; if (reselected) gridArmSeq = commitSeq;
+  const sig = selected.size + ':' + hs, reselected = sig !== gridSelSig; gridSelSig = sig; if (reselected) { gridArmSeq = commitSeq; for (const g of gridsTouchedBySelection(false)) gridFps.set(g.id, gridFpOf(g)); }   /* 選びなおした時点の図形の指紋も覚える（あとで別の操作が入っても、この格子の図形が変わっていなければ、欄の変更で作りなおす） */
   const gs = gridsTouchedBySelection(false), key = gs.map(g => g.id).join(','); if (key === gridSelKey) return;
   const first = gridSelKey === '' && gs.length === 0; gridSelKey = key; if (first || regenBusy) return;
   if (gs.length === 1) { loadGridSettings(gs[0].settings); if (mode === 'select' && commitSeq === gridSelSeq) $('hint').textContent = t('gridPicked', { n: gs[0].pieceIds.length }); }
@@ -2297,7 +2310,8 @@ function gridTargetRegions() {
   const gs = gridsTouchedBySelection(), lastOnly = !!lastPatch && undo.at(-1) === lastPatch.before && gs.length === 1 && gs[0].id === lastPatch.gridId, out = [];
   const regionOf = frameIds => { const set = new Set(frameIds), mine = doc.shapes.filter(s => set.has(s.id) && visible(s) && stitchable(s)), rs = mine.length ? outerRegions(closedRegions(mine, 0.01, { dashed: true })) : []; return rs.length === 1 ? rs[0] : null; };
   if (gs.length && !lastOnly) { for (const g of gs) { const r = regionOf(g.frameIds); if (r) out.push(r); } return { regions: out, grids: gs }; }
-  const follow = !!lastPatch && undo.at(-1) === lastPatch.before, r = regionOf(follow ? lastPatch.frameIds : [...selectedShapeIds()]); return { regions: r ? [r] : [], grids: [] };
+  const follow = !!lastPatch && undo.at(-1) === lastPatch.before; if (!follow && gridsStaleBySelection().length) return { regions: [], grids: [], stale: true };   /* 格子の図形が手で変えられている：選んだピースを「枠」と読み違えない */
+  const r = regionOf(follow ? lastPatch.frameIds : [...selectedShapeIds()]); return { regions: r ? [r] : [], grids: [] };
 }
 /** 目標 幅・高さを変えたとき：対象の枠から列・行・角度の欄を決めて（先頭の枠）、下見を出し、作りなおす。 */
 let gridTargetTimer = null;
@@ -2305,7 +2319,7 @@ function gridTargetSoon(el) {
   gridTargetMode = true; clearTimeout(gridTargetTimer); gridTargetTimer = null;
   const run = () => {
     gridTargetTimer = null; if (gesture || stage) return;
-    const { regions } = gridTargetRegions(); if (!regions.length) { $('hint').textContent = t('gridTargetNoFrame'); return; }
+    const { regions, stale } = gridTargetRegions(); if (!regions.length) { $('hint').textContent = t(stale ? 'gridStaleEdited' : 'gridTargetNoFrame'); return; }
     const p = gridParamsFor(regions[0], 0, 0); if (p.bad) { $('hint').textContent = t('invalidNumber'); return; }
     $('patchCols').value = String(+p.cols.toFixed(3)); $('patchRows').value = String(+p.rows.toFixed(3)); $('gridAngle').value = String(+p.angle.toFixed(2));   /* 欄に、いまの計算結果を出す（先頭の枠） */
     gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR);
@@ -2340,6 +2354,7 @@ function gridPreviewUpdate() {
       $('hint').textContent = gridPreview.text; draw(); return;
     } }
   const follow = !!lastPatch && undo.at(-1) === lastPatch.before, ids = follow ? new Set(lastPatch.frameIds) : selectedShapeIds();
+  if (!follow && gridsStaleBySelection().length) { $('hint').textContent = t('gridStaleEdited'); draw(); return; }
   if (follow && lastPatch.sig === regenSig()) { $('hint').textContent = t('gridPreviewSame'); draw(); return; }   /* いま作ってある格子と同じ数（欄を離れたときの change など） */
   const mine = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), regions = mine.length ? outerRegions(closedRegions(mine, 0.01, { dashed: true })) : [];
   if (regions.length !== 1) { $('hint').textContent = t('gridFieldsNoFigure'); draw(); return; }   /* 枠が1つに決まらない（選んでいない・ピースだけ選んでいる）ときは、下見は出さず、押す操作を案内する */
