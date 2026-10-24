@@ -4733,13 +4733,14 @@ function roundedRectPoints(x0, y0, w, h, r) {
 function refillGaps(d, p, h) {
   const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
   const E = 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s >= arcMid - 1e-6 ? 1 : -1, x0 = dir > 0 ? d.ring.s - E : d.ring.s - (W - E), x1 = x0 + W;   /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
-  const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リングの並び＝リフィルの穴の並び（規格の穴の間隔・金具の中心から） */
+  const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リフィルの穴の並び（規格の穴の数・間隔・中心から）。ロルバーンのように、リフィルの穴の数が金具のリングの数と違う製品でも、並びの中心を合わせるだけ（事業主 2026-10-24「ロルバーンの穴はリングの穴と数は合いません。位置だけ中心に合わせてください」） */
+  const hwSpec = (sp.parent && binderSpec(sp.parent)) || sp;   /* 金具（台座・リング）は、製品の親（Mini6 など）のもの */
   let closed = null;
   if (d.ring.dir !== 'v') {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
     if (rf && [xw, xA, xB].every(Number.isFinite)) { const xs = rf.map(q => q.x), a = Math.min(...xs), b = Math.max(...xs), far = Math.abs(b - xw) > Math.abs(a - xw), tip = far ? b : a, heel = far ? a : b, out = Math.sign(xA - xw) || 1; closed = { cover: (xA - tip) * out, back: (xB - tip) * out, spine: (heel - xw) * out }; }
   }
-  return { W, Hr, E, dir, axis: d.ring.s, spec: sp, ringD: d.ring.ringD, holeYs, vert: (h - Hr) / 2, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
+  return { W, Hr, E, dir, axis: d.ring.s, spec: hwSpec, ringD: d.ring.ringD, holeYs, vert: (h - Hr) / 2, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
