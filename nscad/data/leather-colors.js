@@ -65,6 +65,10 @@ export const DATA_LEATHER_COLORS = {
     {
       "name": "アイスブルー",
       "hex": "#90C0D8"
+    },
+    {
+      "name": "ホワイト（リフィルの紙）",
+      "hex": "#FFFFFF"
     }
   ]
 };
