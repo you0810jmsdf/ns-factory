@@ -1358,9 +1358,9 @@ function fillCtxLayers() {
   const box = $('ctxLayers'), targets = doc.shapes.filter(s => selected.has(s.id) && editable(s));
   box.innerHTML = ''; $('ctxLayersTitle').hidden = box.hidden = !targets.length; if (!targets.length) return;
   const here = new Set(targets.map(s => s.layer));
-  for (const l of [...doc.layers].reverse()) { const b = document.createElement('button'), blocked = !l.visible || l.locked; b.textContent = (here.size === 1 && here.has(l.id) ? '✓ ' : '') + layerName(l); b.title = t(blocked ? 'ctxLayerBlockedTip' : 'ctxLayerTip'); b.disabled = blocked; b.onclick = () => { hideCtxMenu(); moveSelectedToLayer(l.id); }; box.appendChild(b); }
+  for (const l of [...doc.layers].reverse()) { const b = document.createElement('button'), blocked = !l.visible || l.locked; b.textContent = (here.size === 1 && here.has(l.id) ? '✓ ' : '') + layerName(l); b.title = t(blocked ? 'ctxLayerBlockedTip' : 'ctxLayerTip'); b.disabled = blocked; b.onclick = () => { countUse('ctx_layer'); hideCtxMenu(); moveSelectedToLayer(l.id); }; box.appendChild(b); }
   const src = doc.layers.find(l => l.id === targets[0].layer), name = nextLayerName(src ? layerName(src) : t('layer.pattern')), nb = document.createElement('button');
-  nb.className = 'ctx-wide'; nb.textContent = t('ctxLayerNew', { name }); nb.title = t('ctxLayerNewTip'); nb.onclick = () => { hideCtxMenu(); moveSelectedToNewLayer(src?.id, name); }; box.appendChild(nb);
+  nb.className = 'ctx-wide'; nb.textContent = t('ctxLayerNew', { name }); nb.title = t('ctxLayerNewTip'); nb.onclick = () => { countUse('ctx_layer_new'); hideCtxMenu(); moveSelectedToNewLayer(src?.id, name); }; box.appendChild(nb);
 }
 /** 選んだ図形（複数でもよい）を、指定の層（既定は作図先）へ移す。移し先が非表示・ロック中なら何もしない。 */
 function moveSelectedToLayer(destId = activeLayer) {
@@ -2992,10 +2992,15 @@ const canvas3d = $('canvas3d');
 let view3d = false, cam = null, foldT = 0, playing = null, gl = null, glProg = null, ctx3 = null, lastStats = { faces: 0, collisions: 0 };
 /** アクセス計測：ボタンの押下と切り替えを1か所で数える（回数と kind だけ。送る中身は analytics.js が絞る。公開版以外では何もしない）。 */
 const COUNT_CLICKS = { exportSvg: ['ncad_export', 'svg'], exportDxf: ['ncad_export', 'dxf'], exportPdf: ['ncad_export', 'pdf'], exportPng: ['ncad_export', 'png'], print: ['ncad_print'], aiSend: ['ncad_ai'], view3d: ['ncad_view3d'] };
+/** どの機能がよく使われているかを数える（事業主 2026-10-24「どの機能がよく使われているか、統計を撮りたい」・案A＝今の Google アナリティクスに足す）。
+ *  送るのは、機能の名前（ボタン・チェック・カード・ツール・右クリックの項目の id＝画面に最初から付いている短い英数字）と回数だけ。図形・文字・寸法・ファイル名・入力した数値は送らない（kind は英数字24字までに analytics.js が絞る）。
+ *  公開版以外・作家の端末（nsf_ga_optout）では何もしない。イベントは ncad_use 1種類にまとめ、機能の名前は kind に入れる（GA4 で kind をカスタムディメンションにすると、機能ごとの回数が見える）。 */
+const countUse = kind => { const k = String(kind || '').replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 24); if (k) track.event('ncad_use', { kind: k }); };
 function initCounting() {
   track.pageview();
-  document.addEventListener?.('click', e => { const id = e?.target?.closest?.('button')?.id; if (id === 'binderPlace') track.event('ncad_hw_place', { kind: $('binderSpecSel')?.value }); else if (COUNT_CLICKS[id]) track.event(COUNT_CLICKS[id][0], COUNT_CLICKS[id][1] ? { kind: COUNT_CLICKS[id][1] } : {}); });
-  document.addEventListener?.('change', e => { const el = e?.target; if (!el) return; if (el.id === 'ghost3d') track.event('ncad_ghost', { kind: el.checked ? 'on' : 'off' }); else if ((el.id === 'threeView' || el.id === 'quadView') && el.checked) track.event('ncad_three_view', { kind: el.id === 'quadView' ? 'quad' : 'frame' }); });
+  document.addEventListener?.('click', e => { const b = e?.target?.closest?.('button'), id = b?.id; if (id === 'binderPlace') track.event('ncad_hw_place', { kind: $('binderSpecSel')?.value }); else if (COUNT_CLICKS[id]) track.event(COUNT_CLICKS[id][0], COUNT_CLICKS[id][1] ? { kind: COUNT_CLICKS[id][1] } : {});
+    if (b) { const use = b.dataset?.tool ? 'tool_' + b.dataset.tool : id; if (use) countUse(use); } else { const card = e?.target?.closest?.('summary')?.parentElement?.id; if (card) countUse('card_' + card); } });   /* 全ボタン（ツールは tool_名）・カードを開いた回数 */
+  document.addEventListener?.('change', e => { const el = e?.target; if (!el) return; if (el.type === 'checkbox' && el.id) countUse(el.id); if (el.id === 'ghost3d') track.event('ncad_ghost', { kind: el.checked ? 'on' : 'off' }); else if ((el.id === 'threeView' || el.id === 'quadView') && el.checked) track.event('ncad_three_view', { kind: el.id === 'quadView' ? 'quad' : 'frame' }); });
 }
 /** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
 const GHOST_ALPHA = 0.3;
@@ -7292,8 +7297,8 @@ function fillCtxCards() {
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
-    if (g === 'fold') { if (!foldSim) { foldSim = true; const s = document.createElement('button'); s.textContent = t('ctxFoldSim'); s.title = t('foldFlowInfoTip'); s.onclick = () => { hideCtxMenu(); setFlowWin(true); }; box.appendChild(s); } continue; }
-    const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+    if (g === 'fold') { if (!foldSim) { foldSim = true; const s = document.createElement('button'); s.textContent = t('ctxFoldSim'); s.title = t('foldFlowInfoTip'); s.onclick = () => { countUse('ctx_foldsim'); hideCtxMenu(); setFlowWin(true); }; box.appendChild(s); } continue; }
+    const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
@@ -7613,7 +7618,7 @@ window.addEventListener('keydown', e => {
   if (modalDialogOpen()) return; // ダイアログ内の Esc/Space はダイアログのもの（折りの小窓は除く）
   if (e.key === 'Tab' && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }   /* 目打ち：打てる経路が複数あるとき、Tab で切り替える */
   const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
-  if (kt) { e.preventDefault(); if (kt.tool) setMode(kt.tool); else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
+  if (kt) { e.preventDefault(); if (kt.tool) { countUse('tool_' + kt.tool); setMode(kt.tool); } else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
   if (isUndo(e) || isRedo(e)) { e.preventDefault(); if (isRedo(e)) history(redo, undo); else history(undo, redo); }
   else if (isCopy(e)) { e.preventDefault(); copySelected(); }
