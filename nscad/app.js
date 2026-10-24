@@ -3390,20 +3390,26 @@ function fillPayload(brush, ids) {
   if (brush.kind === 'texture') { const old = (doc.fills || []).find(o => o.ids.length === ids.length && o.ids.every(i => ids.includes(i))); return { ...(old?.leather ? { leather: old.leather } : {}), texture: brush.id }; }
   return { leather: brush.hex };
 }
+/** 金属の部分（リング・台座・サポータ・置いた金具）：革色・質感は塗らない（事業主 2026-10-24「表紙に色を塗ったのにリングの色が変わった」：選んだ図形に質感を付けると、リングの輪の中まで塗られた）。選んで塗るときは、リフィル（紙）・リフィルの穴も革ではないので塗らない。クリックして塗るときは、リフィルの紙は塗れる。 */
+const METAL_ROLES = new Set(['ring-outer', 'ring-inner', 'plate', 'boss']), NONLEATHER_ROLES = new Set([...METAL_ROLES, 'refills', 'refill-hole']);
+const isMetalShape = s => !s || METAL_ROLES.has(s.role) || !!s.hw || !!s.hwHole || s.layer === 'hardware', isNonLeatherShape = s => !s || NONLEATHER_ROLES.has(s.role) || !!s.hw || !!s.hwHole || s.layer === 'hardware';
+const regionIsMetalOnly = (r, nonLeather = false) => r.ids.length > 0 && r.ids.every(id => (nonLeather ? isNonLeatherShape : isMetalShape)(doc.shapes.find(x => x.id === id)));
 function addRegionFill(p, brush) {
   const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
+  if (brush.kind !== 'metal' && regionIsMetalOnly(r)) { $('hint').textContent = t('paintMetalRegion'); return false; }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) };
   commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
   $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
 }
 /** 選んだ図形（ids）と、まわりの線で囲まれた場所を、全部「領域の塗り」にする（事業主の指摘 2026-10-18「選んだ線が一周つながっていないと言われる。つながっているのに」：袋の形の13本を選んで色を押した）。塗れた数を返す（0 なら何も塗らない）。 */
 function addSelectionRegionFills(brush, ids) {
-  const regs = enclosedAreasAround(regionShapes(), ids); if (!regs.length) return 0;
+  let regs = enclosedAreasAround(regionShapes(), ids); if (!regs.length) return 0;
+  let skippedMetal = 0; if (brush.kind !== 'metal') { const keep = regs.filter(r => !regionIsMetalOnly(r, true)); skippedMetal = regs.length - keep.length; regs = keep; if (!regs.length) { $('hint').textContent = t('paintMetalRegion'); return 0; } }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
   for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) }; list.push(nf); made.push(nf); }
   const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
   commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });   /* 同じ場所は置き換える */
-  $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : ''); return made.length;
+  $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : '') + (skippedMetal ? ' ' + t('regionsMetalSkipped', { k: skippedMetal }) : ''); return made.length;
 }
 /** 「光沢の形」を選び直したとき：金属の色が付いた図形を選んでいれば、色はそのままで形（帯・放射）だけを変える。何も選んでいなければ、これから塗る形（と塗りモードで持っている色の形）を決めるだけ。 */
 function changeMetalStyle() {
@@ -4736,6 +4742,9 @@ function roundedRectPoints(x0, y0, w, h, r) {
   const pts = [], N = 12; for (const [cx, cy, a0] of [[x0 + r, y0 + r, 180], [x1 - r, y0 + r, 270], [x1 - r, y1 - r, 0], [x0 + r, y1 - r, 90]]) for (let k = 0; k <= N; k++) { const a = (a0 + 90 * k / N) * Math.PI / 180; pts.push({ x: q(cx + r * Math.cos(a)), y: q(cy + r * Math.sin(a)) }); }
   return pts;
 }
+/** 平面図に置く金具（台座・リング・レバー・取付穴）の規格。製品（ロルバーン M など）が使う金具：ロルバーン M は、事業主が実測した「Mini6 通常リング」（レバー2つ・取付穴 ±38mm・径5）。それ以外の製品は、親の規格・親が無ければ自分（事業主 2026-10-24「バインダ金具のレバーが消えている」：親の汎用 Mini6 だと、レバーが1つ・もう一方はボタンの円になっていた）。 */
+const PLAN_HARDWARE = { 'rollbahn-m': 'mini6-standard' };
+function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_HARDWARE[specId] && binderSpec(PLAN_HARDWARE[specId])) || (sp?.parent && binderSpec(sp.parent)) || sp; }
 /** 平面図に重ねる「リフィルと本体の差」（事業主 2026-10-24「平面図にリフィルと本体の差を寸法で表示させたい」「畳んだ状態と開いた状態では左右の差はかなり違うはず」）。
  *  上下＝（革の高さ−リフィルの高さ）÷2。開いた状態＝革を平らに置いたとき：リングの位置 s（取付穴の中心）を軸に、ページが左右に広がる（軸から リフィル幅−穴の縁 ずつ）ので、革の両端との差が左右の余り。
  *  畳んだ状態＝断面のリフィルの範囲と、革の端（表紙・裏表紙）・背の外側との水平の距離（背の丸みで革の長さが使われるぶん、開いた状態より小さくなる）。断面が無い・リフィルを垂直に置いたときは null。2つ折りのみ。 */
@@ -4745,7 +4754,7 @@ function refillGaps(d, p, h) {
   const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s >= arcMid - 1e-6 ? 1 : -1, x0 = dir > 0 ? d.ring.s - E : d.ring.s - (Wp - E), x1 = x0 + Wp, top = h / 2 - (Hp / 2 + Yp);   /* 部品の穴の並びの中心（H/2＋Y）を、平面図の高さの真ん中（リングの並びの中心）に合わせる */
    /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
   const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リフィルの穴の並び（規格の穴の数・間隔・中心から）。ロルバーンのように、リフィルの穴の数が金具のリングの数と違う製品でも、並びの中心を合わせるだけ（事業主 2026-10-24「ロルバーンの穴はリングの穴と数は合いません。位置だけ中心に合わせてください」） */
-  const hwSpec = (sp.parent && binderSpec(sp.parent)) || sp;   /* 金具（台座・リング）は、製品の親（Mini6 など）のもの */
+  const hwSpec = planHardwareSpec(sp.id);   /* 金具（台座・リング・レバー・取付穴）は、製品が使う金具の規格（ロルバーン M は、実測の Mini6 通常リング）のもの */
   let closed = null;
   if (d.ring.dir !== 'v') {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
@@ -4771,7 +4780,7 @@ function projectFoldDesign(withStitch) {
   if (st && layout === 'loop' && !rimLine([{ x: 0, y: 0 }, { x: p.length, y: 0 }, { x: p.length, y: h }, { x: 0, y: h }], st.edge, Math.max(corner - st.edge, 0))) { $('hint').textContent = t('foldStitchLoopFail'); return; }
   const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = d.mode === 'bifold' ? [f1, f1 + b1 / 2, f1 + b1] : [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   const buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
-  const mounts = (d.ring && binderSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;
+  const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
     dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
@@ -4849,7 +4858,7 @@ function unfoldFoldDesign() {
       if (d.mode === 'bifold' && d.ring) {
         const f = p.flats[0], b = p.bends[0], nb = Math.PI * (p.rc[0] + u.delta);
         const map = x => x <= f ? x : x <= f + b ? f + (x - f) * nb / b : x + nb - b;
-        for (const rv of binderSpec(d.ring.specId)?.rivets || []) add({ type: 'circle', layer, cx: fx + map(d.ring.s + rv.yMm), cy: fy + h / 2 + rv.xMm, r: rv.dMm / 2 });
+        for (const rv of planHardwareSpec(d.ring.specId)?.rivets || []) add({ type: 'circle', layer, cx: fx + map(d.ring.s + rv.yMm), cy: fy + h / 2 + rv.xMm, r: rv.dMm / 2 });
       }
       for (const y of [fy + edge, fy + h - edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（この革の長さに沿った位置） */
         const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + u.rowFrom, y1: y, x2: fx + u.rowTo, y2: y }), len = u.rowTo - u.rowFrom;
