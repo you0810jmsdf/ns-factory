@@ -4103,6 +4103,15 @@ function applyMove() {
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
 }
 $('moveApply').onclick = applyMove;
+/** 複製して動かす（事業主 2026-10-24「移動の機能に複製して移動する機能が欲しい」）：選んだ図形の複製を dx・dy だけずらして置き、複製を選ぶ（続けて押すと、同じ量ずつ並べて複製）。元は動かない・元に戻すは1回。 */
+function applyMoveCopy() {
+  const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
+  if (!selectedShapeIds().size) { $('hint').textContent = t('moveCopyNeed'); return; }
+  if (dx === 0 && dy === 0) { $('hint').textContent = t('invalidNumber'); return; }   /* 0 だと、元と重なった複製ができるだけ */
+  copySelectedOffsets([{ dx, dy }]); $('hint').textContent = t('movedCopy', { x: dx, y: dy });
+}
+$('moveCopy').onclick = applyMoveCopy;
 $('adRun').onclick = runAutoDims; $('adClear').onclick = clearAutoDims;
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
@@ -4732,7 +4741,9 @@ function roundedRectPoints(x0, y0, w, h, r) {
  *  畳んだ状態＝断面のリフィルの範囲と、革の端（表紙・裏表紙）・背の外側との水平の距離（背の丸みで革の長さが使われるぶん、開いた状態より小さくなる）。断面が無い・リフィルを垂直に置いたときは null。2つ折りのみ。 */
 function refillGaps(d, p, h) {
   const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
-  const E = 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s >= arcMid - 1e-6 ? 1 : -1, x0 = dir > 0 ? d.ring.s - E : d.ring.s - (W - E), x1 = x0 + W;   /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
+  const item = libraryItems().find(i => i.id === 'notebook-' + sp.id) || libraryItems().find(i => i.id === 'refill-' + sp.id) || null, pv = item?.vars || {}, num = (v, fb) => Number.isFinite(Number(v)) && v !== '' && v !== null && v !== undefined ? Number(v) : fb;   /* 部品ライブラリのリフィル（ロルバーンM・Mini6 など）。あれば、その部品そのものを置く（事業主 2026-10-24「リフィルの青印字と実際に部品を置いたときの差が大きい。そのままリングバインダと同様にリフィル部品を置くだけでよい」） */
+  const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s >= arcMid - 1e-6 ? 1 : -1, x0 = dir > 0 ? d.ring.s - E : d.ring.s - (Wp - E), x1 = x0 + Wp, top = h / 2 - (Hp / 2 + Yp);   /* 部品の穴の並びの中心（H/2＋Y）を、平面図の高さの真ん中（リングの並びの中心）に合わせる */
+   /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
   const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リフィルの穴の並び（規格の穴の数・間隔・中心から）。ロルバーンのように、リフィルの穴の数が金具のリングの数と違う製品でも、並びの中心を合わせるだけ（事業主 2026-10-24「ロルバーンの穴はリングの穴と数は合いません。位置だけ中心に合わせてください」） */
   const hwSpec = (sp.parent && binderSpec(sp.parent)) || sp;   /* 金具（台座・リング）は、製品の親（Mini6 など）のもの */
   let closed = null;
@@ -4740,7 +4751,7 @@ function refillGaps(d, p, h) {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
     if (rf && [xw, xA, xB].every(Number.isFinite)) { const xs = rf.map(q => q.x), a = Math.min(...xs), b = Math.max(...xs), far = Math.abs(b - xw) > Math.abs(a - xw), tip = far ? b : a, heel = far ? a : b, out = Math.sign(xA - xw) || 1; closed = { cover: (xA - tip) * out, back: (xB - tip) * out, spine: (heel - xw) * out }; }
   }
-  return { W, Hr, E, dir, axis: d.ring.s, spec: hwSpec, ringD: d.ring.ringD, holeYs, vert: (h - Hr) / 2, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
+  return { W: Wp, Hr: Hp, E, dir, item, axis: d.ring.s, spec: hwSpec, ringD: d.ring.ringD, holeYs, vert: top, bottom: h - Hp - top, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
@@ -4786,8 +4797,13 @@ function projectFoldDesign(withStitch) {
     const gap = refillGaps(d, p, h);   /* リフィルと本体の差：点線の枠（開いた状態の位置）・上下と左右の寸法・畳んだ状態の数字（平面図の下の文字） */
     if (gap) {
       const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
-      seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
-      for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.axis, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });   /* リフィルの穴（中心＝リングの中心） */
+      if (gap.item) {   /* リフィルの部品（部品ライブラリのもの）を、そのまま置く：穴の列（E）をリング軸に合わせ、向きが逆なら左右反転。層はガイド・色は青（切り抜きではない参考） */
+        const payload = instantiateItem(gap.item, {}, { x: fx + gap.axis - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
+        for (const sh of placed) add({ ...sh, layer: guide, color: 'blue' });
+      } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
+        seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
+        for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.axis, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });
+      }
       try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
@@ -4797,7 +4813,7 @@ function projectFoldDesign(withStitch) {
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
       if (gap.open.left > 0.005) dim(fx, ym, gx0, ym); if (gap.open.right > 0.005) dim(gx1, ym, fx + p.length, ym);
       const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + 8 + i * 5, text, sizeMm: 3, angleDeg: 0 });
-      tx(0, t('foldGapNote1', { w: n(gap.W), h: n(gap.Hr), tb: n(gap.vert) })); tx(1, t('foldGapNote2', { ol: n(gap.open.left), or: n(gap.open.right) })); if (gap.closed) tx(2, t('foldGapNote3', { ca: n(gap.closed.cover), cb: n(gap.closed.back), cs: n(gap.closed.spine) }));
+      tx(0, Math.abs(gap.vert - gap.bottom) < 0.005 ? t('foldGapNote1', { w: n(gap.W), h: n(gap.Hr), tb: n(gap.vert) }) : t('foldGapNote1b', { w: n(gap.W), h: n(gap.Hr), a: n(gap.vert), b: n(gap.bottom) })); tx(1, t('foldGapNote2', { ol: n(gap.open.left), or: n(gap.open.right) })); if (gap.closed) tx(2, t('foldGapNote3', { ca: n(gap.closed.cover), cb: n(gap.closed.back), cs: n(gap.closed.spine) }));
     }
     doc.foldDesign = { ...doc.foldDesign, ...(st ? { stitch: st } : {}) };
   });
