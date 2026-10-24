@@ -7437,16 +7437,23 @@ window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { 
 /* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
 /** 上の段の「表示」「その他」メニュー（チェック欄・ズーム・ヘルプ類をまとめた開け閉め）。開いている間は、中のチェックを続けて変えられ、外をクリックか Esc で閉じる。中のボタン（ヘルプなど）を押したら閉じる。 */
 const HDR_MENUS = [['viewBtn', 'viewMenu'], ['otherBtn', 'otherMenu']];
+/** 上の段のメニューの板を、画面からはみ出さないように置く（事業主 2026-10-24「不具合記録のメニューほか見えない」：上の段が2行に折り返して「その他」が左端に来ると、右そろえの板が、画面の左へ切れていた）。開いた直後に測り、左がはみ出すなら左そろえに、右がはみ出すなら左へ寄せる。 */
+function placeHdrMenu(el) {
+  if (!el?.getBoundingClientRect) return; el.style.left = ''; el.style.right = '';   /* いったん、CSS の置き方（左そろえ／右そろえ）に戻して測る */
+  const vw = typeof innerWidth === 'number' ? innerWidth : 1000; let r = el.getBoundingClientRect(); if (!(r.width > 0)) return;
+  if (r.left < 8) { el.style.left = '0px'; el.style.right = 'auto'; r = el.getBoundingClientRect(); }
+  if (r.right > vw - 8) { const over = r.right - (vw - 8), cur = parseFloat(el.style.left || '0') || 0; el.style.left = (cur - over) + 'px'; el.style.right = 'auto'; }
+}
 function closeHdrMenus(except = null) { for (const [b, m] of HDR_MENUS) { if (m === except) continue; const el = $(m); if (el && !el.hidden) { el.hidden = true; $(b).setAttribute?.('aria-expanded', 'false'); } } }
 function initHdrMenus() {
   for (const [b, m] of HDR_MENUS) {
-    $(b).onclick = () => { const el = $(m), open = el.hidden; closeHdrMenus(m); $('saveMenu').hidden = true; el.hidden = !open; $(b).setAttribute?.('aria-expanded', String(open)); };
+    $(b).onclick = () => { const el = $(m), open = el.hidden; closeHdrMenus(m); $('saveMenu').hidden = true; el.hidden = !open; $(b).setAttribute?.('aria-expanded', String(open)); if (open) placeHdrMenu(el); };
     for (const x of ($(m).querySelectorAll ? $(m).querySelectorAll('button') : [])) x.addEventListener('click', () => { if (m === 'otherMenu' || x.id === 'autoSolid') closeHdrMenus(); });
   }
   document.addEventListener?.('click', e => { if (!(e.target instanceof Node)) return; for (const [b, m] of HDR_MENUS) { const el = $(m); if (el && !el.hidden && !el.contains(e.target) && !$(b).contains(e.target)) { el.hidden = true; $(b).setAttribute?.('aria-expanded', 'false'); } } });
   document.addEventListener?.('keydown', e => { if (e.key === 'Escape') closeHdrMenus(); });
 }
-$('save').onclick = () => { closeHdrMenus(); $('saveMenu').hidden = !$('saveMenu').hidden; };
+$('save').onclick = () => { closeHdrMenus(); $('saveMenu').hidden = !$('saveMenu').hidden; if (!$('saveMenu').hidden) placeHdrMenu($('saveMenu')); };
 initHdrMenus();
 try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
