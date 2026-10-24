@@ -878,7 +878,8 @@ function divideAt(p) {
   const reach = 60 / scale, cand = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 3).slice(0, 40);
   const xs = cand.length >= 2 ? allIntersections(cand).filter(q => distance(p, q) <= reach) : []; if (!xs.length) { $('hint').textContent = t('divideNoCross'); return; }
   const X = xs.reduce((b, q) => distance(p, q) < distance(p, b) ? q : b), norm = a => ((a % 360) + 360) % 360, rays = [];
-  for (const id of X.ids) {   /* 交点を通る各線の、両方向の腕（端が交点なら、片方向だけ）と、その腕の長さ */
+  const here = [...new Set(xs.filter(q => distance(q, X) < 0.02).flatMap(q => q.ids))];   /* 同じ点に集まる線は全部（端どうしがつながった線は、組ごとの交点として別々に出てくる） */
+  for (const id of here) {   /* 交点を通る各線の、両方向の腕（端が交点なら、片方向だけ）と、その腕の長さ */
     const s = cand.find(c => c.id === id), len = s ? arcLength(s) : 0; if (!s) continue; const pr = projectOnPath(s, X), closed = !!s.closed;
     if (closed || pr.s > 1e-6) rays.push({ a: norm(pr.angleDeg + 180), len: closed ? Infinity : pr.s }); if (closed || len - pr.s > 1e-6) rays.push({ a: norm(pr.angleDeg), len: closed ? Infinity : len - pr.s });
   }
@@ -888,16 +889,18 @@ function divideAt(p) {
   const r1 = sorted[k0], r2 = sorted[(k0 + 1) % sorted.length], theta = norm(r2.a - r1.a) || 360, n = divisionCount(), user = divisionNumber('divLen'), mark = divisionNumber('divMark');
   const arm = [r1.len, r2.len].filter(v => Number.isFinite(v) && v > 1), len = user > 0 ? user : arm.length ? Math.min(...arm) : 30, layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer;
   const made = [], tool = doc.tools.find(x => x.id === $('stitchTool').value) || doc.tools[0], markOut = mark > len + 1e-9, putMarks = mark > 0 && !markOut && !!tool; let marks = 0;
+  const dirs = []; for (let k = 1; k < n; k++) { const deg = norm(r1.a + theta * k / n); if (!sorted.some(r => Math.abs(norm(r.a - deg + 180) - 180) < 0.5)) dirs.push(k); }   /* すでにその向きに線がある所には、重ねて引かない */
+  if (!dirs.length) { $('hint').textContent = t('divideExists'); return; }
   cancel();
   commit(() => {   /* 線と目印は同じ1回の保存（元に戻すは1回）。目印は、線ごとに別の経路へ打つ（交点でつながった線が、1本の経路にまとめられて、位置がずれるのを避ける） */
-    for (let k = 1; k < n; k++) {
+    for (const k of dirs) {
       const a = (r1.a + theta * k / n) * Math.PI / 180, id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'line', lineStyle: 'dashed', color: 'blue', x1: X.x, y1: X.y, x2: +(X.x + len * Math.cos(a)).toFixed(4), y2: +(X.y + len * Math.sin(a)).toFixed(4) }); made.push({ id, a });
       if (putMarks) { const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: false, segments: [{ from: mark, to: mark, toolId: tool.id, pitch: tool.pitch, mode: 'manual' }], mark: 'tool' }); doc.holes.push({ id: freshId(doc.holes, 'h'), pathId: pid, toolId: tool.id, x: +(X.x + mark * Math.cos(a)).toFixed(4), y: +(X.y + mark * Math.sin(a)).toFixed(4), s: mark, angleDeg: a * 180 / Math.PI, mark: 'dot' }); marks++; }
     }
     selected = new Set(made.map(m => m.id));
   });
   const f = v => +v.toFixed(2);
-  $('hint').textContent = t('divideDone', { x: f(X.x), y: f(X.y), a: f(theta), n, k: n - 1, each: f(theta / n), len: f(len) }) + (marks ? ' ' + t('divideMarkNote', { m: marks, d: f(mark) }) : markOut ? ' ' + t('divideMarkOut', { len: f(len) }) : ''); rebuildSnaps(); draw();
+  $('hint').textContent = t('divideDone', { x: f(X.x), y: f(X.y), a: f(theta), n, k: made.length, each: f(theta / n), len: f(len) }) + (marks ? ' ' + t('divideMarkNote', { m: marks, d: f(mark) }) : markOut ? ' ' + t('divideMarkOut', { len: f(len) }) : ''); rebuildSnaps(); draw();
 }
 /** 分割数（2 以上の整数）。1 以下・空は 0（＝分割して打たない）。 */
 function markDivisions() { const n = Math.floor(Number($('markDiv').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 100) : 0; }
@@ -2647,6 +2650,7 @@ function initDesign() {
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
+  $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
@@ -2685,7 +2689,7 @@ function initInfo() {
     transformSelectedTo({ ...s, nodes }); };
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
-  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections;
+  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections; $('offsetSel').onclick = offsetSelectedShapes;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -3364,7 +3368,9 @@ let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leath
 const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
 const paintName = b => b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
-function startPaint(brush) { paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = brush.kind === 'erase' ? t('metalEraseStart') : t('paintStart', { name: paintName(brush) }); draw(); }
+let lastLeatherBrush = null, lastMetalBrush = null;   /* 直前に選んだ革色・質感・金属の色（「断面に色をつける」が使う） */
+function rememberBrush(brush) { if (brush?.kind === 'leather' || brush?.kind === 'texture') lastLeatherBrush = brush; else if (brush?.kind === 'metal') lastMetalBrush = brush; }
+function startPaint(brush) { rememberBrush(brush); paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = brush.kind === 'erase' ? t('metalEraseStart') : t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
 const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
 const insideRing = (q, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > q.y) !== (ps[j].y > q.y) && q.x < (ps[j].x - ps[i].x) * (q.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
@@ -3383,6 +3389,21 @@ function eraseMetalAt(p, s) {
   const fl = metalFillAt(p);
   if (fl) { commit(() => { doc.fills = (doc.fills || []).filter(x => x !== fl); }); $('hint').textContent = t('metalEraseFill'); return 1; }
   $('hint').textContent = t(s ? 'metalEraseNoneShape' : 'metalEraseNone'); return 0;
+}
+/** 断面に色をつける（事業主 2026-10-24「断面図に色を塗るのがかなりむつかしい。もっと簡単に」「リフィルを白に塗りつぶせない」）：断面（foldSec 'fd'）の囲まれた場所を、役割で1回に塗り分ける。
+ *  革（edge・glue・cap などの革の線を含む場所）＝直前に選んだ革色・質感（無ければ薄茶）／リフィルの紙（リフィルの線を含み、金属・台座を含まない場所）＝白／金具（リングの輪＝外の円と内の円の両方を含む場所）＝直前に選んだ金属の色（無ければ銀）。
+ *  台座・サポータと金具の図形そのものにも、金属の色を付ける。リフィルが台座・リングと一緒に囲む空きの場所は、塗らない。同じ場所の前の塗りは置き換える（元に戻すは1回）。 */
+function paintSectionAuto() {
+  const sec = doc.shapes.filter(s => s.foldSec === 'fd' && visible(s)); if (!sec.length) { $('hint').textContent = t('sectionPaintNone'); return 0; }
+  const ids = new Set(sec.map(s => s.id)), regs = enclosedAreasAround(regionShapes(), ids), role = id => doc.shapes.find(x => x.id === id)?.role || '', rolesOf = r => r.ids.map(role);
+  const leatherBrush = lastLeatherBrush || { kind: 'leather', hex: '#C4A882' }, metalBrush = { kind: 'metal', id: lastMetalBrush?.id || 'silver', ...(lastMetalBrush?.style === 'radial' ? { style: 'radial' } : {}) };
+  const kindOf = r => { const rs = rolesOf(r); if (rs.some(x => !NONLEATHER_ROLES.has(x) && x !== '')) return 'leather'; if (rs.includes('ring-outer') && rs.includes('ring-inner')) return 'metal'; if (rs.includes('refills') && !rs.includes('plate') && !rs.includes('boss')) return 'paper'; return 'air'; };
+  const plan = regs.map(r => ({ r, kind: kindOf(r) })), count = k => plan.filter(x => x.kind === k).length;
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
+  for (const { r, kind } of plan) { if (kind === 'air') continue; const brush = kind === 'leather' ? leatherBrush : kind === 'paper' ? { kind: 'leather', hex: '#FFFFFF' } : metalBrush; const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) }; list.push(nf); made.push(nf); }
+  const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)), metalShapes = sec.filter(s => (s.role === 'plate' || s.role === 'boss') && (s.closed || s.type === 'circle')), loneRefills = sec.filter(s => s.role === 'refills' && s.closed && !made.some(nf => nf.ids.includes(s.id)));   /* 他の線と交わらず、場所として拾われないリフィルの四角は、図形そのものを白にする */
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); for (const s of doc.shapes) { if (metalShapes.some(m => m.id === s.id)) { s.metal = metalBrush.id; if (metalBrush.style === 'radial') s.metalStyle = 'radial'; else delete s.metalStyle; } if (loneRefills.some(m => m.id === s.id)) { s.leather = '#FFFFFF'; delete s.leatherGroup; } } });
+  $('hint').textContent = t('sectionPainted', { a: count('leather'), b: count('paper'), c: count('metal') + metalShapes.length, d: count('air'), leather: paintName(leatherBrush), metal: paintName(metalBrush) }); draw(); return made.length;
 }
 /** 領域の塗りの中身：金属（と光沢の形）・質感（同じ領域に革色があれば残す）・革色。 */
 function fillPayload(brush, ids) {
@@ -3450,6 +3471,7 @@ function paintClick(p, eyedrop) {
   draw();
 }
 function applyLeather(hex, quiet = false) {   /* quiet：塗りモードで、塗れなければ案内を出さず 0 を返す（そのあと領域を塗る）。返り値：塗ったまとまりの数 */
+  if (!quiet) rememberBrush({ kind: 'leather', hex });
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(id => okIds.has(id)));
   if (!okIds.size && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'leather', hex }); return 0; }   /* 何も選んでいなければ、その色を持って塗りモードに（ロックしたレイヤーの図形を選んでいるときは、今までどおり塗れない案内） */
   const inPart = new Set(doc.parts.flatMap(p => p.shapeIds)), loose = doc.shapes.filter(sh => okIds.has(sh.id) && !inPart.has(sh.id) && !sh.holeLink && !['text', 'dimension', 'image', 'fold'].includes(sh.type));
@@ -3554,6 +3576,7 @@ function drawMetalFills(vis = visible) {
   for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) paint(m, r.body, r.holes, r.style); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
 }
 function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
+  if (id) rememberBrush({ kind: 'metal', id, style });
   const ids = new Set(doc.shapes.filter(s => selected.has(s.id) && editable(s)).map(s => s.id)); if (!ids.size) { if (!doc.shapes.some(s => selected.has(s.id))) startPaint(id ? { kind: 'metal', id, style } : { kind: 'erase' }); else $('hint').textContent = t('metalNeedSelect'); return 0; }   /* 解除も、選ばずに押すと「金属の色を消す」モード（事業主の指摘 2026-10-19） */   /* 何も選んでいなければ、その色を持って塗りモードに（解除は、選んでから。ロックしたレイヤーの図形を選んでいるときは、今までどおりの案内） */
   let unclosed = 0, loopsMade = 0; const openLeft = [];   /* 一周つながっていない線の数（線の色だけ付く）・一周にできた数・一周にできなかった線の id */
   commit(() => {
@@ -3614,6 +3637,7 @@ function renderTextures() {
 }
 /** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
 function applyTexture(id, quiet = false) {   /* quiet：塗りモードのクリックから呼ぶとき。付けられなければ案内を出さず 0 を返す（そのあと囲まれた場所を塗る）。返り値：付けた数 */
+  if (id && !quiet) rememberBrush({ kind: 'texture', id });
   if (id && !quiet && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'texture', id }); return 0; }   /* 何も選んでいなければ、その質感を持って塗りモードに（色の見本と同じ・事業主 2026-10-23「革の質感を図形に貼れない」「パッチワークの各ピースに塗る予定」：ピースの内側クリックでは選べず、0件で押していた） */
   const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), parts = doc.parts.filter(p => p.shapeIds.some(i => okIds.has(i)));
   const loose = doc.shapes.filter(sh => okIds.has(sh.id) && (sh.closed || sh.type === 'circle') && !doc.parts.some(p => p.shapeIds.includes(sh.id)));
@@ -3666,7 +3690,8 @@ function initColors() {
   $('threadSearch').addEventListener('input', renderColors); $('threadSel').addEventListener('change', renderColors);
   $('applyThread').onclick = applyThread; $('pinThread').onclick = () => { const id = $('threadSel').value; if (!id) return; colorPins = colorPins.includes(id) ? colorPins.filter(x => x !== id) : [...colorPins, id]; persistPins(); renderColors(); };
   $('metalClear').onclick = () => applyMetal(null);
-  $('leatherHex').addEventListener('change', () => { const v = $('leatherHex').value; if (/^#[0-9a-fA-F]{6}$/.test(v)) applyLeather(v); });
+  $('paintSection').onclick = paintSectionAuto; $('flowPaint').onclick = paintSectionAuto;
+  $('leatherHex').addEventListener('change', () => { const raw = String($('leatherHex').value).trim().replace(/^#/, ''), v = /^[0-9a-fA-F]{3}$/.test(raw) ? '#' + raw.split('').map(c => c + c).join('') : /^[0-9a-fA-F]{6}$/.test(raw) ? '#' + raw : null; if (v) { $('leatherHex').value = v.toUpperCase(); applyLeather(v.toUpperCase()); } });   /* FFFFFF・#fff・#FFFFFF のどれでも（事業主 2026-10-24「白に塗りつぶせない」） */
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
   $('textureSel').addEventListener('change', () => { if (mode === 'paint' && paintBrush?.kind === 'texture' && $('textureSel').value) { paintBrush = { kind: 'texture', id: $('textureSel').value }; $('hint').textContent = t('paintStart', { name: paintName(paintBrush) }); } });   /* 塗りモードの途中で質感を選び直したら、その質感で塗る */
@@ -5751,7 +5776,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
@@ -6269,6 +6294,23 @@ function placeOffsetFloat() {
   box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; box.hidden = false;
 }
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
+/** 選んだ図形を、つながった組ごとにまとめてオフセット（事業主 2026-10-24「オフセットが短い直線のみ動く。複数選択した図形をまとめたあとに右クリックでオフセットするか、ショートカットでまとめて処理できるようにしたい」）。
+ *  選んだ図形の中だけで、端がつながったものを1組にして（選んでいない図形は通らない）、組ごとに、作図オプションの「オフセット距離」「向き」（内側・外側・両側。それ以外の向きは外側）でずらす。
+ *  結果は、黄色の点線でガイドの層へ（今のオフセットと同じ）。元に戻すは1回。 */
+function offsetSelectedShapes() {
+  const ids = selectedShapeIds(), pool = doc.shapes.filter(s => ids.has(s.id) && visible(s) && editable(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type));
+  if (!pool.length) { $('hint').textContent = t('offsetSelNeed'); return; }
+  const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; }
+  const v = ['in', 'out', 'both'].includes($('offsetSide').value) ? $('offsetSide').value : 'out', used = new Set(), groups = [];
+  for (const s of pool) { if (used.has(s.id)) continue; const sel = offsetSpan(pool, s, null, true); if (!sel) continue; for (const id of sel.shapeIds) used.add(id); groups.push({ sel, layer: s.layer }); }
+  const sideOf = (sel, inner) => { let d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return d; };   /* 開いた線の「内側」は、曲がりの内側（今のオフセットと同じ）。まっすぐなら、進行方向の左が外側 */
+  const results = []; let failed = 0;
+  for (const g of groups) { const ds = v === 'both' ? [sideOf(g.sel, true), sideOf(g.sel, false)] : [sideOf(g.sel, v === 'in')], rs = ds.map(d => offsetSpanResult(g.sel, d, { join: $('offsetJoin').value })); if (rs.some(r => !r)) { failed++; continue; } results.push(...rs); }
+  if (!results.length) { $('hint').textContent = t('impossible'); return; }
+  const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || groups[0].layer;
+  cancel(); offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } });
+  $('hint').textContent = t('offsetSelDone', { n: groups.length - failed, d: dist, side: v === 'both' ? t('offsetSelBothName') : t(v === 'in' ? 'offsetIn' : 'offsetOut') }) + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
+}
 function runOffset(override = null) {
   let sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
   let sides; /* 向きごとの { d: 符号つき距離, key: 説明文のキー }。「両側」なら内側と外側の2本 */
@@ -7182,7 +7224,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget();
+  const menu = $('ctxMenu'), p = local(e); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-offset').hidden = !selectedShapeIds().size;
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
