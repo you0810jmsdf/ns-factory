@@ -4732,13 +4732,14 @@ function roundedRectPoints(x0, y0, w, h, r) {
  *  畳んだ状態＝断面のリフィルの範囲と、革の端（表紙・裏表紙）・背の外側との水平の距離（背の丸みで革の長さが使われるぶん、開いた状態より小さくなる）。断面が無い・リフィルを垂直に置いたときは null。2つ折りのみ。 */
 function refillGaps(d, p, h) {
   const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
-  const reach = W - 6, x0 = d.ring.s - reach, x1 = d.ring.s + reach;   /* 6＝穴の中心からリフィルの縁まで（foldRingParts の既定） */
+  const E = 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s >= arcMid - 1e-6 ? 1 : -1, x0 = dir > 0 ? d.ring.s - E : d.ring.s - (W - E), x1 = x0 + W;   /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
+  const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リングの並び＝リフィルの穴の並び（規格の穴の間隔・金具の中心から） */
   let closed = null;
   if (d.ring.dir !== 'v') {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
     if (rf && [xw, xA, xB].every(Number.isFinite)) { const xs = rf.map(q => q.x), a = Math.min(...xs), b = Math.max(...xs), far = Math.abs(b - xw) > Math.abs(a - xw), tip = far ? b : a, heel = far ? a : b, out = Math.sign(xA - xw) || 1; closed = { cover: (xA - tip) * out, back: (xB - tip) * out, spine: (heel - xw) * out }; }
   }
-  return { W, Hr, vert: (h - Hr) / 2, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
+  return { W, Hr, E, dir, axis: d.ring.s, spec: sp, ringD: d.ring.ringD, holeYs, vert: (h - Hr) / 2, open: { x0, x1, left: x0, right: p.length - x1 }, closed };
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
@@ -4785,7 +4786,13 @@ function projectFoldDesign(withStitch) {
     if (gap) {
       const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
       seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
-      const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2;
+      for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.axis, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });   /* リフィルの穴（中心＝リングの中心） */
+      try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
+        const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
+        const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
+        for (const s of binderViewDrawing(gap.spec, gap.ringD, 'plan')) { if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map) }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r }); } }
+      } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
+      const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
       if (gap.open.left > 0.005) dim(fx, ym, gx0, ym); if (gap.open.right > 0.005) dim(gx1, ym, fx + p.length, ym);
       const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + 8 + i * 5, text, sizeMm: 3, angleDeg: 0 });
