@@ -1905,6 +1905,23 @@ function renderFoldFlow() {
   setText('flowOpenDesign', t(bi ? 'foldFlowBiOpenDesign' : 'foldFlowOpenDesign')); setText('flowMake', t(bi ? 'foldFlowBiMake' : 'fdMake'));   /* 2つ折りにはボタン線が無いので、「（ボタン線から）」を付けない */
   renderFoldBook(bookDone);
   { const fh = $('flowH'), src = $('fdH'); if (fh && src && document.activeElement !== fh && fh.value !== src.value) fh.value = src.value; }   /* ②の高さの欄＝設計カードの欄 */
+  applyFlowFold();
+}
+/* ───────── 折りの小窓：必要なカードだけ開く（事業主 2026-10-24「①～③までを折りたたんで必要なカードだけ表示すればよくないか？」）。「いまここ」のカードを開き、ほかは見出し1行に畳む。
+   見出しを押すと、そのカードだけ開け閉めできる（手順が進むまで有効）。欄に入力しているカードは、自動では閉じない ───────── */
+const FLOW_CARDS = ['foldFlowBook', 'foldFlowStep1', 'foldFlowStep2', 'foldFlowStep3', 'foldFlowStep4', 'foldFlowStep5'], flowOpenOverride = new Map(); let flowOpenNowId = '';
+function applyFlowFold() {
+  const cards = FLOW_CARDS.filter(id => $(id)), nowId = cards.find(id => $(id).dataset.state === 'now') ?? '';
+  if (nowId !== flowOpenNowId) { flowOpenNowId = nowId; flowOpenOverride.clear(); }   /* 手順が進んだら、手で開け閉めした分は戻し、いまここのカードが開く */
+  const ae = document.activeElement, typing = ae && ['INPUT', 'SELECT', 'TEXTAREA'].includes(ae.tagName);
+  for (const id of cards) {
+    const li = $(id), typed = !!(typing && li.contains?.(ae)), open = flowOpenOverride.has(id) ? flowOpenOverride.get(id) : id === nowId || typed, v = open ? '1' : '0';
+    if (li.dataset.open !== v) li.dataset.open = v; li.querySelector?.('.flow-head')?.setAttribute?.('aria-expanded', open ? 'true' : 'false');
+  }
+}
+function toggleFlowCard(id) { const li = $(id); if (!li) return; flowOpenOverride.set(id, li.dataset.open !== '1'); applyFlowFold(); }
+function initFlowFold() {
+  for (const id of FLOW_CARDS) { const head = $(id)?.querySelector?.('.flow-head'); if (!head) continue; head.tabIndex = 0; head.setAttribute('role', 'button'); head.addEventListener('click', () => toggleFlowCard(id)); head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlowCard(id); } }); }
 }
 /* ───────── 曲げの範囲の確認（事業主「リング外径で来ます線なので合っているかわからない」→ 選択 A「表と文字」）：曲げごとに、表・裏の曲げの長さ（点線の間）と、リング外径（欄に入っていれば）に必要な裏の曲げ・リングの隙間・入る／入らない。返り値：{ rows:[{ k, o, i, need, gap, ok }], ringD } ───────── */
 function bendGuideInfo(po, pi, axis, specs) {
@@ -7047,7 +7064,7 @@ function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
   showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
-  initWinDrag(); initFlowNotes(); initFlowMargin(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
+  initWinDrag(); initFlowNotes(); initFlowMargin(); initFlowFold(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
