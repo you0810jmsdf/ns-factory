@@ -72,14 +72,18 @@ export function transformPayload(payload, at = { x: 0, y: 0 }, scale = 1) {
   return { shapes, holes, paths, parts: payload.parts || [], ...(fills.length ? { fills } : {}) };
 }
 /** 文書と図形 id の集合から、転活用用の payload（図形・それに完結する経路と穴・部品・工具）を取り出す。座標は bbox の左上を原点にする。 */
-export function extractSelection(doc, ids, { originAtBbox = true } = {}) {
+export function extractSelection(doc, ids, { originAtBbox = true, holeIds = null } = {}) {
   const shapes = doc.shapes.filter(s => ids.has(s.id)), idSet = new Set(shapes.map(s => s.id));
-  const paths = doc.paths.filter(p => p.shapeIds.every(id => idSet.has(id))), pathIds = new Set(paths.map(p => p.id));
-  const holes = doc.holes.filter(h => pathIds.has(h.pathId)), toolIds = new Set(holes.map(h => h.toolId));
+  /* 選んだ穴（holeIds）が乗る経路で、線がぜんぶは選ばれていないもの（縫い線が、隠したガイドの層にあるとき）：その線を、見えない補助の線（holeLink）として運び、選んだ穴も運ぶ（事業主 2026-10-25「菱目が消えた」：全選択→コピー→貼り付けで、穴が0個になっていた） */
+  const whole = doc.paths.filter(p => p.shapeIds.every(id => idSet.has(id))), wholeIds = new Set(whole.map(p => p.id));
+  const liveIds = new Set(doc.shapes.map(s => s.id)), extra = holeIds && holeIds.size ? doc.paths.filter(p => !wholeIds.has(p.id) && p.shapeIds.length && p.shapeIds.every(id => liveIds.has(id)) && doc.holes.some(h => h.pathId === p.id && holeIds.has(h.id))) : [], extraIds = new Set(extra.map(p => p.id));
+  const supportIds = new Set(extra.flatMap(p => p.shapeIds).filter(id => !idSet.has(id))), support = doc.shapes.filter(s => supportIds.has(s.id)).map(s => ({ ...JSON.parse(JSON.stringify(s)), holeLink: true }));
+  const paths = [...whole, ...extra], pathIds = new Set(paths.map(p => p.id));
+  const holes = doc.holes.filter(h => wholeIds.has(h.pathId) || (extraIds.has(h.pathId) && holeIds.has(h.id))), toolIds = new Set(holes.map(h => h.toolId));
   const parts = doc.parts.filter(p => p.shapeIds.some(id => idSet.has(id))).map(p => ({ ...p, shapeIds: p.shapeIds.filter(id => idSet.has(id)) }));
   const live = new Set(doc.shapes.map(s => s.id)), fills = (doc.fills || []).filter(f => !f.foldFlat && Array.isArray(f.ids)).map(f => ({ ...f, ids: f.ids.filter(id => live.has(id)) })).filter(f => f.ids.length && f.ids.every(id => idSet.has(id))).map(f => JSON.parse(JSON.stringify(f)));   /* 色付きでコピー（事業主 2026-10-25）：囲んでいる図形がぜんぶ選ばれている領域の塗りを、いっしょに持っていく（折りシミュレーションの塗りは、作りなおされるので除く） */
   const tools = doc.tools.filter(t => toolIds.has(t.id)), b = originAtBbox && shapes.length ? bboxOfDoc({ ...doc, shapes, holes: [] }) : null; // 原点は図形だけの外接矩形の左上（穴の輪郭は含めない）
-  const payload = { shapes: shapes.map(s => JSON.parse(JSON.stringify(s))), holes: holes.map(h => ({ ...h })), paths: paths.map(p => JSON.parse(JSON.stringify(p))), parts: parts.map(p => JSON.parse(JSON.stringify(p))), tools: tools.map(t => ({ ...t })), ...(fills.length ? { fills } : {}), layers: [...new Set(shapes.map(s => s.layer))].map(id => ({ id, name: doc.layers.find(l => l.id === id)?.name || id })) };
+  const payload = { shapes: [...shapes.map(s => JSON.parse(JSON.stringify(s))), ...support], holes: holes.map(h => ({ ...h })), paths: paths.map(p => JSON.parse(JSON.stringify(p))), parts: parts.map(p => JSON.parse(JSON.stringify(p))), tools: tools.map(t => ({ ...t })), ...(fills.length ? { fills } : {}), layers: [...new Set([...shapes, ...support].map(s => s.layer))].map(id => ({ id, name: doc.layers.find(l => l.id === id)?.name || id })) };
   return b ? { ...transformPayload(payload, { x: -b.minX, y: -b.minY }, 1), tools: payload.tools, layers: payload.layers, origin: { x: b.minX, y: b.minY } } : { ...payload, origin: { x: 0, y: 0 } };
 }
 /** payload をクリップボード用の文字列にする。 */

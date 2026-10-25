@@ -4231,7 +4231,9 @@ function selectAllShapes() {
   setMode('select'); selected = new Set([...doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id), ...doc.holes.filter(h => holeVisible(h) && holeEditable(h)).map(h => h.id)]); draw();   /* 見えていて編集できる菱目も選ぶ（事業主指摘 2026-10-17：全体を選んで動かすと菱目だけ取り残された） */
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
-function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
+/** 選んでいる穴（箱で囲む・全選択で選ばれる）の番号。コピーで、縫い線が隠したガイドの層にある穴も運ぶため。 */
+function selectedHoleIdSet() { return new Set(doc.holes.filter(h => selected.has(h.id) && holeEditable(h)).map(h => h.id)); }
+function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids, { holeIds: selectedHoleIdSet() }), tabs[activeTab]?.name || 'untitled'); }
 /** 貼り付ける図形全体の中心を、マウスの位置に置くときの、置き場所。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
 function pasteTarget(data) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; return { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
 /** 貼り付け待ち（事業主 2026-10-25「コピーした図形が他の図形と重なったところで貼り付けられてしまう。カーソル位置で移動後に貼り付けられるように」）：Ctrl+V では、すぐに置かず、貼る図形が半透明でカーソルについて動く。クリックした所に貼る（Esc でやめる）。 */
@@ -4278,7 +4280,7 @@ function closeTabAt(i) { if (tabs.length < 2) { $('hint').textContent = t('lastT
 function sendToTab(move) {
   const target = Number($('tabTarget').value); if (!tabs[target] || target === activeTab) { $('hint').textContent = t('needTab'); return; }
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  const payload = extractSelection(doc, ids), other = tabs[target].doc, before = JSON.stringify(other);
+  const payload = extractSelection(doc, ids, { holeIds: selectedHoleIdSet() }), other = tabs[target].doc, before = JSON.stringify(other);
   const newIds = mergePayload(other, payload, { at: payload.origin, scale: 1, freshId, source: 'tab:' + tabs[activeTab].name });
   tabs[target].undo = tabs[target].undo || []; tabs[target].undo.push(before); tabs[target].dirty = true;
   if (move) removeSelected();
