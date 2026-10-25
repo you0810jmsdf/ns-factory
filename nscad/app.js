@@ -15,7 +15,7 @@ import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayo
 import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { varStep, varOutOfRange, instantiateItem, extractSelection, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
+import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -73,7 +73,7 @@ let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ stor
 const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
-let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null;
+let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
 let width = 1, height = 1, scale = 4, origin = { x: 80, y: 400 }, snapCache = [];
 let offsetLast = null; /* 最後にクリックして選んだ位置（選ぶ範囲を切り替えたとき、同じ場所で選び直す） */
 let offsetSelection = null; /* オフセットで選んだ範囲 {points, closed, whole, layer}。距離を決めて Enter で実行 */
@@ -4232,10 +4232,21 @@ function selectAllShapes() {
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids), tabs[activeTab]?.name || 'untitled'); }
+/** 貼り付ける図形全体の中心を、マウスの位置に置くときの、置き場所。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
+function pasteTarget(data) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; return { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
+/** 貼り付け待ち（事業主 2026-10-25「コピーした図形が他の図形と重なったところで貼り付けられてしまう。カーソル位置で移動後に貼り付けられるように」）：Ctrl+V では、すぐに置かず、貼る図形が半透明でカーソルについて動く。クリックした所に貼る（Esc でやめる）。 */
+function beginPaste(text) {
+  const data = decodeClipboard(text); if (!data) return false;
+  cancel(); pasteGhost = { text, data }; $('hint').textContent = t('pasteHold', { n: (data.payload.shapes || []).length }); draw(); return true;
+}
+function placePasteGhost() { const g = pasteGhost; pasteGhost = null; if (g) pasteText(g.text, pasteTarget(g.data)); }
+function drawPasteGhost() {
+  if (!pasteGhost) return; const k = Number($('pasteScale').value) || 1, moved = transformPayload({ shapes: (pasteGhost.data.payload.shapes || []).filter(s => s.type !== 'image' && s.type !== 'dimension') }, pasteTarget(pasteGhost.data), k);
+  ctx.save(); ctx.setLineDash([]); ctx.globalAlpha = 0.75; ctx.lineWidth = 1.4 / scale; for (const s of moved.shapes) { try { strokeShape(s, '#5ad0ff'); } catch { /* 描けない図形は、見えなくてよい */ } } ctx.restore();
+}
 function pasteText(text, at = null) {
   const data = decodeClipboard(text); if (!data) return false;
-  /* 位置の指定が無いとき：貼り付ける図形全体の中心を、マウスの位置に置く。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
-  let target = at; if (!target) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; target = { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
+  let target = at; if (!target) target = pasteTarget(data);
   let ids = [];
   cancel(); commit(() => { ids = mergePayload(doc, data.payload, { at: target, scale: Number($('pasteScale').value) || 1, freshId, source: 'clip:' + data.source }); selected = new Set(ids); });
   renderLayers(); $('hint').textContent = t('pasted', { n: ids.length, from: data.source }); return true;
@@ -4284,7 +4295,7 @@ function initLibrary() {
   $('copyBtn').onclick = () => { const text = clipboardText(); if (!text) { $('hint').textContent = t('selectFirst'); return; } $('pasteBox').value = text; if (typeof document.execCommand === 'function') { try { $('pasteBox').select(); document.execCommand('copy'); } catch { /* 手動コピー */ } } $('hint').textContent = t('copied'); };
   document.addEventListener?.('copy', e => onClipCopy(e, false));
   document.addEventListener?.('cut', e => onClipCopy(e, true));
-  document.addEventListener?.('paste', e => { if (isTextEntry(e.target) || isTextEntry(document.activeElement)) return; const text = e.clipboardData?.getData('text/plain'); if (text && pasteText(text)) e.preventDefault(); });
+  document.addEventListener?.('paste', e => { if (isTextEntry(e.target) || isTextEntry(document.activeElement)) return; const text = e.clipboardData?.getData('text/plain'); if (text && beginPaste(text)) e.preventDefault(); });
   tabs = [{ name: t('tabDefault', { n: 1 }), doc, undo, redo, selected, activeLayer, dirty: false }]; activeTab = 0; renderTabs();
 }
 
@@ -6424,7 +6435,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -7581,6 +7592,7 @@ function drawSheetBody(lo, hi) {
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (tracePreviewShapes.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.2 / scale; for (const s of tracePreviewShapes) strokeShape(s, '#ff4040'); ctx.restore(); }
+  drawPasteGhost();
   if ($('threeView').checked) drawThreeViewGuides();
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
   /* 縫い合わせ（隣り合う辺の組）の橙の点線（向かい合う穴の列を結ぶ印）は描かない（事業主 2026-10-21「菱目ラインをつなぐ点線の意味がわからない。不要です」）。縫い合わせのデータ（doc.seams）は、最適化などのためにそのまま持つ */
@@ -7665,6 +7677,7 @@ canvas.addEventListener('pointerdown', e => {
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
+  if (pasteGhost && e.button === 0) { placePasteGhost(); return; }   /* 貼り付け待ち：クリックした所に貼る */
   if ((mode === 'select' || mode === 'text') && e.button === 0) { const th = textHandleHit(world(p)); if (th) { const sh = th.shape; gesture = { kind: 'textR', id: sh.id, size0: sh.sizeMm, size: sh.sizeMm, d0: { x: th.corner.x - sh.x, y: th.corner.y - sh.y } }; $('hint').textContent = t('textDrag', { size: circleNum(sh.sizeMm) }); draw(); return; } }   /* 文字の取っ手：文字ツールでも、新しい文字を置かずに大きさを変える */
   if (mode === 'paint') { paintClick(world(p), e.altKey); return; }   /* 塗りモード：クリックで塗る・Alt＋クリックで色を拾う */
   if (mode === 'centerOn') { centerOnClick(world(p)); return; }   /* 基準の図形の中央へ：クリックした外形の中央に、選んだ図形を動かす */
@@ -8176,7 +8189,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); if (pasteGhost) { pasteGhost = null; $('hint').textContent = ''; draw(); return; } if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
