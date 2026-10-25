@@ -985,8 +985,20 @@ function moveEnd(s, end, p) {
  *  movable（図形 id の集合）を渡すと、その図形だけを動かす（ロックした層の図形を動かさない）。円弧どうしなど動かせない組は閉じず skipped に数える。戻り値 { changes:[{id,next}], closed, skipped, maxGap }。 */
 export function closeGaps(shapes, selectedIds, max = 2, tol = 0.01, movable = null) {
   const work = new Map(), byId = new Map((shapes || []).map(s => [s.id, s])); let closed = 0, skipped = 0, maxGap = 0;
+  const cur = e => work.get(e.id) || byId.get(e.id), axisOf = e => { const s = cur(e); return s.type === 'line' ? (Math.abs(s.y1 - s.y2) < 1e-6 ? 'h' : Math.abs(s.x1 - s.x2) < 1e-6 ? 'v' : null) : null; }, coord = (e, k) => k === 'h' ? cur(e).y1 : cur(e).x1;   /* 水平（h）・垂直（v）の直線と、その線の高さ・位置 */
   for (const g of findGaps(shapes, max, tol)) {
     if (!selectedIds.has(g.a.id) && !selectedIds.has(g.b.id)) continue;
+    /* 水平・垂直の直線は、傾けない（事業主 2026-10-25「隙間を閉じたら横線が傾いた」：端を相手の端へ動かすと、横線の端だけが縦にずれて傾いた）。
+       水平の線と垂直の線なら、2本の線の交点へ、それぞれの線に沿って伸ばす。水平か垂直の1本と曲線なら、曲線の端から、その線へ下ろした点へ、線を沿って伸ばし、曲線の端も同じ点へ動かす。動かせない側の端は、すでに点にあるときだけ。 */
+    { const ax = axisOf(g.a), bx = axisOf(g.b); let P = null;
+      if (ax && bx && ax !== bx) P = ax === 'h' ? { x: coord(g.b, 'v'), y: coord(g.a, 'h') } : { x: coord(g.a, 'v'), y: coord(g.b, 'h') };
+      else if (ax && !bx) P = ax === 'h' ? { x: g.b.x, y: coord(g.a, 'h') } : { x: coord(g.a, 'v'), y: g.b.y };
+      else if (bx && !ax) P = bx === 'h' ? { x: g.a.x, y: coord(g.b, 'h') } : { x: coord(g.b, 'v'), y: g.a.y };
+      if (P) {
+        const need = [g.a, g.b].filter(e => Math.hypot(e.x - P.x, e.y - P.y) > tol), can = e => MOVABLE_END.includes(byId.get(e.id).type) && (!movable || movable.has(e.id));
+        if (need.every(can)) { for (const e of need) work.set(e.id, moveEnd(cur(e), e.end, P)); closed++; maxGap = Math.max(maxGap, g.d); } else skipped++;   /* 傾けずには閉じられない組は、閉じずに数える */
+        continue;
+      } }
     const can = x => MOVABLE_END.includes(byId.get(x.id).type) && (!movable || movable.has(x.id)), sides = [[g.a, g.b], [g.b, g.a]].filter(([m]) => can(m)), chosen = sides.find(([m]) => selectedIds.has(m.id)) || sides[0];
     if (!chosen) { skipped++; continue; }
     const [mover, target] = chosen; work.set(mover.id, moveEnd(work.get(mover.id) || byId.get(mover.id), mover.end, { x: target.x, y: target.y })); closed++; maxGap = Math.max(maxGap, g.d);
