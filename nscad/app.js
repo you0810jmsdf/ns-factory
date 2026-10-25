@@ -384,7 +384,7 @@ function drawQuad(dpr) {
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && !hwHidden(s) && (exporting || viewShows(s)); };
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
-const viewShow = { solid: true, dashed: true, colors: true, hardware: true };   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
+const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true };   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
@@ -407,7 +407,7 @@ const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shap
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
-try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; } catch { /* 保存できない環境でも操作を続ける */ }
+try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; if (v.secDims === false) viewShow.secDims = false; } catch { /* 保存できない環境でも操作を続ける */ }
 const visible = s => layerVisible(s) && !s.holeLink && !hwHidden(s) && (exporting || viewShows(s));
 /** 三面図・金具の自動生成など、図形の数値を使う計算では、実線・点線の表示切り替えを見ない（画面だけの切り替えのため）。 */
 const visibleData = s => layerVisible(s) && !s.holeLink;
@@ -1417,6 +1417,7 @@ function initLayers() {
   $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
+  $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
@@ -3533,7 +3534,7 @@ function clearFills() {
   reset(); commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
-const visibleFills = (d, vis, kind) => (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => !fl.layer || d.layers?.find(l => l.id === fl.layer)?.visible !== false).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
+const visibleFills = (d, vis, kind) => { const byId = new Map(d.shapes.map(s => [s.id, s])); return (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => { const l = fillEffectiveLayer(fl, byId); return !l || d.layers?.find(x => x.id === l)?.visible !== false; }).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0)); };
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
 /** 革色・質感の塗りの不透明度：質感 0.92・色 0.55（線や下の図が透ける）。白（リフィルの紙）だけは不透明にする（事業主 2026-10-25「リフィルも白にできない」：半透明のままだと、暗い背景の上で灰色に見えた）。 */
 const leatherAlpha = (tex, hex) => tex ? 0.92 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
@@ -3553,7 +3554,10 @@ function fillOwnerLayer(fl, byId) {
   let layer = null, top = 0; for (const [l, n] of tally) if (n > top) { top = n; layer = l; }
   fillOwnerCache.set(fl, { sig, layer }); return layer;
 }
-const fillLayerRank = (fl, rank, byId) => { const l = fl.layer || fillOwnerLayer(fl, byId); return l && rank.has(l) ? rank.get(l) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)); };
+/** 領域の塗りが属する層（事業主 2026-10-25「金具よりリングサポータが全面にくるはずなのに金具が一番全面にきている」）：境目の線がいちばん多く乗っている図形の層。
+ *  塗ったときの作図先（fl.layer）は、金具を型紙の層が作図先のまま塗ると、金具の塗りまで型紙の層になって、同じ層の中では小さい金具が上に出た。作図先は、境目の図形が見つからないときだけ使う。 */
+const fillEffectiveLayer = (fl, byId) => fillOwnerLayer(fl, byId) || fl.layer || null;
+const fillLayerRank = (fl, rank, byId) => { const l = fillEffectiveLayer(fl, byId); return l && rank.has(l) ? rank.get(l) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)); };
 const fillLayerNow = () => doc.layers.some(l => l.id === activeLayer) ? { layer: activeLayer } : {};
 /** 図形を別の層へ移したとき、その図形で（半分以上）囲まれている領域の塗りも、同じ層へ移す。 */
 function moveFillsWithShapes(movedIds, destId) { let n = 0; for (const f of doc.fills || []) { const k = (f.ids || []).filter(id => movedIds.has(id)).length; if (k > 0 && k * 2 >= f.ids.length && f.layer !== destId) { f.layer = destId; n++; } } return n; }
@@ -3631,7 +3635,7 @@ function clearSamplePoint(c) {
   let best = null, bd = Infinity; for (let i = 1; i <= 9; i++) for (let j = 1; j <= 9; j++) { const q = { x: x0 + (x1 - x0) * i / 10, y: y0 + (y1 - y0) * j / 10 }; if (!fillContains(c, q)) continue; const dd = Math.hypot(q.x - mid.x, q.y - mid.y); if (dd < bd) { bd = dd; best = q; } }
   clearSampleCache.set(c, best); return best;
 }
-const visibleClears = (d, vis) => (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => fl.clear && (!fl.layer || d.layers?.find(l => l.id === fl.layer)?.visible !== false) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }));
+const visibleClears = (d, vis) => { const byId = new Map(d.shapes.map(s => [s.id, s])); return (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => { if (!fl.clear) return false; const l = fillEffectiveLayer(fl, byId); return (!l || d.layers?.find(x => x.id === l)?.visible !== false) && fl.ids.some(id => { const sh = byId.get(id); return sh && vis(sh); }); }); };
 function attachClearCuts(items, d, vis) {
   for (const c of visibleClears(d, vis)) { const q = clearSamplePoint(c); if (!q) continue; for (let i = items.length - 1; i >= 0; i--) if (items[i].hit?.(q)) { (items[i].cuts ||= []).push(c); break; } }
 }
@@ -5255,8 +5259,34 @@ function drawFoldHandles() {
 }
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
 const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
-const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
+const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
 function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdItems(g.items, { color: '#4fb3ff', lineW: 1.6, font: 15, keepIn: true }); }
+/* ───────── 断面の寸法を、いつも画面に出す＋寸法をクリックして数字を入れる（事業主 2026-10-25「断面図の寸法を入力したい」「見てもサイズがわからない」・案C）：
+   表示メニューの「断面の寸法」（初めからオン）がオンの間は、設計カードや手順の小窓を閉じていても、全幅・全高・厚みの寸法（foldSectionDims）を出し続ける。2つ折りでは、線や文字をクリックすると、その寸法の数字を入れる小窓（FHB）が開く。
+   ①表紙の幅＝endA・②裏表紙の幅＝endB・④全高＝h（背の内側の半径が変わる）・⑤表の厚み＝to・⑥裏の厚み＝ti。画面だけ（書き出し・印刷には入らない）。 ───────── */
+const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign && doc.shapes.some(s => s.foldSec === 'fd' && visible(s));
+const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h' };
+function foldDimTargets() {
+  const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
+  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = 15 / scale;
+  const box = it => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(it.text)?.width ?? it.text.length * font * 0.62; ctx.restore(); const x0 = it.align === 'right' ? it.x - w : it.align === 'left' ? it.x : it.x - w / 2; return { x0, x1: x0 + w, y0: it.y - font * 0.7, y1: it.y + font * 0.7 }; };
+  const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
+  for (const g of groups) {
+    if (g.key === 't') { const to = { key: 'to', ...parts((foldDimensions(d, 'to') ?? []).filter(i => i.type === 'line')) }, ti = { key: 'ti', ...parts((foldDimensions(d, 'ti') ?? []).filter(i => i.type === 'line')) }; to.boxes.push(...parts(g.items).boxes); out.push(to, ti); }   /* 厚みの文字は「⑤表」へ。線は、押した方 */
+    else if (FD_DIM_EDIT[g.key]) out.push({ key: FD_DIM_EDIT[g.key], ...parts(g.items) });
+  }
+  return out;
+}
+/** 画面の点 p にある、数字を直せる断面の寸法（線の近く・文字の中）。無ければ null。 */
+function foldDimKeyAt(p) {
+  const w = world(p), r = 7 / scale; let best = null, bd = Infinity;
+  for (const tg of foldDimTargets()) {
+    for (const l of tg.lines) { const dd = distToShape({ type: 'line', x1: l.a.x, y1: l.a.y, x2: l.b.x, y2: l.b.y }, w); if (dd <= r && dd < bd) { best = tg.key; bd = dd; } }
+    for (const b of tg.boxes) if (w.x >= b.x0 - r && w.x <= b.x1 + r && w.y >= b.y0 - r && w.y <= b.y1 + r && 0 < bd) { best = tg.key; bd = 0; }
+  }
+  return best;
+}
+let fdDimHot = null;
 /** 図面に保存されている三つ折りの設計の値を、設計カードの数値欄へ書き戻す。図面を開いた・前回の続きを開いた・タブを切り替えた・元に戻したときなど、欄が図面の設計とずれていると、
  *  取っ手のドラッグや欄の入力で断面を作り直すときに、ずれた欄の値（ほかの寸法・厚み・リング）を読んでしまい、寸法が変わらない・別の形になる（事業主指摘 2026-10-15）。 */
 let foldSyncDoc = null;
@@ -5307,7 +5337,7 @@ function endFoldHandleDrag(g) {
   if (g && !g.moved) openFoldHandleBar(g.h);   /* 動かさずに離した＝クリック：その寸法の数字を入れる小窓を開く */
 }
 /* ───────── 断面の取っ手をクリック：その寸法の数字を入れる小窓（事業主 2026-10-23「寸法指定の窓がどこにあるか見つからない」）。Enter で確定・Esc で閉じる ───────── */
-const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0] };
+const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0], h: ['fhbH', d => { const p = foldDesignPlan(d); return p.ok ? 2 * (d.rinR + p.T) : 0; }], to: ['fhbTO', d => d.tOuter], ti: ['fhbTI', d => d.tInner] };
 let fhbKey = null;
 function openFoldHandleBar(h) {
   const d = doc.foldDesign, spec = FHB[h?.key]; if (!d || !spec || d.mode !== 'bifold' || !$('foldHandleBar')) return; fhbKey = h.key;
@@ -5324,6 +5354,9 @@ function applyFoldHandleBar(same = false) {
   else if (key === 'endA') { $('fdBiW').value = String(val); foldPend = { widthB: d.widthB ?? d.width, shiftX: sx + (d.width - val) }; }   /* 表紙の端：背は動かさない・裏表紙は今のまま */
   else if (key === 'endB') foldPend = { widthB: same ? undefined : val, shiftX: sx };
   else if (key === 'rr') $('fdRR').value = String(val);
+  else if (key === 'h') { const p = foldDesignPlan(d), rin = val / 2 - (p.ok ? p.T : 0); if (!(rin >= 0.1)) { $('hint').textContent = t('fhbBad'); return; } $('fdRR').value = String(+rin.toFixed(2)); }   /* ④全高：背の内側の半径で決まる（全高＝2×（半径＋厚み）） */
+  else if (key === 'to') $('fdTO').value = String(val);
+  else if (key === 'ti') $('fdTI').value = String(val);
   else if (key === 'ring') $('fdRingPos').value = String(val);
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); foldPend = null; closeFoldHandleBar();
 }
@@ -6208,7 +6241,7 @@ function placePatchWin(left, top, width) { placeCardWin('patchCard', left, top, 
 function keepPatchWinInView() { keepCardWinInView('patchCard'); }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード。ほかのツールでは閉じる。柄は右列でなく窓（setPatchWin）。 */
 function syncToolCards() {
-  if ($('foldHandleBar') && !$('foldHandleBar').hidden && !foldHandleList().length) closeFoldHandleBar();   /* 取っ手が出ていないときは、数字の小窓も閉じる */
+  if ($('foldHandleBar') && !$('foldHandleBar').hidden && !foldHandleList().length && !secDimsShown()) closeFoldHandleBar();   /* 取っ手が出ていないときは、数字の小窓も閉じる */
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
@@ -7395,6 +7428,7 @@ canvas.addEventListener('pointerdown', e => {
   }
   if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) { const gm = gapMarkAt(cursor); if (gm) { fillOneGap(gm); return; } } /* 赤い輪（歯抜けの印）のクリックは、下の線の選択より優先 */
   if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p), p); return; } }
+  if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey && !pickShapeAt(cursor)) { const dk = foldDimKeyAt(p); if (dk) { openFoldHandleBar({ key: dk }); return; } }   /* 断面の寸法をクリック：その数字を入れる小窓（線・文字の下に図形があるときは、図形の選択が先） */
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
@@ -7448,7 +7482,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && (mode === 'select' || mode === 'text')) { const hot = !!textHandleHit(world(p)); if (hot !== textHot) { textHot = hot; canvas.style.cursor = hot ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = circleHandleHit(world(p))?.k ?? null; if (hot !== circleHot) { circleHot = hot; canvas.style.cursor = hot !== null ? 'nesw-resize' : ''; draw(); } }
-  if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null; if (hot !== fdHandleHot) { fdHandleHot = hot; canvas.style.cursor = hot ? 'ew-resize' : ''; draw(); } }
+  if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null, dimHot = hot ? null : foldDimKeyAt(p); if (hot !== fdHandleHot || dimHot !== fdDimHot) { fdHandleHot = hot; fdDimHot = dimHot; canvas.style.cursor = hot ? 'ew-resize' : dimHot ? 'pointer' : ''; draw(); } }
   if (quadOn()) quadHover = quadRoleAt(p);
   stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
   if (mode === 'stitch' && !gesture) { stitchLastW = world(p); syncStitchPreview(stitchLastW, e.shiftKey); } else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
