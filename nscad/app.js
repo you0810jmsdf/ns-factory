@@ -2612,6 +2612,7 @@ function gridTargetSoon(el) {
     const { regions, stale } = gridTargetRegions(); if (!regions.length) { $('hint').textContent = t(stale ? 'gridStaleEdited' : 'gridTargetNoFrame'); return; }
     const p = gridParamsFor(regions[0], 0, 0); if (p.bad) { $('hint').textContent = t('invalidNumber'); return; }
     $('patchCols').value = String(+p.cols.toFixed(3)); $('patchRows').value = String(+p.rows.toFixed(3)); $('gridAngle').value = String(+p.angle.toFixed(2));   /* 欄に、いまの計算結果を出す（先頭の枠） */
+    $('gridResult').textContent = t('gridResult', { c: +p.cols.toFixed(2), r: +p.rows.toFixed(2), a: +p.angle.toFixed(1) });   /* 列・行・角度は「くわしい設定」にしまったので、寸法から決まった値を、ここに出す（事業主 2026-10-25「そもそも縦と横のパッチ寸法あれば不必要では？」→ 案B） */
     gridPreviewUpdate(); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR);
   };
   if (el.type !== 'number' || !(regenDelayMs > 0)) { run(); return; }
@@ -2782,7 +2783,7 @@ function initDesign() {
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
   for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchMinPiece', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
-  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; if (id === 'patchRows' && String($('gridAngle').value ?? '').trim() !== '') { $('gridAngle').value = ''; }   /* 行を打ったら、角度の欄を空にする：角度（初期値45）が数字のままだと、ひし形の高さは幅×角度で決まり、行は目安にしかならず、列×行の数が合わなくなる（事業主 2026-10-25「列と行は3＊3なのに、数が合わない」）。45°にしたいときは、角度に打つ */
+  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; $('gridResult').textContent = ''; if (id === 'patchRows' && String($('gridAngle').value ?? '').trim() !== '') { $('gridAngle').value = ''; }   /* 行を打ったら、角度の欄を空にする：角度（初期値45）が数字のままだと、ひし形の高さは幅×角度で決まり、行は目安にしかならず、列×行の数が合わなくなる（事業主 2026-10-25「列と行は3＊3なのに、数が合わない」）。45°にしたいときは、角度に打つ */
     gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   for (const id of ['patchTargetW', 'patchTargetH']) { const el = $(id), go = () => gridTargetSoon(el); el.addEventListener('input', go); el.addEventListener('change', go); }   /* 目標 幅・高さ＝ひし形1枚の大きさ：入れると、列・行・角度を決めて格子を作りなおす */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
@@ -2793,6 +2794,8 @@ function initDesign() {
   $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
   $('ctx-center').onclick = () => { hideCtxMenu(); centerOnStart('xy'); };
   $('ctx-lattice').onclick = () => { hideCtxMenu(); removeLatticeLines(); };
+  $('ctx-round').onclick = () => { hideCtxMenu(); removeLatticeLines('round'); };   /* 事業主 2026-10-25「丸目も消したい。格子と丸目の両方を消すこともある」 */
+  $('ctx-lattice-round').onclick = () => { hideCtxMenu(); removeLatticeLines('both'); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
@@ -6507,16 +6510,27 @@ function latticePieceIds() {
   for (const s of cand) if (s.id !== frame.id && s.points.every(ins)) out.add(s.id);
   return out;
 }
-/** 格子の線（ピース）だけを消す：外形・点線・穴（菱目・丸目）・縫い合わせは残す。裏面は、左右反転（今の機能）のあとにこれを使う。元に戻すは1回。 */
-function removeLatticeLines() {
-  const ids = latticePieceIds(); if (!ids.size) { $('hint').textContent = t('latticeNone'); return; }
+/** 「丸目だけ消す」の相手（事業主 2026-10-25「丸目も消したい」）：選んだ格子（記録のある格子）の丸目＋選んだ閉じた実線の内側（ふちを含む）の丸目＋直接選んだ丸目。菱目は対象にしない。格子の線を先に消したあとでも、外形を選べば見つかる。 */
+function latticeRoundHoleIds() {
+  const out = new Set(); if (!selected.size) return out;
+  const kind = new Map(doc.tools.map(x => [x.id, x.kind])), recPaths = new Set(gridsTouchedBySelection(false).flatMap(g => g.pathIds)), sel = selectedShapeIds();
+  const loops = doc.shapes.filter(s => sel.has(s.id) && s.type === 'polyline' && s.closed && !s.holeLink && s.lineStyle !== 'dashed' && s.layer !== 'guide' && s.points?.length >= 3 && visible(s)).map(s => ({ pts: s.points, loop: loopSampler(s.points) }));
+  for (const h of doc.holes) if (kind.get(h.toolId) === 'round' && holeEditable(h) && (selected.has(h.id) || recPaths.has(h.pathId) || loops.some(l => insidePolygon(h, l.pts) || l.loop.nearest(h).dist < 0.05))) out.add(h.id);
+  return out;
+}
+/** 格子の線（ピース）・丸目を消す。what＝'lines'（格子の線だけ）／'round'（丸目だけ）／'both'（両方）。外形・点線・菱目・縫い合わせは残す。裏面は、左右反転（今の機能）のあとにこれを使う。対象は消す前にまとめて決め、元に戻すは1回。 */
+function removeLatticeLines(what = 'lines') {
+  const ids = what === 'round' ? new Set() : latticePieceIds(), hids = what === 'lines' ? new Set() : latticeRoundHoleIds(); if (!ids.size && !hids.size) { $('hint').textContent = t('latticeNone'); return; }
   const holes = doc.holes.length; cancel();
   commit(() => {
+    if (hids.size) { doc.holes = doc.holes.filter(h => !hids.has(h.id)); selected = new Set([...selected].filter(id => !hids.has(id))); manualNext = null; }
+    if (ids.size) {
     doc.shapes = doc.shapes.filter(s => !ids.has(s.id)); for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id)); dropFillsOf(ids);
     for (const g of doc.grids || []) { g.pieceIds = g.pieceIds.filter(id => !ids.has(id)); g.ids = g.ids.filter(id => !ids.has(id)); } doc.grids = (doc.grids || []).filter(g => g.pieceIds.length);   /* 消した格子の記録は捨てる（作りなおしで、残った穴まで消さないように） */
     selected = new Set([...selected].filter(id => !ids.has(id)));
+    }
   });
-  $('hint').textContent = t('latticeRemoved', { n: ids.size, h: holes }); draw();
+  $('hint').textContent = what === 'round' ? t('latticeRoundRemoved', { n: hids.size, h: doc.holes.length }) : what === 'both' ? t('latticeBothRemoved', { n: ids.size, r: hids.size, h: doc.holes.length }) : t('latticeRemoved', { n: ids.size, h: holes }); draw();
 }
 function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
@@ -7821,7 +7835,7 @@ function initSideTabs() {
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
 function fillCtxCards() {
-  const box = $('ctxCards'), cards = ctxCardList(); box.innerHTML = '';
+  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')); box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
@@ -7830,7 +7844,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; $('ctx-lattice').hidden = !latticePieceIds().size; $('ctx-offset').hidden = !selectedShapeIds().size;
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size;
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
