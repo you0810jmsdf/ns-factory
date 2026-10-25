@@ -43,6 +43,7 @@
   card.innerHTML = [
     '<div style="font-size:15px;font-weight:700;margin-bottom:6px;">' + TITLE + '</div>',
     '<div style="font-size:12px;color:#6e6e73;margin-bottom:12px;">うまく動かない・こうしてほしい等、そのまま書いてください。写真も添付できます。ページ名は自動で添えます。</div>',
+    '<div id="nsf-bug-board" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:#fbf7ef;border:1px solid #e0d2c2;max-height:30vh;overflow:auto;"></div>',
     '<button type="button" id="nsf-bug-mine-toggle" style="display:none;width:100%;text-align:left;padding:8px 10px;margin-bottom:10px;border:1px solid #e0d2c2;border-radius:8px;background:#fbf7ef;color:#6f4e37;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">📮 送った要望と返信を見る</button>',
     '<div id="nsf-bug-mine" style="display:none;margin-bottom:12px;max-height:40vh;overflow:auto;"></div>',
     '<textarea id="nsf-bug-msg" rows="5" maxlength="1000" placeholder="' + PLACEHOLDER.replace(/"/g, '&quot;') + '" style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #d2d2d7;border-radius:8px;font-size:14px;resize:vertical;font-family:inherit;"></textarea>',
@@ -115,7 +116,12 @@
     }
   }
 
-  function open() { overlay.style.display = 'flex'; setTimeout(() => { const t = document.getElementById('nsf-bug-msg'); if (t) t.focus(); }, 0); }
+  async function open() {
+    overlay.style.display = 'flex';
+    setTimeout(() => { const t = document.getElementById('nsf-bug-msg'); if (t) t.focus(); }, 0);
+    await ensureData();
+    renderBoard(); renderMine(); markBoardSeen();
+  }
   function close() { overlay.style.display = 'none'; }
 
   // === 送った要望と開発者からの返信 ===
@@ -130,26 +136,88 @@
   function replyStamp(it) { return String(it.replyAt || '') + '|' + String((it.reply || '').length); }
   function fmtDate(t) { const d = new Date(t); return isNaN(d) ? '' : (d.getMonth() + 1) + '/' + d.getDate(); }
 
-  let replyMap = null; // rid -> { reply, replyAt, done }。null = 未取得または GAS 未対応
-  let replyFetched = false;
-  async function fetchReplies() {
-    const mine = loadMine();
-    if (!mine.length || !SCRIPT_SRC) return null;
+  let replyMap = null; // rid -> { reply, replyAt, done }。null = 未取得または読み込み失敗
+  let feedbackData = null; // { replies, board }。null = 未取得または読み込み失敗
+  let dataFetched = false, dataPromise = null;
+  async function loadData() {
+    if (!SCRIPT_SRC) return null;
     try {
       const res = await fetch(new URL('feedback-replies.json', SCRIPT_SRC).href, { cache: 'no-cache' });
       if (!res.ok) return null;
       const data = JSON.parse(await res.text());
-      const list = data && Array.isArray(data.replies) ? data.replies : null;
-      if (!list) return null;
-      // 要望の冒頭(m.msg)に match の文字列が含まれ、page が指定されていれば一致するものを、新しい返信から順に採用する
-      const map = {};
-      mine.forEach(m => {
-        const hit = list.filter(r => r && r.match && (m.msg || '').indexOf(r.match) >= 0 && (!r.page || r.page.replace(/^\/+/, '') === String(m.page || '').replace(/^\/+/, '')))
-          .sort((a, b) => String(b.replyAt || '').localeCompare(String(a.replyAt || '')))[0];
-        map[m.rid] = hit ? { rid: m.rid, reply: hit.reply || '', replyAt: hit.replyAt || '', done: !!hit.done } : { rid: m.rid, reply: '', replyAt: '', done: false };
-      });
-      return map;
+      if (!data || !Array.isArray(data.replies)) return null;
+      return { replies: data.replies, board: Array.isArray(data.board) ? data.board : [] };
     } catch (e) { return null; }
+  }
+  // 要望の冒頭(m.msg)に match の文字列が含まれ、page が指定されていれば一致するものを、新しい返信から順に採用する
+  function computeReplyMap(list) {
+    const norm = v => String(v || '').replace(/^\/+/, '');
+    const map = {};
+    loadMine().forEach(m => {
+      const hit = list.filter(r => r && r.match && (m.msg || '').indexOf(r.match) >= 0 && (!r.page || norm(r.page) === norm(m.page)))
+        .sort((x, y) => String(y.replyAt || '').localeCompare(String(x.replyAt || '')))[0];
+      map[m.rid] = hit ? { rid: m.rid, reply: hit.reply || '', replyAt: hit.replyAt || '', done: !!hit.done } : { rid: m.rid, reply: '', replyAt: '', done: false };
+    });
+    return map;
+  }
+  async function ensureData() {
+    if (dataFetched) return;
+    if (!dataPromise) dataPromise = (async () => {
+      feedbackData = await loadData();
+      replyMap = feedbackData ? computeReplyMap(feedbackData.replies) : null;
+      dataFetched = true;
+    })();
+    await dataPromise;
+  }
+
+  // === このツールの改善要望の状況（公開ボード） ===
+  // feedback-replies.json の board に { page, title, status, note, updatedAt } を書くと、そのツールを開いたときに一覧で見える。
+  const BOARD_SEEN_KEY = 'nsf-bug-board-seen', BOARD_NEW_DAYS = 30;
+  const STATUS_COLOR = { '対応済み': '#29613d', '対応中': '#b26a00', '一部対応': '#b26a00', '検討中': '#3d5a80', '確認中': '#3d5a80', '見送り': '#6e6e73' };
+  function boardItems() {
+    if (!feedbackData) return [];
+    const norm = v => String(v || '').replace(/^\/+/, '');
+    const here = norm(pageKey());
+    return feedbackData.board.filter(b => b && b.title && b.page && norm(b.page) === here);
+  }
+  function boardKey(b) { return b.id || b.title; }
+  function boardStamp(b) { return String(b.status || '') + '|' + String(b.updatedAt || ''); }
+  function boardUnseen() {
+    const seen = lsGet(BOARD_SEEN_KEY, {});
+    return boardItems().filter(b => {
+      const t = Date.parse(b.updatedAt || '');
+      const recent = isNaN(t) || (Date.now() - t) < BOARD_NEW_DAYS * 86400000; // 古い項目は赤い数字にしない
+      return recent && seen[boardKey(b)] !== boardStamp(b);
+    }).length;
+  }
+  function markBoardSeen() {
+    const items = boardItems(); if (!items.length) return;
+    const seen = lsGet(BOARD_SEEN_KEY, {});
+    items.forEach(b => { seen[boardKey(b)] = boardStamp(b); });
+    lsSet(BOARD_SEEN_KEY, seen);
+    updateBadge();
+  }
+  function renderBoard() {
+    const box = document.getElementById('nsf-bug-board'); if (!box) return;
+    const items = boardItems();
+    box.innerHTML = '';
+    box.style.display = items.length ? 'block' : 'none';
+    if (!items.length) return;
+    const head = el('div', 'font-size:12px;font-weight:700;color:#6f4e37;margin-bottom:4px;');
+    head.textContent = '📋 このツールへの改善要望の状況';
+    box.appendChild(head);
+    items.forEach(b => {
+      const row = el('div', 'padding:6px 0;border-top:1px solid #efe5d6;');
+      const line = el('div', 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;');
+      const chip = el('span', 'display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:' + (STATUS_COLOR[b.status] || '#6e6e73') + ';');
+      chip.textContent = b.status || '受付済み';
+      const t = el('span', 'font-size:12.5px;font-weight:700;color:#1d1d1f;word-break:break-word;');
+      t.textContent = b.title;
+      line.appendChild(chip); line.appendChild(t); row.appendChild(line);
+      if (b.note) { const n = el('div', 'font-size:12px;color:#3b2a1e;margin-top:2px;white-space:pre-wrap;word-break:break-word;'); n.textContent = b.note; row.appendChild(n); }
+      if (b.updatedAt) { const d = el('div', 'font-size:10.5px;color:#8a7362;margin-top:2px;'); d.textContent = '更新 ' + b.updatedAt; row.appendChild(d); }
+      box.appendChild(row);
+    });
   }
   function unseenCount() {
     if (!replyMap) return 0;
@@ -157,7 +225,7 @@
     return loadMine().filter(m => replyMap[m.rid] && replyMap[m.rid].reply && seen[m.rid] !== replyStamp(replyMap[m.rid])).length;
   }
   function updateBadge() {
-    const n = unseenCount();
+    const n = unseenCount() + boardUnseen();
     let dot = document.getElementById('nsf-bug-dot');
     if (!n) { if (dot) dot.remove(); return; }
     if (!dot) { dot = el('span', 'display:inline-block;min-width:16px;height:16px;line-height:16px;margin-left:6px;border-radius:8px;background:#b42318;color:#fff;font-size:10px;text-align:center;padding:0 4px;box-sizing:border-box;'); dot.id = 'nsf-bug-dot'; btn.appendChild(dot); }
@@ -178,7 +246,7 @@
     toggle.style.display = mine.length ? '' : 'none';
     if (!mine.length) { box.style.display = 'none'; return; }
     box.innerHTML = '';
-    if (!replyFetched) box.appendChild(el('div', 'font-size:12px;color:#6e6e73;', '返信を確認しています…'));
+    if (!dataFetched) box.appendChild(el('div', 'font-size:12px;color:#6e6e73;', '返信を確認しています…'));
     else if (!replyMap) box.appendChild(el('div', 'font-size:11px;color:#8a7362;margin-bottom:6px;', '返信を確認できませんでした。いまは送った内容のみ表示します。'));
     mine.forEach(m => {
       const it = replyMap && replyMap[m.rid];
@@ -208,7 +276,7 @@
     box.style.display = show ? 'block' : 'none';
     if (!show) return;
     renderMine();
-    if (!replyFetched) { replyMap = await fetchReplies(); replyFetched = true; updateBadge(); renderMine(); }
+    if (!dataFetched) { await ensureData(); updateBadge(); renderMine(); }
     markSeen();
   }
 
@@ -255,7 +323,7 @@
       status.style.color = '#29613d';
       status.textContent = '送りました。ありがとうございます。';
       saveMine({ rid: rid, at: Date.now(), page: pageKey(), msg: msg.slice(0, 120) });
-      replyFetched = false; replyMap = null;
+      dataFetched = false; dataPromise = null; replyMap = null;
       renderMine();
       document.getElementById('nsf-bug-msg').value = '';
       photos = []; renderThumbs();
@@ -277,13 +345,8 @@
     document.getElementById('nsf-bug-send').addEventListener('click', send);
     document.getElementById('nsf-bug-mine-toggle').addEventListener('click', openMine);
     renderMine();
-    // 返信の有無を1タブ1回だけ確認し、新着があればボタンに赤い数字を出す
-    try {
-      if (loadMine().length && !sessionStorage.getItem('nsf-bug-chk')) {
-        sessionStorage.setItem('nsf-bug-chk', '1');
-        setTimeout(async () => { replyMap = await fetchReplies(); replyFetched = true; updateBadge(); }, 2000);
-      }
-    } catch (e) {}
+    // ツールを開いたとき、返信や改善要望の状況に更新があればボタンに赤い数字を出す（JSONは小さな静的ファイル）
+    setTimeout(async () => { await ensureData(); updateBadge(); }, 1500);
     document.getElementById('nsf-bug-photo').addEventListener('change', onPickPhotos);
     overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
     // 印刷には出さない
