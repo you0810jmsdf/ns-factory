@@ -247,9 +247,23 @@ export function clipPolygonByConvex(subject, clip) {
   out = cleanPolygon(out);
   return out.length >= 3 && Math.abs(signedAreaOf(out)) > 1e-9 ? out : [];
 }
-/** 実線だけで囲まれた閉じた経路（連結した線・閉じた折れ線・円など）の多角形を返す。点線（lineStyle 'dashed'）は辺に使わない。 */
+/** 同じ位置に重なった同じ図形（コピーを元の上に重ねて貼ったときなど）を1つにする（先のものを残す）。重なった線があると、端点で3本以上が集まって、つながりが枝分かれし、閉じた囲みに見えなくなるため（事業主 2026-10-25「長丸の中にパッチワークを入れたいのに、その外の全体の枠に作図される」）。線・円弧・円・折れ線が対象。座標は 0.001mm で丸めて比べる（コピーの計算の誤差は、これより十分小さい）。 */
+export function dedupeCoincident(shapes) {
+  const r = v => Math.round(v * 1000) / 1000, pt = p => r(p.x) + ',' + r(p.y), deg = v => r(((v % 360) + 360) % 360), seen = new Set(), out = [];
+  for (const s of shapes) {
+    let key = null;
+    if (s.type === 'line') { const a = r(s.x1) + ',' + r(s.y1), b = r(s.x2) + ',' + r(s.y2); key = 'L' + (a < b ? a + '|' + b : b + '|' + a); }
+    else if (s.type === 'arc') key = 'A' + r(s.cx) + ',' + r(s.cy) + ',' + r(s.r) + ',' + deg(s.startDeg) + ',' + deg(s.endDeg);
+    else if (s.type === 'circle') key = 'C' + r(s.cx) + ',' + r(s.cy) + ',' + r(s.r);
+    else if (s.type === 'polyline' && Array.isArray(s.points)) { const f = s.points.map(pt).join(';'), g = s.points.map(pt).reverse().join(';'); key = 'P' + (s.closed ? 'c' : 'o') + (f < g ? f : g); }
+    if (key !== null) { if (seen.has(key)) continue; seen.add(key); }
+    out.push(s);
+  }
+  return out;
+}
+/** 実線だけで囲まれた閉じた経路（連結した線・閉じた折れ線・円など）の多角形を返す。点線（lineStyle 'dashed'）は辺に使わない。同じ位置に重なった同じ図形は1つとして数える。 */
 export function closedRegions(shapes, tol = 0.01, { dashed = false } = {}) {   /* dashed を true にすると、点線も辺に使う（選んだ線を囲みとして使うとき） */
-  const solid = shapes.filter(s => (dashed || s.lineStyle !== 'dashed') && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)), out = [];
+  const solid = dedupeCoincident(shapes.filter(s => (dashed || s.lineStyle !== 'dashed') && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type))), out = [];
   for (const chain of chainShapes(solid, tol)) {
     if (!chain.closed) continue;
     const pts = [];
