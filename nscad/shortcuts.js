@@ -18,7 +18,7 @@ export function arrowNudge(e) {
 export const TOOL_KEYS = { select: 'V', line: 'L', rect: 'R', circle: 'C', arc: 'A', bezier: 'B', path: 'P', text: 'T', dimension: 'D', ruler: 'S', fillet: 'F', chamfer: 'Shift+C', divide: 'W', offset: 'O', trim: 'Shift+T', mirror: 'M', fold: 'Shift+F', koma: 'K', stitch: 'Shift+S', mark: 'Shift+M', patchfill: 'Shift+P' };
 /** 左メニュー「選択中」の操作のキー（キー → 押すボタンの id）。コピー・グループ・削除は今までのキー（Ctrl+D・Ctrl+G・Delete）。
  *  2026-10-21 事業主指示「ショートカットがないメニューのショートカット割り当て」：1本に結合＝J（Join）・隙間を閉じる＝Shift+J・穴の点検＝I（Inspect）・菱目を消す＝Shift+E（Erase・消す操作なのでうっかり防止の Shift）・順目⇔逆目＝Shift+H（Hole の向き）・拡大縮小＝Shift+R（Resize）。 */
-export const ACTION_KEYS = { mirrorX: 'H', mirrorY: 'Shift+V', rotate: 'Q', toPath: 'N', unroll: 'X', mergeLines: 'J', closeGaps: 'Shift+J', splitLines: 'Shift+X', offsetSel: 'Shift+O', checkHoles: 'I', delHoles: 'Shift+E', flipHoleSlant: 'Shift+H', scaleOpen: 'Shift+R', attachLeft: 'Shift+A' };   /* 線に着ける＝Shift+A（Attach） */
+export const ACTION_KEYS = { mirrorX: 'H', mirrorY: 'Shift+V', rotate: 'Q', toPath: 'N', unroll: 'X', mergeLines: 'J', closeGaps: 'Shift+J', splitLines: 'Shift+X', offsetSel: 'Shift+O', checkHoles: 'I', delHoles: 'Shift+E', flipHoleSlant: 'Shift+H', scaleOpen: 'Shift+R', attachLeft: 'Shift+A', symCheck: 'Y' };   /* 線に着ける＝Shift+A（Attach） */
 /** すでに別の仕組みで動いているキー（ボタンの id → キー）。メニューの横に表示するためだけの一覧（判定は app.js のキー処理：isCopy・isShortcut(e,'g')・isDelete）。解除は Ctrl+Shift+G（Illustrator・Figma と同じ）。 */
 export const FIXED_KEYS = { copy: 'Ctrl+D', group: 'Ctrl+G', ungroup: 'Ctrl+Shift+G', delete: 'Delete', deleteKeepHoles: 'Shift+Delete' };
 /** 画面上部のチェック（キー → チェックの id）：G＝Grid（グリッド）・Shift+G＝スナップ。Ctrl+G のグループ化は別（今までどおり）。 */
