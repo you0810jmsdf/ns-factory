@@ -28,6 +28,7 @@ import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, design
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
 import { DATA_RELEASE_NOTES } from './data/release-notes.js';
+import { DATA_RELEASE_HISTORY } from './data/release-history.js';
 import { TUTORIALS_BASICS } from './tutorials/basics.js';
 import { TUTORIALS_STITCH } from './tutorials/stitch.js';
 import { TUTORIALS_PEN } from './tutorials/pen.js';
@@ -1359,7 +1360,7 @@ function insertNumberedLayer(srcId, name) {
 /** 選んだ図形を、元の層の連番の新しい層を作って移す（右クリックメニューから）。作図先はそのまま。元に戻すは1回。 */
 function moveSelectedToNewLayer(srcId, name) {
   const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s)); if (!targets.length) { $('hint').textContent = t('layerMoveNone'); return; }
-  commit(() => { const id = insertNumberedLayer(srcId, name); for (const s of targets) s.layer = id; }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name });
+  commit(() => { const id = insertNumberedLayer(srcId, name); for (const s of targets) s.layer = id; moveFillsWithShapes(new Set(targets.map(s => s.id)), id); }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name });
 }
 /** 右クリックメニューの「選んだ図形を、この層へ移す」：層の名前を（手前の層が上に）並べ、押すとその層へ移す。末尾に、連番の新しい層を作って移す項目（事業主 2026-10-24「図形を選択して右クリック→レイヤー→名前が付いたレイヤを選ぶと、そのレイヤの属性になる」）。 */
 function fillCtxLayers() {
@@ -1376,7 +1377,7 @@ function moveSelectedToLayer(destId = activeLayer) {
   if (!dest.visible || dest.locked) { $('hint').textContent = t('layerMoveBlocked', { name: layerName(dest) }); return; }
   const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.layer !== dest.id);
   if (!targets.length) { $('hint').textContent = t('layerMoveNone'); return; }
-  commit(() => { for (const s of targets) s.layer = dest.id; }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name: layerName(dest) });
+  commit(() => { for (const s of targets) s.layer = dest.id; moveFillsWithShapes(new Set(targets.map(s => s.id)), dest.id); }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name: layerName(dest) });
 }
 function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
@@ -1943,8 +1944,10 @@ function refillPlanHeight() { const s = foldBookState(), sp = s.kind === 'book' 
 function applyPlanHeight() { const r = refillPlanHeight(); if (!r) return; planHeightTouched = false; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); }
 const FLAT_CORNER_KEY = 'leather-cad.flatCorner', FLAT_LAYOUT_KEY = 'leather-cad.flatLayout';
 /** 平面図の角の丸め・菱目の並べ方：前回の値をブラウザに覚え、変えたら平面図を作りなおす。 */
+const FLAT_PAPER_KEY = 'leather-cad.refillPaper';
 function initFlowPlanOptions() {
-  let c = null, l = null; try { c = localStorage.getItem(FLAT_CORNER_KEY); l = localStorage.getItem(FLAT_LAYOUT_KEY); } catch { /* 読めなければ、初めの値 */ }
+  let c = null, l = null, pp = null; try { c = localStorage.getItem(FLAT_CORNER_KEY); l = localStorage.getItem(FLAT_LAYOUT_KEY); pp = localStorage.getItem(FLAT_PAPER_KEY); } catch { /* 読めなければ、初めの値 */ }
+  $('flowRefillPaper').checked = pp === '1'; $('flowRefillPaper').addEventListener('change', () => { try { localStorage.setItem(FLAT_PAPER_KEY, $('flowRefillPaper').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });
   if (c !== null && c !== '' && Number.isFinite(Number(c)) && Number(c) >= 0) $('flowCorner').value = c; if (l === 'rows' || l === 'loop') $('flowStitchLayout').value = l;
   $('flowCorner').addEventListener('input', () => { const raw = String($('flowCorner').value).trim(); if (raw !== '' && Number.isFinite(Number(raw)) && Number(raw) >= 0) { try { localStorage.setItem(FLAT_CORNER_KEY, raw); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); } });
   $('flowStitchLayout').addEventListener('change', () => { try { localStorage.setItem(FLAT_LAYOUT_KEY, $('flowStitchLayout').value); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });
@@ -3467,8 +3470,8 @@ const regionIsMetalOnly = (r, nonLeather = false) => r.ids.length > 0 && r.ids.e
 function addRegionFill(p, brush) {
   const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
   if (brush.kind !== 'metal' && regionIsMetalOnly(r)) { $('hint').textContent = t('paintMetalRegion'); return false; }
-  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) };
-  commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)))); doc.fills.push(nf); });   /* 同じ領域は置き換える */
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillLayerNow(), ...fillPayload(brush, r.ids) };
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)) && fillContains(o, p))); doc.fills.push(nf); });   /* 同じ領域（クリックした場所を含む同じ囲み）は置き換える。同じ図形で囲まれた別の場所（リングの輪の上下など）の塗りは残す */
   $('hint').textContent = t('regionPainted', { name: paintName(brush) }) + (r.bridged ? ' ' + t('regionBridged') : ''); return true;
 }
 /** 選んだ図形（ids）と、まわりの線で囲まれた場所を、全部「領域の塗り」にする（事業主の指摘 2026-10-18「選んだ線が一周つながっていないと言われる。つながっているのに」：袋の形の13本を選んで色を押した）。塗れた数を返す（0 なら何も塗らない）。 */
@@ -3477,7 +3480,7 @@ function addSelectionRegionFills(brush, ids) {
   let skippedMetal = 0; if (brush.kind !== 'metal') { const keep = regs.filter(r => !regionIsMetalOnly(r, true) && !regionTouchesMetalRole(r)); skippedMetal = regs.length - keep.length; regs = keep; if (!regs.length) { $('hint').textContent = t('paintMetalRegion'); return 0; } }
   let skippedLeather = 0; if (brush.kind === 'metal') { const keep = regs.filter(r => !regionHasLeatherRole(r, ids)); skippedLeather = regs.length - keep.length; regs = keep; if (!regs.length) return 0; }   /* 金属の色は、革・リフィルの線を含む場所には塗らない（事業主 2026-10-25「リングだけ色を塗りたいのに全体がリングの色になる」：リングの線をクリックしたら、まわりの8か所が全部金色になった） */
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
-  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillPayload(brush, r.ids) }; list.push(nf); made.push(nf); }
+  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillLayerNow(), ...fillPayload(brush, r.ids) }; list.push(nf); made.push(nf); }
   const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
   commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });   /* 同じ場所は置き換える */
   $('hint').textContent = t('regionsPainted', { n: made.length, name: paintName(brush) }) + (regs.some(r => r.bridged) ? ' ' + t('regionBridged') : '') + (skippedMetal ? ' ' + t('regionsMetalSkipped', { k: skippedMetal }) : '') + (skippedLeather ? ' ' + t('regionsLeatherSkipped', { k: skippedLeather }) : ''); return made.length;
@@ -3499,13 +3502,19 @@ function clearFills() {
   reset(); commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
-const visibleFills = (d, vis, kind) => (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
+const visibleFills = (d, vis, kind) => (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => !fl.layer || d.layers?.find(l => l.id === fl.layer)?.visible !== false).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0));
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
 /** 革色・質感の塗りの不透明度：質感 0.92・色 0.55（線や下の図が透ける）。白（リフィルの紙）だけは不透明にする（事業主 2026-10-25「リフィルも白にできない」：半透明のままだと、暗い背景の上で灰色に見えた）。 */
 const leatherAlpha = (tex, hex) => tex ? 0.92 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
+/** 領域の塗りの層（事業主 2026-10-25「リフィルのレイヤーを最前面にしたのに、リングサポータの下に来ている」）：塗ったときの作図先の層を覚え、重なりと表示は、その層で決める。
+ *  層の無い古い塗りは、今までどおり、囲んでいる図形のうちいちばん手前の層（それだと、リフィルの線がサポータの塗りを区切ると、サポータの塗りまで「手前の層」になり、同じ順位の中で小さい方が上に出た）。 */
+const fillLayerRank = (fl, rank, byId) => fl.layer && rank.has(fl.layer) ? rank.get(fl.layer) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0));
+const fillLayerNow = () => doc.layers.some(l => l.id === activeLayer) ? { layer: activeLayer } : {};
+/** 図形を別の層へ移したとき、その図形で（半分以上）囲まれている領域の塗りも、同じ層へ移す。 */
+function moveFillsWithShapes(movedIds, destId) { let n = 0; for (const f of doc.fills || []) { const k = (f.ids || []).filter(id => movedIds.has(id)).length; if (k > 0 && k * 2 >= f.ids.length && f.layer !== destId) { f.layer = destId; n++; } } return n; }
 function regionLeatherItems(d, vis) {
   const rank = layerRankMap(d), byId = new Map(d.shapes.map(s => [s.id, s]));
-  return visibleFills(d, vis, 'leather').map(fl => ({ li: Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
+  return visibleFills(d, vis, 'leather').map(fl => ({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
 }
 /** 多角形の面積（絶対値）。革色の塗りを大きい順に重ねるために使う。点が無い・壊れているときは 0。 */
 function leatherItemArea(ps) { if (!ps || ps.length < 3) return 0; const v = Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2; return Number.isFinite(v) ? v : 0; }
@@ -3631,6 +3640,13 @@ function mixHex(a, b, t) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i,
 function metalStops(m) { return [[0, m.dark], [0.12, mixHex(m.hex, m.dark, 0.35)], [0.3, m.hex], [0.42, m.light], [0.56, m.hex], [0.8, mixHex(m.hex, m.dark, 0.6)], [1, m.dark]]; }
 /** 図形の線の色：情報パネルで選んだ色が先。無ければ、金属の色が付いた図形は金属の濃い側の色（塗りの上でも線が見える）。どちらも無ければ null。 */
 const shapeLineColor = s => SHAPE_DRAW_COLOR[s.color] || (s.metal ? METAL_COLORS.find(m => m.id === s.metal)?.dark : null) || null;
+/** 金属の塗り（線で囲まれた場所）に使われている図形の、線の色：その金属の濃い側（事業主 2026-10-25「レバーの輪郭だけ色が違う」：図形そのものに金属の色を付けた台座は線が金属の濃い色になるが、場所をクリックして塗ったレバーは、図形そのものに色が付かず、線が灰色のままだった）。 */
+function metalEdgeColors(d = doc) {
+  const out = new Map();
+  for (const fl of d.fills || []) { if (!fl.metal) continue; const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) for (const id of fl.ids || []) if (!out.has(id)) out.set(id, m.dark); }
+  return out;
+}
+
 /** 金属の質感の塗り（光沢の帯のグラデーション）。ps＝多角形の点列。細い側に帯が走る。 */
 /** 金属の光沢の放射：明るい点（中心の少し左上）→基本色→暗い縁。丸いボタン・コインの金属らしい見え方。 */
 function metalRadialStops(m) { return [[0, m.light], [0.3, mixHex(m.hex, m.light, 0.45)], [0.62, m.hex], [0.86, mixHex(m.hex, m.dark, 0.55)], [1, m.dark]]; }
@@ -3652,7 +3668,7 @@ function metalDrawItems(vis = visible) {
     for (const h of holes) { ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.65)'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); trace(h); ctx.stroke(); ctx.restore(); } /* 穴の暗い縁 */
   };
   const rank = layerRankMap(doc), byId = new Map(doc.shapes.map(s => [s.id, s])), items = [];
-  for (const fl of visibleFills(doc, vis, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) items.push({ li: Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)), area: leatherItemArea(fl.points), direct: true, alpha: 1, draw: () => paint(m, fl.points, fl.holes || [], fl.style) }); }   /* 線で囲まれた場所の金属の塗り */
+  for (const fl of visibleFills(doc, vis, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) items.push({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), direct: true, alpha: 1, draw: () => paint(m, fl.points, fl.holes || [], fl.style) }); }   /* 線で囲まれた場所の金属の塗り */
   for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) items.push({ li: rank.get(r.layer) || 0, area: leatherItemArea(r.body), direct: true, alpha: 1, draw: () => paint(m, r.body, r.holes, r.style) }); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
   return items;
 }
@@ -4906,6 +4922,15 @@ function ringHoleOffset(ring) {
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
+/** 平面図のリフィルを白い紙として塗る（事業主 2026-10-25「リフィルの穴は透明にしたい。下の革を表示させたい」）：リフィルの外形（線と弧）を一周たどった形から、穴（閉じた図形）をくり抜いた領域の塗り（白）にする。穴の中は塗られないので、下の革が見える。
+ *  平面図を作りなおすたびに置き換わる（foldFlat 'fd'）。外形が一周につながらないときは、何も塗らない。 */
+function addRefillPaperFill(refillIds, layer) {
+  const added = refillIds.map(id => doc.shapes.find(s => s.id === id)).filter(Boolean), outline = added.filter(s => !(s.closed || s.type === 'circle')), holeShapes = added.filter(s => s.closed || s.type === 'circle');
+  const poly = outline.length ? outlinePolygon(outline, outline[0].id) : null; if (!poly) return null;
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), holes = holeShapes.map(h => outlinePolygon([h], h.id)?.points).filter(Boolean).map(h => h.map(rd));
+  const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd' };
+  doc.fills = [...(doc.fills || []), fl]; return fl;
+}
 function projectFoldDesign(withStitch) {
   const d = doc.foldDesign; if (!d) { $('hint').textContent = t(foldIsBifold() ? 'foldFixNoneBi' : 'foldFixNone'); return; }
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
@@ -4925,7 +4950,7 @@ function projectFoldDesign(withStitch) {
   const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
   commit(() => {
     const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
-    dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
+    doc.fills = (doc.fills || []).filter(f => f.foldFlat !== 'fd'); dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
     const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
     add({ type: 'polyline', layer, closed: true, points: roundedRectPoints(fx, fy, p.length, h, corner) });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
@@ -4950,7 +4975,7 @@ function projectFoldDesign(withStitch) {
       const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
       if (gap.item) {   /* リフィルの部品（部品ライブラリのもの）を、そのまま置く：穴の列（E）をリング軸に合わせ、向きが逆なら左右反転。層はガイド・色は青（切り抜きではない参考） */
         const payload = instantiateItem(gap.item, {}, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
-        for (const sh of placed) add({ ...sh, layer: guide, color: 'blue' });
+        const refillIds = placed.map(sh => add({ ...sh, layer: guide, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, guide);   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
         seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
         for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });
@@ -7043,7 +7068,7 @@ function drawSheetBody(lo, hi) {
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   if (viewShow.colors) drawLeatherFills(doc, visible, previewMoved, metalDrawItems()); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
-  const rankDraw = layerRankMap(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
   if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of strokeList) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
   for (const s of strokeList) if (!s.occlude) strokeOne(s);
@@ -7739,10 +7764,23 @@ function fillReleaseList(box, releases, mine) {
     for (const it of r.items || []) { const d = document.createElement('div'); d.className = 'rel-item'; d.textContent = it; box.appendChild(d); }
   }
 }
+/** 更新履歴の検索（事業主 2026-10-25「更新履歴で検索窓を付けて」）：スペースで区切った言葉が、すべて入っている行だけを出す。全角・半角、大文字・小文字は区別しない。
+ *  検索していないときは、公開した更新（新しい順）と、「それ以前の更新の記録」（ボタンで開閉）。検索中は、両方からさがして、出る。 */
+const releaseNorm = s => String(s ?? '').normalize('NFKC').toLowerCase();
+const releaseTerms = q => releaseNorm(q).split(/\s+/).filter(Boolean);
+const releaseFilter = (list, terms) => list.map(r => ({ date: r.date, items: (r.items || []).filter(x => { const n = releaseNorm(x); return terms.every(w => n.includes(w)); }) })).filter(r => r.items.length);
+let releaseOldOpen = false;
+function renderReleaseDialog() {
+  const mine = parseBuild($('buildVer')?.textContent), cur = DATA_RELEASE_NOTES?.releases ?? [], old = DATA_RELEASE_HISTORY?.days ?? [], terms = releaseTerms($('releaseSearch').value);
+  const showOld = (list, open) => { $('releaseOldTitle').hidden = $('releaseOld').hidden = !open; if (open) fillReleaseList($('releaseOld'), list, null); };
+  if (!terms.length) { fillReleaseList($('releaseList'), cur, mine); $('releaseCount').textContent = ''; $('releaseMore').hidden = false; $('releaseMore').textContent = t(releaseOldOpen ? 'releaseLess' : 'releaseMore', { n: old.length }); showOld(old, releaseOldOpen); return; }
+  const a = releaseFilter(cur, terms), b = releaseFilter(old, terms), n = [...a, ...b].reduce((k, r) => k + r.items.length, 0);
+  fillReleaseList($('releaseList'), a, mine); $('releaseMore').hidden = true; showOld(b, b.length > 0); $('releaseCount').textContent = n ? t('releaseFound', { n }) : t('releaseNone');
+}
 function openReleaseNotes() {
-  const mine = parseBuild($('buildVer')?.textContent), list = DATA_RELEASE_NOTES?.releases ?? [];
-  fillReleaseList($('releaseList'), list, mine); $('releaseNow').textContent = mine ? t('releaseNow', { ver: mine.jst }) : t('releaseDev');
-  const dlg = $('releaseDialog'); if (!dlg.open) dlg.showModal?.();
+  const mine = parseBuild($('buildVer')?.textContent); $('releaseSearch').value = ''; releaseOldOpen = false;
+  $('releaseNow').textContent = mine ? t('releaseNow', { ver: mine.jst }) : t('releaseDev'); renderReleaseDialog();
+  const dlg = $('releaseDialog'); if (!dlg.open) dlg.showModal?.(); $('releaseSearch').focus?.();
 }
 let updateDismissed = '', lastVersionCheck = 0;
 async function checkNewVersion() {
@@ -7752,7 +7790,7 @@ async function checkNewVersion() {
   $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); const news = releasesSince(mine, v.releases); fillReleaseList($('updateNotes'), news, null); $('updateNotes').hidden = !news.length;   /* 新しい版で変わったこと */
   $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
 }
-$('releaseBtn').onclick = openReleaseNotes; $('releaseClose').onclick = () => $('releaseDialog').close?.(); $('updateHistory').onclick = openReleaseNotes;
+$('releaseBtn').onclick = openReleaseNotes; $('releaseClose').onclick = () => $('releaseDialog').close?.(); $('updateHistory').onclick = openReleaseNotes; $('releaseSearch').addEventListener('input', renderReleaseDialog); $('releaseMore').onclick = () => { releaseOldOpen = !releaseOldOpen; renderReleaseDialog(); };
 $('updateNow').onclick = () => { try { flushAutosave(); } catch { /* 自動保存できなくても更新はできる */ } location.reload(); };
 $('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id || ''; $('updateBar').hidden = true; };
 if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
