@@ -1,5 +1,8 @@
 (function () {
   const { volumes, commentaries, videos, workflow } = window.HITSUKI_DATA;
+  const FULLTEXT = window.HITSUKI_FULLTEXT || {};   // 原典の全文（出典：ひふみ神示データー）。'巻id-帖番号' → { t, n, r, x }
+  const FULLTEXT_SOURCE = window.HITSUKI_FULLTEXT_SOURCE || {};
+  const FULLTEXT_INLINE_MAX = 240;   // この文字数までの帖は、押さなくても全文を出す
 
   const state = {
     query: '',
@@ -70,6 +73,7 @@
         anchor: `passage-${volume.id}-${key}`,
         sourceUrl: volume.sourceUrl,
         excerpt: volume.samplePassages?.[i] || '',
+        full: isMissing ? null : FULLTEXT[`${volume.id}-${key}`] || null,
         status: isMissing ? 'missing' : volume.samplePassages?.[i] ? 'sample' : 'pending'
       });
     }
@@ -84,6 +88,7 @@
         anchor: `passage-${volume.id}-${extra.key}`,
         sourceUrl: volume.sourceUrl,
         excerpt: '',
+        full: FULLTEXT[`${volume.id}-${extra.key}`] || null,
         status: 'pending'
       });
     });
@@ -99,6 +104,15 @@
       '"': '&quot;',
       "'": '&#39;'
     }[ch]));
+  }
+
+  // 原典の記号（私用領域の文字）は、図（glyphs.css）に直して出す
+  function withGlyphs(escaped) {
+    return escaped.replace(/[\uE000-\uF8FF]/g, (ch) => `<i class="gl g-${ch.charCodeAt(0).toString(16).toUpperCase()}" role="img" aria-label="記号"></i>`);
+  }
+
+  function fullTextHtml(text) {
+    return withGlyphs(escapeHtml(text)).replace(/\n/g, '<br>');
   }
 
   function normalize(value) {
@@ -131,6 +145,7 @@
       passage.title,
       passage.label,
       passage.excerpt,
+      passage.full?.t,
       volume?.title,
       volume?.themes.join(',')
     ].join(' '));
@@ -195,13 +210,41 @@
     const transcript = (window.HITSUKI_TRANSCRIPTS || {})[passageKey];
     const mappedVideos = videosByPassage.get(passageKey) || [];
     const statusLabel = {
-      pending: '本文入力待ち',
+      pending: passage.full ? null : '本文入力待ち',
       missing: '欠帖'
     }[passage.status] || null;
 
-    const excerpt = passage.status === 'missing'
-      ? 'この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。'
-      : passage.excerpt || '本文全文は出典・掲載許諾の確認後に登録します。';
+    // 本文の出し方：サイトの本文（抜粋のこともある）→ 原典の全文（出典サイトの転記）。全文が無い帖は、その理由を出す
+    const full = passage.full;
+    const fullText = full && full.t ? full.t : '';
+    const pct = full && Number.isFinite(full.r) && full.r < 90 ? (full.r < 5 ? null : Math.round(full.r / 5) * 5) : undefined;   // サイトの本文が原典より短いときだけ
+    const sourceUrl = FULLTEXT_SOURCE.url && passage.sourceUrl ? passage.sourceUrl : '';
+    const credit = fullText
+      ? `<p class="fulltext-credit">原典の全文。出典：${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}</a>` : escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}（${escapeHtml(passage.title)}）${full.n ? `　通し番号 ${escapeHtml(full.n)}` : ''}${pct === undefined ? '' : `。サイトの本文は、この原典の${pct === null ? '5％に満たない' : `約${pct}％`}（文字数の比較）`}。記号は図で表しています。</p>`
+      : '';
+    let excerptHtml;
+    let fullToggle = '';
+    let fullPanel = '';
+    if (passage.status === 'missing') {
+      excerptHtml = '<p class="passage-excerpt">この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。</p>';
+    } else if (passage.excerpt) {
+      excerptHtml = `<p class="passage-excerpt">${escapeHtml(passage.excerpt)}</p>`;
+      if (fullText && pct !== undefined) {
+        fullToggle = `<button class="fulltext-toggle" type="button" aria-expanded="false">原典の全文を読む ▾</button>`;
+        fullPanel = `<div class="fulltext-panel" hidden><p class="fulltext-body">${fullTextHtml(fullText)}</p>${credit}</div>`;
+      }
+    } else if (fullText && fullText.length <= FULLTEXT_INLINE_MAX) {
+      excerptHtml = `<p class="passage-excerpt fulltext-body">${fullTextHtml(fullText)}</p>${credit}`;
+    } else if (fullText) {
+      const preview = [...fullText].slice(0, 90).join('').replace(/\n/g, ' ');
+      excerptHtml = `<p class="passage-excerpt">${withGlyphs(escapeHtml(preview))}……</p>`;
+      fullToggle = `<button class="fulltext-toggle" type="button" aria-expanded="false">原典の全文を読む ▾</button>`;
+      fullPanel = `<div class="fulltext-panel" hidden><p class="fulltext-body">${fullTextHtml(fullText)}</p>${credit}</div>`;
+    } else if (full && full.x) {
+      excerptHtml = `<p class="passage-excerpt">${escapeHtml(full.x)}</p>`;
+    } else {
+      excerptHtml = '<p class="passage-excerpt">この帖の本文は、まだ載せられていません。</p>';
+    }
 
     // 工房の言い換え解説（kind: 'workshop'）は、出典リンクとバッジを付けて動画の解説と区別する
     const isWorkshop = !!transcript && transcript.kind === 'workshop';
@@ -244,12 +287,14 @@
           </div>
           ${statusLabel ? `<span class="status-pill ${escapeHtml(passage.status)}">${escapeHtml(statusLabel)}</span>` : ''}
         </div>
-        <p class="passage-excerpt">${escapeHtml(excerpt)}</p>
+        ${excerptHtml}
         <div class="passage-links">
+          ${fullToggle}
           ${toggleBtn}
           ${badge}
           ${excerptBadge}
         </div>
+        ${fullPanel}
         ${transcriptHtml}
       </article>
     `;
@@ -294,6 +339,16 @@
   });
 
   els.passageList.addEventListener('click', (event) => {
+    const fullToggle = event.target.closest('.fulltext-toggle');
+    if (fullToggle) {
+      const fullPanel = fullToggle.closest('.passage-card')?.querySelector('.fulltext-panel');
+      if (!fullPanel) return;
+      const open = fullToggle.getAttribute('aria-expanded') === 'true';
+      fullToggle.setAttribute('aria-expanded', String(!open));
+      fullToggle.textContent = open ? '原典の全文を読む ▾' : '原典の全文を閉じる ▴';
+      fullPanel.hidden = open;
+      return;
+    }
     const toggle = event.target.closest('.commentary-toggle');
     if (!toggle || toggle.classList.contains('no-data')) return;
     const card = toggle.closest('.passage-card');
