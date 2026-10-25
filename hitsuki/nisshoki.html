@@ -27,6 +27,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <meta property="og:site_name" content="N's factory">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="glyphs.css">
 </head>
 <body>
   <header class="site-header">
@@ -133,7 +134,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <h2 id="index-title">巻物索引</h2>
           <p>
             全巻を一覧し、各帖から解説ページと動画候補へ繋げるための作業台です。
-            本文全文は出典と掲載許諾の確認後に差し込む前提で、いまは索引を先に整えています。
+            原典の全文は、出典サイト「ひふみ神示データー」の転記をもとに、各帖に載せています（原典の記号は図で表します）。
+            原典の著作権の保護期間が満了していることを確認したうえでの掲載です。サイトの本文が原典の抜粋の帖には、「原典の全文を読む」を付けています。
           </p>
         </div>
 
@@ -198,6 +200,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <script src="data/hitsukiData.js"></script>
   <script src="data/hitsukiStatic.js"></script>
   <script src="data/commentaries.js"></script>
+  <script src="data/fulltext.js"></script>
   <script src="app.js"></script>
   <script>
   (function () {
