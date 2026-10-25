@@ -45,6 +45,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .pg-row .pg-bar { margin: 0; height: 10px; }
     .pg-row .num { text-align: right; font-variant-numeric: tabular-nums; font-size: .88rem; color: var(--ink-soft); }
     .pg-row.done .pg-bar i { background: #8fbf7f; }
+    .pg-bar i.w { background: #6fb3b8; }
+    .pg-row.done .pg-bar i.w { background: #6fb3b8; }
+    .pg-split { margin: 10px 0 0; color: var(--ink-soft); font-size: .9rem; }
+    .pg-split b { color: #8fcfd3; font-weight: 600; }
     .pg-row.zero .name { color: var(--muted); }
     .pg-row .new { color: var(--gold); font-size: .75rem; margin-left: 4px; }
     .pg-hist { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-top: 18px; overflow-x: auto; }
@@ -88,9 +92,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <span id="pg-of">/ – 帖に解説あり</span>
       </div>
       <div class="pg-bar" role="progressbar" aria-labelledby="sum-title" id="pg-total-bar" aria-valuemin="0" aria-valuemax="100"><i id="pg-total-fill" style="width:0"></i></div>
+      <p class="pg-split" id="pg-split" hidden></p>
       <dl class="pg-kpis">
         <div class="pg-kpi"><dt>最後に追加した日</dt><dd id="pg-last">–</dd></div>
-        <div class="pg-kpi"><dt>次の確認</dt><dd id="pg-next">–</dd></div>
+        <div class="pg-kpi"><dt>動画の次の確認</dt><dd id="pg-next">–</dd></div>
         <div class="pg-kpi"><dt>全帖そろった巻</dt><dd id="pg-full">–</dd></div>
         <div class="pg-kpi"><dt>まだ解説のない巻</dt><dd id="pg-zero">–</dd></div>
       </dl>
@@ -106,7 +111,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <h2 id="vol-title">巻ごとの状況</h2>
       <p class="pg-legend">
         <span><b style="background:#8fbf7f"></b>全帖そろった</span>
-        <span><b style="background:var(--gold)"></b>掲載した帖</span>
+        <span><b style="background:var(--gold)"></b>動画の解説を掲載した帖</span>
+        <span><b style="background:#6fb3b8"></b>工房の言い換え解説（AI作成）</span>
         <span><b style="background:rgba(245,239,225,.12)"></b>まだの帖</span>
         <span><span style="color:var(--gold)">NEW</span> 最後に追加した日に増えた巻</span>
       </p>
@@ -115,7 +121,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <p class="pg-note">
       ※ 数字は、このページを開いたときのアーカイブの中身をそのまま数えています。
-      解説の順番は動画の公開順によるため、巻の順には並びません。
+      動画の解説は公開順に、工房の言い換え解説は巻の順に増やしているため、全体は巻の順には並びません。
+      工房の言い換え解説は、神示の原文を教育幕僚（AI）がやさしい言葉に言い換えたもので、解釈ごとに根拠と確信度（高・中・低）を付けています。
     </p>
     <a class="pg-back" href="nisshoki.html#index">← 巻物索引で解説を読む</a>
   </main>
@@ -131,7 +138,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       var m = key.match(/^([a-z0-9]+)-(\d+)$/);
       if (!m) return;
       var d = String(tr[key].addedAt || '').slice(0, 10);
-      (byVol[m[1]] = byVol[m[1]] || { n: 0, dates: {} }).n++;
+      (byVol[m[1]] = byVol[m[1]] || { n: 0, w: 0, dates: {} }).n++;
+      if (tr[key].kind === 'workshop') byVol[m[1]].w++;
       if (d) {
         byVol[m[1]].dates[d] = true;
         byDate[d] = (byDate[d] || 0) + 1;
@@ -153,6 +161,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     $('pg-done').textContent = done;
     $('pg-of').textContent = '/ ' + total + ' 帖に解説あり（' + pct.toFixed(1) + '%）';
+    var workTotal = 0;
+    vols.forEach(function (v) { workTotal += Math.min((byVol[v.id] || {}).w || 0, v.totalChapters); });
+    if (workTotal) {
+      $('pg-split').innerHTML = '内訳：動画の解説 <b>' + (done - workTotal) + '帖</b>　＋　工房の言い換え解説（AI作成） <b>' + workTotal + '帖</b>';
+      $('pg-split').hidden = false;
+    }
     $('pg-total-fill').style.width = pct + '%';
     $('pg-total-bar').setAttribute('aria-valuenow', pct.toFixed(1));
     $('pg-last').innerHTML = lastDate ? fmt(lastDate) + ' <small>' + (byDate[lastDate] || 0) + '帖</small>' : 'なし';
@@ -198,12 +212,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       list.forEach(function (v) { gt += v.totalChapters; gd += Math.min((byVol[v.id] || {}).n || 0, v.totalChapters); });
       html += '<p class="pg-group">' + g + '（' + gd + ' / ' + gt + '帖）</p>';
       list.forEach(function (v) {
-        var info = byVol[v.id] || { n: 0, dates: {} };
+        var info = byVol[v.id] || { n: 0, w: 0, dates: {} };
         var n = Math.min(info.n, v.totalChapters), w = n / v.totalChapters * 100;
+        var nw = Math.min(info.w || 0, n), wVideo = (n - nw) / v.totalChapters * 100, wWork = nw / v.totalChapters * 100;
         var cls = n >= v.totalChapters ? ' done' : (n === 0 ? ' zero' : '');
         var isNew = lastDate && info.dates[lastDate] ? '<span class="new">NEW</span>' : '';
         html += '<div class="pg-row' + cls + '"><span class="name">' + v.title + '<small>' + (v.displayNo || '') + '</small>' + isNew + '</span>' +
-          '<div class="pg-bar" aria-hidden="true"><i style="width:' + w + '%"></i></div>' +
+          '<div class="pg-bar" aria-hidden="true"><i style="width:' + wVideo + '%"></i>' +
+          (nw ? '<i class="w" style="left:' + wVideo + '%;width:' + wWork + '%"></i>' : '') + '</div>' +
           '<span class="num">' + n + ' / ' + v.totalChapters + '</span></div>';
       });
     });

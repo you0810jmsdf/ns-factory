@@ -203,10 +203,22 @@
       ? 'この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。'
       : passage.excerpt || '本文全文は出典・掲載許諾の確認後に登録します。';
 
+    // 工房の言い換え解説（kind: 'workshop'）は、出典リンクとバッジを付けて動画の解説と区別する
+    const isWorkshop = !!transcript && transcript.kind === 'workshop';
+    const sourceLinks = isWorkshop && Array.isArray(transcript.sources)
+      ? transcript.sources
+        .filter((s) => /^https:\/\//.test(s.u || ''))
+        .map((s) => `<a href="${escapeHtml(s.u)}" target="_blank" rel="noopener">${escapeHtml(s.t)}</a>`)
+      : [];
+    const sourcesHtml = sourceLinks.length
+      ? `<p class="commentary-source">出典・参考：${sourceLinks.join('、')}</p>`
+      : '';
+
     const transcriptHtml = transcript ? `
       <div class="commentary-panel" hidden>
         <div class="commentary-panel-inner">
           <p class="commentary-transcript">${escapeHtml(transcript.transcript).replace(/\n/g, '<br>')}</p>
+          ${sourcesHtml}
         </div>
       </div>
     ` : '';
@@ -216,9 +228,12 @@
       : `<span class="commentary-toggle no-data">解説未収録</span>`;
 
     const hasCommentary = !!transcript;
+    const badge = !transcript ? '' : (isWorkshop
+      ? '<span class="commentary-badge workshop">工房の言い換え解説（AI作成）</span>'
+      : '<span class="commentary-badge video">動画の解説</span>');
 
     return `
-      <article class="passage-card${hasCommentary ? ' has-commentary' : ''}" id="${escapeHtml(passage.anchor)}">
+      <article class="passage-card${hasCommentary ? ' has-commentary' : ''}${isWorkshop ? ' is-workshop' : ''}" id="${escapeHtml(passage.anchor)}">
         <div class="passage-card-head">
           <div>
             <span class="passage-label">${escapeHtml(passage.label)}</span>
@@ -229,6 +244,7 @@
         <p class="passage-excerpt">${escapeHtml(excerpt)}</p>
         <div class="passage-links">
           ${toggleBtn}
+          ${badge}
         </div>
         ${transcriptHtml}
       </article>
