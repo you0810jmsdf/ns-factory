@@ -1275,7 +1275,7 @@ function initStitch() {
   $('resetManual').onclick=()=>{manualNext=null;draw();};
   $('placement').addEventListener('change',syncPlacementFields);syncPlacementFields();
   for(const id of ['placement','reversePath','offsetStart','offsetEnd','segmentFrom','segmentTo','stitchCount'])$(id).addEventListener('change',()=>{manualNext=null;countStage=null;});
-  $('delHoles').onclick=deleteSelectedHoles; $('checkHoles').onclick=checkHoles; $('flipHoleSlant').onclick=flipSlantOfSelection;
+  $('delHoles').onclick=deleteSelectedHoles; $('checkHoles').onclick=checkHoles; $('flipHoleSlant').onclick=flipSlantOfSelection; $('slantFlipNow').onclick=flipSlantOfSelection; $('drawDashed').onclick=toggleDrawDashed;
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
@@ -4482,10 +4482,14 @@ function centerOnClick(p) {
   const ids = selectedShapeIds(); if (!ids.size) { setMode('select'); $('hint').textContent = t('centerOnNeedSelect'); return; }
   const skip = s => ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type);
   let target = null; for (const s of doc.shapes) { if (skip(s)) continue; const d = distToShape(s, p); if (d <= 12 / scale && (!target || d < target.d)) target = { s, d }; }
-  if (!target) { $('hint').textContent = t('centerOnNoTarget'); return; }
-  const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 });
   const boxOf = list => { let b = null; for (const s of list) { const q = bboxOf(s); b = b ? { minX: Math.min(b.minX, q.minX), minY: Math.min(b.minY, q.minY), maxX: Math.max(b.maxX, q.maxX), maxY: Math.max(b.maxY, q.maxY) } : { ...q }; } return b; };
-  const members = new Set(chain.length ? chain : [target.s.id]), tb = boxOf(doc.shapes.filter(s => members.has(s.id))), sb = boxOf(doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image')); if (!tb || !sb) return;
+  let tb = null;
+  if (target) { const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 }), members = new Set(chain.length ? chain : [target.s.id]); tb = boxOf(doc.shapes.filter(s => members.has(s.id))); }
+  else {   /* 線の近くでなければ、クリックした所を囲んでいる場所（選んでいない見えている実線で囲まれた、いちばん内側）の中央へ（事業主 2026-10-25「真ん中に配置できない」：基準の線のすぐそばをクリックしないと動かなかった） */
+    const reg = enclosedAreaAt(regionShapes().filter(s => !ids.has(s.id)), p); if (reg?.points?.length) { const xs = reg.points.map(q => q.x), ys = reg.points.map(q => q.y); tb = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }; }
+  }
+  if (!tb) { $('hint').textContent = t('centerOnNoTarget'); return; }
+  const sb = boxOf(doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image')); if (!sb) return;
   const dx = centerOnAxes.includes('x') ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
@@ -6191,7 +6195,7 @@ function updateUI() {
   $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
-  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
+  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('mergeLines').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
@@ -6486,6 +6490,10 @@ function removeSelected(onlyIds = null, alsoFn = null) {
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
   if (dropped) $('hint').textContent = t('fillsDroppedWithShapes', { n: dropped });
 }
+/** 「点線で描く」（事業主 2026-10-25「直接点線が引きたい」→ 案A）：オンの間、作図の道具（直線・矩形・円・円弧・ベジェ・ペン）で描く図形は、点線になる。描いたあとに線種を変える手間をなくす。画面だけの状態で、図面には保存しない（もう一度押すか、ページを開き直すと実線）。 */
+let drawDashed = false;
+const DASH_DRAW_MODES = ['line', 'rect', 'circle', 'arc', 'bezier', 'path', 'polyline'];
+function toggleDrawDashed() { drawDashed = !drawDashed; const b = $('drawDashed'); b.classList?.toggle?.('active', drawDashed); b.setAttribute?.('aria-pressed', String(drawDashed)); $('hint').textContent = t(drawDashed ? 'drawDashedOn' : 'drawDashedOff'); }
 function addShape(shape) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
   if (!layer) { $('hint').textContent = t('noLayer'); cancel(); return; }
@@ -6494,7 +6502,7 @@ function addShape(shape) {
   const ids = new Set(doc.shapes.map(s => s.id)); while (ids.has(id)) id = `s${++n}`;
   const { layer: wanted, ...rest } = shape; let target = wanted && doc.layers.some(l => l.id === wanted && l.visible && !l.locked) ? wanted : layer.id; // 呼び元の layer はロック・非表示でなければ尊重
   if ((rest.type === 'text' || rest.type === 'dimension') && doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked)) target = 'guide'; /* 基本方針：文字・寸法線はガイド、実線は型紙 */
-  const dashed = target === 'guide' && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線 */
+  const dashed = (target === 'guide' || (drawDashed && DASH_DRAW_MODES.includes(mode))) && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線。「点線で描く」がオンの間は、作図の道具で描く線も点線 */
   commit(() => { doc.shapes.push({ id, layer: target, ...dashed, ...rest }); selected = new Set([id]); });
 }
 function freshId(items, prefix) {
