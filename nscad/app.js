@@ -1418,17 +1418,17 @@ function fillCtxLayers() {
   const box = $('ctxLayers'), targets = doc.shapes.filter(s => selected.has(s.id) && editable(s));
   box.innerHTML = ''; $('ctxLayersTitle').hidden = box.hidden = !targets.length; if (!targets.length) return;
   const here = new Set(targets.map(s => s.layer));
-  for (const l of [...doc.layers].reverse()) { const b = document.createElement('button'), blocked = !l.visible || l.locked; b.textContent = (here.size === 1 && here.has(l.id) ? '✓ ' : '') + layerName(l); b.title = t(blocked ? 'ctxLayerBlockedTip' : 'ctxLayerTip'); b.disabled = blocked; b.onclick = () => { countUse('ctx_layer'); hideCtxMenu(); moveSelectedToLayer(l.id); }; box.appendChild(b); }
+  for (const l of [...doc.layers].reverse()) { const b = document.createElement('button'), blocked = l.locked; b.textContent = (here.size === 1 && here.has(l.id) ? '✓ ' : '') + layerName(l); b.title = t(blocked ? 'ctxLayerBlockedTip' : !l.visible ? 'ctxLayerHiddenTip' : 'ctxLayerTip'); b.disabled = blocked;   /* 非表示の層にも移せる（事業主 2026-10-25「選んだ寸法線をガイドレイヤーに移したくてもアクティブ表示にならない」：ガイドの層を隠していると、ボタンが押せなかった）。止めるのはロック中の層だけ */ b.onclick = () => { countUse('ctx_layer'); hideCtxMenu(); moveSelectedToLayer(l.id); }; box.appendChild(b); }
   const src = doc.layers.find(l => l.id === targets[0].layer), name = nextLayerName(src ? layerName(src) : t('layer.pattern')), nb = document.createElement('button');
   nb.className = 'ctx-wide'; nb.textContent = t('ctxLayerNew', { name }); nb.title = t('ctxLayerNewTip'); nb.onclick = () => { countUse('ctx_layer_new'); hideCtxMenu(); moveSelectedToNewLayer(src?.id, name); }; box.appendChild(nb);
 }
 /** 選んだ図形（複数でもよい）を、指定の層（既定は作図先）へ移す。移し先が非表示・ロック中なら何もしない。 */
 function moveSelectedToLayer(destId = activeLayer) {
   const dest = doc.layers.find(x => x.id === destId); if (!dest) return;
-  if (!dest.visible || dest.locked) { $('hint').textContent = t('layerMoveBlocked', { name: layerName(dest) }); return; }
+  if (dest.locked) { $('hint').textContent = t('layerMoveBlocked', { name: layerName(dest) }); return; }
   const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s) && s.layer !== dest.id);
   if (!targets.length) { $('hint').textContent = t('layerMoveNone'); return; }
-  commit(() => { for (const s of targets) s.layer = dest.id; moveFillsWithShapes(new Set(targets.map(s => s.id)), dest.id); }); renderLayers(); $('hint').textContent = t('layerMoved', { n: targets.length, name: layerName(dest) });
+  commit(() => { for (const s of targets) s.layer = dest.id; moveFillsWithShapes(new Set(targets.map(s => s.id)), dest.id); if (!dest.visible) selected = new Set([...selected].filter(id => !targets.some(s => s.id === id))); }); renderLayers(); $('hint').textContent = t(dest.visible ? 'layerMoved' : 'layerMovedHidden', { n: targets.length, name: layerName(dest) });   /* 非表示の層へ移したら、移した図形は見えなくなる：選びからも外し、案内を出す */
 }
 function initLayers() {
   $('layerList').addEventListener('change', () => { activeLayer = $('layerList').value; renderLayers(); });
@@ -2765,6 +2765,7 @@ function initDesign() {
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
+  $('ctx-center').onclick = () => { hideCtxMenu(); centerOnStart('xy'); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
@@ -4495,7 +4496,7 @@ function centerOnClick(p) {
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
 }
-$('symCheck').onclick = runSymmetryCheck; $('centerOnXY').onclick = () => centerOnStart('xy'); $('centerOnX').onclick = () => centerOnStart('x'); $('centerOnY').onclick = () => centerOnStart('y');
+$('symCheck').onclick = runSymmetryCheck; $('centerOnXY').onclick = () => centerOnStart('xy');   /* 右クリックの「中心を合わせる」は、移動の窓の「基準の中央へ（縦横）」と同じ（事業主 2026-10-25「二つの図形の中心どうしを合わせるだけなのに」→「右クリックの図形の移動に加えたらよくないですか？左メニューがどんどんふくれてきているので使いにくい」） */ $('centerOnX').onclick = () => centerOnStart('x'); $('centerOnY').onclick = () => centerOnStart('y');
 $('attachStart').onclick = attachStart; $('attachLeft').onclick = attachStart;   /* 左メニューの「線に着ける」も同じ（Shift+A） */ $('fillsClear').onclick = clearFills; $('fillsDetachedClear').onclick = clearDetachedFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
@@ -7781,7 +7782,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-offset').hidden = !selectedShapeIds().size;
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; $('ctx-offset').hidden = !selectedShapeIds().size;
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
