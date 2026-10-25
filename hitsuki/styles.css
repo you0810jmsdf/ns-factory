@@ -788,6 +788,12 @@ button {
   color: #8fcfd3;
 }
 
+.commentary-badge.excerpt {
+  border-color: #c9a45c;
+  background: rgba(201, 164, 92, 0.1);
+  color: #e0c38a;
+}
+
 .passage-card.has-commentary.is-workshop {
   border-left-color: #6fb3b8;
 }
