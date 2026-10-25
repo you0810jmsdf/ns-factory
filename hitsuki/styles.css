@@ -771,6 +771,31 @@ button {
   margin-left: 6px;
 }
 
+/* 解説の種別バッジ（動画の解説／工房の言い換え解説）。工房の解説は青緑で区別する */
+.commentary-badge {
+  align-self: center;
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.commentary-badge.workshop {
+  border-color: #6fb3b8;
+  background: rgba(111, 179, 184, 0.1);
+  color: #8fcfd3;
+}
+
+.passage-card.has-commentary.is-workshop {
+  border-left-color: #6fb3b8;
+}
+
+.passage-card.has-commentary.is-workshop .passage-label::after {
+  color: #6fb3b8;
+}
+
 .commentary-transcript {
   color: var(--ink-soft);
   line-height: 1.9;
