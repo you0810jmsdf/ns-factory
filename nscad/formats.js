@@ -20,6 +20,7 @@ export const DIAMOND_RED = '#e00000';
 export function svgLineHex(s, mode, isDiamond) {
   if (mode === 'mono') return null;
   if (mode === 'paper') return exportHex(s.color);
+  if (mode === 'color-white-black') return s.color === 'white' ? (isDiamond ? DIAMOND_RED : null) : svgLineHex(s, 'color', isDiamond);   /* 色はそのまま・白だけ黒（切る線）にする。白い菱目の線は、菱目の赤（事業主 2026-10-25「出力したらところどころ線が消えている」：白い線は白のレイヤーで出て、白い下地の Beamo では見えなかった → 「白い線を黒で出す」） */
   if (s.color && SHAPE_COLOR_HEX[s.color]) return SHAPE_COLOR_HEX[s.color];
   return isDiamond ? DIAMOND_RED : null;
 }

@@ -2918,7 +2918,7 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
+  const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
   exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + savedTo(saved); });
 }
 function exportPdf() {
