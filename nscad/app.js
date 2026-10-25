@@ -4486,10 +4486,11 @@ function centerOnClick(p) {
   let tb = null;
   if (target) { const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 }), members = new Set(chain.length ? chain : [target.s.id]); tb = boxOf(doc.shapes.filter(s => members.has(s.id))); }
   else {   /* 線の近くでなければ、クリックした所を囲んでいる場所（選んでいない見えている実線で囲まれた、いちばん内側）の中央へ（事業主 2026-10-25「真ん中に配置できない」：基準の線のすぐそばをクリックしないと動かなかった） */
-    const reg = enclosedAreaAt(regionShapes().filter(s => !ids.has(s.id)), p); if (reg?.points?.length) { const xs = reg.points.map(q => q.x), ys = reg.points.map(q => q.y); tb = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }; }
+    const reg = enclosedAreaAt(regionShapes().filter(s => !ids.has(s.id)), p); if (reg?.points?.length) { const xs = reg.points.map(q => q.x), ys = reg.points.map(q => q.y), pb = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }, rs = doc.shapes.filter(s => (reg.ids || []).includes(s.id)), ib = rs.length ? boxOf(rs) : null; tb = ib && ['minX', 'maxX', 'minY', 'maxY'].every(k => Math.abs(ib[k] - pb[k]) < 1) ? ib : pb; }   /* 囲んでいる図形の外接の四角が、囲まれた場所とほぼ同じなら、図形そのものの値（点線の目盛りでなく、ぴったり） */
   }
   if (!tb) { $('hint').textContent = t('centerOnNoTarget'); return; }
-  const sb = boxOf(doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image')); if (!sb) return;
+  /* 動かす図形の中心は、実線の図形（本体）だけで測る：点線・ガイドの層・寸法・文字（十字の目印・折り目の線・寸法など）を含めると、それが外形からはみ出している分だけ中心がずれる（事業主 2026-10-25「クロスの点線を作図しても２つの図形の中心を合わせられない」「4mm動かしただけなのにだいぶずれる」：本体の横に置いた十字の点線が、選んだ図形の外接の四角を広げて、約2.5mm左へずれた）。動かすのは、選んだ図形ぜんぶ。本体が1つも無ければ（点線だけを選んだとき）、選んだぜんぶで測る */
+  const movers = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image'), isHelper = s => s.lineStyle === 'dashed' || s.layer === 'guide' || ['text', 'dimension', 'fold'].includes(s.type), body = movers.filter(s => !isHelper(s)), sb = boxOf(body.length ? body : movers); if (!sb) return;
   const dx = centerOnAxes.includes('x') ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
