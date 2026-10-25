@@ -417,7 +417,7 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.id)) : null; return shapes === doc.shapes ? doc : { ...doc, shapes, ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.id)) : null; return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
@@ -3066,7 +3066,7 @@ function printPages(target, { dots = true } = {}) {
   if (!regGuard('print', 'pages')) return null;
   const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
-  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => holeIsOwn(h, ownHolePathIds(target)) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id)))) : [], b = bboxOfDoc({ ...target, shapes, holes });
+  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => (!target.outSelOnly && holeIsOwn(h, ownHolePathIds(target))) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id))) || target.outHoleIds?.has(h.id)) : [], b = bboxOfDoc({ ...target, shapes, holes });   /* 図形を選んでの印刷は、独立した穴も選んだ範囲だけ（書き出しと同じ・outSelOnly／outHoleIds） */
   if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
   const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot })}</div>`).join('');
