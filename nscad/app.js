@@ -2396,8 +2396,12 @@ function nudgePatch(dx, dy) {
   $('patchShiftX').value = fmt(cur.x + dx * step); $('patchShiftY').value = fmt(cur.y + dy * step); regenPatch();
 }
 function resetPatchShift() { $('patchShiftX').value = '0'; $('patchShiftY').value = '0'; regenPatch(); }
-/** 外周の穴が実線から離れていなければならない距離（mm）：穴の大きい方の寸法の半分＋0.3mm。 */
+/** 外周の穴の「ふち」から、縁・パッチの境目の実線まで、あけておく間（mm）。これより近いと、穴と縁（境目）のあいだの革がちぎれる（事業主 2026-10-25「両方です。菱目と端部までの距離が短いとちぎれてしまうから」：外周の菱目はパッチの境界線から 1.5mm 離す）。 */
+const PATCH_HOLE_WEB_MM = 1.5;
+/** すでにある外周の穴を、境目から離す・点検するときの距離（mm）＝穴の中心から：穴の大きい方の寸法の半分＋0.3mm（穴が線にかかるかどうか）。ずらせる量（ピッチの40%）に限りがあるので、これは今までどおり。 */
 const patchHoleClearR = tool => Math.max(tool.holeW, tool.holeH) / 2 + 0.3;
+/** 新しく打つ外周の菱目が、縁・境目の実線から離れていなければならない距離（mm）＝穴の中心から：穴の大きい方の寸法の半分＋ PATCH_HOLE_WEB_MM（1.5mm）。 */
+const patchHoleWebR = tool => Math.max(tool.holeW, tool.holeH) / 2 + PATCH_HOLE_WEB_MM;
 /** 外周の穴がよける相手：見えている実線の図形（柄のピース・図形の外形・円など）。点線（縫い線・案内）は除く。r は箱の余白（早く除くため）。 */
 function patchObstacles(r) {
   return doc.shapes.filter(s => visibleData(s) && stitchable(s) && s.lineStyle !== 'dashed' && ['line', 'arc', 'bezier', 'polyline', 'circle', 'path'].includes(s.type)).map(s => { const b = bboxOf(s); return { s, minX: b.minX - r, maxX: b.maxX + r, minY: b.minY - r, maxY: b.maxY + r }; });
@@ -2700,7 +2704,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
   const rimOn = !!tool && $('patchRim').checked, rimOffset = Number($('patchRimOffset').value), rimPitch = Number($('patchRimPitch').value), rimRadius = Number($('patchRimRadius').value);
   if (rimOn && !(rimOffset > 0 && rimPitch > 0 && rimRadius >= 0)) { $('hint').textContent = t('invalidNumber'); return; }
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
-  if (rimOn && rimOffset <= patchHoleClearR(tool)) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleClearR(tool).toFixed(1) }); return; } /* 穴が縁の線と重なる近さ */
+  if (rimOn && rimOffset < patchHoleWebR(tool) - 1e-9) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleWebR(tool).toFixed(2), w: PATCH_HOLE_WEB_MM }); return; } /* 穴のふちと縁のあいだが 1.5mm 未満になる近さ */
   const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
   let stitched = null, rimInfo = null, ringShift = null, pieceIds = [], allIds = [], gridPathIds = [], gridRecId = null; const depth0 = undo.length, seq0 = commitSeq;
   commit(() => {
@@ -2725,7 +2729,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved); gridPathIds.push(pid);   /* rim：外周の穴の経路（点検で使う） */
         const toolKind = new Map(doc.tools.map(x => [x.id, x.kind])), roundHoles = tool.kind === 'round' ? [] : doc.holes.filter(h => toolKind.get(h.toolId) === 'round'), otherHoles = tool.kind === 'round' ? doc.holes : doc.holes.filter(h => toolKind.get(h.toolId) !== 'round');   /* 丸目（縫い合わせ）は、菱目から reach 以内に入れない。菱目の外周を作るときだけ分ける */
-        const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(otherHoles, rimPitch * 0.5), loop = loopSampler(rim.points);
+        const route = resolvePath(doc, saved), clearR = patchHoleWebR(tool), others = patchObstacles(clearR), near = holeGrid(otherHoles, rimPitch * 0.5), loop = loopSampler(rim.points);   /* 新しい外周の菱目：穴のふちから縁・境目まで 1.5mm */
         const reach = Math.max(seamTool.holeW, seamTool.holeH) / 2 + Math.max(tool.holeW, tool.holeH) / 2 + rimRoundMargin, roundNear = holeGrid(roundHoles, Math.max(reach, 0.5)), r2 = reach * reach;   /* 丸目の半径＋菱目の半径＋0.4mm（約1.45mm） */
         const clearOfRound = q => { const cx = Math.floor(q.x / roundNear.cell), cy = Math.floor(q.y / roundNear.cell); for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) for (const h of roundNear.grid.get(i + ',' + j) || []) if ((h.x - q.x) ** 2 + (h.y - q.y) ** 2 < r2) return false; return true; };
         const anchors = otherHoles.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（前の操作の菱目）＝そのまま使い、間を埋める。丸目は数えない */
@@ -2778,7 +2782,8 @@ function initDesign() {
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
   $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
   for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchMinPiece', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
-  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
+  for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; if (id === 'patchRows' && String($('gridAngle').value ?? '').trim() !== '') { $('gridAngle').value = ''; }   /* 行を打ったら、角度の欄を空にする：角度（初期値45）が数字のままだと、ひし形の高さは幅×角度で決まり、行は目安にしかならず、列×行の数が合わなくなる（事業主 2026-10-25「列と行は3＊3なのに、数が合わない」）。45°にしたいときは、角度に打つ */
+    gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
   for (const id of ['patchTargetW', 'patchTargetH']) { const el = $(id), go = () => gridTargetSoon(el); el.addEventListener('input', go); el.addEventListener('change', go); }   /* 目標 幅・高さ＝ひし形1枚の大きさ：入れると、列・行・角度を決めて格子を作りなおす */
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
