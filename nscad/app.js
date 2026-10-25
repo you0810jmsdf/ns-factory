@@ -1451,10 +1451,21 @@ function initLayers() {
   $('addLayer').onclick = () => { const src = doc.layers.find(l => l.id === activeLayer); let id; commit(() => { id = insertNumberedLayer(activeLayer, nextLayerName(src ? layerName(src) : t('layer.pattern'))); }); activeLayer = id; renderLayers(); };   /* 作図先の層の連番の層を、そのすぐ手前に（事業主 2026-10-24） */
   $('layerMerge').onclick = () => mergeLayers($('layerMergeSrc').value);
   $('layerNewMove').onclick = () => { const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s)); if (!targets.length) { $('hint').textContent = t('layerNewMoveNeed'); return; } const src = doc.layers.find(l => l.id === targets[0].layer); countUse('layer_new_move'); moveSelectedToNewLayer(src?.id, nextLayerName(src ? layerName(src) : t('layer.pattern'))); };   /* 選んだ図形を、新しい層に登録（事業主 2026-10-25「選んだ図形を新たなレイヤーとして登録するには？」）：右クリックの「作って移す」と同じ処理を、レイヤーの窓から1回で */
+  let layerRemoveArmed = null;   /* 図形のある層を消す2段押し：{ id, at } */
   $('removeLayer').onclick = () => {
     if (doc.layers.length < 2) { $('hint').textContent = t('lastLayer'); return; }
-    if (doc.shapes.some(s => s.layer === activeLayer)) { $('hint').textContent = t('layerNotEmpty'); return; }
-    commit(() => { doc.layers = doc.layers.filter(l => l.id !== activeLayer); }); activeLayer = doc.layers[0].id; renderLayers();
+    const lay = doc.layers.find(l => l.id === activeLayer), ids = new Set(doc.shapes.filter(s => s.layer === activeLayer).map(s => s.id));
+    if (!ids.size) { commit(() => { doc.layers = doc.layers.filter(l => l.id !== activeLayer); }); activeLayer = doc.layers[0].id; renderLayers(); return; }
+    /* 図形のある層：2回押して消す（事業主 2026-10-25「型紙５が消せない」：図形があると「消せません」と出るだけで、消す道が無かった）。図形・その図形で囲んだ塗りもいっしょに消え、元に戻すは1回。残したいときは「この層を、作図先へ統合」 */
+    if (lay?.locked) { $('hint').textContent = t('layerRemoveLocked'); return; }
+    const btn = $('removeLayer'), reset = () => { layerRemoveArmed = null; btn.textContent = t('removeLayer'); };
+    if (!layerRemoveArmed || layerRemoveArmed.id !== activeLayer || Date.now() - layerRemoveArmed.at > 5000) {
+      const at = Date.now(); layerRemoveArmed = { id: activeLayer, at }; btn.textContent = t('layerRemoveAgain', { n: ids.size }); $('hint').textContent = t('layerRemoveConfirm', { name: layerName(lay), n: ids.size });
+      setTimeout(() => { if (layerRemoveArmed && layerRemoveArmed.at === at) reset(); }, 5000); return;
+    }
+    reset(); const name = layerName(lay), gone = activeLayer;
+    removeSelected(ids, () => { doc.layers = doc.layers.filter(l => l.id !== gone); for (const f of doc.fills || []) if (f.layer === gone) delete f.layer; });   /* 図形と、層の記録を、同じ1回の操作で消す。層だけ残った塗りは、囲む図形の層で決める */
+    activeLayer = doc.layers[0].id; renderLayers(); $('hint').textContent = t('layerRemoved', { name, n: ids.size }); draw();
   };
 }
 
@@ -4962,7 +4973,7 @@ function closeSelectedGaps() {
 /** 三つ折りの設計：ボタン線を基準にした距離と内側の半径から、完成形の断面を先に作る。重なり・突き抜けは作ったうえで警告する。前の設計の断面は置き換える（元に戻すは1回）。 */
 let designUndoLen = -1; /* 数値変更のライブ更新を、元に戻す1回にまとめるための印（断面を作った直後の undo の数） */
 function designCommit(fn, live) {
-  if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; fn(); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
+  if (live && designUndoLen === undo.length && !redo.length) { ownPathsCache = null; const fillSnap = fillSnapshot(); fn(); followFillsAfter(fillSnap); rebuildSnaps(); scheduleAutosave(); draw(); return; }   /* 重ねる間も、塗りは取り直す（事業主 2026-10-25「断面図全幅を修正してもリングとリフィルが追従しない」：この道は commit を通らず、塗りが取り残された） */   /* 続けて数値を変えている間は、同じ元に戻す1回に重ねる */
   commit(fn); designUndoLen = undo.length;
 }
 /** 図形の一覧を、縦の線 x=xm を軸に左右反転する（x を折り返し・円弧は角度を 180° から引く）。背を左にする断面に使う（事業主 2026-10-24「断面を左右反転させてたい。実際に使う向きと逆」）。 */
@@ -6278,7 +6289,7 @@ function fillSnapshot() {
  *  囲まれた場所が同じ図形の組み合わせで見つからないとき（環が崩れた）は、塗りを前のまま残す。戻り値＝取り直せなかった塗りの数。 */
 /** 塗り fl の中の点（穴の外）を、塗りの外形を格子に区切って探し、いま、そこを囲んでいる場所を返す。面積が元の 0.3〜3.5 倍の場所だけ（別の大きな場所に飛ばない）。見つからなければ null。 */
 /** 塗りを取り直すのに使える時間の上限（ms・1回の編集あたり）。事業主 2026-10-25「断面を生成したらフリーズした」（図面の塗り25か所のうち7か所が探索に回り、囲まれた場所を204回探して約33秒かかった）→ 探す点は中心から9つまで・小さな塗りは近くの範囲だけ・全体で上限を超えたら残りは取り直さず「取り直せなかった」と案内する。 */
-let fillProbeBudgetMs = 1500;
+let fillProbeBudgetMs = 2500;   /* 数字を止めたあとの1回（断面と平面図の塗りをまとめて取り直す）に足りる時間 */
 const FILL_PROBE_MAX = 9;   /* 探す点の数（塗りの中の点を、外接の四角の10等分の格子から、まんべんなく9つ） */
 function fillRegionByProbe(fl, deadline = Infinity) {
   const xs = fl.points.map(q => q.x), ys = fl.points.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), shapes = regionShapes();
@@ -6297,6 +6308,30 @@ function pickNearestRegion(cands, fl, used) {
   const c0 = bboxCenterOf(fl.points), dist = r => { const c = bboxCenterOf(r.points); return Math.hypot(c.x - c0.x, c.y - c0.y); };
   const sorted = [...cands].sort((a, b) => dist(a) - dist(b)), r = sorted.find(x => !used.has(regionKeyOf(x))) || sorted[0]; used.add(regionKeyOf(r)); return r;
 }
+/** 前の形（fillGeomSig）と今の形が、位置だけが同じ量ずれたものなら、そのずれ { dx, dy }。半径・角度・点の数・閉じているかが変わっていれば null（形が変わった）。 */
+function geomShift(oldSig, newSig) {
+  let a, b; try { a = JSON.parse(oldSig); b = JSON.parse(newSig); } catch { return null; }
+  let dx = null, dy = null, ok = true;
+  const put = (axis, u, v) => {
+    if (!Number.isFinite(u) || !Number.isFinite(v)) { ok = ok && u === v; return; }
+    const d = v - u; if (axis === 'x') { if (dx === null) dx = d; else if (Math.abs(dx - d) > 1e-4) ok = false; } else if (dy === null) dy = d; else if (Math.abs(dy - d) > 1e-4) ok = false;
+  };
+  FILL_GEOM_KEYS.forEach((k, i) => {
+    const u = a[i], v = b[i]; if (!ok) return;
+    if (k === 'points') { if (!Array.isArray(u) || !Array.isArray(v)) { ok = JSON.stringify(u) === JSON.stringify(v); return; } if (u.length !== v.length) { ok = false; return; } u.forEach((p, j) => { put('x', p.x, v[j].x); put('y', p.y, v[j].y); }); }
+    else if (k === 'nodes') ok = JSON.stringify(u) === JSON.stringify(v);   /* ベジェの節は、形が変わったものとして探し直す */
+    else if (/^(cx|x1|x2|c1x|c2x)$/.test(k)) put('x', u, v);
+    else if (/^(cy|y1|y2|c1y|c2y)$/.test(k)) put('y', u, v);
+    else ok = JSON.stringify(u) === JSON.stringify(v);
+  });
+  return ok && dx !== null && dy !== null ? { dx, dy } : null;
+}
+/** 塗りの外形の長さのうち、囲んでいる図形（shapes）の上に乗っている割合（0〜1）。 */
+function fillOnShapes(fl, shapes) {
+  let on = 0, tot = 0;
+  for (const ring of [fl.points, ...(fl.holes || [])]) for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length], len = Math.hypot(q.x - p.x, q.y - p.y), mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 }; tot += len; if (shapes.some(sh => distTo(sh, mid) < 0.6)) on += len; }
+  return tot > 0 ? on / tot : 0;
+}
 function refollowFills(snap) {
   if (!snap || !(doc.fills || []).length) return 0;
   const byId = new Map(doc.shapes.map(sh => [sh.id, sh])), deadline = Date.now() + fillProbeBudgetMs, used = new Set(); let stale = 0, shapes = null;
@@ -6304,6 +6339,11 @@ function refollowFills(snap) {
     const ids = fl.ids || []; if (!ids.length || !ids.every(id => byId.has(id) && snap.geom.has(id))) return fl;
     if (ids.every(id => fillGeomSig(byId.get(id)) === snap.geom.get(id))) return fl;
     if (JSON.stringify(fl.points) !== snap.pts.get(fl.id)) return fl;
+    { const sh = ids.map(id => geomShift(snap.geom.get(id), fillGeomSig(byId.get(id))));   /* 囲んでいる図形が、ぜんぶ同じ量だけ動いただけなら、探さずに、塗りも同じだけ動かす（断面のリングなど・速く、ぴったり）。動かした外形が図形の上に乗っていなければ（ほかの図形に区切られていたなど）、探し直す */
+      if (sh.every(Boolean) && sh.every(x => Math.abs(x.dx - sh[0].dx) < 1e-4 && Math.abs(x.dy - sh[0].dy) < 1e-4)) {
+        const { dx, dy } = sh[0], mv = q => ({ x: +(q.x + dx).toFixed(2), y: +(q.y + dy).toFixed(2) }), moved = { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) };
+        if (fillOnShapes(moved, ids.map(id => byId.get(id))) >= 0.9) return moved;
+      } }
     if (Date.now() > deadline) { stale++; return fl; }   /* 時間の上限：残りの塗りは取り直さない（案内は commit が出す） */
     shapes ??= regionShapes(); const want = new Set(ids);
     let r = pickNearestRegion(enclosedAreasAround(shapes, want).filter(x => x.ids.length === want.size && x.ids.every(id => want.has(id))), fl, used);
@@ -6325,18 +6365,27 @@ function pruneFoldSections() {
 let deferFillFollow = 0, pendingFillFollow = null, fillSettleTimer = null;
 function settleFillFollow() {
   clearTimeout(fillSettleTimer); fillSettleTimer = null; const p = pendingFillFollow; pendingFillFollow = null;
-  if (p && p.doc === doc && p.seq === commitSeq) { const stale = refollowFills(p.snap); scheduleAutosave(); if (stale) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: stale }); }
+  if (p && p.doc === doc) { const stale = refollowFills(p.snap); scheduleAutosave(); if (stale) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: stale }); }
   draw();
+}
+/** 図面を変えたあとの、領域の塗りの追従（commit と、続けて数字を変える間の designCommit の両方から）。
+ *  数字を変えている最中（deferFillFollow）は後回しにし、止まって0.35秒後に1回だけ取り直す（比べる元は最初の変更の前）。
+ *  後回し中の塗りがあるときに、後回しでない変更が入っても（数字を変えた0.24秒後の平面図の作りなおしなど）、その元と比べて取り直す。
+ *  事業主 2026-10-25「断面図全幅を修正してもリングとリフィルが追従しない」：以前は、そのあとの変更が入ると「取り直さない」ことにしていたので、断面の塗りだけが取り残された。 */
+function followFillsAfter(fillSnap) {
+  if (deferFillFollow > 0) { if (!pendingFillFollow || pendingFillFollow.doc !== doc) pendingFillFollow = { doc, snap: fillSnap }; clearTimeout(fillSettleTimer); fillSettleTimer = setTimeout(settleFillFollow, 350); return 0; }   /* 止まって0.35秒後に1回だけ塗りを取り直す */
+  const pend = pendingFillFollow && pendingFillFollow.doc === doc ? pendingFillFollow : null, stale = refollowFills(pend ? pend.snap : fillSnap);
+  if (pend) { clearTimeout(fillSettleTimer); fillSettleTimer = null; pendingFillFollow = null; }
+  return stale;
 }
 function commit(fn) {
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
   const before = JSON.stringify(doc), dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
   fn(); pruneFoldSections(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
-  const deferNow = deferFillFollow > 0, staleFills = deferNow ? 0 : refollowFills(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
+  const staleFills = followFillsAfter(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
   const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('holeDedupe', { n: dupHoles }); }, 0);
   if (before !== JSON.stringify(doc)) { commitSeq++; undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
-  if (deferNow) { (pendingFillFollow ??= { doc, snap: fillSnap }).seq = commitSeq; clearTimeout(fillSettleTimer); fillSettleTimer = setTimeout(settleFillFollow, 350); }   /* 止まって0.35秒後に1回だけ塗りを取り直す */
   draw();
 }
 function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
@@ -6431,10 +6480,10 @@ function removeSelectedKeepHoles() {
   }); renderSeams();
   $('hint').textContent = t('holesKept', { n: lines, h: kept }) + (dropped ? ' ' + t('fillsDroppedWithShapes', { n: dropped }) : '');
 }
-function removeSelected(onlyIds = null) {
+function removeSelected(onlyIds = null, alsoFn = null) {
   const ids = onlyIds || selectedShapeIds(); let dropped = 0;   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
   cancel(); commit(() => { const own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
-    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds); selected.clear(); manualNext=null; }); renderSeams();
+    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
   if (dropped) $('hint').textContent = t('fillsDroppedWithShapes', { n: dropped });
 }
 function addShape(shape) {
