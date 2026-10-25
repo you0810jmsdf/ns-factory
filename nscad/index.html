@@ -94,7 +94,7 @@
     }
     #side details.card#scaleCard[hidden], #side details.card#moveCard[hidden] { display: none !important; }   /* no window when nothing is selected */
     .ctx-cards .ctx-group { grid-column: 1 / -1; } .ctx-cards .ctx-wide { grid-column: 1 / -1; }
-    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } #layerRows .layer-move { flex: none; padding: 2px 8px; white-space: nowrap; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerRows .row.has-sel { background: rgba(108,197,255,.16); box-shadow: inset 0 0 0 1px #6cc5ff; } #layerRows .layer-sel { flex: none; padding: 0 7px; border-radius: 9px; background: #6cc5ff; color: #06202e; font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap; } #layerRows .layer-sel:empty { display: none; } #layerCard[data-win="1"] .lw-hide { display: none !important; }
+    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } #layerRows .layer-move { flex: none; padding: 2px 8px; white-space: nowrap; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerRows .layer-grip { flex: none; width: 14px; text-align: center; color: var(--accent); cursor: grab; user-select: none; font-size: 15px; line-height: 1; } #layerRows .layer-grip:active { cursor: grabbing; } #layerRows .row.dragging { opacity: .4; } #layerRows .row.drop-above { box-shadow: inset 0 3px 0 #c9a96e; } #layerRows .row.drop-below { box-shadow: inset 0 -3px 0 #c9a96e; } #layerRows .row.has-sel { background: rgba(108,197,255,.16); box-shadow: inset 0 0 0 1px #6cc5ff; } #layerRows .layer-sel { flex: none; padding: 0 7px; border-radius: 9px; background: #6cc5ff; color: #06202e; font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap; } #layerRows .layer-sel:empty { display: none; } #layerCard[data-win="1"] .lw-hide { display: none !important; }
     .rel-list { flex: 1 1 100%; max-height: 40vh; overflow: auto; text-align: left; font-size: 12px; line-height: 1.6; } .rel-date { font-weight: 700; color: var(--accent, #c9a96e); margin-top: 8px; } .rel-item { padding-left: 2px; } .rel-item::before { content: '\30fb'; } .rel-btn { font-size: 10px; margin-left: 6px; padding: 1px 8px; white-space: nowrap; } #releaseDialog { max-width: min(560px, calc(100vw - 24px)); } .rel-search { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 6px 8px; font: inherit; } .rel-more { margin: 6px 0; } #releaseDialog .rel-list { max-height: 34vh; }
     dialog.flow-win { position: fixed; top: 132px; right: 312px; left: auto; margin: 0; width: 320px; max-width: calc(100vw - 24px); max-height: calc(100vh - 160px); overflow: auto; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.45); z-index: 20; } .flow-win-head { display: flex; align-items: center; gap: 8px; cursor: move; touch-action: none; } .flow-win-head button { cursor: pointer; } .flow-h-note { display: block; margin-top: 4px; color: var(--accent); font-size: 12px; } .flow-notes-btn { flex: none; padding: 2px 8px; font-size: 12px; border-radius: 12px; } .flow-notes-btn[aria-pressed="true"] { background: var(--accent); color: #111; border-color: var(--accent); }
     dialog.flow-win[data-notes="hide"] p.note { display: none; }   /* the detailed explanations are folded by default (2026-10-24); the head button shows them */ .flow-win-head h3 { margin: 0; font-size: 15px; flex: 1; } .info-close { border: 0; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
@@ -194,7 +194,7 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 13:20 · e7eeaa3</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 13:56 · ed7b4bc</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showSecDimsTip"><input id="showSecDims" type="checkbox" checked><span data-i18n="showSecDims"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -219,7 +219,7 @@
 <button data-tool="stitch"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M7 10l2 2-2 2M12 10l2 2-2 2M17 10l2 2-2 2"/></svg><span data-i18n="stitch"></span></button>
 <button data-tool="mark"><svg class="ic" viewBox="0 0 24 24"><path d="M3 18C8 18 8 6 13 6s5 12 8 12"/><circle cx="13" cy="6" r="2" fill="currentColor"/></svg><span data-i18n="markTool"></span></button><button data-tool="divide"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20h16M4 20L18 6M4 20L20 12" stroke-linecap="round"/></svg><span data-i18n="divideTool"></span></button>
 <div class="group" data-i18n="selection"></div>
-<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="scaleOpen"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="12" width="8" height="8" rx="1"/><path d="M14 4h6v6M20 4l-7 7"/></svg><span data-i18n="scaleOpen"></span></button><button id="attachLeft" data-i18n-title="attachMenuTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 4h18M20 3v18"/><rect x="5" y="8" width="10" height="10" rx="1"/></svg><span data-i18n="attachMenu"></span></button><button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="closeGaps"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h6M15 12h6"/><path d="M9 8l-3 4 3 4M15 8l3 4-3 4"/></svg><span data-i18n="closeGaps"></span></button><button id="mergeLines"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M8 9v6M16 9v6"/></svg><span data-i18n="mergeLines"></span></button><button id="splitLines"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h7M14 12h7"/><path d="M12 5v14" stroke-dasharray="2 2"/></svg><span data-i18n="splitLines"></span></button><button id="offsetSel"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18V8a4 4 0 0 1 4-4h8"/><path d="M8 20V11a3 3 0 0 1 3-3h9" stroke-dasharray="2 2"/></svg><span data-i18n="offsetSel"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delHoles" data-i18n-title="delHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4l7 8-7 8-7-8z"/><path d="M4 4l16 16"/></svg><span data-i18n="delHoles"></span></button><button id="checkHoles" data-i18n-title="checkHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4M17 12h4"/><path d="M12 8l4 4-4 4-4-4z" stroke-dasharray="2 2"/></svg><span id="checkHolesLabel" data-i18n="checkHoles"></span></button><button id="flipHoleSlant" data-i18n-title="flipHoleSlantTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M8 18l4-6 4 6"/><path d="M8 6l4 6 4-6" opacity=".5"/></svg><span data-i18n="flipHoleSlant"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button><button id="deleteKeepHoles" data-i18n-title="deleteKeepHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M12 11v6"/></svg><span data-i18n="deleteKeepHoles"></span></button>
+<button id="copy"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/></svg><span data-i18n="copy"></span></button><button id="mirrorX"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 7L3 17h6zM15 7l6 10h-6z"/></svg><span data-i18n="mirrorX"></span></button><button id="mirrorY"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M7 9l5-6 5 6zM7 15l5 6 5-6z"/></svg><span data-i18n="mirrorY"></span></button><button id="symCheck" data-i18n-title="symCheckTip"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2"/><path d="M4 9h5v6H4zM15 9h5v6h-5z"/><path d="M6 20l-2-2 2-2M18 20l2-2-2-2" fill="none"/></svg><span data-i18n="symCheck"></span></button><button id="rotate"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg><span data-i18n="rotate"></span></button><button id="scaleOpen"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="12" width="8" height="8" rx="1"/><path d="M14 4h6v6M20 4l-7 7"/></svg><span data-i18n="scaleOpen"></span></button><button id="attachLeft" data-i18n-title="attachMenuTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 4h18M20 3v18"/><rect x="5" y="8" width="10" height="10" rx="1"/></svg><span data-i18n="attachMenu"></span></button><button data-tool="mirror"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M4 7l5 5-5 5M20 7l-5 5 5 5"/></svg><span data-i18n="mirror"></span></button><button id="group"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/><path d="M3 15h6v6H3zM15 3h6v6h-6z" stroke-dasharray="2 2"/></svg><span data-i18n="group"></span></button><button id="closeGaps"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h6M15 12h6"/><path d="M9 8l-3 4 3 4M15 8l3 4-3 4"/></svg><span data-i18n="closeGaps"></span></button><button id="mergeLines"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M8 9v6M16 9v6"/></svg><span data-i18n="mergeLines"></span></button><button id="splitLines"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h7M14 12h7"/><path d="M12 5v14" stroke-dasharray="2 2"/></svg><span data-i18n="splitLines"></span></button><button id="offsetSel"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18V8a4 4 0 0 1 4-4h8"/><path d="M8 20V11a3 3 0 0 1 3-3h9" stroke-dasharray="2 2"/></svg><span data-i18n="offsetSel"></span></button><button id="ungroup"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span data-i18n="ungroup"></span></button><button id="toPath"><svg class="ic" viewBox="0 0 24 24"><path d="M4 18c4-12 12-12 16 0"/><circle cx="4" cy="18" r="1.6"/><circle cx="12" cy="9" r="1.6"/><circle cx="20" cy="18" r="1.6"/></svg><span data-i18n="toPath"></span></button><button id="unroll" data-i18n-title="unrollTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 8c3-5 5 5 9 0s6-5 9 0"/><path d="M3 17h18M17 13.5l4 3.5-4 3.5"/></svg><span data-i18n="unroll"></span></button><button id="delHoles" data-i18n-title="delHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4l7 8-7 8-7-8z"/><path d="M4 4l16 16"/></svg><span data-i18n="delHoles"></span></button><button id="checkHoles" data-i18n-title="checkHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h4M17 12h4"/><path d="M12 8l4 4-4 4-4-4z" stroke-dasharray="2 2"/></svg><span id="checkHolesLabel" data-i18n="checkHoles"></span></button><button id="flipHoleSlant" data-i18n-title="flipHoleSlantTip"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18" stroke-dasharray="2 2"/><path d="M8 18l4-6 4 6"/><path d="M8 6l4 6 4-6" opacity=".5"/></svg><span data-i18n="flipHoleSlant"></span></button><button id="delete"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg><span data-i18n="delete"></span></button><button id="deleteKeepHoles" data-i18n-title="deleteKeepHolesTip"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M12 11v6"/></svg><span data-i18n="deleteKeepHoles"></span></button>
 </aside>
 <div class="workspace"><div id="tabBar"></div><div id="tutBar" hidden><strong id="tutTitle"></strong><span id="tutCaption"></span><select id="tutSel"></select><button id="tutPlay" data-i18n="tutPlay"></button><button id="tutPause" data-i18n="tutPause"></button><button id="tutStop" data-i18n="tutStop"></button><label><span data-i18n="tutSpeed"></span><select id="tutSpeed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><label><input id="tutSelf" type="checkbox"><span data-i18n="tutSelf"></span></label></div><div id="ctxMenu" class="floatbox ctx" hidden><button id="ctx-move" data-i18n="ctxMove" hidden></button><button id="ctx-offset" data-i18n="ctxOffset" hidden></button><button id="ctx-lib" data-i18n="ctxLib"></button><button id="ctx-koma" data-i18n="ctxKoma"></button><button id="ctx-patch" data-lock="patchwork" data-i18n="patchTool"></button><div id="ctxLayersTitle" class="ctx-title" data-i18n="ctxLayersTitle" hidden></div><div id="ctxLayers" class="ctx-cards" hidden></div><div id="ctxCardsTitle" class="ctx-title" data-i18n="ctxCardsTitle"></div><div id="ctxCards" class="ctx-cards"></div></div><div id="offsetFloat" class="floatbox" hidden><label><span data-i18n="ofDist"></span><input id="of-dist" type="number" min="0" step="0.5" value="2.5"></label><select id="of-scope" data-i18n-title="offsetScopeTip"><option value="span" data-i18n="ofScopeSpan"></option><option value="edge" data-i18n="ofScopeEdge"></option><option value="whole" data-i18n="ofScopeWhole"></option></select><select id="of-side"><option value="cursor" data-i18n="ofCursor"></option><option value="in" data-i18n="ofIn"></option><option value="out" data-i18n="ofOut"></option><option value="both" data-i18n="ofBoth"></option><option value="left" data-i18n="ofLeft"></option><option value="right" data-i18n="ofRight"></option><option value="up" data-i18n="ofUp"></option><option value="down" data-i18n="ofDown"></option></select><button id="of-run" data-i18n="ofRun"></button><button id="of-close" data-i18n="ofClose" aria-label="close"></button></div><div id="detourFloat" class="floatbox" hidden><label><span data-i18n="dfClear"></span><input id="df-clear" type="number" min="0" step="0.5" value="3"></label><label><span data-i18n="dfRadius"></span><input id="df-radius" type="number" min="0" step="0.5" value="2"></label><button id="df-run" data-i18n="dfRun"></button><button id="df-close" data-i18n="ofClose" aria-label="close"></button><output id="df-out"></output></div><div id="rulerBar" class="floatbox" hidden><span data-i18n="rbA"></span><input id="rb-ax" type="number" step="0.1" aria-label="X1"><input id="rb-ay" type="number" step="0.1" aria-label="Y1"><span data-i18n="rbB"></span><input id="rb-bx" type="number" step="0.1" aria-label="X2"><input id="rb-by" type="number" step="0.1" aria-label="Y2"><output id="rb-out"></output></div><div id="rectBar" class="floatbox" data-i18n-title="rectBarTip" hidden><label><span data-i18n="rectW"></span><input id="rectW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectAnchor"></span><select id="rectAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="foldHandleBar" class="floatbox" hidden><strong id="fhbLabel"></strong><input id="fhbVal" type="number" step="0.1"><button id="fhbSame" type="button" hidden data-i18n="fhbSame"></button><button id="fhbClose" type="button" data-i18n-title="closeHelp">✕</button></div>
 <div id="rectEditBar" class="floatbox" data-i18n-title="rectEditTip" hidden><strong data-i18n="rectEditTitle"></strong><label><span data-i18n="rectW"></span><input id="rectEditW" type="number" min="0" step="0.5"></label><label><span data-i18n="rectH"></span><input id="rectEditH" type="number" min="0" step="0.5"></label><label><span data-i18n="rectEditAnchor"></span><select id="rectEditAnchor"><option value="corner" data-i18n="rectAnchorCorner"></option><option value="center" data-i18n="rectAnchorCenter"></option></select></label></div><div id="circleBar" class="floatbox" data-i18n-title="circleBarTip" hidden><label><span data-i18n="circleR"></span><input id="circleR" type="number" min="0" step="0.5"></label><label><span data-i18n="circleD"></span><input id="circleD" type="number" min="0" step="0.5"></label></div><div id="filletBar" class="floatbox" data-i18n-title="filletBarTip" hidden><label><span data-i18n="filletBarR"></span><input id="filletR" type="number" min="0" step="0.5" value="3"></label></div><div id="divideBar" class="floatbox" data-i18n-title="divideBarTip" hidden><label><span data-i18n="divideBarN"></span><input id="divN" type="number" min="2" max="36" step="1" value="2"></label><label><span data-i18n="divideBarLen"></span><input id="divLen" type="number" min="0" step="1" data-i18n-placeholder="divideLenPh"></label><label><span data-i18n="divideBarMark"></span><input id="divMark" type="number" min="0" step="0.5" data-i18n-placeholder="divideMarkPh"></label></div><div id="chamferBar" class="floatbox" data-i18n-title="chamferBarTip" hidden><label><span data-i18n="chamferBarD"></span><input id="chamferD" type="number" min="0" step="0.5" value="3"></label></div><div id="rotateBar" class="floatbox" data-i18n-title="rotateBarTip" hidden><label><span data-i18n="rotateBarA"></span><input id="rotateA" type="number" step="1" value="90"></label><button id="rotateRun" data-i18n="rotateRun"></button><button id="rotateClose" data-i18n="ofClose" aria-label="close"></button></div><div id="arcBar" class="floatbox" data-i18n-title="arcBarTip" hidden><label><span data-i18n="arcMethod"></span><select id="arcMethod"><option value="three" data-i18n="arcMethodThree"></option><option value="half" data-i18n="arcMethodHalf"></option><option value="radius" data-i18n="arcMethodRadius"></option></select></label><label><span data-i18n="arcDir"></span><select id="arcDir"><option value="cw" data-i18n="arcCw"></option><option value="ccw" data-i18n="arcCcw"></option></select></label><label><span data-i18n="arcRadius"></span><input id="arcRadius" type="number" min="0" step="0.5"></label></div><div id="textBar" class="floatbox" data-i18n-title="textBarTip" hidden><label><span data-i18n="sizeMm"></span><input id="textSize" type="number" step="0.5" value="5"></label></div><div id="dimBar" class="floatbox" data-i18n-title="dimBarTip" hidden><label><span data-i18n="dimOffset"></span><input id="dimOffset" type="number" step="0.5" value="8"></label></div>
@@ -325,6 +325,7 @@
 <div class="row"><button id="layerPickDashed" data-i18n="layerPickDashed"></button></div>
 <div class="row"><button id="layerMove" data-i18n="layerMove"></button></div>
 <div class="row"><button id="addLayer" data-i18n="addLayer" data-i18n-title="addLayerTip"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
+<div class="row"><button id="layerNewMove" data-i18n="layerNewMove" data-i18n-title="layerNewMoveTip"></button></div>
 <div class="row"><select id="layerMergeSrc" data-i18n-aria="layerMergeSrcAria"></select><button id="layerMerge" type="button" data-i18n="layerMerge" data-i18n-title="layerMergeTip"></button></div>
 <div class="row"><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
 </div></details>
@@ -393,7 +394,7 @@
 <option value="radial" data-i18n="metalStyleRadial"></option>
 </select></label>
 <button id="metalClear" data-i18n="metalClear"></button>
-<button id="eraseFill" data-i18n="eraseFill" data-i18n-title="eraseFillTip"></button><button id="fillsClear" data-i18n="fillsClear"></button>
+<button id="eraseFill" data-i18n="eraseFill" data-i18n-title="eraseFillTip"></button><button id="fillsClear" data-i18n="fillsClear"></button><button id="fillsDetachedClear" data-i18n="fillsDetachedClear" data-i18n-title="fillsDetachedClearTip"></button>
 <details class="sub" open><summary data-i18n="textureSection"></summary>
 <p class="note" data-i18n="textureHow"></p>
 <input id="textureSearch" type="text" data-i18n-placeholder="textureSearch" autocomplete="off">
@@ -526,6 +527,7 @@
 <output id="libDesc" class="note"></output>
 <label><span data-i18n="pasteScale"></span><input id="pasteScale" type="number" step="0.1" min="0.1" value="1"></label>
 <button id="libPlace" data-i18n="libPlace"></button>
+<button id="libRemoveSel" data-i18n="libRemoveSel" data-i18n-title="libRemoveSelTip"></button>
 <details class="sub"><summary><span data-i18n="myDesigns"></span> <span id="designCount" class="muted"></span></summary>
 <select id="designSel" size="6"></select>
 <div class="row"><button id="designOpen" data-i18n="designOpen"></button><button id="designPlace" data-i18n="designPlace"></button></div>
@@ -732,13 +734,15 @@
 <div id="printArea" data-pages="0"></div>
 <dialog id="foldFlowDialog" class="flow-win" data-notes="hide" aria-labelledby="foldFlowDialogTitle">
 <div class="flow-win-head" id="foldFlowHead" data-i18n-title="winDragTip"><h3 id="foldFlowDialogTitle" data-i18n="foldFlowTitle"></h3><button id="foldFlowNotes" type="button" class="flow-notes-btn" aria-pressed="false" data-i18n="foldFlowNotes" data-i18n-title="foldFlowNotesTip"></button><button id="foldFlowClose" type="button" class="info-close" data-i18n-title="closeHelp">✕</button></div>
+<label class="flow-mode" data-i18n-title="flowLinkMoveTip"><input id="flowLinkMove" type="checkbox" checked><span data-i18n="flowLinkMove"></span></label>
 <label class="flow-mode"><span data-i18n="fdMode"></span><select id="flowFoldMode"><option value="trifold" data-i18n="fdModeTri"></option><option value="bifold" data-i18n="fdModeBi"></option></select></label>
 <p class="note" data-bifold-only hidden data-i18n="foldFlowBiNote"></p>
 <p class="note" data-i18n="foldFlowNote"></p>
 <ol id="foldFlowSteps" class="flow-steps">
 <li id="foldFlowBook" data-state="todo"><div class="flow-head"><span class="flow-no">⓪</span><b data-i18n="foldFlowBookName"></b><span id="foldFlowBookState" class="flow-state"></span></div><p class="note" data-i18n="foldFlowBookText"></p><label class="flow-mode"><span data-i18n="foldFlowBookKind"></span><select id="flowBook"><option value="" data-i18n="foldFlowBookPick"></option><option value="book" data-i18n="foldFlowBookYes"></option><option value="plain" data-i18n="foldFlowBookNo"></option></select></label><div id="flowBookRows" hidden><label class="flow-mode"><span data-i18n="foldFlowBookSpec"></span><select id="flowRingSpec"></select></label><label class="flow-mode"><span data-i18n="foldFlowBookDia"></span><select id="flowRingDia"></select></label><label class="flow-mode"><span data-i18n="foldFlowBookStack"></span><input id="flowStackT" type="number" min="0.1" step="0.1"></label><label class="flow-mode"><span data-i18n="foldFlowBookMargin"></span><input id="flowMargin" type="number" min="0" step="0.5"></label><small id="flowHeightNote" class="flow-h-note"></small></div></li>
 <li id="foldFlowStep1" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo1">①</span><b id="foldFlowName1" data-i18n="foldFlowStep1"></b><span id="foldFlowState1" class="flow-state"></span></div><p class="note" id="foldFlowText1" data-i18n="foldFlowText1"></p><label class="flow-mode" data-bifold-only><span data-i18n="fdSide"></span><select id="flowSide"><option value="right" data-i18n="fdSideRight"></option><option value="left" data-i18n="fdSideLeft"></option></select></label><div class="flow-btns"><button id="flowMake" type="button" data-i18n="fdMake"></button><button id="flowPaint" type="button" data-i18n="paintSection" data-i18n-title="paintSectionTip"></button></div><details class="sub" id="foldFlowMore"><summary data-i18n="foldFlowMore"></summary><p class="note" data-i18n="foldFlowMoreNote"></p><div class="flow-btns"><button id="flowOpenDesign" type="button" data-i18n="foldFlowOpenDesign"></button><button id="flowOpenLam" type="button" data-trifold-only data-i18n="foldFlowOpenLam"></button></div></details></li>
-<li id="foldFlowStep2" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo2">②</span><b id="foldFlowName2" data-i18n="foldFlowStep2"></b><span id="foldFlowState2" class="flow-state"></span></div><p class="note" id="foldFlowText2" data-i18n="foldFlowText2"></p><label class="flow-mode"><span data-i18n="fdH"></span><input id="flowH" type="number" min="1" step="1"></label><label class="flow-mode"><span data-i18n="fdCorner"></span><input id="flowCorner" type="number" min="0" step="0.5" value="8"></label><label class="flow-mode" data-i18n-title="flowAutoDimsTip"><input id="flowAutoDims" type="checkbox" checked><span data-i18n="flowAutoDims"></span></label><label class="flow-mode" data-bifold-only hidden data-i18n-title="flowRefillPaperTip"><input id="flowRefillPaper" type="checkbox"><span data-i18n="flowRefillPaper"></span></label><label class="flow-mode"><span data-i18n="fdStitchLayout"></span><select id="flowStitchLayout"><option value="loop" data-i18n="fdLayoutLoop"></option><option value="rows" data-i18n="fdLayoutRows"></option></select></label><div class="flow-btns"><button id="flowFix" type="button" data-i18n="fdFix"></button><button id="flowStitch" type="button" data-i18n="fdStitch"></button></div></li>
+<li id="foldFlowStep2" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo2">②</span><b id="foldFlowName2" data-i18n="foldFlowStep2"></b><span id="foldFlowState2" class="flow-state"></span></div><p class="note" id="foldFlowText2" data-i18n="foldFlowText2"></p><label class="flow-mode"><span data-i18n="fdH"></span><input id="flowH" type="number" min="1" step="1"></label><label class="flow-mode"><span data-i18n="fdCorner"></span><input id="flowCorner" type="number" min="0" step="0.5" value="8"></label><label class="flow-mode" data-i18n-title="flowAutoDimsTip"><input id="flowAutoDims" type="checkbox" checked><span data-i18n="flowAutoDims"></span></label><label class="flow-mode" data-bifold-only hidden data-i18n-title="flowRefillPaperTip"><input id="flowRefillPaper" type="checkbox"><span data-i18n="flowRefillPaper"></span></label>
+<label class="flow-mode" data-bifold-only hidden data-i18n-title="flowHwMetalTip"><span data-i18n="flowHwMetal"></span><select id="flowHwMetal"><option value="" data-i18n="flowHwMetalNone"></option><option value="gold" data-i18n="metal.gold"></option><option value="silver" data-i18n="metal.silver"></option><option value="pinkgold" data-i18n="metal.pinkgold"></option><option value="blackgold" data-i18n="metal.blackgold"></option></select></label><label class="flow-mode"><span data-i18n="fdStitchLayout"></span><select id="flowStitchLayout"><option value="loop" data-i18n="fdLayoutLoop"></option><option value="rows" data-i18n="fdLayoutRows"></option><option value="none" data-i18n="fdLayoutNone"></option></select></label><div class="flow-btns"><button id="flowFix" type="button" data-i18n="fdFix"></button><button id="flowStitch" type="button" data-i18n="fdStitch"></button></div></li>
 <li id="foldFlowStep3" data-trifold-only data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo3">③</span><b id="foldFlowName3" data-i18n="foldFlowStep3"></b><span id="foldFlowState3" class="flow-state"></span></div><p class="note" id="foldFlowText3" data-i18n="foldFlowText3"></p><div class="flow-btns"><button id="flowRelay" type="button" data-i18n="lamRelay"></button><button id="flowGrow" type="button" data-i18n="lamGrow"></button></div></li>
 <li id="foldFlowStep4" data-trifold-only data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo4">④</span><b id="foldFlowName4" data-i18n="foldFlowStep4"></b><span id="foldFlowState4" class="flow-state"></span></div><p class="note" id="foldFlowText4" data-i18n="foldFlowText4"></p><div class="flow-btns"><button id="flowSection" type="button" data-i18n="lamSection"></button></div></li>
 <li id="foldFlowStep5" data-state="todo"><div class="flow-head"><span class="flow-no" id="foldFlowNo5">⑤</span><b id="foldFlowName5" data-i18n="foldFlowStep5"></b><span id="foldFlowState5" class="flow-state"></span></div><p class="note" id="foldFlowText5" data-i18n="foldFlowText5"></p><div class="flow-btns"><button id="flowUnfoldPlan" type="button" data-i18n="fdUnfold"></button><button id="flowUnfold" type="button" data-trifold-only data-i18n="lamUnfold"></button></div><p class="note" data-trifold-only data-i18n="foldFlowShortcut"></p><div class="flow-btns" data-trifold-only><button id="flowTidy" type="button" data-i18n="lamTidy"></button></div></li>
@@ -769,8 +773,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=80c93dc6","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=8ce2bf05","./data/release-notes.js":"./data/release-notes.js?v=3eeac3e9","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=1738f9f2","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=200a273f","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=861c2d4f","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=01fd44d9","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
-<script type="module" src="app.js?v=80c93dc6"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=a62df386","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=8775416b","./data/release-notes.js":"./data/release-notes.js?v=c6fd3661","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=1738f9f2","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=200a273f","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=99a1f84c","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=d6c58639","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=a62df386"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3783,6 +3787,34 @@ const MESSAGES = {
     "releaseNext": "公開前（次の版に入る予定）",
     "releaseHere": "← いま開いている版",
     "releaseClose": "閉じる",
+    "flowLinkMove": "断面を動かすとき、平面図・展開図もいっしょに動かす",
+    "flowLinkMoveTip": "オン（初めの設定）：断面を動かすと、平面図・展開図も同じだけ動きます（色もいっしょ）。オフ：断面だけが動いて、平面図・展開図はその場に残ります（数字を直して作りなおしても、その位置のままです）。",
+    "layerGripTip": "つかんで上下へドラッグすると、層の並び（重なりの順）を入れ替えます。上ほど手前です。",
+    "layerDragMoved": "層「{name}」を、ドラッグして並べ替えました。重なりの順は、層の並び（上ほど手前）で決まります。",
+    "layerNewMove": "選んだ図形を、新しい層へ",
+    "layerNewMoveTip": "選んでいる図形の層と同じ名前に連番を付けた新しい層を、そのすぐ手前に作って、選んでいる図形を移します（作図先はそのまま・元に戻すは1回）。同じ型紙でも、重なりの順を変えたいときに使います。",
+    "layerNewMoveNeed": "先に、新しい層へ移す図形を選んでください。",
+    "fillsDetachedClear": "宙に浮いた塗りを消す",
+    "fillsDetachedClearTip": "図形から離れて、元の場所に残った塗り（選べなくて消せなかった色）を、まとめて消します。図形に付いている塗りは消えません（元に戻すは1回）。",
+    "fillsDetachedNone": "宙に浮いた塗りは、ありません。",
+    "fillsDetachedDone": "宙に浮いた塗り {n} か所を消しました（元に戻すは1回）。",
+    "foldStitchNone": "菱目の並べ方が「菱目を打たない」になっています。菱目を打つときは、並べ方を「ぐるっと一周」か「上下の2本」に変えてから押してください。",
+    "fdLayoutNone": "菱目を打たない（外形・穴・金具・リフィルだけ）",
+    "flowHwMetal": "金具の色",
+    "flowHwMetalNone": "つけない",
+    "flowHwMetalTip": "平面図の金具（台座・リング）に、金属の色（ゴールド・シルバー…）を付けます。リフィルを白く塗るのと同じように、平面図を作るたびに付けます。",
+    "libRemoveSel": "選んでいる部品を削除",
+    "libRemoveSelTip": "ミスのある部品を消します。押し間違いを防ぐため、5秒以内にもう一度押すと消えます。消す前の一覧はバックアップに残るので、「選択を登録・書き出し」の「バックアップから戻す」で戻せます。同梱の部品は消せません。",
+    "libRemoveAgain": "もう一度押すと削除",
+    "libRemoveConfirm": "「{name}」を削除します。5秒以内に、もう一度押してください（バックアップに残るので、あとで戻せます）。",
+    "libRemoved": "「{name}」を削除しました（バックアップから戻せます）。",
+    "symCheck": "対称チェック",
+    "symCheckTip": "選んでいる図形が、左右・上下に対称かを調べます。外接の四角の中心で折り返して、重なり具合（最大のずれ）を出します。ずれた場所に赤い印、対称の軸に水色の点線が出ます（選び直すと消えます）。",
+    "symNeedSelect": "先に、調べる図形を選んでください。",
+    "symOk": "○ 対称（最大のずれ {d} mm）",
+    "symNear": "△ ほぼ対称（最大のずれ {d} mm）",
+    "symNg": "× 対称ではありません（最大のずれ {d} mm・赤い印の所）",
+    "symResult": "対称チェック（{n} 個の図形）：左右＝{lr}／上下＝{ud}",
     "centerOnNote": "選んでいる図形（群）を、基準にする外形（サポーターなど）の中央へ、ひとまとまりのまま動かします。押したあと、基準の外形の線をクリックします。",
     "centerOnXY": "基準の中央へ（縦横）",
     "centerOnX": "横だけ中央へ",
@@ -5952,6 +5984,34 @@ const MESSAGES = {
     "releaseNext": "Not yet released (planned for the next version)",
     "releaseHere": "<- the version you have open",
     "releaseClose": "Close",
+    "flowLinkMove": "Move the flat plan and unfolded views together with the section",
+    "flowLinkMoveTip": "On (default): moving the section moves the flat plan and unfolded views by the same amount (colors too). Off: only the section moves and the flat plan and unfolded views stay put (they keep that position when you change a number and rebuild).",
+    "layerGripTip": "Drag up or down to reorder the layers (what covers what). The higher, the closer to the front.",
+    "layerDragMoved": "Reordered layer \"{name}\" by dragging. What covers what is decided by the layer order (top = front).",
+    "layerNewMove": "Move selection to a new layer",
+    "layerNewMoveTip": "Creates a new numbered layer named after the layer of the selected shapes, right in front of it, and moves the selection there (the drawing layer does not change; undo reverts in one step). Use it to change what covers what even within the same pattern.",
+    "layerNewMoveNeed": "Select the shapes to move to a new layer first.",
+    "fillsDetachedClear": "Remove floating fills",
+    "fillsDetachedClearTip": "Removes fills left behind away from any shape (colors you could not select or delete). Fills that belong to shapes are kept (undo reverts in one step).",
+    "fillsDetachedNone": "There are no floating fills.",
+    "fillsDetachedDone": "Removed {n} floating fills (undo reverts in one step).",
+    "foldStitchNone": "The stitch layout is set to \"No stitch holes\". To punch stitch holes, change it to \"all around\" or \"top and bottom rows\" first.",
+    "fdLayoutNone": "No stitch holes (outline, holes, hardware and refill only)",
+    "flowHwMetal": "Hardware color",
+    "flowHwMetalNone": "None",
+    "flowHwMetalTip": "Applies a metal color (gold, silver...) to the hardware (base and rings) of the flat plan, each time the plan is made, just like painting the refill white.",
+    "libRemoveSel": "Delete the selected part",
+    "libRemoveSelTip": "Deletes a part that has a mistake. To avoid accidents, press again within 5 seconds. The list before deleting is kept in the backup, so you can restore it with Restore from backup under Register / export. Built-in parts cannot be deleted.",
+    "libRemoveAgain": "Press again to delete",
+    "libRemoveConfirm": "About to delete \"{name}\". Press again within 5 seconds (it stays in the backup, so you can restore it later).",
+    "libRemoved": "Deleted \"{name}\" (restore it from the backup).",
+    "symCheck": "Symmetry check",
+    "symCheckTip": "Checks whether the selected shapes are symmetric left-right and top-bottom. They are mirrored about the center of their bounding box and the largest deviation is reported. Red marks show where they differ and dashed blue lines show the axes (cleared when the selection changes).",
+    "symNeedSelect": "Select the shapes to check first.",
+    "symOk": "OK symmetric (max deviation {d} mm)",
+    "symNear": "Nearly symmetric (max deviation {d} mm)",
+    "symNg": "NOT symmetric (max deviation {d} mm; see the red marks)",
+    "symResult": "Symmetry check ({n} shapes): left-right = {lr} / top-bottom = {ud}",
     "centerOnNote": "Moves the selected shapes, as one group, to the center of a reference outline (such as the supporter). After pressing, click a line of the reference outline.",
     "centerOnXY": "Center on reference (both)",
     "centerOnX": "Center horizontally",
@@ -7566,7 +7626,7 @@ function arrowNudge(e) {
 const TOOL_KEYS = { select: 'V', line: 'L', rect: 'R', circle: 'C', arc: 'A', bezier: 'B', path: 'P', text: 'T', dimension: 'D', ruler: 'S', fillet: 'F', chamfer: 'Shift+C', divide: 'W', offset: 'O', trim: 'Shift+T', mirror: 'M', fold: 'Shift+F', koma: 'K', stitch: 'Shift+S', mark: 'Shift+M', patchfill: 'Shift+P' };
 /** 左メニュー「選択中」の操作のキー（キー → 押すボタンの id）。コピー・グループ・削除は今までのキー（Ctrl+D・Ctrl+G・Delete）。
  *  2026-10-21 事業主指示「ショートカットがないメニューのショートカット割り当て」：1本に結合＝J（Join）・隙間を閉じる＝Shift+J・穴の点検＝I（Inspect）・菱目を消す＝Shift+E（Erase・消す操作なのでうっかり防止の Shift）・順目⇔逆目＝Shift+H（Hole の向き）・拡大縮小＝Shift+R（Resize）。 */
-const ACTION_KEYS = { mirrorX: 'H', mirrorY: 'Shift+V', rotate: 'Q', toPath: 'N', unroll: 'X', mergeLines: 'J', closeGaps: 'Shift+J', splitLines: 'Shift+X', offsetSel: 'Shift+O', checkHoles: 'I', delHoles: 'Shift+E', flipHoleSlant: 'Shift+H', scaleOpen: 'Shift+R', attachLeft: 'Shift+A' };   /* 線に着ける＝Shift+A（Attach） */
+const ACTION_KEYS = { mirrorX: 'H', mirrorY: 'Shift+V', rotate: 'Q', toPath: 'N', unroll: 'X', mergeLines: 'J', closeGaps: 'Shift+J', splitLines: 'Shift+X', offsetSel: 'Shift+O', checkHoles: 'I', delHoles: 'Shift+E', flipHoleSlant: 'Shift+H', scaleOpen: 'Shift+R', attachLeft: 'Shift+A', symCheck: 'Y' };   /* 線に着ける＝Shift+A（Attach） */
 /** すでに別の仕組みで動いているキー（ボタンの id → キー）。メニューの横に表示するためだけの一覧（判定は app.js のキー処理：isCopy・isShortcut(e,'g')・isDelete）。解除は Ctrl+Shift+G（Illustrator・Figma と同じ）。 */
 const FIXED_KEYS = { copy: 'Ctrl+D', group: 'Ctrl+G', ungroup: 'Ctrl+Shift+G', delete: 'Delete', deleteKeepHoles: 'Shift+Delete' };
 /** 画面上部のチェック（キー → チェックの id）：G＝Grid（グリッド）・Shift+G＝スナップ。Ctrl+G のグループ化は別（今までどおり）。 */
@@ -23776,6 +23836,23 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-10-25 13:56",
+      "items": [
+        "「対称チェック」を足しました（左の「選択中」）。選んでいる図形が、左右・上下に対称かを調べて、最大のずれを出します。ずれた場所には赤い印、対称の軸には水色の点線が出ます（選び直すと消えます）。",
+        "部品ライブラリで、選んでいる部品の下に「選んでいる部品を削除」を出しました。押し間違いを防ぐため、5秒以内にもう一度押すと消えます。消す前の一覧はバックアップに残るので、あとで戻せます（同梱の部品は消せません）。",
+        "平面図の手順②の「菱目の並べ方」に、「菱目を打たない」を足しました。選ぶと、外形・穴・金具・リフィルだけの平面図になります（「菱目打ちラインを描く」を押すと、その旨を案内します）。",
+        "平面図の手順②に、「金具の色」（つけない・ゴールド・シルバー・ピンクゴールド・ブラックゴールド）を足しました。リフィルを白く塗るのと同じように、平面図の金具に、その色が付きます。",
+        "リフィルの穴が、リングのスロットの透明と重なる所で、リングの先端が白く塗りつぶされて見える不具合を直しました（透明の切り抜きが重なると、打ち消し合って白に戻っていました）。リフィルの穴から、リングの色が見えます。",
+        "レイヤーの窓で、行の頭の「≡」をつかんで、上下へドラッグ＆ドロップして、層の並び（重なりの順）を入れ替えられます。",
+        "レイヤーの窓の行にマウスを置くと、その層の図形が橙色に光ります（どの図形が対象かが分かります）。作図先の「●」を押したときも、1.5秒光ります。",
+        "レイヤーの窓に「選んだ図形を、新しい層へ」を足しました。選んでいる図形を、新しい層に作って、1回で移します。",
+        "塗りの色のカードに「宙に浮いた塗りを消す」を足しました。図形から離れて残って、選べなくて消せなかった色を、まとめて消します（元に戻すは1回）。",
+        "折りシミュレーションの小窓に「断面を動かすとき、平面図・展開図もいっしょに動かす」を足しました。切ると、断面だけが動きます（初めはオン）。オンのとき、平面図の塗りも、いっしょに動くようにしました（これまでは、外形だけが動いて、色が元の場所に残りました）。",
+        "PNG に書き出すとき、寸法の数字を、図面の大きさに合わせて大きくしました（大きい図面でも読めます）。",
+        "「対称チェック」のキーは Y です。"
+      ]
+    },
+    {
       "date": "2026-10-25 13:20",
       "items": [
         "寸法ツール・定規で、線の上に吸い付くようにしました。2点目を線の近くに持っていくと、始点から線への垂線の足（いちばん短い距離）に合います。これまでは、点が1mmの目盛りに丸められて、線に乗らず、斜めのずれた距離になりました。",
@@ -23892,6 +23969,7 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-10-25",
       "items": [
+        "層をドラッグ＆ドロップで並べ替え・行にマウスを置くと図形が光る・新しい層へ移す／宙に浮いた塗りを消す／断面だけ動かす切り替え／対称チェック／部品の削除／平面図の菱目なし・金具の色／リングの先が白く消える不具合／PNGの…",
         "寸法・定規が線の上に吸い付く／PNGの余白（寸法・文字があれば10mm）／レイヤーの各行に「移す」／隙間を閉じても水平・垂直の線が傾かない／選んだ図形群を基準の外形の中央へ",
         "断面の寸法をいつも出す＋クリックで数字を入れる（案C）／塗りの前後・表示を、囲む図形の層で決める（金具がサポータより手前に出る不具合）",
         "選んだ図形が入っている層の行に目印（選択 n）／図面を開くとき宙に浮いた塗りを自動で消す（右に残った幽霊の色）",
@@ -25002,7 +25080,7 @@ const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } = __mods['autodim'];
 const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
-const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
+const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
 const { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } = __mods['formats'];
@@ -26297,6 +26375,22 @@ function initStitch() {
 }
 
 // ---- レイヤー（カード）----
+let layerDragId = null;
+/** ドラッグ＆ドロップで層を並べ替える（事業主 2026-10-25「直感的にドラッグ＆ドロップで順番を入れ替えたい」）：src の層を、dst の行の「上（手前）」か「下（奥）」へ移す。表示は手前の層が上なので、上＝並びの後ろ。元に戻すは1回。 */
+function reorderLayerTo(srcId, dstId, above) {
+  if (!srcId || !dstId || srcId === dstId) return false;
+  const arr = doc.layers.slice(), si = arr.findIndex(l => l.id === srcId); if (si < 0) return false; const [src] = arr.splice(si, 1), di = arr.findIndex(l => l.id === dstId); if (di < 0) return false;
+  arr.splice(above ? di + 1 : di, 0, src); if (arr.map(l => l.id).join() === doc.layers.map(l => l.id).join()) return false;
+  commit(() => { doc.layers = arr; }); renderLayers(); $('hint').textContent = t('layerDragMoved', { name: layerName(src) }); draw(); return true;
+}
+/** 層の行の上にマウスを置く（またはタップで作図先にした）間、その層の図形を、画面で橙色に光らせる（事業主 2026-10-25「レイヤを選択したときにどの図形が対象なのかさっぱりわからない」）。 */
+let layerHover = null, layerHoverTimer = null;
+function setLayerHover(id, ms = 0) { clearTimeout(layerHoverTimer); layerHoverTimer = null; if (layerHover === id) { if (ms && id) layerHoverTimer = setTimeout(() => setLayerHover(null), ms); return; } layerHover = id; draw(); if (ms && id) layerHoverTimer = setTimeout(() => setLayerHover(null), ms); }
+function drawLayerHover() {
+  if (!layerHover || exporting) return; const list = doc.shapes.filter(s => s.layer === layerHover && visible(s) && !['text', 'dimension', 'image'].includes(s.type)); if (!list.length) return;
+  ctx.save(); ctx.setLineDash([]); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = 6 / scale; for (const s of list) strokeShape(previewMoved(s), 'rgba(255,170,40,.55)', false);
+  ctx.lineWidth = 2 / scale; for (const s of list) strokeShape(previewMoved(s), '#ffb52e', false); ctx.restore();
+}
 /** 選んだ図形が入っている層の行に目印（事業主 2026-10-25「選択した図形がどのレイヤーなのか一目でわかるように目印つけて」）：行を水色の枠にして、「選択 n」の札を出す。選び直すたびに（画面を描くたびに）出し入れする。 */
 let layerRowRefs = [];
 function markSelectedLayers() {
@@ -26317,11 +26411,19 @@ function renderLayers() {
   const rows = $('layerRows'); rows.textContent = ''; layerRowRefs = [];
   for (const lay of [...doc.layers].reverse()) {   /* 手前の層（並びの後ろ）が上 */
     const row = document.createElement('div'); row.className = 'row' + (lay.id === activeLayer ? ' active' : '');   /* 作図先の層の行は、色を付ける */
+    const grip = document.createElement('span'); grip.className = 'layer-grip'; grip.textContent = '≡'; grip.title = t('layerGripTip'); grip.draggable = true;   /* つかんで、上下へ。並べ替え */
+    grip.addEventListener('dragstart', e => { row.classList?.add?.('dragging'); layerDragId = lay.id; try { e.dataTransfer?.setData?.('text/plain', lay.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer?.setDragImage?.(row, 10, 10); } catch { /* 古いブラウザ */ } });
+    grip.addEventListener('dragend', () => { layerDragId = null; for (const r of layerRowRefs) { if (r.row.classList) r.row.classList.remove('dragging', 'drop-above', 'drop-below'); } });
+    const dropSide = e => { const b = row.getBoundingClientRect?.(); return b && Number.isFinite(e.clientY) ? e.clientY < b.top + b.height / 2 : true; };   /* 行の上半分なら、その行の上（手前） */
+    row.addEventListener('dragover', e => { if (!layerDragId || layerDragId === lay.id) return; e.preventDefault?.(); try { e.dataTransfer.dropEffect = 'move'; } catch { /* 古いブラウザ */ } const up = dropSide(e); row.classList?.toggle?.('drop-above', up); row.classList?.toggle?.('drop-below', !up); });
+    row.addEventListener('dragleave', () => { row.classList?.remove?.('drop-above', 'drop-below'); });
+    row.addEventListener('drop', e => { e.preventDefault?.(); row.classList?.remove?.('drop-above', 'drop-below'); const src = layerDragId || e.dataTransfer?.getData?.('text/plain'); layerDragId = null; reorderLayerTo(src, lay.id, dropSide(e)); });
+    row.addEventListener('mouseenter', () => setLayerHover(lay.id)); row.addEventListener('mouseleave', () => setLayerHover(null));   /* どの図形が対象か：その層の図形を光らせる */
     const selTag = document.createElement('span'); selTag.className = 'layer-sel'; const mvBtn = document.createElement('button'); mvBtn.type = 'button'; mvBtn.className = 'layer-move'; mvBtn.textContent = t('layerMoveHere'); mvBtn.title = t('layerMoveHereTip'); mvBtn.addEventListener('click', () => moveSelectedToLayer(lay.id)); layerRowRefs.push({ id: lay.id, row, tag: selTag, mv: mvBtn });   /* 「移す」：選んでいる図形を、この層へ（作図先は変えない・事業主 2026-10-25「選択した図形を別のレイヤーにボタンを押して移動したい」） */   /* 選んだ図形が入っている層の目印（markSelectedLayers が出し入れする） */
     const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
       input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
-    const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); });   /* 行の頭の丸：この層を作図先にする */
-    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
+    const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); setLayerHover(lay.id, 1500); });   /* 行の頭の丸：この層を作図先にする */
+    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(grip); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
     const arrow = (text, tip, dir) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = t(tip); b.className = 'layer-arrow'; b.addEventListener('click', () => moveLayer(lay.id, dir)); return b; };
     const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); row.appendChild(mvBtn); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
@@ -26424,6 +26526,7 @@ function initLayers() {
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const src = doc.layers.find(l => l.id === activeLayer); let id; commit(() => { id = insertNumberedLayer(activeLayer, nextLayerName(src ? layerName(src) : t('layer.pattern'))); }); activeLayer = id; renderLayers(); };   /* 作図先の層の連番の層を、そのすぐ手前に（事業主 2026-10-24） */
   $('layerMerge').onclick = () => mergeLayers($('layerMergeSrc').value);
+  $('layerNewMove').onclick = () => { const targets = doc.shapes.filter(s => selected.has(s.id) && editable(s)); if (!targets.length) { $('hint').textContent = t('layerNewMoveNeed'); return; } const src = doc.layers.find(l => l.id === targets[0].layer); countUse('layer_new_move'); moveSelectedToNewLayer(src?.id, nextLayerName(src ? layerName(src) : t('layer.pattern'))); };   /* 選んだ図形を、新しい層に登録（事業主 2026-10-25「選んだ図形を新たなレイヤーとして登録するには？」）：右クリックの「作って移す」と同じ処理を、レイヤーの窓から1回で */
   $('removeLayer').onclick = () => {
     if (doc.layers.length < 2) { $('hint').textContent = t('lastLayer'); return; }
     if (doc.shapes.some(s => s.layer === activeLayer)) { $('hint').textContent = t('layerNotEmpty'); return; }
@@ -26971,12 +27074,15 @@ function refillPlanHeight() { const s = foldBookState(), sp = s.kind === 'book' 
 function applyPlanHeight() { const r = refillPlanHeight(); if (!r) return; planHeightTouched = false; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); }
 const FLAT_CORNER_KEY = 'leather-cad.flatCorner', FLAT_LAYOUT_KEY = 'leather-cad.flatLayout';
 /** 平面図の角の丸め・菱目の並べ方：前回の値をブラウザに覚え、変えたら平面図を作りなおす。 */
-const FLAT_PAPER_KEY = 'leather-cad.refillPaper', FLAT_DIMS_KEY = 'leather-cad.autoDims';
+const FLAT_PAPER_KEY = 'leather-cad.refillPaper', FLAT_DIMS_KEY = 'leather-cad.autoDims', FLAT_METAL_KEY = 'leather-cad.flatHwMetal', FLAT_LINK_KEY = 'leather-cad.foldLinkMove';
 function initFlowPlanOptions() {
   let c = null, l = null, pp = null, ad = null; try { c = localStorage.getItem(FLAT_CORNER_KEY); l = localStorage.getItem(FLAT_LAYOUT_KEY); pp = localStorage.getItem(FLAT_PAPER_KEY); ad = localStorage.getItem(FLAT_DIMS_KEY); } catch { /* 読めなければ、初めの値 */ }
   if (ad === '0' || ad === '1') $('flowAutoDims').checked = ad === '1'; $('flowAutoDims').addEventListener('change', () => { try { localStorage.setItem(FLAT_DIMS_KEY, $('flowAutoDims').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });   /* 初めはオン（HTML の checked）。選びは覚える */
   $('flowRefillPaper').checked = pp === '1'; $('flowRefillPaper').addEventListener('change', () => { try { localStorage.setItem(FLAT_PAPER_KEY, $('flowRefillPaper').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });
-  if (c !== null && c !== '' && Number.isFinite(Number(c)) && Number(c) >= 0) $('flowCorner').value = c; if (l === 'rows' || l === 'loop') $('flowStitchLayout').value = l;
+  { let lk = null; try { lk = localStorage.getItem(FLAT_LINK_KEY); } catch { /* 読めなければ、いっしょに動く */ } if (lk === '0') $('flowLinkMove').checked = false; $('flowLinkMove').addEventListener('change', () => { try { localStorage.setItem(FLAT_LINK_KEY, $('flowLinkMove').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); }   /* 断面を動かすとき、平面図もいっしょに動かすか（事業主 2026-10-25「断面図だけ動かせないのか？」）：初めはオン（2026-10-24 の指示どおり） */
+  let hm = null; try { hm = localStorage.getItem(FLAT_METAL_KEY); } catch { /* 読めなければ、金属の色なし */ } if (['gold', 'silver', 'pinkgold', 'blackgold'].includes(hm)) $('flowHwMetal').value = hm;
+  $('flowHwMetal').addEventListener('change', () => { try { localStorage.setItem(FLAT_METAL_KEY, $('flowHwMetal').value); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });   /* 平面図の金具の色（事業主 2026-10-25「リフィルの色をここで入れられるのなら、金具の色もここでいれられるようにしたい」） */
+  if (c !== null && c !== '' && Number.isFinite(Number(c)) && Number(c) >= 0) $('flowCorner').value = c; if (l === 'rows' || l === 'loop' || l === 'none') $('flowStitchLayout').value = l;
   $('flowCorner').addEventListener('input', () => { const raw = String($('flowCorner').value).trim(); if (raw !== '' && Number.isFinite(Number(raw)) && Number(raw) >= 0) { try { localStorage.setItem(FLAT_CORNER_KEY, raw); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); } });
   $('flowStitchLayout').addEventListener('change', () => { try { localStorage.setItem(FLAT_LAYOUT_KEY, $('flowStitchLayout').value); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });
 }
@@ -27895,7 +28001,7 @@ function exportPng() {
   if (only && !shapes.length && !holes.length) { $('hint').textContent = t('pngSelNone'); return; }
   if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('png', 'draw')) return;
-  const margin = pngMarginMm(shapes);   /* 寸法線の文字が端に来ても切れない余白（事業主 2026-10-25「PNG出力する際にぎりぎりのところの図形の寸法線が見にくい。もう少し余白を取ってほしい」） */
+  const margin = pngMarginMm(shapes); exportExtentMm = Math.max(b.maxX - b.minX, b.maxY - b.minY);   /* 寸法線の文字が端に来ても切れない余白（事業主 2026-10-25「PNG出力する際にぎりぎりのところの図形の寸法線が見にくい。もう少し余白を取ってほしい」） */
   let dpi = Number($('pngDpi').value) || 300; const wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
   const pixels = d => (wMm / 25.4 * d) * (hMm / 25.4 * d); let lowered = false;
   while (pixels(dpi) > 50e6 && dpi > 10) { dpi = Math.floor(dpi * 0.8); lowered = true; }
@@ -27905,7 +28011,7 @@ function exportPng() {
   width = off.width; height = off.height; scale = k; origin = { x: (margin - b.minX) * k, y: (margin - b.minY) * k };
   exportColor = $('pngColor').checked && viewShow.colors; exportFilter = only ? { vis, hvis, ids: selIds } : null;
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
-  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; draw(); }
+  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; exportExtentMm = 0; draw(); }
   if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
   exportFile('leather-pattern.png', new Promise(res => off.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved); });
 }
@@ -28529,6 +28635,12 @@ function changeMetalStyle() {
 }
 /** 塗りを全部消す。事業主 2026-10-25「特定のエリアだけ色を消したいのに全部消えた」（不具合記録 08:41：「全部消す」を押して12か所が一度に消えた）→ 1回目は確認だけ、5秒以内にもう一度押すと消す（元に戻すは1回）。1か所だけ消すなら「塗りを1か所ずつ消す」。 */
 let fillsClearArmedAt = 0;
+/** 図形から離れて残った塗り（宙に浮いた塗り）を、1回で消す（事業主 2026-10-25「どうやっても消せない」：消した図形・動かした図形の色だけが、元の場所に残り、選べないので消せなかった。図面を開き直すと消える仕組みはあるが、開いたまま消せるように）。元に戻すは1回。 */
+function clearDetachedFills() {
+  const byId = new Map(doc.shapes.map(s => [s.id, s])), n = (doc.fills || []).filter(f => fillDetached(f, byId)).length;
+  if (!n) { $('hint').textContent = t('fillsDetachedNone'); return 0; }
+  commit(() => { dropDetachedFills(doc); }); $('hint').textContent = t('fillsDetachedDone', { n }); draw(); return n;
+}
 function clearFills() {
   const n = (doc.fills || []).length; if (!n) { $('hint').textContent = t('fillsNone'); return; }
   const btn = $('fillsClear'), reset = () => { fillsClearArmedAt = 0; btn.textContent = t('fillsClear'); };
@@ -28644,9 +28756,13 @@ function attachClearCuts(items, d, vis) {
 /** 1つの塗りの項目を描く。透明の領域で抜かれる項目は、その領域の外だけを描く（evenodd の切り抜き）。 */
 function paintItem(it) {
   if (!it.cuts?.length) { it.draw(); return; }
-  ctx.save(); ctx.beginPath(); ctx.rect(-1e7, -1e7, 2e7, 2e7);
-  for (const c of it.cuts) for (const ring of [c.points, ...(c.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); }
-  ctx.clip('evenodd'); it.draw(); ctx.restore();
+  ctx.save();
+  for (const c of it.cuts) {   /* 切り抜きは、1つずつ順に重ねる（クリップは重なる＝どれの中も描かない）。1つの路にまとめて evenodd にすると、切り抜きどうしが重なった所が、打ち消し合って白に戻った（事業主 2026-10-25「リングの色がリフィルの下になったときに消えてきます」：リフィルの穴と、リングのスロットの透明が重なる所） */
+    ctx.beginPath(); ctx.rect(-1e7, -1e7, 2e7, 2e7);
+    for (const ring of [c.points, ...(c.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); }
+    ctx.clip('evenodd');
+  }
+  it.draw(); ctx.restore();
 }
 /** 透明にする場所（事業主 2026-10-25「今もまだリフィルの穴は白のまま」：実際の図面で、リフィルの穴は、ガイド層の閉じた図形だった。ガイド層の線は「囲む線」に数えないので、囲まれた場所としては拾えない）：
  *  ① 閉じた図形（折れ線・円）は、その図形そのものの内側（層に関係なく） ② 開いた線は、選んだ線だけで囲まれた場所。クリックでは、その2つのうち、いちばん小さい場所。 */
@@ -28710,6 +28826,7 @@ function paintLeatherItems(items) {
 }
 /** 革色の塗りを重ねるための作業用の紙（画面と同じ大きさ・使い回す）。使えなければ null。 */
 let leatherLayerCache = null;
+let exportExtentMm = 0;   /* PNG 書き出し中の、図面のいちばん長い辺（mm）。寸法の数字の大きさを、図面に合わせるのに使う */
 function leatherLayer() {
   try {
     if (typeof canvas.cloneNode !== 'function') return null;   /* 使えない環境（テストの擬似画面など）は、今まで通り1つずつ塗る。紙は画面の canvas の複製で作る（PNG 書き出し用の紙は document.createElement で作るので、取り違えない。OffscreenCanvas は Mac の検査で禁止） */
@@ -29115,7 +29232,16 @@ function saveToLibrary(nameArg = null) {
   const payload = extractSelection(doc, ids), item = { id: uniqueLibraryId(), name, tags: ($('libTags').value || '').split(/[\s,]+/).filter(Boolean), desc: '', vars: {}, shapes: payload.shapes, holes: payload.holes, paths: payload.paths, parts: payload.parts, tools: payload.tools };
   userLibrary.push(item); persistLibrary(); renderLibrary(); $('libItem').value = item.id; renderLibrary(); $('hint').textContent = t('libSaved', { name });
 }
-function removeFromLibrary() { const it = libCurrent(); if (!it || !userLibrary.includes(it)) { $('hint').textContent = t('libBuiltin'); return; } userLibrary = userLibrary.filter(x => x !== it); persistLibrary(); renderLibrary(); }
+/** 部品の削除（事業主 2026-10-25「部品にミスがあったので削除したい」：削除のボタンは、折りたたんだ「選択を登録・書き出し」の中にしか無かった）。選んでいる部品の下に、いつも見える「選んでいる部品を削除」を足した。
+ *  押し間違いで消さないよう、1回目は確認だけ・5秒以内にもう一度押すと消す。消す前に、バックアップに残す（「バックアップから戻す」で戻せる）。同梱の部品は消せない。 */
+let libRemoveArm = null;
+function removeFromLibrary() {
+  const it = libCurrent(); if (!it || !userLibrary.includes(it)) { $('hint').textContent = t('libBuiltin'); return; }
+  const btns = [['libRemove', 'libRemove'], ['libRemoveSel', 'libRemoveSel']].map(([id, key]) => [$(id), key]).filter(([b]) => b), reset = () => { libRemoveArm = null; for (const [b, key] of btns) b.textContent = t(key); };
+  if (!libRemoveArm || libRemoveArm.id !== it.id || Date.now() - libRemoveArm.at > 5000) { const at = Date.now(); libRemoveArm = { id: it.id, at }; for (const [b] of btns) b.textContent = t('libRemoveAgain'); $('hint').textContent = t('libRemoveConfirm', { name: it.name }); setTimeout(() => { if (libRemoveArm?.at === at) reset(); }, 5000); return; }
+  saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary));   /* 消す前の一覧を、バックアップに残す */
+  userLibrary = userLibrary.filter(x => x !== it); persistLibrary(); renderLibrary(); renderLibBackups(); reset(); $('hint').textContent = t('libRemoved', { name: it.name });
+}
 function exportLibrary() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } const d = new Date(), z = n => String(n).padStart(2, '0'); download(`nscad-parts-library-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`, libraryFileText(userLibrary), 'application/json'); $('hint').textContent = t('libSavedFile', { n: userLibrary.length }); }
 async function importLibrary(file) { /* 同じ名前（id）の部品は更新、無いものは追加。読み込む前の状態もバックアップに残す */
   try { const r = parseLibraryFile(await file.text()); if (!r) throw new Error(t('libFileInvalid')); if (userLibrary.length) saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); const m = mergeLibraryItems(userLibrary, r.items); userLibrary = m.items; persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libImported', { n: r.items.length, a: m.added, u: m.updated, s: r.skipped }); }
@@ -29184,7 +29310,7 @@ function sendToTab(move) {
 function initLibrary() {
   loadLibrary(); renderLibrary(); renderLibBackups(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
-  $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
+  $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libRemoveSel').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
   $('libImport').onclick = () => $('libFile').click(); $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
   $('tabNew').onclick = () => newTab(); $('tabClose').onclick = closeTab; $('tabName').addEventListener('change', () => { if (tabs[activeTab]) { tabs[activeTab].name = $('tabName').value.trim() || tabs[activeTab].name; renderTabs(); } });
   $('sendCopy').onclick = () => sendToTab(false); $('sendMove').onclick = () => sendToTab(true);
@@ -29373,6 +29499,43 @@ function attachClick(p) {
   attachState = { key, line, undoLen: undo.length, moved: !already };   /* 着けたあとも着ける状態のまま：続けて2本目の線をクリックできる（Esc・別のツールで終わり） */
   $('hint').textContent = (already ? t('attachAlready') : r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) })) + ' ' + t('attachNext');
 }
+/* ───────── 対称チェック（事業主 2026-10-25「選択した画像が上下左右対称になっているかチェックする機能が欲しい」）：選んでいる図形を、外接の四角の中心の縦線（左右）・横線（上下）で折り返した図形が、もとの図形と重なるかを調べる。
+   折り返した図形の線の上の点（0.5mm おきぐらい）が、もとの図形から離れている距離のいちばん大きいところ（ずれ）を出す。もとの点が、折り返した図形から離れている距離も。
+   ずれ 0.05mm 以下＝○対称・0.3mm 以下＝△ほぼ対称・それより大きい＝×。ずれた場所に赤い印・対称の軸に水色の点線を、選び直すまで出す（画面だけ・図面は変えない）。 ───────── */
+const SYM_OK = 0.05, SYM_NEAR = 0.3, SYM_SKIP = ['text', 'dimension', 'image', 'fold'];
+function symSamples(s, step) {
+  const pts = flattenShape(s, 0.02), out = []; if (pts.length === 1) return [pts[0]];
+  for (let i = 0; i + 1 < pts.length; i++) { const a = pts[i], b = pts[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y), n = Math.max(1, Math.ceil(len / step)); for (let k = 0; k < n; k++) out.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n }); }
+  out.push(pts.at(-1)); return out;
+}
+/** 図形 list を、軸（'x'＝縦線 x=c で左右・'y'＝横線 y=c で上下）で折り返して比べる。{ axis, c, maxDev, bad:[{x,y,d}]（ずれの大きい所・3mm 以上はなして最大6つ）, samples }。図形が無ければ null。 */
+function symmetryCheck(list, axis) {
+  const shapes = list.filter(s => !SYM_SKIP.includes(s.type) && !s.holeLink); if (!shapes.length) return null;
+  const b = bboxOfDoc({ shapes, holes: [] }); if (!b) return null; const c = axis === 'x' ? (b.minX + b.maxX) / 2 : (b.minY + b.maxY) / 2, mir = shapes.map(s => axis === 'x' ? mirrorX(s, c) : mirrorY(s, c));
+  const total = shapes.reduce((m, s) => { try { return m + arcLength(s); } catch { return m; } }, 0), step = Math.max(0.5, total / 2000), pairs = [[mir, shapes, 1], [shapes, mir, 0]], found = [];
+  const boxes = new Map([...shapes, ...mir].map(s => [s, bboxOf(s)])), lower = (bx, p) => Math.hypot(Math.max(bx.minX - p.x, 0, p.x - bx.maxX), Math.max(bx.minY - p.y, 0, p.y - bx.maxY));   /* 図形の外接の四角までの距離＝距離の下限（これが今の最小以上なら、その図形は測らない） */
+  for (const [from, to, mirrored] of pairs) for (const s of from) for (const p of symSamples(s, step)) {
+    let d = Infinity; for (const o of to) { if (lower(boxes.get(o), p) >= d) continue; const q = distToShape(o, p); if (q < d) d = q; if (d < 1e-6) break; }
+    if (d > SYM_OK) found.push({ x: mirrored ? (axis === 'x' ? 2 * c - p.x : p.x) : p.x, y: mirrored ? (axis === 'y' ? 2 * c - p.y : p.y) : p.y, d });   /* 印は、もとの図形の側に出す */
+  }
+  found.sort((u, v) => v.d - u.d); const bad = []; for (const f of found) if (bad.length < 6 && bad.every(q => Math.hypot(q.x - f.x, q.y - f.y) > 3)) bad.push(f);
+  return { axis, c, maxDev: found.length ? found[0].d : 0, bad, box: b };
+}
+let symView = null;   /* 画面に出す対称チェックの結果：{ key（選んだ図形の組）, results:[左右, 上下] } */
+const symKey = () => [...selectedShapeIds()].sort().join(',');
+function symText(r) { const d = (+r.maxDev).toFixed(2); return r.maxDev <= SYM_OK ? t('symOk', { d }) : r.maxDev <= SYM_NEAR ? t('symNear', { d }) : t('symNg', { d }); }
+function runSymmetryCheck() {
+  const ids = selectedShapeIds(), list = doc.shapes.filter(s => ids.has(s.id) && !SYM_SKIP.includes(s.type) && !s.holeLink && visible(s));
+  if (!list.length) { symView = null; $('hint').textContent = t('symNeedSelect'); draw(); return null; }
+  const lr = symmetryCheck(list, 'x'), ud = symmetryCheck(list, 'y'); symView = { key: symKey(), results: [lr, ud] };
+  $('hint').textContent = t('symResult', { n: list.length, lr: symText(lr), ud: symText(ud) }); draw(); return { lr, ud };
+}
+function drawSymView() {
+  if (!symView || exporting || symView.key !== symKey()) return; const k = 1 / scale; ctx.save(); ctx.setLineDash([6 * k, 4 * k]); ctx.lineWidth = 1.2 * k; ctx.strokeStyle = '#4fd0ff';
+  for (const r of symView.results) { if (!r) continue; const b = r.box, m = 6; ctx.beginPath(); if (r.axis === 'x') { ctx.moveTo(r.c, b.minY - m); ctx.lineTo(r.c, b.maxY + m); } else { ctx.moveTo(b.minX - m, r.c); ctx.lineTo(b.maxX + m, r.c); } ctx.stroke(); }
+  ctx.setLineDash([]); ctx.lineWidth = 2 * k; ctx.strokeStyle = '#ff4040'; for (const r of symView.results) for (const q of r?.bad || []) { ctx.beginPath(); ctx.arc(q.x, q.y, 7 * k, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.restore();
+}
 /** 基準の図形の中央へ（事業主 2026-10-25「選択した図形群がサポーター図形の中央に配置できない」）：選んでいる図形（群）を、1つのまとまりとして、クリックした基準の図形の中央へ動かす。
  *  基準の図形は、クリックした線につながった外形（端がつながった線・弧・折れ線）をまるごと1つの形として、その外接の四角の中心。選んでいない図形から選ぶ。axes：'xy'（縦横）・'x'（横だけ）・'y'（縦だけ）。元に戻すは1回。 */
 let centerOnAxes = 'xy';
@@ -29392,8 +29555,8 @@ function centerOnClick(p) {
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
 }
-$('centerOnXY').onclick = () => centerOnStart('xy'); $('centerOnX').onclick = () => centerOnStart('x'); $('centerOnY').onclick = () => centerOnStart('y');
-$('attachStart').onclick = attachStart; $('attachLeft').onclick = attachStart;   /* 左メニューの「線に着ける」も同じ（Shift+A） */ $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
+$('symCheck').onclick = runSymmetryCheck; $('centerOnXY').onclick = () => centerOnStart('xy'); $('centerOnX').onclick = () => centerOnStart('x'); $('centerOnY').onclick = () => centerOnStart('y');
+$('attachStart').onclick = attachStart; $('attachLeft').onclick = attachStart;   /* 左メニューの「線に着ける」も同じ（Shift+A） */ $('fillsClear').onclick = clearFills; $('fillsDetachedClear').onclick = clearDetachedFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
   const ids = selectedShapeIds(), shapes = doc.shapes.filter(s => ids.has(s.id)), parent = new Map(shapes.map(s => [s.id, s.id]));
@@ -29957,7 +30120,7 @@ function makeFoldDesign(live = false) {
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
     for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
     if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
-    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(sideLeft ? { flipH: true, flipDx } : {}), ...(shiftX ? { shiftX } : {}), ...(moveOff ? { moveOff } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
+    doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(sideLeft ? { flipH: true, flipDx } : {}), ...(shiftX ? { shiftX } : {}), ...(moveOff ? { moveOff } : {}), ...(prevD?.flatOff ? { flatOff: prevD.flatOff } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
   $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
@@ -30012,7 +30175,8 @@ function foldFollowNow() {
 }
 /** 平面図の角の丸め半径（mm）。欄が空・負の数・文字は 0（丸めない）。短い辺の半分を超えないようにする（事業主 2026-10-24「平面図の角の丸めを実施し」）。 */
 function planCorner(h, len) { const raw = String($('flowCorner')?.value ?? '').trim(), v = Number(raw), r = raw !== '' && Number.isFinite(v) && v > 0 ? v : 0; return Math.max(0, Math.min(r, h / 2 - 0.01, len / 2 - 0.01)); }
-const stitchLayoutNow = () => $('flowStitchLayout')?.value === 'rows' ? 'rows' : 'loop';   /* 平面図の菱目の並べ方：loop＝ぐるっと一周（縦のラインにも）・rows＝上下の2本 */
+const stitchLayoutNow = () => { const v = $('flowStitchLayout')?.value; return v === 'rows' || v === 'none' ? v : 'loop'; };   /* 平面図の菱目の並べ方：loop＝ぐるっと一周（縦のラインにも）・rows＝上下の2本・none＝菱目を打たない（事業主 2026-10-25「菱目打ちを入れないパターンも追加する」） */
+const flatHwMetalNow = () => { const v = $('flowHwMetal')?.value; return ['gold', 'silver', 'pinkgold', 'blackgold'].includes(v) ? v : null; };
 /** 角を半径 r で丸めた長方形（左上から時計回り・各角 12 分割の折れ線）。r が 0 以下なら、ふつうの4点。 */
 function roundedRectPoints(x0, y0, w, h, r) {
   const x1 = x0 + w, y1 = y0 + h, q = v => +v.toFixed(4); if (!(r > 0)) return [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
@@ -30063,8 +30227,9 @@ function projectFoldDesign(withStitch) {
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
   const btnD = Number($('fdBtnD').value); if (d.mode !== 'bifold' && !(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
   const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t(foldErrKey(p.error, d.mode)); return; }
-  let st = d.stitch || null;
-  if (withStitch) {
+  const noStitch = stitchLayoutNow() === 'none'; if (withStitch && noStitch) { $('hint').textContent = t('foldStitchNone'); return; }   /* 「菱目打ちラインを描く」を押したが、並べ方が「菱目を打たない」 */
+  let st = noStitch ? null : d.stitch || null;   /* 「菱目を打たない」：菱目の列は作らず、前の設定も使わない */
+  if (withStitch && !noStitch) {
     const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value);
     const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : stitchLayoutNow() === 'rows' && !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null;
     if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
@@ -30072,7 +30237,7 @@ function projectFoldDesign(withStitch) {
   }
   const corner = planCorner(h, p.length), layout = stitchLayoutNow();
   if (st && layout === 'loop' && !rimLine([{ x: 0, y: 0 }, { x: p.length, y: 0 }, { x: p.length, y: h }, { x: 0, y: h }], st.edge, Math.max(corner - st.edge, 0))) { $('hint').textContent = t('foldStitchLoopFail'); return; }
-  const fx = d.origin.x, fy = d.origin.y + p.T / 2 + 2 + 40, [f1, f2] = p.flats, [b1, b2] = p.bends, xs = d.mode === 'bifold' ? [f1, f1 + b1 / 2, f1 + b1] : [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
+  const fx = d.origin.x + (d.flatOff?.x ?? 0), fy = d.origin.y + p.T / 2 + 2 + 40 + (d.flatOff?.y ?? 0), [f1, f2] = p.flats, [b1, b2] = p.bends, xs = d.mode === 'bifold' ? [f1, f1 + b1 / 2, f1 + b1] : [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   const buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
   const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
   commit(() => {
@@ -30110,7 +30275,8 @@ function projectFoldDesign(withStitch) {
       try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
-        for (const s of binderViewDrawing(gap.spec, gap.ringD, 'plan')) { if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map) }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r }); } }
+        const hwMetal = flatHwMetalNow(), mt = hwMetal ? { metal: hwMetal } : {};   /* 金具の色（選んでいれば、金具の図形に金属の色を付ける） */
+        for (const s of binderViewDrawing(gap.spec, gap.ringD, 'plan')) { if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt }); } }
       } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
@@ -30123,7 +30289,7 @@ function projectFoldDesign(withStitch) {
       autoDim(fx, fy, fx + p.length, fy, 12); autoDim(fx, fy, fx, fy + h, -12);
       if (d.ring && Number.isFinite(d.ring.s)) autoDim(fx, fy + h, fx + d.ring.s, fy + h, -12);
     }
-    doc.foldDesign = { ...doc.foldDesign, ...(st ? { stitch: st } : {}) };
+    { const { stitch: _drop, ...rest } = doc.foldDesign; doc.foldDesign = { ...(noStitch ? rest : doc.foldDesign), ...(st ? { stitch: st } : {}) }; }
   });
   const f2s = v => v.toFixed(2);
   $('hint').textContent = t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + (layout === 'loop' ? t('foldFixStitchLoop', { edge: f2s(st.edge), pitch: f2s(holeInfo.step), n: holeInfo.n, r: f2s(corner) }) : t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n })) : ''); rebuildSnaps(); draw();
@@ -30139,7 +30305,7 @@ function unfoldFoldDesign() {
   const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null; if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
   const [f1, f2] = p.flats, [b1, b2] = p.bends, buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];
   const plies = foldUnfoldPlan(p, { pitch, margin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
-  const tool = stitchToolCurrent(), fx = d.origin.x, f2s = v => v.toFixed(2); let fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60;
+  const tool = stitchToolCurrent(), fx = d.origin.x + (d.flatOff?.x ?? 0), f2s = v => v.toFixed(2); let fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60 + (d.flatOff?.y ?? 0);
   { /* 置き場所に別の図形（財布の部品など）が重なるときは、その下の空いた所へずらす。重ならないときは今までの位置（事業主指摘 2026-10-18） */
     const blockLen = Math.max(...plies.map(u => u.length)), near = doc.shapes.filter(sh => sh.foldFlat !== 'fdu' && !sh.holeLink).map(bboxOf).filter(bx => bx.maxX >= fx - 10 && bx.minX <= fx + blockLen + 10 && bx.maxY > fy0 - 10);
     if (near.length) fy0 = Math.max(fy0, Math.max(...near.map(bx => bx.maxY)) + 60);
@@ -31075,7 +31241,7 @@ function selectedLineHoleStats() {
 function updateUI() {
   renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
-  $('delete').disabled = !selected.size;
+  $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; refreshGapCount();
@@ -31409,10 +31575,17 @@ function followSectionMove(ids, fn, paths, alone) {
   let r0, r1, r2; try { r0 = fn({ x: 0, y: 0 }); r1 = fn({ x: 100, y: 0 }); r2 = fn({ x: 0, y: 100 }); } catch { return; }
   if (![r0, r1, r2].every(r => Number.isFinite(r?.x) && Number.isFinite(r?.y))) return;
   const dx = r0.x, dy = r0.y; if (Math.abs(r1.x - dx - 100) > 1e-6 || Math.abs(r1.y - dy) > 1e-6 || Math.abs(r2.x - dx) > 1e-6 || Math.abs(r2.y - dy - 100) > 1e-6 || (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9)) return;   /* 平行移動だけ */
-  const flatOf = s => s.foldFlat === 'fd' || s.foldFlat === 'fdu';
+  const flatOf = s => s.foldFlat === 'fd' || s.foldFlat === 'fdu', linked = $('flowLinkMove')?.checked !== false;
+  const o = d.origin, fo = d.flatOff ?? { x: 0, y: 0 };
+  if (!linked) {   /* 断面だけ動かす：平面図・展開図はその場に残す。平面図の位置は設計の原点からの差（flatOff）で持ち、作りなおしても、動かさなかった位置になる */
+    doc.foldDesign = { ...d, origin: { x: o.x + dx, y: o.y + dy }, moveOff: { x: (d.moveOff?.x ?? 0) + dx, y: (d.moveOff?.y ?? 0) + dy }, flatOff: { x: fo.x - dx, y: fo.y - dy } }; return;
+  }
+  const movedFlat = new Set(doc.shapes.filter(s => flatOf(s) && !ids.has(s.id)).map(s => s.id));
   doc.shapes = doc.shapes.map(s => flatOf(s) && !ids.has(s.id) ? translate(s, dx, dy) : s);
   doc.holes = doc.holes.map(h => (h.foldFlat === 'fd' || h.foldFlat === 'fdu') && !(paths.has(h.pathId) || alone(h)) ? { ...h, x: h.x + dx, y: h.y + dy } : h);
-  const o = d.origin; doc.foldDesign = { ...d, origin: { x: o.x + dx, y: o.y + dy }, moveOff: { x: (d.moveOff?.x ?? 0) + dx, y: (d.moveOff?.y ?? 0) + dy } };
+  /* 平面図・展開図の塗りも、いっしょに動かす（半分以上が、動かした平面図の線で囲まれた塗り）：置き去りにすると、外形だけ動いて、色が元の場所に残った（事業主 2026-10-25「断面図だけ動かせないのか？」の図） */
+  if (movedFlat.size && Array.isArray(doc.fills)) { const mv = q => ({ x: +(q.x + dx).toFixed(4), y: +(q.y + dy).toFixed(4) }); doc.fills = doc.fills.map(f => (f.ids || []).length && f.ids.filter(id => movedFlat.has(id)).length * 2 >= f.ids.length ? { ...f, points: f.points.map(mv), holes: (f.holes || []).map(h => h.map(mv)) } : f); }
+  doc.foldDesign = { ...d, origin: { x: o.x + dx, y: o.y + dy }, moveOff: { x: (d.moveOff?.x ?? 0) + dx, y: (d.moveOff?.y ?? 0) + dy } };
 }
 function copySelected() { copySelectedOffsets([{ dx: 5, dy: 5 }]); }
 function copySelectedOffsets(offsets) {
@@ -32076,7 +32249,7 @@ const segmentBoundsCache = new WeakMap();
 const SHAPE_DRAW_COLOR = { blue: '#4da6ff', green: '#4ecb6b', red: '#ff5a5a', white: '#ffffff', yellow: '#f0d050' };
 /** 寸法の数字の置き場所（画面での中心 x,y・向き・文字の大きさ px・文字）。描くときとクリックの判定で同じ式を使う。数字は寸法線から離れて描かれるので、判定にも数字の枠を含める（事業主指摘 2026-10-16）。 */
 function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset)) {
-  const px = Math.max(2.5, 12 / scale), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale;
+  const px = Math.max(2.5, 12 / scale, exporting ? exportExtentMm / 70 : 0), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale;
   return { x: (d.a.x + d.b.x) / 2 + nx / nl * gap, y: (d.a.y + d.b.y) / 2 + ny / nl * gap, angleDeg: d.angleDeg, px, label: typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2) };   /* label があれば数字の代わりにその文字（菱目の間隔「菱目 ○○mm ×n」） */
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
@@ -32362,7 +32535,7 @@ function drawSheetBody(lo, hi) {
     ctx.stroke(); ctx.restore();
   }
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawRotateHandle();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawRotateHandle(); drawSymView(); drawLayerHover();
   updateUI();
 }
 function resize() {
