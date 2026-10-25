@@ -94,6 +94,7 @@
     #side details.card#scaleCard[hidden], #side details.card#moveCard[hidden] { display: none !important; }   /* no window when nothing is selected */
     .ctx-cards .ctx-group { grid-column: 1 / -1; } .ctx-cards .ctx-wide { grid-column: 1 / -1; }
     #layerRows .row { flex-wrap: wrap; row-gap: 2px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.06); } #layerRows .layer-name { flex: 1 1 100%; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row button:first-of-type { margin-left: auto; } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; }
+    .rel-list { flex: 1 1 100%; max-height: 40vh; overflow: auto; text-align: left; font-size: 12px; line-height: 1.6; } .rel-date { font-weight: 700; color: var(--accent, #c9a96e); margin-top: 8px; } .rel-item { padding-left: 2px; } .rel-item::before { content: '\30fb'; } .rel-btn { font-size: 10px; margin-left: 6px; padding: 1px 8px; white-space: nowrap; } #releaseDialog { max-width: min(560px, calc(100vw - 24px)); }
     dialog.flow-win { position: fixed; top: 132px; right: 312px; left: auto; margin: 0; width: 320px; max-width: calc(100vw - 24px); max-height: calc(100vh - 160px); overflow: auto; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.45); z-index: 20; } .flow-win-head { display: flex; align-items: center; gap: 8px; cursor: move; touch-action: none; } .flow-win-head button { cursor: pointer; } .flow-h-note { display: block; margin-top: 4px; color: var(--accent); font-size: 12px; } .flow-notes-btn { flex: none; padding: 2px 8px; font-size: 12px; border-radius: 12px; } .flow-notes-btn[aria-pressed="true"] { background: var(--accent); color: #111; border-color: var(--accent); }
     dialog.flow-win[data-notes="hide"] p.note { display: none; }   /* the detailed explanations are folded by default (2026-10-24); the head button shows them */ .flow-win-head h3 { margin: 0; font-size: 15px; flex: 1; } .info-close { border: 0; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
     .flow-steps { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 8px; } .flow-steps li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; } .flow-steps li[data-state="now"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; background: rgba(201, 169, 110, .08); } .flow-steps li[data-state="done"] { opacity: .85; }
@@ -190,8 +191,8 @@
   </style><style id="pageSize"></style></head>
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
-<div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 09:30 · b9f70d3</span><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 09:56 · ed2d9c4</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -413,7 +414,7 @@
 <label><span data-i18n="unfoldAllowance"></span><input id="unfoldAllowance" type="number" step="0.5" value="3"></label>
 <button id="unfoldBtn" data-i18n="unfoldBtn"></button>
 </div></details>
-<details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><label><span data-i18n="fdMode"></span><select id="fdMode"><option value="trifold" data-i18n="fdModeTri"></option><option value="bifold" data-i18n="fdModeBi"></option></select></label><p class="note" data-trifold-only data-i18n="foldDesignNote"></p><p class="note" data-bifold-only hidden data-i18n="bifoldNote"></p><label data-bifold-only hidden><span data-i18n="fdBiW"></span><input id="fdBiW" type="number" min="1" step="0.1" value="100"></label><button id="fdSameCover" type="button" data-bifold-only hidden data-i18n="fdSameCover" data-i18n-title="fdSameCoverTip"></button><svg id="fdDiagram" data-trifold-only class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
+<details class="card" data-side="fold" id="foldDesignCard" data-lock="fold"><summary data-i18n="foldDesignTitle"></summary><div class="body"><label><span data-i18n="fdMode"></span><select id="fdMode"><option value="trifold" data-i18n="fdModeTri"></option><option value="bifold" data-i18n="fdModeBi"></option></select></label><p class="note" data-trifold-only data-i18n="foldDesignNote"></p><p class="note" data-bifold-only hidden data-i18n="bifoldNote"></p><label data-bifold-only hidden><span data-i18n="fdBiW"></span><input id="fdBiW" type="number" min="1" step="0.1" value="100"></label><label data-bifold-only hidden><span data-i18n="fdBiWB"></span><input id="fdBiWB" type="number" min="1" step="0.1"></label><button id="fdSameCover" type="button" data-bifold-only hidden data-i18n="fdSameCover" data-i18n-title="fdSameCoverTip"></button><svg id="fdDiagram" data-trifold-only class="fdDia" viewBox="0 -16 400 202" role="img" aria-label="sample"><defs><marker id="fdArr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="context-stroke" stroke="none"/></marker></defs><path class="lth" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><path class="glue" d="M110,22 H292 A56,56 0 0 1 292,134 H70 A36,36 0 0 1 70,62 H318"/><line class="btn" x1="190" y1="2" x2="190" y2="150"/>
 <g class="dim" data-k="dl"><line class="ext" x1="30" y1="102" x2="30" y2="176"/><line x1="190" y1="152" x2="30" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="110" y="148">①</text></g>
 <g class="dim" data-k="dr"><line class="ext" x1="352" y1="82" x2="352" y2="176"/><line x1="190" y1="152" x2="352" y2="152" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="271" y="148">②</text></g>
 <g class="dim" data-k="w"><line x1="30" y1="172" x2="352" y2="172" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="191" y="168">③</text></g>
@@ -426,7 +427,7 @@
 <g class="dim" data-k="shift"><line x1="190" y1="-2" x2="170" y2="-2" marker-end="url(#fdArr)"/><line x1="190" y1="-2" x2="210" y2="-2" marker-end="url(#fdArr)"/><text x="228" y="2">⑩</text></g>
 <g class="dim" data-k="ring"><path d="M349.1,59.5 A60,60 0 0 1 349.1,96.5" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><circle cx="352" cy="78" r="2.5"/><text x="376" y="82">⑪</text></g>
 <g class="dim" data-k="stack"><circle cx="318" cy="78" r="14"/><rect x="170" y="74" width="140" height="8"/><line x1="156" y1="74" x2="156" y2="82" marker-start="url(#fdArr)" marker-end="url(#fdArr)"/><text x="144" y="82">⑫</text></g>
-</svg><p class="note" data-trifold-only data-i18n="fdDiagramNote"></p><label data-trifold-only><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label data-trifold-only><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTotalH"></span><input id="fdTotalH" type="number" min="0" step="0.1"></label><label><span data-i18n="fdTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label data-bifold-only><span data-i18n="fdSide"></span><select id="fdSide"><option value="right" data-i18n="fdSideRight"></option><option value="left" data-i18n="fdSideLeft"></option></select></label><label data-trifold-only><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row" data-trifold-only><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label data-trifold-only><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" data-side="fold" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecClear" data-i18n="foldSecClear" data-i18n-title="foldSecClearTip"></button><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
+</svg><p class="note" data-trifold-only data-i18n="fdDiagramNote"></p><label data-trifold-only><span data-i18n="fdDL"></span><input id="fdDL" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdDR"></span><input id="fdDR" type="number" min="0" step="0.1" value="25"></label><label data-trifold-only><span data-i18n="fdW"></span><input id="fdW" type="number" min="0" step="0.1" value="50"></label><label data-trifold-only><span data-i18n="fdCL"></span><input id="fdCL" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdCR"></span><input id="fdCR" type="number" min="0" step="0.1" value="15"></label><label data-trifold-only><span data-i18n="fdRL"></span><input id="fdRL" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdRR" data-i18n-tri="fdRR" data-i18n-bi="fdBiRR"></span><input id="fdRR" type="number" min="0" step="0.1" value="6"></label><label><span data-i18n="fdTotalH" data-i18n-tri="fdTotalH" data-i18n-bi="fdBiTotalH"></span><input id="fdTotalH" type="number" min="0" step="0.1"></label><label><span data-i18n="fdTO" data-i18n-tri="fdTO" data-i18n-bi="fdBiTO"></span><input id="fdTO" type="number" min="0.1" step="0.1" value=""></label><label><span data-i18n="fdTI" data-i18n-tri="fdTI" data-i18n-bi="fdBiTI"></span><input id="fdTI" type="number" min="0.1" step="0.1" value=""></label><label><input id="fdFlip" type="checkbox" checked><span data-i18n="fdFlip"></span></label><label data-bifold-only><span data-i18n="fdSide"></span><select id="fdSide"><option value="right" data-i18n="fdSideRight"></option><option value="left" data-i18n="fdSideLeft"></option></select></label><label data-trifold-only><span data-i18n="fdShift"></span><input id="fdShift" type="number" min="0" step="0.5" value="1"></label><div class="row" data-trifold-only><button id="fdNudgeL" data-i18n="fdNudgeL"></button><button id="fdNudgeR" data-i18n="fdNudgeR"></button></div><label><input id="fdRingOn" type="checkbox"><span data-i18n="fdRingOn"></span></label><label><span data-i18n="fdRingSpec"></span><select id="fdRingSpec"></select></label><label><span data-i18n="fdRingDia"></span><select id="fdRingDia"></select></label><label><span data-i18n="fdRefillDir"></span><select id="fdRefillDir"><option value="h" data-i18n="fdRefillH"></option><option value="v" data-i18n="fdRefillV"></option></select></label><label><span data-i18n="fdRingPos"></span><input id="fdRingPos" type="number" step="0.5" value="0"></label><label><span data-i18n="fdStackT"></span><input id="fdStackT" type="number" min="0.1" step="0.1" value="6"></label><div class="row"><button id="fdMake" data-i18n="fdMake"></button></div><label><span data-i18n="fdH"></span><input id="fdH" type="number" min="1" step="1" value="40"></label><label data-trifold-only><span data-i18n="fdBtnD"></span><input id="fdBtnD" type="number" min="0.1" step="0.1" value="4"></label><div class="row"><button id="fdFix" data-i18n="fdFix"></button></div><label><span data-i18n="fdEdge"></span><input id="fdEdge" type="number" min="0" step="0.1" value="3"></label><label><span data-i18n="fdPitch"></span><input id="fdPitch" type="number" min="0" step="0.05" value="3.95"></label><label><span data-i18n="fdMargin"></span><input id="fdMargin" type="number" min="0" step="0.1" value="5"></label><div class="row"><button id="fdStitch" data-i18n="fdStitch"></button></div><div class="row"><button id="fdUnfold" data-i18n="fdUnfold"></button></div><p class="note" id="fdPitchOut" style="white-space:pre-line"></p></div></details><details class="card" data-side="fold" id="foldSecCard" data-lock="fold"><summary data-i18n="foldSecTitle"></summary><div class="body"><p class="note" data-i18n="foldBaseNote"></p><label><span data-i18n="foldBaseF1"></span><input id="foldBaseF1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB1"></span><input id="foldBaseB1" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseF2"></span><input id="foldBaseF2" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldBaseB2"></span><input id="foldBaseB2" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldBaseMake" data-i18n="foldBaseMake"></button></div><hr><p class="note" data-i18n="foldSecNote"></p><label><span data-i18n="foldSecThickness"></span><input id="foldSecT" type="number" min="0.1" step="0.1" value="1.5"></label><label><span data-i18n="foldCutY"></span><input id="foldCutY" type="number" step="0.1"></label><div class="row"><button id="foldCutPick" data-i18n="foldCutPick"></button><button id="foldCutClear" data-i18n="foldCutClear"></button></div><div class="row"><button id="foldSecMake" data-i18n="foldSecMake"></button></div><label><span data-i18n="foldRadL"></span><input id="foldRadL" type="number" min="0.1" step="0.1"></label><label><span data-i18n="foldRadR"></span><input id="foldRadR" type="number" min="0.1" step="0.1"></label><div class="row"><button id="foldRadApply" data-i18n="foldRadApply"></button></div><div class="row"><button id="foldSecClear" data-i18n="foldSecClear" data-i18n-title="foldSecClearTip"></button><button id="foldSecApply" data-i18n="foldSecApply"></button></div></div></details>
 <details class="card" data-side="out" id="imgCard"><summary data-i18n="underlay"></summary><div class="body">
 <div class="row"><button id="imgImport" data-i18n="imgImport"></button><button id="imgRemove" data-i18n="imgRemove"></button></div>
 <input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" hidden>
@@ -738,6 +739,7 @@
 <div class="flow-btns" data-trifold-only><button id="flowGuide" type="button" data-i18n="foldFlowGuide" data-i18n-title="foldFlowGuideTip"></button></div>
 </dialog>
 <dialog id="lockDialog" class="fb"><h3 id="lockTitle"></h3><p data-i18n="lockBody"></p><p id="lockNow" class="bd-note" role="status"></p><p class="bd-note" data-i18n="lockOwnerNote"></p><div class="row"><button id="lockRegister" data-i18n="lockRegister"></button><button id="lockClose" data-i18n="lockClose"></button></div></dialog>
+<dialog id="releaseDialog" class="fb"><h3 data-i18n="releaseTitle"></h3><p id="releaseNow" class="bd-note" role="status"></p><div id="releaseList" class="rel-list"></div><div class="row"><button id="releaseClose" type="button" data-i18n="releaseClose"></button></div></dialog>
 <dialog id="regDialog" class="fb"><h3 data-i18n="regTitle"></h3><p id="regNow" class="bd-note" role="status"></p><p data-i18n="regWhy"></p><label class="fb-f"><span data-i18n="regEmailL"></span><input id="regEmail" type="email" maxlength="254" autocomplete="email"></label><label class="fb-f"><span data-i18n="regNickL"></span><input id="regNick" type="text" maxlength="30" autocomplete="nickname"></label><p class="bd-note" data-i18n="regPrivacy"></p><label class="fb-ctx-on"><input id="regConsent" type="checkbox"><span data-i18n="regConsentL"></span></label><output id="regStatus" class="fb-status" role="status"></output><div class="row"><button id="regSend" data-i18n="regSend"></button><button id="regCheck" data-i18n="regCheck" hidden></button><button id="regClose" data-i18n="regClose"></button></div></dialog>
 <dialog id="feedbackDialog" class="fb"><h3 data-i18n="fbTitle"></h3><p data-i18n="fbLead"></p>
 <div class="row" id="fbKinds" role="radiogroup"><label><input id="fbKind-idea" type="radio" name="fbKind" value="idea" checked><span data-i18n="fbKindIdea"></span></label><label><input id="fbKind-bug" type="radio" name="fbKind" value="bug"><span data-i18n="fbKindBug"></span></label><label><input id="fbKind-cheer" type="radio" name="fbKind" value="cheer"><span data-i18n="fbKindCheer"></span></label></div>
@@ -760,8 +762,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=7383e7bc","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=7cf9bfba","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=829b7085","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=a0368a89","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=01fd44d9","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=d88fad4b","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
-<script type="module" src="app.js?v=7383e7bc"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=03689874","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-notes.js":"./data/release-notes.js?v=8c400c83","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=7cf9bfba","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=829b7085","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=5a12c26d","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=01fd44d9","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=03689874"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1025,17 +1027,24 @@ __mods['update_check'] = (function(){
 // 新しい版のお知らせ：公開された最新の版（version.json）を取りにいき、開いている画面の版より新しいかを調べる。通信（fetch）はここに置く（app.js には書かない決まり）。
 /** 画面の左上の「版 2026-10-22 11:00 · 159e2b2」から、日時と識別番号を読む。手元の開発版（「開発版」）や読めない文字は null。 */
 const parseBuild = text => { const m = /^版 (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) · ([0-9a-f]{7})$/.exec(String(text ?? '').trim()); return m ? { jst: m[1], id: m[2] } : null; };
-/** 公開された最新の版（{ id, jst }）。fetchFn は fetch 相当。キャッシュを避けて取り、取れない・形が違うときは null。 */
+/** 更新履歴（version.json の releases）を、画面に出せる形に整える：日付は「2026-10-25 09:30」の形・文は文字だけ（長いものは切る）・最大8件。形が違うものは捨てる。 */
+function cleanReleases(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter(r => r && typeof r.date === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(r.date) && Array.isArray(r.items)).slice(0, 8).map(r => ({ date: r.date, items: r.items.filter(x => typeof x === 'string' && x.trim()).slice(0, 12).map(x => x.slice(0, 200)) }));
+}
+/** 更新履歴 releases（新しい順）のうち、開いている画面の版 mine より新しいもの（最大 max 件）。mine が無ければ、新しい順に max 件。 */
+const releasesSince = (mine, releases, max = 4) => cleanReleases(releases).filter(r => !mine || r.date > mine.jst).slice(0, max);
+/** 公開された最新の版（{ id, jst, releases }）。fetchFn は fetch 相当。キャッシュを避けて取り、取れない・形が違うときは null。 */
 async function latestBuild(fetchFn, now = Date.now()) {
   try {
     const res = await fetchFn('version.json?t=' + now, { cache: 'no-store' }), v = await res.json();
-    return v && /^[0-9a-f]{7}$/.test(String(v.id)) && typeof v.jst === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(v.jst) ? { id: v.id, jst: v.jst } : null;
+    return v && /^[0-9a-f]{7}$/.test(String(v.id)) && typeof v.jst === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(v.jst) ? { id: v.id, jst: v.jst, releases: cleanReleases(v.releases) } : null;
   } catch { return null; }
 }
 /** 公開された版 remote が、開いている画面の版 mine より新しいか：識別番号が違い、公開日時が同じか新しい（古い版が出回っているときは出さない）。 */
 const isNewerBuild = (mine, remote) => !!mine && !!remote && remote.id !== mine.id && remote.jst >= mine.jst;
 
-return {parseBuild, latestBuild, isNewerBuild};
+return {parseBuild, cleanReleases, releasesSince, latestBuild, isNewerBuild};
 })();
 __mods['geometry'] = (function(){
 // 座標・長さは mm、Y 下向き。角度は度、時計回りが正。
@@ -3391,8 +3400,18 @@ const MESSAGES = {
     "fdMode": "折り方",
     "fdModeTri": "3つ折り",
     "fdModeBi": "2つ折り（財布・ノート型手帳）",
-    "fdBiW": "閉じたときの幅 (mm)",
-    "bifoldNote": "表紙と裏表紙が同じ幅の2つ折りです。⑦で背の内半径、全高で閉じたときの厚さを指定します。財布はリングなし、手帳はリングありで設計できます。ボタン穴は作りません。",
+    "fdBiW": "①表紙の幅（閉じたときの幅） (mm)",
+    "fdBiWB": "②裏表紙の幅 (mm・空欄＝表紙と同じ)",
+    "fdBiRR": "③背の内側の半径 (mm)",
+    "fdBiTotalH": "④全高（折りの高さ・mm）：入れると、背の半径を自動で合わせる",
+    "fdBiTO": "⑤表（外側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
+    "fdBiTI": "⑥裏（内側の革）の厚み (mm・空欄＝「革1枚の厚み」)",
+    "fdSecWN": "①全幅（表紙）",
+    "fdSecWBN": "②裏表紙の幅",
+    "fdSecHN": "④全高",
+    "fdSecTON": "⑤表",
+    "fdSecTIN": "⑥裏",
+    "bifoldNote": "2つ折りの数字は、①〜⑥の番号で並べています（断面の水色の寸法線の番号と同じです）。①表紙の幅・②裏表紙の幅（空欄なら表紙と同じ）・③背の内側の半径・④全高・⑤⑥革の厚み。財布はリングなし、手帳はリングありで設計できます。ボタン穴は作りません。",
     "bifoldDesignDone": "2つ折りの断面を作りました。表紙 {f1} mm・裏表紙 {f2} mm、背の曲げ {b1} mm、中心線の全長 {len} mm。",
     "bifoldFixDone": "確定しました。2つ折りの平面図（全長 {len} mm）と背の点線3本を作りました。",
     "foldSideSpine": "背",
@@ -3436,10 +3455,10 @@ const MESSAGES = {
     "fdSideRight": "右（今までの向き）",
     "fdSideLeft": "左（本を持つ向き・左右反転）",
     "transformLocked": "選んだ図形は、鍵のかかった層か、非表示の層にあるので、反転・回転できません。層の鍵を外す（または表示する）と、できます。",
-    "fhbW": "全幅（表紙・裏表紙とも）(mm)",
-    "fhbEndA": "表紙の幅 (mm)",
-    "fhbEndB": "裏表紙の幅 (mm)",
-    "fhbRR": "背の内側の半径 (mm)",
+    "fhbW": "①②全幅（表紙・裏表紙とも）(mm)",
+    "fhbEndA": "①表紙の幅 (mm)",
+    "fhbEndB": "②裏表紙の幅 (mm)",
+    "fhbRR": "③背の内側の半径 (mm)",
     "fhbRing": "リングの位置 (mm・背の頂点から革に沿って)",
     "fhbSame": "表紙と同じにする",
     "fhbBad": "数字が正しくないので、そのままにしました。",
@@ -3732,6 +3751,14 @@ const MESSAGES = {
     "fdSameCoverDone": "裏表紙を表紙と同じ長さにしました。",
     "fdSameCoverAlready": "裏表紙は、もう表紙と同じ長さです。",
     "fdSameCoverNone": "2つ折りの断面がありません。先に「断面を作る」を押してください。",
+    "releaseBtn": "更新履歴",
+    "releaseBtnTip": "これまでの更新を、新しい順に見ます（何が変わったか）",
+    "releaseTitle": "更新履歴",
+    "releaseNow": "いま開いている版：{ver}",
+    "releaseDev": "（開発版です。公開前の更新も出しています）",
+    "releaseNext": "公開前（次の版に入る予定）",
+    "releaseHere": "← いま開いている版",
+    "releaseClose": "閉じる",
     "layerNameEditTip": "層の名前を、ここで直接書き換えられます（Enter で決まります）。元の名前のあとに自由に足せます。例：「型紙 表紙」「型紙 リフィル」「金具 リング」",
     "layerRenamed": "層の名前を「{name}」にしました。",
     "sectionPaintScope": "断面では、金属の色はリング・台座に、革色・質感は革の線にだけ付きます（選んだ中に、その部分がありませんでした）。",
@@ -5495,8 +5522,18 @@ const MESSAGES = {
     "fdMode": "Fold type",
     "fdModeTri": "Tri-fold",
     "fdModeBi": "Bi-fold (wallet / notebook)",
-    "fdBiW": "Closed width (mm)",
-    "bifoldNote": "Equal-width front and back covers. Set the spine inner radius in (7), or set the closed thickness using overall height. Enable rings for a planner; leave them off for a wallet. No button holes are added.",
+    "fdBiW": "(1) Front cover width = closed width (mm)",
+    "fdBiWB": "(2) Back cover width (mm; blank = same as the front)",
+    "fdBiRR": "(3) Inner radius of the spine (mm)",
+    "fdBiTotalH": "(4) Overall height (mm): enter it to set the spine radius automatically",
+    "fdBiTO": "(5) Thickness of the outer leather (mm; blank = \"Thickness of one leather\")",
+    "fdBiTI": "(6) Thickness of the inner leather (mm; blank = \"Thickness of one leather\")",
+    "fdSecWN": "(1) Width (front cover)",
+    "fdSecWBN": "(2) Back cover width",
+    "fdSecHN": "(4) Height",
+    "fdSecTON": "(5) outer",
+    "fdSecTIN": "(6) inner",
+    "bifoldNote": "The bi-fold numbers are listed as (1)-(6), matching the numbers on the light-blue dimension lines of the section: (1) front cover width, (2) back cover width (blank = same as the front), (3) spine inner radius, (4) overall height, (5)(6) leather thickness. Enable rings for a planner; leave them off for a wallet. No button holes are added.",
     "bifoldDesignDone": "Bi-fold section created. Covers {f1} / {f2} mm, spine bend {b1} mm, centerline length {len} mm.",
     "bifoldFixDone": "Bi-fold flat pattern created: length {len} mm, with 3 spine guide lines.",
     "foldSideSpine": "Spine",
@@ -5540,10 +5577,10 @@ const MESSAGES = {
     "fdSideRight": "Right (as before)",
     "fdSideLeft": "Left (as you hold a book; mirrored)",
     "transformLocked": "The selected shapes are on a locked or hidden layer, so they cannot be flipped or rotated. Unlock (or show) the layer and try again.",
-    "fhbW": "Overall width (both covers) (mm)",
-    "fhbEndA": "Front cover width (mm)",
-    "fhbEndB": "Back cover width (mm)",
-    "fhbRR": "Inner radius of the spine (mm)",
+    "fhbW": "(1)(2) Overall width (both covers) (mm)",
+    "fhbEndA": "(1) Front cover width (mm)",
+    "fhbEndB": "(2) Back cover width (mm)",
+    "fhbRR": "(3) Inner radius of the spine (mm)",
     "fhbRing": "Ring position (mm, along the leather from the apex of the spine)",
     "fhbSame": "Same as the front cover",
     "fhbBad": "The number is not valid, so nothing was changed.",
@@ -5836,6 +5873,14 @@ const MESSAGES = {
     "fdSameCoverDone": "Made the back cover the same length as the front.",
     "fdSameCoverAlready": "The back cover is already the same length as the front.",
     "fdSameCoverNone": "There is no bi-fold section yet. Press \"Make section\" first.",
+    "releaseBtn": "Updates",
+    "releaseBtnTip": "See past updates, newest first (what changed)",
+    "releaseTitle": "Update history",
+    "releaseNow": "Version you have open: {ver}",
+    "releaseDev": "(Development build. Unreleased updates are shown too.)",
+    "releaseNext": "Not yet released (planned for the next version)",
+    "releaseHere": "<- the version you have open",
+    "releaseClose": "Close",
     "layerNameEditTip": "Rename the layer right here (press Enter). You can add your own words after the original name, e.g. \"Pattern cover\", \"Pattern refill\", \"Hardware ring\".",
     "layerRenamed": "Renamed the layer to \"{name}\".",
     "sectionPaintScope": "In a section, metal colors go on the ring and base only, and leather colors and textures go on the leather lines only (the selection had no such part).",
@@ -23596,6 +23641,72 @@ const DATA_LIBRARY = {
 
 return {DATA_LIBRARY};
 })();
+__mods['data/release-notes'] = (function(){
+// Generated by tools/build_data.js; edit JSON instead.
+const DATA_RELEASE_NOTES = {
+  "releases": [
+    {
+      "date": "2026-10-25 09:56",
+      "items": [
+        "画面の上の版の表示のとなりに、「更新履歴」ボタンを足しました。過去の更新を、新しい順に見られます。",
+        "「新しい版があります」のお知らせに、何が変わったかを出すようにしました。",
+        "2つ折りの数字を、①〜⑥の番号つきにしました（①表紙の幅・②裏表紙の幅・③背の内側の半径・④全高・⑤⑥革の厚み）。断面の水色の寸法線と、寸法の小窓も、同じ番号です。",
+        "②「裏表紙の幅」の欄を足しました。空欄なら表紙と同じ長さです。",
+        "2つ折りのときも3つ折りの図が出たままで、①〜⑥の欄が見つからなかった不具合を直しました。"
+      ]
+    },
+    {
+      "date": "2026-10-25 09:30",
+      "items": [
+        "平面図で、リフィルが逆の側に出る不具合を直しました。リングが背の丸みの上にあるときは、いつも右に出ます。",
+        "リングの位置を変えたとき、色がずれる・重なる不具合を直しました。",
+        "断面をまとめて選んで色を押しても、金属の色はリング・台座だけ、革の色・質感は革の線だけに付きます。",
+        "白（リフィルの紙）が灰色に見えていたのを、白く見えるようにしました。",
+        "層の名前を、一覧からその場で書き換えられます（「型紙 表紙」のように、あとに自由に足せます）。",
+        "「リフィルの端〜表紙の端の寸法を入れる」ボタンを足しました。正確な距離が入ります。"
+      ]
+    },
+    {
+      "date": "2026-10-25 09:03",
+      "items": [
+        "断面を作る・寸法を変えるとフリーズしていた不具合を直しました（約33秒が約3秒になりました）。",
+        "寸法を動かしている間は、色の取り直しを待ち、止まってから1回だけ行います。",
+        "リングや表紙を1回クリックして塗ると、断面ぜんぶに色が付く不具合を直しました。",
+        "「線で囲まれた場所の塗りを、全部消す」は、2回押さないと消えません。",
+        "「裏表紙を表紙と同じ長さにする」ボタンを足しました。",
+        "層の一覧で、名前の文字が縦に並ぶ表示の崩れを直しました。"
+      ]
+    },
+    {
+      "date": "2026-10-24 21:30",
+      "items": [
+        "どの機能がよく使われているかを数えるようにしました。送るのは機能の名前だけで、図形・文字・ファイル名は送りません。",
+        "ヘルプの「個人情報と計測の扱い」を、この内容に書き換えました。"
+      ]
+    },
+    {
+      "date": "2026-10-24 17:01",
+      "items": [
+        "図形を選んで右クリックすると、名前のついた層へ移せます。層の追加は「型紙 2」のように連番になります。",
+        "右クリックの「レイヤー」に、できることの説明を付けました。",
+        "「塗りを1か所ずつ消す」を足しました（クリックした所の塗りだけ消えます）。",
+        "平面図で、リフィルの穴をリングの右端に合わせ、寸法は開いた側の1本だけにしました。"
+      ]
+    },
+    {
+      "date": "2026-10-24 16:16",
+      "items": [
+        "平面図の金具を、実測のリング（レバー2つ）にしました。",
+        "「断面に色をつける」を足しました（革・リフィル・リングを自動で塗り分けます）。",
+        "「複製して動かす」と、選んだ図形をまとめてオフセット（Shift+O）を足しました。分割線の不具合も直しました。",
+        "上の段のメニューが、画面の外へ切れる不具合を直しました。"
+      ]
+    }
+  ]
+};
+
+return {DATA_RELEASE_NOTES};
+})();
 __mods['help/ja'] = (function(){
 // Generated by tools/build_data.js; edit JSON instead.
 const HELP_JA = {
@@ -23934,6 +24045,7 @@ const { lccToDoc, styleSummary } = __mods['lcc'];
 const { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } = __mods['designs'];
 const { DATA_DESIGNS } = __mods['data/designs'];
 const { DATA_STYLE } = __mods['data/style'];
+const { DATA_RELEASE_NOTES } = __mods['data/release-notes'];
 const { TUTORIALS_BASICS } = __mods['tutorials/basics'];
 const { TUTORIALS_STITCH } = __mods['tutorials/stitch'];
 const { TUTORIALS_PEN } = __mods['tutorials/pen'];
@@ -23953,7 +24065,7 @@ const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 const { track } = __mods['analytics'];
 const { createRegistration, regIsOwner, REG_GATE_ON } = __mods['registration'];
-const { parseBuild, latestBuild, isNewerBuild } = __mods['update_check'];
+const { parseBuild, latestBuild, isNewerBuild, releasesSince } = __mods['update_check'];
 const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { createTabLock, TAB_LOCK_KEY } = __mods['tablock'];
@@ -28694,8 +28806,10 @@ function setFoldSide(v, save = true) { const side = v === 'left' ? 'left' : 'rig
 const foldErrKey = (err, mode) => 'foldDesignErr_' + err + (mode === 'bifold' && (err === 'badNumber' || err === 'flatShort') ? 'Bi' : '');
 function syncFoldModeUI() {
   const bi = foldIsBifold();
-  for (const el of document.querySelectorAll('[data-trifold-only]')) el.hidden = bi;
-  for (const el of document.querySelectorAll('[data-bifold-only]')) el.hidden = !bi;
+  const setHidden = (el, v) => { if (typeof el.toggleAttribute === 'function') el.toggleAttribute('hidden', !!v); else el.hidden = !!v; };   /* SVG の図は hidden の属性で隠す（el.hidden = は効かず、2つ折りでも3つ折りの図が残って、①〜⑥の番号だけ出ていた・事業主 2026-10-25「①～⑥の数値が変更できない」） */
+  for (const el of document.querySelectorAll('[data-trifold-only]')) setHidden(el, bi);
+  for (const el of document.querySelectorAll('[data-bifold-only]')) setHidden(el, !bi);
+  for (const el of document.querySelectorAll('[data-i18n-bi]')) { const key = bi ? el.dataset.i18nBi : el.dataset.i18nTri; if (key) { el.setAttribute('data-i18n', key); el.textContent = t(key); } }   /* 2つ折りの欄の見出しは、①〜⑥の番号 */
   renderFoldFlow();   /* 折りシミュレーションの小窓も、折り方に合わせる */
 }
 let foldPend = null;   /* 断面を作り直す1回だけ、欄に無い値（widthB・shiftX）を上書きする */
@@ -28722,7 +28836,7 @@ function makeFoldDesign(live = false) {
   const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
   $('hint').textContent = t(vals.mode === 'bifold' ? 'bifoldDesignDone' : 'foldDesignDone', { f1: f2(p.flats[0]), f2: f2(p.flats[1]), f3: f2(p.flats[2] ?? 0), b1: f2(p.bends[0]), b2: f2(p.bends[1] ?? 0), len: f2(p.length) }) + p.warnings.map(w => ' ' + t('foldDesignWarn_' + w, { half: f2(p.T / 2) })).join('')
     + (ring ? ' ' + t('foldRingDone', { ringD: f2(ring.ringD), pos: f2(ring.pos), s: f2(ring.s), stack: f2(ring.stackT), dir: t(ring.dir === 'v' ? 'foldRefillV' : 'foldRefillH') }) + (ring.parts.ringFits ? '' : ' ' + t('foldRingTight', { stack: f2(ring.stackT), ringD: f2(ring.ringD) })) + (ring.clamped ? ' ' + t('foldRingClamped', { pos: f2(ring.pos), r: f2(ring.rOut) }) : '') : ringIn?.error ? ' ' + t('foldRingErr') : ''); draw();
-  foldFollowSoon();   /* できている平面図・展開図も、新しい数字で作りなおす */
+  syncBackWidthField(); foldFollowSoon();   /* できている平面図・展開図も、新しい数字で作りなおす */
 }
 /** 数値を変えたとき：その場で断面を作る・作り直す（元に戻すは1回）。まだ断面が無く数値が不正なときは、入力の途中なので案内を出さずに待つ。 */
 function liveFoldDesign() { deferFillFollow++; try { makeFoldDesign(true); } finally { deferFillFollow--; } }   /* 塗りの取り直しは、止まってから1回（commit） */
@@ -28734,6 +28848,17 @@ function addRefillCoverDim() {
   const xs = rf.points.map(q => q.x), ys = rf.points.map(q => q.y), a = Math.min(...xs), b = Math.max(...xs), tip = Math.abs(b - xw) > Math.abs(a - xw) ? b : a, y = (Math.min(...ys) + Math.max(...ys)) / 2, len = Math.abs(xA - tip);
   commit(() => { doc.shapes = doc.shapes.filter(s => !s.refillCover); const id = freshId(doc.shapes, 's'), layer = ensureLayer(doc, 'guide'); doc.shapes.push({ id, type: 'dimension', layer, x1: tip, y1: y, x2: xA, y2: y, offset: -8, refillCover: true }); });
   $('hint').textContent = t('refillCoverDimDone', { len: len.toFixed(2) }); draw();
+}
+/** ②裏表紙の幅の欄：表紙と違うときだけ数字を出す（同じなら空欄＝表紙と同じ）。入力中の欄は触らない。 */
+function syncBackWidthField() {
+  const el = $('fdBiWB'), d = doc.foldDesign; if (!el || !d || (typeof document !== 'undefined' && document.activeElement === el)) return;
+  el.value = d.widthB > 0 && Math.abs(d.widthB - d.width) > 1e-9 ? String(d.widthB) : '';
+}
+/** ②裏表紙の幅の欄に入れたとき：その幅で断面を作り直す。空欄なら表紙と同じ（事業主 2026-10-25「表と裏の表紙の長さを合わせられない」「①～⑥の数値が変更できない」）。入力の途中（数字でない・0以下）は待つ。 */
+function onBackWidthInput() {
+  const raw = ($('fdBiWB').value ?? '').trim(), v = Number(raw); if (raw !== '' && !(v > 0)) return;
+  const d = doc.foldDesign; if (!d || d.mode !== 'bifold') return;
+  foldPend = { widthB: raw === '' ? undefined : v, shiftX: d.shiftX ?? 0 }; liveFoldDesign(); foldPend = null;
 }
 /** 裏表紙を表紙と同じ長さにする（事業主 2026-10-25「表と裏の表紙の長さを合わせられない」：裏表紙の幅は、取っ手のドラッグ・小窓で別に決めた値が残り、「閉じたときの幅」の欄では変わらなかった）。 */
 function sameCoverLength() {
@@ -29015,14 +29140,15 @@ function drawFoldHandles() {
   ctx.restore();
 }
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
-const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: { w: t('fdSecW'), wb: t('fdSecWB'), h: t('fdSecH'), t: t('fdSecT'), to: t('fdSecTO'), ti: t('fdSecTI') } }) ?? []) : [];
+const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
+const foldSectionDimList = () => foldHandleList().length ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
 function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdItems(g.items, { color: '#4fb3ff', lineW: 1.6, font: 15, keepIn: true }); }
 /** 図面に保存されている三つ折りの設計の値を、設計カードの数値欄へ書き戻す。図面を開いた・前回の続きを開いた・タブを切り替えた・元に戻したときなど、欄が図面の設計とずれていると、
  *  取っ手のドラッグや欄の入力で断面を作り直すときに、ずれた欄の値（ほかの寸法・厚み・リング）を読んでしまい、寸法が変わらない・別の形になる（事業主指摘 2026-10-15）。 */
 let foldSyncDoc = null;
 function syncFoldFields() {
   const d = doc.foldDesign; if (!d) return; const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null && String(el.value) !== String(v)) el.value = String(v); };
-  set('fdMode', d.mode === 'bifold' ? 'bifold' : 'trifold'); set('fdBiW', d.width); syncFoldModeUI();
+  set('fdMode', d.mode === 'bifold' ? 'bifold' : 'trifold'); set('fdBiW', d.width); syncBackWidthField(); syncFoldModeUI();
   for (const [id, k] of FD_HANDLE_FIELDS) set(id, d[k]);
   set('foldSecT', d.t); set('fdTO', d.tOuter); set('fdTI', d.tInner); if ($('fdFlip')) $('fdFlip').checked = d.flipV !== false;
   if ($('fdRingOn')) $('fdRingOn').checked = !!d.ring;
@@ -29217,7 +29343,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') planHeightTouched = true; onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; $('fdH').value = $('flowH').value; onFlatNumber('fdH'); });   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('fdBiWB').oninput = onBackWidthInput; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') planHeightTouched = true; onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; $('fdH').value = $('flowH').value; onFlatNumber('fdH'); });   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
@@ -31621,13 +31747,29 @@ doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); 
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 /* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
+/** 更新履歴の表示（事業主 2026-10-25「新しい版が出ましたという警告に、何を更新したのかを追記して」「過去の更新履歴を見られるようにボタンを」）：日付の行と、変わったことの行を、文字だけで並べる（入れ子にしない）。
+ *  お知らせ（新しい版で変わったこと）と、「更新履歴」の小窓で同じ形を使う。mine＝いま開いている版（その行に印を付ける）。 */
+function fillReleaseList(box, releases, mine) {
+  box.textContent = '';
+  for (const r of releases) {
+    const h = document.createElement('div'); h.className = 'rel-date'; h.textContent = r.date === 'next' ? t('releaseNext') : r.date + (mine && r.date === mine.jst ? ' ' + t('releaseHere') : ''); box.appendChild(h);
+    for (const it of r.items || []) { const d = document.createElement('div'); d.className = 'rel-item'; d.textContent = it; box.appendChild(d); }
+  }
+}
+function openReleaseNotes() {
+  const mine = parseBuild($('buildVer')?.textContent), list = DATA_RELEASE_NOTES?.releases ?? [];
+  fillReleaseList($('releaseList'), list, mine); $('releaseNow').textContent = mine ? t('releaseNow', { ver: mine.jst }) : t('releaseDev');
+  const dlg = $('releaseDialog'); if (!dlg.open) dlg.showModal?.();
+}
 let updateDismissed = '', lastVersionCheck = 0;
 async function checkNewVersion() {
   const mine = parseBuild($('buildVer')?.textContent); if (!mine || typeof globalThis.fetch !== 'function' || globalThis.location?.protocol !== 'https:') return false;
   lastVersionCheck = Date.now();
   const v = await latestBuild(globalThis.fetch.bind(globalThis)); if (!isNewerBuild(mine, v) || updateDismissed === v.id) return false;
-  $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
+  $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); const news = releasesSince(mine, v.releases); fillReleaseList($('updateNotes'), news, null); $('updateNotes').hidden = !news.length;   /* 新しい版で変わったこと */
+  $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
 }
+$('releaseBtn').onclick = openReleaseNotes; $('releaseClose').onclick = () => $('releaseDialog').close?.(); $('updateHistory').onclick = openReleaseNotes;
 $('updateNow').onclick = () => { try { flushAutosave(); } catch { /* 自動保存できなくても更新はできる */ } location.reload(); };
 $('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id || ''; $('updateBar').hidden = true; };
 if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
