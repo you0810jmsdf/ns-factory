@@ -53,7 +53,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, insidePolygon, diamondGridFill, rimLine, rimHolePositions, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -215,6 +215,21 @@ function quadRoleAt(p) { const left = p.x < width / 2, upper = p.y < height / 2;
 function sheetRole(tab = tabs[activeTab]) { return tab?.doc?.threeViewSheet?.role || null; }
 function quadRole() { return quadOn() && sheetRole() ? sheetRole() : 'front'; }
 function paneOff() { return quadOn() ? quadPane(quadRole()) : { x: 0, y: 0 }; }
+/** 実寸（等倍）表示（事業主 2026-10-25「画面の表示を等倍（実寸）に変えることは可能か？」→ 案A：実寸ボタン＋測って合わせ）。scale＝1mm あたりの画素（CSS 画素）。画面の約束は 1mm＝96/25.4＝約3.78 画素。モニターの実際の大きさとずれるので、画面に出した100mmの線を定規で測った長さ screenMm100 で直す（この画面に覚える）。 */
+const SCREEN_MM_KEY = 'leather-cad.screenMm';
+let screenMm100 = (() => { try { const v = Number(localStorage.getItem(SCREEN_MM_KEY)); return v >= 50 && v <= 200 ? v : 100; } catch { return 100; } })();
+const actualScale = () => (100 * 96 / 25.4) / screenMm100;
+function setActualSize() {
+  const cx = (viewW() / 2 - origin.x) / scale, cy = (viewH() / 2 - origin.y) / scale;   /* いま見ている真ん中は動かさない */
+  scale = actualScale(); origin = { x: viewW() / 2 - cx * scale, y: viewH() / 2 - cy * scale };
+  $('hint').textContent = t('actualSizeDone', { s: screenMm100 === 100 ? t('actualNominal') : t('actualCalibrated', { m: +screenMm100.toFixed(1) }) }); draw();
+}
+function openActualCalib() { $('actualCalibMm').value = String(+screenMm100.toFixed(1)); $('actualCalibBar').hidden = false; }
+function applyActualCalib() {
+  const v = Number($('actualCalibMm').value); if (!(v >= 50 && v <= 200)) { $('hint').textContent = t('actualCalibBad'); return; }
+  screenMm100 = v; try { localStorage.setItem(SCREEN_MM_KEY, String(v)); } catch { /* 保存できなくても、この画面では効く */ } $('actualCalibBar').hidden = true; setActualSize();
+}
+function resetActualCalib() { screenMm100 = 100; try { localStorage.removeItem(SCREEN_MM_KEY); } catch { /* 省略 */ } $('actualCalibMm').value = '100'; setActualSize(); }
 function viewW() { return quadOn() ? width / 2 : width; }
 function viewH() { return quadOn() ? height / 2 : height; }
 /** 同じ組（id）の紙のタブ：{ front, top, side } */
@@ -2676,6 +2691,7 @@ function closeGapsAndMakeGrid() {
   if (commitSeq > seq) $('hint').textContent = msg + ' ' + $('hint').textContent;
 }
 /** 柄・格子のピース（fill）を、囲み（region）の中に描く。縫い合わせ（縫い線・縫い穴）・外周の穴は、カードの設定に従う。p は柄の塗りつぶしでクリックした点（数値を変えたときの作りなおし用）。格子は null。 */
+let rimDiamondShiftFrac = 0.4, rimRoundMargin = 0.4;   /* 外周の菱目を、丸目や線をよけてずらせる量（間隔に対する割合） */
 function patchFillApply(region, fill, layer, opts = {}) {
   const exact = opts.exactPitch > 0 ? opts.exactPitch : null;   /* 穴の間隔 exact（縫い線は縁から exact/2 内側・境をまたいだ向かいの穴も exact） */
   const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = exact / 2, banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
@@ -2704,16 +2720,21 @@ function patchFillApply(region, fill, layer, opts = {}) {
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
       if (rimOn) ringShift = shiftRingHolesOffBoundaries(region.points, rimOffset);   /* すでにある外周の菱目が、パッチの境目に重なっていたら、線に沿ってずらす（裏面も同じだけ）。先に動かして、そのあとの新しい外周・縫い合わせの丸目が避ける */
-      if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・ほかの穴と重ならないよう菱目を打つ。縫い合わせの丸目より先に打つ（重なる所は菱目を優先・事業主 2026-10-23） */
+      const holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact, loopSampler(region.points)), banned = 0;   /* region.points＝枠の輪郭（外周に近い端の見分けに使う）。縫い合わせの丸目を先に打つ：丸目は1個も省かず、外周の菱目のほうが、丸目をよけて縁に沿ってずれる（事業主 2026-10-25「丸目が途中で抜けている」→「丸目を残して菱目をずらす」。以前は菱目が先で、近い丸目を省いていた） */
+      if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・丸目・ほかの穴と重ならないよう菱目を打つ（重なる所は、菱目が縁に沿ってずれる・ずらしても離れない菱目は省く） */
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
         const pid = freshId(doc.paths, 'p'), saved = { id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', rim: true }; doc.paths.push(saved); gridPathIds.push(pid);   /* rim：外周の穴の経路（点検で使う） */
-        const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(doc.holes, rimPitch * 0.5), loop = loopSampler(rim.points);
-        const anchors = doc.holes.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（柄の縫い合わせの端の穴）＝そのまま使い、間を埋める */
-        const spots = route ? rimHolePositions(loop.total, rimPitch, s => rimSpotFree(loop.at(s), others, clearR, near), { anchors }).map(s => { const want = loop.at(s), q = pointAtLength(route, s); return distance(q, want) < 1e-3 ? q : projectOnPath(route, want); }) : []; /* 位置は軽い道具で探し、経路上の弧長・向きへ直す（経路の向き・始点が違うときだけ投影で求める） */
+        const toolKind = new Map(doc.tools.map(x => [x.id, x.kind])), roundHoles = tool.kind === 'round' ? [] : doc.holes.filter(h => toolKind.get(h.toolId) === 'round'), otherHoles = tool.kind === 'round' ? doc.holes : doc.holes.filter(h => toolKind.get(h.toolId) !== 'round');   /* 丸目（縫い合わせ）は、菱目から reach 以内に入れない。菱目の外周を作るときだけ分ける */
+        const route = resolvePath(doc, saved), clearR = patchHoleClearR(tool), others = patchObstacles(clearR), near = holeGrid(otherHoles, rimPitch * 0.5), loop = loopSampler(rim.points);
+        const reach = Math.max(seamTool.holeW, seamTool.holeH) / 2 + Math.max(tool.holeW, tool.holeH) / 2 + rimRoundMargin, roundNear = holeGrid(roundHoles, Math.max(reach, 0.5)), r2 = reach * reach;   /* 丸目の半径＋菱目の半径＋0.4mm（約1.45mm） */
+        const clearOfRound = q => { const cx = Math.floor(q.x / roundNear.cell), cy = Math.floor(q.y / roundNear.cell); for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) for (const h of roundNear.grid.get(i + ',' + j) || []) if ((h.x - q.x) ** 2 + (h.y - q.y) ** 2 < r2) return false; return true; };
+        const anchors = otherHoles.map(h => loop.nearest(h)).filter(m => m.dist < 0.6).map(m => m.s); /* 外周の線の上にすでにある穴（前の操作の菱目）＝そのまま使い、間を埋める。丸目は数えない */
+        const freeAt = s => { const q = loop.at(s); return rimSpotFree(q, others, clearR, near) && clearOfRound(q); };
+        const byRuns = !anchors.length && roundHoles.length ? rimHolePositionsByRuns(loop.total, rimPitch, freeAt) : null;   /* 丸目がある外周：置ける範囲ごとに等分する（丸目にはさまれた狭い空きにも1つ入り、空きの両側が空きすぎない） */
+        const spots = route ? (byRuns || rimHolePositions(loop.total, rimPitch, freeAt, { anchors, maxShift: rimDiamondShiftFrac })).map(s => { const want = loop.at(s), q = pointAtLength(route, s); return distance(q, want) < 1e-3 ? q : projectOnPath(route, want); }) : []; /* 位置は軽い道具で探し、経路上の弧長・向きへ直す（経路の向き・始点が違うときだけ投影で求める） */
         if (route && spots.length) placeHoles(saved, route, spots, { ...tool, pitch: rimPitch });
         rimInfo = { n: spots.length, d: rimOffset, r: rim.radius };
       }
-      const holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact, loopSampler(region.points)), banned = 0;   /* region.points＝枠の輪郭（外周に近い端の見分けに使う） */
       stitched = { seams: stitch.seams.length, holes, banned, inset };
     }
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
@@ -2766,6 +2787,7 @@ function initDesign() {
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
   $('ctx-center').onclick = () => { hideCtxMenu(); centerOnStart('xy'); };
+  $('ctx-lattice').onclick = () => { hideCtxMenu(); removeLatticeLines(); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
@@ -6204,7 +6226,7 @@ function updateUI() {
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
-  $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
+  $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) }) + (Math.abs(scale - actualScale()) < 0.005 ? t('actualMark') : '');
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
 }
@@ -6469,6 +6491,27 @@ function dropFillsOf(ids, keep = new Set()) {
   const fills = doc.fills; if (!fills?.length) return 0;   /* 塗りが無い図面には、fills を足さない */
   const kept = fills.filter(f => !(f.ids || []).some(id => ids.has(id) && !keep.has(id))); if (kept.length === fills.length) return 0;
   doc.fills = kept; return fills.length - kept.length;
+}
+/** 「格子の線だけ消す」の相手（事業主 2026-10-25「裏面はひっくり返して格子のみ削除したい」）：選んだ格子（記録のある格子）のピース。記録が無いとき（コピーした裏面・古い図面）は、選んだ中の、いちばん外側の閉じた実線（外形）の内側にある、閉じた実線（格子のピース）。点線・ガイドの層・見えない補助の線は数えない。 */
+function latticePieceIds() {
+  const live = new Set(doc.shapes.map(s => s.id)), out = new Set(); if (!selected.size) return out;
+  for (const g of gridsTouchedBySelection(false)) for (const id of g.pieceIds) if (live.has(id)) out.add(id);
+  if (out.size) return out;
+  const sel = selectedShapeIds(), cand = doc.shapes.filter(s => sel.has(s.id) && s.type === 'polyline' && s.closed && !s.holeLink && s.lineStyle !== 'dashed' && s.layer !== 'guide' && s.points?.length >= 3 && visible(s)); if (cand.length < 2) return out;
+  const frame = cand.reduce((a, b) => leatherItemArea(b.points) > leatherItemArea(a.points) ? b : a), loop = loopSampler(frame.points), ins = q => insidePolygon(q, frame.points) || loop.nearest(q).dist < 0.05;   /* 縁にのっているピースの頂点も「内側」に数える */
+  for (const s of cand) if (s.id !== frame.id && s.points.every(ins)) out.add(s.id);
+  return out;
+}
+/** 格子の線（ピース）だけを消す：外形・点線・穴（菱目・丸目）・縫い合わせは残す。裏面は、左右反転（今の機能）のあとにこれを使う。元に戻すは1回。 */
+function removeLatticeLines() {
+  const ids = latticePieceIds(); if (!ids.size) { $('hint').textContent = t('latticeNone'); return; }
+  const holes = doc.holes.length; cancel();
+  commit(() => {
+    doc.shapes = doc.shapes.filter(s => !ids.has(s.id)); for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id)); dropFillsOf(ids);
+    for (const g of doc.grids || []) { g.pieceIds = g.pieceIds.filter(id => !ids.has(id)); g.ids = g.ids.filter(id => !ids.has(id)); } doc.grids = (doc.grids || []).filter(g => g.pieceIds.length);   /* 消した格子の記録は捨てる（作りなおしで、残った穴まで消さないように） */
+    selected = new Set([...selected].filter(id => !ids.has(id)));
+  });
+  $('hint').textContent = t('latticeRemoved', { n: ids.size, h: holes }); draw();
 }
 function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
@@ -7782,7 +7825,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; $('ctx-offset').hidden = !selectedShapeIds().size;
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; $('ctx-lattice').hidden = !latticePieceIds().size; $('ctx-offset').hidden = !selectedShapeIds().size;
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
@@ -7957,7 +8000,7 @@ $('new').onclick = () => {
   /* 保存していない図があるときは、消さずに新しい図面タブで始める（事業主指摘 2026-10-15：新規で保存前の図が消えた）。保存済み・空の図面だけ、従来どおりその場で空にする */
   if (tabs[activeTab]?.dirty && (doc.shapes.length || doc.calcMemos?.length)) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
   cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
-$('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit;
+$('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit; $('zoomActual').onclick = setActualSize; $('zoomActualCalib').onclick = openActualCalib; $('actualCalibApply').onclick = applyActualCalib; $('actualCalibReset').onclick = resetActualCalib; $('actualCalibClose').onclick = () => { $('actualCalibBar').hidden = true; };
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
 for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
 $('threeView').addEventListener('change', () => { if ($('threeView').checked && !lockGate('threeview')) { $('threeView').checked = false; return; } let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });

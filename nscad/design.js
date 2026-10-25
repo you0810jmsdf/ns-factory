@@ -484,6 +484,25 @@ export function loopSampler(points) {
   };
   return { total, at, nearest };
 }
+/** 外周の穴の位置を、「置ける範囲（連続した空き）」ごとに、間隔ができるだけ pitch に近いように等分して決める（事業主 2026-10-25「丸目が途中で抜けている」→ 丸目を残して菱目をずらす：丸目にはさまれた狭い空きにも菱目が入り、空きの両側で間隔が大きく空かない）。
+ *  len＝一周の長さ。isFree(s)→そこに置けるか。step ごとに調べ、置ける連続した範囲 [u, v] を求め、範囲の長さ L に対して、間隔が pitch に近く（かつ pitch の minRatio 倍以上）になる個数で等分する（L が短くて2つ置くと近すぎるときは、真ん中に1つ）。
+ *  置けない所がまったくないとき（一周ぜんぶ空き）は null（呼ぶ側が、ふつうの等分を使う）。戻り値は弧長の配列（小さい順）。 */
+export function rimHolePositionsByRuns(len, pitch, isFree, { step = 0.1, minRatio = 0.75 } = {}) {
+  if (!Number.isFinite(len) || !Number.isFinite(pitch) || !(len > 0) || !(pitch > 0) || typeof isFree !== 'function') return null;
+  const n = Math.max(8, Math.round(len / step)), d = len / n, wrap = s => ((s % len) + len) % len, free = Array.from({ length: n }, (_, i) => !!isFree(wrap(i * d)));
+  if (free.every(Boolean)) return null; if (!free.some(Boolean)) return [];
+  const start = free.findIndex(f => !f); const out = []; let i = 0;   /* 置けない所から数え始める（一周の継ぎ目で空きを切らない） */
+  while (i < n) {
+    const k = (start + i) % n; if (!free[k]) { i++; continue; }
+    let j = i; while (j + 1 < n && free[(start + j + 1) % n]) j++;
+    const u = (start + i) * d, L = (j - i) * d;   /* 空きの始め u と、長さ L（最初と最後の置ける点のあいだ） */
+    let m = 1, cost = Infinity;   /* 個数 m：間隔 L/(m-1) が pitch に近く、minRatio×pitch 以上（そうなる個数が無ければ、真ん中に1つ） */
+    for (let c = 2; c <= Math.floor(L / pitch) + 2; c++) { const sp = L / (c - 1); if (sp >= minRatio * pitch - 1e-9 && Math.abs(sp - pitch) < cost) { cost = Math.abs(sp - pitch); m = c; } }
+    if (m === 1) out.push(wrap(u + L / 2)); else for (let q = 0; q < m; q++) out.push(wrap(u + L * q / (m - 1)));
+    i = j + 1;
+  }
+  return out.sort((a, b) => a - b);
+}
 /** 外周の穴の位置（一周の長さ len の線に沿った弧長の配列）。isFree(s) が false の所（線と重なる所など）には置かず、近くのあいた所へずらす。
  *  ずらせる範囲は間隔の 40% まで・ずらしても隣と間隔の半分以上あけ、置けない穴は省く。
  *  anchors（外周の線の上にすでにある穴の弧長）が無ければ、len を pitch でほぼ等分して穴の数を決め（一周がきれいに閉じる）、等分の始まりを16通り試して、ずらす量・省く穴がいちばん少ないものを選ぶ。
