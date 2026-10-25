@@ -415,6 +415,12 @@ const editable = s => layerEditable(s); /* holeLink も「選べる」側（全�
 // 文字・寸法・折り線・下絵は縫い経路・オフセット・面取りの対象にしない。
 const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && !s.holeLink; /* 見えない補助の線（holeLink）は、目打ち・オフセット・クリックの当たり判定の相手にしない */
 const partOf = s => doc.parts.find(p => p.shapeIds.includes(s.id)) || null;
+/** 選んだ図形の層の名前（画面の右下に出す）。事業主 2026-10-25「レイヤーの名前を変えれないと、どこのレイヤーに属しているかわからない」「リフィルの順番を変えられない」（リフィルの図形は、事業主が上げ下げしていた層ではなく、別の層に入っていた）。1つの層なら名前・複数なら層の数と名前。 */
+function selectedLayerText() {
+  const picked = doc.shapes.filter(s => !s.holeLink && selected.has(s.id)); if (!picked.length) return '';
+  const names = [...new Set(picked.map(s => s.layer))].map(id => { const l = doc.layers.find(x => x.id === id); return l ? layerName(l) : id; });
+  return ' · ' + (names.length === 1 ? t('countLayer', { name: names[0] }) : t('countLayers', { n: names.length, names: names.slice(0, 3).join('・') }));
+}
 const layerName = l => l.name === l.id && ['pattern', 'hardware', 'guide'].includes(l.id) ? t('layer.' + l.id) : l.name;
 /** 層 id が無ければ作って返す（金具を置くときなど）。2番目（型紙の次）に入れる。 */
 function ensureLayer(d, id) { if (!d.layers.some(l => l.id === id)) d.layers.splice(Math.min(1, d.layers.length), 0, { id, name: id, visible: true, locked: false }); return id; }
@@ -1302,14 +1308,16 @@ function renderLayers() {
   const l = doc.layers.find(l => l.id === activeLayer);
   $('layerList').value = activeLayer; $('layerName').value = layerName(l); $('layerVisible').checked = l.visible; $('layerLocked').checked = l.locked;
   /* 各層の表示・ロックを一覧で切り替える（層を1つずつ選ばなくてよい） */
+  { const sel = $('layerMergeSrc'); if (sel) { sel.textContent = ''; for (const lay of [...doc.layers].reverse()) { if (lay.id === activeLayer || lay.id === 'section') continue; const o = document.createElement('option'); o.value = lay.id; o.textContent = t('layerMergeOpt', { name: layerName(lay), n: doc.shapes.filter(s => s.layer === lay.id).length }); sel.appendChild(o); } } }   /* 統合する層の選択肢（作図先と断面図の層は除く） */
   const rows = $('layerRows'); rows.textContent = '';
   for (const lay of [...doc.layers].reverse()) {   /* 手前の層（並びの後ろ）が上 */
-    const row = document.createElement('div'); row.className = 'row';
+    const row = document.createElement('div'); row.className = 'row' + (lay.id === activeLayer ? ' active' : '');   /* 作図先の層の行は、色を付ける */
     const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
       input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
-    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(name);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
+    const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); });   /* 行の頭の丸：この層を作図先にする */
+    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(act); row.appendChild(name);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
     const arrow = (text, tip, dir) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = t(tip); b.className = 'layer-arrow'; b.addEventListener('click', () => moveLayer(lay.id, dir)); return b; };
-    row.appendChild(arrow('▲', 'layerUpTip', 1)); row.appendChild(arrow('▼', 'layerDownTip', -1)); rows.appendChild(row);
+    const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
 }
 /** 層の名前を直す（事業主 2026-10-25「レイヤーの名前を変えれないと、どこのレイヤーに属しているかわからない」「型紙の大属性のあとに自由に名前をつけたい」）：一覧の名前の欄から、どの層でも直接書き換える。「型紙 表紙」のように、元の名前のあとに自由に足せる。
@@ -1318,6 +1326,16 @@ function renameLayer(id, raw) {
   const l = doc.layers.find(x => x.id === id), name = String(raw ?? '').trim().slice(0, 40); if (!l) return;
   if (!name || name === layerName(l)) { renderLayers(); return; }
   commit(() => { const x = doc.layers.find(q => q.id === id); if (x) x.name = name; }); renderLayers(); $('hint').textContent = t('layerRenamed', { name }); draw();
+}
+/** 層の統合（事業主 2026-10-25「レイヤーの統合はできますか？」）：選んだ層の図形と塗りを、作図先の層へ移し、選んだ層は無くす。元に戻すは1回。
+ *  ロック中の層・断面図の層は、統合しない（断面は、作りなおすたびに専用の層に置かれる）。 */
+function mergeLayers(srcId, destId = activeLayer) {
+  const src = doc.layers.find(l => l.id === srcId), dest = doc.layers.find(l => l.id === destId);
+  if (!src || !dest || src.id === dest.id) { $('hint').textContent = t('layerMergeNone'); return false; }
+  if (src.id === 'section' || src.locked || dest.locked) { $('hint').textContent = t('layerMergeBlocked'); return false; }
+  const n = doc.shapes.filter(s => s.layer === src.id).length;
+  commit(() => { for (const s of doc.shapes) if (s.layer === src.id) s.layer = dest.id; for (const f of doc.fills || []) if (f.layer === src.id) f.layer = dest.id; doc.layers = doc.layers.filter(l => l.id !== src.id); });
+  activeLayer = dest.id; renderLayers(); $('hint').textContent = t('layerMerged', { n, src: layerName(src), dest: layerName(dest) }); draw(); return true;
 }
 /** 層の並びを1つ入れ替える（事業主 2026-10-24「複数の図形を重ねた時に任意に図形の重ねる順を変えたい」「レイヤーを設定して、層の順で並び変えるのが一番楽？」）。dir=+1 手前へ（並びの後ろへ）・-1 奥へ。重なりの順は、層の並び（後ろの層ほど手前）で決まる。元に戻せる。 */
 function moveLayer(id, dir) {
@@ -1397,6 +1415,7 @@ function initLayers() {
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
   $('gatherLayer').onclick = gatherVisibleToActiveLayer;
   $('addLayer').onclick = () => { const src = doc.layers.find(l => l.id === activeLayer); let id; commit(() => { id = insertNumberedLayer(activeLayer, nextLayerName(src ? layerName(src) : t('layer.pattern'))); }); activeLayer = id; renderLayers(); };   /* 作図先の層の連番の層を、そのすぐ手前に（事業主 2026-10-24） */
+  $('layerMerge').onclick = () => mergeLayers($('layerMergeSrc').value);
   $('removeLayer').onclick = () => {
     if (doc.layers.length < 2) { $('hint').textContent = t('lastLayer'); return; }
     if (doc.shapes.some(s => s.layer === activeLayer)) { $('hint').textContent = t('layerNotEmpty'); return; }
@@ -1944,9 +1963,10 @@ function refillPlanHeight() { const s = foldBookState(), sp = s.kind === 'book' 
 function applyPlanHeight() { const r = refillPlanHeight(); if (!r) return; planHeightTouched = false; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); }
 const FLAT_CORNER_KEY = 'leather-cad.flatCorner', FLAT_LAYOUT_KEY = 'leather-cad.flatLayout';
 /** 平面図の角の丸め・菱目の並べ方：前回の値をブラウザに覚え、変えたら平面図を作りなおす。 */
-const FLAT_PAPER_KEY = 'leather-cad.refillPaper';
+const FLAT_PAPER_KEY = 'leather-cad.refillPaper', FLAT_DIMS_KEY = 'leather-cad.autoDims';
 function initFlowPlanOptions() {
-  let c = null, l = null, pp = null; try { c = localStorage.getItem(FLAT_CORNER_KEY); l = localStorage.getItem(FLAT_LAYOUT_KEY); pp = localStorage.getItem(FLAT_PAPER_KEY); } catch { /* 読めなければ、初めの値 */ }
+  let c = null, l = null, pp = null, ad = null; try { c = localStorage.getItem(FLAT_CORNER_KEY); l = localStorage.getItem(FLAT_LAYOUT_KEY); pp = localStorage.getItem(FLAT_PAPER_KEY); ad = localStorage.getItem(FLAT_DIMS_KEY); } catch { /* 読めなければ、初めの値 */ }
+  if (ad === '0' || ad === '1') $('flowAutoDims').checked = ad === '1'; $('flowAutoDims').addEventListener('change', () => { try { localStorage.setItem(FLAT_DIMS_KEY, $('flowAutoDims').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });   /* 初めはオン（HTML の checked）。選びは覚える */
   $('flowRefillPaper').checked = pp === '1'; $('flowRefillPaper').addEventListener('change', () => { try { localStorage.setItem(FLAT_PAPER_KEY, $('flowRefillPaper').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); });
   if (c !== null && c !== '' && Number.isFinite(Number(c)) && Number(c) >= 0) $('flowCorner').value = c; if (l === 'rows' || l === 'loop') $('flowStitchLayout').value = l;
   $('flowCorner').addEventListener('input', () => { const raw = String($('flowCorner').value).trim(); if (raw !== '' && Number.isFinite(Number(raw)) && Number(raw) >= 0) { try { localStorage.setItem(FLAT_CORNER_KEY, raw); } catch { /* 保存できなくても続ける */ } foldFollowSoon(); } });
@@ -2713,8 +2733,8 @@ function initDesign() {
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   /* 窓の×と、見出しのドラッグ（柄・目打ち・拡大縮小・移動の窓で共通）。×＝柄・目打ちは、そのツールをやめる（選択ツールへ）／拡大縮小・移動は、窓を右列のカードへ戻す（見出し summary の開閉は起こさない）。
      窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
-  for (const [card, { head: headId, close: closeId, tool }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false } })) {
-    $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, true); });
+  for (const [card, { head: headId, close: closeId, tool, back }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false } })) {
+    $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, back !== false); });
     const head = $(headId); let drag = null; const isWin = () => $(card).dataset.win === '1';
     head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
     head.addEventListener('pointerdown', e => { if (!isWin() || e.target?.closest?.('button')) return; const r = $(card).getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top, w: r.width }; head.setPointerCapture?.(e.pointerId); });
@@ -3400,6 +3420,7 @@ function threadList() { const q = ($('threadSearch').value || '').toLowerCase();
 function renderColors() {
   const grid = $('leatherGrid'); grid.textContent = '';
   for (const c of DATA_LEATHER_COLORS.leatherColors) { const b = document.createElement('button'); b.className = 'swatch'; b.title = c.name; b.style.background = c.hex; b.dataset.hex = c.hex; b.onclick = () => applyLeather(c.hex); grid.appendChild(b); }
+  { const b = document.createElement('button'); b.className = 'swatch clear'; b.title = t('clearTip'); b.setAttribute('aria-label', t('clearName')); b.onclick = () => applyClear(); grid.appendChild(b); }   /* 透明：塗った色を、その場所だけ抜く */
   const mg = $('metalGrid'); mg.textContent = ''; /* 金具の色（金属）：革色とは別の見本。金属らしい光沢の見た目 */
   for (const m of METAL_COLORS) { const b = document.createElement('button'); b.className = 'swatch metal'; b.title = t('metal.' + m.id); b.dataset.metal = m.id; b.style.background = `linear-gradient(135deg, ${m.light} 0%, ${m.hex} 45%, ${m.dark} 100%)`; b.onclick = () => applyMetal(m.id); mg.appendChild(b); }
   const sel = $('threadSel'), keep = sel.value; sel.textContent = '';
@@ -3416,7 +3437,7 @@ function renderColors() {
  *  事業主指示 2026-10-18「革は部品ではなく型紙。型紙で塗れるようにしたい」（取り込んだ図面には部品が無く、革色が付かなかった）。 */
 let paintBrush = null;   /* 塗りモードで持っている色：{ kind:'leather', hex } か { kind:'metal', id } */
 const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' : 'linear';   /* 光沢の形の選択欄（帯・放射） */
-const paintName = b => b.kind === 'eraseFill' ? t('eraseFillName') : b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
+const paintName = b => b.kind === 'clear' ? t('clearName') : b.kind === 'eraseFill' ? t('eraseFillName') : b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
 let lastLeatherBrush = null, lastMetalBrush = null;   /* 直前に選んだ革色・質感・金属の色（「断面に色をつける」が使う） */
 function rememberBrush(brush) { if (brush?.kind === 'leather' || brush?.kind === 'texture') lastLeatherBrush = brush; else if (brush?.kind === 'metal') lastMetalBrush = brush; }
@@ -3457,6 +3478,7 @@ function paintSectionAuto() {
 }
 /** 領域の塗りの中身：金属（と光沢の形）・質感（同じ領域に革色があれば残す）・革色。 */
 function fillPayload(brush, ids) {
+  if (brush.kind === 'clear') return { clear: true };
   if (brush.kind === 'metal') return { metal: brush.id, ...(brush.style === 'radial' ? { style: 'radial' } : {}) };
   if (brush.kind === 'texture') { const old = (doc.fills || []).find(o => o.ids.length === ids.length && o.ids.every(i => ids.includes(i))); return { ...(old?.leather ? { leather: old.leather } : {}), texture: brush.id }; }
   return { leather: brush.hex };
@@ -3508,13 +3530,27 @@ const visibleFills = (d, vis, kind) => (pendingFillFollow && d === doc ? [] : (d
 const leatherAlpha = (tex, hex) => tex ? 0.92 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
 /** 領域の塗りの層（事業主 2026-10-25「リフィルのレイヤーを最前面にしたのに、リングサポータの下に来ている」）：塗ったときの作図先の層を覚え、重なりと表示は、その層で決める。
  *  層の無い古い塗りは、今までどおり、囲んでいる図形のうちいちばん手前の層（それだと、リフィルの線がサポータの塗りを区切ると、サポータの塗りまで「手前の層」になり、同じ順位の中で小さい方が上に出た）。 */
-const fillLayerRank = (fl, rank, byId) => fl.layer && rank.has(fl.layer) ? rank.get(fl.layer) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0));
+/** 層を覚えていない古い塗りの層：境目の線がいちばん多く乗っている図形の層（事業主 2026-10-25「まだリフィルの順番を変えられない」：前回の直しは、これから塗る塗りだけに効き、すでに塗った塗りは、囲む図形のいちばん手前の層のままだった）。
+ *  境目（外形と穴）の各辺の真ん中が、どの図形の上にあるかを長さで数える。図形の層が変わったら、数え直す。どれにも乗らなければ null。 */
+const fillOwnerCache = new WeakMap();
+function fillOwnerLayer(fl, byId) {
+  const shapes = (fl.ids || []).map(id => byId.get(id)).filter(Boolean), sig = shapes.map(s => s.layer).join(','), hit = fillOwnerCache.get(fl); if (hit && hit.sig === sig) return hit.layer;
+  const tally = new Map();
+  for (const ring of [fl.points, ...(fl.holes || [])]) for (let i = 0; i < ring.length; i++) {
+    const a = ring[i], b = ring[(i + 1) % ring.length], len = Math.hypot(b.x - a.x, b.y - a.y), mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    let best = null, bd = 0.5; for (const s of shapes) { const dd = distTo(s, mid); if (dd < bd) { bd = dd; best = s; } }
+    if (best) tally.set(best.layer, (tally.get(best.layer) || 0) + len);
+  }
+  let layer = null, top = 0; for (const [l, n] of tally) if (n > top) { top = n; layer = l; }
+  fillOwnerCache.set(fl, { sig, layer }); return layer;
+}
+const fillLayerRank = (fl, rank, byId) => { const l = fl.layer || fillOwnerLayer(fl, byId); return l && rank.has(l) ? rank.get(l) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)); };
 const fillLayerNow = () => doc.layers.some(l => l.id === activeLayer) ? { layer: activeLayer } : {};
 /** 図形を別の層へ移したとき、その図形で（半分以上）囲まれている領域の塗りも、同じ層へ移す。 */
 function moveFillsWithShapes(movedIds, destId) { let n = 0; for (const f of doc.fills || []) { const k = (f.ids || []).filter(id => movedIds.has(id)).length; if (k > 0 && k * 2 >= f.ids.length && f.layer !== destId) { f.layer = destId; n++; } } return n; }
 function regionLeatherItems(d, vis) {
   const rank = layerRankMap(d), byId = new Map(d.shapes.map(s => [s.id, s]));
-  return visibleFills(d, vis, 'leather').map(fl => ({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
+  return visibleFills(d, vis, 'leather').map(fl => ({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), hit: q => fillContains(fl, q), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
 }
 /** 多角形の面積（絶対値）。革色の塗りを大きい順に重ねるために使う。点が無い・壊れているときは 0。 */
 function leatherItemArea(ps) { if (!ps || ps.length < 3) return 0; const v = Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2; return Number.isFinite(v) ? v : 0; }
@@ -3548,6 +3584,7 @@ function paintClick(p, eyedrop) {
   if (!paintBrush) { $('hint').textContent = t('paintNoBrush'); return; }
   if (paintBrush.kind === 'erase') { eraseMetalAt(p, s); draw(); return; }   /* 金属の色を消すモード */
   if (paintBrush.kind === 'eraseFill') { eraseFillAt(p); draw(); return; }   /* 塗りを1か所ずつ消すモード */
+  if (paintBrush.kind === 'clear') { addClearAt(p); draw(); return; }   /* 透明：線をクリックしても、その場所を抜く（線に色は付けない） */
   let painted = 0;
   if (s) {
     const g = groupIdOf(s), part = sectionPartOf(s), ids = new Set(g ? doc.shapes.filter(x => groupIdOf(x) === g && (!part || sectionPartOf(x) === part)).map(x => x.id) : [s.id]);   /* 金具などのグループは全体を塗る。ただし断面の図形は、同じ分類（リング・台座・リフィル・革）だけ */
@@ -3576,26 +3613,81 @@ function leatherOutlineFills(d, vis, move = s => s) {
   const byGroup = new Map(); for (const s of d.shapes) { if (!(s.leather || s.texture) || !s.leatherGroup || !vis(s)) continue; if (!byGroup.has(s.leatherGroup)) byGroup.set(s.leatherGroup, []); byGroup.get(s.leatherGroup).push(move(s)); }
   const out = []; for (const list of byGroup.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) out.push({ layer: list[0].layer, points: poly.points, color: list[0].leather, texture: list.find(q => q.texture)?.texture || null }); } return out;
 }
+/** 透明の塗り（clear）：その場所の、いちばん上の革色・質感の塗りを1枚だけ抜く（事業主 2026-10-25「色塗りで透明を選択して範囲を指定して塗ることができればよいのでは？」「今もまだリフィルの穴は白のまま」：リフィルを白で塗ると、穴の四角まで白くなり、下の革が見えなかった）。
+ *  抜く塗りは、描くときに決める（透明の領域の中の1点が入っている項目のうち、いちばん手前）。層を入れ替えても、その場所のいちばん上が抜ける。金属の色は抜かない。 */
+const clearSampleCache = new WeakMap();
+function clearSamplePoint(c) {
+  if (clearSampleCache.has(c)) return clearSampleCache.get(c);
+  const xs = c.points.map(q => q.x), ys = c.points.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), mid = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
+  let best = null, bd = Infinity; for (let i = 1; i <= 9; i++) for (let j = 1; j <= 9; j++) { const q = { x: x0 + (x1 - x0) * i / 10, y: y0 + (y1 - y0) * j / 10 }; if (!fillContains(c, q)) continue; const dd = Math.hypot(q.x - mid.x, q.y - mid.y); if (dd < bd) { bd = dd; best = q; } }
+  clearSampleCache.set(c, best); return best;
+}
+const visibleClears = (d, vis) => (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => fl.clear && (!fl.layer || d.layers?.find(l => l.id === fl.layer)?.visible !== false) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }));
+function attachClearCuts(items, d, vis) {
+  for (const c of visibleClears(d, vis)) { const q = clearSamplePoint(c); if (!q) continue; for (let i = items.length - 1; i >= 0; i--) if (items[i].hit?.(q)) { (items[i].cuts ||= []).push(c); break; } }
+}
+/** 1つの塗りの項目を描く。透明の領域で抜かれる項目は、その領域の外だけを描く（evenodd の切り抜き）。 */
+function paintItem(it) {
+  if (!it.cuts?.length) { it.draw(); return; }
+  ctx.save(); ctx.beginPath(); ctx.rect(-1e7, -1e7, 2e7, 2e7);
+  for (const c of it.cuts) for (const ring of [c.points, ...(c.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); }
+  ctx.clip('evenodd'); it.draw(); ctx.restore();
+}
+/** 透明にする場所（事業主 2026-10-25「今もまだリフィルの穴は白のまま」：実際の図面で、リフィルの穴は、ガイド層の閉じた図形だった。ガイド層の線は「囲む線」に数えないので、囲まれた場所としては拾えない）：
+ *  ① 閉じた図形（折れ線・円）は、その図形そのものの内側（層に関係なく） ② 開いた線は、選んだ線だけで囲まれた場所。クリックでは、その2つのうち、いちばん小さい場所。 */
+const clearShapeRegion = s => { const poly = outlinePolygon([s], s.id)?.points; return poly && poly.length >= 3 ? { points: poly, holes: [], ids: [s.id], area: leatherItemArea(poly) } : null; };
+const clearableShape = s => (s.closed || s.type === 'circle') && !['text', 'dimension', 'image', 'fold'].includes(s.type) && visible(s) && editable(s);
+function clearRegionAt(p) {
+  const cands = []; const r = enclosedAreaAt(regionShapes(), p); if (r) cands.push(r);
+  for (const s of doc.shapes) { if (!clearableShape(s)) continue; const reg = clearShapeRegion(s); if (reg && insideRing(p, reg.points)) cands.push(reg); }
+  return cands.sort((a, b) => a.area - b.area)[0] || null;
+}
+function commitClearRegions(regs) {
+  const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
+  for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: (r.holes || []).map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillLayerNow(), clear: true }; list.push(nf); made.push(nf); }
+  const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });
+  return made.length;
+}
+/** 「透明」を押したとき：選んだ図形（穴の四角など）の内側を透明にする。何も選んでいなければ、透明を持って塗りモードに（クリックした場所を透明にする）。返り値：透明にした場所の数。 */
+function applyClear() {
+  const picked = doc.shapes.filter(sh => selected.has(sh.id) && editable(sh) && !['text', 'dimension', 'image', 'fold'].includes(sh.type));
+  if (!picked.length && !doc.shapes.some(sh => selected.has(sh.id))) { startPaint({ kind: 'clear' }); return 0; }
+  const regs = picked.filter(clearableShape).map(clearShapeRegion).filter(Boolean), openIds = new Set(picked.filter(s => !(s.closed || s.type === 'circle')).map(s => s.id));
+  if (openIds.size) regs.push(...enclosedAreasAround(regionShapes(), openIds).filter(r => r.ids.every(id => openIds.has(id))));
+  if (!regs.length) { $('hint').textContent = t('clearNone'); return 0; }
+  const n = commitClearRegions(regs); $('hint').textContent = t('clearApplied', { n }); return n;
+}
+/** 塗りモード（透明）でクリックした場所を、透明にする。 */
+function addClearAt(p) {
+  const r = clearRegionAt(p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
+  commitClearRegions([r]); $('hint').textContent = t('clearApplied', { n: 1 }); return true;
+}
 /** 革色・革の質感の塗り（カラーシミュレーション）：部品の閉図形・型紙に付けた革色（閉じた図形）・質感（図形自身の指定が優先）を塗り、端がつながった線の一周の革色も塗る。画面・ほかの紙・PNG 書き出しで同じ見え方（書き出しは不透明）。 */
-function drawLeatherFills(d, vis, move = s => s, extra = []) {   /* extra＝いっしょに並べて描く、ほかの塗りの項目（金属の色。direct が真のものは、紙を使わず直接描く） */
+function leatherItems(d, vis, move = s => s, extra = []) {   /* extra＝いっしょに並べて描く、ほかの塗りの項目（金属の色。direct が真のものは、紙を使わず直接描く）。層の並びの順に並べて返す */
   const rank = layerRankMap(d), items = regionLeatherItems(d, vis);   /* 線で囲まれた場所の塗り */
   for (const sh of d.shapes.filter(sh => vis(sh) && (sh.closed || sh.type === 'circle'))) {   /* 図形ごとの塗り */
     const tex = textureOf(sh, d), part = tex ? null : (d.parts || []).find(p => p.color && p.shapeIds.includes(sh.id)), color = part?.color || sh.leather; if (!tex && !color) continue;
     const poly = outlinePolygon([move(sh)], sh.id)?.points, bb = poly ? null : bboxOf(move(sh));
-    items.push({ li: rank.get(sh.layer) || 0, area: poly ? leatherItemArea(poly) : bb ? Math.max(0, (bb.maxX - bb.minX) * (bb.maxY - bb.minY)) || 0 : 0, alpha: leatherAlpha(tex, color), draw: () => { path(move(sh)); ctx.save(); ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore(); } });
+    items.push({ li: rank.get(sh.layer) || 0, area: poly ? leatherItemArea(poly) : bb ? Math.max(0, (bb.maxX - bb.minX) * (bb.maxY - bb.minY)) || 0 : 0, alpha: leatherAlpha(tex, color), hit: q => !!poly && insideRing(q, poly), draw: () => { path(move(sh)); ctx.save(); ctx.fillStyle = tex ? textureFill(tex) : color; ctx.fill(); ctx.restore(); } });
   }
-  for (const r of leatherOutlineFills(d, vis, move)) items.push({ li: rank.get(r.layer) || 0, area: leatherItemArea(r.points), alpha: leatherAlpha(r.texture, r.color), draw: () => { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.fillStyle = r.texture ? textureFill(r.texture) : r.color; ctx.fill(); ctx.restore(); } });   /* 一周の線（型紙の輪郭）の塗り */
-  items.push(...extra); items.sort((x, y) => (x.li || 0) - (y.li || 0) || y.area - x.area);   /* 層の並びが先（手前の層ほど上）。同じ層の中は：大きい形が下・小さい形が上（本体の内側のポケットが、本体の下に隠れない・事業主の指摘 2026-10-18）。同じ面積は、並べた順のまま（安定ソート） */
+  for (const r of leatherOutlineFills(d, vis, move)) items.push({ li: rank.get(r.layer) || 0, area: leatherItemArea(r.points), alpha: leatherAlpha(r.texture, r.color), hit: q => insideRing(q, r.points), draw: () => { ctx.beginPath(); r.points.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); ctx.save(); ctx.fillStyle = r.texture ? textureFill(r.texture) : r.color; ctx.fill(); ctx.restore(); } });   /* 一周の線（型紙の輪郭）の塗り */
+  items.push(...extra); items.sort((x, y) => (x.li || 0) - (y.li || 0) || y.area - x.area); attachClearCuts(items, d, vis);   /* 層の並びが先（手前の層ほど上）。同じ層の中は：大きい形が下・小さい形が上（本体の内側のポケットが、本体の下に隠れない・事業主の指摘 2026-10-18）。同じ面積は、並べた順のまま（安定ソート） */
+  return items;
+}
+function drawLeatherFills(d, vis, move = s => s, extra = []) { paintLeatherItems(leatherItems(d, vis, move, extra)); }
+/** 並んだ塗りの項目を、順に描く。 */
+function paintLeatherItems(items) {
   /* 画面では半透明（革色 0.55・質感 0.92）で塗る。これまでは1つずつ半透明で重ねていたので、同じ色の塗りが重なった所だけ濃く（明るく）見え、「一色で塗られていない」ようになった（2026-10-20 事業主の指摘・ウォレットの図面の左の肌色は 3〜4 層）。
    → 同じ濃さが続く塗りは、まず作業用の紙に不透明で重ね（上の形の色が勝つ）、その紙を1回だけ半透明で貼る。書き出し（exporting）は今まで通り不透明で直接塗る。作業用の紙が使えないとき（テストの擬似画面など）は、今まで通り1つずつ。 */
-  if (exporting) { for (const it of items) { ctx.save(); ctx.globalAlpha = 1; it.draw(); ctx.restore(); } return; }
+  if (exporting) { for (const it of items) { ctx.save(); ctx.globalAlpha = 1; paintItem(it); ctx.restore(); } return; }
   const layer = leatherLayer();
-  if (!layer) { for (const it of items) { ctx.save(); ctx.globalAlpha = it.direct ? 1 : it.alpha; it.draw(); ctx.restore(); } return; }
+  if (!layer) { for (const it of items) { ctx.save(); ctx.globalAlpha = it.direct ? 1 : it.alpha; paintItem(it); ctx.restore(); } return; }
   let run = [];
   const flush = () => {
     if (!run.length) return; const main = ctx, m = main.getTransform?.();
     layer.lc.save(); layer.lc.setTransform(1, 0, 0, 1, 0, 0); layer.lc.clearRect(0, 0, layer.c.width, layer.c.height); layer.lc.restore(); if (m) layer.lc.setTransform(m);
-    ctx = layer.lc; try { for (const it of run) it.draw(); } finally { ctx = main; }
+    ctx = layer.lc; try { for (const it of run) paintItem(it); } finally { ctx = main; }
     main.save(); main.setTransform(1, 0, 0, 1, 0, 0); main.globalAlpha = run[0].alpha; main.drawImage(layer.c, 0, 0); main.restore(); run = [];
   };
   for (const it of items) { if (it.direct) { flush(); ctx.save(); ctx.globalAlpha = 1; it.draw(); ctx.restore(); continue; } if (run.length && it.alpha !== run[0].alpha) flush(); run.push(it); }
@@ -4991,6 +5083,11 @@ function projectFoldDesign(withStitch) {
       const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + 8 + i * 5, text, sizeMm: 3, angleDeg: 0 });
       tx(0, Math.abs(gap.vert - gap.bottom) < 0.005 ? t('foldGapNote1', { w: n(gap.W), h: n(gap.Hr), tb: n(gap.vert) }) : t('foldGapNote1b', { w: n(gap.W), h: n(gap.Hr), a: n(gap.vert), b: n(gap.bottom) })); tx(1, t('foldGapNote2', { side: t(gap.dir > 0 ? 'foldGapSideRight' : 'foldGapSideLeft'), v: n(gap.open.gap) })); if (gap.closed) tx(2, t('foldGapNote3', { ca: n(gap.closed.cover), cb: n(gap.closed.back), cs: n(gap.closed.spine) }));
     }
+    if ($('flowAutoDims')?.checked) {   /* 寸法を自動で入れる（事業主 2026-10-25「平面図に自分で寸法入れましたが自動で入れられない？」）：全長（上）・高さ（左）・リング取付穴の位置（下・革の左の端から）。平面図を作りなおすたびに置き換わる */
+      const autoDim = (x1, y1, x2, y2, offset) => add({ type: 'dimension', layer: guide, x1, y1, x2, y2, offset, fresh: true });
+      autoDim(fx, fy, fx + p.length, fy, 12); autoDim(fx, fy, fx, fy + h, -12);
+      if (d.ring && Number.isFinite(d.ring.s)) autoDim(fx, fy + h, fx + d.ring.s, fy + h, -12);
+    }
     doc.foldDesign = { ...doc.foldDesign, ...(st ? { stitch: st } : {}) };
   });
   const f2s = v => v.toFixed(2);
@@ -5922,7 +6019,7 @@ function updateUI() {
   $('mergeLines').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
-  $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
+  $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
@@ -6078,6 +6175,8 @@ function commit(fn) {
 function cancel() { stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
+/** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
+function openLayerWin() { renderLayers(); setCardWin('layerCard', true); $('hint').textContent = t('layerCtxOpened'); }
 /** 右列のカードを「窓」にする／戻す（柄の窓と同じ仕組みを、目打ち・目印（目打ちカード）・拡大縮小・移動にも広げた：事業主指示 2026-10-21「数字が右列のカードにある道具も窓にして」）。
  *  on＝窓にする／しない。openAfter＝窓をやめたとき、右列のカードを開いたままにするか（柄・目打ちは閉じる／拡大縮小・移動は、いつも開いている）。拡大縮小と移動の窓は、同時には出さない（片方を出すと、もう片方は右列へ戻る）。 */
 function setCardWin(id, on, openAfter = false) {
@@ -6142,9 +6241,16 @@ function explodeSelection() {
 }
 /** 「線だけ削除（菱目は残す）」（Shift+Delete・専用ボタン）：選んだ線を、見えない補助の線（holeLink）にして、その線に付いた菱目（穴）と経路を残す。穴の無い線は普通に消す。
  *  （事業主の指摘 2026-10-18「直線を削除したら菱目も消える」→ 決定「Delete は今までどおり・線だけ削除は別のキーとボタン」）。選んでいる穴は消える。 */
+/** 図形を消すとき、その図形で囲まれていた領域の塗りも消す（事業主 2026-10-25「おかしな図形が残っていて消せない」「断面を作るボタンで2つ断面が出てきた」：塗りは図形の番号だけで囲みを覚えているので、図形を消しても塗りが残り、同じ番号の図形が作り直されると、古い塗りが元の位置に幽霊のように現れた）。
+ *  keep＝消さずに残る図形（見えない補助の線にして残す線）。消した塗りの数を返す。元に戻すは、消した図形と同じ1回。 */
+function dropFillsOf(ids, keep = new Set()) {
+  const fills = doc.fills; if (!fills?.length) return 0;   /* 塗りが無い図面には、fills を足さない */
+  const kept = fills.filter(f => !(f.ids || []).some(id => ids.has(id) && !keep.has(id))); if (kept.length === fills.length) return 0;
+  doc.fills = kept; return fills.length - kept.length;
+}
 function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  let lines = 0, kept = 0;
+  let lines = 0, kept = 0, dropped = 0;
   cancel(); commit(() => {
     const holed = new Set(doc.holes.map(h => h.pathId)), keepPaths = doc.paths.filter(p => holed.has(p.id) && p.shapeIds.some(id => ids.has(id))), keepIds = new Set(keepPaths.flatMap(p => p.shapeIds.filter(id => ids.has(id))));
     const dropPaths = new Set(doc.paths.filter(p => p.shapeIds.some(id => ids.has(id)) && !keepPaths.includes(p)).map(p => p.id));
@@ -6153,14 +6259,16 @@ function removeSelectedKeepHoles() {
     doc.holes = doc.holes.filter(h => !dropPaths.has(h.pathId) && !(selected.has(h.id) && holeEditable(h)));
     doc.paths = doc.paths.filter(p => !dropPaths.has(p.id)); doc.seams = doc.seams.filter(m => !dropPaths.has(m.a.pathId) && !dropPaths.has(m.b.pathId));
     for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id));
+    dropped = dropFillsOf(ids, keepIds);
     selected.clear(); manualNext = null;
   }); renderSeams();
-  $('hint').textContent = t('holesKept', { n: lines, h: kept });
+  $('hint').textContent = t('holesKept', { n: lines, h: kept }) + (dropped ? ' ' + t('fillsDroppedWithShapes', { n: dropped }) : '');
 }
 function removeSelected(onlyIds = null) {
-  const ids = onlyIds || selectedShapeIds();   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
+  const ids = onlyIds || selectedShapeIds(); let dropped = 0;   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
   cancel(); commit(() => { const own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
-    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); selected.clear(); manualNext=null; }); renderSeams();
+    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds); selected.clear(); manualNext=null; }); renderSeams();
+  if (dropped) $('hint').textContent = t('fillsDroppedWithShapes', { n: dropped });
 }
 function addShape(shape) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
@@ -7039,12 +7147,17 @@ function draw() {
   if (exporting) {
     ctx.lineWidth = Math.max(0.1, 1 / scale);
     const color = exportColor, ef = exportFilter, vis = ef ? ef.vis : visible, rankOut = layerRankMap(doc), list = doc.shapes.filter(vis).sort((p, q) => (rankOut.get(p.layer) || 0) - (rankOut.get(q.layer) || 0));   /* 線は、層の並びの順（手前の層が後）*/
-    if (color) drawLeatherFills(doc, vis, s => s, metalDrawItems(vis));   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
+    const exItems = color ? leatherItems(doc, vis, s => s, metalDrawItems(vis)) : []; paintLeatherItems(exItems);   /* 色つき：革色・質感・金属の色を、線の下に塗る（画面と同じ色） */
     const looks = new Map(); for (const sh of list) looks.set(sh.id, exportLineLook(sh, color && exportNeedsProbe(sh) ? exportBehindDark(sh) : false, color));   /* 線を引く前に、下の色の明暗を全部読む（先に引いた線に左右されない） */
     const outStroke = sh => { const lk = looks.get(sh.id); ctx.lineWidth = Math.max(0.1, lk.px / scale); strokeShape(sh, lk.color); };
-    if (diamondMode() === 'fill') for (const sh of list) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
-    for (const s of list) if (!(color && s.occlude)) outStroke(s);
-    if (color) for (const s of list) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
+    const exRank = sh => rankOut.get(sh.layer) || 0, exRanks = [...new Set([...list.map(exRank), ...exItems.map(it => it.li || 0)])].sort((a, b) => a - b);   /* 層ごとに：手前の層の塗りを奥の層の線の上にもう一度 → その層の線（画面と同じ重なり） */
+    for (const r of exRanks) {
+      if (r !== exRanks[0]) for (const it of exItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = 1; paintItem(it); ctx.restore(); }
+      const layerList = list.filter(sh => exRank(sh) === r);
+      if (diamondMode() === 'fill') for (const sh of layerList) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
+      for (const s of layerList) if (!(color && s.occlude)) outStroke(s);
+      if (color) for (const s of layerList) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
+    }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
     for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; if (a.kind === 'diamond' && diamondMode() === 'fill') { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } ctx.restore(); }   /* 色つき：糸の色 */
     return;
@@ -7067,12 +7180,20 @@ function drawSheetBody(lo, hi) {
   const hl = aiHighlight.until > Date.now() ? aiHighlight.ids : null;
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
-  if (viewShow.colors) drawLeatherFills(doc, visible, previewMoved, metalDrawItems()); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
+  const fillItems = viewShow.colors ? leatherItems(doc, visible, previewMoved, metalDrawItems()) : []; paintLeatherItems(fillItems); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
   const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
-  if (diamondMode() === 'fill') for (const s of strokeList) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
-  if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of strokeList) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
-  for (const s of strokeList) if (!s.occlude) strokeOne(s);
-  for (const s of strokeList) if (s.occlude) { drawOccluder(s); strokeOne(s); }
+  /* 重なりは、層ごとに「その層の塗り → その層の線」の順（事業主 2026-10-25「レイヤーの表示が崩れている」：塗りは層の順に重なるのに、線はいつも全部の塗りの上に出て、手前の層の白い塗りがリングの塗りを隠しても、リングの輪郭だけが白の上に残った）。
+     塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
+  const rankOfStroke = s => rankDraw.get(s.layer) || 0, opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
+  const stackRanks = [...new Set([...strokeList.map(rankOfStroke), ...opaqueItems.map(it => it.li || 0)])].sort((a, b) => a - b);
+  for (const r of stackRanks) {
+    if (r !== stackRanks[0]) for (const it of opaqueItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = it.direct ? 1 : it.alpha; paintItem(it); ctx.restore(); }
+    const layerStrokes = strokeList.filter(s => rankOfStroke(s) === r);
+    if (diamondMode() === 'fill') for (const s of layerStrokes) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
+    if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of layerStrokes) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
+    for (const s of layerStrokes) if (!s.occlude) strokeOne(s);
+    for (const s of layerStrokes) if (s.occlude) { drawOccluder(s); strokeOne(s); }
+  }
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
@@ -7404,7 +7525,7 @@ function fillCtxCards() {
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
     if (g === 'fold') { if (!foldSim) { foldSim = true; const s = document.createElement('button'); s.textContent = t('ctxFoldSim'); s.title = t('foldFlowInfoTip'); s.onclick = () => { countUse('ctx_foldsim'); hideCtxMenu(); setFlowWin(true); }; box.appendChild(s); } continue; }
-    const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+    const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('layerCard')) { hideCtxMenu(); openLayerWin(); return; }   /* レイヤーは右列でなく窓（事業主 2026-10-25「レイヤーのインターフェースが見にくい。窓にしたらどう？」） */ if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
