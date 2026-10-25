@@ -1304,7 +1304,7 @@ let layerRowRefs = [];
 function markSelectedLayers() {
   if (!layerRowRefs.length) return; const count = new Map();
   if (selected.size) for (const s of doc.shapes) if (!s.holeLink && selected.has(s.id)) count.set(s.layer, (count.get(s.layer) || 0) + 1);
-  for (const { id, row, tag } of layerRowRefs) { const n = count.get(id) || 0, cls = 'row' + (id === activeLayer ? ' active' : '') + (n ? ' has-sel' : ''), text = n ? t('layerSelCount', { n }) : ''; if (row.className !== cls) row.className = cls; if (tag.textContent !== text) tag.textContent = text; }
+  for (const { id, row, tag, mv } of layerRowRefs) { if (mv && mv.disabled !== !selected.size) mv.disabled = !selected.size; const n = count.get(id) || 0, cls = 'row' + (id === activeLayer ? ' active' : '') + (n ? ' has-sel' : ''), text = n ? t('layerSelCount', { n }) : ''; if (row.className !== cls) row.className = cls; if (tag.textContent !== text) tag.textContent = text; }
 }
 function renderLayers() {
   if (!doc.layers.some(l => l.id === activeLayer)) activeLayer = doc.layers[0].id;
@@ -1319,13 +1319,13 @@ function renderLayers() {
   const rows = $('layerRows'); rows.textContent = ''; layerRowRefs = [];
   for (const lay of [...doc.layers].reverse()) {   /* 手前の層（並びの後ろ）が上 */
     const row = document.createElement('div'); row.className = 'row' + (lay.id === activeLayer ? ' active' : '');   /* 作図先の層の行は、色を付ける */
-    const selTag = document.createElement('span'); selTag.className = 'layer-sel'; layerRowRefs.push({ id: lay.id, row, tag: selTag });   /* 選んだ図形が入っている層の目印（markSelectedLayers が出し入れする） */
+    const selTag = document.createElement('span'); selTag.className = 'layer-sel'; const mvBtn = document.createElement('button'); mvBtn.type = 'button'; mvBtn.className = 'layer-move'; mvBtn.textContent = t('layerMoveHere'); mvBtn.title = t('layerMoveHereTip'); mvBtn.addEventListener('click', () => moveSelectedToLayer(lay.id)); layerRowRefs.push({ id: lay.id, row, tag: selTag, mv: mvBtn });   /* 「移す」：選んでいる図形を、この層へ（作図先は変えない・事業主 2026-10-25「選択した図形を別のレイヤーにボタンを押して移動したい」） */   /* 選んだ図形が入っている層の目印（markSelectedLayers が出し入れする） */
     const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
       input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
     const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); });   /* 行の頭の丸：この層を作図先にする */
     const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
     const arrow = (text, tip, dir) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = t(tip); b.className = 'layer-arrow'; b.addEventListener('click', () => moveLayer(lay.id, dir)); return b; };
-    const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
+    const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); row.appendChild(mvBtn); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
   markSelectedLayers();
 }
@@ -2888,13 +2888,17 @@ function exportPdf() {
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
+/** PNG 書き出しの余白（mm）。寸法の範囲（bbox）には、寸法線と補助線しか入らず、数字（文字）は含まれない：端にある寸法の数字が、2mm の余白からはみ出して、切れたり、ぎりぎりで読みにくかった。
+ *  寸法線・文字があるときは 10mm（数字が 3.5mm でも、まわりに十分あく）。無いときは今までどおり 2mm。 */
+const pngMarginMm = shapes => shapes.some(s => s.type === 'dimension' || s.type === 'text') ? 10 : 2;
 function exportPng() {
   const only = !!$('pngSelOnly')?.checked, selIds = new Set(selected), vis = only ? (sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 「選んだ図形だけ出力」：選んだ図形と、その縫い穴だけ */
   const shapes = doc.shapes.filter(vis), holes = doc.holes.filter(hvis), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
   if (only && !shapes.length && !holes.length) { $('hint').textContent = t('pngSelNone'); return; }
   if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('png', 'draw')) return;
-  let dpi = Number($('pngDpi').value) || 300; const margin = 2, wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
+  const margin = pngMarginMm(shapes);   /* 寸法線の文字が端に来ても切れない余白（事業主 2026-10-25「PNG出力する際にぎりぎりのところの図形の寸法線が見にくい。もう少し余白を取ってほしい」） */
+  let dpi = Number($('pngDpi').value) || 300; const wMm = b.maxX - b.minX + 2 * margin, hMm = b.maxY - b.minY + 2 * margin;
   const pixels = d => (wMm / 25.4 * d) * (hMm / 25.4 * d); let lowered = false;
   while (pixels(dpi) > 50e6 && dpi > 10) { dpi = Math.floor(dpi * 0.8); lowered = true; }
   const off = document.createElement('canvas'); if (typeof off.getContext !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
@@ -4371,6 +4375,26 @@ function attachClick(p) {
   attachState = { key, line, undoLen: undo.length, moved: !already };   /* 着けたあとも着ける状態のまま：続けて2本目の線をクリックできる（Esc・別のツールで終わり） */
   $('hint').textContent = (already ? t('attachAlready') : r.angleDeg ? t('attachDoneRot', { gap: fmt(Math.abs(r.gap)), angle: fmt(Math.abs(r.angleDeg)) }) : t('attachDone', { gap: fmt(Math.abs(r.gap)) })) + ' ' + t('attachNext');
 }
+/** 基準の図形の中央へ（事業主 2026-10-25「選択した図形群がサポーター図形の中央に配置できない」）：選んでいる図形（群）を、1つのまとまりとして、クリックした基準の図形の中央へ動かす。
+ *  基準の図形は、クリックした線につながった外形（端がつながった線・弧・折れ線）をまるごと1つの形として、その外接の四角の中心。選んでいない図形から選ぶ。axes：'xy'（縦横）・'x'（横だけ）・'y'（縦だけ）。元に戻すは1回。 */
+let centerOnAxes = 'xy';
+function centerOnStart(axes) {
+  if (!selectedShapeIds().size) { $('hint').textContent = t('centerOnNeedSelect'); return; }
+  centerOnAxes = axes; setMode('centerOn'); $('hint').textContent = t('centerOnStart');
+}
+function centerOnClick(p) {
+  const ids = selectedShapeIds(); if (!ids.size) { setMode('select'); $('hint').textContent = t('centerOnNeedSelect'); return; }
+  const skip = s => ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type);
+  let target = null; for (const s of doc.shapes) { if (skip(s)) continue; const d = distToShape(s, p); if (d <= 12 / scale && (!target || d < target.d)) target = { s, d }; }
+  if (!target) { $('hint').textContent = t('centerOnNoTarget'); return; }
+  const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 });
+  const boxOf = list => { let b = null; for (const s of list) { const q = bboxOf(s); b = b ? { minX: Math.min(b.minX, q.minX), minY: Math.min(b.minY, q.minY), maxX: Math.max(b.maxX, q.maxX), maxY: Math.max(b.maxY, q.maxY) } : { ...q }; } return b; };
+  const members = new Set(chain.length ? chain : [target.s.id]), tb = boxOf(doc.shapes.filter(s => members.has(s.id))), sb = boxOf(doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image')); if (!tb || !sb) return;
+  const dx = centerOnAxes.includes('x') ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
+  setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
+  transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
+}
+$('centerOnXY').onclick = () => centerOnStart('xy'); $('centerOnX').onclick = () => centerOnStart('x'); $('centerOnY').onclick = () => centerOnStart('y');
 $('attachStart').onclick = attachStart; $('attachLeft').onclick = attachStart;   /* 左メニューの「線に着ける」も同じ（Shift+A） */ $('fillsClear').onclick = clearFills; $('metalStyle').onchange = changeMetalStyle;
 /** グループ・縫い経路でつながる選択図形を、整列で一緒に動かすまとまりにする。 */
 function selectedAlignUnits() {
@@ -6867,6 +6891,23 @@ function intersectionSnapAt(p) {
   const reach = 9 / scale, near = doc.shapes.filter(s => visible(s) && stitchable(s) && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 2).slice(0, 12); if (near.length < 2) return null;
   let best = null, bd = reach; for (const q of allIntersections(near)) { const d = distance(p, q); if (d <= bd) { bd = d; best = { x: q.x, y: q.y }; } } return best;
 }
+/** 線の上の点に吸い付く（寸法・定規の1・2点目）（事業主 2026-10-25「線までの寸法が引けない。途中で飛んでしまい、線に合わせられない」：スナップが入だと、点が1mm の目盛りに丸められて、線の上に乗らず、横にも縦にもずれた距離になった）。
+ *  p の近く（画面9px以内）にある線のうち、いちばん近い線の上の点。始点 a があるときは、a から線へ下ろした垂線の足（線の上にあるとき）が p から画面14px以内なら、そちらを優先する（始点から線までのいちばん短い距離）。端点・交点・穴の吸着が先。 */
+function lineSnapAt(p, a) {
+  const reach = 9 / scale; let best = null, bd = reach;
+  for (const s of doc.shapes) {
+    if (!visible(s) || !stitchable(s) || ['text', 'dimension', 'image'].includes(s.type) || distTo(s, p) > reach) continue;
+    const pts = flattenShape(s, 0.05);
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const q = pts[i], r = pts[i + 1], dx = r.x - q.x, dy = r.y - q.y, len2 = dx * dx + dy * dy; if (len2 < 1e-12) continue;
+      const u = Math.max(0, Math.min(1, ((p.x - q.x) * dx + (p.y - q.y) * dy) / len2)), foot = { x: q.x + dx * u, y: q.y + dy * u }, d = distance(p, foot);
+      if (d < bd) { bd = d; best = { foot, q, r, len2, dx, dy }; }
+    }
+  }
+  if (!best) return null;
+  if (a) { const { q, dx, dy, len2 } = best, u = ((a.x - q.x) * dx + (a.y - q.y) * dy) / len2; if (u >= 0 && u <= 1) { const perp = { x: q.x + dx * u, y: q.y + dy * u }; if (distance(p, perp) <= 14 / scale) return perp; } }
+  return best.foot;
+}
 /** 作図中のカーソル p が、「中心」の点（辺の中点・円弧の中点・円や円弧の中心・小さな輪の中心）の近く（画面で 40px 以内＝ひし形の印が出る範囲）にあるとき、その点の縦の線・横の線に 10px（吸着距離）以内なら、そろえる（事業主指摘 2026-10-21「どうみても中心点からずれる」：印から離れた所では、1mm 刻みのグリッドに丸められて、中心から 0.4mm ずれていた）。縦（x）と横（y）は別々。端点にはそろえない。 */
 function alignToCenters(p) {
   const reach = magnetRadiusMm(); if (!(reach > 0)) return null; const see = 40 / scale; let bx = null, by = null;
@@ -6898,6 +6939,7 @@ function snapped(p, shift, anchor) {
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
   if (!snap && (mode === 'ruler' || mode === 'dimension' || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
+  if (!snap && (mode === 'ruler' || mode === 'dimension') && stage?.kind !== 'dimPlace' && stage?.kind !== 'radius') { const ln = lineSnapAt(p, anchor); if (ln) { result = ln; snap = ln; } }   /* 定規・寸法：線の上にも吸い付く（始点があれば、始点から線への垂線の足）。目盛りに丸める前 */
   const al = !snap && (MAGNET_DRAW_MODES.includes(mode) || gesture?.kind === 'lineEnd') ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
   if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
@@ -7388,6 +7430,7 @@ canvas.addEventListener('pointerdown', e => {
   cursor = mode === 'select' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if ((mode === 'select' || mode === 'text') && e.button === 0) { const th = textHandleHit(world(p)); if (th) { const sh = th.shape; gesture = { kind: 'textR', id: sh.id, size0: sh.sizeMm, size: sh.sizeMm, d0: { x: th.corner.x - sh.x, y: th.corner.y - sh.y } }; $('hint').textContent = t('textDrag', { size: circleNum(sh.sizeMm) }); draw(); return; } }   /* 文字の取っ手：文字ツールでも、新しい文字を置かずに大きさを変える */
   if (mode === 'paint') { paintClick(world(p), e.altKey); return; }   /* 塗りモード：クリックで塗る・Alt＋クリックで色を拾う */
+  if (mode === 'centerOn') { centerOnClick(world(p)); return; }   /* 基準の図形の中央へ：クリックした外形の中央に、選んだ図形を動かす */
   if (mode === 'attach') { attachClick(world(p)); return; }   /* 線に着ける：クリックした本体の線に、選んだ金具を着ける */
   if (foldCutPicking) { foldCutPickClick(snapped(world(p), e.shiftKey, anchor())); return; }   /* 断面の位置の指定：クリックした高さ（磁石あり）を指定にして、1回で終わる */
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
