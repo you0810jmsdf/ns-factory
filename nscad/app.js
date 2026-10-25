@@ -6508,6 +6508,15 @@ function latticePieceIds() {
   const sel = selectedShapeIds(), cand = doc.shapes.filter(s => sel.has(s.id) && s.type === 'polyline' && s.closed && !s.holeLink && s.lineStyle !== 'dashed' && s.layer !== 'guide' && s.points?.length >= 3 && visible(s)); if (cand.length < 2) return out;
   const frame = cand.reduce((a, b) => leatherItemArea(b.points) > leatherItemArea(a.points) ? b : a), loop = loopSampler(frame.points), ins = q => insidePolygon(q, frame.points) || loop.nearest(q).dist < 0.05;   /* 縁にのっているピースの頂点も「内側」に数える */
   for (const s of cand) if (s.id !== frame.id && s.points.every(ins)) out.add(s.id);
+  return out.size ? out : latticeBySharedEdges(cand);   /* 外形が1本の閉じた線でないとき（線・円弧に分かれた外形。コピーした裏面など）は、辺を共有してつながるピースを格子とみなす */
+}
+/** 外形の線が1本の閉じた線でない図（直線・円弧に分かれた外形）で、記録の無い格子（コピーした裏面など）のピースを見つける（事業主 2026-10-25「格子線だけ消せない」）。格子のピースは、となりのピースと辺を共有する（端点が 0.01mm 以内で同じ）。辺でつながる3枚以上のかたまりだけを、格子とみなす（別々の部品2枚を選んだだけでは出さない）。 */
+function latticeBySharedEdges(cand) {
+  const key = p => Math.round(p.x * 100) + ',' + Math.round(p.y * 100), edges = new Map(), adj = new Map(cand.map(s => [s.id, new Set()]));
+  for (const s of cand) for (let i = 0; i < s.points.length; i++) { const a = key(s.points[i]), b = key(s.points[(i + 1) % s.points.length]); if (a === b) continue; const k = a < b ? a + '|' + b : b + '|' + a; if (!edges.has(k)) edges.set(k, new Set()); edges.get(k).add(s.id); }
+  for (const set of edges.values()) if (set.size > 1) for (const x of set) for (const y of set) if (x !== y) adj.get(x).add(y);
+  const out = new Set(), seen = new Set();
+  for (const s of cand) { if (seen.has(s.id)) continue; const group = [], stack = [s.id]; seen.add(s.id); while (stack.length) { const id = stack.pop(); group.push(id); for (const n of adj.get(id)) if (!seen.has(n)) { seen.add(n); stack.push(n); } } if (group.length >= 3) for (const id of group) out.add(id); }
   return out;
 }
 /** 「丸目だけ消す」の相手（事業主 2026-10-25「丸目も消したい」）：選んだ格子（記録のある格子）の丸目＋選んだ閉じた実線の内側（ふちを含む）の丸目＋直接選んだ丸目。菱目は対象にしない。格子の線を先に消したあとでも、外形を選べば見つかる。 */
