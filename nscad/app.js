@@ -5031,19 +5031,23 @@ function makeFoldDesign(live = false) {
   const prevD = doc.foldDesign, pend = foldPend || {}, biNow = foldIsBifold() && (!prevD || prevD.mode === 'bifold' || 'widthB' in pend), widthB = !biNow ? undefined : 'widthB' in pend ? pend.widthB : prevD?.widthB, shiftX = !biNow ? 0 : 'shiftX' in pend ? pend.shiftX : prevD?.shiftX ?? 0;   /* 裏表紙の幅 widthB・断面の横ずらし shiftX は欄に無い値：取っ手のドラッグ・数字の小窓から foldPend で渡し、無ければ今の断面の値を引き継ぐ */
   const vals = { ...(foldIsBifold() ? { mode: 'bifold', width: num('fdBiW'), ...(Number.isFinite(widthB) ? { widthB } : {}) } : {}), t: foldSecThickness(), plies: FOLD_SEC_PLIES, ...foldThicknessVals(), dL: num('fdDL'), dR: num('fdDR'), cL: num('fdCL'), cR: num('fdCR'), rinL: num('fdRL'), rinR: num('fdRR') }, p = foldDesignPlan(vals);
   if (!p.ok) { if (!live || doc.foldDesign) $('hint').textContent = t(foldErrKey(p.error, vals.mode)); return; }
-  const base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
+  let base = bboxOfDoc({ ...doc, shapes: doc.shapes.filter(s => visible(s) && !s.foldSec && !s.foldFlat), holes: [] }) || { minX: 0, maxY: 0 };   /* 断面・平面の投影そのものは数えない（作り直すたびに下へずれない） */
+  /* 作りなおすときは、前の断面の置き場所を引き継ぐ（事業主 2026-10-25「入れるとこうなる」：全幅を直しただけで、断面と平面図が、約165mm 左・71mm 下へ飛んだ。置き場所を、そのときのほかの図形の左端・下端から計算し直していたので、断面を作ったあとに、ほかの図形を動かしていると、飛んだ）。
+     前の原点から、横ずらし・動かした分・断面の高さを引き戻して、置き場所の基準を求める（断面が今も図面にあるときだけ。消して作り直すときは、今までどおり、ほかの図形の下へ） */
+  if (prevD?.origin && doc.shapes.some(s => s.foldSec === 'fd')) { const pp = foldDesignPlan(prevD); if (pp.ok) base = { minX: prevD.origin.x - (prevD.shiftX ?? 0) - (prevD.moveOff?.x ?? 0), maxY: prevD.origin.y - 40 - 2 * pp.rc[0] - pp.T - (prevD.moveOff?.y ?? 0) }; }
   const moveOff = prevD?.moveOff, path = foldSectionPath({ flats: p.flats, bends: p.bends }), origin = { x: base.minX + shiftX + (moveOff?.x ?? 0), y: base.maxY + 40 + 2 * p.rc[0] + p.T + (moveOff?.y ?? 0) }, axisX = origin.x + p.cEff[0];   /* moveOff＝断面を手で動かした分（作り直しても、動かした位置のまま） */
   const flipOn = $('fdFlip')?.checked !== false, sideLeft = vals.mode === 'bifold' && $('fdSide')?.value === 'left', flipDx = !sideLeft ? undefined : prevD?.flipH && Number.isFinite(prevD.flipDx) ? prevD.flipDx : (Math.min(0, p.flats[0] - p.flats[1]) + vals.width) / 2;   /* 背を左にする：軸は、そうした時点の断面の真ん中（origin からの距離で持つ＝あとで幅を変えても、断面が飛ばない） */
   const ringIn = foldRingInput(), ring = ringIn && !ringIn.error ? { ...ringIn, ...foldRingShapes(path, p.T, origin, ringIn) } : null;
   const prevStitch = doc.foldDesign?.stitch;   /* 平面図の縫い穴の設定は、断面を作り直しても引き継ぐ */
   designCommit(() => {
+    const idFor = makeIdReuser(doc.shapes.filter(s => s.foldSec === 'fd'));   /* 前の断面の図形の番号を使い回す */
     doc.shapes = doc.shapes.filter(s => s.foldSec !== 'fd');
     if (!doc.layers.some(l => l.id === 'section')) doc.layers.push({ id: 'section', name: t('foldSecLayer'), visible: true, locked: false });
     const gid = nextGroupId(doc.shapes);
     const flip = shapes => { const v = flipOn ? flipSectionV(shapes, origin.y - p.rc[0]) : shapes; return sideLeft ? flipSectionH(v, origin.x + flipDx) : v; };   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15・切り替えできる）。右の丸折りの中心の高さを軸にするので、範囲は変わらない。左右は変わらない */
-    for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
-    for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
-    if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: freshId(doc.shapes, 's'), layer: 'section', groupId: gid, foldSec: 'fd' });
+    for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
+    for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
+    if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', groupId: gid, foldSec: 'fd' });
     doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(sideLeft ? { flipH: true, flipDx } : {}), ...(shiftX ? { shiftX } : {}), ...(moveOff ? { moveOff } : {}), ...(prevD?.flatOff ? { flatOff: prevD.flatOff } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
@@ -5146,6 +5150,14 @@ function addRefillPaperFill(refillIds, layer) {
   const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd' };
   doc.fills = [...(doc.fills || []), fl]; return fl;
 }
+/** 作りなおす図形に、前の図形と同じ番号を使わせる（事業主 2026-10-25「色塗る範囲も追従させてね」「色だけが宙に浮かないように処置するのが普通では」：作りなおすたびに番号を振り直すと、塗りが、無くなった図形を指したまま取り残された）。
+ *  「種類・層・役割・色・線の種類・閉じているか」ごとの作った順で、前の図形と対応させる。途中に新しい種類の図形が増えても、番号は崩れない。対応する前の図形が無ければ、まだ使われていない前の番号を避けて、新しい番号。 */
+function makeIdReuser(oldShapes) {
+  const keyOf = (sh, layer) => [sh.type, layer ?? sh.layer, sh.role || '', sh.color || '', sh.lineStyle || '', sh.closed ? 'c' : ''].join('|'), count = new Map();
+  const nextKey = (sh, layer) => { const k = keyOf(sh, layer), n = count.get(k) || 0; count.set(k, n + 1); return k + '#' + n; };
+  const old = new Map(oldShapes.map(sh => [nextKey(sh), sh.id])); count.clear(); const pending = new Set(old.values());
+  return (sh, layer) => { const id = old.get(nextKey(sh, layer)); if (id !== undefined) { pending.delete(id); return id; } return freshId([...doc.shapes, ...[...pending].map(i => ({ id: i }))], 's'); };
+}
 function projectFoldDesign(withStitch) {
   const d = doc.foldDesign; if (!d) { $('hint').textContent = t(foldIsBifold() ? 'foldFixNoneBi' : 'foldFixNone'); return; }
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
@@ -5165,9 +5177,9 @@ function projectFoldDesign(withStitch) {
   const buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
   const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
   commit(() => {
-    const mineShapes = new Set(doc.shapes.filter(s => s.foldFlat === 'fd').map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id));
+    const oldFlat = doc.shapes.filter(s => s.foldFlat === 'fd'), mineShapes = new Set(oldFlat.map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id)), idFor = makeIdReuser(oldFlat);   /* 前の平面図の図形（同じ番号を使い回す） */
     doc.fills = (doc.fills || []).filter(f => f.foldFlat !== 'fd'); dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
-    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };
+    const layer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = idFor(sh); doc.shapes.push({ ...sh, id, foldFlat: 'fd' }); return id; };   /* 同じ番号を使えば、平面図に塗った色は、図形の変わった形に追従する（commit が取り直す） */
     add({ type: 'polyline', layer, closed: true, points: roundedRectPoints(fx, fy, p.length, h, corner) });
     for (const x of xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
     for (const x of (d.mode === 'bifold' ? [] : [buttons[0], buttons[2]])) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
