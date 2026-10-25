@@ -357,6 +357,23 @@ export function validateDoc(d) {
 }
 
 /** 直せる不整合を直す（図面を書き換える・直した数を返す）。いまは、経路の「閉じている」を実際の線に合わせる：区間選択で線を切り分けたあと、新しい経路が元の印を引き継いで、検査に通らず読み込めなくなった図面を直す（2026-10-16 不具合記録）。読み込み（migrateDoc）と保存の前に使う。 */
+/** 宙に浮いた塗り：囲む図形（ids）の上に、塗りの境目（頂点・辺の真ん中）が1点も乗っていない塗り（事業主 2026-10-25「右の図面はどうやって消せばいいですか？」：図形を消すと、塗りだけが残り、同じ番号の図形が作り直されると、古い塗りが元の位置に幽霊のように残った。選べないので消せない）。
+ *  囲む図形が1つでも残っていて、境目がどれかの図形から 0.6mm 以内にあれば、正しい塗り。曲線の塗りは、頂点が図形の上にあるので、これで足りる。 */
+export function fillDetached(f, shapesById) {
+  const shapes = (Array.isArray(f?.ids) ? f.ids : []).map(id => shapesById.get(id)).filter(Boolean); if (!shapes.length) return false;   /* 図形が1つも無い塗りは、別の掃除が消す */
+  const rings = [Array.isArray(f.points) ? f.points : [], ...(Array.isArray(f.holes) ? f.holes : [])]; let probes = 0;
+  for (const ring of rings) for (let i = 0; i < ring.length; i++) {
+    const q = ring[i], r = ring[(i + 1) % ring.length]; if (!Number.isFinite(q?.x) || !Number.isFinite(q?.y)) continue; probes++;
+    const mid = { x: (q.x + (r?.x ?? q.x)) / 2, y: (q.y + (r?.y ?? q.y)) / 2 };
+    for (const s of shapes) { let d1 = Infinity; try { d1 = Math.min(distToShape(s, q), distToShape(s, mid)); } catch { return false; } if (d1 < 0.6) return false; }   /* 計算できない図形は、消さない */
+  }
+  return probes >= 3;
+}
+/** 図面を開くとき（ファイル・前回の続き）に、宙に浮いた塗りを消す。元に戻す・やり直しの途中の図面には使わない（図形を動かした直後の、まだ取り直していない塗りを消してしまうため）。消した数を返す。 */
+export function dropDetachedFills(d) {
+  if (!Array.isArray(d?.fills) || !Array.isArray(d?.shapes)) return 0; const byId = new Map(d.shapes.map(s => [s.id, s])), keep = d.fills.filter(f => !fillDetached(f, byId)), n = d.fills.length - keep.length;
+  if (n) d.fills = keep; return n;
+}
 export function healDoc(d) {
   let fixed = 0; if (!d || !Array.isArray(d.paths) || !Array.isArray(d.shapes)) return fixed;
   { /* 部品が、消えた図形を指したままの図面（どこかの消し方で、部品の掃除が漏れた・2026-10-18）：検査に通らず、色の変更・保存・「前回の続き」が止まる。消えた図形を、部品の中身から外す */

@@ -94,7 +94,7 @@
     }
     #side details.card#scaleCard[hidden], #side details.card#moveCard[hidden] { display: none !important; }   /* no window when nothing is selected */
     .ctx-cards .ctx-group { grid-column: 1 / -1; } .ctx-cards .ctx-wide { grid-column: 1 / -1; }
-    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerCard[data-win="1"] .lw-hide { display: none !important; }
+    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerRows .row.has-sel { background: rgba(108,197,255,.16); box-shadow: inset 0 0 0 1px #6cc5ff; } #layerRows .layer-sel { flex: none; padding: 0 7px; border-radius: 9px; background: #6cc5ff; color: #06202e; font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap; } #layerRows .layer-sel:empty { display: none; } #layerCard[data-win="1"] .lw-hide { display: none !important; }
     .rel-list { flex: 1 1 100%; max-height: 40vh; overflow: auto; text-align: left; font-size: 12px; line-height: 1.6; } .rel-date { font-weight: 700; color: var(--accent, #c9a96e); margin-top: 8px; } .rel-item { padding-left: 2px; } .rel-item::before { content: '\30fb'; } .rel-btn { font-size: 10px; margin-left: 6px; padding: 1px 8px; white-space: nowrap; } #releaseDialog { max-width: min(560px, calc(100vw - 24px)); } .rel-search { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 6px 8px; font: inherit; } .rel-more { margin: 6px 0; } #releaseDialog .rel-list { max-height: 34vh; }
     dialog.flow-win { position: fixed; top: 132px; right: 312px; left: auto; margin: 0; width: 320px; max-width: calc(100vw - 24px); max-height: calc(100vh - 160px); overflow: auto; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.45); z-index: 20; } .flow-win-head { display: flex; align-items: center; gap: 8px; cursor: move; touch-action: none; } .flow-win-head button { cursor: pointer; } .flow-h-note { display: block; margin-top: 4px; color: var(--accent); font-size: 12px; } .flow-notes-btn { flex: none; padding: 2px 8px; font-size: 12px; border-radius: 12px; } .flow-notes-btn[aria-pressed="true"] { background: var(--accent); color: #111; border-color: var(--accent); }
     dialog.flow-win[data-notes="hide"] p.note { display: none; }   /* the detailed explanations are folded by default (2026-10-24); the head button shows them */ .flow-win-head h3 { margin: 0; font-size: 15px; flex: 1; } .info-close { border: 0; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
@@ -194,7 +194,7 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 11:27 · 310c14d</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-25 11:42 · 23e4ab8</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -767,8 +767,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=87615f54","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=3a950c7e","./data/release-notes.js":"./data/release-notes.js?v=497e4943","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=7cf9bfba","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=9b6ee177","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=25de49c9","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=01fd44d9","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
-<script type="module" src="app.js?v=87615f54"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=3b488f60","./app.js":"./app.js?v=bbf64cbf","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=5330afec","./data/release-notes.js":"./data/release-notes.js?v=81087191","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=3cb71697","./design.js":"./design.js?v=7cf9bfba","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=02b8f253","./geometry.js":"./geometry.js?v=200a273f","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=047aaaf3","./help/ja.js":"./help/ja.js?v=aab1cc93","./i18n.js":"./i18n.js?v=ace9aa59","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=b33c8e2c","./phrases.js":"./phrases.js?v=4115f440","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=01fd44d9","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=5f1cb10a","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=bbf64cbf"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -1411,6 +1411,23 @@ function validateDoc(d) {
 }
 
 /** 直せる不整合を直す（図面を書き換える・直した数を返す）。いまは、経路の「閉じている」を実際の線に合わせる：区間選択で線を切り分けたあと、新しい経路が元の印を引き継いで、検査に通らず読み込めなくなった図面を直す（2026-10-16 不具合記録）。読み込み（migrateDoc）と保存の前に使う。 */
+/** 宙に浮いた塗り：囲む図形（ids）の上に、塗りの境目（頂点・辺の真ん中）が1点も乗っていない塗り（事業主 2026-10-25「右の図面はどうやって消せばいいですか？」：図形を消すと、塗りだけが残り、同じ番号の図形が作り直されると、古い塗りが元の位置に幽霊のように残った。選べないので消せない）。
+ *  囲む図形が1つでも残っていて、境目がどれかの図形から 0.6mm 以内にあれば、正しい塗り。曲線の塗りは、頂点が図形の上にあるので、これで足りる。 */
+function fillDetached(f, shapesById) {
+  const shapes = (Array.isArray(f?.ids) ? f.ids : []).map(id => shapesById.get(id)).filter(Boolean); if (!shapes.length) return false;   /* 図形が1つも無い塗りは、別の掃除が消す */
+  const rings = [Array.isArray(f.points) ? f.points : [], ...(Array.isArray(f.holes) ? f.holes : [])]; let probes = 0;
+  for (const ring of rings) for (let i = 0; i < ring.length; i++) {
+    const q = ring[i], r = ring[(i + 1) % ring.length]; if (!Number.isFinite(q?.x) || !Number.isFinite(q?.y)) continue; probes++;
+    const mid = { x: (q.x + (r?.x ?? q.x)) / 2, y: (q.y + (r?.y ?? q.y)) / 2 };
+    for (const s of shapes) { let d1 = Infinity; try { d1 = Math.min(distToShape(s, q), distToShape(s, mid)); } catch { return false; } if (d1 < 0.6) return false; }   /* 計算できない図形は、消さない */
+  }
+  return probes >= 3;
+}
+/** 図面を開くとき（ファイル・前回の続き）に、宙に浮いた塗りを消す。元に戻す・やり直しの途中の図面には使わない（図形を動かした直後の、まだ取り直していない塗りを消してしまうため）。消した数を返す。 */
+function dropDetachedFills(d) {
+  if (!Array.isArray(d?.fills) || !Array.isArray(d?.shapes)) return 0; const byId = new Map(d.shapes.map(s => [s.id, s])), keep = d.fills.filter(f => !fillDetached(f, byId)), n = d.fills.length - keep.length;
+  if (n) d.fills = keep; return n;
+}
 function healDoc(d) {
   let fixed = 0; if (!d || !Array.isArray(d.paths) || !Array.isArray(d.shapes)) return fixed;
   { /* 部品が、消えた図形を指したままの図面（どこかの消し方で、部品の掃除が漏れた・2026-10-18）：検査に通らず、色の変更・保存・「前回の続き」が止まる。消えた図形を、部品の中身から外す */
@@ -2310,7 +2327,7 @@ function cornerLimit(l1, p1, l2, p2, kind = 'fillet') {
   const short = Math.min(la, lb); return { max: kind === 'chamfer' ? short : short * Math.tan(theta / 2), short };
 }
 
-return {distance, dot, rotate, warpX, warpY, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, THROUGH_STRAIGHT_DEG, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, attachToLines, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, loopCenters, diamondLoopSizes, resizeDiamondLoop, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
+return {distance, dot, rotate, warpX, warpY, translate, scaleGeometry, mirrorX, mirrorY, chamferCorner, filletCorner, offsetPolyline, offsetShape, offsetPath, arcSweep, circlePoint, bezierPoint, distToShape, snapPoints, intersections, bboxOf, bboxOfDoc, SHAPE_COLORS, LINE_STYLES, newDoc, validateDoc, fillDetached, dropDetachedFills, healDoc, migrateDoc, dimension, areaOf, parseInput, pathSegments, pathNode, smoothPathNodes, toPath, pathInsertNode, pathRemoveNode, flattenShape, arcLength, lengthOf, pointAtLength, THROUGH_STRAIGHT_DEG, chainShapes, contourFrom, contourChain, nearestSegmentOf, attachToLine, attachToLines, enclosedAreaAt, enclosedAreasAround, outlinePolygon, contourStops, resolvePath, equalDivide, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, dotLen, holeAppearance, defaultTools, reflectAcross, collinearLineClusters, smallLoopCenters, loopCenters, diamondLoopSizes, resizeDiamondLoop, straightRuns, straightenPath, splitShapeAt, allIntersections, trimAt, isLccLayerId, ownHolePathIds, holeIsOwn, filletCurves, roundLinesAt, collinearChain, roundChainAt, cornerLimit};
 })();
 __mods['autodim'] = (function(){
 // 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。
@@ -3764,6 +3781,7 @@ const MESSAGES = {
     "releaseNext": "公開前（次の版に入る予定）",
     "releaseHere": "← いま開いている版",
     "releaseClose": "閉じる",
+    "layerSelCount": "選択 {n}",
     "layerRowsTop": "▲ 手前（上の層ほど、重なりの上に出ます）",
     "layerRowsBottom": "▼ 奥",
     "layerActiveTip": "この層を作図先にする（新しく描く図形が入る層・●が今の作図先）",
@@ -5914,6 +5932,7 @@ const MESSAGES = {
     "releaseNext": "Not yet released (planned for the next version)",
     "releaseHere": "<- the version you have open",
     "releaseClose": "Close",
+    "layerSelCount": "{n} selected",
     "layerRowsTop": "▲ Front (the higher a layer is, the more it covers)",
     "layerRowsBottom": "▼ Back",
     "layerActiveTip": "Make this the drawing layer (new shapes go here; ● marks the current one)",
@@ -23707,6 +23726,13 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-10-25 11:42",
+      "items": [
+        "レイヤーの窓で、選んだ図形が入っている層の行に、水色の枠と「選択 n」の札が出ます（どの層の図形かが一目で分かります）。",
+        "図面を開くとき、図形から離れて宙に浮いた塗り（消した図形の色だけが残って選べなかったもの）を自動で消します。"
+      ]
+    },
+    {
       "date": "2026-10-25 11:27",
       "items": [
         "平面図に、寸法を自動で入れられます（全長・高さ・リング取付穴の位置）。手順②の「寸法を自動で入れる」です（初めからオン）。",
@@ -23798,6 +23824,7 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-10-25",
       "items": [
+        "選んだ図形が入っている層の行に目印（選択 n）／図面を開くとき宙に浮いた塗りを自動で消す（右に残った幽霊の色）",
         "色の見本に「透明」（リフィルの穴など、その場所のいちばん上の色を抜く）／レイヤーを窓にして1層1行に（▲▼が行の右端）／手前の層の白い塗りが奥の層の線も隠す／図形を消すと囲んでいた塗りも消える（消せない図形・断面が2つ…",
         "テスト：金属で塗った場所の図形の輪郭の色",
         "更新履歴に検索欄と「それ以前の更新の記録」／平面図のリフィルを白く塗る（穴は透明）／塗りの重なりを塗った層で決める（リフィルの層を最前面にしてもサポータの下に隠れる不具合）／金属で塗った場所の輪郭の色／同じ囲みの別の場…",
@@ -24905,7 +24932,7 @@ const { arrayOffsets } = __mods['array'];
 const { alignOffsets, distributeOffsets } = __mods['align'];
 const { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } = __mods['autodim'];
 const { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } = __mods['geometry'];
-const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
+const { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } = __mods['geometry'];
 const { scaleInput, calcExpr, fmtCalc } = __mods['scale_input'];
 const { editVertex } = __mods['vertex'];
 const { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } = __mods['formats'];
@@ -26070,7 +26097,7 @@ async function attachSavedFiles(info, base) {
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
 function offerRestore() {
   let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
-  const info = text ? unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); return validateDoc(m); }) : null;   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
+  const info = text ? unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); }) : null;   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
   if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
   const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
   pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
@@ -26078,7 +26105,7 @@ function offerRestore() {
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
-  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
+  for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); dropDetachedFills(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
 }
@@ -26200,6 +26227,13 @@ function initStitch() {
 }
 
 // ---- レイヤー（カード）----
+/** 選んだ図形が入っている層の行に目印（事業主 2026-10-25「選択した図形がどのレイヤーなのか一目でわかるように目印つけて」）：行を水色の枠にして、「選択 n」の札を出す。選び直すたびに（画面を描くたびに）出し入れする。 */
+let layerRowRefs = [];
+function markSelectedLayers() {
+  if (!layerRowRefs.length) return; const count = new Map();
+  if (selected.size) for (const s of doc.shapes) if (!s.holeLink && selected.has(s.id)) count.set(s.layer, (count.get(s.layer) || 0) + 1);
+  for (const { id, row, tag } of layerRowRefs) { const n = count.get(id) || 0, cls = 'row' + (id === activeLayer ? ' active' : '') + (n ? ' has-sel' : ''), text = n ? t('layerSelCount', { n }) : ''; if (row.className !== cls) row.className = cls; if (tag.textContent !== text) tag.textContent = text; }
+}
 function renderLayers() {
   if (!doc.layers.some(l => l.id === activeLayer)) activeLayer = doc.layers[0].id;
   for (const id of ['layerList', 'info-layer']) {
@@ -26210,16 +26244,18 @@ function renderLayers() {
   $('layerList').value = activeLayer; $('layerName').value = layerName(l); $('layerVisible').checked = l.visible; $('layerLocked').checked = l.locked;
   /* 各層の表示・ロックを一覧で切り替える（層を1つずつ選ばなくてよい） */
   { const sel = $('layerMergeSrc'); if (sel) { sel.textContent = ''; for (const lay of [...doc.layers].reverse()) { if (lay.id === activeLayer || lay.id === 'section') continue; const o = document.createElement('option'); o.value = lay.id; o.textContent = t('layerMergeOpt', { name: layerName(lay), n: doc.shapes.filter(s => s.layer === lay.id).length }); sel.appendChild(o); } } }   /* 統合する層の選択肢（作図先と断面図の層は除く） */
-  const rows = $('layerRows'); rows.textContent = '';
+  const rows = $('layerRows'); rows.textContent = ''; layerRowRefs = [];
   for (const lay of [...doc.layers].reverse()) {   /* 手前の層（並びの後ろ）が上 */
     const row = document.createElement('div'); row.className = 'row' + (lay.id === activeLayer ? ' active' : '');   /* 作図先の層の行は、色を付ける */
+    const selTag = document.createElement('span'); selTag.className = 'layer-sel'; layerRowRefs.push({ id: lay.id, row, tag: selTag });   /* 選んだ図形が入っている層の目印（markSelectedLayers が出し入れする） */
     const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
       input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
     const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); });   /* 行の頭の丸：この層を作図先にする */
-    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(act); row.appendChild(name);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
+    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
     const arrow = (text, tip, dir) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = t(tip); b.className = 'layer-arrow'; b.addEventListener('click', () => moveLayer(lay.id, dir)); return b; };
     const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
+  markSelectedLayers();
 }
 /** 層の名前を直す（事業主 2026-10-25「レイヤーの名前を変えれないと、どこのレイヤーに属しているかわからない」「型紙の大属性のあとに自由に名前をつけたい」）：一覧の名前の欄から、どの層でも直接書き換える。「型紙 表紙」のように、元の名前のあとに自由に足せる。
  *  空にしたら今の名前のまま。同じ名前も付けられる（右クリックの一覧に✓が付くので見分けられる）。元に戻すは1回。 */
@@ -27849,7 +27885,7 @@ async function openFile(file) {
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
     if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
     const raw = JSON.parse(text), hist = raw && raw.undoHistory; if (raw) delete raw.undoHistory; /* 保存ファイルに入っていた元に戻す履歴は、図面とは別に扱う */
-    const next = withDefaultTool(migrateDoc(raw)); healDoc(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
+    const next = withDefaultTool(migrateDoc(raw)); healDoc(next); dropDetachedFills(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
     const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode); noticeGaps();
@@ -30921,6 +30957,7 @@ function updateUI() {
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
+  markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) });
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
