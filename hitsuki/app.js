@@ -273,7 +273,9 @@
     const hasCommentary = !!transcript;
     // サイトの本文が原典の抜粋のときは、原典に対する割合を閉じたカードにも出す（将来、本文がそろったら解説を作り直す）
     const excerptPct = transcript && Number.isFinite(transcript.excerptPercent) ? transcript.excerptPercent : null;
-    const excerptBadge = excerptPct === null ? '' : `<span class="commentary-badge excerpt" title="サイトに載っている本文は、出典サイトの原典の一部です。本文がそろったときに、解説を改めて作ります。">抜粋・原典の約${escapeHtml(String(excerptPct))}％</span>`;
+    const excerptBadge = excerptPct === null ? '' : (transcript.basis === 'full'
+      ? `<span class="commentary-badge excerpt" title="カードの上に出ている本文は、原典の一部（抜粋）です。この解説は、「原典の全文を読む」で開く全文をもとに作りました。">解説は原典の全文に対応・上の本文は約${escapeHtml(String(excerptPct))}％</span>`
+      : `<span class="commentary-badge excerpt" title="サイトに載っている本文は、出典サイトの原典の一部です。本文がそろったときに、解説を改めて作ります。">抜粋・原典の約${escapeHtml(String(excerptPct))}％</span>`);
     const badge = !transcript ? '' : (isWorkshop
       ? '<span class="commentary-badge workshop">工房の言い換え解説（AI作成）</span>'
       : '<span class="commentary-badge video">動画の解説</span>');
