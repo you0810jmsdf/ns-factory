@@ -2928,6 +2928,7 @@ function initDesign() {
   $('ctx-center').onclick = () => { hideCtxMenu(); centerOnStart('xy'); };
   $('ctx-lattice').onclick = () => { hideCtxMenu(); removeLatticeLines(); };
   $('ctx-round').onclick = () => { hideCtxMenu(); removeLatticeLines('round'); };   /* 事業主 2026-10-25「丸目も消したい。格子と丸目の両方を消すこともある」 */
+  $('ctx-diamond').onclick = () => { hideCtxMenu(); removeLatticeLines('diamond'); };   /* 事業主 2026-10-26「菱目だけ消したい」 */
   $('ctx-lattice-round').onclick = () => { hideCtxMenu(); removeLatticeLines('both'); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
@@ -6763,16 +6764,16 @@ function latticeBySharedEdges(cand) {
   return out;
 }
 /** 「丸目だけ消す」の相手（事業主 2026-10-25「丸目も消したい」）：選んだ格子（記録のある格子）の丸目＋選んだ閉じた実線の内側（ふちを含む）の丸目＋直接選んだ丸目。菱目は対象にしない。格子の線を先に消したあとでも、外形を選べば見つかる。 */
-function latticeRoundHoleIds() {
+function latticeRoundHoleIds(want = 'round') {   /* want＝'round'（丸目）／'diamond'（菱目・事業主 2026-10-26「菱目だけ消したい」） */
   const out = new Set(); if (!selected.size) return out;
   const kind = new Map(doc.tools.map(x => [x.id, x.kind])), recPaths = new Set(gridsTouchedBySelection(false).flatMap(g => g.pathIds)), sel = selectedShapeIds();
   const loops = doc.shapes.filter(s => sel.has(s.id) && s.type === 'polyline' && s.closed && !s.holeLink && s.lineStyle !== 'dashed' && s.layer !== 'guide' && s.points?.length >= 3 && visible(s)).map(s => ({ pts: s.points, loop: loopSampler(s.points) }));
-  for (const h of doc.holes) if (kind.get(h.toolId) === 'round' && holeEditable(h) && (selected.has(h.id) || recPaths.has(h.pathId) || loops.some(l => insidePolygon(h, l.pts) || l.loop.nearest(h).dist < 0.05))) out.add(h.id);
+  for (const h of doc.holes) if (kind.get(h.toolId) === want && holeEditable(h) && (selected.has(h.id) || recPaths.has(h.pathId) || loops.some(l => insidePolygon(h, l.pts) || l.loop.nearest(h).dist < 0.05))) out.add(h.id);
   return out;
 }
 /** 格子の線（ピース）・丸目を消す。what＝'lines'（格子の線だけ）／'round'（丸目だけ）／'both'（両方）。外形・点線・菱目・縫い合わせは残す。裏面は、左右反転（今の機能）のあとにこれを使う。対象は消す前にまとめて決め、元に戻すは1回。 */
 function removeLatticeLines(what = 'lines') {
-  const ids = what === 'round' ? new Set() : latticePieceIds(), hids = what === 'lines' ? new Set() : latticeRoundHoleIds(); if (!ids.size && !hids.size) { $('hint').textContent = t('latticeNone'); return; }
+  const only = what === 'round' || what === 'diamond', ids = only ? new Set() : latticePieceIds(), hids = what === 'lines' ? new Set() : latticeRoundHoleIds(what === 'diamond' ? 'diamond' : 'round'); if (!ids.size && !hids.size) { $('hint').textContent = t('latticeNone'); return; }
   const holes = doc.holes.length; cancel();
   commit(() => {
     if (hids.size) { doc.holes = doc.holes.filter(h => !hids.has(h.id)); selected = new Set([...selected].filter(id => !hids.has(id))); manualNext = null; }
@@ -6782,7 +6783,7 @@ function removeLatticeLines(what = 'lines') {
     selected = new Set([...selected].filter(id => !ids.has(id)));
     }
   });
-  $('hint').textContent = what === 'round' ? t('latticeRoundRemoved', { n: hids.size, h: doc.holes.length }) : what === 'both' ? t('latticeBothRemoved', { n: ids.size, r: hids.size, h: doc.holes.length }) : t('latticeRemoved', { n: ids.size, h: holes }); draw();
+  $('hint').textContent = what === 'diamond' ? t('latticeDiamondRemoved', { n: hids.size, h: doc.holes.length }) : what === 'round' ? t('latticeRoundRemoved', { n: hids.size, h: doc.holes.length }) : what === 'both' ? t('latticeBothRemoved', { n: ids.size, r: hids.size, h: doc.holes.length }) : t('latticeRemoved', { n: ids.size, h: holes }); draw();
 }
 function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
@@ -8146,7 +8147,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
