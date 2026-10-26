@@ -1237,7 +1237,7 @@ function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', Str
 const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD settings";
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
-  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchMinPiece', 'patchTexA', 'patchTexB',
+  'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchKeepSize', 'patchMinPiece', 'patchTexA', 'patchTexB',
   'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
@@ -2444,7 +2444,7 @@ function gridPlan(region, cols0, rows0) {
   const gp = gridParamsFor(region, cols0, rows0), cols = gp.cols, rows = gp.rows;
   if (gp.bad) return { msg: t('invalidNumber') };
   if (gridTargetMode && (!(cols >= 1) || !(rows >= 1))) return { msg: t('gridTargetTooBig', { w: +gp.tw.toFixed(1), h: +gp.th.toFixed(1), bw: +gp.bw.toFixed(1), bh: +gp.bh.toFixed(1) }) };   /* 目標の大きさが、枠より大きい */
-  const angleRaw = gp.angle !== undefined ? String(gp.angle) : String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(region, cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked ? pitch : null, preferNear: !!$('patchPreferNear')?.checked, minAreaRatio: patchMinRatio() });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
+  const angleRaw = gp.angle !== undefined ? String(gp.angle) : String($('gridAngle').value ?? '').trim(), fill = diamondGridFill(region, cols, rows, { angle: angleRaw === '' ? null : Number(angleRaw), shift: patchShiftNow(), pitch: $('patchStitch').checked && !$('patchKeepSize')?.checked ? pitch : null, preferNear: !!$('patchPreferNear')?.checked, minAreaRatio: patchMinRatio() });   /* 縫い穴を付けるときだけ、ひし形の大きさを穴の間隔に合わせる */   /* 斜めの2方向のひし形：幅＝枠の幅÷列・高さ＝枠の高さ÷行（角度が空のとき）／幅×tan（角度を入れたとき）。枠の中心基準で左右対称 */
   if (!fill) return { msg: t('invalidNumber') };
   if (fill.badAngle) return { msg: t('gridBadAngle', { a: +fill.theta.toFixed(1), min: 20, max: 80 }) };
   if (fill.tooMany) return { msg: t('patchTooMany', { n: fill.tiles }) };
@@ -2564,7 +2564,7 @@ function regenSoon(fn, el, ms = regenDelayMs) {
   regenTimer = setTimeout(run, ms);
 }
 /** 格子の設定の値の組（これが前回の作りなおしと同じなら、作りなおさない：欄を離れたときの change で、同じ値のまま、もう一度作りなおすのを防ぐ）。 */
-function regenSig() { return JSON.stringify(['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool', 'patchMinPiece'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear'].map(id => !!$(id)?.checked)).concat(gridTargetMode)); }
+function regenSig() { return JSON.stringify(['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool', 'patchMinPiece'].map(id => $(id)?.value).concat(['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear', 'patchKeepSize'].map(id => !!$(id)?.checked)).concat(gridTargetMode)); }
 /** 列・行・ひし形の角度を変えたとき：直前が格子なら作りなおす。作りなおす図が無いとき（読み込み直した後・別の操作のあと）は、下見（gridPreviewUpdate）が、何も起きない理由と押す操作を案内する（事業主「列と行の数字を変えてもなにも図形に変化が出ない」）。 */
 function gridFieldChanged() {
   if (gridsTouchedBySelection().length || (lastPatch && undo.at(-1) === lastPatch.before)) regenPatch();
@@ -2587,7 +2587,7 @@ function regenPatch(force = false) {
  *  「格子を作る」ごとに、枠・できた図形・経路・動かした外周の穴の元の位置・設定を図面に残す。パッチの線を1本選ぶか、枠の線を全部選ぶと、その格子が対象になり、設定が欄に出る。
  *  列・行・角度・位置・ピッチ・外周などの欄を変えると、その格子だけが、記録のものを消して作りなおされる（直前に作った1つだけは、今までどおり取り消して作りなおす）。複数の格子を選べば、一斉に変わる（取り消しは1回）。
  *  「内側すべて」ではなく、その枠から作った図形だけを消す（枠の中の文字・目印・金具の穴などを巻き込まない）。 */
-const GRID_SETTING_IDS = ['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool', 'patchMinPiece'], GRID_CHECK_IDS = ['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear'];
+const GRID_SETTING_IDS = ['patchTargetW', 'patchTargetH', 'patchCols', 'patchRows', 'gridAngle', 'patchPitch', 'patchTol', 'patchClear', 'patchShiftX', 'patchShiftY', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchHole', 'patchTexA', 'patchTexB', 'stitchTool', 'patchMinPiece'], GRID_CHECK_IDS = ['patchStitch', 'patchEdgeBan', 'patchRim', 'patchPreferNear', 'patchKeepSize'];
 let gridApplyDone = 0, gridSelKey = '', gridSelSeq = -1, gridArmSeq = -1, gridSelSig = '';   /* gridArmSeq：格子を選びなおしたときの commitSeq。そのあと図面を変える操作が入ったら、選びなおすまで、欄の変更で作りなおさない（選択が残っているだけで、あとの作業を消さない） */
 /** いまの格子の設定（欄の値）。記録に入れる。 */
 function gridSettingsNow() { const fields = {}, checks = {}; for (const id of GRID_SETTING_IDS) fields[id] = String($(id)?.value ?? ''); for (const id of GRID_CHECK_IDS) checks[id] = !!$(id)?.checked; checks.targetMode = gridTargetMode; return { fields, checks, sig: regenSig() }; }
