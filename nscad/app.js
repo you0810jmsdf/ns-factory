@@ -6953,18 +6953,17 @@ function copySelectedOffsets(offsets) {
 function openRotateBar() { $('rotateBar').hidden = false; $('rotateA').focus?.(); $('rotateA').select?.(); }
 function closeRotateBar() { $('rotateBar').hidden = true; }
 /** 右クリックの「選んだ図形をオフセット」（点線・実線）：押すと、距離（mm）を入れる小窓が出る。Enter か「オフセット」で、入れた距離で実行（向きは作図オプション）。入れた距離は、作図オプションの「オフセット距離」にも残る。Esc・×・選んだ図形が無くなったら閉じる。キー（Shift+O）と左のボタンは、これまでどおりすぐ実行。 */
-let offsetSelSolid = false;
+let offsetSelSolid = false, offsetSelSideMem = null;   /* 小窓で選んだ向きは、次に開いたときも残る（作図オプションの向きは変えない＝カーソルの側のツールの設定を壊さない） */
 const offsetSelSideKey = () => { const v = $('offsetSide').value; return ['in', 'out', 'both'].includes(v) ? v : 'out'; };   /* 「カーソルの側」は選んだ図形には使えないので、外側 */
 function openOffsetSelBar(solid) {
-  offsetSelSolid = solid; const side = offsetSelSideKey();
-  $('offsetSelBarMode').textContent = t(solid ? 'offsetSelBarSolid' : 'offsetSelBarDashed') + '（' + t(side === 'both' ? 'offsetSelBothName' : side === 'in' ? 'offsetSelSideIn' : 'offsetSelSideOut') + '）';
+  offsetSelSolid = solid; $('offsetSelBarMode').textContent = t(solid ? 'offsetSelBarSolid' : 'offsetSelBarDashed'); $('offsetSelSide').value = offsetSelSideMem || offsetSelSideKey();
   $('offsetSelDist').value = $('offsetDist').value; $('offsetSelBar').hidden = false; $('offsetSelDist').focus?.(); $('offsetSelDist').select?.();
 }
 function closeOffsetSelBar() { $('offsetSelBar').hidden = true; }
 function applyOffsetSelBar() {
   const raw = String($('offsetSelDist').value).trim(), d = Number(raw);
   if (raw === '' || !Number.isFinite(d) || d <= 0) { $('hint').textContent = t('invalidNumber'); return; }
-  $('offsetDist').value = String(d); closeOffsetSelBar(); offsetSelectedShapes({ solid: offsetSelSolid }); canvas.focus?.();
+  const side = $('offsetSelSide').value; offsetSelSideMem = side; $('offsetDist').value = String(d); closeOffsetSelBar(); offsetSelectedShapes({ solid: offsetSelSolid, side }); canvas.focus?.();
 }
 $('offsetSelRun').onclick = applyOffsetSelBar; $('offsetSelClose').onclick = closeOffsetSelBar;
 $('offsetSelDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyOffsetSelBar(); } else if (e.key === 'Escape') { e.stopPropagation?.(); closeOffsetSelBar(); canvas.focus?.(); } });
@@ -7207,7 +7206,7 @@ function offsetSelectedShapes(opts = {}) {
   const ids = selectedShapeIds(), pool = doc.shapes.filter(s => ids.has(s.id) && visible(s) && editable(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type));
   if (!pool.length) { $('hint').textContent = t('offsetSelNeed'); return; }
   const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; }
-  const v = ['in', 'out', 'both'].includes($('offsetSide').value) ? $('offsetSide').value : 'out', used = new Set(), groups = [];
+  const v = ['in', 'out', 'both'].includes(opts.side) ? opts.side : offsetSelSideKey(), used = new Set(), groups = [];   /* 向き：距離の小窓で選んだもの（opts.side）、なければ作図オプションの向き（「カーソルの側」は外側） */
   for (const s of pool) { if (used.has(s.id)) continue; const sel = offsetSpan(pool, s, null, true); if (!sel) continue; for (const id of sel.shapeIds) used.add(id); groups.push({ sel, layer: s.layer, src: s }); }
   const sideOf = (sel, inner) => { let d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return d; };   /* 開いた線の「内側」は、曲がりの内側（今のオフセットと同じ）。まっすぐなら、進行方向の左が外側 */
   const results = []; let failed = 0;
