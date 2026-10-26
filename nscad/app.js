@@ -3718,8 +3718,8 @@ function clearFills() {
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
 const visibleFills = (d, vis, kind) => { const byId = new Map(d.shapes.map(s => [s.id, s])); return (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => { const l = fillEffectiveLayer(fl, byId); return !l || d.layers?.find(x => x.id === l)?.visible !== false; }).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0)); };
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
-/** 革色・質感の塗りの不透明度：質感 0.92・色 0.55（線や下の図が透ける）。白（リフィルの紙）だけは不透明にする（事業主 2026-10-25「リフィルも白にできない」：半透明のままだと、暗い背景の上で灰色に見えた）。 */
-const leatherAlpha = (tex, hex) => tex ? 0.92 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
+/** 革色・質感の塗りの不透明度：質感は 1（不透明・2026-10-26 事業主 A「同じフラゴラなのに、下にラズベリーの塗りがあると色が違って見える」：0.92 だと、下の塗りが 8% 透けて、同じ革が場所で違う色になった）・色は 0.55（線や下の図が透ける）。白（リフィルの紙）も不透明にする（事業主 2026-10-25「リフィルも白にできない」：半透明のままだと、暗い背景の上で灰色に見えた）。 */
+const leatherAlpha = (tex, hex) => tex ? 1 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
 /** 領域の塗りの層（事業主 2026-10-25「リフィルのレイヤーを最前面にしたのに、リングサポータの下に来ている」）：塗ったときの作図先の層を覚え、重なりと表示は、その層で決める。
  *  層の無い古い塗りは、今までどおり、囲んでいる図形のうちいちばん手前の層（それだと、リフィルの線がサポータの塗りを区切ると、サポータの塗りまで「手前の層」になり、同じ順位の中で小さい方が上に出た）。 */
 /** 層を覚えていない古い塗りの層：境目の線がいちばん多く乗っている図形の層（事業主 2026-10-25「まだリフィルの順番を変えられない」：前回の直しは、これから塗る塗りだけに効き、すでに塗った塗りは、囲む図形のいちばん手前の層のままだった）。
@@ -3745,7 +3745,7 @@ const fillLayerNow = () => doc.layers.some(l => l.id === activeLayer) ? { layer:
 function moveFillsWithShapes(movedIds, destId) { let n = 0; for (const f of doc.fills || []) { const k = (f.ids || []).filter(id => movedIds.has(id)).length; if (k > 0 && k * 2 >= f.ids.length && f.layer !== destId) { f.layer = destId; n++; } } return n; }
 function regionLeatherItems(d, vis) {
   const rank = layerRankMap(d), byId = new Map(d.shapes.map(s => [s.id, s]));
-  return visibleFills(d, vis, 'leather').map(fl => ({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), hit: q => fillContains(fl, q), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
+  return visibleFills(d, vis, 'leather').map(fl => ({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), alpha: leatherAlpha(fl.texture, fl.leather), tex: !!fl.texture, hit: q => fillContains(fl, q), draw: () => { ctx.beginPath(); for (const ring of [fl.points, ...(fl.holes || [])]) { ring.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); ctx.closePath(); } ctx.save(); ctx.fillStyle = fl.texture ? textureFill(fl.texture) : fl.leather; ctx.fill('evenodd'); ctx.restore(); } }));
 }
 /** 多角形の面積（絶対値）。革色の塗りを大きい順に重ねるために使う。点が無い・壊れているときは 0。 */
 function leatherItemArea(ps) { if (!ps || ps.length < 3) return 0; const v = Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2; return Number.isFinite(v) ? v : 0; }
@@ -3877,7 +3877,7 @@ function leatherItems(d, vis, move = s => s, extra = []) {   /* extra＝いっ�
 function drawLeatherFills(d, vis, move = s => s, extra = []) { paintLeatherItems(leatherItems(d, vis, move, extra)); }
 /** 並んだ塗りの項目を、順に描く。 */
 function paintLeatherItems(items) {
-  /* 画面では半透明（革色 0.55・質感 0.92）で塗る。これまでは1つずつ半透明で重ねていたので、同じ色の塗りが重なった所だけ濃く（明るく）見え、「一色で塗られていない」ようになった（2026-10-20 事業主の指摘・ウォレットの図面の左の肌色は 3〜4 層）。
+  /* 画面では半透明（革色 0.55）・質感と白は不透明で塗る。これまでは1つずつ半透明で重ねていたので、同じ色の塗りが重なった所だけ濃く（明るく）見え、「一色で塗られていない」ようになった（2026-10-20 事業主の指摘・ウォレットの図面の左の肌色は 3〜4 層）。
    → 同じ濃さが続く塗りは、まず作業用の紙に不透明で重ね（上の形の色が勝つ）、その紙を1回だけ半透明で貼る。書き出し（exporting）は今まで通り不透明で直接塗る。作業用の紙が使えないとき（テストの擬似画面など）は、今まで通り1つずつ。 */
   if (exporting) { for (const it of items) { ctx.save(); ctx.globalAlpha = 1; paintItem(it); ctx.restore(); } return; }
   const layer = leatherLayer();
