@@ -6445,6 +6445,32 @@ function selectedLineHoleStats() {
   const nearLine = nearShapeFn(withLen, 0.3, distTo), holes = doc.holes.filter(h => holeVisible(h) && nearLine(h)).length;
   return { len, holes };
 }
+/** 左の情報パネル（第1段・読み取り専用）：状態／選んだもの／図面／案内（事業主 2026-10-26「左メニューを「情報」に変える」）。
+ *  描くたびに呼ばれるので、軽い所（道具・倍率・カーソル・案内）は毎回、重い所（選んだものの全長・図面の集計）は、図面か選択が変わったときだけ計算し直す。 */
+const TOOL_LABEL_KEY = { select: 'select', line: 'line', rect: 'rect', circle: 'circle', arc: 'arc', bezier: 'bezier', path: 'path', text: 'text', dimension: 'dimension', ruler: 'ruler', fillet: 'fillet', chamfer: 'chamfer', divide: 'divideTool', offset: 'offset', trim: 'trim', mirror: 'mirror', stitch: 'stitch', mark: 'markTool', koma: 'ctxKoma', patchfill: 'patchTool' };
+const toolLabel = m => { const k = TOOL_LABEL_KEY[m], s = k ? t(k) : ''; return s && s !== k ? s : String(m || ''); };
+let ipSelKey = '', ipSelCache = null, ipDocKey = '', ipDocCache = null;
+const ipLen = list => { let n = 0; for (const s of list) { try { const l = arcLength(s); if (Number.isFinite(l)) n += l; } catch { /* 数えられない図形は飛ばす */ } } return n; };
+function updateInfoPanel() {
+  const set = (id, v, warn) => { const el = $(id); if (!el) return; el.textContent = v; if (warn !== undefined) el.classList?.toggle('warn', !!warn); };
+  set('ipTool', toolLabel(mode)); set('ipZoom', Math.round(scale / 4 * 100) + '%'); set('ipCursor', 'X ' + cursor.x.toFixed(2) + '  Y ' + cursor.y.toFixed(2) + ' mm');
+  set('ipSnap', t('ipSnapV', { s: t($('snap')?.checked ? 'ipOn' : 'ipOff'), g: t($('grid')?.checked ? 'ipOn' : 'ipOff') })); { const l = doc.layers.find(x => x.id === activeLayer); set('ipLayer', l ? layerName(l) : String(activeLayer)); }
+  set('ipHintText', $('hint')?.textContent ?? '');
+  const sk = commitSeq + ':' + selected.size + ':' + [...selected].slice(0, 400).join(',');
+  if (sk !== ipSelKey) {
+    ipSelKey = sk; const picked = doc.shapes.filter(s => !s.holeLink && selected.has(s.id)), holes = doc.holes.filter(h => selected.has(h.id));
+    if (!picked.length && !holes.length) ipSelCache = null;
+    else { const kinds = new Map(); for (const s of picked) kinds.set(s.type, (kinds.get(s.type) || 0) + 1); if (holes.length) kinds.set('hole', holes.length);
+      const b = selectedSizeBox(), lines = picked.filter(s => stitchable(s) && s.layer !== 'guide');
+      ipSelCache = { n: picked.length + holes.length, s: picked.length, h: holes.length, kinds: [...kinds].map(([k, n]) => (k === 'hole' ? t('ipDocHoles').split('（')[0].split(' (')[0] : t(k)) + ' ' + n).join('・'), box: b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('ipSizeV', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '', len: lines.length ? t('ipLenV', { len: ipLen(lines).toFixed(2) }) : '' }; }
+  }
+  if (!ipSelCache) { set('ipSelCount', t('ipNoSel')); set('ipSelKinds', ''); set('ipSelBox', ''); set('ipSelLen', ''); }
+  else { set('ipSelCount', t('ipSelCountV', { n: ipSelCache.n, s: ipSelCache.s, h: ipSelCache.h })); set('ipSelKinds', ipSelCache.kinds); set('ipSelBox', ipSelCache.box); set('ipSelLen', ipSelCache.len); }
+  const dk = commitSeq + ':' + doc.shapes.length + ':' + doc.holes.length + ':' + doc.layers.map(l => (l.visible ? 1 : 0)).join('') + ':' + dupGroups.length + ':' + gaps.length;
+  if (dk !== ipDocKey) { ipDocKey = dk; const vis = doc.shapes.filter(s => !s.holeLink && visible(s) && stitchable(s) && s.layer !== 'guide'); ipDocCache = { shapes: doc.shapes.filter(s => !s.holeLink).length, holes: doc.holes.length, seams: (doc.seams || []).length, len: ipLen(vis), dup: dupGroups.length, gaps: gaps.length }; }
+  set('ipDocShapes', String(ipDocCache.shapes)); set('ipDocHoles', String(ipDocCache.holes)); set('ipDocSeams', String(ipDocCache.seams)); set('ipDocLen', t('ipLenV', { len: ipDocCache.len.toFixed(2) }));
+  set('ipDocDup', ipDocCache.dup ? t('ipDupV', { n: ipDocCache.dup }) : t('ipNone'), ipDocCache.dup > 0); set('ipDocGaps', ipDocCache.gaps ? t('ipGapsV', { n: ipDocCache.gaps }) : t('ipNone'), ipDocCache.gaps > 0);
+}
 function updateUI() {
   renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
@@ -6458,6 +6484,7 @@ function updateUI() {
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
   markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
+  updateInfoPanel();
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) }) + (Math.abs(scale - actualScale()) < 0.005 ? t('actualMark') : '');
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
   refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
