@@ -1348,9 +1348,10 @@ function markSelectedLayers() {
 }
 function renderLayers() {
   if (!doc.layers.some(l => l.id === activeLayer)) activeLayer = doc.layers[0].id;
-  for (const id of ['layerList', 'info-layer']) {
-    const select = $(id); select.textContent = '';
-    for (const l of doc.layers) { const o = document.createElement('option'); o.value = l.id; o.textContent = layerName(l) + (l.locked ? ' 🔒' : '') + (l.visible ? '' : ' ・'); select.appendChild(o); }
+  for (const id of ['layerList', 'info-layer', 'prop-layer']) {
+    const select = $(id); if (!select) continue; select.textContent = '';
+    for (const l of doc.layers) { const o = document.createElement('option'); o.value = l.id; o.textContent = (id === 'prop-layer' && l.id === activeLayer ? '● ' : '') + layerName(l) + (l.locked ? ' 🔒' : '') + (l.visible ? '' : ' ・'); select.appendChild(o); }   /* 左の情報パネルの一覧は、いま描いている層（作業層）に ● を付ける（事業主 2026-10-26） */
+    if (id === 'prop-layer') { const m = document.createElement('option'); m.value = '__mixed'; m.textContent = t('propMixed'); m.hidden = true; m.disabled = true; select.appendChild(m); }   /* 2つ以上選んで層がばらばらのときだけ、これを選んで見せる（選べはしない） */
   }
   const l = doc.layers.find(l => l.id === activeLayer);
   $('layerList').value = activeLayer; $('layerName').value = layerName(l); $('layerVisible').checked = l.visible; $('layerLocked').checked = l.locked;
@@ -1696,7 +1697,7 @@ function runHoleShapeApply() {
 }
 function refreshInfo() { try { refreshInfoCore(); } finally { syncPropPanel(); } }   /* 右列のカードを直したあと、左の3つの欄へ写す */
 function refreshInfoCore() {
-  const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true;
+  const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true; propMixed.color = propMixed.lineStyle = propMixed.layer = false;
   const hs = !s && !many.length ? doc.holes.filter(h => selected.has(h.id)) : [], dl = s ? diamondLoopSizes([s]) : many.length ? diamondLoopSizes(many) : [], spec = hs.length ? holeSpecText(hs) : dl.length ? diamondLineSpecText(dl) : '', subj = s ? [s] : many, dOnly = !!subj.length && dl.length === subj.length;   /* dOnly：選んだのが菱の線だけ（穴と同じ並びで出す） */   /* 選んだ菱目の工具の規格・菱の線の大きさ */
   $('l-holeSpec').hidden = !spec; $('info-holeSpec').textContent = spec; $('info-holeToolLoad').hidden = !hs.length;
   { /* 選んだ穴が、菱形の1つの工具だけのとき：その工具の値を入力欄に入れて、直せるようにする */
@@ -1714,8 +1715,8 @@ function refreshInfoCore() {
     for (const f of ALL_FIELDS) $('l-' + f).hidden = !(colorable.length && COLOR_FIELDS.includes(f));
     $('l-type').hidden = $('l-layer').hidden = false;
     for (const id of ['l-part', 'l-partName', 'l-thickness', 'l-partOrder', 'l-addNodes']) $(id).hidden = true;
-    $('info-type').textContent = dOnly ? t('diamondLinesSelected', { n: many.length }) : t('multiSelected', { n: many.length }); $('info-layer').value = commonValue(many, x => x.layer);
-    if (colorable.length) { $('info-color').value = commonValue(colorable, x => x.color || ''); $('info-lineStyle').value = commonValue(colorable, x => x.lineStyle || ''); }
+    $('info-type').textContent = dOnly ? t('diamondLinesSelected', { n: many.length }) : t('multiSelected', { n: many.length }); { const lv = commonValue(many, x => x.layer); $('info-layer').value = lv; propMixed.layer = lv === '__mixed'; }
+    if (colorable.length) { const cv = commonValue(colorable, x => x.color || ''), sv = commonValue(colorable, x => x.lineStyle || ''); $('info-color').value = cv; $('info-lineStyle').value = sv; propMixed.color = cv === '__mixed'; propMixed.lineStyle = sv === '__mixed'; }
     infoBusy = false; return;
   }
   for (const f of ALL_FIELDS) $('l-' + f).hidden = !s || !INFO_FIELDS[s.type]?.includes(f);
@@ -6453,15 +6454,14 @@ function selectedLineHoleStats() {
  *  右列の「情報」カード（座標・長さ・文字・穴など）の同じ3つの欄と、値・表示を写し合うだけで、変える処理は applyInfo のまま（1つ選んだとき・複数選んだとき・元に戻す1回、どれも同じ）。
  *  選んだものが無いときは、パネルごと隠す。スマホ幅は、左の列が出ないので、右列（下の引き出し）のカードで直す。 */
 const PROP_FIELDS = ['color', 'lineStyle', 'layer'];
-let propLayerHtml = null;
+const propMixed = { color: false, lineStyle: false, layer: false };   /* 2つ以上選んだ図形で、値がばらばらの欄（左の欄に「(複数)」と出す） */
 function syncPropPanel() {
   const panel = $('infoPanel'); if (!panel) return;
-  const layer = $('info-layer'); if (layer && layer.innerHTML !== propLayerHtml) { propLayerHtml = layer.innerHTML; $('prop-layer').innerHTML = propLayerHtml; }   /* レイヤーの一覧は、右列の欄と同じ */
   let any = false;
   for (const f of PROP_FIELDS) {
     const src = $('info-' + f), row = $('pl-' + f), mine = $('prop-' + f), orig = $('l-' + f); if (!src || !row || !mine || !orig) continue;
     const show = !orig.hidden && $('infoCard').style.display !== 'none'; row.hidden = !show;
-    if (show) { any = true; if (mine.value !== src.value) mine.value = src.value; }
+    if (show) { any = true; const v = propMixed[f] ? '__mixed' : src.value; if (mine.value !== v) mine.value = v; }
   }
   panel.hidden = !any;
 }
