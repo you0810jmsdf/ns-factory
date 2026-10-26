@@ -2933,7 +2933,7 @@ function initDesign() {
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
-  $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); offsetSelectedShapes(); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); offsetSelectedShapes({ solid: true }); };   /* 実線は、元の図形と同じ層・同じ色（事業主 2026-10-26） */
+  $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); openOffsetSelBar(false); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); openOffsetSelBar(true); };   /* 右クリックで選んだら、すぐ実行せず、距離を入れる小窓を出す（事業主 2026-10-26「右クリック直後のオフセットコマンド選択後に数値を入れる」）。実線は、元の図形と同じ層・同じ色 */
   $('ctx-chamfer').onclick = e => { e?.stopPropagation?.(); const sub = $('ctxChamferSub'); sub.hidden = !sub.hidden; };   /* 右クリック → 面取り（丸・角）：押すと、丸め・面取りの2つが、その下に開く（左の「編集」から移した・事業主指示 2026-10-26「面取り（丸、角）として統合」。キー F・Shift+C は今までどおり） */
   $('ctx-fillet').onclick = () => { countUse('ctx_fillet'); hideCtxMenu(); setMode('fillet'); }; $('ctx-chamferc').onclick = () => { countUse('ctx_chamfer'); hideCtxMenu(); setMode('chamfer'); };
   $('ctx-offsettool').onclick = () => { countUse('ctx_offsettool'); hideCtxMenu(); setMode('offset'); }; $('ctx-trim').onclick = () => { countUse('ctx_trim'); hideCtxMenu(); setMode('trim'); }; $('ctx-mirror').onclick = () => { countUse('ctx_mirror'); hideCtxMenu(); setMode('mirror'); };   /* オフセット・トリム・線対称：左の「編集」「選択中」から移した（キー O・Shift+T・M は今までどおり）。線対称は、図形を選んでいるときだけ出る（左のボタンが押せない条件と同じ） */
@@ -6484,7 +6484,7 @@ function updateUI() {
   markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) }) + (Math.abs(scale - actualScale()) < 0.005 ? t('actualMark') : '');
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
+  refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar(); refreshOffsetSelBar();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -6699,7 +6699,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -6952,6 +6952,23 @@ function copySelectedOffsets(offsets) {
 /** 回転の小窓（事業主指示 2026-10-21）：回転ボタン（キー Q）で出る。角度を入れて Enter か「回す」で、選んだ図形全体の中心まわりに回す。声で角度を先に言ったときは、窓を出さずにすぐ回す。 */
 function openRotateBar() { $('rotateBar').hidden = false; $('rotateA').focus?.(); $('rotateA').select?.(); }
 function closeRotateBar() { $('rotateBar').hidden = true; }
+/** 右クリックの「選んだ図形をオフセット」（点線・実線）：押すと、距離（mm）を入れる小窓が出る。Enter か「オフセット」で、入れた距離で実行（向きは作図オプション）。入れた距離は、作図オプションの「オフセット距離」にも残る。Esc・×・選んだ図形が無くなったら閉じる。キー（Shift+O）と左のボタンは、これまでどおりすぐ実行。 */
+let offsetSelSolid = false;
+const offsetSelSideKey = () => { const v = $('offsetSide').value; return ['in', 'out', 'both'].includes(v) ? v : 'out'; };   /* 「カーソルの側」は選んだ図形には使えないので、外側 */
+function openOffsetSelBar(solid) {
+  offsetSelSolid = solid; const side = offsetSelSideKey();
+  $('offsetSelBarMode').textContent = t(solid ? 'offsetSelBarSolid' : 'offsetSelBarDashed') + '（' + t(side === 'both' ? 'offsetSelBothName' : side === 'in' ? 'offsetSelSideIn' : 'offsetSelSideOut') + '）';
+  $('offsetSelDist').value = $('offsetDist').value; $('offsetSelBar').hidden = false; $('offsetSelDist').focus?.(); $('offsetSelDist').select?.();
+}
+function closeOffsetSelBar() { $('offsetSelBar').hidden = true; }
+function applyOffsetSelBar() {
+  const raw = String($('offsetSelDist').value).trim(), d = Number(raw);
+  if (raw === '' || !Number.isFinite(d) || d <= 0) { $('hint').textContent = t('invalidNumber'); return; }
+  $('offsetDist').value = String(d); closeOffsetSelBar(); offsetSelectedShapes({ solid: offsetSelSolid }); canvas.focus?.();
+}
+$('offsetSelRun').onclick = applyOffsetSelBar; $('offsetSelClose').onclick = closeOffsetSelBar;
+$('offsetSelDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyOffsetSelBar(); } else if (e.key === 'Escape') { e.stopPropagation?.(); closeOffsetSelBar(); canvas.focus?.(); } });
+function refreshOffsetSelBar() { if (!$('offsetSelBar').hidden && !selectedShapeIds().size) closeOffsetSelBar(); }   /* 選んだ図形が無くなったら、窓も閉じる */
 function applyRotate() {
   const angle = Number($('rotateA').value);
   if (String($('rotateA').value).trim() === '' || !Number.isFinite(angle)) { $('hint').textContent = t('invalidNumber'); return; }
