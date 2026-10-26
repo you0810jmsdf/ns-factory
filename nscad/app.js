@@ -2,7 +2,7 @@ import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
 import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -2866,6 +2866,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
+  $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
@@ -2892,7 +2893,7 @@ function initDesign() {
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   /* 窓の×と、見出しのドラッグ（柄・目打ち・拡大縮小・移動の窓で共通）。×＝柄・目打ちは、そのツールをやめる（選択ツールへ）／拡大縮小・移動は、窓を右列のカードへ戻す（見出し summary の開閉は起こさない）。
      窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
-  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true } })) {
+  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true }, textFontCard: { head: 'textFontWinHead', close: 'textFontWinClose', tool: false, back: false, hide: true } })) {
     $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, back !== false); if (hide) $(card).hidden = true; });   /* hide＝右列のカードに戻さず、閉じたら隠す（「菱目・丸目をまとめて変える」は、開くのは右クリックだけ） */
     const head = $(headId); let drag = null; const isWin = () => $(card).dataset.win === '1';
     head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
@@ -4890,10 +4891,10 @@ function renderPhraseList(selectName) {
   const sel = $('phraseSel'), keep = selectName ?? sel.value; sel.textContent = '';
   for (const p of phrases) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); }
   sel.value = phrases.some(p => p.name === keep) ? keep : (phrases[0]?.name || '');
-  const cur = phrases.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; }
+  const cur = phrases.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; $('phraseFont').value = cur.font || 'gothic'; if (cur.size) $('phraseSize').value = String(cur.size); }   /* 句が覚えている書体・大きさ（覚えていなければ、欄はそのまま） */
 }
 function savePhrase() {
-  let r; try { r = upsertPhrase(phrases, $('phraseName').value, $('phraseText').value); } catch { $('hint').textContent = t('phraseEmpty'); return; }
+  let r; try { r = upsertPhrase(phrases, $('phraseName').value, $('phraseText').value, { font: $('phraseFont').value, size: Number($('phraseSize').value) }); } catch { $('hint').textContent = t('phraseEmpty'); return; }
   phrases = r.items; if (!persistPhrases()) return; renderPhraseList(r.name); $('hint').textContent = t('phraseSaved', { name: r.name });
 }
 function deletePhrase() { const name = $('phraseSel').value; if (!name) return; phrases = removePhrase(phrases, name); if (!persistPhrases()) return; $('phraseName').value = ''; $('phraseText').value = ''; renderPhraseList(''); $('hint').textContent = t('phraseDeleted', { name }); }
@@ -4901,10 +4902,48 @@ function placePhrase(at) {
   const lines = phraseLines($('phraseText').value); if (!lines.some(Boolean)) { $('hint').textContent = t('phraseEmpty'); return; }
   const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
-  const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer);
+  const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
   cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); });
   renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length });
 }
+/* ---- 文字のフォントと大きさをまとめて変える（選んだ文字。定型句で置いた文字も同じ文字図形）----
+   事業主指示 2026-10-26「定型句、文字ともにフォントとフォントサイズを後から変更したい」（フォントは数種類から選ぶ）。「そのまま」（書体＝空・大きさ＝空）の項目は変えない。 */
+const pickedTexts = () => { const ids = selectedShapeIds(); return doc.shapes.filter(s => s.type === 'text' && ids.has(s.id) && editable(s)); };
+const fontLabel = key => t('font' + key[0].toUpperCase() + key.slice(1));
+/** 文字の書体を書く（ゴシック＝標準は書かない＝今までの図面と同じ）。size は mm。戻り値は変えた数。元に戻すは1回。 */
+function applyTextFont({ font, size }) {
+  const list = pickedTexts(); if (!list.length) { $('hint').textContent = t('textFontNone'); return 0; }
+  const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null;
+  const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z));
+  if (!plan.length) { $('hint').textContent = t('textFontSame'); return 0; }
+  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; } });
+  $('hint').textContent = t('textFontDone', { n: plan.length }); return plan.length;
+}
+/** 窓の「選んだ文字：n 個（書体・大きさ）」。 */
+function textFontNowText(list) {
+  const fonts = new Set(list.map(s => s.font || 'gothic')), sizes = new Set(list.map(s => +s.sizeMm.toFixed(2)));
+  return t('textFontNow', { n: list.length, font: fonts.size === 1 ? fontLabel([...fonts][0]) : t('fontMixed'), size: sizes.size === 1 ? [...sizes][0] + ' mm' : t('fontMixed') });
+}
+let textFontKey = '';
+/** 窓の中身を、選んだ文字に合わせる（窓が出ていないときは何もしない・描くたびに呼ぶので、選択・書体・大きさが変わったときだけ数え直す）。fill＝欄の初期値を入れる（窓を開いたとき）：書体・大きさがそろっていればその値、ばらばらなら空（＝そのまま）。 */
+function refreshTextFontCard(force = false, fill = false) {
+  const c = $('textFontCard'); if (!c || c.hidden || c.dataset.win !== '1') return;
+  const list = pickedTexts(), key = list.map(s => s.id + ':' + (s.font || '') + ':' + s.sizeMm).join(',');
+  if (!force && key === textFontKey) return; textFontKey = key;
+  $('tfNow').textContent = list.length ? textFontNowText(list) : t('textFontNone'); $('tfApply').disabled = !list.length;
+  if (!fill) return;
+  const fonts = new Set(list.map(s => s.font || 'gothic')), sizes = new Set(list.map(s => +s.sizeMm.toFixed(2)));
+  $('tfFont').value = fonts.size === 1 ? [...fonts][0] : ''; $('tfSize').value = sizes.size === 1 ? String([...sizes][0]) : '';
+}
+function openTextFontWin() { $('textFontCard').hidden = false; setCardWin('textFontCard', true); refreshTextFontCard(true, true); $('hint').textContent = t('textFontOpened'); }
+function runTextFontApply() {
+  const font = $('tfFont').value, sv = $('tfSize').value, size = sv === '' || sv === null ? null : Number(sv);
+  if (size !== null && !(size >= 0.5 && size <= 200)) { $('hint').textContent = t('textFontInvalid'); return; }
+  if (!font && size === null) { $('hint').textContent = t('textFontNothing'); return; }
+  applyTextFont({ font, size }); refreshTextFontCard(true);
+}
+/** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
+const newTextFont = () => { const v = $('textFont')?.value; return v && v !== 'gothic' && Object.hasOwn(TEXT_FONTS, v) ? { font: v } : {}; };
 /** 書き出し：phrases.json（別の PC へ持っていく・控え）。読み込み：同じ名前は置き換え、新しい名前は足す。 */
 function exportPhrases() { if (!phrases.length) { $('hint').textContent = t('phraseNone'); return; } download('phrases.json', serializePhrases(phrases), 'application/json'); $('hint').textContent = t('phraseExported', { n: phrases.length }); }
 function importPhrasesText(text) {
@@ -5684,7 +5723,7 @@ function drawRectHandles() {
 /** 文字の取っ手（事業主要望 2026-10-21「入力後のテキストを図で直接拡大縮小したい」）：文字を1つだけ選んでいる間（選択・文字ツール）、文字の枠（点線）と右上の角に取っ手が出る。
  *  角をつかんで引くと、左下の基準点（文字の置き場所）を固定したまま、角が対角線の方向に付いてくる大きさ（0.1mm 単位・最小 0.5mm）になる。離すと確定（元に戻すは1回）。回転した文字は、角も一緒に回る。 */
 function textWidthMm(s) {
-  let w = NaN; try { ctx.save(); ctx.font = `${s.sizeMm}px system-ui, sans-serif`; w = ctx.measureText?.(s.text)?.width; ctx.restore(); } catch { /* 測れない環境では概算 */ }
+  let w = NaN; try { ctx.save(); ctx.font = `${s.sizeMm}px ${textFontStack(s.font)}`; w = ctx.measureText?.(s.text)?.width; ctx.restore(); } catch { /* 測れない環境では概算 */ }
   return Number.isFinite(w) && w > 0 ? w : Math.max(0.6, 0.6 * [...s.text].length) * s.sizeMm;   /* 描くときと同じ書体で実測する（日本語は1文字が大きさと同じ幅） */
 }
 const selectedText = () => (mode === 'select' || mode === 'text') && !exporting && selected.size === 1 ? (sh => sh && sh.type === 'text' ? sh : null)(doc.shapes.find(x => selected.has(x.id) && editable(x))) : null;
@@ -5770,7 +5809,7 @@ function placeCalcMemo(m) {
   const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const text = (m.note || m.expr) + ' ＝ ' + fmtCalc(m.result), at = world({ x: width / 2, y: height / 2 });
-  cancel(); commit(() => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'text', x: +at.x.toFixed(3), y: +at.y.toFixed(3), text, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); selected = new Set([id]); });
+  cancel(); commit(() => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'text', x: +at.x.toFixed(3), y: +at.y.toFixed(3), text, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); selected = new Set([id]); });
   renderLayers(); $('hint').textContent = t('calcPlaced', { text });
 }
 function refreshCalcCard() {
@@ -6094,7 +6133,7 @@ function runCommand(raw) {
       if (stage.steps.length === 3) { const [r, s0, s1] = stage.steps; if (r > 0) addShape({ type: 'arc', cx: stage.center.x, cy: stage.center.y, r, startDeg: s0, endDeg: s1 }); lastPoint = stage.center; stage = null; } }
   } else if (mode === 'dimension' || mode === 'text') {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
-    if (mode === 'text') { const content = askText(); if (content) addShape({ type: 'text', x: point.x, y: point.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); }
+    if (mode === 'text') { const content = askText(); if (content) addShape({ type: 'text', x: point.x, y: point.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); }
     else if (stage?.kind !== 'dim') stage = { kind: 'dim', a: point, cmdLast: point }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: point.x, y2: point.y, offset: Number($('dimOffset').value) || 8 }); stage = null; }
     lastPoint = point;
   } else { $('hint').textContent = t('cmdNotHere'); return; }
@@ -6328,7 +6367,7 @@ function updateUI() {
   markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) }) + (Math.abs(scale - actualScale()) < 0.005 ? t('actualMark') : '');
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHoleShapeCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
+  refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -7432,7 +7471,7 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
     }
     ctx.strokeStyle = color; ctx.stroke(); return;
   }
-  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${s.sizeMm}px system-ui, sans-serif`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
+  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${s.sizeMm}px ${textFontStack(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
   if (s.type === 'image') {
     const img = imageElement(s.imageId); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.globalAlpha = s.opacity;
     if (img && typeof ctx.drawImage === 'function') ctx.drawImage(img, 0, 0, s.wMm, s.hMm); else { ctx.fillStyle = '#333'; ctx.fillRect(0, 0, s.wMm, s.hMm); }
@@ -7778,7 +7817,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
-  if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0 }); lastPoint = cursor; } return; }
+  if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); lastPoint = cursor; } return; }
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { bezierClick(cursor); return; }
@@ -7938,7 +7977,7 @@ function initSideTabs() {
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
 function fillCtxCards() {
-  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard'));   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
+  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('textFontCard'));   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
@@ -7947,7 +7986,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }

@@ -982,6 +982,16 @@ export function holeAppearance(h,doc) {
   const d=mark==='dot'?doc.dotD:mark==='circle'?tool.holeW:tool.holeD;
   return {kind,width:kind==='dot'||kind==='circle'?d:tool.holeW,height:kind==='dot'||kind==='circle'?d:tool.holeH,angleDeg:h.angleDeg};
 }
+/** 文字（図形 type 'text'）の書体の選択肢（事業主指示 2026-10-26「フォントとフォントサイズを後から変更したい」→「数種類から選ぶ」）。値は CSS の font-family（引用符は ' ＝ SVG の属性にもそのまま入れられる）。
+ *  図形の font に書く。書かない（undefined）＝ゴシック＝今までの見た目（system-ui で始まる）。見た目は、そのPCに入っているフォントによる（無ければ次の候補へ）。 */
+export const TEXT_FONTS = {
+  gothic: "system-ui, 'Yu Gothic UI', 'Meiryo UI', 'Hiragino Kaku Gothic ProN', sans-serif",
+  mincho: "'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', serif",
+  maru: "'Hiragino Maru Gothic ProN', 'HGMaruGothicMPRO', 'BIZ UDPGothic', 'Yu Gothic UI', sans-serif",
+  hand: "'UD Digi Kyokasho NK-R', 'UD Digi Kyokasho N-R', 'Yu Kyokasho', 'HGKyokashotai', 'Klee One', cursive, sans-serif",
+  mono: "'MS Gothic', 'BIZ UDGothic', Consolas, monospace",
+};
+export const textFontStack = key => TEXT_FONTS[key] || TEXT_FONTS.gothic;
 /** 新しい既定工具配列を返す。名前は翻訳キーとして UI 側で表示する。 */
 export function defaultTools() {
   const make=(id,kind,pitch,teeth)=>({id,name:id,kind,pitch,teeth,holeW:kind==='round'?1:2,holeH:kind==='round'?1:0.8,holeD:1,angleDeg:kind==='round'?0:45,mark:'tool'});
