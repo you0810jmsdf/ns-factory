@@ -3,7 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
-import { resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -419,6 +419,15 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 const outputSelIds = () => selectedShapeIds();
 const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.id)) : null; return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
+/** 書き出し用（SVG・PDF・DXF）：重なった線を1本にした図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた図形は、そのまま（穴が付いたまま出る）。除いた長さは lastDedupe（書き出し後の案内に使う）。
+ *  事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に。…起動のたびに重複する線を削除する機能」 */
+let lastDedupe = null;
+function vectorOutDoc() {
+  const d = outputDoc(); lastDedupe = null; if (!$('outDedupe')?.checked) return d;
+  const keep = new Set(doc.paths.flatMap(p => p.shapeIds)), r = dedupeStrokes(d.shapes, { keepIds: keep });
+  if (!r.touched) return d; lastDedupe = { mm: r.removed, n: r.touched }; return { ...d, shapes: r.shapes };
+}
+const dedupeNote = () => lastDedupe && lastDedupe.mm >= 0.05 ? ' ' + t('outDedupeNote', { mm: lastDedupe.mm.toFixed(1), n: lastDedupe.n }) : '';
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
@@ -2908,7 +2917,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
-  $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
+  $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline(); $('ctx-dedupe').onclick = () => { countUse('ctx_dedupe'); hideCtxMenu(); mergeSelectionOverlaps(); }; $('selDedupe').onclick = () => mergeSelectionOverlaps();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
@@ -3073,14 +3082,14 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(outputDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(outputDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
-  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + savedTo(saved); });
+  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
+  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(outputDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
-  exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + savedTo(saved); });
+  const paper = $('paper').value, bytes = docToPdf(vectorOutDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
+  exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
 /** PNG 書き出しの余白（mm）。寸法の範囲（bbox）には、寸法線と補助線しか入らず、数字（文字）は含まれない：端にある寸法の数字が、2mm の余白からはみ出して、切れたり、ぎりぎりで読みにくかった。
@@ -3168,10 +3177,10 @@ async function openFile(file) {
 }
 function exportDxf() {
   const preset = $('exportPreset').value;
-  const dxf = preset === 'leathercraft' ? leathercraftDxf(outputDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(outputDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
+  const dxf = preset === 'leathercraft' ? leathercraftDxf(vectorOutDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(vectorOutDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
   if (!regGuard('dxf', 'dl')) return;
-  exportFile(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', saved => { $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote() + savedTo(saved); });
+  exportFile(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', saved => { $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 現在の用紙設定（paper・重なり10mm）で割付を計算し、ページ境界とページ番号を薄い赤破線で重ねる。表示専用（draw() 内のみ・出力には含めない）。選択・編集の対象にはしない。 */
 function drawPrintOverlay() {
@@ -6436,7 +6445,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
@@ -7907,6 +7916,18 @@ document.addEventListener?.('keydown', keyLog, true);
 /** ボタン・見本・欄のクリックの記録（押したものの名前・選択数・画面下のメッセージ）。入力欄・選択欄の中身は残さない。 */
 function clickLogNow(e) { const b = e.target?.closest?.('button, select, input, summary, label'); if (!b) return; const form = b.tagName === 'INPUT' || b.tagName === 'SELECT' || b.tagName === 'TEXTAREA'; logOp('click', { id: b.id || '', cls: String(b.className || '').slice(0, 40), data: { ...(b.dataset || {}) }, text: form ? '' : String(b.textContent || '').trim().slice(0, 20), nSel: selected.size, mode, hint: $('hint')?.textContent ?? '' }); }
 document.addEventListener?.('click', e => setTimeout(() => clickLogNow(e), 0), true); /* 押した直後の状態（選択数・メッセージ）を残す */
+/** 「重なった線を1本にまとめる」（選んだ範囲・事業主 2026-10-26「起動しなくても選択範囲で重複する線、曲線を全部統合する機能がほしい」）：選んだ図形の、重なった線・曲線（直線・折れ線・円弧・円）を、図面の上で1本にまとめる。
+ *  塗り（領域の塗りが囲む図形）・縫い穴の経路・部品・格子の記録に使われている図形と、ロック・非表示の図形は、そのまま（重なる相手の線は、これを避けて残る）。グループ・層・線種・折り展開の線かどうかが違う線は、まとめない。元に戻すは1回。書き出しでは、これらも自動で1本にして出す（vectorOutDoc）。 */
+function mergeSelectionOverlaps() {
+  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
+  const sel = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), keep = new Set([...doc.paths.flatMap(p => p.shapeIds), ...(doc.parts || []).flatMap(p => p.shapeIds || []), ...(doc.fills || []).flatMap(f => f.ids || []), ...(doc.grids || []).flatMap(g => [...(g.ids || []), ...(g.frameIds || []), ...(g.pieceIds || [])]), ...sel.filter(s => !editable(s)).map(s => s.id)]);
+  const r = dedupeStrokes(sel, { keepIds: keep, splitBy: s => (groupIdOf(s) || '') + '|' + (s.foldFlat || '') });
+  if (!r.touched) { $('hint').textContent = t('dedupeNone'); return; }
+  const now = new Set(r.shapes.map(s => s.id)), gone = new Set(sel.filter(s => !now.has(s.id)).map(s => s.id)), made = r.shapes.filter(s => !ids.has(s.id)), kept = sel.filter(s => keep.has(s.id)).length;
+  cancel();
+  commit(() => { const at = doc.shapes.findIndex(s => gone.has(s.id)); doc.shapes = doc.shapes.filter(s => !gone.has(s.id)); doc.shapes.splice(Math.min(at, doc.shapes.length), 0, ...made); selected = new Set([...selected].filter(id => !gone.has(id)).concat(made.map(s => s.id))); });
+  $('hint').textContent = t('dedupeDone', { mm: r.removed.toFixed(1), n: gone.size, m: made.length, keep: kept ? t('dedupeKept', { k: kept }) : '' }).trim(); draw();
+}
 /** 「外周の線だけ選ぶ」：選んだ図形のうち、いちばん外の輪郭をつくる線だけを選び直す（図面は変えない・事業主 2026-10-26「外周だけ青色にしたい」）。
  *  格子（パッチ）を選んでいれば、その格子の枠（作ったときの外周の線）と、枠の縁の上に重なった線。ほかは、一周つながった輪郭（outlineShapeIds）。見つからないときは、選択を変えずに案内する。 */
 function selectOutline() {
@@ -8125,7 +8146,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
