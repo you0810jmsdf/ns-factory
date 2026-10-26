@@ -2932,6 +2932,9 @@ function initDesign() {
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
+  $('ctx-chamfer').onclick = e => { e?.stopPropagation?.(); const sub = $('ctxChamferSub'); sub.hidden = !sub.hidden; };   /* 右クリック → 面取り（丸・角）：押すと、丸め・面取りの2つが、その下に開く（左の「編集」から移した・事業主指示 2026-10-26「面取り（丸、角）として統合」。キー F・Shift+C は今までどおり） */
+  $('ctx-fillet').onclick = () => { countUse('ctx_fillet'); hideCtxMenu(); setMode('fillet'); }; $('ctx-chamferc').onclick = () => { countUse('ctx_chamfer'); hideCtxMenu(); setMode('chamfer'); };
+  $('ctx-offsettool').onclick = () => { countUse('ctx_offsettool'); hideCtxMenu(); setMode('offset'); }; $('ctx-trim').onclick = () => { countUse('ctx_trim'); hideCtxMenu(); setMode('trim'); }; $('ctx-mirror').onclick = () => { countUse('ctx_mirror'); hideCtxMenu(); setMode('mirror'); };   /* オフセット・トリム・線対称：左の「編集」「選択中」から移した（キー O・Shift+T・M は今までどおり）。線対称は、図形を選んでいるときだけ出る（左のボタンが押せない条件と同じ） */
   $('ctx-center').onclick = () => { hideCtxMenu(); centerOnStart('xy'); };
   $('ctx-lattice').onclick = () => { hideCtxMenu(); removeLatticeLines(); };
   $('ctx-round').onclick = () => { hideCtxMenu(); removeLatticeLines('round'); };   /* 事業主 2026-10-25「丸目も消したい。格子と丸目の両方を消すこともある」 */
@@ -8202,7 +8205,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-offset', 'ctx-dedupe', 'ctx-outline', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch']], ['fold', []], ['color', []], ['parts', ['ctx-lib']], ['draw', ['ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['fold', []], ['color', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-mirror', 'ctx-trim', 'ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { hwEditCard: 'parts' }, CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'color', fold: 'fold', parts: 'parts', out: 'out' };
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
@@ -8246,7 +8249,7 @@ function fillCtxSel() {
   }
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   distributeCtxCards(); updateCtxTree(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
