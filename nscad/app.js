@@ -6445,7 +6445,25 @@ function selectedLineHoleStats() {
   const nearLine = nearShapeFn(withLen, 0.3, distTo), holes = doc.holes.filter(h => holeVisible(h) && nearLine(h)).length;
   return { len, holes };
 }
-/** 左の情報パネル（第1段・読み取り専用）：状態／選んだもの／図面／案内（事業主 2026-10-26「左メニューを「情報」に変える」）。
+/** 「情報」カード（数値を直す欄）の置き場：パソコン幅は、左の情報パネルの「選んだもの」（HTML のまま）。スマホ幅（760px 以下）は、左の列が出ないので、下の引き出し（#side）の先頭（事業主 2026-10-26「情報パネルの次の段」）。幅が変わったら置き直す。 */
+function placeInfoCard() {
+  const card = $('infoCard'), side = $('side'), home = $('ipBlock-sel'); if (!card?.parentNode || !side || !home) return;
+  const mq = globalThis.matchMedia?.('(max-width: 760px)'); const put = () => { const narrow = globalThis.matchMedia ? globalThis.matchMedia('(max-width: 760px)').matches : false; if (narrow) { const first = side.querySelector?.('details.card'); if (card.parentNode !== side && first) side.insertBefore(card, first); } else if (card.parentNode !== home) home.appendChild(card); };
+  placeInfoCardNow = put; put(); mq?.addEventListener?.('change', put);
+}
+let placeInfoCardNow = () => {};   /* 画面の幅が変わったとき（resize）に呼ぶ置き直し */
+/** 情報パネルの4ブロック（状態・選んだもの・図面・案内）は、見出しを押すと、折りたため、状態を覚える（初めは「案内」だけ折りたたむ＝画面下にも同じ文が出るため）。 */
+const IP_FOLD_KEY = 'leather-cad.ipFolded', IP_BLOCKS = ['ipBlock-state', 'ipBlock-sel', 'ipBlock-doc', 'ipBlock-hint'];
+function ipFolded() { try { const v = localStorage.getItem(IP_FOLD_KEY); if (v !== null) { const a = JSON.parse(v); if (Array.isArray(a)) return a; } } catch { /* 読めなければ、初期の状態 */ } return ['ipBlock-hint']; }
+function toggleInfoBlock(id) {
+  const box = $(id); if (!box) return; box.classList.toggle('collapsed');
+  const now = IP_BLOCKS.filter(b => $(b)?.classList?.contains('collapsed')); try { localStorage.setItem(IP_FOLD_KEY, JSON.stringify(now)); } catch { /* 保存できなくても、折りたたみはできる */ }
+}
+function initInfoPanelFold() {
+  const folded = ipFolded();
+  for (const id of IP_BLOCKS) { const box = $(id); if (!box) continue; box.classList.toggle('collapsed', folded.includes(id)); const head = box.querySelector?.('.ip-h'); if (head) { head.setAttribute?.('role', 'button'); head.onclick = () => toggleInfoBlock(id); } }
+}
+/** 左の情報パネル（第1段：読み取り専用の4ブロック。第2段：「選んだもの」に、数値を直す欄の「情報」カードを移した）：状態／選んだもの／図面／案内（事業主 2026-10-26「左メニューを「情報」に変える」）。
  *  描くたびに呼ばれるので、軽い所（道具・倍率・カーソル・案内）は毎回、重い所（選んだものの全長・図面の集計）は、図面か選択が変わったときだけ計算し直す。 */
 const TOOL_LABEL_KEY = { select: 'select', line: 'line', rect: 'rect', circle: 'circle', arc: 'arc', bezier: 'bezier', path: 'path', text: 'text', dimension: 'dimension', ruler: 'ruler', fillet: 'fillet', chamfer: 'chamfer', divide: 'divideTool', offset: 'offset', trim: 'trim', mirror: 'mirror', stitch: 'stitch', mark: 'markTool', koma: 'ctxKoma', patchfill: 'patchTool' };
 const toolLabel = m => { const k = TOOL_LABEL_KEY[m], s = k ? t(k) : ''; return s && s !== k ? s : String(m || ''); };
@@ -7900,7 +7918,7 @@ function drawSheetBody(lo, hi) {
   updateUI();
 }
 function resize() {
-  const r = canvas.getBoundingClientRect(); width = r.width; height = r.height;
+  placeInfoCardNow(); const r = canvas.getBoundingClientRect(); width = r.width; height = r.height;
   canvas.width = Math.round(width * (window.devicePixelRatio || 1)); canvas.height = Math.round(height * (window.devicePixelRatio || 1)); draw();
   if (view3d) { canvas3d.width = canvas.width; canvas3d.height = canvas.height; render3d(); }
 }
@@ -8112,7 +8130,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
@@ -8185,7 +8203,7 @@ function fillCtxCards() {
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
 const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-offset', 'ctx-dedupe', 'ctx-outline', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch']], ['fold', []], ['color', []], ['parts', ['ctx-lib']], ['draw', ['ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];
-const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts' }, CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'color', fold: 'fold', parts: 'parts', out: 'out' };
+const CTX_CARD_CAT = { hwEditCard: 'parts' }, CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'color', fold: 'fold', parts: 'parts', out: 'out' };
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
   for (const [cat, ids] of CTX_CATS) {
@@ -8582,7 +8600,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initCtxTree(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initCtxTree(); placeInfoCard(); initInfoPanelFold(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 /* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
