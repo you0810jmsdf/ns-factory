@@ -2932,7 +2932,7 @@ function initDesign() {
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
-  $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
+  $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); offsetSelectedShapes(); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); offsetSelectedShapes({ solid: true }); };   /* 実線は、元の図形と同じ層・同じ色（事業主 2026-10-26） */
   $('ctx-chamfer').onclick = e => { e?.stopPropagation?.(); const sub = $('ctxChamferSub'); sub.hidden = !sub.hidden; };   /* 右クリック → 面取り（丸・角）：押すと、丸め・面取りの2つが、その下に開く（左の「編集」から移した・事業主指示 2026-10-26「面取り（丸、角）として統合」。キー F・Shift+C は今までどおり） */
   $('ctx-fillet').onclick = () => { countUse('ctx_fillet'); hideCtxMenu(); setMode('fillet'); }; $('ctx-chamferc').onclick = () => { countUse('ctx_chamfer'); hideCtxMenu(); setMode('chamfer'); };
   $('ctx-offsettool').onclick = () => { countUse('ctx_offsettool'); hideCtxMenu(); setMode('offset'); }; $('ctx-trim').onclick = () => { countUse('ctx_trim'); hideCtxMenu(); setMode('trim'); }; $('ctx-mirror').onclick = () => { countUse('ctx_mirror'); hideCtxMenu(); setMode('mirror'); };   /* オフセット・トリム・線対称：左の「編集」「選択中」から移した（キー O・Shift+T・M は今までどおり）。線対称は、図形を選んでいるときだけ出る（左のボタンが押せない条件と同じ） */
@@ -7184,19 +7184,21 @@ function placeOffsetFloat() {
 /** 選んだ図形を、つながった組ごとにまとめてオフセット（事業主 2026-10-24「オフセットが短い直線のみ動く。複数選択した図形をまとめたあとに右クリックでオフセットするか、ショートカットでまとめて処理できるようにしたい」）。
  *  選んだ図形の中だけで、端がつながったものを1組にして（選んでいない図形は通らない）、組ごとに、作図オプションの「オフセット距離」「向き」（内側・外側・両側。それ以外の向きは外側）でずらす。
  *  結果は、黄色の点線でガイドの層へ（今のオフセットと同じ）。元に戻すは1回。 */
-function offsetSelectedShapes() {
+/** 選んだ図形をオフセット：{ solid: true } のとき、結果は、元の図形と同じ層・同じ色の実線（型紙の線としてそのまま使える）。そうでなければ、これまでどおり、黄色の点線をガイド層に作る（事業主 2026-10-26「実線でのオフセット機能もつけて」・右クリックに別の項目）。 */
+function offsetSelectedShapes(opts = {}) {
+  const solid = opts.solid === true;   /* ボタンの onclick から呼ばれるとイベントが来るので、solid は true のときだけ */
   const ids = selectedShapeIds(), pool = doc.shapes.filter(s => ids.has(s.id) && visible(s) && editable(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type));
   if (!pool.length) { $('hint').textContent = t('offsetSelNeed'); return; }
   const dist = Number($('offsetDist').value); if (!Number.isFinite(dist) || dist <= 0) { $('hint').textContent = t('invalidNumber'); return; }
   const v = ['in', 'out', 'both'].includes($('offsetSide').value) ? $('offsetSide').value : 'out', used = new Set(), groups = [];
-  for (const s of pool) { if (used.has(s.id)) continue; const sel = offsetSpan(pool, s, null, true); if (!sel) continue; for (const id of sel.shapeIds) used.add(id); groups.push({ sel, layer: s.layer }); }
+  for (const s of pool) { if (used.has(s.id)) continue; const sel = offsetSpan(pool, s, null, true); if (!sel) continue; for (const id of sel.shapeIds) used.add(id); groups.push({ sel, layer: s.layer, src: s }); }
   const sideOf = (sel, inner) => { let d = inner ? -dist : dist; if (!sel.closed) { const k = bendInnerSign(sel.points); if (k) d = (inner ? k : -k) * dist; } return d; };   /* 開いた線の「内側」は、曲がりの内側（今のオフセットと同じ）。まっすぐなら、進行方向の左が外側 */
   const results = []; let failed = 0;
-  for (const g of groups) { const ds = v === 'both' ? [sideOf(g.sel, true), sideOf(g.sel, false)] : [sideOf(g.sel, v === 'in')], rs = ds.map(d => offsetSpanResult(g.sel, d, { join: $('offsetJoin').value })); if (rs.some(r => !r)) { failed++; continue; } results.push(...rs); }
+  for (const g of groups) { const ds = v === 'both' ? [sideOf(g.sel, true), sideOf(g.sel, false)] : [sideOf(g.sel, v === 'in')], rs = ds.map(d => offsetSpanResult(g.sel, d, { join: $('offsetJoin').value })); if (rs.some(r => !r)) { failed++; continue; } results.push(...rs.map(r => ({ r, g }))); }
   if (!results.length) { $('hint').textContent = t('impossible'); return; }
   const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || groups[0].layer;
-  cancel(); offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } });
-  $('hint').textContent = t('offsetSelDone', { n: groups.length - failed, d: dist, side: v === 'both' ? t('offsetSelBothName') : t(v === 'in' ? 'offsetIn' : 'offsetOut') }) + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
+  cancel(); offsetSelection = null; commit(() => { selected = new Set(); for (const { r, g } of results) { const id = freshId(doc.shapes, 's'); if (solid) { const o = { ...r, id, layer: g.layer }; delete o.lineStyle; if (g.src.color) o.color = g.src.color; else delete o.color; doc.shapes.push(o); } else doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } });
+  $('hint').textContent = t(solid ? 'offsetSelDoneSolid' : 'offsetSelDone', { n: groups.length - failed, d: dist, side: v === 'both' ? t('offsetSelBothName') : t(v === 'in' ? 'offsetIn' : 'offsetOut') }) + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
 function runOffset(override = null) {
   let sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
@@ -8186,7 +8188,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-mirror', 'ctx-trim', 'ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts' }, CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
@@ -8230,7 +8232,7 @@ function fillCtxSel() {
   }
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   distributeCtxCards(); updateCtxTree(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
