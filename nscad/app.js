@@ -2870,6 +2870,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
+  $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
@@ -3688,6 +3689,19 @@ function changeMetalStyle() {
   $('hint').textContent = t('metalStyleChanged', { n: ids.size, name });
 }
 /** 塗りを全部消す。事業主 2026-10-25「特定のエリアだけ色を消したいのに全部消えた」（不具合記録 08:41：「全部消す」を押して12か所が一度に消えた）→ 1回目は確認だけ、5秒以内にもう一度押すと消す（元に戻すは1回）。1か所だけ消すなら「塗りを1か所ずつ消す」。 */
+/** 選んだ範囲の色塗りを全部消す（事業主 2026-10-26「選択した範囲の色塗りを全部削除したい」：既存の「線で囲まれた場所の塗りを、全部消す」は図面全体が対象）。
+ *  消すもの：①選んだ図形に囲まれた領域の塗り（革・質感・金属・透明の抜き。「動かすと塗りがついてくる」と同じ判定＝fillFollows）②選んだ図形に付いた革色・質感（グループの印も）・金属の色 ③選んだ部品の色。選んでいない図形の塗りは残る。元に戻すは1回。戻り値 { fills, shapes }。 */
+const PAINT_KEYS = ['leather', 'texture', 'leatherGroup', 'metal', 'metalStyle'];
+function unpaintSelection() {
+  const none = { fills: 0, shapes: 0 }, ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('unpaintNone'); return none; }
+  const byId = new Map(doc.shapes.map(s => [s.id, s])), fillIds = new Set((doc.fills || []).filter(fl => fillFollows(fl, ids, byId)).map(fl => fl.id));
+  const shapeIds = new Set(doc.shapes.filter(s => ids.has(s.id) && editable(s) && PAINT_KEYS.some(k => k in s)).map(s => s.id)), parts = (doc.parts || []).filter(p => p.color && p.shapeIds.length && p.shapeIds.every(id => ids.has(id)));
+  if (!fillIds.size && !shapeIds.size && !parts.length) { $('hint').textContent = t('unpaintNone'); return none; }
+  commit(() => { doc.fills = (doc.fills || []).filter(f => !fillIds.has(f.id)); for (const s of doc.shapes) if (shapeIds.has(s.id)) for (const k of PAINT_KEYS) delete s[k]; for (const p of doc.parts || []) if (parts.some(q => q.id === p.id)) delete p.color; });
+  $('hint').textContent = t('unpaintDone', { f: fillIds.size, s: shapeIds.size }); return { fills: fillIds.size, shapes: shapeIds.size };
+}
+/** 右クリックに「選んだ範囲の色塗りを全部消す」を出すか：何か選んでいて、図面に領域の塗りがあるか、選んだ図形に色が付いているとき（軽く調べる） */
+const selectionHasPaint = () => selected.size > 0 && ((doc.fills || []).length > 0 || doc.shapes.some(s => selected.has(s.id) && PAINT_KEYS.some(k => k in s)));
 let fillsClearArmedAt = 0;
 /** 図形から離れて残った塗り（宙に浮いた塗り）を、1回で消す（事業主 2026-10-25「どうやっても消せない」：消した図形・動かした図形の色だけが、元の場所に残り、選べないので消せなかった。図面を開き直すと消える仕組みはあるが、開いたまま消せるように）。元に戻すは1回。 */
 function clearDetachedFills() {
@@ -8026,7 +8040,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
