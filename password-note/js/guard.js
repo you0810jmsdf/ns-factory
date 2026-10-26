@@ -9,6 +9,8 @@
  * 守り
  *   - 見守りの鍵が未設定なら、一切通信しない（鍵を入れていない人・端末には影響しない）。
  *   - 送るのは「種類」だけ。合言葉・登録内容・画像は一切送らない。
+ *     例外として、自動ログイン('auto')にだけ「開き方」（再読み込みか新しく開いたか等）の目印を付ける。
+ *     通知メールで、本人が身に覚えのない通知かどうかを見分けるため。値は決まった語だけ（秘密は含まない）。
  *   - 通信の失敗はログイン・保存を止めない（黙って捨てる）。結果は設定画面の「最後の送信」で見える。
  *   - 鍵は保管庫（vault.guard.key）の中に入れる＝合言葉で暗号化される。端末に平文では残さない。
  *   - localStorage に置くのは「鍵を設定済み」の印と、最後の送信結果（種類・時刻・成否）だけ。
@@ -30,6 +32,29 @@ const Guard = (() => {
 
   function key() {
     try { return (typeof vault !== 'undefined' && vault && vault.guard && vault.guard.key) || ''; } catch (e) { return ''; }
+  }
+
+  // このタブで以前にも開いたか（開き方の目印）。サイト更新による自動の再読み込みと、新しく開いた場合を見分ける。
+  // 見守りを設定済みの端末だけで、タブごとの sessionStorage に印を1つ付ける（他の利用者の端末には何も残さない）。
+  const TAB_SEEN = 'pwn_tab_seen';
+  let tabKind = '';
+  try {
+    if (ls.get(FLAG) === '1') {
+      tabKind = sessionStorage.getItem(TAB_SEEN) ? 'again' : 'new';
+      sessionStorage.setItem(TAB_SEEN, '1');
+    }
+  } catch (e) { /* 使えなくても動く（tab は付けない） */ }
+
+  /** 自動ログインに付ける「開き方」。how＝ブラウザの読み込み種別（navigate/reload/back_forward/prerender）、tab＝new/again、vis＝visible/hidden */
+  function openInfo() {
+    const o = {};
+    try {
+      const nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type) o.how = nav.type;
+    } catch (e) { /* 取れなければ付けない（Worker は従来の通知にする） */ }
+    if (tabKind) o.tab = tabKind;
+    try { if (document.visibilityState) o.vis = document.visibilityState; } catch (e) { /* */ }
+    return o;
   }
 
   async function post(path, body, withKey) {
@@ -58,7 +83,7 @@ const Guard = (() => {
       if (t - lastSave < SAVE_GAP_MS) return;
       lastSave = t;
     }
-    post('/ping', { type }, true).then(res => record(type, res));
+    post('/ping', type === 'auto' ? { type, ...openInfo() } : { type }, true).then(res => record(type, res));
   }
 
   /** ログイン失敗。保管庫を開く前なので鍵は無い。設定済みの端末の印がある時だけ送る */
