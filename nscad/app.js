@@ -8006,7 +8006,7 @@ canvas.addEventListener('pointerdown', e => {
   longPressStart(e); hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
-  e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
+  e.preventDefault(); canvas.focus(); globalThis.getSelection?.()?.removeAllRanges?.(); const p = local(e); canvas.setPointerCapture(e.pointerId);   /* ページ内の文字の選択が残ったままだと、Ctrl+C を「文字のコピー」とみなして図形をコピーしない（onClipCopy）。図を押したら、文字の選択は解除する（事業主 2026-10-26「選択した図形のコピーペーストができない」・左の欄の文字が選ばれたままだった） */
   if (quadOn()) { const role = quadRoleAt(p); if (role === 'solid') { if (e.button === 0) gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } if (role !== quadRole()) switchSheet(role); } /* 4分割：押した区画の紙に切り替える。右上は立体を回す */
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */
