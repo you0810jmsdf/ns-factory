@@ -6115,8 +6115,11 @@ function mergeOverlaps() {
   });
   $('hint').textContent = t(skipped ? 'dupMergedSkip' : 'dupMerged', { k: removed, n: plan.length, s: skipped });
 }
+/** 線対称コピー。選んだ図形（と、その線の穴）に加えて、図形ごと写されない穴（穴だけ選んだ・線の一部しか選んでいない）も、軸の反対側にコピーする。
+ *  事業主 2026-10-26「丸目の線対称コピーができない」：穴だけを選ぶと「先に図形を選択してください」で止まっていた。穴は線の上にしか置けないので、反射した位置を通る見えない補助の線（holeLink・ガイド層）を作り、その上に置く（工具・種類・傾きは元のまま）。 */
 function mirrorCopy(a, b) {
-  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
+  const ids = selectedShapeIds(), lone = doc.holes.filter(h => selected.has(h.id) && holeEditable(h) && !doc.paths.find(p => p.id === h.pathId)?.shapeIds.every(id => ids.has(id)));   /* lone＝選んだ穴のうち、乗っている線が（全部は）選ばれていないもの */
+  if (!ids.size && !lone.length) { $('hint').textContent = t('selectFirst'); return; }
   cancel();
   commit(() => {
     const map = new Map(), paths = [...doc.paths], holes = [...doc.holes];
@@ -6129,7 +6132,17 @@ function mirrorCopy(a, b) {
         doc.holes.push({ ...reflected, s: route ? projectOnPath(route, reflected).s : h.s, id: freshId(doc.holes, 'h'), pathId: id });
       }
     }
-    selected = new Set(map.values()); if (doc.shapes.some(s => ids.has(s.id) && partOf(s))) flipMark(selected);
+    const madeHoles = [], byPath = new Map(); for (const h of lone) { if (!byPath.has(h.pathId)) byPath.set(h.pathId, []); byPath.get(h.pathId).push(h); }
+    for (const [pid, list] of byPath) {
+      list.sort((u, v) => u.s - v.s); const orig = doc.paths.find(p => p.id === pid), origRoute = orig && resolvePath(doc, orig), refl = list.map(h => keepHoleSlant(reflectAcross(h, a, b), h));
+      let pts = refl.map(h => ({ x: h.x, y: h.y })).filter((q, i, arr) => !i || distance(q, arr[i - 1]) > 1e-6);
+      if (pts.length < 2) { const tan = (origRoute ? pointAtLength(origRoute, list[0].s).angleDeg : 0) * Math.PI / 180, q = reflectAcross({ ...list[0], x: list[0].x + Math.cos(tan) * 0.5, y: list[0].y + Math.sin(tan) * 0.5 }, a, b); pts = [{ x: refl[0].x, y: refl[0].y }, { x: q.x, y: q.y }]; }   /* 穴が1個だけのとき：元の線の向き（鏡に映した向き）に、0.5mm の補助の線 */
+      const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: ensureLayer(doc, 'guide'), type: 'polyline', holeLink: true, closed: false, points: pts });
+      const npid = freshId(doc.paths, 'p'), np = { id: npid, shapeIds: [sid], reversed: false, closed: false, segments: [], mark: orig?.mark || 'tool', ...(orig?.thread ? { thread: orig.thread, threadHex: orig.threadHex } : {}) }; doc.paths.push(np);
+      const route = resolvePath(doc, np);
+      for (const h of refl) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id, pathId: npid, s: route ? projectOnPath(route, h).s : 0 }); madeHoles.push(id); }
+    }
+    selected = new Set([...map.values(), ...madeHoles]); if (doc.shapes.some(s => ids.has(s.id) && partOf(s))) flipMark(selected);
   });
 }
 function runCommand(raw) {
