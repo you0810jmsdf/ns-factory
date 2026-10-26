@@ -3658,8 +3658,11 @@ const isMetalShape = s => !s || METAL_ROLES.has(s.role) || !!s.hw || !!s.hwHole 
 const regionHasLeatherRole = (r, picked) => r.ids.some(id => { if (picked?.has(id)) return false; const s = doc.shapes.find(x => x.id === id); return !!s?.role && !METAL_ROLES.has(s.role); });   /* 断面の革・リフィル・リフィルの穴の線（役割が金属以外）を、選んでいないのに含む場所（選んだ線は、塗ってよい） */
 const regionTouchesMetalRole = r => r.ids.some(id => METAL_ROLES.has(doc.shapes.find(x => x.id === id)?.role));   /* リング・台座の線を含む場所：革色・質感は、金属の部分のまわりの小さな場所（台座の中など）には塗らない */
 const regionIsMetalOnly = (r, nonLeather = false) => r.ids.length > 0 && r.ids.every(id => (nonLeather ? isNonLeatherShape : isMetalShape)(doc.shapes.find(x => x.id === id)));
+/** クリックした場所を囲む場所。標準（線のすき間を 0.8mm・2.5mm まで閉じて数える）で見つからないときだけ、細かい判定（0.1mm・0.3mm）でもう一度探す。
+ *  事業主 2026-10-26「白の色が塗れない」（クリックしても「塗れる場所がありません」）：不具合記録の座標は、幅 0.8mm ほどの細い場所で、標準の判定では線に埋もれて「場所が無い」になっていた。標準で見つかる場所は、今までどおり。 */
+function enclosedAreaForClick(p) { const shapes = regionShapes(); return enclosedAreaAt(shapes, p) || enclosedAreaAt(shapes, p, { gaps: [0.1, 0.3] }); }
 function addRegionFill(p, brush) {
-  const r = enclosedAreaAt(regionShapes(), p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
+  const r = enclosedAreaForClick(p); if (!r) { $('hint').textContent = t('paintNoRegion'); return false; }
   if (brush.kind !== 'metal' && regionIsMetalOnly(r)) { $('hint').textContent = t('paintMetalRegion'); return false; }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), nf = { id: freshId(doc.fills || [], 'f'), points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillLayerNow(), ...fillPayload(brush, r.ids) };
   commit(() => { doc.fills = (doc.fills || []).filter(o => !(o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id)) && fillContains(o, p))); doc.fills.push(nf); });   /* 同じ領域（クリックした場所を含む同じ囲み）は置き換える。同じ図形で囲まれた別の場所（リングの輪の上下など）の塗りは残す */
@@ -3820,7 +3823,7 @@ function paintItem(it) {
 const clearShapeRegion = s => { const poly = outlinePolygon([s], s.id)?.points; return poly && poly.length >= 3 ? { points: poly, holes: [], ids: [s.id], area: leatherItemArea(poly) } : null; };
 const clearableShape = s => (s.closed || s.type === 'circle') && !['text', 'dimension', 'image', 'fold'].includes(s.type) && visible(s) && editable(s);
 function clearRegionAt(p) {
-  const cands = []; const r = enclosedAreaAt(regionShapes(), p); if (r) cands.push(r);
+  const cands = []; const r = enclosedAreaForClick(p); if (r) cands.push(r);
   for (const s of doc.shapes) { if (!clearableShape(s)) continue; const reg = clearShapeRegion(s); if (reg && insideRing(p, reg.points)) cands.push(reg); }
   return cands.sort((a, b) => a.area - b.area)[0] || null;
 }
