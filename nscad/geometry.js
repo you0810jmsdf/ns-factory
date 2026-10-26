@@ -1025,6 +1025,79 @@ export function collinearLineClusters(list, { gap = 0.5, dist = 0.01, cross = 1e
   }
   return out;
 }
+/** 書き出し用：重なった線を1本にする（図面は変えない・事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に」）。
+ *  対象は、直線・折れ線（開いた・閉じた・曲線を折れ線にしたもの）・円弧・円。同じ層・同じ線種の中で、同じ直線の上（ずれ tol mm 以内）で長さの途中が重なる線分（隣のマスが共有する辺・向きが逆の二重の線・頂点が少しずれた曲線の二重）と、同じ中心・半径の円弧・円の重なる角度を、1本にする。
+ *  色が違う重なりは、色のついた線（白・色なし以外）を残し、色のついた線がない部分だけ、ほかの線が残る。重なっていない図形は、同じ実体のまま（順も同じ）。重なった図形は、重なりを除いた線分に分け、端でつながるものを折れ線につなぎなおす。
+ *  対象外（そのまま）：塗り（革色・質感・金属）がある図形・金具・断面・見えない補助の線・keepIds（縫い穴の経路が付いた図形など）・文字・寸法・ベジェ・パス。戻り値：{ shapes, removed（除いた長さ mm）, touched（まとめた図形の数）}。 */
+export function dedupeStrokes(shapes, { tol = 0.02, keepIds = null, splitBy = null } = {}) {
+  const EPSL = 0.005, eligible = s => (s.type === 'line' || s.type === 'polyline' || s.type === 'arc' || s.type === 'circle') && !s.holeLink && !s.hw && !s.foldSec, fixed = s => !!(keepIds && keepIds.has(s.id)) || !!(s.leather || s.texture || s.metal);   /* fixed＝そのまま残す図形（塗りのある図形・縫い穴の経路が付いた図形）。重なる相手の線は、これを避けて残る */
+  const GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'points', 'closed', 'cx', 'cy', 'r', 'startDeg', 'endDeg', 'joined']), lookOf = s => { const o = {}; for (const [k, v] of Object.entries(s)) if (!GEOM.has(k)) o[k] = v; return o; };
+  const pri = s => (s.color && s.color !== 'white' ? 1 : 0), bucketOf = s => (s.layer ?? '') + '|' + (s.lineStyle || '') + (splitBy ? '|' + splitBy(s) : '');   /* splitBy：まとめない境目を足す（グループなど） */
+  const segs = [], arcs = [];
+  shapes.forEach((s, own) => {
+    if (!eligible(s)) return;
+    const push = (a, b) => { const len = Math.hypot(b.x - a.x, b.y - a.y); if (len > 1e-6) segs.push({ a, b, len, u: { x: (b.x - a.x) / len, y: (b.y - a.y) / len }, own, bucket: bucketOf(s), fixed: fixed(s) }); };
+    if (s.type === 'line') push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
+    else if (s.type === 'polyline' && Array.isArray(s.points)) { const p = s.points; for (let i = 0; i + 1 < p.length; i++) push(p[i], p[i + 1]); if (s.closed && p.length > 2) push(p[p.length - 1], p[0]); }
+    else if (s.type === 'arc') arcs.push({ cx: s.cx, cy: s.cy, r: s.r, s0: norm(s.startDeg), sweep: arcSweep(s), own, bucket: bucketOf(s), fixed: fixed(s) });
+    else if (s.type === 'circle') arcs.push({ cx: s.cx, cy: s.cy, r: s.r, s0: 0, sweep: 360, own, bucket: bucketOf(s), fixed: fixed(s) });
+  });
+  const touched = new Set(), out = { segPieces: [], arcShapes: [] }; let before = 0, after = 0;
+  /* ---- 区間（直線の上の [lo, hi]・端の点つき）の和と差 ---- */
+  const unionIv = list => { const a = [...list].sort((p, q) => p.lo.t - q.lo.t), r = []; for (const iv of a) { const last = r.at(-1); if (last && iv.lo.t <= last.hi.t + EPSL) { if (iv.hi.t > last.hi.t) last.hi = iv.hi; } else r.push({ lo: iv.lo, hi: iv.hi }); } return r; };
+  const subIv = (list, covered) => list.flatMap(iv => { let ps = [iv]; for (const c of covered) ps = ps.flatMap(q => { if (c.hi.t <= q.lo.t + EPSL || c.lo.t >= q.hi.t - EPSL) return [q]; const o = []; if (q.lo.t < c.lo.t - EPSL) o.push({ lo: q.lo, hi: c.lo }); if (q.hi.t > c.hi.t + EPSL) o.push({ lo: c.hi, hi: q.hi }); return o; }); return ps; }).filter(iv => iv.hi.t - iv.lo.t > EPSL);
+  const classes = (members, shapeOf) => { const m = new Map(); for (const x of members) { const sh = shapeOf(x), k = sh.color || ''; if (!m.has(k)) m.set(k, { pri: pri(sh), first: x.own, items: [] }); const c = m.get(k); c.first = Math.min(c.first, x.own); c.items.push(x); } return [...m.values()].sort((p, q) => q.pri - p.pri || p.first - q.first); };
+  /* ---- 直線：同じ直線の上で重なる線分を、まとまり（cluster）にする ---- */
+  const parent = segs.map((_, i) => i), find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const cell = 5, grid = new Map(), add = (i, cx, cy) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) { const k = segs[i].bucket + '#' + (cx + dx) + ',' + (cy + dy); if (!grid.has(k)) grid.set(k, new Set()); grid.get(k).add(i); } };
+  segs.forEach((g, i) => { const n = Math.max(1, Math.ceil(g.len / (cell / 2))), seen = new Set(); for (let k = 0; k <= n; k++) { const x = g.a.x + (g.b.x - g.a.x) * k / n, y = g.a.y + (g.b.y - g.a.y) * k / n, cx = Math.floor(x / cell), cy = Math.floor(y / cell), key = cx + ',' + cy; if (!seen.has(key)) { seen.add(key); add(i, cx, cy); } } });
+  const overlaps = (A, B) => { const R = A.len >= B.len ? A : B, S = R === A ? B : A, off = q => Math.abs((q.x - R.a.x) * R.u.y - (q.y - R.a.y) * R.u.x); if (off(S.a) > tol || off(S.b) > tol) return false; const t1 = (S.a.x - R.a.x) * R.u.x + (S.a.y - R.a.y) * R.u.y, t2 = (S.b.x - R.a.x) * R.u.x + (S.b.y - R.a.y) * R.u.y; return Math.min(R.len, Math.max(t1, t2)) - Math.max(0, Math.min(t1, t2)) > EPSL; };
+  for (const set of grid.values()) { const ids = [...set]; for (let x = 0; x < ids.length; x++) for (let y = x + 1; y < ids.length; y++) { const i = ids[x], j = ids[y]; if (find(i) !== find(j) && overlaps(segs[i], segs[j])) parent[find(j)] = find(i); } }
+  const comps = new Map(); segs.forEach((_, i) => { const r = find(i); if (!comps.has(r)) comps.set(r, []); comps.get(r).push(i); });
+  const inCluster = new Set();
+  for (const ids of comps.values()) {
+    if (ids.length < 2) continue; const mem = ids.map(i => segs[i]), free = mem.filter(g => !g.fixed); if (!free.length) continue; const ref = mem.reduce((m, q) => q.len > m.len ? q : m), t = q => (q.x - ref.a.x) * ref.u.x + (q.y - ref.a.y) * ref.u.y, ivOf = g => { const ta = t(g.a), tb = t(g.b); return ta <= tb ? { lo: { t: ta, p: g.a }, hi: { t: tb, p: g.b } } : { lo: { t: tb, p: g.b }, hi: { t: ta, p: g.a } }; };
+    for (const g of free) { inCluster.add(segs.indexOf(g)); touched.add(g.own); before += g.len; }
+    let covered = unionIv(mem.filter(g => g.fixed).map(ivOf));   /* そのまま残す図形の線が通る範囲は、先に塞がれたものとして数える */
+    for (const cls of classes(free, g => shapes[g.own])) {
+      const ivs = unionIv(cls.items.map(ivOf)), rep = cls.items.reduce((m, q) => q.len > m.len ? q : m);
+      for (const iv of subIv(ivs, covered)) { out.segPieces.push({ a: iv.lo.p, b: iv.hi.p, look: lookOf(shapes[rep.own]), first: rep.own }); after += Math.hypot(iv.hi.p.x - iv.lo.p.x, iv.hi.p.y - iv.lo.p.y); }
+      covered = unionIv(covered.concat(ivs));
+    }
+  }
+  /* ---- 円弧・円：同じ中心・半径の円弧の、重なる角度を1つにする ---- */
+  const ap = arcs.map((_, i) => i), af = i => { while (ap[i] !== i) { ap[i] = ap[ap[i]]; i = ap[i]; } return i; };
+  for (let i = 0; i < arcs.length; i++) for (let j = i + 1; j < arcs.length; j++) { const A = arcs[i], B = arcs[j]; if (A.bucket === B.bucket && Math.abs(A.cx - B.cx) <= tol && Math.abs(A.cy - B.cy) <= tol && Math.abs(A.r - B.r) <= tol && af(i) !== af(j)) ap[af(j)] = af(i); }
+  const ac = new Map(); arcs.forEach((_, i) => { const r = af(i); if (!ac.has(r)) ac.set(r, []); ac.get(r).push(i); });
+  const split = a => { const e = a.s0 + a.sweep; return e > 360 + 1e-9 ? [{ lo: { t: a.s0 }, hi: { t: 360 } }, { lo: { t: 0 }, hi: { t: e - 360 } }] : [{ lo: { t: a.s0 }, hi: { t: Math.min(e, 360) } }]; };
+  for (const ids of ac.values()) {
+    const mem = ids.map(i => arcs[i]); if (mem.length < 2) continue; const free = mem.filter(g => !g.fixed); if (!free.length) continue; const ref = mem.reduce((m, q) => q.sweep > m.sweep ? q : m), len = a => a.r * Math.PI / 180 * a.sweep;
+    for (const g of free) { touched.add(g.own); before += len(g); }
+    let covered = unionIv(mem.filter(g => g.fixed).flatMap(split));
+    for (const cls of classes(free, g => shapes[g.own])) {
+      const ivs = unionIv(cls.items.flatMap(split)), rep = cls.items.reduce((m, q) => q.sweep > m.sweep ? q : m), look = lookOf(shapes[rep.own]); let rem = subIv(ivs, covered);
+      if (rem.length > 1 && rem[0].lo.t <= EPSL && rem.at(-1).hi.t >= 360 - EPSL) { const last = rem.pop(); rem[0] = { lo: last.lo, hi: { t: rem[0].hi.t + 360 } }; }   /* 0° をまたぐ円弧は、1つにつなぐ */
+      for (const iv of rem) { const sweep = iv.hi.t - iv.lo.t; after += ref.r * Math.PI / 180 * Math.min(sweep, 360); out.arcShapes.push(sweep >= 360 - EPSL ? { ...look, type: 'circle', cx: ref.cx, cy: ref.cy, r: ref.r, first: rep.own } : { ...look, type: 'arc', cx: ref.cx, cy: ref.cy, r: ref.r, startDeg: iv.lo.t, endDeg: iv.lo.t + sweep, first: rep.own }); }
+      covered = unionIv(covered.concat(ivs));
+    }
+  }
+  if (!touched.size) return { shapes, removed: 0, touched: 0 };
+  /* ---- 重なった図形の、重なっていない線分も集め、端でつながるものを折れ線につなぎなおす ---- */
+  const pieces = out.segPieces.slice(); segs.forEach((g, i) => { if (touched.has(g.own) && !inCluster.has(i)) pieces.push({ a: g.a, b: g.b, look: lookOf(shapes[g.own]), first: g.own }); });
+  const byLook = new Map(); for (const pc of pieces) { const k = JSON.stringify(pc.look); if (!byLook.has(k)) byLook.set(k, []); byLook.get(k).push(pc); }
+  const used = new Set(shapes.map(s => s.id)); let seq = 0; const freshId = () => { let id; do id = 'dd' + (++seq); while (used.has(id)); used.add(id); return id; }, made = [], nodes = new Map(), cellN = Math.max(tol * 2, 0.04), nk = q => { const cx = Math.floor(q.x / cellN), cy = Math.floor(q.y / cellN); for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (const n of nodes.get((cx + dx) + ',' + (cy + dy)) || []) if (Math.hypot(n.x - q.x, n.y - q.y) <= tol) return n.id; const n = { x: q.x, y: q.y, id: 'n' + nodes.size }, key = cx + ',' + cy; if (!nodes.has(key)) nodes.set(key, []); nodes.get(key).push(n); return n.id; };   /* 端の近さ（tol mm 以内）で、同じ点とみなす */
+  for (const list of byLook.values()) {
+    const adj = new Map(), taken = new Set(); list.forEach((pc, i) => { for (const q of [pc.a, pc.b]) { const k = nk(q); if (!adj.has(k)) adj.set(k, []); adj.get(k).push(i); } });
+    const walk = (startK, start) => { const pts = [start]; let k = startK; for (;;) { const nxt = (adj.get(k) || []).find(i => !taken.has(i)); if (nxt === undefined) break; taken.add(nxt); const pc = list[nxt], cur = nk(pc.a) === k ? pc.b : pc.a; k = nk(cur); pts.push(cur); } return pts; };
+    const emit = (pts, first) => { const look = list[0].look; if (pts.length === 2) made.push({ first, shape: { ...look, id: freshId(), type: 'line', x1: pts[0].x, y1: pts[0].y, x2: pts[1].x, y2: pts[1].y } }); else { const closed = nk(pts[0]) === nk(pts.at(-1)) && pts.length > 3; made.push({ first, shape: { ...look, id: freshId(), type: 'polyline', closed, points: (closed ? pts.slice(0, -1) : pts).map(q => ({ x: q.x, y: q.y })) } }); } };
+    for (const [k, ids] of adj) if (ids.length === 1 && !taken.has(ids[0])) { const pc = list[ids[0]], start = nk(pc.a) === k ? pc.a : pc.b; emit(walk(k, start), pc.first); }   /* 端から端へ */
+    list.forEach((pc, i) => { if (!taken.has(i)) emit(walk(nk(pc.a), pc.a), pc.first); });   /* 輪（閉じた形）・枝分かれの残り */
+  }
+  for (const a of out.arcShapes) { const { first, ...shape } = a; made.push({ first, shape: { ...shape, id: freshId() } }); }
+  const firstTouched = Math.min(...touched); let inserted = false; const result = [];
+  shapes.forEach((s, i) => { if (touched.has(i)) { if (!inserted && i === firstTouched) { inserted = true; for (const m of made.sort((p, q) => p.first - q.first)) result.push(m.shape); } } else result.push(s); });
+  return { shapes: result, removed: Math.max(0, before - after), touched: touched.size };
+}
 /** 小さな菱形・四角（4つの頂点で一周する折れ線・大きさ maxMm 以下）の中心＝4つの頂点の平均。一周＝閉じた折れ線、または始点と終点が同じ位置の開いた折れ線（菱目の作り）。
  *  （事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」：円には中心のスナップがあるが、菱形には無く、頂点にしか吸い付かなかった）。大きな図形・4頂点でない図形・線・円は対象外。戻り値は [{ x, y }]。 */
 export function smallLoopCenters(list, { maxMm = 12 } = {}) {
