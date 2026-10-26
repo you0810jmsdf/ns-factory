@@ -180,6 +180,7 @@ const CROP_FALLBACK_ZOOM = 3; // CADの質感が使えない革だけ、従来�
    マルゴーフォグ12色は更に「ランダム回転＋境目ぼかし」の3×3大判にしてある。型紙のmm→画面pxの比（state.pxPerMm）で実寸のまま敷く */
 const CAD_TEX_BASE = '../../nscad/';
 let cadTexMetaPromise = null;
+let cadTexMeta = null; // 読み込めたあとの { tileMm, byId }（パレットの見本が同期で引く）
 const cadTexImgCache = {}; // 革ID -> Promise<{img, mm}|null>
 
 function loadCadTexMeta(){
@@ -189,7 +190,8 @@ function loadCadTexMeta(){
       .then(j => {
         const byId = {};
         (j.textures || []).forEach(x => { byId[x.id] = x; });
-        return { tileMm: Number(j.tileMm) > 0 ? Number(j.tileMm) : 30, byId };
+        cadTexMeta = { tileMm: Number(j.tileMm) > 0 ? Number(j.tileMm) : 30, byId };
+        return cadTexMeta;
       })
       .catch(e => {
         console.log('CADの質感データを読めません（従来の方式で塗ります）:', e.message);
@@ -198,6 +200,12 @@ function loadCadTexMeta(){
       });
   }
   return cadTexMetaPromise;
+}
+
+/* パレットの見本に使うCADのタイル画像のURL。塗る質感と同じ画像。CADに無い革・データ未読込は null（従来の見本へ） */
+function cadTexUrl(id){
+  const x = cadTexMeta && cadTexMeta.byId[id];
+  return x ? CAD_TEX_BASE + x.file : null;
 }
 
 /* CADの質感（画像と実寸mm）を返す。CADに無い革・読み込み失敗は null（従来方式へ） */
@@ -274,8 +282,10 @@ function buildPalette(){
     const d = document.createElement('div');
     d.className = 'sw' + (currentLeather && lt.id===currentLeather.id ? ' on' : '') + (inStock ? '' : ' oos');
     d.style.animationDelay = (i*15) + 'ms';
-    const cropped = leatherImgCache[lt.id] ? cropTopRight(leatherImgCache[lt.id]) : null;
-    d.innerHTML = `<img src="${cropped ? cropped.toDataURL() : lt.image}" alt="${lt.name}" loading="lazy">
+    // 見本は塗る質感と同じCADのタイル。CADに無い革は従来どおり商品写真の切り出し（商品ラベルを避けた右上部分）
+    const cadUrl = cadTexUrl(lt.id);
+    const cropped = !cadUrl && leatherImgCache[lt.id] ? cropTopRight(leatherImgCache[lt.id]) : null;
+    d.innerHTML = `<img src="${cadUrl || (cropped ? cropped.toDataURL() : lt.image)}" alt="${lt.name}" loading="lazy">
       <span class="stock-badge ${badge.cls}">${badge.label}</span>
       <div>${lt.name}</div>`;
     // 在庫なしでも取り寄せで対応できる場合があるため、選択自体は常に可能にする
@@ -819,10 +829,13 @@ async function resetCurrentTab(){
   LEATHERS = await loadLeatherCatalog();
   console.log('革カタログ総数:', LEATHERS.length, '/ 在庫あり:', LEATHERS.filter(l=>l.stockPct>0).length);
   currentLeather = LEATHERS.find(l => l.stockPct > 0) || LEATHERS[0];
-  await Promise.all(LEATHERS.map(async lt=>{
-    try{ leatherImgCache[lt.id] = await loadImage(lt.image); }
-    catch(e){ console.log('画像読み込み失敗:', lt.id, lt.image); }
-  }));
+  await Promise.all([
+    loadCadTexMeta(), // 見本をCADのタイルにするため、パレットを作る前にデータを読んでおく（失敗しても従来の見本で続行）
+    ...LEATHERS.map(async lt=>{
+      try{ leatherImgCache[lt.id] = await loadImage(lt.image); }
+      catch(e){ console.log('画像読み込み失敗:', lt.id, lt.image); }
+    }),
+  ]);
   buildColorFilters();
   buildPalette();
   buildMetalPalette();
