@@ -1,5 +1,8 @@
 // 定型句：よく使う文（複数行）を名前付きでこの PC のブラウザに保存し、クリックした位置に 1 行ずつ文字図形として置く。純粋関数。画面は app.js。
+import { TEXT_FONTS } from './geometry.js';
 export const PHRASES_KEY = 'leather-cad.phrases';
+/** 句が覚えている書体（font・TEXT_FONTS のどれか）と文字の大きさ（size・mm・正の数）。無い・壊れた値は入れない。 */
+const extrasOf = p => { const o = {}; if (p && typeof p.font === 'string' && Object.hasOwn(TEXT_FONTS, p.font)) o.font = p.font; if (p && typeof p.size === 'number' && Number.isFinite(p.size) && p.size > 0) o.size = p.size; return o; };
 export const PHRASE_MAX_LINES = 20;
 export const PHRASE_LINE_GAP = 1.4;   /* 行間 ＝ 文字サイズ × 1.4 */
 
@@ -7,16 +10,16 @@ export const PHRASE_LINE_GAP = 1.4;   /* 行間 ＝ 文字サイズ × 1.4 */
 export function parsePhrases(text) {
   let j; try { j = JSON.parse(text); } catch { return []; }
   if (!j || j.v !== 1 || !Array.isArray(j.items)) return [];
-  return j.items.filter(p => p && typeof p.name === 'string' && p.name.trim() && typeof p.text === 'string').map(p => ({ name: p.name.trim(), text: p.text }));
+  return j.items.filter(p => p && typeof p.name === 'string' && p.name.trim() && typeof p.text === 'string').map(p => ({ name: p.name.trim(), text: p.text, ...extrasOf(p) }));
 }
-export function serializePhrases(items) { return JSON.stringify({ v: 1, items: items.map(p => ({ name: p.name, text: p.text })) }); }
+export function serializePhrases(items) { return JSON.stringify({ v: 1, items: items.map(p => ({ name: p.name, text: p.text, ...extrasOf(p) })) }); }
 
 /** 名前が同じものは置き換え、無ければ末尾に足す。名前が空なら本文の 1 行目を名前にする。入力は変えない。 */
-export function upsertPhrase(items, name, text) {
+export function upsertPhrase(items, name, text, extra = {}) {
   const lines = phraseLines(text); if (!lines.some(Boolean)) throw new Error('empty');
-  const n = String(name || '').trim() || lines.find(Boolean).slice(0, 20);
+  const n = String(name || '').trim() || lines.find(Boolean).slice(0, 20), item = { name: n, text, ...extrasOf(extra) };   /* extra＝{ font, size }：書体と大きさを覚える（無ければ名前と本文だけ） */
   const out = items.map(p => ({ ...p })), i = out.findIndex(p => p.name === n);
-  if (i >= 0) out[i] = { name: n, text }; else out.push({ name: n, text });
+  if (i >= 0) out[i] = item; else out.push(item);
   return { items: out, name: n };
 }
 export function removePhrase(items, name) { return items.filter(p => p.name !== name); }
@@ -29,15 +32,15 @@ export function phraseLines(text) {
 }
 
 /** クリックした位置 at（1 行目の左下）から下へ、1 行ずつ文字図形を作る。空行は図形を作らず行間だけ空ける。 */
-export function phraseShapes(lines, at, sizeMm, layer, gap = PHRASE_LINE_GAP) {
-  const out = [];
-  lines.forEach((text, i) => { if (!text) return; out.push({ type: 'text', layer, x: at.x, y: at.y + i * sizeMm * gap, text, sizeMm, angleDeg: 0 }); });
+export function phraseShapes(lines, at, sizeMm, layer, gap = PHRASE_LINE_GAP, font = undefined) {
+  const out = [], fontProp = font && font !== 'gothic' && Object.hasOwn(TEXT_FONTS, font) ? { font } : {};   /* ゴシック（標準）は書体を書かない */
+  lines.forEach((text, i) => { if (!text) return; out.push({ type: 'text', layer, x: at.x, y: at.y + i * sizeMm * gap, text, sizeMm, angleDeg: 0, ...fontProp }); });
   return out;
 }
 
 /** 読み込んだ一覧を今の一覧に合流する（同じ名前は置き換え・新しい名前は末尾に）。{ items, added, replaced }。 */
 export function mergePhrases(items, incoming) {
   const out = items.map(p => ({ ...p })); let added = 0, replaced = 0;
-  for (const p of incoming) { const i = out.findIndex(q => q.name === p.name); if (i >= 0) { out[i] = { name: p.name, text: p.text }; replaced++; } else { out.push({ name: p.name, text: p.text }); added++; } }
+  for (const p of incoming) { const i = out.findIndex(q => q.name === p.name), item = { name: p.name, text: p.text, ...extrasOf(p) }; if (i >= 0) { out[i] = item; replaced++; } else { out.push(item); added++; } }
   return { items: out, added, replaced };
 }
