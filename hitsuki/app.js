@@ -219,8 +219,12 @@
     const fullText = full && full.t ? full.t : '';
     const pct = full && Number.isFinite(full.r) && full.r < 90 ? (full.r < 5 ? null : Math.round(full.r / 5) * 5) : undefined;   // サイトの本文が原典より短いときだけ
     const sourceUrl = FULLTEXT_SOURCE.url && passage.sourceUrl ? passage.sourceUrl : '';
+    // サイトの本文（カードの上）は別の版：仮名遣い・語句・記号の位置の言葉が、原典の全文と違うことがある
+    const sampleNote = passage.excerpt
+      ? `。カードの上のサイトの本文は別の版です${pct === undefined ? '' : `（この原典の${pct === null ? '5％に満たない' : `約${pct}％`}、文字数の比較）`}。仮名遣い・語句・記号の位置の言葉が、原典の全文と違うことがあります`
+      : '';
     const credit = fullText
-      ? `<p class="fulltext-credit">原典の全文。出典：${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}</a>` : escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}（${escapeHtml(passage.title)}）${full.n ? `　通し番号 ${escapeHtml(full.n)}` : ''}${pct === undefined ? '' : `。サイトの本文は、この原典の${pct === null ? '5％に満たない' : `約${pct}％`}（文字数の比較）`}。記号は図で表しています。</p>`
+      ? `<p class="fulltext-credit">原典の全文。出典：${sourceUrl ? `<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}</a>` : escapeHtml(FULLTEXT_SOURCE.name || '出典サイト')}（${escapeHtml(passage.title)}）${full.n ? `　通し番号 ${escapeHtml(full.n)}` : ''}${sampleNote}。記号は図で表しています。</p>`
       : '';
     let excerptHtml;
     let fullToggle = '';
@@ -229,7 +233,7 @@
       excerptHtml = '<p class="passage-excerpt">この帖は欠帖として扱います。番号は残し、解説側で事情を説明します。</p>';
     } else if (passage.excerpt) {
       excerptHtml = `<p class="passage-excerpt">${escapeHtml(passage.excerpt)}</p>`;
-      if (fullText && pct !== undefined) {
+      if (fullText) {
         fullToggle = `<button class="fulltext-toggle" type="button" aria-expanded="false">原典の全文を読む ▾</button>`;
         fullPanel = `<div class="fulltext-panel" hidden><p class="fulltext-body">${fullTextHtml(fullText)}</p>${credit}</div>`;
       }
