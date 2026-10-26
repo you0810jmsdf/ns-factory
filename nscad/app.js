@@ -2856,7 +2856,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
         const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [sid], reversed: false, closed: true, segments: [], mark: 'tool', grid: true }); gridPathIds.push(pid); return pid;   /* grid：格子が作った縫い線の経路（消すときは、穴も一緒に消す） */
       });
       for (const s of stitch.seams) doc.seams.push({ id: freshId(doc.seams, 'seam'), a: { pathId: pathOfPiece[s.a.piece], from: s.a.from, to: s.a.to }, b: { pathId: pathOfPiece[s.b.piece], from: s.b.from, to: s.b.to }, style, reversed: s.reversed });
-      if (rimOn) ringShift = shiftRingHolesOffBoundaries(region.points, rimOffset);   /* すでにある外周の菱目が、パッチの境目に重なっていたら、線に沿ってずらす（裏面も同じだけ）。先に動かして、そのあとの新しい外周・縫い合わせの丸目が避ける */
+      if (rimOn && !$('patchKeepSize')?.checked) ringShift = shiftRingHolesOffBoundaries(region.points, rimOffset);   /* 「調整しない」を入れたときは、すでにある外周の菱目（ベースに均等に打ったもの）を動かさない（事業主 2026-10-26「まだ菱目が自動調整されてしまう」：16個が動いていた） */   /* すでにある外周の菱目が、パッチの境目に重なっていたら、線に沿ってずらす（裏面も同じだけ）。先に動かして、そのあとの新しい外周・縫い合わせの丸目が避ける */
       const holes = !stitch.seams.length ? 0 : latticeSeamHoles(stitch, pathOfPiece, seamTool, exact, loopSampler(region.points)), banned = 0;   /* region.points＝枠の輪郭（外周に近い端の見分けに使う）。縫い合わせの丸目を先に打つ：丸目は1個も省かず、外周の菱目のほうが、丸目をよけて縁に沿ってずれる（事業主 2026-10-25「丸目が途中で抜けている」→「丸目を残して菱目をずらす」。以前は菱目が先で、近い丸目を省いていた） */
       if (rim) { /* 外周：縁から rimOffset mm 内側へ寄せた角丸の線（黄色の点線）の上に、線・丸目・ほかの穴と重ならないよう菱目を打つ（重なる所は、菱目が縁に沿ってずれる・ずらしても離れない菱目は省く） */
         const sid = freshId(doc.shapes, 's'); doc.shapes.push({ id: sid, layer: stitchLayer, type: 'polyline', closed: true, points: rim.points, color: 'yellow', lineStyle: 'dashed', holeLink: true }); extraIds.push(sid);
