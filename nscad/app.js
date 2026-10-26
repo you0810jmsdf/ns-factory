@@ -7955,7 +7955,7 @@ function selectOutline() {
 /** 一部だけ動かすと壊れるグループ（アプリが作った金具・折り目の断面図）の図形か。Ctrl+クリックでも、全体のまま。 */
 const groupIsWhole = s => { const g = groupIdOf(s); return !!g && doc.shapes.some(x => groupIdOf(x) === g && (isHardwareShape(x) || x.hwSection || x.hwFor || x.foldSec || x.layer === 'section')); };
 canvas.addEventListener('pointerdown', e => {
-  hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
+  longPressStart(e); hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); const p = local(e); canvas.setPointerCapture(e.pointerId);
@@ -8054,6 +8054,7 @@ canvas.addEventListener('pointerdown', e => {
   draw();
 });
 canvas.addEventListener('pointermove', e => {
+  longPressMove(e);
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
   if (gesture?.kind === 'rotate') { const c = world(p); cursor = c; gesture.cursor = c; gesture.angle = rotateAngleNow(gesture, c, e.shiftKey); $('hint').textContent = t('rotDrag', { a: gesture.angle }); draw(); return; }
@@ -8176,6 +8177,16 @@ function showCtxMenu(e) {
 }
 function hideCtxMenu() { $('ctxMenu').hidden = true; }
 let lastPanDragAt = -1e9; /* 右ドラッグ（画面の移動）を終えた時刻。離した直後に出るメニューのイベントを無視するため */
+/** 右クリックと同じメニューを開く入口（スマホ・タブレットには右クリックが無い・事業主 2026-10-26「右クリックはスマホだとどうなる？」）。①ヘッダーの「機能」ボタン ②選択モードでの、指・ペンの長押し（0.6秒・10px 以上動かさない）。マウスの長押しは何もしない。 */
+$('ctxOpenBtn').addEventListener('click', e => { const r = (e.currentTarget || $('ctxOpenBtn')).getBoundingClientRect(); e.stopPropagation?.(); countUse('ctx_open_btn'); showCtxMenu({ clientX: r.left, clientY: r.bottom + 4, preventDefault() {} }); });
+let longPressTimer = null, longPressAt = null;
+const longPressCancel = () => { clearTimeout(longPressTimer); longPressTimer = null; longPressAt = null; };
+function longPressStart(e) {
+  longPressCancel(); if ((e.pointerType !== 'touch' && e.pointerType !== 'pen') || e.button !== 0) return;
+  longPressAt = { x: e.clientX, y: e.clientY };
+  longPressTimer = setTimeout(() => { const at = longPressAt; longPressCancel(); if (!at || mode !== 'select' || stage || (gesture && !['select', 'move'].includes(gesture.kind))) return; gesture = null; countUse('ctx_long_press'); showCtxMenu({ clientX: at.x, clientY: at.y, preventDefault() {} }); }, 600);
+}
+const longPressMove = e => { if (longPressAt && Math.hypot(e.clientX - longPressAt.x, e.clientY - longPressAt.y) > 10) longPressCancel(); };
 canvas.addEventListener('contextmenu', e => {
   e.preventDefault(); hideCtxMenu();
   if (Date.now() - lastPanDragAt < 400) return; /* 画面を動かしたあとは、メニューを出さない（動かさずに右クリックしたときだけ出す） */
@@ -8232,6 +8243,7 @@ canvas.addEventListener('dblclick', e => {
   }
 });
 canvas.addEventListener('pointerup', e => {
+  longPressCancel();
   if (!gesture) return;
   const g = gesture, p = local(e);
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey, e.altKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
@@ -8311,7 +8323,7 @@ canvas.addEventListener('pointerup', e => {
   }
   draw();
 });
-canvas.addEventListener('pointercancel', () => { gesture = null; draw(); });
+canvas.addEventListener('pointercancel', () => { longPressCancel(); gesture = null; draw(); });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
   if (quadOn()) { const role = quadRoleAt(local(e)); if (role === 'solid') return; if (role !== quadRole()) switchSheet(role); }
