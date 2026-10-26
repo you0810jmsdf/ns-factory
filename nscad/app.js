@@ -1645,6 +1645,13 @@ function applyHoleShape({ shape, w, h, d, onlyDiamond = true, onlyRound = true, 
   const f = v => +(+v).toFixed(2); $('hint').textContent = t('holeShapeDone', { n: plan.length, to: shape === 'round' ? t('holeShapeToRound', { d: f(d) }) : t('holeShapeToDiamond', { w: f(w), h: f(h) }) });
   return plan.length;
 }
+/** 選んだ範囲の菱目・丸目の穴を消す（線は残す）。onlyDiamond／onlyRound＝消す相手。戻り値は消した数。元に戻すは1回。事業主指示 2026-10-26「選択範囲の目打ちをすべて消す機能もつけて」。点の目印・切れ目は消さない（範囲に入らない）。 */
+function eraseRangeHoles({ onlyDiamond = true, onlyRound = true, scope } = {}) {
+  const range = shapeRangeHoles(scope), ids = new Set([...(onlyDiamond ? range.diamond : []), ...(onlyRound ? range.round : [])].map(h => h.id));
+  if (!ids.size) { $('hint').textContent = t('holeShapeNone'); return 0; }
+  commit(() => { doc.holes = doc.holes.filter(h => !ids.has(h.id)); for (const id of ids) selected.delete(id); manualNext = null; });
+  $('hint').textContent = t('holeShapeErased', { n: ids.size }); return ids.size;
+}
 /** 窓の「選んだ範囲：菱目 n 個（大きさ）・丸目 m 個（大きさ）」。大きさは種類が違えば3つまで。 */
 function holeShapeNowText(range) {
   const f = v => +(+v).toFixed(2), sizes = (list, fn) => { const u = [...new Set(list.map(hl => { const a = holeAppearance(hl, doc); return a ? fn(a) : ''; }).filter(Boolean))]; return u.length ? '（' + u.slice(0, 3).join('・') + (u.length > 3 ? '…' : '') + '）' : ''; };
@@ -1658,7 +1665,7 @@ function refreshHoleShapeCard(force = false, fill = false) {
   const key = [...selected].join(',') + '|' + doc.holes.length + '|' + doc.tools.length + '|' + doc.shapes.length + '|' + holeShapeScope();
   if (!force && key === holeShapeKey) return; holeShapeKey = key;
   const range = shapeRangeHoles(), n = range.diamond.length + range.round.length;
-  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n;
+  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n; $('holeShapeErase').disabled = !n;
   if (!fill) return;
   const ad = range.diamond[0] && holeAppearance(range.diamond[0], doc), ar = range.round[0] && holeAppearance(range.round[0], doc), f = v => String(+(+v).toFixed(2));
   $('holeShapeKind').value = !range.diamond.length && range.round.length ? 'round' : 'diamond';
@@ -1668,6 +1675,10 @@ function refreshHoleShapeCard(force = false, fill = false) {
 function syncHoleShapeRows() { const round = $('holeShapeKind').value === 'round'; $('holeShapeDiamondRow').hidden = round; $('holeShapeRoundRow').hidden = !round; }
 /** 「菱目・丸目をまとめて変える」の窓を開く（右クリックメニューから）。選んだままで図面を触れる窓。 */
 function openHoleShapeWin() { $('holeShapeCard').hidden = false; setCardWin('holeShapeCard', true); refreshHoleShapeCard(true, true); $('hint').textContent = t('holeShapeOpened'); }
+function runHoleShapeErase() {
+  const onlyDiamond = $('holeShapeOnlyDiamond').checked, onlyRound = $('holeShapeOnlyRound').checked; if (!onlyDiamond && !onlyRound) { $('hint').textContent = t('holeShapeNoKind'); return; }
+  eraseRangeHoles({ onlyDiamond, onlyRound }); refreshHoleShapeCard(true);
+}
 function runHoleShapeApply() {
   const num = id => { const v = $(id).value; return v === '' || v === null ? NaN : Number(v); }, ok = v => v >= 0.1 && v <= 50, shape = $('holeShapeKind').value === 'round' ? 'round' : 'diamond', w = num('holeShapeW'), h = num('holeShapeH'), d = num('holeShapeD');
   if (shape === 'round' ? !ok(d) : !(ok(w) && ok(h))) { $('hint').textContent = t('holeShapeInvalid'); return; }
@@ -2901,7 +2912,7 @@ function initDesign() {
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
-  $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
+  $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { hideCtxMenu(); offsetSelectedShapes(); };
