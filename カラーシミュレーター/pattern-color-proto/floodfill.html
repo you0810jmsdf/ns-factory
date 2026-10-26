@@ -69,8 +69,8 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:.03em;background:linear-gradient
     <div class="color-filters" id="colorFilters"></div>
     <div class="palette" id="palette"></div>
     <div class="note" style="margin-top:10px">
-      テクスチャの大きさ: <input type="range" id="textureScaleSlider" min="1" max="8" step="0.5" value="3"> <span id="textureScaleVal">3</span>倍
-      <br>（次にクリックして塗った箇所から反映されます）
+      テクスチャの大きさ: <input type="range" id="textureScaleSlider" min="0.25" max="4" step="0.25" value="1"> <span id="textureScaleVal">1</span>倍
+      <br>（1倍＝実物の革の大きさ。次にクリックして塗った箇所から反映されます）
     </div>
     <div style="font-size:12px;font-weight:bold;margin:14px 0 6px">金具カラーを選ぶ（任意）</div>
     <div class="note" style="margin-bottom:6px">金具を選んだあと、図面の金具部分をクリックするとその色で塗れます。革に戻すときは革色パレットを選び直してください。</div>
@@ -172,7 +172,51 @@ function cropTopRight(img){
   return c;
 }
 
-let textureScale = 3; // クロップ画像が小さいままタイル状に敷き詰めると継ぎ目が目立つため拡大する（スライダーで変更可能）
+let textureScale = 1; // 質感の大きさ（実物の何倍か。1＝実寸。スライダーで変更可能）
+const CROP_FALLBACK_ZOOM = 3; // CADの質感が使えない革だけ、従来どおり商品写真の切り出しを拡大して敷く（小さいまま敷くと継ぎ目が目立つため）
+
+/* N's CAD と同じ革の質感。画像（継ぎ目なしタイル）と1枚の実寸(mm)はCADの公開データをそのまま共用する。
+   タイルは後方部のテクスチャライブラリで、平らな部分の切り出し→照明ムラ除去→縦横ずらし4枚混ぜで継ぎ目なしに作り、
+   マルゴーフォグ12色は更に「ランダム回転＋境目ぼかし」の3×3大判にしてある。型紙のmm→画面pxの比（state.pxPerMm）で実寸のまま敷く */
+const CAD_TEX_BASE = '../../nscad/';
+let cadTexMetaPromise = null;
+const cadTexImgCache = {}; // 革ID -> Promise<{img, mm}|null>
+
+function loadCadTexMeta(){
+  if(!cadTexMetaPromise){
+    cadTexMetaPromise = fetch(CAD_TEX_BASE + 'data/textures.json')
+      .then(r => { if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(j => {
+        const byId = {};
+        (j.textures || []).forEach(x => { byId[x.id] = x; });
+        return { tileMm: Number(j.tileMm) > 0 ? Number(j.tileMm) : 30, byId };
+      })
+      .catch(e => {
+        console.log('CADの質感データを読めません（従来の方式で塗ります）:', e.message);
+        cadTexMetaPromise = null; // 次のクリックで読み直す
+        return { tileMm: 30, byId: {} };
+      });
+  }
+  return cadTexMetaPromise;
+}
+
+/* CADの質感（画像と実寸mm）を返す。CADに無い革・読み込み失敗は null（従来方式へ） */
+function loadCadTexture(id){
+  if(!cadTexImgCache[id]){
+    cadTexImgCache[id] = loadCadTexMeta().then(async meta => {
+      const x = meta.byId[id];
+      if(!x) return null;
+      try{
+        const img = await loadImage(CAD_TEX_BASE + x.file);
+        return { img, mm: Number(x.mm) > 0 ? Number(x.mm) : meta.tileMm };
+      }catch(e){
+        console.log('CADの質感画像を読めません:', id);
+        return null;
+      }
+    }).then(r => { if(!r) delete cadTexImgCache[id]; return r; });
+  }
+  return cadTexImgCache[id];
+}
 /* 2つの16進カラーを比率tで混ぜる（金具の光沢グラデーション用） */
 function mixHex(hexA, hexB, t){
   const a = parseInt(hexA.slice(1),16), b = parseInt(hexB.slice(1),16);
@@ -214,7 +258,8 @@ function computeBevel(visited, w, h, regionSize){
 function cropTopRightScaled(img){
   const base = cropTopRight(img);
   const c = document.createElement('canvas');
-  c.width = base.width * textureScale; c.height = base.height * textureScale;
+  const zoom = CROP_FALLBACK_ZOOM * textureScale;
+  c.width = Math.max(1, Math.round(base.width * zoom)); c.height = Math.max(1, Math.round(base.height * zoom));
   c.getContext('2d').drawImage(base, 0, 0, c.width, c.height);
   return c;
 }
@@ -438,7 +483,12 @@ async function buildTabState(tabInfo){
   offCtx.fillRect(0,0,DISP_W,DISP_H);
   offCtx.drawImage(img, 0, 0, DISP_W, DISP_H);
 
-  return { DISP_W, DISP_H, offCanvas, offCtx, judgeImageData };
+  // 型紙の実寸(mm)と画面pxの比。CADが書き出すSVGは width が mm 単位。mm でなければ viewBox の幅を mm とみなす
+  const widthAttr = svgEl.getAttribute('width') || '';
+  const mmWidth = /mm\s*$/i.test(widthAttr) && parseFloat(widthAttr) > 0 ? parseFloat(widthAttr) : vb.width;
+  const pxPerMm = DISP_W / mmWidth;
+
+  return { DISP_W, DISP_H, offCanvas, offCtx, judgeImageData, pxPerMm };
 }
 
 async function ensureTabLoaded(tabKey){
@@ -527,17 +577,21 @@ function floodFillMask(state, startX, startY){
   return { visited, count };
 }
 
-function applyTextureAt(clickX, clickY){
-  const state = tabStates[currentTabKey];
+async function applyTextureAt(clickX, clickY){
+  // 質感の読み込み待ちの間にパレットやタブが切り替わっても、クリックした時点の内容で塗る
+  const tabKey = currentTabKey, leather = currentLeather, metal = currentMetal;
+  const useMetal = activeFill === 'metal' && !!metal;
+  if(!useMetal && !leather){ console.log('leather not selected'); return; }
+  const cad = useMetal ? null : await loadCadTexture(leather.id); // N's CADと同じ継ぎ目なしタイル。無い革・読めない場合は null
+  if(currentTabKey !== tabKey) return; // 待っている間に別タブへ移った（クリック位置が別の型紙の座標になる）
+
+  const state = tabStates[tabKey];
   const result = floodFillMask(state, clickX, clickY);
   if(!result){
     console.log('flood fill failed (line clicked, or region not closed / leaked to whole canvas)');
     return;
   }
   console.log('filled pixel count:', result.count);
-
-  const useMetal = activeFill === 'metal' && !!currentMetal;
-  if(!useMetal && !currentLeather){ console.log('leather not selected'); return; }
   const { visited } = result;
 
   // オフスクリーンに塗り素材（革テクスチャのタイル or 金具色）を敷いた画像を作る
@@ -554,7 +608,7 @@ function applyTextureAt(clickX, clickY){
       const y = (i / state.DISP_W) | 0, x = i - y*state.DISP_W;
       if(x<minX) minX=x; if(x>maxX) maxX=x; if(y<minY) minY=y; if(y>maxY) maxY=y;
     }
-    const hex = currentMetal.hex;
+    const hex = metal.hex;
     const grad = texCtx.createLinearGradient(minX, minY, Math.max(maxX, minX+1), Math.max(maxY, minY+1));
     grad.addColorStop(0.00, mixHex(hex, '#ffffff', 0.55));
     grad.addColorStop(0.22, hex);
@@ -566,10 +620,18 @@ function applyTextureAt(clickX, clickY){
     texCtx.fillStyle = grad;
     bevel = computeBevel(visited, state.DISP_W, state.DISP_H, Math.min(maxX-minX, maxY-minY));
   }else{
-    const leatherImg = leatherImgCache[currentLeather.id];
-    if(!leatherImg){ console.log('leather image not loaded yet'); return; }
-    const croppedTexture = cropTopRightScaled(leatherImg); // 商品ラベルを避けた右上部分を拡大して使う
-    texCtx.fillStyle = texCtx.createPattern(croppedTexture, 'repeat');
+    const pat = cad ? texCtx.createPattern(cad.img, 'repeat') : null;
+    if(pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function'){
+      // CADの textureFill と同じ式：タイル1枚＝実寸mm。画像1pxが画面で何pxになるかを pxPerMm から出し、図面の原点に固定して敷く
+      const k = cad.mm * textureScale * state.pxPerMm / cad.img.width;
+      pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0]));
+      texCtx.fillStyle = pat;
+    }else{
+      // CADの質感が無い革・読み込み失敗・古いブラウザは従来方式（商品ラベルを避けた右上部分を拡大して敷く）
+      const leatherImg = leatherImgCache[leather.id];
+      if(!leatherImg){ console.log('leather image not loaded yet'); return; }
+      texCtx.fillStyle = texCtx.createPattern(cropTopRightScaled(leatherImg), 'repeat');
+    }
   }
   texCtx.fillRect(0,0,state.DISP_W,state.DISP_H);
   const texData = texCtx.getImageData(0,0,state.DISP_W,state.DISP_H);
@@ -601,10 +663,10 @@ function applyTextureAt(clickX, clickY){
 
   // 再生中の自動塗りは履歴に記録しない（次回読み込み時に同じ内容が重複して積み上がるのを防ぐ）
   if(!isReplayingPaint){
-    if(!paintHistory[currentTabKey]) paintHistory[currentTabKey] = [];
-    paintHistory[currentTabKey].push(useMetal
-      ? { x: clickX, y: clickY, metalId: currentMetal.id }
-      : { x: clickX, y: clickY, leatherId: currentLeather.id });
+    if(!paintHistory[tabKey]) paintHistory[tabKey] = [];
+    paintHistory[tabKey].push(useMetal
+      ? { x: clickX, y: clickY, metalId: metal.id }
+      : { x: clickX, y: clickY, leatherId: leather.id });
   }
 }
 
@@ -616,27 +678,32 @@ window.exportPaintHistory = function(tabKey){
 /* 指定タブの塗り履歴を先頭から順に再生し、前回終了時と同じ塗り状態を再現する */
 async function replayPaintHistory(tabKey, history){
   if(!history || !history.length) return;
+  // 質感の画像は先に全部読んでおく。再生中の待ちを「読み込み済みの待ち」だけにして、途中で利用者のクリックが割り込まないようにする
+  await Promise.all([...new Set(history.map(e => e.leatherId).filter(Boolean))].map(loadCadTexture));
   const savedTabKey = currentTabKey, savedLeather = currentLeather, savedMetal = currentMetal, savedFill = activeFill;
   isReplayingPaint = true;
   currentTabKey = tabKey;
-  history.forEach(entry => {
-    if(entry.metalId){
-      const metal = METALS.find(m => m.id === entry.metalId);
-      if(!metal){ console.log('塗り履歴の再生スキップ（金具が見つかりません）:', entry.metalId); return; }
-      currentMetal = metal; activeFill = 'metal';
-      applyTextureAt(entry.x, entry.y);
-      return;
+  try{
+    for(const entry of history){
+      if(entry.metalId){
+        const metal = METALS.find(m => m.id === entry.metalId);
+        if(!metal){ console.log('塗り履歴の再生スキップ（金具が見つかりません）:', entry.metalId); continue; }
+        currentMetal = metal; activeFill = 'metal';
+        await applyTextureAt(entry.x, entry.y);
+        continue;
+      }
+      const leather = LEATHERS.find(l => l.id === entry.leatherId);
+      if(!leather){ console.log('塗り履歴の再生スキップ（革が見つかりません）:', entry.leatherId); continue; }
+      currentLeather = leather; activeFill = 'leather';
+      await applyTextureAt(entry.x, entry.y);
     }
-    const leather = LEATHERS.find(l => l.id === entry.leatherId);
-    if(!leather){ console.log('塗り履歴の再生スキップ（革が見つかりません）:', entry.leatherId); return; }
-    currentLeather = leather; activeFill = 'leather';
-    applyTextureAt(entry.x, entry.y);
-  });
-  currentTabKey = savedTabKey;
-  currentLeather = savedLeather;
-  currentMetal = savedMetal;
-  activeFill = savedFill;
-  isReplayingPaint = false;
+  }finally{
+    currentTabKey = savedTabKey;
+    currentLeather = savedLeather;
+    currentMetal = savedMetal;
+    activeFill = savedFill;
+    isReplayingPaint = false;
+  }
 }
 
 /* 「この内容で確定」ボタン。ロード済みの各タブの塗り結果を画像化してGASへ送信し、
