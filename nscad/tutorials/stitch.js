@@ -20,7 +20,6 @@ export const TUTORIALS_STITCH = {
     },
     {
       "say": "tut.stitch.2",
-      "click": "[data-tool=\"stitch\"]",
       "mode": "stitch"
     },
     {
