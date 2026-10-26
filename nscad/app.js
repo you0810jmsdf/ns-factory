@@ -7855,6 +7855,8 @@ document.addEventListener?.('keydown', keyLog, true);
 /** ボタン・見本・欄のクリックの記録（押したものの名前・選択数・画面下のメッセージ）。入力欄・選択欄の中身は残さない。 */
 function clickLogNow(e) { const b = e.target?.closest?.('button, select, input, summary, label'); if (!b) return; const form = b.tagName === 'INPUT' || b.tagName === 'SELECT' || b.tagName === 'TEXTAREA'; logOp('click', { id: b.id || '', cls: String(b.className || '').slice(0, 40), data: { ...(b.dataset || {}) }, text: form ? '' : String(b.textContent || '').trim().slice(0, 20), nSel: selected.size, mode, hint: $('hint')?.textContent ?? '' }); }
 document.addEventListener?.('click', e => setTimeout(() => clickLogNow(e), 0), true); /* 押した直後の状態（選択数・メッセージ）を残す */
+/** 一部だけ動かすと壊れるグループ（アプリが作った金具・折り目の断面図）の図形か。Ctrl+クリックでも、全体のまま。 */
+const groupIsWhole = s => { const g = groupIdOf(s); return !!g && doc.shapes.some(x => groupIdOf(x) === g && (isHardwareShape(x) || x.hwSection || x.hwFor || x.foldSec || x.layer === 'section')); };
 canvas.addEventListener('pointerdown', e => {
   hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
@@ -7942,7 +7944,9 @@ canvas.addEventListener('pointerdown', e => {
     cancelSpanClick();
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
-      if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; } /* グループの図形なら全体を選ぶ */
+      const oneOfGroup = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && !groupIsWhole(hit);   /* Ctrl+クリック（Mac は ⌘）：グループの中の、押した図形1個だけ（事業主 2026-10-26「円だけ消したい。パッチの境界がすべて反応してしまう」） */
+      if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
+      else if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = t('groupPickedHint', { n: selected.size }); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
       if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
