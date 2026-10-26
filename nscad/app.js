@@ -1115,7 +1115,7 @@ function fillOneGap({ m, list }) {
 }
 /** 「菱目を消す」：選んだ線の上の菱目をすべて（線は残す）。菱目を選んでいれば、その菱目だけ。 */
 function deleteSelectedHoles() {
-  const ids = new Set(affectedHoles().map(h => h.id)); if (!ids.size) { $('hint').textContent = t('noHolesToDelete'); return; }
+  const ids = slantPickedIds();   /* 選んだ穴・選んだ線の経路の穴・選んだ線の上 0.5mm 以内の穴（順目⇔逆目と同じ数え方）。穴は見えない補助の線の経路に付くことがあり、その上に重なった見える点線を選ぶだけでも消せるように（事業主 2026-10-26「点線上の菱目を消せない」・不具合記録 1845） */ if (!ids.size) { $('hint').textContent = t('noHolesToDelete'); return; }
   commit(() => { doc.holes = doc.holes.filter(h => !ids.has(h.id)); for (const id of ids) selected.delete(id); manualNext = null; });
   $('hint').textContent = t('holesDeleted', { n: ids.size });
 }
@@ -6444,7 +6444,7 @@ function updateUI() {
   $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
-  $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
+  $('delHoles').disabled = !(affectedHoles().length || (selected.size && doc.holes.length));   /* 線の上の穴は、押したときに数える（描くたびに全穴×選択を測らない） */ $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
   $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
