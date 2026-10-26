@@ -3828,7 +3828,7 @@ function commitClearRegions(regs) {
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), list = [...(doc.fills || [])], made = [];
   for (const r of regs) { const nf = { id: freshId(list, 'f'), points: r.points.map(rd), holes: (r.holes || []).map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10, ...fillLayerNow(), clear: true }; list.push(nf); made.push(nf); }
   const same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
-  commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); });
+  commit(() => { doc.fills = (doc.fills || []).filter(o => !made.some(nf => same(o, nf))); doc.fills.push(...made); repairFillRings(); });   /* 透明を塗るとき、取り残された革の塗りの穴の輪も、いまのスロットに合わせ直す（事業主 2026-10-26「透明に塗れない」） */
   return made.length;
 }
 /** 「透明」を押したとき：選んだ図形（穴の四角など）の内側を透明にする。何も選んでいなければ、透明を持って塗りモードに（クリックした場所を透明にする）。返り値：透明にした場所の数。 */
@@ -6506,6 +6506,33 @@ function fillOnShapes(fl, shapes) {
   for (const ring of [fl.points, ...(fl.holes || [])]) for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length], len = Math.hypot(q.x - p.x, q.y - p.y), mid = { x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 }; tot += len; if (shapes.some(sh => distTo(sh, mid) < 0.6)) on += len; }
   return tot > 0 ? on / tot : 0;
 }
+/** 領域の塗りの穴（抜き）の輪で、いまの図形の上に乗っていない（取り残された）ものを、いまのスロットなどの輪郭に合わせ直す。戻り値＝直した輪の数。外形（points）・図形の一覧（ids）は変えない。
+ *  事業主 2026-10-26「透明にした穴がずれている」「透明に塗れない」：革の質感の塗りの穴の輪は、元の図形（スロットの輪郭）を覚えていない（fl.ids は外形の図形だけ）ので、スロットを動かすと輪だけ取り残された（実図面：+10mm・+2mm）。
+ *  調べる輪は、塗りごとに、輪のまわり（0.8mm）にある図形だけ。輪の辺の長さの半分以上が図形の上に乗っていなければ「取り残された」。直し先は、その塗りの外形の図形から取り直した場所の穴のうち、大きさが近く（±15%）、まだ使われていないもの。 */
+function repairFillRings() {
+  const fills = doc.fills || []; if (!fills.some(f => !f.clear && (f.holes || []).length)) return 0;
+  let shapes = null, bbs = null, fixed = 0; const bbOf = pts => { const xs = pts.map(q => q.x), ys = pts.map(q => q.y); return { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }; };
+  const near = ring => { const b = bbOf(ring), e = 0.8; return shapes.filter(sh => { const q = bbs.get(sh.id); return q && q.maxX >= b.minX - e && q.minX <= b.maxX + e && q.maxY >= b.minY - e && q.minY <= b.maxY + e; }); };
+  const out = fills.map(fl => {
+    if (fl.clear || !(fl.holes || []).length) return fl;
+    if (!shapes) { shapes = regionShapes(); bbs = new Map(shapes.map(sh => { try { return [sh.id, bboxOf(sh)]; } catch { return [sh.id, null]; } })); }
+    const stale = fl.holes.map(h => fillOnShapes({ points: h, holes: [] }, near(h)) < 0.5); if (!stale.some(Boolean)) return fl;
+    const live = (fl.ids || []).filter(id => doc.shapes.some(sh => sh.id === id)); if (!live.length) return fl;
+    const cands = enclosedAreasAround(shapes, new Set(live)).filter(r => live.filter(id => r.ids.includes(id)).length >= Math.max(1, live.length - 2)), r = pickNearestRegion(cands, fl, new Set());
+    if (!r || !(r.holes || []).length) return fl;
+    const sameRing = (u, v) => { const a = bbOf(u), b = bbOf(v); return [a.minX - b.minX, a.maxX - b.maxX, a.minY - b.minY, a.maxY - b.maxY].every(d => Math.abs(d) < 0.3); };
+    const free = r.holes.filter(h => !fl.holes.some((k, i) => !stale[i] && sameRing(h, k))), rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) });
+    let changed = 0; const holes = fl.holes.map((h, i) => {
+      if (!stale[i]) return h; const a = bbOf(h), w = a.maxX - a.minX, ht = a.maxY - a.minY, cx = (a.minX + a.maxX) / 2, cy = (a.minY + a.maxY) / 2;
+      let best = -1, bd = Infinity; free.forEach((c, j) => { if (!c) return; const b = bbOf(c), cw = b.maxX - b.minX, ch = b.maxY - b.minY; if (Math.abs(cw - w) > 0.15 * Math.max(w, 1e-6) || Math.abs(ch - ht) > 0.15 * Math.max(ht, 1e-6)) return; const d = Math.hypot((b.minX + b.maxX) / 2 - cx, (b.minY + b.maxY) / 2 - cy); if (d < bd) { bd = d; best = j; } });
+      if (best < 0) return h; const to = free[best]; free[best] = null; changed++; return to.map(rd);
+    });
+    if (!changed) return fl; fixed += changed; return { ...fl, holes };
+  });
+  if (fixed) doc.fills = out; return fixed;
+}
+const ringRepairedDocs = new WeakSet();   /* 取り残された穴の輪を直した（調べた）図面。図面ごとに、最初の描画で1回だけ調べる（開いたとき・前回の続き・タブの切り替え） */
+function ensureFillRingsRepaired() { if (exporting || ringRepairedDocs.has(doc)) return; ringRepairedDocs.add(doc); try { repairFillRings(); } catch { /* 直せなくても、描くのは続ける */ } }
 function refollowFills(snap) {
   if (!snap || !(doc.fills || []).length) return 0;
   const byId = new Map(doc.shapes.map(sh => [sh.id, sh])), deadline = Date.now() + fillProbeBudgetMs, used = new Set(); let stale = 0, shapes = null;
@@ -6750,8 +6777,10 @@ function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転
   try { commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
     const followFills = new Set((doc.fills || []).filter(fl => fillFollows(fl, ids, new Map(doc.shapes.map(s => [s.id, s])))).map(fl => fl.id));   /* 動かす前の図形で決める（動かしたあとでは輪郭の位置が変わる） */
+    const holeFollow = new Map();   /* 塗りの穴（抜き）の輪が、動かす図形の上に乗っているとき（スロットだけ動かすなど）：その輪だけ、いっしょに動かす。動かす前の図形で決める */
+    { const moving = doc.shapes.filter(s => ids.has(s.id) && !['text', 'dimension', 'image', 'fold'].includes(s.type)); if (moving.length) for (const fl of doc.fills || []) { if (followFills.has(fl.id) || fl.clear || !(fl.holes || []).length) continue; const flags = fl.holes.map(h => fillOnShapes({ points: h, holes: [] }, moving) >= 0.9); if (flags.some(Boolean)) holeFollow.set(fl.id, flags); } }
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
-    if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => followFills.has(fl.id) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : fl); }   /* 囲む図形（輪郭に接している生きている図形）を全部動かしたら、領域の塗りもついていく */
+    if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => followFills.has(fl.id) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : holeFollow.has(fl.id) ? { ...fl, holes: fl.holes.map((h, i) => holeFollow.get(fl.id)[i] ? h.map(mv) : h) } : fl); }   /* 囲む図形（輪郭に接している生きている図形）を全部動かしたら、領域の塗りもついていく */
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>p.id));
     const alone=h=>!paths.has(h.pathId)&&selected.has(h.id)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
     doc.holes=doc.holes.map(h=>paths.has(h.pathId)||alone(h)?fn(h):h);
@@ -7597,6 +7626,7 @@ function exportBehindDark(s) {
   return votes >= 2;
 }
 function draw() {
+  ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 
   ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
@@ -7923,7 +7953,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'drawCard', 'autoDimCard', 'stitchCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
