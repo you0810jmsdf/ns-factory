@@ -2778,6 +2778,32 @@ function closeGapsAndMakeGrid() {
 }
 /** 柄・格子のピース（fill）を、囲み（region）の中に描く。縫い合わせ（縫い線・縫い穴）・外周の穴は、カードの設定に従う。p は柄の塗りつぶしでクリックした点（数値を変えたときの作りなおし用）。格子は null。 */
 let rimDiamondShiftFrac = 0.4, rimRoundMargin = 0.4;   /* 外周の菱目を、丸目や線をよけてずらせる量（間隔に対する割合） */
+/** 作りなおす格子 g の塗り（領域の塗りのうち、格子のピースと枠の図形だけで囲まれたもの）。内側の点と中身を覚える。
+ *  事業主 2026-10-26「格子の寸法変えたら色がぐちゃぐちゃに」：作りなおすと古いピースの図形は消えるのに、塗りは古い場所のまま取り残され、新しいピースの上に重なって、色がばらばらに見えた。→ 塗りは、場所についてくる。 */
+function gridFillsToCarry(g) {
+  const pieces = new Set(g.ids || []), mine = new Set([...pieces, ...(g.frameIds || [])]);
+  return (doc.fills || []).filter(fl => (fl.ids || []).length && fl.points?.length && fl.ids.some(id => pieces.has(id)) && fl.ids.every(id => mine.has(id))).map(fl => {
+    const xs = fl.points.map(q => q.x), ys = fl.points.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), inside = [];
+    for (let i = 1; i <= 9; i++) for (let j = 1; j <= 9; j++) { const q = { x: x0 + (x1 - x0) * i / 10, y: y0 + (y1 - y0) * j / 10 }; if (fillContains(fl, q)) inside.push(q); }   /* 抜き（穴）の中の点は使わない */
+    const mean = inside.length ? { x: inside.reduce((m, q) => m + q.x, 0) / inside.length, y: inside.reduce((m, q) => m + q.y, 0) / inside.length } : null;
+    return { fl, pts: [...(mean && fillContains(fl, mean) ? [mean] : []), ...inside.filter((_, k) => k % Math.max(1, Math.floor(inside.length / 4)) === 0).slice(0, 4)] };
+  });
+}
+/** 作りなおした格子（新しい図形 newIds）で、覚えておいた塗りの内側の点を囲む場所を取り直し、同じ色・質感の塗りにする。古い塗りは消す（取り残さない）。場所が見つからない塗りは、数えて知らせる。commit の中で呼ぶ。 */
+function carryGridFills(plans, newIds) {
+  if (!plans.length) return { moved: 0, lost: 0 };
+  const shapes = regionShapes(), rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), made = new Map(), deadline = Date.now() + fillProbeBudgetMs; let lost = 0;
+  for (const { fl, pts } of plans) {
+    if (Date.now() > deadline) { lost++; continue; }
+    let r = null; for (const p of pts) { r = enclosedAreaAt(shapes, p) || enclosedAreaAt(shapes, p, { gaps: [0.1, 0.3] }); if (r && r.ids.some(id => newIds.has(id))) break; r = null; }
+    if (!r) { lost++; continue; }
+    const { id: _i, points: _p, holes: _h, ids: _d, area: _a, ...payload } = fl; made.set([...r.ids].sort().join(','), { ...payload, points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), ids: r.ids, area: Math.round(r.area * 10) / 10 });   /* 同じ場所に重なれば、あとに塗ったほう */
+  }
+  const gone = new Set(plans.map(p => p.fl.id)), list = (doc.fills || []).filter(f => !gone.has(f.id)), same = (o, nf) => o.ids.length === nf.ids.length && o.ids.every(id => nf.ids.includes(id));
+  const add = [...made.values()]; for (const nf of add) nf.id = freshId(list.concat(add.filter(x => x.id)), 'f');
+  doc.fills = list.filter(o => !add.some(nf => same(o, nf))).concat(add);
+  return { moved: add.length, lost };
+}
 function patchFillApply(region, fill, layer, opts = {}) {
   const exact = opts.exactPitch > 0 ? opts.exactPitch : null;   /* 穴の間隔 exact（縫い線は縁から exact/2 内側・境をまたいだ向かいの穴も exact） */
   const tool = $('patchStitch').checked ? patchHoleTool() : null, inset = exact / 2, banEdge = $('patchEdgeBan').checked && tool?.kind === 'diamond';
@@ -2788,7 +2814,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
   if (rimOn && banEdge && rimOffset < PATCH_EDGE_MIN_MM - 1e-9) { $('hint').textContent = t('patchEdgeBanned', { d: rimOffset, m: PATCH_EDGE_MIN_MM }); return; } /* 外周の菱目も縁から2.5mm以内に置かない */
   if (rimOn && rimOffset < patchHoleWebR(tool) - 1e-9) { $('hint').textContent = t('patchRimTooClose', { m: +patchHoleWebR(tool).toFixed(2), w: PATCH_HOLE_WEB_MM }); return; } /* 穴のふちと縁のあいだが 1.5mm 未満になる近さ */
   const rim = rimOn ? rimLine(region.points, rimOffset, rimRadius) : null; if (rimOn && !rim) { $('hint').textContent = t('patchRimFail'); return; }
-  let stitched = null, rimInfo = null, ringShift = null, pieceIds = [], allIds = [], gridPathIds = [], gridRecId = null; const depth0 = undo.length, seq0 = commitSeq;
+  let stitched = null, rimInfo = null, ringShift = null, pieceIds = [], allIds = [], gridPathIds = [], gridRecId = null, carried = null; const depth0 = undo.length, seq0 = commitSeq, carryPlans = opts.replace ? gridFillsToCarry(opts.replace) : [];   /* 作りなおす格子の塗り（古いピースが消える前に、内側の点を覚える） */
   commit(() => {
     if (opts.replace) removeGridItems(opts.replace);   /* 作りなおし：前の格子の図形・穴・縫い合わせを消し、動かした外周の穴を元の位置へ戻してから、作る（同じ1回の取り消しにまとまる） */
     const polys = fill.pieces.map(pc => pc.points.map(q => ({ x: +q.x.toFixed(4), y: +q.y.toFixed(4) })));
@@ -2825,13 +2851,14 @@ function patchFillApply(region, fill, layer, opts = {}) {
     }
     allIds = [...ids, ...extraIds]; selected = new Set(allIds);
     if (opts.frameIds) { gridRecId = opts.replace?.id || freshId(doc.grids || [], 'g'); doc.grids = (doc.grids || []).filter(g => g.id !== gridRecId); doc.grids.push({ id: gridRecId, frameIds: [...opts.frameIds], ids: allIds.slice(), pieceIds: ids.slice(), pathIds: gridPathIds.slice(), restore: ringShift?.restore || [], settings: gridSettingsNow() }); }   /* 格子の記録：どの枠から、何を作り、どんな設定か（パッチの線や枠を選んだとき、その格子だけを作りなおせる） */
+    if (carryPlans.length) carried = carryGridFills(carryPlans, new Set(allIds));   /* 古い塗りは、新しいピースの上へ（同じ1回の取り消しにまとまる） */
   });
   renderSeams(); if (gridRecId && commitSeq !== seq0) rearmGrids([gridRecId]);   /* 作った直後の格子も、続けて数字に追従できる状態に */
   if (opts.frameIds && commitSeq !== seq0) lastPatch = { frameIds: opts.frameIds, before: undo.at(-1), pieceIds, allIds, sig: regenSig(), gridId: gridRecId };   /* 図面が変わったか（commitSeq）で見る：履歴が満杯（100件）のときは長さが増えない（不具合のレビュー：満杯だと数値に連動しなかった） */
   const ringShiftNote = ringShift ? (ringShift.moved ? ' ' + t('ringShiftDone', { n: ringShift.moved, d: +ringShift.maxD.toFixed(2) }) + (ringShift.mirrored ? ' ' + t('ringShiftMirror', { m: ringShift.mirrored }) : '') + (ringShift.ambiguous ? ' ' + t('ringShiftAmbig', { n: ringShift.ambiguous }) : '') : '') + (ringShift.stuck ? ' ' + t('ringShiftStuck', { n: ringShift.stuck }) : '') : '';
   const rimNote = rimInfo ? ' ' + (rimInfo.n ? t('patchRimMade', { n: rimInfo.n, d: rimInfo.d, r: +rimInfo.r.toFixed(1) }) : t('patchRimNone')) + (rimInfo.r < rimRadius - 1e-9 ? ' ' + t('patchRimRadiusCut', { R: rimRadius, r: +rimInfo.r.toFixed(1) }) : '') : '';
   const chk = rimInfo ? rimBoundaryProblems() : null, rimCheckNote = chk && chk.total ? ' ' + (chk.bad.length ? t('rimCheckBadShort', { n: chk.bad.length }) : t('rimCheckOkShort')) : '';   /* 外周の穴が、パッチの境目にかかっていないか */
-  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + ringShiftNote + rimNote + rimCheckNote;
+  $('hint').textContent = (stitched ? t('patchStitched', { n: fill.pieces.length, d: fill.dropped, s: stitched.seams, h: stitched.holes, i: stitched.inset }) : t('patchFilled', { n: fill.pieces.length, d: fill.dropped })) + (opts.note ? ' ' + opts.note : '') + ringShiftNote + rimNote + rimCheckNote + (carried ? ' ' + t('gridFillsCarried', { k: carried.moved }) + (carried.lost ? ' ' + t('gridFillsLost', { n: carried.lost }) : '') : '');
   gridApplyDone++;   /* ここまで来た＝作れた（作りなおしが、成功か失敗かを見分ける） */
 }
 function initDesign() {
