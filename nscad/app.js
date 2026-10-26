@@ -1486,8 +1486,9 @@ function initLayers() {
 
 // ---- 情報パネル（選択図形の数値編集）----
 const COLOR_FIELDS = ['color','lineStyle'];
-const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circle: ['cx','cy','r',...COLOR_FIELDS], arc: ['cx','cy','r','startDeg','endDeg','length',...COLOR_FIELDS], bezier: ['x1','y1','x2','y2','length',...COLOR_FIELDS], polyline: ['nodes','closed','length','area',...COLOR_FIELDS], path: ['nodes','closed','length','area','nodeOps',...COLOR_FIELDS], text: ['text','sizeMm','font','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
-const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','font','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
+const isHex6 = v => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v), TEXT_COLOR_DEFAULT = '#9fb8c8';   /* 文字の色（textColor＝#RRGGBB）。決めていない文字の、画面の標準の色 */
+const INFO_FIELDS = { line: ['x1','y1','x2','y2','length',...COLOR_FIELDS], circle: ['cx','cy','r',...COLOR_FIELDS], arc: ['cx','cy','r','startDeg','endDeg','length',...COLOR_FIELDS], bezier: ['x1','y1','x2','y2','length',...COLOR_FIELDS], polyline: ['nodes','closed','length','area',...COLOR_FIELDS], path: ['nodes','closed','length','area','nodeOps',...COLOR_FIELDS], text: ['text','sizeMm','font','textColor','angleDeg','x','y'], dimension: ['x1','y1','x2','y2','offset','length'], fold: ['x1','y1','x2','y2','angleDeg','inner'] };
+const ALL_FIELDS = ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','font','textColor','angleDeg','offset','closed','nodes','area','nodeOps','inner',...COLOR_FIELDS];
 let infoBusy = false;
 function infoShape() { if (selected.size !== 1) return null; const id = [...selected][0]; return doc.shapes.find(s => s.id === id) || null; }
 /** 図形の全体の長さ(mm)＝線・円弧・曲線・折れ線・円（外周）の長さの合計。文字・寸法・折り線・画像は含めない。 */
@@ -1705,7 +1706,7 @@ function refreshInfo() {
     const typing = el => typeof document.activeElement !== 'undefined' && document.activeElement === el; // 打ちかけの欄は巻き戻さない
     for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','sizeMm','angleDeg','offset']) if (f in s && !typing($('info-' + f))) $('info-' + f).value = Number(s[f]).toFixed(2);
     if ('text' in s && !typing($('info-text'))) $('info-text').value = s.text;
-    if (s.type === 'text') $('info-font').value = s.font && Object.hasOwn(TEXT_FONTS, s.font) ? s.font : 'gothic';   /* 文字のフォント（書いていなければゴシック＝標準） */
+    if (s.type === 'text') { $('info-font').value = s.font && Object.hasOwn(TEXT_FONTS, s.font) ? s.font : 'gothic'; $('info-textColor').value = isHex6(s.textColor) ? s.textColor : TEXT_COLOR_DEFAULT; }   /* 文字のフォント（書いていなければゴシック＝標準） */
     if ('closed' in s) $('info-closed').checked = s.closed;
     if ('inner' in s) $('info-inner').checked = s.inner;
     if (INFO_FIELDS[s.type]?.includes('color')) { $('info-color').value = s.color || ''; $('info-lineStyle').value = s.lineStyle || ''; }
@@ -1750,6 +1751,7 @@ function applyInfo(field) {
   let next = { ...s };
   if (field === 'layer') { next.layer = $('info-layer').value; }
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
+  else if (field === 'textColor') { const v = $('info-textColor').value; if (s.type !== 'text' || !isHex6(v)) return; next.textColor = v; }   /* 文字の色（事業主 2026-10-26「フォントの色が選べない」） */
   else if (field === 'font') { const v = $('info-font').value; if (s.type !== 'text' || !Object.hasOwn(TEXT_FONTS, v)) return; if (v === 'gothic') delete next.font; else next.font = v; }   /* 文字のフォント（ゴシック＝標準は書かない・2026-10-26 事業主「フォントを変えられない」：右クリックの窓は見つけにくかったため、情報カードにも置く） */
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
@@ -2910,7 +2912,8 @@ function initDesign() {
 }
 
 function initInfo() {
-  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle','font']) $('info-' + f).addEventListener('change', () => applyInfo(f));
+  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle','font','textColor']) $('info-' + f).addEventListener('change', () => applyInfo(f));
+  $('info-textColorReset').onclick = () => { const s = infoShape(); if (!s || s.type !== 'text' || !editable(s) || !('textColor' in s)) return; const next = { ...s }; delete next.textColor; transformSelectedTo(next); };   /* 標準の色に戻す（色の指定を消す） */
   $('toggleSmooth').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const nodes = s.nodes.map(n => ({ ...n })), n = nodes[nodeSel.index];
     if (n.smooth) { n.smooth = false; } else { const prev = nodes[(nodeSel.index - 1 + nodes.length) % nodes.length], nx = nodes[(nodeSel.index + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
     transformSelectedTo({ ...s, nodes }); };
@@ -4913,12 +4916,12 @@ function placePhrase(at) {
 const pickedTexts = () => { const ids = selectedShapeIds(); return doc.shapes.filter(s => s.type === 'text' && ids.has(s.id) && editable(s)); };
 const fontLabel = key => t('font' + key[0].toUpperCase() + key.slice(1));
 /** 文字の書体を書く（ゴシック＝標準は書かない＝今までの図面と同じ）。size は mm。戻り値は変えた数。元に戻すは1回。 */
-function applyTextFont({ font, size }) {
+function applyTextFont({ font, size, color }) {
   const list = pickedTexts(); if (!list.length) { $('hint').textContent = t('textFontNone'); return 0; }
-  const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null;
-  const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z));
+  const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null, c = isHex6(color) ? color.toLowerCase() : null;   /* color＝文字の色（#RRGGBB）。null は変えない */
+  const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z) || (c && (isHex6(s.textColor) ? s.textColor.toLowerCase() : '') !== c));
   if (!plan.length) { $('hint').textContent = t('textFontSame'); return 0; }
-  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; } });
+  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; if (c) sh.textColor = c; } });
   $('hint').textContent = t('textFontDone', { n: plan.length }); return plan.length;
 }
 /** 窓の「選んだ文字：n 個（書体・大きさ）」。 */
@@ -4936,13 +4939,15 @@ function refreshTextFontCard(force = false, fill = false) {
   if (!fill) return;
   const fonts = new Set(list.map(s => s.font || 'gothic')), sizes = new Set(list.map(s => +s.sizeMm.toFixed(2)));
   $('tfFont').value = fonts.size === 1 ? [...fonts][0] : ''; $('tfSize').value = sizes.size === 1 ? String([...sizes][0]) : '';
+  const cols = new Set(list.map(s => isHex6(s.textColor) ? s.textColor.toLowerCase() : '')); $('tfColor').value = cols.size === 1 && [...cols][0] ? [...cols][0] : TEXT_COLOR_DEFAULT; $('tfColorOn').checked = false;
 }
 function openTextFontWin() { $('textFontCard').hidden = false; setCardWin('textFontCard', true); refreshTextFontCard(true, true); $('hint').textContent = t('textFontOpened'); }
 function runTextFontApply() {
   const font = $('tfFont').value, sv = $('tfSize').value, size = sv === '' || sv === null ? null : Number(sv);
   if (size !== null && !(size >= 0.5 && size <= 200)) { $('hint').textContent = t('textFontInvalid'); return; }
-  if (!font && size === null) { $('hint').textContent = t('textFontNothing'); return; }
-  applyTextFont({ font, size }); refreshTextFontCard(true);
+  const color = $('tfColorOn').checked ? $('tfColor').value : null;   /* 「色も変える」を入れたときだけ、色を変える */
+  if (!font && size === null && !color) { $('hint').textContent = t('textFontNothing'); return; }
+  applyTextFont({ font, size, color }); refreshTextFontCard(true);
 }
 /** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
 const newTextFont = () => { const v = $('textFont')?.value; return v && v !== 'gothic' && Object.hasOwn(TEXT_FONTS, v) ? { font: v } : {}; };
@@ -7567,7 +7572,7 @@ const EXPORT_GOLD_WIRE = '#c8a232';
  *  金具の黄色い線は明暗どちらでも見える金色で少し太く。金属の色の図形・寸法・文字は今までどおり。色なし（color=false）は黒の細い線（切る線）。
  *  （事業主の指摘 2026-10-18「PNG に変換すると全然違う配色・金具も消えている」：黒い革の上の黒い縫い目・縁、紙の上の薄い黄色の金具の線が見えなかった） */
 function exportLineLook(s, dark, color) {
-  if (s.type === 'dimension' || s.type === 'text') return { color: '#335', px: 1 };
+  if (s.type === 'dimension' || s.type === 'text') return { color: s.type === 'text' && color && isHex6(s.textColor) ? s.textColor : '#335', px: 1 };   /* 色つきの書き出しでは、色を決めた文字はその色 */
   if (!color) return { color: '#000', px: 1 };
   const own = shapeLineColor(s);
   if (s.color === 'yellow') return { color: EXPORT_GOLD_WIRE, px: 2.4 };   /* 金属の色が付いていても、黄色指定の線は金色（薄い黄色は白い紙で見えない） */
@@ -7636,7 +7641,7 @@ function drawSheetBody(lo, hi) {
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   const fillItems = viewShow.colors ? leatherItems(doc, visible, previewMoved, metalDrawItems()) : []; paintLeatherItems(fillItems); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
-  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'dimension' || s.type === 'text' ? '#9fb8c8' : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   /* 重なりは、層ごとに「その層の塗り → その層の線」の順（事業主 2026-10-25「レイヤーの表示が崩れている」：塗りは層の順に重なるのに、線はいつも全部の塗りの上に出て、手前の層の白い塗りがリングの塗りを隠しても、リングの輪郭だけが白の上に残った）。
      塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
   const rankOfStroke = s => rankDraw.get(s.layer) || 0, opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
