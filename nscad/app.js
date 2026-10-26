@@ -2497,6 +2497,11 @@ function nudgePatch(dx, dy) {
   $('patchShiftX').value = fmt(cur.x + dx * step); $('patchShiftY').value = fmt(cur.y + dy * step); regenPatch();
 }
 function resetPatchShift() { $('patchShiftX').value = '0'; $('patchShiftY').value = '0'; regenPatch(); }
+/** 「上下左右対称に整える」：柄の位置（左右・上下）を 0 に戻して、選んでいる格子（直前に作った格子）を作りなおす。列・行・幅・高さなどの寸法はそのまま。寸法を変えて位置もずらしたあとに、はじめの対称な並びへ戻す（事業主 2026-10-26）。 */
+function symmetrizePatch() {
+  if (!gridsTouchedBySelection().length && !lastPatch) { $('hint').textContent = t('patchSymmetryNone'); return; }
+  $('patchShiftX').value = '0'; $('patchShiftY').value = '0'; regenPatch(true); $('hint').textContent = t('patchSymmetryDone') + ' ' + $('hint').textContent;
+}
 /** 外周の穴の「ふち」から、縁・パッチの境目の実線まで、あけておく間（mm）。これより近いと、穴と縁（境目）のあいだの革がちぎれる（事業主 2026-10-25「両方です。菱目と端部までの距離が短いとちぎれてしまうから」：外周の菱目はパッチの境界線から 1.5mm 離す）。 */
 const PATCH_HOLE_WEB_MM = 1.5;
 /** すでにある外周の穴を、境目から離す・点検するときの距離（mm）＝穴の中心から：穴の大きい方の寸法の半分＋0.3mm（穴が線にかかるかどうか）。ずらせる量（ピッチの40%）に限りがあるので、これは今までどおり。 */
@@ -2909,7 +2914,7 @@ function initDesign() {
   $('of-close').onclick = () => { offsetSelection = null; draw(); canvas.focus(); };
   $('df-run').onclick = runDetour; $('df-close').onclick = () => { detourState = null; draw(); canvas.focus(); }; for (const id of ['df-clear', 'df-radius']) $(id).addEventListener('input', () => draw());
   $('offsetDist').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runOffset(); } });
-  $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift;
+  $('patchShiftL').onclick = () => nudgePatch(-1, 0); $('patchShiftR').onclick = () => nudgePatch(1, 0); $('patchShiftU').onclick = () => nudgePatch(0, -1); $('patchShiftD').onclick = () => nudgePatch(0, 1); $('patchShiftReset').onclick = resetPatchShift; $('patchSymmetry').onclick = symmetrizePatch;
   for (const id of ['patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'patchShiftX', 'patchShiftY', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchMinPiece', 'patchPitch', 'patchTol', 'patchClear', 'stitchTool', 'patchTexA', 'patchTexB']) { const el = $(id), go = () => regenSoon(regenPatch, el); el.addEventListener('input', go); el.addEventListener('change', go); }
   for (const id of ['patchCols', 'patchRows', 'gridAngle']) { const el = $(id), go = () => { gridTargetMode = false; $('gridResult').textContent = ''; if (id === 'patchRows' && String($('gridAngle').value ?? '').trim() !== '') { $('gridAngle').value = ''; }   /* 行を打ったら、角度の欄を空にする：角度（初期値45）が数字のままだと、ひし形の高さは幅×角度で決まり、行は目安にしかならず、列×行の数が合わなくなる（事業主 2026-10-25「列と行は3＊3なのに、数が合わない」）。45°にしたいときは、角度に打つ */
     gridPreviewSoon(el); regenSoon(gridFieldChanged, el, regenDelayMs * REGEN_PREVIEW_FACTOR); }; el.addEventListener('input', go); el.addEventListener('change', go); el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); gridConfirmNow(); } }); }   /* 列・行・角度は「格子を作る」用 */
