@@ -8150,10 +8150,40 @@ function fillCtxCards() {
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
-    if (g === 'fold') { if (!foldSim) { foldSim = true; const s = document.createElement('button'); s.textContent = t('ctxFoldSim'); s.title = t('foldFlowInfoTip'); s.onclick = () => { countUse('ctx_foldsim'); hideCtxMenu(); setFlowWin(true); }; box.appendChild(s); } continue; }
-    const b = document.createElement('button'); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('layerCard')) { hideCtxMenu(); openLayerWin(); return; }   /* レイヤーは右列でなく窓（事業主 2026-10-25「レイヤーのインターフェースが見にくい。窓にしたらどう？」） */ if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
-  $('ctxCardsTitle').hidden = !cards.length; return cards.length;
+    if (g === 'fold') { if (!foldSim) { foldSim = true; const s = document.createElement('button'); if (s.dataset) s.dataset.cat = 'fold'; s.textContent = t('ctxFoldSim'); s.title = t('foldFlowInfoTip'); s.onclick = () => { countUse('ctx_foldsim'); hideCtxMenu(); setFlowWin(true); }; box.appendChild(s); } continue; }
+    const b = document.createElement('button'); if (b.dataset) b.dataset.cat = ctxCatOfCard(c); b.textContent = c.querySelector('summary').textContent; if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('layerCard')) { hideCtxMenu(); openLayerWin(); return; }   /* レイヤーは右列でなく窓（事業主 2026-10-25「レイヤーのインターフェースが見にくい。窓にしたらどう？」） */ if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+  $('ctxCardsTitle').hidden = true; return cards.length;   /* 旧い見出しは使わない（カードは、カテゴリごとの入れ物へ配る＝distributeCtxCards） */
 }
+/** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
+ *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
+ *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-offset', 'ctx-dedupe', 'ctx-outline', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch']], ['fold', []], ['color', []], ['parts', ['ctx-lib']], ['draw', ['ctx-divide', 'ctxLayersTitle', 'ctxLayers']], ['out', []]];
+const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts' }, CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'color', fold: 'fold', parts: 'parts', out: 'out' };
+const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
+function initCtxTree() {
+  for (const [cat, ids] of CTX_CATS) {
+    const fly = $('ctxFly-' + cat), btn = $('ctxCatBtn-' + cat); if (!fly || !btn) continue;
+    for (const id of ids) { const el = $(id); if (el) fly.appendChild(el); }
+    const cards = $('ctxCards-' + cat); if (cards) fly.appendChild(cards);   /* カードの入れ物は、いつも最後 */
+    btn.onclick = e => { e?.stopPropagation?.(); toggleCtxCat(cat); };
+  }
+  for (const id of ['ctxPatchTitle', 'ctxCardsTitle', 'ctxCards']) { const el = $(id); if (el) el.hidden = true; }   /* 旧い（平らな）見出し・入れ物は使わない */
+}
+function closeCtxCats() { for (const [cat] of CTX_CATS) { const fly = $('ctxFly-' + cat), box = $('ctxCat-' + cat); if (fly) { fly.hidden = true; if (fly.style) fly.style.top = ''; } box?.classList?.remove('open'); box?.classList?.remove('flip'); } }
+function toggleCtxCat(cat) {
+  const fly = $('ctxFly-' + cat), box = $('ctxCat-' + cat), wasOpen = fly.hidden === false; closeCtxCats(); if (wasOpen) return;
+  fly.hidden = false; box?.classList?.add('open');
+  const r = fly.getBoundingClientRect?.(), W = globalThis.window?.innerWidth || 0, H = globalThis.window?.innerHeight || 0;   /* 画面の右・下からはみ出すときは、左へ開く・上へずらす */
+  if (r && W && r.right > W - 8) { box?.classList?.add('flip'); }
+  const r2 = fly.getBoundingClientRect?.(); if (r2 && H && r2.bottom > H - 8 && fly.style) fly.style.top = Math.min(0, -(r2.bottom - (H - 8)) - 4) + 'px';
+}
+function distributeCtxCards() {
+  const src = $('ctxCards'), items = src?.children ? [...src.children] : [];
+  for (const [cat] of CTX_CATS) { const box = $('ctxCards-' + cat); if (box) box.textContent = ''; }
+  for (const x of items) { const cat = x?.dataset?.cat, box = cat && $('ctxCards-' + cat); if (box) box.appendChild(x); }
+}
+const ctxLiveCount = el => { let n = 0; for (const x of el?.children ? [...el.children] : []) { if (x.hidden) continue; if (x.tagName === 'BUTTON' || typeof x.onclick === 'function') n++; else n += ctxLiveCount(x); } return n; };
+function updateCtxTree() { closeCtxCats(); for (const [cat] of CTX_CATS) { const box = $('ctxCat-' + cat), fly = $('ctxFly-' + cat); if (box && fly) box.hidden = !ctxLiveCount(fly); } }
 /** 左メニュー「選択中」の操作を、右クリックメニューの先頭にカテゴリ別に並べる（事業主 2026-10-26「左の選択中のメニューは右クリックにカテゴリにわけて登録して。ごちゃごちゃして見にくい」）。
  *  実行は左の同じボタンの処理（クリックを渡す）なので、キー操作・無効の条件は変わらない。出すのは、いま押せるものだけ。左の並びは class inCtx で隠す（ボタンは残す）。 */
 const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
@@ -8172,10 +8202,10 @@ function fillCtxSel() {
 }
 function showCtxMenu(e) {
   const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
-  menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
+  distributeCtxCards(); updateCtxTree(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
-function hideCtxMenu() { $('ctxMenu').hidden = true; }
+function hideCtxMenu() { $('ctxMenu').hidden = true; closeCtxCats(); }
 let lastPanDragAt = -1e9; /* 右ドラッグ（画面の移動）を終えた時刻。離した直後に出るメニューのイベントを無視するため */
 /** 右クリックと同じメニューを開く入口（スマホ・タブレットには右クリックが無い・事業主 2026-10-26「右クリックはスマホだとどうなる？」）。①ヘッダーの「機能」ボタン ②選択モードでの、指・ペンの長押し（0.6秒・10px 以上動かさない）。マウスの長押しは何もしない。 */
 $('ctxOpenBtn').addEventListener('click', e => { const r = (e.currentTarget || $('ctxOpenBtn')).getBoundingClientRect(); e.stopPropagation?.(); countUse('ctx_open_btn'); showCtxMenu({ clientX: r.left, clientY: r.bottom + 4, preventDefault() {} }); });
@@ -8525,7 +8555,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initCtxTree(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 /* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
