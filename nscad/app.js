@@ -3042,9 +3042,9 @@ function exportPdf() {
  *  寸法線・文字があるときは 10mm（数字が 3.5mm でも、まわりに十分あく）。無いときは今までどおり 2mm。 */
 const pngMarginMm = shapes => shapes.some(s => s.type === 'dimension' || s.type === 'text') ? 10 : 2;
 function exportPng() {
-  const only = !!$('pngSelOnly')?.checked, selIds = new Set(selected), vis = only ? (sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 「選んだ図形だけ出力」：選んだ図形と、その縫い穴だけ */
+  const selIds = new Set(selected), only = doc.shapes.some(sh => selIds.has(sh.id) && visible(sh)), vis = only ?(sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 図形を選んでいれば自動で、選んだ図形と、その縫い穴だけ（SVG・印刷・PDF・DXF と同じ「選んでいれば自動」。2026-10-26 事業主「本日も同じ不具合が発生しました。選択した図形のみＰＮＧに出力できない」：PNG だけ、出力カードの「選んだ図形だけ出力」（初期は切）の方式のままだった） */
   const shapes = doc.shapes.filter(vis), holes = doc.holes.filter(hvis), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
-  if (only && !shapes.length && !holes.length) { $('hint').textContent = t('pngSelNone'); return; }
+  const scopeNote = ' ' + (only ? t('outScopeSel', { n: shapes.length }) : t('outScopeAll'));   /* 出力のあとの案内に、何が出たかを必ず出す（ほかの書き出しと同じ） */
   if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('png', 'draw')) return;
   const margin = pngMarginMm(shapes); exportExtentMm = Math.max(b.maxX - b.minX, b.maxY - b.minY);   /* 寸法線の文字が端に来ても切れない余白（事業主 2026-10-25「PNG出力する際にぎりぎりのところの図形の寸法線が見にくい。もう少し余白を取ってほしい」） */
@@ -3059,7 +3059,7 @@ function exportPng() {
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
   finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; exportExtentMm = 0; draw(); }
   if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
-  exportFile('leather-pattern.png', new Promise(res => off.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved); });
+  exportFile('leather-pattern.png', new Promise(res => off.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved) + scopeNote; });
 }
 /** 取り込んだ図形群を文書に足す（id・レイヤーを割り当て、validateDoc で壊れた要素を捨てて件数を報告）。 */
 function importShapes(list, { layersFrom = [] } = {}) {
