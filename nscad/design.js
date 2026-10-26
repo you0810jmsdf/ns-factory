@@ -289,7 +289,7 @@ export function shapesOnRings(rings, shapes, { tol = 0.1 } = {}) {
   return out;
 }
 /** 別の（より長い、同じ長さなら先の）図形の上に、全部のっている図形をのぞく。二重の線があると、輪郭の端が枝分かれして、一周つながった輪郭が見つからないため。 */
-function dropCovered(cand, tol) {
+export function dropCovered(cand, tol) {
   const info = cand.map(s => ({ s, bb: bboxOf(s), len: arcLength(s), smp: null })), dead = new Set();
   for (let i = 0; i < info.length; i++) for (let j = 0; j < info.length; j++) {
     const A = info[i], B = info[j]; if (i === j || dead.has(A.s.id) || A.len > B.len + 1e-9 || (Math.abs(A.len - B.len) <= 1e-9 && i < j)) continue;   /* A は B より短い（同じ長さなら、あとの図形が A） */

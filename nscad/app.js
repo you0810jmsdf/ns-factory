@@ -53,7 +53,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -5141,8 +5141,8 @@ function makeFoldBaselines() {
 /** 「1本に結合」：選んだ線のうち、端がつながって同じ直線の上に並び、層・線の種類・色・グループが同じものを、1本の直線にまとめる。菱目（縫い穴）は位置のまま1本の経路にまとめ直す。縫い合わせ設定がある線や、選んでいない線もいっしょの経路は、まとめない（事業主指示 2026-10-17）。 */
 function mergeSelectedLines() {
   const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
-  const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && !s.foldFlat, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
-  for (const s of cand) { const key = [s.layer, s.lineStyle || '', groupIdOf(s) || ''].join('|'); /* 色は区別しない（トリムなどで一部の色が抜けた短い線が混ざることがある）。まとめた線の色は、いちばん長い線のもの */ if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
+  const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
+  for (const s of cand) { const key = [s.layer, s.lineStyle || '', groupIdOf(s) || '', s.foldFlat || ''].join('|'); /* 折り展開の線（foldFlat）も、同じ種類どうしなら結合できる（事業主 2026-10-26「複数の直線が１本に結合されない」） */ /* 色は区別しない（トリムなどで一部の色が抜けた短い線が混ざることがある）。まとめた線の色は、いちばん長い線のもの */ if (!groups.has(key)) groups.set(key, []); groups.get(key).push(s); }
   const clusters = [...groups.values()].flatMap(list => collinearLineClusters(list)).filter(c => c.ids.some(id => ids.has(id)));   /* 選んだ線を1本以上含むまとまりだけ */
   const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
   const ok = clusters.filter(c => { const set = new Set(c.ids); return doc.paths.filter(p => p.shapeIds.some(id => set.has(id))).every(p => p.shapeIds.every(id => set.has(id)) && !seamPaths.has(p.id)); });
@@ -7054,10 +7054,23 @@ function offsetEdgeSel(hit, p) {
   for (let i = 0; i < edges; i++) { const a = pts[i], b = pts[(i + 1) % n], d = distTo({ type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }, p); if (!best || d < best.d) best = { d, a, b }; }
   return best && best.d <= 7 / scale ? { points: [{ x: best.a.x, y: best.a.y }, { x: best.b.x, y: best.b.y }], closed: false, shapeIds: [hit.id], whole: false, single: null } : null;
 }
+/** オフセットの「外周」：クリックした所を通る輪郭（閉じた折れ線・円・閉じた曲線、または線・円弧・曲線で一周つながった輪郭）のうち、いちばん大きいもの。その輪郭の線を1本返す（オフセットが、そこからつながった全体へ広げる）。見つからなければ null。
+ *  事業主 2026-10-26「外周のオフセットしたいのに、パッチのオフセットしかできない」「オフセットで外周を選べない」：外周の縁の上に、マスの折れ線や折り線が重なっていて、クリックすると、上にある図形（マス・折り線の一部）が選ばれていた。いちばん大きい輪郭を選べば、外周になる。 */
+function outlineHitAt(shapes, p) {
+  const tol = 7 / scale, cands = [];
+  for (const s of shapes) if ((s.type === 'circle' || ((s.type === 'polyline' || s.type === 'path') && s.closed)) && distTo(s, p) <= tol) cands.push({ s, area: s.type === 'circle' ? Math.PI * s.r * s.r : areaOf(flattenShape(s, 0.05)) });
+  const open = shapes.filter(s => !s.closed && s.layer !== 'guide' && ['line', 'arc', 'bezier', 'polyline', 'path'].includes(s.type)), byId = new Map(open.map(s => [s.id, s]));
+  for (const r of closedRegions(dropCovered(open, 0.1), 0.01, { dashed: true })) {
+    const near = r.shapeIds.map(id => byId.get(id)).filter(Boolean).map(s => ({ s, d: distTo(s, p) })).filter(c => c.d <= tol).sort((x, y) => x.d - y.d)[0];
+    if (near) cands.push({ s: near.s, area: r.area });
+  }
+  cands.sort((x, y) => y.area - x.area); return cands[0]?.s || null;
+}
 function offsetClick(p, whole) {
-  const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)), hit = shapes.filter(s => editable(s)).reverse().find(s => distTo(s, p) <= 7 / scale);
-  if (!hit) { offsetSelection = null; $('hint').textContent = t('offsetNone'); draw(); return; }
-  offsetLast = p; const scope = whole ? 'whole' : offsetAlt ? 'edge' : $('offsetScope').value, edge = scope === 'edge' ? (offsetEdgeSel(hit, p) || (hit.type !== 'polyline' ? offsetSpan([hit], hit, p, true) : null)) : null; /* 線・円弧・曲線は、その1本が1辺（つながった別の図形は含めない） */ /* 選ぶ範囲：交点から交点まで／1辺だけ（Alt＋クリックでも）／つながった全体（ダブルクリックでも） */ if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
+  const shapes = doc.shapes.filter(s => visible(s) && stitchable(s)); let scopeSel = offsetAlt ? 'edge' : $('offsetScope').value; if (whole && scopeSel !== 'outline') scopeSel = 'whole';
+  const hit = scopeSel === 'outline' ? outlineHitAt(shapes.filter(s => editable(s)), p) : shapes.filter(s => editable(s)).reverse().find(s => distTo(s, p) <= 7 / scale);
+  if (!hit) { offsetSelection = null; $('hint').textContent = t(scopeSel === 'outline' ? 'offsetOutlineNone' : 'offsetNone'); draw(); return; }
+  offsetLast = p; const scope = scopeSel === 'outline' ? 'whole' : scopeSel, edge = scope === 'edge' ? (offsetEdgeSel(hit, p) || (hit.type !== 'polyline' ? offsetSpan([hit], hit, p, true) : null)) : null; /* 線・円弧・曲線は、その1本が1辺（つながった別の図形は含めない） */ /* 選ぶ範囲：交点から交点まで／1辺だけ（Alt＋クリックでも）／つながった全体（ダブルクリックでも） */ if (edge) { offsetAlt = false; offsetSelection = { ...edge, layer: hit.layer }; $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw(); $('hint').textContent = t($('offsetSide').value === 'cursor' ? 'offsetPickCursor' : 'offsetPickedEdge'); return; }
   const sel = offsetSpan(shapes, hit, p, scope === 'whole'); if (!sel) { offsetSelection = null; $('hint').textContent = t('impossible'); draw(); return; }
   offsetSelection = { ...sel, layer: hit.layer, hit, click: p }; /* 向き「カーソルの側」：1回クリックでは、別々の線でつながっていても、クリックした1本の線だけをずらす（全体はダブルクリック。矩形・折れ線は従来どおり全体） */ if ($('offsetSide').value === 'cursor' && !whole && hit.type === 'line' && sel.points.length > 2) { const es = offsetEdgeOfHit(offsetSelection); if (es) offsetSelection = { ...es, hit, click: p }; } $('of-dist').value = $('offsetDist').value; $('of-side').value = $('offsetSide').value; draw();
   if (voiceAskNumber !== null) { const v = voiceAskNumber; voiceAskNumber = null; runOffset(v); return; } /* 音声で数値を先に聞いているときは、選んですぐ実行 */
