@@ -280,6 +280,41 @@ export function regionAt(shapes, p, tol = 0.01) {
 }
 /** 閉じた領域（closedRegions の要素）のうち、ほかの領域の内側に入っていない、いちばん外の囲みだけ。 */
 export function outerRegions(regions) { return regions.filter(r => !regions.some(o => o !== r && o.area > r.area + 1e-9 && insidePolygon(r.points[0], o.points))); }
+/** 図形の端から端までを細かく取った点（折れ線にしてから、各辺の中点も足す）。外周の「縁の上にのっているか」の判定に使う。 */
+const edgeSamples = s => { const ps = flattenShape(s, 0.05); return ps.flatMap((p, i) => i + 1 < ps.length ? [p, { x: (p.x + ps[i + 1].x) / 2, y: (p.y + ps[i + 1].y) / 2 }] : [p]); };
+/** 輪（多角形の点の並び rings）の縁の上に、全部のっている図形（線・円弧・曲線・折れ線）の id。二重に重なった同じ線や、縁の途中で切れた線が入る。縁に接する辺だけが縁の上にあるマスの折れ線は入らない。 */
+export function shapesOnRings(rings, shapes, { tol = 0.1 } = {}) {
+  const polys = rings.map(points => ({ type: 'polyline', closed: true, points })), out = [];
+  for (const s of shapes) { const smp = edgeSamples(s); if (smp.length && polys.some(g => smp.every(p => distToShape(g, p) <= tol))) out.push(s.id); }
+  return out;
+}
+/** 別の（より長い、同じ長さなら先の）図形の上に、全部のっている図形をのぞく。二重の線があると、輪郭の端が枝分かれして、一周つながった輪郭が見つからないため。 */
+function dropCovered(cand, tol) {
+  const info = cand.map(s => ({ s, bb: bboxOf(s), len: arcLength(s), smp: null })), dead = new Set();
+  for (let i = 0; i < info.length; i++) for (let j = 0; j < info.length; j++) {
+    const A = info[i], B = info[j]; if (i === j || dead.has(A.s.id) || A.len > B.len + 1e-9 || (Math.abs(A.len - B.len) <= 1e-9 && i < j)) continue;   /* A は B より短い（同じ長さなら、あとの図形が A） */
+    if (A.bb.minX < B.bb.minX - tol || A.bb.maxX > B.bb.maxX + tol || A.bb.minY < B.bb.minY - tol || A.bb.maxY > B.bb.maxY + tol) continue;
+    A.smp ??= edgeSamples(A.s); if (A.smp.every(p => distToShape(B.s, p) <= tol)) dead.add(A.s.id);
+  }
+  return cand.filter(s => !dead.has(s.id));
+}
+/** 選んだ図形（shapes）の外周をつくる線：{ ids, enclosing }。
+ *  ①選んだ図形のうち、線・円弧・曲線・開いた折れ線で一周つながった輪郭（いちばん外の囲み）とその縁の上に全部のっている線（二重に重なった同じ線・縁の途中で切れた線）。中の線・円・マスの折れ線（縁に接する辺だけが縁の上）は含めない。点線も辺に使う。
+ *  ②選んだ図形の中に輪郭がなければ（パッチだけを選んだ・外周の一部だけを選んだ）、図面の全体（within）から、選んだ図形の中心を囲む、いちばん小さな輪郭（enclosing＝true）。
+ *  ③選んだものが、閉じた折れ線（長方形など）だけのときは、その輪郭。どれも無ければ ids は []（線が途中で切れて輪郭が閉じていないときも []）。（事業主 2026-10-26「外周だけ青色にしたい」） */
+export function outlineOf(shapes, { within = null, tol = 0.1 } = {}) {
+  const isOpen = s => ['line', 'arc', 'bezier', 'polyline', 'path'].includes(s.type), loops = list => outerRegions(closedRegions(dropCovered(list, tol), 0.01, { dashed: true }));
+  const cand = shapes.filter(isOpen), pack = (outers, pool, enclosing) => { const ids = new Set(outers.flatMap(r => r.shapeIds)); for (const id of shapesOnRings(outers.map(r => r.points), pool.filter(s => !ids.has(s.id)), { tol })) ids.add(id); return { ids: [...ids], enclosing }; };
+  let outers = loops(cand.filter(s => !s.closed)); if (outers.length) return pack(outers, cand, false);
+  if (within && shapes.length) {
+    const boxes = shapes.map(bboxOf), c = { x: (Math.min(...boxes.map(b => b.minX)) + Math.max(...boxes.map(b => b.maxX))) / 2, y: (Math.min(...boxes.map(b => b.minY)) + Math.max(...boxes.map(b => b.maxY))) / 2 };
+    const pool = within.filter(s => isOpen(s) && !s.closed), around = closedRegions(dropCovered(pool, tol), 0.01, { dashed: true }).filter(r => insidePolygon(c, r.points)).sort((a, b) => a.area - b.area);
+    if (around.length) return pack([around[0]], pool, true);
+  }
+  if (cand.some(s => !s.closed)) return { ids: [], enclosing: false };   /* 線が途中で切れている（輪郭が閉じていない）ときは、マスの折れ線を外周にしない */
+  outers = loops(cand); return outers.length ? pack(outers, cand, false) : { ids: [], enclosing: false };
+}
+export const outlineShapeIds = (shapes, opts) => outlineOf(shapes, opts).ids;
 /** 囲まれた図形（closedRegions の要素）の外枠を、列数 × 行数のマスに分けて、囲みの形で切り抜いたピースを返す（fillRegionPattern と同じ形）。
  *  pitch を渡さないとき：マスは長方形で、大きさは「外枠の幅÷列数」×「外枠の高さ÷行数」。
  *  pitch（穴の間隔 mm）を渡すとき：マスの1辺を pitch の整数倍にする（外枠からはみ出さない側へ丸める・最小 2 倍）。格子全体は外枠の中央に置き、外枠の縁には余白が残る。

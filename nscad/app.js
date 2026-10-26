@@ -53,7 +53,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2897,6 +2897,7 @@ function initDesign() {
   $('showJunctions').addEventListener('change', () => { rebuildSnaps(); draw(); });
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
+  $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
@@ -6424,7 +6425,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !affectedHoles().length; $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
@@ -7882,6 +7883,22 @@ document.addEventListener?.('keydown', keyLog, true);
 /** ボタン・見本・欄のクリックの記録（押したものの名前・選択数・画面下のメッセージ）。入力欄・選択欄の中身は残さない。 */
 function clickLogNow(e) { const b = e.target?.closest?.('button, select, input, summary, label'); if (!b) return; const form = b.tagName === 'INPUT' || b.tagName === 'SELECT' || b.tagName === 'TEXTAREA'; logOp('click', { id: b.id || '', cls: String(b.className || '').slice(0, 40), data: { ...(b.dataset || {}) }, text: form ? '' : String(b.textContent || '').trim().slice(0, 20), nSel: selected.size, mode, hint: $('hint')?.textContent ?? '' }); }
 document.addEventListener?.('click', e => setTimeout(() => clickLogNow(e), 0), true); /* 押した直後の状態（選択数・メッセージ）を残す */
+/** 「外周の線だけ選ぶ」：選んだ図形のうち、いちばん外の輪郭をつくる線だけを選び直す（図面は変えない・事業主 2026-10-26「外周だけ青色にしたい」）。
+ *  格子（パッチ）を選んでいれば、その格子の枠（作ったときの外周の線）と、枠の縁の上に重なった線。ほかは、一周つながった輪郭（outlineShapeIds）。見つからないときは、選択を変えずに案内する。 */
+function selectOutline() {
+  const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
+  const live = doc.shapes.filter(s => ids.has(s.id) && visible(s) && stitchable(s)), grids = (doc.grids || []).filter(g => (g.ids || []).some(id => ids.has(id)) || (g.frameIds || []).some(id => ids.has(id)));
+  let out = [], enclosing = false;
+  if (grids.length) {
+    const frameSet = new Set(grids.flatMap(g => g.frameIds || [])), frame = doc.shapes.filter(s => frameSet.has(s.id) && visible(s) && stitchable(s)), set = new Set(frame.map(s => s.id));
+    const rings = outerRegions(closedRegions(frame, 0.01, { dashed: true })).map(r => r.points); if (rings.length) for (const id of shapesOnRings(rings, live.filter(s => !set.has(s.id) && ['line', 'arc', 'bezier', 'polyline', 'path'].includes(s.type)))) set.add(id);
+    out = [...set];
+  } else { const r = outlineOf(live, { within: doc.shapes.filter(s => visible(s) && stitchable(s)) }); out = r.ids; enclosing = r.enclosing; }
+  out = out.filter(id => doc.shapes.some(s => s.id === id && editable(s)));
+  if (!out.length) { $('hint').textContent = t('outlineNone'); return; }
+  selected = new Set(out); nodeSel = null; countUse('select_outline');
+  $('hint').textContent = t(enclosing ? 'outlineSelectedAround' : 'outlineSelected', { n: out.length, len: totalLengthOf(out.map(id => doc.shapes.find(s => s.id === id))).toFixed(1) }); draw();
+}
 /** 一部だけ動かすと壊れるグループ（アプリが作った金具・折り目の断面図）の図形か。Ctrl+クリックでも、全体のまま。 */
 const groupIsWhole = s => { const g = groupIdOf(s); return !!g && doc.shapes.some(x => groupIdOf(x) === g && (isHardwareShape(x) || x.hwSection || x.hwFor || x.foldSec || x.layer === 'section')); };
 canvas.addEventListener('pointerdown', e => {
@@ -8084,7 +8101,7 @@ function fillCtxCards() {
   $('ctxCardsTitle').hidden = !cards.length; return cards.length;
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  const menu = $('ctxMenu'), p = local(e); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = !selectedShapeIds().size; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
