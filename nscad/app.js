@@ -8232,14 +8232,23 @@ function syncSideToggle() { const tg = $('sideToggle'); if (!tg?.setAttribute) r
  *  カードの項目は、いまの「1枚だけ表示」（revealCard）で開き、「← 一覧」で戻る。開いているカテゴリは覚えておく。 */
 const sideMenuOpen = new Set(); let sideMenuTimer = null;
 const sideListShown = () => { const cl = document.body?.classList; return typeof cl?.contains === 'function' && cl.contains('side-list') && !cl.contains('side-closed'); };   /* body の classList を持たない環境（試験の擬似画面）でも止まらない */
+/** 最近使った項目（2026-10-28 事業主「パネルの一覧の先頭に、最近使った項目を出す」）：右クリックメニューの項目を、押した順（パネルの一覧から押しても、右クリックで押しても）に覚え、一覧の先頭に「最近使った」として最大5つ出す。
+ *  覚えるのは項目のキーだけ（項目の id・選択中の操作の名前・カードの名前）で、ブラウザに残す。いま押せない項目は出さない（覚えたまま、押せるようになれば戻る）。 */
+const SIDE_RECENT_KEY = 'leather-cad.sideRecent', SIDE_RECENT_SAVE = 10, SIDE_RECENT_SHOW = 5;
+let sideRecentKeys = null, sideRecentClosed = false;
+const sideItemKey = b => b?.id || (b?.dataset?.ctxFor ? 'sel:' + b.dataset.ctxFor : (String(b?.parentNode?.id || '').startsWith('ctxCards-') ? 'card:' + String(b.textContent || '').trim() : ''));   /* キーを作れない項目（レイヤーの一覧など）は、覚えない */
+function loadSideRecent() { if (!sideRecentKeys) { sideRecentKeys = []; try { const v = JSON.parse(localStorage.getItem(SIDE_RECENT_KEY) || '[]'); if (Array.isArray(v)) sideRecentKeys = v.filter(k => typeof k === 'string' && k && k.length <= 80).slice(0, SIDE_RECENT_SAVE); } catch { /* 読めなければ、空から */ } } return sideRecentKeys; }
+function noteSideRecent(key) { if (!key) return; const list = loadSideRecent(), i = list.indexOf(key); if (i >= 0) list.splice(i, 1); list.unshift(key); if (list.length > SIDE_RECENT_SAVE) list.length = SIDE_RECENT_SAVE; try { localStorage.setItem(SIDE_RECENT_KEY, JSON.stringify(list)); } catch { /* 保存できなくても、この画面の間は覚える */ } }
+function initSideRecent() { $('ctxMenu')?.addEventListener?.('click', e => { const b = e.target?.closest?.('button'); if (b && b.closest?.('[id^="ctxFly-"]')) noteSideRecent(sideItemKey(b)); }); }   /* 右クリックで押した項目も覚える（一覧の写しを押したときは、元の項目のクリックがここへ届く） */
 function renderSideMenu() {
   const box = $('sideMenu'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
   prepareCtxMenu(); box.textContent = '';
   const mine = src => { const x = src.cloneNode(true); x.removeAttribute?.('id'); x.hidden = false; return x; };
+  const pool = new Map(), cats = [], item = (c, key) => { const x = mine(c); x.onclick = () => { noteSideRecent(key); c.click(); scheduleSideMenu(); }; return x; };   /* pool：キー → いま押せる元の項目（「最近使った」の写しの元） */
   const collect = (el, out) => {
     for (const c of el?.children ? [...el.children] : []) {
       if (c.hidden && c.id !== 'ctxChamferSub') continue;   /* いま出ない項目は写さない（面取りの「丸・角」は、右クリックでは押して開くので、パネルでは最初から並べる） */
-      if (c.tagName === 'BUTTON') { if (c.disabled) continue; if (c.id === 'ctx-chamfer') { const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = c.textContent; out.push(h); } else { const x = mine(c); x.onclick = () => { c.click(); scheduleSideMenu(); }; out.push(x); } }
+      if (c.tagName === 'BUTTON') { if (c.disabled) continue; if (c.id === 'ctx-chamfer') { const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = c.textContent; out.push(h); } else { const key = sideItemKey(c); if (key) pool.set(key, c); out.push(item(c, key)); } }
       else if (c.classList?.contains('ctx-title')) out.push(mine(c)); else collect(c, out);
     }
   };
@@ -8248,8 +8257,15 @@ function renderSideMenu() {
     const items = []; collect(fly, items); if (!items.some(x => x.tagName === 'BUTTON')) continue;   /* 押せる項目が1つも無いカテゴリは出さない（右クリックと同じ） */
     const d = document.createElement('details'), s = document.createElement('summary'), list = document.createElement('div');
     d.className = 'side-menu-cat'; d.dataset.cat = cat; d.open = sideMenuOpen.has(cat); s.textContent = head.textContent; list.className = 'side-menu-items'; for (const x of items) list.appendChild(x); d.appendChild(s); d.appendChild(list);
-    d.addEventListener?.('toggle', () => { if (d.open) sideMenuOpen.add(cat); else sideMenuOpen.delete(cat); }); box.appendChild(d);
+    d.addEventListener?.('toggle', () => { if (d.open) sideMenuOpen.add(cat); else sideMenuOpen.delete(cat); }); cats.push(d);
   }
+  const recent = loadSideRecent().filter(k => pool.has(k)).slice(0, SIDE_RECENT_SHOW);   /* 先頭に「最近使った」（いま押せるものだけ・最大5つ・初めは開いている） */
+  if (recent.length) {
+    const d = document.createElement('details'), s = document.createElement('summary'), list = document.createElement('div');
+    d.className = 'side-menu-cat side-menu-recent'; d.open = !sideRecentClosed; s.textContent = t('sideRecentTitle'); list.className = 'side-menu-items'; for (const k of recent) list.appendChild(item(pool.get(k), k)); d.appendChild(s); d.appendChild(list);
+    d.addEventListener?.('toggle', () => { sideRecentClosed = !d.open; }); box.appendChild(d);
+  }
+  for (const d of cats) box.appendChild(d);
   if (!box.children?.length) { const p = document.createElement('div'); p.className = 'note'; p.textContent = t('sideMenuEmpty'); box.appendChild(p); }
 }
 /** 一覧を出している間だけ、選択や図面が変わったあとに、少し待って1回だけ作り直す（押せる項目が変わるため）。 */
@@ -8709,7 +8725,7 @@ window.addEventListener('blur', () => { space = false; gesture = null; draw(); }
 window.addEventListener('resize', resize);
 /* キャンバスの表示サイズ（CSS）は、ウィンドウが同じでも変わる（下の案内文が折り返す・パネルが出入りする）。描画サイズ（ビットマップ）が古いままだと、描かれた線とクリックの位置がずれる（実際に約20px ずれた）ので、表示サイズが変わったら合わせ直す。 */
 if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const r = canvas.getBoundingClientRect(); if (Math.abs(r.width - width) > 0.5 || Math.abs(r.height - height) > 0.5) resize(); }).observe(canvas);
-doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initCtxTree(); initPropPanel(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
+doc.tools = loadTools(); initStitch(); initPresets(); initLayers(); initInfo(); initOutput(); initDesign(); init3d(); loadBinderEdits(); initHardware(); initPhrases(); initCalc(); initSpineSim(); initFoldSection(); initToolKeys(); initCtxSel(); initCtxTree(); initSideRecent(); initPropPanel(); initShowKeys(); initLibrary(); initAi(); initRecipe(); initImages(); initColors(); initTutorials(); initVoice(); initDesigns(); initLocalDesigner(); renderLayers(); rebuildSnaps(); resize(); fit(); setMode('select');
 let initialLang = globalThis.navigator?.language?.startsWith('ja') ? 'ja' : 'en';
 try { initialLang = localStorage.getItem('leather-cad.lang') || initialLang; } catch { /* 保存不可でもブラウザ言語で起動する。 */ }
 /* 新しい版のお知らせ：公開された最新の版（version.json）が、開いている画面の版より新しいとき、画面の上に「新しい版があります」を出す。公開版（https）だけ。 */
