@@ -337,11 +337,24 @@
     });
   });
 
+  // 巻カードを押したら、その巻の帖の一覧の先頭へ移る（狭い画面では一覧が巻カードの下にあるため、押しただけでは見えない）。
+  // 画面の上に固定されたヘッダーの高さは幅によって変わるので、実測して、その下に先頭が来るようにする。
+  function scrollToPassages() {
+    const panel = document.querySelector('.passage-panel');
+    if (!panel) return;
+    const header = document.querySelector('.site-header');
+    const offset = (header ? header.offsetHeight : 0) + 12;
+    const top = panel.getBoundingClientRect().top + window.scrollY - offset;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: Math.max(0, top), behavior: reduce ? 'instant' : 'smooth' });
+  }
+
   els.volumeList.addEventListener('click', (event) => {
     const button = event.target.closest('[data-volume-id]');
     if (!button) return;
     state.selectedVolumeId = button.dataset.volumeId;
     render();
+    scrollToPassages();
   });
 
   els.passageList.addEventListener('click', (event) => {
