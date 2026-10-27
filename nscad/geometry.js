@@ -985,6 +985,33 @@ export function holeAppearance(h,doc) {
   const d=mark==='dot'?doc.dotD:mark==='circle'?tool.holeW:tool.holeD;
   return {kind,width:kind==='dot'||kind==='circle'?d:tool.holeW,height:kind==='dot'||kind==='circle'?d:tool.holeH,angleDeg:h.angleDeg};
 }
+/** 菱目の縫い目（ステッチシミュレーション・事業主 2026-10-27「菱目をつかったステッチシミュレーション（色も含める）機能をつけたい」）。
+ *  経路ごとに、菱目を経路に沿った順（s）に並べ、となり合う菱目のあいだに、糸の線分を1本ずつ作る [{pathId, a:{x,y}, b:{x,y}, hex}]。
+ *  線分の端は、菱目の長い軸（傾き）の先端：前の穴の「後ろの先端」から、次の穴の「前の先端」へ（前＝経路の進む向きに近い側）。穴の傾きどおりの、斜めの縫い目になる。
+ *  hex は経路の糸の色（threadHex）で、決めていなければ null。となり合う穴が、工具のピッチの maxGap 倍より離れていれば、つながない（穴を消した所・別の縫い目の連なり）。閉じた経路は、最後から最初へもつなぐ。
+ *  reach は、先端の位置（穴の長さの半分に対する割合）。visible(h) が false の穴は使わない。 */
+export function stitchSegments(doc, { reach = 0.9, maxGap = 1.8, visible = () => true } = {}) {
+  const out = [], byPath = new Map();
+  for (const h of doc.holes || []) { if (holeAppearance(h, doc)?.kind !== 'diamond' || !visible(h)) continue; const list = byPath.get(h.pathId); if (list) list.push(h); else byPath.set(h.pathId, [h]); }   /* 穴を1回なめて経路ごとに分ける（描くたびに呼ぶので、経路の数×穴の数にしない） */
+  for (const path of doc.paths || []) {
+    const hs = (byPath.get(path.id) || []).sort((a, b) => a.s - b.s);
+    if (hs.length < 2) continue;
+    const route = resolvePath(doc, path), closed = !!(route ? route.closed : path.closed), hex = path.threadHex || null;
+    const tipOf = (h, toward) => {   /* 穴 h の長い軸の、toward の向きに近い側の先端 */
+      const half = (holeAppearance(h, doc)?.width || 0) / 2 * reach, th = (h.angleDeg || 0) * Math.PI / 180, ux = Math.cos(th), uy = Math.sin(th), dot = ux * toward.x + uy * toward.y, k = dot >= 0 ? 1 : -1;
+      return { x: h.x + k * ux * half, y: h.y + k * uy * half };
+    };
+    const link = (a, b) => {
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d < 1e-9) return;
+      const tool = doc.tools?.find(t => t.id === a.toolId), pitch = (tool && tool.pitch) || 4; if (d > pitch * maxGap) return;
+      const fwd = { x: dx / d, y: dy / d }, back = { x: -fwd.x, y: -fwd.y };
+      out.push({ pathId: path.id, a: tipOf(a, back), b: tipOf(b, fwd), hex });
+    };
+    for (let i = 0; i + 1 < hs.length; i++) link(hs[i], hs[i + 1]);
+    if (closed && hs.length > 2) link(hs[hs.length - 1], hs[0]);
+  }
+  return out;
+}
 /** 文字（図形 type 'text'）の書体の選択肢（事業主指示 2026-10-26「フォントとフォントサイズを後から変更したい」→「数種類から選ぶ」）。値は CSS の font-family（引用符は ' ＝ SVG の属性にもそのまま入れられる）。
  *  図形の font に書く。書かない（undefined）＝ゴシック＝今までの見た目（system-ui で始まる）。見た目は、そのPCに入っているフォントによる（無ければ次の候補へ）。 */
 export const TEXT_FONTS = {
