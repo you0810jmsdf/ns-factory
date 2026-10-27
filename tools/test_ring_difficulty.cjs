@@ -38,15 +38,15 @@ test('ring sourcing flags and skiving settings: browser edit and CSV roundtrip',
     await page.goto(origin + '/order_estimate/admin.html#tab=ring', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof rows !== 'undefined' && rows.length > 0);
     const baseline = await page.evaluate(() => JSON.parse(JSON.stringify(rows)));
-    const firstLabel = await page.evaluate(() => {
-      const input = document.querySelector('input[aria-label$=" 入手困難"]');
-      return input?.getAttribute('aria-label');
-    });
-    assert.ok(firstLabel, 'matrix must expose a per-color checkbox');
-    const target = page.getByRole('checkbox', { name: firstLabel, exact: true }).first();
+    // 実データには、すでに入手困難にしてある色がある（2026-09-05 以降）。まだ印の付いていない最初の1つを対象にする。
+    const flagSelector = 'input[aria-label$=" 入手困難"]';
+    const targetNth = await page.evaluate(sel => [...document.querySelectorAll(sel)].findIndex(el => !el.checked), flagSelector);
+    assert.ok(targetNth >= 0, 'matrix must expose a per-color checkbox that is not flagged yet');
+    const target = page.locator(flagSelector).nth(targetNth);
     await target.check();
-    const changed = await page.evaluate(() => rows.map((r,i) => r.hard_to_source === 'TRUE' ? i : -1).filter(i => i >= 0));
-    assert.equal(changed.length, 1, 'exactly one ring color must be flagged');
+    const baselineFlagged = baseline.map(r => r.hard_to_source === 'TRUE');
+    const changed = await page.evaluate(flagged => rows.map((r,i) => r.hard_to_source === 'TRUE' && !flagged[i] ? i : -1).filter(i => i >= 0), baselineFlagged);
+    assert.equal(changed.length, 1, 'exactly one ring color must be newly flagged');
     const index = changed[0];
     const saved = await page.evaluate(() => toCsv());
     await page.evaluate(csv => loadFromText(csv, 'local test roundtrip'), saved);
