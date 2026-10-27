@@ -1247,6 +1247,7 @@ export function trimAt(s, p, others, { keep = false, tol = 0.01 } = {}) {
   const parts = splitShapeAt(s, cuts);
   if (parts.length < 2 && s.type !== 'circle') { /* 端だけが他の図形に接している線（飛び出した線）：交点の外側は線全体なので、切り取ると線ごと消える */
     const open = !s.closed, atEnd = cuts.some(c => c < 1e-6 + tol || c > len - tol - 1e-6);
+    if (open && !cuts.length) { if (keep) return null; const whole = []; whole.isolated = true; return whole; }   /* 交点が1つも無い開いた線（ほかの線に触れていない点線など）：線全体が「1つの区間」なので、切り取ると線ごと消える（事業主 2026-10-27「トリムで点線が消せない」）。残す側を選ぶときは、消すものが無いので断る。閉じた図形は、誤って全体を消さないよう従来どおり断る。isolated は、画面が「交点が無いので線ごと消した」と案内するための印 */
     return open && atEnd ? (keep ? [s] : []) : null;
   }
   const hit = parts.reduce((best, part) => distToShape(part, p) < distToShape(best, p) ? part : best);

@@ -6075,6 +6075,7 @@ function trimClick(p, keep, byHoles = false) {
   if (seamsOn(hit) && !window.confirm(t('holeTrimConfirm'))) return; /* 縫い合わせ設定だけは、切ると解除になる（菱目は残る部分に引き継ぐ） */
   cancel();
   commit(() => { selected = new Set(applyShapeParts(hit, parts)); });
+  if (parts.isolated) $('hint').textContent = t('trimIsolated');   /* 交点が1つも無い線を、線ごと消したとき：なぜ全部消えたかを案内する */
 }
 /** Alt+クリック：クリックした図形を、ほかの図形との交点で区切り、クリックした区間（交点から交点まで）だけを選ぶ。Shift+Alt+クリックで、選んだものに足す。交点が無ければ、図形全体を選ぶ。 */
 function selectSpanAt(p, additive, { byHoles = false, auto = false } = {}) {
