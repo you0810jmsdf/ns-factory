@@ -748,6 +748,10 @@ tr.row-out-stock td{
 .kg-state.out{color:#b3261e}
 .kg-state.low{color:#9a5b00}
 .kg-state.unset{color:#7d644d}
+.kg-card.queued{border-color:#6b3a1f;box-shadow:0 0 0 1px #6b3a1f inset}
+.kg-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.kg-actions .btn{padding:6px 10px;font-size:12px}
+.kg-actions .btn.queued{background:#6b3a1f;color:#fff}
 .kg-form{margin-top:12px;padding:14px;border:1px solid #d8c8b0;border-radius:12px;background:#fffdf9}
 .kg-form-title{font-weight:700;color:#6b3a1f;margin-bottom:10px}
 .kg-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
@@ -5196,6 +5200,7 @@ function kgCardHtml(row, i) {
   const unset = String(row.stock ?? '').trim() === ''; // 空は「在庫未入力」。0（欠品）と区別する
   const state = unset ? 'unset' : stock === 0 ? 'out' : (kgIsLow(row) ? 'low' : '');
   const stateLabel = state === 'unset' ? '在庫未入力' : state === 'out' ? '欠品' : state === 'low' ? `発注点（${kgInt(row.reorder_point)}）以下` : '';
+  const queued = kgIsLow(row); // 購入予定リストに載っている（発注点以下）
   const url = kgSafeUrl(row.url);
   const img = kgSafeUrl(row.image_url);
   const photoInner = img ? `<img src="${kgEsc(img)}" alt="${kgEsc(row.name)}" loading="lazy" referrerpolicy="no-referrer">` : '写真なし';
@@ -5208,7 +5213,7 @@ function kgCardHtml(row, i) {
   const priceLine = price ? `${kgYen(price)}${pack > 1 ? ` / ${pack}個入（1個 ${kgUnitYen(price / pack)}）` : ''}` : '価格未設定';
   const free = kgInt(row.free_over);
   const shipLine = `送料 ${kgYen(kgInt(row.shipping))}${free ? `（${kgYen(free)}以上で無料）` : ''}`;
-  return `<div class="kg-card ${state}" data-kg-card="${i}">
+  return `<div class="kg-card ${state}${queued ? ' queued' : ''}" data-kg-card="${i}">
     ${photo}
     <div class="kg-body">
       <div class="kg-name">${name}</div>
@@ -5222,7 +5227,10 @@ function kgCardHtml(row, i) {
         <span>個</span>
         <span class="kg-state ${state}">${kgEsc(stateLabel)}</span>
       </div>
-      <button type="button" class="btn light" data-kg-act="edit" data-kg-i="${i}" style="padding:6px 10px;font-size:12px;margin-top:4px">編集</button>
+      <div class="kg-actions">
+        <button type="button" class="btn light${queued ? ' queued' : ''}" data-kg-act="queue" data-kg-i="${i}" aria-pressed="${queued}">${queued ? '✓ 次に買う（外す）' : '🛒 次に買う'}</button>
+        <button type="button" class="btn light" data-kg-act="edit" data-kg-i="${i}">編集</button>
+      </div>
     </div>
   </div>`;
 }
@@ -5242,6 +5250,15 @@ function kgRenderList() {
   grid.querySelectorAll('.kg-photo img').forEach(img => {
     img.addEventListener('error', () => img.replaceWith(document.createTextNode('写真を読み込めません')), { once: true });
   });
+}
+
+// 「次に買う」: 発注点を現在庫以上（最低1）にして購入予定リストに載せる。もう一度押す（外す）と発注点を0に戻す
+function kgToggleQueue(row) {
+  row.reorder_point = kgIsLow(row)
+    ? '0'
+    : String(Math.max(kgInt(row.reorder_point), kgInt(row.stock), 1));
+  kgDirty = true;
+  kgRender();
 }
 
 // ── 追加・編集フォーム ──
@@ -5399,7 +5416,7 @@ function kgRenderPlan() {
   const count = groups.reduce((n, g) => n + g.rows.filter(x => !x.skip).length, 0);
   document.getElementById('kgTabPlan').textContent = `🛒 楽天マラソン購入予定リスト（${count}件）`;
   if (!groups.length) {
-    body.innerHTML = '<div class="stock-empty" style="margin-top:12px">いま購入予定に入る資材はありません。「発注点」を決めた資材の現在庫が発注点以下になると、ここに店ごとに並びます。</div>';
+    body.innerHTML = '<div class="stock-empty" style="margin-top:12px">いま購入予定に入る資材はありません。資材カードの「次に買う」を押すか、「発注点」を決めた資材の現在庫が発注点以下になると、ここに店ごとに並びます。</div>';
     return;
   }
   const act = groups.filter(g => g.active);
@@ -5473,6 +5490,7 @@ function kgInit() {
     const row = kgRows[i];
     if (!row) return;
     if (btn.dataset.kgAct === 'edit') { kgOpenForm(i); return; }
+    if (btn.dataset.kgAct === 'queue') { kgToggleQueue(row); return; }
     const next = Math.max(kgInt(row.stock) + (btn.dataset.kgAct === 'inc' ? 1 : -1), 0);
     if (String(next) === String(kgInt(row.stock))) return;
     row.stock = String(next);
