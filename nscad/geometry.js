@@ -122,9 +122,9 @@ export function offsetPolyline(points, d, closed = false, {join='miter', toleran
     const hit = infiniteIntersection(a.p, a.v, b.p, b.v);
     if (!hit && dot(a.v, b.v) > 0) return b.p;
     // 過大なマイターはベベル結合に置き換える。
-    /* 内側の角（曲がる向きとずらす側が同じ）で、辺が距離より短いと、交点が、ずらした辺の範囲の外（手前・向こう）に出て、線が折り返してとげになる。そのときは交点を使わず、角を切る形にして、下のループ除去に任せる（2026-10-27 事業主の不具合記録：5mm の短い直線＋円弧のつながりを内側へオフセット） */
+    /* 内側の角（曲がる向きとずらす側が同じ）で、辺が距離より短いと、交点が、ずらした辺の範囲の外（手前・向こう）に出て、線が折り返してとげになる。開いた線だけ（閉じた図形は、短い辺が消えるとき、これまでの交点のほうが、ループ除去できれいに収まる）。そのときは交点を使わず、角を切る形にして、下のループ除去に任せる（2026-10-27 事業主の不具合記録：5mm の短い直線＋円弧のつながりを内側へオフセット） */
     const insideCorner = cross(a.v, b.v) * side > EPS, ta = hit ? dot({ x: hit.x - a.p.x, y: hit.y - a.p.y }, a.v) : 0, tb = hit ? dot({ x: hit.x - b.p.x, y: hit.y - b.p.y }, b.v) : 0;
-    if (hit && insideCorner && (ta < -EPS || ta > a.len + EPS || tb < -EPS || tb > b.len + EPS)) return [{ x: p.x - a.v.y * side, y: p.y + a.v.x * side }, b.p];
+    if (!closed && hit && insideCorner && (ta < -EPS || ta > a.len + EPS || tb < -EPS || tb > b.len + EPS)) return [{ x: p.x - a.v.y * side, y: p.y + a.v.x * side }, b.p];
     if (hit && distance(hit, p) <= Math.abs(d) * 10) return hit;
     return [{ x: p.x - a.v.y * side, y: p.y + a.v.x * side }, b.p];
   }).flat();
