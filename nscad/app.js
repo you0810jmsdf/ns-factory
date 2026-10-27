@@ -3,7 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
-import { stitchSegments, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { stitchSegments, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -7863,7 +7863,8 @@ function draw() {
       if (color) for (const s of layerList) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
-    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; if (a.kind === 'diamond' && diamondMode() === 'fill') { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } ctx.restore(); }   /* 色つき：糸の色 */
+    const exAngle = faceAngler(doc, exportStitch ? stitchFace() : 'front');   /* 縫い目を入れて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
+    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(exAngle(h) * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; if (a.kind === 'diamond' && diamondMode() === 'fill') { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } ctx.restore(); }   /* 色つき：糸の色 */
     drawStitches(ef ? ef.hvis : holeVisible, true);   /* 「縫い目を入れて出力」：穴の上に、糸の縫い目を重ねる（選んだ図形だけの出力なら、その穴だけ） */
     return;
   }
@@ -7902,6 +7903,7 @@ function drawSheetBody(lo, hi) {
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
+  const holeAngle = faceAngler(doc, viewShow.stitch ? stitchFace() : 'front');   /* 「縫い目を見る」が入っていて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) continue;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
@@ -7909,7 +7911,7 @@ function drawSheetBody(lo, hi) {
     if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
-    ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.angleDeg*Math.PI/180); ctx.beginPath();
+    ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(holeAngle(h)*Math.PI/180); ctx.beginPath();
     if (kind === 'dot') { const half = dotLen(h) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
