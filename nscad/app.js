@@ -8240,18 +8240,33 @@ const sideItemKey = b => b?.id || (b?.dataset?.ctxFor ? 'sel:' + b.dataset.ctxFo
 function loadSideRecent() { if (!sideRecentKeys) { sideRecentKeys = []; try { const v = JSON.parse(localStorage.getItem(SIDE_RECENT_KEY) || '[]'); if (Array.isArray(v)) sideRecentKeys = v.filter(k => typeof k === 'string' && k && k.length <= 80).slice(0, SIDE_RECENT_SAVE); } catch { /* 読めなければ、空から */ } } return sideRecentKeys; }
 function noteSideRecent(key) { if (!key) return; const list = loadSideRecent(), i = list.indexOf(key); if (i >= 0) list.splice(i, 1); list.unshift(key); if (list.length > SIDE_RECENT_SAVE) list.length = SIDE_RECENT_SAVE; try { localStorage.setItem(SIDE_RECENT_KEY, JSON.stringify(list)); } catch { /* 保存できなくても、この画面の間は覚える */ } }
 function initSideRecent() { $('ctxMenu')?.addEventListener?.('click', e => { const b = e.target?.closest?.('button'); if (b && b.closest?.('[id^="ctxFly-"]')) noteSideRecent(sideItemKey(b)); }); }   /* 右クリックで押した項目も覚える（一覧の写しを押したときは、元の項目のクリックがここへ届く） */
+/** 右クリックメニューの入れ物（flyout）の中の、いま出る項目を、順に fn(要素, 'button' | 'title') へ渡す。パネルの一覧（renderSideMenu）と、右クリックの「最近使った」（fillCtxRecent）が、同じ見方（いま出る・押せる）を使うための共通の歩き方。
+ *  いま出ない項目（hidden）・押せない項目（disabled）は渡さない（面取りの「丸・角」だけは、右クリックでは押して開くので、パネルでは最初から並べる）。面取りの見出しボタン（ctx-chamfer）は、押す項目でなく見出しとして渡す。 */
+function walkCtxItems(el, fn) {
+  for (const c of el?.children ? [...el.children] : []) {
+    if (c.hidden && c.id !== 'ctxChamferSub') continue;
+    if (c.tagName === 'BUTTON') { if (c.disabled) continue; fn(c, c.id === 'ctx-chamfer' ? 'title' : 'button'); }
+    else if (c.classList?.contains('ctx-title')) fn(c, 'title'); else walkCtxItems(c, fn);
+  }
+}
+/** 右クリックメニューの先頭の「最近使った」（2026-10-28 事業主「「最近使った」を、右クリックメニューの先頭にも出す」→ 先頭に項目を直接並べる）：パネルと同じ記録（noteSideRecent）から、いま押せるものを最大5つ。押すと、メニューを閉じて元の項目を押す。 */
+function fillCtxRecent() {
+  const box = $('ctxRecent'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
+  box.textContent = ''; const pool = new Map();
+  for (const [cat] of CTX_CATS) walkCtxItems($('ctxFly-' + cat), (c, kind) => { if (kind !== 'button') return; const key = sideItemKey(c); if (key) pool.set(key, c); });
+  const keys = loadSideRecent().filter(k => pool.has(k)).slice(0, SIDE_RECENT_SHOW); box.hidden = !keys.length; if (!keys.length) return;
+  const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = t('sideRecentTitle'); box.appendChild(h);
+  for (const k of keys) { const c = pool.get(k), x = c.cloneNode(true); x.removeAttribute?.('id'); x.hidden = false; x.onclick = () => { noteSideRecent(k); hideCtxMenu(); c.click(); }; box.appendChild(x); }
+}
 function renderSideMenu() {
   const box = $('sideMenu'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
   prepareCtxMenu(); box.textContent = '';
   const mine = src => { const x = src.cloneNode(true); x.removeAttribute?.('id'); x.hidden = false; return x; };
   const pool = new Map(), cats = [], item = (c, key) => { const x = mine(c); x.onclick = () => { noteSideRecent(key); c.click(); scheduleSideMenu(); }; return x; };   /* pool：キー → いま押せる元の項目（「最近使った」の写しの元） */
-  const collect = (el, out) => {
-    for (const c of el?.children ? [...el.children] : []) {
-      if (c.hidden && c.id !== 'ctxChamferSub') continue;   /* いま出ない項目は写さない（面取りの「丸・角」は、右クリックでは押して開くので、パネルでは最初から並べる） */
-      if (c.tagName === 'BUTTON') { if (c.disabled) continue; if (c.id === 'ctx-chamfer') { const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = c.textContent; out.push(h); } else { const key = sideItemKey(c); if (key) pool.set(key, c); out.push(item(c, key)); } }
-      else if (c.classList?.contains('ctx-title')) out.push(mine(c)); else collect(c, out);
-    }
-  };
+  const collect = (el, out) => walkCtxItems(el, (c, kind) => {
+    if (kind === 'title') { if (c.id === 'ctx-chamfer') { const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = c.textContent; out.push(h); } else out.push(mine(c)); }
+    else { const key = sideItemKey(c); if (key) pool.set(key, c); out.push(item(c, key)); }
+  });
   for (const [cat] of CTX_CATS) {
     const head = $('ctxCatBtn-' + cat), fly = $('ctxFly-' + cat); if (!head || !fly) continue;
     const items = []; collect(fly, items); if (!items.some(x => x.tagName === 'BUTTON')) continue;   /* 押せる項目が1つも無いカテゴリは出さない（右クリックと同じ） */
@@ -8372,7 +8387,7 @@ function prepareCtxMenu() {
   distributeCtxCards(); updateCtxTree();
 }
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); prepareCtxMenu(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
+  const menu = $('ctxMenu'), p = local(e); prepareCtxMenu(); fillCtxRecent(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
 function hideCtxMenu() { $('ctxMenu').hidden = true; closeCtxCats(); }
