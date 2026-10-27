@@ -65,7 +65,7 @@ globalThis.__LC_BOOTED = true;
 
 const $ = id => document.getElementById(id);
 let longPressed = false; // ツールボタンを長押ししてヘルプを開いた直後のクリックは無視する
-const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false, exportColor = false, exportFilter = null;   /* exportFilter：「選んだ図形だけ出力」のとき { vis, hvis, ids }（描く図形・穴の条件と、選んだ id） */   /* exportColor：書き出し（PNG）のとき、革色・金属の色・糸の色も描く */
+const canvas = $('canvas'); let ctx = canvas.getContext('2d'), exporting = false, exportColor = false, exportFilter = null, exportStitch = false;   /* exportStitch：PNG の「縫い目を入れて出力」のとき true（書き出しの間だけ） */   /* exportFilter：「選んだ図形だけ出力」のとき { vis, hvis, ids }（描く図形・穴の条件と、選んだ id） */   /* exportColor：書き出し（PNG）のとき、革色・金属の色・糸の色も描く */
 let doc = newDoc(), selected = new Set(), undo = [], redo = [];
 const lamTouched = { o: false, i: false };   /* 貼り合わせの曲げ検証：厚みの欄を、事業主が書き換えたか（書き換えていなければ、部品の厚みを使う） */
 let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧（変わったときだけ作り直す） */
@@ -858,14 +858,14 @@ const STITCH_THICK_KEY = 'leather-cad.stitchThick', STITCH_DEFAULT_HEX = '#efe6d
 const stitchFace = () => $('stitchFace')?.value === 'back' ? 'back' : 'front';   /* 縫い目の面：表（穴の傾きどおりの斜め）／裏（逆向きの斜め）。覚えない（見るたびに表から） */
 const stitchThickMm = () => { const v = parseFloat($('stitchThick')?.value); return Number.isFinite(v) && v > 0 ? v : 0.6; };
 function restoreStitchThick() { try { const v = localStorage.getItem(STITCH_THICK_KEY), sel = $('stitchThick'); if (v && sel?.options && [...sel.options].some(o => o.value === v)) sel.value = v; } catch { /* 読めなければ、既定の太さのまま */ } }
-function drawStitches() {
-  if (!viewShow.stitch || exporting) return;
-  const segs = stitchSegments(doc, { visible: holeVisible, face: stitchFace() }); if (!segs.length) return;
-  const w = Math.max(stitchThickMm(), 1.4 / scale);   /* 縮小しても、線が消えない太さ（1.4px）は残す */
-  ctx.save(); ctx.lineCap = 'round';
-  for (const pass of [0, 1]) for (const s of segs) {   /* 先に影（暗い太線）を引き、その上に糸の色の線を引く */
+function drawStitches(visible = holeVisible, forExport = false) {   /* forExport：PNG の書き出し（穴の描画のあと・「縫い目を入れて出力」が入っているときだけ） */
+  if (forExport ? !exportStitch : (!viewShow.stitch || exporting)) return;
+  const segs = stitchSegments(doc, { visible, face: stitchFace() }); if (!segs.length) return;
+  const w = Math.max(stitchThickMm(), 1.4 / scale), tint = forExport ? exportColor : viewShow.colors, plain = forExport && !exportColor;   /* 縮小しても、線が消えない太さ（1.4px）は残す。色なしの書き出しは、線画のまま濃い灰色の1本線 */
+  ctx.save(); ctx.lineCap = 'round'; ctx.setLineDash([]);
+  for (const pass of plain ? [1] : [0, 1]) for (const s of segs) {   /* 先に影（暗い太線）を引き、その上に糸の色の線を引く */
     ctx.beginPath(); ctx.moveTo(s.a.x, s.a.y); ctx.lineTo(s.b.x, s.b.y);
-    if (pass === 0) { ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = w + 0.3; } else { ctx.strokeStyle = (viewShow.colors && s.hex) || STITCH_DEFAULT_HEX; ctx.lineWidth = w; }
+    if (pass === 0) { ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = w + 0.3; } else { ctx.strokeStyle = plain ? '#333' : (tint && s.hex) || STITCH_DEFAULT_HEX; ctx.lineWidth = w; }
     ctx.stroke();
   }
   ctx.restore();
@@ -3146,9 +3146,9 @@ function exportPng() {
   const k = dpi / 25.4; off.width = Math.ceil(wMm * k); off.height = Math.ceil(hMm * k);
   const saved = { ctx, width, height, scale, origin }; ctx = off.getContext('2d'); exporting = true;
   width = off.width; height = off.height; scale = k; origin = { x: (margin - b.minX) * k, y: (margin - b.minY) * k };
-  exportColor = $('pngColor').checked && viewShow.colors; exportFilter = only ? { vis, hvis, ids: selIds } : null;
+  exportColor = $('pngColor').checked && viewShow.colors; exportStitch = !!$('pngStitch')?.checked; exportFilter = only ? { vis, hvis, ids: selIds } : null;
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
-  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportFilter = null; exportExtentMm = 0; draw(); }
+  finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportStitch = false; exportFilter = null; exportExtentMm = 0; draw(); }
   if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
   exportFile('leather-pattern.png', new Promise(res => off.toBlob(b => res(b || null), 'image/png')), 'image/png', saved => { $('hint').textContent = t('pngExported', { dpi, w: off.width, h: off.height }) + (lowered ? t('pngLowered') : '') + savedTo(saved) + scopeNote; });
 }
@@ -7864,6 +7864,7 @@ function draw() {
     }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
     for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.angleDeg * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; if (a.kind === 'diamond' && diamondMode() === 'fill') { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } ctx.restore(); }   /* 色つき：糸の色 */
+    drawStitches(ef ? ef.hvis : holeVisible, true);   /* 「縫い目を入れて出力」：穴の上に、糸の縫い目を重ねる（選んだ図形だけの出力なら、その穴だけ） */
     return;
   }
   drawSheetBody(lo, hi);
