@@ -3,7 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
-import { dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { stitchSegments, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
@@ -400,7 +400,7 @@ function drawQuad(dpr) {
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && !hwHidden(s) && (exporting || viewShows(s)); };
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
-const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true };   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
+const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false };   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
@@ -852,6 +852,23 @@ function syncStitchPreview(w, flip) {
   stitchRouteIds = ids ? [...ids] : null;
 }
 function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; stitchRouteChoices = { n: 1, i: 0 }; }
+/** 縫い目を見る（ステッチシミュレーション・事業主 2026-10-27「菱目をつかったステッチシミュレーション（色も含める）機能をつけたい」）：菱目と菱目のあいだに、糸の縫い目を描く。
+ *  糸の色は、経路ごとの「糸の色」（決めていなければ、既定の糸色）。色の表示を切ると、既定の糸色になる。太さは「表示」メニューの欄（mm）。表示だけで、保存・書き出し・印刷には入らない。 */
+const STITCH_THICK_KEY = 'leather-cad.stitchThick', STITCH_DEFAULT_HEX = '#efe6d2';
+const stitchThickMm = () => { const v = parseFloat($('stitchThick')?.value); return Number.isFinite(v) && v > 0 ? v : 0.6; };
+function restoreStitchThick() { try { const v = localStorage.getItem(STITCH_THICK_KEY), sel = $('stitchThick'); if (v && sel?.options && [...sel.options].some(o => o.value === v)) sel.value = v; } catch { /* 読めなければ、既定の太さのまま */ } }
+function drawStitches() {
+  if (!viewShow.stitch || exporting) return;
+  const segs = stitchSegments(doc, { visible: holeVisible }); if (!segs.length) return;
+  const w = Math.max(stitchThickMm(), 1.4 / scale);   /* 縮小しても、線が消えない太さ（1.4px）は残す */
+  ctx.save(); ctx.lineCap = 'round';
+  for (const pass of [0, 1]) for (const s of segs) {   /* 先に影（暗い太線）を引き、その上に糸の色の線を引く */
+    ctx.beginPath(); ctx.moveTo(s.a.x, s.a.y); ctx.lineTo(s.b.x, s.b.y);
+    if (pass === 0) { ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = w + 0.3; } else { ctx.strokeStyle = (viewShow.colors && s.hex) || STITCH_DEFAULT_HEX; ctx.lineWidth = w; }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 function drawStitchPreview() {
   if (mode !== 'stitch' || exporting) return;
   if (stitchRouteIds?.length) { ctx.save(); ctx.lineWidth = 8 / scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = 0.18; for (const id of stitchRouteIds) strokeShape(doc.shapes.find(x => x.id === id), '#c9a96e'); ctx.restore(); }   /* 経路：太く薄く */
@@ -1468,6 +1485,8 @@ function initLayers() {
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
+  $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
+  restoreStitchThick(); $('stitchThick').addEventListener('change', () => { try { localStorage.setItem(STITCH_THICK_KEY, $('stitchThick').value); } catch { /* 保存できなくても続ける */ } draw(); });
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
@@ -7898,6 +7917,7 @@ function drawSheetBody(lo, hi) {
     if(selected.has(h.id)&&kind!=='dot'&&kind!=='diamond'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
+  drawStitches();   /* 縫い目を見る（表示だけ）：穴の上に、糸の縫い目を重ねる */
   if (mode === 'stitch' && manualNext) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
