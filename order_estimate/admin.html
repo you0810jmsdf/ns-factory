@@ -747,6 +747,7 @@ tr.row-out-stock td{
 .kg-state{margin-left:auto;font-size:11px;font-weight:700}
 .kg-state.out{color:#b3261e}
 .kg-state.low{color:#9a5b00}
+.kg-state.unset{color:#7d644d}
 .kg-form{margin-top:12px;padding:14px;border:1px solid #d8c8b0;border-radius:12px;background:#fffdf9}
 .kg-form-title{font-weight:700;color:#6b3a1f;margin-bottom:10px}
 .kg-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
@@ -5192,8 +5193,9 @@ function kgVisibleIndexes() {
 
 function kgCardHtml(row, i) {
   const stock = kgInt(row.stock);
-  const state = stock === 0 ? 'out' : (kgIsLow(row) ? 'low' : '');
-  const stateLabel = state === 'out' ? '欠品' : state === 'low' ? `発注点（${kgInt(row.reorder_point)}）以下` : '';
+  const unset = String(row.stock ?? '').trim() === ''; // 空は「在庫未入力」。0（欠品）と区別する
+  const state = unset ? 'unset' : stock === 0 ? 'out' : (kgIsLow(row) ? 'low' : '');
+  const stateLabel = state === 'unset' ? '在庫未入力' : state === 'out' ? '欠品' : state === 'low' ? `発注点（${kgInt(row.reorder_point)}）以下` : '';
   const url = kgSafeUrl(row.url);
   const img = kgSafeUrl(row.image_url);
   const photoInner = img ? `<img src="${kgEsc(img)}" alt="${kgEsc(row.name)}" loading="lazy" referrerpolicy="no-referrer">` : '写真なし';
@@ -5215,7 +5217,7 @@ function kgCardHtml(row, i) {
       ${row.note ? `<div class="kg-meta">📝 ${kgEsc(row.note)}</div>` : ''}
       <div class="kg-stock">
         <button type="button" data-kg-act="dec" data-kg-i="${i}" aria-label="在庫を1減らす">−</button>
-        <input type="number" min="0" value="${stock}" data-kg-stock="${i}" aria-label="現在庫（個）">
+        <input type="number" min="0" value="${unset ? '' : stock}" placeholder="未入力" data-kg-stock="${i}" aria-label="現在庫（個）">
         <button type="button" data-kg-act="inc" data-kg-i="${i}" aria-label="在庫を1増やす">＋</button>
         <span>個</span>
         <span class="kg-state ${state}">${kgEsc(stateLabel)}</span>
@@ -5282,7 +5284,7 @@ function kgSaveForm() {
     pack_qty: String(Math.max(kgInt(val('kgfPack')), 1)),
     shipping: String(kgInt(val('kgfShip'))),
     free_over: String(kgInt(val('kgfFree'))),
-    stock: String(kgInt(val('kgfStock'))),
+    stock: val('kgfStock') === '' ? '' : String(kgInt(val('kgfStock'))),
     reorder_point: String(kgInt(val('kgfPoint'))),
     order_qty: String(Math.max(kgInt(val('kgfOrder')), 1)),
     note: val('kgfNote')
@@ -5482,7 +5484,7 @@ function kgInit() {
     if (!input) return;
     const row = kgRows[Number(input.dataset.kgStock)];
     if (!row) return;
-    row.stock = String(kgInt(input.value));
+    row.stock = input.value.trim() === '' ? '' : String(kgInt(input.value));
     kgDirty = true;
     kgRender();
   });
