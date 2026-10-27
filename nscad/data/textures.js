@@ -1007,7 +1007,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw158695092.jpg",
       "px": 384,
-      "avg": "#c9bbbc"
+      "avg": "#e7c4a4"
     },
     {
       "id": "kw159050069",
