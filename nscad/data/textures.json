@@ -1,6 +1,6 @@
 {
  "_comment": "革の質感（継ぎ目なしの革写真）。tools/build_textures.py が後方部のテクスチャライブラリと ns-factory の革目録から作る。手で直さない。",
- "generatedAt": "2026-10-11",
+ "generatedAt": "2026-10-27",
  "tileMm": 30,
  "textures": [
   {
@@ -1005,7 +1005,7 @@
    ],
    "file": "assets/textures/kw158695092.jpg",
    "px": 384,
-   "avg": "#bcadae"
+   "avg": "#c9bbbc"
   },
   {
    "id": "kw159050069",
@@ -3816,7 +3816,7 @@
    ],
    "file": "assets/textures/numer_25.jpg",
    "px": 384,
-   "avg": "#b4987c"
+   "avg": "#e7c4a4"
   },
   {
    "id": "ska01",
