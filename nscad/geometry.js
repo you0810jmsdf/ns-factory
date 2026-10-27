@@ -988,7 +988,7 @@ export function holeAppearance(h,doc) {
 /** 菱目の縫い目（ステッチシミュレーション・事業主 2026-10-27「菱目をつかったステッチシミュレーション（色も含める）機能をつけたい」）。
  *  経路ごとに、菱目を経路に沿った順（s）に並べ、となり合う菱目のあいだに、糸の線分を1本ずつ作る [{pathId, a:{x,y}, b:{x,y}, hex}]。
  *  線分の端は、菱目の長い軸（傾き）の先端：前の穴の「後ろの先端」から、次の穴の「前の先端」へ（前＝経路の進む向きに近い側）。穴の傾きどおりの、斜めの縫い目になる。
- *  hex は経路の糸の色（threadHex）で、決めていなければ null。となり合う穴が、工具のピッチの maxGap 倍より離れていれば、つながない（穴を消した所・別の縫い目の連なり）。閉じた経路は、最後から最初へもつなぐ。
+ *  kind は、'diamond'（両端とも菱目）か 'round'（丸目・スリットがからむ）：画面が、太さを分けて描くため。hex は経路の糸の色（threadHex）で、決めていなければ null。となり合う穴が、工具のピッチの maxGap 倍より離れていれば、つながない（穴を消した所・別の縫い目の連なり）。閉じた経路は、最後から最初へもつなぐ。
  *  reach は、先端の位置（穴の長さの半分に対する割合）。visible(h) が false の穴は使わない。
  *  2026-10-28 拡張（事業主「縫い目の裏面表示（逆向きの斜め）と、丸目・スリットへの対応」）：
  *  ・face='back'（裏）は、穴も縫い目も、表の鏡像（縫い線を軸に反転した逆向きの斜め）：穴の傾きを faceAngler で反転して、表と同じ規則（後ろの先端→前の先端）を当てる。縫い目の長さは表と同じ（2026-10-28 事業主「裏面表示のとき、穴の描き方も裏向きにする」→ 穴も縫い目も表の鏡像）。
@@ -1021,7 +1021,8 @@ export function stitchSegments(doc, { reach = 0.9, maxGap = 1.8, visible = () =>
       const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d < 1e-9) return;
       const tool = doc.tools?.find(t => t.id === a.toolId), pitch = (tool && tool.pitch) || 4; if (d > pitch * maxGap) return;
       const fwd = { x: dx / d, y: dy / d }, rear = { x: -fwd.x, y: -fwd.y };
-      out.push({ pathId: path.id, a: tipOf(a, rear), b: tipOf(b, fwd), hex });   /* 後ろの先端→前の先端（裏は、穴の傾きを反転してあるので、鏡像の斜めになる） */
+      const kind = holeAppearance(a, doc)?.kind === 'diamond' && holeAppearance(b, doc)?.kind === 'diamond' ? 'diamond' : 'round';   /* 太さを分けるための種類：両端とも菱目なら 'diamond'、丸目・スリットがからむなら 'round'（2026-10-28「丸目・スリットの縫い目の見た目（糸の太さの違い）を調整できるようにする」） */
+      out.push({ pathId: path.id, a: tipOf(a, rear), b: tipOf(b, fwd), hex, kind });   /* 後ろの先端→前の先端（裏は、穴の傾きを反転してあるので、鏡像の斜めになる） */
     };
     for (let i = 0; i + 1 < hs.length; i++) link(hs[i], hs[i + 1]);
     if (closed && hs.length > 2) link(hs[hs.length - 1], hs[0]);

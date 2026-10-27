@@ -854,17 +854,20 @@ function syncStitchPreview(w, flip) {
 function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; stitchRouteChoices = { n: 1, i: 0 }; }
 /** 縫い目を見る（ステッチシミュレーション・事業主 2026-10-27「菱目をつかったステッチシミュレーション（色も含める）機能をつけたい」）：菱目と菱目のあいだに、糸の縫い目を描く。
  *  糸の色は、経路ごとの「糸の色」（決めていなければ、既定の糸色）。色の表示を切ると、既定の糸色になる。太さは「表示」メニューの欄（mm）。表示だけで、保存・書き出し・印刷には入らない。 */
-const STITCH_THICK_KEY = 'leather-cad.stitchThick', STITCH_DEFAULT_HEX = '#efe6d2';
+const STITCH_THICK_KEY = 'leather-cad.stitchThick', STITCH_THICK_ROUND_KEY = 'leather-cad.stitchThickRound', STITCH_DEFAULT_HEX = '#efe6d2';
 const stitchFace = () => $('stitchFace')?.value === 'back' ? 'back' : 'front';   /* 縫い目の面：表（穴の傾きどおりの斜め）／裏（逆向きの斜め）。覚えない（見るたびに表から） */
-const stitchThickMm = () => { const v = parseFloat($('stitchThick')?.value); return Number.isFinite(v) && v > 0 ? v : 0.6; };
-function restoreStitchThick() { try { const v = localStorage.getItem(STITCH_THICK_KEY), sel = $('stitchThick'); if (v && sel?.options && [...sel.options].some(o => o.value === v)) sel.value = v; } catch { /* 読めなければ、既定の太さのまま */ } }
+const stitchThickMm = (kind = 'diamond') => {   /* 縫い目の線の太さ（mm）。丸目・スリット（kind='round'）は専用の欄で、「菱目と同じ」（数にならない値）なら、菱目の太さ */
+  const v = parseFloat($('stitchThick')?.value), mm = Number.isFinite(v) && v > 0 ? v : 0.6; if (kind !== 'round') return mm;
+  const r = parseFloat($('stitchThickRound')?.value); return Number.isFinite(r) && r > 0 ? r : mm;
+};
+function restoreStitchThick() { for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) { try { const v = localStorage.getItem(key), sel = $(id); if (v && sel?.options && [...sel.options].some(o => o.value === v)) sel.value = v; } catch { /* 読めなければ、既定のまま */ } } }
 function drawStitches(visible = holeVisible, forExport = false) {   /* forExport：PNG の書き出し（穴の描画のあと・「縫い目を入れて出力」が入っているときだけ） */
   if (forExport ? !exportStitch : (!viewShow.stitch || exporting)) return;
   const segs = stitchSegments(doc, { visible, face: stitchFace() }); if (!segs.length) return;
-  const w = Math.max(stitchThickMm(), 1.4 / scale), tint = forExport ? exportColor : viewShow.colors, plain = forExport && !exportColor;   /* 縮小しても、線が消えない太さ（1.4px）は残す。色なしの書き出しは、線画のまま濃い灰色の1本線 */
+  const thick = kind => Math.max(stitchThickMm(kind), 1.4 / scale), tint = forExport ? exportColor : viewShow.colors, plain = forExport && !exportColor;   /* 縮小しても、線が消えない太さ（1.4px）は残す。丸目・スリットは専用の太さ。色なしの書き出しは、線画のまま濃い灰色の1本線 */
   ctx.save(); ctx.lineCap = 'round'; ctx.setLineDash([]);
   for (const pass of plain ? [1] : [0, 1]) for (const s of segs) {   /* 先に影（暗い太線）を引き、その上に糸の色の線を引く */
-    ctx.beginPath(); ctx.moveTo(s.a.x, s.a.y); ctx.lineTo(s.b.x, s.b.y);
+    const w = thick(s.kind); ctx.beginPath(); ctx.moveTo(s.a.x, s.a.y); ctx.lineTo(s.b.x, s.b.y);
     if (pass === 0) { ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.lineWidth = w + 0.3; } else { ctx.strokeStyle = plain ? '#333' : (tint && s.hex) || STITCH_DEFAULT_HEX; ctx.lineWidth = w; }
     ctx.stroke();
   }
@@ -1487,7 +1490,7 @@ function initLayers() {
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
-  restoreStitchThick(); $('stitchThick').addEventListener('change', () => { try { localStorage.setItem(STITCH_THICK_KEY, $('stitchThick').value); } catch { /* 保存できなくても続ける */ } draw(); });
+  restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
