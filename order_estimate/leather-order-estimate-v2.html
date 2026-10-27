@@ -785,7 +785,7 @@ body{
   <button class="lp-tool-btn" onclick="goBackToParentSite()" data-i18n="ui.backSite">↩ 元のサイト</button>
   <a class="lp-tool-btn" href="./admin.html" data-i18n="ui.adminBtn">🗂 管理画面</a>
   <button class="lp-tool-btn" onclick="resetAll()" data-i18n="ui.resetBtn">🔄 リセット</button>
-  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.09.12.6</span>
+  <span id="simulatorVersion" style="margin-left:auto;font-size:12px;color:#6b3a1f;align-self:center">見積シミュレータ v2026.10.27.1</span>
 </div>
 
 <div class="main">
@@ -962,7 +962,7 @@ body{
         <button id="pw_right" onclick="setPatchworkSide('right')" style="min-width:34px;border-radius:0" data-i18n="opt.right">右</button>
         <button id="pw_both"  onclick="setPatchworkSide('both')"  style="min-width:40px;border-radius:0 8px 8px 0" data-i18n="opt.both">左右</button>
       </div>
-      <span class="num-note" data-i18n="opt.patchworkNote">1か所 +¥5,000（革複数選択可・最大2か所）</span>
+      <span class="num-note" data-i18n="opt.patchworkNote">1か所 +¥5,000〜（判型が大きいほど増額・革複数選択可・最大2か所）</span>
     </div>
   </div>
 </div>
@@ -1164,7 +1164,7 @@ body{
 </div>
 
 <script src="./labor-curve-model.js?v=20260905"></script>
-<script src="./labor-curve-editor.js?v=20260912.6"></script>
+<script src="./labor-curve-editor.js?v=20261027.1"></script>
 <script src="./quote-archive.js?v=20260912.6"></script>
 <script src="./estimate-fulfillment.js?v=20260905"></script>
 <script>
@@ -3151,6 +3151,10 @@ function sideCost(v)  { return Math.round(sideCount(v) * 1000 * getOptionMultipl
 // あおりポケットは1箇所2,000円の固定額（顧客への案内額と一致させるため・サイズ倍率非適用／2026-09-04変更）
 const INNER_POCKET_UNIT_PRICE = 2000;
 function innerPocketCost(v) { return sideCount(v) * INNER_POCKET_UNIT_PRICE; }
+// パッチワーク加工は手縫いで、縫い目の長さは判型の大きさの平方根に比例する。
+// 1か所5,000円（Micro5＝倍率1.0）× 判型倍率の平方根（2026-10-27 事業主決定A・以前は判型に関わらず固定5,000円）
+const PATCHWORK_UNIT_PRICE = 5000;
+function patchworkCost(v) { return Math.round(sideCount(v) * PATCHWORK_UNIT_PRICE * Math.sqrt(getOptionMultiplier())); }
 function sideLabel(v) {
   return isEN()
     ? (({none:'None', left:'Left only', right:'Right only', both:'Both sides'})[v] || 'None')
@@ -3383,7 +3387,7 @@ function updateSummary(options = {}) {
         + beltPrice
         + krauseFitting
         + sideCount(window._clearWindowSide) * 3000
-        + sideCount(window._patchworkSide)   * 5000;
+        + patchworkCost(window._patchworkSide);
 
   // 初度設計費：ブランド「その他」＋刻印「その他」を合算（各1回限り・qty倍しない）
   const initDesignFee = (prices.brandInitFee || 0) + (prices.initDesignFee || 0);
@@ -3492,7 +3496,7 @@ function updateSummary(options = {}) {
     if(cardPCC > 0)              add(`${T('opt.cardPocket', 'カードポケット')}×${cardPCC}`, `+¥${Math.round(cardPCC * 1000).toLocaleString()}`);
     if(slitSide !== 'none')      add(`${T('opt.slit', 'スリット加工')}(${sideLabel(slitSide)})`, `+¥${sideCost(slitSide).toLocaleString()}`);
     if(window._clearWindowSide !== 'none') add(`${T('opt.clearWindow', 'クリア窓枠')}(${sideLabel(window._clearWindowSide)})`, `+¥${(sideCount(window._clearWindowSide)*3000).toLocaleString()}`);
-    if(window._patchworkSide   !== 'none') add(`${T('opt.patchwork', 'パッチワーク加工')}(${sideLabel(window._patchworkSide)})`,   `+¥${(sideCount(window._patchworkSide)*5000).toLocaleString()}`);
+    if(window._patchworkSide   !== 'none') add(`${T('opt.patchwork', 'パッチワーク加工')}(${sideLabel(window._patchworkSide)})`,   `+¥${patchworkCost(window._patchworkSide).toLocaleString()}`);
     // 「なし」の判定は表示名ではなく定義配列の実名で行う（EN化で表示名が変わるため）
     const penNoneName = (ACCESSORIES.find(a => a.id === 'pen0') || {}).name;
     const stampNoneName = (STAMPS.find(s => s.id === 's_none') || {}).name;
@@ -4250,7 +4254,7 @@ window.NSF_I18N_DICT = {
   'opt.slit': 'Slit work', 'opt.slitNote': '+¥1,000 each (for double rings)',
   'opt.dkan': 'D-ring attachment', 'opt.dkanNote': '+¥1,000 per place (max 2)',
   'opt.clearWindow': 'Clear window', 'opt.clearWindowNote': '+¥3,000 per place (max 2)',
-  'opt.patchwork': 'Patchwork', 'opt.patchworkNote': '+¥5,000 per place (multiple leathers OK, max 2)',
+  'opt.patchwork': 'Patchwork', 'opt.patchworkNote': 'From +¥5,000 per place (more for larger sizes; multiple leathers OK, max 2)',
   'opt.left': 'L', 'opt.right': 'R', 'opt.both': 'L+R',
   'mail.title': '📧 Inquiry / quote request',
   'mail.name': 'Your name *', 'mail.namePh': 'e.g. Jane Smith',
