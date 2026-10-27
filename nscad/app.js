@@ -5976,7 +5976,7 @@ function initHardware() {
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = (k, which) => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)} <button type="button" data-place-view="${which}">${t('binderViewPlace')}</button></div>`; binderViewTarget = { spec, ringD: d }; showSvgDialog(cap('binderViewPlan', 'plan') + binderPlanSvg(spec, d) + cap('binderViewSide', 'side') + binderSideSvg(spec, d) + cap('binderViewFront', 'front') + binderFrontSvg(spec, d), spec.names.ja); for (const b of $('svgBody').querySelectorAll?.('[data-place-view]') || []) b.onclick = () => { placeBinderView(b.dataset.placeView); $('svgDialog').close(); }; } };
   $('binderData').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) showBinderData(spec); };
   $('closeSvg').onclick = () => $('svgDialog').close();
-  $('sideToggle').onclick = () => { const open = document.body.classList.toggle('side-open'); $('sideToggle').textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); $('sideToggle').setAttribute('aria-expanded', String(open)); resize(); };   /* スマホ：カード群の引き出しを開け閉め */
+  $('sideToggle').onclick = () => { if (document.body.classList.contains('side-open')) closeSidePanel(); else openSidePanel(null); };   /* スマホ：引き出しを開け閉め（開くと、右クリックメニューと同じ一覧が出る） */
   $('spCoverDraw').onclick = drawCoverFromSpine;
   /* 上のメニューを一時的に隠す（小さい画面で作図の場所を広げる）。記憶はしない。 */
   const setHeaderHidden = on => { document.body?.classList?.toggle('hdr-hidden', on); $('hdrShow').hidden = !on; $('hint').textContent = t(on ? 'hdrHidden' : 'hdrShown'); resize(); };
@@ -6522,7 +6522,7 @@ function initColorPick() {
   document.addEventListener?.('pointerdown', e => { if (colorPick.open && !row.contains?.(e.target)) closeColorPick(); });   /* 一覧の外を押したら閉じる */
 }
 function updateUI() {
-  renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
+  scheduleSideMenu(); renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
   $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
@@ -8195,14 +8195,42 @@ function sidePanelOpen() { return !document.body?.classList?.contains('side-clos
 function clearSideOnly() { for (const c of document.querySelectorAll('#side details.card') || []) { if (c.dataset) delete c.dataset.only; } }
 function openSidePanel(card = null) {
   const b = document.body; if (!b?.classList || card?.dataset?.win === '1') return;
-  b.classList.remove('side-closed'); clearSideOnly();
-  if (card) { card.dataset.only = '1'; card.open = true; b.classList.add('side-single'); $('sideHeadTitle').textContent = card.querySelector?.('summary')?.textContent || ''; } else { b.classList.remove('side-single'); $('sideHeadTitle').textContent = ''; }
-  $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'true'); const sp = readWinPos(SIDE_POS_KEY); if (sp) floatSide(sp); else resize();   /* 動かしたことがあれば、覚えている位置に浮かせて出す */
+  b.classList.remove('side-closed'); b.classList.add('side-open'); clearSideOnly();   /* side-open はスマホの引き出し用（パソコン幅では何も起きない） */
+  if (card) { card.dataset.only = '1'; card.open = true; b.classList.add('side-single'); b.classList.remove('side-list'); $('sideHeadTitle').textContent = card.querySelector?.('summary')?.textContent || ''; } else { b.classList.remove('side-single'); b.classList.add('side-list'); $('sideHeadTitle').textContent = t('sideListTitle'); renderSideMenu(); }   /* カードを指さなければ、右クリックメニューと同じ一覧を出す */
+  syncSideToggle(); $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'true'); const sp = readWinPos(SIDE_POS_KEY); if (sp) floatSide(sp); else resize();   /* 動かしたことがあれば、覚えている位置に浮かせて出す */
 }
 function closeSidePanel() {
   const b = document.body; if (!b?.classList) return;
-  b.classList.add('side-closed'); b.classList.remove('side-single'); clearSideOnly(); $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'false'); resize();
+  b.classList.add('side-closed'); b.classList.remove('side-single'); b.classList.remove('side-list'); b.classList.remove('side-open'); clearSideOnly(); syncSideToggle(); $('sidePanelBtn')?.setAttribute?.('aria-pressed', 'false'); resize();
 }
+function syncSideToggle() { const tg = $('sideToggle'); if (!tg?.setAttribute) return; const open = !!document.body?.classList?.contains('side-open'); tg.textContent = t(open ? 'sideToggleClose' : 'sideToggleOpen'); tg.setAttribute('aria-expanded', String(open)); }   /* スマホの引き出しのボタンの文字と状態を、いまの開け閉めに合わせる */
+/** パネルの一覧：右クリックメニューと同じ「カテゴリ → 項目」（事業主 2026-10-27「パネルはスマホのように右クリックが押せない場合の対応なので、右クリックメニューと同じ内容とすべきでは？」）。
+ *  右クリックメニューの項目（ctxFly-カテゴリの中の、いま押せるもの）の写しを作り、押すと元のボタンを押す＝右クリックで選んだときと同じ動き。項目を足せば、パネルにも自動で出る。
+ *  カードの項目は、いまの「1枚だけ表示」（revealCard）で開き、「← 一覧」で戻る。開いているカテゴリは覚えておく。 */
+const sideMenuOpen = new Set(); let sideMenuTimer = null;
+const sideListShown = () => !!document.body?.classList?.contains('side-list') && !document.body.classList.contains('side-closed');
+function renderSideMenu() {
+  const box = $('sideMenu'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
+  prepareCtxMenu(); box.textContent = '';
+  const mine = src => { const x = src.cloneNode(true); x.removeAttribute?.('id'); x.hidden = false; return x; };
+  const collect = (el, out) => {
+    for (const c of el?.children ? [...el.children] : []) {
+      if (c.hidden && c.id !== 'ctxChamferSub') continue;   /* いま出ない項目は写さない（面取りの「丸・角」は、右クリックでは押して開くので、パネルでは最初から並べる） */
+      if (c.tagName === 'BUTTON') { if (c.disabled) continue; if (c.id === 'ctx-chamfer') { const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = c.textContent; out.push(h); } else { const x = mine(c); x.onclick = () => { c.click(); scheduleSideMenu(); }; out.push(x); } }
+      else if (c.classList?.contains('ctx-title')) out.push(mine(c)); else collect(c, out);
+    }
+  };
+  for (const [cat] of CTX_CATS) {
+    const head = $('ctxCatBtn-' + cat), fly = $('ctxFly-' + cat); if (!head || !fly) continue;
+    const items = []; collect(fly, items); if (!items.some(x => x.tagName === 'BUTTON')) continue;   /* 押せる項目が1つも無いカテゴリは出さない（右クリックと同じ） */
+    const d = document.createElement('details'), s = document.createElement('summary'), list = document.createElement('div');
+    d.className = 'side-menu-cat'; d.dataset.cat = cat; d.open = sideMenuOpen.has(cat); s.textContent = head.textContent; list.className = 'side-menu-items'; for (const x of items) list.appendChild(x); d.appendChild(s); d.appendChild(list);
+    d.addEventListener?.('toggle', () => { if (d.open) sideMenuOpen.add(cat); else sideMenuOpen.delete(cat); }); box.appendChild(d);
+  }
+  if (!box.children?.length) { const p = document.createElement('div'); p.className = 'note'; p.textContent = t('sideMenuEmpty'); box.appendChild(p); }
+}
+/** 一覧を出している間だけ、選択や図面が変わったあとに、少し待って1回だけ作り直す（押せる項目が変わるため）。 */
+function scheduleSideMenu() { if (!sideListShown() || sideMenuTimer || typeof setTimeout !== 'function') return; sideMenuTimer = setTimeout(() => { sideMenuTimer = null; if (sideListShown()) renderSideMenu(); }, 120); }
 /* ───────── 右の列・折りの小窓を、自分の好きな位置へ動かせる（事業主 2026-10-24「自分で右クリックメニューのカード位置を動かせるようにしたい」「メニューが邪魔で押せない」）：見出しをつかんで動かす（画面の外へは出さない）。
    位置はブラウザに覚え、開き直したときも同じ所に出す。ダブルクリックで元の位置へ。右の列は、動かすと「浮く」（作業の場所を広く使える形・ほかの窓と同じ） ───────── */
 const SIDE_POS_KEY = 'leather-cad.sidePos', FLOW_POS_KEY = 'leather-cad.flowPos';
@@ -8299,9 +8327,13 @@ function fillCtxSel() {
     }
   }
 }
+/** 右クリックメニューの中身を、いまの選択に合わせて作り直す（出すかどうかは別）。右クリックの表示（showCtxMenu）と、パネルの一覧（renderSideMenu）が、同じ項目を使うための共通の準備。 */
+function prepareCtxMenu() {
+  fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  distributeCtxCards(); updateCtxTree();
+}
 function showCtxMenu(e) {
-  const menu = $('ctxMenu'), p = local(e); fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
-  distributeCtxCards(); updateCtxTree(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
+  const menu = $('ctxMenu'), p = local(e); prepareCtxMenu(); menu.hidden = false; const w = menu.offsetWidth || 200, h = menu.offsetHeight || 40;   /* 出してから大きさを測る（項目が多いので） */
   menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
 }
 function hideCtxMenu() { $('ctxMenu').hidden = true; closeCtxCats(); }
