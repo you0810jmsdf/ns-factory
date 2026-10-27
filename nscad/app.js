@@ -47,6 +47,7 @@ import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEd
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
 import { track } from './analytics.js';
+import { createPresence } from './presence.js';
 import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
 import { parseBuild, latestBuild, isNewerBuild, releasesSince } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
@@ -3265,6 +3266,12 @@ function initCounting() {
   document.addEventListener?.('click', e => { const b = e?.target?.closest?.('button'), id = b?.id; if (id === 'binderPlace') track.event('ncad_hw_place', { kind: $('binderSpecSel')?.value }); else if (COUNT_CLICKS[id]) track.event(COUNT_CLICKS[id][0], COUNT_CLICKS[id][1] ? { kind: COUNT_CLICKS[id][1] } : {});
     if (b) { const use = b.dataset?.tool ? 'tool_' + b.dataset.tool : id; if (use) countUse(use); } else { const card = e?.target?.closest?.('summary')?.parentElement?.id; if (card) countUse('card_' + card); } });   /* 全ボタン（ツールは tool_名）・カードを開いた回数 */
   document.addEventListener?.('change', e => { const el = e?.target; if (!el) return; if (el.type === 'checkbox' && el.id) countUse(el.id); if (el.id === 'ghost3d') track.event('ncad_ghost', { kind: el.checked ? 'on' : 'off' }); else if ((el.id === 'threeView' || el.id === 'quadView') && el.checked) track.event('ncad_three_view', { kind: el.id === 'quadView' ? 'quad' : 'frame' }); });
+}
+/** いま開いている人数を、右下の隅に小さく出す（事業主 2026-10-27「アクセス中の人の人数を目立たないところに表示して」）。数えるのは Cloudflare Worker（presence-worker）。
+ *  公開版以外では presence.js が何もしないので、要素は隠れたまま。通信が遅い・止まっても CAD は待たず、数字が消えるだけ。 */
+function initPresence() {
+  const box = $('presence'); if (!box) return;
+  createPresence({ onCount: n => { if (n == null) { box.hidden = true; return; } $('presenceN').textContent = String(n); box.hidden = false; } }).start();
 }
 /** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
 const GHOST_ALPHA = 0.3;
@@ -8650,7 +8657,7 @@ if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
 if (typeof setInterval === 'function') setInterval(checkNewVersion, 300000);
 document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > 60000) checkNewVersion(); });
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
-initCounting();
+initCounting(); initPresence();
 tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else restoreSkipped = true;   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
 autosaveReady = true; startTabWatch();
 showTour();
