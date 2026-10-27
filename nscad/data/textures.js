@@ -100,7 +100,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw141887558.jpg",
       "px": 384,
-      "avg": "#a94a3f"
+      "avg": "#bb6252"
     },
     {
       "id": "kw142026124",
@@ -170,7 +170,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw142086646.jpg",
       "px": 384,
-      "avg": "#636466"
+      "avg": "#5a5655"
     },
     {
       "id": "kw142098205",
@@ -268,7 +268,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw142151264.jpg",
       "px": 384,
-      "avg": "#a96308"
+      "avg": "#b56b08"
     },
     {
       "id": "kw142151566",
@@ -296,7 +296,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw142151671.jpg",
       "px": 384,
-      "avg": "#b5221a"
+      "avg": "#f13e22"
     },
     {
       "id": "kw142151977",
@@ -380,7 +380,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw142277492.jpg",
       "px": 384,
-      "avg": "#b5a49d"
+      "avg": "#8a685b"
     },
     {
       "id": "kw142277908",
@@ -394,7 +394,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw142277908.jpg",
       "px": 384,
-      "avg": "#d4bea3"
+      "avg": "#c77b48"
     },
     {
       "id": "kw142278005",
@@ -702,7 +702,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw154473133.jpg",
       "px": 384,
-      "avg": "#717171"
+      "avg": "#88898d"
     },
     {
       "id": "kw155042339",
@@ -744,7 +744,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw155504309.jpg",
       "px": 384,
-      "avg": "#cec9c4"
+      "avg": "#abaaac"
     },
     {
       "id": "kw155709863",
@@ -872,7 +872,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw156744751.jpg",
       "px": 384,
-      "avg": "#665f5e"
+      "avg": "#7d8085"
     },
     {
       "id": "kw156838098",
@@ -899,8 +899,9 @@ export const DATA_TEXTURES = {
         "ブラウン系"
       ],
       "file": "assets/textures/kw156838223.jpg",
-      "px": 384,
-      "avg": "#e2d5c3"
+      "px": 1152,
+      "avg": "#885954",
+      "mm": 90
     },
     {
       "id": "kw156838252",
@@ -960,7 +961,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw158501313.jpg",
       "px": 384,
-      "avg": "#693a31"
+      "avg": "#603026"
     },
     {
       "id": "kw158501354",
@@ -1386,7 +1387,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw159732478.jpg",
       "px": 384,
-      "avg": "#998a71"
+      "avg": "#2c2c2c"
     },
     {
       "id": "kw159732492",
@@ -1414,7 +1415,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw159732507.jpg",
       "px": 384,
-      "avg": "#d4855e"
+      "avg": "#d6532c"
     },
     {
       "id": "kw159732522",
@@ -1442,7 +1443,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw159732534.jpg",
       "px": 384,
-      "avg": "#775142"
+      "avg": "#7e453a"
     },
     {
       "id": "kw159732548",
@@ -1470,7 +1471,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw159732568.jpg",
       "px": 384,
-      "avg": "#84423a"
+      "avg": "#8d333c"
     },
     {
       "id": "kw159732602",
@@ -1484,7 +1485,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw159732602.jpg",
       "px": 384,
-      "avg": "#636465"
+      "avg": "#596473"
     },
     {
       "id": "kw159732636",
@@ -1582,7 +1583,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163434620.jpg",
       "px": 384,
-      "avg": "#bdb7ac"
+      "avg": "#c8c4bf"
     },
     {
       "id": "kw163434660",
@@ -1596,7 +1597,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163434660.jpg",
       "px": 384,
-      "avg": "#c3986f"
+      "avg": "#dd8a47"
     },
     {
       "id": "kw163434683",
@@ -1610,7 +1611,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163434683.jpg",
       "px": 384,
-      "avg": "#ac7b5e"
+      "avg": "#a7522f"
     },
     {
       "id": "kw163434696",
@@ -1624,7 +1625,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163434696.jpg",
       "px": 384,
-      "avg": "#896a58"
+      "avg": "#7c5d58"
     },
     {
       "id": "kw163438818",
@@ -1638,7 +1639,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163438818.jpg",
       "px": 384,
-      "avg": "#78303c"
+      "avg": "#6d182f"
     },
     {
       "id": "kw163438954",
@@ -1652,7 +1653,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163438954.jpg",
       "px": 384,
-      "avg": "#df360a"
+      "avg": "#d72c07"
     },
     {
       "id": "kw163439020",
@@ -1666,7 +1667,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163439020.jpg",
       "px": 384,
-      "avg": "#354478"
+      "avg": "#203c8a"
     },
     {
       "id": "kw163439070",
@@ -1694,7 +1695,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163439114.jpg",
       "px": 384,
-      "avg": "#b19671"
+      "avg": "#a38a68"
     },
     {
       "id": "kw163439240",
@@ -1708,7 +1709,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw163439240.jpg",
       "px": 384,
-      "avg": "#473e3a"
+      "avg": "#4e4d4f"
     },
     {
       "id": "kw164301924",
@@ -2030,7 +2031,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930317.jpg",
       "px": 384,
-      "avg": "#dcbfa9"
+      "avg": "#b76220"
     },
     {
       "id": "kw171930324",
@@ -2046,7 +2047,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930324.jpg",
       "px": 384,
-      "avg": "#bf7a54"
+      "avg": "#c45611"
     },
     {
       "id": "kw171930332",
@@ -2078,7 +2079,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930338.jpg",
       "px": 384,
-      "avg": "#45322f"
+      "avg": "#4a3435"
     },
     {
       "id": "kw171930342",
@@ -2094,7 +2095,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930342.jpg",
       "px": 384,
-      "avg": "#624243"
+      "avg": "#743c40"
     },
     {
       "id": "kw171930351",
@@ -2110,7 +2111,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930351.jpg",
       "px": 384,
-      "avg": "#c73554"
+      "avg": "#df2c55"
     },
     {
       "id": "kw171930353",
@@ -2126,7 +2127,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930353.jpg",
       "px": 384,
-      "avg": "#cb806e"
+      "avg": "#d23228"
     },
     {
       "id": "kw171930360",
@@ -2158,7 +2159,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw171930365.jpg",
       "px": 384,
-      "avg": "#686c77"
+      "avg": "#414b5d"
     },
     {
       "id": "kw171930369",
@@ -2189,8 +2190,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930388.jpg",
-      "px": 384,
-      "avg": "#c28964"
+      "px": 1152,
+      "avg": "#a66241",
+      "mm": 90
     },
     {
       "id": "kw171930394",
@@ -2205,8 +2207,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930394.jpg",
-      "px": 384,
-      "avg": "#b56351"
+      "px": 1152,
+      "avg": "#cc522c",
+      "mm": 90
     },
     {
       "id": "kw171930400",
@@ -2221,8 +2224,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930400.jpg",
-      "px": 384,
-      "avg": "#7e433a"
+      "px": 1152,
+      "avg": "#8b3d33",
+      "mm": 90
     },
     {
       "id": "kw171930407",
@@ -2237,8 +2241,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930407.jpg",
-      "px": 384,
-      "avg": "#de7682"
+      "px": 1152,
+      "avg": "#dd9e91",
+      "mm": 90
     },
     {
       "id": "kw171930411",
@@ -2269,8 +2274,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930418.jpg",
-      "px": 384,
-      "avg": "#848069"
+      "px": 1152,
+      "avg": "#a28e67",
+      "mm": 90
     },
     {
       "id": "kw171930424",
@@ -2317,8 +2323,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw171930433.jpg",
-      "px": 384,
-      "avg": "#beb0a9"
+      "px": 1152,
+      "avg": "#444246",
+      "mm": 90
     },
     {
       "id": "kw172107644",
@@ -2453,8 +2460,9 @@ export const DATA_TEXTURES = {
         "馬革"
       ],
       "file": "assets/textures/kw175312207.jpg",
-      "px": 384,
-      "avg": "#a21e19"
+      "px": 1152,
+      "avg": "#d61a14",
+      "mm": 90
     },
     {
       "id": "kw175312214",
@@ -2514,7 +2522,7 @@ export const DATA_TEXTURES = {
       ],
       "file": "assets/textures/kw176481776.jpg",
       "px": 384,
-      "avg": "#ca9d73"
+      "avg": "#ca9a70"
     },
     {
       "id": "kw176617989",
