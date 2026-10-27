@@ -8228,7 +8228,7 @@ function syncSideToggle() { const tg = $('sideToggle'); if (!tg?.setAttribute) r
  *  右クリックメニューの項目（ctxFly-カテゴリの中の、いま押せるもの）の写しを作り、押すと元のボタンを押す＝右クリックで選んだときと同じ動き。項目を足せば、パネルにも自動で出る。
  *  カードの項目は、いまの「1枚だけ表示」（revealCard）で開き、「← 一覧」で戻る。開いているカテゴリは覚えておく。 */
 const sideMenuOpen = new Set(); let sideMenuTimer = null;
-const sideListShown = () => !!document.body?.classList?.contains('side-list') && !document.body.classList.contains('side-closed');
+const sideListShown = () => { const cl = document.body?.classList; return typeof cl?.contains === 'function' && cl.contains('side-list') && !cl.contains('side-closed'); };   /* body の classList を持たない環境（試験の擬似画面）でも止まらない */
 function renderSideMenu() {
   const box = $('sideMenu'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
   prepareCtxMenu(); box.textContent = '';
