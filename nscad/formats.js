@@ -67,7 +67,15 @@ export function holeToSvg(h, doc, color = '#e00000', fillDiamond = false, dotMm 
 /** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る）, mm: その質感1枚の実寸（省略可） } }、textureMm：mm の無い質感に使う1枚の大きさ。fill のときだけ使う。 */
 const METAL_FALLBACK = { gold: '#D4AF37', silver: '#C0C0C0', pinkgold: '#E5A593', blackgold: '#6B5B3A' };   /* 領域の塗りの金属の色（呼び出し側が色を渡さないとき） */
 /** holeDot：0 より大きいと、穴も菱の線（菱形の polyline）も、真ん中の●（直径 holeDot mm）に置き換える（印刷・PDF だけが使う。画面・SVG 書き出しは渡さない）。 */
-export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, lineColors = 'color' } = {}) {
+/** Beam Studio は、色ごとの層を、線の太さ1px（72DPI で約0.35mm）ぶん余分に見積もり、層の大きさに合わせて縮めて表示・加工する。細い層（点線・菱目だけの層など）は、幅が小さいぶん、縮みが大きく（幅15mm で約2.3%）、切る線との間隔が崩れる。
+ *  beamFix のとき、層ごとに、縮むぶんを、あらかじめ拡大して出す（層の中心を基準に、1÷(幅÷(幅＋0.35mm))倍。幅・高さの小さいほう）。最小の幅・高さが 5mm 未満の層は、確かめていないので、そのまま（事業主の Beam Studio で、幅15mm の層で確認 2026-10-27）。 */
+export const BEAM_STROKE_MM = 25.4 / 72;
+export function beamFixWrap(inner, b) {
+  if (!b) return inner; const w = b.maxX - b.minX, h = b.maxY - b.minY; if (!(Math.min(w, h) >= 5)) return inner;
+  const k = BEAM_STROKE_MM, s = 1 / Math.min(w / (w + k), h / (h + k)), cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2, n = v => +v.toFixed(4);
+  return `<g data-beamfix="1" transform="translate(${n(cx)} ${n(cy)}) scale(${+s.toFixed(5)}) translate(${n(-cx)} ${n(-cy)})">${inner}</g>`;
+}
+export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, lineColors = 'color' } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
   const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -88,10 +96,11 @@ export function docToSvg(doc, { includeHoles = true, strokeMm = 0.1, fill = fals
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
       return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';
     }).join('');
-    return `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
+    const g = `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
+    return beamFix ? beamFixWrap(g, bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.layer === l.id), holes: [] })) : g;
   }).join('');
   const threadHex = h => { if (lineColors === 'mono') return '#000000'; const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '';
+  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length ? beamFixWrap(holeGroup0, bboxOfDoc({ ...doc, shapes: [], holes })) : holeGroup0;
   const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
   const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
