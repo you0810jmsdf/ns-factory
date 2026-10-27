@@ -30,6 +30,12 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     await context.addInitScript(() => {
       sessionStorage.setItem('nsfactory-ring-admin-auth', 'ok');
       sessionStorage.setItem('nsf_admin_key', 'local-browser-test-only');
+      // 画面は html{scroll-behavior:smooth}。スクロールが終わる前に位置を測ってしまわないよう、試験では即時スクロールにする。
+      document.addEventListener('DOMContentLoaded', () => {
+        const style = document.createElement('style');
+        style.textContent = 'html{scroll-behavior:auto !important}';
+        document.head.appendChild(style);
+      });
     });
     const page = await context.newPage();
     const errors = [];
@@ -96,9 +102,13 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
       const plain = document.getElementById('totalDisplay').textContent;
       sel.ringId = RINGS.find(r => r.isKlause).id;
       updateSummary();
-      return { plain, krause: document.getElementById('totalDisplay').textContent, dimensions: SIZES.find(s => s.id === 'a5slim') };
+      return { plain, krause: document.getElementById('totalDisplay').textContent, fee: KRAUSE_FITTING_FEE, dimensions: SIZES.find(s => s.id === 'a5slim') };
     });
-    assert.equal(ringCheck.plain, ringCheck.krause, 'ring mechanism alone must not change leather/labor cost');
+    // クラウゼのリングを選ぶと当て革加工（税抜 KRAUSE_FITTING_FEE）だけが加わる（2026-09-13 以降）。革・工数は増えない。
+    // 合計は100円単位で切り捨てるため、税込の加算額との差は100円まで許す。革や工数が二重に入れば数千円の差になる。
+    const totalOf = text => Number(text.replace(/[^0-9]/g, ''));
+    const krauseDelta = totalOf(ringCheck.krause) - totalOf(ringCheck.plain);
+    assert.ok(Math.abs(krauseDelta - ringCheck.fee * 1.1) <= 100, `ring mechanism alone must add only the Krause fitting fee (+${ringCheck.fee} excl. tax), got +${krauseDelta}`);
     assert.equal(ringCheck.dimensions.w, 110);
     assert.equal(ringCheck.dimensions.h, 210);
     const matrix = await admin.evaluate(() => sizeBasePriceRows.flatMap(s => brandPriceRows.map(b => {
@@ -188,7 +198,9 @@ test('real curve UI: drag, quote, persistence, shared admin draft and public iso
     await page.getByRole('button', { name: '設定をダウンロード', exact: true }).click();
     const settingsDownload = await settingsDownloadPromise;
     const settingsFilename = settingsDownload.suggestedFilename();
-    assert.match(settingsFilename, /^labor-curves_v2026\.09\.05\.5_[0-9a-f]{8}\.json$/);
+    const simulatorVersion = await page.evaluate(() => window.NSFSimulatorVersion);
+    assert.match(simulatorVersion, /^\d{4}\.\d{2}\.\d{2}\.\d+$/);
+    assert.match(settingsFilename, new RegExp('^labor-curves_v' + simulatorVersion.replace(/\./g, '\\.') + '_[0-9a-f]{8}\\.json$'));
     assert.equal(settingsFilename, await page.evaluate(() => NSFLaborCurves.settingsFilename()));
     assert.ok((await page.locator('#printDetail .quote-settings-file').textContent()).includes(settingsFilename));
     const settingsPath = path.join(os.tmpdir(), settingsFilename);
