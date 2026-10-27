@@ -1468,7 +1468,7 @@ function initLayers() {
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
-  initSideTabs(); restoreAskWhere(); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
+  initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
   $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
   $('info-diamondHollow').onclick = () => setDiamondMode('line'); $('info-diamondFilled').onclick = () => setDiamondMode('fill');
@@ -3064,7 +3064,8 @@ async function doRegCheck() {
 }
 /** 書き出したファイルの保存（事業主の希望 2026-10-19「保存場所を指定して保存したい」）：「書き出すとき保存先を選ぶ」（#outAskWhere・既定は入）が入で、ブラウザが保存先の選択（showSaveFilePicker）に対応していれば、保存の窓を開いて、選んだ場所に書く（前回の場所を覚える）。
  *  切・非対応・書き込みの失敗のときは、今までどおりダウンロード（失敗のときは案内を足す）。窓を閉じた（やめた）ときは何も保存しない。data は、文字列・バイト列・Blob、または Blob になる Promise（PNG：窓を先に開いて、画像ができるのを待つ＝窓が開けなくなるのを防ぐ）。onDone(保存したファイル名 or null) は保存できたあとの案内の組み立て。 */
-const ASK_WHERE_KEY = 'leather-cad.askWhere';
+const ASK_WHERE_KEY = 'leather-cad.askWhere', BEAM_FIX_KEY = 'leather-cad.outBeamFix';
+function restoreBeamFix() { try { if (localStorage.getItem(BEAM_FIX_KEY) === '1' && $('outBeamFix')) $('outBeamFix').checked = true; } catch { /* 保存できない環境でも続ける */ } }   /* 「Beam Studio 補正」は、押した状態を覚える（初めは切） */
 function restoreAskWhere() { try { const v = localStorage.getItem(ASK_WHERE_KEY); if ((v === '0' || v === '1') && $('outAskWhere')) $('outAskWhere').checked = v === '1'; } catch { /* 保存できない環境でも続ける */ } }
 function exportFile(name, data, mime, onDone) {
   const askWhere = !!$('outAskWhere')?.checked && typeof globalThis.showSaveFilePicker === 'function';
@@ -3095,8 +3096,9 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill' });
-  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + savedTo(saved); });
+  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked });
+  const beamN = preset === 'beam' ? 0 : (svg.match(/data-beamfix=/g) || []).length;   /* Beam Studio 補正をかけた層の数 */
+  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + savedTo(saved); });
 }
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
