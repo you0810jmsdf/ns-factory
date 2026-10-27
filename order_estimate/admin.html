@@ -723,7 +723,7 @@ tr.row-out-stock td{
   width:20px;
   height:20px;
 }
-/* ── 金具在庫・購入管理（kanagu-stock.csv） ── */
+/* ── 資材管理・購入管理（kanagu-stock.csv） ── */
 .kg-view-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .kg-view-tabs .btn.active{background:#6b3a1f;color:#fff}
 .kg-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
@@ -877,7 +877,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ring" data-admin-cat="stock" role="tab" aria-selected="false">リング在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="leather" data-admin-cat="stock" role="tab" aria-selected="false">🎨 革在庫</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="thread" data-admin-cat="stock" role="tab" aria-selected="false">ステッチ糸在庫</button>
-      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="kanagu" data-admin-cat="stock" role="tab" aria-selected="false">🔩 金具在庫</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="kanagu" data-admin-cat="stock" role="tab" aria-selected="false">🧰 資材管理</button>
       <!-- 💰 価格設定 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="dashboard" data-admin-cat="price" role="tab" aria-selected="false">🎛 価格ダッシュボード</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="settings" data-admin-cat="price" role="tab" aria-selected="false">⚙ 設定（時給等）</button>
@@ -1240,7 +1240,7 @@ tr.row-out-stock td{
         <button class="btn sub size-publish-action admin-section-hidden" id="publishSizeGithubBtn">サイズ基準価格をGitHubへ反映</button>
         <button class="btn sub brand-publish-action admin-section-hidden" id="publishBrandGithubBtn">構造タイプ価格をGitHubへ反映</button>
         <button class="btn sub thread-publish-action admin-section-hidden" id="publishThreadGithubBtn">糸在庫をGitHubへ反映</button>
-        <button class="btn sub kanagu-publish-action admin-section-hidden" id="publishKanaguGithubBtn">金具在庫をGitHubへ反映</button>
+        <button class="btn sub kanagu-publish-action admin-section-hidden" id="publishKanaguGithubBtn">資材管理をGitHubへ反映</button>
         <button class="btn sub leather-publish-action admin-section-hidden" id="publishLeatherGithubBtn">革在庫をGitHubへ反映</button>
         <button class="btn sub hearing-publish-action admin-section-hidden" id="publishHearingGithubBtn">対話ナレッジをGitHubへ反映</button>
       </div>
@@ -1488,20 +1488,20 @@ tr.row-out-stock td{
     </div>
 
     <div class="panel kanagu-section admin-section-hidden" id="kanaguPanel">
-      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">金具 在庫・購入管理</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">資材管理（リング以外の材料）</h2>
       <div class="hint">
-        金具ごとに購入サイトURL・写真URL・価格・送料・現在庫を管理します。<b>発注点</b>（この個数以下になったら補充）を決めた金具は、「購入予定リスト」に店ごとにまとまって並びます。
-        価格は税込で、<b>購入単位あたり</b>の金額と入数（例: 100個入 ¥850）を入れます。画面上の変更は、上の `金具在庫をGitHubへ反映` を押すまで保存されません（GitHub上の `kanagu-stock.csv` を更新します。反映後1〜2分は再読込で古い内容が出ることがあります）。
+        リング以外の材料（ホック・ファスナー・ナスカン・ひもなど。リングは「リング在庫」で管理）を、1種類ずつ購入サイトURL・写真URL・価格・送料・現在庫で管理します。<b>発注点</b>（この個数以下になったら補充）を決めた資材は、「購入予定リスト」に店ごとにまとまって並びます。
+        価格は税込で、<b>購入単位あたり</b>の金額と入数（例: 100個入 ¥850）を入れます。画面上の変更は、上の `資材管理をGitHubへ反映` を押すまで保存されません（GitHub上の `kanagu-stock.csv` を更新します。反映後1〜2分は再読込で古い内容が出ることがあります）。
       </div>
       <div class="controls" style="margin-top:12px">
-        <button class="btn" id="kgAddBtn">＋ 金具を追加</button>
-        <button class="btn light" id="kgReloadBtn">金具CSVを再読込</button>
-        <button class="btn light" id="kgDownloadBtn">金具の控えCSVダウンロード</button>
-        <span class="status-pill" id="kgCountPill">金具: 初期化中</span>
+        <button class="btn" id="kgAddBtn">＋ 資材を追加</button>
+        <button class="btn light" id="kgReloadBtn">資材CSVを再読込</button>
+        <button class="btn light" id="kgDownloadBtn">資材の控えCSVダウンロード</button>
+        <span class="status-pill" id="kgCountPill">資材: 初期化中</span>
       </div>
 
       <div class="kg-form admin-section-hidden" id="kgForm">
-        <div class="kg-form-title" id="kgFormTitle">金具を追加</div>
+        <div class="kg-form-title" id="kgFormTitle">資材を追加</div>
         <div class="kg-form-grid">
           <label>品名 *<input id="kgfName" type="text" placeholder="例: バネホック 10mm 真鍮"></label>
           <label>分類<input id="kgfCategory" type="text" list="kgCatList" placeholder="例: ホック"></label>
@@ -1521,9 +1521,9 @@ tr.row-out-stock td{
         <div class="controls" style="margin-top:12px">
           <button class="btn" id="kgfSave">この内容で確定</button>
           <button class="btn light" id="kgfCancel">キャンセル</button>
-          <button class="btn light admin-section-hidden" id="kgfDelete">この金具を削除</button>
+          <button class="btn light admin-section-hidden" id="kgfDelete">この資材を削除</button>
         </div>
-        <div class="hint">「確定」は画面上の変更です。保存は上の `金具在庫をGitHubへ反映` で行います。</div>
+        <div class="hint">「確定」は画面上の変更です。保存は上の `資材管理をGitHubへ反映` で行います。</div>
       </div>
 
       <div class="kg-view-tabs">
@@ -1537,12 +1537,12 @@ tr.row-out-stock td{
           <select id="kgCatFilter"><option value="">全分類</option></select>
           <label><input type="checkbox" id="kgLowOnly"> 発注点以下のみ</label>
         </div>
-        <div class="kg-grid" id="kgGrid"><div class="stock-empty" style="grid-column:1/-1">金具CSVを読込中です。</div></div>
+        <div class="kg-grid" id="kgGrid"><div class="stock-empty" style="grid-column:1/-1">資材CSVを読込中です。</div></div>
       </div>
 
       <div id="kgPlanWrap" class="admin-section-hidden">
         <div class="hint" style="margin-top:12px">
-          現在庫が発注点以下の金具を、店ごとにまとめています。数量の変更と「買う」のチェックは、この端末のブラウザに覚えます（CSVには書きません）。
+          現在庫が発注点以下の資材を、店ごとにまとめています。数量の変更と「買う」のチェックは、この端末のブラウザに覚えます（CSVには書きません）。
           URLが <code>rakuten.co.jp</code> の店は楽天市場、それ以外は「楽天以外」に分けます。
         </div>
         <div class="controls" style="margin-top:10px">
@@ -5061,7 +5061,7 @@ async function loadThreadStockCsv() {
   renderThreadStockList();
 }
 
-// ── 金具在庫・購入管理（kanagu-stock.csv）と楽天マラソン購入予定リスト ──
+// ── 資材管理・購入管理（kanagu-stock.csv）と楽天マラソン購入予定リスト ──
 // 列名の正本は KG_HEADERS。CSVの1行目・編集フォーム・購入予定の計算は、すべてこの名前を読む。
 const KANAGU_CSV_PATH = 'order_estimate/kanagu-stock.csv';
 const KANAGU_CSV_URL = new URL('./kanagu-stock.csv', location.href).toString();
@@ -5069,7 +5069,7 @@ const KG_HEADERS = ['id','name','category','shop','url','image_url','unit_price'
 const KG_PLAN_STORE = 'nsf_kanagu_plan_v1';
 const KG_MARATHON_MIN_PER_SHOP = 1000; // 買い回りに数える1店舗あたりの商品代金（税込）。開催回で変わりうる目安
 const KG_MARATHON_MAX_SHOPS = 10;
-const KG_DEFAULT_CATEGORIES = ['ホック','カシメ','ボタン','リング','バックル','ファスナー','その他'];
+const KG_DEFAULT_CATEGORIES = ['ホック','カシメ','ボタン','バックル','ファスナー・スライダー','ナスカン・カン類','ひも・ロープ','その他'];
 let kgRows = [];
 let kgLoaded = false;
 let kgDirty = false;
@@ -5114,7 +5114,7 @@ function kanaguToCsv() {
 async function loadKanaguCsv() {
   if (location.protocol !== 'file:') {
     const res = await fetch(KANAGU_CSV_URL + '?t=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) throw new Error(`金具在庫CSV読込失敗: HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`資材管理CSV読込失敗: HTTP ${res.status}`);
     const parsed = parseCsv(await res.text());
     const missing = KG_HEADERS.filter(h => !parsed.headers.includes(h));
     if (missing.length) throw new Error(`kanagu-stock.csv に必要な列がありません: ${missing.join(', ')}`);
@@ -5163,7 +5163,7 @@ function kgUpdateMeta() {
   const pill = document.getElementById('kgCountPill');
   if (!pill) return;
   const low = kgRows.filter(kgIsLow).length;
-  pill.textContent = `金具: ${kgRows.length}種類 / 発注点以下 ${low}${kgDirty ? '（未保存）' : ''}`;
+  pill.textContent = `資材: ${kgRows.length}種類 / 発注点以下 ${low}${kgDirty ? '（未保存）' : ''}`;
   pill.className = `status-pill ${kgDirty ? 'warn' : 'good'}`;
 }
 
@@ -5233,9 +5233,9 @@ function kgRenderList() {
   kgRefreshCategoryOptions();
   const idx = kgVisibleIndexes();
   if (!kgRows.length) {
-    grid.innerHTML = '<div class="stock-empty" style="grid-column:1/-1">まだ金具が登録されていません。「＋ 金具を追加」から、品名・購入サイトURL・写真URL・価格・送料・現在庫を入れてください。</div>';
+    grid.innerHTML = '<div class="stock-empty" style="grid-column:1/-1">まだ資材が登録されていません。「＋ 資材を追加」から、品名・購入サイトURL・写真URL・価格・送料・現在庫を入れてください。</div>';
   } else if (!idx.length) {
-    grid.innerHTML = '<div class="stock-empty" style="grid-column:1/-1">条件に合う金具がありません。</div>';
+    grid.innerHTML = '<div class="stock-empty" style="grid-column:1/-1">条件に合う資材がありません。</div>';
   } else {
     grid.innerHTML = idx.map(i => kgCardHtml(kgRows[i], i)).join('');
   }
@@ -5255,7 +5255,7 @@ function kgOpenForm(i) {
   set('kgfShip', row.shipping); set('kgfFree', row.free_over);
   set('kgfStock', row.stock); set('kgfPoint', row.reorder_point); set('kgfOrder', row.order_qty || '1');
   set('kgfNote', row.note);
-  document.getElementById('kgFormTitle').textContent = i >= 0 ? `編集: ${row.name}` : '金具を追加';
+  document.getElementById('kgFormTitle').textContent = i >= 0 ? `編集: ${row.name}` : '資材を追加';
   document.getElementById('kgfDelete').classList.toggle('admin-section-hidden', i < 0);
   const form = document.getElementById('kgForm');
   form.classList.remove('admin-section-hidden');
@@ -5322,7 +5322,7 @@ function kgPlanQty(row) {
   return Math.max(kgInt(q !== undefined ? q : row.order_qty), 1);
 }
 
-// 発注点以下の金具を、店（楽天かどうか＋店名）ごとにまとめて小計・送料を出す
+// 発注点以下の資材を、店（楽天かどうか＋店名）ごとにまとめて小計・送料を出す
 function kgBuildPlan() {
   const map = new Map();
   kgRows.filter(kgIsLow).forEach(row => {
@@ -5399,7 +5399,7 @@ function kgRenderPlan() {
   const count = groups.reduce((n, g) => n + g.rows.filter(x => !x.skip).length, 0);
   document.getElementById('kgTabPlan').textContent = `🛒 楽天マラソン購入予定リスト（${count}件）`;
   if (!groups.length) {
-    body.innerHTML = '<div class="stock-empty" style="margin-top:12px">いま購入予定に入る金具はありません。「発注点」を決めた金具の現在庫が発注点以下になると、ここに店ごとに並びます。</div>';
+    body.innerHTML = '<div class="stock-empty" style="margin-top:12px">いま購入予定に入る資材はありません。「発注点」を決めた資材の現在庫が発注点以下になると、ここに店ごとに並びます。</div>';
     return;
   }
   const act = groups.filter(g => g.active);
@@ -7276,7 +7276,7 @@ function setAdminTab(tab) {
     loadKanaguCsv().catch(err => {
       const pill = document.getElementById('kgCountPill');
       if (pill) {
-        pill.textContent = '金具: 読込失敗';
+        pill.textContent = '資材: 読込失敗';
         pill.className = 'status-pill warn';
       }
       alert(err.message);
@@ -7346,7 +7346,7 @@ function setAdminTab(tab) {
       : isSales
       ? 'Gmailの受注通知メールからチャネル別×月別の売上と売れ筋アイテムを自動集計します（期間切替・手動入力シート合算対応）。'
       : isKanagu
-      ? '金具の在庫・価格・送料・購入サイトを管理します。発注点以下の金具から、楽天マラソンの購入予定リストを店ごとに自動で作ります。'
+      ? 'リング以外の材料の在庫・価格・送料・購入サイトを管理します。発注点以下の資材から、楽天マラソンの購入予定リストを店ごとに自動で作ります。'
       : isThread
       ? 'ステッチ糸は在庫の有無だけをチェックボックスで確認・試し編集します。'
       : isLeather
