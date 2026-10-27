@@ -6473,11 +6473,53 @@ function syncPropPanel() {
     const show = !orig.hidden && $('infoCard').style.display !== 'none'; row.hidden = !show;
     if (show) { any = true; const v = propMixed[f] ? '__mixed' : src.value; if (mine.value !== v) mine.value = v; }
   }
-  panel.hidden = !any;
+  panel.hidden = !any; if (panel.hidden) closeColorPick(); syncColorPick();
 }
+/** 左の欄で選んだ値を、右列の同じ欄へ写して、図形に反映する（欄の change も、色の一覧の選択も、ここを通る）。選び終えたら、図面へフォーカスを戻す（選択リストにフォーカスが残ると、Ctrl+C・Delete が効かない）。 */
+function applyPropField(f) { const src = $('info-' + f); src.value = $('prop-' + f).value; applyInfo(f); canvas.focus?.(); }
 function initPropPanel() {
-  for (const f of PROP_FIELDS) $('prop-' + f)?.addEventListener('change', () => { const src = $('info-' + f); src.value = $('prop-' + f).value; applyInfo(f); canvas.focus?.(); });   /* 選び終えたら、図面へフォーカスを戻す（選択リストにフォーカスが残ると、Ctrl+C・Delete が効かない） */
-  syncPropPanel();
+  for (const f of PROP_FIELDS) $('prop-' + f)?.addEventListener('change', () => applyPropField(f));
+  initColorPick(); syncPropPanel();
+}
+/** 「線の色」の欄：文字だけでなく、色の四角つきの一覧にする（事業主 2026-10-27「線の色を文字だけではなく直観でわかりやすく色も載せて」）。
+ *  本体は、いままでの選択欄（prop-color）のまま（値・変える処理・テストは同じ）で、見えないようにして、その上に「色の四角＋名前」のボタンと一覧を重ねる。
+ *  四角の色は、図面で線を描く色（SHAPE_DRAW_COLOR）と同じ。「既定」（層の色）は斜線、複数の色が混ざっているときは多色の四角。 */
+const colorPick = { btn: null, list: null, open: false };
+/** 一覧に出す項目（選択欄の選択肢と、いまの値から）。「（複数）」は選べる項目には出さない。 */
+function colorPickItems(options, value) { return options.filter(o => o.value !== '__mixed').map(o => ({ value: o.value, label: o.label, swatch: o.value === '' ? 'default' : (SHAPE_DRAW_COLOR[o.value] || 'default'), selected: o.value === value })); }
+function colorSwatch(swatch) { const s = document.createElement('span'); s.className = 'sw' + (swatch === 'default' ? ' sw-default' : swatch === 'mixed' ? ' sw-mixed' : ''); if (swatch.startsWith('#')) s.style.background = swatch; return s; }
+function closeColorPick() { if (!colorPick.list) return; colorPick.list.hidden = true; colorPick.open = false; colorPick.btn.setAttribute('aria-expanded', 'false'); }
+function syncColorPick() {
+  const sel = $('prop-color'), { btn, list } = colorPick; if (!sel?.options || !btn || !list) return;
+  const opts = [...sel.options].map(o => ({ value: o.value, label: o.textContent })), cur = opts.find(o => o.value === sel.value) || opts[0];
+  btn.textContent = ''; btn.appendChild(colorSwatch(sel.value === '__mixed' ? 'mixed' : sel.value === '' ? 'default' : (SHAPE_DRAW_COLOR[sel.value] || 'default')));
+  const label = document.createElement('span'); label.textContent = cur?.label || ''; btn.appendChild(label);
+  list.textContent = '';
+  for (const it of colorPickItems(opts, sel.value)) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'cpick-opt'; b.setAttribute('role', 'option'); b.setAttribute('aria-selected', String(it.selected)); b.dataset.value = it.value;
+    const lab = document.createElement('span'); lab.textContent = it.label; b.appendChild(colorSwatch(it.swatch)); b.appendChild(lab);
+    b.onclick = () => { closeColorPick(); sel.value = it.value; applyPropField('color'); }; list.appendChild(b);
+  }
+}
+function openColorPick() {
+  const { btn, list } = colorPick; if (!list) return; syncColorPick(); list.hidden = false; colorPick.open = true; btn.setAttribute('aria-expanded', 'true');
+  const r = btn.getBoundingClientRect(), h = list.offsetHeight || 190, below = (globalThis.innerHeight || 800) - r.bottom, up = below < h + 8 && r.top > below;   /* 下に収まらなければ上へ開く（左の列は画面の下にあるため、ふつうは上） */
+  list.style.left = Math.round(r.left) + 'px'; list.style.width = Math.round(r.width) + 'px'; list.style.top = (up ? Math.max(4, Math.round(r.top - h - 4)) : Math.round(r.bottom + 4)) + 'px';
+  list.querySelector('[aria-selected="true"]')?.focus?.();
+}
+function initColorPick() {
+  const sel = $('prop-color'), row = $('pl-color'); if (!sel?.options || !row?.appendChild || typeof document.createElement !== 'function') return;
+  const btn = document.createElement('button'), list = document.createElement('div');
+  btn.type = 'button'; btn.id = 'colorPickBtn'; btn.className = 'cpick-btn'; btn.setAttribute('aria-haspopup', 'listbox'); btn.setAttribute('aria-expanded', 'false');
+  list.id = 'colorPickList'; list.className = 'cpick-list'; list.setAttribute('role', 'listbox'); list.hidden = true;
+  row.appendChild(btn); row.appendChild(list); row.classList?.add('cpick-on'); colorPick.btn = btn; colorPick.list = list;
+  btn.onclick = e => { e?.preventDefault?.(); if (colorPick.open) closeColorPick(); else openColorPick(); };
+  btn.addEventListener?.('keydown', e => { if (e.key === 'ArrowDown') { e.preventDefault(); openColorPick(); } });
+  list.addEventListener?.('keydown', e => {
+    const items = [...list.querySelectorAll('.cpick-opt')], i = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); closeColorPick(); btn.focus?.(); } else if (e.key === 'ArrowDown') { e.preventDefault(); items[Math.min(items.length - 1, i + 1)]?.focus?.(); } else if (e.key === 'ArrowUp') { e.preventDefault(); items[Math.max(0, i - 1)]?.focus?.(); }
+  });
+  document.addEventListener?.('pointerdown', e => { if (colorPick.open && !row.contains?.(e.target)) closeColorPick(); });   /* 一覧の外を押したら閉じる */
 }
 function updateUI() {
   renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
