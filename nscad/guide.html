@@ -428,92 +428,103 @@
 <div class="say"><b>よくある失敗：</b>「円（ボタンの穴）が見つかりません」と出たときは、基準の部品に円が無いので、ボタンの穴はそろえられません（「整える」では飛ばして続け、点線だけ入れます）。点線は、やり直すたびに前の線が置き換わるので、増え続けることはありません。表と裏の位置がずれるときは、先に③で菱目を並べ直してから展開します。</div>
 
 <h2 id="koma">12 駒合わせ縫い</h2>
-<p class="lead">駒合わせ縫いは、<b>2枚の革を直角に突き合わせて縫う</b>縫い方です（箱の底と側面、ペンケースの胴とマチなど）。片方（A）は<b>面</b>に穴をあけ、もう片方（B）は<b>コバ（切り口）</b>に穴をあけます。穴の数が1つでも違うと縫えないので、N's CAD の「駒合わせ」は、<b>A と B の2本の縫い線に、同じ数の穴を並べます</b>。始め方は、図面の上で右クリック →<b>「目打ち・縫い穴」→「駒合わせ（2本の縫い線の穴の数をそろえる）」</b>（またはキー <kbd>K</kbd>）です。</p>
+<p class="lead">駒合わせ縫いは、<b>2枚の革を直角に突き合わせて縫う</b>縫い方です（箱の底と側面、名刺入れの本体と側面、ペンケースの胴とマチなど）。本体（A）は<b>面に貫通する穴</b>、側面（B）は<b>面に半分の深さの穴</b>（貫通させない）をあけ、B のコバ（切り口）を A の面に突き合わせて貼り、縫うときは本体の穴から菱ギリを斜めに側面の穴へ通します。穴の数が1つでも違うと縫えないので、N's CAD の「駒合わせ」は、<b>A と B の縫い線に同じ数の穴を並べ、B の穴に「半分の深さ」の印を付けます</b>。始め方は、図面の上で右クリック →<b>「目打ち・縫い穴」→「駒合わせ（2本の縫い線の穴の数をそろえる）」</b>（またはキー <kbd>K</kbd>）。画面の上に<b>駒合わせの小窓</b>が出ます。</p>
 <div class="card">
-<svg viewBox="0 0 760 250" role="img" aria-label="駒合わせ縫いの断面と平面の図：A は面に穴、B はコバ（切り口）に穴。平面では、A の縫い線は辺から B の厚み÷2 内側、B の縫い線は B の辺そのもの。同じ数の穴を橙の薄い線（対応線）で結ぶ">
+<svg viewBox="0 0 760 270" role="img" aria-label="駒合わせ縫いの断面と平面の図：A は面に貫通する穴（辺から 2.5mm）、B は A の面の上に立ち、内側の面に半分の深さの穴（辺から 2.5mm）。菱ギリは A の穴から斜めに B の穴へ。平面では、A も B も突き合わせる辺から 2.5mm 内側の縫い線に同じ数の穴が並び、B の穴は中抜きに点。対応線（橙の薄い線）で結ぶ">
   <defs><marker id="km-ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9z" fill="var(--accent)"/></marker></defs>
-  <g transform="translate(20,20)"><rect width="340" height="210" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+  <g transform="translate(20,20)"><rect width="340" height="230" rx="12" fill="var(--soft)" stroke="var(--line)"/>
     <text x="16" y="28" class="a" font-size="14">断面（横から見た図）</text>
-    <rect x="40" y="130" width="260" height="24" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <rect x="264" y="40" width="36" height="90" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <path d="M282 166 V96" stroke="var(--mark)" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="282" cy="130" r="3.5" fill="var(--mark)"/>
-    <text x="40" y="184" font-size="13">A：面に穴をあける</text>
-    <text x="96" y="62" font-size="13">B：コバ（切り口）に穴</text>
-    <path d="M232 58 h24" stroke="var(--sub)" stroke-width="1.6" fill="none" marker-end="url(#km-ar)"/>
-    <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="282" y1="174" x2="300" y2="174"/><line x1="282" y1="168" x2="282" y2="180"/><line x1="300" y1="168" x2="300" y2="180"/></g>
-    <text x="276" y="184" font-size="12" class="a" text-anchor="end">B の厚み÷2</text>
-    <text x="40" y="204" font-size="12" class="s">橙の線＝糸の通り道（A の面 → B の切り口）</text></g>
-  <g transform="translate(400,20)"><rect width="340" height="210" rx="12" fill="var(--soft)" stroke="var(--line)"/>
+    <rect x="40" y="140" width="260" height="26" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <rect x="258" y="44" width="42" height="96" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="282" y1="140" x2="282" y2="166" stroke="var(--mark)" stroke-width="3.5"/>
+    <line x1="258" y1="104" x2="276" y2="112" stroke="var(--mark)" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M282 176 V150 L262 108" fill="none" stroke="var(--guide)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#km-ar)"/>
+    <text x="40" y="60" font-size="13">B（側面）：内側の面に</text><text x="40" y="78" font-size="13">半分の深さの穴（貫通させない）</text>
+    <path d="M220 74 h30" stroke="var(--sub)" stroke-width="1.6" fill="none" marker-end="url(#km-ar)"/>
+    <text x="40" y="192" font-size="13">A（本体）：面に貫通する穴</text>
+    <text x="40" y="212" font-size="12" class="s">青の点線＝菱ギリ（A の穴から斜めに B の穴へ）</text>
+    <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="282" y1="178" x2="300" y2="178"/><line x1="282" y1="172" x2="282" y2="184"/><line x1="300" y1="172" x2="300" y2="184"/></g>
+    <text x="236" y="196" font-size="12" class="a">2.5mm</text>
+    <g stroke="var(--accent)" stroke-width="1.6" fill="none"><line x1="312" y1="108" x2="312" y2="140"/><line x1="306" y1="108" x2="318" y2="108"/><line x1="306" y1="140" x2="318" y2="140"/></g>
+    <text x="306" y="98" font-size="12" class="a" text-anchor="end">2.5mm</text>
+    <text x="150" y="230" font-size="12" class="s">B の外側の面は A の辺にそろえる</text></g>
+  <g transform="translate(400,20)"><rect width="340" height="230" rx="12" fill="var(--soft)" stroke="var(--line)"/>
     <text x="16" y="28" class="a" font-size="14">平面（型紙の上）</text>
-    <rect x="30" y="46" width="190" height="140" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <line x1="202" y1="56" x2="202" y2="176" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
-    <rect x="250" y="46" width="70" height="140" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <g stroke="var(--mark)" stroke-width="1.2" opacity=".55"><line x1="202" y1="60" x2="250" y2="60"/><line x1="202" y1="78" x2="250" y2="78"/><line x1="202" y1="96" x2="250" y2="96"/><line x1="202" y1="114" x2="250" y2="114"/><line x1="202" y1="132" x2="250" y2="132"/><line x1="202" y1="150" x2="250" y2="150"/><line x1="202" y1="168" x2="250" y2="168"/></g>
-    <g stroke="var(--mark)" stroke-width="3" stroke-linecap="round"><line x1="198" y1="64" x2="206" y2="56"/><line x1="198" y1="82" x2="206" y2="74"/><line x1="198" y1="100" x2="206" y2="92"/><line x1="198" y1="118" x2="206" y2="110"/><line x1="198" y1="136" x2="206" y2="128"/><line x1="198" y1="154" x2="206" y2="146"/><line x1="198" y1="172" x2="206" y2="164"/></g>
-    <g fill="var(--mark)"><circle cx="250" cy="60" r="3"/><circle cx="250" cy="78" r="3"/><circle cx="250" cy="96" r="3"/><circle cx="250" cy="114" r="3"/><circle cx="250" cy="132" r="3"/><circle cx="250" cy="150" r="3"/><circle cx="250" cy="168" r="3"/></g>
-    <text x="40" y="70" class="a" font-size="14">A</text><text x="262" y="70" class="a" font-size="14">B</text>
-    <text x="40" y="100" font-size="12" class="s">縫い線は辺から</text><text x="40" y="116" font-size="12" class="s">B の厚み÷2 内側</text>
-    <text x="254" y="100" font-size="12" class="s">縫い線は</text><text x="254" y="116" font-size="12" class="s">辺そのもの</text>
-    <text x="16" y="204" font-size="12" class="s">同じ数の穴を、橙の薄い線（対応線）で結んで見せる</text></g>
+    <rect x="30" y="46" width="186" height="150" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="196" y1="56" x2="196" y2="186" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <rect x="250" y="46" width="70" height="150" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="270" y1="56" x2="270" y2="186" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <g stroke="var(--mark)" stroke-width="1.2" opacity=".55"><line x1="196" y1="62" x2="270" y2="62"/><line x1="196" y1="80" x2="270" y2="80"/><line x1="196" y1="98" x2="270" y2="98"/><line x1="196" y1="116" x2="270" y2="116"/><line x1="196" y1="134" x2="270" y2="134"/><line x1="196" y1="152" x2="270" y2="152"/><line x1="196" y1="170" x2="270" y2="170"/></g>
+    <g fill="var(--mark)"><path d="M192 62 l4 -6 l4 6 l-4 6z M192 80 l4 -6 l4 6 l-4 6z M192 98 l4 -6 l4 6 l-4 6z M192 116 l4 -6 l4 6 l-4 6z M192 134 l4 -6 l4 6 l-4 6z M192 152 l4 -6 l4 6 l-4 6z M192 170 l4 -6 l4 6 l-4 6z"/></g>
+    <g fill="none" stroke="var(--mark)" stroke-width="1.4"><path d="M266 62 l4 -6 l4 6 l-4 6z M266 80 l4 -6 l4 6 l-4 6z M266 98 l4 -6 l4 6 l-4 6z M266 116 l4 -6 l4 6 l-4 6z M266 134 l4 -6 l4 6 l-4 6z M266 152 l4 -6 l4 6 l-4 6z M266 170 l4 -6 l4 6 l-4 6z"/></g>
+    <g fill="var(--mark)"><circle cx="270" cy="62" r="1.3"/><circle cx="270" cy="80" r="1.3"/><circle cx="270" cy="98" r="1.3"/><circle cx="270" cy="116" r="1.3"/><circle cx="270" cy="134" r="1.3"/><circle cx="270" cy="152" r="1.3"/><circle cx="270" cy="170" r="1.3"/></g>
+    <text x="40" y="70" class="a" font-size="14">A</text><text x="296" y="70" class="a" font-size="14">B</text>
+    <text x="40" y="100" font-size="12" class="s">縫い線は辺から</text><text x="40" y="116" font-size="12" class="s">2.5mm 内側</text><text x="40" y="132" font-size="12" class="s">穴は貫通（塗り）</text>
+    <text x="16" y="214" font-size="12" class="s">B の縫い線も辺から 2.5mm。穴は半分の深さ＝中抜きに点</text>
+    <text x="16" y="232" font-size="12" class="s">同じ数の穴を、橙の薄い線（対応線）で結んで見せる</text></g>
 </svg>
 </div>
-<p class="note">図の縫い線は、分かりやすいように橙の点線で描いています。実際の画面では、線の色は層ごとの色です。対応線（橙の薄い線）は画面だけに出て、保存・書き出し・印刷には入りません（元に戻す・ファイルを開く・「パッチワーク」カードの「対応線を消す」で消えます）。</p>
+<p class="note">縫い線の「縁からの距離」は、本体も側面も同じ 2.5mm が初めの値です（事業主の名刺入れの型紙と同じ）。小窓の「縁からの距離 (mm)」で変えられます。図の縫い線は、分かりやすいように橙の点線で描いています（実際の画面では黄色の点線・ガイドの層）。対応線（橙の薄い線）は画面だけに出て、保存・書き出し・印刷には入りません（元に戻す・ファイルを開く・「パッチワーク」カードの「対応線を消す」で消えます）。</p>
 
 <h3 id="koma1">作図例：箱の底（A）に側面（B）を立てる</h3>
 <div class="card">
-<svg viewBox="0 0 760 280" role="img" aria-label="作図例の3コマ：① A の辺を選んで「選んだ図形をオフセット」（距離＝B の厚み÷2・内側）→ 辺から B の厚み÷2 内側に縫い線ができる。② 右クリック →「目打ち・縫い穴」→「駒合わせ」で、A の縫い線、B の辺の順にクリック。③ 両方に同じ数の穴が並び、対応する穴が橙の薄い線で結ばれる">
+<svg viewBox="0 0 760 280" role="img" aria-label="作図例の3コマ：① A と B の辺を選んで、小窓の「選んだ辺に、縫い線を作る」→ どちらも辺から 2.5mm 革の内側に縫い線ができる。② 右クリック →「目打ち・縫い穴」→「駒合わせ」（またはキー K）で、A の縫い線、B の縫い線の順にクリック。③ 両方に同じ数の穴。B の穴は半分の深さ（中抜きに点）。対応する穴は橙の薄い線で結ぶ">
   <g transform="translate(14,16)"><rect width="228" height="250" rx="12" fill="var(--soft)" stroke="var(--line)"/>
-    <text x="12" y="26" class="a" font-size="13">① A の辺を選んで</text>
-    <text x="12" y="44" class="a" font-size="13">オフセット（B の厚み÷2・内側）</text>
-    <rect x="24" y="70" width="150" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <line x1="174" y1="70" x2="174" y2="190" stroke="var(--accent)" stroke-width="4"/>
-    <line x1="160" y1="78" x2="160" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
-    <text x="34" y="100" class="a" font-size="14">A</text>
-    <text x="180" y="130" font-size="11" class="s">選んだ辺</text>
-    <g stroke="var(--accent)" stroke-width="1.4" fill="none"><line x1="160" y1="204" x2="174" y2="204"/><line x1="160" y1="198" x2="160" y2="210"/><line x1="174" y1="198" x2="174" y2="210"/></g>
-    <text x="154" y="226" font-size="11" class="a" text-anchor="end">B の厚み÷2</text>
-    <text x="12" y="244" font-size="11" class="s">橙の点線＝できた A の縫い線</text></g>
+    <text x="12" y="26" class="a" font-size="13">① A・B の辺を選んで</text>
+    <text x="12" y="44" class="a" font-size="13">「選んだ辺に、縫い線を作る」</text>
+    <rect x="20" y="70" width="110" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="130" y1="70" x2="130" y2="190" stroke="var(--accent)" stroke-width="4"/>
+    <line x1="118" y1="78" x2="118" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <rect x="150" y="70" width="64" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="150" y1="70" x2="150" y2="190" stroke="var(--accent)" stroke-width="4"/>
+    <line x1="162" y1="78" x2="162" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="28" y="100" class="a" font-size="14">A</text><text x="178" y="100" class="a" font-size="14">B</text>
+    <text x="12" y="214" font-size="11" class="s">太い線＝選んだ辺（突き合わせる辺）</text>
+    <text x="12" y="230" font-size="11" class="s">点線＝できた縫い線（辺から 2.5mm）</text>
+    <text x="12" y="246" font-size="11" class="s">A も B も、革の内側へ</text></g>
   <path d="M245 140 h12" stroke="var(--accent)" stroke-width="2.2" fill="none" marker-end="url(#km-ar)"/>
   <g transform="translate(266,16)"><rect width="228" height="250" rx="12" fill="var(--soft)" stroke="var(--line)"/>
     <text x="12" y="26" class="a" font-size="13">② 右クリック→「目打ち・縫い穴」</text>
     <text x="12" y="44" class="a" font-size="13">→「駒合わせ」（またはキー K）</text>
     <rect x="20" y="70" width="110" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <line x1="116" y1="78" x2="116" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <line x1="118" y1="78" x2="118" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
     <rect x="150" y="70" width="64" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
+    <line x1="162" y1="78" x2="162" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
     <text x="28" y="100" class="a" font-size="14">A</text><text x="178" y="100" class="a" font-size="14">B</text>
-    <circle cx="116" cy="130" r="12" fill="var(--accent)"/><text x="116" y="135" font-size="13" text-anchor="middle" style="fill:var(--bg);font-weight:bold">1</text>
-    <circle cx="150" cy="130" r="12" fill="var(--accent)"/><text x="150" y="135" font-size="13" text-anchor="middle" style="fill:var(--bg);font-weight:bold">2</text>
-    <text x="12" y="214" font-size="11" class="s">1：A の縫い線をクリック</text>
-    <text x="12" y="230" font-size="11" class="s">2：B の辺（コバ側）をクリック</text>
-    <text x="12" y="246" font-size="11" class="s">案内文を見ながら（左の強調は出ない）</text></g>
+    <circle cx="118" cy="130" r="12" fill="var(--accent)"/><text x="118" y="135" font-size="13" text-anchor="middle" style="fill:var(--bg);font-weight:bold">1</text>
+    <circle cx="162" cy="130" r="12" fill="var(--accent)"/><text x="162" y="135" font-size="13" text-anchor="middle" style="fill:var(--bg);font-weight:bold">2</text>
+    <text x="12" y="214" font-size="11" class="s">1：A（貫通する側）の縫い線をクリック</text>
+    <text x="12" y="230" font-size="11" class="s">2：B（半分の深さ）の縫い線をクリック</text>
+    <text x="12" y="246" font-size="11" class="s">小窓と案内文を見ながら</text></g>
   <path d="M497 140 h12" stroke="var(--accent)" stroke-width="2.2" fill="none" marker-end="url(#km-ar)"/>
   <g transform="translate(518,16)"><rect width="228" height="250" rx="12" fill="var(--soft)" stroke="var(--line)"/>
     <text x="12" y="26" class="a" font-size="13">③ 両方に同じ数の穴が並ぶ</text>
-    <text x="12" y="44" class="a" font-size="13">対応する穴は橙の薄い線で結ぶ</text>
+    <text x="12" y="44" class="a" font-size="13">B の穴は中抜きに点（半分の深さ）</text>
     <rect x="20" y="70" width="110" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <line x1="116" y1="78" x2="116" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <line x1="118" y1="78" x2="118" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
     <rect x="150" y="70" width="64" height="120" fill="var(--card)" stroke="var(--pat)" stroke-width="2.4"/>
-    <g stroke="var(--mark)" stroke-width="1.2" opacity=".55"><line x1="116" y1="82" x2="150" y2="82"/><line x1="116" y1="102" x2="150" y2="102"/><line x1="116" y1="122" x2="150" y2="122"/><line x1="116" y1="142" x2="150" y2="142"/><line x1="116" y1="162" x2="150" y2="162"/><line x1="116" y1="182" x2="150" y2="182"/></g>
-    <g stroke="var(--mark)" stroke-width="3" stroke-linecap="round"><line x1="112" y1="86" x2="120" y2="78"/><line x1="112" y1="106" x2="120" y2="98"/><line x1="112" y1="126" x2="120" y2="118"/><line x1="112" y1="146" x2="120" y2="138"/><line x1="112" y1="166" x2="120" y2="158"/><line x1="112" y1="186" x2="120" y2="178"/></g>
-    <g fill="var(--mark)"><circle cx="150" cy="82" r="3"/><circle cx="150" cy="102" r="3"/><circle cx="150" cy="122" r="3"/><circle cx="150" cy="142" r="3"/><circle cx="150" cy="162" r="3"/><circle cx="150" cy="182" r="3"/></g>
+    <line x1="162" y1="78" x2="162" y2="182" stroke="var(--mark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <g stroke="var(--mark)" stroke-width="1.2" opacity=".55"><line x1="118" y1="84" x2="162" y2="84"/><line x1="118" y1="104" x2="162" y2="104"/><line x1="118" y1="124" x2="162" y2="124"/><line x1="118" y1="144" x2="162" y2="144"/><line x1="118" y1="164" x2="162" y2="164"/><line x1="118" y1="184" x2="162" y2="184"/></g>
+    <g fill="var(--mark)"><path d="M114 84 l4 -6 l4 6 l-4 6z M114 104 l4 -6 l4 6 l-4 6z M114 124 l4 -6 l4 6 l-4 6z M114 144 l4 -6 l4 6 l-4 6z M114 164 l4 -6 l4 6 l-4 6z M114 184 l4 -6 l4 6 l-4 6z"/></g>
+    <g fill="none" stroke="var(--mark)" stroke-width="1.4"><path d="M158 84 l4 -6 l4 6 l-4 6z M158 104 l4 -6 l4 6 l-4 6z M158 124 l4 -6 l4 6 l-4 6z M158 144 l4 -6 l4 6 l-4 6z M158 164 l4 -6 l4 6 l-4 6z M158 184 l4 -6 l4 6 l-4 6z"/></g>
+    <g fill="var(--mark)"><circle cx="162" cy="84" r="1.3"/><circle cx="162" cy="104" r="1.3"/><circle cx="162" cy="124" r="1.3"/><circle cx="162" cy="144" r="1.3"/><circle cx="162" cy="164" r="1.3"/><circle cx="162" cy="184" r="1.3"/></g>
     <text x="28" y="100" class="a" font-size="14">A</text><text x="178" y="100" class="a" font-size="14">B</text>
     <rect x="12" y="204" width="206" height="38" rx="6" fill="var(--card)" stroke="var(--line)"/>
-    <text x="20" y="220" font-size="11">案内：駒合わせ：各 6 穴</text>
-    <text x="20" y="236" font-size="11">（A 4.00mm ／ B 4.00mm）。</text></g>
+    <text x="20" y="220" font-size="11">案内：駒合わせ：各 6 穴。</text>
+    <text x="20" y="236" font-size="11">B の穴は半分の深さ（貫通させない）。</text></g>
 </svg>
 </div>
-<div class="step"><b class="n">1</b><div><b>A（底）と B（側面）の型紙を描きます。</b>縫い線にする辺は、<b>1本の直線</b>になっている必要があります。四角ツールで描いた型紙は、4つの辺が1つの図形なので、辺を1本だけ選べません。その場合は、作図先を「ガイド」にして、<b>直線ツールで A の辺の上と B の辺の上に1本ずつ線を引きます</b>（端に吸着します。ガイドの層なので点線になり、切る線には入りません）。</div></div>
-<div class="step"><b class="n">2</b><div><b>A の縫い線を作ります。</b>選択（<kbd>V</kbd>）で A の辺（手順1で引いた線）をクリックして選び、右クリック →<b>「作図オプション・寸法・レイヤー」→「選んだ図形をオフセット（点線・ガイド層）」</b>。出てきた小窓の「距離 (mm)」に <b>B の厚み÷2</b>（厚み 1.5mm なら 0.75）、「向き」を「内側」にして「オフセット」を押します。A の内側に黄色の点線ができれば、それが A の縫い線です。反対側にできたときは、<kbd>Ctrl</kbd>+<kbd>Z</kbd> で消して「外側」でもう一度押します。<span class="note">※「設計（厚み）」カードの「駒合わせ」にある「B の厚み (mm)」「内側へずらす」「A の縫い線を作る」でも同じ線を作れますが、いまの版では、このカードを開く入口が右クリックメニューとパネルにありません（右クリックの「シミュレーション」に出るのは「2つ折り」「3つ折り」だけです）。</span></div></div>
-<div class="step"><b class="n">3</b><div><b>穴の種類を決めます。</b>右クリック →「目打ち・縫い穴」→<b>「目打ちの設定・穴の編集」</b>カードの「使用する工具」で菱目を選びます（間隔＝ピッチはここで決まります）。同じカードの<b>「連続図形を1経路にする」は外します</b>（入っていると、B の辺に引いた線が、四角の角でつながる線とまとめて1本の縫い線になり、B の周り全部に穴が並びます）。</div></div>
-<div class="step"><b class="n">4</b><div><b>駒合わせを始めます。</b>図面の上で右クリック →「目打ち・縫い穴」→<b>「駒合わせ（2本の縫い線の穴の数をそろえる）」</b>（またはキー <kbd>K</kbd>）。画面の下に「A の縫い線 → B の縫い線の順にクリック。…」と出ます。駒合わせは左のツール列に無いので、左の「使用中」の強調は出ません。案内文を見ながら進めます。</div></div>
-<div class="step"><b class="n">5</b><div><b>A の縫い線をクリック → B の辺（コバ側の線）をクリック。</b>両方に同じ数の穴が並び、対応する穴どうしが橙の薄い線で結ばれます。案内に「駒合わせ：各 6 穴（A 4.00mm ／ B 4.00mm）。」のように、穴の数と実際の間隔が出ます。やり直すときは <kbd>Ctrl</kbd>+<kbd>Z</kbd>（1回で両方戻ります）。途中でやめるときは <kbd>Esc</kbd>。</div></div>
-<div class="say"><b>できあがり：</b>A の面の縫い線と B の辺に、同じ数の穴。革を切って、A は面に、B はコバに穴をあければ、穴がぴったり対応して縫えます。A と B で穴の間隔が少し違っても縫えます（差の目安が「許容」です）。</div>
+<div class="step"><b class="n">1</b><div><b>A（本体）と B（側面）の型紙を描きます。</b>四角ツールで描いた四角のままでも、辺の上に直線を引いた線でも、縫い線のもとにできます。四角を選ぶと輪郭ぜんたいの内側に縫い線ができるので、<b>辺1本だけに縫い線がほしいときは、四角を選んで <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>（グループ解除）で辺ごとの直線にばらすか</b>、作図先を「ガイド」にして辺の上に直線を1本引きます。</div></div>
+<div class="step"><b class="n">2</b><div><b>駒合わせの小窓を出します。</b>図面の上で右クリック →「目打ち・縫い穴」→<b>「駒合わせ（2本の縫い線の穴の数をそろえる）」</b>（またはキー <kbd>K</kbd>）。小窓に「縁からの距離 (mm)」（初めは 2.5）、「優先」、<b>「選んだ辺に、縫い線を作る」</b>が並びます。駒合わせは左のツール列に無いので、左の「使用中」の強調は出ません。小窓と画面の下の案内文が目印です。</div></div>
+<div class="step"><b class="n">3</b><div><b>縫い線を作ります。</b>選択（<kbd>V</kbd>）で A の辺（突き合わせる辺）をクリックして選び、<kbd>Shift</kbd> を押しながら B の辺もクリック（1本ずつでもかまいません）。もう一度キー <kbd>K</kbd> で小窓を出し、<b>「選んだ辺に、縫い線を作る」</b>を押します。どちらの辺からも、<b>革の内側へ 2.5mm</b> の所に黄色の点線（ガイドの層）ができます（案内「縁から 2.5mm 内側に、縫い線を 2 本作りました（点線・ガイド層）。」）。内側は、実線で囲まれた革の形から自動で決めます。</div></div>
+<div class="step"><b class="n">4</b><div><b>穴の種類を確かめます。</b>右クリック →「目打ち・縫い穴」→<b>「目打ちの設定・穴の編集」</b>カードの「使用する工具」で菱目を選びます（穴の間隔＝ピッチはここで決まります）。</div></div>
+<div class="step"><b class="n">5</b><div><b>A の縫い線をクリック → B の縫い線をクリック。</b>（小窓が出ている間が駒合わせのツールです。消えていたらキー <kbd>K</kbd>。）両方に同じ数の穴が並び、<b>B の穴は中抜きに点（半分の深さ）</b>、対応する穴どうしが橙の薄い線で結ばれます。案内に「駒合わせ：各 6 穴（A 4.00mm ／ B 4.00mm）。B（2回目にクリックした線）の穴は半分の深さ（貫通させない）です。…」と出ます。順番を間違えたら <kbd>Ctrl</kbd>+<kbd>Z</kbd>（1回で両方戻ります）で戻して、貫通する側（A）を先にクリックし直します。途中でやめるときは <kbd>Esc</kbd>。</div></div>
+<div class="say"><b>できあがり：</b>A の面と B の面に、辺から 2.5mm の所に同じ数の穴。革を切って、A は菱目打ちで貫通、B は菱目打ちを半分の深さで止め、B の外側の面を A の辺にそろえて貼ってから、A の穴から菱ギリを斜めに B の穴へ通して縫います。A と B で穴の間隔が少し違っても縫えます（差の目安が「許容」です）。SVG・PDF・印刷では、B の穴は塗らず点線の輪郭で出るので、現物でも見分けられます。</div>
 
 <h3 id="koma2">穴の数は、こう決まります（3つの場合）</h3>
 <table><tr><th style="width:9.5em">2本の縫い線の状態</th><th>何が起きるか</th></tr>
-<tr><td><b>どちらにも目打ちがない</b></td><td>「使用する工具」のピッチから穴の数を決めて、A・B の両方に並べます。数をどちらの長さから決めるかは「優先」（両方を均す／A 固定／B 固定）。線の両端の空きは「始端の空き」「終端の空き」（A・B とも同じ mm）。曲がり角（30° より大きい角）や直線と曲線の継ぎ目で区切って、区間ごとに合わせます（区間の数が違えば全体で1区間）。</td></tr>
-<tr><td><b>片方にだけ目打ちがある</b></td><td>その目打ちは<b>そのまま残し</b>、もう片方に同じ数を<b>長さの割合</b>で並べます。クリックの順はどちらが先でもかまいません。1回目のクリックのあと、案内に「A の目打ち 10 個を写します。…」と出ます。</td></tr>
+<tr><td><b>どちらにも目打ちがない</b></td><td>「使用する工具」のピッチから穴の数を決めて、A・B の両方に並べます。数をどちらの長さから決めるかは、小窓の「優先」（両方を均す／A 固定／B 固定）。線の両端の空きは「始端の空き」「終端の空き」（A・B とも同じ mm）。曲がり角（30° より大きい角）や直線と曲線の継ぎ目で区切って、区間ごとに合わせます（区間の数が違えば全体で1区間）。</td></tr>
+<tr><td><b>片方にだけ目打ちがある</b></td><td>その目打ちは<b>そのまま残し</b>、もう片方に同じ数を<b>長さの割合</b>で並べます。クリックの順はどちらが先でもかまいません。1回目のクリックのあと、案内に「A の目打ち 10 個を写します。…」と出ます。半分の深さの印は、クリックの順（1回目＝A・2回目＝B）で付け直します。</td></tr>
 <tr><td><b>両方に目打ちがある</b></td><td>どちらも、ピッチから作り直します（案内に「両方に目打ちがあったので、どちらも作り直しました。」）。片方の穴を残したいときは、先にもう片方の穴を消してから駒合わせをします。</td></tr></table>
 <div class="card">
 <svg viewBox="0 0 760 230" role="img" aria-label="片方（A）にだけ目打ちがあるときの図：左は、長い A の10個の穴を、短い B に同じ10個、長さの割合で並べる（間隔は狭くなる）。右は、曲がり角の数が同じなら角で区切って区間ごとに合わせる">
@@ -540,21 +551,22 @@
 
 <h3 id="koma3">欄のある場所</h3>
 <table><tr><th>欄・ボタン</th><th>ある場所</th><th>働き</th></tr>
+<tr><td>縁からの距離 (mm)</td><td>駒合わせの小窓（右クリック →「目打ち・縫い穴」→「駒合わせ」、またはキー K）</td><td>縫い線を、辺からどれだけ革の内側に作るか。初めは 2.5mm。本体（A）も側面（B）も同じ距離です。</td></tr>
+<tr><td>優先（両方を均す／A 固定／B 固定）</td><td>同じ小窓</td><td>穴の数を、2本の平均の長さから決めるか、A の長さから決めるか（A の間隔がピッチに近くなり、B が合わせる）、B の長さから決めるか。</td></tr>
+<tr><td>「選んだ辺に、縫い線を作る」</td><td>同じ小窓</td><td>選んだ辺（直線・つながった線・四角などの輪郭）から、縁からの距離だけ革の内側へ、点線（ガイド層）の縫い線を作ります。</td></tr>
 <tr><td>使用する工具</td><td>「目打ちの設定・穴の編集」カード（右クリック →「目打ち・縫い穴」）</td><td>穴の種類と間隔（ピッチ）。どちらにも目打ちがないときの穴の数の元になります。</td></tr>
 <tr><td>始端の空き (mm)・終端の空き (mm)</td><td>同じカード</td><td>線の両端にあける空き（どちらにも目打ちがないとき。A・B とも同じ mm）。</td></tr>
-<tr><td>連続図形を1経路にする</td><td>同じカード</td><td>入っていると、端でつながった線をまとめて1本の縫い線にします。駒合わせでは<b>外す</b>のが安全です（辺1本だけに穴を並べたいので）。</td></tr>
-<tr><td>優先（両方を均す／A 固定／B 固定）</td><td>「設計（厚み）」カードの「駒合わせ」（いまの版では開く入口が無く、初めの「両方を均す」のまま使います）</td><td>穴の数を、2本の平均の長さから決めるか、A の長さから決めるか（A の間隔がピッチに近くなり、B が合わせる）、B の長さから決めるか。</td></tr>
-<tr><td>B の厚み (mm)・内側へずらす・「A の縫い線を作る」</td><td>同じ「駒合わせ」（開く入口が無いので、代わりに「選んだ図形をオフセット」を使います）</td><td>選んだ直線から B の厚み÷2 だけ内側（チェックを外すと外側）に、A の縫い線を作ります。</td></tr>
+<tr><td>連続図形を1経路にする</td><td>同じカード</td><td>入っていると、端でつながった線をまとめて1本の縫い線にします。小窓で作った縫い線は辺から離れた点線なので、普通は影響しません。</td></tr>
 <tr><td>許容 (%)</td><td>「パッチワーク」カード（右クリック →「目打ち・縫い穴」）</td><td>実際の間隔がピッチからこれ以上ずれると、案内に警告を出します（初めは 15%）。</td></tr></table>
 
 <h3 id="koma4">よくある失敗</h3>
 <div class="say"><b>「駒合わせ：各 n 穴。ピッチの差が 20.0% で許容を超えています。」と出た：</b>A と B の縫い線の長さが違いすぎて、同じ数にすると間隔がピッチから大きくずれています。穴は並んでいるので、警告は目安です。直すなら、型紙の長さを合わせ直す、「優先」を「A 固定」か「B 固定」にして基準をはっきりさせる、または「許容 (%)」を上げます。</div>
-<div class="say"><b>クリックしても何も起きない：</b>線から離れています（拡大して、線の上をクリック）。文字・寸法線・折り線・画像は縫い線にできません。2回目のクリックが1回目と同じ縫い線（同じ経路）のときも、何も起きません。「連続図形を1経路にする」が入っていると、つながった線は全部で1本の経路なので、A の縫い線と B の辺がつながっていると2本に分かれません。チェックを外すか、線を離します。</div>
-<div class="say"><b>B の周り全部に穴が並んだ：</b>B の辺として、四角（閉じた図形）そのものをクリックしています。B の辺の上に直線を1本引いて（作図先「ガイド」）、「連続図形を1経路にする」を外してから、その線をクリックします。</div>
+<div class="say"><b>A と B の印が逆になった（A が中抜き・B が塗り）：</b>クリックの順が逆です。1回目にクリックした線が A（貫通）、2回目が B（半分の深さ）になります。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻して、貫通する側を先にクリックします。</div>
+<div class="say"><b>縫い線が辺の外側にできた・「どちら側が革の内側か決められない」と出た：</b>辺が実線の輪郭で囲まれていない（ガイドの線だけ・輪郭が閉じていない）と、内側を決められず、曲がりの内側（まっすぐな線は進行方向の右）に作ります。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で消して、線を逆向きに引き直すか、右クリック →「作図オプション・寸法・レイヤー」→「選んだ図形をオフセット（点線・ガイド層）」で向きを選んで作ります。</div>
+<div class="say"><b>B の周り全部に穴が並んだ：</b>B の縫い線として、四角から作った閉じた縫い線（輪郭ぜんたい）をクリックしています。辺1本だけの縫い線にしたいときは、四角を <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>（グループ解除）で辺ごとの直線にばらしてから、その辺を選んで縫い線を作ります。</div>
+<div class="say"><b>クリックしても何も起きない：</b>線から離れています（拡大して、線の上をクリック）。文字・寸法線・折り線・画像は縫い線にできません。2回目のクリックが1回目と同じ縫い線（同じ経路）のときも、何も起きません。「連続図形を1経路にする」が入っていて、A の縫い線と B の縫い線が端でつながっていると2本に分かれません。チェックを外すか、線を離します。</div>
 <div class="say"><b>残したかった穴が消えた：</b>両方に目打ちがあると、両方作り直します。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で1回で戻ります。残したい方だけに穴がある状態（もう片方の穴を消す）にしてから、もう一度駒合わせをします。</div>
-<div class="say"><b>「直線を1本選択してください。」と出た：</b>「A の縫い線を作る」は、直線を1本だけ選んでいるときに使えます。曲がった辺や、四角（閉じた図形）では作れません。「選んだ図形をオフセット」（距離＝B の厚み÷2・内側）なら、曲がった辺にも縫い線を作れます。</div>
-<div class="say"><b>縫い線が辺の外側にできた：</b>まっすぐな線の「内側」「外側」は、線を引いた向きで決まります（「内側へずらす」も同じ）。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で消して、「向き」を替えてもう一度押します。</div>
-
+<div class="say"><b>小窓が消えた：</b>別のツールを押すと消えます。キー <kbd>K</kbd> か、右クリック →「目打ち・縫い穴」→「駒合わせ」でまた出ます。縫い線や穴は消えません。</div>
 <hr style="border:0;border-top:1px solid var(--line);margin:40px 0 14px">
 <p class="note">このガイドは N's CAD の画面と同じ言葉で書いています。分からない点があれば、画面のスクリーンショットを添えて教えてください。説明を足します。</p>
 <p class="note">計測について：公開版では、ページを開いた回数と機能の使用回数（三面図の切替・金具を置く・革を透かして見る）だけを Google アナリティクスで集計しています。図面の内容・文字・ファイル名は送りません。</p>

@@ -166,12 +166,7 @@ export function extendAcrossFold(points, fold, deltaMm) {
   const far = fold.inner ? 1 : -1; // inner=true は法線の正側を内側として、負側（折り線の先）を伸ばす
   return points.map(p => Math.sign(side(p)) === far ? { x: p.x + n.x * far * deltaMm, y: p.y + n.y * far * deltaMm } : { ...p });
 }
-/** 線分 2 本（部品の辺 A と相手 B）のうち、A を B の厚み/2 だけ内側へずらした駒合わせ用の縫い線を返す。inward は内側の向き（+1/−1）。 */
-export function komaStitchLine(edge, thicknessB, inward = 1) {
-  const v = { x: edge.x2 - edge.x1, y: edge.y2 - edge.y1 }, len = Math.hypot(v.x, v.y); if (len < DEPS) return null;
-  const n = { x: -v.y / len * inward, y: v.x / len * inward }, d = thicknessB / 2;
-  return { type: 'line', x1: edge.x1 + n.x * d, y1: edge.y1 + n.y * d, x2: edge.x2 + n.x * d, y2: edge.y2 + n.y * d };
-}
+/* 旧 komaStitchLine（A の縫い線＝辺から B の厚み/2）は 2026-10-28 に廃止：駒合わせの縫い線は本体・側面とも面の上・縁から同じ距離（app.js makeKomaLines）。 */
 
 
 /* ---- パッチワークの柄（アーガイル・市松）：囲まれた図形を柄のピースに分ける ---- */
