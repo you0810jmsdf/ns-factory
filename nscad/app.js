@@ -930,7 +930,10 @@ function divisionCount() { const n = Math.floor(Number($('divN')?.value)); retur
 const divisionNumber = id => { const raw = String($(id)?.value ?? '').trim(), v = Number(raw); return raw !== '' && Number.isFinite(v) && v > 0 ? v : 0; };
 function divideAt(p) {
   const reach = 60 / scale, cand = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 3).slice(0, 40);
-  const xs = cand.length >= 2 ? allIntersections(cand).filter(q => distance(p, q) <= reach) : []; if (!xs.length) { $('hint').textContent = t('divideNoCross'); return; }
+  const nearLine = px => cand.filter(s => s.type !== 'circle' && distTo(s, p) <= px / scale).sort((u, v) => distTo(u, p) - distTo(v, p))[0];
+  const onLine = nearLine(7); if (onLine && divideSegmentAt(onLine, p)) return;   /* 線の上（7px 以内）をクリック：その線を等分する点から垂線（事業主 2026-10-28「分割線は線を二等分線したいのに角の二等分線しか機能がない」）。角の等分は、線から離れた角の中でクリック */
+  const xs = cand.length >= 2 ? allIntersections(cand).filter(q => distance(p, q) <= reach) : [];
+  if (!xs.length) { const nl = nearLine(10); if (nl && divideSegmentAt(nl, p)) return; $('hint').textContent = t('divideNoCross'); return; }   /* 交点が近くに無ければ、少し離れていても（10px）線を等分する */
   const X = xs.reduce((b, q) => distance(p, q) < distance(p, b) ? q : b), norm = a => ((a % 360) + 360) % 360, rays = [];
   const here = [...new Set(xs.filter(q => distance(q, X) < 0.02).flatMap(q => q.ids))];   /* 同じ点に集まる線は全部（端どうしがつながった線は、組ごとの交点として別々に出てくる） */
   for (const id of here) {   /* 交点を通る各線の、両方向の腕（端が交点なら、片方向だけ）と、その腕の長さ */
@@ -955,6 +958,39 @@ function divideAt(p) {
   });
   const f = v => +v.toFixed(2);
   $('hint').textContent = t('divideDone', { x: f(X.x), y: f(X.y), a: f(theta), n, k: made.length, each: f(theta / n), len: f(len) }) + (marks ? ' ' + t('divideMarkNote', { m: marks, d: f(mark) }) : markOut ? ' ' + t('divideMarkOut', { len: f(len) }) : ''); rebuildSnaps(); draw();
+}
+/** 線の等分：1本の線（直線・折れ線のクリックした辺・円弧・曲線）を n 等分する点（2＝中点）から、クリックした側へ垂直な線を引く。長さは欄の値、空なら線の半分（最大 30mm）。目印は分割点から垂線に沿って欄の距離。すでにその向きに線がある所には引かない。描けないときは false。 */
+function divideSegmentAt(s, p) {
+  let seg = s;
+  if (s.type === 'polyline') {   /* 折れ線・四角：クリックした辺だけ */
+    const pts = s.points, m = pts.length, cnt = s.closed ? m : m - 1; let best = null;
+    for (let i = 0; i < cnt; i++) { const e = { type: 'line', x1: pts[i].x, y1: pts[i].y, x2: pts[(i + 1) % m].x, y2: pts[(i + 1) % m].y }; const d = distTo(e, p); if (!best || d < best.d) best = { d, e }; }
+    if (!best) return false; seg = best.e;
+  }
+  const L = arcLength(seg); if (!(L > 1e-6)) return false;
+  const n = divisionCount(), user = divisionNumber('divLen'), mark = divisionNumber('divMark'), norm = a => ((a % 360) + 360) % 360;
+  const len = user > 0 ? user : Math.min(30, L / 2), layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer;
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value) || doc.tools[0], markOut = mark > len + 1e-9, putMarks = mark > 0 && !markOut && !!tool; let marks = 0;
+  const lineDir = o => norm(Math.atan2(o.y2 - o.y1, o.x2 - o.x1) * 180 / Math.PI), sameDir = (u, v) => Math.abs(norm(u - v + 180) - 180) < 0.5;
+  const plan = [];
+  for (let k = 1; k < n; k++) {
+    const q = pointAtLength(seg, L * k / n), tr = q.angleDeg * Math.PI / 180, cross = Math.cos(tr) * (p.y - q.y) - Math.sin(tr) * (p.x - q.x), a = norm(q.angleDeg + (cross >= 0 ? 90 : -90));   /* クリックした側へ */
+    const dir = { x: Math.cos(a * Math.PI / 180), y: Math.sin(a * Math.PI / 180) };
+    const exists = doc.shapes.some(o => o.type === 'line' && visible(o) && distTo(o, q) < 0.05 && (sameDir(lineDir(o), a) || sameDir(lineDir(o) + 180, a)) && [[o.x1, o.y1], [o.x2, o.y2]].some(([x, y]) => (x - q.x) * dir.x + (y - q.y) * dir.y > 0.05));   /* 分割点を通って、その向きに伸びる線がすでにある */
+    if (!exists) plan.push({ q, a });
+  }
+  if (!plan.length) { $('hint').textContent = t('divideExists'); return true; }
+  const made = []; cancel();
+  commit(() => {   /* 線と目印は同じ1回の保存（元に戻すは1回） */
+    for (const { q, a } of plan) {
+      const rad = a * Math.PI / 180, id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'line', lineStyle: 'dashed', color: 'blue', x1: +q.x.toFixed(4), y1: +q.y.toFixed(4), x2: +(q.x + len * Math.cos(rad)).toFixed(4), y2: +(q.y + len * Math.sin(rad)).toFixed(4) }); made.push(id);
+      if (putMarks) { const pid = freshId(doc.paths, 'p'); doc.paths.push({ id: pid, shapeIds: [id], reversed: false, closed: false, segments: [{ from: mark, to: mark, toolId: tool.id, pitch: tool.pitch, mode: 'manual' }], mark: 'tool' }); doc.holes.push({ id: freshId(doc.holes, 'h'), pathId: pid, toolId: tool.id, x: +(q.x + mark * Math.cos(rad)).toFixed(4), y: +(q.y + mark * Math.sin(rad)).toFixed(4), s: mark, angleDeg: a, mark: 'dot' }); marks++; }
+    }
+    selected = new Set(made);
+  });
+  const f = v => +v.toFixed(2);
+  $('hint').textContent = t('divideLineDone', { L: f(L), n, k: made.length, each: f(L / n), len: f(len) }) + (marks ? ' ' + t('divideMarkNote', { m: marks, d: f(mark) }) : markOut ? ' ' + t('divideMarkOut', { len: f(len) }) : ''); rebuildSnaps(); draw();
+  return true;
 }
 /** 分割数（2 以上の整数）。1 以下・空は 0（＝分割して打たない）。 */
 function markDivisions() { const n = Math.floor(Number($('markDiv').value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 100) : 0; }
