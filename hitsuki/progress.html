@@ -93,6 +93,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </div>
       <div class="pg-bar" role="progressbar" aria-labelledby="sum-title" id="pg-total-bar" aria-valuemin="0" aria-valuemax="100"><i id="pg-total-fill" style="width:0"></i></div>
       <p class="pg-split" id="pg-split" hidden></p>
+      <p class="pg-split" id="pg-excl" hidden></p>
       <dl class="pg-kpis">
         <div class="pg-kpi"><dt>最後に追加した日</dt><dd id="pg-last">–</dd></div>
         <div class="pg-kpi"><dt>動画の次の確認</dt><dd id="pg-next">–</dd></div>
@@ -128,10 +129,21 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </main>
 
   <script src="data/hitsukiData.js"></script>
+  <script src="data/hitsukiNoText.js"></script>
   <script src="data/commentaries.js"></script>
   <script>
   (function () {
-    var vols = window.HITSUKI_VOLUMES || [];
+    // 出典サイトに本文が無い帖（欠番）は、その巻の帖数（分母）から外す
+    var noText = window.HITSUKI_NO_TEXT || {};
+    var allVols = window.HITSUKI_VOLUMES || [];
+    var vols = allVols.map(function (v) {
+      var ex = (noText[v.id] || []).length;
+      if (!ex) return v;
+      var c = {};
+      Object.keys(v).forEach(function (k) { c[k] = v[k]; });
+      c.totalChapters = v.totalChapters - ex;
+      return c;
+    });
     var tr = window.HITSUKI_TRANSCRIPTS || {};
     var byVol = {}, byDate = {}, lastDate = '';
     Object.keys(tr).forEach(function (key) {
@@ -161,6 +173,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     function fmt(d) { var p = d.split('-'); return +p[1] + '月' + +p[2] + '日'; }
 
     $('pg-done').textContent = done;
+    var exList = allVols.filter(function (v) { return (noText[v.id] || []).length; }).map(function (v) {
+      return v.title + ' 第' + noText[v.id].join('・') + '帖';
+    });
+    if (exList.length) {
+      $('pg-excl').textContent = '※ 出典サイト（ひふみ神示データー）に本文が無い帖は、数に入れていません：' + exList.join('、') + '。';
+      $('pg-excl').hidden = false;
+    }
     $('pg-of').textContent = '/ ' + total + ' 帖に解説あり（' + pct.toFixed(1) + '%）';
     var workTotal = 0;
     vols.forEach(function (v) { workTotal += Math.min((byVol[v.id] || {}).w || 0, v.totalChapters); });
