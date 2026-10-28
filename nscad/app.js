@@ -6402,7 +6402,7 @@ function magnetPointsOf(shapes) {
     else if (s.type === 'bezier') ends.push({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 });
     else if (s.type === 'path') ends.push(...s.nodes.map(n => ({ x: n.x, y: n.y })));
     else if (s.type === 'arc') { ends.push(circlePoint(s, s.startDeg), circlePoint(s, s.endDeg)); centers.push({ x: s.cx, y: s.cy }); }
-    else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push(circlePoint(s, k * 45)); }
+    else if (s.type === 'circle') { centers.push({ x: s.cx, y: s.cy }); for (let k = 0; k < 8; k++) guide.push({ ...circlePoint(s, k * 45), weak: true }); }   /* weak：円周の45°ごとの点は「弱い点」。吸着距離の中に他の点（線の端・円の中心・中点など）があれば、そちらを先に取る（事業主 2026-10-28「円の中心に直線の始点がスナップしない」：小さな円では、中心から半径の半分を外れると円周の点に取られていた） */
   }
   guide.push(...runs.map(r => ({ ...r.mid }))); mids.push(...runs.map(r => ({ ...r.mid })));   /* 分かれた辺の中点は、辺全体の中点 */
   { const sl = smallLoopCenters(shapes); guide.push(...sl); mids.push(...sl); }   /* 小さな菱形・四角の中心（ガイドの点＝近づくと印が出る。常時の十字は出さない・事業主の指摘 2026-10-18「菱穴の中心から直線が引けない」） */
@@ -7552,7 +7552,11 @@ function snapped(p, shift, anchor) {
   snap = null; snapAlign = null;
   let result = { ...p };
   const reach = magnetRadiusMm();
-  if (reach > 0) { let near = reach; for (const c of [...magnetEnds, ...magnetCenters, ...magnetGuide]) { const d = distance(p, c); if (d < near) { near = d; result = { ...c }; snap = c; } } }
+  if (reach > 0) {   /* 磁石は2段：まず、円周の45°点以外（線の端・円と円弧の中心・中点・輪の中心・穴の中心）で近い点。無ければ円周の45°点（弱い点）。円の中心が、自分の円周の点に負けないため（小さな円で中心に合わせられなかった・2026-10-28） */
+    const pick = list => { let near = reach, hit = null; for (const c of list) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } return hit; };
+    const hit = pick([...magnetEnds, ...magnetCenters, ...magnetGuide.filter(c => !c.weak)]) || pick(magnetGuide.filter(c => c.weak));
+    if (hit) { result = { x: hit.x, y: hit.y }; snap = hit; }
+  }
   if ($('snap').checked && !snap) {
     let best = 9 / scale;
     for (const c of [...snapCache, ...(stage?.points || [])]) { const d = distance(p, c); if (d < best) { best = d; result = { ...c }; snap = c; } }
