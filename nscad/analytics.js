@@ -6,7 +6,7 @@ const NAME_RE = /^ncad_[a-z0-9_]{1,30}$/, KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
 
 /** env（既定は window）から計測器を作る。{ pageview(), event(name, { kind }) }。送れない環境では何もしない。 */
 export function createTracker(env = globalThis) {
-  let ready = false;
+  let ready = false, sink = null;   /* sink：GA4 に送ったのと同じ（イベント名・kind）を渡す先（2026-10-28 利用モニタ・presence.js の use）。送れる環境・作家の端末でないときだけ呼ばれる */
   const enabled = () => {
     try {
       const loc = env.location; if (!loc || loc.protocol !== 'https:' || loc.hostname !== HOST) return false;
@@ -29,7 +29,9 @@ export function createTracker(env = globalThis) {
       if (!NAME_RE.test(String(name)) || !load()) return;
       const clean = {}; if (typeof params?.kind === 'string' && KIND_RE.test(params.kind)) clean.kind = params.kind;
       try { env.gtag('event', name, clean); } catch { /* 計測の失敗で本体の動作を止めない */ }
+      try { sink?.(String(name), clean.kind); } catch { /* 利用モニタへ渡せなくても、本体は止めない */ }
     },
+    setSink(fn) { sink = typeof fn === 'function' ? fn : null; },
   };
 }
 export const track = createTracker();

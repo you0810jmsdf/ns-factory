@@ -5,10 +5,11 @@
 export const PRESENCE_URL = 'https://leather-cad-presence.bouncy-xenoposeidon.workers.dev';
 const PRES_HOST = 'you0810jmsdf.github.io', PRES_BASE_KEY = 'ncad_presence_base', PRES_TIMEOUT_MS = 3000, PRES_MIN_SEC = 20, PRES_MAX_SEC = 300;
 const PRES_LOCAL_RE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+const USE_FLUSH_MS = 2000, USE_MAX_QUEUE = 40, USE_KIND_RE = /^[A-Za-z0-9_.:-]{1,32}$/;   /* 利用モニタ：機能の名前は英数字と . _ : - の32字まで（それ以外は送らない） */
 
 /** env（既定は window）で動く人数係。{ start(), stop(), id() }。公開版以外では start() が false を返し、何もしない。 */
 export function createPresence({ env = globalThis, onCount = () => {}, fetchFn = null, rand = Math.random } = {}) {
-  let id = '', timer = null, started = false, fails = 0, inFlight = false;
+  let id = '', timer = null, started = false, fails = 0, inFlight = false, queue = [], useTimer = null;
   const base = () => {
     try {
       const loc = env.location; if (!loc) return '';
@@ -37,7 +38,16 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
     } catch { fails++; next = Math.min(30 * 2 ** fails, PRES_MAX_SEC); if (fails >= 2) onCount(null); }   /* 失敗は静かに：間隔を延ばして、2回続いたら数字を消すだけ */
     inFlight = false; schedule(next);
   }
-  const bye = () => { try { const b = base(); if (b && id) env.navigator?.sendBeacon?.(b + '/bye', new Blob([id], { type: 'text/plain' })); } catch { /* 閉じるときの知らせが届かなくても、90秒で数えなくなる */ } };
+  /** 利用モニタ（2026-10-28 事業主「他人がどの機能をよく使うかリアルタイムモニタしたい」）：機能の名前を2秒ためて、まとめて /use へ送る。ncad_use は kind、書き出しなどは 'export:svg' の形。失敗しても CAD は待たず・黙って捨てる */
+  const toKind = (name, kind) => { const n = String(name || ''), k = typeof kind === 'string' ? kind : ''; if (!/^ncad_[a-z0-9_]{1,30}$/.test(n)) return ''; const s = n === 'ncad_use' ? k : n.replace(/^ncad_/, '') + (k ? ':' + k : ''); return USE_KIND_RE.test(s) ? s : ''; };
+  const flushUse = (viaBeacon = false) => {
+    if (useTimer != null) { env.clearTimeout(useTimer); useTimer = null; } if (!queue.length || !started || !id) { queue = []; return; }
+    const b = base(), body = JSON.stringify({ id, ks: queue.splice(0, 20) }); if (!b) return;
+    try { if (viaBeacon && env.navigator?.sendBeacon) env.navigator.sendBeacon(b + '/use', new Blob([body], { type: 'text/plain' })); else (fetchFn || env.fetch.bind(env))(b + '/use', { method: 'POST', headers: { 'content-type': 'text/plain' }, body, cache: 'no-store', keepalive: true }).catch(() => {}); } catch { /* 送れなくても止めない */ }
+    if (queue.length) useTimer = env.setTimeout(() => flushUse(), USE_FLUSH_MS);
+  };
+  const bye = () => {
+    flushUse(true); try { const b = base(); if (b && id) env.navigator?.sendBeacon?.(b + '/bye', new Blob([id], { type: 'text/plain' })); } catch { /* 閉じるときの知らせが届かなくても、90秒で数えなくなる */ } };
   const onVisibility = () => { if (!started) return; if (visible()) { clear(); beat(); } else clear(); };
   return {
     start() {
@@ -47,6 +57,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
       beat(); return true;
     },
     stop() { if (!started) return; started = false; clear(); env.document?.removeEventListener?.('visibilitychange', onVisibility); env.removeEventListener?.('pagehide', bye); bye(); onCount(null); },
+    use(name, kind) { if (!started || !id) return; const k = toKind(name, kind); if (!k) return; if (queue.length < USE_MAX_QUEUE) queue.push(k); if (useTimer == null) useTimer = env.setTimeout(() => flushUse(), USE_FLUSH_MS); },
     id: () => id,
   };
 }
