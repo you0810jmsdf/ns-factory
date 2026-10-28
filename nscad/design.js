@@ -82,6 +82,49 @@ export function matchRoutes(routeA, routeB, pitch, opts = {}) {
   return { holesA, holesB, pairs: holesA.map((_, i) => ({ a: i, b: i })), segments, warn: segments.some(s => s.warn) };
 }
 
+/* ── 駒合わせ（曲面）：輪郭に沿った写し ─────────────────────────────────────────────
+ *  円柱の上面（曲線の輪郭）と側面の帯のように、帯はピッチどおり等間隔でよいが、上面の穴は帯の各穴を輪郭に沿って内側の縫い線へ写す必要がある
+ *  （直線部は同じ間隔・曲線部は内側の分だけ狭くなる。円は角度で対応）。長さの割合で均すと、直線と曲線が混じる形で合わない（事業主 2026-10-28）。
+ *  inset＝輪郭から「縁からの距離」だけ内側の縫い線（resolvePath 済みの経路）。outline＝その輪郭の多角形（closedRegions の points・閉じている）。
+ *  帯側の距離 s（0..lenOther）↔ 輪郭の弧長 u（inset の始点の投影から、inset と同じ向きに）↔ inset の区間ごとの比例位置。区間＝inset の区切り（角・直線と曲線の継ぎ目）を輪郭に投影した点。 */
+const polyCum = pts => { const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + distance(pts[i - 1], pts[i])); return cum; };
+/** 点 p にいちばん近い多角形（閉じた点列）上の位置：{ u: 弧長, d: 距離 }。dir（単位ベクトル）を渡すと、p から dir の両向きに伸ばした直線と多角形の交点のうち p に近いものを返す
+ *  （縫い線の法線方向に輪郭を取る。円弧を折れ線にした誤差や、端が別の辺に近いことによるずれを避ける）。交点が無ければ最寄りの点。 */
+export function projectToPolygon(p, pts, dir = null) {
+  const ring = [...pts, pts[0]], cum = polyCum(ring); let best = { u: 0, d: Infinity };
+  if (dir) { for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], b = ring[i], ex = b.x - a.x, ey = b.y - a.y, den = dir.x * ey - dir.y * ex; if (Math.abs(den) < 1e-12) continue; const t = ((a.x - p.x) * ey - (a.y - p.y) * ex) / den, w = ((a.x - p.x) * dir.y - (a.y - p.y) * dir.x) / den; if (w < -1e-9 || w > 1 + 1e-9) continue; const d = Math.abs(t); if (d < best.d) best = { u: cum[i - 1] + Math.max(0, Math.min(1, w)) * (cum[i] - cum[i - 1]), d }; } if (best.d < Infinity) return best; }
+  for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], b = ring[i], len = cum[i] - cum[i - 1]; if (len < DEPS) continue; const t = Math.max(0, Math.min(1, ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / (len * len))), q = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }, d = distance(p, q); if (d < best.d) best = { u: cum[i - 1] + t * len, d }; }
+  return best;
+}
+/** 経路（inset）が、多角形 outline の内側に一定の距離で寄せた線か調べる：{ margin（距離の中央値）, spread（ばらつき） }。端の 1 割は見ない（まっすぐな帯の縫い線は端で短い辺に近づくため）。 */
+export function insetDistance(route, outline, samples = 9) {
+  const len = arcLength(route); if (!(len > DEPS) || !outline || outline.length < 3) return null;
+  const ds = []; for (let i = 0; i < samples; i++) { const s = len * (0.1 + 0.8 * i / (samples - 1)); ds.push(projectToPolygon(pointAtLength(route, s), outline).d); }
+  const sorted = [...ds].sort((a, b) => a - b); return { margin: sorted[Math.floor(sorted.length / 2)], spread: sorted.at(-1) - sorted[0] };
+}
+/** 輪郭に沿った写しの対応表。戻り値 { lenPart（輪郭の対応部分の長さ）, lenInset, toInset(sOther, lenOther) → inset の距離, toOther(sInset, lenOther) → 帯側の距離, reversed（輪郭を逆向きにたどった）}。作れなければ null。 */
+export function outlineMap(routeInset, outline) {
+  const lenI = arcLength(routeInset); if (!(lenI > DEPS) || !outline || outline.length < 3) return null;
+  const ring = [...outline, outline[0]], per = polyCum(ring).at(-1); if (!(per > DEPS)) return null;
+  const closed = !!routeInset.closed, breaks = [0, ...routeBreaks(routeInset).filter(s => s > DEPS && s < lenI - DEPS), lenI];   /* inset の区切り（弧長） */
+  const uOf = s => {   /* 縫い線の法線方向に輪郭を取る。角（前後の向きが 30° より違う）では、2つの法線の中間（角の二等分線）の向きで、輪郭の角を取る */
+    const q = pointAtLength(routeInset, s), e = Math.min(0.05, lenI / 4), a1 = (pointAtLength(routeInset, Math.max(0, s - e)).angleDeg || 0) * Math.PI / 180, a2 = (pointAtLength(routeInset, Math.min(lenI, s + e)).angleDeg || 0) * Math.PI / 180;
+    let d = Math.abs(((a2 - a1) * 180 / Math.PI + 540) % 360 - 180), n1 = { x: -Math.sin(a1), y: Math.cos(a1) }, n2 = { x: -Math.sin(a2), y: Math.cos(a2) }, dir = n1;
+    if (d > 30 && d < 150) { const m = { x: n1.x + n2.x, y: n1.y + n2.y }, L = Math.hypot(m.x, m.y); if (L > 1e-9) dir = { x: m.x / L, y: m.y / L }; }
+    return projectToPolygon(q, outline, dir).u; };
+  const u0 = uOf(0), uProbe = uOf(Math.min(lenI, Math.max(lenI * 0.02, 0.5)));   /* 少し進んだ点で、輪郭をどちら向きにたどるか決める */
+  const fwd = ((uProbe - u0) % per + per) % per, reversed = fwd > per / 2;   /* 進んだ点が、輪郭の弧長で逆向き（半周以上先）なら逆 */
+  const unwrap = u => { let v = reversed ? ((u0 - u) % per + per) % per : ((u - u0) % per + per) % per; return v; };   /* 始点の投影を 0 にして、inset の向きに正の弧長 */
+  const edgesU = breaks.map(s => s <= DEPS ? 0 : unwrap(uOf(s)));
+  if (closed) edgesU[edgesU.length - 1] = per; else if (edgesU.at(-1) < DEPS) edgesU[edgesU.length - 1] = per;   /* 閉じた経路は一周・開いた経路で終点が始点に重なるときも一周 */
+  for (let i = 1; i < edgesU.length; i++) if (edgesU[i] <= edgesU[i - 1] + DEPS) return null;   /* 投影が折り返す（輪郭と合っていない）ときは使わない */
+  const lenPart = edgesU.at(-1);
+  const seg = (edges, v) => { let i = 0; while (i + 2 < edges.length && v > edges[i + 1] + DEPS) i++; return i; };
+  const toInset = (sOther, lenOther) => { const u = Math.max(0, Math.min(lenPart, sOther * lenPart / Math.max(DEPS, lenOther))), i = seg(edgesU, u), span = edgesU[i + 1] - edgesU[i]; return breaks[i] + (span > DEPS ? (u - edgesU[i]) / span : 0) * (breaks[i + 1] - breaks[i]); };
+  const toOther = (sInset, lenOther) => { const s = Math.max(0, Math.min(lenI, sInset)), i = seg(breaks, s), span = breaks[i + 1] - breaks[i], u = edgesU[i] + (span > DEPS ? (s - breaks[i]) / span : 0) * (edgesU[i + 1] - edgesU[i]); return u * lenOther / lenPart; };
+  return { lenPart, lenInset: lenI, breaks, edgesU, reversed, toInset, toOther };
+}
+
 /** パッチワーク：縫い合わせ線（seams）から共有辺の穴を最適化する。
  *  戻り値 {holesByPath: Map(pathId → [{x,y,s,angleDeg}]), pairs:[{seamId,a:{pathId,s},b:{pathId,s}}], warnings:[{seamId,segment,pitchA,pitchB,diffPct}]}。 */
 export function optimizePatchHoles(doc, { pitch = 4, tolerancePct = 15, junctionClearMm = null } = {}) {
