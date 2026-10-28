@@ -3285,11 +3285,17 @@ const COUNT_CLICKS = { exportSvg: ['ncad_export', 'svg'], exportDxf: ['ncad_expo
 /** どの機能がよく使われているかを数える（事業主 2026-10-24「どの機能がよく使われているか、統計を撮りたい」・案A＝今の Google アナリティクスに足す）。
  *  送るのは、機能の名前（ボタン・チェック・カード・ツール・右クリックの項目の id＝画面に最初から付いている短い英数字）と回数だけ。図形・文字・寸法・ファイル名・入力した数値は送らない（kind は英数字24字までに analytics.js が絞る）。
  *  公開版以外・作家の端末（nsf_ga_optout）では何もしない。イベントは ncad_use 1種類にまとめ、機能の名前は kind に入れる（GA4 で kind をカスタムディメンションにすると、機能ごとの回数が見える）。 */
-const countUse = kind => { const k = String(kind || '').replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 24); if (k) track.event('ncad_use', { kind: k }); };
+let lastCtxUseAt = 0;
+const countUse = (kind, fromClick = false) => {
+  const k = String(kind || '').replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 24); if (!k) return;
+  const now = Date.now();
+  if (/^ctx[-_]/.test(k)) { if (fromClick && now - lastCtxUseAt < 150) return; if (!fromClick) lastCtxUseAt = now; }   /* 右クリックの項目は、押した1回が「項目の処理が数える ctx_名前」と「全ボタン共通の数え（項目の id＝ctx-名前）」の2つで数えられていた（GA4 の記録でも二重に出ていた）→ 共通の数えは、直前（150ms 以内）に項目の処理が数えていれば数えない（2026-10-28 利用モニタで気づいた） */
+  track.event('ncad_use', { kind: k });
+};
 function initCounting() {
   track.pageview();
   document.addEventListener?.('click', e => { const b = e?.target?.closest?.('button'), id = b?.id; if (id === 'binderPlace') track.event('ncad_hw_place', { kind: $('binderSpecSel')?.value }); else if (COUNT_CLICKS[id]) track.event(COUNT_CLICKS[id][0], COUNT_CLICKS[id][1] ? { kind: COUNT_CLICKS[id][1] } : {});
-    if (b) { const use = b.dataset?.tool ? 'tool_' + b.dataset.tool : id; if (use) countUse(use); } else { const card = e?.target?.closest?.('summary')?.parentElement?.id; if (card) countUse('card_' + card); } });   /* 全ボタン（ツールは tool_名）・カードを開いた回数 */
+    if (b) { const use = b.dataset?.tool ? 'tool_' + b.dataset.tool : id; if (use) countUse(use, true); } else { const card = e?.target?.closest?.('summary')?.parentElement?.id; if (card) countUse('card_' + card); } });   /* 全ボタン（ツールは tool_名）・カードを開いた回数 */
   document.addEventListener?.('change', e => { const el = e?.target; if (!el) return; if (el.type === 'checkbox' && el.id) countUse(el.id); if (el.id === 'ghost3d') track.event('ncad_ghost', { kind: el.checked ? 'on' : 'off' }); else if ((el.id === 'threeView' || el.id === 'quadView') && el.checked) track.event('ncad_three_view', { kind: el.id === 'quadView' ? 'quad' : 'frame' }); });
 }
 /** いま開いている人数を、右下の隅に小さく出す（事業主 2026-10-27「アクセス中の人の人数を目立たないところに表示して」）。数えるのは Cloudflare Worker（presence-worker）。
