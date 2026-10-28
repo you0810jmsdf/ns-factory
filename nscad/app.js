@@ -1492,6 +1492,7 @@ function initLayers() {
   $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
   restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
+  $('backBadge')?.addEventListener('click', () => { $('stitchFace').value = 'front'; draw(); });   /* 「裏面表示中」の印を押すと、表に戻す */
   $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
@@ -7842,7 +7843,13 @@ function exportBehindDark(s) {
   }
   return votes >= 2;
 }
+/** 裏面表示中の印（2026-10-28 事業主「裏面表示のとき、画面の端に「裏面表示中」の印を出す（見間違い防止）」）：「縫い目を見る」が入っていて、縫い目の面が「裏」のとき、画面の右上の隅に出す。押すと表に戻す。3D の表示中は出さない。 */
+function syncBackBadge() {
+  const b = $('backBadge'); if (!b) return;
+  const on = !!viewShow.stitch && stitchFace() === 'back' && !!$('canvas3d')?.hidden; if (b.hidden === on) b.hidden = !on;
+}
 function draw() {
+  if (!exporting) syncBackBadge();
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 
   ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
