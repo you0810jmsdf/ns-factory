@@ -3296,7 +3296,8 @@ function initCounting() {
  *  公開版以外では presence.js が何もしないので、要素は隠れたまま。通信が遅い・止まっても CAD は待たず、数字が消えるだけ。 */
 function initPresence() {
   const box = $('presence'); if (!box) return;
-  createPresence({ onCount: n => { if (n == null) { box.hidden = true; return; } $('presenceN').textContent = String(n); box.hidden = false; } }).start();
+  const pres = createPresence({ onCount: n => { if (n == null) { box.hidden = true; return; } $('presenceN').textContent = String(n); box.hidden = false; } });
+  if (pres.start()) track.setSink((name, kind) => pres.use(name, kind));   /* 機能の利用モニタ（2026-10-28）：GA4 に送るのと同じ（機能名・kind）を、人数と同じ中継へも渡す。作家の端末（nsf_ga_optout）は、GA4 と同じく送らない */
 }
 /** 「革を透かして見る」がオンの間、三面図の立体の革の面（金具以外）を半透明にして描く。 */
 const GHOST_ALPHA = 0.3;
