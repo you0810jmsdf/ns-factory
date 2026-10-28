@@ -1,6 +1,6 @@
 // 他ソフト連携：Leathercraft CAD（第三者製）と Beam Studio（FLUX）向けの書き出しプリセットと取り込み補助。純粋関数のみ。
 import { bboxOfDoc, bboxOf, holeAppearance, offsetShape, distance, distToShape, projectOnPath, chainShapes, ownHolePathIds, holeIsOwn } from './geometry.js';
-import { shapeToSvgD, docToDxfR12 } from './formats.js';
+import { shapeToSvgD, docToDxfR12, beamFixWrap } from './formats.js';
 
 const fmt3 = n => (Math.round(n * 1000) / 1000).toString();
 const escX = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -8,7 +8,7 @@ const escX = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;
 export const LC_LAYER_MAP = { LineType_01: 'pattern', LineType_02: 'hardware', LineType_03: 'guide', 0: 'pattern', Cut: 'pattern', Stitch: 'guide', Guide: 'guide', Hardware: 'hardware' };   /* 層は 型紙・金具・ガイド の3つ（書き出しと同じ対応で読み戻す）。Stitch など実物でないものはガイド */
 export const LC_EXPORT_MAP = { pattern: 'LineType_01', hardware: 'LineType_02', guide: 'LineType_03' };
 /** Beam Studio 用 SVG：カット線＝黒（kerf/2 外側へ）、縫い穴＝赤の小円、刻印（目印レイヤー・文字）＝青、ガイドは含めない。 */
-export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = ['pattern'], engraveLayerIds = [], strokeMm = 0.1 } = {}) {   /* 彫刻は Beam Studio 側で足す（N's CAD からは出さない）。金具の穴（hwHole）は切る */
+export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = ['pattern'], engraveLayerIds = [], strokeMm = 0.1, beamFix = false } = {}) {   /* beamFix：色ごとの層（カット・穴・刻印）を、Beam Studio が縮めるぶんだけ先に拡大する（標準の SVG の「Beam Studio 用の補正」と同じ式・2026-10-28 事業主「書き出し方式「Beam Studio」にも同じ補正を」） */   /* 彫刻は Beam Studio 側で足す（N's CAD からは出さない）。金具の穴（hwHole）は切る */
   const visible = s => doc.layers.find(l => l.id === s.layer)?.visible && !s.holeLink;   /* 見えない補助の線（holeLink）は書き出さない */
   const cut = doc.shapes.filter(s => visible(s) && (cutLayerIds.includes(s.layer) || (s.hwHole && s.layer === 'hardware')) && !['text', 'dimension', 'fold'].includes(s.type));
   const engrave = doc.shapes.filter(s => visible(s) && (engraveLayerIds.includes(s.layer) || (s.type === 'text' && !cutLayerIds.includes(s.layer) && s.layer !== 'guide' && s.layer !== 'hardware')) && s.type !== 'fold' && s.type !== 'dimension');
@@ -19,7 +19,8 @@ export function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLaye
   const cutBody = kerfed.map(s => { const d = shapeToSvgD(s); return d ? `<path d="${d}"/>` : ''; }).join('');
   const holeBody = holes.map(hole => { const a = holeAppearance(hole, doc); if (!a) return ''; return `<circle cx="${fmt3(hole.x)}" cy="${fmt3(hole.y)}" r="${fmt3(Math.max(0.05, Math.min(a.width, a.height || a.width) / 2))}"/>`; }).join('');
   const engraveBody = engrave.map(s => { if (s.type === 'text') return `<text x="${fmt3(s.x)}" y="${fmt3(s.y)}" font-size="${fmt3(s.sizeMm)}" font-family="sans-serif" fill="#0000ff" stroke="none" transform="rotate(${fmt3(s.angleDeg)} ${fmt3(s.x)} ${fmt3(s.y)})">${escX(s.text)}</text>`; const d = shapeToSvgD(s); return d ? `<path d="${d}"${s.closed || s.type === 'circle' ? ' fill="#0000ff"' : ''}/>` : ''; }).join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt3(w)}mm" height="${fmt3(h)}mm" viewBox="${fmt3(x0)} ${fmt3(y0)} ${fmt3(w)} ${fmt3(h)}"><g id="cut" fill="none" stroke="#000000" stroke-width="${fmt3(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${cutBody}</g><g id="holes" fill="none" stroke="#ff0000" stroke-width="${fmt3(strokeMm)}">${holeBody}</g><g id="engrave" fill="none" stroke="#0000ff" stroke-width="${fmt3(strokeMm)}">${engraveBody}</g></svg>`;
+  const fix = (body, shapes, hs) => (beamFix && body) ? beamFixWrap(body, bboxOfDoc({ ...doc, shapes, holes: hs })) : body;   /* 層ごとに、その層の中身の大きさで補正（カットはカーフ込み） */
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt3(w)}mm" height="${fmt3(h)}mm" viewBox="${fmt3(x0)} ${fmt3(y0)} ${fmt3(w)} ${fmt3(h)}"><g id="cut" fill="none" stroke="#000000" stroke-width="${fmt3(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${fix(cutBody, kerfed, [])}</g><g id="holes" fill="none" stroke="#ff0000" stroke-width="${fmt3(strokeMm)}">${fix(holeBody, [], holes)}</g><g id="engrave" fill="none" stroke="#0000ff" stroke-width="${fmt3(strokeMm)}">${fix(engraveBody, engrave, [])}</g></svg>`;
 }
 /** Leathercraft CAD 互換 DXF（R12）：レイヤー名を LineType_NN に、縫い穴は Stitch_Holes、外接矩形の左下を原点に。 */
 export function leathercraftDxf(doc, { originAtCorner = true, includeHoles = true, layerMap = LC_EXPORT_MAP } = {}) {
