@@ -135,7 +135,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     var tr = window.HITSUKI_TRANSCRIPTS || {};
     var byVol = {}, byDate = {}, lastDate = '';
     Object.keys(tr).forEach(function (key) {
-      var m = key.match(/^([a-z0-9]+)-(\d+)$/);
+      // 冬の巻の補帖（fuyu-supplement）も、その巻の1帖として数える（totalChapters に含まれている）
+      var m = key.match(/^([a-z0-9]+)-(\d+|supplement)$/);
       if (!m) return;
       var d = String(tr[key].addedAt || '').slice(0, 10);
       (byVol[m[1]] = byVol[m[1]] || { n: 0, w: 0, dates: {} }).n++;
