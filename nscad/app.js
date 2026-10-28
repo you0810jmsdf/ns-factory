@@ -1254,7 +1254,7 @@ async function attachSavedFiles(info, base) {
   } catch { /* 行き先が読めなくても、図面の復元はそのまま（保存のときに選び直す） */ }
 }
 /** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。主のタブは、主の保存と副のタブの保存のうち新しいほう（戻したら、もう一方も出す）。副のタブは、副の保存だけ（主の保存は、生きている主のタブのもの）。出したら true。 */
-function offerRestore(keys = tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]) {
+function readRestoreCandidates(keys) {
   const found = [];
   for (const key of keys) {
     let text = null; try { text = localStorage.getItem(key); } catch { /* 保存を読めない環境では何もしない */ }
@@ -1263,21 +1263,26 @@ function offerRestore(keys = tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] :
     if (!info) { try { localStorage.removeItem(key); } catch { /* 無視 */ } continue; }
     found.push({ ...info, key });
   }
-  if (!found.length) return false;
   found.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));   /* 新しいほうから */
-  const info = found[0], d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }) + (info.key === AUTOSAVE_SUB_KEY ? ' ' + t('restoreFromSub') : ''); $('restoreBar').hidden = false; return true;
+  return found;
+}
+const restoreKeysNow = () => tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY];
+function offerRestore(keys = restoreKeysNow()) { const found = readRestoreCandidates(keys); if (!found.length) return false; showRestoreOffer(found[0]); return true; }
+function showRestoreOffer(info) {
+  const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }) + (info.key === AUTOSAVE_SUB_KEY ? ' ' + t('restoreFromSub') : ''); $('restoreBar').hidden = false;
 }
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   if (info.key === AUTOSAVE_SUB_KEY) { try { localStorage.removeItem(AUTOSAVE_SUB_KEY); } catch { /* 無視 */ } }   /* 副の保存は、戻したら片付ける（主の保存は、次の自動保存が上書きする） */
+  const nextUp = readRestoreCandidates(restoreKeysNow().filter(k => k !== info.key))[0] || null;   /* 主の保存と副の保存の両方があったときの、もう一方（復元のあとの自動保存が上書きする前に読んでおく） */
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); dropDetachedFills(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
-  offerRestore((tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]).filter(k => k !== info.key));   /* 主の保存と副の保存の両方があったときは、もう一方も続けて出す */
+  if (nextUp) showRestoreOffer(nextUp);   /* もう一方も続けて出す */
 }
-function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } if (key === AUTOSAVE_KEY) clearUndoRecord().catch(() => {}); flushAutosave(); offerRestore((tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]).filter(k => k !== key)); }
+function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } if (key === AUTOSAVE_KEY) clearUndoRecord().catch(() => {}); flushAutosave(); offerRestore(restoreKeysNow().filter(k => k !== key)); }
 /** 別のブラウザのタブでも開いているとき（このタブが副）の警告。副のタブは、自動保存・履歴の保管・「捨てる」をしない。 */
 function syncMultiTabBar() { const bar = $('multiTabBar'); if (bar) bar.hidden = tabIsPrimary(); }
 /** 主／副が替わったとき：副→主なら、見送っていた「前回の続き」を出す（なければ、いまの図面を保存する）。 */
