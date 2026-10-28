@@ -54,7 +54,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, komaStitchLine, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1296,7 +1296,7 @@ const PRESET_KEY = 'leather-cad.presets', PRESET_MAX = 30, PRESET_APP = "N's CAD
 const PRESET_FIELDS = ['stitchTool', 'placement', 'chain', 'reversePath', 'offsetStart', 'offsetEnd', 'segmentFrom', 'segmentTo', 'cornerMode', 'followTangent', 'reverseSlant', 'constrainHole', 'holeAngle', 'holeMark', 'defaultMark', 'dotD',
   'textSize', 'dimOffset', 'offsetJoin', 'mirrorHoles', 'arcMethod', 'arcDir', 'arcRadius', 'snapDist', 'offsetDist', 'offsetSide',
   'patchPitch', 'patchTol', 'patchClear', 'patchTargetW', 'patchTargetH', 'patchAllowance', 'patchCols', 'patchRows', 'gridAngle', 'patchShiftX', 'patchShiftY', 'patchRim', 'patchRimOffset', 'patchRimPitch', 'patchRimRadius', 'seamStyle', 'patchStitch', 'patchHole', 'patchEdgeBan', 'patchPreferNear', 'patchKeepSize', 'patchMinPiece', 'patchTexA', 'patchTexB',
-  'komaThickness', 'komaInward', 'grid', 'spacing', 'snap'];
+  'komaMargin', 'grid', 'spacing', 'snap'];
 /** いまの設定値（画面の入力欄）と登録した工具を、保存用のデータにまとめる。 */
 function captureSettings() {
   const values = {};
@@ -2373,8 +2373,8 @@ function stitchToolCurrent() { return doc.tools.find(t => t.id === $('stitchTool
 /** パッチワークの「基準ピッチ」欄を、選んでいる穴の工具のピッチに合わせる（事業主 2026-10-23「1辺3.95mm（選択した菱目工具）」：欄が 4 のまま、工具の 3.95 と食い違い、丸目が 4mm 間隔で打たれていた）。工具を替えたときだけ合わせ、欄に打った値は、工具が同じ間は残す。 */
 let patchPitchToolId = null;
 function syncPatchPitch() { const tool = stitchToolCurrent(); if (!tool || !(tool.pitch > 0)) return; patchPitchToolId = tool.id; $('patchPitch').value = String(tool.pitch); }
-function placeHoles(saved, route, points, tool) {
-  for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool' }); }
+function placeHoles(saved, route, points, tool, depth = null) {   /* depth 'half'＝駒合わせの B（コバ側）の穴。半分の深さ（貫通させない） */
+  for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool', ...(depth ? { depth } : {}) }); }
   saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
 }
 function komaClick(p) {
@@ -2390,11 +2390,11 @@ function komaClick(p) {
   if (!result.holesA.length) { $('hint').textContent = t('impossible'); draw(); return; }
   commit(() => {
     for (const side of [a, b]) { if (side.fresh) { side.saved.id = freshId(doc.paths, 'p'); doc.paths.push(side.saved); side.fresh = false; } doc.holes = doc.holes.filter(h => h.pathId !== side.saved.id); }
-    placeHoles(a.saved, a.route, result.holesA, tool); placeHoles(b.saved, b.route, result.holesB, tool);
+    placeHoles(a.saved, a.route, result.holesA, tool); placeHoles(b.saved, b.route, result.holesB, tool, 'half');   /* B（2回目にクリックした線＝コバ側）の穴は半分の深さ。A（面側）は貫通 */
     selected = new Set([hit.id, ...a.saved.shapeIds]);
   });
   pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]);
-  $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '');
+  $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '') + ' ' + t('komaHalfNote');
   draw();
 }
 /** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
@@ -2404,22 +2404,44 @@ function komaCopy(src, dst, from, to) {
     if (dst.fresh) { dst.saved.id = freshId(doc.paths, 'p'); doc.paths.push(dst.saved); dst.fresh = false; }
     holes.forEach((h, i) => {
       const q = pointAtLength(dst.route, map.s[i]), srcTan = pointAtLength(src.route, h.s).angleDeg, tan = q.angleDeg + (map.reversed ? 180 : 0), nh = { ...h, id: freshId(doc.holes, 'h'), pathId: dst.saved.id, s: map.s[i], x: q.x, y: q.y, angleDeg: ((h.angleDeg - srcTan + tan) % 360 + 360) % 360 };
+      if (to === 'B') nh.depth = 'half'; else delete nh.depth;   /* B（2回目にクリックした線＝コバ側）の穴は半分の深さ */
       doc.holes.push(nh); made.push(nh);
     });
+    for (const h of holes) { if (from === 'B') h.depth = 'half'; else delete h.depth; }   /* 残した側も、役（A＝貫通・B＝半分）に合わせる */
     const tool = doc.tools.find(x => x.id === holes[0].toolId); dst.saved.segments = [{ from: 0, to: arcLength(dst.route), toolId: holes[0].toolId, pitch: tool?.pitch ?? 0, mode: 'variable' }];
     selected = new Set([...dst.saved.shapeIds]);
   });
   pairLines = holes.map((h, i) => [{ x: h.x, y: h.y }, { x: made[i].x, y: made[i].y }]);
   const gap = list => list.length > 1 ? (Math.max(...list.map(h => h.s)) - Math.min(...list.map(h => h.s))) / (list.length - 1) : 0; /* 穴の間隔の平均 */
-  $('hint').textContent = t('komaCopied', { from, to, n: holes.length, pa: gap(holes).toFixed(2), pb: gap(made).toFixed(2) });
+  $('hint').textContent = t('komaCopied', { from, to, n: holes.length, pa: gap(holes).toFixed(2), pb: gap(made).toFixed(2) }) + ' ' + t('komaHalfNote');
   draw();
 }
-function makeKomaLine() {
-  const edge = doc.shapes.find(s => selected.has(s.id) && s.type === 'line'); if (!edge) { $('hint').textContent = t('selectLine'); return; }
-  const thickness = Number($('komaThickness').value); if (!(thickness > 0)) { $('hint').textContent = t('invalidNumber'); return; }
-  const line = komaStitchLine(edge, thickness, $('komaInward').checked ? 1 : -1); if (!line) return;
-  addShape({ ...line, layer: edge.layer }); $('hint').textContent = t('komaLineMade', { d: (thickness / 2).toFixed(2) });
+/** 駒合わせの縫い線：選んだ辺（直線・つながった線・閉じた図形）から「縁からの距離」だけ革の内側へ、点線（ガイド層・黄）の縫い線を作る。
+ *  本体（面側・貫通）も側面（コバ側・半分の深さ）も、面の上・突き合わせる辺から同じ距離（事業主決定 2026-10-28：名刺入れの実図面は両方 2.5mm。以前の「B の厚み/2・B は辺そのもの」は誤り）。
+ *  内側＝±距離の2候補のうち、中点が実線で囲まれた革の中に入る側。両方とも中・外で決められないときは、閉じた図形は内側、開いた線は曲がりの内側（まっすぐなら進行方向の右）にして案内する。 */
+function makeKomaLines() {
+  const margin = Number($('komaMargin').value); if (!(margin > 0)) { $('hint').textContent = t('invalidNumber'); return; }
+  const ids = selectedShapeIds(), pool = doc.shapes.filter(s => ids.has(s.id) && visible(s) && editable(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type));
+  if (!pool.length) { $('hint').textContent = t('komaSelNeed'); return; }
+  const regions = closedRegions(doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink), 0.01);   /* 実線で囲まれた革（点線は囲みに使わない） */
+  const midOf = r => { if (!r) return null; if (r.type === 'line') return { x: (r.x1 + r.x2) / 2, y: (r.y1 + r.y2) / 2 }; if (r.points?.length > 1) { const i = Math.floor(r.points.length / 2); return { x: (r.points[i - 1].x + r.points[i].x) / 2, y: (r.points[i - 1].y + r.points[i].y) / 2 }; } try { return pointAtLength(r, arcLength(r) / 2); } catch { return null; } };
+  const inside = p => !!p && regions.some(rg => insidePolygon(p, rg.points));
+  const used = new Set(), results = []; let unsure = 0, failed = 0;
+  for (const src of pool) {
+    if (used.has(src.id)) continue; const sel = offsetSpan(pool, src, null, true); if (!sel) { failed++; continue; } for (const id of sel.shapeIds) used.add(id);
+    const bend = sel.closed ? 0 : bendInnerSign(sel.points), guess = sel.closed ? -margin : (bend ? -bend : -1) * margin;   /* 既定：閉じた図形は内側・曲がった線は曲がりの内側 */
+    const cand = [-margin, margin].map(v => ({ v, r: offsetSpanResult(sel, v, { join: 'miter' }) })).filter(c => c.r); if (!cand.length) { failed++; continue; }
+    const ins = cand.filter(c => inside(midOf(c.r))); let pick;
+    if (ins.length === 1) pick = ins[0]; else { pick = cand.find(c => c.v === guess) || cand[0]; if (!sel.closed) unsure++; }
+    results.push({ r: pick.r, src });
+  }
+  if (!results.length) { $('hint').textContent = t('impossible'); return; }
+  const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || results[0].src.layer;
+  cancel(); commit(() => { selected = new Set(); for (const { r } of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } });
+  $('hint').textContent = t('komaLinesMade', { n: results.length, d: margin }) + (unsure ? ' ' + t('komaSideUnsure') : '') + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
+/** 駒合わせの小窓（縁からの距離・優先・縫い線を作る）は、駒合わせのツールの間だけ出す。 */
+function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; }
 function renderSeams() { $('seamCount').textContent = String(doc.seams.length); }
 function seamStyleValue() { const v = $('seamStyle').value; return ['butt', 'overlap', 'felled'].includes(v) ? v : 'butt'; }
 function optimizePatch() {
@@ -3029,7 +3051,7 @@ function initDesign() {
     head.addEventListener('pointermove', e => { if (drag) placeCardWin(card, e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
     const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
   }
-  $('makeKomaLine').onclick = makeKomaLine; $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
+  $('komaMakeLine').onclick = makeKomaLines; $('komaClose').onclick = () => setMode('select'); $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
   renderSeams();
@@ -6861,7 +6883,7 @@ function setMode(next) {
   if (next === 'patchfill' && !lockGate('patchwork')) return;
   cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards(); refreshModHelp();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
-  $('hint').textContent = modeHint(mode); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
+  $('hint').textContent = modeHint(mode); syncKomaBar(); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
 function history(from, to, quiet = false) {
   if (!from.length) return; scheduleAutosave();
@@ -7921,7 +7943,7 @@ function draw() {
     }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
     const exAngle = faceAngler(doc, exportStitch ? stitchFace() : 'front');   /* 縫い目を入れて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
-    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(exAngle(h) * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; if (a.kind === 'diamond' && diamondMode() === 'fill') { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } ctx.restore(); }   /* 色つき：糸の色 */
+    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(exAngle(h) * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#c00'; const halfDepth = h.depth === 'half'; if (a.kind === 'diamond' && diamondMode() === 'fill' && !halfDepth) { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } if (halfDepth && a.kind !== 'dot') { ctx.fillStyle = hc; ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(a.width, a.height) * 0.15), 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }   /* 半分の深さの穴は中抜き＋真ん中の点 */   /* 色つき：糸の色 */
     drawStitches(ef ? ef.hvis : holeVisible, true);   /* 「縫い目を入れて出力」：穴の上に、糸の縫い目を重ねる（選んだ図形だけの出力なら、その穴だけ） */
     return;
   }
@@ -7968,6 +7990,7 @@ function drawSheetBody(lo, hi) {
     if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
     const appearance = holeAppearance(h, doc); if (!appearance) continue;
     const {kind,width:w,height:heightMM} = appearance;
+    const halfDepth = h.depth === 'half';   /* 駒合わせの B（コバ側）の穴＝半分の深さ（貫通させない）：中抜きに真ん中の点 */
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(holeAngle(h)*Math.PI/180); ctx.beginPath();
     if (kind === 'dot') { const half = dotLen(h) / 2; ctx.moveTo(0,-half); ctx.lineTo(0,half); } /* 目印は、元の線と直角に交わる細かい点線（ガイドと同じ黄色）。長さは標準2mm・選んで端をつかむと変えられる */
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
@@ -7975,7 +7998,8 @@ function drawSheetBody(lo, hi) {
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
     if (kind === 'dot') { ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); }
-    else if (kind === 'slit') { ctx.lineWidth = heightMM; ctx.stroke(); } else if (kind === 'diamond' && diamondMode() === 'line') { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
+    else if (kind === 'slit') { ctx.lineWidth = halfDepth ? Math.max(0.1, heightMM / 2) : heightMM; ctx.stroke(); } else if (halfDepth || (kind === 'diamond' && diamondMode() === 'line')) { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();
+    if (halfDepth && kind !== 'dot') { ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(w, heightMM) * 0.15), 0, Math.PI * 2); ctx.fill(); }   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
     if(selected.has(h.id)&&kind!=='dot'&&kind!=='diamond'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
