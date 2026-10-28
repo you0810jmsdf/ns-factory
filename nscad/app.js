@@ -3149,7 +3149,7 @@ async function doRegCheck() {
 /** 書き出したファイルの保存（事業主の希望 2026-10-19「保存場所を指定して保存したい」）：「書き出すとき保存先を選ぶ」（#outAskWhere・既定は入）が入で、ブラウザが保存先の選択（showSaveFilePicker）に対応していれば、保存の窓を開いて、選んだ場所に書く（前回の場所を覚える）。
  *  切・非対応・書き込みの失敗のときは、今までどおりダウンロード（失敗のときは案内を足す）。窓を閉じた（やめた）ときは何も保存しない。data は、文字列・バイト列・Blob、または Blob になる Promise（PNG：窓を先に開いて、画像ができるのを待つ＝窓が開けなくなるのを防ぐ）。onDone(保存したファイル名 or null) は保存できたあとの案内の組み立て。 */
 const ASK_WHERE_KEY = 'leather-cad.askWhere', BEAM_FIX_KEY = 'leather-cad.outBeamFix';
-function restoreBeamFix() { try { if (localStorage.getItem(BEAM_FIX_KEY) === '1' && $('outBeamFix')) $('outBeamFix').checked = true; } catch { /* 保存できない環境でも続ける */ } }   /* 「Beam Studio 補正」は、押した状態を覚える（初めは切） */
+function restoreBeamFix() { let v = null; try { v = localStorage.getItem(BEAM_FIX_KEY); } catch { /* 保存できない環境でも続ける */ } if ($('outBeamFix')) $('outBeamFix').checked = v !== '0'; }   /* 「Beam Studio 補正」は初めから入（SVG はレーザー加工用＝Beam Studio で開くのが普通）。切にした選択（'0'）だけ覚える。事業主 2026-10-28「まだオフセットの菱目ラインが Beam Studio でずれる」＝切のまま書き出していた（細い層は 2% 縮む） */
 function restoreAskWhere() { try { const v = localStorage.getItem(ASK_WHERE_KEY); if ((v === '0' || v === '1') && $('outAskWhere')) $('outAskWhere').checked = v === '1'; } catch { /* 保存できない環境でも続ける */ } }
 function exportFile(name, data, mime, onDone) {
   const askWhere = !!$('outAskWhere')?.checked && typeof globalThis.showSaveFilePicker === 'function';
