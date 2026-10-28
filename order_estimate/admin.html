@@ -891,6 +891,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="analytics" data-admin-cat="analytics" role="tab" aria-selected="false">アクセス解析</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="stats" data-admin-cat="analytics" role="tab" aria-selected="false">作品ページアクセスログ</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="toolstats" data-admin-cat="analytics" role="tab" aria-selected="false">🧰 ツール利用状況</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ncad-live" data-admin-cat="analytics" role="tab" aria-selected="false">📡 N's CAD 利用モニタ</button>
       <!-- 📣 発信・接客 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="threads-sns" data-admin-cat="promo" role="tab" aria-selected="false">📣 Threads投稿管理</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="hearing" data-admin-cat="promo" role="tab" aria-selected="false">🧵 対話ナレッジ</button>
@@ -2039,6 +2040,8 @@ tr.row-out-stock td{
         ※ 2026年5月以前に作られた行はUUの集計開始前のため、UUが実態より小さく出ます。
       </div>
     </div><!-- /toolstatsPanel -->
+    <!-- 📡 N's CAD 利用モニタ（2026-10-28）：表示と読み取りは ncad-live.js。中継は leather-cad-presence（Cloudflare Worker）の /monitor -->
+    <div class="panel ncad-live-section admin-section-hidden" id="ncadLivePanel"><div id="ncadLiveMount"></div></div><!-- /ncadLivePanel -->
 
     <!-- ══════════════════════════════════════════════════════════
          🔀 統合整理（MF仕訳帳 × スマホ台帳 × メール証憑）
@@ -2390,6 +2393,7 @@ tr.row-out-stock td{
 <script src="../assets/js/github-token.js"></script>
 <script src="./labor-curve-model.js?v=20260905"></script>
 <script src="./labor-curve-editor.js?v=20261027.1"></script>
+<script src="./ncad-live.js?v=20261028.1"></script>
 <script>
 // 管理者パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
 // 通過時の入力平文を nsf_admin_key として保持し、GAS API の key に使用する。
@@ -7132,7 +7136,7 @@ const ADMIN_TAB_TO_CAT = {
   'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'backup-monitor': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'side-analytics': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock', 'kanagu': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
-  'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics',
+  'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics', 'ncad-live': 'analytics',
   'threads-sns': 'promo', 'hearing': 'promo', 'chatlog': 'promo',
 };
 // カテゴリごとに最後に開いたタブを覚えておき、カテゴリ再選択時に復元する
@@ -7144,6 +7148,7 @@ function setAdminTab(tab) {
   const isAnalytics = tab === 'analytics';
   const isStats = tab === 'stats';
   const isToolstats = tab === 'toolstats';
+  const isNcadLive = tab === 'ncad-live';
   const isMerge = tab === 'merge';
   const isThreadsSns = tab === 'threads-sns';
   const isCustomers = tab === 'customers';
@@ -7169,7 +7174,7 @@ function setAdminTab(tab) {
   const isFavorites = tab === 'favorites';
   const isStructureMap = tab === 'structure-map';
   const isKanagu = tab === 'kanagu';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isBackupMonitor && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isKanagu && !isMerge;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isNcadLive && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isBackupMonitor && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isKanagu && !isMerge;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -7205,6 +7210,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.toolstats-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isToolstats);
+  });
+  document.querySelectorAll('.ncad-live-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isNcadLive);
   });
   document.querySelectorAll('.merge-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isMerge);
@@ -7397,6 +7405,8 @@ function setAdminTab(tab) {
       ? "週次で集計したSNSトレンドのレポートです。トレンド要約・N's factoryへの示唆・推奨アクション・収集記事を週ごとに確認できます。"
       : isChatlog
       ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
+      : isNcadLive
+      ? "N's CAD を使っている人が、いまどの機能を使っているかをリアルタイムで見ます（5秒ごとに更新）。この端末は、開くと自動で『作家の端末』として除外します。"
       : isJhcsDl
       ? 'JHCS講習資料（テキスト/型紙/CAD）の受講生認証ダウンロードを管理します。生徒名簿・認証ログ・DLログの管理シートと資料フォルダへの入口です。'
       : 'リング金具の在庫数、在庫状態、見積価格を確認・試し編集します。';
@@ -7407,6 +7417,7 @@ function setAdminTab(tab) {
   if (isAnalytics && !gaLoaded) gaLoad(7);
   if (isStats && !statsLoaded) statsLoad();
   if (isToolstats && !toolstatsLoaded) toolstatsLoad();
+  if (window.NCADLive) { if (isNcadLive) window.NCADLive.start(); else window.NCADLive.stop(); }   /* 利用モニタ（ncad-live.js）：開いている間だけ5秒ごとに読む */
   if (isMerge && !mergeLoaded) mergeLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
   if (isReceiptChecklist) loadReceiptChecklist();
