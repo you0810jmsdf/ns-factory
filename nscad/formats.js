@@ -71,10 +71,23 @@ const METAL_FALLBACK = { gold: '#D4AF37', silver: '#C0C0C0', pinkgold: '#E5A593'
 /** Beam Studio は、色ごとの層を、線の太さ1px（72DPI で約0.35mm）ぶん余分に見積もり、層の大きさに合わせて縮めて表示・加工する。細い層（点線・菱目だけの層など）は、幅が小さいぶん、縮みが大きく（幅15mm で約2.3%）、切る線との間隔が崩れる。
  *  beamFix のとき、層ごとに、縮むぶんを、あらかじめ拡大して出す（層の中心を基準に、1÷(幅÷(幅＋0.35mm))倍。幅・高さの小さいほう）。最小の幅・高さが 5mm 未満の層は、確かめていないので、そのまま（事業主の Beam Studio で、幅15mm の層で確認 2026-10-27）。 */
 export const BEAM_STROKE_MM = 25.4 / 72;
+/** Beam Studio が、この大きさの層を縮める比率（1 未満）と中心。最小の幅・高さが 5mm 未満（確かめていない）・大きさが無いときは null。 */
+export function beamShrinkOf(b) {
+  if (!b) return null; const w = b.maxX - b.minX, h = b.maxY - b.minY; if (!(Math.min(w, h) >= 5)) return null;
+  const k = BEAM_STROKE_MM; return { r: Math.min(w / (w + k), h / (h + k)), cx: (b.minX + b.maxX) / 2, cy: (b.minY + b.maxY) / 2 };
+}
+/** 層の中身 inner を、Beam Studio が縮めるぶんだけ、層の中心を基準にあらかじめ拡大して包む（縮んだあとに真の大きさ＝外周の位置に合う）。
+ *  外周（型紙・カット）の層には使わない：Beam Studio は外周をそのまま読み込む（事業主の読み取り 2026-10-28「外周実線はいじらないでほしかった」）。 */
 export function beamFixWrap(inner, b) {
-  if (!b) return inner; const w = b.maxX - b.minX, h = b.maxY - b.minY; if (!(Math.min(w, h) >= 5)) return inner;
-  const k = BEAM_STROKE_MM, s = 1 / Math.min(w / (w + k), h / (h + k)), cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2, n = v => +v.toFixed(4);
-  return `<g data-beamfix="1" transform="translate(${n(cx)} ${n(cy)}) scale(${+s.toFixed(5)}) translate(${n(-cx)} ${n(-cy)})">${inner}</g>`;
+  const L = beamShrinkOf(b); if (!L) return inner; const s = 1 / L.r, n = v => +v.toFixed(4);
+  return `<g data-beamfix="1" transform="translate(${n(L.cx)} ${n(L.cy)}) scale(${+s.toFixed(5)}) translate(${n(-L.cx)} ${n(-L.cy)})">${inner}</g>`;
+}
+/** 触らない層（外周＝型紙の層。無ければ、いちばん大きな層）の id。boxes＝[{ id, box }]。
+ *  事業主の Beam Studio の読み取り（2026-10-28）：外周の層は、SVG の大きさのまま読み込まれる（縮まない）。細い層（点線・菱目）だけが縮む（10-27 の実測）。
+ *  → 外周の層は包まず、ほかの層は、その層の中心を基準に 1÷縮み 倍（＝真の大きさ＝外周の位置に合う）。 */
+export function beamRefOf(boxes, preferId = 'pattern') {
+  const pref = boxes.find(x => x.id === preferId && beamShrinkOf(x.box)); if (pref) return pref.id;
+  let best = null; for (const x of boxes) { const S = beamShrinkOf(x.box); if (S && (!best || S.r > best.S.r)) best = { id: x.id, S }; } return best ? best.id : null;   /* 縮みがいちばん小さい（＝いちばん大きい）層 */
 }
 export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, lineColors = 'color' } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
@@ -84,6 +97,8 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
   const x0 = b.minX - marginMm, y0 = b.minY - marginMm, w = b.maxX - b.minX + 2 * marginMm, h = b.maxY - b.minY + 2 * marginMm;
   const usedTex = new Set(); /* 画像を埋め込んだ質感の id（<defs> に pattern を作る） */
   const texPaint = (texId, color) => { const tex = texId && textures ? textures[texId] : null; if (tex?.href) { usedTex.add(texId); return `url(#tex-${safeId(texId)})`; } return tex ? safeColor(tex.avg) : (color ? safeColor(color) : null); };   /* 質感の塗り：画像（pattern）、無ければ平均色、それも無ければ革色 */
+  const layerBox = id => bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.layer === id), holes: [] }), holesBox = holes.length ? bboxOfDoc({ ...doc, shapes: [], holes }) : null;
+  const beamRef = beamFix ? beamRefOf([...doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => ({ id: l.id, box: layerBox(l.id) })), ...(holesBox ? [{ id: 'holes', box: holesBox }] : [])]) : null;   /* Beam 補正の基準＝型紙の層（外周）。無ければいちばん大きな層 */
   const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(s.font ? textFontStack(s.font) : fontFamily)}" fill="${svgTextHex(s, lineColors)}" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;   /* 書体を決めた文字（font）は、その書体。決めていない文字は、出力の既定（fontFamily） */
@@ -98,10 +113,10 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
       return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';
     }).join('');
     const g = `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
-    return beamFix ? beamFixWrap(g, bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.layer === l.id), holes: [] })) : g;
+    return beamFix && l.id !== beamRef ? beamFixWrap(g, layerBox(l.id)) : g;   /* 外周（基準）の層は触らない */
   }).join('');
   const threadHex = h => { if (lineColors === 'mono') return '#000000'; const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length ? beamFixWrap(holeGroup0, bboxOfDoc({ ...doc, shapes: [], holes })) : holeGroup0;
+  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length && beamRef !== 'holes' ? beamFixWrap(holeGroup0, holesBox) : holeGroup0;
   const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
   const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
