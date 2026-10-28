@@ -54,7 +54,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, insetDistance, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -2383,6 +2383,7 @@ function komaClick(p) {
   if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
   const holesOf = side => doc.holes.filter(h => h.pathId === side.saved.id), ha = holesOf(stage.a), hb = holesOf(state);
+  { const infoA = komaOutlineOf(stage.a), infoB = komaOutlineOf(state); if (!!infoA?.curved !== !!infoB?.curved) { const done = komaByOutline(stage.a, state, ha, hb, infoA?.curved ? infoA : infoB, !!infoA?.curved); if (done) { stage = null; return; } } }   /* 曲面（円柱の上面・小判型など）と帯：帯の穴を輪郭に沿って写す（長さの割合で均さない） */
   if (!!ha.length !== !!hb.length) { const [src, dst] = ha.length ? [stage.a, state] : [state, stage.a]; stage = null; komaCopy(src, dst, ha.length ? 'A' : 'B', ha.length ? 'B' : 'A'); return; } /* 片方だけ目打ちがある：それは残して、もう片方に同じ数を写す */
   const tool = stitchToolCurrent(); if (!tool) return;
   const a = stage.a, b = state, both = !!ha.length && !!hb.length, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
@@ -2396,6 +2397,54 @@ function komaClick(p) {
   pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]);
   $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '') + ' ' + t('komaHalfNote');
   draw();
+}
+/** 駒合わせ（曲面）：縫い線が、実線で囲まれた革の輪郭から一定の距離だけ内側の線なら { outline（輪郭の点列）, margin（距離）, curved（曲線がある・または閉じている） } を返す。まっすぐな線や、囲みの中に無い線は null。 */
+function komaOutlineOf(side) {
+  const route = side.route, len = arcLength(route); if (!(len > 1e-6) || !route.items?.length) return null;
+  const own = new Set(side.saved.shapeIds), regions = closedRegions(doc.shapes.filter(sh => visible(sh) && stitchable(sh) && !sh.holeLink && !own.has(sh.id)), 0.01);   /* 実線で囲まれた革（縫い線そのものは除く） */
+  const samples = [0.1, 0.3, 0.5, 0.7, 0.9].map(f => pointAtLength(route, len * f));
+  const region = regions.filter(r => samples.every(q => insidePolygon(q, r.points))).sort((x, y) => x.area - y.area)[0]; if (!region) return null;
+  const d = insetDistance(route, region.points); if (!d || d.margin < 0.3 || d.spread > Math.max(0.6, d.margin * 0.3)) return null;   /* 一定の距離で内側に寄せた線でなければ使わない */
+  return { outline: region.points, margin: d.margin, curved: !!route.closed || route.items.some(it => it.shape.type !== 'line') };
+}
+/** 駒合わせ（曲面）：曲線側（円柱の上面・小判型・側面の U 字など＝輪郭の内側の縫い線）と、まっすぐな側（帯）。帯の穴は等間隔のまま、曲線側は帯の各穴を輪郭に沿って写す（直線部は同じ間隔・曲線部は狭く）。
+ *  どちらにも目打ちが無ければ、「優先」の側（両方を均す＝まっすぐな側）を工具のピッチで等間隔にしてから写す。片方にだけあれば、それを残して写す。両方にあれば作り直す。
+ *  curvedIsA＝1回目にクリックした線（A）が曲線側か。B（2回目）の穴は半分の深さ。帯の長さが輪郭の対応部分と 3% より違えば案内する。できなければ false（従来の方式に任せる）。 */
+function komaByOutline(a, b, ha, hb, info, curvedIsA) {
+  const curved = curvedIsA ? a : b, flat = curvedIsA ? b : a, map = outlineMap(curved.route, info.outline); if (!map) return false;
+  const lenFlat = arcLength(flat.route), lenCurved = arcLength(curved.route), tool = stitchToolCurrent(); if (!tool || !(lenFlat > 1e-6)) return false;
+  const hc = curvedIsA ? ha : hb, hf = curvedIsA ? hb : ha, both = !!hc.length && !!hf.length, srcKey = $('komaPrefer').value;
+  let srcSide, srcS, srcAngles = null;   /* 写す元（距離の一覧）と写し先 */
+  if (!!hc.length !== !!hf.length) { const list = (hc.length ? hc : hf).slice().sort((x, y) => x.s - y.s); srcSide = hc.length ? 'curved' : 'flat'; srcS = list.map(h => h.s); srcAngles = list; }
+  else {
+    srcSide = srcKey === 'A' ? (curvedIsA ? 'curved' : 'flat') : srcKey === 'B' ? (curvedIsA ? 'flat' : 'curved') : 'flat';   /* 両方を均す＝まっすぐな側をピッチどおりに */
+    const route = srcSide === 'flat' ? flat.route : curved.route, len = srcSide === 'flat' ? lenFlat : lenCurved, ms = Number($('offsetStart').value) || 0, me = Number($('offsetEnd').value) || 0;
+    if (route.closed || (srcSide === 'flat' && curved.route.closed)) { const n = Math.max(1, Math.round(len / tool.pitch)); srcS = Array.from({ length: n }, (_, k) => len * k / n); }   /* 閉じた経路、または閉じた曲線に巻く帯：始点と終点は同じ穴なので、終点の穴は置かない（余白も無し） */
+    else { const usable = len - ms - me; if (!(usable > 1e-6)) { $('hint').textContent = t('impossible'); draw(); return true; } const n = Math.max(1, Math.round(usable / tool.pitch)); srcS = Array.from({ length: n + 1 }, (_, k) => ms + usable * k / n); }
+  }
+  const dstS = srcS.map(v => srcSide === 'flat' ? map.toInset(v, lenFlat) : map.toOther(v, lenFlat));
+  const srcRoute = srcSide === 'flat' ? flat.route : curved.route, dstRoute = srcSide === 'flat' ? curved.route : flat.route, srcSaved = srcSide === 'flat' ? flat.saved : curved.saved, dstSaved = srcSide === 'flat' ? curved.saved : flat.saved;
+  const dstIsB = srcSide === 'flat' ? !curvedIsA : curvedIsA;   /* 写し先が B（2回目にクリックした線）か：写し先が曲線側なら A が曲線でないとき、写し先がまっすぐな側なら A が曲線のとき */
+  const madeSrc = [], madeDst = [];
+  commit(() => {
+    for (const side of [a, b]) { if (side.fresh) { side.saved.id = freshId(doc.paths, 'p'); doc.paths.push(side.saved); side.fresh = false; } }
+    if (!srcAngles) doc.holes = doc.holes.filter(h => h.pathId !== srcSaved.id);   /* 作り直し（両方に穴があった・どちらにも無い）：元の側も置き直す */
+    doc.holes = doc.holes.filter(h => h.pathId !== dstSaved.id);
+    srcS.forEach((v, i) => {
+      const q = pointAtLength(dstRoute, dstS[i]), base = srcAngles ? srcAngles[i] : null, srcTan = pointAtLength(srcRoute, v).angleDeg;
+      const ang = base ? ((base.angleDeg - srcTan + q.angleDeg) % 360 + 360) % 360 : ($('followTangent').checked ? q.angleDeg : 0) + slantOf(tool);
+      const nh = { id: freshId(doc.holes, 'h'), pathId: dstSaved.id, s: dstS[i], x: q.x, y: q.y, angleDeg: ang, toolId: base ? base.toolId : tool.id, mark: 'tool', ...(dstIsB ? { depth: 'half' } : {}) }; doc.holes.push(nh); madeDst.push(nh);
+      if (!srcAngles) { const qs = pointAtLength(srcRoute, v), sh = { id: freshId(doc.holes, 'h'), pathId: srcSaved.id, s: v, x: qs.x, y: qs.y, angleDeg: ($('followTangent').checked ? qs.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool', ...(!dstIsB ? { depth: 'half' } : {}) }; doc.holes.push(sh); madeSrc.push(sh); }
+      else { const h = srcAngles[i]; if (!dstIsB) h.depth = 'half'; else delete h.depth; madeSrc.push(h); }
+    });
+    for (const [saved, route] of [[srcSaved, srcRoute], [dstSaved, dstRoute]]) saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
+    selected = new Set([...a.saved.shapeIds, ...b.saved.shapeIds]);
+  });
+  pairLines = madeSrc.map((h, i) => [{ x: h.x, y: h.y }, { x: madeDst[i].x, y: madeDst[i].y }]);
+  const gapsOf = list => { const ss = list.map(h => h.s).sort((x, y) => x - y); const g = ss.slice(1).map((v, i) => v - ss[i]); return g.length ? { min: Math.min(...g), max: Math.max(...g) } : { min: 0, max: 0 }; };
+  const gf = gapsOf(srcSide === 'flat' ? madeSrc : madeDst), gc = gapsOf(srcSide === 'flat' ? madeDst : madeSrc), n = madeDst.length, pct = Math.abs(lenFlat - map.lenPart) / Math.max(1e-6, map.lenPart) * 100;
+  $('hint').textContent = t('komaOutlineDone', { n, flat: curvedIsA ? 'B' : 'A', curved: curvedIsA ? 'A' : 'B', pf: gf.max.toFixed(2), cmin: gc.min.toFixed(2), cmax: gc.max.toFixed(2) }) + (both ? ' ' + t('komaBoth') : '') + (pct > 3 ? ' ' + t('komaLenWarn', { flat: curvedIsA ? 'B' : 'A', lf: lenFlat.toFixed(1), lo: map.lenPart.toFixed(1), pct: pct.toFixed(1) }) : '') + ' ' + t('komaHalfNote');
+  draw(); return true;
 }
 /** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
 function komaCopy(src, dst, from, to) {

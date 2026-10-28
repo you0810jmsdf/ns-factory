@@ -46,7 +46,7 @@
     #dupBar { left: 50%; bottom: 40px; transform: translateX(-50%); border-color: #ff4d4d; color: #ffb3b3; }
     #gapBar { left: 50%; bottom: 84px; transform: translateX(-50%); border-color: #ff9a1f; color: #ffd9a8; }
     #rulerBar, #rectBar, #rectEditBar, #circleBar, #filletBar, #chamferBar, #rotateBar, #offsetSelBar, #arcBar, #textBar, #dimBar, #restoreBar, #roundHoleBar, #foldHandleBar { left: 50%; top: 8px; transform: translateX(-50%); }
-    #komaBar { left: 50%; top: 8px; transform: translateX(-50%); } #komaBar input { width: 70px; }   /* 駒合わせの小窓：上の中央（既存の並びの規則は tests/number_windows・offset_sel_bar が文字列で見るので、別の規則にする） */ #foldHandleBar input { width: 84px; } #rulerBar input, #rectBar input, #rectEditBar input, #circleBar input, #filletBar input, #chamferBar input, #rotateBar input, #offsetSelBar input, #arcBar input, #textBar input, #dimBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
+    #komaBar { left: 50%; top: 8px; transform: translateX(-50%); } #komaBar input { width: 70px; }   /* koma bar: top center (kept as a separate rule because tests/number_windows and offset_sel_bar match the existing selector list) */ #foldHandleBar input { width: 84px; } #rulerBar input, #rectBar input, #rectEditBar input, #circleBar input, #filletBar input, #chamferBar input, #rotateBar input, #offsetSelBar input, #arcBar input, #textBar input, #dimBar input { width: 70px; } #rulerBar output { color: #4fd0ff; font-weight: bold; min-width: 90px; }
     .ctx { flex-direction: column; align-items: stretch; padding: 4px; z-index: 6; max-height: calc(100% - 48px); overflow-y: auto; } .ctx button { height: 30px; text-align: left; }
     aside button { position: relative; } kbd.key { margin-left: auto; font: 10px/1 ui-monospace, Consolas, monospace; color: #8a7a50; border: 1px solid #3a3a2e; border-radius: 3px; padding: 2px 4px; background: #101010; } .no-keys kbd.key { display: none; }
     /* right-click menu tree (category -> flyout, 2026-10-26); on phone width the flyout opens below (accordion) */
@@ -229,7 +229,7 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-28 16:32 · 83b1492</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-28 16:49 · b7b7b04</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <button id="ctxOpenBtn" type="button" aria-haspopup="true" data-i18n="ctxOpenBtn" data-i18n-title="ctxOpenBtnTip"></button><span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showSecDimsTip"><input id="showSecDims" type="checkbox" checked><span data-i18n="showSecDims"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="showStitchTip"><input id="showStitch" type="checkbox"><span data-i18n="showStitch"></span></label><label data-i18n-title="stitchThickTip"><span data-i18n="stitchThick"></span><select id="stitchThick"><option value="0.45">0.45 mm</option><option value="0.6" selected>0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option></select></label><label data-i18n-title="stitchThickRoundTip"><span data-i18n="stitchThickRound"></span><select id="stitchThickRound"><option value="same" selected data-i18n="stitchThickSame"></option><option value="0.45">0.45 mm</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option><option value="1.2">1.2 mm</option></select></label><label data-i18n-title="stitchFaceTip"><span data-i18n="stitchFace"></span><select id="stitchFace"><option value="front" selected data-i18n="stitchFaceFront"></option><option value="back" data-i18n="stitchFaceBack"></option></select></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="zoomActual" data-i18n="zoomActual" data-i18n-title="zoomActualTip"></button><button id="zoomActualCalib" data-i18n="zoomActualCalib" data-i18n-title="zoomActualTip"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -834,8 +834,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span><span id="presence" data-i18n-title="presenceTip" hidden><span class="pr-dot">●</span> <span id="presenceN"></span><span class="pr-t" data-i18n="presenceSuffix"></span></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=083389e2","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=c3afa1f8","./data/release-notes.js":"./data/release-notes.js?v=71c4a304","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=a7c881f4","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=2f559507","./geometry.js":"./geometry.js?v=23392851","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=fe348857","./help/ja.js":"./help/ja.js?v=f350e6ae","./i18n.js":"./i18n.js?v=56d550fc","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=93a300e7","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=41903d3e","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
-<script type="module" src="app.js?v=083389e2"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=c5d49be0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=c72a175e","./data/release-notes.js":"./data/release-notes.js?v=e0e0f7f8","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=37b827aa","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=2f559507","./geometry.js":"./geometry.js?v=23392851","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=fe348857","./help/ja.js":"./help/ja.js?v=f350e6ae","./i18n.js":"./i18n.js?v=4966e122","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=a4b1e3e7","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=93a300e7","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=41903d3e","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=c5d49be0"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -5231,6 +5231,8 @@ const MESSAGES = {
     "komaBoth": "両方に目打ちがあったので、どちらも作り直しました。",
     "komaDone": "駒合わせ：各 {n} 穴（A {pa}mm ／ B {pb}mm）。",
     "komaWarn": "駒合わせ：各 {n} 穴。ピッチの差が {pct}% で許容を超えています。",
+    "komaOutlineDone": "駒合わせ（輪郭に沿って写しました）：各 {n} 穴。{flat}（まっすぐ）は {pf}mm 間隔のまま、{curved}（曲線）は {cmin}〜{cmax}mm（直線部は同じ間隔・曲線部は内側の分だけ狭く）。",
+    "komaLenWarn": "{flat} の縫い線の長さ {lf}mm と、曲線側の輪郭の対応部分 {lo}mm が合っていません（差 {pct}%）。帯の長さを輪郭に合わせてください。",
     "noSeams": "縫い合わせがありません。",
     "patchWarnLine": "{seam} 区間{i}：A {pa} / B {pb}（{pct}%）",
     "patchOk": "全区間が許容内です。",
@@ -7638,6 +7640,8 @@ const MESSAGES = {
     "komaBoth": "Both had stitching holes, so both were redone.",
     "komaDone": "Box stitch: {n} holes each (A {pa} mm / B {pb} mm).",
     "komaWarn": "Box stitch: {n} holes each. Pitch differs by {pct}% (over tolerance).",
+    "komaOutlineDone": "Box stitch (mapped along the outline): {n} holes each. {flat} (straight) keeps {pf} mm spacing; {curved} (curved) gets {cmin}–{cmax} mm (same spacing on straight parts, tighter on curves).",
+    "komaLenWarn": "The stitch line of {flat} ({lf} mm) does not match the corresponding outline length of the curved piece ({lo} mm, {pct}% off). Make the strip as long as the outline.",
     "noSeams": "No seams.",
     "patchWarnLine": "{seam} span {i}: A {pa} / B {pb} ({pct}%)",
     "patchOk": "All spans within tolerance.",
@@ -9037,6 +9041,49 @@ function matchRoutes(routeA, routeB, pitch, opts = {}) {
   return { holesA, holesB, pairs: holesA.map((_, i) => ({ a: i, b: i })), segments, warn: segments.some(s => s.warn) };
 }
 
+/* ── 駒合わせ（曲面）：輪郭に沿った写し ─────────────────────────────────────────────
+ *  円柱の上面（曲線の輪郭）と側面の帯のように、帯はピッチどおり等間隔でよいが、上面の穴は帯の各穴を輪郭に沿って内側の縫い線へ写す必要がある
+ *  （直線部は同じ間隔・曲線部は内側の分だけ狭くなる。円は角度で対応）。長さの割合で均すと、直線と曲線が混じる形で合わない（事業主 2026-10-28）。
+ *  inset＝輪郭から「縁からの距離」だけ内側の縫い線（resolvePath 済みの経路）。outline＝その輪郭の多角形（closedRegions の points・閉じている）。
+ *  帯側の距離 s（0..lenOther）↔ 輪郭の弧長 u（inset の始点の投影から、inset と同じ向きに）↔ inset の区間ごとの比例位置。区間＝inset の区切り（角・直線と曲線の継ぎ目）を輪郭に投影した点。 */
+const polyCum = pts => { const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + distance(pts[i - 1], pts[i])); return cum; };
+/** 点 p にいちばん近い多角形（閉じた点列）上の位置：{ u: 弧長, d: 距離 }。dir（単位ベクトル）を渡すと、p から dir の両向きに伸ばした直線と多角形の交点のうち p に近いものを返す
+ *  （縫い線の法線方向に輪郭を取る。円弧を折れ線にした誤差や、端が別の辺に近いことによるずれを避ける）。交点が無ければ最寄りの点。 */
+function projectToPolygon(p, pts, dir = null) {
+  const ring = [...pts, pts[0]], cum = polyCum(ring); let best = { u: 0, d: Infinity };
+  if (dir) { for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], b = ring[i], ex = b.x - a.x, ey = b.y - a.y, den = dir.x * ey - dir.y * ex; if (Math.abs(den) < 1e-12) continue; const t = ((a.x - p.x) * ey - (a.y - p.y) * ex) / den, w = ((a.x - p.x) * dir.y - (a.y - p.y) * dir.x) / den; if (w < -1e-9 || w > 1 + 1e-9) continue; const d = Math.abs(t); if (d < best.d) best = { u: cum[i - 1] + Math.max(0, Math.min(1, w)) * (cum[i] - cum[i - 1]), d }; } if (best.d < Infinity) return best; }
+  for (let i = 1; i < ring.length; i++) { const a = ring[i - 1], b = ring[i], len = cum[i] - cum[i - 1]; if (len < DEPS) continue; const t = Math.max(0, Math.min(1, ((p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)) / (len * len))), q = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }, d = distance(p, q); if (d < best.d) best = { u: cum[i - 1] + t * len, d }; }
+  return best;
+}
+/** 経路（inset）が、多角形 outline の内側に一定の距離で寄せた線か調べる：{ margin（距離の中央値）, spread（ばらつき） }。端の 1 割は見ない（まっすぐな帯の縫い線は端で短い辺に近づくため）。 */
+function insetDistance(route, outline, samples = 9) {
+  const len = arcLength(route); if (!(len > DEPS) || !outline || outline.length < 3) return null;
+  const ds = []; for (let i = 0; i < samples; i++) { const s = len * (0.1 + 0.8 * i / (samples - 1)); ds.push(projectToPolygon(pointAtLength(route, s), outline).d); }
+  const sorted = [...ds].sort((a, b) => a - b); return { margin: sorted[Math.floor(sorted.length / 2)], spread: sorted.at(-1) - sorted[0] };
+}
+/** 輪郭に沿った写しの対応表。戻り値 { lenPart（輪郭の対応部分の長さ）, lenInset, toInset(sOther, lenOther) → inset の距離, toOther(sInset, lenOther) → 帯側の距離, reversed（輪郭を逆向きにたどった）}。作れなければ null。 */
+function outlineMap(routeInset, outline) {
+  const lenI = arcLength(routeInset); if (!(lenI > DEPS) || !outline || outline.length < 3) return null;
+  const ring = [...outline, outline[0]], per = polyCum(ring).at(-1); if (!(per > DEPS)) return null;
+  const closed = !!routeInset.closed, breaks = [0, ...routeBreaks(routeInset).filter(s => s > DEPS && s < lenI - DEPS), lenI];   /* inset の区切り（弧長） */
+  const uOf = s => {   /* 縫い線の法線方向に輪郭を取る。角（前後の向きが 30° より違う）では、2つの法線の中間（角の二等分線）の向きで、輪郭の角を取る */
+    const q = pointAtLength(routeInset, s), e = Math.min(0.05, lenI / 4), a1 = (pointAtLength(routeInset, Math.max(0, s - e)).angleDeg || 0) * Math.PI / 180, a2 = (pointAtLength(routeInset, Math.min(lenI, s + e)).angleDeg || 0) * Math.PI / 180;
+    let d = Math.abs(((a2 - a1) * 180 / Math.PI + 540) % 360 - 180), n1 = { x: -Math.sin(a1), y: Math.cos(a1) }, n2 = { x: -Math.sin(a2), y: Math.cos(a2) }, dir = n1;
+    if (d > 30 && d < 150) { const m = { x: n1.x + n2.x, y: n1.y + n2.y }, L = Math.hypot(m.x, m.y); if (L > 1e-9) dir = { x: m.x / L, y: m.y / L }; }
+    return projectToPolygon(q, outline, dir).u; };
+  const u0 = uOf(0), uProbe = uOf(Math.min(lenI, Math.max(lenI * 0.02, 0.5)));   /* 少し進んだ点で、輪郭をどちら向きにたどるか決める */
+  const fwd = ((uProbe - u0) % per + per) % per, reversed = fwd > per / 2;   /* 進んだ点が、輪郭の弧長で逆向き（半周以上先）なら逆 */
+  const unwrap = u => { let v = reversed ? ((u0 - u) % per + per) % per : ((u - u0) % per + per) % per; return v; };   /* 始点の投影を 0 にして、inset の向きに正の弧長 */
+  const edgesU = breaks.map(s => s <= DEPS ? 0 : unwrap(uOf(s)));
+  if (closed) edgesU[edgesU.length - 1] = per; else if (edgesU.at(-1) < DEPS) edgesU[edgesU.length - 1] = per;   /* 閉じた経路は一周・開いた経路で終点が始点に重なるときも一周 */
+  for (let i = 1; i < edgesU.length; i++) if (edgesU[i] <= edgesU[i - 1] + DEPS) return null;   /* 投影が折り返す（輪郭と合っていない）ときは使わない */
+  const lenPart = edgesU.at(-1);
+  const seg = (edges, v) => { let i = 0; while (i + 2 < edges.length && v > edges[i + 1] + DEPS) i++; return i; };
+  const toInset = (sOther, lenOther) => { const u = Math.max(0, Math.min(lenPart, sOther * lenPart / Math.max(DEPS, lenOther))), i = seg(edgesU, u), span = edgesU[i + 1] - edgesU[i]; return breaks[i] + (span > DEPS ? (u - edgesU[i]) / span : 0) * (breaks[i + 1] - breaks[i]); };
+  const toOther = (sInset, lenOther) => { const s = Math.max(0, Math.min(lenI, sInset)), i = seg(breaks, s), span = breaks[i + 1] - breaks[i], u = edgesU[i] + (span > DEPS ? (s - breaks[i]) / span : 0) * (edgesU[i + 1] - edgesU[i]); return u * lenOther / lenPart; };
+  return { lenPart, lenInset: lenI, breaks, edgesU, reversed, toInset, toOther };
+}
+
 /** パッチワーク：縫い合わせ線（seams）から共有辺の穴を最適化する。
  *  戻り値 {holesByPath: Map(pathId → [{x,y,s,angleDeg}]), pairs:[{seamId,a:{pathId,s},b:{pathId,s}}], warnings:[{seamId,segment,pitchA,pitchB,diffPct}]}。 */
 function optimizePatchHoles(doc, { pitch = 4, tolerancePct = 15, junctionClearMm = null } = {}) {
@@ -10169,7 +10216,7 @@ function foldSectionMark(path, s, t, origin, extra = 1.5) {
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
 
-return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, dedupeCoincident, closedRegions, insidePolygon, regionAt, outerRegions, shapesOnRings, dropCovered, outlineOf, outlineShapeIds, gridFillRegion, diamondGridFill, gridRingPoints, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, insetPolygonFit, patchInsetStitch, seamHoleOffsets, rimLine, loopSampler, rimHolePositionsByRuns, rimHolePositions, shiftHolesClear, ringCounterpart, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldSectionDims, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
+return {foldAllowance, stackOffset, edgeBand, matchPitch, routeBreaks, mapHoleDistances, matchRoutes, projectToPolygon, insetDistance, outlineMap, optimizePatchHoles, suggestPatchSize, patchGrid, extendAcrossFold, PATCH_ARGYLE_RATIO, patchAngleRatio, PATCH_PATTERNS, clipPolygonByConvex, dedupeCoincident, closedRegions, insidePolygon, regionAt, outerRegions, shapesOnRings, dropCovered, outlineOf, outlineShapeIds, gridFillRegion, diamondGridFill, gridRingPoints, patchShiftOf, fillRegionPattern, patchSeamsFromPieces, PATCH_EDGE_MIN_MM, insetPolygon, insetPolygonFit, patchInsetStitch, seamHoleOffsets, rimLine, loopSampler, rimHolePositionsByRuns, rimHolePositions, shiftHolesClear, ringCounterpart, shapeEndpoints, classifyJunctions, bendInnerSign, offsetSpan, offsetSpanResult, filletAt, detourPath, foldPanelBox, foldSectionSpec, foldCutPick, foldCutLine, foldSurfaceS, foldHoleSpacing, foldHoleMarks, foldCircleMarks, foldEndLabels, foldDesignPlan, foldDimensions, foldSectionDims, foldHandles, foldBendPitch, foldUnfoldPlan, foldBendRadii, foldBendWarp, findGaps, closeGaps, foldBaselines, foldSectionPath, pointOnFoldPath, projectOnFoldPath, foldPlyLengths, foldStackPlan, foldRingCheck, foldSectionSvg, foldPathVMax, foldSectionShapes, foldSectionMark};
 })();
 __mods['sim3d'] = (function(){
 // 折りたたみ 3D シミュレーション：板（部品）の生成・折り線での分割と回転・投影・干渉判定・三面図。純粋関数のみ（DOM/WebGL は app 側）。
@@ -24610,6 +24657,13 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-10-28 16:49",
+      "items": [
+        "駒合わせ（曲面）：円柱の上面や小判型のように曲線の縫い線と、まっすぐな帯を駒合わせするとき、帯の穴は工具のピッチで等間隔のまま、曲線側の穴は帯の各穴を輪郭に沿って写すようにしました（直線の部分は帯と同じ間隔・曲線の部分は内側の分だけ狭く。円は角度で対応）。これまでは長さの割合で均していたので、直線と曲線が混じる形で合いませんでした（事業主の指摘「曲面でそれぞれ菱目間隔が変わってくるので、それに追従させるための機能」）。案内に「駒合わせ（輪郭に沿って写しました）：各 n 穴。B（まっすぐ）は 3.93mm 間隔のまま、A（曲線）は 3.27〜3.27mm」のように出ます。帯の長さが輪郭の対応部分と 3% より違うと、案内に出ます。閉じた上面に巻く帯は、終点（始点と同じ穴）を置きません。",
+        "図解ガイド「12 駒合わせ縫い」の作図例を、四角2枚から円柱（上面＋側面の帯）に差し替え、「曲面では、場所ごとに間隔が変わります」の図（小判型：直線の部分は同じ間隔・半円の部分だけ狭い）を足しました。"
+      ]
+    },
+    {
       "date": "2026-10-28 16:32",
       "items": [
         "出力カードの「Beam Studio 用の補正（SVG）」を、初めから入にしました（事業主の指摘「まだオフセットの菱目ラインが Beam Studio でずれる」。書き出した SVG に補正が付いておらず、点線と菱目だけの細い層（幅 17mm）が Beam Studio で約2% 縮んで、両端が 1.4〜1.6mm ずれていました。幅の広い層（中央の部品）は 0.4% なので目立ちませんでした）。レーザー加工用の SVG は Beam Studio で開くのが普通なので入が初期値です。Beam Studio 以外のソフトで開くときは切にしてください（切にした選択は覚えます）。書き出しの案内に「Beam Studio 用に、n 層を補正しました」と出ます。"
@@ -25222,6 +25276,8 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-10-28",
       "items": [
+        "N's CAD: 図解ガイド12の曲面の図の文字の重なりを直す",
+        "N's CAD: 駒合わせ（曲面）＝帯の穴を輪郭に沿って曲線側へ写す（直線部は同じ間隔・曲線部は狭く）・図解ガイド12の作図例を円柱に",
         "N's CAD: 「Beam Studio 用の補正（SVG）」を初めから入に（切のまま書き出すと細い層が約2%縮んでずれる）",
         "N's CAD: 更新履歴の日付を公開日時に（互換ブロックも）・引き継ぎ書に追記",
         "N's CAD: 駒合わせの小窓の CSS を別の規則にする（既存の小窓の並びを文字列で見るテスト2件が落ちていた）",
@@ -26502,7 +26558,7 @@ const { newRid, feedbackContext, sendFeedback } = __mods['feedback'];
 const { AUTOSAVE_KEY, packAutosave, unpackAutosave } = __mods['autosave'];
 const { createTabLock, TAB_LOCK_KEY } = __mods['tablock'];
 const { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } = __mods['grouping'];
-const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
+const { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, insetDistance, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } = __mods['design'];
 const { t, setLang } = __mods['i18n'];
 const { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } = __mods['shortcuts'];
 const { HELP_JA } = __mods['help/ja'];
@@ -28830,6 +28886,7 @@ function komaClick(p) {
   if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
   const holesOf = side => doc.holes.filter(h => h.pathId === side.saved.id), ha = holesOf(stage.a), hb = holesOf(state);
+  { const infoA = komaOutlineOf(stage.a), infoB = komaOutlineOf(state); if (!!infoA?.curved !== !!infoB?.curved) { const done = komaByOutline(stage.a, state, ha, hb, infoA?.curved ? infoA : infoB, !!infoA?.curved); if (done) { stage = null; return; } } }   /* 曲面（円柱の上面・小判型など）と帯：帯の穴を輪郭に沿って写す（長さの割合で均さない） */
   if (!!ha.length !== !!hb.length) { const [src, dst] = ha.length ? [stage.a, state] : [state, stage.a]; stage = null; komaCopy(src, dst, ha.length ? 'A' : 'B', ha.length ? 'B' : 'A'); return; } /* 片方だけ目打ちがある：それは残して、もう片方に同じ数を写す */
   const tool = stitchToolCurrent(); if (!tool) return;
   const a = stage.a, b = state, both = !!ha.length && !!hb.length, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
@@ -28843,6 +28900,54 @@ function komaClick(p) {
   pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]);
   $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '') + ' ' + t('komaHalfNote');
   draw();
+}
+/** 駒合わせ（曲面）：縫い線が、実線で囲まれた革の輪郭から一定の距離だけ内側の線なら { outline（輪郭の点列）, margin（距離）, curved（曲線がある・または閉じている） } を返す。まっすぐな線や、囲みの中に無い線は null。 */
+function komaOutlineOf(side) {
+  const route = side.route, len = arcLength(route); if (!(len > 1e-6) || !route.items?.length) return null;
+  const own = new Set(side.saved.shapeIds), regions = closedRegions(doc.shapes.filter(sh => visible(sh) && stitchable(sh) && !sh.holeLink && !own.has(sh.id)), 0.01);   /* 実線で囲まれた革（縫い線そのものは除く） */
+  const samples = [0.1, 0.3, 0.5, 0.7, 0.9].map(f => pointAtLength(route, len * f));
+  const region = regions.filter(r => samples.every(q => insidePolygon(q, r.points))).sort((x, y) => x.area - y.area)[0]; if (!region) return null;
+  const d = insetDistance(route, region.points); if (!d || d.margin < 0.3 || d.spread > Math.max(0.6, d.margin * 0.3)) return null;   /* 一定の距離で内側に寄せた線でなければ使わない */
+  return { outline: region.points, margin: d.margin, curved: !!route.closed || route.items.some(it => it.shape.type !== 'line') };
+}
+/** 駒合わせ（曲面）：曲線側（円柱の上面・小判型・側面の U 字など＝輪郭の内側の縫い線）と、まっすぐな側（帯）。帯の穴は等間隔のまま、曲線側は帯の各穴を輪郭に沿って写す（直線部は同じ間隔・曲線部は狭く）。
+ *  どちらにも目打ちが無ければ、「優先」の側（両方を均す＝まっすぐな側）を工具のピッチで等間隔にしてから写す。片方にだけあれば、それを残して写す。両方にあれば作り直す。
+ *  curvedIsA＝1回目にクリックした線（A）が曲線側か。B（2回目）の穴は半分の深さ。帯の長さが輪郭の対応部分と 3% より違えば案内する。できなければ false（従来の方式に任せる）。 */
+function komaByOutline(a, b, ha, hb, info, curvedIsA) {
+  const curved = curvedIsA ? a : b, flat = curvedIsA ? b : a, map = outlineMap(curved.route, info.outline); if (!map) return false;
+  const lenFlat = arcLength(flat.route), lenCurved = arcLength(curved.route), tool = stitchToolCurrent(); if (!tool || !(lenFlat > 1e-6)) return false;
+  const hc = curvedIsA ? ha : hb, hf = curvedIsA ? hb : ha, both = !!hc.length && !!hf.length, srcKey = $('komaPrefer').value;
+  let srcSide, srcS, srcAngles = null;   /* 写す元（距離の一覧）と写し先 */
+  if (!!hc.length !== !!hf.length) { const list = (hc.length ? hc : hf).slice().sort((x, y) => x.s - y.s); srcSide = hc.length ? 'curved' : 'flat'; srcS = list.map(h => h.s); srcAngles = list; }
+  else {
+    srcSide = srcKey === 'A' ? (curvedIsA ? 'curved' : 'flat') : srcKey === 'B' ? (curvedIsA ? 'flat' : 'curved') : 'flat';   /* 両方を均す＝まっすぐな側をピッチどおりに */
+    const route = srcSide === 'flat' ? flat.route : curved.route, len = srcSide === 'flat' ? lenFlat : lenCurved, ms = Number($('offsetStart').value) || 0, me = Number($('offsetEnd').value) || 0;
+    if (route.closed || (srcSide === 'flat' && curved.route.closed)) { const n = Math.max(1, Math.round(len / tool.pitch)); srcS = Array.from({ length: n }, (_, k) => len * k / n); }   /* 閉じた経路、または閉じた曲線に巻く帯：始点と終点は同じ穴なので、終点の穴は置かない（余白も無し） */
+    else { const usable = len - ms - me; if (!(usable > 1e-6)) { $('hint').textContent = t('impossible'); draw(); return true; } const n = Math.max(1, Math.round(usable / tool.pitch)); srcS = Array.from({ length: n + 1 }, (_, k) => ms + usable * k / n); }
+  }
+  const dstS = srcS.map(v => srcSide === 'flat' ? map.toInset(v, lenFlat) : map.toOther(v, lenFlat));
+  const srcRoute = srcSide === 'flat' ? flat.route : curved.route, dstRoute = srcSide === 'flat' ? curved.route : flat.route, srcSaved = srcSide === 'flat' ? flat.saved : curved.saved, dstSaved = srcSide === 'flat' ? curved.saved : flat.saved;
+  const dstIsB = srcSide === 'flat' ? !curvedIsA : curvedIsA;   /* 写し先が B（2回目にクリックした線）か：写し先が曲線側なら A が曲線でないとき、写し先がまっすぐな側なら A が曲線のとき */
+  const madeSrc = [], madeDst = [];
+  commit(() => {
+    for (const side of [a, b]) { if (side.fresh) { side.saved.id = freshId(doc.paths, 'p'); doc.paths.push(side.saved); side.fresh = false; } }
+    if (!srcAngles) doc.holes = doc.holes.filter(h => h.pathId !== srcSaved.id);   /* 作り直し（両方に穴があった・どちらにも無い）：元の側も置き直す */
+    doc.holes = doc.holes.filter(h => h.pathId !== dstSaved.id);
+    srcS.forEach((v, i) => {
+      const q = pointAtLength(dstRoute, dstS[i]), base = srcAngles ? srcAngles[i] : null, srcTan = pointAtLength(srcRoute, v).angleDeg;
+      const ang = base ? ((base.angleDeg - srcTan + q.angleDeg) % 360 + 360) % 360 : ($('followTangent').checked ? q.angleDeg : 0) + slantOf(tool);
+      const nh = { id: freshId(doc.holes, 'h'), pathId: dstSaved.id, s: dstS[i], x: q.x, y: q.y, angleDeg: ang, toolId: base ? base.toolId : tool.id, mark: 'tool', ...(dstIsB ? { depth: 'half' } : {}) }; doc.holes.push(nh); madeDst.push(nh);
+      if (!srcAngles) { const qs = pointAtLength(srcRoute, v), sh = { id: freshId(doc.holes, 'h'), pathId: srcSaved.id, s: v, x: qs.x, y: qs.y, angleDeg: ($('followTangent').checked ? qs.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool', ...(!dstIsB ? { depth: 'half' } : {}) }; doc.holes.push(sh); madeSrc.push(sh); }
+      else { const h = srcAngles[i]; if (!dstIsB) h.depth = 'half'; else delete h.depth; madeSrc.push(h); }
+    });
+    for (const [saved, route] of [[srcSaved, srcRoute], [dstSaved, dstRoute]]) saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
+    selected = new Set([...a.saved.shapeIds, ...b.saved.shapeIds]);
+  });
+  pairLines = madeSrc.map((h, i) => [{ x: h.x, y: h.y }, { x: madeDst[i].x, y: madeDst[i].y }]);
+  const gapsOf = list => { const ss = list.map(h => h.s).sort((x, y) => x - y); const g = ss.slice(1).map((v, i) => v - ss[i]); return g.length ? { min: Math.min(...g), max: Math.max(...g) } : { min: 0, max: 0 }; };
+  const gf = gapsOf(srcSide === 'flat' ? madeSrc : madeDst), gc = gapsOf(srcSide === 'flat' ? madeDst : madeSrc), n = madeDst.length, pct = Math.abs(lenFlat - map.lenPart) / Math.max(1e-6, map.lenPart) * 100;
+  $('hint').textContent = t('komaOutlineDone', { n, flat: curvedIsA ? 'B' : 'A', curved: curvedIsA ? 'A' : 'B', pf: gf.max.toFixed(2), cmin: gc.min.toFixed(2), cmax: gc.max.toFixed(2) }) + (both ? ' ' + t('komaBoth') : '') + (pct > 3 ? ' ' + t('komaLenWarn', { flat: curvedIsA ? 'B' : 'A', lf: lenFlat.toFixed(1), lo: map.lenPart.toFixed(1), pct: pct.toFixed(1) }) : '') + ' ' + t('komaHalfNote');
+  draw(); return true;
 }
 /** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
 function komaCopy(src, dst, from, to) {
