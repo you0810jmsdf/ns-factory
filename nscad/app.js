@@ -8259,9 +8259,36 @@ function fillCtxRecent() {
   const box = $('ctxRecent'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
   box.textContent = ''; const pool = new Map();
   for (const [cat] of CTX_CATS) walkCtxItems($('ctxFly-' + cat), (c, kind) => { if (kind !== 'button') return; const key = sideItemKey(c); if (key) pool.set(key, c); });
-  const keys = loadSideRecent().filter(k => pool.has(k)).slice(0, SIDE_RECENT_SHOW); box.hidden = !keys.length; if (!keys.length) return;
-  const h = document.createElement('div'); h.className = 'ctx-title'; h.textContent = t('sideRecentTitle'); box.appendChild(h);
-  for (const k of keys) { const c = pool.get(k), x = c.cloneNode(true); x.removeAttribute?.('id'); x.hidden = false; x.onclick = () => { noteSideRecent(k); hideCtxMenu(); c.click(); }; box.appendChild(x); }
+  const blk = recentBlock(pool, (c, key) => { noteSideRecent(key); hideCtxMenu(); c.click(); }, fillCtxRecent); box.hidden = !blk; if (!blk) return;
+  const h = document.createElement('div'), title = document.createElement('span'); h.className = 'ctx-title recent-head'; title.textContent = t('sideRecentTitle'); h.appendChild(title); h.appendChild(blk.clear); box.appendChild(h);   /* 見出しの右に「消す」 */
+  for (const row of blk.rows) box.appendChild(row);
+}
+/** 「最近使った」の固定・消す（2026-10-28 事業主「「最近使った」を消す・固定するボタン（よく使う項目を先頭に固定）」→ 各項目に★・見出しに「消す」・パネルと右クリックの両方）。
+ *  ★で固定した項目は、いつも先頭（固定した順）。そのあとに、固定していない最近使った項目（新しい順）。合わせて最大5つ（固定は最大5つ）。「消す」は、固定していない履歴を消す（固定は残る）。
+ *  固定も履歴も、キーだけをブラウザに残す。いま押せない項目は出さない（固定したままなら、押せるようになれば戻る）。 */
+const SIDE_PIN_KEY = 'leather-cad.sidePinned', SIDE_PIN_MAX = 5;
+let sidePinnedKeys = null;
+function loadSidePinned() { if (!sidePinnedKeys) { sidePinnedKeys = []; try { const v = JSON.parse(localStorage.getItem(SIDE_PIN_KEY) || '[]'); if (Array.isArray(v)) sidePinnedKeys = v.filter(k => typeof k === 'string' && k && k.length <= 80).slice(0, SIDE_PIN_MAX); } catch { /* 読めなければ、空から */ } } return sidePinnedKeys; }
+function toggleSidePin(key) {   /* 固定する／はずす。固定が最大5つのときは、案内を出して何もしない（false を返す） */
+  if (!key) return false; const list = loadSidePinned(), i = list.indexOf(key);
+  if (i >= 0) list.splice(i, 1); else { if (list.length >= SIDE_PIN_MAX) { $('hint').textContent = t('recentPinFull'); return false; } list.push(key); }
+  try { localStorage.setItem(SIDE_PIN_KEY, JSON.stringify(list)); } catch { /* 保存できなくても、この画面の間は覚える */ } return true;
+}
+function clearSideRecent() { sideRecentKeys = []; try { localStorage.setItem(SIDE_RECENT_KEY, '[]'); } catch { /* 保存できなくても、この画面の間は消えている */ } }   /* 固定（sidePinnedKeys）は触らない */
+const sideRecentList = pool => { const pinned = loadSidePinned().filter(k => pool.has(k)), rest = loadSideRecent().filter(k => pool.has(k) && !pinned.includes(k)); return [...pinned.map(key => ({ key, pinned: true })), ...rest.map(key => ({ key, pinned: false }))].slice(0, SIDE_RECENT_SHOW); };
+/** 「最近使った」の行（項目の写し＋★）と、見出し用の「消す」ボタンを作る。出す項目が無ければ null。press(元の項目, キー)：項目を押したときの動き。refresh：★・消すのあとに、作り直す関数。 */
+function recentBlock(pool, press, refresh) {
+  const list = sideRecentList(pool); if (!list.length) return null;
+  const rows = list.map(({ key, pinned }) => {
+    const c = pool.get(key), row = document.createElement('div'), x = c.cloneNode(true), pin = document.createElement('button');
+    x.removeAttribute?.('id'); x.hidden = false; x.onclick = () => press(c, key);
+    row.className = 'recent-row'; pin.type = 'button'; pin.className = 'recent-pin' + (pinned ? ' on' : ''); pin.textContent = pinned ? '★' : '☆'; pin.title = t(pinned ? 'recentUnpinTip' : 'recentPinTip'); pin.setAttribute?.('aria-pressed', String(pinned));
+    pin.onclick = e => { e?.stopPropagation?.(); toggleSidePin(key); refresh(); };
+    row.appendChild(x); row.appendChild(pin); return row;
+  });
+  const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'recent-clear'; clear.textContent = t('recentClear'); clear.title = t('recentClearTip'); clear.hidden = list.every(x => x.pinned);   /* 固定だけのときは、消すものが無い */
+  clear.onclick = e => { e?.preventDefault?.(); e?.stopPropagation?.(); clearSideRecent(); refresh(); };   /* 見出し（summary）の中のボタンでも、開け閉めさせない */
+  return { rows, clear };
 }
 function renderSideMenu() {
   const box = $('sideMenu'); if (!box?.appendChild || typeof document.createElement !== 'function') return;
@@ -8279,10 +8306,10 @@ function renderSideMenu() {
     d.className = 'side-menu-cat'; d.dataset.cat = cat; d.open = sideMenuOpen.has(cat); s.textContent = head.textContent; list.className = 'side-menu-items'; for (const x of items) list.appendChild(x); d.appendChild(s); d.appendChild(list);
     d.addEventListener?.('toggle', () => { if (d.open) sideMenuOpen.add(cat); else sideMenuOpen.delete(cat); }); cats.push(d);
   }
-  const recent = loadSideRecent().filter(k => pool.has(k)).slice(0, SIDE_RECENT_SHOW);   /* 先頭に「最近使った」（いま押せるものだけ・最大5つ・初めは開いている） */
-  if (recent.length) {
-    const d = document.createElement('details'), s = document.createElement('summary'), list = document.createElement('div');
-    d.className = 'side-menu-cat side-menu-recent'; d.open = !sideRecentClosed; s.textContent = t('sideRecentTitle'); list.className = 'side-menu-items'; for (const k of recent) list.appendChild(item(pool.get(k), k)); d.appendChild(s); d.appendChild(list);
+  const blk = recentBlock(pool, (c, key) => { noteSideRecent(key); c.click(); scheduleSideMenu(); }, renderSideMenu);   /* 先頭に「最近使った」（固定した項目→最近使った項目・いま押せるものだけ・最大5つ・初めは開いている） */
+  if (blk) {
+    const d = document.createElement('details'), s = document.createElement('summary'), title = document.createElement('span'), list = document.createElement('div');
+    d.className = 'side-menu-cat side-menu-recent'; d.open = !sideRecentClosed; title.textContent = t('sideRecentTitle'); s.className = 'recent-head'; s.appendChild(title); s.appendChild(blk.clear); list.className = 'side-menu-items'; for (const row of blk.rows) list.appendChild(row); d.appendChild(s); d.appendChild(list);
     d.addEventListener?.('toggle', () => { sideRecentClosed = !d.open; }); box.appendChild(d);
   }
   for (const d of cats) box.appendChild(d);
