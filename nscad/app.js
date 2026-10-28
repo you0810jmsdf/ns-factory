@@ -54,7 +54,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, insetDistance, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -72,6 +72,8 @@ let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧�
 let lastAutosaveAt = ''; /* 最後の自動保存の時刻（復元のあとの保管し直しに使う） */
 let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ storage: localStorage }); } catch { /* 保存を読めない環境では、タブの取り合いを見ない（いつも主＝今までどおり保存する） */ }   /* 別のブラウザのタブでも開いているとき、保存してよいのは主のタブだけ（tablock.js・事業主 2026-10-23） */
 const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
+const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別のブラウザタブが主）の自動保存の置き場。主の置き場（AUTOSAVE_KEY）を上書き・削除しないための別のキー（2026-10-28 事業主「更新したら作業中の作図が消えた」：副のタブで描いた分が自動保存に乗っていなかった） */
+let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
@@ -1208,14 +1210,17 @@ function showHelp(shortcuts = false, pageId = null) {
 /** 自動保存：変更の1.5秒後に、全タブの図面を localStorage へ入れる。復元するか決める前は、前回の保存を上書きしない。 */
 function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
 function flushAutosave() {
-  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore || !tabIsPrimary()) return;   /* 副のタブは保存しない（主のタブの自動保存・履歴を上書き・削除しない） */
+  if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
+  const primary = tabIsPrimary(), key = primary ? AUTOSAVE_KEY : AUTOSAVE_SUB_KEY;   /* 副のタブは別の置き場へ（主の自動保存・元に戻す履歴は上書き・削除しない）。以前は副では保存しなかったので、再読み込みで描いた分が消えた */
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(AUTOSAVE_KEY, r.text); autosaveWarned = false; lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); }
-    else if (r.status === 'empty') { localStorage.removeItem(AUTOSAVE_KEY); clearUndoRecord().catch(() => {}); }
-    else if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); }
-  } catch { if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
+    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; if (primary) { lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); } }
+    else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; if (primary) clearUndoRecord().catch(() => {}); }
+    else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
+  } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
 }
+/** 自動保存に乗っていない未保存の変更があるか（大きすぎ・保存できないとき）。閉じる・更新・再読み込みの前の確認に使う。 */
+const unsavedNotAutosaved = () => autosaveState !== 'ok' && tabs.some(tb => tb.dirty);
 /** 元に戻す履歴の保管（事業主指示 2026-10-17：再起動しても Undo が残る）：自動保存の2秒後に、全タブの履歴を圧縮して IndexedDB へ。自動保存と同じ時刻（savedAt）を付け、復元のときは時刻が合うものだけ使う（図面とずれた履歴で戻して、作業を失わないため）。 */
 function scheduleUndoSave(savedAt) {
   if (undoAttaching || typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(undoSaveTimer);
@@ -1248,22 +1253,31 @@ async function attachSavedFiles(info, base) {
     }
   } catch { /* 行き先が読めなくても、図面の復元はそのまま（保存のときに選び直す） */ }
 }
-/** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。 */
-function offerRestore() {
-  let text = null; try { text = localStorage.getItem(AUTOSAVE_KEY); } catch { /* 保存を読めない環境では何もしない */ }
-  const info = text ? unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); }) : null;   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */   /* 古い版の保存（層の変更前など）も、版上げしてから検査する */
-  if (!info) { if (text) try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } return; }
-  const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }); $('restoreBar').hidden = false;
+/** 起動時：前回の保存があれば「前回の続き」バーを出す（勝手には戻さない）。壊れた保存は消す。主のタブは、主の保存と副のタブの保存のうち新しいほう（戻したら、もう一方も出す）。副のタブは、副の保存だけ（主の保存は、生きている主のタブのもの）。出したら true。 */
+function offerRestore(keys = tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]) {
+  const found = [];
+  for (const key of keys) {
+    let text = null; try { text = localStorage.getItem(key); } catch { /* 保存を読めない環境では何もしない */ }
+    if (!text) continue;
+    const info = unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); });   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */
+    if (!info) { try { localStorage.removeItem(key); } catch { /* 無視 */ } continue; }
+    found.push({ ...info, key });
+  }
+  if (!found.length) return false;
+  found.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));   /* 新しいほうから */
+  const info = found[0], d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }) + (info.key === AUTOSAVE_SUB_KEY ? ' ' + t('restoreFromSub') : ''); $('restoreBar').hidden = false; return true;
 }
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
+  if (info.key === AUTOSAVE_SUB_KEY) { try { localStorage.removeItem(AUTOSAVE_SUB_KEY); } catch { /* 無視 */ } }   /* 副の保存は、戻したら片付ける（主の保存は、次の自動保存が上書きする） */
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); dropDetachedFills(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
   if (!featureLocked() && info.tabs.some(tb => tb.doc.threeViewSheet)) { $('quadView').checked = true; if ($('threeView')) $('threeView').checked = false; }
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
+  offerRestore((tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]).filter(k => k !== info.key));   /* 主の保存と副の保存の両方があったときは、もう一方も続けて出す */
 }
-function discardAutosave() { pendingRestore = null; $('restoreBar').hidden = true; if (!tabIsPrimary()) return; try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* 無視 */ } clearUndoRecord().catch(() => {}); flushAutosave(); }
+function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } if (key === AUTOSAVE_KEY) clearUndoRecord().catch(() => {}); flushAutosave(); offerRestore((tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY]).filter(k => k !== key)); }
 /** 別のブラウザのタブでも開いているとき（このタブが副）の警告。副のタブは、自動保存・履歴の保管・「捨てる」をしない。 */
 function syncMultiTabBar() { const bar = $('multiTabBar'); if (bar) bar.hidden = tabIsPrimary(); }
 /** 主／副が替わったとき：副→主なら、見送っていた「前回の続き」を出す（なければ、いまの図面を保存する）。 */
@@ -2377,16 +2391,22 @@ function placeHoles(saved, route, points, tool, depth = null) {   /* depth 'half
   for (const p of points) { const id = freshId(doc.holes, 'h'); doc.holes.push({ id, pathId: saved.id, s: p.s, x: p.x, y: p.y, angleDeg: ($('followTangent').checked ? p.angleDeg : 0) + slantOf(tool), toolId: tool.id, mark: 'tool', ...(depth ? { depth } : {}) }); }
   saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
 }
+let komaSeam = null, komaSeamPicking = false, komaSeamAt = null, lastKoma = null;   /* 継ぎ目（帯の始点）の指定：{ key（曲線側の縫い線の図形 id）, s（その縫い線の上の弧長）, x, y }／指定中か／画面の印／直前の曲面の駒合わせ（作り直し用）*/
 function komaClick(p) {
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale); if (!hit) return;
   const state = routeForHit(hit); if (!state?.route) return;
+  if (komaSeamPicking) { komaSeamPickAt(state, p); return; }
   if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
-  const holesOf = side => doc.holes.filter(h => h.pathId === side.saved.id), ha = holesOf(stage.a), hb = holesOf(state);
-  { const infoA = komaOutlineOf(stage.a), infoB = komaOutlineOf(state); if (!!infoA?.curved !== !!infoB?.curved) { const done = komaByOutline(stage.a, state, ha, hb, infoA?.curved ? infoA : infoB, !!infoA?.curved); if (done) { stage = null; return; } } }   /* 曲面（円柱の上面・小判型など）と帯：帯の穴を輪郭に沿って写す（長さの割合で均さない） */
-  if (!!ha.length !== !!hb.length) { const [src, dst] = ha.length ? [stage.a, state] : [state, stage.a]; stage = null; komaCopy(src, dst, ha.length ? 'A' : 'B', ha.length ? 'B' : 'A'); return; } /* 片方だけ目打ちがある：それは残して、もう片方に同じ数を写す */
+  komaFinish(stage.a, state, hit);
+}
+/** 駒合わせの2回目のクリック以降（A の状態・B の状態・B のクリックした図形）。継ぎ目を指定したあとの作り直しからも呼ぶ。 */
+function komaFinish(aState, state, hit) {
+  const holesOf = side => doc.holes.filter(h => h.pathId === side.saved.id), ha = holesOf(aState), hb = holesOf(state);
+  { const infoA = komaOutlineOf(aState), infoB = komaOutlineOf(state); if (!!infoA?.curved !== !!infoB?.curved) { const done = komaByOutline(aState, state, ha, hb, infoA?.curved ? infoA : infoB, !!infoA?.curved); if (done) { stage = null; return; } } }   /* 曲面（円柱の上面・小判型など）と帯：帯の穴を輪郭に沿って写す（長さの割合で均さない） */
+  if (!!ha.length !== !!hb.length) { const [src, dst] = ha.length ? [aState, state] : [state, aState]; stage = null; komaCopy(src, dst, ha.length ? 'A' : 'B', ha.length ? 'B' : 'A'); return; } /* 片方だけ目打ちがある：それは残して、もう片方に同じ数を写す */
   const tool = stitchToolCurrent(); if (!tool) return;
-  const a = stage.a, b = state, both = !!ha.length && !!hb.length, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
+  const a = aState, b = state, both = !!ha.length && !!hb.length, opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
   const result = matchRoutes(a.route, b.route, tool.pitch, opts); stage = null;
   if (!result.holesA.length) { $('hint').textContent = t('impossible'); draw(); return; }
   commit(() => {
@@ -2398,6 +2418,22 @@ function komaClick(p) {
   $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '') + ' ' + t('komaHalfNote');
   draw();
 }
+/** 継ぎ目（帯の始点）の位置を、曲線側の縫い線の上のクリックで指定する。直前の駒合わせ（曲面）の曲線側ならすぐ作り直し、そうでなければ次の駒合わせに使う。 */
+function komaSeamPickAt(state, p) {
+  const info = komaOutlineOf(state); if (!info?.curved) { $('hint').textContent = t('komaSeamNeedCurve'); draw(); return; }   /* まっすぐな線では指定できない（指定中のまま・もう一度クリックできる） */
+  const q = projectOnPath(state.route, p), at = pointAtLength(state.route, q.s), key = state.saved.shapeIds.join();
+  komaSeam = { key, s: q.s, x: at.x, y: at.y }; komaSeamPicking = false; syncKomaBar();
+  if (komaRedo(key)) { $('hint').textContent = t('komaSeamRedone') + ' ' + $('hint').textContent; return; }
+  $('hint').textContent = t('komaSeamSet'); selected = new Set(state.saved.shapeIds); draw();
+}
+/** 直前の駒合わせ（曲面）の曲線側が key で、A・B の両方に穴が残っていれば、同じ A・B でもう一度駒合わせ（継ぎ目の指定・解除の反映）。作り直したら true。 */
+function komaRedo(key) {
+  const last = lastKoma; if (!last || last.key !== key || !pairLines.length || komaSeamAt?.pl !== pairLines) return false;
+  const sa = doc.shapes.find(sh => sh.id === last.aId), sb = doc.shapes.find(sh => sh.id === last.bId), pa = sa && doc.paths.find(pp => pp.shapeIds.includes(sa.id)), pb = sb && doc.paths.find(pp => pp.shapeIds.includes(sb.id));
+  if (!pa || !pb || !doc.holes.some(h => h.pathId === pa.id) || !doc.holes.some(h => h.pathId === pb.id)) return false;
+  const a = routeForHit(sa), b = routeForHit(sb); if (!a?.route || !b?.route) return false; komaFinish(a, b, sb); return true;
+}
+function komaSeamClearAll() { const key = komaSeam?.key; komaSeam = null; komaSeamPicking = false; syncKomaBar(); if (key && komaRedo(key)) { $('hint').textContent = t('komaSeamCleared') + ' ' + $('hint').textContent; return; } $('hint').textContent = t('komaSeamCleared'); draw(); }
 /** 駒合わせ（曲面）：縫い線が、実線で囲まれた革の輪郭から一定の距離だけ内側の線なら { outline（輪郭の点列）, margin（距離）, curved（曲線がある・または閉じている） } を返す。まっすぐな線や、囲みの中に無い線は null。 */
 function komaOutlineOf(side) {
   const route = side.route, len = arcLength(route); if (!(len > 1e-6) || !route.items?.length) return null;
@@ -2405,14 +2441,15 @@ function komaOutlineOf(side) {
   const samples = [0.1, 0.3, 0.5, 0.7, 0.9].map(f => pointAtLength(route, len * f));
   const region = regions.filter(r => samples.every(q => insidePolygon(q, r.points))).sort((x, y) => x.area - y.area)[0]; if (!region) return null;
   const d = insetDistance(route, region.points); if (!d || d.margin < 0.3 || d.spread > Math.max(0.6, d.margin * 0.3)) return null;   /* 一定の距離で内側に寄せた線でなければ使わない */
-  return { outline: region.points, margin: d.margin, curved: !!route.closed || route.items.some(it => it.shape.type !== 'line') };
+  return { outline: region.points, margin: d.margin, curved: !!route.closed || route.items.some(it => it.shape.type !== 'line') || routeBreaks(route).length > 0 };   /* 曲線側＝閉じている・曲線を含む・角で折れている（名刺入れの側面の U 字）。1本のまっすぐな線は帯の側 */
 }
 /** 駒合わせ（曲面）：曲線側（円柱の上面・小判型・側面の U 字など＝輪郭の内側の縫い線）と、まっすぐな側（帯）。帯の穴は等間隔のまま、曲線側は帯の各穴を輪郭に沿って写す（直線部は同じ間隔・曲線部は狭く）。
  *  どちらにも目打ちが無ければ、「優先」の側（両方を均す＝まっすぐな側）を工具のピッチで等間隔にしてから写す。片方にだけあれば、それを残して写す。両方にあれば作り直す。
  *  curvedIsA＝1回目にクリックした線（A）が曲線側か。B（2回目）の穴は半分の深さ。帯の長さが輪郭の対応部分と 3% より違えば案内する。できなければ false（従来の方式に任せる）。 */
 function komaByOutline(a, b, ha, hb, info, curvedIsA) {
-  const curved = curvedIsA ? a : b, flat = curvedIsA ? b : a, map = outlineMap(curved.route, info.outline); if (!map) return false;
+  const curved = curvedIsA ? a : b, flat = curvedIsA ? b : a, map0 = outlineMap(curved.route, info.outline); if (!map0) return false;
   const lenFlat = arcLength(flat.route), lenCurved = arcLength(curved.route), tool = stitchToolCurrent(); if (!tool || !(lenFlat > 1e-6)) return false;
+  const seamOn = !!komaSeam && komaSeam.key === curved.saved.shapeIds.join(), map = seamOn ? withSeam(map0, komaSeam.s, lenFlat, !!curved.route.closed) : map0;   /* 継ぎ目を指定してあれば、帯の始点をそこに当てる（指定が無ければ、縫い線の始点） */
   const hc = curvedIsA ? ha : hb, hf = curvedIsA ? hb : ha, both = !!hc.length && !!hf.length, srcKey = $('komaPrefer').value;
   let srcSide, srcS, srcAngles = null;   /* 写す元（距離の一覧）と写し先 */
   if (!!hc.length !== !!hf.length) { const list = (hc.length ? hc : hf).slice().sort((x, y) => x.s - y.s); srcSide = hc.length ? 'curved' : 'flat'; srcS = list.map(h => h.s); srcAngles = list; }
@@ -2441,9 +2478,10 @@ function komaByOutline(a, b, ha, hb, info, curvedIsA) {
     selected = new Set([...a.saved.shapeIds, ...b.saved.shapeIds]);
   });
   pairLines = madeSrc.map((h, i) => [{ x: h.x, y: h.y }, { x: madeDst[i].x, y: madeDst[i].y }]);
+  { const q = pointAtLength(curved.route, map.toInset(0, lenFlat)); komaSeamAt = { x: q.x, y: q.y, pl: pairLines }; lastKoma = { aId: a.saved.shapeIds[0], bId: b.saved.shapeIds[0], key: curved.saved.shapeIds.join() }; }   /* 帯の始点が当たる位置の印と、作り直し用の覚え */
   const gapsOf = list => { const ss = list.map(h => h.s).sort((x, y) => x - y); const g = ss.slice(1).map((v, i) => v - ss[i]); return g.length ? { min: Math.min(...g), max: Math.max(...g) } : { min: 0, max: 0 }; };
   const gf = gapsOf(srcSide === 'flat' ? madeSrc : madeDst), gc = gapsOf(srcSide === 'flat' ? madeDst : madeSrc), n = madeDst.length, pct = Math.abs(lenFlat - map.lenPart) / Math.max(1e-6, map.lenPart) * 100;
-  $('hint').textContent = t('komaOutlineDone', { n, flat: curvedIsA ? 'B' : 'A', curved: curvedIsA ? 'A' : 'B', pf: gf.max.toFixed(2), cmin: gc.min.toFixed(2), cmax: gc.max.toFixed(2) }) + (both ? ' ' + t('komaBoth') : '') + (pct > 3 ? ' ' + t('komaLenWarn', { flat: curvedIsA ? 'B' : 'A', lf: lenFlat.toFixed(1), lo: map.lenPart.toFixed(1), pct: pct.toFixed(1) }) : '') + ' ' + t('komaHalfNote');
+  $('hint').textContent = t('komaOutlineDone', { n, flat: curvedIsA ? 'B' : 'A', curved: curvedIsA ? 'A' : 'B', pf: gf.max.toFixed(2), cmin: gc.min.toFixed(2), cmax: gc.max.toFixed(2) }) + (both ? ' ' + t('komaBoth') : '') + (pct > 3 ? ' ' + t('komaLenWarn', { flat: curvedIsA ? 'B' : 'A', lf: lenFlat.toFixed(1), lo: map.lenPart.toFixed(1), pct: pct.toFixed(1) }) : '') + ' ' + t(seamOn ? 'komaSeamNoteSet' : 'komaSeamNote') + ' ' + t('komaHalfNote');
   draw(); return true;
 }
 /** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
@@ -2490,7 +2528,7 @@ function makeKomaLines() {
   $('hint').textContent = t('komaLinesMade', { n: results.length, d: margin }) + (unsure ? ' ' + t('komaSideUnsure') : '') + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
 /** 駒合わせの小窓（縁からの距離・優先・縫い線を作る）は、駒合わせのツールの間だけ出す。 */
-function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; }
+function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; if (mode !== 'koma') komaSeamPicking = false; const pick = $('komaSeamPick'), clr = $('komaSeamClear'); if (pick) { pick.textContent = t(komaSeamPicking ? 'komaSeamPicking' : komaSeam ? 'komaSeamPickAgain' : 'komaSeamPick'); pick.classList?.toggle?.('active', !!komaSeamPicking); } if (clr) clr.hidden = !komaSeam; }
 function renderSeams() { $('seamCount').textContent = String(doc.seams.length); }
 function seamStyleValue() { const v = $('seamStyle').value; return ['butt', 'overlap', 'felled'].includes(v) ? v : 'butt'; }
 function optimizePatch() {
@@ -3100,7 +3138,7 @@ function initDesign() {
     head.addEventListener('pointermove', e => { if (drag) placeCardWin(card, e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
     const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
   }
-  $('komaMakeLine').onclick = makeKomaLines; $('komaClose').onclick = () => setMode('select'); $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
+  $('komaMakeLine').onclick = makeKomaLines; $('komaSeamPick').onclick = () => { komaSeamPicking = !komaSeamPicking; syncKomaBar(); $('hint').textContent = komaSeamPicking ? t('komaSeamPickHint') : t('hint.koma'); draw(); }; $('komaSeamClear').onclick = komaSeamClearAll; $('komaClose').onclick = () => setMode('select'); $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
   renderSeams();
@@ -6890,7 +6928,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -8099,6 +8137,7 @@ function drawSheetBody(lo, hi) {
   if (tracePreviewShapes.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.2 / scale; for (const s of tracePreviewShapes) strokeShape(s, '#ff4040'); ctx.restore(); }
   drawPasteGhost();
   if ($('threeView').checked) drawThreeViewGuides();
+  { const seamPt = pairLines.length && komaSeamAt?.pl === pairLines ? komaSeamAt : (mode === 'koma' && komaSeam ? komaSeam : null); if (seamPt) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); ctx.arc(seamPt.x, seamPt.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.font = `${12 / scale}px sans-serif`; ctx.fillText(t('komaSeamMark'), seamPt.x + 9 / scale, seamPt.y - 9 / scale); ctx.restore(); } }   /* 継ぎ目（帯の始点が当たる位置）の印 */
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
   /* 縫い合わせ（隣り合う辺の組）の橙の点線（向かい合う穴の列を結ぶ印）は描かない（事業主 2026-10-21「菱目ラインをつなぐ点線の意味がわからない。不要です」）。縫い合わせのデータ（doc.seams）は、最適化などのためにそのまま持つ */
   if (stage?.kind === 'bezier') {
@@ -8946,7 +8985,8 @@ if (typeof setInterval === 'function') setInterval(checkNewVersion, 300000);
 document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > 60000) checkNewVersion(); });
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting(); initPresence();
-tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else restoreSkipped = true;   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
+tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { restoreSkipped = true; offerRestore([AUTOSAVE_SUB_KEY]); }   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
 autosaveReady = true; startTabWatch();
+window.addEventListener?.('beforeunload', e => { if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
 showTour();
 }

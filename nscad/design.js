@@ -124,6 +124,19 @@ export function outlineMap(routeInset, outline) {
   const toOther = (sInset, lenOther) => { const s = Math.max(0, Math.min(lenI, sInset)), i = seg(breaks, s), span = breaks[i + 1] - breaks[i], u = edgesU[i] + (span > DEPS ? (s - breaks[i]) / span : 0) * (edgesU[i + 1] - edgesU[i]); return u * lenOther / lenPart; };
   return { lenPart, lenInset: lenI, breaks, edgesU, reversed, toInset, toOther };
 }
+/** 継ぎ目（帯の始点 s=0 が、曲線側の縫い線のどこに当たるか）を指定した対応表を返す（事業主 2026-10-28「帯の継ぎ目（始点）の位置を選べるように。上面の縫い線の始点をクリックで指定」）。
+ *  seamS＝曲線側の縫い線（inset）の上の位置（弧長）。lenOther＝帯の長さ。closed＝曲線側の縫い線が閉じているか。
+ *  閉じている（円・小判型）：帯の対応を、seamS に当たる帯の位置（toOther(seamS)）だけ回す＝帯の始点が seamS に来て、先は同じ向きに進む。
+ *  開いている（U 字）：回せないので、seamS が縫い線の後ろ半分なら帯を逆向きにして、帯の始点を縫い線の終わりに当てる（flip）。前半分なら、そのまま。 */
+export function withSeam(map, seamS, lenOther, closed) {
+  const lenI = map.lenInset, wrap = v => ((v % lenOther) + lenOther) % lenOther;
+  if (closed) {
+    const b0 = map.toOther(Math.max(0, Math.min(lenI, seamS)), lenOther);
+    return { ...map, flip: false, seam: seamS, toInset: (s, lo = lenOther) => map.toInset(wrap(s + b0), lo), toOther: (sI, lo = lenOther) => wrap(map.toOther(sI, lo) - b0) };
+  }
+  const flip = seamS > lenI / 2;
+  return { ...map, flip, seam: seamS, toInset: flip ? (s, lo = lenOther) => map.toInset(lo - s, lo) : map.toInset, toOther: flip ? (sI, lo = lenOther) => lo - map.toOther(sI, lo) : map.toOther };
+}
 
 /** パッチワーク：縫い合わせ線（seams）から共有辺の穴を最適化する。
  *  戻り値 {holesByPath: Map(pathId → [{x,y,s,angleDeg}]), pairs:[{seamId,a:{pathId,s},b:{pathId,s}}], warnings:[{seamId,segment,pitchA,pitchB,diffPct}]}。 */
