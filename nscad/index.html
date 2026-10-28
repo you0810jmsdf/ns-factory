@@ -127,7 +127,8 @@
     }
     #side details.card#scaleCard[hidden], #side details.card#moveCard[hidden] { display: none !important; }   /* no window when nothing is selected */
     .ctx-cards .ctx-group { grid-column: 1 / -1; } .ctx-cards .ctx-wide { grid-column: 1 / -1; }
-    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } #layerRows .layer-move { flex: none; padding: 2px 8px; white-space: nowrap; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerRows .layer-grip { flex: none; width: 14px; text-align: center; color: var(--accent); cursor: grab; user-select: none; font-size: 15px; line-height: 1; } #layerRows .layer-grip:active { cursor: grabbing; } #layerRows .row.dragging { opacity: .4; } #layerRows .row.drop-above { box-shadow: inset 0 3px 0 #c9a96e; } #layerRows .row.drop-below { box-shadow: inset 0 -3px 0 #c9a96e; } #layerRows .row.has-sel { background: rgba(108,197,255,.16); box-shadow: inset 0 0 0 1px #6cc5ff; } #layerRows .layer-sel { flex: none; padding: 0 7px; border-radius: 9px; background: #6cc5ff; color: #06202e; font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap; } #layerRows .layer-sel:empty { display: none; } #layerCard[data-win="1"] .lw-hide { display: none !important; }
+    #layerRows .row { flex-wrap: nowrap; align-items: center; gap: 6px; padding: 4px 6px; border-bottom: 1px solid rgba(255,255,255,.06); border-left: 3px solid transparent; } #layerRows .row.active { background: rgba(201,169,110,.12); border-left-color: #c9a96e; } #layerRows .layer-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; } #layerRows input.layer-name { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; color: inherit; padding: 3px 6px; font: inherit; font-weight: 600; } #layerRows input.layer-name:focus { border-color: #c9a96e; outline: none; } #layerRows .row label { flex: none; white-space: nowrap; } #layerRows .layer-active { flex: none; width: 24px; min-width: 24px; padding: 0; border-radius: 50%; line-height: 1; } #layerRows .row.active .layer-active { color: #c9a96e; border-color: #c9a96e; } #layerRows .layer-arrows { flex: none; display: flex; gap: 2px; margin-left: 2px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,.18); } #layerRows .layer-arrow { min-width: 28px; padding: 2px 6px; } #layerRows .layer-move { flex: none; padding: 2px 8px; white-space: nowrap; }
+.lw-grp { align-items: center; gap: 6px; } .lw-grp .lw-cap { flex: none; width: 3em; font-size: 12px; color: var(--accent); } .lw-grp button { flex: 1 1 0; min-width: 0; padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .lw-grp select { flex: 1 1 0; min-width: 0; } .layer-end { margin: 2px 0; font-size: 12px; color: var(--accent); } #layerRows .layer-grip { flex: none; width: 14px; text-align: center; color: var(--accent); cursor: grab; user-select: none; font-size: 15px; line-height: 1; } #layerRows .layer-grip:active { cursor: grabbing; } #layerRows .row.dragging { opacity: .4; } #layerRows .row.drop-above { box-shadow: inset 0 3px 0 #c9a96e; } #layerRows .row.drop-below { box-shadow: inset 0 -3px 0 #c9a96e; } #layerRows .row.has-sel { background: rgba(108,197,255,.16); box-shadow: inset 0 0 0 1px #6cc5ff; } #layerRows .layer-sel { flex: none; padding: 0 7px; border-radius: 9px; background: #6cc5ff; color: #06202e; font-size: 11px; font-weight: 700; line-height: 18px; white-space: nowrap; } #layerRows .layer-sel:empty { display: none; } #layerCard[data-win="1"] .lw-hide { display: none !important; }
     .rel-list { flex: 1 1 100%; max-height: 40vh; overflow: auto; text-align: left; font-size: 12px; line-height: 1.6; } .rel-date { font-weight: 700; color: var(--accent, #c9a96e); margin-top: 8px; } .rel-item { padding-left: 2px; } .rel-item::before { content: '\30fb'; } .rel-btn { font-size: 10px; margin-left: 6px; padding: 1px 8px; white-space: nowrap; } #releaseDialog { max-width: min(560px, calc(100vw - 24px)); } .rel-search { width: 100%; box-sizing: border-box; margin: 4px 0; padding: 6px 8px; font: inherit; } .rel-more { margin: 6px 0; } #releaseDialog .rel-list { max-height: 34vh; }
     dialog.flow-win { position: fixed; top: 132px; right: 312px; left: auto; margin: 0; width: 320px; max-width: calc(100vw - 24px); max-height: calc(100vh - 160px); overflow: auto; padding: 10px 12px; box-shadow: 0 6px 24px rgba(0,0,0,.45); z-index: 20; } .flow-win-head { display: flex; align-items: center; gap: 8px; cursor: move; touch-action: none; } .flow-win-head button { cursor: pointer; } .flow-h-note { display: block; margin-top: 4px; color: var(--accent); font-size: 12px; } .flow-notes-btn { flex: none; padding: 2px 8px; font-size: 12px; border-radius: 12px; } .flow-notes-btn[aria-pressed="true"] { background: var(--accent); color: #111; border-color: var(--accent); }
     dialog.flow-win[data-notes="hide"] p.note { display: none; }   /* the detailed explanations are folded by default (2026-10-24); the head button shows them */ .flow-win-head h3 { margin: 0; font-size: 15px; flex: 1; } .info-close { border: 0; background: transparent; color: inherit; font-size: 16px; cursor: pointer; }
@@ -229,7 +230,7 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-28 17:10 · c7f1cc6</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-10-28 17:30 · 8e37005</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <button id="ctxOpenBtn" type="button" aria-haspopup="true" data-i18n="ctxOpenBtn" data-i18n-title="ctxOpenBtnTip"></button><span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showSecDimsTip"><input id="showSecDims" type="checkbox" checked><span data-i18n="showSecDims"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="showStitchTip"><input id="showStitch" type="checkbox"><span data-i18n="showStitch"></span></label><label data-i18n-title="stitchThickTip"><span data-i18n="stitchThick"></span><select id="stitchThick"><option value="0.45">0.45 mm</option><option value="0.6" selected>0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option></select></label><label data-i18n-title="stitchThickRoundTip"><span data-i18n="stitchThickRound"></span><select id="stitchThickRound"><option value="same" selected data-i18n="stitchThickSame"></option><option value="0.45">0.45 mm</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option><option value="1.2">1.2 mm</option></select></label><label data-i18n-title="stitchFaceTip"><span data-i18n="stitchFace"></span><select id="stitchFace"><option value="front" selected data-i18n="stitchFaceFront"></option><option value="back" data-i18n="stitchFaceBack"></option></select></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="zoomActual" data-i18n="zoomActual" data-i18n-title="zoomActualTip"></button><button id="zoomActualCalib" data-i18n="zoomActualCalib" data-i18n-title="zoomActualTip"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -377,14 +378,10 @@
 <div class="layer-end" data-i18n="layerRowsTop"></div>
 <div id="layerRows"></div>
 <div class="layer-end" data-i18n="layerRowsBottom"></div>
-<div class="row"><button id="layerSolo" data-i18n="layerSolo"></button><button id="layerAll" data-i18n="layerAll"></button></div>
-<div class="row"><button id="layerPickYellow" data-i18n="layerPickYellow"></button></div>
-<div class="row"><button id="layerPickDashed" data-i18n="layerPickDashed"></button></div>
-<div class="row"><button id="layerMove" data-i18n="layerMove"></button></div>
-<div class="row"><button id="addLayer" data-i18n="addLayer" data-i18n-title="addLayerTip"></button><button id="removeLayer" data-i18n="removeLayer"></button></div>
-<div class="row"><button id="layerNewMove" data-i18n="layerNewMove" data-i18n-title="layerNewMoveTip"></button></div>
-<div class="row"><select id="layerMergeSrc" data-i18n-aria="layerMergeSrcAria"></select><button id="layerMerge" type="button" data-i18n="layerMerge" data-i18n-title="layerMergeTip"></button></div>
-<div class="row"><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
+<div class="row lw-grp"><span class="lw-cap" data-i18n="layerGrpShow"></span><button id="layerSolo" data-i18n="layerSolo" data-i18n-title="layerSoloTip"></button><button id="layerAll" data-i18n="layerAll" data-i18n-title="layerAllTip"></button></div>
+<div class="row lw-grp"><span class="lw-cap" data-i18n="layerGrpPick"></span><button id="layerPickYellow" data-i18n="layerPickYellow" data-i18n-title="layerPickYellowTip"></button><button id="layerPickDashed" data-i18n="layerPickDashed" data-i18n-title="layerPickDashedTip"></button></div>
+<div class="row lw-grp"><span class="lw-cap" data-i18n="layerGrpMove"></span><button id="layerMove" data-i18n="layerMove" data-i18n-title="layerMoveTip"></button><button id="layerNewMove" data-i18n="layerNewMove" data-i18n-title="layerNewMoveTip"></button><button id="gatherLayer" data-i18n="gatherLayer" data-i18n-title="gatherLayerTip"></button></div>
+<div class="row lw-grp"><span class="lw-cap" data-i18n="layerGrpLayer"></span><button id="addLayer" data-i18n="addLayer" data-i18n-title="addLayerTip"></button><button id="removeLayer" data-i18n="removeLayer" data-i18n-title="removeLayerTip"></button><select id="layerMergeSrc" data-i18n-aria="layerMergeSrcAria"></select><button id="layerMerge" type="button" data-i18n="layerMerge" data-i18n-title="layerMergeTip"></button></div>
 </div></details>
 <details class="card" data-side="stitch" id="stitchCard"><summary id="stitchWinHead"><span data-i18n="stitchSettings"></span><button type="button" id="stitchWinClose" class="winClose" aria-label="close"></button></summary><div class="body" id="stitchPanel">
 <label id="l-markDiv" data-i18n-title="markDivTip" hidden><span data-i18n="markDiv"></span><input id="markDiv" type="number" step="1" min="1" max="100" value="1"></label><label id="l-markDist" data-i18n-title="markDistTip" hidden><span data-i18n="markDist"></span><input id="markDist" type="number" step="0.5" min="0" value="0"></label>
@@ -834,7 +831,7 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span><span id="presence" data-i18n-title="presenceTip" hidden><span class="pr-dot">●</span> <span id="presenceN"></span><span class="pr-t" data-i18n="presenceSuffix"></span></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=81ed3418","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=1f5a3553","./data/release-notes.js":"./data/release-notes.js?v=5ce34c33","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=a4e72d9e","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=2f559507","./geometry.js":"./geometry.js?v=23392851","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=e33e4536","./help/ja.js":"./help/ja.js?v=e2bfcff7","./i18n.js":"./i18n.js?v=2e5fe2e2","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=ea734053","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=93a300e7","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=41903d3e","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=81ed3418","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=7c7355c6","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=8b9bf1a3","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=f870f7a0","./data/release-history.js":"./data/release-history.js?v=c2cc629d","./data/release-notes.js":"./data/release-notes.js?v=457170f3","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=a4e72d9e","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=672bdc16","./geometry.js":"./geometry.js?v=23392851","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=e33e4536","./help/ja.js":"./help/ja.js?v=e2bfcff7","./i18n.js":"./i18n.js?v=4f9fb3f3","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=962b9e5a","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=8ce47be4","./library.js":"./library.js?v=93a300e7","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=41903d3e","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=84ef53a6","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
 <script type="module" src="app.js?v=81ed3418"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
@@ -3569,7 +3566,7 @@ const MESSAGES = {
     "outDedupeTip": "SVG・PDF・DXF に出すとき、重なった線（隣のマスが共有する辺・二重の線・頂点が少しずれた同じ曲線・同じ円弧）を1本にして出します。レーザーが同じ所を何度も往復しなくなります。図面のデータは変わりません。色が違う重なりは、色のついた線を残します。縫い穴の経路が付いた線・塗りのある図形は、そのまま出します。",
     "outDedupeNote": "重なった線 {mm} mm 分を除いて出しました（{n} 個の図形を整理）。",
     "outBeamFix": "Beam Studio 用の補正（SVG）",
-    "outBeamFixTip": "Beam Studio は、色ごとの層を、線の太さ（約0.35mm）ぶん余分に見積もって縮めるので、点線・菱目だけの細い層が数%縮み、切る線との間隔が崩れます。入れると、層ごとに、縮むぶんを、あらかじめ拡大して出します（最小の幅・高さが 5mm 以上の層だけ）。レーザー加工用の SVG は Beam Studio で開くのが普通なので、初めから入です。Beam Studio 以外のソフトで開くときは、切にしてください（切にした選択は覚えます）。",
+    "outBeamFixTip": "Beam Studio は、色ごとの層を、線の太さ（約0.35mm）ぶん余分に見積もって縮めるので、点線・菱目だけの細い層が数%縮み、切る線との間隔が崩れます。入れると、切る線（型紙の層）はそのままに、点線・菱目の層だけを、縮むぶんだけあらかじめ拡大して出します（最小の幅・高さが 5mm 以上の層だけ）。切る線の大きさは、補正なしのときと同じです。レーザー加工用の SVG は Beam Studio で開くのが普通なので、初めから入です。Beam Studio 以外のソフトで開くときは、切にしてください（切にした選択は覚えます）。",
     "outBeamFixNote": "Beam Studio 用に、{n} 層を補正しました。",
     "presenceSuffix": "人が利用中",
     "presenceTip": "いま N's CAD を開いている人数です（約30秒ごとに更新・自分も含みます）。数えるために、画面を開くたびに作り直す匿名のランダム文字だけを送っています（氏名・図形・ファイル名は送りません）。",
@@ -4084,7 +4081,7 @@ const MESSAGES = {
     "flowLinkMoveTip": "オン（初めの設定）：断面を動かすと、平面図・展開図も同じだけ動きます（色もいっしょ）。オフ：断面だけが動いて、平面図・展開図はその場に残ります（数字を直して作りなおしても、その位置のままです）。",
     "layerGripTip": "つかんで上下へドラッグすると、層の並び（重なりの順）を入れ替えます。上ほど手前です。",
     "layerDragMoved": "層「{name}」を、ドラッグして並べ替えました。重なりの順は、層の並び（上ほど手前）で決まります。",
-    "layerNewMove": "選んだ図形を、新しい層へ",
+    "layerNewMove": "新しい層へ",
     "layerNewMoveTip": "選んでいる図形の層と同じ名前に連番を付けた新しい層を、そのすぐ手前に作って、選んでいる図形を移します（作図先はそのまま・元に戻すは1回）。同じ型紙でも、重なりの順を変えたいときに使います。",
     "layerNewMoveNeed": "先に、新しい層へ移す図形を選んでください。",
     "fillsDetachedClear": "宙に浮いた塗りを消す",
@@ -4207,7 +4204,7 @@ const MESSAGES = {
     "centerOnNoTarget": "基準にできる図形や囲まれた場所が、クリックした所にありません（選んでいない図形の線、または、実線で囲まれた場所の中をクリックしてください）。",
     "centerOnAlready": "もう、基準の中央にあります。",
     "centerOnDone": "基準の図形の中央へ動かしました（横 {dx} mm・縦 {dy} mm）。",
-    "layerMoveHere": "移す",
+    "layerMoveHere": "ここへ移す",
     "layerMoveHereTip": "選んでいる図形を、この層へ移します（作図先は変わりません・元に戻すは1回）。何も選んでいないときは押せません。",
     "showSecDims": "断面の寸法",
     "showSecDimsTip": "断面図の全幅・全高・厚みの寸法を、いつも画面に出します。2つ折りでは、寸法の線や文字をクリックすると、数字を入れて直せます。画面だけで、書き出し・印刷には入りません。",
@@ -4215,7 +4212,7 @@ const MESSAGES = {
     "fhbTO": "⑤表の革の厚み (mm)",
     "fhbTI": "⑥裏の革の厚み (mm)",
     "layerSelCount": "選択 {n}",
-    "layerRowsTop": "▲ 手前（上の層ほど、重なりの上に出ます）",
+    "layerRowsTop": "▲ 手前",
     "layerRowsBottom": "▼ 奥",
     "layerActiveTip": "この層を作図先にする（新しく描く図形が入る層・●が今の作図先）",
     "layerActiveSet": "作図先を「{name}」にしました。",
@@ -4224,7 +4221,7 @@ const MESSAGES = {
     "clearApplied": "{n} か所を透明にしました（いちばん上の色を抜いて、下が見えます）。",
     "clearNone": "透明にできる場所がありません。選んだ線だけで囲まれた場所（穴の四角など）を選ぶか、何も選ばずに「透明」を押して囲みをクリックしてください。",
     "fillsDroppedWithShapes": "消した図形で囲まれていた塗り {n} か所も、いっしょに消しました（元に戻すは1回）。",
-    "layerMerge": "この層を、作図先へ統合",
+    "layerMerge": "作図先へ統合",
     "layerMergeTip": "左で選んだ層の図形と塗りを、いまの作図先の層へまとめて移し、選んだ層は無くします（元に戻すは1回）。ロック中の層と、断面図の層は統合できません。",
     "layerMergeSrcAria": "統合する層",
     "layerMergeOpt": "{name}（{n} 図形）",
@@ -4888,7 +4885,7 @@ const MESSAGES = {
     "activeLayer": "作図先",
     "layerName": "名前",
     "visible": "表示",
-    "layerSolo": "作図先の層だけ表示（他を隠す）",
+    "layerSolo": "作図先だけ",
     "layerAll": "すべて表示",
     "ctxLib": "部品ライブラリに登録…",
     "ctxCat_sel": "選んだ図形",
@@ -4956,19 +4953,29 @@ const MESSAGES = {
     "dashedToGuideHidden": "点線にしたので、ガイドの層へ移しました（ガイドは非表示かロック中です）。",
     "multiSelected": "{n} 個（まとめて変更）",
     "multiApplied": "選んだ {n} 個の図形に反映しました。",
-    "layerPickYellow": "黄色の点線の図形をすべて選ぶ（オフセット線など）",
+    "layerPickYellow": "黄の点線",
     "layerPickedYellow": "黄色の点線の図形 {n} 個を選びました。続けて「選んだ図形を、作図先の層へ移す」を押せます。",
     "layerPickNoneYellow": "黄色の点線の図形はありません（非表示・ロック中の層は対象外）。",
-    "layerPickDashed": "点線の図形をすべて選ぶ（すべての色）",
+    "layerPickDashed": "点線（全色）",
     "layerPickedDashed": "点線の図形 {n} 個を選びました（色は問いません）。続けて「選んだ図形を、作図先の層へ移す」を押せます。",
     "layerPickNoneDashed": "点線の図形はありません（非表示・ロック中の層は対象外）。",
-    "layerMove": "選んだ図形を、作図先の層へ移す",
+    "layerMove": "作図先へ",
     "layerMoved": "{n} 個の図形を「{name}」へ移しました。",
     "layerMoveNone": "移す図形が選ばれていません（ロック中の層の図形は移せません）。",
     "layerMoveBlocked": "「{name}」はロック中なので、図形を移せません（ロックを外してから押してください）。",
     "layerMovedHidden": "{n} 個の図形を「{name}」へ移しました。この層は非表示なので、移した図形は見えなくなりました（レイヤーの「表示」にチェックを入れると見えます。元に戻すでも戻せます）。",
     "layerSoloDone": "「{name}」だけを表示しました。",
-    "layerOrderNote": "層の並び（上ほど手前）で、重なりの順が決まります。各行の ▲ で手前へ・▼ で奥へ。行の頭の丸（●）が作図先。名前は、行の名前の欄を書き換えます。",
+    "layerOrderNote": "上の層ほど手前。● が作図先（新しく描く図形が入る層）。",
+    "layerGrpShow": "表示",
+    "layerGrpPick": "選ぶ",
+    "layerGrpMove": "移す",
+    "layerGrpLayer": "層",
+    "layerSoloTip": "作図先（●）の層だけを見せて、ほかの層を隠します。",
+    "layerAllTip": "すべての層を見せます。",
+    "layerPickYellowTip": "黄色の点線の図形（オフセット線など）をすべて選びます。",
+    "layerPickDashedTip": "色に関わらず、点線の図形をすべて選びます（ガイドの層へまとめて移すときに）。",
+    "layerMoveTip": "選んだ図形を、作図先（●）の層へ移します。ほかの層へは、その層の行の「ここへ移す」。",
+    "removeLayerTip": "作図先の層を消します（図形が入っている層・最後の1層は消せません）。",
     "layerIntro": "レイヤー（層）は、図形を分けて入れておく「透明なシート」です。シートごとに、次のことができます。\n① 見せる・隠す、ロック（うっかり動かさない）\n② 重なりの順を変える（一覧の上のシートほど手前）\n③ 選んだ図形を、別のシートへ移す\n新しく描く図形は、「作図先」に選んだシートに入ります。",
     "ctxLayersTitle": "選んだ図形を、この層へ移す（重なりは層の並びで決まります）",
     "ctxLayerTip": "押すと、選んだ図形をこの層へ移します（元に戻すは1回）。",
@@ -4992,7 +4999,7 @@ const MESSAGES = {
     "showSolidTip": "実線の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。隠した線はクリックで選べず、吸着もしません。",
     "showDashed": "点線を表示",
     "showDashedTip": "点線（補助線・ガイド）の表示・非表示（画面だけ。印刷・書き出しには常に出ます。レイヤーとは別です）。線種が点線の線と、ガイドの層の線が対象です。",
-    "gatherLayer": "表示中の線を作図レイヤーに集める",
+    "gatherLayer": "見えている線をすべて作図先へ",
     "gatherLayerTip": "いま画面に出ている（実線・点線の表示とレイヤーの両方で見えている）線を、すべて上の「作図レイヤー」に移します。ロック中・非表示のレイヤーの線は動きません。元に戻せます。",
     "gatherLocked": "作図レイヤーが非表示かロック中です。別のレイヤーを選ぶか、ロックを外してください。",
     "gatherNone": "移す線がありません（表示中の線は、すべて作図レイヤーにあります）。",
@@ -5992,7 +5999,7 @@ const MESSAGES = {
     "outDedupeTip": "When exporting SVG, PDF or DXF, overlapping lines (edges shared by neighboring cells, doubled lines, the same curve with slightly shifted vertices, the same arc) are exported once, so the laser does not travel the same place again and again. The drawing data is not changed. For overlaps of different colors the colored line is kept. Lines with a stitch-hole route and painted shapes are exported as they are.",
     "outDedupeNote": "Removed {mm} mm of overlapping lines on export ({n} shapes tidied).",
     "outBeamFix": "Beam Studio correction (SVG)",
-    "outBeamFixTip": "Beam Studio sizes each color layer about one stroke width (about 0.35 mm) too large and shrinks it to fit, so thin layers (a layer of only dotted lines or stitch holes) shrink by a few percent and the gap to the cut line goes wrong. When on, each layer is enlarged beforehand by the amount it will shrink (only layers whose smaller width/height is 5 mm or more). It is on by default, because the laser SVG is normally opened in Beam Studio; turn it off for other software (your choice is remembered).",
+    "outBeamFixTip": "Beam Studio sizes each color layer about one stroke width (about 0.35 mm) too large and shrinks it to fit, so thin layers (only dotted lines or stitch holes) shrink by a few percent and drift from the cut line. When on, the cut line (pattern layer) is left untouched and only the dotted/hole layers are pre-adjusted so they shrink the same way as the cut line (layers whose smaller side is 5 mm or more). The cut size is the same as without the correction. It is on by default, because the laser SVG is normally opened in Beam Studio; turn it off for other software (your choice is remembered).",
     "outBeamFixNote": "Corrected {n} layer(s) for Beam Studio.",
     "presenceSuffix": " online",
     "presenceTip": "People with N's CAD open right now (updated about every 30 seconds, including you). To count them, only a random anonymous string, made anew each time you open the page, is sent (no name, drawing or file name).",
@@ -6507,7 +6514,7 @@ const MESSAGES = {
     "flowLinkMoveTip": "On (default): moving the section moves the flat plan and unfolded views by the same amount (colors too). Off: only the section moves and the flat plan and unfolded views stay put (they keep that position when you change a number and rebuild).",
     "layerGripTip": "Drag up or down to reorder the layers (what covers what). The higher, the closer to the front.",
     "layerDragMoved": "Reordered layer \"{name}\" by dragging. What covers what is decided by the layer order (top = front).",
-    "layerNewMove": "Move selection to a new layer",
+    "layerNewMove": "To a new layer",
     "layerNewMoveTip": "Creates a new numbered layer named after the layer of the selected shapes, right in front of it, and moves the selection there (the drawing layer does not change; undo reverts in one step). Use it to change what covers what even within the same pattern.",
     "layerNewMoveNeed": "Select the shapes to move to a new layer first.",
     "fillsDetachedClear": "Remove floating fills",
@@ -6630,7 +6637,7 @@ const MESSAGES = {
     "centerOnNoTarget": "No reference shape or enclosed area at the click (click a line of a shape that is not selected, or inside an area enclosed by solid lines).",
     "centerOnAlready": "Already at the center of the reference.",
     "centerOnDone": "Moved to the center of the reference (x {dx} mm, y {dy} mm).",
-    "layerMoveHere": "Move",
+    "layerMoveHere": "Move here",
     "layerMoveHereTip": "Moves the selected shapes to this layer (the drawing layer does not change; undo reverts in one step). Disabled when nothing is selected.",
     "showSecDims": "Section dimensions",
     "showSecDimsTip": "Always show the overall width, height and thickness dimensions of the section. For the bi-fold, click a dimension line or number to type a new value. Screen only; not included in exports or prints.",
@@ -6638,7 +6645,7 @@ const MESSAGES = {
     "fhbTO": "(5) Outer leather thickness (mm)",
     "fhbTI": "(6) Inner leather thickness (mm)",
     "layerSelCount": "{n} selected",
-    "layerRowsTop": "▲ Front (the higher a layer is, the more it covers)",
+    "layerRowsTop": "▲ Front",
     "layerRowsBottom": "▼ Back",
     "layerActiveTip": "Make this the drawing layer (new shapes go here; ● marks the current one)",
     "layerActiveSet": "Drawing layer set to \"{name}\".",
@@ -6647,7 +6654,7 @@ const MESSAGES = {
     "clearApplied": "Made {n} areas transparent (the top color is removed and the one below shows).",
     "clearNone": "No area to clear. Select lines that enclose an area by themselves (such as hole squares), or press Transparent with nothing selected and click an enclosed area.",
     "fillsDroppedWithShapes": "Also removed {n} fills that were enclosed by the deleted shapes (undo reverts both in one step).",
-    "layerMerge": "Merge this layer into the drawing layer",
+    "layerMerge": "Merge into drawing layer",
     "layerMergeTip": "Moves the shapes and fills of the layer chosen on the left into the current drawing layer and removes the chosen layer (undo reverts it in one step). Locked layers and the section layer cannot be merged.",
     "layerMergeSrcAria": "Layer to merge",
     "layerMergeOpt": "{name} ({n} shapes)",
@@ -7311,7 +7318,7 @@ const MESSAGES = {
     "activeLayer": "Draw on",
     "layerName": "Name",
     "visible": "Visible",
-    "layerSolo": "Show only the drawing layer (hide others)",
+    "layerSolo": "Drawing layer only",
     "layerAll": "Show all",
     "ctxLib": "Register in the parts library…",
     "ctxCat_sel": "Selection",
@@ -7379,19 +7386,29 @@ const MESSAGES = {
     "dashedToGuideHidden": "Made it dashed, so it was moved to the Guide layer (which is hidden or locked).",
     "multiSelected": "{n} shapes (edit together)",
     "multiApplied": "Applied to the {n} selected shapes.",
-    "layerPickYellow": "Select all yellow dashed shapes (offset lines, etc.)",
+    "layerPickYellow": "Yellow dashed",
     "layerPickedYellow": "Selected {n} yellow dashed shapes. Now press \"Move selected shapes to the drawing layer\".",
     "layerPickNoneYellow": "No yellow dashed shapes (hidden or locked layers are excluded).",
-    "layerPickDashed": "Select all dashed shapes (any color)",
+    "layerPickDashed": "Dashed (all colors)",
     "layerPickedDashed": "Selected {n} dashed shapes (any color). Now press \"Move selected shapes to the drawing layer\".",
     "layerPickNoneDashed": "No dashed shapes (hidden or locked layers are excluded).",
-    "layerMove": "Move selected shapes to the drawing layer",
+    "layerMove": "To drawing layer",
     "layerMoved": "Moved {n} shapes to \"{name}\".",
     "layerMoveNone": "No shapes to move are selected (shapes on locked layers cannot be moved).",
     "layerMoveBlocked": "\"{name}\" is locked, so shapes cannot be moved there (unlock it first).",
     "layerMovedHidden": "Moved {n} shapes to \"{name}\". That layer is hidden, so the moved shapes are no longer visible (turn on its Show checkbox to see them; Undo also brings them back).",
     "layerSoloDone": "Showing only \"{name}\".",
-    "layerOrderNote": "The order of the layers decides what covers what (top = in front). Use the up arrow on a row to bring that layer forward and the down arrow to send it back. The circle at the start of a row (●) is the drawing layer. Rename a layer in its name box.",
+    "layerOrderNote": "Upper layers are in front. ● = the drawing layer (where new shapes go).",
+    "layerGrpShow": "Show",
+    "layerGrpPick": "Select",
+    "layerGrpMove": "Move",
+    "layerGrpLayer": "Layer",
+    "layerSoloTip": "Show only the drawing layer (●) and hide the others.",
+    "layerAllTip": "Show every layer.",
+    "layerPickYellowTip": "Select every yellow dashed shape (offset lines etc.).",
+    "layerPickDashedTip": "Select every dashed shape regardless of color (to move them to the guide layer at once).",
+    "layerMoveTip": "Move the selected shapes to the drawing layer (●). For another layer, use \"Move here\" on that layer's row.",
+    "removeLayerTip": "Remove the drawing layer (a layer with shapes, or the last layer, cannot be removed).",
     "layerIntro": "A layer is a \"transparent sheet\" that holds some of your shapes. For each sheet you can:\n1. Show or hide it, or lock it (so it cannot be moved by accident)\n2. Change what covers what (the higher in the list, the closer to the front)\n3. Move the selected shapes to another sheet\nNew shapes go onto the sheet chosen as the Drawing layer.",
     "ctxLayersTitle": "Move the selected shapes to this layer (what covers what is decided by the layer order)",
     "ctxLayerTip": "Press to move the selected shapes to this layer (undo reverts it in one step).",
@@ -7415,7 +7432,7 @@ const MESSAGES = {
     "showSolidTip": "Show or hide solid lines (screen only; printing and export always include them; separate from layers). Hidden lines cannot be clicked and do not snap.",
     "showDashed": "Show dashed lines",
     "showDashedTip": "Show or hide dashed lines (guides / construction lines) (screen only; printing and export always include them; separate from layers). Covers dashed lines and lines on the Guide layer.",
-    "gatherLayer": "Gather visible lines into the drawing layer",
+    "gatherLayer": "All visible lines to drawing layer",
     "gatherLayerTip": "Moves every line you can see now (visible by both the solid / dashed toggles and the layers) to the Drawing layer above. Lines on locked or hidden layers stay. You can undo it.",
     "gatherLocked": "The drawing layer is hidden or locked. Pick another layer or unlock it.",
     "gatherNone": "Nothing to move (all visible lines are already on the drawing layer).",
@@ -8437,10 +8454,23 @@ const METAL_FALLBACK = { gold: '#D4AF37', silver: '#C0C0C0', pinkgold: '#E5A593'
 /** Beam Studio は、色ごとの層を、線の太さ1px（72DPI で約0.35mm）ぶん余分に見積もり、層の大きさに合わせて縮めて表示・加工する。細い層（点線・菱目だけの層など）は、幅が小さいぶん、縮みが大きく（幅15mm で約2.3%）、切る線との間隔が崩れる。
  *  beamFix のとき、層ごとに、縮むぶんを、あらかじめ拡大して出す（層の中心を基準に、1÷(幅÷(幅＋0.35mm))倍。幅・高さの小さいほう）。最小の幅・高さが 5mm 未満の層は、確かめていないので、そのまま（事業主の Beam Studio で、幅15mm の層で確認 2026-10-27）。 */
 const BEAM_STROKE_MM = 25.4 / 72;
+/** Beam Studio が、この大きさの層を縮める比率（1 未満）と中心。最小の幅・高さが 5mm 未満（確かめていない）・大きさが無いときは null。 */
+function beamShrinkOf(b) {
+  if (!b) return null; const w = b.maxX - b.minX, h = b.maxY - b.minY; if (!(Math.min(w, h) >= 5)) return null;
+  const k = BEAM_STROKE_MM; return { r: Math.min(w / (w + k), h / (h + k)), cx: (b.minX + b.maxX) / 2, cy: (b.minY + b.maxY) / 2 };
+}
+/** 層の中身 inner を、Beam Studio が縮めるぶんだけ、層の中心を基準にあらかじめ拡大して包む（縮んだあとに真の大きさ＝外周の位置に合う）。
+ *  外周（型紙・カット）の層には使わない：Beam Studio は外周をそのまま読み込む（事業主の読み取り 2026-10-28「外周実線はいじらないでほしかった」）。 */
 function beamFixWrap(inner, b) {
-  if (!b) return inner; const w = b.maxX - b.minX, h = b.maxY - b.minY; if (!(Math.min(w, h) >= 5)) return inner;
-  const k = BEAM_STROKE_MM, s = 1 / Math.min(w / (w + k), h / (h + k)), cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2, n = v => +v.toFixed(4);
-  return `<g data-beamfix="1" transform="translate(${n(cx)} ${n(cy)}) scale(${+s.toFixed(5)}) translate(${n(-cx)} ${n(-cy)})">${inner}</g>`;
+  const L = beamShrinkOf(b); if (!L) return inner; const s = 1 / L.r, n = v => +v.toFixed(4);
+  return `<g data-beamfix="1" transform="translate(${n(L.cx)} ${n(L.cy)}) scale(${+s.toFixed(5)}) translate(${n(-L.cx)} ${n(-L.cy)})">${inner}</g>`;
+}
+/** 触らない層（外周＝型紙の層。無ければ、いちばん大きな層）の id。boxes＝[{ id, box }]。
+ *  事業主の Beam Studio の読み取り（2026-10-28）：外周の層は、SVG の大きさのまま読み込まれる（縮まない）。細い層（点線・菱目）だけが縮む（10-27 の実測）。
+ *  → 外周の層は包まず、ほかの層は、その層の中心を基準に 1÷縮み 倍（＝真の大きさ＝外周の位置に合う）。 */
+function beamRefOf(boxes, preferId = 'pattern') {
+  const pref = boxes.find(x => x.id === preferId && beamShrinkOf(x.box)); if (pref) return pref.id;
+  let best = null; for (const x of boxes) { const S = beamShrinkOf(x.box); if (S && (!best || S.r > best.S.r)) best = { id: x.id, S }; } return best ? best.id : null;   /* 縮みがいちばん小さい（＝いちばん大きい）層 */
 }
 function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, lineColors = 'color' } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
@@ -8450,6 +8480,8 @@ function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, f
   const x0 = b.minX - marginMm, y0 = b.minY - marginMm, w = b.maxX - b.minX + 2 * marginMm, h = b.maxY - b.minY + 2 * marginMm;
   const usedTex = new Set(); /* 画像を埋め込んだ質感の id（<defs> に pattern を作る） */
   const texPaint = (texId, color) => { const tex = texId && textures ? textures[texId] : null; if (tex?.href) { usedTex.add(texId); return `url(#tex-${safeId(texId)})`; } return tex ? safeColor(tex.avg) : (color ? safeColor(color) : null); };   /* 質感の塗り：画像（pattern）、無ければ平均色、それも無ければ革色 */
+  const layerBox = id => bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.layer === id), holes: [] }), holesBox = holes.length ? bboxOfDoc({ ...doc, shapes: [], holes }) : null;
+  const beamRef = beamFix ? beamRefOf([...doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => ({ id: l.id, box: layerBox(l.id) })), ...(holesBox ? [{ id: 'holes', box: holesBox }] : [])]) : null;   /* Beam 補正の基準＝型紙の層（外周）。無ければいちばん大きな層 */
   const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(s.font ? textFontStack(s.font) : fontFamily)}" fill="${svgTextHex(s, lineColors)}" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;   /* 書体を決めた文字（font）は、その書体。決めていない文字は、出力の既定（fontFamily） */
@@ -8464,10 +8496,10 @@ function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, f
       return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';
     }).join('');
     const g = `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
-    return beamFix ? beamFixWrap(g, bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.layer === l.id), holes: [] })) : g;
+    return beamFix && l.id !== beamRef ? beamFixWrap(g, layerBox(l.id)) : g;   /* 外周（基準）の層は触らない */
   }).join('');
   const threadHex = h => { if (lineColors === 'mono') return '#000000'; const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length ? beamFixWrap(holeGroup0, bboxOfDoc({ ...doc, shapes: [], holes })) : holeGroup0;
+  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length && beamRef !== 'holes' ? beamFixWrap(holeGroup0, holesBox) : holeGroup0;
   const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
   const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
@@ -8649,7 +8681,7 @@ function dxfToShapes(text) {
   return shapes;
 }
 
-return {flipFormatY, svgSweep, holesOnShapes, SHAPE_COLOR_HEX, SHAPE_COLOR_ACI, exportHex, DIAMOND_RED, svgLineHex, svgTextHex, safeColor, shapeToSvgD, dimText, dimTextAscii, holeToSvg, BEAM_STROKE_MM, beamFixWrap, docToSvg, calibrationFactor, applyCalibration, pagesFor, printLayout, pageSvg, calibrationScale, shapeToDxf, holeToDxf, docToDxfR12, docToPdf, dxfToShapes};
+return {flipFormatY, svgSweep, holesOnShapes, SHAPE_COLOR_HEX, SHAPE_COLOR_ACI, exportHex, DIAMOND_RED, svgLineHex, svgTextHex, safeColor, shapeToSvgD, dimText, dimTextAscii, holeToSvg, BEAM_STROKE_MM, beamShrinkOf, beamFixWrap, beamRefOf, docToSvg, calibrationFactor, applyCalibration, pagesFor, printLayout, pageSvg, calibrationScale, shapeToDxf, holeToDxf, docToDxfR12, docToPdf, dxfToShapes};
 })();
 __mods['importers'] = (function(){
 // 取り込み（SVG・DXF）。純粋関数のみ。SVG は自前の軽量 XML 字句解析（DOM に挿入しない）。内部は Y 下向き・mm。
@@ -8895,8 +8927,8 @@ function beamStudioSvg(doc, { kerfMm = 0.15, includeHoles = true, cutLayerIds = 
   const cutBody = kerfed.map(s => { const d = shapeToSvgD(s); return d ? `<path d="${d}"/>` : ''; }).join('');
   const holeBody = holes.map(hole => { const a = holeAppearance(hole, doc); if (!a) return ''; return `<circle cx="${fmt3(hole.x)}" cy="${fmt3(hole.y)}" r="${fmt3(Math.max(0.05, Math.min(a.width, a.height || a.width) / 2))}"/>`; }).join('');
   const engraveBody = engrave.map(s => { if (s.type === 'text') return `<text x="${fmt3(s.x)}" y="${fmt3(s.y)}" font-size="${fmt3(s.sizeMm)}" font-family="sans-serif" fill="#0000ff" stroke="none" transform="rotate(${fmt3(s.angleDeg)} ${fmt3(s.x)} ${fmt3(s.y)})">${escX(s.text)}</text>`; const d = shapeToSvgD(s); return d ? `<path d="${d}"${s.closed || s.type === 'circle' ? ' fill="#0000ff"' : ''}/>` : ''; }).join('');
-  const fix = (body, shapes, hs) => (beamFix && body) ? beamFixWrap(body, bboxOfDoc({ ...doc, shapes, holes: hs })) : body;   /* 層ごとに、その層の中身の大きさで補正（カットはカーフ込み） */
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt3(w)}mm" height="${fmt3(h)}mm" viewBox="${fmt3(x0)} ${fmt3(y0)} ${fmt3(w)} ${fmt3(h)}"><g id="cut" fill="none" stroke="#000000" stroke-width="${fmt3(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${fix(cutBody, kerfed, [])}</g><g id="holes" fill="none" stroke="#ff0000" stroke-width="${fmt3(strokeMm)}">${fix(holeBody, [], holes)}</g><g id="engrave" fill="none" stroke="#0000ff" stroke-width="${fmt3(strokeMm)}">${fix(engraveBody, engrave, [])}</g></svg>`;
+  const fix = (body, shapes, hs, untouched = false) => (beamFix && body && !untouched) ? beamFixWrap(body, bboxOfDoc({ ...doc, shapes, holes: hs })) : body;   /* カットの層は触らない（Beam Studio は外周をそのまま読み込む・事業主の読み取り 2026-10-28）。穴・刻印の層は、その層の中心を基準に縮むぶんを先に拡大 */
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt3(w)}mm" height="${fmt3(h)}mm" viewBox="${fmt3(x0)} ${fmt3(y0)} ${fmt3(w)} ${fmt3(h)}"><g id="cut" fill="none" stroke="#000000" stroke-width="${fmt3(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${fix(cutBody, kerfed, [], true)}</g><g id="holes" fill="none" stroke="#ff0000" stroke-width="${fmt3(strokeMm)}">${fix(holeBody, [], holes)}</g><g id="engrave" fill="none" stroke="#0000ff" stroke-width="${fmt3(strokeMm)}">${fix(engraveBody, engrave, [])}</g></svg>`;
 }
 /** Leathercraft CAD 互換 DXF（R12）：レイヤー名を LineType_NN に、縫い穴は Stitch_Holes、外接矩形の左下を原点に。 */
 function leathercraftDxf(doc, { originAtCorner = true, includeHoles = true, layerMap = LC_EXPORT_MAP } = {}) {
@@ -24699,6 +24731,13 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-10-28 17:30",
+      "items": [
+        "「Beam Studio 用の補正（SVG）」を、切る線（型紙の層・カットの層）には掛けないようにしました（事業主「補正はガイドラインに対する菱目のオフセットがおかしかっただけで、外周実線はいじらないでほしかった」。事業主の Beam Studio の読み取りで、外周の層は SVG の大きさのまま読み込まれて縮まないことを確認）。版 16:32〜17:10 で補正ありで書き出した SVG は、外周が約0.3%（148mm で 0.5mm）大きくなっていました。補正は、点線・菱目の層だけに、縮むぶんをあらかじめ拡大して掛けます。切る線の大きさは補正なしのときと同じです。",
+        "レイヤーの窓を整理しました（事業主「説明が長くシンプルでないので、簡潔に・配置をバランスよく」）。上の説明は1行（上の層ほど手前。● が作図先）。各層の行の「移す」は「ここへ移す」に。下のボタンは「表示：作図先だけ／すべて表示」「選ぶ：黄の点線／点線（全色）」「移す：作図先へ／新しい層へ／見えている線をすべて作図先へ」「層：追加／削除／（層）を作図先へ統合」の4行にまとめ、くわしい説明はマウスを乗せたときの吹き出しに移しました。機能は変えていません。点線をまとめてガイドの層へ移すときは、点線（全色）→ ガイドの行の「ここへ移す」です（ガイドの層が非表示でも移せます。移した図形は見えなくなるので、表示にチェックを入れると見えます）。"
+      ]
+    },
+    {
       "date": "2026-10-28 17:10",
       "items": [
         "自動保存を、別のブラウザタブでも効くようにしました（事業主の報告「更新したら作業中の作図が消えた」。N's CAD を2つのタブで開いていると、あとから開いたタブ（副）では自動保存が止まっていて、そのタブを再読み込みすると描いた分が消えていました）。副のタブの図面は別の置き場に自動保存し、再読み込みすると「前回の続き（別のタブで描いていた分）」として戻せます。主のタブでは、主の保存と副の保存の両方があれば新しいほうを先に出し、戻したあとにもう一方も出します。また、図面が大きすぎる・ブラウザに保存できないなどで自動保存に乗っていない変更があるときは、タブを閉じる・更新・再読み込みの前に、ブラウザの確認を出すようにしました（自動保存が効いていれば出ません）。"
@@ -25337,10 +25376,11 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-10-28",
       "items": [
+        "N's CAD: Beam Studio 用の補正を外周（型紙・カット）の層には掛けない／レイヤーの窓を4行に整理",
+        "N's CAD: 更新履歴の日付を公開日時に（互換ブロックも）",
         "N's CAD: 副のタブでも自動保存（別の置き場）・自動保存に乗らない変更があるときは閉じる前に確認（「更新したら作業中の作図が消えた」）",
         "N's CAD: 引き継ぎ書に全体テスト（7672件）の結果を追記",
         "N's CAD: 引き継ぎ書に 10-28 夕（駒合わせの継ぎ目の指定）の公開分を追記",
-        "N's CAD: 更新履歴の日付を公開日時に（互換ブロックも）",
         "N's CAD: 駒合わせ（曲面）で、帯の継ぎ目（始点）の位置を上面の縫い線のクリックで選べるように",
         "N's CAD: 引き継ぎ書に全体テストの結果（guide_fit・単独合格の2件）を追記",
         "N's CAD: 書き出し先「Beam Studio」にも「Beam Studio 用の補正」を効かせる（カット・穴・刻印の層ごと）",
