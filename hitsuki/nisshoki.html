@@ -198,6 +198,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </footer>
 
   <script src="data/hitsukiData.js"></script>
+  <script src="data/hitsukiNoText.js"></script>
   <script src="data/hitsukiStatic.js"></script>
   <script src="data/commentaries.js"></script>
   <script src="data/fulltext.js"></script>
@@ -206,9 +207,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   (function () {
     var vols = window.HITSUKI_VOLUMES || [], tr = window.HITSUKI_TRANSCRIPTS || {};
     var tot = {}, total = 0, cnt = {}, last = '', lastN = 0, work = 0;
-    vols.forEach(function (v) { tot[v.id] = v.totalChapters; total += v.totalChapters; });
+    var noText = window.HITSUKI_NO_TEXT || {};
+    // 出典サイトに本文が無い帖（欠番）は分母から外し、冬の巻の補帖（fuyu-supplement）は1帖として数える
+    vols.forEach(function (v) { var t = v.totalChapters - (noText[v.id] || []).length; tot[v.id] = t; total += t; });
     Object.keys(tr).forEach(function (k) {
-      var m = k.match(/^([a-z0-9]+)-\d+$/);
+      var m = k.match(/^([a-z0-9]+)-(\d+|supplement)$/);
       if (!m || !tot[m[1]]) return;
       cnt[m[1]] = (cnt[m[1]] || 0) + 1;
       if (tr[k].kind === 'workshop') work++;
