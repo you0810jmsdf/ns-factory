@@ -303,7 +303,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙のサイズと穴の位置について</p>
       <ul style="padding-left:18px; margin:4px 0;">
         <li>数値は変えられます。変えると「サイズ」は自動で「自分で入力」になります</li>
-        <li><b>ロルバーン L は仮の規格です。</b>公式で分かっているのは本体（カバー込み）の横143×縦182mmだけで、中の用紙の寸法・穴の位置は公開されていません。「139×182（推定）」と「130×178（note記事の値）」の2つを用意しました。手元の用紙を測って、幅・高さ・穴の位置を直してください</li>
+        <li><b>ロルバーン L の用紙は、横132×縦178mm（デルフォニックス公式のフレキシブルリフィル L の仕様）です。</b>穴の位置は公式に公開されていないため、18個・間隔9.5mm・端から6mm は仮の値（ロルバーン M と同じ）です。手元の用紙を測って、穴の位置を直してください</li>
         <li>用紙が実物と合うかは、「印刷がずれるとき」の「テスト用紙を表示」で枠と穴だけを印刷し、実物を重ねて確かめられます</li>
         <li>穴の位置は「上端から（mm）」をカンマで並べます。等間隔の穴は「等間隔で作る」で入れられます</li>
       </ul>
@@ -347,10 +347,9 @@ const r1 = v => Math.round(v * 100) / 100;
 // 等間隔の穴: 上下の余りが同じになるように中央に置く
 function uniformHoles(n, pitch, h) { const s = (h - (n - 1) * pitch) / 2; return Array.from({ length: n }, (_, i) => r1(s + i * pitch)); }
 // 用紙プリセット。w×h は中の用紙（mm）、holes は上端から穴中心（mm）、edge は綴じ側の端から穴中心（mm）、d は穴径（mm）
-// ⛔ ロルバーン L は公式で分かるのが本体（カバー込み）143×182mm だけ。中の用紙と穴は推定（M の実測：107×138・穴13個・9.5mm・端から6mm から類推）。実測したら直すこと。
+// ⛔ ロルバーン L：用紙 132×178mm は公式（フレキシブルリフィル L の仕様）。穴は公式に数値が無く、18個・9.5mm・端から6mm は仮（M の実測 107×138・穴13個・9.5mm・端から6mm から類推）。実測したら直すこと。N's CAD の部品「リフィル型紙 ロルバーン L」（tools/gen_rollbahn_part.mjs）と同じ数値に揃えること。
 const PRESETS = {
-  rollbahnL:  { label: 'ロルバーン L（139×182・推定）', w: 139, h: 182, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 182), note: '⚠ 仮の規格です。公式で分かるのは本体（カバー込み）143×182mmだけ。中の用紙は「カバーより幅4mm狭く高さは同じ」というMの実測から推定した値で、穴は9.5mm間隔の18個（ルーズリーフと同じ間隔とされる）です。手元の用紙を測って直してください。', warn: true },
-  rollbahnL2: { label: 'ロルバーン L（130×178・note記事の値）', w: 130, h: 178, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 178), note: '⚠ 仮の規格です。noteの記事で印刷サイズとして挙げられている値（130×178）です。穴は9.5mm間隔の18個を中央に置いています。手元の用紙を測って直してください。', warn: true },
+  rollbahnL:  { label: 'ロルバーン L（132×178）', w: 132, h: 178, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 178), note: '用紙の大きさ 132×178mm はデルフォニックス公式（フレキシブルリフィル L）の仕様です。⚠ 穴の位置は公式に公開されておらず、18個・9.5mm間隔・端から6mm は仮の値です（ロルバーン M と同じ。穴の数は note 記事から）。手元の用紙を測って直してください。', warn: true },
   rollbahnM:  { label: 'ロルバーン M（107×138）', w: 107, h: 138, d: 5, edge: 6, holes: uniformHoles(13, 9.5, 138), note: '用紙107×138mm・穴13個・9.5mm間隔・端から6mm（当工房のロルバーンM部品の値）。穴径は仮です。' },
   a6:     { label: 'A6（105×148）', w: 105, h: 148, d: 4, edge: 5, holes: [14.75, 33.75, 52.75, 90.75, 109.75, 128.75], note: 'システム手帳A6（6穴）。当工房のA6ツールと同じ位置です。' },
   bible:  { label: 'バイブル（95×170）', w: 95, h: 170, d: 5, edge: 5, holes: [18.5, 37.5, 56.5, 107.5, 126.5, 145.5], note: 'システム手帳バイブル（6穴）。当工房のバイブルツールと同じ位置です。' },
@@ -360,10 +359,10 @@ const PRESETS = {
   micro5: { label: 'マイクロ5（62×105）', w: 62, h: 105, d: 5, edge: 6, holes: [15, 34, 53, 72, 91], note: 'マイクロ5（5穴・19mm間隔）。' },
   custom: { label: '自分で入力', w: 120, h: 170, d: 5, edge: 6, holes: uniformHoles(6, 19, 170), note: '数値を入力してください。' }
 };
-const PRESET_ORDER = ['rollbahnL', 'rollbahnL2', 'rollbahnM', 'a6', 'bible', 'a5', 'a5slim', 'mini6', 'micro5', 'custom'];
+const PRESET_ORDER = ['rollbahnL', 'rollbahnM', 'a6', 'bible', 'a5', 'a5slim', 'mini6', 'micro5', 'custom'];
 
 // === MODULE: State ===
-let paper = { preset: 'rollbahnL', w: 139, h: 182, d: 5, edge: 6, holes: PRESETS.rollbahnL.holes.slice() };
+let paper = { preset: 'rollbahnL', w: 132, h: 178, d: 5, edge: 6, holes: PRESETS.rollbahnL.holes.slice() };
 let fmt = 'weekly', isEN = false;
 let opts = { showHoles: true, showHoleLine: true, showPunchGuide: true, showCutLine: true, showLogo: true, showHoliday: true,
   showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false };
@@ -708,6 +707,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-10-29', type: 'fix', title: 'ロルバーン L の用紙を公式の 132×178mm に統一',
+    detail: 'ロルバーン L の用紙サイズを、デルフォニックス公式（フレキシブルリフィル L）の横132×縦178mmにそろえました。推定の2案（139×182・130×178）は整理しました。穴（18個・9.5mm間隔・端から6mm）は公式に数値が無いため仮のままで、実物を測って直せます。N\'s CAD の部品「リフィル型紙 ロルバーン L」も同じ数値です。' },
   { date: '2026-10-29', type: 'feat', title: 'リフィルメーカーを新規作成（ロルバーンL・お薬手帳・自由サイズ）',
     detail: 'サイズ・穴の位置を選べる（または数値で入力できる）リフィルメーカーを作りました。用紙はロルバーン L／M、A6、バイブル、A5、A5スリム、ミニ6、マイクロ5、自分で入力。書式は、週間バーチカル（見開き1週間・時間軸の開始／終了時を選べる）、お薬手帳（本人情報ページ＋記録ページ・薬剤情報シール貼付欄つき）、方眼・ドット・罫線のメモ（3〜7mm）。A4への並べ方は、縦・横のうち多く入るほうを自動で選びます。ロルバーン L は公式で分かる寸法が本体（カバー込み）だけのため仮の規格です。実測値で直せます。実物での印刷・穴位置の確認は未了です。' }
 ];
