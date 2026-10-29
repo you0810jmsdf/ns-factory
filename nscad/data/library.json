@@ -1922,6 +1922,513 @@
           ]
         }
       ]
+    },
+    {
+      "id": "notebook-rollbahn-l",
+      "name": "リフィル型紙 ロルバーン L（132×178・リング18）",
+      "name_en": "Refill pattern Rollbahn L (132×178, 18 rings)",
+      "tags": [
+        "refill",
+        "notebook",
+        "rollbahn"
+      ],
+      "desc": "ロルバーン L（デルフォニックス）のリフィル型紙（外形とリングの穴）。W=幅（132mm＝公式のフレキシブルリフィル L） H=高さ（縦178mm） R=右側の角の丸み（左側は直角） P=リングの間隔 E=穴の中心から左端 Dw=穴の幅（縁から内へ） Dh=穴の高さ（縁に沿って） Y=リングの列を中心の線から下へずらす量（0＝上下対称）。リングは左側に18個（偶数なので真ん中は穴と穴のあいだ）。紙の大きさは公式の仕様。穴の数（18個）は note 記事から、間隔・位置・大きさ・形はロルバーン M の設計を引き継いだ推定です（公式に穴の数値は公開されていません）。実物を測って、P・E・Dw・Dh・Y で直してください。ロルバーン M と同じく、Mini6 のリフィル（穴6個・間隔19.2mm＝リング2つぶん）が使える見込みですが、L の実物では未確認です。",
+      "vars": {
+        "W": 132,
+        "H": 178,
+        "R": 5,
+        "P": 9.5,
+        "E": 6,
+        "Dw": 6,
+        "Dh": 5,
+        "Y": 0
+      },
+      "varSteps": {
+        "W": 1,
+        "H": 1,
+        "R": 0.5,
+        "P": 0.05,
+        "E": 0.1,
+        "Dw": 0.1,
+        "Dh": 0.1,
+        "Y": 0.1
+      },
+      "varLimits": {
+        "R": [
+          1,
+          15
+        ],
+        "E": [
+          3,
+          9
+        ]
+      },
+      "shapes": [
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": 0,
+          "y1": 0,
+          "x2": "W-R",
+          "y2": 0
+        },
+        {
+          "type": "arc",
+          "layer": "pattern",
+          "cx": "W-R",
+          "cy": "R",
+          "r": "R",
+          "startDeg": 270,
+          "endDeg": 360
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": "W",
+          "y1": "R",
+          "x2": "W",
+          "y2": "H-R"
+        },
+        {
+          "type": "arc",
+          "layer": "pattern",
+          "cx": "W-R",
+          "cy": "H-R",
+          "r": "R",
+          "startDeg": 0,
+          "endDeg": 90
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": "W-R",
+          "y1": "H",
+          "x2": 0,
+          "y2": "H"
+        },
+        {
+          "type": "line",
+          "layer": "pattern",
+          "x1": 0,
+          "y1": "H",
+          "x2": 0,
+          "y2": 0
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-8.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-8.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-8.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-8.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-7.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-7.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-7.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-7.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-6.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-6.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-6.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-6.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-5.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-5.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-5.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-5.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-4.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-4.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-4.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-4.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-3.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-3.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-3.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-3.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-2.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-2.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-2.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-2.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-1.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-1.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-1.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-1.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-0.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-0.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y-0.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y-0.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+0.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+0.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+0.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+0.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+1.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+1.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+1.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+1.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+2.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+2.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+2.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+2.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+3.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+3.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+3.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+3.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+4.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+4.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+4.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+4.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+5.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+5.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+5.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+5.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+6.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+6.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+6.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+6.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+7.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+7.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+7.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+7.5*P+Dh/2"
+            }
+          ]
+        },
+        {
+          "type": "polyline",
+          "layer": "pattern",
+          "closed": true,
+          "points": [
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+8.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+8.5*P-Dh/2"
+            },
+            {
+              "x": "E+Dw/2",
+              "y": "H/2+Y+8.5*P+Dh/2"
+            },
+            {
+              "x": "E-Dw/2",
+              "y": "H/2+Y+8.5*P+Dh/2"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
