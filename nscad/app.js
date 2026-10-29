@@ -4195,6 +4195,14 @@ function leatherLayer() {
  *  戻り値：[{ metal, body: [点], holes: [[点]] }]（面積の大きい順＝小さい形が上）。d・vis・move は、ほかの紙・作図中の移動プレビュー用。 */
 /** 金属の線の一周が、トリムなどで少しとぎれても（とぎれた所の長さがこれ以下なら）、直線でつないで塗りを残す（mm・事業主 2026-10-29「金具の線をトリムしたいのに、全部消える」）。 */
 const METAL_LOOP_GAP = 30;
+/** 金属の線の一周の印（metalGroup）の、まだ使っていない名前（'mg1'・'mg2'…）。分解・切り分けで、閉じた金属の図形が直線になるとき、同じ印を付けて、塗りを残す（事業主 2026-10-29「金具を選択するだけで色が消える」）。 */
+const freshMetalGroup = () => { const used = new Set(doc.shapes.map(sh => sh.metalGroup).filter(Boolean)); let n = 1; while (used.has('mg' + n)) n++; return 'mg' + n; };
+/** リングの棒（occlude）が、分解・切り分けで直線になっても、同じ一周の印（metalGroup）の線から、塗りの形を作る：[{ points, metal, metalStyle, closed:true, type:'polyline' }]（drawOccluder にそのまま渡せる）。点を持つ棒（閉じた図形）は、ふつうに描くので含めない。 */
+function occluderLoops(list) {
+  const groups = new Map(); for (const sh of list) if (sh.occlude && sh.metalGroup && !sh.points && sh.type !== 'circle') { if (!groups.has(sh.metalGroup)) groups.set(sh.metalGroup, []); groups.get(sh.metalGroup).push(sh); }
+  const out = []; for (const lines of groups.values()) { const poly = outlinePolygon(lines, lines[0].id) || metalBrokenLoop(lines); if (poly) out.push({ type: 'polyline', closed: true, points: poly.points, metal: lines[0].metal, metalStyle: lines[0].metalStyle }); }
+  return out;
+}
 /** とぎれた一周（線を1つ消した・トリムで一部を消した）の塗りの形：どの線から・どちら向きにたどっても、いちばん近い端どうしをつないでいき（つなぐ長さは METAL_LOOP_GAP 以下）、最後に出発点へ戻る。つなぐ長さの合計がいちばん短いたどり方を選ぶ。戻り値は outlinePolygon と同じ { points }（つながらなければ null）。 */
 function metalBrokenLoop(list) {
   const pieces = list.map(sh => { try { return flattenShape(sh, 0.05); } catch { return []; } }).filter(pp => pp.length >= 2), n = pieces.length; if (n < 2) return null;
@@ -6400,7 +6408,8 @@ function applyShapeParts(hit, parts) {
   doc.holes = doc.holes.filter(h => !removedPaths.has(h.pathId));
   doc.seams = doc.seams.filter(seam => !removedPaths.has(seam.a.pathId) && !removedPaths.has(seam.b.pathId));
   const idx = doc.shapes.findIndex(s => s.id === hit.id); doc.shapes.splice(idx, 1);
-  const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
+  const grp = hit.metal && (hit.closed || hit.metalGroup) ? (hit.metalGroup || freshMetalGroup()) : null;   /* 閉じた金属の図形を切り分けたら、できた線に同じ一周の印を付ける（塗りが消えないように） */
+  const added = parts.map(part => { const id = freshId(doc.shapes, 's'), { markOf, ...plain } = part; doc.shapes.push({ ...plain, ...(grp ? { metalGroup: grp } : {}), id, layer: hit.layer }); return id; }); /* 目印の直線を切ったときの残りは、普通の点線（目印との結びつきは外す） */
   /* 菱目は、消した区間の上にあるものだけ消し、残った線の上にあるものは、その線の新しい経路に引き継ぐ（位置・向きはそのまま・経路の上の位置 s は計算し直す） */
   for (const oldPath of oldPaths) {
   const keepIds = [...added, ...oldPath.shapeIds.filter(id => id !== hit.id && doc.shapes.some(s => s.id === id))], groups = new Map();
@@ -7174,8 +7183,8 @@ function explodeSelection() {
   commit(() => {
     const dropPaths = new Set(ok.flatMap(s => pathsOf(s).map(p => p.id)));
     for (const s of ok) {
-      const { id, points, closed, type, ...rest } = s, n = points.length, edges = closed ? n : n - 1, ids = [];
-      for (let i = 0; i < edges; i++) { const a = points[i], b = points[(i + 1) % n]; if (Math.hypot(a.x - b.x, a.y - b.y) < 1e-9) continue; const nid = freshId(doc.shapes, 's'); doc.shapes.push({ ...rest, id: nid, type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); ids.push(nid); }
+      const { id, points, closed, type, ...rest } = s, n = points.length, edges = closed ? n : n - 1, ids = [], grp = s.metal && closed ? (s.metalGroup || freshMetalGroup()) : null;   /* 閉じた金属の図形は、分解した直線に、同じ一周の印を付ける（塗りが消えないように） */
+      for (let i = 0; i < edges; i++) { const a = points[i], b = points[(i + 1) % n]; if (Math.hypot(a.x - b.x, a.y - b.y) < 1e-9) continue; const nid = freshId(doc.shapes, 's'); doc.shapes.push({ ...rest, ...(grp ? { metalGroup: grp } : {}), id: nid, type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); ids.push(nid); }
       doc.shapes = doc.shapes.filter(q => q.id !== id); made.push(...ids);
       for (const part of doc.parts) if (part.shapeIds.includes(id)) part.shapeIds = [...part.shapeIds.filter(x => x !== id), ...ids];
     }
@@ -8236,6 +8245,7 @@ function draw() {
       const layerList = list.filter(sh => exRank(sh) === r);
       if (diamondMode() === 'fill') for (const sh of layerList) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
       for (const s of layerList) if (!(color && s.occlude)) outStroke(s);
+      if (color) { for (const lp of occluderLoops(layerList)) drawOccluder(lp, $('pngTransparent').checked ? null : '#fff'); }   /* 分解した棒：一周の印のある線から塗る */
       if (color) for (const s of layerList) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
@@ -8274,6 +8284,7 @@ function drawSheetBody(lo, hi) {
     if (diamondMode() === 'fill') for (const s of layerStrokes) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
     if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of layerStrokes) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
     for (const s of layerStrokes) if (!s.occlude) strokeOne(s);
+    for (const lp of occluderLoops(layerStrokes)) drawOccluder(lp);   /* 分解した棒：一周の印のある線から塗る */
     for (const s of layerStrokes) if (s.occlude) { drawOccluder(s); strokeOne(s); }
   }
   ctx.setLineDash([]);
@@ -8907,7 +8918,8 @@ canvas.addEventListener('pointerup', e => {
     else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
     else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
-      if (only && ['line', 'arc', 'polyline', 'path'].includes(only.type) && !groupIdOf(only) && !only.joined) { cancelSpanClick();   /* 「1本に結合」した線は、クリックで交点ごとに切らない（事業主 2026-10-24「１本に結合されるのはその瞬間だけで移動させるときにばらばらになる」） */ spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
+      if (only && ['line', 'arc', 'polyline', 'path'].includes(only.type) && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
+   /* 「1本に結合」した線は、クリックで交点ごとに切らない（事業主 2026-10-24「１本に結合されるのはその瞬間だけで移動させるときにばらばらになる」） */ spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
     }
   } else if (g.kind === 'dimOff') {
     if (distance(p, g.screen) >= 4) { const pv = dimOffPreview(g, cursor); if (pv.size) { commit(() => { for (const s of doc.shapes) if (s.type === 'dimension' && pv.has(s.id)) s.offset = pv.get(s.id); }); $('hint').textContent = pv.size === 1 ? t('dimOffDragged', { off: Math.abs([...pv.values()][0]).toFixed(1) }) : t('dimOffDraggedMany', { n: pv.size }); } }   /* 寸法線だけを動かした（測る点はそのまま・追従の覚えも残る・事業主の希望 2026-10-19） */
