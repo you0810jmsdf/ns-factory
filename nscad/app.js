@@ -4847,6 +4847,47 @@ function applyMoveCopy() {
   copySelectedOffsets([{ dx, dy }]); $('hint').textContent = t('movedCopy', { x: dx, y: dy });
 }
 $('moveCopy').onclick = applyMoveCopy;
+/** 範囲を選んで形を伸ばす（ストレッチ）（事業主 2026-10-29「範囲を選んで形を伸ばす機能を作って。右クリックの移動から使えるようにして、寸法も追従させて」）：移動カードの右へ・下への数字と、図面で四角に囲んだ範囲で、範囲に入る点だけを動かす（入らない点は動かない＝形が伸びる）。
+ *  対象＝選んでいる図形（無ければ見えている図形ぜんぶ）＋寸法（端の点が範囲に入れば、いっしょに伸びる）。直線・折れ線・ペン・ベジェ・寸法・文字は、範囲に入る点（端）だけ。円は中心、円弧は両端とも入るときだけ（片方だけなら動かさない）。菱目（穴）は、範囲に入るものが動き、線の上に残る。元に戻すは1回。 */
+let stretchArmed = false;
+const stretchInRect = (rect, q) => q.x >= rect.minX - 1e-6 && q.x <= rect.maxX + 1e-6 && q.y >= rect.minY - 1e-6 && q.y <= rect.maxY + 1e-6;
+function stretchShape(sh, rect, dx, dy) {
+  const inR = q => stretchInRect(rect, q), mv = q => ({ ...q, x: q.x + dx, y: q.y + dy });
+  switch (sh.type) {
+    case 'line': case 'dimension': { const a = inR({ x: sh.x1, y: sh.y1 }), b = inR({ x: sh.x2, y: sh.y2 }); return a || b ? { ...sh, ...(a ? { x1: sh.x1 + dx, y1: sh.y1 + dy } : {}), ...(b ? { x2: sh.x2 + dx, y2: sh.y2 + dy } : {}) } : sh; }
+    case 'polyline': return sh.points.some(inR) ? { ...sh, points: sh.points.map(q => (inR(q) ? mv(q) : q)) } : sh;
+    case 'path': return sh.nodes.some(inR) ? { ...sh, nodes: sh.nodes.map(n => (inR(n) ? { ...n, x: n.x + dx, y: n.y + dy, inX: n.inX + dx, inY: n.inY + dy, outX: n.outX + dx, outY: n.outY + dy } : n)) } : sh;
+    case 'bezier': { const a = inR({ x: sh.x1, y: sh.y1 }), b = inR({ x: sh.x2, y: sh.y2 }); return a || b ? { ...sh, ...(a ? { x1: sh.x1 + dx, y1: sh.y1 + dy, c1x: sh.c1x + dx, c1y: sh.c1y + dy } : {}), ...(b ? { x2: sh.x2 + dx, y2: sh.y2 + dy, c2x: sh.c2x + dx, c2y: sh.c2y + dy } : {}) } : sh; }
+    case 'circle': return inR({ x: sh.cx, y: sh.cy }) ? { ...sh, cx: sh.cx + dx, cy: sh.cy + dy } : sh;
+    case 'arc': return inR(circlePoint(sh, sh.startDeg)) && inR(circlePoint(sh, sh.endDeg)) ? { ...sh, cx: sh.cx + dx, cy: sh.cy + dy } : sh;
+    case 'text': return inR({ x: sh.x, y: sh.y }) ? { ...sh, x: sh.x + dx, y: sh.y + dy } : sh;
+    default: return sh;
+  }
+}
+/** 伸ばす対象の図形の id：選んでいる図形（無ければ、見えて動かせる図形ぜんぶ）。寸法は、選んでいなくても対象（端が範囲に入れば伸びる）。 */
+function stretchTargetIds() {
+  const base = doc.shapes.filter(sh => editable(sh) && visible(sh) && !['image', 'fold'].includes(sh.type)), sel = selectedShapeIds();
+  return new Set(sel.size ? [...sel, ...base.filter(sh => sh.type === 'dimension').map(sh => sh.id)] : base.map(sh => sh.id));
+}
+const stretchRectOf = (a, b) => ({ minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minY: Math.min(a.y, b.y), maxY: Math.max(a.y, b.y) });
+/** 範囲 rect で伸ばしたあとの、形が変わる図形の一覧 [{ before, after }]（予定位置の影・案内の数に使う）。 */
+function stretchPlan(rect, dx, dy) {
+  const ids = stretchTargetIds(), out = [];
+  for (const sh of doc.shapes) if (ids.has(sh.id)) { const after = stretchShape(sh, rect, dx, dy); if (after !== sh) out.push({ before: sh, after }); }
+  return out;
+}
+function stretchNumbers() { const dx = Number($('moveDx').value), dy = Number($('moveDy').value); return Number.isFinite(dx) && Number.isFinite(dy) && (dx !== 0 || dy !== 0) ? { dx, dy } : null; }
+function applyStretch(rect) {
+  const n = stretchNumbers(); if (!n) { $('hint').textContent = t('invalidNumber'); return 0; }
+  const { dx, dy } = n, plan = stretchPlan(rect, dx, dy), hit = doc.holes.filter(h => holeVisible(h) && holeEditable(h) && stretchInRect(rect, h)).length;
+  if (!plan.length && !hit) { $('hint').textContent = t('stretchNone'); return 0; }
+  const ids = stretchTargetIds(), keep = selected, fn = o => (o.type ? stretchShape(o, rect, dx, dy) : (stretchInRect(rect, o) ? { ...o, x: o.x + dx, y: o.y + dy } : o));
+  selected = new Set(ids);   /* いまの動かす処理（図形・穴・塗り・断面の追従）を、そのまま使う */
+  try { transformSelected(fn); } finally { selected = new Set([...keep].filter(id => doc.shapes.some(sh => sh.id === id) || doc.holes.some(h => h.id === id))); }
+  refreshInfo(); draw(); $('hint').textContent = t('stretchDone', { n: plan.length, x: dx, y: dy });
+  return plan.length;
+}
+$('moveStretch').onclick = () => { if (!stretchNumbers()) { $('hint').textContent = t('invalidNumber'); return; } cancel(); setMode('select'); stretchArmed = true; $('hint').textContent = t('moveStretchStart'); draw(); };
 $('adRun').onclick = () => runAutoDims(); $('adClear').onclick = clearAutoDims; for (const id of ['adSize', 'adEdges', 'adCircles', 'adRadius', 'adHoles']) $(id).onchange = () => toggleAutoDimKind(id);   /* チェックの入れ外しで、その種類の自動寸法が出入りする */
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
@@ -6997,7 +7038,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { stretchArmed = false; komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -8237,6 +8278,11 @@ function drawSheetBody(lo, hi) {
     strokeShape({ type: 'line', x1: s.x1, y1: s.y1, x2: s.c1x, y2: s.c1y }, '#888');
     strokeShape({ type: 'line', x1: s.x2, y1: s.y2, x2: s.c2x, y2: s.c2y }, '#888');
   }
+  if (gesture?.kind === 'stretch') {   /* 範囲の四角と、伸びたあとの予定の形（薄い点線） */
+    const rect = stretchRectOf(gesture.start, cursor), n = stretchNumbers();
+    ctx.save(); ctx.strokeStyle = '#4fd0ff'; ctx.fillStyle = '#4fd0ff18'; ctx.lineWidth = 1 / scale; ctx.setLineDash([5 / scale, 4 / scale]); ctx.fillRect(rect.minX, rect.minY, rect.maxX - rect.minX, rect.maxY - rect.minY); ctx.strokeRect(rect.minX, rect.minY, rect.maxX - rect.minX, rect.maxY - rect.minY); ctx.restore();
+    if (n) { ctx.save(); ctx.globalAlpha = 0.5; ctx.lineWidth = 1.5 / scale; for (const { after } of stretchPlan(rect, n.dx, n.dy)) strokeShape(after, '#c9a96e', true); ctx.restore(); }
+  }
   if (gesture?.kind === 'select') {
     ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#c9a96e20'; const a = gesture.start;
     ctx.fillRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y); ctx.strokeRect(a.x, a.y, cursor.x - a.x, cursor.y - a.y);
@@ -8388,6 +8434,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey) { const gm = gapMarkAt(cursor); if (gm) { fillOneGap(gm); return; } } /* 赤い輪（歯抜けの印）のクリックは、下の線の選択より優先 */
   if (mode === 'select' && e.button === 0) { const fh = foldHandleAt(p); if (fh) { startFoldHandleDrag(fh, world(p), p); return; } }
   if (mode === 'select' && e.button === 0 && !e.shiftKey && !e.altKey && !e.metaKey && !e.ctrlKey && !pickShapeAt(cursor)) { const dk = foldDimKeyAt(p); if (dk) { openFoldHandleBar({ key: dk }); return; } }   /* 断面の寸法をクリック：その数字を入れる小窓（線・文字の下に図形があるときは、図形の選択が先） */
+  if (mode === 'select' && stretchArmed && e.button === 0) { gesture = { kind: 'stretch', start: cursor, screen: p }; draw(); return; }   /* 範囲を選んで伸ばす：ふつうの選択の代わりに、範囲の四角をドラッグ */
   if (mode === 'select') {
     const pathShape = selected.size === 1 ? doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)) : null;
     /* ハンドル（直線の端・ペンの節点）は、選択中の図形が、ほかのどの図形より（1.5px以上）遠くないときだけ使う。正確にほかの線をクリックしたときは、その線を選ぶ */
@@ -8779,6 +8826,9 @@ canvas.addEventListener('pointerup', e => {
     }
   } else if (g.kind === 'dimOff') {
     if (distance(p, g.screen) >= 4) { const pv = dimOffPreview(g, cursor); if (pv.size) { commit(() => { for (const s of doc.shapes) if (s.type === 'dimension' && pv.has(s.id)) s.offset = pv.get(s.id); }); $('hint').textContent = pv.size === 1 ? t('dimOffDragged', { off: Math.abs([...pv.values()][0]).toFixed(1) }) : t('dimOffDraggedMany', { n: pv.size }); } }   /* 寸法線だけを動かした（測る点はそのまま・追従の覚えも残る・事業主の希望 2026-10-19） */
+  } else if (g.kind === 'stretch') {
+    stretchArmed = false;
+    if (distance(p, g.screen) >= 4) applyStretch(stretchRectOf(g.start, cursor)); else { $('hint').textContent = t('moveStretchStart'); stretchArmed = true; }   /* 動かさずに離した：もう一度、範囲を選べる */
   } else if (g.kind === 'select') {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
