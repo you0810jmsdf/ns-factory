@@ -481,10 +481,10 @@ function refreshTools() {
   fillTool();
   if (stitchToolCurrent()?.id !== patchPitchToolId) syncPatchPitch();   /* 工具が替わったときだけ（欄に打った値を、工具が同じままのときは消さない） */
 }
-/** 穴の工具を付け替える（fromId の穴を toId へ。onlySelected なら選択中の穴だけ）。戻り値は付け替えた穴数。 */
+/** 穴の工具を付け替える（fromId の穴を toId へ。onlySelected なら、選択中の穴を、元の工具に関係なく toId へ＝事業主指示 2026-10-29「菱目を既存の工具による菱目に置換できない」。それまでは、工具設定で選んでいる工具の穴しか動かなかった）。戻り値は付け替えた穴数。 */
 function reassignTool(fromId, toId, onlySelected = false) {
-  if (!fromId || !toId || fromId === toId || !doc.tools.some(t => t.id === toId)) return 0; let n = 0;
-  commit(() => { for (const h of doc.holes) if (h.toolId === fromId && (!onlySelected || selected.has(h.id))) { h.toolId = toId; n++; } if (!onlySelected) for (const p of doc.paths) for (const seg of p.segments) if (seg.toolId === fromId) seg.toolId = toId; });
+  if (!toId || !doc.tools.some(t => t.id === toId) || (!onlySelected && (!fromId || fromId === toId))) return 0; let n = 0;
+  commit(() => { for (const h of doc.holes) if (onlySelected ? selected.has(h.id) && h.toolId !== toId : h.toolId === fromId) { h.toolId = toId; n++; } if (!onlySelected) for (const p of doc.paths) for (const seg of p.segments) if (seg.toolId === fromId) seg.toolId = toId; });
   $('hint').textContent = t('toolReassigned', { n }); return n;
 }
 /** 現物合わせ用のテスト片：今の工具の穴を 1 列（10 個）と 50mm の目盛りを実寸で印刷する。 */
@@ -1736,6 +1736,30 @@ function applyHoleShape({ shape, w, h, d, onlyDiamond = true, onlyRound = true, 
   const f = v => +(+v).toFixed(2); $('hint').textContent = t('holeShapeDone', { n: plan.length, to: shape === 'round' ? t('holeShapeToRound', { d: f(d) }) : t('holeShapeToDiamond', { w: f(w), h: f(h) }) });
   return plan.length;
 }
+/** 選んだ範囲の菱目・丸目の穴を、登録済みの工具 toolId に付け替える（事業主指示 2026-10-29「菱目を既存の工具による菱目に置換できない」）。元の工具が何でもよい（工具設定の選択に関係しない）。
+ *  位置・間隔・数は変えない。向きは、菱目→菱目／菱目→丸目なら元のまま・丸目→菱目なら線の向きに対して順目（applyHoleShape と同じ）。戻り値は変えた数。変えるものが無ければ履歴に残さず案内だけ。元に戻すは1回。 */
+function applyHoleToolExisting({ toolId, scope } = {}) {
+  const tool = doc.tools.find(x => x.id === toolId); if (!tool) return 0;
+  const range = shapeRangeHoles(scope), list = [...range.diamond, ...range.round];
+  if (!list.length) { $('hint').textContent = t('holeShapeNone'); return 0; }
+  const routes = new Map(), plan = [], m180 = a => ((a % 180) + 180) % 180;
+  const routeOf = pathId => { if (!routes.has(pathId)) { const p = doc.paths.find(q => q.id === pathId); routes.set(pathId, p ? resolvePath(doc, p) : null); } return routes.get(pathId); };
+  for (const hl of list) {
+    let angle = hl.angleDeg;
+    if (tool.kind === 'diamond' && holeAppearance(hl, doc)?.kind === 'circle') { const route = routeOf(hl.pathId); if (route) { const tan = pointAtLength(route, hl.s).angleDeg, rel = m180(hl.angleDeg - tan); if (rel < 1 || rel > 179) angle = (((tan + slantOf(tool)) % 360) + 360) % 360; } }
+    const mark = hl.mark === 'diamond' || hl.mark === 'circle' ? 'tool' : hl.mark;   /* 目印で形を固定していた穴は、工具の形に従わせる */
+    if (tool.id !== hl.toolId || angle !== hl.angleDeg || mark !== hl.mark) plan.push({ id: hl.id, angle, mark });
+  }
+  if (!plan.length) { $('hint').textContent = t('holeToolExistingSame'); return 0; }
+  commit(() => {
+    const byId = new Map(doc.holes.map(x => [x.id, x])), touched = new Set();
+    for (const p of plan) { const hl = byId.get(p.id); if (!hl) continue; hl.toolId = tool.id; hl.angleDeg = p.angle; if (hl.mark !== p.mark) hl.mark = p.mark; touched.add(hl.pathId); }
+    for (const path of doc.paths) if (touched.has(path.id)) { const ids = new Set(doc.holes.filter(x => x.pathId === path.id).map(x => x.toolId)); if (ids.size === 1) for (const seg of path.segments || []) seg.toolId = [...ids][0]; }   /* 経路の穴が全部同じ工具になったら、経路の記録も合わせる */
+  });
+  const keep = $('stitchTool').value; refreshTools(); $('stitchTool').value = keep;   /* 工具設定で選んでいる工具は、そのまま */
+  $('hint').textContent = t('holeToolExistingDone', { n: plan.length, name: tool.name === tool.id ? t('toolSummary', { kind: t(tool.kind), pitch: tool.pitch, teeth: tool.teeth }) : tool.name });
+  return plan.length;
+}
 /** 選んだ範囲の菱目・丸目の穴を消す（線は残す）。onlyDiamond／onlyRound＝消す相手。戻り値は消した数。元に戻すは1回。事業主指示 2026-10-26「選択範囲の目打ちをすべて消す機能もつけて」。点の目印・切れ目は消さない（範囲に入らない）。 */
 function eraseRangeHoles({ onlyDiamond = true, onlyRound = true, scope } = {}) {
   const range = shapeRangeHoles(scope), ids = new Set([...(onlyDiamond ? range.diamond : []), ...(onlyRound ? range.round : [])].map(h => h.id));
@@ -1756,13 +1780,20 @@ function refreshHoleShapeCard(force = false, fill = false) {
   const key = [...selected].join(',') + '|' + doc.holes.length + '|' + doc.tools.length + '|' + doc.shapes.length + '|' + holeShapeScope();
   if (!force && key === holeShapeKey) return; holeShapeKey = key;
   const range = shapeRangeHoles(), n = range.diamond.length + range.round.length;
-  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n; $('holeShapeErase').disabled = !n;
+  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n; $('holeShapeErase').disabled = !n; $('holeToolExistingApply').disabled = !n; fillHoleToolExisting();
   if (!fill) return;
   const ad = range.diamond[0] && holeAppearance(range.diamond[0], doc), ar = range.round[0] && holeAppearance(range.round[0], doc), f = v => String(+(+v).toFixed(2));
   $('holeShapeKind').value = !range.diamond.length && range.round.length ? 'round' : 'diamond';
   $('holeShapeW').value = ad ? f(ad.width) : '2'; $('holeShapeH').value = ad ? f(ad.height) : '0.8'; $('holeShapeD').value = ar ? f(ar.width) : '1';
   $('holeShapeOnlyDiamond').checked = true; $('holeShapeOnlyRound').checked = true; syncHoleShapeRows();
 }
+/** 窓の「登録済みの工具」の一覧を、図面の工具（doc.tools）で作り直す。選んでいた工具は残す。 */
+function fillHoleToolExisting() {
+  const sel = $('holeToolExisting'); if (!sel) return; const keep = sel.value; sel.textContent = '';
+  for (const tool of doc.tools) { const o = document.createElement('option'); o.value = tool.id; o.textContent = tool.name === tool.id ? t('toolSummary', { kind: t(tool.kind), pitch: tool.pitch, teeth: tool.teeth }) : tool.name; sel.appendChild(o); }
+  if (doc.tools.some(x => x.id === keep)) sel.value = keep;
+}
+function runHoleToolExisting() { applyHoleToolExisting({ toolId: $('holeToolExisting').value, scope: undefined }); refreshHoleShapeCard(true); }
 function syncHoleShapeRows() { const round = $('holeShapeKind').value === 'round'; $('holeShapeDiamondRow').hidden = round; $('holeShapeRoundRow').hidden = !round; }
 /** 「菱目・丸目をまとめて変える」の窓を開く（右クリックメニューから）。選んだままで図面を触れる窓。 */
 function openHoleShapeWin() { $('holeShapeCard').hidden = false; setCardWin('holeShapeCard', true); refreshHoleShapeCard(true, true); $('hint').textContent = t('holeShapeOpened'); }
@@ -3104,7 +3135,7 @@ function initDesign() {
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
-  $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
+  $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
