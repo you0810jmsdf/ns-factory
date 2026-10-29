@@ -170,6 +170,11 @@ function adRoundings(s, minSweep = AD_FIT_MIN_SWEEP) {
   if (s.type === 'arc') { if (!(s.r > 0)) return []; const sw = arcSweep(s), m = Math.max(2, Math.ceil(sw / 5)); return sw <= 180 + AD_ARC_SLACK ? [{ cx: s.cx, cy: s.cy, r: s.r, mid: circlePoint(s, s.startDeg + sw / 2), exact: true, pts: Array.from({ length: m + 1 }, (_, i) => circlePoint(s, s.startDeg + sw * i / m)) }] : []; }
   let pts = null; if (s.type === 'polyline') pts = s.points; else if (s.type === 'bezier' || s.type === 'path') { try { pts = flattenShape(s, 0.02); } catch { pts = null; } }
   if (!Array.isArray(pts) || pts.length < 4) return [];
+  /* 開いた折れ線ぜんたいが1つの円にあてはまる（ずれが max(0.05mm, 半径の1%) 以内）ときは、それを1つの丸みとして先に採る。点が細かくぎざぎざしていて（頂点ごとに曲がる向きが入れ替わる）、下の「曲がりが続く所」だけだと、角の一部しか拾えない・切れて1つも拾えない（2026-10-30 事業主「丸めた角の寸法がチェックをしても出てこない」：実図面は半径10の角がどれも約47点の折れ線で、点が±0.025mm ほどぎざぎざ）。 */
+  if (s.type === 'polyline' && !s.closed && pts.length >= 6) {
+    const f = adFitCircle(pts);
+    if (f && f.r >= AD_MIN && f.r <= AD_R_MAX && f.dev <= Math.max(AD_FIT_TOL, AD_FIT_REL * f.r)) { const sw = adSweepAlong(pts, f); if (sw >= minSweep && sw <= 180 + AD_ARC_SLACK) return [{ cx: f.cx, cy: f.cy, r: f.r, mid: pts[(pts.length - 1) >> 1], exact: false, pts }]; }
+  }
   const turnAt = (a, i) => { const p = a[i - 1], q = a[i], r = a[i + 1]; return adNormDeg((Math.atan2(r.y - q.y, r.x - q.x) - Math.atan2(q.y - p.y, q.x - p.x)) * 180 / Math.PI); };
   const arcLike = d => Math.abs(d) >= AD_TURN_MIN && Math.abs(d) <= AD_TURN_MAX;
   const kappa = (a, i) => { const d = Math.hypot(a[i + 1].x - a[i].x, a[i + 1].y - a[i].y) + Math.hypot(a[i].x - a[i - 1].x, a[i].y - a[i - 1].y); return d > 0 ? Math.abs(turnAt(a, i)) / (d / 2) : 0; };   /* 曲がり（度/mm）：円の上なら 1/半径 に比例して一定。長い直線につながる頂点は小さくなる */
