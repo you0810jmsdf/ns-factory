@@ -1,0 +1,15 @@
+{
+  "name": "N's factory リフィル印刷ツール",
+  "short_name": "N's refill",
+  "description": "手帳リフィルを無料で作って印刷。バイブル・A5・A6・ミニ6など。",
+  "start_url": "tools/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3ECE4",
+  "theme_color": "#7A5540",
+  "lang": "ja",
+  "icons": [
+    { "src": "assets/pwa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

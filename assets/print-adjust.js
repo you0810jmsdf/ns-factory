@@ -7,12 +7,17 @@
 //   （ツール側の @media print は .a4-sheet の transform を !important で消すため、その親でずらす）
 // PDF生成側は window.nsfPrintOffsetFor(用紙の要素) を読んで jsPDF.addImage の座標にずらし量を足す。
 // 補正値は localStorage に「ページごと」に記憶する（プリンターの引き込みズレは用紙の向きごとに違うため）。
+// 2026-10-29 追加: 倍率補正（縦横 %。ブラウザ印刷にだけ効く）／プリンター設定の保存・切替（全ツール共通 nsf_print_profiles）／逆順印刷（排紙が面を上にして出るプリンター向け）。
 (function () {
   const G = window.NSF_PRINT_GEOMETRY;
   if (!G || document.getElementById('nsf-print-adjust')) return;
   const KEY = 'nsf_print_adjust:' + location.pathname.replace(/^\/ns-factory\/?/, '');
-  const state = { x: 0, y: 0, bx: 0, by: 0 };
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) { state.x = +s.x || 0; state.y = +s.y || 0; state.bx = +s.bx || 0; state.by = +s.by || 0; } } catch (e) {}
+  const state = { x: 0, y: 0, bx: 0, by: 0, sx: 100, sy: 100, reverse: false };
+  const clampScale = v => { v = +v; return isFinite(v) && v >= 90 && v <= 110 ? v : 100; };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s) { state.x = +s.x || 0; state.y = +s.y || 0; state.bx = +s.bx || 0; state.by = +s.by || 0; state.sx = clampScale(s.sx); state.sy = clampScale(s.sy); state.reverse = !!s.reverse; } } catch (e) {}
+  const PROF_KEY = 'nsf_print_profiles'; // { 名前: {x,y,bx,by,sx,sy,reverse} }。全ツール共通（プリンターごとの設定）
+  const loadProfiles = () => { try { const o = JSON.parse(localStorage.getItem(PROF_KEY)); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } };
+  const saveProfiles = o => { try { localStorage.setItem(PROF_KEY, JSON.stringify(o)); } catch (e) {} };
   const offsetOf = side => side === 'back' ? { x: state.x + state.bx, y: state.y + state.by } : { x: state.x, y: state.y };
   const sideOf = el => {
     const wrap = el && el.closest ? (el.closest('.sheet-wrap') || el) : null;
@@ -38,15 +43,46 @@
   function fmt(v) { return (Math.round(v * 10) / 10).toString(); }
   function apply() {
     const f = offsetOf('front'), b = offsetOf('back');
-    style.textContent = '@media print { #preview .sheet-wrap { transform: translate(' + f.x + 'mm, ' + f.y + 'mm); } #preview .sheet-wrap[data-side="back"] { transform: translate(' + b.x + 'mm, ' + b.y + 'mm); } }';
+    const sc = ' scale(' + (state.sx / 100) + ', ' + (state.sy / 100) + ')';
+    style.textContent = '@media print { #preview .sheet-wrap { transform-origin: 0 0; transform: translate(' + f.x + 'mm, ' + f.y + 'mm)' + sc + '; } #preview .sheet-wrap[data-side="back"] { transform: translate(' + b.x + 'mm, ' + b.y + 'mm)' + sc + '; } }';
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
-    [['nsfAdjX', 'x'], ['nsfAdjY', 'y'], ['nsfAdjBX', 'bx'], ['nsfAdjBY', 'by']].forEach(([id, k]) => {
+    [['nsfAdjX', 'x'], ['nsfAdjY', 'y'], ['nsfAdjBX', 'bx'], ['nsfAdjBY', 'by'], ['nsfAdjSX', 'sx'], ['nsfAdjSY', 'sy']].forEach(([id, k]) => {
       const el = document.getElementById(id); if (el) { el.value = state[k]; el.nextElementSibling.textContent = fmt(state[k]); }
     });
+    const rv = document.getElementById('nsfAdjReverse'); if (rv) rv.checked = !!state.reverse;
     const sum = document.getElementById('nsfAdjSum');
-    if (sum) sum.textContent = '表面 ' + fmt(f.x) + ' / ' + fmt(f.y) + ' mm ・ 裏面 ' + fmt(b.x) + ' / ' + fmt(b.y) + ' mm（横 / 縦）';
+    if (sum) sum.textContent = '表面 ' + fmt(f.x) + ' / ' + fmt(f.y) + ' mm ・ 裏面 ' + fmt(b.x) + ' / ' + fmt(b.y) + ' mm（横 / 縦）・ 倍率 ' + fmt(state.sx) + ' / ' + fmt(state.sy) + ' %' + (state.reverse ? ' ・ 逆順印刷' : '');
     tagSides();
   }
+
+  // ── 逆順印刷: 排紙が「面を上」で出るプリンター向け。印刷の直前に用紙の並びを逆にして、終わったら戻す ──
+  // 表裏が交互（自動両面）のときは「表→裏」の組を保ったまま組の順を逆に、そうでなければ同じ面が続く塊ごとに逆にする。
+  let reversedFrom = null;
+  function reverseForPrint() {
+    const pv = document.getElementById('preview');
+    if (!state.reverse || !pv || reversedFrom) return;
+    tagSides();
+    const items = [...pv.children].filter(e => e.classList && e.classList.contains('sheet-wrap'));
+    if (items.length < 2) return;
+    reversedFrom = [...pv.children];
+    const faces = items.map(e => e.dataset.side);
+    const alternate = items.length % 2 === 0 && items.every((e, i) => faces[i] === (i % 2 ? 'back' : 'front'));
+    let order = [];
+    if (alternate) { for (let i = items.length - 2; i >= 0; i -= 2) order.push(items[i], items[i + 1]); }
+    else { let i = 0; while (i < items.length) { let j = i; while (j < items.length && faces[j] === faces[i]) j++; order = order.concat(items.slice(i, j).reverse()); i = j; } }
+    const others = [...pv.children].filter(e => !items.includes(e));
+    pv.innerHTML = '';
+    order.concat(others).forEach(e => pv.appendChild(e));
+  }
+  function restoreAfterPrint() {
+    const pv = document.getElementById('preview');
+    if (!reversedFrom || !pv) { reversedFrom = null; return; }
+    const orig = reversedFrom; reversedFrom = null;
+    pv.innerHTML = '';
+    orig.forEach(e => pv.appendChild(e));
+  }
+  window.addEventListener('beforeprint', reverseForPrint);
+  window.addEventListener('afterprint', restoreAfterPrint);
 
   // ── テスト印刷: 枠・穴・カット線だけの用紙を表裏1枚ずつ描いて印刷し、元の表示に戻す ──
   function testSheetHTML(side) {
@@ -109,6 +145,7 @@
     const sec = document.createElement('div');
     sec.className = 'ctrl-section';
     sec.id = 'nsf-print-adjust';
+    const rowS = (id, label) => '<div class="ctrl-row"><label>' + label + '</label><input type="range" id="' + id + '" min="97" max="103" step="0.1" value="100"><span class="val">100</span>%</div>';
     const row = (id, label) => '<div class="ctrl-row"><label>' + label + '</label><input type="range" id="' + id + '" min="-10" max="10" step="0.5" value="0"><span class="val">0</span>mm</div>';
     sec.innerHTML = [
       '<h3>印刷ズレ補正・テスト印刷</h3>',
@@ -116,16 +153,46 @@
       row('nsfAdjX', '横'), row('nsfAdjY', '縦'),
       '<div style="font-size:10px;color:#ccc;margin:8px 0 4px;font-weight:700;">裏面の追加ずれ（表面に対して）</div>',
       row('nsfAdjBX', '横'), row('nsfAdjBY', '縦'),
+      '<div style="font-size:10px;color:#ccc;margin:8px 0 4px;font-weight:700;">印刷の倍率（用紙の寸法がずれるとき）</div>',
+      rowS('nsfAdjSX', '横倍率'), rowS('nsfAdjSY', '縦倍率'),
+      '<div style="font-size:9px;color:#aaa;line-height:1.5;margin:0 0 4px;">100%のまま、定規で測って寸法が合わないときだけ使います（99.5〜100.5程度）。ブラウザの印刷に効き、PDF生成には効きません。</div>',
+      '<label style="display:flex;align-items:center;gap:6px;font-size:11px;color:#ddd;margin:6px 0;cursor:pointer;"><input type="checkbox" id="nsfAdjReverse"> 逆順で印刷する（排紙が面を上にして出るプリンター）</label>',
+      '<div style="font-size:10px;color:#ccc;margin:8px 0 4px;font-weight:700;">プリンターごとの設定（全ツール共通）</div>',
+      '<div class="ctrl-row"><select id="nsfProfSel" style="flex:1"></select></div>',
+      '<div class="btn-row"><button type="button" class="btn-secondary" id="nsfProfLoad">この設定を使う</button><button type="button" class="btn-secondary" id="nsfProfSave">今の補正を保存</button><button type="button" class="btn-secondary" id="nsfProfDel">削除</button></div>',
       '<div id="nsfAdjSum" style="font-size:9px;color:#aaa;margin-top:4px;"></div>',
       '<div class="btn-row" style="margin-top:6px"><button type="button" class="btn-secondary" id="nsfAdjReset">0に戻す</button><button type="button" class="btn-secondary" id="nsfTestPreview">テスト用紙を表示</button><button type="button" class="btn-primary" id="nsfTestPrint">テスト印刷（両面）</button></div>',
       '<div style="font-size:9px;color:#aaa;line-height:1.6;margin-top:4px;">プリンターの引き込みで印刷位置がずれるときに使います。右（＋）・下（＋）にずらします。両面印刷では裏面だけ別方向にずれることが多いので、裏面は「表面に対する追加分」で入れます。テスト印刷は枠・穴・カット線だけの用紙を表裏1枚ずつ出します（プリンターの両面設定は本番と同じにしてください）。表面は紙の端からのずれ、裏面は透かして表面と重ねたずれを測って入れてください。値はこのツールごとに記憶され、PDF生成にも同じ補正がかかります。</div>',
     ].join('');
     const printSec = [...controls.querySelectorAll('.ctrl-section h3')].find(h => /^印刷$/.test(h.textContent.trim()));
     if (printSec && printSec.parentElement) controls.insertBefore(sec, printSec.parentElement); else controls.appendChild(sec);
-    [['nsfAdjX', 'x'], ['nsfAdjY', 'y'], ['nsfAdjBX', 'bx'], ['nsfAdjBY', 'by']].forEach(([id, k]) => {
+    [['nsfAdjX', 'x'], ['nsfAdjY', 'y'], ['nsfAdjBX', 'bx'], ['nsfAdjBY', 'by'], ['nsfAdjSX', 'sx'], ['nsfAdjSY', 'sy']].forEach(([id, k]) => {
       sec.querySelector('#' + id).addEventListener('input', e => { state[k] = +e.target.value; apply(); });
     });
-    sec.querySelector('#nsfAdjReset').addEventListener('click', () => { state.x = 0; state.y = 0; state.bx = 0; state.by = 0; apply(); });
+    sec.querySelector('#nsfAdjReverse').addEventListener('change', e => { state.reverse = e.target.checked; apply(); });
+    sec.querySelector('#nsfAdjReset').addEventListener('click', () => { state.x = 0; state.y = 0; state.bx = 0; state.by = 0; state.sx = 100; state.sy = 100; state.reverse = false; apply(); });
+    const sel = sec.querySelector('#nsfProfSel');
+    const fillProfiles = (keep) => {
+      const names = Object.keys(loadProfiles());
+      sel.innerHTML = '<option value="">' + (names.length ? '（保存した設定を選ぶ）' : '（まだ保存した設定はありません）') + '</option>' + names.map(n => '<option></option>').join('');
+      [...sel.options].slice(1).forEach((o, i) => { o.value = names[i]; o.textContent = names[i]; });
+      if (keep && names.includes(keep)) sel.value = keep;
+    };
+    fillProfiles();
+    sec.querySelector('#nsfProfSave').addEventListener('click', () => {
+      const name = (window.prompt('この補正に付ける名前（例：自宅プリンター）', sel.value || '') || '').trim().slice(0, 30);
+      if (!name) return;
+      const o = loadProfiles(); o[name] = { x: state.x, y: state.y, bx: state.bx, by: state.by, sx: state.sx, sy: state.sy, reverse: state.reverse };
+      saveProfiles(o); fillProfiles(name);
+    });
+    sec.querySelector('#nsfProfLoad').addEventListener('click', () => {
+      const p = loadProfiles()[sel.value]; if (!p) return;
+      state.x = +p.x || 0; state.y = +p.y || 0; state.bx = +p.bx || 0; state.by = +p.by || 0; state.sx = clampScale(p.sx); state.sy = clampScale(p.sy); state.reverse = !!p.reverse; apply();
+    });
+    sec.querySelector('#nsfProfDel').addEventListener('click', () => {
+      if (!sel.value || !window.confirm('「' + sel.value + '」を削除しますか？')) return;
+      const o = loadProfiles(); delete o[sel.value]; saveProfiles(o); fillProfiles();
+    });
     sec.querySelector('#nsfTestPreview').addEventListener('click', previewTest);
     sec.querySelector('#nsfTestPrint').addEventListener('click', testPrint);
     apply();
