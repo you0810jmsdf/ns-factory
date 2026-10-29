@@ -4193,6 +4193,22 @@ function leatherLayer() {
 /** 金属の色が付いた図形の、べた塗りの計画。置いた金具・手描き・取り込みのどれも、図形そのものの形から作る（登録した金具の形は見ない）。だから、金具を動かしても・形を直しても・拡大縮小しても、線と塗りは同じ（事業主の指摘 2026-10-18「リングの線と塗りがずれる」）。
  *  塗る形：閉じた図形（円も）と、端がつながった線の一周（metalGroup）。同じ金属の別の形にすっぽり入る形は、その形のくり抜きの穴（穴の中の形は、また塗る形）。リングアームの棒（occlude）は、線を描くときに本体の上へ別に塗る。
  *  戻り値：[{ metal, body: [点], holes: [[点]] }]（面積の大きい順＝小さい形が上）。d・vis・move は、ほかの紙・作図中の移動プレビュー用。 */
+/** 金属の線の一周が、トリムなどで少しとぎれても（とぎれた所の長さがこれ以下なら）、直線でつないで塗りを残す（mm・事業主 2026-10-29「金具の線をトリムしたいのに、全部消える」）。 */
+const METAL_LOOP_GAP = 30;
+/** とぎれた一周（線を1つ消した・トリムで一部を消した）の塗りの形：どの線から・どちら向きにたどっても、いちばん近い端どうしをつないでいき（つなぐ長さは METAL_LOOP_GAP 以下）、最後に出発点へ戻る。つなぐ長さの合計がいちばん短いたどり方を選ぶ。戻り値は outlinePolygon と同じ { points }（つながらなければ null）。 */
+function metalBrokenLoop(list) {
+  const pieces = list.map(sh => { try { return flattenShape(sh, 0.05); } catch { return []; } }).filter(pp => pp.length >= 2), n = pieces.length; if (n < 2) return null;
+  let best = null;
+  for (let st = 0; st < n; st++) for (const r0 of [false, true]) {
+    const first = pieces[st].slice(); if (r0) first.reverse(); const pts = first, used = new Set([st]); let sum = 0, ok = true;
+    while (used.size < n) { const exit = pts.at(-1); let b = null; for (let i = 0; i < n; i++) { if (used.has(i)) continue; for (const rev of [false, true]) { const a = rev ? pieces[i].at(-1) : pieces[i][0], d = distance(exit, a); if (!b || d < b.d) b = { i, rev, d }; } } if (!b || b.d > METAL_LOOP_GAP) { ok = false; break; } const pp = pieces[b.i].slice(); if (b.rev) pp.reverse(); pts.push(...pp); used.add(b.i); sum += b.d; }
+    if (!ok) continue; const close = distance(pts.at(-1), pts[0]); if (close > METAL_LOOP_GAP) continue; sum += close;
+    if (!best || sum < best.sum - 1e-9) best = { sum, pts };
+  }
+  if (!best) return null;
+  const out = []; for (const q of best.pts) if (!out.length || distance(out.at(-1), q) > 1e-6) out.push({ x: q.x, y: q.y }); if (out.length > 1 && distance(out[0], out.at(-1)) <= 1e-6) out.pop();
+  return out.length >= 3 ? { points: out } : null;
+}
 function metalFillPlan(d = doc, vis = visible, move = s => s) {
   const items = [], loops = new Map(), nonGeom = ['text', 'dimension', 'image', 'fold'];
   for (const s of d.shapes) {
@@ -4200,7 +4216,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
     if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ layer: s.layer, metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }); }
     else if (s.metalGroup) { if (!loops.has(s.metalGroup)) loops.set(s.metalGroup, []); loops.get(s.metalGroup).push(move(s)); }
   }
-  for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id); if (poly) items.push({ layer: list[0].layer, metal: list[0].metal, points: poly.points, style: list[0].metalStyle === 'radial' ? 'radial' : 'linear' }); }
+  for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id) || metalBrokenLoop(list); if (poly) items.push({ layer: list[0].layer, metal: list[0].metal, points: poly.points, style: list[0].metalStyle === 'radial' ? 'radial' : 'linear' }); }
   const area = ps => Math.abs(ps.reduce((m, q, i) => { const r = ps[(i + 1) % ps.length]; return m + (q.x * r.y - r.x * q.y); }, 0)) / 2;
   const inside = (p, ps) => { let c = false; for (let i = 0, j = ps.length - 1; i < ps.length; j = i++) if ((ps[i].y > p.y) !== (ps[j].y > p.y) && p.x < (ps[j].x - ps[i].x) * (p.y - ps[i].y) / (ps[j].y - ps[i].y) + ps[i].x) c = !c; return c; };
   for (const it of items) it.area = area(it.points);
