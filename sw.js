@@ -2,7 +2,7 @@
 // 方針: ネットワーク優先。つながるときは常に最新を取り、取れたものを控えておく。つながらないときだけ控えを返す。
 // ⛔ 古い画面が残らないよう、先に控えを返す（cache-first）方式にしない。対象はリフィルツールのページと assets のみ。
 const CACHE = 'nsf-refill-v1';
-const TARGET = /\/((a5|a5slim|a6|bible|micro5|mini6)-(daily|weekly|monthly)|bible-vertical|tools)\/|\/assets\//;
+const TARGET = /\/((a5|a5slim|a6|bible|micro5|mini6)-(daily|weekly|monthly)|bible-vertical|refill-maker|tools)\/|\/assets\//;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

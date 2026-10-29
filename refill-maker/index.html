@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>リフィルメーカー（ロルバーンL・お薬手帳・自由サイズ）| N's factory</title>
+<meta name="description" content="ロルバーンL・M、A6、バイブル、A5、ミニ6など好きなサイズのリフィルを無料で作成・印刷。週間バーチカル、お薬手帳（本人情報・記録ページ）、方眼・ドット・罫線メモ。穴の位置も自分で調整できます。">
+<!-- Google tag (gtag.js) -->
+<script>
+// 作家自身の端末では計測しない（管理画面「作品ページアクセスログ」から設定）。
+// GA4公式のオプトアウト機構。gtag読み込みより前に立てる必要がある。
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* === MODULE: Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f0f0; }
+:root { --sheet-w: 210mm; --sheet-h: 297mm; --strip-w: 12mm; --hole-d: 5mm; --page-h: 182mm; --vt-time-w: 6mm; --ghost-opacity: 0.18; }
+
+/* === MODULE: Control Panel === */
+#ctrl-toggle-btn { position: fixed; top: 10px; left: 10px; z-index: 200; width: 36px; height: 36px; border-radius: 6px; background: #1a1a2e; color: #7ec8e3; border: 1px solid #444; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#controls { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; background: #1a1a2e; color: #eee; overflow-y: auto; padding: 12px; font-size: 11px; z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; }
+#controls.open { transform: translateX(0); }
+#controls h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; letter-spacing: 1px; padding-left: 44px; }
+.ctrl-section { margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.ctrl-section h3 { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.ctrl-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; flex-wrap: wrap; }
+.ctrl-row label { min-width: 70px; color: #ccc; }
+.ctrl-row input[type=range] { flex: 1; min-width: 80px; accent-color: #7ec8e3; }
+.ctrl-row input[type=date], .ctrl-row input[type=number], .ctrl-row select, .ctrl-row input[type=text] { flex: 1; min-width: 0; background: #2a2a4a; border: 1px solid #444; color: #eee; padding: 3px 5px; border-radius: 3px; font-size: 10px; }
+.ctrl-row .val { min-width: 28px; text-align: right; color: #7ec8e3; font-size: 10px; }
+.hint { font-size: 9px; color: #888; line-height: 1.6; margin: 2px 2px 5px; }
+.hint.warn { color: #e0a040; }
+.btn-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; touch-action: manipulation; }
+.btn-primary { background: #7ec8e3; color: #1a1a2e; }
+.btn-secondary { background: #444; color: #eee; }
+.btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
+.btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
+body.undated .dated-only { display: none; }
+.fmt-weekly-only, .fmt-okusuri-only, .fmt-memo-only, .fmt-paged-only { display: none; }
+body[data-fmt="weekly"] .fmt-weekly-only { display: block; }
+body[data-fmt="okusuri"] .fmt-okusuri-only { display: block; }
+body[data-fmt="memo"] .fmt-memo-only { display: block; }
+body[data-fmt="okusuri"] .fmt-paged-only, body[data-fmt="memo"] .fmt-paged-only { display: block; }
+body[data-fmt="weekly"] .ctrl-row.fmt-weekly-only, body[data-fmt="okusuri"] .ctrl-row.fmt-okusuri-only, body[data-fmt="memo"] .ctrl-row.fmt-memo-only, body[data-fmt="okusuri"] .ctrl-row.fmt-paged-only, body[data-fmt="memo"] .ctrl-row.fmt-paged-only { display: flex; }
+
+/* === MODULE: Preview Area === */
+#preview { margin-left: 0; padding: 60px 20px 20px; }
+body.panel-open #preview { margin-left: 280px; }
+.sheet-wrap { margin-bottom: 20px; }
+.sheet-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+.a4-sheet { width: var(--sheet-w); height: var(--sheet-h); background: white; position: relative; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+/* === MODULE: Slot（位置と大きさは描画時にインラインで指定） === */
+.slot { position: absolute; overflow: hidden; display: flex; flex-direction: row; background: #fff; }
+.slot.empty { background: white; }
+.hole-strip { width: var(--strip-w); flex-shrink: 0; position: relative; background: #fff; }
+.hole-strip.right { order: 2; }
+.hole { position: absolute; width: var(--hole-d); height: var(--hole-d); border-radius: 50%; background: white; border: 0.3mm solid #bbb; left: 50%; transform: translate(-50%, -50%); }
+.punch-guide { position: absolute; width: 2mm; top: calc(var(--page-h) / 2); height: 0; border-top: 0.2mm dashed #bbb; pointer-events: none; }
+.hole-strip:not(.right) .punch-guide { left: 0; }
+.hole-strip.right .punch-guide { right: 0; }
+.page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 0 2mm; min-width: 0; }
+.cut-line-h { position: absolute; left: 0; right: 0; height: 0; border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+.cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+.logo-wm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; pointer-events: none; z-index: 0; }
+.logo-wm img { width: 100%; height: auto; display: block; opacity: 0.08; }
+
+/* === MODULE: 共通パーツ === */
+.week-header { height: 10mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: center; gap: 2mm; padding: 0 1mm; position: relative; }
+.week-meta { display: flex; flex-direction: column; gap: 0.5mm; }
+.week-range { font-size: 3.2mm; font-weight: 700; line-height: 1; }
+.week-num { font-size: 2mm; color: #999; line-height: 1; }
+.week-brand { position: absolute; left: 50%; bottom: 0.8mm; transform: translateX(-50%); font-size: 3mm; font-weight: 700; color: #bbb; letter-spacing: 0.3mm; white-space: nowrap; font-family: 'Times New Roman', Times, serif; }
+.week-month-abbr { margin-left: auto; font-size: 6mm; font-weight: 700; color: #000; line-height: 1; font-family: 'Times New Roman', Times, serif; }
+.memo-area { flex: 1; min-height: 8mm; display: flex; flex-direction: column; justify-content: space-around; border-top: 0.3mm solid #aaa; padding-top: 0.5mm; }
+.memo-label { font-size: 1.8mm; color: #aaa; padding: 0 1mm 0.5mm; line-height: 1; }
+.memo-line { height: 0; border-bottom: 0.15mm solid #ddd; flex-shrink: 0; }
+.page-num-bar { height: 3mm; flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: 1mm; border-top: 0.3mm solid #ddd; }
+.page-num-bar span { font-size: 1.8mm; color: #bbb; }
+.fill-page { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; z-index: 1; }
+
+/* === MODULE: 週間バーチカル（見開き1週間＝左ページ 4日 / 右ページ 3日＋MEMO列） === */
+.vt-grid { flex: 1; min-height: 0; display: flex; border-top: 0.45mm solid #222; border-bottom: 0.3mm solid #bbb; }
+.vt-time { width: var(--vt-time-w); flex-shrink: 0; display: flex; flex-direction: column; }
+.vt-col { flex: 1; min-width: 0; display: flex; flex-direction: column; border-left: 0.2mm solid #ddd; }
+.vt-colhead { flex: 0 0 11mm; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 0.3mm solid #999; }
+.vt-colhead .day-num { font-size: 6mm; font-weight: 700; line-height: 1; min-height: 6mm; }
+.vt-colhead .day-wd { font-size: 2.2mm; font-weight: 700; color: #555; line-height: 1; margin-top: 0.5mm; }
+.vt-colhead .day-holiday { font-size: 1.4mm; color: #cc3333; line-height: 1.2; margin-top: 0.3mm; text-align: center; }
+.vt-colhead.is-sat { background: #f0f4ff; } .vt-colhead.is-sat .day-num, .vt-colhead.is-sat .day-wd { color: #3377cc; }
+.vt-colhead.is-sun { background: #fff0f0; } .vt-colhead.is-sun .day-num, .vt-colhead.is-sun .day-wd { color: #cc3333; }
+.vt-colhead.is-holiday .day-num, .vt-colhead.is-holiday .day-wd { color: #cc3333; }
+.vt-colhead .memo-title { font-size: 2.2mm; font-weight: 700; color: #aaa; letter-spacing: 0.3mm; }
+.vt-row { flex: 1 1 0; min-height: 0; position: relative; border-top: 0.15mm solid #e2e2e2; }
+.vt-row.major { border-top: 0.3mm solid #999; }
+.vt-row.half::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 0; border-top: 0.12mm dotted #ddd; }
+.vt-time .vt-row { border-top-color: transparent; }
+.vt-time .vt-row span { position: absolute; right: 0.8mm; top: 0.3mm; font-size: 2mm; color: #888; line-height: 1; }
+.vt-col.is-memo .vt-row.half::after { display: none; }
+
+/* === MODULE: お薬手帳 === */
+.ok-head { height: 10mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 1mm 1.2mm; }
+.ok-title { font-size: 4.2mm; font-weight: 700; letter-spacing: 0.3mm; }
+.ok-name { font-size: 2.4mm; color: #555; }
+.ok-name i, .ok-row i { display: inline-block; border-bottom: 0.2mm solid #999; vertical-align: bottom; }
+.ok-name i { width: 28mm; height: 3.4mm; }
+.ok-block { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; padding: 2mm 0 1.5mm; border-bottom: 0.2mm solid #ccc; }
+.ok-block:last-of-type { border-bottom: none; }
+.ok-row { display: flex; align-items: flex-end; gap: 1.5mm; font-size: 2.2mm; color: #555; padding: 0 1mm 1mm; flex-shrink: 0; }
+.ok-row i { flex: 1; height: 3.6mm; }
+.ok-row i.date { flex: 0 0 24%; }
+.ok-sticker { flex: 1; min-height: 0; margin: 0.5mm 1mm; border: 0.25mm dashed #bbb; border-radius: 1.5mm; position: relative; }
+.ok-sticker span { position: absolute; left: 1.5mm; top: 1mm; font-size: 1.9mm; color: #bbb; }
+.ok-note { display: flex; align-items: flex-end; gap: 1.5mm; font-size: 2.2mm; color: #555; padding: 1mm 1mm 0; flex-shrink: 0; }
+.ok-note i { flex: 1; display: inline-block; border-bottom: 0.2mm solid #ccc; height: 3.6mm; }
+.ok-foot { flex-shrink: 0; font-size: 1.7mm; color: #aaa; line-height: 1.4; padding: 0.8mm 1mm 0; }
+.ok-info { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1.2mm; padding-top: 2mm; }
+.ok-f { display: flex; align-items: flex-end; gap: 1.5mm; font-size: 2.3mm; color: #555; flex-shrink: 0; padding: 0 1mm; }
+.ok-f b { flex: 0 0 22%; font-weight: 700; color: #333; }
+.ok-f i { flex: 1; height: 4.4mm; border-bottom: 0.2mm solid #999; }
+.ok-box { flex: 1 1 0; min-height: 0; border: 0.25mm solid #bbb; border-radius: 1.2mm; margin: 0.6mm 1mm; padding: 1mm 1.5mm; display: flex; flex-direction: column; }
+.ok-box b { font-size: 2.3mm; color: #333; flex-shrink: 0; }
+.ok-box small { font-size: 1.7mm; color: #aaa; margin-left: 1mm; font-weight: 400; }
+
+/* === MODULE: 方眼・ドット・罫線 === */
+.bg-svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; }
+
+/* === MODULE: Screen Scale === */
+@media screen {
+  .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(var(--sheet-h) * -0.35); }
+  .sheet-wrap { width: calc(var(--sheet-w) * 0.65); overflow: visible; }
+}
+@media screen and (max-width: 900px) { .a4-sheet { transform: scale(0.45); margin-bottom: calc(var(--sheet-h) * -0.55); } .sheet-wrap { width: calc(var(--sheet-w) * 0.45); } }
+@media screen and (max-width: 560px) { .a4-sheet { transform: scale(0.3); margin-bottom: calc(var(--sheet-h) * -0.7); } .sheet-wrap { width: calc(var(--sheet-w) * 0.3); } }
+
+/* === MODULE: UpdateHistory / Help === */
+.history-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: center; justify-content: center; }
+.history-overlay.open { display: flex; }
+.history-box { background: #1a1a2e; color: #eee; border-radius: 8px; padding: 20px; width: min(560px, 92vw); max-height: 80vh; overflow-y: auto; }
+.history-box h3 { font-size: 13px; color: #7ec8e3; margin-bottom: 12px; }
+.history-entry { border-top: 1px solid #333; padding: 10px 0; font-size: 10px; line-height: 1.6; }
+.history-date { color: #aaa; font-size: 9px; }
+.history-type { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-left: 6px; background: #2a4a6a; }
+.history-title { font-weight: 700; margin: 2px 0; }
+.history-close { float: right; background: #444; color: #eee; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 10px; }
+
+/* === MODULE: Print === */
+@media print {
+  html, body { width: var(--sheet-w); height: var(--sheet-h); margin: 0 !important; padding: 0 !important; background: white; }
+  .slot.empty { background: white !important; }
+  .vt-colhead.is-sat, .vt-colhead.is-sun { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.panel-open #preview { margin-left: 0 !important; }
+  #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch { display: none !important; }
+  #preview { margin: 0 !important; padding: 0 !important; width: var(--sheet-w) !important; }
+  .sheet-wrap { width: var(--sheet-w) !important; height: var(--sheet-h) !important; margin: 0 !important; padding: 0 !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; overflow: hidden; position: relative; }
+  .sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
+  .sheet-label { display: none !important; }
+  .a4-sheet { transform: none !important; box-shadow: none !important; width: var(--sheet-w) !important; height: var(--sheet-h) !important; margin: 0 !important; padding: 0 !important; display: block !important; position: relative !important; overflow: hidden; }
+}
+</style>
+<style id="nsf-page-size">@page { size: 210mm 297mm; margin: 0; }</style>
+</head>
+<body data-fmt="weekly">
+<!-- 無料開放のお知らせ。⛔ 改善要望の連絡先を消さないこと。 -->
+<div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+  <strong>無料でお使いください。</strong>
+  会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
+  うまく動かない・印刷がずれる・こうしてほしい等ありましたら
+  <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
+  か、右下の「改善要望」からお知らせください。個人で作っているので、教えていただけると助かります。
+</div>
+<nav id="nsf-size-switch" aria-label="ツール" style="max-width:760px;margin:0 auto 12px;padding:10px 14px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:2;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">
+  <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">リフィルメーカー（ロルバーン・お薬手帳・自由サイズ）</b></span>
+  <a href="../tools/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">ツール一覧へ ›</a>
+</nav>
+
+<button id="ctrl-toggle-btn" onclick="toggleSidebar()">☰</button>
+<div id="controls">
+  <h2>N's factory<br>リフィルメーカー</h2>
+  <div class="btn-row" style="margin-bottom:8px;"><button class="btn-toggle" style="font-size:9px;color:#f88;" onclick="resetSettings()">設定リセット</button></div>
+
+  <div class="ctrl-section">
+    <h3>用紙</h3>
+    <div class="ctrl-row"><label>サイズ</label>
+      <select id="presetSel" onchange="onPresetChange()"></select>
+    </div>
+    <div class="hint" id="presetNote"></div>
+    <div class="ctrl-row"><label>幅 × 高さ</label><input type="number" id="pW" min="40" max="290" step="0.5" oninput="onPaperInput()"><span>×</span><input type="number" id="pH" min="40" max="290" step="0.5" oninput="onPaperInput()"><span>mm</span></div>
+    <div class="ctrl-row"><label>穴の径</label><input type="number" id="pD" min="2" max="12" step="0.5" oninput="onPaperInput()"><span>mm</span>
+      <label style="min-width:auto">端から</label><input type="number" id="pEdge" min="2" max="15" step="0.5" oninput="onPaperInput()"><span>mm</span></div>
+    <div class="ctrl-row"><label>穴の位置</label><input type="text" id="pHoles" placeholder="上端から（mm）をカンマ区切り" oninput="onHolesInput()"></div>
+    <div class="ctrl-row"><label>等間隔で作る</label><input type="number" id="uN" min="1" max="40" value="18" style="max-width:48px"><span>個</span><input type="number" id="uP" min="5" max="40" step="0.1" value="9.5" style="max-width:56px"><span>mm間隔</span><button type="button" class="btn-secondary" onclick="makeUniformHoles()">入れる</button></div>
+    <div class="hint" id="layoutInfo"></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>書式</h3>
+    <div class="ctrl-row"><label>種類</label>
+      <select id="fmtSel" onchange="setFormat(this.value)">
+        <option value="weekly">週間バーチカル（見開き1週間）</option>
+        <option value="okusuri">お薬手帳（本人情報＋記録ページ）</option>
+        <option value="memo">方眼・ドット・罫線のメモ</option>
+      </select>
+    </div>
+    <div class="hint fmt-okusuri-only">1ページ目が本人情報（アレルギー歴・副作用歴・既往歴など）、以降が服薬の記録（薬剤情報シールを貼る欄つき）です。自分用の記録で、薬局・病院の指示が優先です。</div>
+    <div class="ctrl-row fmt-okusuri-only"><label>1ページの記録数</label>
+      <select id="recSel" onchange="rerender()"><option value="0">おまかせ</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+    <div class="ctrl-row fmt-memo-only"><label>罫の種類</label>
+      <select id="memoKind" onchange="rerender()"><option value="grid">方眼</option><option value="dot">ドット</option><option value="line">横罫線</option><option value="plain">無地</option></select></div>
+    <div class="ctrl-row fmt-memo-only"><label>罫の間隔</label>
+      <select id="memoSp" onchange="rerender()"><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option></select><span>mm</span></div>
+    <div class="ctrl-row fmt-paged-only"><label>ページ数</label>
+      <input type="number" id="pageCount" min="1" max="120" value="8" onchange="rerender()" style="max-width:70px"><span>ページ（表裏で2ページ）</span></div>
+    <div class="ctrl-row"><label>言語</label>
+      <button class="btn-toggle on" id="btnJA" onclick="setLang(false)">日本語</button>
+      <button class="btn-toggle" id="btnEN" onclick="setLang(true)">English</button></div>
+  </div>
+
+  <div class="ctrl-section fmt-weekly-only">
+    <h3>日付・週設定</h3>
+    <div class="ctrl-row"><label>日付</label>
+      <button class="btn-toggle on" id="btnDated" onclick="setUndated(false)">日付あり</button>
+      <button class="btn-toggle" id="btnUndated" onclick="setUndated(true)">日付なし</button></div>
+    <div class="ctrl-row dated-only"><label>開始日</label><input type="date" id="startDate" onchange="rerender()"></div>
+    <div class="ctrl-row dated-only"><label>終了日</label><input type="date" id="periodEnd" onchange="rerender()"></div>
+    <div class="hint dated-only">期間にかかる週をすべて作ります（最大60週）。用紙は必要枚数ぶん自動で増えます。</div>
+    <div class="ctrl-row"><label>週開始</label>
+      <select id="weekStartDay" onchange="rerender()"><option value="1" selected>月曜始まり</option><option value="0">日曜始まり</option></select></div>
+    <div class="ctrl-row" id="undatedCountRow" style="display:none"><label>週数</label><input type="number" id="undatedCount" min="1" max="60" value="4" onchange="rerender()" style="max-width:70px"></div>
+  </div>
+
+  <div class="ctrl-section fmt-weekly-only">
+    <h3>時間軸（バーチカル）</h3>
+    <div class="ctrl-row"><label>開始時</label>
+      <select id="startHour" onchange="rerender()"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div>
+    <div class="ctrl-row"><label>終了時</label>
+      <select id="endHour" onchange="rerender()"><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option><option selected>24</option></select></div>
+    <div class="hint">0〜24時にすれば全24時間、5〜24時なら1時間の高さが広がります。終了時は「その時刻まで」（24＝23時台まで）。</div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnHalfLine" onclick="toggleOpt('showHalfLine','btnHalfLine')">30分の点線</button>
+      <button class="btn-toggle" id="btnMajorLine" onclick="toggleOpt('showMajorLine','btnMajorLine')">3時間ごとの太線</button></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>表示要素</h3>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnHoles" onclick="toggleOpt('showHoles','btnHoles')">穴印刷</button>
+      <button class="btn-toggle on" id="btnHoleLine" onclick="toggleOpt('showHoleLine','btnHoleLine')">穴仕切線</button>
+      <button class="btn-toggle on" id="btnPunch" onclick="toggleOpt('showPunchGuide','btnPunch')">パンチガイド</button></div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnCutLine" onclick="toggleOpt('showCutLine','btnCutLine')">カット線</button>
+      <button class="btn-toggle on" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
+      <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button></div>
+    <div class="btn-row">
+      <button class="btn-toggle on" id="btnMonthAbbr" onclick="toggleOpt('showMonthAbbr','btnMonthAbbr')">月表示</button>
+      <button class="btn-toggle on" id="btnWeekMeta" onclick="toggleOpt('showWeekMeta','btnWeekMeta')">日付範囲・週番号</button></div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>印刷</h3>
+    <div class="btn-row">
+      <button class="btn-primary" id="btnPdf" onclick="generatePDF(event)">PDFを生成</button>
+      <button class="btn-secondary" onclick="window.print()" style="margin-left:6px">印刷</button>
+    </div>
+    <div style="background:#fff8dc; color:#333; border:1px solid #d4b97a; border-radius:4px; padding:8px 10px; margin:8px 0 0 0; font-size:12px; line-height:1.5;">
+      ⚠️ <strong>印刷時の注意</strong><br>用紙は <strong id="printOrient">A4</strong>。印刷ダイアログで <strong>「実際のサイズ（100%）」</strong> を必ず選択。両面印刷は <strong id="printDuplex">長辺綴じ</strong>。
+    </div>
+    <div class="hint" style="margin-top:6px;">※ iPhone/iPadは「PDFを生成」を推奨（共有→プリント）<br>※ まず1枚だけ印刷して、実物の用紙に重ねて寸法と穴位置を確かめてください。</div>
+  </div>
+
+  <div class="ctrl-section">
+    <h3>サポート</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
+      <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
+    </div>
+  </div>
+</div>
+
+<div class="history-overlay" id="helpOverlay" onclick="if(event.target===this)closeHelp()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHelp()">✕ 閉じる</button>
+    <h3>使い方マニュアル（リフィルメーカー）</h3>
+    <div style="font-size:11px; line-height:1.7; color:#ddd;">
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
+      <ol style="padding-left:18px; margin:4px 0;">
+        <li>「用紙」でサイズを選ぶ（ロルバーン L／M、A6、バイブル、A5、ミニ6、マイクロ5、または数値を入力）</li>
+        <li>「書式」で種類を選ぶ（週間バーチカル／お薬手帳／方眼・ドット・罫線メモ）</li>
+        <li>PCは「印刷」、スマホは「PDFを生成」。印刷ダイアログで <b>「実際のサイズ（100%）」</b>。両面は画面に出る綴じ方で</li>
+      </ol>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙のサイズと穴の位置について</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>数値は変えられます。変えると「サイズ」は自動で「自分で入力」になります</li>
+        <li><b>ロルバーン L は仮の規格です。</b>公式で分かっているのは本体（カバー込み）の横143×縦182mmだけで、中の用紙の寸法・穴の位置は公開されていません。「139×182（推定）」と「130×178（note記事の値）」の2つを用意しました。手元の用紙を測って、幅・高さ・穴の位置を直してください</li>
+        <li>用紙が実物と合うかは、「印刷がずれるとき」の「テスト用紙を表示」で枠と穴だけを印刷し、実物を重ねて確かめられます</li>
+        <li>穴の位置は「上端から（mm）」をカンマで並べます。等間隔の穴は「等間隔で作る」で入れられます</li>
+      </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 面付け（A4への並べ方）</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>用紙の大きさに合わせて、A4の縦・横のうち、たくさん入るほうに自動で並べます（カット線で切り分け）</li>
+        <li>表面に奇数ページ、裏面に偶数ページが並び、切り分けた紙の表裏が対になります。穴は表面が左、裏面が右です</li>
+        <li>「📖 綴じ後プレビュー」で、見開きの並びを確認できます</li>
+        <li>※ 実物での組み立て確認は未了です。まず1枚で試してください</li>
+      </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 書式</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li><b>週間バーチカル</b>: 見開き1週間。左ページ月〜木、右ページ金〜日＋MEMO列。時間軸の開始・終了時を選べます（0〜24時も可）。最初と最後の紙の外側はメモページ</li>
+        <li><b>お薬手帳</b>: 1ページ目が本人情報（氏名・生年月日・血液型・連絡先・かかりつけ・アレルギー歴・副作用歴・既往歴・服用中の市販薬）、以降が記録ページ（日付・病院／薬局・薬剤情報シール貼付欄・メモ）。自分用の記録です。薬局・病院の指示を優先してください</li>
+        <li><b>方眼・ドット・罫線メモ</b>: 間隔を3〜7mmで選べます（ロルバーンの方眼は5mm）</li>
+      </ul>
+      <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>サイズが合わない → 倍率100%を確認し、用紙の実測値を入力</li>
+        <li>iPhone/iPadでレイアウトが崩れる → 「PDFを生成」を使用</li>
+        <li>要望・不具合 → 右下の「改善要望」ボタン</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="history-overlay" id="historyOverlay" onclick="if(event.target===this)closeHistory()">
+  <div class="history-box">
+    <button class="history-close" onclick="closeHistory()">✕ 閉じる</button>
+    <h3>更新履歴</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<div id="preview"><p style="color:#666; font-size:12px; margin-bottom:10px;">← 左パネル（☰）で設定すると自動で描画されます</p></div>
+<script>
+// === MODULE: Constants ===
+const WD_JA = ['日','月','火','水','木','金','土'];
+const WD_EN = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const r1 = v => Math.round(v * 100) / 100;
+// 等間隔の穴: 上下の余りが同じになるように中央に置く
+function uniformHoles(n, pitch, h) { const s = (h - (n - 1) * pitch) / 2; return Array.from({ length: n }, (_, i) => r1(s + i * pitch)); }
+// 用紙プリセット。w×h は中の用紙（mm）、holes は上端から穴中心（mm）、edge は綴じ側の端から穴中心（mm）、d は穴径（mm）
+// ⛔ ロルバーン L は公式で分かるのが本体（カバー込み）143×182mm だけ。中の用紙と穴は推定（M の実測：107×138・穴13個・9.5mm・端から6mm から類推）。実測したら直すこと。
+const PRESETS = {
+  rollbahnL:  { label: 'ロルバーン L（139×182・推定）', w: 139, h: 182, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 182), note: '⚠ 仮の規格です。公式で分かるのは本体（カバー込み）143×182mmだけ。中の用紙は「カバーより幅4mm狭く高さは同じ」というMの実測から推定した値で、穴は9.5mm間隔の18個（ルーズリーフと同じ間隔とされる）です。手元の用紙を測って直してください。', warn: true },
+  rollbahnL2: { label: 'ロルバーン L（130×178・note記事の値）', w: 130, h: 178, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 178), note: '⚠ 仮の規格です。noteの記事で印刷サイズとして挙げられている値（130×178）です。穴は9.5mm間隔の18個を中央に置いています。手元の用紙を測って直してください。', warn: true },
+  rollbahnM:  { label: 'ロルバーン M（107×138）', w: 107, h: 138, d: 5, edge: 6, holes: uniformHoles(13, 9.5, 138), note: '用紙107×138mm・穴13個・9.5mm間隔・端から6mm（当工房のロルバーンM部品の値）。穴径は仮です。' },
+  a6:     { label: 'A6（105×148）', w: 105, h: 148, d: 4, edge: 5, holes: [14.75, 33.75, 52.75, 90.75, 109.75, 128.75], note: 'システム手帳A6（6穴）。当工房のA6ツールと同じ位置です。' },
+  bible:  { label: 'バイブル（95×170）', w: 95, h: 170, d: 5, edge: 5, holes: [18.5, 37.5, 56.5, 107.5, 126.5, 145.5], note: 'システム手帳バイブル（6穴）。当工房のバイブルツールと同じ位置です。' },
+  a5:     { label: 'A5（148×210）', w: 148, h: 210, d: 5, edge: 6, holes: [32, 51, 70, 140, 159, 178], note: 'システム手帳A5（6穴）。' },
+  a5slim: { label: 'A5スリム（110×210）', w: 110, h: 210, d: 5, edge: 6, holes: [32, 51, 70, 140, 159, 178], note: 'A5スリム（6穴）。' },
+  mini6:  { label: 'ミニ6（80×128）', w: 80, h: 128, d: 5, edge: 6.3, holes: [16.3, 35.5, 54.7, 73.9, 93.1, 112.3], note: 'ミニ6（6穴・19.2mm間隔）。' },
+  micro5: { label: 'マイクロ5（62×105）', w: 62, h: 105, d: 5, edge: 6, holes: [15, 34, 53, 72, 91], note: 'マイクロ5（5穴・19mm間隔）。' },
+  custom: { label: '自分で入力', w: 120, h: 170, d: 5, edge: 6, holes: uniformHoles(6, 19, 170), note: '数値を入力してください。' }
+};
+const PRESET_ORDER = ['rollbahnL', 'rollbahnL2', 'rollbahnM', 'a6', 'bible', 'a5', 'a5slim', 'mini6', 'micro5', 'custom'];
+
+// === MODULE: State ===
+let paper = { preset: 'rollbahnL', w: 139, h: 182, d: 5, edge: 6, holes: PRESETS.rollbahnL.holes.slice() };
+let fmt = 'weekly', isEN = false;
+let opts = { showHoles: true, showHoleLine: true, showPunchGuide: true, showCutLine: true, showLogo: true, showHoliday: true,
+  showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false };
+let LAY = null; // 面付けの計算結果
+
+// === MODULE: Utility ===
+function pad(n) { return String(n).padStart(2, '0'); }
+function addDays(date, n) { const d = new Date(date); d.setDate(d.getDate() + n); return d; }
+function getWeekStart(date, startDay) { const d = new Date(date); const diff = (d.getDay() - startDay + 7) % 7; d.setDate(d.getDate() - diff); return d; }
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+function toDateVal(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function $(id) { return document.getElementById(id); }
+function toggleSidebar() { $('controls').classList.toggle('open'); document.body.classList.toggle('panel-open'); }
+
+// === MODULE: Japanese Holidays ===
+function getJPHolidays(y) {
+  const h = {};
+  const add = (m, d, name) => { h[`${y}-${pad(m)}-${pad(d)}`] = name; };
+  function nthWd(m, wd, n) { const first = new Date(y, m - 1, 1).getDay(); return 1 + ((wd - first + 7) % 7) + (n - 1) * 7; }
+  add(1, 1, '元日'); add(2, 11, '建国記念の日'); add(2, 23, '天皇誕生日');
+  add(4, 29, '昭和の日'); add(5, 3, '憲法記念日'); add(5, 4, 'みどりの日'); add(5, 5, 'こどもの日');
+  if (y >= 2016) add(8, 11, '山の日');
+  add(11, 3, '文化の日'); add(11, 23, '勤労感謝の日');
+  add(1, nthWd(1, 1, 2), '成人の日'); add(7, nthWd(7, 1, 3), '海の日'); add(9, nthWd(9, 1, 3), '敬老の日');
+  if (y >= 2000) add(10, nthWd(10, 1, 2), 'スポーツの日');
+  add(3, Math.floor(20.8431 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4)), '春分の日');
+  add(9, Math.floor(23.2488 + 0.242194 * (y - 1980) - Math.floor((y - 1980) / 4)), '秋分の日');
+  const viburi = {};
+  for (const k of Object.keys(h)) {
+    const d = new Date(k);
+    if (d.getDay() === 0) {
+      let next = new Date(d); next.setDate(next.getDate() + 1);
+      while (h[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`]) next.setDate(next.getDate() + 1);
+      viburi[`${next.getFullYear()}-${pad(next.getMonth()+1)}-${pad(next.getDate())}`] = '振替休日';
+    }
+  }
+  Object.assign(h, viburi);
+  for (let m = 1; m <= 12; m++) {
+    const days = new Date(y, m, 0).getDate();
+    for (let d = 2; d < days; d++) {
+      const prev = `${y}-${pad(m)}-${pad(d-1)}`, cur = `${y}-${pad(m)}-${pad(d)}`, next = `${y}-${pad(m)}-${pad(d+1)}`;
+      const wd = new Date(y, m-1, d).getDay();
+      if (h[prev] && h[next] && !h[cur] && wd !== 0 && wd !== 6) h[cur] = '国民の休日';
+    }
+  }
+  return h;
+}
+
+// === MODULE: 用紙の入力 ===
+function fillPresetSelect() { $('presetSel').innerHTML = PRESET_ORDER.map(k => `<option value="${k}">${PRESETS[k].label}</option>`).join(''); }
+function syncPaperUI() {
+  $('presetSel').value = paper.preset;
+  $('pW').value = paper.w; $('pH').value = paper.h; $('pD').value = paper.d; $('pEdge').value = paper.edge;
+  $('pHoles').value = paper.holes.join(', ');
+  const p = PRESETS[paper.preset];
+  const n = $('presetNote'); n.textContent = p ? p.note : ''; n.className = 'hint' + (p && p.warn ? ' warn' : '');
+}
+function onPresetChange() {
+  const k = $('presetSel').value, p = PRESETS[k];
+  if (k !== 'custom') paper = { preset: k, w: p.w, h: p.h, d: p.d, edge: p.edge, holes: p.holes.slice() };
+  else paper.preset = 'custom';
+  syncPaperUI(); rerender();
+}
+function readHoles(text, h) {
+  return String(text).split(/[,、\s]+/).map(s => parseFloat(s)).filter(v => isFinite(v) && v > 0 && v < h);
+}
+function onPaperInput() {
+  const num = (id, d) => { const v = parseFloat($(id).value); return isFinite(v) && v > 0 ? v : d; };
+  paper.w = num('pW', paper.w); paper.h = num('pH', paper.h); paper.d = num('pD', paper.d); paper.edge = num('pEdge', paper.edge);
+  paper.preset = 'custom';
+  $('presetSel').value = 'custom'; $('presetNote').textContent = PRESETS.custom.note; $('presetNote').className = 'hint';
+  rerender();
+}
+function onHolesInput() { paper.holes = readHoles($('pHoles').value, paper.h); paper.preset = 'custom'; $('presetSel').value = 'custom'; rerender(); }
+function makeUniformHoles() {
+  const n = Math.max(1, Math.min(40, parseInt($('uN').value) || 1)), p = parseFloat($('uP').value) || 9.5;
+  if ((n - 1) * p >= paper.h) { alert('穴が用紙の高さに収まりません。個数か間隔を減らしてください。'); return; }
+  paper.holes = uniformHoles(n, p, paper.h); paper.preset = 'custom'; syncPaperUI(); rerender();
+}
+
+// === MODULE: 面付け（A4への並べ方） ===
+// 縦・横のうち多く入るほうを選ぶ（同数なら縦・余白の大きいほう）。余白は 3mm → 0.5mm → 0 の順に試す。
+function computeLayout() {
+  const w = paper.w, h = paper.h; let best = null;
+  for (const m of [3, 0.5, 0]) for (const o of [[210, 297], [297, 210]]) {
+    const cols = Math.floor((o[0] - 2 * m) / w + 1e-9), rows = Math.floor((o[1] - 2 * m) / h + 1e-9), n = cols * rows;
+    if (n < 1) continue;
+    if (!best || n > best.n || (n === best.n && m > best.m)) best = { n, m, PW: o[0], PH: o[1], cols, rows, over: false };
+  }
+  if (!best) best = { n: 1, m: 0, PW: 210, PH: 297, cols: 1, rows: 1, over: true };
+  const x0 = (best.PW - best.cols * w) / 2, y0 = (best.PH - best.rows * h) / 2;
+  best.slots = [];
+  for (let r = 0; r < best.rows; r++) for (let c = 0; c < best.cols; c++) best.slots.push({ k: r * best.cols + c, r, c, x: r1(x0 + c * w), y: r1(y0 + r * h) });
+  best.cuts = { x: Array.from({ length: best.cols + 1 }, (_, i) => r1(x0 + i * w)), y: Array.from({ length: best.rows + 1 }, (_, j) => r1(y0 + j * h)) };
+  best.perSheet = 2 * best.n;
+  best.portrait = best.PW === 210;
+  return best;
+}
+// 表面は「綴じた紙の表（右ページ）」＝偶数番、裏面は列を左右反転して奇数番（長辺綴じ・短辺綴じとも）
+function pageIndexFor(sideKey, slot, L) {
+  if (sideKey === 'front') return 2 * slot.k;
+  return 2 * (slot.r * L.cols + (L.cols - 1 - slot.c)) + 1;
+}
+const stripW = () => Math.max(10, r1(paper.edge * 2));
+function applyLayoutVars() {
+  const root = document.documentElement.style;
+  root.setProperty('--sheet-w', LAY.PW + 'mm'); root.setProperty('--sheet-h', LAY.PH + 'mm');
+  root.setProperty('--strip-w', stripW() + 'mm'); root.setProperty('--hole-d', paper.d + 'mm'); root.setProperty('--page-h', paper.h + 'mm');
+  $('nsf-page-size').textContent = `@page { size: ${LAY.PW}mm ${LAY.PH}mm; margin: 0; }`;
+  $('printOrient').textContent = LAY.portrait ? 'A4 縦向き' : 'A4 横向き';
+  $('printDuplex').textContent = LAY.portrait ? '長辺綴じ' : '短辺綴じ';
+  $('layoutInfo').textContent = `A4${LAY.portrait ? '縦' : '横'}に ${LAY.cols}列×${LAY.rows}段 = ${LAY.n}面（用紙1枚で${LAY.perSheet}ページ）` + (LAY.over ? '。A4に収まらないサイズです' : '');
+  $('layoutInfo').className = 'hint' + (LAY.over ? ' warn' : '');
+  const G = window.NSF_PRINT_GEOMETRY;
+  if (G) {
+    G.sheet = [LAY.PW, LAY.PH];
+    G.slots = LAY.slots.map(s => ({ x: s.x, y: s.y, w: paper.w, h: paper.h, holeSide: 'left' }));
+    G.holes = paper.holes.slice(); G.holeEdge = paper.edge; G.holeD = paper.d;
+    G.cuts = LAY.cuts.x.map(x => ({ x })).concat(LAY.cuts.y.map(y => ({ y })));
+  }
+}
+
+// === MODULE: ページ部品 ===
+function holeStripHTML(holeSide) {
+  const right = holeSide === 'right';
+  const items = opts.showHoles ? paper.holes.map(pos => `<div class="hole" style="top:${pos}mm"></div>`).join('') : '';
+  const border = opts.showHoleLine ? (right ? 'border-left:0.2mm solid #ddd;' : 'border-right:0.2mm solid #ddd;') : '';
+  const guide = opts.showPunchGuide ? '<div class="punch-guide"></div>' : '';
+  return `<div class="hole-strip ${right ? 'right' : ''}" style="${border}">${items}${guide}</div>`;
+}
+function wrapSlot(innerHTML, pageNum, holeSide) {
+  const logo = opts.showLogo ? '<div class="logo-wm"><img src="../assets/logo-wm.png" alt=""></div>' : '';
+  const strip = holeStripHTML(holeSide);
+  return `${holeSide === 'left' ? strip : ''}<div class="page-body">${logo}<div class="fill-page">${innerHTML}<div class="page-num-bar"><span>${pageNum}</span></div></div></div>${holeSide === 'right' ? strip : ''}`;
+}
+
+// --- 週間バーチカル ---
+function vtHours() {
+  const sH = parseInt($('startHour').value);
+  let eH = parseInt($('endHour').value);
+  if (isNaN(eH) || eH <= sH) eH = Math.min(24, sH + 1);
+  return Array.from({ length: eH - sH }, (_, i) => sH + i);
+}
+function vtRowClass(h, sH) { return 'vt-row' + (opts.showHalfLine ? ' half' : '') + (opts.showMajorLine && h > sH && h % 3 === 0 ? ' major' : ''); }
+function buildWeekly(item, pageNum, holeSide) {
+  const U = opts.undated, startDay = parseInt($('weekStartDay').value);
+  let inner = '';
+  if (item.v === 'memo') {
+    inner = `<div class="memo-area" style="border-top:0.45mm solid #222"><div class="memo-label">MEMO</div>${Array(24).fill('<div class="memo-line"></div>').join('')}</div>`;
+  } else {
+    const ws = item.week, hours = vtHours(), sH = hours[0];
+    let holidays = null, metaHTML = '', monthAbbr = '';
+    if (!U) {
+      const we = addDays(ws, 6);
+      holidays = getJPHolidays(ws.getFullYear());
+      if (ws.getFullYear() !== we.getFullYear()) holidays = Object.assign({}, holidays, getJPHolidays(we.getFullYear()));
+      if (item.v === 'L') {
+        const rangeStr = (ws.getMonth() === we.getMonth()) ? `${ws.getMonth()+1}/${ws.getDate()} – ${we.getDate()}` : `${ws.getMonth()+1}/${ws.getDate()} – ${we.getMonth()+1}/${we.getDate()}`;
+        if (opts.showWeekMeta) metaHTML = `<div class="week-meta"><div class="week-range">${rangeStr}</div><div class="week-num">W${pad(getWeekNumber(ws))} · ${ws.getFullYear()}</div></div>`;
+        if (opts.showMonthAbbr) monthAbbr = `<div class="week-month-abbr">${isEN ? MONTH_EN_ABB[ws.getMonth()] : `${ws.getMonth()+1}月`}</div>`;
+      }
+    }
+    const idxs = item.v === 'L' ? [0, 1, 2, 3] : [4, 5, 6, -1];
+    const timeCol = `<div class="vt-time"><div class="vt-colhead"></div>${hours.map(h => `<div class="vt-row"><span>${h}</span></div>`).join('')}</div>`;
+    const rowsHTML = hours.map(h => `<div class="${vtRowClass(h, sH)}"></div>`).join('');
+    const cols = idxs.map(i => {
+      if (i < 0) return `<div class="vt-col is-memo"><div class="vt-colhead"><div class="memo-title">MEMO</div></div>${hours.map(() => '<div class="vt-row"></div>').join('')}</div>`;
+      const d = U ? null : addDays(ws, i), wd = U ? (startDay + i) % 7 : d.getDay();
+      const holName = (!U && opts.showHoliday && holidays) ? (holidays[toDateVal(d)] || '') : '';
+      const isHol = !!holName && wd !== 0 && wd !== 6;
+      const cls = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : (isHol ? 'is-holiday' : '');
+      return `<div class="vt-col"><div class="vt-colhead ${cls}"><div class="day-num">${U ? '' : d.getDate()}</div><div class="day-wd">${isEN ? WD_EN[wd] : WD_JA[wd]}</div>${holName ? `<div class="day-holiday">${holName}</div>` : ''}</div>${rowsHTML}</div>`;
+    }).join('');
+    inner = `<div class="week-header">${metaHTML}<div class="week-brand">N's factory</div>${monthAbbr}</div><div class="vt-grid">${timeCol}${cols}</div>`;
+  }
+  return wrapSlot(inner, pageNum, holeSide);
+}
+function spreadPages(weeks) {
+  const out = [{ v: 'memo' }];
+  weeks.forEach(w => out.push({ v: 'L', week: w }, { v: 'R', week: w }));
+  out.push({ v: 'memo' });
+  return out;
+}
+
+// --- お薬手帳 ---
+function recordCount() {
+  const v = parseInt($('recSel').value);
+  if (v >= 2 && v <= 4) return v;
+  return paper.h >= 165 ? 3 : 2;
+}
+function buildOkusuri(item, pageNum, holeSide) {
+  let inner = '';
+  if (item.t === 'info') {
+    const f = t => `<div class="ok-f"><b>${t}</b><i></i></div>`;
+    const box = (t, s) => `<div class="ok-box"><div><b>${t}</b><small>${s || ''}</small></div></div>`;
+    inner = `<div class="ok-head"><span class="ok-title">${isEN ? 'My Medication Record' : '私のお薬手帳'}</span></div>
+      <div class="ok-info">${f('氏名')}${f('生年月日')}${f('血液型')}${f('住所・電話')}${f('緊急連絡先')}${f('かかりつけ医')}${f('かかりつけ薬局')}
+      ${box('アレルギー歴', '食べ物・薬など')}${box('副作用歴', '薬の名前と症状')}${box('主な既往歴・持病')}${box('服用中の市販薬・サプリ')}</div>
+      <div class="ok-foot">この手帳は自分用の記録です。薬の使い方は、医師・薬剤師の指示に従ってください。</div>`;
+  } else {
+    const n = recordCount();
+    const block = `<div class="ok-block"><div class="ok-row"><span>日付</span><i class="date"></i><span>病院・薬局</span><i></i></div><div class="ok-sticker"><span>薬剤情報シール貼付欄</span></div><div class="ok-note"><span>メモ</span><i></i></div></div>`;
+    inner = `<div class="ok-head"><span class="ok-title">${isEN ? 'Medication Log' : 'お薬の記録'}</span><span class="ok-name">氏名 <i></i></span></div>${Array(n).fill(block).join('')}`;
+  }
+  return wrapSlot(inner, pageNum, holeSide);
+}
+
+// --- 方眼・ドット・罫線 ---
+function buildMemo(item, pageNum, holeSide) {
+  const kind = $('memoKind').value, sp = parseFloat($('memoSp').value) || 5;
+  const K = 3.7795; // 1mm の px
+  let defs = '', fill = '';
+  if (kind === 'grid') { defs = `<pattern id="bgp" width="${sp}mm" height="${sp}mm" patternUnits="userSpaceOnUse"><g transform="scale(${K})"><path d="M0 0H${sp}M0 0V${sp}" fill="none" stroke="#c9c9c9" stroke-width="0.18"/></g></pattern>`; fill = 'url(#bgp)'; }
+  else if (kind === 'dot') { defs = `<pattern id="bgp" width="${sp}mm" height="${sp}mm" patternUnits="userSpaceOnUse"><g transform="scale(${K})"><circle cx="0" cy="0" r="0.28" fill="#b5b5b5"/></g></pattern>`; fill = 'url(#bgp)'; }
+  else if (kind === 'line') { defs = `<pattern id="bgp" width="${sp}mm" height="${sp}mm" patternUnits="userSpaceOnUse"><g transform="scale(${K})"><path d="M0 0H${sp}" fill="none" stroke="#c9c9c9" stroke-width="0.18"/></g></pattern>`; fill = 'url(#bgp)'; }
+  const svg = fill ? `<svg class="bg-svg" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs><rect width="100%" height="100%" fill="${fill}"/></svg>` : '';
+  const inner = `<div style="flex:1;position:relative;min-height:0;">${svg}</div>`;
+  return wrapSlot(inner, pageNum, holeSide);
+}
+
+// === MODULE: Sheet Builder ===
+function buildItems() {
+  if (fmt === 'weekly') {
+    if (opts.undated) { const n = Math.min(60, Math.max(1, parseInt($('undatedCount').value) || 4)); return { items: spreadPages(Array.from({ length: n }, (_, i) => i)), label: `日付なし ${n}週（見開き1週間）` }; }
+    const startDay = parseInt($('weekStartDay').value);
+    const baseWeek = getWeekStart(new Date($('startDate').value || toDateVal(new Date())), startDay);
+    const rawEnd = $('periodEnd').value;
+    const endD = rawEnd ? new Date(rawEnd) : addDays(baseWeek, 27);
+    const weeks = [];
+    for (let cur = baseWeek; cur <= endD && weeks.length < 60; cur = addDays(cur, 7)) weeks.push(cur);
+    if (!weeks.length) weeks.push(baseWeek);
+    return { items: spreadPages(weeks), label: `${toDateVal(weeks[0])}〜 ${weeks.length}週（見開き1週間）` };
+  }
+  const n = Math.min(120, Math.max(1, parseInt($('pageCount').value) || 8));
+  if (fmt === 'okusuri') return { items: Array.from({ length: n }, (_, i) => ({ t: i === 0 ? 'info' : 'rec' })), label: `お薬手帳 ${n}ページ` };
+  return { items: Array.from({ length: n }, () => ({ t: 'memo' })), label: `メモ ${n}ページ` };
+}
+function buildPage(item, pageNum, holeSide) {
+  if (fmt === 'weekly') return buildWeekly(item, pageNum, holeSide);
+  if (fmt === 'okusuri') return buildOkusuri(item, pageNum, holeSide);
+  return buildMemo(item, pageNum, holeSide);
+}
+function makeSheetHTML(sideKey, sheetIndex, items) {
+  const cuts = opts.showCutLine ? (LAY.cuts.x.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') + LAY.cuts.y.map(y => `<div class="cut-line-h" style="top:${y}mm;"></div>`).join('')) : '';
+  const slots = LAY.slots.map(s => {
+    const idx = sheetIndex * LAY.perSheet + pageIndexFor(sideKey, s, LAY);
+    const other = (idx % 2 === 0) ? idx + 1 : idx - 1;
+    // 綴じ後プレビュー用: 通し番号 idx → 紙 floor(idx/2)、偶数が表・奇数が裏。片面だけ実在する紙の裏も白紙として印を付ける
+    const real = idx < items.length || (other >= 0 && other < items.length);
+    const dl = real ? ` data-leaf="${Math.floor(idx / 2)}" data-face="${idx % 2 ? 'back' : 'front'}"` : '';
+    const style = `left:${s.x}mm;top:${s.y}mm;width:${paper.w}mm;height:${paper.h}mm;`;
+    if (idx >= items.length) return `<div class="slot empty" data-pos="P${s.k}"${dl} style="${style}"></div>`;
+    return `<div class="slot" data-pos="P${s.k}"${dl} style="${style}">${buildPage(items[idx], idx + 1, sideKey === 'front' ? 'left' : 'right')}</div>`;
+  }).join('');
+  return `<div class="a4-sheet">${cuts}${slots}</div>`;
+}
+
+// === MODULE: Render ===
+function rerender() { render(); }
+function render() {
+  if (!(paper.w > 0 && paper.h > 0)) return;
+  document.body.dataset.fmt = fmt;
+  LAY = computeLayout(); applyLayoutVars();
+  const { items, label } = buildItems();
+  const sheetCount = Math.ceil(items.length / LAY.perSheet);
+  let html = '';
+  for (let s = 0; s < sheetCount; s++) for (const side of ['front', 'back']) {
+    html += `<div class="sheet-wrap"><div class="sheet-label">${label} · Sheet ${s + 1} · ${side === 'front' ? '表面' : '裏面'}</div>${makeSheetHTML(side, s, items)}</div>`;
+  }
+  $('preview').dataset.orient = 'portrait';
+  $('preview').innerHTML = html;
+  saveSettings();
+}
+function toggleOpt(key, btnId) { opts[key] = !opts[key]; $(btnId).classList.toggle('on', opts[key]); rerender(); }
+function setFormat(f) { fmt = f; $('fmtSel').value = f; rerender(); }
+function setLang(en) { isEN = en; $('btnJA').classList.toggle('on', !en); $('btnEN').classList.toggle('on', en); rerender(); }
+function setUndatedQuiet(u) { opts.undated = u; $('btnDated').classList.toggle('on', !u); $('btnUndated').classList.toggle('on', u); document.body.classList.toggle('undated', u); $('undatedCountRow').style.display = u ? 'flex' : 'none'; }
+function setUndated(u) { setUndatedQuiet(u); rerender(); }
+
+// === MODULE: PDF Generation ===
+async function generatePDF(ev) {
+  const btn = ev && ev.target ? ev.target : $('btnPdf');
+  const sheets = document.querySelectorAll('#preview .a4-sheet');
+  if (!sheets.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
+  if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
+  const orig = btn.textContent; btn.disabled = true;
+  const PW = LAY.PW, PH = LAY.PH;
+  const stage = document.createElement('div');
+  stage.style.cssText = `position:fixed;left:-99999px;top:0;width:${PW}mm;background:white;`;
+  document.body.appendChild(stage);
+  try {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: LAY.portrait ? 'portrait' : 'landscape' });
+    for (let i = 0; i < sheets.length; i++) {
+      btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
+      const clone = sheets[i].cloneNode(true);
+      clone.style.cssText = `width:${PW}mm;height:${PH}mm;transform:none;position:relative;overflow:hidden;background:white;box-shadow:none;margin:0;`;
+      stage.appendChild(clone);
+      const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false });
+      stage.removeChild(clone);
+      if (i > 0) pdf.addPage();
+      const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(sheets[i]) : { x: 0, y: 0 };
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, PW, PH);
+    }
+    const url = URL.createObjectURL(pdf.output('blob'));
+    const a = document.createElement('a'); a.href = url; a.download = `refill-${fmt}-${new Date().toISOString().slice(0,10)}.pdf`; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  } catch (e) { console.error(e); alert('PDF生成に失敗しました: ' + (e && e.message ? e.message : e)); }
+  finally { if (stage.parentNode) stage.parentNode.removeChild(stage); btn.disabled = false; btn.textContent = orig; }
+}
+
+// === MODULE: Settings Persistence ===
+const SETTINGS_KEY = 'nsf_refill_maker_g1';
+function saveSettings() {
+  const v = id => { const e = $(id); return e ? e.value : null; };
+  const s = { paper, fmt, opts: { ...opts }, isEN, recSel: v('recSel'), memoKind: v('memoKind'), memoSp: v('memoSp'), pageCount: v('pageCount'), weekStartDay: v('weekStartDay'), startHour: v('startHour'), endHour: v('endHour'), undatedCount: v('undatedCount') };
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
+}
+function loadSettings() {
+  let s; try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch (e) {}
+  if (!s) return;
+  if (s.paper && s.paper.w > 0 && s.paper.h > 0 && Array.isArray(s.paper.holes)) paper = { preset: PRESETS[s.paper.preset] ? s.paper.preset : 'custom', w: +s.paper.w, h: +s.paper.h, d: +s.paper.d || 5, edge: +s.paper.edge || 6, holes: s.paper.holes.map(Number).filter(isFinite) };
+  if (['weekly', 'okusuri', 'memo'].includes(s.fmt)) fmt = s.fmt;
+  const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta' };
+  if (s.opts) for (const [k, id] of Object.entries(btnMap)) if (s.opts[k] != null) { opts[k] = !!s.opts[k]; $(id).classList.toggle('on', opts[k]); }
+  ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
+  if (s.isEN) { isEN = true; $('btnJA').classList.remove('on'); $('btnEN').classList.add('on'); }
+  if (s.opts && s.opts.undated) setUndatedQuiet(true);
+}
+function resetSettings() {
+  if (!confirm('設定をリセットしますか？\nブラウザに保存された設定を削除してページを再読み込みします。')) return;
+  try { localStorage.removeItem(SETTINGS_KEY); } catch (e) {}
+  location.reload();
+}
+
+// === MODULE: UpdateHistory ===
+const HISTORY_ENTRIES = [
+  { date: '2026-10-29', type: 'feat', title: 'リフィルメーカーを新規作成（ロルバーンL・お薬手帳・自由サイズ）',
+    detail: 'サイズ・穴の位置を選べる（または数値で入力できる）リフィルメーカーを作りました。用紙はロルバーン L／M、A6、バイブル、A5、A5スリム、ミニ6、マイクロ5、自分で入力。書式は、週間バーチカル（見開き1週間・時間軸の開始／終了時を選べる）、お薬手帳（本人情報ページ＋記録ページ・薬剤情報シール貼付欄つき）、方眼・ドット・罫線のメモ（3〜7mm）。A4への並べ方は、縦・横のうち多く入るほうを自動で選びます。ロルバーン L は公式で分かる寸法が本体（カバー込み）だけのため仮の規格です。実測値で直せます。実物での印刷・穴位置の確認は未了です。' }
+];
+function openHistory() {
+  const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
+  $('historyList').innerHTML = [...HISTORY_ENTRIES].reverse().map(e => `<div class="history-entry"><span class="history-date">${e.date}</span><span class="history-type">${typeLabel[e.type] || e.type}</span><div class="history-title">${e.title}</div><div>${e.detail}</div></div>`).join('');
+  $('historyOverlay').classList.add('open');
+}
+function closeHistory() { $('historyOverlay').classList.remove('open'); }
+function openHelp() { $('helpOverlay').classList.add('open'); }
+function closeHelp() { $('helpOverlay').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeHistory(); closeHelp(); } });
+
+// === MODULE: Init ===
+document.addEventListener('DOMContentLoaded', () => {
+  fillPresetSelect();
+  const today = new Date();
+  $('startDate').value = toDateVal(today);
+  { const e = new Date(today); e.setDate(e.getDate() + 27); $('periodEnd').value = toDateVal(e); }
+  loadSettings();
+  $('fmtSel').value = fmt;
+  syncPaperUI();
+  render();
+});
+</script>
+<script src="../assets/access-counter.js"></script>
+<script src="../assets/bug-report.js"></script>
+<script>
+// 印刷ズレ補正・テスト印刷用の用紙形状（print-adjust.js が参照）。中身は描画のたびに applyLayoutVars() が更新する
+window.NSF_PRINT_GEOMETRY = { sheet: [210, 297], slots: [], holes: [], holeEdge: 6, holeD: 5, cuts: [] };
+</script>
+<script src="../assets/print-adjust.js"></script>
+<script src="../assets/flip-sim.js"></script>
+<script src="../assets/refill-extras.js"></script>
+</body>
+</html>

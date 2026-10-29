@@ -8,7 +8,7 @@
   if (window.__nsfExtras) return;
   window.__nsfExtras = true;
   const SRC = (document.currentScript && document.currentScript.src) || '';
-  const ESSENTIAL = /^(印刷モード|日付設定|日付・週設定|週の並び|期間|時間設定|時間軸（バーチカル）|日付なしの設定|印刷|サポート)$/;
+  const ESSENTIAL = /^(印刷モード|用紙|書式|日付設定|日付・週設定|週の並び|期間|時間設定|時間軸（バーチカル）|日付なしの設定|印刷|サポート)$/;
   const OPEN_KEY = 'nsf_ui_open';
 
   function lsGet(k, d) { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
