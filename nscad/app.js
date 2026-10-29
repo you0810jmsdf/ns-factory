@@ -4821,10 +4821,19 @@ $('arrayApply').onclick = applyArray;
 /** 移動できる選択があるか：図形、または、図形を選ばず菱目（穴）だけを選んでいる（事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」：以前は図形だけを数えていて、菱目だけを選ぶと移動カードが隠れ・押しても動かなかった）。 */
 const hasMoveTarget = () => selectedShapeIds().size > 0 || doc.holes.some(h => selected.has(h.id) && holeEditable(h));
 function refreshMoveCard() { const none = !hasMoveTarget(); $('moveCard').hidden = none; if (none && $('moveCard').dataset.win === '1') setCardWin('moveCard', false, true); }   /* 動かす図形が無くなったら、窓も閉じる */
+/** 移動の予定位置（事業主 2026-10-29「移動の数値を入れたら、図面にも予定位置を薄く表示させて、移動ボタンで確定できるようにしたい」）：右へ・下への数字を入れる（変える）と、選んでいる図形（と穴）を、その量だけずらした位置に薄い影で描く（図形は動かない）。「動かす」「複製して動かす」で確定すると影は消える（数字は残る）。 */
+let movePending = false;
+function movePreviewDelta() {
+  if (!movePending || exporting || $('moveCard').hidden || !hasMoveTarget()) return null;
+  const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
+  return Number.isFinite(dx) && Number.isFinite(dy) && (dx !== 0 || dy !== 0) ? { dx, dy } : null;
+}
+for (const id of ['moveDx', 'moveDy']) $(id).addEventListener('input', () => { movePending = true; draw(); });
 function applyMove() {
   const dx = Number($('moveDx').value), dy = Number($('moveDy').value);
   if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
   if (!hasMoveTarget() || (dx === 0 && dy === 0)) return;
+  movePending = false;   /* 確定：予定位置の影は消す */
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('moved', { x: dx, y: dy });
 }
 $('moveApply').onclick = applyMove;
@@ -4834,6 +4843,7 @@ function applyMoveCopy() {
   if (!Number.isFinite(dx) || !Number.isFinite(dy)) { $('hint').textContent = t('invalidNumber'); return; }
   if (!selectedShapeIds().size) { $('hint').textContent = t('moveCopyNeed'); return; }
   if (dx === 0 && dy === 0) { $('hint').textContent = t('invalidNumber'); return; }   /* 0 だと、元と重なった複製ができるだけ */
+  movePending = false;   /* 確定：予定位置の影は消す */
   copySelectedOffsets([{ dx, dy }]); $('hint').textContent = t('movedCopy', { x: dx, y: dy });
 }
 $('moveCopy').onclick = applyMoveCopy;
@@ -8184,6 +8194,12 @@ function drawSheetBody(lo, hi) {
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
+  { const mv = movePreviewDelta(); if (mv) {   /* 移動カードの数字の予定位置：選んでいる図形・穴を、ずらした位置に薄い点線で（動かさない） */
+    ctx.save(); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5 / scale;
+    for (const s of doc.shapes) if (selected.has(s.id) && visible(s) && !['image', 'text'].includes(s.type)) strokeShape(translate(s, mv.dx, mv.dy), '#c9a96e', true);
+    for (const h of doc.holes) if (selected.has(h.id) && holeVisible(h)) { const a = holeAppearance(h, doc); if (!a) continue; ctx.save(); ctx.translate(h.x + mv.dx, h.y + mv.dy); ctx.rotate(holeAngle(h) * Math.PI / 180); ctx.setLineDash([4 / scale, 3 / scale]); ctx.strokeStyle = '#c9a96e'; ctx.beginPath(); if (a.kind === 'circle') ctx.arc(0, 0, (a.width || 1) / 2, 0, Math.PI * 2); else { const w = (a.width || 1) / 2, hh = (a.height || a.width || 1) / 2; ctx.moveTo(-w, 0); ctx.lineTo(0, -hh); ctx.lineTo(w, 0); ctx.lineTo(0, hh); ctx.closePath(); } ctx.stroke(); ctx.restore(); }
+    ctx.restore();
+  } }
   drawCircleReadout();
   if (stage?.kind === 'arc') strokeShape(arcShape(cursor), '#c9a96e');
   if (stage?.kind === 'half') { const pv = distance(stage.pts[0], cursor) > 1e-8 ? halfCircleShape(stage.pts[0], cursor) : null; if (pv) strokeShape(pv, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
