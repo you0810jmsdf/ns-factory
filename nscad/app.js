@@ -7188,10 +7188,14 @@ function explodeSelection() {
  *  （事業主の指摘 2026-10-18「直線を削除したら菱目も消える」→ 決定「Delete は今までどおり・線だけ削除は別のキーとボタン」）。選んでいる穴は消える。 */
 /** 図形を消すとき、その図形で囲まれていた領域の塗りも消す（事業主 2026-10-25「おかしな図形が残っていて消せない」「断面を作るボタンで2つ断面が出てきた」：塗りは図形の番号だけで囲みを覚えているので、図形を消しても塗りが残り、同じ番号の図形が作り直されると、古い塗りが元の位置に幽霊のように現れた）。
  *  keep＝消さずに残る図形（見えない補助の線にして残す線）。消した塗りの数を返す。元に戻すは、消した図形と同じ1回。 */
-function dropFillsOf(ids, keep = new Set()) {
+function dropFillsOf(ids, keep = new Set(), gone = null) {
   const fills = doc.fills; if (!fills?.length) return 0;   /* 塗りが無い図面には、fills を足さない */
-  const kept = fills.filter(f => !(f.ids || []).some(id => ids.has(id) && !keep.has(id))); if (kept.length === fills.length) return 0;
-  doc.fills = kept; return fills.length - kept.length;
+  const kept = fills.filter(f => !(f.ids || []).some(id => ids.has(id) && !keep.has(id)));
+  /* 残る塗りの、くり抜きの穴のうち、消した図形の輪郭の上に乗っていたもの（金具・スロットの形）は外す（事業主 2026-10-29「金具を消すと本体の色が中抜けする」：穴が残って、色が抜けたままだった）。辺の9割以上が、消した図形の上にある穴だけ */
+  let opened = false, out = kept;
+  if (gone && gone.length) out = kept.map(f => { if (!(f.holes || []).length) return f; const flags = f.holes.map(h => fillOnShapes({ points: h, holes: [] }, gone) >= 0.9); if (!flags.some(Boolean)) return f; opened = true; return { ...f, holes: f.holes.filter((_, i) => !flags[i]) }; });
+  if (kept.length === fills.length && !opened) return 0;
+  doc.fills = out; return fills.length - kept.length;
 }
 /** 「格子の線だけ消す」の相手（事業主 2026-10-25「裏面はひっくり返して格子のみ削除したい」）：選んだ格子（記録のある格子）のピース。記録が無いとき（コピーした裏面・古い図面）は、選んだ中の、いちばん外側の閉じた実線（外形）の内側にある、閉じた実線（格子のピース）。点線・ガイドの層・見えない補助の線は数えない。 */
 function latticePieceIds() {
@@ -7227,7 +7231,7 @@ function removeLatticeLines(what = 'lines') {
   commit(() => {
     if (hids.size) { doc.holes = doc.holes.filter(h => !hids.has(h.id)); selected = new Set([...selected].filter(id => !hids.has(id))); manualNext = null; }
     if (ids.size) {
-    doc.shapes = doc.shapes.filter(s => !ids.has(s.id)); for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id)); dropFillsOf(ids);
+    const goneLines = doc.shapes.filter(s => ids.has(s.id)); doc.shapes = doc.shapes.filter(s => !ids.has(s.id)); for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id)); dropFillsOf(ids, new Set(), goneLines);
     for (const g of doc.grids || []) { g.pieceIds = g.pieceIds.filter(id => !ids.has(id)); g.ids = g.ids.filter(id => !ids.has(id)); } doc.grids = (doc.grids || []).filter(g => g.pieceIds.length);   /* 消した格子の記録は捨てる（作りなおしで、残った穴まで消さないように） */
     selected = new Set([...selected].filter(id => !ids.has(id)));
     }
@@ -7236,7 +7240,7 @@ function removeLatticeLines(what = 'lines') {
 }
 function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  let lines = 0, kept = 0, dropped = 0;
+  let lines = 0, kept = 0, dropped = 0; const goneShapes = doc.shapes.filter(sh => ids.has(sh.id));
   cancel(); commit(() => {
     const holed = new Set(doc.holes.map(h => h.pathId)), keepPaths = doc.paths.filter(p => holed.has(p.id) && p.shapeIds.some(id => ids.has(id))), keepIds = new Set(keepPaths.flatMap(p => p.shapeIds.filter(id => ids.has(id))));
     const dropPaths = new Set(doc.paths.filter(p => p.shapeIds.some(id => ids.has(id)) && !keepPaths.includes(p)).map(p => p.id));
@@ -7245,15 +7249,16 @@ function removeSelectedKeepHoles() {
     doc.holes = doc.holes.filter(h => !dropPaths.has(h.pathId) && !(selected.has(h.id) && holeEditable(h)));
     doc.paths = doc.paths.filter(p => !dropPaths.has(p.id)); doc.seams = doc.seams.filter(m => !dropPaths.has(m.a.pathId) && !dropPaths.has(m.b.pathId));
     for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id));
-    dropped = dropFillsOf(ids, keepIds);
+    dropped = dropFillsOf(ids, keepIds, goneShapes);
     selected.clear(); manualNext = null;
   }); renderSeams();
   $('hint').textContent = t('holesKept', { n: lines, h: kept }) + (dropped ? ' ' + t('fillsDroppedWithShapes', { n: dropped }) : '');
 }
 function removeSelected(onlyIds = null, alsoFn = null) {
   const ids = onlyIds || selectedShapeIds(); let dropped = 0;   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
+  const goneShapes = doc.shapes.filter(sh => ids.has(sh.id));   /* 消す前の図形（塗りの、くり抜きの穴を外すのに使う） */
   cancel(); commit(() => { const own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
-    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
+    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds,goneShapes); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
   if (dropped) $('hint').textContent = t('fillsDroppedWithShapes', { n: dropped });
 }
 /** 「点線で描く」（事業主 2026-10-25「直接点線が引きたい」→ 案A）：オンの間、作図の道具（直線・矩形・円・円弧・ベジェ・ペン）で描く図形は、点線になる。描いたあとに線種を変える手間をなくす。画面だけの状態で、図面には保存しない（もう一度押すか、ページを開き直すと実線）。 */
