@@ -48,8 +48,9 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
 .btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
 body.undated .dated-only { display: none; }
-.fmt-weekly-only, .fmt-okusuri-only, .fmt-memo-only, .fmt-paged-only { display: none; }
+.fmt-weekly-only, .fmt-okusuri-only, .fmt-memo-only, .fmt-paged-only, .fmt-monthly-only { display: none; }
 body[data-fmt="weekly"] .fmt-weekly-only { display: block; }
+body[data-fmt="monthly"] .fmt-monthly-only { display: block; }
 body[data-fmt="okusuri"] .fmt-okusuri-only { display: block; }
 body[data-fmt="memo"] .fmt-memo-only { display: block; }
 body[data-fmt="okusuri"] .fmt-paged-only, body[data-fmt="memo"] .fmt-paged-only { display: block; }
@@ -109,6 +110,22 @@ body.panel-open #preview { margin-left: 280px; }
 .vt-time .vt-row { border-top-color: transparent; }
 .vt-time .vt-row span { position: absolute; right: 0.8mm; top: 0.3mm; font-size: 2mm; color: #888; line-height: 1; }
 .vt-col.is-memo .vt-row.half::after { display: none; }
+
+/* === MODULE: マンスリー（見開き1ヶ月＝左ページ カレンダー表 / 右ページ TODO＋MEMO） === */
+.mo-header { height: 10mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: center; gap: 2mm; padding: 0 1mm; position: relative; }
+.mo-title { font-size: 5mm; font-weight: 700; line-height: 1; letter-spacing: 0.3mm; }
+.mo-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, 1fr); border-left: 0.2mm solid #ddd; border-bottom: 0.3mm solid #bbb; }
+.mo-wd { display: flex; align-items: center; justify-content: center; font-size: 2.2mm; font-weight: 700; color: #555; padding: 0.8mm 0; border-right: 0.2mm solid #ddd; border-bottom: 0.3mm solid #999; }
+.mo-wd.is-sat { background: #f0f4ff; color: #3377cc; } .mo-wd.is-sun { background: #fff0f0; color: #cc3333; }
+.mo-cell { min-width: 0; min-height: 0; overflow: hidden; padding: 0.6mm 0.8mm; border-right: 0.2mm solid #ddd; border-bottom: 0.2mm solid #ddd; }
+.mo-cell.is-out { background: #fafafa; }
+.mo-num { font-size: 3.4mm; font-weight: 700; line-height: 1; }
+.mo-cell.is-sat .mo-num { color: #3377cc; } .mo-cell.is-sun .mo-num, .mo-cell.is-holiday .mo-num { color: #cc3333; }
+.mo-hol { margin-top: 0.4mm; font-size: 1.4mm; line-height: 1.2; color: #cc3333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mo-sec { flex-shrink: 0; margin: 2mm 1mm 0; font-size: 2.4mm; font-weight: 700; color: #555; letter-spacing: 0.3mm; line-height: 1; }
+.mo-todo { flex-shrink: 0; display: flex; flex-direction: column; margin-top: 1mm; }
+.mo-todo-line { height: 6.4mm; display: flex; align-items: center; gap: 1.6mm; padding: 0 1mm; border-bottom: 0.15mm solid #ddd; }
+.mo-todo-line i { width: 2.6mm; height: 2.6mm; border: 0.25mm solid #999; flex-shrink: 0; }
 
 /* === MODULE: お薬手帳 === */
 .ok-head { height: 10mm; flex-shrink: 0; border-bottom: 0.45mm solid #222; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 1mm 1.2mm; }
@@ -210,6 +227,7 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>種類</label>
       <select id="fmtSel" onchange="setFormat(this.value)">
         <option value="weekly">週間バーチカル（見開き1週間）</option>
+        <option value="monthly">マンスリー（見開き1ヶ月）</option>
         <option value="okusuri">お薬手帳（本人情報＋記録ページ）</option>
         <option value="memo">方眼・ドット・罫線のメモ</option>
       </select>
@@ -239,6 +257,15 @@ body.panel-open #preview { margin-left: 280px; }
     <div class="ctrl-row"><label>週開始</label>
       <select id="weekStartDay" onchange="rerender()"><option value="1" selected>月曜始まり</option><option value="0">日曜始まり</option></select></div>
     <div class="ctrl-row" id="undatedCountRow" style="display:none"><label>週数</label><input type="number" id="undatedCount" min="1" max="60" value="4" onchange="rerender()" style="max-width:70px"></div>
+  </div>
+
+  <div class="ctrl-section fmt-monthly-only">
+    <h3>月の設定（マンスリー）</h3>
+    <div class="ctrl-row"><label>開始月</label><input type="month" id="monthStart" onchange="rerender()"></div>
+    <div class="ctrl-row"><label>月数</label><input type="number" id="monthCount" min="1" max="24" value="3" onchange="rerender()" style="max-width:70px"><span>か月（最大24）</span></div>
+    <div class="ctrl-row"><label>週開始</label>
+      <select id="monthWeekStart" onchange="rerender()"><option value="1" selected>月曜始まり</option><option value="0">日曜始まり</option></select></div>
+    <div class="hint">左ページがカレンダー表（曜日・祝日つき）、右ページが TODO と MEMO の見開きです。祝日は「表示要素」の「祝日表示」で出し入れできます。</div>
   </div>
 
   <div class="ctrl-section fmt-weekly-only">
@@ -297,7 +324,7 @@ body.panel-open #preview { margin-left: 280px; }
       <p style="color:#7ec8e3; font-weight:bold; margin-top:8px;">■ 基本の流れ</p>
       <ol style="padding-left:18px; margin:4px 0;">
         <li>「用紙」でサイズを選ぶ（ロルバーン L／M、A6、バイブル、A5、ミニ6、マイクロ5、または数値を入力）</li>
-        <li>「書式」で種類を選ぶ（週間バーチカル／お薬手帳／方眼・ドット・罫線メモ）</li>
+        <li>「書式」で種類を選ぶ（週間バーチカル／マンスリー／お薬手帳／方眼・ドット・罫線メモ）</li>
         <li>PCは「印刷」、スマホは「PDFを生成」。印刷ダイアログで <b>「実際のサイズ（100%）」</b>。両面は画面に出る綴じ方で</li>
       </ol>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙のサイズと穴の位置について</p>
@@ -556,6 +583,46 @@ function spreadPages(weeks) {
   return out;
 }
 
+// --- マンスリー（見開き1ヶ月） ---
+const MONTH_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function monthlyMonths() {
+  const v = $('monthStart').value, t = new Date(), base = /^[0-9]{4}-[0-9]{2}$/.test(v) ? new Date(+v.slice(0, 4), +v.slice(5, 7) - 1, 1) : new Date(t.getFullYear(), t.getMonth(), 1);
+  const n = Math.min(24, Math.max(1, parseInt($('monthCount').value) || 3));
+  return Array.from({ length: n }, (_, i) => new Date(base.getFullYear(), base.getMonth() + i, 1));
+}
+function monthlyPages(months) {
+  const out = [{ v: 'memo' }];
+  months.forEach(m => out.push({ v: 'cal', month: m }, { v: 'note', month: m }));
+  out.push({ v: 'memo' });
+  return out;
+}
+function buildMonthly(item, pageNum, holeSide) {
+  let inner = '';
+  if (item.v === 'memo') {
+    inner = `<div class="memo-area" style="border-top:0.45mm solid #222"><div class="memo-label">MEMO</div>${Array(24).fill('<div class="memo-line"></div>').join('')}</div>`;
+  } else {
+    const first = item.month, y = first.getFullYear(), mo = first.getMonth();
+    const title = isEN ? `${MONTH_EN[mo]} ${y}` : `${y}年 ${mo + 1}月`;
+    if (item.v === 'cal') {
+      const startDay = parseInt($('monthWeekStart').value), lead = (first.getDay() - startDay + 7) % 7, days = new Date(y, mo + 1, 0).getDate(), weeks = Math.ceil((lead + days) / 7);
+      const holidays = opts.showHoliday ? getJPHolidays(y) : null;
+      const head = Array.from({ length: 7 }, (_, i) => { const wd = (startDay + i) % 7; return `<div class="mo-wd ${wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : ''}">${isEN ? WD_EN[wd] : WD_JA[wd]}</div>`; }).join('');
+      const cells = Array.from({ length: weeks * 7 }, (_, i) => {
+        const dn = i - lead + 1; if (dn < 1 || dn > days) return '<div class="mo-cell is-out"></div>';
+        const d = new Date(y, mo, dn), wd = d.getDay(), hol = holidays ? (holidays[toDateVal(d)] || '') : '';
+        const cls = wd === 0 ? 'is-sun' : wd === 6 ? 'is-sat' : (hol ? 'is-holiday' : '');
+        return `<div class="mo-cell ${cls}"><div class="mo-num">${dn}</div>${hol ? `<div class="mo-hol">${hol}</div>` : ''}</div>`;
+      }).join('');
+      inner = `<div class="mo-header"><div class="mo-title">${title}</div><div class="week-brand">N's factory</div></div><div class="mo-grid" style="grid-template-rows:auto repeat(${weeks},1fr)">${head}${cells}</div>`;
+    } else {
+      inner = `<div class="mo-header"><div class="mo-title">${isEN ? 'NOTES' : 'ノート'}</div><div class="week-brand">N's factory</div></div>`
+        + `<div class="mo-sec">TODO</div><div class="mo-todo">${Array(10).fill('<div class="mo-todo-line"><i></i></div>').join('')}</div>`
+        + `<div class="mo-sec">MEMO</div><div class="memo-area" style="margin-top:1mm">${Array(18).fill('<div class="memo-line"></div>').join('')}</div>`;
+    }
+  }
+  return wrapSlot(inner, pageNum, holeSide);
+}
+
 // --- お薬手帳 ---
 function recordCount() {
   const v = parseInt($('recSel').value);
@@ -594,6 +661,7 @@ function buildMemo(item, pageNum, holeSide) {
 
 // === MODULE: Sheet Builder ===
 function buildItems() {
+  if (fmt === 'monthly') { const months = monthlyMonths(); return { items: monthlyPages(months), label: `${months[0].getFullYear()}年${months[0].getMonth() + 1}月〜 ${months.length}か月（見開き1ヶ月）` }; }
   if (fmt === 'weekly') {
     if (opts.undated) { const n = Math.min(60, Math.max(1, parseInt($('undatedCount').value) || 4)); return { items: spreadPages(Array.from({ length: n }, (_, i) => i)), label: `日付なし ${n}週（見開き1週間）` }; }
     const startDay = parseInt($('weekStartDay').value);
@@ -611,6 +679,7 @@ function buildItems() {
 }
 function buildPage(item, pageNum, holeSide) {
   if (fmt === 'weekly') return buildWeekly(item, pageNum, holeSide);
+  if (fmt === 'monthly') return buildMonthly(item, pageNum, holeSide);
   if (fmt === 'okusuri') return buildOkusuri(item, pageNum, holeSide);
   return buildMemo(item, pageNum, holeSide);
 }
@@ -688,17 +757,17 @@ async function generatePDF(ev) {
 const SETTINGS_KEY = 'nsf_refill_maker_g1';
 function saveSettings() {
   const v = id => { const e = $(id); return e ? e.value : null; };
-  const s = { paper, fmt, opts: { ...opts }, isEN, recSel: v('recSel'), memoKind: v('memoKind'), memoSp: v('memoSp'), pageCount: v('pageCount'), weekStartDay: v('weekStartDay'), startHour: v('startHour'), endHour: v('endHour'), undatedCount: v('undatedCount') };
+  const s = { paper, fmt, opts: { ...opts }, isEN, recSel: v('recSel'), memoKind: v('memoKind'), memoSp: v('memoSp'), pageCount: v('pageCount'), weekStartDay: v('weekStartDay'), startHour: v('startHour'), endHour: v('endHour'), undatedCount: v('undatedCount'), monthStart: v('monthStart'), monthCount: v('monthCount'), monthWeekStart: v('monthWeekStart') };
   try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) {}
 }
 function loadSettings() {
   let s; try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch (e) {}
   if (!s) return;
   if (s.paper && s.paper.w > 0 && s.paper.h > 0 && Array.isArray(s.paper.holes)) paper = { preset: PRESETS[s.paper.preset] ? s.paper.preset : 'custom', w: +s.paper.w, h: +s.paper.h, d: +s.paper.d || 5, edge: +s.paper.edge || 6, holes: s.paper.holes.map(Number).filter(isFinite) };
-  if (['weekly', 'okusuri', 'memo'].includes(s.fmt)) fmt = s.fmt;
+  if (['weekly', 'monthly', 'okusuri', 'memo'].includes(s.fmt)) fmt = s.fmt;
   const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta' };
   if (s.opts) for (const [k, id] of Object.entries(btnMap)) if (s.opts[k] != null) { opts[k] = !!s.opts[k]; $(id).classList.toggle('on', opts[k]); }
-  ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
+  ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount', 'monthStart', 'monthCount', 'monthWeekStart'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
   if (s.isEN) { isEN = true; $('btnJA').classList.remove('on'); $('btnEN').classList.add('on'); }
   if (s.opts && s.opts.undated) setUndatedQuiet(true);
 }
@@ -710,6 +779,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-10-30', type: 'feat', title: 'マンスリー（見開き1ヶ月）の書式を追加',
+    detail: '書式「マンスリー（見開き1ヶ月）」を追加しました。左ページがカレンダー表（曜日・祝日つき・週の始まりは月曜／日曜から選べます）、右ページが TODO（チェック欄10行）と MEMO の見開きです。開始月と月数（最大24か月）を選べます。祝日は「祝日表示」で出し入れでき、英語表示にも対応しています。用紙のサイズ・穴の位置・面付け・PDF生成は、ほかの書式と同じように使えます。' },
   { date: '2026-10-29', type: 'feat', title: 'ロルバーン L・M の穴を矩形で表示・印刷',
     detail: 'ロルバーン L・M の綴じ穴を、丸ではなく矩形（幅6×高さ5mm・中心は端から6mm）で描くようにしました。N\'s CAD の部品・規格「ロルバーン L／M」と同じ形です。画面の穴の列・テスト用紙の両方に出ます。穴の位置や大きさの数値を直して「自分で入力」に切り替わると、丸の穴に戻ります。' },
   { date: '2026-10-29', type: 'fix', title: 'ロルバーン L の用紙を公式の 132×178mm に統一',
@@ -732,6 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fillPresetSelect();
   const today = new Date();
   $('startDate').value = toDateVal(today);
+  $('monthStart').value = `${today.getFullYear()}-${pad(today.getMonth() + 1)}`;
   { const e = new Date(today); e.setDate(e.getDate() + 27); $('periodEnd').value = toDateVal(e); }
   loadSettings();
   $('fmtSel').value = fmt;
