@@ -4910,7 +4910,9 @@ function centerOnStart(axes) {
 function centerOnClick(p) {
   const ids = selectedShapeIds(); if (!ids.size) { setMode('select'); $('hint').textContent = t('centerOnNeedSelect'); return; }
   const skip = s => ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type);
-  let target = null; for (const s of doc.shapes) { if (skip(s)) continue; const d = distToShape(s, p); if (d <= 12 / scale && (!target || d < target.d)) target = { s, d }; }
+  const isGuide = s => s.lineStyle === 'dashed' || s.layer === 'guide';   /* 点線・ガイド層の線（折り目・中心線）。外形の辺に端が当たるので、クリックの近くでは外形より先に選ばれてしまう（事業主 2026-10-29「リングサポータと本体外周の中心が合わない」）→ 実線が近くにあれば実線を基準にする */
+  let target = null, guideTarget = null; for (const s of doc.shapes) { if (skip(s)) continue; const d = distToShape(s, p); if (d > 12 / scale) continue; if (isGuide(s)) { if (!guideTarget || d < guideTarget.d) guideTarget = { s, d }; } else if (!target || d < target.d) target = { s, d }; }
+  if (!target) target = guideTarget;   /* 実線が何も近くに無いときだけ、点線・ガイドも基準にできる（これまでどおり） */
   const boxOf = list => { let b = null; for (const s of list) { const q = bboxOf(s); b = b ? { minX: Math.min(b.minX, q.minX), minY: Math.min(b.minY, q.minY), maxX: Math.max(b.maxX, q.maxX), maxY: Math.max(b.maxY, q.maxY) } : { ...q }; } return b; };
   let tb = null;
   if (target) { const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 }), members = new Set(chain.length ? chain : [target.s.id]); tb = boxOf(doc.shapes.filter(s => members.has(s.id))); }
