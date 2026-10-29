@@ -101,9 +101,11 @@
       const holeRight = isBack ? s.holeSide !== 'right' : s.holeSide === 'right';
       const hx = holeRight ? s.x + s.w - (G.holeEdge || 6) : s.x + (G.holeEdge || 6);
       inner += `<div style="position:absolute;left:${s.x}mm;top:${s.y}mm;width:${s.w}mm;height:${s.h}mm;border:0.3mm solid #444;box-sizing:border-box"></div>`;
+      // G.holeRect = [幅（縁から内へ）, 高さ（縁に沿って）]：穴が矩形のとき（無ければ従来どおり丸）。上端の穴は向きが入れ替わる
+      const hw = G.holeRect ? (holeTop ? G.holeRect[1] : G.holeRect[0]) : (G.holeD || 5), hh = G.holeRect ? (holeTop ? G.holeRect[0] : G.holeRect[1]) : (G.holeD || 5), hr = G.holeRect ? '0' : '50%';
       (G.holes || []).forEach(h => {
         const cx = holeTop ? s.x + h : hx, cy = holeTop ? s.y + (G.holeEdge || 6) : s.y + h;
-        inner += `<div style="position:absolute;left:${cx}mm;top:${cy}mm;width:${G.holeD || 5}mm;height:${G.holeD || 5}mm;border:0.3mm solid #444;border-radius:50%;transform:translate(-50%,-50%);box-sizing:border-box"></div>`;
+        inner += `<div style="position:absolute;left:${cx}mm;top:${cy}mm;width:${hw}mm;height:${hh}mm;border:0.3mm solid #444;border-radius:${hr};transform:translate(-50%,-50%);box-sizing:border-box"></div>`;
       });
       inner += `<div style="position:absolute;left:${s.x + s.w / 2}mm;top:${s.y + s.h / 2}mm;transform:translate(-50%,-50%);font:3mm/1.4 sans-serif;color:#444;text-align:center;white-space:nowrap">${isBack ? '裏面' : '表面'} テスト ${i + 1}<br><span style="font-size:2.2mm">${s.w}×${s.h}mm ／ 穴は${holeTop ? '上' : (holeRight ? '右' : '左')}</span></div>`;
     });
