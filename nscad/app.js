@@ -4837,7 +4837,7 @@ function applyMoveCopy() {
   copySelectedOffsets([{ dx, dy }]); $('hint').textContent = t('movedCopy', { x: dx, y: dy });
 }
 $('moveCopy').onclick = applyMoveCopy;
-$('adRun').onclick = runAutoDims; $('adClear').onclick = clearAutoDims;
+$('adRun').onclick = () => runAutoDims(); $('adClear').onclick = clearAutoDims; for (const id of ['adSize', 'adEdges', 'adCircles', 'adRadius', 'adHoles']) $(id).onchange = () => toggleAutoDimKind(id);   /* チェックの入れ外しで、その種類の自動寸法が出入りする */
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
   if (!selectedShapeIds().size) { $('hint').textContent = t('attachNeedSelect'); return; }
@@ -6493,10 +6493,10 @@ function dimOffPreview(g, cur) {
 const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
 /** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
 function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && (adIsDiamond(s) || (s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed')) && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)); return $('adSelOnly')?.checked ? all.filter(s => ids.has(s.id)) : all; }   /* 「選んだ図形だけに入れる」を入れたときだけ、選択で絞る（不具合記録 2026-10-19 08:45：前回の続きを開いたときの選択 198 個が残っていて、外形の角の曲線が外れ「全体 0 本」になった） */   /* 菱目（菱の線）は、目印・ガイドの層や点線でも対象に入れる（寸法は付けず、菱目の間隔の比較にだけ使う） */   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
-function runAutoDims() {
+function runAutoDims(only = null) {   /* only＝'size'｜'edge'｜'circle'｜'radius'｜'hole'：その種類だけ入れる（チェックを入れたとき）。省略はチェックの付いた種類ぜんぶ（「寸法線を入れる」ボタン） */
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const tool = doc.tools.find(x => x.id === $('stitchTool')?.value) || doc.tools[0], toolPitch = tool && tool.pitch > 0 ? tool.pitch : null;   /* 菱の線の間隔は、目打ちカードで選んでいる工具のピッチと比べる */
-  const cand = autoDimCandidates(), plan = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, radii: $('adRadius').checked, radiusSide: $('adRadiusSide')?.value === 'out' ? 'out' : 'in', gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) });
+  const cand = autoDimCandidates(), full = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, radii: $('adRadius').checked, radiusSide: $('adRadiusSide')?.value === 'out' ? 'out' : 'in', gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) }), plan = only ? Object.assign(full.filter(d => d.autoDim === only), { info: full.info }) : full;   /* 種類を絞るときも、ほかのチェックの状態で計算する（全体の幅・高さが入っていれば、その辺は「辺ごと」に入れない・同じ所には入れない） */
   const noPiece = $('adSize').checked && !autoDimCounts(plan).size && plan.info?.biggest ? ' ' + t('adNoPiece', { n: plan.info.clusters, w: plan.info.biggest.w, h: plan.info.biggest.h, why: t('adWhy_' + (plan.info.biggest.why || 'exists')) }) : '';   /* 全体の幅・高さが1本も入らなかったとき：いちばん大きいかたまりの大きさと理由（不具合の切り分け用） */
   if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : $('adSelOnly')?.checked ? 'adSelNone' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
   const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
@@ -6507,6 +6507,15 @@ function runAutoDims() {
 function clearAutoDims() {
   const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim); if (!gone.length) { $('hint').textContent = t('adNoneToClear'); return; }
   cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
+  $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
+}
+/** 自動寸法のチェックを入れた・外したとき（事業主 2026-10-29「まとめて入れた寸法はチェックボックスと連動させてほしい」）：入れたらその種類の自動寸法だけ入り、外したらその種類の自動寸法だけ消える。手で引いた寸法・ほかの種類は触らない。1回の操作は元に戻すで1回。 */
+const AD_KIND_OF = { adSize: 'size', adEdges: 'edge', adCircles: 'circle', adRadius: 'radius', adHoles: 'hole' };
+function toggleAutoDimKind(id) {
+  const kind = AD_KIND_OF[id]; if (!kind) return;
+  if ($(id).checked) { runAutoDims(kind); return; }
+  const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim === kind); if (!gone.length) return;
+  cancel(); commit(() => { doc.shapes = doc.shapes.filter(s => !(s.type === 'dimension' && s.autoDim === kind)); }); for (const s of gone) selected.delete(s.id); refreshInfo(); draw();
   $('hint').textContent = t('adCleared', { n: gone.length }); $('adInfo').textContent = '';
 }
 /** 寸法ツール（D）で丸めた角（円弧・ベジェ・折れ線の丸み）をクリックして R の寸法を作る（事業主の希望 2026-10-20「Rの寸法をお願いします」→「クリックで寸法線を呼び出し、次のクリックの位置で内外を決めたい」）。
