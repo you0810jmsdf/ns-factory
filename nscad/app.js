@@ -1,7 +1,8 @@
 import { binderSpecWithSection, normalizeSectionPoints, sectionPointsText } from './binder_section_edit.js';
 import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
-import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension } from './autodim.js';
+import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension, adPieces } from './autodim.js';
+import { nestPieces } from './nest.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
 import { stitchSegments, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -3134,6 +3135,7 @@ function initDesign() {
   $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline(); $('ctx-dedupe').onclick = () => { countUse('ctx_dedupe'); hideCtxMenu(); mergeSelectionOverlaps(); }; $('selDedupe').onclick = () => mergeSelectionOverlaps();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
+  $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
@@ -3166,7 +3168,7 @@ function initDesign() {
   $('patchFill').onclick = () => { if (!lockGate('patchwork')) return; setMode('patchfill'); $('hint').textContent = t('hint.patchfill'); };
   /* 窓の×と、見出しのドラッグ（柄・目打ち・拡大縮小・移動の窓で共通）。×＝柄・目打ちは、そのツールをやめる（選択ツールへ）／拡大縮小・移動は、窓を右列のカードへ戻す（見出し summary の開閉は起こさない）。
      窓は、見出しをつかんで動かせる（画面の外へは出さない）。窓でないとき（右列のカード）は動かさず、今までどおり見出しで開閉する */
-  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true }, textFontCard: { head: 'textFontWinHead', close: 'textFontWinClose', tool: false, back: false, hide: true } })) {
+  for (const [card, { head: headId, close: closeId, tool, back, hide }] of Object.entries({ patchCard: { head: 'patchWinHead', close: 'patchWinClose', tool: true }, stitchCard: { head: 'stitchWinHead', close: 'stitchWinClose', tool: true }, scaleCard: { head: 'scaleWinHead', close: 'scaleWinClose', tool: false }, moveCard: { head: 'moveWinHead', close: 'moveWinClose', tool: false }, layerCard: { head: 'layerWinHead', close: 'layerWinClose', tool: false, back: false }, holeShapeCard: { head: 'holeShapeWinHead', close: 'holeShapeWinClose', tool: false, back: false, hide: true }, textFontCard: { head: 'textFontWinHead', close: 'textFontWinClose', tool: false, back: false, hide: true }, nestCard: { head: 'nestWinHead', close: 'nestWinClose', tool: false, back: false, hide: true } })) {
     $(closeId).addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (tool) setMode('select'); else setCardWin(card, false, back !== false); if (hide) $(card).hidden = true; });   /* hide＝右列のカードに戻さず、閉じたら隠す（「菱目・丸目をまとめて変える」は、開くのは右クリックだけ） */
     const head = $(headId); let drag = null; const isWin = () => $(card).dataset.win === '1';
     head.addEventListener('click', e => { if (isWin()) e.preventDefault(); });   /* 窓のときは、見出しを押しても（ドラッグの後も）たたまない */
@@ -4888,6 +4890,61 @@ function applyStretch(rect) {
   return plan.length;
 }
 $('moveStretch').onclick = () => { if (!stretchNumbers()) { $('hint').textContent = t('invalidNumber'); return; } cancel(); setMode('select'); stretchArmed = true; $('hint').textContent = t('moveStretchStart'); draw(); };
+/** 用紙に並べる（事業主 2026-10-29「図形をA4用紙に効率よく配置調整できる機能が欲しい。極力余白が少なくなるような組み合わせ（図形の回転許容）をシミュレーションして最適な結果を表示する。印刷時の余白も考慮」）：
+ *  型紙（つながった外形）ごとに、中の菱目・線・ガイド・寸法・文字をいっしょに、用紙の印刷できる範囲へ、回転も試して並べる。計算は nest.js。結果は、用紙の枠（印刷余白の内側は点線）と、置く位置の薄い点線で図面に出し、「配置する」で確定する（元に戻すは1回）。
+ *  対象＝選んでいる図形（無ければ、見えている実線の図形ぜんぶ）。用紙は、図面の右はしの外に出す。 */
+let nestPreview = null;
+const NEST_PAPERS = { a4: [210, 297], a3: [297, 420] };
+function nestInside(p, poly) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) if ((poly[i].y > p.y) !== (poly[j].y > p.y) && p.x < (poly[j].x - poly[i].x) * (p.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x) c = !c; return c; }
+function nestCandidates() {
+  const sel = selectedShapeIds(), all = doc.shapes.filter(sh => visible(sh) && editable(sh) && !sh.holeLink && sh.layer !== 'guide' && sh.layer !== 'marks' && sh.lineStyle !== 'dashed' && !isHardwareShape(sh) && !['text', 'dimension', 'fold', 'image'].includes(sh.type));
+  return sel.size ? all.filter(sh => sel.has(sh.id)) : all;
+}
+function nestRun() {
+  const num = id => Number($(id).value), margin = num('nestMargin'), gap = num('nestGap'), [pw, ph] = NEST_PAPERS[$('nestSize').value] || NEST_PAPERS.a4;
+  if (!(margin >= 0) || !(gap >= 0) || margin * 2 >= Math.min(pw, ph)) { $('hint').textContent = t('invalidNumber'); return; }
+  const pcs = adPieces(nestCandidates()).filter(c => c.piece && c.points);
+  if (!pcs.length) { nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = t('nestNone'); $('hint').textContent = t('nestNone'); draw(); return; }
+  const res = nestPieces(pcs.map((c, i) => ({ id: i, points: c.points })), { sheetW: pw, sheetH: ph, margin, gap, rotate: $('nestRotate').checked, orient: $('nestOrient').value, timeMs: 2000 });
+  /* 型紙といっしょに動かすもの：型紙の外形の中に中心がある、見えて動かせる図形（菱目の線・スロット・ガイド・寸法・文字ほか）。いちばん小さい外形に入れる */
+  const owner = new Map(), polys = pcs.map(c => c.points), areas = polys.map(p => Math.abs(p.reduce((a, q, i) => a + q.x * p[(i + 1) % p.length].y - p[(i + 1) % p.length].x * q.y, 0)) / 2);
+  const own = pcs.map(c => new Set(c.ids));
+  for (const sh of doc.shapes) { if (!visible(sh) || !editable(sh)) continue; const own0 = own.findIndex(o => o.has(sh.id)); if (own0 >= 0) { owner.set(sh.id, own0); continue; } let b; try { b = bboxOf(sh); } catch { continue; } if (![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }; let best = -1; polys.forEach((poly, i) => { if (nestInside(c, poly) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) owner.set(sh.id, best); }
+  const pieces = pcs.map((c, i) => ({ ids: [...owner].filter(([, k]) => k === i).map(([id]) => id) }));
+  const bb = bboxOfDoc(doc), origin = bb && Number.isFinite(bb.maxX) ? { x: bb.maxX + 30, y: bb.minY } : { x: 0, y: 0 };
+  nestPreview = { res, pieces, origin, sizeName: $('nestSize').value.toUpperCase() };
+  const orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait'), n = res.sheets.reduce((a, sh) => a + sh.items.length, 0);
+  $('nestResult').textContent = res.sheets.length ? t('nestResult', { sheets: res.sheets.length, size: nestPreview.sizeName, orient, usage: (res.usage * 100).toFixed(1), waste: (res.wasteRatio * 100).toFixed(1), n, un: res.unplaced.length ? t('nestUnplaced', { n: res.unplaced.length }) : '' }) : t('nestNoFit');
+  $('nestApply').disabled = !res.sheets.length; $('hint').textContent = $('nestResult').textContent; draw();
+}
+function nestApply() {
+  if (!nestPreview || !nestPreview.res.sheets.length) return;
+  const { res, pieces, origin } = nestPreview, n0 = undo.length, moved = new Set();
+  cancel();
+  res.sheets.forEach((sh, k) => {
+    const ox = origin.x + k * (res.sheetW + 20), oy = origin.y;
+    for (const it of sh.items) { const ids = pieces[it.id].ids; if (!ids.length) continue; selected = new Set(ids); transformSelected(o => translate(it.angle ? rotate(o, it.angle, it.center) : o, it.dx + ox, it.dy + oy), { rotates: it.angle !== 0 }); ids.forEach(id => moved.add(id)); }
+  });
+  if (undo.length > n0 + 1) undo.splice(n0 + 1);   /* 型紙ごとの移動を、元に戻す1回にまとめる */
+  selected = moved; nestPreview = null; $('nestApply').disabled = true; refreshInfo(); draw();
+  $('hint').textContent = t('nestDone', { n: res.sheets.reduce((a, sh) => a + sh.items.length, 0) });
+}
+function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
+/** 用紙の枠・印刷できる範囲・置く位置の薄い点線（draw から）。窓が開いていて、結果があるときだけ。 */
+function drawNestPreview() {
+  if (!nestPreview || exporting || $('nestCard').hidden) return;
+  const { res, origin } = nestPreview; ctx.save();
+  res.sheets.forEach((sh, k) => {
+    const x0 = origin.x + k * (res.sheetW + 20), y0 = origin.y;
+    ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#8a8a8a'; ctx.fillStyle = '#ffffff10'; ctx.fillRect(x0, y0, res.sheetW, res.sheetH); ctx.strokeRect(x0, y0, res.sheetW, res.sheetH);
+    ctx.setLineDash([5 / scale, 4 / scale]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#4fd0ff'; ctx.strokeRect(x0 + res.margin, y0 + res.margin, res.sheetW - 2 * res.margin, res.sheetH - 2 * res.margin);
+    ctx.setLineDash([]); ctx.fillStyle = '#8a8a8a'; ctx.font = `${12 / scale}px sans-serif`; ctx.fillText(`${nestPreview.sizeName} ${k + 1}/${res.sheets.length}（${t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait')}・${(sh.usedArea / ((res.sheetW - 2 * res.margin) * (res.sheetH - 2 * res.margin)) * 100).toFixed(0)}%）`, x0, y0 - 4 / scale);
+    ctx.setLineDash([4 / scale, 3 / scale]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#c9a96e30';
+    for (const it of sh.items) { ctx.beginPath(); it.points.forEach((q, i) => (i ? ctx.lineTo(x0 + q.x, y0 + q.y) : ctx.moveTo(x0 + q.x, y0 + q.y))); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+  });
+  ctx.restore();
+}
+$('nestRun').onclick = nestRun; $('nestApply').onclick = nestApply;
 $('adRun').onclick = () => runAutoDims(); $('adClear').onclick = clearAutoDims; for (const id of ['adSize', 'adEdges', 'adCircles', 'adRadius', 'adHoles']) $(id).onchange = () => toggleAutoDimKind(id);   /* チェックの入れ外しで、その種類の自動寸法が出入りする */
 /** 金具を本体の線に着ける（事業主の希望 2026-10-18「金具をしっかり本体にくっつけたいが、隙間ができる」）：金具を選んで「線に着ける」→ 本体の線をクリックすると、金具の線に近い辺が線にぴったり着くよう、金具全体を動かす。「向きも合わせる」なら、辺が線と平行になるよう回してから。計算は geometry.js の attachToLine。 */
 function attachStart() {
@@ -8235,6 +8292,7 @@ function drawSheetBody(lo, hi) {
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
+  drawNestPreview();
   { const mv = movePreviewDelta(); if (mv) {   /* 移動カードの数字の予定位置：選んでいる図形・穴を、ずらした位置に薄い点線で（動かさない） */
     ctx.save(); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5 / scale;
     for (const s of doc.shapes) if (selected.has(s.id) && visible(s) && !['image', 'text'].includes(s.type)) strokeShape(translate(s, mv.dx, mv.dy), '#c9a96e', true);
@@ -8512,7 +8570,7 @@ canvas.addEventListener('pointermove', e => {
 const SIDE_TABS = ['shape', 'stitch', 'color', 'fold', 'parts', 'out'], SIDE_TAB_KEY = 'leather-cad.sideTab';
 let sideTab = 'shape';
 /** 右メニューのカードの並び（分類ごと・使う順）：三つ折りは「設計→断面図→設計（厚み）→3D」・出力は先頭。HTML の並びは変えず、起動時に DOM を並べ替える（カードの中身・イベントはそのまま）。 */
-const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
+const SIDE_ORDER = ['infoCard', 'hwEditCard', 'moveCard', 'scaleCard', 'vertexCard', 'arrayCard', 'alignCard', 'layerCard', 'textFontCard', 'drawCard', 'autoDimCard', 'stitchCard', 'holeShapeCard', 'nestCard', 'presetCard', 'patchCard', 'colorCard', 'foldDesignCard', 'foldSecCard', 'designCard', 'card3d', 'libCard', 'binderCard', 'hwCard', 'outputCard', 'imgCard', 'recipeCard', 'voiceCard', 'aiCard', 'calcCard', 'phraseCard'];
 function orderSideCards() { const side = $('side'); if (!side?.appendChild) return; for (const id of SIDE_ORDER) { const el = $(id); if (el && el.parentElement === side) side.appendChild(el); } }
 const sideGroupOf = c => c?.dataset?.side || null;
 function showSideTab(name, { save = true } = {}) {
@@ -8664,7 +8722,7 @@ function openFoldSim(mode) {
 }
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
 function fillCtxCards() {
-  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('textFontCard')).filter(c => c !== $('moveCard') && c !== $('scaleCard'));   /* 移動・拡大縮小の窓は、「選んだ図形」の「移動…」「拡大縮小」から開く（同じ窓が、作図オプション側にも並んで重なっていた・事業主 2026-10-28「他のメニューも同様」） */   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
+  const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('nestCard')).filter(c => c !== $('textFontCard')).filter(c => c !== $('moveCard') && c !== $('scaleCard'));   /* 移動・拡大縮小の窓は、「選んだ図形」の「移動…」「拡大縮小」から開く（同じ窓が、作図オプション側にも並んで重なっていた・事業主 2026-10-28「他のメニューも同様」） */   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
@@ -8675,7 +8733,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', []]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
