@@ -346,11 +346,11 @@ const MONTH_EN_ABB = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT
 const r1 = v => Math.round(v * 100) / 100;
 // 等間隔の穴: 上下の余りが同じになるように中央に置く
 function uniformHoles(n, pitch, h) { const s = (h - (n - 1) * pitch) / 2; return Array.from({ length: n }, (_, i) => r1(s + i * pitch)); }
-// 用紙プリセット。w×h は中の用紙（mm）、holes は上端から穴中心（mm）、edge は綴じ側の端から穴中心（mm）、d は穴径（mm）
+// 用紙プリセット。w×h は中の用紙（mm）、holes は上端から穴中心（mm）、edge は綴じ側の端から穴中心（mm）、d は穴径（mm）、rect は [幅（縁から内へ）, 高さ（縁に沿って）]（mm）＝穴が丸でなく矩形のとき（ロルバーン L・M＝N's CAD の部品と同じ 6×5）。数値を直して「自分で入力」になると丸に戻る
 // ⛔ ロルバーン L：用紙 132×178mm は公式（フレキシブルリフィル L の仕様）。穴は公式に数値が無く、18個・9.5mm・端から6mm は仮（M の実測 107×138・穴13個・9.5mm・端から6mm から類推）。実測したら直すこと。N's CAD の部品「リフィル型紙 ロルバーン L」（tools/gen_rollbahn_part.mjs）と同じ数値に揃えること。
 const PRESETS = {
-  rollbahnL:  { label: 'ロルバーン L（132×178）', w: 132, h: 178, d: 5, edge: 6, holes: uniformHoles(18, 9.5, 178), note: '用紙の大きさ 132×178mm はデルフォニックス公式（フレキシブルリフィル L）の仕様です。⚠ 穴の位置は公式に公開されておらず、18個・9.5mm間隔・端から6mm は仮の値です（ロルバーン M と同じ。穴の数は note 記事から）。手元の用紙を測って直してください。', warn: true },
-  rollbahnM:  { label: 'ロルバーン M（107×138）', w: 107, h: 138, d: 5, edge: 6, holes: uniformHoles(13, 9.5, 138), note: '用紙107×138mm・穴13個・9.5mm間隔・端から6mm（当工房のロルバーンM部品の値）。穴径は仮です。' },
+  rollbahnL:  { label: 'ロルバーン L（132×178）', w: 132, h: 178, d: 5, edge: 6, rect: [6, 5], holes: uniformHoles(18, 9.5, 178), note: '用紙の大きさ 132×178mm はデルフォニックス公式（フレキシブルリフィル L）の仕様です。⚠ 穴の位置は公式に公開されておらず、18個・9.5mm間隔・端から6mm は仮の値です（ロルバーン M と同じ。穴の数は note 記事から）。手元の用紙を測って直してください。', warn: true },
+  rollbahnM:  { label: 'ロルバーン M（107×138）', w: 107, h: 138, d: 5, edge: 6, rect: [6, 5], holes: uniformHoles(13, 9.5, 138), note: '用紙107×138mm・穴13個・9.5mm間隔・端から6mm（当工房のロルバーンM部品の値）。穴径は仮です。' },
   a6:     { label: 'A6（105×148）', w: 105, h: 148, d: 4, edge: 5, holes: [14.75, 33.75, 52.75, 90.75, 109.75, 128.75], note: 'システム手帳A6（6穴）。当工房のA6ツールと同じ位置です。' },
   bible:  { label: 'バイブル（95×170）', w: 95, h: 170, d: 5, edge: 5, holes: [18.5, 37.5, 56.5, 107.5, 126.5, 145.5], note: 'システム手帳バイブル（6穴）。当工房のバイブルツールと同じ位置です。' },
   a5:     { label: 'A5（148×210）', w: 148, h: 210, d: 5, edge: 6, holes: [32, 51, 70, 140, 159, 178], note: 'システム手帳A5（6穴）。' },
@@ -472,6 +472,8 @@ function pageIndexFor(sideKey, slot, L) {
   if (sideKey === 'front') return 2 * slot.k;
   return 2 * (slot.r * L.cols + (L.cols - 1 - slot.c)) + 1;
 }
+// 穴が矩形のときだけ [幅, 高さ]。プリセットのまま（数値を直して「自分で入力」になっていない）ときに限る
+const holeRectOf = () => (PRESETS[paper.preset] && PRESETS[paper.preset].rect) || null;
 const stripW = () => Math.max(10, r1(paper.edge * 2));
 function applyLayoutVars() {
   const root = document.documentElement.style;
@@ -486,7 +488,7 @@ function applyLayoutVars() {
   if (G) {
     G.sheet = [LAY.PW, LAY.PH];
     G.slots = LAY.slots.map(s => ({ x: s.x, y: s.y, w: paper.w, h: paper.h, holeSide: 'left' }));
-    G.holes = paper.holes.slice(); G.holeEdge = paper.edge; G.holeD = paper.d;
+    G.holes = paper.holes.slice(); G.holeEdge = paper.edge; G.holeD = paper.d; G.holeRect = holeRectOf();
     G.cuts = LAY.cuts.x.map(x => ({ x })).concat(LAY.cuts.y.map(y => ({ y })));
   }
 }
@@ -494,7 +496,8 @@ function applyLayoutVars() {
 // === MODULE: ページ部品 ===
 function holeStripHTML(holeSide) {
   const right = holeSide === 'right';
-  const items = opts.showHoles ? paper.holes.map(pos => `<div class="hole" style="top:${pos}mm"></div>`).join('') : '';
+  const rect = holeRectOf(), shape = rect ? `;width:${rect[0]}mm;height:${rect[1]}mm;border-radius:0` : '';
+  const items = opts.showHoles ? paper.holes.map(pos => `<div class="hole" style="top:${pos}mm${shape}"></div>`).join('') : '';
   const border = opts.showHoleLine ? (right ? 'border-left:0.2mm solid #ddd;' : 'border-right:0.2mm solid #ddd;') : '';
   const guide = opts.showPunchGuide ? '<div class="punch-guide"></div>' : '';
   return `<div class="hole-strip ${right ? 'right' : ''}" style="${border}">${items}${guide}</div>`;
@@ -707,6 +710,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-10-29', type: 'feat', title: 'ロルバーン L・M の穴を矩形で表示・印刷',
+    detail: 'ロルバーン L・M の綴じ穴を、丸ではなく矩形（幅6×高さ5mm・中心は端から6mm）で描くようにしました。N\'s CAD の部品・規格「ロルバーン L／M」と同じ形です。画面の穴の列・テスト用紙の両方に出ます。穴の位置や大きさの数値を直して「自分で入力」に切り替わると、丸の穴に戻ります。' },
   { date: '2026-10-29', type: 'fix', title: 'ロルバーン L の用紙を公式の 132×178mm に統一',
     detail: 'ロルバーン L の用紙サイズを、デルフォニックス公式（フレキシブルリフィル L）の横132×縦178mmにそろえました。推定の2案（139×182・130×178）は整理しました。穴（18個・9.5mm間隔・端から6mm）は公式に数値が無いため仮のままで、実物を測って直せます。N\'s CAD の部品「リフィル型紙 ロルバーン L」も同じ数値です。' },
   { date: '2026-10-29', type: 'feat', title: 'リフィルメーカーを新規作成（ロルバーンL・お薬手帳・自由サイズ）',
