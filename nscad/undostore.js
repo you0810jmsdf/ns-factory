@@ -2,6 +2,8 @@
 // 履歴は「操作前の図面の JSON」の並び（最大100）。まるごと圧縮（gzip）して文字列にする。圧縮が使えない環境では、そのままの JSON 文字列（r1:）。
 export const UNDO_KEEP_MAX = 100;
 const UST_DB = 'leather-cad-undo', UST_STORE = 'stacks', UST_KEY = 'current', UST_FILES_KEY = 'files';
+/** 副のタブ（別のブラウザタブが主）の履歴の置き場。主の置き場（current）を上書き・削除しないための別の項目（2026-10-29 事業主「もっと前にさかのぼりたい」：副のタブは履歴を保管しておらず、再読み込みで空になった）。 */
+export const UST_SUB_KEY = 'sub';
 const ustMemory = () => (globalThis.__lcUndoMem ??= new Map());
 /** 履歴の1件は、図面の JSON 文字列（{ で始まる・5000万文字未満）だけを通す。壊れたファイルで「元に戻す」が落ちないように。 */
 const ustValid = a => Array.isArray(a) && a.every(s => typeof s === 'string' && s.charCodeAt(0) === 123 && s.length < 50_000_000);
@@ -35,17 +37,19 @@ function ustOpen() {
   });
 }
 /** ブラウザ内の保管（自動保存の1回分）：{ savedAt, tabs: [encodeStacks の文字列 | null, …] }。IndexedDB が無い環境ではメモリに置く。 */
-export async function saveUndoRecord(record) {
-  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().set(UST_KEY, record); return; }
-  await new Promise((resolve, reject) => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).put(record, UST_KEY); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }).catch(() => {}); db.close();
+export async function saveUndoRecord(record, key = UST_KEY) {
+  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().set(key, record); return; }
+  await new Promise((resolve, reject) => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).put(record, key); tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); }).catch(() => {}); db.close();
 }
-export async function loadUndoRecord() {
-  const db = await ustOpen().catch(() => null); if (!db) return ustMemory().get(UST_KEY) || null;
-  const r = await new Promise(resolve => { const req = db.transaction(UST_STORE, 'readonly').objectStore(UST_STORE).get(UST_KEY); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); db.close(); return r;
+export async function loadUndoRecord(key = UST_KEY) {
+  const db = await ustOpen().catch(() => null); if (!db) return ustMemory().get(key) || null;
+  const r = await new Promise(resolve => { const req = db.transaction(UST_STORE, 'readonly').objectStore(UST_STORE).get(key); req.onsuccess = () => resolve(req.result || null); req.onerror = () => resolve(null); }); db.close(); return r;
 }
-export async function clearUndoRecord() {
-  const db = await ustOpen().catch(() => null); if (!db) { ustMemory().delete(UST_KEY); ustMemory().delete(UST_FILES_KEY); return; }
-  await new Promise(resolve => { const tx = db.transaction(UST_STORE, 'readwrite'); tx.objectStore(UST_STORE).delete(UST_KEY); tx.objectStore(UST_STORE).delete(UST_FILES_KEY); tx.oncomplete = resolve; tx.onerror = resolve; }); db.close();
+/** key を渡さない（主）ときは、主の履歴とファイルの行き先を消す（今までどおり）。副の置き場（UST_SUB_KEY）を渡したときは、その置き場だけ消す（主のものは残す）。 */
+export async function clearUndoRecord(key = UST_KEY) {
+  const keys = key === UST_KEY ? [UST_KEY, UST_FILES_KEY] : [key];
+  const db = await ustOpen().catch(() => null); if (!db) { for (const k of keys) ustMemory().delete(k); return; }
+  await new Promise(resolve => { const tx = db.transaction(UST_STORE, 'readwrite'); for (const k of keys) tx.objectStore(UST_STORE).delete(k); tx.oncomplete = resolve; tx.onerror = resolve; }); db.close();
 }
 /** 保存したファイルの行き先（FileSystemFileHandle）の保管（事業主指示 2026-10-21「上書き保存機能はないのか？」：再読み込みで行き先を忘れ、毎回「名前を付けて保存」になっていた）：{ savedAt, handles: [ハンドル | null, …] }（タブの順）。
  *  履歴とは別の項目にする：ハンドルを保管できない環境でも、履歴の保管は巻き込まない。自動保存と同じ時刻（savedAt）が合うときだけ使う。 */

@@ -36,7 +36,7 @@ import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
-import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord } from './undostore.js';
+import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord, UST_SUB_KEY } from './undostore.js';
 import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRimBendZones, lamButtonPlan, lamBendGrowPlan, lamBendGrowApply, lamPartCircles, lamBendGuides, lamApexPlan } from './laminate.js';
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
@@ -1215,8 +1215,8 @@ function flushAutosave() {
   const primary = tabIsPrimary(), key = primary ? AUTOSAVE_KEY : AUTOSAVE_SUB_KEY;   /* 副のタブは別の置き場へ（主の自動保存・元に戻す履歴は上書き・削除しない）。以前は副では保存しなかったので、再読み込みで描いた分が消えた */
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; if (primary) { lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); } }
-    else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; if (primary) clearUndoRecord().catch(() => {}); }
+    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); }   /* 履歴も、主は主の置き場・副は副の置き場へ（scheduleUndoSave が決める） */
+    else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; clearUndoRecord(primary ? undefined : UST_SUB_KEY).catch(() => {}); }   /* 副は、副の置き場だけ消す（主の履歴・ファイルの行き先は残す） */
     else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
   } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
 }
@@ -1227,13 +1227,14 @@ function scheduleUndoSave(savedAt) {
   if (undoAttaching || typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(undoSaveTimer);
   const stacks = tabs.map(tb => ({ undo: tb.undo.slice(), redo: tb.redo.slice() })); /* その時点の履歴を控える（2秒のあいだに増えても、この時刻の図面に合う分だけ） */
   const handles = tabs.map(tb => tb.fileHandle || null); /* 保存したファイルの行き先も、同じ時刻の分を控える */
-  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }); } catch { /* 保管できない環境では何もしない */ } try { await saveFilesRecord({ savedAt, handles }); } catch { /* 行き先を保管できなくても、履歴・図面はそのまま */ } }, 2000);
+  const primary = tabIsPrimary(); /* 副のタブ（別のブラウザタブが主）は、副の置き場へ（主の履歴を上書きしない）。ファイルの行き先は主だけ（副の自動保存の置き場とは別の組なので、主の行き先を上書きしない） */
+  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }, primary ? undefined : UST_SUB_KEY); } catch { /* 保管できない環境では何もしない */ } if (primary) { try { await saveFilesRecord({ savedAt, handles }); } catch { /* 行き先を保管できなくても、履歴・図面はそのまま */ } } }, 2000);
 }
 /** 「前回の続き」で復元したタブに、保管した履歴を戻す。時刻が合わない・もう編集を始めた（履歴が空でない）タブには戻さない。 */
 async function attachSavedUndo(info, base) {
   undoAttaching = true;
   try {
-    const rec = await loadUndoRecord(); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.tabs)) return;
+    const rec = await loadUndoRecord(info.key === AUTOSAVE_SUB_KEY ? UST_SUB_KEY : undefined); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.tabs)) return;   /* 副の保存から開くときは、副の置き場の履歴 */
     for (let i = 0; i < info.tabs.length; i++) {
       const st = rec.tabs[i] ? await decodeStacks(rec.tabs[i]) : null, idx = base + i, tb = tabs[idx]; if (!st || !tb) continue;
       const cur = idx === activeTab ? undo : tb.undo; if (cur.length || (idx === activeTab ? redo : tb.redo).length) continue;
@@ -1283,7 +1284,7 @@ function restoreAutosave() {
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
   if (nextUp) showRestoreOffer(nextUp);   /* もう一方も続けて出す */
 }
-function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } if (key === AUTOSAVE_KEY) clearUndoRecord().catch(() => {}); flushAutosave(); offerRestore(restoreKeysNow().filter(k => k !== key)); }
+function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } clearUndoRecord(key === AUTOSAVE_KEY ? undefined : UST_SUB_KEY).catch(() => {}); flushAutosave(); offerRestore(restoreKeysNow().filter(k => k !== key)); }
 /** 別のブラウザのタブでも開いているとき（このタブが副）の警告。副のタブは、自動保存・履歴の保管・「捨てる」をしない。 */
 function syncMultiTabBar() { const bar = $('multiTabBar'); if (bar) bar.hidden = tabIsPrimary(); }
 /** 主／副が替わったとき：副→主なら、見送っていた「前回の続き」を出す（なければ、いまの図面を保存する）。 */
