@@ -202,7 +202,7 @@
   "crownRadiusMm": null,
   "edgeRadiusMm": null,
   "cornerRMm": 4,
-  "trimRingArms": null,
+  "trimRingArms": "no",
   "supporterThicknessMm": 2.4,
   "supporterDiameterMm": 10,
   "confidence": "measured",
