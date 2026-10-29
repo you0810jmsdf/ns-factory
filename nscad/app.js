@@ -75,6 +75,7 @@ let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ stor
 const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
 const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別のブラウザタブが主）の自動保存の置き場。主の置き場（AUTOSAVE_KEY）を上書き・削除しないための別のキー（2026-10-28 事業主「更新したら作業中の作図が消えた」：副のタブで描いた分が自動保存に乗っていなかった） */
 let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
+let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
@@ -1390,6 +1391,7 @@ function initStitch() {
   $('markDiv').addEventListener('input',()=>{if(mode==='mark'){cancel();$('hint').textContent=modeHint('mark');draw();}});
   $('markDist').addEventListener('input',()=>{if(mode==='mark'){cancel();$('hint').textContent=modeHint('mark');draw();}}); /* 距離を変えたら、途中の基準の点は捨てて、ヒントも切り替える */
   $('dotD').addEventListener('change',()=>{const d=Number($('dotD').value);if(Number.isFinite(d)&&d>0)commit(()=>doc.dotD=d);else $('dotD').value=doc.dotD;});
+  $('dotD').addEventListener('input',dotPreviewSoon);$('dotD').addEventListener('focus',dotPreviewUpdate);$('dotD').addEventListener('blur',dotPreviewClear);   /* 数値を動かすたびに、選んだ穴へ薄い丸の下見（入力の250ms後に1回） */
   $('help').onclick=()=>showHelp();$('closeHelp').onclick=()=>$('helpDialog').close();
   $('helpSearch').addEventListener('input',()=>showHelp(false));$('helpPage').addEventListener('change',()=>showHelp(false));
   document.querySelectorAll('[data-tool]').forEach(b=>{ b.addEventListener('contextmenu',e=>{e.preventDefault();showHelp(false,TOOL_HELP[b.dataset.tool]||'');}); let timer=null; b.addEventListener('pointerdown',()=>{timer=setTimeout(()=>{longPressed=true;showHelp(false,TOOL_HELP[b.dataset.tool]||'');},700);}); b.addEventListener('click',e=>{ if(longPressed){ longPressed=false; e.stopImmediatePropagation(); e.preventDefault(); } },true); for(const ev of ['pointerup','pointerleave','pointercancel'])b.addEventListener(ev,()=>clearTimeout(timer)); });
@@ -2942,6 +2944,27 @@ function gridAtPoint(p) {
   if (lastPatch && undo.at(-1) === lastPatch.before && region.shapeIds.every(id => lastPatch.pieceIds?.includes(id))) { regenPatch(true); return; }   /* 直前の格子のピースの上をクリックしたとき：ピースの中に入れ子の格子は作らず、同じ枠を、いまの数で作りなおす（事業主「途中で連動しなくなる」） */
   selected = new Set(region.shapeIds); makeGrid();
 }
+const DOT_MIN_PX = 2;   /* 点の丸を画面で見える最小の半径（px）。縮小で実寸だと点にならないときだけ、これまで大きくして描く（書き出しは実寸のまま） */
+/** 「点の直径」欄の下見（事業主 2026-10-30「数値を動かすたびに実画面で薄く表示して変化させてください」）：選んでいる穴の中心に、いまの直径の薄い丸を重ねる。計算は選んだ穴の一覧だけ（図面は変えない）。数値の欄の連打に追いつくよう、最後の入力の 250ms 後に1回だけ（テストなど regenDelayMs が 0 以下ならすぐ）。欄を離れる・図面が変わる・Esc で消える。 */
+function dotPreviewUpdate() {
+  const d = Number($('dotD').value); dotPreview = Number.isFinite(d) && d > 0 ? { d } : null;
+  if (dotPreview) { const n = affectedHoles(false).length; $('hint').textContent = dotPreviewText = n ? t('dotPreview', { d: +d.toFixed(3), n }) : t('dotPreviewNone'); }
+  draw();
+}
+function dotPreviewSoon() {
+  clearTimeout(dotPreviewTimer); dotPreviewTimer = 0;
+  if (!(regenDelayMs > 0)) { dotPreviewUpdate(); return; }
+  dotPreviewTimer = setTimeout(() => { dotPreviewTimer = 0; if (gesture || stage) return; dotPreviewUpdate(); }, 250);
+}
+function dotPreviewClear() { clearTimeout(dotPreviewTimer); dotPreviewTimer = 0; if (dotPreviewText && $('hint').textContent === dotPreviewText) $('hint').textContent = ''; dotPreviewText = ''; if (dotPreview) { dotPreview = null; draw(); } }   /* 下見の案内文が、そのまま残っているときだけ消す（置換したあとに「まだ変わりません」と出たままにしない） */
+function drawDotPreview() {
+  if (!dotPreview || exporting) return;
+  const hs = affectedHoles(false); if (!hs.length) return;
+  const r = Math.max(dotPreview.d / 2, DOT_MIN_PX / scale);
+  ctx.save(); ctx.fillStyle = ctx.strokeStyle = SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1 / scale;
+  ctx.beginPath(); for (const h of hs) { ctx.moveTo(h.x + r, h.y); ctx.arc(h.x, h.y, r, 0, Math.PI * 2); }
+  ctx.globalAlpha = 0.3; ctx.fill(); ctx.globalAlpha = 0.75; ctx.stroke(); ctx.restore();
+}
 let gridPreview = null;   /* 確定前の下見：{ pieces: [[{x,y}…]…]（ひし形の輪郭）, text, follow（作りなおす格子があるか）, ids（枠の図形）}。図面が変わる（rebuildSnaps）か Esc で消える。画面に薄い輪郭で描く */
 /** 列・行・角度を打っている最中の下見（事業主 2026-10-21 案 A ①）：作りなおす（または作る）枠を、いまの数で割った輪郭と「ひし形 幅×高さ・枚数」をすぐ出す。計算だけで、図面は変えない（約 5ms）。枠は、作りなおせる直前の格子の枠か、いま選んでいる閉じた枠。確定は Enter・約1秒の停止・「格子を作る」。 */
 /** 列・行・角度の欄が変わったとき、下見（gridPreviewUpdate）を、最後の変化の 250ms 後に1回だけ出す。下見は枠の計算と全体の再描画で、実図面（475図形・穴918個）では 1回 200〜300ms かかり、矢印キー・▲▼の押しっぱなし（毎秒 20〜30 回）に追いつかず、離したあとも数値が増え続け・減り続けた（事業主 2026-10-23「数値がずっと増え続けたり、減り続けたりする」「矢印も同じ」）。数値の欄（type=number）だけ。テスト（regenDelayMs が 0 以下・数値の欄でない）では、すぐ。 */
@@ -3306,7 +3329,7 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked });
+  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm() });   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
   const beamN = (svg.match(/data-beamfix=/g) || []).length;   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
   exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + savedTo(saved); });
 }
@@ -6809,7 +6832,7 @@ function rebuildSnaps() {
   const holeCenters = doc.holes.filter(h => holeVisible(h)).map(h => ({ x: h.x, y: h.y })), seen = new Set(); /* 画面に見えている穴（目打ちの縫い穴・点の目印）の中心。定規で穴の間隔を測れるように */
   magnetGuide = [...magnet.guide, ...loops, ...holeCenters].filter(c => { const k = c.x.toFixed(5) + ',' + c.y.toFixed(5); return seen.has(k) ? false : (seen.add(k), true); });
   junctions = $('showJunctions').checked ? classifyJunctions(shapes) : { joined: [], loose: [] };
-  gaps = findGaps(shapes.filter(s => !s.holeLink)); gapAlert = null; gridPreview = null;
+  gaps = findGaps(shapes.filter(s => !s.holeLink)); gapAlert = null; gridPreview = null; dotPreview = null;
   dupGroups = findOverlaps(shapes.filter(s => !s.holeLink)); updateDupBar();
   // 折れ線の各辺、円弧の円も候補にし、円弧の範囲外を除く。
   const edges = shapes.flatMap(s => s.type === 'polyline' ? s.points.slice(0, s.closed ? undefined : -1).map((p, i) => ({ type: 'line', x1: p.x, y1: p.y, x2: s.points[(i + 1) % s.points.length].x, y2: s.points[(i + 1) % s.points.length].y })) : [s]);
@@ -8307,12 +8330,13 @@ function drawSheetBody(lo, hi) {
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
-    if (kind === 'dot') { ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); }
+    if (kind === 'dot') { ctx.strokeStyle = ctx.fillStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(0, 0, Math.max(w / 2, DOT_MIN_PX / scale), 0, Math.PI * 2); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 1 / scale; ctx.stroke(); }   /* 点の穴は、点の直径どおりの丸も描く（書き出しの形）。縮小で小さすぎるときだけ、画面で見える最小の大きさにする */
     else if (kind === 'slit') { ctx.lineWidth = halfDepth ? Math.max(0.1, heightMM / 2) : heightMM; ctx.stroke(); } else if (halfDepth || (kind === 'diamond' && diamondMode() === 'line')) { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();
     if (halfDepth && kind !== 'dot') { ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(w, heightMM) * 0.15), 0, Math.PI * 2); ctx.fill(); }   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
     if(selected.has(h.id)&&kind!=='dot'&&kind!=='diamond'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
     ctx.restore();
   }
+  drawDotPreview();   /* 点の直径を打っている最中の下見（選んだ穴だけ） */
   drawStitches();   /* 縫い目を見る（表示だけ）：穴の上に、糸の縫い目を重ねる */
   if (mode === 'stitch' && manualNext) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
@@ -9158,7 +9182,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); if (pasteGhost) { pasteGhost = null; $('hint').textContent = ''; draw(); return; } if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); dotPreviewClear(); if (pasteGhost) { pasteGhost = null; $('hint').textContent = ''; draw(); return; } if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
