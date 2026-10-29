@@ -4915,7 +4915,13 @@ function nestRun() {
   nestPreview = { res, pieces, origin, sizeName: $('nestSize').value.toUpperCase() };
   const orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait'), n = res.sheets.reduce((a, sh) => a + sh.items.length, 0);
   $('nestResult').textContent = res.sheets.length ? t('nestResult', { sheets: res.sheets.length, size: nestPreview.sizeName, orient, usage: (res.usage * 100).toFixed(1), waste: (res.wasteRatio * 100).toFixed(1), n, un: res.unplaced.length ? t('nestUnplaced', { n: res.unplaced.length }) : '' }) : t('nestNoFit');
-  $('nestApply').disabled = !res.sheets.length; $('hint').textContent = $('nestResult').textContent; draw();
+  $('nestApply').disabled = !res.sheets.length; $('hint').textContent = $('nestResult').textContent; nestFitView(); draw();
+}
+/** 結果の用紙の枠が、ぜんぶ画面に入るよう、表示を移す（結果は図面の右はしの外に出るので、そのままでは画面の外で見えない・事業主 2026-10-29「用紙に並べる機能の使い方がまったくわからん」）。 */
+function nestFitView() {
+  if (!nestPreview || !nestPreview.res.sheets.length) return;
+  const { res, origin: so } = nestPreview, n = res.sheets.length, w = n * res.sheetW + (n - 1) * 20, h = res.sheetH, vw = viewW(), vh = viewH();
+  scale = Math.max(0.1, Math.min(100, (vw - 80) / w, (vh - 110) / h)); origin = { x: vw / 2 - (so.x + w / 2) * scale, y: vh / 2 - (so.y + h / 2) * scale };
 }
 function nestApply() {
   if (!nestPreview || !nestPreview.res.sheets.length) return;
