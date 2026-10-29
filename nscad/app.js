@@ -4907,6 +4907,17 @@ function centerOnStart(axes) {
   if (!selectedShapeIds().size) { $('hint').textContent = t('centerOnNeedSelect'); return; }
   centerOnAxes = axes; setMode('centerOn'); $('hint').textContent = t('centerOnStart');
 }
+/** 点線・ガイドの線が交わる所（十字・T字）のうち、p の近く（画面12px以内）で一番近い交点（事業主 2026-10-29「上下方向です」：十字の交点に中心を合わせたい）。どちらの線も端で出会う所（点線の長方形の角など）は含めない。 */
+function helperCrossNear(p, lines) {
+  let best = null, bd = 12 / scale;
+  for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) {
+    const a = lines[i], b = lines[j], rx = a.x2 - a.x1, ry = a.y2 - a.y1, sx = b.x2 - b.x1, sy = b.y2 - b.y1, den = rx * sy - ry * sx; if (Math.abs(den) < 1e-9) continue;
+    const t = ((b.x1 - a.x1) * sy - (b.y1 - a.y1) * sx) / den, u = ((b.x1 - a.x1) * ry - (b.y1 - a.y1) * rx) / den, ea = 0.01 / Math.hypot(rx, ry), eb = 0.01 / Math.hypot(sx, sy);
+    if (t < -ea || t > 1 + ea || u < -eb || u > 1 + eb || ((t <= ea || t >= 1 - ea) && (u <= eb || u >= 1 - eb))) continue;
+    const q = { x: a.x1 + rx * t, y: a.y1 + ry * t }, d = distance(p, q); if (d <= bd) { bd = d; best = q; }
+  }
+  return best;
+}
 function centerOnClick(p) {
   const ids = selectedShapeIds(); if (!ids.size) { setMode('select'); $('hint').textContent = t('centerOnNeedSelect'); return; }
   const skip = s => ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type);
@@ -4914,15 +4925,16 @@ function centerOnClick(p) {
   let target = null, guideTarget = null; for (const s of doc.shapes) { if (skip(s)) continue; const d = distToShape(s, p); if (d > 12 / scale) continue; if (isGuide(s)) { if (!guideTarget || d < guideTarget.d) guideTarget = { s, d }; } else if (!target || d < target.d) target = { s, d }; }
   if (!target) target = guideTarget;   /* 実線が何も近くに無いときだけ、点線・ガイドも基準にできる（これまでどおり） */
   const boxOf = list => { let b = null; for (const s of list) { const q = bboxOf(s); b = b ? { minX: Math.min(b.minX, q.minX), minY: Math.min(b.minY, q.minY), maxX: Math.max(b.maxX, q.maxX), maxY: Math.max(b.maxY, q.maxY) } : { ...q }; } return b; };
-  let tb = null;
-  if (target) { const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 }), members = new Set(chain.length ? chain : [target.s.id]); tb = boxOf(doc.shapes.filter(s => members.has(s.id))); }
+  let tb = null, crossPoint = false;
+  if (target) { const pool = doc.shapes.filter(s => !skip(s) && s.type !== 'circle'), chain = target.s.closed || target.s.type === 'circle' ? [target.s.id] : contourFrom(pool, target.s.id, { gapTol: 0.5 }), members = new Set(chain.length ? chain : [target.s.id]); tb = boxOf(doc.shapes.filter(s => members.has(s.id))); const ix = isGuide(target.s) ? helperCrossNear(p, doc.shapes.filter(s => !skip(s) && s.type === 'line' && isGuide(s))) : null; if (ix) { tb = { minX: ix.x, maxX: ix.x, minY: ix.y, maxY: ix.y }; crossPoint = true; } }   /* 点線・ガイドの十字・T字の近くなら、その交点 */
   else {   /* 線の近くでなければ、クリックした所を囲んでいる場所（選んでいない見えている実線で囲まれた、いちばん内側）の中央へ（事業主 2026-10-25「真ん中に配置できない」：基準の線のすぐそばをクリックしないと動かなかった） */
     const reg = enclosedAreaAt(regionShapes().filter(s => !ids.has(s.id)), p); if (reg?.points?.length) { const xs = reg.points.map(q => q.x), ys = reg.points.map(q => q.y), pb = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) }, rs = doc.shapes.filter(s => (reg.ids || []).includes(s.id)), ib = rs.length ? boxOf(rs) : null; tb = ib && ['minX', 'maxX', 'minY', 'maxY'].every(k => Math.abs(ib[k] - pb[k]) < 1) ? ib : pb; }   /* 囲んでいる図形の外接の四角が、囲まれた場所とほぼ同じなら、図形そのものの値（点線の目盛りでなく、ぴったり） */
   }
   if (!tb) { $('hint').textContent = t('centerOnNoTarget'); return; }
   /* 動かす図形の中心は、実線の図形（本体）だけで測る：点線・ガイドの層・寸法・文字（十字の目印・折り目の線・寸法など）を含めると、それが外形からはみ出している分だけ中心がずれる（事業主 2026-10-25「クロスの点線を作図しても２つの図形の中心を合わせられない」「4mm動かしただけなのにだいぶずれる」：本体の横に置いた十字の点線が、選んだ図形の外接の四角を広げて、約2.5mm左へずれた）。動かすのは、選んだ図形ぜんぶ。本体が1つも無ければ（点線だけを選んだとき）、選んだぜんぶで測る */
   const movers = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image'), isHelper = s => s.lineStyle === 'dashed' || s.layer === 'guide' || ['text', 'dimension', 'fold'].includes(s.type), body = movers.filter(s => !isHelper(s)), sb = boxOf(body.length ? body : movers); if (!sb) return;
-  const dx = centerOnAxes.includes('x') ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
+  const bw = tb.maxX - tb.minX, bh = tb.maxY - tb.minY, onlyY = !crossPoint && bh <= 0.01 && bw > 0.01, onlyX = !crossPoint && bw <= 0.01 && bh > 0.01;   /* まっすぐな線（横＝高さ0・縦＝幅0）は、その線に直角な方向だけ合わせる（線に沿った方向の「真ん中」に意味はない） */
+  const dx = centerOnAxes.includes('x') && !onlyY ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') && !onlyX ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
   transformSelected(s => translate(s, dx, dy)); $('hint').textContent = t('centerOnDone', { dx: dx.toFixed(2), dy: dy.toFixed(2) });
 }
@@ -7988,8 +8000,24 @@ function lineEndCursor(g, w, shift) {
   if (g.orig) return Math.abs(sp.x - g.orig.x) >= Math.abs(sp.y - g.orig.y) ? { x: sp.x, y: g.orig.y } : { x: g.orig.x, y: sp.y };
   return sp;
 }
-/** 選択中の図形のハンドル（画面で 9px 以内で一番近いもの）。ロック層は対象外。 */
+/** 選んでいる図形が、同じ直線の上に端と端でつながった直線だけ（2本以上）のとき、全体の両端のハンドル [{ shape, handle }, …]。それ以外は null（事業主 2026-10-29「直線を端のハンドルを持って伸ばしたい」：点線が交点ごとに分かれ、ダブルクリックで選ぶと複数選択になって端のハンドルが出なかった）。
+ *  一直線＝端の点がすべて、いちばん離れた2点を結ぶ線から 0.01mm 以内／つながっている＝次の線の始まりが、ここまでの終わりから 0.5mm 以内（交点で分けた線のつなぎ目の小さな隙間を許す）。外側の端のハンドルをつかむと、その端の線だけが元の向きに伸びる（ほかは動かない）。 */
+function chainEndHandles() {
+  if (selected.size < 2) return null;
+  const list = doc.shapes.filter(s => selected.has(s.id)); if (list.length !== selected.size || !list.every(s => s.type === 'line' && editable(s))) return null;
+  const pts = list.flatMap(s => [{ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }]); let a = pts[0], b = pts[0], far = -1;
+  for (const p of pts) for (const q of pts) { const d = Math.hypot(p.x - q.x, p.y - q.y); if (d > far) { far = d; a = p; b = q; } }
+  if (!(far > 1e-6)) return null; const ux = (b.x - a.x) / far, uy = (b.y - a.y) / far, proj = q => (q.x - a.x) * ux + (q.y - a.y) * uy;
+  if (!pts.every(q => Math.abs((q.x - a.x) * uy - (q.y - a.y) * ux) <= 0.01)) return null;
+  const items = list.map(s => { const t1 = proj({ x: s.x1, y: s.y1 }), t2 = proj({ x: s.x2, y: s.y2 }); return { s, lo: Math.min(t1, t2), hi: Math.max(t1, t2), loEnd: t1 <= t2 ? 1 : 2 }; }).sort((m, n) => m.lo - n.lo);
+  let reach = items[0].hi; for (const it of items.slice(1)) { if (it.lo > reach + 0.5) return null; reach = Math.max(reach, it.hi); }
+  const first = items[0], last = items.reduce((m, it) => (it.hi > m.hi ? it : m), items[0]), pick = (it, end) => ({ shape: it.s, handle: shapeHandles(it.s).find(h => h.end === end) });
+  return [pick(first, first.loEnd), pick(last, last.loEnd === 1 ? 2 : 1)];
+}
+/** 選択中の図形のハンドル（画面で 9px 以内で一番近いもの）。ロック層は対象外。一直線につながった複数の線は、全体の両端（chainEndHandles）。 */
 function lineEndHit(p) {
+  const chain = chainEndHandles();
+  if (chain) { let best = null, bd = 9 / scale; for (const c of chain) { const d = distance(p, c.handle); if (d <= bd) { bd = d; best = c; } } return best; }
   const s = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id) && hasHandles(x) && editable(x)) : null; if (!s) return null;
   const near = 9 / scale; let best = null, bd = near; for (const h of shapeHandles(s)) { const d = distance(p, h); if (d <= bd) { bd = d; best = h; } }
   return best ? { shape: s, handle: best } : null;
@@ -8116,6 +8144,7 @@ function drawSheetBody(lo, hi) {
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
+  if (mode === 'select' && selected.size > 1) { const ce = chainEndHandles(); if (ce) { const r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const c of ce) { const v = gesture?.kind === 'lineEnd' && gesture.id === c.shape.id ? handleMoved(c.shape, gesture.h, cursor) : c.shape, q = shapeHandles(v).find(h => h.end === c.handle.end); ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } }   /* 一直線につながった複数の線を選ぶと、全体の両端にハンドル（外側の端の線だけが伸びる） */
   const holeAngle = faceAngler(doc, viewShow.stitch ? stitchFace() : 'front');   /* 「縫い目を見る」が入っていて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
   for (const originalHole of doc.holes) {
     if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) continue;
