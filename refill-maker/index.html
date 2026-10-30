@@ -18,6 +18,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
+<script>window.NSF_COMPACT_FABS = true; // スマホ幅では右下の「綴じ後プレビュー」「改善要望」を丸いアイコンだけにする（共通JSが参照）</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -162,6 +163,42 @@ body.panel-open #preview { margin-left: 280px; }
 @media screen and (max-width: 900px) { .a4-sheet { transform: scale(0.45); margin-bottom: calc(var(--sheet-h) * -0.55); } .sheet-wrap { width: calc(var(--sheet-w) * 0.45); } }
 @media screen and (max-width: 560px) { .a4-sheet { transform: scale(0.3); margin-bottom: calc(var(--sheet-h) * -0.7); } .sheet-wrap { width: calc(var(--sheet-w) * 0.3); } }
 
+/* === MODULE: スマホ幅（2026-10-31）===
+   パネルは紙面の上に重ねて開く（紙面を押し縮めない）・入力欄16px（iPhoneの自動拡大を防ぐ）・操作部品は高さ40px以上・
+   「PDFを生成」はパネル下端に固定・お知らせは2行に畳む。PCの見た目は変えない。 */
+#mobileDock { display: none; }
+@media screen and (max-width: 600px) {
+  body { padding-top: 54px; }
+  #preview { padding: 6px 12px 20px; }
+  body.panel-open #preview { margin-left: 0; }
+  body.panel-open::after { content: ''; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 99; }
+  #ctrl-toggle-btn { width: 40px; height: 40px; }
+  #controls { width: min(88vw, 340px); height: 100vh; height: 100dvh; padding-bottom: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  #controls h2 { font-size: 15px; padding-left: 50px; }
+  .ctrl-section h3 { font-size: 12px; }
+  .ctrl-row { gap: 8px; margin-bottom: 8px; }
+  .ctrl-row label { font-size: 13px; }
+  .ctrl-row .val { font-size: 12px; }
+  .ctrl-row input[type=date], .ctrl-row input[type=month], .ctrl-row input[type=number], .ctrl-row select, .ctrl-row input[type=text] { font-size: 16px; padding: 7px 6px; border-radius: 5px; }
+  button { font-size: 13px; padding: 9px 12px; min-height: 40px; }
+  #controls button { font-size: 13px !important; }
+  /* 印刷ズレ補正など共通JSが足す欄も含め、パネル内の入力はすべて16px・高さ38px以上 */
+  #controls input:not([type=checkbox]):not([type=range]), #controls select { font-size: 16px !important; min-height: 38px; }
+  #controls input[type=checkbox] { width: 22px; height: 22px; }
+  .hint { font-size: 11px; }
+  #mobileDock { display: flex; gap: 8px; position: sticky; bottom: 0; margin: 8px -12px 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: #1a1a2e; border-top: 1px solid #444; z-index: 2; }
+  #mobileDock button { flex: 1; min-height: 44px; font-size: 14px; }
+  .history-box { padding: 16px; max-height: 86vh; }
+  .history-box h3 { font-size: 15px; }
+  .history-box > div { font-size: 13px !important; }
+  .history-entry { font-size: 12px; }
+  .history-date, .history-type { font-size: 11px; }
+  .history-close { padding: 8px 12px; font-size: 13px; }
+  #nsf-free-notice { margin: 8px 12px !important; padding: 8px 12px !important; font-size: 12px !important; line-height: 1.6 !important; }
+  #nsf-free-notice:not(.expanded) .nsf-nb { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #nsf-size-switch { margin: 0 12px 8px !important; padding: 6px 10px !important; line-height: 1.5 !important; }
+}
+
 /* === MODULE: UpdateHistory / Help === */
 .history-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: center; justify-content: center; }
 .history-overlay.open { display: flex; }
@@ -192,12 +229,13 @@ body.panel-open #preview { margin-left: 280px; }
 <body data-fmt="weekly">
 <!-- 無料開放のお知らせ。⛔ 改善要望の連絡先を消さないこと。 -->
 <div id="nsf-free-notice" style="max-width:760px;margin:12px auto;padding:12px 14px;background:#F3ECE4;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:1.8;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;">
+<div class="nsf-nb">
   <strong>無料でお使いください。</strong>
   会員登録もパスワードも不要です。作ったデータはこの端末の中だけで処理され、どこにも送信されません。<br>
   うまく動かない・印刷がずれる・こうしてほしい等ありましたら
   <a href="https://you0810jmsdf.github.io/ns-factory/links.html" style="color:#7A5540;font-weight:700;">こちら</a>
   か、右下の「改善要望」からお知らせください。個人で作っているので、教えていただけると助かります。
-</div>
+</div></div>
 <nav id="nsf-size-switch" aria-label="ツール" style="max-width:760px;margin:0 auto 12px;padding:10px 14px;background:#fff;border:1px solid #E0D2C2;border-radius:8px;font-size:13px;line-height:2;color:#4a3a2c;font-family:-apple-system,'Hiragino Sans',Meiryo,sans-serif;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;">
   <span style="font-size:11px;color:#8a7362;letter-spacing:.06em;">いま開いているのは <b style="color:#4a3a2c;">リフィルメーカー（ロルバーン・お薬手帳・自由サイズ）</b></span>
   <a href="../tools/" style="margin-left:auto;color:#7A5540;font-weight:700;text-decoration:none;border:1px solid #E0D2C2;border-radius:6px;padding:2px 10px;background:#F3ECE4;">ツール一覧へ ›</a>
@@ -313,6 +351,11 @@ body.panel-open #preview { margin-left: 280px; }
       <button class="btn-secondary" onclick="openHelp()" style="flex:1">📖 使い方</button>
       <button class="btn-secondary" onclick="openHistory()" style="flex:1;margin-left:6px">📋 更新履歴</button>
     </div>
+  </div>
+
+  <div id="mobileDock">
+    <button type="button" class="btn-primary" data-nsf-pdf onclick="generatePDF(event)">📄 PDFを生成</button>
+    <button type="button" class="btn-secondary" onclick="toggleSidebar()">紙面を見る</button>
   </div>
 </div>
 
@@ -779,6 +822,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-10-31', type: 'improve', title: 'スマホで使いやすくしました',
+    detail: 'スマホの画面幅で、設定パネルを紙面の上に重ねて開くようにしました（以前は紙面が押しつぶされて見えませんでした）。パネルの外をタップすると閉じます。入力欄の文字を大きくして、iPhoneで触れたときに画面が勝手に拡大しないようにし、ボタンも押しやすい大きさにしました。「PDFを生成」はパネルの下に固定して、スクロールしなくても押せます。右下の「綴じ後プレビュー」「改善要望」は丸いアイコンだけにして、紙面を隠さないようにしました。無料のお知らせは2行に畳み、最初の画面で紙面が見えるようにしました（タップで全文）。PCの見た目は変わりません。' },
   { date: '2026-10-30', type: 'feat', title: 'マンスリー（見開き1ヶ月）の書式を追加',
     detail: '書式「マンスリー（見開き1ヶ月）」を追加しました。左ページがカレンダー表（曜日・祝日つき・週の始まりは月曜／日曜から選べます）、右ページが TODO（チェック欄10行）と MEMO の見開きです。開始月と月数（最大24か月）を選べます。祝日は「祝日表示」で出し入れでき、英語表示にも対応しています。用紙のサイズ・穴の位置・面付け・PDF生成は、ほかの書式と同じように使えます。' },
   { date: '2026-10-29', type: 'feat', title: 'ロルバーン L・M の穴を矩形で表示・印刷',
@@ -797,6 +842,15 @@ function closeHistory() { $('historyOverlay').classList.remove('open'); }
 function openHelp() { $('helpOverlay').classList.add('open'); }
 function closeHelp() { $('helpOverlay').classList.remove('open'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeHistory(); closeHelp(); } });
+// スマホ幅：パネルの外（暗い部分）をタップで閉じる／お知らせは2行に畳み、タップで全文
+document.addEventListener('click', e => {
+  if (innerWidth > 600 || !$('controls').classList.contains('open')) return;
+  if (!e.target.closest('#controls, #ctrl-toggle-btn, .history-overlay')) toggleSidebar();
+});
+document.addEventListener('DOMContentLoaded', () => {
+  const n = $('nsf-free-notice');
+  if (n) n.addEventListener('click', e => { if (innerWidth <= 600 && !e.target.closest('a')) n.classList.toggle('expanded'); });
+});
 
 // === MODULE: Init ===
 document.addEventListener('DOMContentLoaded', () => {

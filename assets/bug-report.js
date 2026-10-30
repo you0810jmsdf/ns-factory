@@ -33,6 +33,7 @@
   btn.id = 'nsf-bug-btn';
   btn.type = 'button';
   btn.setAttribute('aria-label', TITLE);
+  btn.dataset.ico = (LABEL.match(/^\p{Extended_Pictographic}\uFE0F?/u) || ['💬'])[0];
 
   const overlay = el('div', 'position:fixed;inset:0;z-index:960;background:rgba(15,15,15,.55);display:none;align-items:center;justify-content:center;padding:16px;');
   overlay.id = 'nsf-bug-overlay';
@@ -352,6 +353,8 @@
     // 印刷には出さない
     const st = document.createElement('style');
     st.textContent = '@media print { #nsf-bug-btn, #nsf-bug-overlay { display: none !important; } }';
+    // スマホ幅では丸いアイコンだけにして紙面を隠さない（window.NSF_COMPACT_FABS を立てたページだけ・2026-10-31 リフィルメーカー）
+    if (window.NSF_COMPACT_FABS) st.textContent += '@media (max-width:600px){#nsf-bug-btn{width:44px;height:44px;padding:0!important;font-size:0!important;display:flex;align-items:center;justify-content:center;bottom:12px!important}#nsf-bug-btn::before{content:attr(data-ico);font-size:20px}body.nsf-nudge-on #nsf-bug-btn,body.panel-open #nsf-bug-btn{display:none!important}}';
     document.head.appendChild(st);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
