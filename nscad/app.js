@@ -9240,7 +9240,6 @@ function restoreSheets(extra, id) {
   for (const role of ['top', 'side']) { const raw = extra[role]; if (!raw) continue; let d; try { d = migrateDoc(raw); } catch { continue; } if (!validateDoc(d)) continue; delete d.threeViewSheets; d.threeViewSheet = { id, role }; newTab(t(role === 'top' ? 'threeViewTop' : 'threeViewSide')); doc = d; refreshTools(); renderLayers(); renderSeams(); scale = sc; origin = role === 'top' ? { x: 80, y: Math.max(60, height / 2 * 0.8) } : { x: Math.max(40, width / 2 * 0.2), y: 80 }; snapshotTab(); tabs[activeTab].dirty = false; }
   switchTab(cur); renderTabs();
 }
-window.addEventListener('beforeunload', e => { if (tabs.some(tb => tb.dirty)) { e.preventDefault(); e.returnValue = ''; } });
 /* 「保存」を押すと、保存と書き出し（SVG・PDF・DXF・PNG）のメニューが出る。普段は隠れている。Ctrl+S は N's CAD 形式でそのまま保存 */
 /** 上の段の「表示」「その他」メニュー（チェック欄・ズーム・ヘルプ類をまとめた開け閉め）。開いている間は、中のチェックを続けて変えられ、外をクリックか Esc で閉じる。中のボタン（ヘルプなど）を押したら閉じる。 */
 const HDR_MENUS = [['viewBtn', 'viewMenu'], ['otherBtn', 'otherMenu']];
