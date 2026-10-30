@@ -7297,7 +7297,14 @@ function removeSelected(onlyIds = null, alsoFn = null) {
 /** 「点線で描く」（事業主 2026-10-25「直接点線が引きたい」→ 案A）：オンの間、作図の道具（直線・矩形・円・円弧・ベジェ・ペン）で描く図形は、点線になる。描いたあとに線種を変える手間をなくす。画面だけの状態で、図面には保存しない（もう一度押すか、ページを開き直すと実線）。 */
 let drawDashed = false;
 const DASH_DRAW_MODES = ['line', 'rect', 'circle', 'arc', 'bezier', 'path', 'polyline'];
-function toggleDrawDashed() { drawDashed = !drawDashed; const b = $('drawDashed'); b.classList?.toggle?.('active', drawDashed); b.setAttribute?.('aria-pressed', String(drawDashed)); $('hint').textContent = t(drawDashed ? 'drawDashedOn' : 'drawDashedOff'); }
+/** 「表示」の「点線」が切れているとき、点線を描いても見えず「線が引けない」ように見える（2026-10-30 事業主「点線が引けない」「点線が見えない」：保存された表示設定が dashed:false で、描いた点線が23本とも隠れていた）。点線を描く場面（「点線で描く」を入れたとき・点線ができたとき）で、切れていたらオンにする。画面の再描画・選択の整理はしない（呼び元が続けて描く）。オンにしたら true。 */
+function showDashedView() {
+  if (viewShow.dashed) return false;
+  viewShow.dashed = true; $('showDashed').checked = true;
+  try { localStorage.setItem('leather-cad.view', JSON.stringify(viewShow)); } catch { /* 保存できなくても続ける */ }
+  return true;
+}
+function toggleDrawDashed() { drawDashed = !drawDashed; const b = $('drawDashed'); b.classList?.toggle?.('active', drawDashed); b.setAttribute?.('aria-pressed', String(drawDashed)); $('hint').textContent = t(drawDashed ? (showDashedView() ? 'dashedViewAutoOn' : 'drawDashedOn') : 'drawDashedOff'); if (drawDashed) draw(); }
 function addShape(shape) {
   const layer = doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked) || doc.layers.find(l => l.visible && !l.locked);
   if (!layer) { $('hint').textContent = t('noLayer'); cancel(); return; }
@@ -7307,7 +7314,9 @@ function addShape(shape) {
   const { layer: wanted, ...rest } = shape; let target = wanted && doc.layers.some(l => l.id === wanted && l.visible && !l.locked) ? wanted : layer.id; // 呼び元の layer はロック・非表示でなければ尊重
   if ((rest.type === 'text' || rest.type === 'dimension') && doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked)) target = 'guide'; /* 基本方針：文字・寸法線はガイド、実線は型紙 */
   const dashed = (target === 'guide' || (drawDashed && DASH_DRAW_MODES.includes(mode))) && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線。「点線で描く」がオンの間は、作図の道具で描く線も点線 */
+  const turnedOn = (dashed.lineStyle === 'dashed' || rest.lineStyle === 'dashed') && showDashedView();   /* 点線を描いたのに「点線を表示」が切れていると見えない */
   commit(() => { doc.shapes.push({ id, layer: target, ...dashed, ...rest }); selected = new Set([id]); });
+  if (turnedOn) $('hint').textContent = t('dashedViewAutoOn');
 }
 function freshId(items, prefix) {
   const used = new Set(items.map(s => s.id)); /* 空き番号の検索を Set で速くする（結果は同じ：未使用で最小の番号） */
