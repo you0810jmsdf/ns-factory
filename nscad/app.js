@@ -9243,10 +9243,15 @@ function openReleaseNotes() {
   const dlg = $('releaseDialog'); if (!dlg.open) dlg.showModal?.(); $('releaseSearch').focus?.();
 }
 let updateDismissed = '', lastVersionCheck = 0;
+/** 新しい版があるあいだ、ブラウザのタブの題名の先頭に「🔔更新あり｜」を付ける（事業主 2026-10-30「公開版が出ても通知が来ない」：別のタブで作業していると、画面の上の帯には気づけない）。「あとで」で帯を閉じても印は残し、更新（再読み込み）で消える。 */
+const UPDATE_TITLE_MARK = '🔔更新あり｜';
+function markUpdateTitle(on) { try { const cur = String(document.title || ''), has = cur.startsWith(UPDATE_TITLE_MARK); if (on && !has) document.title = UPDATE_TITLE_MARK + cur; else if (!on && has) document.title = cur.slice(UPDATE_TITLE_MARK.length); } catch { /* 題名を変えられなくても続ける */ } }
+const VERSION_CHECK_MS = 60000, VERSION_CHECK_ON_RETURN_MS = 30000;   /* 公開版の確認は1分ごと（version.json は小さい）。タブに戻ったときは、前回から30秒あいていれば確認 */
 async function checkNewVersion() {
   const mine = parseBuild($('buildVer')?.textContent); if (!mine || typeof globalThis.fetch !== 'function' || globalThis.location?.protocol !== 'https:') return false;
   lastVersionCheck = Date.now();
-  const v = await latestBuild(globalThis.fetch.bind(globalThis)); if (!isNewerBuild(mine, v) || updateDismissed === v.id) return false;
+  const v = await latestBuild(globalThis.fetch.bind(globalThis)); if (!isNewerBuild(mine, v)) { if (v) markUpdateTitle(false); return false; }
+  markUpdateTitle(true); if (updateDismissed === v.id) return false;
   $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); const news = releasesSince(mine, v.releases); fillReleaseList($('updateNotes'), news, null); $('updateNotes').hidden = !news.length;   /* 新しい版で変わったこと */
   $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
 }
@@ -9254,8 +9259,8 @@ $('releaseBtn').onclick = openReleaseNotes; $('releaseClose').onclick = () => $(
 $('updateNow').onclick = () => { try { flushAutosave(); } catch { /* 自動保存できなくても更新はできる */ } location.reload(); };
 $('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id || ''; $('updateBar').hidden = true; };
 if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
-if (typeof setInterval === 'function') setInterval(checkNewVersion, 300000);
-document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > 60000) checkNewVersion(); });
+if (typeof setInterval === 'function') setInterval(checkNewVersion, VERSION_CHECK_MS);
+document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > VERSION_CHECK_ON_RETURN_MS) checkNewVersion(); });
 applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting(); initPresence();
 tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { restoreSkipped = true; offerRestore([AUTOSAVE_SUB_KEY]); }   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
