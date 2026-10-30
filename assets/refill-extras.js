@@ -197,7 +197,8 @@
       + '<button type="button" id="nsfNudgeClose" style="margin-left:auto;background:none;border:none;color:#8a7362;cursor:pointer;font-size:12px;">閉じる</button>'
       + '</div><div id="nsfNudgeHelp" style="display:none;font-size:11px;color:#6b5646;margin-top:8px;"></div>';
     document.body.appendChild(box);
-    box.querySelector('#nsfNudgeClose').addEventListener('click', () => box.remove());
+    document.body.classList.add('nsf-nudge-on');   // スマホ幅で右下の丸ボタンを隠す（案内と重なるため）
+    box.querySelector('#nsfNudgeClose').addEventListener('click', () => { box.remove(); document.body.classList.remove('nsf-nudge-on'); });
     box.querySelector('#nsfNudgeCal').addEventListener('click', () => sendEvent('reminder'));
     box.querySelector('#nsfNudgeHome').addEventListener('click', () => {
       sendEvent('homescreen');
@@ -211,7 +212,7 @@
 
   function usage() {
     document.addEventListener('click', e => {
-      const b = e.target && e.target.closest && e.target.closest('#btnPdf');
+      const b = e.target && e.target.closest && e.target.closest('#btnPdf, [data-nsf-pdf]');
       if (!b) return;
       sendEvent('pdf');
       setTimeout(showNudge, 6000);   // 生成の操作を邪魔しないよう、少し待ってから
