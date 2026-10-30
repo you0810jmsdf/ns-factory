@@ -1185,7 +1185,12 @@ function affectedHoles(all=false) {
   const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>selected.has(id))).map(p=>p.id));
   return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId))&&holeEditable(h));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
 }
-function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>h.mark=mark)); }
+/** 穴を点に置換する：点の直径どおりの丸だけにする（画面も書き出しも）。点線の直線（ガイド層）は作らず、すでに自動でできていた直線は消す（2026-10-30 事業主「菱目を点に変換したら点線になった」：syncMarkLines が点の穴ごとに直線を作り、画面は点線の連なりになっていた）。目印ツールで打った点は、今までどおり直線と一体。 */
+function convertHoleToDot(h) {
+  h.mark = 'dot'; h.noLine = true;
+  if (h.lineId) { const i = doc.shapes.findIndex(x => x.id === h.lineId && x.markOf === h.id); if (i >= 0) doc.shapes.splice(i, 1); delete h.lineId; }
+}
+function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } })); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
 const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
@@ -1383,7 +1388,7 @@ function initStitch() {
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
-  $('restoreMarks').onclick=()=>commit(()=>{affectedHoles(true).forEach(h=>h.mark='tool');doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.mark='tool');doc.mark='tool';$('defaultMark').value='tool';});
+  $('restoreMarks').onclick=()=>commit(()=>{affectedHoles(true).forEach(h=>{h.mark='tool';delete h.noLine;});doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.mark='tool');doc.mark='tool';$('defaultMark').value='tool';});
   $('applyMark').onclick=()=>markHoles($('holeMark').value);
   $('applyAngle').onclick=()=>{const a=Number($('holeAngle').value);if(Number.isFinite(a))commit(()=>affectedHoles().forEach(h=>h.angleDeg=a));};
   $('flipSlant').onclick=()=>commit(()=>affectedHoles().forEach(h=>{const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));const tangent=$('followTangent').checked?pointAtLength(route,h.s).angleDeg:0;h.angleDeg=2*tangent-h.angleDeg;}));
@@ -6958,6 +6963,7 @@ function syncMarkLines() {
     let ln = h.lineId ? doc.shapes.find(s => s.id === h.lineId && s.markOf === h.id && s.type === 'line') : null;
     if (!ln && !h.lineId && mine.length === 1 && mine[0].type === 'line') { ln = mine[0]; h.lineId = ln.id; } /* 「目印を補助線にする」で作った線を引き継ぐ */
     if (!ln && h.lineId) { for (const s of mine) delete s.markOf; del.add(h.id); continue; } /* 直線が消えた（削除）か、ちぎれた（トリム）：削除なら目印も消え、ちぎれたなら残りは普通の点線 */
+    if (!ln && (h.noLine || h.mark !== 'dot')) continue;   /* 点に置換した穴・全体の既定が点の穴は、直線を作らない（点の丸だけ） */
     if (!ln) { const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), half = dotLen(h) / 2, id = freshId([...doc.shapes, ...add], 's'); ensureLayer(doc, 'guide'); add.push({ id, layer: 'guide', type: 'line', x1: +(h.x - ux * half).toFixed(6), y1: +(h.y - uy * half).toFixed(6), x2: +(h.x + ux * half).toFixed(6), y2: +(h.y + uy * half).toFixed(6), lineStyle: 'dashed', color: 'yellow', markOf: h.id }); h.lineId = id; continue; }
     const dx = ln.x2 - ln.x1, dy = ln.y2 - ln.y1, len = Math.hypot(dx, dy);
     if (len < 1e-6) { del.add(h.id); ln.markOf = undefined; delete ln.markOf; continue; }
@@ -8208,7 +8214,7 @@ function pickShapeAt(p) {
 }
 /** 穴・目印をクリックしたときの距離。点の目印は長さ2mmの短い線（元の線と直角）なので、中心ではなく、その線までの距離で測る（端のあたりをクリックしても選べる）。 */
 function holeHitDistance(h, p) {
-  if (holeAppearance(h, doc)?.kind !== 'dot') return distance(h, p);
+  if (holeAppearance(h, doc)?.kind !== 'dot' || !h.lineId) return distance(h, p);   /* 直線を持たない点（点に置換した穴）は、丸の中心との距離 */
   const a = h.angleDeg * Math.PI / 180, ux = -Math.sin(a), uy = Math.cos(a), half = dotLen(h) / 2, t = Math.max(-half, Math.min(half, (p.x - h.x) * ux + (p.y - h.y) * uy));
   return distance({ x: h.x + ux * t, y: h.y + uy * t }, p);
 }
@@ -8339,7 +8345,7 @@ function drawSheetBody(lo, hi) {
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
     ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
-    if (kind === 'dot') { ctx.strokeStyle = ctx.fillStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.setLineDash([0.2,0.25]); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(0, 0, Math.max(w / 2, DOT_MIN_PX / scale), 0, Math.PI * 2); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 1 / scale; ctx.stroke(); }   /* 点の穴は、点の直径どおりの丸も描く（書き出しの形）。縮小で小さすぎるときだけ、画面で見える最小の大きさにする */
+    if (kind === 'dot') { ctx.strokeStyle = ctx.fillStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.beginPath(); ctx.arc(0, 0, Math.max(w / 2, DOT_MIN_PX / scale), 0, Math.PI * 2); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 1 / scale; ctx.stroke(); }   /* 点の穴は、点の直径どおりの丸も描く（書き出しの形）。縮小で小さすぎるときだけ、画面で見える最小の大きさにする */
     else if (kind === 'slit') { ctx.lineWidth = halfDepth ? Math.max(0.1, heightMM / 2) : heightMM; ctx.stroke(); } else if (halfDepth || (kind === 'diamond' && diamondMode() === 'line')) { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();
     if (halfDepth && kind !== 'dot') { ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(w, heightMM) * 0.15), 0, Math.PI * 2); ctx.fill(); }   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
     if(selected.has(h.id)&&kind!=='dot'&&kind!=='diamond'){ctx.lineWidth=1/scale;ctx.strokeRect(-w/2-2/scale,-heightMM/2-2/scale,w+4/scale,heightMM+4/scale);}
