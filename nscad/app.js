@@ -3305,7 +3305,6 @@ function syncLockMarks() {
 let numberJustFocused = null;
 /** 数値の欄にカーソルがある（フォーカス中）ときにホイールを回すと、数値が勝手に増減して止まらなくなる（事業主「数値がとまらない」）→ ホイールを回したら、欄からフォーカスを外し、カード・ページのスクロールにする。 */
 function blurNumberOnWheel(e) { const el = e?.target; if (el?.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) el.blur(); }
-document.addEventListener?.('wheel', blurNumberOnWheel, { passive: true });
 document.addEventListener?.('focusin', e => { const el = e?.target; if (el?.tagName === 'INPUT' && el.type === 'number') { numberJustFocused = el; setTimeout(() => { try { el.select?.(); } catch { /* 選べない欄は、そのまま */ } }, 0); } else numberJustFocused = null; });
 /** マウスで入った最初のマウスアップ：以前は preventDefault で止めて全選択を保っていたが、▲▼（スピンボタン）の「押し終わり」まで止めてしまい、フォーカスの無い欄の▲を1回クリックしただけで、数値が毎秒20ずつ増え続け、別の所をクリックするまで止まらなかった（事業主 2026-10-23「数値が止まらない」・実ブラウザ（公開版）で再現し、この処理を外すと1回で止まることを確認）。止めずに、マウスアップのあとで全選択し直す（全選択が外れない見た目は同じ）。 */
 document.addEventListener?.('mouseup', e => { const el = numberJustFocused; if (el && e?.target === el) { numberJustFocused = null; setTimeout(() => { try { el.select?.(); } catch { /* 選べない欄は、そのまま */ } }, 0); } });
@@ -9141,7 +9140,7 @@ canvas.addEventListener('gesturestart', e => e.preventDefault(), { passive: fals
 document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tool)));
 /** 数字の欄を選んだまま、その上でマウスのホイールを回すと、ブラウザの標準動作で数字が増減する（右のカードを動かそうとして、工具の穴の高さが 0.8 → 5 になった・事業主の指摘 2026-10-18「数字が勝手に増えていく」）。
  *  数字の欄の上でホイールを回したら、欄の選択を外す：数字は変わらず、画面のスクロールはそのまま通る。 */
-document.addEventListener('wheel', e => { const el = e?.target; if (el && el.tagName === 'INPUT' && el.type === 'number' && document.activeElement === el) el.blur(); }, { passive: true, capture: true });
+document.addEventListener('wheel', blurNumberOnWheel, { passive: true, capture: true });   /* 登録は1つだけ（以前は同じ処理が2か所に重なっていた） */
 $('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
