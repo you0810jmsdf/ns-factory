@@ -56,10 +56,10 @@ export function shapeToSvgD(s) {
 /** 寸法の文字：label があればそれ（SVG）。DXF・PDF 用は英数字だけに落とす（× は x・日本語は外す・何も残らなければ数字）。 */
 export const dimText = (s, d) => (typeof s.label === 'string' && s.label) ? s.label : f(d.value);
 export const dimTextAscii = (s, d) => { const t = (typeof s.label === 'string' && s.label) ? s.label.replace(/\u00d7/g, 'x').replace(/[^\x20-\x7e]/g, '').replace(/\s+/g, ' ').trim() : ''; return t || f(d.value); };
-export function holeToSvg(h, doc, color = '#e00000', fillDiamond = false, dotMm = 0) {
+export function holeToSvg(h, doc, color = '#e00000', fillDiamond = false, dotMm = 0, dotStroke = false) {
   const a = holeAppearance(h, doc); if (!a) return '';
   const half = h.depth === 'half', halfAttr = half ? ' data-depth="half" stroke-dasharray="0.4 0.3"' : '';   /* 駒合わせの B（コバ側）の穴＝半分の深さ（貫通させない）：塗らず、点線の輪郭に */
-  if (dotMm > 0) return half ? `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="none" stroke="${color}" data-depth="half"/>` : `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="${color}" stroke="none"/>`;   /* 印刷・PDF の「縫い穴を点で印刷する」：形にかかわらず真ん中の●（直径 dotMm・事業主の希望 2026-10-19） */
+  if (dotMm > 0) return half ? `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="none" stroke="${color}" data-depth="half"/>` : (dotStroke ? `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="none" stroke="${color}"/>` : `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(dotMm / 2)}" fill="${color}" stroke="none"/>`);   /* 印刷・PDF の「縫い穴を点で印刷する」：形にかかわらず真ん中の●（直径 dotMm・事業主の希望 2026-10-19） */
   if (a.kind === 'dot' || a.kind === 'circle') return `<circle cx="${f(h.x)}" cy="${f(h.y)}" r="${f(a.width / 2)}" fill="none" stroke="${color}"${halfAttr}/>`;
   const pts = (a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]).map(p => { const q = rotate(p, h.angleDeg); return `${f(q.x + h.x)},${f(q.y + h.y)}`; });
   return a.kind === 'slit' ? `<line x1="${pts[0].split(',')[0]}" y1="${pts[0].split(',')[1]}" x2="${pts[1].split(',')[0]}" y2="${pts[1].split(',')[1]}" stroke="${color}"${halfAttr}/>` : `<polygon points="${pts.join(' ')}" fill="${fillDiamond && !half ? color : 'none'}" stroke="${color}"${halfAttr}/>`;   /* 菱目：fillDiamond で塗る（事業主の希望 2026-10-18） */
@@ -67,7 +67,7 @@ export function holeToSvg(h, doc, color = '#e00000', fillDiamond = false, dotMm 
 /** 文書から SVG 文字列を返す。1 ユーザー単位＝1mm、width/height は mm、レイヤーごとに <g id>。線は黒 strokeMm、穴は赤。 */
 /** textures：革の質感 { id: { avg: '#rrggbb', href: 'data:image/jpeg;base64,…'（無ければ平均色で塗る）, mm: その質感1枚の実寸（省略可） } }、textureMm：mm の無い質感に使う1枚の大きさ。fill のときだけ使う。 */
 const METAL_FALLBACK = { gold: '#D4AF37', silver: '#C0C0C0', pinkgold: '#E5A593', blackgold: '#6B5B3A' };   /* 領域の塗りの金属の色（呼び出し側が色を渡さないとき） */
-/** holeDot：0 より大きいと、穴も菱の線（菱形の polyline）も、真ん中の●（直径 holeDot mm）に置き換える（印刷・PDF だけが使う。画面・SVG 書き出しは渡さない）。 */
+/** holeDot：0 より大きいと、穴も菱の線（菱形の polyline）も、真ん中の●（直径 holeDot mm）に置き換える（印刷・PDF は塗りの●。SVG の書き出しは holeDotStroke で、線だけの丸＝Beam Studio が画像でなく図形（ベクター）として読む：2026-10-30 事業主「点が図形ではなく画像として認識されている」）。 */
 /** Beam Studio は、色ごとの層を、線の太さ1px（72DPI で約0.35mm）ぶん余分に見積もり、層の大きさに合わせて縮めて表示・加工する。細い層（点線・菱目だけの層など）は、幅が小さいぶん、縮みが大きく（幅15mm で約2.3%）、切る線との間隔が崩れる。
  *  beamFix のとき、層ごとに、縮むぶんを、あらかじめ拡大して出す（層の中心を基準に、1÷(幅÷(幅＋0.35mm))倍。幅・高さの小さいほう）。最小の幅・高さが 5mm 未満の層は、確かめていないので、そのまま（事業主の Beam Studio で、幅15mm の層で確認 2026-10-27）。 */
 export const BEAM_STROKE_MM = 25.4 / 72;
@@ -89,7 +89,7 @@ export function beamRefOf(boxes, preferId = 'pattern') {
   const pref = boxes.find(x => x.id === preferId && beamShrinkOf(x.box)); if (pref) return pref.id;
   let best = null; for (const x of boxes) { const S = beamShrinkOf(x.box); if (S && (!best || S.r > best.S.r)) best = { id: x.id, S }; } return best ? best.id : null;   /* 縮みがいちばん小さい（＝いちばん大きい）層 */
 }
-export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, lineColors = 'color' } = {}) {
+export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, holeDotStroke = false, lineColors = 'color' } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
   const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -103,7 +103,7 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
     const body = shapes.filter(s => s.layer === l.id).map(s => {
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(s.font ? textFontStack(s.font) : fontFamily)}" fill="${svgTextHex(s, lineColors)}" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;   /* 書体を決めた文字（font）は、その書体。決めていない文字は、出力の既定（fontFamily） */
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${esc(dimText(s, d))}</text>`; }
-      if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) return `<circle id="${safeId(s.id)}" cx="${f(dl[0].x)}" cy="${f(dl[0].y)}" r="${f(holeDot / 2)}" fill="${svgLineHex(s, lineColors, true) || '#000'}" stroke="none"/>`; }   /* 菱の線（取り込んだ図面の菱形）も真ん中の● */
+      if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) return `<circle id="${safeId(s.id)}" cx="${f(dl[0].x)}" cy="${f(dl[0].y)}" r="${f(holeDot / 2)}" ${holeDotStroke ? `fill="none" stroke="${svgLineHex(s, lineColors, true) || '#000'}"` : `fill="${svgLineHex(s, lineColors, true) || '#000'}" stroke="none"`}/>`; }   /* 菱の線（取り込んだ図面の菱形）も真ん中の● */
       const d = shapeToSvgD(s), part = fill ? (doc.parts || []).find(p => p.shapeIds.includes(s.id)) : null;
       const texId = fill ? (s.texture || part?.texture || null) : null, tex = texId && textures ? textures[texId] : null; /* 革の質感：図形自身の指定が優先、無ければ部品の指定 */
       if (tex?.href) usedTex.add(texId);
@@ -116,7 +116,7 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
     return beamFix && l.id !== beamRef ? beamFixWrap(g, layerBox(l.id)) : g;   /* 外周（基準）の層は触らない */
   }).join('');
   const threadHex = h => { if (lineColors === 'mono') return '#000000'; const p = doc.paths.find(p => p.id === h.pathId); return (fill && p && p.threadHex) ? safeColor(p.threadHex, '#e00000') : '#e00000'; };
-  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot)).join('')}</g>` : '', holeGroup = beamFix && holes.length && beamRef !== 'holes' ? beamFixWrap(holeGroup0, holesBox) : holeGroup0;
+  const holeGroup0 = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(h => holeToSvg(h, doc, threadHex(h), diamondFill, holeDot, holeDotStroke)).join('')}</g>` : '', holeGroup = beamFix && holes.length && beamRef !== 'holes' ? beamFixWrap(holeGroup0, holesBox) : holeGroup0;
   const leatherGroups = new Map(); if (fill) for (const s of shapes) if ((s.leather || s.texture) && s.leatherGroup) { if (!leatherGroups.has(s.leatherGroup)) leatherGroups.set(s.leatherGroup, []); leatherGroups.get(s.leatherGroup).push(s); } /* 型紙の輪郭（端がつながった線の一周）に付けた革色は、一周をたどった多角形で線の下に塗る */
   const leatherFill = [...leatherGroups.values()].map(list => { const poly = outlinePolygon(list, list[0].id), paint = texPaint(list.find(q => q.texture)?.texture, list[0].leather); return poly && paint ? `<path d="M${poly.points.map(p => `${f(p.x)} ${f(p.y)}`).join('L')}Z" fill="${paint}" stroke="none"/>` : ''; }).join('');
   const ringD = ps => 'M' + ps.map(q => `${f(q.x)} ${f(q.y)}`).join('L') + 'Z';
