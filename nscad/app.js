@@ -1248,6 +1248,8 @@ function flushAutosave() {
     else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
   } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
 }
+/** 保存待ち（変更から1.5秒）のまま閉じても最後の変更が残るよう、閉じる・隠れる直前に待たずに保存する（事業主指示 2026-10-30）。待ちが無ければ何もしない。 */
+function flushPendingAutosave() { if (!autosaveTimer) return; try { flushAutosave(); } catch { /* 保存できなくても閉じる処理は止めない */ } }
 /** 自動保存に乗っていない未保存の変更があるか（大きすぎ・保存できないとき）。閉じる・更新・再読み込みの前の確認に使う。 */
 const unsavedNotAutosaved = () => autosaveState !== 'ok' && tabs.some(tb => tb.dirty);
 /** 元に戻す履歴の保管（事業主指示 2026-10-17：再起動しても Undo が残る）：自動保存の2秒後に、全タブの履歴を圧縮して IndexedDB へ。自動保存と同じ時刻（savedAt）を付け、復元のときは時刻が合うものだけ使う（図面とずれた履歴で戻して、作業を失わないため）。 */
@@ -1333,7 +1335,7 @@ function startTabWatch() {
   if (typeof setInterval === 'function') setInterval(tabWatchTick, 2000);
   window.addEventListener('storage', e => { if (e?.key === TAB_LOCK_KEY) tabWatchTick(); });   /* 別のタブが主を替えたら、すぐ気づく */
   document.addEventListener?.('visibilitychange', () => { if (!document.hidden) tabWatchTick(); });
-  window.addEventListener('pagehide', () => tabLock.release());   /* 閉じるとき：主なら譲る */
+  window.addEventListener('pagehide', () => { flushPendingAutosave(); tabLock.release(); });   /* 閉じるとき：保存待ちを先に書き（主か副かは譲る前の状態で決まる）、主なら譲る */
   window.addEventListener('pageshow', () => tabWatchTick());   /* 戻る・進むで復元されたとき（閉じるときに印を消しているので、主に戻る） */
 }
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
@@ -9376,6 +9378,6 @@ applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => {
 initCounting(); initPresence();
 tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { restoreSkipped = true; offerRestore([AUTOSAVE_SUB_KEY]); }   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
 autosaveReady = true; startTabWatch();
-window.addEventListener?.('beforeunload', e => { if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
+window.addEventListener?.('beforeunload', e => { flushPendingAutosave(); if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
 showTour();
 }
