@@ -7574,6 +7574,7 @@ function pickRoundHole(choice) {
 }
 for (const [id, c] of [['roundHoleKeep', 'keep'], ['roundHoleRestitch', 'restitch'], ['roundHoleRemove', 'remove']]) $(id).onclick = () => pickRoundHole(c);
 $('roundAll').onclick = () => roundSelectedCorners();
+$('chamferAll').onclick = () => roundSelectedCorners('chamfer');
 $('roundHoleCancel').onclick = () => { hideRoundHoleBar(); cancel(); $('hint').textContent = t('roundHoleCanceled'); };
 /** 丸め・面取りのあと、目印だけが付いていた線を作り直す：図形の入れ替え（swap: 古い図形の id → 新しい図形の id の列）を線に反映し、目印を新しい線の上へ置き直す（つながらなければ、その線の目印は外す）。目印のない線は消す。commit の中で、図形を入れ替えたあとに呼ぶ。 */
 function reattachMarks(pathIds, swap = new Map()) {
@@ -7618,15 +7619,16 @@ function roundPolylineAt(poly, p) {
   });
   $('hint').textContent = t('hint.' + mode);
 }
-/** 丸めの窓の「選んだ図形の全部の角を丸める」：選んだ折れ線・矩形の全部の角と、選んだ直線どうしが端でつながった角（2本だけの角）を、窓の半径で丸める。丸められない角（半径が大きい・短い線）は飛ばして、数を知らせる。元に戻すは1回分（事業主指示 2026-10-30）。 */
-function roundSelectedCorners() {
+/** 丸めの窓の「選んだ図形の全部の角を丸める」と、面取りの窓の「選んだ図形の全部の角を面取りする」（kind が 'chamfer'・事業主指示 2026-10-30 提案3）：選んだ折れ線・矩形の全部の角と、選んだ直線どうしが端でつながった角（2本だけの角）を、窓の半径で丸める。丸められない角（半径が大きい・短い線）は飛ばして、数を知らせる。元に戻すは1回分（事業主指示 2026-10-30）。 */
+function roundSelectedCorners(kind = 'fillet') {
+  const chamfer = kind === 'chamfer', K = chamfer ? 'chamferAll' : 'roundAll', make = chamfer ? chamferCorner : filletCorner;   /* 面取りは、2本の線の角が円弧でなく直線になる */
   const ids = selectedShapeIds(), twoPt = x => x.type === 'polyline' && !x.closed && x.points.length === 2;
   const toLine = x => twoPt(x) ? { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y } : { ...x };
   const polys = doc.shapes.filter(s => ids.has(s.id) && s.type === 'polyline' && !twoPt(s) && s.points.length >= 3), lineShapes = doc.shapes.filter(s => ids.has(s.id) && (s.type === 'line' || twoPt(s)));
   if (!polys.length && lineShapes.length < 2) { $('hint').textContent = t('roundAllNone'); return; }
   const affected = new Set(doc.paths.filter(q => q.shapeIds.some(id => ids.has(id))).map(q => q.id));
-  if (roundPrepare(affected, roundSelectedCorners)) return;
-  const r = askNumber('radius', 3, 'fillet'); if (r === null) return;
+  if (roundPrepare(affected, () => roundSelectedCorners(kind))) return;
+  const r = askNumber(chamfer ? 'chamferSize' : 'radius', 3, chamfer ? 'chamfer' : 'fillet'); if (r === null) return;
   let done = 0, skipped = 0; const swap = new Map(), newArcs = [], lineEdits = new Map();
   for (const poly of polys) {   /* 折れ線・矩形：入る角だけを、ひとつずつ足して確かめる */
     const n = poly.points.length, V = poly.points, cand = [];
@@ -7635,24 +7637,24 @@ function roundSelectedCorners() {
       const prev = V[(i - 1 + n) % n], next = V[(i + 1) % n], cross = (V[i].x - prev.x) * (next.y - V[i].y) - (V[i].y - prev.y) * (next.x - V[i].x);
       if (Math.abs(cross) >= 1e-9 * Math.max(1, distance(prev, V[i]) * distance(V[i], next))) cand.push(i);
     }
-    const chosen = []; for (const i of cand) if (roundPolylineCorners(poly, [...chosen, i], r, 'fillet')) chosen.push(i);
+    const chosen = []; for (const i of cand) if (roundPolylineCorners(poly, [...chosen, i], r, kind)) chosen.push(i);
     skipped += cand.length - chosen.length; done += chosen.length;
-    if (chosen.length) swap.set(poly.id, roundPolylineCorners(poly, chosen, r, 'fillet'));
+    if (chosen.length) swap.set(poly.id, roundPolylineCorners(poly, chosen, r, kind));
   }
   const work = new Map(lineShapes.map(s => [s.id, toLine(s)])), ends = new Map();   /* 直線：端が同じ点に集まる所のうち、ちょうど2本の所が角 */
   for (const l of work.values()) for (const k of [1, 2]) { const key = Math.round(l['x' + k] * 1e4) + ',' + Math.round(l['y' + k] * 1e4); if (!ends.has(key)) ends.set(key, []); ends.get(key).push(l.id); }
   for (const list of ends.values()) {
     if (list.length !== 2 || list[0] === list[1]) { if (list.length > 2) skipped++; continue; }
-    const [la, lb] = list.map(id => work.get(id)), arc = filletCorner(la, lb, r);
+    const [la, lb] = list.map(id => work.get(id)), arc = make(la, lb, r);
     if (!arc) { skipped++; continue; }
-    const pts = [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)];
+    const pts = arc.type === 'arc' ? [circlePoint(arc, arc.startDeg), circlePoint(arc, arc.endDeg)] : [{ x: arc.x1, y: arc.y1 }, { x: arc.x2, y: arc.y2 }];
     const trim = (line, other) => { const end = distance({ x: line.x1, y: line.y1 }, { x: other.x1, y: other.y1 }) < 1e-6 || distance({ x: line.x1, y: line.y1 }, { x: other.x2, y: other.y2 }) < 1e-6 ? 1 : 2, p = pts.reduce((a, b) => distTo(line, a) <= distTo(line, b) ? a : b); return { ...line, ['x' + end]: p.x, ['y' + end]: p.y }; };
     const ta = trim(la, lb), tb = trim(lb, la), keepsDir = (o, n2) => (n2.x2 - n2.x1) * (o.x2 - o.x1) + (n2.y2 - n2.y1) * (o.y2 - o.y1) > 1e-9;
     if (!keepsDir(la, ta) || !keepsDir(lb, tb)) { skipped++; continue; }   /* 1本の両端を丸めると線が尽きる */
     work.set(la.id, ta); work.set(lb.id, tb); lineEdits.set(la.id, true); lineEdits.set(lb.id, true);
     newArcs.push({ arc, from: [la.id, lb.id] }); done++;
   }
-  if (!done) { $('hint').textContent = t('roundAllNone2', { n: skipped }); return; }
+  if (!done) { $('hint').textContent = t(K + 'None2', { n: skipped }); return; }
   cancel();
   commit(() => {
     const touched = new Set(), arcIds = [];
@@ -7670,7 +7672,7 @@ function roundSelectedCorners() {
     reattachMarks(affected, swapIds);
     selected = new Set([...ids].filter(i => !swap.has(i)).concat([...touched]));
   });
-  $('hint').textContent = t(skipped ? 'roundAllDoneSkip' : 'roundAllDone', { n: done, skip: skipped }); draw();
+  $('hint').textContent = t(skipped ? K + 'DoneSkip' : K + 'Done', { n: done, skip: skipped }); draw();
 }
 /** オフセットの選択：1回クリック＝他の図形との交点から交点までの区間、ダブルクリック＝つながった図形全体。 */
 let offsetCursor = null; /* オフセットの向きを決めるカーソル位置（世界座標） */
