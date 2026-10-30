@@ -423,7 +423,7 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.id)) : null; return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set((() => { const own = doc.holes.filter(h => selected.has(h.id)); return own.length ? own : holesInSelectedShapes(); })().map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 /** 書き出し用（SVG・PDF・DXF）：重なった線を1本にした図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた図形は、そのまま（穴が付いたまま出る）。除いた長さは lastDedupe（書き出し後の案内に使う）。
  *  事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に。…起動のたびに重複する線を削除する機能」 */
@@ -1200,7 +1200,7 @@ function holesInSelectedShapes() {
     if (!left.has(s.id)) continue;
     const chain = s.type === 'circle' ? [s.id] : contourFrom(sel, s.id, { gapTol: 0.5 }), ids = new Set(chain.length ? chain : [s.id]); ids.forEach(id => left.delete(id));
     let box = null; for (const x of sel.filter(y => ids.has(y.id))) { const q = bboxOf(x); box = box ? { minX: Math.min(box.minX, q.minX), minY: Math.min(box.minY, q.minY), maxX: Math.max(box.maxX, q.maxX), maxY: Math.max(box.maxY, q.maxY) } : { ...q }; }
-    if (box) boxes.push(box);
+    if (box && box.maxX - box.minX >= 3 && box.maxY - box.minY >= 3) boxes.push(box);   /* 幅・高さが 3mm 未満（1本の直線など）は、部品とは見なさない：線の上の穴は、これまでどおり、補助の線・選んだ穴で決まる */
   }
   return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX && h.x <= q.maxX && h.y >= q.minY && h.y <= q.maxY));
 }
