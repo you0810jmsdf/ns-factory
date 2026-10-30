@@ -1191,7 +1191,20 @@ function convertHoleToDot(h) {
   h.mark = 'dot'; h.noLine = true;
   if (h.lineId) { const i = doc.shapes.findIndex(x => x.id === h.lineId && x.markOf === h.id); if (i >= 0) doc.shapes.splice(i, 1); delete h.lineId; }
 }
-function markHoles(mark,all=false) { commit(()=>affectedHoles(all).forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } })); }
+/** 選んだ図形の範囲（つながった図形ごとの外接の四角）の中にある穴。穴が見えない補助の線に付いている図面（コピー・貼り付けで作られる）でも、図形（部品）を選べば、その部品の菱目が「点に置換」「選択穴に適用」の対象になる（事業主 2026-10-30「選択した図形の菱目を点に変換できない」）。部品ごとなので、別の部品の穴は入らない。点線・ガイド・寸法・文字は範囲に数えない。 */
+function holesInSelectedShapes() {
+  const sel = doc.shapes.filter(s => selected.has(s.id) && editable(s) && !s.holeLink && !['text', 'dimension', 'image', 'fold'].includes(s.type) && s.lineStyle !== 'dashed' && s.layer !== 'guide');
+  if (!sel.length) return [];
+  const left = new Set(sel.map(s => s.id)), boxes = [];
+  for (const s of sel) {
+    if (!left.has(s.id)) continue;
+    const chain = s.type === 'circle' ? [s.id] : contourFrom(sel, s.id, { gapTol: 0.5 }), ids = new Set(chain.length ? chain : [s.id]); ids.forEach(id => left.delete(id));
+    let box = null; for (const x of sel.filter(y => ids.has(y.id))) { const q = bboxOf(x); box = box ? { minX: Math.min(box.minX, q.minX), minY: Math.min(box.minY, q.minY), maxX: Math.max(box.maxX, q.maxX), maxY: Math.max(box.maxY, q.maxY) } : { ...q }; }
+    if (box) boxes.push(box);
+  }
+  return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX && h.x <= q.maxX && h.y >= q.minY && h.y <= q.maxY));
+}
+function markHoles(mark,all=false) { commit(()=>{ const targets = new Set([...affectedHoles(all), ...(all ? [] : holesInSelectedShapes())]); targets.forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } }); }); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
 const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
