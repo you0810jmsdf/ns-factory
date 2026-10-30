@@ -76,7 +76,8 @@ const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
 const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別のブラウザタブが主）の自動保存の置き場。主の置き場（AUTOSAVE_KEY）を上書き・削除しないための別のキー（2026-10-28 事業主「更新したら作業中の作図が消えた」：副のタブで描いた分が自動保存に乗っていなかった） */
 let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
 let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';
-let lastAutosaveSigs = [];   /* 直近の自動保存に入れた、タブごとの図面の署名（履歴の保管に添える：時刻が違っても、図面が同じなら履歴を使える） */   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
+let lastAutosaveSigs = [];
+let commitSeq = 0, rangeHoleCache = { key: '', ids: new Set() };   /* 選んだ範囲の穴の使い回し（rangeHoleSet） */   /* 直近の自動保存に入れた、タブごとの図面の署名（履歴の保管に添える：時刻が違っても、図面が同じなら履歴を使える） */   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
@@ -423,7 +424,7 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set((() => { const own = doc.holes.filter(h => selected.has(h.id)); return own.length ? own : holesInSelectedShapes(); })().map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
+const outputDoc = () => { let shapes = viewShow.hardware ? doc.shapes : doc.shapes.filter(s => !isHardwareShape(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(isSelHole).map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 /** 書き出し用（SVG・PDF・DXF）：重なった線を1本にした図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた図形は、そのまま（穴が付いたまま出る）。除いた長さは lastDedupe（書き出し後の案内に使う）。
  *  事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に。…起動のたびに重複する線を削除する機能」 */
@@ -1184,7 +1185,7 @@ function deleteSelectedHoles() {
 }
 function affectedHoles(all=false) {
   const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>selected.has(id))).map(p=>p.id));
-  return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId))&&holeEditable(h));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
+  return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId)||(selected.size&&rangeHoleSet().has(h.id)))&&holeEditable(h));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
 }
 /** 穴を点に置換する：点の直径どおりの丸だけにする（画面も書き出しも）。点線の直線（ガイド層）は作らず、すでに自動でできていた直線は消す（2026-10-30 事業主「菱目を点に変換したら点線になった」：syncMarkLines が点の穴ごとに直線を作り、画面は点線の連なりになっていた）。目印ツールで打った点は、今までどおり直線と一体。 */
 function convertHoleToDot(h) {
@@ -1204,7 +1205,14 @@ function holesInSelectedShapes() {
   }
   return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX && h.x <= q.maxX && h.y >= q.minY && h.y <= q.maxY));
 }
-function markHoles(mark,all=false) { commit(()=>{ const targets = new Set([...affectedHoles(all), ...(all ? [] : holesInSelectedShapes())]); targets.forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } }); }); }
+/** 「選択した範囲はすべて対象」（事業主 2026-10-30）：選んだ図形の範囲（つながった図形ごとの外接の四角）の中の穴は、選んだものとして扱う。移動・コピー・削除・点に置換・書き出し・強調表示が、同じ判定を使う。選択と図面が変わらないあいだは、結果を使い回す。 */
+function rangeHoleSet() {
+  const key = commitSeq + '|' + doc.holes.length + '|' + doc.shapes.length + '|' + [...selected].join(',');
+  if (rangeHoleCache.key !== key) rangeHoleCache = { key, ids: new Set(selected.size ? holesInSelectedShapes().map(h => h.id) : []) };
+  return rangeHoleCache.ids;
+}
+const isSelHole = h => selected.has(h.id) || rangeHoleSet().has(h.id);
+function markHoles(mark,all=false) { commit(()=>{ const targets = new Set(affectedHoles(all)); targets.forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } }); }); }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
 const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
@@ -2793,7 +2801,7 @@ function rimSpotFree(q, others, r, near) {
   for (let i = cx - 1; i <= cx + 1; i++) for (let j = cy - 1; j <= cy + 1; j++) for (const h of near.grid.get(i + ',' + j) || []) if ((h.x - q.x) ** 2 + (h.y - q.y) ** 2 < g2) return false;
   return true;
 }
-let commitSeq = 0;   /* commit が図面を変えた回数（格子の連動の記録を付けるかの判定に使う） */
+/* commitSeq：commit が図面を変えた回数（格子の連動の記録を付けるかの判定・選んだ範囲の穴の使い回しに使う）。宣言は、上の let の並び（rangeHoleCache の隣）にある */
 let lastPatch = null; /* 直前の格子 {frameIds: 元の枠の図形の id, before: そのときの取り消し用の記録}。数値を変えたら作りなおす */
 let regenTimer = null, regenYield = null, regenDelayMs = 250, regenBusy = false;   /* 数値の欄を押しっぱなし・打ちかけにしている間は作りなおさず、最後の変化の 250ms 後に1回だけ作りなおす（事業主「数値がとまらない」：1段ごとに作りなおすと画面が止まり、矢印を離しても数が進み続けた）。数値の欄（type=number）だけ。選択・チェックはすぐ。0 以下なら、すぐ（テスト用） */
 const REGEN_PREVIEW_FACTOR = 4;   /* 列・行・角度は、変えた瞬間に下見（gridPreviewUpdate）が出るので、確定までの待ちを通常の4倍（約1秒）にする。連続して押している間は下見だけが動く。regenDelayMs が 0（テスト）ならすぐ */
@@ -4692,7 +4700,7 @@ function selectAllShapes() {
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
 /** 選んでいる穴（箱で囲む・全選択で選ばれる）の番号。コピーで、縫い線が隠したガイドの層にある穴も運ぶため。 */
-function selectedHoleIdSet() { return new Set(doc.holes.filter(h => selected.has(h.id) && holeEditable(h)).map(h => h.id)); }
+function selectedHoleIdSet() { return new Set(doc.holes.filter(h => isSelHole(h) && holeEditable(h)).map(h => h.id)); }
 function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids, { holeIds: selectedHoleIdSet() }), tabs[activeTab]?.name || 'untitled'); }
 /** 貼り付ける図形全体の中心を、マウスの位置に置くときの、置き場所。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
 function pasteTarget(data) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; return { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
@@ -7311,11 +7319,12 @@ function removeSelectedKeepHoles() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
   let lines = 0, kept = 0, dropped = 0; const goneShapes = doc.shapes.filter(sh => ids.has(sh.id));
   cancel(); commit(() => {
+    const selHoleIds = new Set(doc.holes.filter(isSelHole).map(h => h.id));   /* 図形を消す前に、選んだ範囲の穴を控える（消したあとは範囲が無くなる） */
     const holed = new Set(doc.holes.map(h => h.pathId)), keepPaths = doc.paths.filter(p => holed.has(p.id) && p.shapeIds.some(id => ids.has(id))), keepIds = new Set(keepPaths.flatMap(p => p.shapeIds.filter(id => ids.has(id))));
     const dropPaths = new Set(doc.paths.filter(p => p.shapeIds.some(id => ids.has(id)) && !keepPaths.includes(p)).map(p => p.id));
-    lines = ids.size; kept = doc.holes.filter(h => keepPaths.some(p => p.id === h.pathId) && !(selected.has(h.id) && holeEditable(h))).length;
+    lines = ids.size; kept = doc.holes.filter(h => keepPaths.some(p => p.id === h.pathId) && !(selHoleIds.has(h.id) && holeEditable(h))).length;
     doc.shapes = doc.shapes.filter(sh => !ids.has(sh.id) || keepIds.has(sh.id)).map(sh => keepIds.has(sh.id) ? { ...sh, holeLink: true } : sh);   /* 穴のある線は、見えない補助の線として残る（経路を保つ） */
-    doc.holes = doc.holes.filter(h => !dropPaths.has(h.pathId) && !(selected.has(h.id) && holeEditable(h)));
+    doc.holes = doc.holes.filter(h => !dropPaths.has(h.pathId) && !(selHoleIds.has(h.id) && holeEditable(h)));
     doc.paths = doc.paths.filter(p => !dropPaths.has(p.id)); doc.seams = doc.seams.filter(m => !dropPaths.has(m.a.pathId) && !dropPaths.has(m.b.pathId));
     for (const part of doc.parts) part.shapeIds = part.shapeIds.filter(id => !ids.has(id));
     dropped = dropFillsOf(ids, keepIds, goneShapes);
@@ -7326,8 +7335,8 @@ function removeSelectedKeepHoles() {
 function removeSelected(onlyIds = null, alsoFn = null) {
   const ids = onlyIds || selectedShapeIds(); let dropped = 0;   /* onlyIds：選択（グループを含む）でなく、この図形だけを消す */
   const goneShapes = doc.shapes.filter(sh => ids.has(sh.id));   /* 消す前の図形（塗りの、くり抜きの穴を外すのに使う） */
-  cancel(); commit(() => { const own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
-    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selected.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds,goneShapes); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
+  cancel(); commit(() => { const selHoleIds = new Set(doc.holes.filter(isSelHole).map(h => h.id)), own=ownHolePathIds(doc); for(const p of doc.paths) if(p.grid||p.rim) own.delete(p.id);   /* 図形を消す前に、選んだ範囲の穴を控える */   /* 格子が作った縫い線・外周の線は、消せば穴も消える */
+    const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>ids.has(id))&&!own.has(p.id)).map(p=>p.id)), keepIds=new Set(doc.paths.filter(p=>own.has(p.id)).flatMap(p=>p.shapeIds.filter(id=>ids.has(id)))); /* .lcc から取り込んだ穴など、線とは独立した穴の経路：その線（ガイドなど）を消しても、穴は残す。線は見えない補助の線（holeLink）にして、経路を保つ */ doc.shapes=doc.shapes.filter(s=>!ids.has(s.id)||keepIds.has(s.id)).map(s=>keepIds.has(s.id)?{...s,holeLink:true}:s); doc.holes=doc.holes.filter(h=>!paths.has(h.pathId)&&!(selHoleIds.has(h.id)&&holeEditable(h))); doc.paths=doc.paths.filter(p=>!paths.has(p.id)); doc.seams=doc.seams.filter(m=>!paths.has(m.a.pathId)&&!paths.has(m.b.pathId)); for(const part of doc.parts)part.shapeIds=part.shapeIds.filter(id=>!ids.has(id)); dropped=dropFillsOf(ids,keepIds,goneShapes); selected.clear(); manualNext=null; alsoFn?.(); }); renderSeams();
   if (dropped) $('hint').textContent = t('fillsDroppedWithShapes', { n: dropped });
 }
 /** 「点線で描く」（事業主 2026-10-25「直接点線が引きたい」→ 案A）：オンの間、作図の道具（直線・矩形・円・円弧・ベジェ・ペン）で描く図形は、点線になる。描いたあとに線種を変える手間をなくす。画面だけの状態で、図面には保存しない（もう一度押すか、ページを開き直すと実線）。 */
@@ -7393,7 +7402,7 @@ function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転
     doc.shapes = doc.shapes.map(s => ids.has(s.id) ? fn(s) : s);
     if (Array.isArray(doc.fills) && doc.fills.length) { const mv = q => { try { const r = fn({ x: q.x, y: q.y }); return Number.isFinite(r?.x) && Number.isFinite(r?.y) ? { x: r.x, y: r.y } : q; } catch { return q; } }; doc.fills = doc.fills.map(fl => followFills.has(fl.id) ? { ...fl, points: fl.points.map(mv), holes: (fl.holes || []).map(h => h.map(mv)) } : holeFollow.has(fl.id) ? { ...fl, holes: fl.holes.map((h, i) => holeFollow.get(fl.id)[i] ? h.map(mv) : h) } : fl); }   /* 囲む図形（輪郭に接している生きている図形）を全部動かしたら、領域の塗りもついていく */
     const paths=new Set(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>p.id));
-    const alone=h=>!paths.has(h.pathId)&&selected.has(h.id)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
+    const alone=h=>!paths.has(h.pathId)&&isSelHole(h)&&holeEditable(h); /* 線が選ばれていない（箱からはみ出した等）のに、菱目だけ選んでいるとき：その菱目も、選んだ図形といっしょに動かす（不具合記録 2026-10-17：線と菱目を選んで動かしたら線しか動かなかった） */
     doc.holes=doc.holes.map(h=>paths.has(h.pathId)||alone(h)?fn(h):h);
     for(const h of doc.holes.filter(h=>paths.has(h.pathId)||alone(h))){const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));if(route)h.s=projectOnPath(route,h).s;}
     for(const saved of doc.paths.filter(p=>paths.has(p.id))){
@@ -8382,7 +8391,7 @@ function drawSheetBody(lo, hi) {
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
-    ctx.fillStyle = ctx.strokeStyle = selected.has(h.id) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
+    ctx.fillStyle = ctx.strokeStyle = isSelHole(h) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
     if (kind === 'dot') { ctx.strokeStyle = ctx.fillStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.beginPath(); ctx.arc(0, 0, Math.max(w / 2, DOT_MIN_PX / scale), 0, Math.PI * 2); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 1 / scale; ctx.stroke(); }   /* 点の穴は、点の直径どおりの丸も描く（書き出しの形）。縮小で小さすぎるときだけ、画面で見える最小の大きさにする */
     else if (kind === 'slit') { ctx.lineWidth = halfDepth ? Math.max(0.1, heightMM / 2) : heightMM; ctx.stroke(); } else if (halfDepth || (kind === 'diamond' && diamondMode() === 'line')) { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();
     if (halfDepth && kind !== 'dot') { ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(w, heightMM) * 0.15), 0, Math.PI * 2); ctx.fill(); }   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
