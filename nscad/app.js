@@ -6995,7 +6995,7 @@ function syncMarkLines() {
   for (const s of doc.shapes) if (s.markOf && !doc.holes.some(h => h.id === s.markOf)) delete s.markOf; /* 目印の穴がなくなった線は、普通の点線にする */
 }
 /** 直線に置き換わった目印の記号は、画面に描かず・クリックの対象にもしない（直線のほうを使う）。 */
-const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId);
+const markHidden = h => !!h.lineId && doc.shapes.some(s => s.id === h.lineId && visible(s));   /* 直線が見えていないとき（表示の「点線」を切った・層を隠した）は、記号を隠さず、点の丸を描く（事業主 2026-10-30「知らないうちに菱目がすべて消えている」：点の穴1032個が点線の直線に置き換わり、点線の表示が切れていて、図面から穴が消えたように見えた） */
 /** 寸法の追従（事業主指示 2026-10-17：寸法は、実際の図形が変化したら追従して数値を変える）。寸法の端が図形の点（snapPoints の k 番目：端点・中心など）と一致していれば、anchors＝[{id, k}｜null, …] に覚える。
  *  図形が変わると、覚えた点の新しい位置へ、寸法の端を動かす（数値は座標から出すので、自動で変わる）。寸法そのものを（図形と別に）動かしたら外す。図形といっしょに動かした（追従の位置と同じ）なら保つ。三つ折りの設計が作る寸法（foldSec）は対象外。 */
 /** 寸法が覚える点の一覧：図形の吸着点（snapPoints）。円は、中心（0番）のほかに、縁の8点（45度ごと・1〜8番）も（画面の金色の点と同じ・2026-10-17 事業主指摘）。 */
@@ -8629,11 +8629,13 @@ canvas.addEventListener('pointerdown', e => {
     cancelSpanClick();
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
-      const oneOfGroup = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && !groupIsWhole(hit);   /* Ctrl+クリック（Mac は ⌘）：グループの中の、押した図形1個だけ（事業主 2026-10-26「円だけ消したい。パッチの境界がすべて反応してしまう」） */
-      if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
+      const ctrlOn = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey, wasSel = selected.has(hit.id), ctrlMulti = ctrlOn && selected.size > 0 && !(wasSel && groupIdOf(hit));   /* Ctrl+クリックで複数選択（事業主 2026-10-30「複数の線を Ctrl を押しながら選択しても選択できない」）：何か選んである間は、押した図形を1つ足す（グループは展開しない）。選択済みの図形は、動かさずに離すと外す。選択済みのグループの図形を押したときだけ、今までどおり「その1個だけ」 */
+      const oneOfGroup = ctrlOn && !groupIsWhole(hit);   /* Ctrl+クリック（Mac は ⌘）：グループの中の、押した図形1個だけ（事業主 2026-10-26「円だけ消したい。パッチの境界がすべて反応してしまう」） */
+      if (ctrlMulti) { if (!wasSel) { selected = new Set([...selected, hit.id]); nodeSel = null; } }
+      else if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
       else if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = t('groupPickedHint', { n: selected.size }); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
       if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
-      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
+      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}), ...(ctrlMulti && wasSel ? { ctrlToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
@@ -8980,6 +8982,7 @@ canvas.addEventListener('pointerup', e => {
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
+    else if (g.ctrlToggle) selected.delete(g.ctrlToggle);   /* Ctrl を押したまま選択済みの図形をクリックだけ：その1つを選択から外す */
     else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
     else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
