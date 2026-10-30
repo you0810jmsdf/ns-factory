@@ -75,7 +75,8 @@ let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ stor
 const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
 const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別のブラウザタブが主）の自動保存の置き場。主の置き場（AUTOSAVE_KEY）を上書き・削除しないための別のキー（2026-10-28 事業主「更新したら作業中の作図が消えた」：副のタブで描いた分が自動保存に乗っていなかった） */
 let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
-let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
+let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';
+let lastAutosaveSigs = [];   /* 直近の自動保存に入れた、タブごとの図面の署名（履歴の保管に添える：時刻が違っても、図面が同じなら履歴を使える） */   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
@@ -1221,7 +1222,7 @@ function flushAutosave() {
   const primary = tabIsPrimary(), key = primary ? AUTOSAVE_KEY : AUTOSAVE_SUB_KEY;   /* 副のタブは別の置き場へ（主の自動保存・元に戻す履歴は上書き・削除しない）。以前は副では保存しなかったので、再読み込みで描いた分が消えた */
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; lastAutosaveAt = r.savedAt; scheduleUndoSave(r.savedAt); }   /* 履歴も、主は主の置き場・副は副の置き場へ（scheduleUndoSave が決める） */
+    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; lastAutosaveAt = r.savedAt; lastAutosaveSigs = tabs.map(tb => docSig(JSON.stringify(tb.doc))); scheduleUndoSave(r.savedAt); }   /* 履歴も、主は主の置き場・副は副の置き場へ（scheduleUndoSave が決める） */
     else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; clearUndoRecord(primary ? undefined : UST_SUB_KEY).catch(() => {}); }   /* 副は、副の置き場だけ消す（主の履歴・ファイルの行き先は残す） */
     else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
   } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
@@ -1229,19 +1230,24 @@ function flushAutosave() {
 /** 自動保存に乗っていない未保存の変更があるか（大きすぎ・保存できないとき）。閉じる・更新・再読み込みの前の確認に使う。 */
 const unsavedNotAutosaved = () => autosaveState !== 'ok' && tabs.some(tb => tb.dirty);
 /** 元に戻す履歴の保管（事業主指示 2026-10-17：再起動しても Undo が残る）：自動保存の2秒後に、全タブの履歴を圧縮して IndexedDB へ。自動保存と同じ時刻（savedAt）を付け、復元のときは時刻が合うものだけ使う（図面とずれた履歴で戻して、作業を失わないため）。 */
+/** 図面の中身の署名（文字数＋FNV-1a）。元に戻す履歴が「いまの図面のもの」かを、時刻でなく中身で見分ける（2026-10-30 事業主「Undo ができない。更新してもできるように」：「更新する」・再読み込みの直前の自動保存は、図面が同じでも新しい時刻になり、2秒あとに保管する履歴の時刻と合わず、履歴が捨てられていた）。 */
+const docSig = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return text.length + ':' + (h >>> 0).toString(36); };
 function scheduleUndoSave(savedAt) {
   if (undoAttaching || typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(undoSaveTimer);
+  const sigs = lastAutosaveSigs.slice();   /* この時刻の自動保存の図面の署名 */
   const stacks = tabs.map(tb => ({ undo: tb.undo.slice(), redo: tb.redo.slice() })); /* その時点の履歴を控える（2秒のあいだに増えても、この時刻の図面に合う分だけ） */
   const handles = tabs.map(tb => tb.fileHandle || null); /* 保存したファイルの行き先も、同じ時刻の分を控える */
   const primary = tabIsPrimary(); /* 副のタブ（別のブラウザタブが主）は、副の置き場へ（主の履歴を上書きしない）。ファイルの行き先は主だけ（副の自動保存の置き場とは別の組なので、主の行き先を上書きしない） */
-  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }, primary ? undefined : UST_SUB_KEY); } catch { /* 保管できない環境では何もしない */ } if (primary) { try { await saveFilesRecord({ savedAt, handles }); } catch { /* 行き先を保管できなくても、履歴・図面はそのまま */ } } }, 2000);
+  undoSaveTimer = setTimeout(async () => { try { await saveUndoRecord({ savedAt, sigs, tabs: await Promise.all(stacks.map(st => st.undo.length || st.redo.length ? encodeStacks(st) : null)) }, primary ? undefined : UST_SUB_KEY); } catch { /* 保管できない環境では何もしない */ } if (primary) { try { await saveFilesRecord({ savedAt, handles }); } catch { /* 行き先を保管できなくても、履歴・図面はそのまま */ } } }, 2000);
 }
 /** 「前回の続き」で復元したタブに、保管した履歴を戻す。時刻が合わない・もう編集を始めた（履歴が空でない）タブには戻さない。 */
 async function attachSavedUndo(info, base) {
   undoAttaching = true;
   try {
-    const rec = await loadUndoRecord(info.key === AUTOSAVE_SUB_KEY ? UST_SUB_KEY : undefined); if (!rec || rec.savedAt !== info.savedAt || !Array.isArray(rec.tabs)) return;   /* 副の保存から開くときは、副の置き場の履歴 */
+    const rec = await loadUndoRecord(info.key === AUTOSAVE_SUB_KEY ? UST_SUB_KEY : undefined); if (!rec || !Array.isArray(rec.tabs)) return;   /* 副の保存から開くときは、副の置き場の履歴 */
+    const timeOk = rec.savedAt === info.savedAt;   /* 時刻が合う、または、そのタブの図面の中身（署名）が履歴を保管したときと同じなら、使う */
     for (let i = 0; i < info.tabs.length; i++) {
+      if (!timeOk && !(Array.isArray(rec.sigs) && rec.sigs[i] && rec.sigs[i] === info.sigs?.[i])) continue;
       const st = rec.tabs[i] ? await decodeStacks(rec.tabs[i]) : null, idx = base + i, tb = tabs[idx]; if (!st || !tb) continue;
       const cur = idx === activeTab ? undo : tb.undo; if (cur.length || (idx === activeTab ? redo : tb.redo).length) continue;
       tb.undo = st.undo; tb.redo = st.redo; if (idx === activeTab) { undo = tb.undo; redo = tb.redo; }
@@ -1282,6 +1288,7 @@ function showRestoreOffer(info) {
 }
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
+  info.sigs = info.tabs.map(tb => docSig(JSON.stringify(tb.doc)));   /* 図面を整える（migrateDoc など）前の中身の署名：保管した履歴と照らす */
   if (info.key === AUTOSAVE_SUB_KEY) { try { localStorage.removeItem(AUTOSAVE_SUB_KEY); } catch { /* 無視 */ } }   /* 副の保存は、戻したら片付ける（主の保存は、次の自動保存が上書きする） */
   const nextUp = readRestoreCandidates(restoreKeysNow().filter(k => k !== info.key))[0] || null;   /* 主の保存と副の保存の両方があったときの、もう一方（復元のあとの自動保存が上書きする前に読んでおく） */
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
@@ -7844,7 +7851,8 @@ function beginMoveSnap(g) {
   const all = m => [...m.ends, ...m.centers, ...m.guide], mine = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && g.ids.has(s.id))));
   let near = reach, base = null; for (const c of mine) { const d = distance(g.start, c); if (d < near) { near = d; base = c; } }
   g.mine = mine; g.targets = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id))));
-  mine.push(...helperCrosses(doc.shapes.filter(s => visible(s) && g.ids.has(s.id) && isHelperLine(s)))); g.targets.push(...helperCrosses(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id) && !s.holeLink && isHelperLine(s))));   /* 点線・ガイドの十字の交点どうし */
+  g.ownCross = helperCrosses(doc.shapes.filter(s => visible(s) && g.ids.has(s.id) && isHelperLine(s))); g.tgtCross = helperCrosses(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id) && !s.holeLink && isHelperLine(s)));   /* 点線・ガイドの十字の交点：端・中点などの候補とは別の組にして、交点どうしを先に合わせる（近くの別の点に取られない） */
+  g.targetsByX = g.targets.slice().sort((a, b) => a.x - b.x);   /* 相手の点を x の順に並べる：近くの点だけを調べる（点が多い図面でも、磁石が止まらないように） */
   g.edges = moveEdgesOf(g.ids);
   if (base) { g.start = { ...base }; g.hasBase = true; } /* 基点が無い（点から離れた所をつかんだ）ときも、動かす図形の端・中点・中心が、相手の点に合う（movePosition） */
 }
@@ -7868,12 +7876,18 @@ function moveDelta() { return { x: cursor.x - gesture.start.x, y: cursor.y - ges
 /** free：Alt を押している間は「吸着なし」（事業主決定 2026-10-21 A案）：端・中点・中心の点どうしの磁石と、辺どうしの吸着を切る。グリッドのスナップ（「スナップ」のチェック）と Shift の固定は、そのまま。 */
 function movePosition(p, shift, free = false) {
   const start = gesture.start; gesture.edgeSnap = null;
+  if (!free && !shift && gesture.ownCross?.length && gesture.tgtCross?.length) {   /* 交点どうし（十字の中心）を先に合わせる（事業主 2026-10-30「交点どうしが重ならない」「近くの交点どうしでなんで複数候補が出るの？」） */
+    const reach = magnetRadiusMm(), d0 = { x: p.x - start.x, y: p.y - start.y }; let near = reach, hit = null;
+    if (reach > 0) for (const m of gesture.ownCross) for (const c of gesture.tgtCross) { const ex = c.x - (m.x + d0.x), ey = c.y - (m.y + d0.y), d = Math.hypot(ex, ey); if (d < near) { near = d; hit = { c, ex, ey }; } }
+    if (hit) { snap = hit.c; return { x: start.x + d0.x + hit.ex, y: start.y + d0.y + hit.ey }; }
+  }
   if (!free && gesture.hasBase && gesture.targets?.length && !shift) { const reach = magnetRadiusMm(); let near = reach, hit = null; for (const c of gesture.targets) { const d = distance(p, c); if (d < near) { near = d; hit = c; } } if (hit) { snap = hit; return { ...hit }; } } /* 基点を持って動かしているとき：相手の点の近くでは、基点がその点にぴたりと合う */
   const own = gesture.mine, tg = gesture.targets, reachMm = magnetRadiusMm();
-  if (!free && own?.length && tg?.length && reachMm > 0 && own.length * tg.length <= 4e5 && (!gesture.hasBase || shift)) { /* 動かす図形の点（端・中点・中心）のどれかが、相手の点に近づいたら、ぴたりと合わせる。Shift（水平・垂直）のときは、動かせる向きの位置だけを合わせる */
+  if (!free && own?.length && tg?.length && reachMm > 0 && (!gesture.hasBase || shift) && (!shift || own.length * tg.length <= 4e5)) { /* 動かす図形の点（端・中点・中心）のどれかが、相手の点に近づいたら、ぴたりと合わせる。Shift（水平・垂直）のときは、動かせる向きの位置だけを合わせる */
     const d0 = { x: p.x - start.x, y: p.y - start.y }; let axis = null; if (shift) { axis = Math.abs(d0.x) >= Math.abs(d0.y) ? 'x' : 'y'; if (axis === 'x') d0.y = 0; else d0.x = 0; }
     let best = null, bd = reachMm;
-    for (const m of own) for (const c of tg) { const ex = c.x - (m.x + d0.x), ey = c.y - (m.y + d0.y), d = axis === 'x' ? (Math.abs(ey) < reachMm ? Math.abs(ex) : Infinity) : axis === 'y' ? (Math.abs(ex) < reachMm ? Math.abs(ey) : Infinity) : Math.hypot(ex, ey); if (d < bd) { bd = d; best = { c, ex, ey }; } }
+    const win = !axis && gesture.targetsByX, lowerX = x => { let lo = 0, hi = win.length; while (lo < hi) { const mid = (lo + hi) >> 1; if (win[mid].x < x) lo = mid + 1; else hi = mid; } return lo; };   /* 水平・垂直でないときは、相手の点を x の窓だけ調べる（全部と比べない） */
+    for (const m of own) for (let k = win ? lowerX(m.x + d0.x - reachMm) : 0, c; k < (win ? win.length : tg.length) && (c = win ? win[k] : tg[k]) && (!win || c.x <= m.x + d0.x + reachMm); k++) { const ex = c.x - (m.x + d0.x), ey = c.y - (m.y + d0.y), d = axis === 'x' ? (Math.abs(ey) < reachMm ? Math.abs(ex) : Infinity) : axis === 'y' ? (Math.abs(ex) < reachMm ? Math.abs(ey) : Infinity) : Math.hypot(ex, ey); if (d < bd) { bd = d; best = { c, ex, ey }; } }
     if (best) { snap = best.c; return { x: start.x + d0.x + (axis === 'y' ? 0 : best.ex), y: start.y + d0.y + (axis === 'x' ? 0 : best.ey) }; }
   }
   let result = { ...p };
