@@ -1395,7 +1395,7 @@ function initStitch() {
   $('clearHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles(true).map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.segments=[]);selected.clear();manualNext=null;});
   $('clearPathHoles').onclick=()=>commit(()=>{const ids=new Set(affectedHoles().map(h=>h.id));doc.holes=doc.holes.filter(h=>!ids.has(h.id));selected.clear();manualNext=null;});
   $('selectedDots').onclick=()=>markHoles('dot');$('allDots').onclick=()=>markHoles('dot',true);
-  $('restoreMarks').onclick=()=>commit(()=>{affectedHoles(true).forEach(h=>{h.mark='tool';delete h.noLine;});doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.mark='tool');doc.mark='tool';$('defaultMark').value='tool';});
+  $('restoreMarks').onclick=()=>commit(()=>{const gone=new Set();affectedHoles(true).forEach(h=>{h.mark='tool';delete h.noLine;if(h.lineId){gone.add(h.lineId);delete h.lineId;}});if(gone.size){doc.shapes=doc.shapes.filter(s=>!(gone.has(s.id)&&s.markOf));for(const id of gone)selected.delete(id);}   /* 点の穴ごとの点線の直線（目印の直線）は、片付ける：菱目に戻したあとも点線が残らない（事業主 2026-10-30「菱目が〇となってしまっている。菱目で戻して」） */doc.paths.filter(p=>p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id)))).forEach(p=>p.mark='tool');doc.mark='tool';$('defaultMark').value='tool';});
   $('applyMark').onclick=()=>markHoles($('holeMark').value);
   $('applyAngle').onclick=()=>{const a=Number($('holeAngle').value);if(Number.isFinite(a))commit(()=>affectedHoles().forEach(h=>h.angleDeg=a));};
   $('flipSlant').onclick=()=>commit(()=>affectedHoles().forEach(h=>{const route=resolvePath(doc,doc.paths.find(p=>p.id===h.pathId));const tangent=$('followTangent').checked?pointAtLength(route,h.s).angleDeg:0;h.angleDeg=2*tangent-h.angleDeg;}));
@@ -9001,11 +9001,12 @@ canvas.addEventListener('pointerup', e => {
       if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
-      for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) selected.add(s.id); }
+      let boxShapes = 0; for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) { selected.add(s.id); boxShapes++; } }
       /* 囲みの中の図形だけを選ぶ。グループ全体になるのは、アプリが作った一式（金具・折り目の断面図）だけ：一部だけ動かすと壊れるため。自分で「グループ化」した型紙・点線のグループは、囲みの中の図形だけ（事業主指示 2026-10-21：右の図形だけ囲んだのに、同じグループの左の点線の輪・菱目まで動いた・消えた。不具合記録 1528・1530）。クリックは今までどおりグループ全体 */
       const wholeGroups = new Set(doc.shapes.filter(s => groupIdOf(s) && (isHardwareShape(s) || s.hwSection || s.hwFor || s.foldSec || s.layer === 'section')).map(groupIdOf));
       if (wholeGroups.size) { const hit = new Set(doc.shapes.filter(s => selected.has(s.id) && wholeGroups.has(groupIdOf(s))).map(groupIdOf)); for (const s of doc.shapes) if (hit.has(groupIdOf(s))) selected.add(s.id); }
-      for (const h of doc.holes) if (holeVisible(h) && holeEditable(h) && !markHidden(h) && h.x >= minX && h.x <= maxX && h.y >= minY && h.y <= maxY) selected.add(h.id); /* 囲んだ範囲の穴（菱目）も選ぶ（事業主指示 2026-10-16）。中心が範囲の中にあるもの */
+      const pathInBox = new Map(), lineInBox = pid => { if (!pathInBox.has(pid)) { const q = doc.paths.find(x => x.id === pid), sh = q ? q.shapeIds.map(id => doc.shapes.find(x => x.id === id)).filter(Boolean) : []; pathInBox.set(pid, sh.every(x => { const b = bboxOf(x); return b.minX >= minX - 1e-6 && b.maxX <= maxX + 1e-6 && b.minY >= minY - 1e-6 && b.maxY <= maxY + 1e-6; })); } return pathInBox.get(pid); };
+      for (const h of doc.holes) if (holeVisible(h) && holeEditable(h) && !markHidden(h) && h.x >= minX && h.x <= maxX && h.y >= minY && h.y <= maxY && (!boxShapes || lineInBox(h.pathId))) selected.add(h.id); /* 囲んだ範囲の穴（菱目）も選ぶ（事業主指示 2026-10-16）。中心が範囲の中にあるもの。ただし、範囲の中に図形が入っているときは、その穴の縫い線がぜんぶ範囲に入っているものだけ（事業主 2026-10-30「選択したい図形だけ動かしたり、コピーしたいのに関係ない菱目がついてくる」：スロットなど一部の図形だけを囲んでも、まわりの縫い穴が付いてきた）。穴だけを囲んだとき（図形が入っていない）は、今までどおり範囲の穴を選ぶ */
     }
   } else if (g.kind === 'draw' && mode === 'arc' && arcHalf()) {
     stage = { kind: 'half', pts: [g.start] }; $('hint').textContent = t('arcHalfHint');
