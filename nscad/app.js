@@ -5075,16 +5075,25 @@ function centerOnStart(axes) {
   centerOnAxes = axes; setMode('centerOn'); $('hint').textContent = t('centerOnStart');
 }
 /** 点線・ガイドの線が交わる所（十字・T字）のうち、p の近く（画面12px以内）で一番近い交点（事業主 2026-10-29「上下方向です」：十字の交点に中心を合わせたい）。どちらの線も端で出会う所（点線の長方形の角など）は含めない。 */
+/** 2本の直線 a・b が交わる点（十字・T字の交点）。端と端が触れるだけの角・平行・交わらないときは null。 */
+function lineCross(a, b) {
+  const rx = a.x2 - a.x1, ry = a.y2 - a.y1, sx = b.x2 - b.x1, sy = b.y2 - b.y1, den = rx * sy - ry * sx; if (Math.abs(den) < 1e-9) return null;
+  const t = ((b.x1 - a.x1) * sy - (b.y1 - a.y1) * sx) / den, u = ((b.x1 - a.x1) * ry - (b.y1 - a.y1) * rx) / den, ea = 0.01 / Math.hypot(rx, ry), eb = 0.01 / Math.hypot(sx, sy);
+  if (t < -ea || t > 1 + ea || u < -eb || u > 1 + eb || ((t <= ea || t >= 1 - ea) && (u <= eb || u >= 1 - eb))) return null;
+  return { x: a.x1 + rx * t, y: a.y1 + ry * t };
+}
 function helperCrossNear(p, lines) {
   let best = null, bd = 12 / scale;
-  for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) {
-    const a = lines[i], b = lines[j], rx = a.x2 - a.x1, ry = a.y2 - a.y1, sx = b.x2 - b.x1, sy = b.y2 - b.y1, den = rx * sy - ry * sx; if (Math.abs(den) < 1e-9) continue;
-    const t = ((b.x1 - a.x1) * sy - (b.y1 - a.y1) * sx) / den, u = ((b.x1 - a.x1) * ry - (b.y1 - a.y1) * rx) / den, ea = 0.01 / Math.hypot(rx, ry), eb = 0.01 / Math.hypot(sx, sy);
-    if (t < -ea || t > 1 + ea || u < -eb || u > 1 + eb || ((t <= ea || t >= 1 - ea) && (u <= eb || u >= 1 - eb))) continue;
-    const q = { x: a.x1 + rx * t, y: a.y1 + ry * t }, d = distance(p, q); if (d <= bd) { bd = d; best = q; }
-  }
+  for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) { const q = lineCross(lines[i], lines[j]); if (!q) continue; const d = distance(p, q); if (d <= bd) { bd = d; best = q; } }
   return best;
 }
+/** 点線・ガイドの直線どうしの交点を全部（事業主 2026-10-30「交点どうしが合わせられない」：磁石は線の端・中点・中心だけで、十字の交点そのものには合わなかった。線の真ん中で交わらない十字では、中点どうしを合わせても交点どうしは合わない）。線が多すぎるとき（120本超）は作らない。 */
+function helperCrosses(lines) {
+  const out = []; if (lines.length > 120) return out;
+  for (let i = 0; i < lines.length; i++) for (let j = i + 1; j < lines.length; j++) { const q = lineCross(lines[i], lines[j]); if (q) out.push(q); }
+  return out;
+}
+const isHelperLine = s => s.type === 'line' && (s.lineStyle === 'dashed' || s.layer === 'guide');
 function centerOnClick(p) {
   const ids = selectedShapeIds(); if (!ids.size) { setMode('select'); $('hint').textContent = t('centerOnNeedSelect'); return; }
   const skip = s => ids.has(s.id) || s.holeLink || !visible(s) || ['text', 'dimension', 'image', 'fold'].includes(s.type);
@@ -5099,7 +5108,8 @@ function centerOnClick(p) {
   }
   if (!tb) { $('hint').textContent = t('centerOnNoTarget'); return; }
   /* 動かす図形の中心は、実線の図形（本体）だけで測る：点線・ガイドの層・寸法・文字（十字の目印・折り目の線・寸法など）を含めると、それが外形からはみ出している分だけ中心がずれる（事業主 2026-10-25「クロスの点線を作図しても２つの図形の中心を合わせられない」「4mm動かしただけなのにだいぶずれる」：本体の横に置いた十字の点線が、選んだ図形の外接の四角を広げて、約2.5mm左へずれた）。動かすのは、選んだ図形ぜんぶ。本体が1つも無ければ（点線だけを選んだとき）、選んだぜんぶで測る */
-  const movers = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image'), isHelper = s => s.lineStyle === 'dashed' || s.layer === 'guide' || ['text', 'dimension', 'fold'].includes(s.type), body = movers.filter(s => !isHelper(s)), sb = boxOf(body.length ? body : movers); if (!sb) return;
+  const movers = doc.shapes.filter(s => ids.has(s.id) && !s.holeLink && s.type !== 'image'), isHelper = s => s.lineStyle === 'dashed' || s.layer === 'guide' || ['text', 'dimension', 'fold'].includes(s.type), body = movers.filter(s => !isHelper(s)); let sb = boxOf(body.length ? body : movers); if (!sb) return;
+  const ownCross = crossPoint ? helperCrosses(movers.filter(isHelperLine)) : []; if (ownCross.length === 1) sb = { minX: ownCross[0].x, maxX: ownCross[0].x, minY: ownCross[0].y, maxY: ownCross[0].y };   /* 相手が交点のとき、動かす図形に自分の十字（点線の交点）が1つあれば、その交点を基準にする（交点どうしを合わせる） */
   const bw = tb.maxX - tb.minX, bh = tb.maxY - tb.minY, onlyY = !crossPoint && bh <= 0.01 && bw > 0.01, onlyX = !crossPoint && bw <= 0.01 && bh > 0.01;   /* まっすぐな線（横＝高さ0・縦＝幅0）は、その線に直角な方向だけ合わせる（線に沿った方向の「真ん中」に意味はない） */
   const dx = centerOnAxes.includes('x') && !onlyY ? (tb.minX + tb.maxX) / 2 - (sb.minX + sb.maxX) / 2 : 0, dy = centerOnAxes.includes('y') && !onlyX ? (tb.minY + tb.maxY) / 2 - (sb.minY + sb.maxY) / 2 : 0;
   setMode('select'); if (Math.abs(dx) < 0.005 && Math.abs(dy) < 0.005) { $('hint').textContent = t('centerOnAlready'); return; }
@@ -7834,6 +7844,7 @@ function beginMoveSnap(g) {
   const all = m => [...m.ends, ...m.centers, ...m.guide], mine = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && g.ids.has(s.id))));
   let near = reach, base = null; for (const c of mine) { const d = distance(g.start, c); if (d < near) { near = d; base = c; } }
   g.mine = mine; g.targets = all(magnetPointsOf(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id))));
+  mine.push(...helperCrosses(doc.shapes.filter(s => visible(s) && g.ids.has(s.id) && isHelperLine(s)))); g.targets.push(...helperCrosses(doc.shapes.filter(s => visible(s) && !g.ids.has(s.id) && !s.holeLink && isHelperLine(s))));   /* 点線・ガイドの十字の交点どうし */
   g.edges = moveEdgesOf(g.ids);
   if (base) { g.start = { ...base }; g.hasBase = true; } /* 基点が無い（点から離れた所をつかんだ）ときも、動かす図形の端・中点・中心が、相手の点に合う（movePosition） */
 }
