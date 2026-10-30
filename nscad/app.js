@@ -1247,11 +1247,17 @@ function flushAutosave() {
     else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; clearUndoRecord(primary ? undefined : UST_SUB_KEY).catch(() => {}); }   /* 副は、副の置き場だけ消す（主の履歴・ファイルの行き先は残す） */
     else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
   } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
+  syncAutosaveBar();
 }
 /** 保存待ち（変更から1.5秒）のまま閉じても最後の変更が残るよう、閉じる・隠れる直前に待たずに保存する（事業主指示 2026-10-30）。待ちが無ければ何もしない。 */
 function flushPendingAutosave() { if (!autosaveTimer) return; try { flushAutosave(); } catch { /* 保存できなくても閉じる処理は止めない */ } }
 /** 自動保存に乗っていない未保存の変更があるか（大きすぎ・保存できないとき）。閉じる・更新・再読み込みの前の確認に使う。 */
 const unsavedNotAutosaved = () => autosaveState !== 'ok' && tabs.some(tb => tb.dirty);
+/** 自動保存に乗っていない未保存があるあいだ、消えない赤い帯を出す（事業主 2026-10-30 提案1）。1回だけ出て消える案内では、気づかないまま閉じて失うため。保存が効くか、ファイルに保存して未保存でなくなると消える。 */
+function syncAutosaveBar() {
+  const bar = $('autosaveBar'); if (!bar) return; const show = unsavedNotAutosaved(); bar.hidden = !show; if (!show) return;
+  $('autosaveBarText').textContent = t(autosaveState === 'tooLarge' ? 'autosaveBarTooLarge' : 'autosaveBarError'); const mt = $('multiTabBar'); bar.style.top = mt && !mt.hidden ? '112px' : '52px';   /* 別タブの警告と重ならないよう下げる */
+}
 /** 元に戻す履歴の保管（事業主指示 2026-10-17：再起動しても Undo が残る）：自動保存の2秒後に、全タブの履歴を圧縮して IndexedDB へ。自動保存と同じ時刻（savedAt）を付け、復元のときは時刻が合うものだけ使う（図面とずれた履歴で戻して、作業を失わないため）。 */
 /** 図面の中身の署名（文字数＋FNV-1a）。元に戻す履歴が「いまの図面のもの」かを、時刻でなく中身で見分ける（2026-10-30 事業主「Undo ができない。更新してもできるように」：「更新する」・再読み込みの直前の自動保存は、図面が同じでも新しい時刻になり、2秒あとに保管する履歴の時刻と合わず、履歴が捨てられていた）。 */
 const docSig = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return text.length + ':' + (h >>> 0).toString(36); };
@@ -4726,7 +4732,7 @@ function pasteText(text, at = null) {
 // タブ：文書ごとに undo/redo/選択を持つ
 function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { doc, undo, redo, selected, activeLayer, scale, origin }); }
 function renderTabs() {
-  scheduleAutosave();
+  scheduleAutosave(); syncAutosaveBar();
   const bar = $('tabBar'); bar.textContent = '';
   tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip'); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1) { const x = document.createElement('span'); x.className = 'tabX'; x.textContent = '×'; x.title = t('tabClose'); x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
   bar.ondblclick = e => { const t0 = e?.target, b = t0?.closest ? t0.closest('button') : t0; if (!b || t0?.className === 'tabX' || t0?.closest?.('.tabX')) return; const i = [...bar.children].indexOf(b); return i >= 0 ? openTabFolder(tabs[i]) : undefined; };   /* ダブルクリックは、タブの並び全体で受ける（1回目のクリックでタブを描き直すため、ボタンごとに付けると取りこぼす） */
@@ -9266,6 +9272,7 @@ initHdrMenus();
 try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+$('autosaveBarSave').onclick = () => save();
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
