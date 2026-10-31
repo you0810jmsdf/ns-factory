@@ -114,9 +114,9 @@
     var daily = d.daily || {}, keys = Object.keys(daily).sort(), i, set = {};
     if (win === 'd7') { for (i = 0; i < 7; i++) set[dayKeyOf(d.now - i * 86400000)] = 1; keys = keys.filter(function (k) { return set[k]; }); }
     else if (win !== 'all') keys = keys.filter(function (k) { return k === dayKeyOf(d.now); });
-    var r = { v: [], u: [], visitors: 0, pressers: 0, days: keys.length };
+    var r = { v: [], u: [], visitors: 0, pressers: 0, real: 0, days: keys.length };
     for (i = 0; i < 24; i++) { r.v.push(0); r.u.push(0); }
-    keys.forEach(function (k) { var o = daily[k]; for (i = 0; i < 24; i++) { r.v[i] += o.v[i] || 0; r.u[i] += o.u[i] || 0; } r.visitors += o.visitors || 0; r.pressers += o.pressers || 0; });
+    keys.forEach(function (k) { var o = daily[k]; for (i = 0; i < 24; i++) { r.v[i] += o.v[i] || 0; r.u[i] += o.u[i] || 0; } r.visitors += o.visitors || 0; r.pressers += o.pressers || 0; r.real += o.real || 0; });
     return r;
   }
   function hourChart(title, values, color) {
@@ -142,12 +142,47 @@
     var cards = el('div', 'display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px');
     var multi = h.days > 1, rate = h.visitors ? Math.round(h.pressers / h.visitors * 100) + '%' : '―';
     cards.appendChild(card('開いた端末', String(h.visitors), multi ? '日ごとの合計（' + h.days + '日分）' : '画面を開いた端末の数'));
-    cards.appendChild(card('そのうち押した端末', String(h.pressers), '何かの機能を使った端末'));
-    cards.appendChild(card('押した割合', rate, '押した端末 ÷ 開いた端末'));
+    cards.appendChild(card('そのうち何か押した端末', String(h.pressers), '押した割合 ' + rate));
+    cards.appendChild(card('本格的に使った端末', String(h.real), '開いた端末のうち ' + (h.visitors ? Math.round(h.real / h.visitors * 100) + '%' : '―')));
     els.hours.appendChild(cards);
+    els.hours.appendChild(breakdown(h));
     if (!h.visitors) els.hours.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:4px 0 8px', 'この期間は、作家の端末以外で N\'s CAD が開かれた記録がまだありません。'));
     els.hours.appendChild(hourChart('開いた端末（時間帯別・その日の初回）', h.v, '#c9a96e'));
     els.hours.appendChild(hourChart('押した回数（時間帯別）', h.u, '#8B5E3C'));
+    els.hours.appendChild(weekChart(d));
+  }
+  /* 開いた端末の内訳：開いただけ／軽い操作だけ（ツアーのスキップ・更新通知・前回の続きの確認・更新履歴）／本格的に使った */
+  function breakdown(h) {
+    var wrap = el('div', 'margin:4px 0 12px'), look = Math.max(0, h.visitors - h.pressers), light = Math.max(0, h.pressers - h.real), tot = Math.max(1, h.visitors);
+    var parts = [['開いただけ', look, '#e3d6c4'], ['軽い操作だけ（ツアーのスキップ・更新通知など）', light, '#c9a96e'], ['本格的に使った', h.real, '#8B5E3C']];
+    wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', '開いた端末の内訳'));
+    var bar = el('div', 'display:flex;height:16px;border-radius:8px;overflow:hidden;background:#f5ece1');
+    parts.forEach(function (x) { if (x[1]) { var seg = el('span', 'display:block;height:100%;background:' + x[2] + ';width:' + (x[1] / tot * 100) + '%'); seg.title = x[0] + '：' + x[1]; bar.appendChild(seg); } });
+    wrap.appendChild(bar);
+    var lg = el('div', 'display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#8a6a4a;margin-top:4px');
+    parts.forEach(function (x) { var t = el('span', '', ''); t.appendChild(el('span', 'display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:' + x[2])); t.appendChild(document.createTextNode(x[0] + ' ' + x[1])); lg.appendChild(t); });
+    wrap.appendChild(lg); return wrap;
+  }
+  /* 曜日別（日本時間）：記録のある全部の日を曜日ごとに足し、1日あたりの平均で出す（その曜日の日数が違っても比べられる）。窓の選択には連動しない */
+  function weekChart(d) {
+    var names = ['日', '月', '火', '水', '木', '金', '土'], acc = names.map(function () { return { days: 0, v: 0, real: 0 }; });
+    Object.keys(d.daily || {}).forEach(function (k) {
+      var o = d.daily[k], w = new Date(Date.UTC(+k.slice(0, 4), +k.slice(4, 6) - 1, +k.slice(6, 8))).getUTCDay(); acc[w].days++; acc[w].v += o.visitors || 0; acc[w].real += o.real || 0;
+    });
+    var wrap = el('div', 'margin:6px 0 4px'); wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', '曜日別（1日あたりの平均・記録のある全部の日）'));
+    var avg = function (x, key) { return x.days ? Math.round(x[key] / x.days * 10) / 10 : 0; }, max = 0;
+    acc.forEach(function (x) { max = Math.max(max, avg(x, 'v'), avg(x, 'real')); }); max = max || 1;
+    var row = el('div', 'display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:end;height:84px;border-bottom:1px solid #eadccf');
+    acc.forEach(function (x, i) {
+      var col = el('div', 'display:flex;gap:3px;align-items:flex-end;justify-content:center;height:100%'), a = avg(x, 'v'), b = avg(x, 'real'); col.title = names[i] + '曜日（' + x.days + '日分）：開いた ' + a + '／本格的に使った ' + b;
+      [[a, '#c9a96e'], [b, '#8B5E3C']].forEach(function (y) { var c = el('div', 'display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:9px;color:#8a6a4a;width:42%'); if (y[0]) c.appendChild(el('span', '', String(y[0]))); c.appendChild(el('span', 'display:block;width:100%;border-radius:2px 2px 0 0;background:' + y[1] + ';height:' + (y[0] ? Math.max(3, Math.round(y[0] / max * 58)) : 0) + 'px')); col.appendChild(c); });
+      row.appendChild(col);
+    });
+    wrap.appendChild(row);
+    var lab = el('div', 'display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;font-size:10px;color:#a08a74;text-align:center');
+    acc.forEach(function (x, i) { lab.appendChild(el('span', '', names[i] + '（' + x.days + '日分）')); }); wrap.appendChild(lab);
+    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '左の棒＝開いた端末・右の棒＝本格的に使った端末'));
+    return wrap;
   }
   function tick() {
     if (!running || paused || inflight) return; if (document.visibilityState === 'hidden') { schedule(); return; }
