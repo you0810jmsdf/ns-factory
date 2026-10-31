@@ -55,11 +55,12 @@
     WINDOWS.forEach(function (w) { var b = el('button', '', w[1]); b.type = 'button'; b.dataset.win = w[0]; b.onclick = function () { win = w[0]; render(); }; els.tabs.appendChild(b); });
     mount.appendChild(els.tabs);
     els.rank = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px'); mount.appendChild(els.rank);
+    els.hours = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:12px 14px;margin-bottom:14px'); mount.appendChild(els.hours);
     var rh = el('div', 'font-size:14px;font-weight:700;color:#5C3D2E;margin:0 0 6px', '直近の操作（新しい順）'); mount.appendChild(rh);
     els.recent = el('div', 'background:#fff;border:1px solid #eadccf;border-radius:12px;padding:6px 10px;margin-bottom:12px'); mount.appendChild(els.recent);
     mount.appendChild(el('p', 'font-size:11px;color:#8a6a4a;line-height:1.7;margin:0',
       '端末の印（4文字）は、N\'s CAD を開くたびに作り直す匿名のランダム文字の先頭だけです（氏名・図形・ファイル名は届きません）。同じ人でも、開き直すと別の印になります。機能の名前は、ボタンの id など短い英数字そのままで、分かるものだけ日本語名を添えています。' +
-      '作家の端末（上の緑の帯）の操作は、送られないので数えません。いまの人数は、右下に出る「利用中」と同じ数です。'));
+      '作家の端末（上の緑の帯）の操作は、送られないので数えません。いまの人数は、右下に出る「利用中」と同じ数です。時間帯は日本時間で、「開いた」は、その日に N\'s CAD の画面を開いた端末の数（同じ端末は1日1回）です。'));
     return true;
   }
   function ownerBanner() {
@@ -98,6 +99,7 @@
       var bar = el('span', 'display:block;height:12px;background:#f5ece1;border-radius:6px;overflow:hidden'); var fill = el('span', 'display:block;height:100%;background:#c9a96e;width:' + Math.max(2, Math.round(e[1] / max * 100)) + '%'); bar.appendChild(fill); row.appendChild(bar);
       row.appendChild(el('span', 'text-align:right;font-weight:700;color:#5C3D2E', String(e[1]))); els.rank.appendChild(row);
     });
+    renderHours(d);
     els.recent.textContent = '';
     if (!d.recent.length) els.recent.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:8px 0', 'まだ操作の記録がありません。'));
     d.recent.slice(0, 30).forEach(function (r) {
@@ -105,6 +107,47 @@
       row.appendChild(el('span', 'color:#8a6a4a;font-variant-numeric:tabular-nums', clock(r.t))); row.appendChild(el('span', 'color:#a08a74', ago(r.t, d.now)));
       row.appendChild(el('span', 'color:#a08a74;font-family:monospace', r.id)); var ja = nameOf(r.k); row.appendChild(el('span', 'color:#5C3D2E', ja ? ja + '　' + r.k : r.k)); els.recent.appendChild(row);
     });
+  }
+  /* 時間帯別（日本時間）：中継が日ごとに数えた「開いた端末」「押した端末」「押した回数」を、選んだ窓の分だけ24時間に足す。5分・1時間の窓は、今日の分で見る */
+  function dayKeyOf(t) { return new Date(t + 9 * 3600000).toISOString().slice(0, 10).replace(/-/g, ''); }
+  function hoursOf(d) {
+    var daily = d.daily || {}, keys = Object.keys(daily).sort(), i, set = {};
+    if (win === 'd7') { for (i = 0; i < 7; i++) set[dayKeyOf(d.now - i * 86400000)] = 1; keys = keys.filter(function (k) { return set[k]; }); }
+    else if (win !== 'all') keys = keys.filter(function (k) { return k === dayKeyOf(d.now); });
+    var r = { v: [], u: [], visitors: 0, pressers: 0, days: keys.length };
+    for (i = 0; i < 24; i++) { r.v.push(0); r.u.push(0); }
+    keys.forEach(function (k) { var o = daily[k]; for (i = 0; i < 24; i++) { r.v[i] += o.v[i] || 0; r.u[i] += o.u[i] || 0; } r.visitors += o.visitors || 0; r.pressers += o.pressers || 0; });
+    return r;
+  }
+  function hourChart(title, values, color) {
+    var wrap = el('div', 'margin:6px 0 12px'), max = Math.max.apply(null, values.concat([1]));
+    wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', title));
+    var row = el('div', 'display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px;align-items:end;height:64px;border-bottom:1px solid #eadccf');
+    values.forEach(function (n, h) {
+      var col = el('div', 'display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;font-size:9px;color:#8a6a4a'); col.title = h + '時台：' + n;
+      if (n) col.appendChild(el('span', '', String(n))); col.appendChild(el('span', 'display:block;width:100%;background:' + color + ';border-radius:2px 2px 0 0;height:' + (n ? Math.max(3, Math.round(n / max * 44)) : 0) + 'px')); row.appendChild(col);
+    });
+    wrap.appendChild(row);
+    var lab = el('div', 'display:grid;grid-template-columns:repeat(24,minmax(0,1fr));gap:2px;font-size:9px;color:#a08a74;text-align:center');
+    for (var h = 0; h < 24; h++) lab.appendChild(el('span', '', h % 3 === 0 ? String(h) : ''));
+    wrap.appendChild(lab); return wrap;
+  }
+  function renderHours(d) {
+    if (!els.hours) return; els.hours.textContent = '';
+    var label = WINDOWS.filter(function (x) { return x[0] === win; })[0][1], note = win === 'm5' || win === 'h1' ? '（5分・1時間の窓は「今日」の分）' : '';
+    els.hours.appendChild(el('div', 'font-size:14px;font-weight:700;color:#5C3D2E;margin-bottom:4px', '時間帯別（日本時間）：開いた人のうち、何人が押したか'));
+    if (!d.daily) { els.hours.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:8px 0', '中継（Worker）が古い形のため、時間帯別はまだ出せません。')); return; }
+    var h = hoursOf(d), since = d.hoursSince ? new Date(d.hoursSince).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: false }) : '';
+    els.hours.appendChild(el('div', 'font-size:11px;color:#8a6a4a;margin-bottom:8px', label + note + '・時間帯別の記録は' + (since ? ' ' + since + ' ' : '') + 'から（それより前の分はありません。作家の端末は除く）'));
+    var cards = el('div', 'display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:8px');
+    var multi = h.days > 1, rate = h.visitors ? Math.round(h.pressers / h.visitors * 100) + '%' : '―';
+    cards.appendChild(card('開いた端末', String(h.visitors), multi ? '日ごとの合計（' + h.days + '日分）' : '画面を開いた端末の数'));
+    cards.appendChild(card('そのうち押した端末', String(h.pressers), '何かの機能を使った端末'));
+    cards.appendChild(card('押した割合', rate, '押した端末 ÷ 開いた端末'));
+    els.hours.appendChild(cards);
+    if (!h.visitors) els.hours.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:4px 0 8px', 'この期間は、作家の端末以外で N\'s CAD が開かれた記録がまだありません。'));
+    els.hours.appendChild(hourChart('開いた端末（時間帯別・その日の初回）', h.v, '#c9a96e'));
+    els.hours.appendChild(hourChart('押した回数（時間帯別）', h.u, '#8B5E3C'));
   }
   function tick() {
     if (!running || paused || inflight) return; if (document.visibilityState === 'hidden') { schedule(); return; }
