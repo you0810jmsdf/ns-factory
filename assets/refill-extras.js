@@ -221,7 +221,16 @@
     window.addEventListener('afterprint', () => setTimeout(showNudge, 1500));
   }
 
-  function mount() { injectStyle(); fold(); mountBackup(); pwa(); usage(); }
+  // 5. スマホ幅の使いやすさ（メニューの重ね表示・フリック・端のつまみ）は別ファイル。畳んだあとに読み込む（2026-10-31）
+  function loadMobile() {
+    if (window.__nsfRefillMobile || !SRC || document.getElementById('nsf-refill-mobile-js')) return;
+    const s = document.createElement('script');
+    s.id = 'nsf-refill-mobile-js'; s.async = true;
+    s.src = SRC.replace(/refill-extras\.js(\?.*)?$/, 'refill-mobile.js$1');
+    document.head.appendChild(s);
+  }
+
+  function mount() { injectStyle(); fold(); mountBackup(); pwa(); usage(); loadMobile(); }
   // print-adjust.js が DOMContentLoaded で差し込む設定欄を待ってから畳む
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(mount, 0)); else setTimeout(mount, 0);
 })();

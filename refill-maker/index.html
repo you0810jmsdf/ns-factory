@@ -18,7 +18,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
-<script>window.NSF_COMPACT_FABS = true; // スマホ幅では右下の「綴じ後プレビュー」「改善要望」を丸いアイコンだけにする（共通JSが参照）</script>
+<script>window.NSF_COMPACT_FABS = true; // スマホ幅では右下の「綴じ後プレビュー」「改善要望」を丸いアイコンだけにする（共通JSが参照）
+window.NSF_MOBILE_HANDLE_ONLY = true; // スマホ対応はこのページに自前で入っている。共通部品（assets/refill-mobile.js）からは、画面端のつまみだけ足す</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -848,7 +849,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeHisto
 // スマホ幅：パネルの外（暗い部分）をタップで閉じる／お知らせは2行に畳み、タップで全文
 document.addEventListener('click', e => {
   if (innerWidth > 600 || !$('controls').classList.contains('open')) return;
-  if (!e.target.closest('#controls, #ctrl-toggle-btn, .history-overlay')) toggleSidebar();
+  if (!e.target.closest('#controls, #ctrl-toggle-btn, #swipeHandle, .history-overlay')) toggleSidebar();
 });
 document.addEventListener('DOMContentLoaded', () => {
   const n = $('nsf-free-notice');
