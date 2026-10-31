@@ -25,6 +25,7 @@
     if ((m = /^export:(.+)$/.exec(k))) return '書き出し：' + m[1];
     return '';
   }
+  var RELEASE_URL = '../nscad/data/release-notes.json', releases = null, relLoading = false, relErr = false;   /* N's CAD の公開日（公開版の更新履歴）。日ごとにまとめて、日別の推移に重ねる */
   var timer = null, running = false, win = 'm5', last = null, err = '', paused = false, mount = null, els = {}, inflight = false;
 
   function el(tag, css, text) { var e = document.createElement(tag); if (css) e.style.cssText = css; if (text != null) e.textContent = text; return e; }
@@ -151,6 +152,40 @@
     els.hours.appendChild(hourChart('開いた端末（時間帯別・その日の初回）', h.v, '#c9a96e'));
     els.hours.appendChild(hourChart('押した回数（時間帯別）', h.u, '#8B5E3C'));
     els.hours.appendChild(weekChart(d));
+    els.hours.appendChild(trendChart(d));
+  }
+  /* 公開日（N's CAD の更新履歴）を読む：日付（日本時間）→ 公開の内容（時刻と最初の1行）の一覧。読めなくても、日別の推移の棒は出す */
+  function loadReleases() {
+    if (releases || relLoading) return; relLoading = true;
+    fetch(RELEASE_URL, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
+      var m = {}; ((j && j.releases) || []).forEach(function (x) { var t = String(x && x.date || ''); if (!/^\d{4}-\d{2}-\d{2}/.test(t)) return; var k = t.slice(0, 10).replace(/-/g, ''); (m[k] = m[k] || []).push((t.slice(11, 16) + ' ' + String((x.items || [])[0] || '')).slice(0, 70)); });
+      releases = m; relErr = false; if (last) render();
+    }).catch(function () { relErr = true; if (last) render(); }).then(function () { relLoading = false; });
+  }
+  /* 日別の推移（直近35日・日本時間）：開いた端末と本格的に使った端末の棒に、N's CAD の公開の回数（▲）を重ねる。新しい版を出した日の前後で、使われ方が変わったかを見る */
+  function trendChart(d) {
+    var wrap = el('div', 'margin:14px 0 4px'), names = ['日', '月', '火', '水', '木', '金', '土'], daily = d.daily || {}, keys = Object.keys(daily).sort();
+    wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', '日別の推移（直近35日）と N\'s CAD の公開'));
+    if (!keys.length) { wrap.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:4px 0', 'まだ記録がありません。')); return wrap; }
+    var today = dayKeyOf(d.now), toMs = function (k) { return Date.UTC(+k.slice(0, 4), +k.slice(4, 6) - 1, +k.slice(6, 8)); }, end = toMs(today), start = Math.max(toMs(keys[0]), end - 34 * 86400000), days = [];
+    for (var t = start; t <= end; t += 86400000) { var dt = new Date(t), k = dt.toISOString().slice(0, 10).replace(/-/g, ''); days.push({ k: k, w: dt.getUTCDay(), md: (dt.getUTCMonth() + 1) + '/' + dt.getUTCDate(), o: daily[k] || { visitors: 0, real: 0 }, rel: (releases && releases[k]) || [] }); }
+    var max = 1; days.forEach(function (x) { max = Math.max(max, x.o.visitors || 0, x.o.real || 0); });
+    var n = days.length, cols = 'repeat(' + n + ',minmax(0,1fr))';
+    var row = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;align-items:end;height:84px;border-bottom:1px solid #eadccf');
+    days.forEach(function (x) {
+      var col = el('div', 'display:flex;gap:1px;align-items:flex-end;justify-content:center;height:100%'), a = x.o.visitors || 0, b = x.o.real || 0;
+      col.title = x.md + '（' + names[x.w] + '）開いた ' + a + '／本格的に使った ' + b + (x.rel.length ? '／公開 ' + x.rel.length + '回' : '');
+      [[a, '#c9a96e'], [b, '#8B5E3C']].forEach(function (y) { col.appendChild(el('span', 'display:block;width:44%;border-radius:2px 2px 0 0;background:' + y[1] + ';height:' + (y[0] ? Math.max(3, Math.round(y[0] / max * 72)) : 0) + 'px')); });
+      row.appendChild(col);
+    });
+    wrap.appendChild(row);
+    var rel = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;font-size:9px;color:#b4561f;text-align:center;line-height:1.3;margin-top:2px');
+    days.forEach(function (x) { var c = el('span', '', x.rel.length ? '▲' + x.rel.length : ''); if (x.rel.length) { c.style.fontWeight = '700'; c.title = x.md + ' の公開 ' + x.rel.length + '回\n' + x.rel.slice().reverse().slice(0, 12).join('\n'); } rel.appendChild(c); });
+    wrap.appendChild(rel);
+    var lab = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;font-size:9px;color:#a08a74;text-align:center');
+    days.forEach(function (x, i) { lab.appendChild(el('span', 'white-space:nowrap;overflow:visible', (i === 0 || i === n - 1 || x.w === 1) ? x.md : '')); }); wrap.appendChild(lab);
+    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '左の棒＝開いた端末（金）・右の棒＝本格的に使った端末（茶）・▲数字＝その日の N\'s CAD の公開の回数（触れると内容が出ます）。' + (relErr ? '公開日を読み込めませんでした（棒だけ表示しています）。' : releases ? '' : '公開日を読み込み中…')));
+    return wrap;
   }
   /* 最初に使った機能：本格的に使った端末ごとに、その日の最初の1つ（ツアーのスキップ・更新通知などの軽い操作は飛ばす）。多い順に上位10 */
   function firstRank(h) {
@@ -211,7 +246,7 @@
   function schedule() { if (timer) clearTimeout(timer); if (running && !paused) timer = setTimeout(tick, err ? POLL_MS * 2 : POLL_MS); }
   document.addEventListener('visibilitychange', function () { if (running && !paused && document.visibilityState === 'visible') { if (timer) clearTimeout(timer); tick(); } });
   window.NCADLive = {
-    start: function () { if (!build()) return; if (!isOwner()) markOwner(); running = true; paused = false; if (els.pause) els.pause.textContent = '⏸ 止める'; ownerBanner(); status(); tick(); },
+    start: function () { if (!build()) return; loadReleases(); if (!isOwner()) markOwner(); running = true; paused = false; if (els.pause) els.pause.textContent = '⏸ 止める'; ownerBanner(); status(); tick(); },
     stop: function () { running = false; if (timer) { clearTimeout(timer); timer = null; } },
     _state: function () { return { running: running, win: win, paused: paused, last: last, err: err }; }
   };
