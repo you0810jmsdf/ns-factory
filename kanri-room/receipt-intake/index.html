@@ -301,7 +301,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
     </div>
     <div class="card">
       <h2>2. 3系統を突合する<span class="step-badge">ステップ 3</span></h2>
-      <p class="hint">スマホ台帳（GAS）・メール証憑（receipt-checklist.json）・MF仕訳帳を、<b>金額一致＋日付±3日＋店名類似</b>で突合します。</p>
+      <p class="hint">スマホ台帳（GAS）・メール証憑（GAS に非公開保存した証憑チェックリスト）・MF仕訳帳を、<b>金額一致＋日付±3日＋店名類似</b>で突合します。</p>
       <div class="actions">
         <button class="btn primary block" id="mergeRun" type="button">🔀 突合を実行</button>
       </div>
@@ -339,7 +339,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   'use strict';
   // ── 設定 ───────────────────────────────────────────────
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbybL6NbJVtb7HUZ8oFPq38zBWe5AWoLjZ3LfbAxbvkM11t1iMeZZT47ga77OxuKaVpR/exec';
-  const CHECKLIST_URL = '../../order_estimate/receipt-checklist.json';
+  // 2026-11-01: メール証憑（証憑チェックリスト）は公開 JSON ではなく gas('checklistGet') で取る（Drive 非公開）
   // ⛔ 経理ルール（店名・按分率）は公開リポジトリに置かない。GAS内蔵の RULES を action=rules で取得する。
   //    正本は 監理部\経理ルール.md、機械可読版は GAS の Rules.js。
   // ルール取得に失敗したとき、このページ単体でパスワードを受け直して復旧できるようにする。
@@ -1048,7 +1048,7 @@ th{background:var(--soft);font-weight:700;white-space:nowrap}
   function storeLike(a,b){ return storeMatch(a,b) !== 'no'; }
   async function loadEmailReceipts(){
     try{
-      const res=await fetch(CHECKLIST_URL+'?v='+Date.now(),{cache:'no-cache'}); const cl=await res.json();
+      const rc=await gas('checklistGet',{},3); const cl=rc.checklist||{};
       const out=[];
       Object.entries(cl.matrix||{}).forEach(([month,subs])=>Object.entries(subs).forEach(([sub,info])=>(info.records||[]).forEach(rec=>{ if(rec.amount) out.push({date:rec.date, amount:Number(rec.amount), store:sub, subject:rec.subject||'', source:'メール証憑'}); })));
       return out;

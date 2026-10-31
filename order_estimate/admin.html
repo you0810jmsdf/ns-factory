@@ -1817,8 +1817,8 @@ tr.row-out-stock td{
     <div class="panel receipt-checklist-section admin-section-hidden" id="receiptChecklistPanel">
       <h2 style="margin:0 0 10px;font-size:16px;color:#6b3a1f">🧾 証憑チェックリスト（月別・サブスク別 取得状況）</h2>
       <div class="hint" style="margin-bottom:12px">
-        監理部の <code>fetch_email_receipts.py</code> 実行時に自動生成される
-        <code>receipt-checklist.json</code> を表示しています（読み取り専用・自動更新）。
+        監理部の <code>fetch_email_receipts.py</code> 実行時に自動生成され、鍵付き GAS（Drive の非公開ファイル）に保存された
+        証憑チェックリストを表示しています（読み取り専用・自動更新・公開リポジトリには置きません）。
         セルをクリックすると日付・金額・件名・ローカルファイルパスを確認できます（領収書本文は表示されません）。
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
@@ -6753,9 +6753,11 @@ function rcSendAccountingRows() {
 async function loadReceiptChecklist() {
   receiptChecklistSetPill('読込中…', false);
   try {
-    const res = await fetch('./receipt-checklist.json', { cache: 'no-cache' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    // 2026-11-01: 公開ファイル（./receipt-checklist.json）は廃止。鍵付き GAS（receipt-intake・Drive 非公開）から取る。
+    // ⛔ 公開リポジトリに receipt-checklist.json を戻さない（契約サービス・金額が全世界公開になる）。
+    const r = await mergeGas('checklistGet', {}, 3);
+    const data = r.checklist || {};
+    if (!data.matrix) throw new Error('まだ保存されていません（監理部の fetch_email_receipts.py を実行してください）');
     rcMatrixData = data;
 
     rcRenderMatrix(data);
@@ -6765,8 +6767,8 @@ async function loadReceiptChecklist() {
 
     receiptChecklistSetPill('読込済', true);
   } catch (err) {
-    // receipt-checklist.json は公開リポジトリで誰でも読めたため 2026-10-31 に削除した（契約サービス・金額を含む）
-    receiptChecklistSetPill(/HTTP 404/.test(err.message) ? '停止中（公開リスクのためデータを削除済み）' : '読込失敗: ' + err.message, false);
+    // receipt-checklist.json は公開リポジトリで誰でも読めたため 2026-10-31 に削除し、2026-11-01 から GAS（非公開）に移した
+    receiptChecklistSetPill(/unauthorized/.test(err.message) ? '読込失敗: 管理者キーが通りません（ページを再読み込みしてパスワードを入れ直してください）' : '読込失敗: ' + err.message, false);
   }
 }
 
@@ -8453,7 +8455,7 @@ function toolstatsReportDone(btn) {
 //    無関係な同額取引と一致し、その経費は二度とCSVに出ない（計上漏れ）。
 // ══════════════════════════════════════════════════════════════
 const MERGE_GAS_URL = 'https://script.google.com/macros/s/AKfycbybL6NbJVtb7HUZ8oFPq38zBWe5AWoLjZ3LfbAxbvkM11t1iMeZZT47ga77OxuKaVpR/exec';
-const MERGE_CHECKLIST_URL = 'receipt-checklist.json';
+// 2026-11-01: メール証憑（証憑チェックリスト）は公開 JSON ではなく mergeGas('checklistGet') で取る（Drive 非公開）
 const MERGE_TOL_DAYS = 3;
 const MERGE_MF_HEADERS = ['取引日','借方勘定科目','借方補助科目','借方税区分','借方金額','貸方勘定科目','貸方補助科目','貸方税区分','貸方金額','摘要','タグ','メモ','決済'];
 
@@ -8524,8 +8526,8 @@ async function mergeLoadSources(){
     mergeRules = rr.rules || null;
   }catch(e){ mergeRules = null; }
   try{
-    const res = await fetch(MERGE_CHECKLIST_URL + '?v=' + Date.now(), {cache:'no-cache'});
-    const cl = await res.json();
+    const rc = await mergeGas('checklistGet', {}, 3);
+    const cl = rc.checklist || {};
     mergeEmails = [];
     Object.entries(cl.matrix||{}).forEach(([month, subs]) =>
       Object.entries(subs).forEach(([sub, info]) =>
