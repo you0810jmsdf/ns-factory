@@ -11,6 +11,95 @@
   const HANDLE_ONLY = !!window.NSF_MOBILE_HANDLE_ONLY;
   const $ = id => document.getElementById(id);
 
+  // ---- 紙面のページをタップで拡大（スマホ幅）。ページを画面幅いっぱいに出し、前後のページへ送れる。閉じるは ✕・暗い所・Esc ----
+  // 紙面（#preview）の中の [data-leaf]（面付けしたページの枠・全ツール共通。綴じ後プレビューと同じ）を、複製して拡大する。元の紙面は変えない。
+  function installZoom() {
+    if (window.__nsfZoomInstalled) return;
+    window.__nsfZoomInstalled = true;
+    const zcss = [
+      '#nsf-zoom-ov{position:fixed;inset:0;z-index:930;background:rgba(15,15,20,.94);display:none;flex-direction:column;font-family:-apple-system,"Hiragino Sans",Meiryo,sans-serif;color:#eee}',
+      '#nsf-zoom-ov.open{display:flex}',
+      '#nsf-zoom-top{display:flex;align-items:center;gap:8px;padding:8px 10px;flex:0 0 auto}',
+      '#nsf-zoom-cap{flex:1;font-size:13px;color:#bbb;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}',
+      '#nsf-zoom-close{width:44px;height:44px;border-radius:10px;border:1px solid #555;background:#2a2a4a;color:#eee;font-size:20px;cursor:pointer;padding:0;min-height:0}',
+      '#nsf-zoom-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:4px 8px 12px;text-align:center}',
+      '#nsf-zoom-frame{display:inline-block;position:relative;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.5);overflow:hidden;text-align:left}',
+      '#nsf-zoom-inner{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;overflow:hidden}',
+      '#nsf-zoom-inner>*{position:static!important;transform:none!important;margin:0!important;left:auto!important;top:auto!important}',
+      '#nsf-zoom-bar{display:flex;gap:8px;align-items:center;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));flex:0 0 auto}',
+      '#nsf-zoom-bar button{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #555;background:#2a2a4a;color:#eee;font-size:14px;font-weight:700;cursor:pointer}',
+      '#nsf-zoom-bar button:disabled{opacity:.35}',
+      '#nsf-zoom-count{min-width:5em;text-align:center;font-weight:700}',
+      '#nsf-zoom-toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:925;background:rgba(20,16,12,.92);color:#fff;border:1px solid rgba(201,169,110,.7);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;pointer-events:none;opacity:0;transition:opacity .4s}',
+      '#nsf-zoom-toast.show{opacity:1}',
+      'body.nsf-zoom-on #nsf-bug-btn,body.nsf-zoom-on #nsf-flip-btn,body.nsf-zoom-on #swipeHandle,body.nsf-zoom-on #ctrl-toggle-btn{display:none!important}',
+      '@media print{#nsf-zoom-ov,#nsf-zoom-toast{display:none!important}}',
+      '@media (min-width:601px){#nsf-zoom-ov,#nsf-zoom-toast{display:none!important}}'
+    ];
+    const zs = document.createElement('style'); zs.id = 'nsf-zoom-css'; zs.textContent = zcss.join('\n'); document.head.appendChild(zs);
+    const ov = document.createElement('div'); ov.id = 'nsf-zoom-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'ページの拡大表示');
+    ov.innerHTML = '<div id="nsf-zoom-top"><div id="nsf-zoom-cap"></div><button type="button" id="nsf-zoom-close" aria-label="閉じる">✕</button></div>'
+      + '<div id="nsf-zoom-body"><div id="nsf-zoom-frame"><div id="nsf-zoom-inner"></div></div></div>'
+      + '<div id="nsf-zoom-bar"><button type="button" id="nsf-zoom-prev">◀ 前</button><span id="nsf-zoom-count"></span><button type="button" id="nsf-zoom-next">次 ▶</button></div>';
+    document.body.appendChild(ov);
+    const toast = document.createElement('div'); toast.id = 'nsf-zoom-toast'; toast.textContent = '紙面のページをタップすると拡大できます'; document.body.appendChild(toast);
+    let list = [], idx = 0;
+    const slotsNow = () => [...document.querySelectorAll('#preview [data-leaf]')].filter(s => !s.classList.contains('empty') && s.innerHTML.trim());
+    function show(i) {
+      if (!list.length) return;
+      idx = Math.max(0, Math.min(list.length - 1, i));
+      const slot = list[idx];
+      const w = slot.offsetWidth, hgt = slot.offsetHeight;
+      if (!w || !hgt) return;
+      const k = Math.max(0.2, (innerWidth - 16) / w);
+      const frame = $('nsf-zoom-frame'), inner = $('nsf-zoom-inner');
+      inner.innerHTML = '';
+      const clone = slot.cloneNode(true);
+      clone.style.position = 'static'; clone.style.left = ''; clone.style.top = ''; clone.style.margin = '0'; clone.style.width = w + 'px'; clone.style.height = hgt + 'px';
+      clone.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+      inner.appendChild(clone);
+      inner.style.width = w + 'px'; inner.style.height = hgt + 'px'; inner.style.transform = 'scale(' + k + ')';
+      frame.style.width = Math.round(w * k) + 'px'; frame.style.height = Math.round(hgt * k) + 'px';
+      const wrap = slot.closest('.sheet-wrap, .a4-wrapper'), lab = wrap && wrap.querySelector('.sheet-label');
+      $('nsf-zoom-cap').textContent = lab ? lab.textContent.trim() : '';
+      $('nsf-zoom-count').textContent = (idx + 1) + ' / ' + list.length;
+      $('nsf-zoom-prev').disabled = idx === 0; $('nsf-zoom-next').disabled = idx === list.length - 1;
+      $('nsf-zoom-body').scrollTop = 0;
+    }
+    function open(slot) {
+      list = slotsNow(); const i = list.indexOf(slot); if (i < 0) return;
+      ov.classList.add('open'); document.body.classList.add('nsf-zoom-on'); document.documentElement.style.overflow = 'hidden'; show(i);
+    }
+    function close() { ov.classList.remove('open'); document.body.classList.remove('nsf-zoom-on'); document.documentElement.style.overflow = ''; $('nsf-zoom-inner').innerHTML = ''; }
+    $('nsf-zoom-close').addEventListener('click', close);
+    $('nsf-zoom-prev').addEventListener('click', () => show(idx - 1));
+    $('nsf-zoom-next').addEventListener('click', () => show(idx + 1));
+    $('nsf-zoom-body').addEventListener('click', e => { if (e.target === $('nsf-zoom-body')) close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && ov.classList.contains('open')) close(); });
+    // ページをタップ。メニューが開いているとき、綴じ後プレビュー等の他のダイアログが出ているときは、拡大しない（捕捉段階で見るので、外側タップで閉じる処理より先に判定できる）
+    document.addEventListener('click', e => {
+      if (innerWidth > 600 || ov.classList.contains('open')) return;
+      if (document.body.classList.contains('panel-open')) return;
+      const t = e.target; if (!t || !t.closest) return;
+      if (t.closest('#controls, #ctrl-toggle-btn, #swipeHandle, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge, button, a, input, select, textarea, label')) return;
+      const slot = t.closest('#preview [data-leaf]');
+      if (slot) open(slot);
+    }, true);
+    // 最初の1回だけ、案内を数秒出す（端末ごと）
+    try {
+      if (innerWidth <= 600 && !localStorage.getItem('nsf_zoom_hint_v1')) {
+        setTimeout(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3200); try { localStorage.setItem('nsf_zoom_hint_v1', '1'); } catch (e) {} }, 2500);
+      }
+    } catch (e) {}
+    // 更新履歴（HISTORY_ENTRIES の末尾が最新）
+    try {
+      if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === 'スマホで、紙面のページをタップして拡大')) {
+        HISTORY_ENTRIES.push({ date: '2026-10-31', type: 'improve', title: 'スマホで、紙面のページをタップして拡大',
+          detail: 'スマホの画面で、紙面のページをタップすると、そのページを画面の幅いっぱいに拡大して見られるようにしました。「前」「次」で隣のページへ送れます。閉じるには ✕ か、まわりの暗い部分をタップします。拡大して見ているだけで、印刷やPDFの内容は変わりません。' });
+      }
+    } catch (e) {}
+  }
+
   function init() {
     if (window.__nsfRefillMobile) return;
     if (!$('controls') || !$('ctrl-toggle-btn') || typeof window.toggleSidebar !== 'function') return;
@@ -68,6 +157,7 @@
     const h = document.createElement('button'); h.id = 'swipeHandle'; h.type = 'button';
     h.setAttribute('aria-label', 'メニューを開く／閉じる'); h.addEventListener('click', () => window.toggleSidebar());
     document.body.appendChild(h);
+    installZoom();
     if (HANDLE_ONLY) return;
 
     // 更新履歴（各ページの HISTORY_ENTRIES は新しい順の逆＝末尾が最新）。ページ側を18本書き換えず、ここから1件足す
@@ -101,7 +191,7 @@
     });
     // 横フリックで開閉（入力欄・スライダー・ダイアログ上、拡大中、2本指では効かせない。縦の動きが大きいときは通常のスクロール）
     let sx = 0, sy = 0, t0 = 0, ok = false;
-    const NO = 'input, select, textarea, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge';
+    const NO = 'input, select, textarea, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge, #nsf-zoom-ov';
     document.addEventListener('touchstart', e => {
       const zoomed = window.visualViewport && window.visualViewport.scale > 1.05;
       ok = innerWidth <= 600 && e.touches.length === 1 && !zoomed && !(e.target.closest && e.target.closest(NO));
