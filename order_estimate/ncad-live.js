@@ -154,11 +154,15 @@
     els.hours.appendChild(weekChart(d));
     els.hours.appendChild(trendChart(d));
   }
+  /* 「機能を足した公開」の判別：更新履歴の最初の1文（最初の「。」まで）に、足した・できるようにした等の言い回しがあり、直した・不具合等の言い回しが無いもの。実際の更新履歴121件で、機能追加と判別した29件は確認した範囲で全部が機能追加。判別できない言い回しの機能追加は「それ以外」に入る（取りこぼしあり） */
+  var ADD_RE = /(足しました|追加しました|新設|作りました|できるようにしました|選べるようにしました|出せるようにしました|付けられるようにしました|使えるようにしました|増やしました|加えました|設けました|入れました)/;
+  var FIX_RE = /(不具合|直しました|直し|修正|ずれ|戻しました|戻る|防ぎました|防ぐ|ならない|ならなかった|消えない|消えて|誤り|間違い|落ち|止まる|止まって|壊れ|効かな|出ない|出なかった|重なって|重ねて登録|効いて|不一致|揃えました|そろえました|統一|1つにしました)/;
+  function isAddRelease(text) { var i = text.indexOf('。'), f = i < 0 ? text : text.slice(0, i + 1); return ADD_RE.test(f) && !FIX_RE.test(f); }
   /* 公開日（N's CAD の更新履歴）を読む：日付（日本時間）→ 公開の内容（時刻と最初の1行）の一覧。読めなくても、日別の推移の棒は出す */
   function loadReleases() {
     if (releases || relLoading) return; relLoading = true;
     fetch(RELEASE_URL, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(function (j) {
-      var m = {}; ((j && j.releases) || []).forEach(function (x) { var t = String(x && x.date || ''); if (!/^\d{4}-\d{2}-\d{2}/.test(t)) return; var k = t.slice(0, 10).replace(/-/g, ''); (m[k] = m[k] || []).push((t.slice(11, 16) + ' ' + String((x.items || [])[0] || '')).slice(0, 70)); });
+      var m = {}; ((j && j.releases) || []).forEach(function (x) { var t = String(x && x.date || ''); if (!/^\d{4}-\d{2}-\d{2}/.test(t)) return; var k = t.slice(0, 10).replace(/-/g, ''); var one = String((x.items || [])[0] || ''); (m[k] = m[k] || []).push({ add: isAddRelease(one), text: (t.slice(11, 16) + ' ' + one).slice(0, 70) }); });
       releases = m; relErr = false; if (last) render();
     }).catch(function () { relErr = true; if (last) render(); }).then(function () { relLoading = false; });
   }
@@ -174,17 +178,21 @@
     var row = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;align-items:end;height:84px;border-bottom:1px solid #eadccf');
     days.forEach(function (x) {
       var col = el('div', 'display:flex;gap:1px;align-items:flex-end;justify-content:center;height:100%'), a = x.o.visitors || 0, b = x.o.real || 0;
-      col.title = x.md + '（' + names[x.w] + '）開いた ' + a + '／本格的に使った ' + b + (x.rel.length ? '／公開 ' + x.rel.length + '回' : '');
+      col.title = x.md + '（' + names[x.w] + '）開いた ' + a + '／本格的に使った ' + b + (x.rel.length ? '／公開 ' + x.rel.length + '回（機能を足した ' + x.rel.filter(function (r) { return r.add; }).length + '回）' : '');
       [[a, '#c9a96e'], [b, '#8B5E3C']].forEach(function (y) { col.appendChild(el('span', 'display:block;width:44%;border-radius:2px 2px 0 0;background:' + y[1] + ';height:' + (y[0] ? Math.max(3, Math.round(y[0] / max * 72)) : 0) + 'px')); });
       row.appendChild(col);
     });
     wrap.appendChild(row);
     var rel = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;font-size:9px;color:#b4561f;text-align:center;line-height:1.3;margin-top:2px');
-    days.forEach(function (x) { var c = el('span', '', x.rel.length ? '▲' + x.rel.length : ''); if (x.rel.length) { c.style.fontWeight = '700'; c.title = x.md + ' の公開 ' + x.rel.length + '回\n' + x.rel.slice().reverse().slice(0, 12).join('\n'); } rel.appendChild(c); });
+    days.forEach(function (x) {
+      var c = el('span', 'display:flex;flex-direction:column;align-items:center', ''), na = x.rel.filter(function (r) { return r.add; }).length, nr = x.rel.length - na;
+      if (na) c.appendChild(el('span', 'color:#b4561f;font-weight:700', '★' + na)); if (nr) c.appendChild(el('span', 'color:#a08a74;font-weight:700', '▲' + nr));
+      if (x.rel.length) c.title = x.md + ' の公開 ' + x.rel.length + '回（★＝機能を足した ' + na + '回）\n' + x.rel.slice().reverse().slice(0, 12).map(function (r) { return (r.add ? '★ ' : '') + r.text; }).join('\n'); rel.appendChild(c);
+    });
     wrap.appendChild(rel);
     var lab = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;font-size:9px;color:#a08a74;text-align:center');
     days.forEach(function (x, i) { lab.appendChild(el('span', 'white-space:nowrap;overflow:visible', (i === 0 || i === n - 1 || x.w === 1) ? x.md : '')); }); wrap.appendChild(lab);
-    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '左の棒＝開いた端末（金）・右の棒＝本格的に使った端末（茶）・▲数字＝その日の N\'s CAD の公開の回数（触れると内容が出ます）。' + (relErr ? '公開日を読み込めませんでした（棒だけ表示しています）。' : releases ? '' : '公開日を読み込み中…')));
+    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '左の棒＝開いた端末（金）・右の棒＝本格的に使った端末（茶）・★＝機能を足した公開の回数・▲＝それ以外の公開（修正・調整など）の回数（触れると内容が出ます。機能を足したかは、更新履歴の最初の1文の言い回しで判別しているので、判別できない機能追加は ▲ に入ります）。' + (relErr ? '公開日を読み込めませんでした（棒だけ表示しています）。' : releases ? '' : '公開日を読み込み中…')));
     return wrap;
   }
   /* 最初に使った機能：本格的に使った端末ごとに、その日の最初の1つ（ツアーのスキップ・更新通知などの軽い操作は飛ばす）。多い順に上位10 */
