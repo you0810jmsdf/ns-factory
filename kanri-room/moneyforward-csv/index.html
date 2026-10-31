@@ -3589,7 +3589,24 @@ td.amount{
   // admin.html を開かずにこの画面だけで仕訳投入まで完結させるための実装。
   // 勘定科目の対応は admin.html の RC_ACCOUNT_DEFAULTS と必ず同じ内容に保つこと
   // （片方だけ変えると、送る画面によって科目が変わるという事故になる）。
-  const CL_URL = '../../order_estimate/receipt-checklist.json';
+  // 2026-11-01: 公開 JSON（../../order_estimate/receipt-checklist.json）は廃止。鍵付き GAS（receipt-intake・Drive 非公開）から取る。
+  // ⛔ 公開リポジトリに receipt-checklist.json を戻さない（契約サービス・金額が全世界公開になる）。
+  const CL_GAS_URL = 'https://script.google.com/macros/s/AKfycbybL6NbJVtb7HUZ8oFPq38zBWe5AWoLjZ3LfbAxbvkM11t1iMeZZT47ga77OxuKaVpR/exec';
+  function clAdminKey(){ try{ return sessionStorage.getItem('nsf_admin_key')||''; }catch(e){ return ''; } }
+  // admin-gate.js 通過時の平文キーで GAS を呼ぶ。HTML応答・間欠404は3回まで再送（読み取り専用なので安全）
+  async function clGas(action, body, tries){
+    tries = tries || 3; let last = null;
+    for(let i=0;i<tries;i++){
+      try{
+        const res = await fetch(CL_GAS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action, key: clAdminKey()}, body||{})) });
+        const text = await res.text(); let json;
+        try{ json = JSON.parse(text); }catch(e){ throw new Error('GAS応答がJSONではありません（HTTP '+res.status+'）'); }
+        if(json && json.error) throw new Error(json.error);
+        return json;
+      }catch(e){ last = e; if(/unauthorized|がありません/.test(String(e.message))) break; await new Promise(r=>setTimeout(r, 700*(i+1))); }
+    }
+    throw last;
+  }
   const CL_LABELS = {
     apple:'Apple', photoroom:'Photoroom', office365:'Office365', claude_code:'Claude Code',
     chatgpt:'ChatGPT', moneyforward:'MoneyForward', electricity:'電気', water:'水道',
@@ -3622,9 +3639,14 @@ td.amount{
     const status = $('clStatus');
     status.textContent = '証憑チェックリストを読み込んでいます…';
     try{
-      const res = await fetch(CL_URL, { cache:'no-cache' });
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
-      clData = await res.json();
+      if(!clAdminKey()){
+        // 認証済みフラグだけ残って平文キーが無い状態（admin-gate.js が素通りする）。フラグを消して再読込でゲートを出す
+        try{ sessionStorage.removeItem('nsf_admin_auth'); }catch(e){}
+        throw new Error('管理者キーが見つかりません。ページを再読み込みしてパスワードを入れ直してください');
+      }
+      const rc = await clGas('checklistGet', {}, 3);
+      clData = rc.checklist || null;
+      if(!clData || !clData.matrix) throw new Error('まだ保存されていません（監理部の fetch_email_receipts.py を実行してください）');
     }catch(e){
       clData = null;
       status.textContent = `証憑チェックリストを読み込めませんでした（${e.message}）。`;
