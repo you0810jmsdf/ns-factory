@@ -204,7 +204,9 @@
     if (!releases) { wrap.appendChild(el('div', note, relErr ? '公開日を読み込めないため、比べられません。' : '公開日を読み込み中…')); return wrap; }
     var startMs = toMs(d.hoursSince ? dayKeyOf(d.hoursSince) : keys[0]), todayMs = toMs(dayKeyOf(d.now));
     var stars = Object.keys(releases).filter(function (k) { return releases[k].some(function (r) { return r.add; }); }).sort(), starMs = stars.map(toMs);
-    var avg = function (from) { var sum = 0, o = 0; for (var i = 0; i < 7; i++) { var x = daily[keyOf(from + i * DAY)]; sum += (x && x.real) || 0; o += (x && x.visitors) || 0; } return { real: sum / 7, open: o / 7 }; };
+    var avg = function (from) { var sum = 0; for (var i = 0; i < 7; i++) { var x = daily[keyOf(from + i * DAY)]; sum += (x && x.real) || 0; } return { sum: sum, real: sum / 7 }; };
+    /* 偶然の範囲かの目安：前後7日の合計人数の差が、ばらつき（合計の平方根）の2倍を超えたら傾向あり。合計が10人に届かないときは判定しない。厳密な検定ではなく目印 */
+    var verdict = function (a, b) { var n = a + b, df = b - a; if (n < 10) return { t: '判定できない（人数が少ない）', c: '#a08a74' }; if (Math.abs(df) > 2 * Math.sqrt(n)) return df > 0 ? { t: '増えた傾向', c: '#2e7d4f' } : { t: '減った傾向', c: '#b4561f' }; return { t: '差なし（偶然の範囲）', c: '#a08a74' }; };
     var rows = [], none = 0, waiting = 0;
     stars.forEach(function (k, i) {
       var ms = starMs[i];
@@ -219,17 +221,18 @@
     if (!stars.length) { wrap.appendChild(el('div', note, '機能を足した公開（★）が、まだありません。')); return wrap; }
     wrap.appendChild(el('div', note, '比べられた ★ ' + ready + '件／あと数日で比べられる ★ ' + waiting + '件／前の1週間の記録がまだ無く比べられない ★ ' + none + '件（記録は ' + md(startMs) + ' から）。'));
     rows.slice().reverse().slice(0, 10).forEach(function (r) {
-      var row = el('div', 'display:grid;grid-template-columns:3.2em minmax(120px,1fr) 6.2em 6.2em 5em;gap:8px;align-items:center;font-size:12px;padding:3px 0;border-top:1px solid #f1e6d9');
-      row.appendChild(el('span', 'color:#b4561f;font-weight:700', '★' + md(r.ms)));
-      var tx = el('span', 'color:#5C3D2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', r.text + (r.near ? '（前後の週に他の★が ' + r.near + '回）' : '')); tx.title = r.text; row.appendChild(tx);
-      row.appendChild(el('span', 'text-align:right;color:#5C3D2E', '前 ' + r.before.real.toFixed(1) + '人／日'));
+      var row = el('div', 'display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:12px;padding:4px 0;border-top:1px solid #f1e6d9');
+      row.appendChild(el('span', 'flex:0 0 3.4em;color:#b4561f;font-weight:700', '★' + md(r.ms)));
+      var tx = el('span', 'flex:1 1 200px;min-width:0;color:#5C3D2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', r.text + (r.near ? '（前後の週に他の★が ' + r.near + '回）' : '')); tx.title = r.text; row.appendChild(tx);
+      row.appendChild(el('span', 'color:#5C3D2E;white-space:nowrap', '前 ' + r.before.real.toFixed(1) + '人／日'));
       if (r.after) {
-        row.appendChild(el('span', 'text-align:right;color:#5C3D2E', '後 ' + r.after.real.toFixed(1) + '人／日'));
-        var df = r.after.real - r.before.real; row.appendChild(el('span', 'text-align:right;font-weight:700;color:' + (df > 0.05 ? '#2e7d4f' : df < -0.05 ? '#b4561f' : '#a08a74'), (df > 0.05 ? '＋' : df < -0.05 ? '－' : '±') + Math.abs(df).toFixed(1)));
-      } else { row.appendChild(el('span', 'text-align:right;color:#a08a74', '後 あと' + r.left + '日')); row.appendChild(el('span', '', '')); }
+        row.appendChild(el('span', 'color:#5C3D2E;white-space:nowrap', '後 ' + r.after.real.toFixed(1) + '人／日'));
+        var df = r.after.real - r.before.real, v = verdict(r.before.sum, r.after.sum);
+        row.appendChild(el('span', 'font-weight:700;white-space:nowrap;color:' + v.c, (df > 0.05 ? '＋' : df < -0.05 ? '－' : '±') + Math.abs(df).toFixed(1) + '　' + v.t));
+      } else { row.appendChild(el('span', 'color:#a08a74;white-space:nowrap', '後 あと' + r.left + '日')); }
       wrap.appendChild(row);
     });
-    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '前＝公開日の前の7日・後＝公開日の翌日からの7日（公開日そのものは入れません）。人数が1日に数人ほどなので、差は偶然の範囲のことが多く、数週間ためて傾向として見てください。機能を足した公開は、更新履歴の言い回しで判別しています（取りこぼしあり）。'));
+    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '前＝公開日の前の7日・後＝公開日の翌日からの7日（公開日そのものは入れません）。人数が1日に数人ほどなので、差は偶然の範囲のことが多く、数週間ためて傾向として見てください。目印は、前後7日の合計人数の差がばらつき（合計の平方根）の2倍を超えたら「増えた／減った傾向」、合計が10人に届かなければ「判定できない」とする簡単な目安で、厳密な検定ではありません。機能を足した公開は、更新履歴の言い回しで判別しています（取りこぼしあり）。'));
     return wrap;
   }
   /* 最初に使った機能：本格的に使った端末ごとに、その日の最初の1つ（ツアーのスキップ・更新通知などの軽い操作は飛ばす）。多い順に上位10 */
