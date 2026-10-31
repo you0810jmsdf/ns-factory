@@ -114,9 +114,9 @@
     var daily = d.daily || {}, keys = Object.keys(daily).sort(), i, set = {};
     if (win === 'd7') { for (i = 0; i < 7; i++) set[dayKeyOf(d.now - i * 86400000)] = 1; keys = keys.filter(function (k) { return set[k]; }); }
     else if (win !== 'all') keys = keys.filter(function (k) { return k === dayKeyOf(d.now); });
-    var r = { v: [], u: [], visitors: 0, pressers: 0, real: 0, days: keys.length };
+    var r = { v: [], u: [], visitors: 0, pressers: 0, real: 0, first: {}, days: keys.length };
     for (i = 0; i < 24; i++) { r.v.push(0); r.u.push(0); }
-    keys.forEach(function (k) { var o = daily[k]; for (i = 0; i < 24; i++) { r.v[i] += o.v[i] || 0; r.u[i] += o.u[i] || 0; } r.visitors += o.visitors || 0; r.pressers += o.pressers || 0; r.real += o.real || 0; });
+    keys.forEach(function (k) { var o = daily[k]; for (i = 0; i < 24; i++) { r.v[i] += o.v[i] || 0; r.u[i] += o.u[i] || 0; } r.visitors += o.visitors || 0; r.pressers += o.pressers || 0; r.real += o.real || 0; Object.keys(o.first || {}).forEach(function (f) { r.first[f] = (r.first[f] || 0) + o.first[f]; }); });
     return r;
   }
   function hourChart(title, values, color) {
@@ -146,10 +146,26 @@
     cards.appendChild(card('本格的に使った端末', String(h.real), '開いた端末のうち ' + (h.visitors ? Math.round(h.real / h.visitors * 100) + '%' : '―')));
     els.hours.appendChild(cards);
     els.hours.appendChild(breakdown(h));
+    els.hours.appendChild(firstRank(h));
     if (!h.visitors) els.hours.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:4px 0 8px', 'この期間は、作家の端末以外で N\'s CAD が開かれた記録がまだありません。'));
     els.hours.appendChild(hourChart('開いた端末（時間帯別・その日の初回）', h.v, '#c9a96e'));
     els.hours.appendChild(hourChart('押した回数（時間帯別）', h.u, '#8B5E3C'));
     els.hours.appendChild(weekChart(d));
+  }
+  /* 最初に使った機能：本格的に使った端末ごとに、その日の最初の1つ（ツアーのスキップ・更新通知などの軽い操作は飛ばす）。多い順に上位10 */
+  function firstRank(h) {
+    var wrap = el('div', 'margin:4px 0 12px'), list = Object.keys(h.first || {}).map(function (k) { return [k, h.first[k]]; }).sort(function (a, b) { return b[1] - a[1] || (a[0] < b[0] ? -1 : 1); });
+    wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', '最初に使った機能（本格的に使った端末ごとの、その日の最初の1つ・上位10）'));
+    if (!list.length) { wrap.appendChild(el('div', 'font-size:12px;color:#8a6a4a;padding:4px 0', 'この期間は、本格的に使った端末がまだありません。')); return wrap; }
+    var max = list[0][1];
+    list.slice(0, 10).forEach(function (e, i) {
+      var row = el('div', 'display:grid;grid-template-columns:1.8em minmax(120px,240px) 1fr 3.4em;gap:8px;align-items:center;font-size:12px;padding:2px 0'), ja = nameOf(e[0]);
+      row.appendChild(el('span', 'color:#a08a74;text-align:right', String(i + 1)));
+      var nm = el('span', 'color:#5C3D2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', ja || e[0]); nm.title = e[0] + (ja ? '（' + ja + '）' : ''); row.appendChild(nm);
+      var bar = el('span', 'display:block;height:10px;background:#f5ece1;border-radius:5px;overflow:hidden'); bar.appendChild(el('span', 'display:block;height:100%;background:#8B5E3C;width:' + Math.max(2, Math.round(e[1] / max * 100)) + '%')); row.appendChild(bar);
+      row.appendChild(el('span', 'text-align:right;font-weight:700;color:#5C3D2E', String(e[1]))); wrap.appendChild(row);
+    });
+    return wrap;
   }
   /* 開いた端末の内訳：開いただけ／軽い操作だけ（ツアーのスキップ・更新通知・前回の続きの確認・更新履歴）／本格的に使った */
   function breakdown(h) {
