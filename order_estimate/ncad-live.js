@@ -193,6 +193,43 @@
     var lab = el('div', 'display:grid;grid-template-columns:' + cols + ';gap:2px;font-size:9px;color:#a08a74;text-align:center');
     days.forEach(function (x, i) { lab.appendChild(el('span', 'white-space:nowrap;overflow:visible', (i === 0 || i === n - 1 || x.w === 1) ? x.md : '')); }); wrap.appendChild(lab);
     wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '左の棒＝開いた端末（金）・右の棒＝本格的に使った端末（茶）・★＝機能を足した公開の回数・▲＝それ以外の公開（修正・調整など）の回数（触れると内容が出ます。機能を足したかは、更新履歴の最初の1文の言い回しで判別しているので、判別できない機能追加は ▲ に入ります）。' + (relErr ? '公開日を読み込めませんでした（棒だけ表示しています）。' : releases ? '' : '公開日を読み込み中…')));
+    wrap.appendChild(compareChart(d, daily, keys));
+    return wrap;
+  }
+  /* ★の前後1週間の比較：機能を足した公開（★）の日ごとに、前7日（D-7〜D-1）と後7日（D+1〜D+7）の「本格的に使った端末」の1日平均を並べる。公開した日そのものは入れない。記録の開始日（途中から）と今日（途中）は含めないので、前は「開始日の翌日以降の7日」、後は「7日が全部終わってから」比べる。前後の週に他の★が入っていれば注記する（どの公開の効果か切り分けられない） */
+  function compareChart(d, daily, keys) {
+    var wrap = el('div', 'margin:12px 0 4px'), DAY = 86400000, note = 'font-size:12px;color:#8a6a4a;padding:4px 0';
+    var toMs = function (k) { return Date.UTC(+k.slice(0, 4), +k.slice(4, 6) - 1, +k.slice(6, 8)); }, keyOf = function (ms) { return new Date(ms).toISOString().slice(0, 10).replace(/-/g, ''); }, md = function (ms) { var t = new Date(ms); return (t.getUTCMonth() + 1) + '/' + t.getUTCDate(); };
+    wrap.appendChild(el('div', 'font-size:12px;color:#5C3D2E;margin-bottom:3px', '機能を足した公開（★）の前後1週間の比較（本格的に使った端末の1日平均）'));
+    if (!releases) { wrap.appendChild(el('div', note, relErr ? '公開日を読み込めないため、比べられません。' : '公開日を読み込み中…')); return wrap; }
+    var startMs = toMs(d.hoursSince ? dayKeyOf(d.hoursSince) : keys[0]), todayMs = toMs(dayKeyOf(d.now));
+    var stars = Object.keys(releases).filter(function (k) { return releases[k].some(function (r) { return r.add; }); }).sort(), starMs = stars.map(toMs);
+    var avg = function (from) { var sum = 0, o = 0; for (var i = 0; i < 7; i++) { var x = daily[keyOf(from + i * DAY)]; sum += (x && x.real) || 0; o += (x && x.visitors) || 0; } return { real: sum / 7, open: o / 7 }; };
+    var rows = [], none = 0, waiting = 0;
+    stars.forEach(function (k, i) {
+      var ms = starMs[i];
+      if (startMs >= ms - 7 * DAY) { none++; return; }   /* 前の1週間に、記録の無い（または途中からの）日が入る */
+      var same = releases[k].filter(function (r) { return r.add; }).length, near = starMs.filter(function (m, j) { return j !== i && Math.abs(m - ms) <= 7 * DAY; }).length + (same - 1);
+      var first = releases[k].filter(function (r) { return r.add; })[0].text.replace(/^\d{2}:\d{2} /, '');
+      var left = (ms + 8 * DAY - todayMs) / DAY;   /* 後の7日が全部終わるまでの日数 */
+      if (left > 0) waiting++;
+      rows.push({ ms: ms, text: first, same: same, near: near, before: avg(ms - 7 * DAY), after: left > 0 ? null : avg(ms + DAY), left: left });
+    });
+    var ready = rows.length - waiting;
+    if (!stars.length) { wrap.appendChild(el('div', note, '機能を足した公開（★）が、まだありません。')); return wrap; }
+    wrap.appendChild(el('div', note, '比べられた ★ ' + ready + '件／あと数日で比べられる ★ ' + waiting + '件／前の1週間の記録がまだ無く比べられない ★ ' + none + '件（記録は ' + md(startMs) + ' から）。'));
+    rows.slice().reverse().slice(0, 10).forEach(function (r) {
+      var row = el('div', 'display:grid;grid-template-columns:3.2em minmax(120px,1fr) 6.2em 6.2em 5em;gap:8px;align-items:center;font-size:12px;padding:3px 0;border-top:1px solid #f1e6d9');
+      row.appendChild(el('span', 'color:#b4561f;font-weight:700', '★' + md(r.ms)));
+      var tx = el('span', 'color:#5C3D2E;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', r.text + (r.near ? '（前後の週に他の★が ' + r.near + '回）' : '')); tx.title = r.text; row.appendChild(tx);
+      row.appendChild(el('span', 'text-align:right;color:#5C3D2E', '前 ' + r.before.real.toFixed(1) + '人／日'));
+      if (r.after) {
+        row.appendChild(el('span', 'text-align:right;color:#5C3D2E', '後 ' + r.after.real.toFixed(1) + '人／日'));
+        var df = r.after.real - r.before.real; row.appendChild(el('span', 'text-align:right;font-weight:700;color:' + (df > 0.05 ? '#2e7d4f' : df < -0.05 ? '#b4561f' : '#a08a74'), (df > 0.05 ? '＋' : df < -0.05 ? '－' : '±') + Math.abs(df).toFixed(1)));
+      } else { row.appendChild(el('span', 'text-align:right;color:#a08a74', '後 あと' + r.left + '日')); row.appendChild(el('span', '', '')); }
+      wrap.appendChild(row);
+    });
+    wrap.appendChild(el('div', 'font-size:10px;color:#a08a74;margin-top:3px', '前＝公開日の前の7日・後＝公開日の翌日からの7日（公開日そのものは入れません）。人数が1日に数人ほどなので、差は偶然の範囲のことが多く、数週間ためて傾向として見てください。機能を足した公開は、更新履歴の言い回しで判別しています（取りこぼしあり）。'));
     return wrap;
   }
   /* 最初に使った機能：本格的に使った端末ごとに、その日の最初の1つ（ツアーのスキップ・更新通知などの軽い操作は飛ばす）。多い順に上位10 */
