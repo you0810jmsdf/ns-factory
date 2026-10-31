@@ -22,6 +22,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
     try { const a = new Uint8Array(12); env.crypto.getRandomValues(a); return Array.from(a, v => v.toString(36).padStart(2, '0')).join(''); }
     catch { let s = ''; while (s.length < 24) s += Math.floor(rand() * 36).toString(36); return s; }
   };
+  const isOwner = () => { try { return env.localStorage?.getItem('nsf_ga_optout') === '1'; } catch { return false; } };   /* 作家の端末（管理画面で印をつけた端末・analytics.js と同じ印）：人数には入るが、「開いた」の数には入れない（?o=1） */
   const visible = () => env.document?.visibilityState !== 'hidden';
   const wait = sec => Math.round(Math.min(PRES_MAX_SEC, Math.max(PRES_MIN_SEC, sec)) * (0.9 + rand() * 0.2) * 1000);   /* 全員が同じ瞬間に送らないよう ±10% ばらす */
   const clear = () => { if (timer != null) { env.clearTimeout(timer); timer = null; } };
@@ -31,7 +32,7 @@ export function createPresence({ env = globalThis, onCount = () => {}, fetchFn =
     inFlight = true; let next = 30;
     try {
       const ctl = typeof AbortController === 'function' ? new AbortController() : null, to = ctl ? env.setTimeout(() => ctl.abort(), PRES_TIMEOUT_MS) : null;
-      let r; try { r = await (fetchFn || env.fetch.bind(env))(base() + '/beat', { method: 'POST', headers: { 'content-type': 'text/plain' }, body: id, cache: 'no-store', signal: ctl?.signal }); } finally { if (to != null) env.clearTimeout(to); }
+      let r; try { r = await (fetchFn || env.fetch.bind(env))(base() + '/beat' + (isOwner() ? '?o=1' : ''), { method: 'POST', headers: { 'content-type': 'text/plain' }, body: id, cache: 'no-store', signal: ctl?.signal }); } finally { if (to != null) env.clearTimeout(to); }
       if (!r?.ok) throw new Error('http');
       const j = await r.json(); if (!Number.isFinite(j?.n)) throw new Error('shape');
       fails = 0; next = Number(j.next) || 30; onCount(Math.max(1, Math.floor(j.n)));
