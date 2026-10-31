@@ -10,6 +10,10 @@ okcoin-state.json
 # GitHub Pages は静的配信のため、置いた時点で全世界から取得可能になる。
 staff-monitor-data.json
 knowledge-graph.html
+# 受注記録（依頼者名・非公開メモ）と証憑チェックリスト（契約サービス・金額）。2026-10-31 漏洩対応で履歴ごと削除。
+# ここに書いておくと、自動処理が git add しても「ignored」で弾かれて再公開されない
+orderprogress-data.json
+order_estimate/receipt-checklist.json
 
 # BASE登録用の生成物。価格未設定や個人名候補の確認レポートを含むため公開しない。
 tools/output/base-export/

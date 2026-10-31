@@ -6765,7 +6765,8 @@ async function loadReceiptChecklist() {
 
     receiptChecklistSetPill('読込済', true);
   } catch (err) {
-    receiptChecklistSetPill('読込失敗: ' + err.message, false);
+    // receipt-checklist.json は公開リポジトリで誰でも読めたため 2026-10-31 に削除した（契約サービス・金額を含む）
+    receiptChecklistSetPill(/HTTP 404/.test(err.message) ? '停止中（公開リスクのためデータを削除済み）' : '読込失敗: ' + err.message, false);
   }
 }
 
