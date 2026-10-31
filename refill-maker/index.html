@@ -369,6 +369,7 @@ body.panel-open #preview { margin-left: 280px; }
         <li>「用紙」でサイズを選ぶ（ロルバーン L／M、A6、バイブル、A5、ミニ6、マイクロ5、または数値を入力）</li>
         <li>「書式」で種類を選ぶ（週間バーチカル／マンスリー／お薬手帳／方眼・ドット・罫線メモ）</li>
         <li>PCは「印刷」、スマホは「PDFを生成」。印刷ダイアログで <b>「実際のサイズ（100%）」</b>。両面は画面に出る綴じ方で</li>
+        <li>スマホは、画面を<b>右へ払う</b>（フリック）とメニューが開き、<b>左へ払う</b>と紙面に戻ります（☰ボタンやメニューの外のタップでも切り替えられます）</li>
       </ol>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 用紙のサイズと穴の位置について</p>
       <ul style="padding-left:18px; margin:4px 0;">
@@ -822,6 +823,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-10-31', type: 'improve', title: 'スマホで、フリックでメニューと紙面を切り替え',
+    detail: 'スマホの画面で、横に払う（フリック）操作でメニューと紙面を切り替えられるようにしました。右へ払うとメニューが開き、左へ払うと紙面に戻ります。入力欄やスライダーを触っているとき、画面を拡大しているときは、切り替わりません。☰ボタンや、メニューの外をタップする従来の操作もそのまま使えます。' },
   { date: '2026-10-31', type: 'improve', title: 'スマホで使いやすくしました',
     detail: 'スマホの画面幅で、設定パネルを紙面の上に重ねて開くようにしました（以前は紙面が押しつぶされて見えませんでした）。パネルの外をタップすると閉じます。入力欄の文字を大きくして、iPhoneで触れたときに画面が勝手に拡大しないようにし、ボタンも押しやすい大きさにしました。「PDFを生成」はパネルの下に固定して、スクロールしなくても押せます。右下の「綴じ後プレビュー」「改善要望」は丸いアイコンだけにして、紙面を隠さないようにしました。無料のお知らせは2行に畳み、最初の画面で紙面が見えるようにしました（タップで全文）。PCの見た目は変わりません。' },
   { date: '2026-10-30', type: 'feat', title: 'マンスリー（見開き1ヶ月）の書式を追加',
@@ -851,6 +854,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const n = $('nsf-free-notice');
   if (n) n.addEventListener('click', e => { if (innerWidth <= 600 && !e.target.closest('a')) n.classList.toggle('expanded'); });
 });
+// スマホ幅：横にフリックでメニューと紙面を切り替える（右へ払う＝メニューを開く／左へ払う＝閉じる）。
+// 入力欄・スライダー・各ダイアログの上、2本指（拡大）や拡大中は効かせない。縦の動きが大きいときは、ふつうのスクロール。
+(function () {
+  let sx = 0, sy = 0, st = 0, ok = false;
+  const NO = 'input, select, textarea, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge';
+  document.addEventListener('touchstart', e => {
+    const zoomed = window.visualViewport && window.visualViewport.scale > 1.05;
+    ok = innerWidth <= 600 && e.touches.length === 1 && !zoomed && !(e.target.closest && e.target.closest(NO));
+    if (ok) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); }
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!ok || !e.changedTouches.length) return;
+    ok = false;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Date.now() - st > 700 || Math.abs(dx) < 60 || Math.abs(dx) < 1.8 * Math.abs(dy)) return;
+    const open = $('controls').classList.contains('open');
+    if ((dx > 0 && !open) || (dx < 0 && open)) toggleSidebar();
+  }, { passive: true });
+  document.addEventListener('touchcancel', () => { ok = false; }, { passive: true });
+})();
 
 // === MODULE: Init ===
 document.addEventListener('DOMContentLoaded', () => {
