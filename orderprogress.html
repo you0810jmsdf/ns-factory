@@ -468,9 +468,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
 <!-- Main content -->
 <div class="content">
-  <!-- 控えデータ表示中の注意。GASに届かず orderprogress-data.json（2026年4月時点）へ切り替えたときだけ出す -->
+  <!-- GASに届かなかったときだけ出す。控えの orderprogress-data.json は個人情報が公開状態だったため 2026-10-31 に削除した -->
   <div id="stale-banner" hidden>
-    ⚠️ <span data-i18n="stale.msg">最新のデータを読み込めなかったため、2026年4月時点の古い控えを表示しています。件数や案件は最新ではありません。</span><button type="button" onclick="retryLoad()" data-i18n="stale.retry">再読み込み</button>
+    ⚠️ <span data-i18n="stale.msg">最新のデータを読み込めませんでした。時間をおいて再読み込みしてください。</span><button type="button" onclick="retryLoad()" data-i18n="stale.retry">再読み込み</button>
   </div>
   <!-- Stats -->
   <div class="stats-row">
@@ -639,7 +639,7 @@ window.NSF_I18N_DICT = {
   'loading.orders': 'Loading orders…',
   'loading.slow': 'The server is responding slowly. Please wait.',
   'loading.sec': 's',
-  'stale.msg': 'Could not load the latest data, so an older backup copy is shown. Counts and orders may be out of date.',
+  'stale.msg': 'Could not load the latest data. Please wait a moment and reload.',
   'stale.retry': 'Reload',
   'tl.none': 'No progress updates yet',
   'card.client': 'Customer',
@@ -679,7 +679,6 @@ document.addEventListener('nsf:langchange', () => location.reload());
 const GAS_KEY = 'op_gas_url';
 // 管理者パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';
-const FALLBACK_DATA_URL = 'orderprogress-data.json';
 const INVOICE_GAS_URL = 'https://script.google.com/macros/s/AKfycbzERvxy0zmLdytf0roNlzVzj6JHg2keLvMQ3tl38fxQk97S-O83VjG-bQPOLMI_HYZe/exec';
 let customerMaster = [];
 const RR_GAS_KEY = 'rr_gas_url';
@@ -963,11 +962,11 @@ async function loadFallbackRecords() {
   }
 }
 
+// ⛔ 静的な控え（orderprogress-data.json）は置かないこと（2026-10-31）。
+//    公開リポジトリ＝誰でもURL直打ちで読めるため、依頼者名・メモ（非公開）が全件見えていた。
+//    控えが要るなら GAS 側（鍵付き）に持たせる。ここは常に空を返す
 async function fetchFallbackRecords() {
-  const res = await fetch(FALLBACK_DATA_URL);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  return data.records || [];
+  return [];
 }
 
 async function loadRrRecords() {
@@ -1950,6 +1949,7 @@ async function importFallbackToGas() {
   if (!confirm('転載データをGASへ取り込みますか？')) return;
   try {
     const fallback = await fetchFallbackRecords();
+    if (!fallback.length) { showMsg('取り込める転載データがありません（控えファイルは公開リスクのため削除済み）', true); return; }
     const payload = { action:'import', records:fallback.map(toGasImportRecord), key: adminWriteKey() };
     const res = await fetch(gasUrl, { method:'POST', body:JSON.stringify(payload) });
     const data = await res.json();
