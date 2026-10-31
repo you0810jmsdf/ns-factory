@@ -25,7 +25,9 @@
       '.nsf-fold>summary::before{content:"▸ ";color:#7ec8e3}',
       '.nsf-fold[open]>summary::before{content:"▾ "}',
       '.nsf-fold>.ctrl-section{border-top:1px dashed #333;margin-top:8px;padding-top:6px}',
-      '.nsf-fold .nsf-fold-note{font-size:9px;color:#888;line-height:1.5;margin:0 0 4px}'
+      '.nsf-fold .nsf-fold-note{font-size:9px;color:#888;line-height:1.5;margin:0 0 4px}',
+      '.nsf-hole-hint{font-size:10px;color:#9a9a9a;line-height:1.6;margin:2px 2px 6px}',
+      '@media (max-width:600px){.nsf-hole-hint{font-size:11px}}'
     ].join('');
     document.head.appendChild(st);
   }
@@ -230,7 +232,27 @@
     document.head.appendChild(s);
   }
 
-  function mount() { injectStyle(); fold(); mountBackup(); pwa(); usage(); loadMobile(); }
+  // 6. 「穴の印」を印刷するかどうかを、用紙の近くに出す（2026-10-31）。本体は「表示要素」の「穴印刷」ボタン（くわしい設定の中で見つけにくい）。
+  //    同じ設定を操作する行を足すだけで、描画・保存・PDF の仕組みには触れない。穴あけ道具がない人向け。
+  function holeRow() {
+    const real = document.getElementById('btnHoles');
+    const controls = document.getElementById('controls');
+    if (!real || !controls || document.getElementById('nsfHoleRow')) return;
+    const sec = [...controls.querySelectorAll('.ctrl-section')].find(x => /^(用紙|印刷モード)$/.test(titleOf(x)));
+    if (!sec) return;
+    const row = document.createElement('div'); row.id = 'nsfHoleRow'; row.className = 'ctrl-row';
+    row.innerHTML = '<label>穴の印</label><button type="button" class="btn-toggle" id="nsfHoleBtn"></button>';
+    const hint = document.createElement('div'); hint.className = 'nsf-hole-hint';
+    hint.textContent = '穴あけ道具がないときは「印刷しない」にすると、穴の印を印刷しません（PDFも同じ）。';
+    sec.appendChild(row); sec.appendChild(hint);
+    const btn = row.querySelector('button');
+    const sync = () => { const on = real.classList.contains('on'); btn.classList.toggle('on', on); btn.textContent = on ? '印刷する' : '印刷しない'; };
+    btn.addEventListener('click', () => real.click());
+    new MutationObserver(sync).observe(real, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  }
+
+  function mount() { injectStyle(); fold(); holeRow(); mountBackup(); pwa(); usage(); loadMobile(); }
   // print-adjust.js が DOMContentLoaded で差し込む設定欄を待ってから畳む
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(mount, 0)); else setTimeout(mount, 0);
 })();
