@@ -152,7 +152,7 @@ const CN = [
   N("estimate","page",680,100,"見積もりシミュレーター","leather-order-estimate-v2.html",{path:"order_estimate/leather-order-estimate-v2.html",backend:"請求書GAS submitQuoteRequest",data:"brand-price.csv / size-baseprice.csv / labor-curves.json / ring-price-stock.csv / leather-catalog.json / stitch-thread-stock.csv / settings.csv",note:"構造7種・サイズ・リング・革280色・ステッチ92色から税込合計を出す。管理者は ?admin で工数カーブを編集。"}),
   N("quote","mail",920,100,"正式見積依頼","メール（GAS経由）",{backend:"請求書GAS（Nsfactory-Billing）submitQuoteRequest",note:"見積もり画面の「正式見積依頼を送る」。条件と控えが事業主へ届く。"}),
   N("invoice","admin",1160,100,"見積書・請求書・領収書","invoice/",{path:"invoice/index.html ほか4画面",backend:"請求書GAS Nsfactory-Billing",note:"書類台帳・顧客マスタ・商品マスタ・振込先口座。番号は保存時に採番。オーダー進捗の受付番号と関連付け。"}),
-  N("orderprogress","page",1400,100,"オーダー進捗","orderprogress.html",{path:"orderprogress.html",backend:"オーダー進捗GAS（add/update/delete は管理者キー必須）",data:"orderprogress-data.json（静的控え）",note:"サイズ別タブとキャンセルタブ。受付番号ごとにタイムラインと公開写真。カード購入の売約はここへ自動登録。"}),
+  N("orderprogress","page",1400,100,"オーダー進捗","orderprogress.html",{path:"orderprogress.html",backend:"オーダー進捗GAS（add/update/delete は管理者キー必須）",data:"GASのみ（静的控えは公開リスクのため2026-10-31削除）",note:"サイズ別タブとキャンセルタブ。受付番号ごとにタイムラインと公開写真。カード購入の売約はここへ自動登録。"}),
   N("done","actor",1640,100,"製作・発送","決済から7日以内（作品）",{note:"完成の連絡と発送。フルオーダーは材料取寄せ2〜4週間。"},190,64),
   N("works","page",440,230,"作品集","works.html（613件）",{path:"works.html",backend:"商品登録GAS api=products・配信GAS works（カード販売）",data:"works-data.json",note:"カテゴリ3段階の絞り込み。詳細モーダルで写真・動画・SOLDOUT。管理者モードで編集・カード販売の開始。"}),
   N("workpage","page",680,230,"作品ページ","works/NF2026_NNN.html",{path:"works/*.html（自動生成・613本）",data:"works-data.json → tools/build_work_pages.js",note:"OGP付きの1作品1ページ。開くと作品集の該当モーダルへ転送（location.replace）。手で編集しない。"}),
@@ -298,7 +298,6 @@ const ENT = [
   E("e_patterns",40,1060,290,"patterns-data.json","JSON",[["code","FK","→ 商品（PDF）.コード"],["slug","PK","ページ名"],["lesson","","第02回 等"],["title"],["en"],["price"],["summary"],["photo"]],{note:"型紙一覧・詳細ページの生成元。"}),
   // オーダー進捗GAS
   E("e_op",400,90,300,"オーダー進捗","シート",[["ID","PK"],["受付番号","","一意・書類/販売が参照"],["依頼者"],["サイズ","","タブ分類"],["品目"],["ステータス"],["受付日"],["予定完了日"],["タイムライン","","日付付き行"],["DriveフォルダID"],["写真（公開）"],["登録日時"],["更新日時"]],{note:"キャンセル起算はタイムライン最終日付。"}),
-  T("e_opdata",400,350,300,"orderprogress-data.json","JSON・控え","records[]。公開表示の静的フォールバック。"),
   T("e_consult",400,440,300,"案件一覧（AI相談）","シート","hearing-ai / ショールームの submitChatOrder・addConsultation・画像。管理画面の接客ログが読む。"),
   T("e_waitlist",400,540,300,"再製作待ち","シート","SOLDOUT作品への購入意思。即時通知＋一覧。読み取りにも管理キー。"),
   T("e_bug",400,640,300,"不具合報告（改善要望）","シート","公開ツールの💡ボタン。rid で二重防止・事業主メール。"),
@@ -343,7 +342,7 @@ const ENT = [
 const REL = [
   ["e_master","e_worksale","1","0..1","作品ID"],["e_master","e_worksdata","","","生成"],
   ["e_worksale","e_op","","1","受付番号"],["e_purchase","e_pdfprod","n","1","商品=コード"],["e_patterns","e_pdfprod","1","1","code"],
-  ["e_op","e_opdata","","","書き出し"],["e_consult","e_op","","","受付→add"],
+  ["e_consult","e_op","","","受付→add"],
   ["e_tx","e_cust","n","1","customer_id"],["e_doc","e_cust","n","1","customerId"],["e_line","e_doc","n","1","number"],["e_doc","e_op","0..1","1","relatedOrderNumber"],
   ["e_dllog","e_students","n","1","メール"],["e_authlog","e_students","n","1","メール"],
   ["e_lstock","e_leather","1","1","id"],["e_thread","e_stitch","1","1","thread_id"],["e_ring","e_size","n","1","planner_type"],
@@ -352,7 +351,7 @@ const REL = [
 const GROUPS = [
   {label:"商品登録GAS  Nsfactory-product-register  AKfycbw-…",members:["e_master","e_worksdata"],c:"var(--k-gas)"},
   {label:"配信GAS  refill_sales（Stripe）  AKfycbw6…",members:["e_worksale","e_pdfprod","e_purchase"],c:"var(--k-gas)"},
-  {label:"オーダー進捗GAS  order_progress  AKfycby-…",members:["e_op","e_opdata","e_consult","e_waitlist","e_bug","e_access","e_toollinks"],c:"var(--k-gas)"},
+  {label:"オーダー進捗GAS  order_progress  AKfycby-…",members:["e_op","e_consult","e_waitlist","e_bug","e_access","e_toollinks"],c:"var(--k-gas)"},
   {label:"請求書GAS  Nsfactory-Billing  AKfycbzE…",members:["e_cust","e_tx","e_doc","e_line","e_prod2","e_bank"],c:"var(--k-gas)"},
   {label:"JHCS受講生DL GAS  AKfycbwp…",members:["e_students","e_dllog","e_authlog"],c:"var(--k-gas)"},
   {label:"幕僚計画GAS  AKfycbwG…",members:["e_events","e_snstrend","e_monitor"],c:"var(--k-gas)"},
