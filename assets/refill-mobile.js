@@ -100,6 +100,41 @@
     } catch (e) {}
   }
 
+  // ---- 生成したPDFを「共有・印刷」へ回すボタン（ドックに足す）。ブラウザが「ファイルの共有」に対応している端末（iPhone・Androidの新しいブラウザ）だけに出す ----
+  // 「PDFを生成」は新しいタブでPDFを開く作りで、iPhoneでは開いたあとに共有ボタンを探す手間がある。生成したPDFを覚えておき、1タップで共有シート（プリント・ファイルに保存・LINE等）を出す。
+  function installShare() {
+    const dock = $('mobileDock');
+    if (!dock || window.__nsfShareInstalled || dock.querySelector('[data-nsf-share]')) return;
+    let can = false;
+    try { can = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] })); } catch (e) { can = false; }
+    if (!can) return;
+    window.__nsfShareInstalled = true;
+    let last = null;
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'btn-secondary'; btn.setAttribute('data-nsf-share', ''); btn.disabled = true;
+    btn.textContent = '📤 共有・印刷'; btn.title = 'PDFを生成したあとに押すと、プリント・保存などの共有メニューが開きます';
+    const view = dock.querySelector('[data-nsf-view]') || dock.lastElementChild;   // リフィルメーカー本体のドックは属性が無いので、最後の「紙面を見る」の前に入れる
+    dock.insertBefore(btn, view || null);
+    const st = document.createElement('style');
+    st.textContent = '@media (max-width:600px){#mobileDock button{padding-left:6px!important;padding-right:6px!important;white-space:nowrap;font-size:13px!important}#mobileDock button:disabled{opacity:.45}}';
+    document.head.appendChild(st);
+    // 生成関数が作った PDF（URL.createObjectURL に渡される application/pdf）を覚える
+    const orig = URL.createObjectURL.bind(URL);
+    URL.createObjectURL = function (b) { try { if (b && b.type === 'application/pdf') { last = b; btn.disabled = false; } } catch (e) {} return orig(b); };
+    btn.addEventListener('click', async () => {
+      if (!last) return;
+      const file = new File([last], 'refill-' + new Date().toISOString().slice(0, 10) + '.pdf', { type: 'application/pdf' });
+      try { await navigator.share({ files: [file], title: 'リフィルPDF' }); }
+      catch (e) { if (e && e.name !== 'AbortError') alert('共有できませんでした。「PDFを生成」で開いたPDFから、共有・印刷してください。'); }
+    });
+    try {
+      if (typeof HISTORY_ENTRIES !== 'undefined' && Array.isArray(HISTORY_ENTRIES) && !HISTORY_ENTRIES.some(x => x.title === 'スマホで、PDFを「共有・印刷」へ1タップ')) {
+        HISTORY_ENTRIES.push({ date: '2026-10-31', type: 'improve', title: 'スマホで、PDFを「共有・印刷」へ1タップ',
+          detail: 'スマホで「PDFを生成」したあと、メニューの下の「📤 共有・印刷」を押すと、できたPDFをそのまま共有メニュー（プリント・ファイルに保存・LINEなど）へ渡せるようにしました。ファイルの共有に対応している端末だけに出ます。' });
+      }
+    } catch (e) {}
+  }
+
   function init() {
     if (window.__nsfRefillMobile) return;
     if (!$('controls') || !$('ctrl-toggle-btn') || typeof window.toggleSidebar !== 'function') return;
@@ -158,7 +193,7 @@
     h.setAttribute('aria-label', 'メニューを開く／閉じる'); h.addEventListener('click', () => window.toggleSidebar());
     document.body.appendChild(h);
     installZoom();
-    if (HANDLE_ONLY) return;
+    if (HANDLE_ONLY) { installShare(); return; }
 
     // 更新履歴（各ページの HISTORY_ENTRIES は新しい順の逆＝末尾が最新）。ページ側を18本書き換えず、ここから1件足す
     try {
@@ -175,6 +210,7 @@
       d.querySelector('[data-nsf-pdf]').addEventListener('click', e => window.generatePDF(e));
       d.querySelector('[data-nsf-view]').addEventListener('click', () => window.toggleSidebar());
       $('controls').appendChild(d);
+      installShare();
     }
     // お知らせ：本文を .nsf-nb に包み、2行に畳む（タップで全文）
     const n = $('nsf-free-notice');
