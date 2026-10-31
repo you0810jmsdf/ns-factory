@@ -8627,7 +8627,30 @@ function selectOutline() {
 }
 /** 一部だけ動かすと壊れるグループ（アプリが作った金具・折り目の断面図）の図形か。Ctrl+クリックでも、全体のまま。 */
 const groupIsWhole = s => { const g = groupIdOf(s); return !!g && doc.shapes.some(x => groupIdOf(x) === g && (isHardwareShape(x) || x.hwSection || x.hwFor || x.foldSec || x.layer === 'section')); };
+/** 画面の上の指2本（スマホ・2026-11-01 事業主「スマホでN's CADが使いにくい」）：指の間隔の変化で拡大縮小、真ん中の動きで画面を動かす。2本目が触れたら、描きかけ・動かしかけの操作は取り消す（図形は動かさない）。3本目以降は無視。マウス・ペン・1本指は、これまでどおり。 */
+const touchPts = new Map(); let pinch = null;
+const touchXY = e => { const p = local(e); return { x: p.x, y: p.y }; };
+const pinchNow = () => { const [a, b] = [...touchPts.values()]; return { d: Math.hypot(b.x - a.x, b.y - a.y), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } }; };
+function touchPinchDown(e) {
+  if (e.pointerType !== 'touch') return false;
+  if (e.isPrimary !== false) { touchPts.clear(); pinch = null; }   /* 1本目：離した通知の取りこぼしが残っていても、ここで清算する */
+  if (touchPts.size >= 2 && !touchPts.has(e.pointerId)) return true;   /* 3本目以降は無視 */
+  touchPts.set(e.pointerId, touchXY(e)); if (touchPts.size < 2) return false;
+  longPressCancel(); gesture = null; hideCtxMenu(); e.preventDefault?.(); try { canvas.setPointerCapture?.(e.pointerId); } catch {}   /* 触れていない指の番号だと例外になる */
+  pinch = pinchNow(); draw(); return true;
+}
+function touchPinchMove(e) {
+  if (e.pointerType !== 'touch' || !touchPts.has(e.pointerId)) return false;
+  touchPts.set(e.pointerId, touchXY(e)); if (!pinch) return false;
+  const now = pinchNow(); if (pinch.d > 1e-6 && now.d > 1e-6) zoom(now.d / pinch.d, pinch.mid);   /* 前の真ん中を中心に拡大縮小 */
+  origin = { x: origin.x + now.mid.x - pinch.mid.x, y: origin.y + now.mid.y - pinch.mid.y }; pinch = now; draw(); return true;
+}
+function touchPinchUp(e) {
+  if (e.pointerType !== 'touch') return false; touchPts.delete(e.pointerId); if (!pinch) return false;
+  pinch = null; gesture = null; if (canvas.hasPointerCapture?.(e.pointerId)) canvas.releasePointerCapture(e.pointerId); draw(); return true;   /* 2本指の操作は、指を離しても、クリックにしない */
+}
 canvas.addEventListener('pointerdown', e => {
+  if (touchPinchDown(e)) return;
   longPressStart(e); hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
@@ -8730,6 +8753,7 @@ canvas.addEventListener('pointerdown', e => {
   draw();
 });
 canvas.addEventListener('pointermove', e => {
+  if (touchPinchMove(e)) return;
   longPressMove(e);
   const p = local(e);
   if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
@@ -9044,6 +9068,7 @@ canvas.addEventListener('dblclick', e => {
   }
 });
 canvas.addEventListener('pointerup', e => {
+  if (touchPinchUp(e)) return;
   longPressCancel();
   if (!gesture) return;
   const g = gesture, p = local(e);
@@ -9130,7 +9155,7 @@ canvas.addEventListener('pointerup', e => {
   }
   draw();
 });
-canvas.addEventListener('pointercancel', () => { longPressCancel(); gesture = null; draw(); });
+canvas.addEventListener('pointercancel', e => { touchPinchUp(e); longPressCancel(); gesture = null; draw(); });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
   if (quadOn()) { const role = quadRoleAt(local(e)); if (role === 'solid') return; if (role !== quadRole()) switchSheet(role); }
