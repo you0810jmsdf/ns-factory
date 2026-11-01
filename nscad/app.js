@@ -3,7 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension, adPieces } from './autodim.js';
 import { nestPieces } from './nest.js';
-import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, textFontStack } from './geometry.js';
+import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, TEXT_FONT_FILES, textFontStack } from './geometry.js';
 import { stitchSegments, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
@@ -117,6 +117,7 @@ function applyLanguage(lang) {
   try { localStorage.setItem('leather-cad.lang', current); } catch { /* file:// の保存制限でも操作を続ける。 */ }
   document.documentElement.lang = current;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-label]').forEach(el => { el.label = t(el.dataset.i18nLabel); });   /* 書体の選択欄の見出し（optgroup） */
   document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
@@ -5476,6 +5477,16 @@ function runTextFontApply() {
   applyTextFont({ font, size, color }); refreshTextFontCard(true);
 }
 /** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
+/** 書体の CSS。同梱フォント（TEXT_FONT_FILES）は、初めて使うときに assets/fonts/ から読み、読めたら描き直す。FontFace が無い環境（テスト・ファイルで開いた版）では何もせず、後ろの候補で描く。 */
+const textFontLoading = new Set();
+function textFontCss(key) {
+  const f = TEXT_FONT_FILES[key];
+  if (f && !textFontLoading.has(key) && typeof FontFace === 'function' && document.fonts) {
+    textFontLoading.add(key);
+    try { new FontFace(f.family, `url(assets/fonts/${f.file})`).load().then(face => { document.fonts.add(face); draw(); }).catch(() => { /* 読めなければ後ろの候補で描く */ }); } catch { /* 同上 */ }
+  }
+  return textFontStack(key);
+}
 const newTextFont = () => { const v = $('textFont')?.value; return v && v !== 'gothic' && Object.hasOwn(TEXT_FONTS, v) ? { font: v } : {}; };
 /** 書き出し：phrases.json（別の PC へ持っていく・控え）。読み込み：同じ名前は置き換え、新しい名前は足す。 */
 function exportPhrases() { if (!phrases.length) { $('hint').textContent = t('phraseNone'); return; } download('phrases.json', serializePhrases(phrases), 'application/json'); $('hint').textContent = t('phraseExported', { n: phrases.length }); }
@@ -6256,7 +6267,7 @@ function drawRectHandles() {
 /** 文字の取っ手（事業主要望 2026-10-21「入力後のテキストを図で直接拡大縮小したい」）：文字を1つだけ選んでいる間（選択・文字ツール）、文字の枠（点線）と右上の角に取っ手が出る。
  *  角をつかんで引くと、左下の基準点（文字の置き場所）を固定したまま、角が対角線の方向に付いてくる大きさ（0.1mm 単位・最小 0.5mm）になる。離すと確定（元に戻すは1回）。回転した文字は、角も一緒に回る。 */
 function textWidthMm(s) {
-  let w = NaN; try { ctx.save(); ctx.font = `${s.sizeMm}px ${textFontStack(s.font)}`; w = ctx.measureText?.(s.text)?.width; ctx.restore(); } catch { /* 測れない環境では概算 */ }
+  let w = NaN; try { ctx.save(); ctx.font = `${s.sizeMm}px ${textFontCss(s.font)}`; w = ctx.measureText?.(s.text)?.width; ctx.restore(); } catch { /* 測れない環境では概算 */ }
   return Number.isFinite(w) && w > 0 ? w : Math.max(0.6, 0.6 * [...s.text].length) * s.sizeMm;   /* 描くときと同じ書体で実測する（日本語は1文字が大きさと同じ幅） */
 }
 const selectedText = () => (mode === 'select' || mode === 'text') && !exporting && selected.size === 1 ? (sh => sh && sh.type === 'text' ? sh : null)(doc.shapes.find(x => selected.has(x.id) && editable(x))) : null;
@@ -8234,7 +8245,7 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
     }
     ctx.strokeStyle = color; ctx.stroke(); return;
   }
-  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${s.sizeMm}px ${textFontStack(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
+  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${s.sizeMm}px ${textFontCss(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
   if (s.type === 'image') {
     const img = imageElement(s.imageId); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.globalAlpha = s.opacity;
     if (img && typeof ctx.drawImage === 'function') ctx.drawImage(img, 0, 0, s.wMm, s.hMm); else { ctx.fillStyle = '#333'; ctx.fillRect(0, 0, s.wMm, s.hMm); }
