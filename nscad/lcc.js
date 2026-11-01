@@ -50,17 +50,34 @@ export function lccHole(s) {
 /** 菱目の向きを、工具の形に合わせて直す。lccHole の angleDeg は「高さ（holeH）が長い軸」の前提で求めている（長い対角線の向き − 90°）。
  *  登録済みの工具は幅（holeW）が長い（例 2×0.8）ので、そのままだと、元の向きより 90° 回って描かれる（実ファイルで299個すべて）。幅が長い工具には 90° 足して、元の長い軸の向きに合わせる。菱目以外（丸・スリット）は、そのまま。 */
 export function lccDrawAngle(h, tool) { return h.kind === 'diamond' && tool && tool.holeW >= tool.holeH ? normDeg(h.angleDeg + 90) : h.angleDeg; }
-/** 穴候補を Prev/Next の連結順に並べた鎖の配列に分ける（連結のないものは 1 個の鎖）。 */
+/** 穴候補を Prev/Next の連結順に並べた鎖の配列に分ける（連結のないものは 1 個の鎖）。
+ *  連結は「前」「次」のどちらか片方の記録だけでもつなぐ（事業主 2026-11-01「なぜ8個欠けるのか」：ファイルによっては PrevStId だけ・NextStId だけしか記録が無く、
+ *  次だけを辿っていたため、並びがぜんぶ1個ずつにばらばらになり、穴を捨てていた。実ファイル 463 件のうち 13 件・2,915 個）。 */
 export function holeChains(holes) {
-  const byId = new Map(holes.map(h => [h.id, h])), seen = new Set(), chains = [];
-  for (const h of holes) {
-    if (seen.has(h.id)) continue;
-    let head = h; const guard = new Set([h.id]); while (byId.has(head.prev) && !guard.has(head.prev)) { head = byId.get(head.prev); guard.add(head.id); }
-    if (seen.has(head.id)) head = h; // 先頭が別の鎖で消費済みなら自分から始める
-    const chain = []; let cur = head; while (cur && !seen.has(cur.id)) { seen.add(cur.id); chain.push(cur); cur = byId.get(cur.next); }
-    if (chain.length) chains.push(chain);
-  }
+  const byId = new Map(holes.map(h => [h.id, h])), nextOf = new Map(), hasPrev = new Set();
+  const link = (a, b) => { if (!a || !b || a === b || nextOf.has(a.id) || hasPrev.has(b.id)) return; nextOf.set(a.id, b); hasPrev.add(b.id); };   /* a の次が b（枝分かれ・重複は、先に出た方を取る） */
+  for (const h of holes) { link(byId.get(h.prev), h); link(h, byId.get(h.next)); }
+  const seen = new Set(), chains = [], walk = start => { const chain = []; let cur = start; while (cur && !seen.has(cur.id)) { seen.add(cur.id); chain.push(cur); cur = nextOf.get(cur.id); } if (chain.length) chains.push(chain); };
+  for (const h of holes) if (!hasPrev.has(h.id)) walk(h);   /* 先頭（前が無い穴）から順に */
+  for (const h of holes) if (!seen.has(h.id)) walk(h);   /* 循環していて先頭が無いもの */
   return chains;
+}
+/** 連結の記録がまったく無い穴（1個だけの鎖）を、近さでつないで並びにする（事業主 2026-11-01：実ファイルで、曲線の上に等間隔で並んだ穴が、連結の記録なしで入っているものがあった）。
+ *  近い（ピッチの1.6倍以内）穴どうしを同じ並びにし、端から順に、いちばん近い穴へ進む形で並べる。1個だけ離れた穴は、1個のまま。連結のある鎖はそのまま。 */
+export function linkLoneHoles(chains) {
+  const lone = chains.filter(c => c.length === 1).map(c => c[0]), keep = chains.filter(c => c.length > 1); if (lone.length < 2) return chains;
+  const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) <= 1.6 * Math.max(a.pitch || 4, b.pitch || 4), idx = new Map(lone.map((h, i) => [h, i])), nb = lone.map(() => []);
+  for (let i = 0; i < lone.length; i++) for (let j = i + 1; j < lone.length; j++) if (near(lone[i], lone[j])) { nb[i].push(j); nb[j].push(i); }
+  const seen = new Set(), out = [];
+  for (let i = 0; i < lone.length; i++) {
+    if (seen.has(i)) continue;
+    const comp = [], stack = [i]; seen.add(i); while (stack.length) { const k = stack.pop(); comp.push(k); for (const m of nb[k]) if (!seen.has(m)) { seen.add(m); stack.push(m); } }
+    if (comp.length === 1) { out.push([lone[comp[0]]]); continue; }
+    const left = new Set(comp); let cur = comp.find(k => nb[k].length === 1) ?? comp[0]; const order = []; /* 端（近い穴が1個）から。無ければ（輪・格子）先頭から */
+    while (left.size) { left.delete(cur); order.push(lone[cur]); if (!left.size) break; let best = null; for (const k of left) { const dd = Math.hypot(lone[k].x - lone[cur].x, lone[k].y - lone[cur].y); if (!best || dd < best.d) best = { k, d: dd }; } cur = best.k; }
+    out.push(order);
+  }
+  void idx; return [...keep, ...out];
 }
 /** .lcc（文字列または JSON）→ { doc, stats, warnings }。doc は validateDoc を通る N's CAD 文書。 */
 export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {}) {
@@ -88,7 +105,7 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     for (const sh of out) doc.shapes.push({ id: sid(), layer, ...(color ? { color } : {}), ...sh });
   }
   // 穴：鎖ごとに近い図形へ付ける。近い図形が無い鎖は中心を結ぶ折れ線（marks 層）を作って付ける。
-  const chains = holeChains(holes); let attached = 0, viaChain = 0, viaNear = 0; const lone = [];
+  const chains = linkLoneHoles(holeChains(holes)); let attached = 0, viaChain = 0, viaNear = 0; const lone = [];
   const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && s.layer !== 'guide';
   const toolFor = h => { const kind = h.kind, pitch = h.pitch || 4; const own = (tools || []).find(t => t.kind === kind && Math.abs(t.pitch - pitch) < 0.06);
     if (own) { // 登録済み（現物）の工具があれば、ピッチ・刃数・傾きはそれに寄せる。穴の大きさ（幅×高さ）は、.lcc の元のまま（事業主 2026-11-01「読み込んだものは菱目が大きすぎる」：登録工具の 2×0.8 にすると、元の 0.4〜0.6×1.1 より長さが約1.8倍になった）。元の大きさが登録工具と同じなら、登録工具そのもの。
