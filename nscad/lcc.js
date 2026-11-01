@@ -88,9 +88,16 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     for (const sh of out) doc.shapes.push({ id: sid(), layer, ...(color ? { color } : {}), ...sh });
   }
   // 穴：鎖ごとに近い図形へ付ける。近い図形が無い鎖は中心を結ぶ折れ線（marks 層）を作って付ける。
-  const chains = holeChains(holes); let attached = 0, viaChain = 0;
+  const chains = holeChains(holes); let attached = 0, viaChain = 0, viaNear = 0; const lone = [];
   const stitchable = s => !['text', 'dimension', 'fold', 'image'].includes(s.type) && s.layer !== 'guide';
-  const toolFor = h => { const kind = h.kind, pitch = h.pitch || 4; const own = (tools || []).find(t => t.kind === kind && Math.abs(t.pitch - pitch) < 0.06); if (own) { if (!doc.tools.some(t => t.id === own.id)) doc.tools.push({ ...own }); return doc.tools.find(t => t.id === own.id); } // 登録済み（現物）の工具があればそれを使う
+  const toolFor = h => { const kind = h.kind, pitch = h.pitch || 4; const own = (tools || []).find(t => t.kind === kind && Math.abs(t.pitch - pitch) < 0.06);
+    if (own) { // 登録済み（現物）の工具があれば、ピッチ・刃数・傾きはそれに寄せる。穴の大きさ（幅×高さ）は、.lcc の元のまま（事業主 2026-11-01「読み込んだものは菱目が大きすぎる」：登録工具の 2×0.8 にすると、元の 0.4〜0.6×1.1 より長さが約1.8倍になった）。元の大きさが登録工具と同じなら、登録工具そのもの。
+      const f = v => +(+v).toFixed(2), same = Math.abs(own.holeW - h.width) < 1e-6 && Math.abs(own.holeH - h.height) < 1e-6;
+      if (same) { if (!doc.tools.some(t => t.id === own.id)) doc.tools.push({ ...own }); return doc.tools.find(t => t.id === own.id); }
+      const oid = `lcc-${own.id}-${f(h.width)}x${f(h.height)}`; let d = doc.tools.find(t => t.id === oid);
+      if (!d) { d = { ...own, id: oid, name: `${own.name && own.name !== own.id ? own.name : `${kind} ${own.pitch}mm`} ${f(h.width)}×${f(h.height)}`, holeW: h.width, holeH: h.height, holeD: Math.min(h.width, h.height) }; doc.tools.push(d); }
+      return d;
+    }
     const id = `lcc-${kind}-${pitch}-${h.width}x${h.height}`; let tool = doc.tools.find(t => t.id === id); if (!tool) { tool = { id, name: `${kind} ${pitch}mm`, kind, pitch, teeth: 1, holeW: h.width, holeH: h.height, holeD: Math.min(h.width, h.height), angleDeg: kind === 'round' ? 0 : 45, mark: 'tool' }; doc.tools.push(tool); } return tool; };
   const byId = new Map(doc.shapes.map(s => [s.id, s])), groupCache = new Map();
   // 連結は近傍（bbox を 20mm 広げた範囲）の図形だけで作る（全図形で chainShapes すると O(n²) で数万図形が止まる）
@@ -103,10 +110,17 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
     const hit = doc.shapes.filter(stitchable).reduce((best, s) => { const dist = distToShape(s, mid); return dist < (best ? best.d : attachMaxMm) ? { s, d: dist } : best; }, null);
     if (hit) { const grp = groupOf(hit.s), near = h => grp.shapeIds.some(id => distToShape(byId.get(id), h) <= attachMaxMm * 2); if (chain.every(near)) { const path = pathFor(hit.s); for (const h of chain) if (place(h, path)) attached++; continue; } }
     if (chain.length >= 2) { const poly = { id: sid(), layer: 'guide', type: 'polyline', holeLink: true, points: chain.map(h => ({ x: h.x, y: h.y })), closed: false }; /* 穴の経路のための線。もとの図面に無い線なので、画面・書き出しには描かない（holeLink） */ doc.shapes.push(poly); byId.set(poly.id, poly); const path = pathFor(poly); for (const h of chain) if (place(h, path)) { attached++; viaChain++; } }
-    else warnings.push(`hole-skipped:${chain[0].id}`); /* 近くに図形も連結も無い孤立した穴：もとの図面に無い丸の目印は作らない（事業主指示 2026-10-14） */
+    else lone.push(chain[0]); /* 連結も1個・近くに図形も無い穴：すぐ下で、近くの穴の経路に付ける（付けられなければ作らない） */
+  }
+  // 孤立した穴（連結が切れた1個）：列の途中や端にある本物の穴なので、近く（ピッチの3倍以内）に付けた穴があれば、その経路に付ける（事業主 2026-11-01「上と下の菱目位置がずれている」：実ファイルで8個が欠けていた）。
+  // どの穴からも遠い穴は、もとの図面に無い丸の目印を作らず、取り込まない（事業主指示 2026-10-14）。
+  for (const h of lone) {
+    let best = null; for (const q of doc.holes) { const dd = Math.hypot(q.x - h.x, q.y - h.y); if (dd <= 3 * (h.pitch || 4) && (!best || dd < best.d)) best = { q, d: dd }; }
+    const path = best && doc.paths.find(p => p.id === best.q.pathId);
+    if (path && place(h, path)) { attached++; viaNear++; } else warnings.push(`hole-skipped:${h.id}`);
   }
   const stats = lccStats(d, { name });
-  return { doc, stats: { ...stats, holesAttached: attached, holesViaChain: viaChain }, warnings };
+  return { doc, stats: { ...stats, holesAttached: attached, holesViaChain: viaChain, holesViaNearest: viaNear }, warnings };
 }
 /** 1 ファイルの傾向：型ごとの数・穴ピッチ／寸法／工具・角R・文字サイズ／書体・外形サイズ・レイヤー名・版。 */
 export function lccStats(d, { name = '' } = {}) {
