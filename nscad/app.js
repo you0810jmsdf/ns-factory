@@ -3200,7 +3200,7 @@ function initDesign() {
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline(); $('ctx-dedupe').onclick = () => { countUse('ctx_dedupe'); hideCtxMenu(); mergeSelectionOverlaps(); }; $('selDedupe').onclick = () => mergeSelectionOverlaps();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
   $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
-  $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; $('tfApply').onclick = runTextFontApply;   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
+  $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; wireTextFontLive();   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
@@ -5462,19 +5462,35 @@ function refreshTextFontCard(force = false, fill = false) {
   const c = $('textFontCard'); if (!c || c.hidden || c.dataset.win !== '1') return;
   const list = pickedTexts(), key = list.map(s => s.id + ':' + (s.font || '') + ':' + s.sizeMm).join(',');
   if (!force && key === textFontKey) return; textFontKey = key;
-  $('tfNow').textContent = list.length ? textFontNowText(list) : t('textFontNone'); $('tfApply').disabled = !list.length;
+  $('tfNow').textContent = list.length ? textFontNowText(list) : t('textFontNone');
   if (!fill) return;
   const fonts = new Set(list.map(s => s.font || 'gothic')), sizes = new Set(list.map(s => +s.sizeMm.toFixed(2)));
   $('tfFont').value = fonts.size === 1 ? [...fonts][0] : ''; $('tfSize').value = sizes.size === 1 ? String([...sizes][0]) : '';
   const cols = new Set(list.map(s => isHex6(s.textColor) ? s.textColor.toLowerCase() : '')); $('tfColor').value = cols.size === 1 && [...cols][0] ? [...cols][0] : TEXT_COLOR_DEFAULT; $('tfColorOn').checked = false;
 }
 function openTextFontWin() { $('textFontCard').hidden = false; setCardWin('textFontCard', true); refreshTextFontCard(true, true); $('hint').textContent = t('textFontOpened'); }
-function runTextFontApply() {
-  const font = $('tfFont').value, sv = $('tfSize').value, size = sv === '' || sv === null ? null : Number(sv);
-  if (size !== null && !(size >= 0.5 && size <= 200)) { $('hint').textContent = t('textFontInvalid'); return; }
-  const color = $('tfColorOn').checked ? $('tfColor').value : null;   /* 「色も変える」を入れたときだけ、色を変える */
-  if (!font && size === null && !color) { $('hint').textContent = t('textFontNothing'); return; }
-  applyTextFont({ font, size, color }); refreshTextFontCard(true);
+/** 窓の欄を変えた瞬間に、選んだ文字へすぐ反映する（事業主 2026-11-01「変えるボタンを押さないと反映されない」：ボタンをなくした）。
+ *  which＝'font' | 'size' | 'color'（変えた欄の1つだけを反映する。空の書体・空の大きさは「そのまま」）。窓を開いている間、同じ文字への続けての変更は、元に戻す1回分にまとめる（書体を次々に試しても、1回で元に戻る）。 */
+let textFontLive = null, textFontLiveTimer = null;   /* textFontLive＝直前の反映（文字の組・commitSeq・undo の長さ）。何かほかの操作・元に戻すが挟まると、まとめない */
+function liveTextFont(which, report = true) {
+  clearTimeout(textFontLiveTimer); textFontLiveTimer = null;
+  const list = pickedTexts(); if (!list.length) { if (report) $('hint').textContent = t('textFontNone'); return; }
+  const o = { font: null, size: null, color: null };
+  if (which === 'font') { o.font = $('tfFont').value; if (!o.font) return; }
+  else if (which === 'size') { const sv = $('tfSize').value; if (sv === '' || sv === null) return; o.size = Number(sv); if (!(o.size >= 0.5 && o.size <= 200)) { if (report) $('hint').textContent = t('textFontInvalid'); return; } }
+  else { $('tfColorOn').checked = true; o.color = $('tfColor').value; }   /* 色を選んだら「色も変える」は入ったことにする */
+  const key = list.map(s => s.id).join(','), join = !!textFontLive && textFontLive.key === key && textFontLive.seq === commitSeq && textFontLive.len === undo.length, n = undo.length;
+  const done = applyTextFont(o);
+  if (done && join && undo.length === n + 1) undo.splice(n, 1);   /* 直前の反映の「前の姿」だけを残す＝元に戻すは、窓を開いてからの変更を、まとめて1回 */
+  if (done) { textFontLive = { key, seq: commitSeq, len: undo.length }; refreshTextFontCard(true); }
+}
+/** 大きさ・色の欄は、入力が止まってから1回だけ反映する（欄の入力で重い処理を走らせない決まり）。Enter・欄を離れたとき（change）はすぐ。 */
+function scheduleLiveTextFont(which) { clearTimeout(textFontLiveTimer); textFontLiveTimer = setTimeout(() => { textFontLiveTimer = null; liveTextFont(which, false); }, 400); }
+function wireTextFontLive() {
+  $('tfFont').addEventListener('change', () => liveTextFont('font'));
+  $('tfSize').addEventListener('input', () => scheduleLiveTextFont('size')); $('tfSize').addEventListener('change', () => liveTextFont('size'));
+  $('tfColor').addEventListener('input', () => scheduleLiveTextFont('color')); $('tfColor').addEventListener('change', () => liveTextFont('color'));
+  $('tfColorOn').addEventListener('change', () => { if ($('tfColorOn').checked) liveTextFont('color'); });
 }
 /** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
 /** 書体の CSS。同梱フォント（TEXT_FONT_FILES）は、初めて使うときに assets/fonts/ から読み、読めたら描き直す。FontFace が無い環境（テスト・ファイルで開いた版）では何もせず、後ろの候補で描く。 */
