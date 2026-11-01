@@ -49,3 +49,7 @@ Copyright 2015 The Great Vibes Pro Project Authors (https://github.com/googlefon
 === cormorantgaramond
 Copyright 2015 the Cormorant Project Authors (github.com/CatharsisFonts/Cormorant)
 
+
+=== 追加（2026-11-01・ステンシルと Copperplate・英字のみ・変換だけで文字は減らしていない）
+copperplate-cc.woff2 … Copperplate CC（indestructible type* / Cowboy Collective・SIL OFL 1.1・https://github.com/CowboyCollective/CopperplateCC）
+stardos-stencil.woff2・allerta-stencil.woff2・saira-stencil-one.woff2・black-ops-one.woff2 … Google Fonts（google/fonts の ofl/）・SIL OFL 1.1

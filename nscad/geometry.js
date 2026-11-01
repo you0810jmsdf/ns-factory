@@ -1037,6 +1037,8 @@ export const TEXT_FONTS = {
   maru: "'Hiragino Maru Gothic ProN', 'HGMaruGothicMPRO', 'BIZ UDPGothic', 'Yu Gothic UI', sans-serif",
   hand: "'UD Digi Kyokasho NK-R', 'UD Digi Kyokasho N-R', 'Yu Kyokasho', 'HGKyokashotai', 'Klee One', cursive, sans-serif",
   mono: "'MS Gothic', 'BIZ UDGothic', Consolas, monospace",
+  copperGothic: "'Copperplate Gothic Bold', 'Copperplate Gothic Light', 'Yu Mincho', serif",   /* Office に付いてくる書体。無いPCでは別の書体になる（同梱の「Copperplate CC」なら、どのPCでも同じ） */
+  stencilPc: "'Stencil', 'Stencil Std', 'Yu Gothic UI', sans-serif",
   /* 同梱フォント（事業主指示 2026-11-01「種類が少なすぎる」）：assets/fonts/ の woff2 を、使った書体だけ読み込む（TEXT_FONT_FILES）。読めない環境（ファイルで開いた版など）では後ろの候補へ */
   notoSerif: "'Noto Serif JP', 'Yu Mincho', serif",
   zenOldMincho: "'Zen Old Mincho', 'Yu Mincho', serif",
@@ -1055,6 +1057,11 @@ export const TEXT_FONTS = {
   cormorant: "'Cormorant Garamond', 'Yu Mincho', serif",
   cinzel: "'Cinzel', 'Yu Mincho', serif",
   greatVibes: "'Great Vibes', cursive",
+  copperplate: "'Copperplate CC', 'Yu Mincho', serif",
+  stardosStencil: "'Stardos Stencil', 'Yu Gothic UI', serif",
+  allertaStencil: "'Allerta Stencil', 'Yu Gothic UI', sans-serif",
+  sairaStencil: "'Saira Stencil One', 'Yu Gothic UI', sans-serif",
+  blackOps: "'Black Ops One', 'Yu Gothic UI', sans-serif",
 };
 /** 同梱フォントの置き場（assets/fonts/ の woff2）。キー＝TEXT_FONTS のキー、family＝CSS の font-family 名、file＝ファイル名。ここに無い書体は、そのPCに入っているフォントを使う。 */
 export const TEXT_FONT_FILES = {
@@ -1075,6 +1082,11 @@ export const TEXT_FONT_FILES = {
   cormorant: { family: 'Cormorant Garamond', file: 'cormorant-garamond.woff2' },
   cinzel: { family: 'Cinzel', file: 'cinzel.woff2' },
   greatVibes: { family: 'Great Vibes', file: 'great-vibes.woff2' },
+  copperplate: { family: 'Copperplate CC', file: 'copperplate-cc.woff2' },
+  stardosStencil: { family: 'Stardos Stencil', file: 'stardos-stencil.woff2' },
+  allertaStencil: { family: 'Allerta Stencil', file: 'allerta-stencil.woff2' },
+  sairaStencil: { family: 'Saira Stencil One', file: 'saira-stencil-one.woff2' },
+  blackOps: { family: 'Black Ops One', file: 'black-ops-one.woff2' },
 };
 export const textFontStack = key => TEXT_FONTS[key] || TEXT_FONTS.gothic;
 /** 新しい既定工具配列を返す。名前は翻訳キーとして UI 側で表示する。 */

@@ -1886,7 +1886,7 @@ function refreshInfoCore() {
     const typing = el => typeof document.activeElement !== 'undefined' && document.activeElement === el; // 打ちかけの欄は巻き戻さない
     for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','sizeMm','angleDeg','offset']) if (f in s && !typing($('info-' + f))) $('info-' + f).value = Number(s[f]).toFixed(2);
     if ('text' in s && !typing($('info-text'))) $('info-text').value = s.text;
-    if (s.type === 'text') { $('info-font').value = s.font && Object.hasOwn(TEXT_FONTS, s.font) ? s.font : 'gothic'; $('info-textColor').value = isHex6(s.textColor) ? s.textColor : TEXT_COLOR_DEFAULT; }   /* 文字のフォント（書いていなければゴシック＝標準） */
+    if (s.type === 'text') { $('info-font').value = s.font && Object.hasOwn(TEXT_FONTS, s.font) ? s.font : 'gothic'; syncTextSwatches($('info-textColor'), colorKeyOf(s.textColor)); }   /* 文字のフォント（書いていなければゴシック＝標準） */
     if ('closed' in s) $('info-closed').checked = s.closed;
     if ('inner' in s) $('info-inner').checked = s.inner;
     if (INFO_FIELDS[s.type]?.includes('color')) { $('info-color').value = s.color || ''; $('info-lineStyle').value = s.lineStyle || ''; }
@@ -1931,7 +1931,6 @@ function applyInfo(field) {
   let next = { ...s };
   if (field === 'layer') { next.layer = $('info-layer').value; }
   else if (field === 'text') { const text = $('info-text').value; if (!text) { $('hint').textContent = t('invalidNumber'); return; } next.text = text; }
-  else if (field === 'textColor') { const v = $('info-textColor').value; if (s.type !== 'text' || !isHex6(v)) return; next.textColor = v; }   /* 文字の色（事業主 2026-10-26「フォントの色が選べない」） */
   else if (field === 'font') { const v = $('info-font').value; if (s.type !== 'text' || !Object.hasOwn(TEXT_FONTS, v)) return; if (v === 'gothic') delete next.font; else next.font = v; }   /* 文字のフォント（ゴシック＝標準は書かない・2026-10-26 事業主「フォントを変えられない」：右クリックの窓は見つけにくかったため、情報カードにも置く） */
   else if (field === 'closed') { if (s.type === 'polyline' && s.points.length < 3) return; next.closed = $('info-closed').checked; }
   else if (field === 'inner') { next.inner = $('info-inner').checked; }
@@ -3249,8 +3248,8 @@ function initDesign() {
 }
 
 function initInfo() {
-  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle','font','textColor']) $('info-' + f).addEventListener('change', () => applyInfo(f));
-  $('info-textColorReset').onclick = () => { const s = infoShape(); if (!s || s.type !== 'text' || !editable(s) || !('textColor' in s)) return; const next = { ...s }; delete next.textColor; transformSelectedTo(next); };   /* 標準の色に戻す（色の指定を消す） */
+  for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle','font']) $('info-' + f).addEventListener('change', () => applyInfo(f));
+  buildTextSwatches($('info-textColor'), key => { const s = infoShape(); if (!s || s.type !== 'text' || !editable(s)) return; const next = { ...s }; if (key === '') delete next.textColor; else next.textColor = SHAPE_DRAW_COLOR[key]; if ((next.textColor || '') === (s.textColor || '')) return; transformSelectedTo(next); });   /* 情報カードの文字の色＝図形と同じ候補（標準・青・緑・赤・白・黄）の色見本（事業主 2026-11-01「図形と同じ候補の色のみでよい」） */
   $('toggleSmooth').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const nodes = s.nodes.map(n => ({ ...n })), n = nodes[nodeSel.index];
     if (n.smooth) { n.smooth = false; } else { const prev = nodes[(nodeSel.index - 1 + nodes.length) % nodes.length], nx = nodes[(nodeSel.index + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
     transformSelectedTo({ ...s, nodes }); };
@@ -5445,10 +5444,10 @@ const fontLabel = key => t('font' + key[0].toUpperCase() + key.slice(1));
 /** 文字の書体を書く（ゴシック＝標準は書かない＝今までの図面と同じ）。size は mm。戻り値は変えた数。元に戻すは1回。 */
 function applyTextFont({ font, size, color }) {
   const list = pickedTexts(); if (!list.length) { $('hint').textContent = t('textFontNone'); return 0; }
-  const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null, c = isHex6(color) ? color.toLowerCase() : null;   /* color＝文字の色（#RRGGBB）。null は変えない */
-  const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z) || (c && (isHex6(s.textColor) ? s.textColor.toLowerCase() : '') !== c));
+  const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null, c = isHex6(color) ? color.toLowerCase() : color === 'default' ? 'default' : null;   /* color＝文字の色（#RRGGBB）。null は変えない */
+  const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z) || (c && (c === 'default' ? isHex6(s.textColor) : (isHex6(s.textColor) ? s.textColor.toLowerCase() : '') !== c)));
   if (!plan.length) { $('hint').textContent = t('textFontSame'); return 0; }
-  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; if (c) sh.textColor = c; } });
+  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; if (c === 'default') delete sh.textColor; else if (c) sh.textColor = c; } });
   $('hint').textContent = t('textFontDone', { n: plan.length }); return plan.length;
 }
 /** 窓の「選んだ文字：n 個（書体・大きさ）」。 */
@@ -5463,22 +5462,22 @@ function refreshTextFontCard(force = false, fill = false) {
   const list = pickedTexts(), key = list.map(s => s.id + ':' + (s.font || '') + ':' + s.sizeMm).join(',');
   if (!force && key === textFontKey) return; textFontKey = key;
   $('tfNow').textContent = list.length ? textFontNowText(list) : t('textFontNone');
+  { const ks = new Set(list.map(s => colorKeyOf(s.textColor))); syncTextSwatches($('tfColor'), list.length && ks.size === 1 ? [...ks][0] : null); }   /* 色見本の「いまの色」の印（ばらばらなら印なし） */
   if (!fill) return;
   const fonts = new Set(list.map(s => s.font || 'gothic')), sizes = new Set(list.map(s => +s.sizeMm.toFixed(2)));
   $('tfFont').value = fonts.size === 1 ? [...fonts][0] : ''; $('tfSize').value = sizes.size === 1 ? String([...sizes][0]) : '';
-  const cols = new Set(list.map(s => isHex6(s.textColor) ? s.textColor.toLowerCase() : '')); $('tfColor').value = cols.size === 1 && [...cols][0] ? [...cols][0] : TEXT_COLOR_DEFAULT; $('tfColorOn').checked = false;
 }
 function openTextFontWin() { $('textFontCard').hidden = false; setCardWin('textFontCard', true); refreshTextFontCard(true, true); $('hint').textContent = t('textFontOpened'); }
 /** 窓の欄を変えた瞬間に、選んだ文字へすぐ反映する（事業主 2026-11-01「変えるボタンを押さないと反映されない」：ボタンをなくした）。
  *  which＝'font' | 'size' | 'color'（変えた欄の1つだけを反映する。空の書体・空の大きさは「そのまま」）。窓を開いている間、同じ文字への続けての変更は、元に戻す1回分にまとめる（書体を次々に試しても、1回で元に戻る）。 */
 let textFontLive = null, textFontLiveTimer = null;   /* textFontLive＝直前の反映（文字の組・commitSeq・undo の長さ）。何かほかの操作・元に戻すが挟まると、まとめない */
-function liveTextFont(which, report = true) {
+function liveTextFont(which, report = true, value = '') {
   clearTimeout(textFontLiveTimer); textFontLiveTimer = null;
   const list = pickedTexts(); if (!list.length) { if (report) $('hint').textContent = t('textFontNone'); return; }
   const o = { font: null, size: null, color: null };
   if (which === 'font') { o.font = $('tfFont').value; if (!o.font) return; }
   else if (which === 'size') { const sv = $('tfSize').value; if (sv === '' || sv === null) return; o.size = Number(sv); if (!(o.size >= 0.5 && o.size <= 200)) { if (report) $('hint').textContent = t('textFontInvalid'); return; } }
-  else { $('tfColorOn').checked = true; o.color = $('tfColor').value; }   /* 色を選んだら「色も変える」は入ったことにする */
+  else { o.color = value === '' ? 'default' : SHAPE_DRAW_COLOR[value]; if (!o.color) return; }   /* 色＝図形と同じ候補のキー（''＝標準） */
   const key = list.map(s => s.id).join(','), join = !!textFontLive && textFontLive.key === key && textFontLive.seq === commitSeq && textFontLive.len === undo.length, n = undo.length;
   const done = applyTextFont(o);
   if (done && join && undo.length === n + 1) undo.splice(n, 1);   /* 直前の反映の「前の姿」だけを残す＝元に戻すは、窓を開いてからの変更を、まとめて1回 */
@@ -5486,11 +5485,18 @@ function liveTextFont(which, report = true) {
 }
 /** 大きさ・色の欄は、入力が止まってから1回だけ反映する（欄の入力で重い処理を走らせない決まり）。Enter・欄を離れたとき（change）はすぐ。 */
 function scheduleLiveTextFont(which) { clearTimeout(textFontLiveTimer); textFontLiveTimer = setTimeout(() => { textFontLiveTimer = null; liveTextFont(which, false); }, 400); }
+/** 文字の色の候補＝図形の「線の色」と同じ（標準・青・緑・赤・白・黄）。色見本のボタンを box に作る／いまの色に印を付ける。 */
+const TEXT_COLOR_KEYS = ['', 'blue', 'green', 'red', 'white', 'yellow'];
+const colorKeyOf = hex => !isHex6(hex) ? '' : (TEXT_COLOR_KEYS.find(k => k && SHAPE_DRAW_COLOR[k].toLowerCase() === hex.toLowerCase()) ?? null);   /* 決めていない＝''（標準）・候補にない色（昔の図面）＝null */
+function buildTextSwatches(box, onPick) {
+  if (!box?.appendChild) return; box.textContent = '';
+  for (const k of TEXT_COLOR_KEYS) { const b = document.createElement('button'); b.type = 'button'; b.className = 'swatch'; b.dataset.key = k; b.style.background = k ? SHAPE_DRAW_COLOR[k] : TEXT_COLOR_DEFAULT; b.title = k ? t('color' + k[0].toUpperCase() + k.slice(1)) : t('textColorReset'); b.setAttribute('aria-label', b.title); b.onclick = () => onPick(k); box.appendChild(b); }
+}
+function syncTextSwatches(box, key) { for (const b of box?.children || []) { const on = key !== null && b.dataset.key === key; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); } }
 function wireTextFontLive() {
   $('tfFont').addEventListener('change', () => liveTextFont('font'));
   $('tfSize').addEventListener('input', () => scheduleLiveTextFont('size')); $('tfSize').addEventListener('change', () => liveTextFont('size'));
-  $('tfColor').addEventListener('input', () => scheduleLiveTextFont('color')); $('tfColor').addEventListener('change', () => liveTextFont('color'));
-  $('tfColorOn').addEventListener('change', () => { if ($('tfColorOn').checked) liveTextFont('color'); });
+  buildTextSwatches($('tfColor'), key => liveTextFont('color', true, key));   /* 窓の文字の色も、図形と同じ候補の色見本（押した瞬間に反映） */
 }
 /** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
 /** 書体の CSS。同梱フォント（TEXT_FONT_FILES）は、初めて使うときに assets/fonts/ から読み、読めたら描き直す。FontFace が無い環境（テスト・ファイルで開いた版）では何もせず、後ろの候補で描く。 */
@@ -6302,6 +6308,11 @@ function textSizeFrom(g, sh, c) {
   return Math.max(0.5, Math.round(g.size0 * k * 10) / 10);
 }
 let textHot = false;
+/** 色を決めた文字は、選んでいても自分の色で描く（選択色の金色で隠れて、色が変わって見えなかった・事業主 2026-11-01「色が変わらない」）。かわりに、2つ以上選んだ文字は破線の枠で示す（1つだけのときは取っ手つきの枠が出る）。 */
+function drawSelectedTextFrames() {
+  if (exporting || selected.size < 2) return; const k = 1 / scale;
+  for (const s of doc.shapes) { if (s.type !== 'text' || !selected.has(s.id) || !visible(s)) continue; const f = textFrame(s); ctx.save(); ctx.setLineDash([4 * k, 3 * k]); ctx.lineWidth = 1 * k; ctx.strokeStyle = 'rgba(240,180,41,.7)'; ctx.beginPath(); ctx.moveTo(f.tl.x, f.tl.y); ctx.lineTo(f.tr.x, f.tr.y); ctx.lineTo(f.br.x, f.br.y); ctx.lineTo(f.bl.x, f.bl.y); ctx.closePath(); ctx.stroke(); ctx.restore(); }
+}
 function drawTextHandle() {
   const g = gesture?.kind === 'textR' ? gesture : null, sh = g ? doc.shapes.find(x => x.id === g.id) : selectedText(); if (!sh) return; const k = 1 / scale, f = textFrame(sh, g ? g.size : sh.sizeMm);
   ctx.save(); ctx.setLineDash([4 * k, 3 * k]); ctx.lineWidth = 1 * k; ctx.strokeStyle = g ? '#f0b429' : 'rgba(240,180,41,.55)';
@@ -8450,7 +8461,7 @@ function drawSheetBody(lo, hi) {
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   const fillItems = viewShow.colors ? leatherItems(doc, visible, previewMoved, metalDrawItems()) : []; paintLeatherItems(fillItems); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
-  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) && !(s.type === 'text' && isHex6(s.textColor)) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   /* 重なりは、層ごとに「その層の塗り → その層の線」の順（事業主 2026-10-25「レイヤーの表示が崩れている」：塗りは層の順に重なるのに、線はいつも全部の塗りの上に出て、手前の層の白い塗りがリングの塗りを隠しても、リングの輪郭だけが白の上に残った）。
      塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
   const rankOfStroke = s => rankDraw.get(s.layer) || 0, opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
@@ -8569,7 +8580,7 @@ function drawSheetBody(lo, hi) {
     ctx.stroke(); ctx.restore();
   }
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawRotateHandle(); drawSymView(); drawLayerHover();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawSelectedTextFrames(); drawRotateHandle(); drawSymView(); drawLayerHover();
   updateUI();
 }
 function resize() {
