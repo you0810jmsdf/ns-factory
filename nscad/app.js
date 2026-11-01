@@ -9059,6 +9059,9 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'offset') { offsetClick(w, true); return; } /* ダブルクリック＝つながった図形全体を選ぶ */
   if (mode === 'line' && stage?.kind === 'cmd') { stage = null; $('hint').textContent = t('hint.line'); draw(); return; } // 終点でダブルクリック＝連続線の確定
   if (mode === 'select') {
+    /* 文字をダブルクリック＝その文字を選んで「文字のフォントと大きさ」の窓を開く（事業主 2026-11-01「文字をダブルクリックしても窓が出てこない」）。文字の枠に線が重なっていて、線のすぐ近く（7px）なら、今までどおり線の操作（つながった線を選ぶ）を先にする */
+    const textHit = doc.shapes.filter(x => x.type === 'text' && visible(x) && editable(x)).reverse().find(x => distTo(x, w) <= 7 / scale);
+    if (textHit && !doc.shapes.some(x => x.type !== 'text' && visible(x) && editable(x) && stitchable(x) && distTo(x, w) <= 7 / scale)) { selected = new Set([textHit.id]); nodeSel = null; openTextFontWin(); draw(); return; }
     const inGroup = doc.shapes.filter(x => visible(x) && editable(x)).reverse().find(x => groupIdOf(x) && selected.has(x.id) && distTo(x, w) <= 7 / scale);
     const groupMode = !!inGroup && selected.size > 1;   /* グループ全体を選んでいるときのダブルクリック */
     if (!groupMode) { const gp = gridDoubleClickPick(w); if (gp?.ids.length) { selected = new Set(gp.ids); nodeSel = null; $('hint').textContent = t(gp.frame ? 'gridFrameSelected' : 'gridWholeSelected', { n: gp.n }); draw(); return; } }   /* 格子の外周線なら枠、パッチの内側の線ならその格子のピース全部（選びなおした直後は、欄を変えると、その格子が作りなおされる） */
