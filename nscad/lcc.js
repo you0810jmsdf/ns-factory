@@ -47,6 +47,9 @@ export function lccHole(s) {
   const ct = pt(s.ct), bt = String(s.pr?.bt || s.st || 'D').toUpperCase(), kind = LCC_TOOL_KIND[bt] || 'diamond', outlineDeg = kind === 'diamond' ? diamondAngleFromOutline(s.path) : null;
   return { id: String(s.id), x: ct.x, y: ct.y, angleDeg: outlineDeg ?? normDeg(num(s.rt)), width: Math.max(0.2, num(s.w) || 1), height: Math.max(0.1, num(s.h) || 2), kind: LCC_TOOL_KIND[bt] || 'diamond', pitch: num(s.pr?.p) || 0, prev: String(s.PrevStId ?? '-1'), next: String(s.NextStId ?? '-1') };
 }
+/** 菱目の向きを、工具の形に合わせて直す。lccHole の angleDeg は「高さ（holeH）が長い軸」の前提で求めている（長い対角線の向き − 90°）。
+ *  登録済みの工具は幅（holeW）が長い（例 2×0.8）ので、そのままだと、元の向きより 90° 回って描かれる（実ファイルで299個すべて）。幅が長い工具には 90° 足して、元の長い軸の向きに合わせる。菱目以外（丸・スリット）は、そのまま。 */
+export function lccDrawAngle(h, tool) { return h.kind === 'diamond' && tool && tool.holeW >= tool.holeH ? normDeg(h.angleDeg + 90) : h.angleDeg; }
 /** 穴候補を Prev/Next の連結順に並べた鎖の配列に分ける（連結のないものは 1 個の鎖）。 */
 export function holeChains(holes) {
   const byId = new Map(holes.map(h => [h.id, h])), seen = new Set(), chains = [];
@@ -94,7 +97,7 @@ export function lccToDoc(input, { attachMaxMm = 1.5, name = '', tools = [] } = {
   const groupOf = shape => { if (groupCache.has(shape.id)) return groupCache.get(shape.id); const b = bboxOf(shape), pad = 20, near = doc.shapes.filter(stitchable).filter(s => { const c = bboxOf(s); return c.maxX >= b.minX - pad && c.minX <= b.maxX + pad && c.maxY >= b.minY - pad && c.minY <= b.maxY + pad; }); const g = chainShapes(near).find(x => x.shapeIds.includes(shape.id)) || chainShapes([shape])[0]; for (const id of g.shapeIds) groupCache.set(id, g); return g; };
   const pathFor = shape => { let path = doc.paths.find(p => p.shapeIds.includes(shape.id)); if (!path) { const chain = groupOf(shape); path = { id: 'p' + (doc.paths.length + 1), shapeIds: chain.shapeIds, reversed: false, closed: chain.closed, segments: [], mark: 'tool' }; doc.paths.push(path); } return path; };
   const routeCache = new Map();
-  const place = (h, path) => { let rc = routeCache.get(path.id); if (!rc) { const route = chainShapes(path.shapeIds.map(id => byId.get(id) || doc.shapes.find(x => x.id === id)))[0]; if (!route) return false; rc = { route, len: arcLength(route) }; routeCache.set(path.id, rc); } const { route, len } = rc; const q = projectOnPath({ ...route, reversed: path.reversed }, h); doc.holes.push({ ownVisible: true /* .lcc の穴は線とは別の要素：線の層を隠しても穴は消さない */, id: 'h' + (doc.holes.length + 1), pathId: path.id, s: Math.max(0, Math.min(len, q.s)), x: h.x, y: h.y, angleDeg: h.angleDeg, toolId: toolFor(h).id, mark: 'tool' }); return true; };
+  const place = (h, path) => { const tool = toolFor(h); let rc = routeCache.get(path.id); if (!rc) { const route = chainShapes(path.shapeIds.map(id => byId.get(id) || doc.shapes.find(x => x.id === id)))[0]; if (!route) return false; rc = { route, len: arcLength(route) }; routeCache.set(path.id, rc); } const { route, len } = rc; const q = projectOnPath({ ...route, reversed: path.reversed }, h); doc.holes.push({ ownVisible: true /* .lcc の穴は線とは別の要素：線の層を隠しても穴は消さない */, id: 'h' + (doc.holes.length + 1), pathId: path.id, s: Math.max(0, Math.min(len, q.s)), x: h.x, y: h.y, angleDeg: lccDrawAngle(h, tool), toolId: tool.id, mark: 'tool' }); return true; };
   for (const chain of chains) {
     const mid = chain[Math.floor(chain.length / 2)];
     const hit = doc.shapes.filter(stitchable).reduce((best, s) => { const dist = distToShape(s, mid); return dist < (best ? best.d : attachMaxMm) ? { s, d: dist } : best; }, null);

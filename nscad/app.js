@@ -1740,14 +1740,14 @@ function loadHoleToolToEditor() {
 /** 選んだ範囲の菱目・丸目の穴 { diamond, round }。範囲＝選んだ穴・選んだ線の経路の穴・選んだ線の上の穴（順目・逆目の入れ替えと同じ slantPickedIds）。見た目で分ける（点の目印・切れ目は数えない）。 */
 function shapeRangeHoles(scope = holeShapeScope()) {
   const out = { diamond: [], round: [] };
-  let picked = scope === 'picked' ? new Set(doc.holes.filter(h => selected.has(h.id) && holeEditable(h)).map(h => h.id)) : slantPickedIds();   /* 'picked'＝直接選んだ穴だけ（選んだ線に付いた穴は入れない） */
+  let picked = scope === 'all' ? new Set(doc.holes.filter(h => holeEditable(h)).map(h => h.id)) : scope === 'picked' ? new Set(doc.holes.filter(h => selected.has(h.id) && holeEditable(h)).map(h => h.id)) : slantPickedIds();   /* 'all'＝図面全体の穴ぜんぶ（何も選ばなくてよい・事業主 2026-11-01「菱目を全体の寸法規格を一斉に変えたい」：読み込んだ図面の菱目が大きすぎた） */   /* 'picked'＝直接選んだ穴だけ（選んだ線に付いた穴は入れない） */
   if (scope === 'tool' && picked.size) { const tools = new Set(doc.holes.filter(h => picked.has(h.id)).map(h => h.toolId)); picked = new Set(doc.holes.filter(h => tools.has(h.toolId) && holeEditable(h)).map(h => h.id)); }   /* 'tool'＝選んだ範囲の穴と同じ工具の穴ぜんぶ（図面全体）。何も選んでいなければ空（図面全体を巻き込まない） */
   if (!picked.size) return out;
   for (const h of doc.holes) { if (!picked.has(h.id)) continue; const k = holeAppearance(h, doc)?.kind; if (k === 'diamond') out.diamond.push(h); else if (k === 'circle') out.round.push(h); }
   return out;
 }
 /** 窓の「変える範囲」：'range'＝選んだ範囲の穴（既定）／'picked'＝選んだ穴だけ／'tool'＝選んだ穴と同じ種類（工具）の穴ぜんぶ。事業主指示 2026-10-26「Aも作って。選んだ穴だけを変える小窓」 */
-const holeShapeScope = () => { const v = $('holeShapeScope')?.value; return v === 'picked' || v === 'tool' ? v : 'range'; };
+const holeShapeScope = () => { const v = $('holeShapeScope')?.value; return v === 'picked' || v === 'tool' || v === 'all' ? v : 'range'; };
 /** 形と大きさに合う工具：同じ規格（種類・ピッチ・刃数・傾き・大きさ）の工具があればそれ、無ければ新しい工具（pending に入れる・図面へ入れるのは呼び出し側）。ピッチ・刃数は元の工具のまま。 */
 function holeShapeTool(src, shape, { w, h, d }, pending) {
   const round = shape === 'round', kind = round ? 'round' : 'diamond', angleDeg = round ? 0 : (src.kind === 'diamond' ? src.angleDeg : 45), holeW = round ? d : w, holeH = round ? d : h, holeD = round ? d : src.holeD;
@@ -1822,7 +1822,7 @@ let holeShapeKey = '';
 /** 窓の中身を、選んだ範囲に合わせる。窓が出ていないときは何もしない（描くたびに呼ぶので軽く：選択・穴・工具の数が変わったときだけ数え直す）。force＝数え直し／fill＝欄の初期値を、選んだ範囲の穴の大きさにする（窓を開いたとき）。 */
 function refreshHoleShapeCard(force = false, fill = false) {
   const c = $('holeShapeCard'); if (!c || c.hidden || c.dataset.win !== '1') return;
-  if (fill) $('holeShapeScope').value = !selectedShapeIds().size && doc.holes.some(h => selected.has(h.id)) ? 'picked' : 'range';   /* 穴だけを選んで開いたときは「選んだ穴だけ」から（線も選んでいれば「選んだ範囲」） */
+  if (fill) $('holeShapeScope').value = !selected.size ? 'all' : !selectedShapeIds().size && doc.holes.some(h => selected.has(h.id)) ? 'picked' : 'range';   /* 何も選ばずに開いたときは「図面全体」から */   /* 穴だけを選んで開いたときは「選んだ穴だけ」から（線も選んでいれば「選んだ範囲」） */
   const key = [...selected].join(',') + '|' + doc.holes.length + '|' + doc.tools.length + '|' + doc.shapes.length + '|' + holeShapeScope();
   if (!force && key === holeShapeKey) return; holeShapeKey = key;
   const range = shapeRangeHoles(), n = range.diamond.length + range.round.length;
@@ -1831,7 +1831,7 @@ function refreshHoleShapeCard(force = false, fill = false) {
   const ad = range.diamond[0] && holeAppearance(range.diamond[0], doc), ar = range.round[0] && holeAppearance(range.round[0], doc), f = v => String(+(+v).toFixed(2));
   $('holeShapeKind').value = !range.diamond.length && range.round.length ? 'round' : 'diamond';
   $('holeShapeW').value = ad ? f(ad.width) : '2'; $('holeShapeH').value = ad ? f(ad.height) : '0.8'; $('holeShapeD').value = ar ? f(ar.width) : '1';
-  $('holeShapeOnlyDiamond').checked = true; $('holeShapeOnlyRound').checked = true; syncHoleShapeRows();
+  $('holeShapeOnlyDiamond').checked = true; $('holeShapeOnlyRound').checked = $('holeShapeScope').value !== 'all'; syncHoleShapeRows();   /* 図面全体のときは、丸目を巻き込まない（菱目の大きさだけ変えたい使い方が多い・丸目も変えたいときは「丸目」にも印を入れる） */
 }
 /** 窓の「登録済みの工具」の一覧を、図面の工具（doc.tools）で作り直す。選んでいた工具は残す。 */
 function fillHoleToolExisting() {
