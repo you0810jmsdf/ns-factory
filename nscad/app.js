@@ -436,6 +436,11 @@ function vectorOutDoc() {
   if (!r.touched) return d; lastDedupe = { mm: r.removed, n: r.touched }; return { ...d, shapes: r.shapes };
 }
 const dedupeNote = () => lastDedupe && lastDedupe.mm >= 0.05 ? ' ' + t('outDedupeNote', { mm: lastDedupe.mm.toFixed(1), n: lastDedupe.n }) : '';
+/** 図形を選んでいる間だけ、出力カードと保存メニューに「選んだ N 個だけを出力します」を出す（事業主 2026-11-02「SVG出力で菱目が出力されない」：選んだまま書き出すと、選んだ図形とその穴だけが出る決まりに気づけなかった）。書き出しを押す前に目に入る・押す回数は増えない。 */
+function syncOutSelWarn() {
+  const n = outputSelIds().size, text = n ? t('outSelWarn', { n }) : '';
+  for (const id of ['outSelWarn', 'saveSelWarn']) { const el = $(id); if (el) { el.textContent = text; el.hidden = !n; } }
+}
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
@@ -7019,6 +7024,7 @@ function initColorPick() {
 function updateUI() {
   scheduleSideMenu(); renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
+  syncOutSelWarn();
   $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
