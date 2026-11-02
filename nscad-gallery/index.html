@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<!-- N's CAD 型紙ギャラリーの一覧（2026-11-02）。表示だけの静的ページ：承認した型紙を、保存先（Cloudflare Worker leather-cad-gallery）の /list と /thumb/:id から読む。
+     ⛔ 型紙の中身（図面）はここに置かない・返さない（保存先は一覧に図面を載せない）。利用者の入力はすべて textContent で出す（HTML として解釈しない）。 -->
+<title>N's CAD 型紙ギャラリー | N's factory</title>
+<meta name="description" content="N's CAD の利用者が作って公開した革の型紙の一覧です。運営者が確認した型紙だけを載せています。">
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+:root{--bg:#0f0f10;--panel:#1c1c1e;--line:#3a3a3c;--text:#f2f2f2;--sub:#a1a1a6;--accent:#c9a96e;--ok:#7fd48a;--warn:#ffb74d;color-scheme:dark;
+  font-family:-apple-system,'SF Pro Text','Hiragino Sans','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--accent)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header.top{border-bottom:1px solid var(--line);padding:18px 0}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand b{font-size:20px;letter-spacing:.02em}
+.brand span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.brand a{margin-left:auto;font-size:13px}
+.lead{padding:28px 0 8px}
+.lead h1{font-size:clamp(24px,4vw,34px);line-height:1.3;margin:4px 0 10px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.lead p{color:var(--sub);max-width:680px;font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 14px}
+.bar input,.bar select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px}
+.bar input{flex:1;min-width:180px}
+.count{color:var(--sub);font-size:13px;margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;color:inherit;font:inherit;display:flex;flex-direction:column;padding:0}
+.card:hover,.card:focus-visible{border-color:var(--accent);outline:none}
+.thumb{background:#fff;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.meta{padding:10px 12px 12px;display:grid;gap:4px}
+.meta .t{font-weight:700;font-size:15px;word-break:break-all}
+.meta .a{color:var(--sub);font-size:12px}
+.badge{display:inline-block;font-size:11px;border-radius:999px;padding:1px 9px;border:1px solid var(--line);color:var(--sub);width:fit-content}
+.badge.commercial{color:var(--ok);border-color:var(--ok)}
+.empty,.err{padding:40px 0;color:var(--sub);text-align:center}
+.err{color:var(--warn)}
+.more{display:block;margin:20px auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:9px 22px;font:inherit;cursor:pointer}
+.more:hover{border-color:var(--accent)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.dbody{padding:18px;display:grid;gap:10px}
+.dbody h2{font-size:20px;word-break:break-all}
+.dthumb{background:#fff;border-radius:8px;height:min(380px,60vw);overflow:hidden}
+.dthumb img{width:100%;height:100%;object-fit:contain;display:block}
+.dl{display:grid;grid-template-columns:7em 1fr;gap:4px 10px;font-size:14px}
+.dl dt{color:var(--sub)}.dl dd{word-break:break-all}
+.desc{white-space:pre-wrap;word-break:break-all;font-size:14px}
+.note{font-size:12px;color:var(--sub)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.btn{display:inline-block;background:var(--accent);color:#1c1c1e;border-radius:999px;padding:8px 18px;font-weight:700;font-size:14px;text-decoration:none;border:0;cursor:pointer;font-family:inherit}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:400}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:20px 0 40px;color:var(--sub);font-size:12px;display:grid;gap:6px}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap brand"><b>N's CAD</b><span>Pattern Gallery</span><a href="../nscad/">N's CAD を開く</a></div></header>
+<main class="wrap">
+  <section class="lead">
+    <div class="eyebrow">Pattern Gallery</div>
+    <h1>みんなが作った、革の型紙</h1>
+    <p>N's CAD の利用者が作って登録した型紙です。運営者が確かめたものだけを載せています。気に入った型紙は、作者のページから探してみてください。</p>
+  </section>
+  <div class="bar">
+    <input id="q" type="search" placeholder="題・作者名で探す" aria-label="題・作者名で探す" autocomplete="off">
+    <select id="lic" aria-label="利用条件で絞る"><option value="">利用条件：すべて</option><option value="personal">個人利用のみ</option><option value="commercial">商用可</option></select>
+    <span class="count" id="count" role="status"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>まだ公開されている型紙はありません。N's CAD の「保存 ▾」→「ギャラリーに登録」から、あなたの型紙を登録できます。</div>
+  <div class="err" id="err" hidden>型紙の一覧を読み込めませんでした。しばらくしてから開き直してください。</div>
+  <button class="more" id="more" type="button" hidden>もっと見る</button>
+</main>
+<dialog id="dlg" aria-labelledby="dTitle"><div class="dbody">
+  <h2 id="dTitle"></h2>
+  <div class="dthumb" id="dThumb"></div>
+  <dl class="dl">
+    <dt>作者</dt><dd id="dAuthor"></dd>
+    <dt>著作権表示</dt><dd id="dCopy"></dd>
+    <dt>利用条件</dt><dd id="dLic"></dd>
+    <dt>大きさ</dt><dd id="dStats"></dd>
+  </dl>
+  <p class="desc" id="dDesc"></p>
+  <div class="row"><a class="btn" id="dLink" hidden target="_blank" rel="noopener noreferrer nofollow sponsored">作者のページを開く</a><button class="btn ghost" id="dClose" type="button">閉じる</button></div>
+  <p class="note" id="dLinkNote" hidden>作者のページは、運営者が管理していない外部のページです。型紙の入手・購入・取引は、作者とあなたの間で行われます。</p>
+  <p class="note">権利の侵害や個人情報の掲載を見つけたときは、<a id="dReport">運営者へご連絡ください</a>。確認のうえ、公開を止めます。</p>
+</div></dialog>
+<footer class="wrap">
+  <span>型紙の著作権は、それぞれの作者にあります。利用条件に従ってお使いください。</span>
+  <span>© N's factory</span>
+</footer>
+<script>
+(function () {
+  'use strict';
+  var BASE = 'https://leather-cad-gallery.bouncy-xenoposeidon.workers.dev', PAGE = 24;
+  var LICENSE = { personal: '個人利用のみ（作って楽しむ。作った物の販売はしない）', commercial: '商用可（作った革製品の販売まで可。型紙そのものの再配布はしない）' };
+  var BADGE = { personal: '個人利用のみ', commercial: '商用可' };
+  var $ = function (id) { return document.getElementById(id); };
+  var items = [], last = 0, done = false, loading = false;
+
+  function thumbImg(id, alt, eager) { var i = document.createElement('img'); i.alt = alt || ''; i.loading = eager ? 'eager' : 'lazy'; i.src = BASE + '/thumb/' + encodeURIComponent(id); return i; }
+  function safeUrl(u) { return typeof u === 'string' && /^https:\/\/[^\s<>"']+$/.test(u) ? u : ''; }
+  function shown() {
+    var q = $('q').value.trim().toLowerCase(), lic = $('lic').value;
+    return items.filter(function (it) { return (!lic || it.license === lic) && (!q || (it.title + ' ' + it.author).toLowerCase().indexOf(q) >= 0); });
+  }
+  function paint() {
+    var grid = $('grid'), list = shown(); grid.textContent = '';
+    list.forEach(function (it) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'card';
+      var th = document.createElement('div'); th.className = 'thumb'; th.appendChild(thumbImg(it.id, it.title));
+      var m = document.createElement('div'); m.className = 'meta';
+      var t = document.createElement('div'); t.className = 't'; t.textContent = it.title;
+      var a = document.createElement('div'); a.className = 'a'; a.textContent = '作者：' + it.author;
+      var g = document.createElement('span'); g.className = 'badge ' + it.license; g.textContent = BADGE[it.license] || it.license;
+      m.appendChild(t); m.appendChild(a); m.appendChild(g); b.appendChild(th); b.appendChild(m);
+      b.onclick = function () { openItem(it); }; grid.appendChild(b);
+    });
+    $('count').textContent = list.length + ' 件';
+    $('empty').hidden = !(done && !items.length); $('more').hidden = done;
+  }
+  function openItem(it) {
+    $('dTitle').textContent = it.title; $('dThumb').textContent = ''; $('dThumb').appendChild(thumbImg(it.id, it.title, true));
+    $('dAuthor').textContent = it.author; $('dCopy').textContent = it.copyright || ''; $('dLic').textContent = LICENSE[it.license] || it.license;
+    var s = it.stats || {}; $('dStats').textContent = (s.w || 0) + '×' + (s.h || 0) + ' mm・図形 ' + (s.shapes || 0) + ' 個・縫い穴 ' + (s.holes || 0) + ' 個';
+    $('dDesc').textContent = it.description || '';
+    var u = safeUrl(it.authorUrl); $('dLink').hidden = !u; $('dLinkNote').hidden = !u; if (u) $('dLink').href = u;
+    $('dReport').href = 'mailto:you0810jmsdf@gmail.com?subject=' + encodeURIComponent('型紙ギャラリーの掲載について（' + it.id + '）');
+    if (typeof $('dlg').showModal === 'function') $('dlg').showModal(); else $('dlg').setAttribute('open', '');
+    try { history.replaceState(null, '', '#' + it.id); } catch (e) { /* 戻せなくても続ける */ }
+  }
+  function load() {
+    if (loading || done) return; loading = true; $('more').disabled = true;
+    fetch(BASE + '/list?limit=' + PAGE + (last ? '&before=' + last : ''), { credentials: 'omit' })
+      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(function (j) {
+        var got = (j && j.items) || []; items = items.concat(got); if (got.length) last = got[got.length - 1].approvedAt; if (got.length < PAGE) done = true;
+        $('err').hidden = true; paint();
+        var id = (location.hash || '').slice(1), hit = id && items.filter(function (x) { return x.id === id; })[0]; if (hit && !$('dlg').open) openItem(hit);
+      })
+      .catch(function () { $('err').hidden = false; if (!items.length) $('more').hidden = true; })
+      .then(function () { loading = false; $('more').disabled = false; });
+  }
+  $('q').oninput = paint; $('lic').onchange = paint; $('more').onclick = load; $('dClose').onclick = function () { $('dlg').close(); };
+  $('dlg').addEventListener('close', function () { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* そのまま */ } });
+  $('dlg').addEventListener('click', function (e) { if (e.target === $('dlg')) $('dlg').close(); });
+  load();
+})();
+</script>
+</body>
+</html>
