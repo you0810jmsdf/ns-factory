@@ -149,6 +149,19 @@ a{color:var(--accent-dark)}
 .design-catalog{margin-top:6px}
 .design-catalog summary{cursor:pointer;font-weight:700;color:var(--accent-dark);font-size:14px;padding:6px 0}
 .design-catalog img{display:block;width:100%;max-width:1080px;margin-top:8px;border:1px solid var(--line);border-radius:var(--radius)}
+.design-search{margin:8px 0 14px}
+.design-search label.design-search-label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.design-search input[type=search]{width:100%;max-width:420px;padding:10px 12px;font-size:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--white);color:inherit}
+.design-ready-only{display:inline-flex;align-items:center;gap:6px;margin:8px 0 0 0;font-size:14px;cursor:pointer}
+.design-count{margin:8px 0 6px;font-size:13px;color:var(--muted)}
+.design-results{list-style:none;margin:0;padding:0;max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--white)}
+.design-results li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
+.design-results li:last-child{border-bottom:0}
+.design-results .dr-id{flex:0 0 52px;font-weight:700}
+.design-results .dr-name{flex:1 1 auto}
+.design-results .dr-cat{flex:0 0 auto;color:var(--muted);font-size:12px}
+.design-results .dr-badge{flex:0 0 auto;background:#c8003c;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.design-results .dr-empty{color:var(--muted);justify-content:center}
 
 /* ---- credit ---- */
 .credit{
@@ -247,6 +260,13 @@ a{color:var(--accent-dark)}
     </p>
     <details class="design-catalog">
       <summary>デザイン一覧を見る（番号付き・全179種）</summary>
+      <div class="design-search" id="designSearch">
+        <label class="design-search-label" for="designQ">番号・名前・分類で探す</label>
+        <input id="designQ" type="search" placeholder="例：マフラー ／ 11-9 ／ 季節" autocomplete="off" enterkeyhint="search">
+        <label class="design-ready-only"><input type="checkbox" id="designReady"> 刻印対応済みだけ表示</label>
+        <p class="design-count" id="designCount" aria-live="polite"></p>
+        <ul class="design-results" id="designResults"></ul>
+      </div>
       <p class="section-lead">赤い帯が付いているものが刻印対応済みです。画像を押すと大きく開きます。</p>
       <a data-log="デザイン一覧（原寸）を開いた" data-id="inzai-goods" data-name="いんザイ君グッズ" href="assets/inzai-goods/design-catalog.jpg" target="_blank" rel="noopener"><img src="assets/inzai-goods/design-catalog.jpg" alt="いんザイ君 刻印デザイン一覧（番号付き・全179種）" loading="lazy"></a>
     </details>
@@ -398,6 +418,69 @@ document.addEventListener('click', function(ev){
   sendLog('アクション', a.getAttribute('data-id') || '', a.getAttribute('data-name') || '',
           a.getAttribute('data-log'));
 });
+</script>
+<script>
+/* いんザイ君 刻印デザイン検索（assets/inzai-goods/designs.json を最初に開いたときだけ読む） */
+(function designSearchInit(){
+  var box = document.querySelector('details.design-catalog');
+  var q = document.getElementById('designQ');
+  var ready = document.getElementById('designReady');
+  var count = document.getElementById('designCount');
+  var list = document.getElementById('designResults');
+  if(!box || !q || !ready || !count || !list) return;
+  var data = null, loading = false;
+  function norm(s){
+    return String(s).normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g, function(c){
+      return String.fromCharCode(c.charCodeAt(0) - 0x60);
+    });
+  }
+  function matches(item, tokens){
+    var hay = norm(item.id + ' ' + item.name + ' ' + item.cat);
+    for(var i = 0; i < tokens.length; i++){
+      var t = tokens[i];
+      if(/^\d+-\d+$/.test(t)){ if(norm(item.id) !== t) return false; }
+      else if(hay.indexOf(t) < 0) return false;
+    }
+    return true;
+  }
+  function add(li, cls, text){
+    var s = document.createElement('span');
+    s.className = cls; s.textContent = text; li.appendChild(s);
+  }
+  function render(){
+    var tokens = norm(q.value).split(/\s+/).filter(Boolean);
+    var onlyReady = ready.checked;
+    var hits = data.filter(function(d){ return (!onlyReady || d.ready) && matches(d, tokens); });
+    list.textContent = '';
+    hits.forEach(function(d){
+      var li = document.createElement('li');
+      add(li, 'dr-id', d.id); add(li, 'dr-name', d.name); add(li, 'dr-cat', d.cat);
+      if(d.ready) add(li, 'dr-badge', '刻印対応済');
+      list.appendChild(li);
+    });
+    if(!hits.length){
+      var e = document.createElement('li');
+      e.className = 'dr-empty'; e.textContent = '見つかりませんでした。ひらがな・カタカナ、または番号（例：11-9）でお試しください。';
+      list.appendChild(e);
+    }
+    count.textContent = hits.length + '件（全' + data.length + '種）';
+  }
+  function load(){
+    if(data || loading) return;
+    loading = true;
+    fetch('assets/inzai-goods/designs.json').then(function(r){
+      if(!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function(j){ data = j; render(); }).catch(function(){
+      loading = false;
+      count.textContent = '一覧を読み込めませんでした。下の画像をご覧ください。';
+    });
+  }
+  box.addEventListener('toggle', function(){ if(box.open) load(); });
+  q.addEventListener('input', function(){ if(data) render(); });
+  ready.addEventListener('change', function(){ if(data) render(); });
+  if(box.open) load();
+})();
 </script>
 
 </body>
