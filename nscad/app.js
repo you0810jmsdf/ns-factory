@@ -3198,7 +3198,7 @@ function initDesign() {
   for (const id of ['arcMethod', 'arcDir']) $(id).addEventListener('change', () => { if (mode === 'arc' && !stage) $('hint').textContent = modeHint('arc'); }); /* 描き方を変えたら案内文も変える */
   $('ctx-lib').onclick = () => { hideCtxMenu(); const raw = window.prompt(t('libNamePrompt'), ''), name = raw && raw.trim() ? raw.trim() : null; if (name) saveToLibrary(name); }; /* 右クリック → 部品ライブラリに登録 */
   $('ctx-outline').onclick = () => { countUse('ctx_outline'); hideCtxMenu(); selectOutline(); }; $('selOutline').onclick = () => selectOutline(); $('ctx-dedupe').onclick = () => { countUse('ctx_dedupe'); hideCtxMenu(); mergeSelectionOverlaps(); }; $('selDedupe').onclick = () => mergeSelectionOverlaps();   /* 外周の線だけ選ぶ（右クリック・左メニュー） */
-  $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
+  $('ctx-unpaint').onclick = () => { countUse('ctx_unpaint'); hideCtxMenu(); unpaintSelection(); }; $('ctx-guides').onclick = () => { countUse('ctx_guides'); hideCtxMenu(); eraseSelectedGuides(); }; $('unpaintSel').onclick = () => unpaintSelection();   /* 選んだ範囲の色塗りを全部消す（右クリック・塗りの色カード） */
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; wireTextFontLive();   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
@@ -4040,6 +4040,14 @@ function changeMetalStyle() {
 /** 塗りを全部消す。事業主 2026-10-25「特定のエリアだけ色を消したいのに全部消えた」（不具合記録 08:41：「全部消す」を押して12か所が一度に消えた）→ 1回目は確認だけ、5秒以内にもう一度押すと消す（元に戻すは1回）。1か所だけ消すなら「塗りを1か所ずつ消す」。 */
 /** 選んだ範囲の色塗りを全部消す（事業主 2026-10-26「選択した範囲の色塗りを全部削除したい」：既存の「線で囲まれた場所の塗りを、全部消す」は図面全体が対象）。
  *  消すもの：①選んだ図形に囲まれた領域の塗り（革・質感・金属・透明の抜き。「動かすと塗りがついてくる」と同じ判定＝fillFollows）②選んだ図形に付いた革色・質感（グループの印も）・金属の色 ③選んだ部品の色。選んでいない図形の塗りは残る。元に戻すは1回。戻り値 { fills, shapes }。 */
+/** 選んだ範囲のガイド線（点線）だけを消す（事業主 2026-11-02「範囲のガイド線（点線）だけを、右クリックから消せるようにする」：実線を隠してから囲み選択する手順が長かった）。
+ *  対象：選んだ図形のうち、線種が点線の線と、ガイドの層の線。文字・寸法・折り線・画像・金具・穴をつなぐ補助の線と、選んでいない図形は、そのまま。消し方はふだんの削除と同じ（穴を乗せた線は見えない補助の線で残る・元に戻すは1回）。 */
+const guideLineIds = () => { const sel = selectedShapeIds(); return new Set(doc.shapes.filter(s => sel.has(s.id) && !VIEW_FREE_TYPES.includes(s.type) && !s.holeLink && !isHardwareShape(s) && (s.lineStyle === 'dashed' || s.layer === 'guide') && layerEditable(s)).map(s => s.id)); };
+function eraseSelectedGuides() {
+  if (!selectedShapeIds().size) { $('hint').textContent = t('selectFirst'); return 0; }
+  const ids = guideLineIds(); if (!ids.size) { $('hint').textContent = t('guidesNone'); return 0; }
+  removeSelected(ids); $('hint').textContent = t('guidesErased', { n: ids.size }); return ids.size;
+}
 const PAINT_KEYS = ['leather', 'texture', 'leatherGroup', 'metal', 'metalStyle'];
 function unpaintSelection() {
   const none = { fills: 0, shapes: 0 }, ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('unpaintNone'); return none; }
@@ -8986,7 +8994,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
@@ -9031,7 +9039,7 @@ function fillCtxSel() {
 }
 /** 右クリックメニューの中身を、いまの選択に合わせて作り直す（出すかどうかは別）。右クリックの表示（showCtxMenu）と、パネルの一覧（renderSideMenu）が、同じ項目を使うための共通の準備。 */
 function prepareCtxMenu() {
-  fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-guides').hidden = !guideLineIds().size; $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   distributeCtxCards(); updateCtxTree();
 }
 function showCtxMenu(e) {
