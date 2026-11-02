@@ -9227,8 +9227,8 @@ $('circleD').oninput = () => { const d = Number($('circleD').value); $('circleR'
 $('language').addEventListener('change', e => applyLanguage(e.target.value));
 $('undo').onclick = () => history(undo, redo); $('redo').onclick = () => history(redo, undo);
 $('new').onclick = () => {
-  /* 保存していない図があるときは、消さずに新しい図面タブで始める（事業主指摘 2026-10-15：新規で保存前の図が消えた）。保存済み・空の図面だけ、従来どおりその場で空にする */
-  if (tabs[activeTab]?.dirty && (doc.shapes.length || doc.calcMemos?.length)) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
+  /* 図のある図面は、保存済み・読み込んだだけでも、消さずに新しい図面タブで始める（事業主指摘 2026-10-15：新規で保存前の図が消えた／2026-11-02：読み込んだ図面で新規を押すと、タブ名だけ残って空に見えた）。空の図面だけ、その場で空のまま */
+  if (doc.shapes.length || doc.calcMemos?.length) { cancel(); newTab(); $('hint').textContent = t('newKeptOld'); return; }
   cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit; $('zoomActual').onclick = setActualSize; $('zoomActualCalib').onclick = openActualCalib; $('actualCalibApply').onclick = applyActualCalib; $('actualCalibReset').onclick = resetActualCalib; $('actualCalibClose').onclick = () => { $('actualCalibBar').hidden = true; };
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
