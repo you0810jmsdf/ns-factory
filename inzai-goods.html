@@ -158,6 +158,7 @@ a{color:var(--accent-dark)}
 .design-results li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
 .design-results li:last-child{border-bottom:0}
 .design-results .dr-id{flex:0 0 52px;font-weight:700}
+.design-results .dr-img{flex:0 0 72px;width:72px;height:72px;object-fit:contain;background:#fff}
 .design-results .dr-name{flex:1 1 auto}
 .design-results .dr-cat{flex:0 0 auto;color:var(--muted);font-size:12px}
 .design-results .dr-badge{flex:0 0 auto;background:#c8003c;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
@@ -454,6 +455,11 @@ document.addEventListener('click', function(ev){
     list.textContent = '';
     hits.forEach(function(d){
       var li = document.createElement('li');
+      var im = document.createElement('img');
+      im.className = 'dr-img'; im.width = 72; im.height = 72; im.loading = 'lazy';
+      im.alt = 'いんザイ君 ' + d.id + ' ' + d.name; im.src = 'assets/inzai-goods/designs/' + d.id + '.webp';
+      im.onerror = function(){ this.style.visibility = 'hidden'; };
+      li.appendChild(im);
       add(li, 'dr-id', d.id); add(li, 'dr-name', d.name); add(li, 'dr-cat', d.cat);
       if(d.ready) add(li, 'dr-badge', '刻印対応済');
       list.appendChild(li);
