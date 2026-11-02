@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-11",
+  "updated": "2026-11-02",
   "status_values": [
     "candidate",
     "researching",
@@ -9,11 +9,11 @@
   "items": [
     {
       "id": "001",
-      "title": "麻賀多神社 ―同名の社が複数あることをどう読むか(千葉)",
+      "title": "同じ名の社が十八社と数えられる。麻賀多神社を、佐倉と成田から読みくらべる",
       "region": "千葉",
-      "status": "drafted",
+      "status": "published",
       "file": "articles/001-magata-jinja.md",
-      "note_url": ""
+      "note_url": "https://note.com/you0810jmsdf/n/n94a8528596c0"
     }
   ],
   "candidates": [
