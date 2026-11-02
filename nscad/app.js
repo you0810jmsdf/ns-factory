@@ -102,7 +102,7 @@ const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 function syncViewShow(save) {
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
   if (save) { try { localStorage.setItem('leather-cad.view', JSON.stringify(viewShow)); } catch { /* 保存できなくても続ける */ } }
-  selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || viewShows(x); })); cancel(); draw();
+  selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || viewShows(x); })); cancel(); draw(); scheduleOutSummary();
 }
 function gatherVisibleToActiveLayer() {
   const layer = doc.layers.find(l => l.id === activeLayer);
@@ -441,6 +441,19 @@ function syncOutSelWarn() {
   const n = outputSelIds().size, text = n ? t('outSelWarn', { n }) : '';
   for (const id of ['outSelWarn', 'saveSelWarn']) { const el = $(id); if (el) { el.textContent = text; el.hidden = !n; } }
 }
+/** 出力カードの先頭に「出るもの」（図形・縫い穴・全体の大きさ・用紙の枚数）を常に出す（事業主 2026-11-02「出力前の確認」案A）。書き出し・印刷と同じ対象（exportTargets）を数えるので、選択・隠した層・金具の表示・縫い穴のチェックに連動する。押す回数は増えない。重い図面でも操作が重くならないよう、300ms 後に1回だけ数える。 */
+function outputSummary() {
+  const { shapes, holes } = exportTargets($('outHoles').checked), b = bboxOfDoc({ ...doc, shapes, holes }), total = doc.shapes.filter(s => !s.holeLink).length;
+  if (!b) return { empty: true };
+  const paperKey = $('paper').value, pageMm = PAGES[paperKey] || PAGES.a4, pages = printLayout(b, pageMm, 10, null).pages.length;
+  return { shapes: shapes.length, holes: holes.length, w: b.maxX - b.minX, h: b.maxY - b.minY, pages, paper: $('paper').selectedOptions?.[0]?.textContent || 'A4', hidden: Math.max(0, total - shapes.length) };
+}
+function syncOutSummary() {
+  const el = $('outSummary'); if (!el) return; let s; try { s = outputSummary(); } catch { el.textContent = ''; return; }
+  el.textContent = s.empty ? t('outSummaryEmpty') : t('outSummary', { shapes: s.shapes, holes: s.holes, w: s.w.toFixed(1), h: s.h.toFixed(1), paper: s.paper, pages: s.pages }) + (s.hidden ? ' ' + t('outSummaryHidden', { n: s.hidden }) : '');
+}
+let outSummaryTimer = 0;
+const scheduleOutSummary = () => { clearTimeout(outSummaryTimer); outSummaryTimer = setTimeout(syncOutSummary, 300); };
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
@@ -1599,7 +1612,7 @@ function initLayers() {
   restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
   $('backBadge')?.addEventListener('click', () => { $('stitchFace').value = 'front'; draw(); });   /* 「裏面表示中」の印を押すと、表に戻す */
-  $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
+  $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { scheduleOutSummary(); viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
   $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
@@ -3449,15 +3462,32 @@ function tabForOpenedFile(file) {
   return base;
 }
 function nameOpenedTab(base) { if (tabs[activeTab]) { if (base) tabs[activeTab].name = base; tabs[activeTab].dirty = false; renderTabs(); } }
+/** 読み込みの結果を帯で知らせ、「詳しく」で一覧を開く（事業主 2026-11-02「読み込みレポート」案A：.lcc の欠け・ずれを、利用者が自分で気づけるように）。lines が空なら「詳しく」は出さない。 */
+function showImportReport(info, lines = []) {
+  const list = $('importList'); list.textContent = ''; for (const l of lines) { const d = document.createElement('div'); d.textContent = l; list.appendChild(d); }
+  list.hidden = true; $('importDetail').hidden = !lines.length; $('importInfo').textContent = info; $('importBar').hidden = false;
+}
+/** .lcc を取り込んだ結果（lccToDoc の戻り値）→ 帯の1行と、詳しくの一覧。取り込めなかった要素は種類ごと・遠すぎた穴・近くにつないだ穴・穴の大きさを数える。 */
+function lccImportReport(r) {
+  const shapes = r.doc.shapes.filter(s => !s.holeLink).length, holes = r.stats.holesAttached ?? 0, skipped = {};
+  let far = 0; for (const w of r.warnings) { const m = /^skip:([^:]+):/.exec(w); if (m) skipped[m[1]] = (skipped[m[1]] || 0) + 1; else if (/^hole-skipped:/.test(w)) far++; }
+  const skipN = Object.values(skipped).reduce((a, b) => a + b, 0) + far, lines = [];
+  for (const [k, n] of Object.entries(skipped)) lines.push(t('importListSkipped', { name: (tn => tn === 'importType.' + k ? k : tn)(t('importType.' + k)), n }));
+  if (far) lines.push(t('importListHoleFar', { n: far }));
+  if (r.stats.holesViaNearest) lines.push(t('importListHoleNear', { n: r.stats.holesViaNearest }));
+  const sizes = Object.entries(r.stats.holeSize || {}).map(([k, n]) => { const [a, b] = k.split('x').map(Number); return `${+a.toFixed(2)}×${+b.toFixed(2)} → ${n}`; }).join(' / '); if (sizes) lines.push(t('importListHoleSize', { list: sizes }));
+  if (!skipN) lines.unshift(t('importListNone'));
+  return { info: t('importInfo', { kind: t('importKindLcc'), shapes, holes }) + (skipN ? t('importInfoSkip', { n: skipN }) : ''), lines };
+}
 async function openFile(file) {
   const name = (file.name || '').toLowerCase();
   if (/\.(png|jpe?g|webp)$/.test(name)) { try { await importImageFile(file); return { added: 1, dropped: 0 }; } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); return null; } }
   const text = await file.text();
   try {
-    if (name.endsWith('.svg')) { const r = svgToShapes(text); return importVector(r.shapes, r.layers, { recover: false }); }
-    if (name.endsWith('.dxf')) { const r = dxfToShapesFull(text); const res = importVector(r.shapes, [], { recover: $('recoverArcs').checked }); if (r.units === null) $('hint').textContent += ' ' + t('dxfUnitsAssumed'); return res; }
+    if (name.endsWith('.svg')) { const r = svgToShapes(text); const res = importVector(r.shapes, r.layers, { recover: false }); showImportReport(t('importInfo', { kind: 'SVG', shapes: res.added, holes: res.holes ?? 0 }) + (res.dropped ? t('importInfoSkip', { n: res.dropped }) : '')); return res; }
+    if (name.endsWith('.dxf')) { const r = dxfToShapesFull(text); const res = importVector(r.shapes, [], { recover: $('recoverArcs').checked }); if (r.units === null) $('hint').textContent += ' ' + t('dxfUnitsAssumed'); showImportReport(t('importInfo', { kind: 'DXF', shapes: res.added, holes: res.holes ?? 0 }) + (res.dropped ? t('importInfoSkip', { n: res.dropped }) : '')); return res; }
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
-    if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
+    if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); { const rp = lccImportReport(r); showImportReport(rp.info, rp.lines); } $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
     const raw = JSON.parse(text), hist = raw && raw.undoHistory; if (raw) delete raw.undoHistory; /* 保存ファイルに入っていた元に戻す履歴は、図面とは別に扱う */
     const next = withDefaultTool(migrateDoc(raw)); healDoc(next); dropDetachedFills(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
@@ -4752,7 +4782,7 @@ function renderTabs() {
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
 }
 function switchTab(i) {
-  if (i === activeTab || !tabs[i]) return; openGapMarks = []; snapshotTab(); activeTab = i; const tab = tabs[i];
+  if (i === activeTab || !tabs[i]) return; $('importBar').hidden = true; openGapMarks = []; snapshotTab(); activeTab = i; const tab = tabs[i];
   doc = tab.doc; syncDimensions(new Map()); syncMarkLines(); undo = tab.undo; /* 寸法が覚えていない図形の点を覚える（復元・タブ切り替えの直後でも、次の編集から追従する） */ redo = tab.redo; selected = tab.selected || new Set(); activeLayer = tab.activeLayer || 'pattern'; if (tab.scale) { scale = tab.scale; origin = tab.origin; }
   cancel(); manualNext = null; nodeSel = null; pairLines = []; aiPending = null; aiHighlight = { ids: new Set(), until: 0 }; tracePreviewShapes = []; voicePending = null; voiceCandidates = []; renderVoiceCandidates(); renderAi(); refreshTools(); renderLayers(); renderSeams(); rebuildSnaps(); renderTabs(); draw();
 }
@@ -7024,7 +7054,7 @@ function initColorPick() {
 function updateUI() {
   scheduleSideMenu(); renderFoldFlow(); refreshLaminateParts(); if ($('lamSubCard').open) renderLaminateNow();   /* 検証カードを開いているあいだは、図形を直すたびに、いまの全長も最新にする */
   $('undo').disabled = !undo.length; $('redo').disabled = !redo.length;
-  syncOutSelWarn();
+  syncOutSelWarn(); scheduleOutSummary();
   $('delete').disabled = !selected.size; $('symCheck').disabled = !selected.size;
   for (const id of ['copy', 'mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft']) $(id).disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s));
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
@@ -9246,7 +9276,7 @@ $('new').onclick = () => {
   cancel(); commit(() => { doc = newDoc(); doc.tools = loadTools(); selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); activeLayer = 'pattern'; pairLines = []; renderLayers(); renderSeams(); fit(); };
 $('zoomIn').onclick = () => zoom(1.25); $('zoomOut').onclick = () => zoom(0.8); $('fit').onclick = fit; $('zoomActual').onclick = setActualSize; $('zoomActualCalib').onclick = openActualCalib; $('actualCalibApply').onclick = applyActualCalib; $('actualCalibReset').onclick = resetActualCalib; $('actualCalibClose').onclick = () => { $('actualCalibBar').hidden = true; };
 for (const id of ['grid', 'snap', 'spacing']) $(id).addEventListener('change', () => { if (!(Number($('spacing').value) >= 0.1)) $('spacing').value = '1'; snap = null; draw(); });
-for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => draw());
+for (const id of ['printOverlay', 'paper', 'outHoles', 'threeView']) $(id).addEventListener('change', () => { draw(); scheduleOutSummary(); });
 $('threeView').addEventListener('change', () => { if ($('threeView').checked && !lockGate('threeview')) { $('threeView').checked = false; return; } let moved = 0; if (threeViewOn() && quadOn()) { $('quadView').checked = false; moved = quadToFrames(); } $('threeViewNotice').hidden = !threeViewOn(); $('threeViewTools').hidden = !threeViewOn(); rebuildSnaps(); if (view3d) render3d(); if (moved) { draw(); $('hint').textContent = t('quadToFramesDone', { n: moved }); } });
 $('quadView').addEventListener('change', () => { if ($('quadView').checked && !lockGate('threeview')) { $('quadView').checked = false; return; } let moved = 0; if (quadOn()) { const wasFrames = $('threeView').checked; if (wasFrames) { $('threeView').checked = false; $('threeViewNotice').hidden = true; $('threeViewTools').hidden = true; } ensureSheetSet(); if (wasFrames) moved = framesToQuad(); } if (!quadOn()) dropEmptySheetTabs(); rebuildSnaps(); if (view3d) render3d(); draw(); $('hint').textContent = quadOn() ? (moved ? t('framesToQuadDone', { n: moved }) + ' ' : '') + t('quadOnHint') : t('hint.' + mode); });
 $('threeViewMake').onclick = makeThreeViewOutlines;
@@ -9360,6 +9390,7 @@ for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll
 /** 保存メニューの外をクリックしたら閉じる。「保存 ▾」ボタンの中の文字（span・kbd）のクリックは、ボタンの中なので閉じない（事業主指摘 2026-10-18：文字をクリックすると、開いた直後に閉じて、メニューが見えなかった）。 */
 function closeSaveMenuOnOutsideClick(e) { const m = $('saveMenu'), sv = $('save'); if (!m.hidden && e.target instanceof Node && !m.contains(e.target) && !sv.contains(e.target)) m.hidden = true; }
 document.addEventListener?.('click', closeSaveMenuOnOutsideClick); $('open').onclick = () => openDialog(); $('shortcutsBtn').onclick = () => showHelp(true);
+$('importClose').onclick = () => { $('importBar').hidden = true; }; $('importDetail').onclick = () => { $('importList').hidden = !$('importList').hidden; };
 $('file').addEventListener('change', async e => {
   const file = e.target.files[0]; e.target.value = ''; if (!file) return;
   await openFile(file);
