@@ -2,6 +2,8 @@
 // この部品は、整える計算だけ（画面にも通信にも触れない）。保存先・公開・審査はまだ無い：いまは「整形のプレビュー」まで。
 export const GALLERY_LICENSES = ['personal', 'commercial'];   /* personal＝個人で楽しむ用（作った物の販売はしない）・commercial＝作った革製品の販売まで可（型紙そのものの再配布はしない） */
 export const GALLERY_LIMITS = { title: 60, author: 30, description: 400, url: 200 };
+/** 登録の受け口（Cloudflare Worker leather-cad-gallery・保存先は D1。gallery-worker/README.md）。承認待ちで受け、運営者が承認すると公開される。 */
+export const GALLERY_ENDPOINT = 'https://leather-cad-gallery.bouncy-xenoposeidon.workers.dev';
 
 /** 図面タブの名前（ファイル名のことが多い）から、ギャラリーのタイトルの初期値を作る：拡張子と日付の頭（20261101_）を外し、_ を空白にする。空なら ''。 */
 export function galleryTitleFrom(name) {
@@ -56,6 +58,12 @@ export function galleryDocTexts(doc) {
   for (const s of doc.shapes ?? []) if (s.type === 'text' && s.text) list.push({ where: 'text', text: s.text });
   for (const m of doc.calcMemos ?? []) { if (m.note) list.push({ where: 'memo', text: m.note }); if (m.expr) list.push({ where: 'memo', text: m.expr }); }
   return list;
+}
+
+/** 送る図面：図面の全部から、写真（画像の図形）と計算メモ（本人のメモ）を除いたもの。もとの図面は変えない。 */
+export function galleryPayloadDoc(doc) {
+  const { calcMemos, ...rest } = doc;
+  return { ...rest, shapes: (doc.shapes ?? []).filter(s => s.type !== 'image') };
 }
 
 /** 入力の点検。返すのは { ok, errors:[コード] }：title / author / license / url / description / empty（登録する図形が無い）。 */

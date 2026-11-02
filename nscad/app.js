@@ -25,7 +25,7 @@ import { DATA_TEXTURES } from './data/textures.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
-import { GALLERY_LICENSES, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } from './gallery.js';
+import { GALLERY_ENDPOINT, GALLERY_LICENSES, galleryPayloadDoc, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } from './gallery.js';
 import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } from './designs.js';
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
@@ -8656,14 +8656,15 @@ function bugReport() {
   return { kind: 'ncad-bug-report', savedAt: new Date().toISOString(), app: ver, env: { ua: (typeof navigator !== 'undefined' && navigator.userAgent) || '', scale: +scale.toFixed(3), origin, mode, tab: activeTab }, layers: doc.layers.map(l => ({ id: l.id, name: l.name, visible: l.visible, locked: l.locked })), shapeCount: doc.shapes.length, selected: [...selected].slice(0, 50), log: opLog.slice(), doc };
 }
 /* ── 型紙ギャラリー：登録の前の「整形のプレビュー」（事業主 2026-11-02「自動整形（著作権表示やタイトルなど）機能を持たせ、ボタン一つでギャラリー登録できるように」）。
- *  いまは確認だけ：保存先・公開の審査・販売リンクの表示は次の段階。図面は外部へ送らない。作者名・利用条件・リンクだけ、この端末に覚える。 ── */
+ *  「登録する」で、承認待ちとして保存先（gallery-worker・D1）へ送る。公開は運営者が承認してから。送るのは、窓の内容・サムネイル・図面（写真と計算メモは除く）。作者名・利用条件・リンク・登録の印は、この端末に覚える。 ── */
 const GALLERY_KEY = 'leather-cad.gallery';
 let galleryAuto = { title: '', desc: '' };   /* 自動で入れた値（「自動で整え直す」で戻す） */
+let galleryThumbSvg = '', gallerySending = false;
 function galleryPrefs() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '{}') || {}; } catch { return {}; } }
 function galleryRemember() { try { localStorage.setItem(GALLERY_KEY, JSON.stringify({ author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value })); } catch { /* 覚えられなくても続ける */ } }
 /** 登録する図形：表示中の層の図形（金具・穴をつなぐ補助の線を除く）と、その縫い穴。選択には左右されない（図面の全部を載せる）。 */
 function galleryTarget() {
-  const shapes = doc.shapes.filter(s => layerVisible(s) && !s.holeLink && !isHardwareShape(s)), holes = holesOnShapes(doc, shapes);
+  const shapes = doc.shapes.filter(s => layerVisible(s) && !s.holeLink && !isHardwareShape(s) && s.type !== 'image'), holes = holesOnShapes(doc, shapes);   /* 写真（画像の図形）は載せない（絵にも図面にも入れない） */
   return { shapes, holes, stats: galleryStats(shapes, holes, bboxOfDoc({ ...doc, shapes, holes })) };
 }
 const galleryVals = () => ({ title: $('gTitleIn').value, author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value, description: $('gDesc').value });
@@ -8672,17 +8673,19 @@ function gallerySync() {
   const g = galleryTarget(), v = galleryVals(), year = new Date().getFullYear();
   $('gStats').textContent = g.stats ? t('gStats', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) : '';
   $('gCopyright').textContent = v.author.trim() ? t('gCopyright', { c: galleryCopyright(v.author, year) }) : t('gCopyrightNone');
-  const hits = galleryPiiScan([...galleryDocTexts(doc), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }]);
+  const hits = galleryPiiScan([...galleryDocTexts(galleryPayloadDoc(doc)), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }]);
   const list = $('gPiiList'); list.textContent = ''; for (const h of hits) { const li = document.createElement('li'); li.textContent = t('gPiiItem', { kind: t('gPiiKind.' + h.kind), where: t('gPiiWhere.' + h.where), text: h.text }); list.appendChild(li); }
   $('gPiiHead').textContent = hits.length ? t('gPiiFound', { n: hits.length }) : t('gPiiNone'); $('gPiiHead').className = hits.length ? 'ng' : 'ok';
   const check = galleryCheck({ ...v, stats: g.stats });
   $('gStatus').textContent = check.ok ? t(hits.length ? 'gOkPii' : 'gOk') : check.errors.map(e => t('gErr.' + e)).join(' '); $('gStatus').className = 'fb-status ' + (check.ok && !hits.length ? 'ok' : 'ng');
-  return { check, hits, entry: check.ok && !hits.length ? galleryEntry({ ...v, stats: g.stats, year }) : null };
+  const entry = check.ok && !hits.length ? galleryEntry({ ...v, stats: g.stats, year }) : null;
+  $('gSubmit').disabled = !entry || !$('gConsent').checked || gallerySending;
+  return { check, hits, entry };
 }
 /** 一覧に出る小さな絵（SVG）。線だけの白地。金具は除く。 */
 function galleryThumb() {
   const box = $('gThumb'); box.textContent = '';
-  const svg = docToSvg({ ...doc, shapes: doc.shapes.filter(s => !isHardwareShape(s)) }, { includeHoles: true, lineColors: 'mono', marginMm: 3 });
+  const svg = galleryThumbSvg = docToSvg({ ...doc, shapes: doc.shapes.filter(s => !isHardwareShape(s) && s.type !== 'image') }, { includeHoles: true, lineColors: 'mono', marginMm: 3 });
   const img = document.createElement('img'); img.alt = ''; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); box.appendChild(img);
 }
 function openGallery() {
@@ -8691,7 +8694,53 @@ function openGallery() {
   galleryAuto = { title: galleryTitleFrom(tabs[activeTab]?.name), desc: t('gDescAuto', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) };
   $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc;
   $('gAuthor').value = p.author || registration.state().nick || ''; $('gLicense').value = GALLERY_LICENSES.includes(p.license) ? p.license : 'personal'; $('gUrl').value = p.url || '';
-  galleryThumb(); gallerySync(); $('galleryDialog').showModal();
+  $('gConsent').checked = false; galleryThumb(); gallerySync(); $('galleryDialog').showModal(); galleryMineLoad();
+}
+/** この端末の登録の印（承認待ちの数・取り下げの確認に使う。サーバーには SHA-256 だけ残る）。create=false なら、無ければ ''。 */
+function galleryToken(create) {
+  try {
+    let k = localStorage.getItem('leather-cad.galleryToken') || '';
+    if (!k && create) { const a = new Uint8Array(24); crypto.getRandomValues(a); k = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('leather-cad.galleryToken', k); }
+    return k;
+  } catch { return ''; }
+}
+/** 受け口へ送る（text/plain＝事前確認の往復が要らない）。戻りは { status, out }。つながらないときは throw。 */
+async function galleryPost(path, body) {
+  const res = await fetch(GALLERY_ENDPOINT + path, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), credentials: 'omit' });
+  return { status: res.status, out: await res.json().catch(() => ({})) };
+}
+/** 「あなたの登録」の一覧（承認待ち・公開中・公開されていない）。取り下げは2回押し（5秒以内）。 */
+async function galleryMineLoad() {
+  const box = $('gMine'), token = galleryToken(false); box.textContent = ''; $('gMineHead').hidden = true; if (!token) return;
+  let r; try { r = await galleryPost('/mine', { token }); } catch { return; }
+  const items = r.status === 200 && Array.isArray(r.out.items) ? r.out.items : []; if (!items.length) return;
+  $('gMineHead').hidden = false;
+  for (const it of items) {
+    const row = document.createElement('div'), label = document.createElement('span'), btn = document.createElement('button');
+    label.textContent = t('gMineItem', { title: it.title, status: t('gMineStatus.' + it.status) }) + (it.status === 'rejected' && it.reason ? '（' + it.reason + '）' : '');
+    btn.textContent = t('gWithdraw'); let armed = 0;
+    btn.onclick = async () => {
+      if (!armed || Date.now() - armed > 5000) { armed = Date.now(); btn.textContent = t('gWithdrawAgain'); return; }
+      btn.disabled = true; try { const w = await galleryPost('/withdraw', { token, id: it.id }); if (w.status === 200) $('gStatus').textContent = t('gWithdrawn'); } catch { /* つながらなければそのまま */ }
+      galleryMineLoad();
+    };
+    row.appendChild(label); row.appendChild(btn); box.appendChild(row);
+  }
+}
+/** 「登録する」：整形の結果を、承認待ちで送る。同意・点検・個人情報の疑いが全部そろったときだけ（ボタンもそのときだけ押せる）。 */
+async function submitGallery() {
+  const r = gallerySync(), st = $('gStatus');
+  if (!$('gConsent').checked) { st.textContent = t('gSendErr.consent'); st.className = 'fb-status ng'; return; }
+  if (!r.entry || gallerySending) return;
+  if (!regGuard('gallery', 'dl')) return;
+  const token = galleryToken(true); if (!token) { st.textContent = t('gSendErr.token'); st.className = 'fb-status ng'; return; }
+  gallerySending = true; $('gSubmit').disabled = true; st.textContent = t('gSending'); st.className = 'fb-status';
+  try {
+    const { status, out } = await galleryPost('/submit', { consent: true, token, entry: r.entry, stats: r.entry.stats, doc: galleryPayloadDoc(doc), thumb: galleryThumbSvg });
+    if (status === 200 && out.ok) { st.textContent = t('gSent', { id: out.id }); st.className = 'fb-status ok'; galleryMineLoad(); }
+    else { const shown = t('gSendErr.' + out.error); st.textContent = out.error && shown !== 'gSendErr.' + out.error ? shown : t('gSendErr.other'); st.className = 'fb-status ng'; }
+  } catch { st.textContent = t('gSendErr.net'); st.className = 'fb-status ng'; }
+  finally { gallerySending = false; $('gSubmit').disabled = !r.entry || !$('gConsent').checked; }
 }
 /* 改善要望：使い勝手の意見を作者に直接送る（受け口は神社巡りノートと共通・app=ncad で別シート）。送るのは種類・本文・連絡先・版・画面情報だけ。図面の中身は送らない */
 let fbRid = '';
@@ -9426,6 +9475,7 @@ $('saveGallery').onclick = () => { $('saveMenu').hidden = true; openGallery(); }
 for (const id of ['gTitleIn', 'gAuthor', 'gLicense', 'gUrl', 'gDesc']) for (const ev of ['input', 'change']) $(id).addEventListener(ev, () => { galleryRemember(); gallerySync(); });
 $('gRedo').onclick = () => { $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc; gallerySync(); };
 $('gClose').onclick = () => $('galleryDialog').close();
+$('gConsent').addEventListener('change', gallerySync); $('gSubmit').onclick = submitGallery;
 $('autosaveBarSave').onclick = () => save();
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
