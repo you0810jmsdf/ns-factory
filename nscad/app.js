@@ -25,6 +25,7 @@ import { DATA_TEXTURES } from './data/textures.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
+import { GALLERY_LICENSES, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } from './gallery.js';
 import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } from './designs.js';
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
@@ -8654,6 +8655,44 @@ function bugReport() {
   const ver = $('buildVer')?.textContent ?? '';
   return { kind: 'ncad-bug-report', savedAt: new Date().toISOString(), app: ver, env: { ua: (typeof navigator !== 'undefined' && navigator.userAgent) || '', scale: +scale.toFixed(3), origin, mode, tab: activeTab }, layers: doc.layers.map(l => ({ id: l.id, name: l.name, visible: l.visible, locked: l.locked })), shapeCount: doc.shapes.length, selected: [...selected].slice(0, 50), log: opLog.slice(), doc };
 }
+/* ── 型紙ギャラリー：登録の前の「整形のプレビュー」（事業主 2026-11-02「自動整形（著作権表示やタイトルなど）機能を持たせ、ボタン一つでギャラリー登録できるように」）。
+ *  いまは確認だけ：保存先・公開の審査・販売リンクの表示は次の段階。図面は外部へ送らない。作者名・利用条件・リンクだけ、この端末に覚える。 ── */
+const GALLERY_KEY = 'leather-cad.gallery';
+let galleryAuto = { title: '', desc: '' };   /* 自動で入れた値（「自動で整え直す」で戻す） */
+function galleryPrefs() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '{}') || {}; } catch { return {}; } }
+function galleryRemember() { try { localStorage.setItem(GALLERY_KEY, JSON.stringify({ author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value })); } catch { /* 覚えられなくても続ける */ } }
+/** 登録する図形：表示中の層の図形（金具・穴をつなぐ補助の線を除く）と、その縫い穴。選択には左右されない（図面の全部を載せる）。 */
+function galleryTarget() {
+  const shapes = doc.shapes.filter(s => layerVisible(s) && !s.holeLink && !isHardwareShape(s)), holes = holesOnShapes(doc, shapes);
+  return { shapes, holes, stats: galleryStats(shapes, holes, bboxOfDoc({ ...doc, shapes, holes })) };
+}
+const galleryVals = () => ({ title: $('gTitleIn').value, author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value, description: $('gDesc').value });
+/** 窓の表示を今の入力に合わせる（著作権表示・個人情報の疑い・点検の結果）。戻り値は整形の結果（点検が通ったときだけ entry が入る）。 */
+function gallerySync() {
+  const g = galleryTarget(), v = galleryVals(), year = new Date().getFullYear();
+  $('gStats').textContent = g.stats ? t('gStats', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) : '';
+  $('gCopyright').textContent = v.author.trim() ? t('gCopyright', { c: galleryCopyright(v.author, year) }) : t('gCopyrightNone');
+  const hits = galleryPiiScan([...galleryDocTexts(doc), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }]);
+  const list = $('gPiiList'); list.textContent = ''; for (const h of hits) { const li = document.createElement('li'); li.textContent = t('gPiiItem', { kind: t('gPiiKind.' + h.kind), where: t('gPiiWhere.' + h.where), text: h.text }); list.appendChild(li); }
+  $('gPiiHead').textContent = hits.length ? t('gPiiFound', { n: hits.length }) : t('gPiiNone'); $('gPiiHead').className = hits.length ? 'ng' : 'ok';
+  const check = galleryCheck({ ...v, stats: g.stats });
+  $('gStatus').textContent = check.ok ? t(hits.length ? 'gOkPii' : 'gOk') : check.errors.map(e => t('gErr.' + e)).join(' '); $('gStatus').className = 'fb-status ' + (check.ok && !hits.length ? 'ok' : 'ng');
+  return { check, hits, entry: check.ok && !hits.length ? galleryEntry({ ...v, stats: g.stats, year }) : null };
+}
+/** 一覧に出る小さな絵（SVG）。線だけの白地。金具は除く。 */
+function galleryThumb() {
+  const box = $('gThumb'); box.textContent = '';
+  const svg = docToSvg({ ...doc, shapes: doc.shapes.filter(s => !isHardwareShape(s)) }, { includeHoles: true, lineColors: 'mono', marginMm: 3 });
+  const img = document.createElement('img'); img.alt = ''; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); box.appendChild(img);
+}
+function openGallery() {
+  const g = galleryTarget(); if (!g.stats) { $('hint').textContent = t('gErr.empty'); return; }
+  const p = galleryPrefs();
+  galleryAuto = { title: galleryTitleFrom(tabs[activeTab]?.name), desc: t('gDescAuto', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) };
+  $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc;
+  $('gAuthor').value = p.author || registration.state().nick || ''; $('gLicense').value = GALLERY_LICENSES.includes(p.license) ? p.license : 'personal'; $('gUrl').value = p.url || '';
+  galleryThumb(); gallerySync(); $('galleryDialog').showModal();
+}
 /* 改善要望：使い勝手の意見を作者に直接送る（受け口は神社巡りノートと共通・app=ncad で別シート）。送るのは種類・本文・連絡先・版・画面情報だけ。図面の中身は送らない */
 let fbRid = '';
 function fbInfo() { return { w: globalThis.innerWidth, h: globalThis.innerHeight, ua: globalThis.navigator?.userAgent || '', lang: $('language').value, mode, tabs: tabs.length, shapes: doc.shapes.length, threeView: !!$('threeView')?.checked, offline: globalThis.location?.protocol === 'file:' }; }
@@ -9383,6 +9422,10 @@ initHdrMenus();
 try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+$('saveGallery').onclick = () => { $('saveMenu').hidden = true; openGallery(); };
+for (const id of ['gTitleIn', 'gAuthor', 'gLicense', 'gUrl', 'gDesc']) for (const ev of ['input', 'change']) $(id).addEventListener(ev, () => { galleryRemember(); gallerySync(); });
+$('gRedo').onclick = () => { $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc; gallerySync(); };
+$('gClose').onclick = () => $('galleryDialog').close();
 $('autosaveBarSave').onclick = () => save();
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };

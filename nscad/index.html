@@ -159,6 +159,12 @@
     #presence { white-space: nowrap; color: #666; font-size: 11px; cursor: default; } #presence[hidden] { display: none; } #presence .pr-dot { color: #4f6f4f; font-size: 9px; vertical-align: 1px; }   /* people online: small and dim, bottom-right corner */
     #cmd { width: 190px; font-family: ui-monospace, Menlo, monospace; }
     dialog.fb { width: min(560px, calc(100vw - 24px)); } dialog.fb .fb-f { display: block; margin: 8px 0; } dialog.fb .fb-f > span { display: block; margin-bottom: 4px; } dialog.fb { box-sizing: border-box; overflow-x: hidden; } dialog.fb textarea, dialog.fb .fb-f input { width: 100%; box-sizing: border-box; } dialog.fb .fb-ctx { display: block; font-size: 12px; color: #aaa; margin: 2px 0 6px 22px; word-break: break-all; } dialog.fb .fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; } dialog.fb .fb-status { display: block; min-height: 1.4em; margin: 6px 0; } dialog.fb .fb-status.ok { color: #7fd48a; } dialog.fb .fb-status.ng { color: #ff8a80; }
+.gThumb { display: flex; align-items: center; justify-content: center; height: 200px; margin: 8px 0 2px; background: #fff; border-radius: 6px; overflow: hidden; }
+.gThumb img { max-width: 100%; max-height: 100%; }
+.gPii { margin: 8px 0; font-size: 13px; }
+.gPii ul { margin: 4px 0 0 18px; padding: 0; color: #ffb74d; }
+.gPii .ok { color: #7fd48a; }
+.gPii .ng { color: #ffb74d; }
     dialog { max-width: 720px; max-height: 80vh; background: var(--card); color: #ddd; border: 1px solid var(--line); border-radius: 12px; } pre { white-space: pre-wrap; font: inherit; }
     .spacer { margin-left: auto; }
     #tutBar { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 3; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: #1c1c1ee6; border: 1px solid var(--accent); border-radius: 10px; font-size: 13px; } #tutBar[hidden] { display: none; } #tutCaption { flex: 1 1 200px; color: #fff; }
@@ -237,8 +243,8 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-11-02 14:06 · 52bec95</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
-<button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><div id="saveSelWarn" class="outSelWarn" hidden></div><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-11-02 17:17 · 88e997f</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><div id="saveSelWarn" class="outSelWarn" hidden></div><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><button id="saveGallery" data-i18n="saveGalleryFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <button id="ctxOpenBtn" type="button" aria-haspopup="true" data-i18n="ctxOpenBtn" data-i18n-title="ctxOpenBtnTip"></button><span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showSecDimsTip"><input id="showSecDims" type="checkbox" checked><span data-i18n="showSecDims"></span></label><label data-i18n-title="showHardwareTip"><input id="showHardware" type="checkbox" checked><span data-i18n="showHardware"></span></label><label data-i18n-title="showStitchTip"><input id="showStitch" type="checkbox"><span data-i18n="showStitch"></span></label><label data-i18n-title="stitchThickTip"><span data-i18n="stitchThick"></span><select id="stitchThick"><option value="0.45">0.45 mm</option><option value="0.6" selected>0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option></select></label><label data-i18n-title="stitchThickRoundTip"><span data-i18n="stitchThickRound"></span><select id="stitchThickRound"><option value="same" selected data-i18n="stitchThickSame"></option><option value="0.45">0.45 mm</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option><option value="1.2">1.2 mm</option></select></label><label data-i18n-title="stitchFaceTip"><span data-i18n="stitchFace"></span><select id="stitchFace"><option value="front" selected data-i18n="stitchFaceFront"></option><option value="back" data-i18n="stitchFaceBack"></option></select></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="zoomActual" data-i18n="zoomActual" data-i18n-title="zoomActualTip"></button><button id="zoomActualCalib" data-i18n="zoomActualCalib" data-i18n-title="zoomActualTip"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
 <select id="language" class="spacer"><option value="ja" data-i18n="ja"></option><option value="en" data-i18n="en"></option></select><span class="hmenu hmenu-right"><button id="otherBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="otherMenuBtn" data-i18n-title="otherMenuTip"></button><div id="otherMenu" class="hmenu-panel hdr-panel" hidden><button id="shortcutsBtn" data-i18n="shortcutsBtn" data-i18n-title="shortcutsBtnTip"></button><button id="help" data-i18n="help"></button><button id="guideBtn" data-i18n="guideBtn"></button><button id="bugLog" data-i18n="bugLog" data-i18n-title="bugLogTip"></button><button id="feedbackBtn" data-i18n="fbBtn" data-i18n-title="fbBtnTip"></button></div></span><button id="sidePanelBtn" type="button" data-i18n="sidePanelBtn" data-i18n-title="sidePanelBtnTip" aria-pressed="false"></button><button id="hdrMore" class="hdr-more" data-i18n="hdrMore" aria-expanded="false"></button><input id="file" type="file" accept=".json,.lcc,.svg,.dxf,.png,.jpg,.jpeg,.webp,application/json,image/svg+xml,image/png,image/jpeg" hidden></header>
@@ -831,6 +837,17 @@
 <dialog id="lockDialog" class="fb"><h3 id="lockTitle"></h3><p data-i18n="lockBody"></p><p id="lockNow" class="bd-note" role="status"></p><p class="bd-note" data-i18n="lockOwnerNote"></p><div class="row"><button id="lockRegister" data-i18n="lockRegister"></button><button id="lockClose" data-i18n="lockClose"></button></div></dialog>
 <dialog id="releaseDialog" class="fb"><h3 data-i18n="releaseTitle"></h3><p id="releaseNow" class="bd-note" role="status"></p><input id="releaseSearch" type="search" class="rel-search" autocomplete="off" data-i18n-placeholder="releaseSearchPh" data-i18n-aria="releaseSearchPh"><output id="releaseCount" class="bd-note" role="status"></output><div id="releaseList" class="rel-list"></div><button id="releaseMore" type="button" class="rel-more"></button><p id="releaseOldTitle" class="bd-note" data-i18n="releaseOldTitle" hidden></p><div id="releaseOld" class="rel-list" hidden></div><div class="row"><button id="releaseClose" type="button" data-i18n="releaseClose"></button></div></dialog>
 <dialog id="regDialog" class="fb"><h3 data-i18n="regTitle"></h3><p id="regNow" class="bd-note" role="status"></p><p data-i18n="regWhy"></p><label class="fb-f"><span data-i18n="regEmailL"></span><input id="regEmail" type="email" maxlength="254" autocomplete="email"></label><label class="fb-f"><span data-i18n="regNickL"></span><input id="regNick" type="text" maxlength="30" autocomplete="nickname"></label><p class="bd-note" data-i18n="regPrivacy"></p><label class="fb-ctx-on"><input id="regConsent" type="checkbox"><span data-i18n="regConsentL"></span></label><output id="regStatus" class="fb-status" role="status"></output><div class="row"><button id="regSend" data-i18n="regSend"></button><button id="regCheck" data-i18n="regCheck" hidden></button><button id="regClose" data-i18n="regClose"></button></div></dialog>
+<dialog id="galleryDialog" class="fb" aria-labelledby="gTitleH"><h3 id="gTitleH" data-i18n="gTitle"></h3><p data-i18n="gLead"></p>
+<div id="gThumb" class="gThumb" role="img"></div><output id="gStats" class="fb-ctx"></output>
+<label class="fb-f"><span data-i18n="gTitleL"></span><input id="gTitleIn" type="text" maxlength="60" autocomplete="off"></label>
+<label class="fb-f"><span data-i18n="gAuthorL"></span><input id="gAuthor" type="text" maxlength="30" autocomplete="off" data-i18n-placeholder="gAuthorPh"></label>
+<output id="gCopyright" class="fb-ctx"></output>
+<label class="fb-f"><span data-i18n="gLicenseL"></span><select id="gLicense"><option value="personal" data-i18n="gLicensePersonal"></option><option value="commercial" data-i18n="gLicenseCommercial"></option></select></label>
+<label class="fb-f"><span data-i18n="gUrlL"></span><input id="gUrl" type="url" maxlength="200" autocomplete="off" placeholder="https://"></label>
+<label class="fb-f"><span data-i18n="gDescL"></span><textarea id="gDesc" rows="4" maxlength="400"></textarea></label>
+<div id="gPiiBox" class="gPii"><output id="gPiiHead" role="status"></output><ul id="gPiiList"></ul></div>
+<output id="gStatus" class="fb-status" role="status"></output><p class="bd-note" data-i18n="gNote"></p>
+<div class="row"><button id="gRedo" data-i18n="gRedo"></button><button id="gSubmit" disabled data-i18n="gSubmit"></button><button id="gClose" data-i18n="gClose"></button></div></dialog>
 <dialog id="feedbackDialog" class="fb"><h3 data-i18n="fbTitle"></h3><p data-i18n="fbLead"></p>
 <div class="row" id="fbKinds" role="radiogroup"><label><input id="fbKind-idea" type="radio" name="fbKind" value="idea" checked><span data-i18n="fbKindIdea"></span></label><label><input id="fbKind-bug" type="radio" name="fbKind" value="bug"><span data-i18n="fbKindBug"></span></label><label><input id="fbKind-cheer" type="radio" name="fbKind" value="cheer"><span data-i18n="fbKindCheer"></span></label></div>
 <label class="fb-f"><span data-i18n="fbMsgL"></span><textarea id="fbMsg" rows="6" maxlength="500" data-i18n-placeholder="fbPh"></textarea></label><output id="fbCount">0 / 500</output>
@@ -852,8 +869,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span><span id="presence" data-i18n-title="presenceTip" hidden><span class="pr-dot">●</span> <span id="presenceN"></span><span class="pr-t" data-i18n="presenceSuffix"></span></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=b6c4d0b0","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=3717efee","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=017d3994","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=620c2b67","./data/release-history.js":"./data/release-history.js?v=f692f1a2","./data/release-notes.js":"./data/release-notes.js?v=14b71af9","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=a4e72d9e","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3bf1d09e","./geometry.js":"./geometry.js?v=d39879ad","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=41150474","./help/ja.js":"./help/ja.js?v=0c549599","./i18n.js":"./i18n.js?v=6339159a","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=962b9e5a","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=d88e8cf5","./library.js":"./library.js?v=93a300e7","./nest.js":"./nest.js?v=bf8d674e","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=6f6b7382","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=2f77bfe9","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
-<script type="module" src="app.js?v=b6c4d0b0"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=a28cd54c","./ai_schema.js":"./ai_schema.js?v=8fbae64c","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=cad5159f","./array.js":"./array.js?v=0d529d14","./autodesign.js":"./autodesign.js?v=f2ba6cdd","./autodim.js":"./autodim.js?v=3717efee","./autosave.js":"./autosave.js?v=d2615b08","./binder_edits.js":"./binder_edits.js?v=dd210dc9","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=29d10217","./data/binder.js":"./data/binder.js?v=017d3994","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ce0eee11","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=620c2b67","./data/release-history.js":"./data/release-history.js?v=51e30aad","./data/release-notes.js":"./data/release-notes.js?v=52e4765a","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=478e6a30","./design.js":"./design.js?v=a4e72d9e","./designs.js":"./designs.js?v=6658d0d2","./feedback.js":"./feedback.js?v=060bf81d","./formats.js":"./formats.js?v=3bf1d09e","./gallery.js":"./gallery.js?v=f31697dd","./geometry.js":"./geometry.js?v=d39879ad","./grouping.js":"./grouping.js?v=e8458d45","./hardware.js":"./hardware.js?v=74e80164","./help/en.js":"./help/en.js?v=c93804e0","./help/ja.js":"./help/ja.js?v=f263ea51","./i18n.js":"./i18n.js?v=8a06a8f0","./imgstore.js":"./imgstore.js?v=bc47fb13","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=962b9e5a","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=d88e8cf5","./library.js":"./library.js?v=93a300e7","./nest.js":"./nest.js?v=bf8d674e","./phrases.js":"./phrases.js?v=2f60d0f3","./presence.js":"./presence.js?v=6f6b7382","./registration.js":"./registration.js?v=8a975420","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=3da7cb9b","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=0dc6ff00","./trace.js":"./trace.js?v=c2b34617","./tutorial.js":"./tutorial.js?v=f48464b9","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/output.js":"./tutorials/output.js?v=4a9c003e","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./undostore.js":"./undostore.js?v=2f77bfe9","./update_check.js":"./update_check.js?v=87930ae5","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27"}}</script>
+<script type="module" src="app.js?v=cad5159f"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -4610,6 +4627,46 @@ const MESSAGES = {
     "save": "保存",
     "saveBtn": "保存 ▾",
     "saveNativeFor": "N's CAD 形式（続きを編集する用）",
+    "saveGalleryFor": "ギャラリーに登録（型紙を公開用に整える）",
+    "gTitle": "型紙ギャラリーに登録",
+    "gLead": "ボタン1つで、タイトル・著作権表示・説明を整えます。いまは整形の確認までで、まだ公開されません。",
+    "gTitleL": "タイトル（60字まで）",
+    "gAuthorL": "作者名（公開されます・30字まで）",
+    "gAuthorPh": "例：N's factory",
+    "gLicenseL": "利用条件",
+    "gLicensePersonal": "個人利用のみ（作って楽しむ。作った物の販売はしない）",
+    "gLicenseCommercial": "商用可（作った革製品の販売まで可。型紙そのものの再配布はしない）",
+    "gUrlL": "作者のページ（販売先・任意。https:// で始まるもの）",
+    "gDescL": "説明（自動で入れました。直せます・400字まで）",
+    "gStats": "登録する中身：図形 {shapes} 個・縫い穴 {holes} 個・{w}×{h} mm",
+    "gDescAuto": "大きさ {w}×{h} mm。図形 {shapes} 個、縫い穴 {holes} 個。",
+    "gCopyright": "著作権表示：{c}",
+    "gCopyrightNone": "作者名を入れると、著作権表示が付きます。",
+    "gPiiNone": "個人情報の疑い：見つかりませんでした。（人名は見分けられません。自分の目でも確かめてください）",
+    "gPiiFound": "個人情報の疑いが {n} 件あります。公開前に直してください：",
+    "gPiiItem": "{kind}（{where}）：{text}",
+    "gPiiKind.email": "メールアドレス",
+    "gPiiKind.url": "リンク",
+    "gPiiKind.postal": "郵便番号",
+    "gPiiKind.phone": "電話番号",
+    "gPiiKind.address": "住所",
+    "gPiiWhere.text": "図面の文字",
+    "gPiiWhere.memo": "計算メモ",
+    "gPiiWhere.name": "図面タブの名前",
+    "gPiiWhere.title": "タイトル",
+    "gPiiWhere.desc": "説明",
+    "gErr.empty": "登録できる図形がありません。図面を開いてからやり直してください。",
+    "gErr.title": "タイトルを入れてください（60字まで）。",
+    "gErr.author": "作者名を入れてください（30字まで）。",
+    "gErr.license": "利用条件を選んでください。",
+    "gErr.url": "作者のページは https:// で始まる宛先にしてください。",
+    "gErr.description": "説明は400字までです。",
+    "gOk": "整形できました。いまは確認だけで、何も送られず、まだ公開されません。",
+    "gOkPii": "整形はできましたが、個人情報の疑いを直すまでは公開できません。",
+    "gNote": "公開は、運営者が内容を確かめてからになる予定です（準備中）。図面は、このボタンでは外部に送られません。",
+    "gRedo": "自動で整え直す",
+    "gSubmit": "登録する（準備中）",
+    "gClose": "閉じる",
     "exportSvgFor": "SVG（レーザー加工用）",
     "exportPdfFor": "PDF（型紙の配布用）",
     "exportDxfFor": "DXF（他の人へ図面を渡す用）",
@@ -7141,6 +7198,46 @@ const MESSAGES = {
     "save": "Save",
     "saveBtn": "Save ▾",
     "saveNativeFor": "N's CAD format (to keep editing)",
+    "saveGalleryFor": "Register to gallery (prepare pattern for publishing)",
+    "gTitle": "Register to the pattern gallery",
+    "gLead": "One button prepares the title, copyright line and description. For now this only previews the result; nothing is published.",
+    "gTitleL": "Title (up to 60 characters)",
+    "gAuthorL": "Author name (shown publicly, up to 30 characters)",
+    "gAuthorPh": "e.g. N's factory",
+    "gLicenseL": "Terms of use",
+    "gLicensePersonal": "Personal use only (make and enjoy; do not sell what you make)",
+    "gLicenseCommercial": "Commercial use OK (you may sell leather goods made from it; do not redistribute the pattern itself)",
+    "gUrlL": "Author's page (where it is sold; optional, must start with https://)",
+    "gDescL": "Description (filled in automatically; you can edit, up to 400 characters)",
+    "gStats": "Contents: {shapes} shapes, {holes} stitch holes, {w}×{h} mm",
+    "gDescAuto": "Size {w}×{h} mm. {shapes} shapes, {holes} stitch holes.",
+    "gCopyright": "Copyright line: {c}",
+    "gCopyrightNone": "Enter an author name to get a copyright line.",
+    "gPiiNone": "Personal information check: nothing found. (Personal names cannot be detected; please check by eye as well.)",
+    "gPiiFound": "{n} possible piece(s) of personal information. Please fix them before publishing:",
+    "gPiiItem": "{kind} ({where}): {text}",
+    "gPiiKind.email": "email address",
+    "gPiiKind.url": "link",
+    "gPiiKind.postal": "postal code",
+    "gPiiKind.phone": "phone number",
+    "gPiiKind.address": "address",
+    "gPiiWhere.text": "drawing text",
+    "gPiiWhere.memo": "calculation memo",
+    "gPiiWhere.name": "drawing tab name",
+    "gPiiWhere.title": "title",
+    "gPiiWhere.desc": "description",
+    "gErr.empty": "There are no shapes to register. Open a drawing and try again.",
+    "gErr.title": "Enter a title (up to 60 characters).",
+    "gErr.author": "Enter an author name (up to 30 characters).",
+    "gErr.license": "Choose the terms of use.",
+    "gErr.url": "The author's page must start with https://.",
+    "gErr.description": "The description is limited to 400 characters.",
+    "gOk": "Ready. This is only a preview: nothing is sent and nothing is published yet.",
+    "gOkPii": "Formatting is ready, but it cannot be published until the possible personal information is fixed.",
+    "gNote": "Publishing will happen only after the operator reviews it (coming soon). This button does not send your drawing anywhere.",
+    "gRedo": "Reset to automatic",
+    "gSubmit": "Register (coming soon)",
+    "gClose": "Close",
     "exportSvgFor": "SVG (for laser cutting)",
     "exportPdfFor": "PDF (for distributing patterns)",
     "exportDxfFor": "DXF (for handing drawings to others)",
@@ -13156,6 +13253,86 @@ function localDesignStore(value) {
 }
 
 return {loadDesign, filterDesigns, designTerms, rankLocalDesigns, localDesignRequest, learnLocalFiles, localReferenceDoc, localDesignStore};
+})();
+__mods['gallery'] = (function(){
+// 型紙ギャラリー：「ギャラリーに登録」ボタン1つで、タイトル・著作権表示・説明・利用条件を自動で整え、個人情報の疑いを調べる（事業主 2026-11-02）。
+// この部品は、整える計算だけ（画面にも通信にも触れない）。保存先・公開・審査はまだ無い：いまは「整形のプレビュー」まで。
+const GALLERY_LICENSES = ['personal', 'commercial'];   /* personal＝個人で楽しむ用（作った物の販売はしない）・commercial＝作った革製品の販売まで可（型紙そのものの再配布はしない） */
+const GALLERY_LIMITS = { title: 60, author: 30, description: 400, url: 200 };
+
+/** 図面タブの名前（ファイル名のことが多い）から、ギャラリーのタイトルの初期値を作る：拡張子と日付の頭（20261101_）を外し、_ を空白にする。空なら ''。 */
+function galleryTitleFrom(name) {
+  let s = String(name ?? '').trim().replace(/\.(lcc|json|svg|dxf|ncad)$/i, '');
+  s = s.replace(/^\d{8}[_\-\s]+/, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return s.slice(0, GALLERY_LIMITS.title);
+}
+/** 著作権表示：「© 2026 作者名」。作者名が空なら ''。 */
+function galleryCopyright(author, year) {
+  const a = String(author ?? '').trim();
+  return a ? `© ${year} ${a}` : '';
+}
+/** 登録する図面の数え方（説明文と画面の「出るもの」で使う）。shapes は登録する図形、holes は縫い穴。外接矩形が無ければ null。 */
+function galleryStats(shapes, holes, bbox) {
+  if (!bbox) return null;
+  return { shapes: shapes.length, holes: holes.length, w: +(bbox.maxX - bbox.minX).toFixed(1), h: +(bbox.maxY - bbox.minY).toFixed(1) };
+}
+/** https:// で始まる 1 行の宛先だけ通す（作者のページ＝販売先のリンク）。空は「なし」で通す。 */
+function galleryUrlOk(s) {
+  const u = String(s ?? '').trim();
+  if (!u) return true;
+  return u.length <= GALLERY_LIMITS.url && /^https:\/\/[^\s<>"']+$/.test(u);
+}
+
+/* 個人情報の疑い：図面の文字・計算メモ・タブ名・タイトル・説明の中から、メール・電話・郵便番号・住所・リンクらしき文字を探す。人名は見分けられない（画面でそう断る）。 */
+const PII_PATTERNS = [
+  ['email', /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g],
+  ['url', /https?:\/\/[^\s<>"']+/g],
+  ['postal', /(?<![\d\-ー−‐])〒?\s?\d{3}[-ー−‐]\d{4}(?![\d\-ー−‐])/g],   /* 電話番号の後ろ 123-4567 を郵便番号と取り違えない */
+  ['phone', /(?<![\d.])0\d{1,4}[-ー−‐ ]\d{1,4}[-ー−‐ ]\d{3,4}(?![\d.])|(?<![\d.])0[5789]0\d{8}(?!\d)/g],
+  ['address', /(?:北海道|東京都|京都府|大阪府|[一-龥]{2,3}県)[一-龥ぁ-んァ-ヶー0-9０-９]{1,10}[市区町村郡]/g],
+];
+/** texts：[{ where: 'text'|'memo'|'name'|'title'|'desc', text }]。返すのは [{ kind, where, text }]（同じ場所・同じ文字は1件）。 */
+function galleryPiiScan(texts) {
+  const out = [], seen = new Set();
+  for (const { where, text } of texts) {
+    const src = String(text ?? '').normalize('NFKC');
+    if (!src) continue;
+    for (const [kind, re] of PII_PATTERNS) {
+      for (const m of src.matchAll(re)) {
+        const key = `${kind}|${where}|${m[0]}`;
+        if (seen.has(key)) continue;
+        seen.add(key); out.push({ kind, where, text: m[0].slice(0, 40) });
+      }
+    }
+  }
+  return out;
+}
+/** 図面の中の文字（文字図形・計算メモ）を、個人情報の調べ用にまとめる。 */
+function galleryDocTexts(doc) {
+  const list = [];
+  for (const s of doc.shapes ?? []) if (s.type === 'text' && s.text) list.push({ where: 'text', text: s.text });
+  for (const m of doc.calcMemos ?? []) { if (m.note) list.push({ where: 'memo', text: m.note }); if (m.expr) list.push({ where: 'memo', text: m.expr }); }
+  return list;
+}
+
+/** 入力の点検。返すのは { ok, errors:[コード] }：title / author / license / url / description / empty（登録する図形が無い）。 */
+function galleryCheck({ title, author, license, url, description, stats }) {
+  const errors = [];
+  if (!stats) errors.push('empty');
+  if (!String(title ?? '').trim()) errors.push('title');
+  else if (String(title).trim().length > GALLERY_LIMITS.title) errors.push('title');
+  if (!String(author ?? '').trim() || String(author).trim().length > GALLERY_LIMITS.author) errors.push('author');
+  if (!GALLERY_LICENSES.includes(license)) errors.push('license');
+  if (!galleryUrlOk(url)) errors.push('url');
+  if (String(description ?? '').length > GALLERY_LIMITS.description) errors.push('description');
+  return { ok: !errors.length, errors };
+}
+/** 整形の結果（登録する中身のひな形）。保存先ができたら、これをそのまま送る。 */
+function galleryEntry({ title, author, license, url, description, stats, year }) {
+  return { title: String(title).trim(), author: String(author).trim(), copyright: galleryCopyright(author, year), license, authorUrl: String(url ?? '').trim(), description: String(description ?? '').trim(), stats };
+}
+
+return {GALLERY_LICENSES, GALLERY_LIMITS, galleryTitleFrom, galleryCopyright, galleryStats, galleryUrlOk, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry};
 })();
 __mods['data/designs'] = (function(){
 const DATA_DESIGNS = {"_comment":"公開版には事業主の設計カタログを含めない","generatedAt":"","source":"","items":[]};
@@ -26089,6 +26266,12 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-11-02 17:17",
+      "items": [
+        "型紙ギャラリーの第1段階として、「保存 ▾」に「ギャラリーに登録」を足しました。押すと、型紙を公開用に整えた結果を確かめる窓が開きます。タイトル（図面タブの名前から）・著作権表示（© 年 作者名）・説明（大きさ・図形の数・縫い穴の数）・サムネイルが自動で入ります。利用条件（個人利用のみ／商用可）と、作者のページ（販売先のリンク・https:// のみ）を選べ、作者名・条件・リンクはこの端末に覚えます。図面の文字・計算メモ・タイトル・説明に、メール・電話・郵便番号・住所・リンクらしき文字があれば、公開前に警告します（人名は見分けられません）。いまは整形の確認だけで、図面は外部へ送られず、まだ公開されません（登録ボタンは「準備中」）。公開前に運営者が内容を確かめる仕組みと、一覧・販売ページは、次の段階です。"
+      ]
+    },
+    {
       "date": "2026-11-02 14:06",
       "items": [
         "右の「出力」カードの先頭に、「出るもの：図形 N 個・縫い穴 M 個・全体 W×H mm・A4で P 枚」を、いつも出すようにしました。書き出し・印刷と同じ対象を数えるので、図形を選ぶ・層を隠す・「金具を表示」を切る・「縫い穴を出力」を切る、のどれでも、その場で数が変わります。選んでいない・隠しているために出ない図形があるときは、その数も添えます。書き出す前に、中身と大きさと用紙の枚数が分かります（押す回数は増えません）。",
@@ -26996,8 +27179,9 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-11-02",
       "items": [
-        "出力カードに「出るもの」を常時表示／読み込み直後の帯と「詳しく」の一覧",
+        "型紙ギャラリー第1段階（登録ボタン＋整形のプレビュー：タイトル・著作権表示・説明・サムネイル・利用条件・作者リンク・個人情報の疑い／送信なし）",
         "公開後の生成物を反映（更新履歴の日付・互換ブロック）",
+        "出力カードに「出るもの」を常時表示／読み込み直後の帯と「詳しく」の一覧",
         "図形を選んでいる間、出力カードと保存メニューに「選んだ図形だけを出力する」警告を常時表示",
         "右クリックに「選んだ範囲のガイド線（点線）だけを消す」を追加",
         "「線で囲まれた場所の塗りを、全部消す」を「図面全体の塗りを、全部消す」に改名（選んだ範囲だけ消すつもりで押して全体が消える取り違えを防ぐ）",
@@ -28078,7 +28262,7 @@ const HELP_JA = {
     {
       "id": "output",
       "title": "出力と印刷",
-      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。SVG・PDF・DXF に書き出すときは、出力カードの「重なった線は1本にして出す（レーザー向け）」（初期は入）に従い、重なった線（隣のマスが共有する辺・二重の線・頂点が少しずれた同じ曲線・同じ円弧）を1本にして出すので、レーザーが同じ所を何度も往復しません（図面のデータは変わりません。色が違う重なりは、色のついた線を残し、縫い穴の経路が付いた線・塗りのある図形は、そのまま出します。除いた長さは、書き出したあとの案内に出ます）。点は DXF の POINT にもできます。\nBeam Studio（FLUX のレーザー加工機）に SVG を取り込むと、画面の上で、点線・菱目だけの細い層が数%縮んで見え、切る線との間隔が一定に見えないことがあります（Beam Studio が、色ごとの層を、線の太さぶん＝約0.35mm 余分に見積もって縮めて描くため）。これは画面の表示だけです。機械に送る数値と、実物の切断は、N's CAD の数値のままです（2026-10-29 に実物で確認：長さ 143mm の線が 143mm に切れました。SVG の座標そのものも、図面と同じです）。そのため、出力カードの「画面合わせの補正（Beam Studio・実物の切断には不要）」は、初めは切です。入れると、画面では間隔が合って見えますが、実物では、細い層が端で約1〜2.5mm 外へずれます（最小の幅・高さが 5mm 以上の層だけ・入にした選択は覚えます）。画面で見合わせたいときだけ入れてください。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n「縫い穴を点で印刷する」を入れると、印刷と PDF では菱目（目打ちの穴と、図面の菱形の線）が真ん中の丸い点になります。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。\n\n図形を選んでいれば、選んだ図形（とその縫い穴）だけを印刷・SVG・PDF・DXF・PNG に出します（選んでいなければ図面の全部）。出力のあとの案内に、どちらを出したかが出ます。何も選んでいないと案内が出ます）。工具のテスト片と校正スケールの印刷は、このチェックに関係なく出ます。\n書き出し（SVG・PDF・DXF・PNG）は、「書き出すとき保存先を選ぶ」を入れていると（初期値は入）、保存の窓で場所と名前を選べます（前回の場所を覚えています）。切にするか、ブラウザが対応していないとき（Safari・Firefox など）は、ブラウザの「ダウンロード」に保存します。N’s CAD 形式の「保存」は、これまでどおり最初の1回だけ保存先を選びます。"
+      "body": "出力カードから SVG（レーザー加工・Inkscape 向け・mm 単位・レイヤー別）と DXF R12（レーザー加工機・CAD 向け・Y 上向きに変換・縫い穴は Stitch_Holes レイヤー）を書き出せます。SVG・PDF・DXF に書き出すときは、出力カードの「重なった線は1本にして出す（レーザー向け）」（初期は入）に従い、重なった線（隣のマスが共有する辺・二重の線・頂点が少しずれた同じ曲線・同じ円弧）を1本にして出すので、レーザーが同じ所を何度も往復しません（図面のデータは変わりません。色が違う重なりは、色のついた線を残し、縫い穴の経路が付いた線・塗りのある図形は、そのまま出します。除いた長さは、書き出したあとの案内に出ます）。点は DXF の POINT にもできます。\nBeam Studio（FLUX のレーザー加工機）に SVG を取り込むと、画面の上で、点線・菱目だけの細い層が数%縮んで見え、切る線との間隔が一定に見えないことがあります（Beam Studio が、色ごとの層を、線の太さぶん＝約0.35mm 余分に見積もって縮めて描くため）。これは画面の表示だけです。機械に送る数値と、実物の切断は、N's CAD の数値のままです（2026-10-29 に実物で確認：長さ 143mm の線が 143mm に切れました。SVG の座標そのものも、図面と同じです）。そのため、出力カードの「画面合わせの補正（Beam Studio・実物の切断には不要）」は、初めは切です。入れると、画面では間隔が合って見えますが、実物では、細い層が端で約1〜2.5mm 外へずれます（最小の幅・高さが 5mm 以上の層だけ・入にした選択は覚えます）。画面で見合わせたいときだけ入れてください。\n印刷は用紙（A4／A3・縦横）を選んで「印刷」。用紙より大きい型紙は 10mm 重ねて分割し、合わせ目の十字とページ番号を付けます。印刷ダイアログでは必ず倍率を「実際のサイズ／100%」にしてください（「ページに合わせる」だと縮みます）。\n「縫い穴を点で印刷する」を入れると、印刷と PDF では菱目（目打ちの穴と、図面の菱形の線）が真ん中の丸い点になります。点の大きさは「点の直径」で決めます。画面と保存データは変わりません。\n校正：「校正スケールを置く」で L 字の 100mm スケールを置いて印刷し、紙の上で X・Y を測って入力→保存。以後の印刷・SVG・DXF に縦横別の補正が掛かります。もう一度スケールを印刷して 100mm になることを確かめてください。\n\n図形を選んでいれば、選んだ図形（とその縫い穴）だけを印刷・SVG・PDF・DXF・PNG に出します（選んでいなければ図面の全部）。出力のあとの案内に、どちらを出したかが出ます。何も選んでいないと案内が出ます）。工具のテスト片と校正スケールの印刷は、このチェックに関係なく出ます。\n書き出し（SVG・PDF・DXF・PNG）は、「書き出すとき保存先を選ぶ」を入れていると（初期値は入）、保存の窓で場所と名前を選べます（前回の場所を覚えています）。切にするか、ブラウザが対応していないとき（Safari・Firefox など）は、ブラウザの「ダウンロード」に保存します。N’s CAD 形式の「保存」は、これまでどおり最初の1回だけ保存先を選びます。\n\nギャラリーに登録（準備中）：「保存 ▾」の「ギャラリーに登録」を押すと、型紙を公開用に整えた結果を確かめる窓が開きます。タイトル（タブ名から）・著作権表示（© 年 作者名）・説明（大きさ・図形の数・縫い穴の数）・サムネイルを自動で入れ、利用条件（個人利用のみ／商用可）と、作者のページ（販売先のリンク・https:// のみ）を選べます。図面の文字・計算メモ・タイトル・説明にメール・電話・郵便番号・住所・リンクらしき文字があれば、公開前に警告します（人名は見分けられません）。いまは確認だけで、図面は外部へ送られず、まだ公開されません。公開は運営者が確かめてからになる予定です。"
     },
     {
       "id": "design",
@@ -28232,7 +28416,7 @@ const HELP_EN = {
     {
       "id": "output",
       "title": "Output and printing",
-      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs. When exporting SVG, PDF or DXF, the Output card option \"Merge overlapping lines on export (for laser)\" (on by default) writes overlapping lines (edges shared by neighboring cells, doubled lines, the same curve with slightly shifted vertices, the same arc) only once, so the laser does not travel the same place again and again (the drawing data is not changed; for overlaps of different colors the colored line is kept; lines with a stitch-hole route and painted shapes are written as they are; the notice after exporting shows the removed length).\nWhen an SVG is imported into Beam Studio (FLUX laser cutters), a thin layer made only of dotted lines or stitch holes can look a few percent smaller on screen, so its gap to the cut line no longer looks constant (Beam Studio sizes each color layer about one stroke width, roughly 0.35 mm, too large and draws it shrunk). This is only how the screen draws it. The numbers sent to the machine and the real cut stay exactly as in N's CAD (confirmed on 2026-10-29 on a real cut: a 143 mm line was cut at 143 mm; the coordinates in the SVG itself also match the drawing). So the Output card option “Screen-matching correction (Beam Studio; not needed for the real cut)” is off by default. When on, the gap looks constant on screen, but on the real cut the thin layers end up about 1 to 2.5 mm too far out at the ends (only layers whose smaller width/height is 5 mm or more; your choice is remembered). Turn it on only to line things up on screen.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nWith “Print stitching holes as dots” on, print and PDF replace each diamond hole (punched holes and diamond-shaped lines in the drawing) with a filled dot at its center; set the size with “Dot diameter”. The screen and the saved data do not change.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm.\n\nWhen shapes are selected, print and export (SVG, PDF, DXF, PNG) output only the selected shapes and their stitching holes (nothing selected = the whole drawing); the notice after output says which. The tool test strip and the calibration scale always print.\nExports (SVG, PDF, DXF, PNG) open a save window where you choose the folder and name when \"Choose where to save on export\" is on (default on; it remembers the last place). When off, or in browsers without support (Safari, Firefox), files go to the Downloads folder. The N’s CAD format \"Save\" still asks for the location only the first time."
+      "body": "The Output card exports SVG (mm units, one group per layer, for laser software and Inkscape) and DXF R12 (Y flipped up, holes on the Stitch_Holes layer). Dots can be written as DXF POINTs. When exporting SVG, PDF or DXF, the Output card option \"Merge overlapping lines on export (for laser)\" (on by default) writes overlapping lines (edges shared by neighboring cells, doubled lines, the same curve with slightly shifted vertices, the same arc) only once, so the laser does not travel the same place again and again (the drawing data is not changed; for overlaps of different colors the colored line is kept; lines with a stitch-hole route and painted shapes are written as they are; the notice after exporting shows the removed length).\nWhen an SVG is imported into Beam Studio (FLUX laser cutters), a thin layer made only of dotted lines or stitch holes can look a few percent smaller on screen, so its gap to the cut line no longer looks constant (Beam Studio sizes each color layer about one stroke width, roughly 0.35 mm, too large and draws it shrunk). This is only how the screen draws it. The numbers sent to the machine and the real cut stay exactly as in N's CAD (confirmed on 2026-10-29 on a real cut: a 143 mm line was cut at 143 mm; the coordinates in the SVG itself also match the drawing). So the Output card option “Screen-matching correction (Beam Studio; not needed for the real cut)” is off by default. When on, the gap looks constant on screen, but on the real cut the thin layers end up about 1 to 2.5 mm too far out at the ends (only layers whose smaller width/height is 5 mm or more; your choice is remembered). Turn it on only to line things up on screen.\nChoose the paper (A4/A3, portrait/landscape) and press Print. Patterns larger than the page are split with a 10 mm overlap, cross marks and page numbers. In the print dialog always choose “Actual size / 100%”.\nWith “Print stitching holes as dots” on, print and PDF replace each diamond hole (punched holes and diamond-shaped lines in the drawing) with a filled dot at its center; set the size with “Dot diameter”. The screen and the saved data do not change.\nCalibration: place the L-shaped 100 mm scale, print it, measure X and Y on paper, enter and save. Later prints, SVG and DXF are corrected per axis. Print the scale again to confirm 100 mm.\n\nWhen shapes are selected, print and export (SVG, PDF, DXF, PNG) output only the selected shapes and their stitching holes (nothing selected = the whole drawing); the notice after output says which. The tool test strip and the calibration scale always print.\nExports (SVG, PDF, DXF, PNG) open a save window where you choose the folder and name when \"Choose where to save on export\" is on (default on; it remembers the last place). When off, or in browsers without support (Safari, Firefox), files go to the Downloads folder. The N’s CAD format \"Save\" still asks for the location only the first time.\n\nRegister to gallery (coming soon): \"Register to gallery\" in the Save menu opens a window that previews your pattern prepared for publishing. The title (from the tab name), copyright line (© year author), description (size, shape and stitch-hole counts) and thumbnail are filled in automatically; you choose the terms of use (personal use only / commercial use OK) and the author's page (a link to where it is sold, https:// only). If the drawing text, calculation memos, title or description contain what looks like an email address, phone number, postal code, address or link, you are warned before publishing (personal names cannot be detected). For now this only previews: nothing is sent and nothing is published yet. Publishing will happen only after the operator reviews it."
     },
     {
       "id": "design",
@@ -28372,6 +28556,7 @@ const { DATA_TEXTURES } = __mods['data/textures'];
 const { createPlayer } = __mods['tutorial'];
 const { parseVoice, labelOf, voiceIsDraw } = __mods['voice'];
 const { lccToDoc, styleSummary } = __mods['lcc'];
+const { GALLERY_LICENSES, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } = __mods['gallery'];
 const { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } = __mods['designs'];
 const { DATA_DESIGNS } = __mods['data/designs'];
 const { DATA_STYLE } = __mods['data/style'];
@@ -37000,6 +37185,44 @@ function bugReport() {
   const ver = $('buildVer')?.textContent ?? '';
   return { kind: 'ncad-bug-report', savedAt: new Date().toISOString(), app: ver, env: { ua: (typeof navigator !== 'undefined' && navigator.userAgent) || '', scale: +scale.toFixed(3), origin, mode, tab: activeTab }, layers: doc.layers.map(l => ({ id: l.id, name: l.name, visible: l.visible, locked: l.locked })), shapeCount: doc.shapes.length, selected: [...selected].slice(0, 50), log: opLog.slice(), doc };
 }
+/* ── 型紙ギャラリー：登録の前の「整形のプレビュー」（事業主 2026-11-02「自動整形（著作権表示やタイトルなど）機能を持たせ、ボタン一つでギャラリー登録できるように」）。
+ *  いまは確認だけ：保存先・公開の審査・販売リンクの表示は次の段階。図面は外部へ送らない。作者名・利用条件・リンクだけ、この端末に覚える。 ── */
+const GALLERY_KEY = 'leather-cad.gallery';
+let galleryAuto = { title: '', desc: '' };   /* 自動で入れた値（「自動で整え直す」で戻す） */
+function galleryPrefs() { try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '{}') || {}; } catch { return {}; } }
+function galleryRemember() { try { localStorage.setItem(GALLERY_KEY, JSON.stringify({ author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value })); } catch { /* 覚えられなくても続ける */ } }
+/** 登録する図形：表示中の層の図形（金具・穴をつなぐ補助の線を除く）と、その縫い穴。選択には左右されない（図面の全部を載せる）。 */
+function galleryTarget() {
+  const shapes = doc.shapes.filter(s => layerVisible(s) && !s.holeLink && !isHardwareShape(s)), holes = holesOnShapes(doc, shapes);
+  return { shapes, holes, stats: galleryStats(shapes, holes, bboxOfDoc({ ...doc, shapes, holes })) };
+}
+const galleryVals = () => ({ title: $('gTitleIn').value, author: $('gAuthor').value, license: $('gLicense').value, url: $('gUrl').value, description: $('gDesc').value });
+/** 窓の表示を今の入力に合わせる（著作権表示・個人情報の疑い・点検の結果）。戻り値は整形の結果（点検が通ったときだけ entry が入る）。 */
+function gallerySync() {
+  const g = galleryTarget(), v = galleryVals(), year = new Date().getFullYear();
+  $('gStats').textContent = g.stats ? t('gStats', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) : '';
+  $('gCopyright').textContent = v.author.trim() ? t('gCopyright', { c: galleryCopyright(v.author, year) }) : t('gCopyrightNone');
+  const hits = galleryPiiScan([...galleryDocTexts(doc), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }]);
+  const list = $('gPiiList'); list.textContent = ''; for (const h of hits) { const li = document.createElement('li'); li.textContent = t('gPiiItem', { kind: t('gPiiKind.' + h.kind), where: t('gPiiWhere.' + h.where), text: h.text }); list.appendChild(li); }
+  $('gPiiHead').textContent = hits.length ? t('gPiiFound', { n: hits.length }) : t('gPiiNone'); $('gPiiHead').className = hits.length ? 'ng' : 'ok';
+  const check = galleryCheck({ ...v, stats: g.stats });
+  $('gStatus').textContent = check.ok ? t(hits.length ? 'gOkPii' : 'gOk') : check.errors.map(e => t('gErr.' + e)).join(' '); $('gStatus').className = 'fb-status ' + (check.ok && !hits.length ? 'ok' : 'ng');
+  return { check, hits, entry: check.ok && !hits.length ? galleryEntry({ ...v, stats: g.stats, year }) : null };
+}
+/** 一覧に出る小さな絵（SVG）。線だけの白地。金具は除く。 */
+function galleryThumb() {
+  const box = $('gThumb'); box.textContent = '';
+  const svg = docToSvg({ ...doc, shapes: doc.shapes.filter(s => !isHardwareShape(s)) }, { includeHoles: true, lineColors: 'mono', marginMm: 3 });
+  const img = document.createElement('img'); img.alt = ''; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); box.appendChild(img);
+}
+function openGallery() {
+  const g = galleryTarget(); if (!g.stats) { $('hint').textContent = t('gErr.empty'); return; }
+  const p = galleryPrefs();
+  galleryAuto = { title: galleryTitleFrom(tabs[activeTab]?.name), desc: t('gDescAuto', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) };
+  $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc;
+  $('gAuthor').value = p.author || registration.state().nick || ''; $('gLicense').value = GALLERY_LICENSES.includes(p.license) ? p.license : 'personal'; $('gUrl').value = p.url || '';
+  galleryThumb(); gallerySync(); $('galleryDialog').showModal();
+}
 /* 改善要望：使い勝手の意見を作者に直接送る（受け口は神社巡りノートと共通・app=ncad で別シート）。送るのは種類・本文・連絡先・版・画面情報だけ。図面の中身は送らない */
 let fbRid = '';
 function fbInfo() { return { w: globalThis.innerWidth, h: globalThis.innerHeight, ua: globalThis.navigator?.userAgent || '', lang: $('language').value, mode, tabs: tabs.length, shapes: doc.shapes.length, threeView: !!$('threeView')?.checked, offline: globalThis.location?.protocol === 'file:' }; }
@@ -37729,6 +37952,10 @@ initHdrMenus();
 try { const h = localStorage.getItem('leather-cad.saveHistory'); $('saveHistory').value = ['0', '30', '100'].includes(h) ? h : '100'; } catch { $('saveHistory').value = '100'; }
 $('saveHistory').addEventListener('change', () => { try { localStorage.setItem('leather-cad.saveHistory', $('saveHistory').value); } catch { /* 覚えられなくても保存はできる */ } });
 $('saveNative').onclick = () => { $('saveMenu').hidden = true; save(); };
+$('saveGallery').onclick = () => { $('saveMenu').hidden = true; openGallery(); };
+for (const id of ['gTitleIn', 'gAuthor', 'gLicense', 'gUrl', 'gDesc']) for (const ev of ['input', 'change']) $(id).addEventListener(ev, () => { galleryRemember(); gallerySync(); });
+$('gRedo').onclick = () => { $('gTitleIn').value = galleryAuto.title; $('gDesc').value = galleryAuto.desc; gallerySync(); };
+$('gClose').onclick = () => $('galleryDialog').close();
 $('autosaveBarSave').onclick = () => save();
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
