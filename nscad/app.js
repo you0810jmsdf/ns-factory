@@ -25,7 +25,7 @@ import { DATA_TEXTURES } from './data/textures.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
-import { GALLERY_ENDPOINT, GALLERY_LICENSES, galleryPayloadDoc, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } from './gallery.js';
+import { galleryPost, GALLERY_LICENSES, galleryPayloadDoc, galleryTitleFrom, galleryCopyright, galleryStats, galleryPiiScan, galleryDocTexts, galleryCheck, galleryEntry } from './gallery.js';
 import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, designTerms, learnLocalFiles, localReferenceDoc, localDesignStore } from './designs.js';
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
@@ -8703,11 +8703,6 @@ function galleryToken(create) {
     if (!k && create) { const a = new Uint8Array(24); crypto.getRandomValues(a); k = [...a].map(b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('leather-cad.galleryToken', k); }
     return k;
   } catch { return ''; }
-}
-/** 受け口へ送る（text/plain＝事前確認の往復が要らない）。戻りは { status, out }。つながらないときは throw。 */
-async function galleryPost(path, body) {
-  const res = await fetch(GALLERY_ENDPOINT + path, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), credentials: 'omit' });
-  return { status: res.status, out: await res.json().catch(() => ({})) };
 }
 /** 「あなたの登録」の一覧（承認待ち・公開中・公開されていない）。取り下げは2回押し（5秒以内）。 */
 async function galleryMineLoad() {

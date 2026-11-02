@@ -52,6 +52,11 @@ export function galleryPiiScan(texts) {
   }
   return out;
 }
+/** 受け口へ送る（text/plain＝事前確認の往復が要らない）。戻りは { status, out }。つながらないときは throw。 */
+export async function galleryPost(path, body) {
+  const res = await globalThis.fetch(GALLERY_ENDPOINT + path, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body), credentials: 'omit' });
+  return { status: res.status, out: await res.json().catch(() => ({})) };
+}
 /** 図面の中の文字（文字図形・計算メモ）を、個人情報の調べ用にまとめる。 */
 export function galleryDocTexts(doc) {
   const list = [];
