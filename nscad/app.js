@@ -3240,11 +3240,11 @@ function initDesign() {
     const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
     if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
     const res = await saveToSharedDir(name, text, { repick });
-    if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }) + (res.expected ? '' : ' ' + t('bugLogWrongDir', { name: BUGDIR_NAME })) + (res.why && !repick ? ' ' + t('bugLogWhy', { why: res.why }) : ''); return; } /* 約束のフォルダ名でなければ、共有されない場所かもしれないと知らせる */
-    download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : '');
+    if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }) + (res.expected ? '' : ' ' + t('bugLogWrongDir', { name: BUGDIR_NAME })) + (res.why && !repick ? ' ' + t('bugLogWhy', { why: res.why }) : ''); if (!repick) openFeedback(true); return; }   /* 保存のあと、一言を送る窓を開く（送るかどうかは本人が決める。保存先の選び直し＝Shift のときは開かない） */ /* 約束のフォルダ名でなければ、共有されない場所かもしれないと知らせる */
+    download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : ''); if (!repick) openFeedback(true);
   };
   $('regSend').onclick = doRegister; $('regCheck').onclick = doRegCheck; $('regClose').onclick = () => $('regDialog').close(); registration.refresh();
-  $('feedbackBtn').onclick = openFeedback; $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
+  $('feedbackBtn').onclick = () => openFeedback(false); $('fbClose').onclick = () => $('feedbackDialog').close(); $('fbSend').onclick = submitFeedback; $('fbCtxOn').addEventListener('change', fbShowCtx);
   $('fbMsg').addEventListener('input', () => { $('fbCount').textContent = `${$('fbMsg').value.length} / 500`; }); /* 改善要望：入力中の文字数 */
   $('guideBtn').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html', 'ncad-guide'); w?.focus?.(); } }; /* 図解ガイド（日本語）を別タブで開く。何度押しても同じ1つのタブを使う（ブラウザのタブが増え続けないように・事業主指示 2026-10-13） */
   $('flowGuide').onclick = () => { if (typeof window.open === 'function') { const w = window.open('guide.html#fold', 'ncad-guide'); w?.focus?.(); } }; /* 「三つ折りの手順」の小窓の末尾：図解ガイドの「11 三つ折りの手順」を直接開く（初めて開いた人向け・事業主指示 2026-10-20）。同じ名前のタブを使い回す */
@@ -8755,11 +8755,13 @@ async function submitGallery() {
   finally { gallerySending = false; $('gSubmit').disabled = !r.entry || !$('gConsent').checked; }
 }
 /* 改善要望：使い勝手の意見を作者に直接送る（受け口は神社巡りノートと共通・app=ncad で別シート）。送るのは種類・本文・連絡先・版・画面情報だけ。図面の中身は送らない */
-let fbRid = '';
-function fbInfo() { return { w: globalThis.innerWidth, h: globalThis.innerHeight, ua: globalThis.navigator?.userAgent || '', lang: $('language').value, mode, tabs: tabs.length, shapes: doc.shapes.length, threeView: !!$('threeView')?.checked, offline: globalThis.location?.protocol === 'file:' }; }
+let fbRid = '', fbBugMode = false;   /* fbBugMode：不具合記録から開いた窓か（案内の文を出し、直前に押したボタンの名前を画面情報に足す） */
+const recentClickIds = () => opLog.filter(o => o.kind === 'click' && o.id && o.id !== 'bugLog').slice(-8).map(o => o.id);
+function fbInfo() { return { ops: fbBugMode ? recentClickIds() : [], w: globalThis.innerWidth, h: globalThis.innerHeight, ua: globalThis.navigator?.userAgent || '', lang: $('language').value, mode, tabs: tabs.length, shapes: doc.shapes.length, threeView: !!$('threeView')?.checked, offline: globalThis.location?.protocol === 'file:' }; }
 function fbKind() { return ['idea', 'bug', 'cheer'].find(k => $('fbKind-' + k).checked) || 'idea'; }
 function fbShowCtx() { $('fbCtx').textContent = $('fbCtxOn').checked ? feedbackContext(fbInfo()) : ''; }
-function openFeedback() {
+function openFeedback(bug = false) {
+  fbBugMode = bug === true; if (fbBugMode) { $('fbKind-idea').checked = false; $('fbKind-cheer').checked = false; $('fbKind-bug').checked = true; } $('fbBugAsk').hidden = !fbBugMode;
   fbRid = fbRid || newRid(); $('fbStatus').textContent = ''; $('fbStatus').className = 'fb-status'; $('fbSend').disabled = false; $('fbHp').value = ''; $('fbCount').textContent = `${$('fbMsg').value.length} / 500`;
   fbShowCtx(); $('feedbackDialog').showModal(); setTimeout(() => $('fbMsg').focus(), 50);
 }

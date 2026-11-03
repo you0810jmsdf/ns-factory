@@ -32,6 +32,9 @@ export function feedbackContext(info = {}) {
     `mode ${/^[A-Za-z0-9_.-]{1,24}$/.test(String(info.mode)) ? info.mode : '?'}`, `tabs ${Number(info.tabs) || 0}`, `shapes ${Number(info.shapes) || 0}`,
     `3view ${info.threeView ? 'on' : 'off'}`, info.offline ? 'file' : 'web',
   ];
+  /* 不具合記録から開いたときだけ：直前に押したボタンの名前（id）。英数字の名前だけ・最大8個。何を書いたか・図形・ファイル名は入れない */
+  const ops = (Array.isArray(info.ops) ? info.ops : []).map(String).filter(o => /^[A-Za-z0-9_.-]{1,24}$/.test(o)).slice(-8);
+  if (ops.length) parts.push('ops ' + ops.join('>'));
   return parts.join(' / ').slice(0, FB_CTX_MAX);
 }
 
