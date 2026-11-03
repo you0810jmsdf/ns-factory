@@ -2941,10 +2941,33 @@ function matLeatherGrouped() {
   return order.reduce((a, k) => a.concat(groups.get(k)), []);
 }
 
-function matLeatherOptions() {
-  return '<option value="">（引当しない）</option>' + matLeatherGrouped().map(l =>
+// 検索用の正規化（全角半角・大小文字・ひらがな/カタカナ・空白の違いを吸収）
+function matLeatherNorm(s) {
+  return String(s == null ? '' : s).normalize('NFKC').toLowerCase()
+    .replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60))
+    .replace(/\s+/g, '');
+}
+
+// 検索対象 = 名前 + その系列の日本語別名（MATERIAL_SERIES_ALIASES: 「マルゴ」で MARGOT が見つかるように）
+function matLeatherHaystack(name) {
+  const n = matLeatherNorm(name);
+  let h = n;
+  Object.keys(MATERIAL_SERIES_ALIASES).forEach(tag => {
+    if (n.indexOf(matLeatherNorm(tag)) === 0) h += matLeatherNorm(MATERIAL_SERIES_ALIASES[tag].join(' '));
+  });
+  return h;
+}
+
+// q: 検索語（空白区切りは AND）。keepId: 絞り込みで消えても残す選択済みの革ID
+function matLeatherOptions(q, keepId) {
+  const tokens = String(q || '').normalize('NFKC').split(/\s+/).map(matLeatherNorm).filter(Boolean);
+  const list = matLeatherGrouped().filter(l =>
+    !tokens.length || l.id === keepId || tokens.every(t => matLeatherHaystack(l.name).indexOf(t) !== -1));
+  let html = '<option value="">（引当しない）</option>' + list.map(l =>
     '<option value="' + l.id + '">' + l.name + '（残' + (l.stock_pct === '' ? '—' : l.stock_pct + '%') + '）</option>'
   ).join('');
+  if (tokens.length && !list.some(l => l.id !== keepId)) html += '<option value="" disabled>― 該当する革がありません ―</option>';
+  return html;
 }
 
 function matAddLeatherRow() {
@@ -2954,13 +2977,30 @@ function matAddLeatherRow() {
   row.className = 'mat-leather-row';
   row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:6px';
   row.innerHTML =
-    '<select class="mat-leather-sel" style="flex:1;min-width:0;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' + matLeatherOptions() + '</select>' +
+    '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">' +
+      '<input type="search" class="mat-leather-q" placeholder="🔍 革を検索（例: アヴィオ / マルゴ ネイビー）" autocomplete="off" style="width:100%;box-sizing:border-box;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' +
+      '<select class="mat-leather-sel" style="width:100%;min-width:0;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' + matLeatherOptions() + '</select>' +
+    '</div>' +
     '<input type="number" class="mat-pct" min="0" max="100" step="1" placeholder="%" style="width:64px;padding:6px;border:1px solid #d8b888;border-radius:6px;font-size:12px">' +
     '<span style="font-size:12px;color:#5a3a20">%</span>' +
     '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:12px" onclick="this.parentElement.remove(); scheduleRegisterDraftSave()">✕</button>';
   const pctInput = row.querySelector('.mat-pct');
   pctInput.addEventListener('input', () => { pctInput.dataset.userEdited = '1'; });
   pctInput.value = matUsageForSize(val('f_size'));
+  // 検索窓: 打つたびに選択肢を絞る（選択済みの革は残す）。Enter で先頭の候補を選ぶ（フォーム送信はさせない）
+  const qInput = row.querySelector('.mat-leather-q');
+  const leatherSel = row.querySelector('.mat-leather-sel');
+  qInput.addEventListener('input', () => {
+    const keep = leatherSel.value;
+    leatherSel.innerHTML = matLeatherOptions(qInput.value, keep);
+    leatherSel.value = keep;
+  });
+  qInput.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const first = Array.from(leatherSel.options).find(o => o.value && !o.disabled);
+    if (first) { leatherSel.value = first.value; leatherSel.dispatchEvent(new Event('change', { bubbles: true })); }
+  });
   wrap.appendChild(row);
 }
 
