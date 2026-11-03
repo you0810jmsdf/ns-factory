@@ -2928,8 +2928,21 @@ function matRenderSelects() {
   if (!document.querySelector('#matLeatherRows .mat-leather-row')) matAddLeatherRow();
 }
 
+// 革の選択肢は「同じ系列（名前の最初の語）」が連続するよう並べる。
+// ⛔ CSVの登録順のまま出すと、週次巡回（kawamura-crawl）が末尾に足した色（MARGOT アヴィオ等）が
+//    同じ系列から離れて並び、一覧に「無い」ように見える（2026-11-04 アヴィオ）。CSV自体は並べ替えない。
+function matLeatherGrouped() {
+  const order = [], groups = new Map();
+  matData.leather.forEach(l => {
+    const k = String(l.name || '').trim().split(/\s+/)[0];
+    if (!groups.has(k)) { groups.set(k, []); order.push(k); }
+    groups.get(k).push(l);
+  });
+  return order.reduce((a, k) => a.concat(groups.get(k)), []);
+}
+
 function matLeatherOptions() {
-  return '<option value="">（引当しない）</option>' + matData.leather.map(l =>
+  return '<option value="">（引当しない）</option>' + matLeatherGrouped().map(l =>
     '<option value="' + l.id + '">' + l.name + '（残' + (l.stock_pct === '' ? '—' : l.stock_pct + '%') + '）</option>'
   ).join('');
 }
