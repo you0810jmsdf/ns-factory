@@ -4778,7 +4778,8 @@ function renderTabs() {
   scheduleAutosave(); syncAutosaveBar();
   const bar = $('tabBar'); bar.textContent = '';
   tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip'); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1 || tabHasWork(tab)) { const x = document.createElement('span'); x.className = 'tabX'; const armed = closeArmedFor(tab); x.textContent = armed ? t('closeTabAsk') : '×'; x.title = t('tabClose'); if (armed) { x.style.opacity = '1'; x.style.background = '#c0392b'; x.style.color = '#fff'; } /* 確認中（5秒）は、×が赤い「閉じる？」になる＝下のヒント文を見落としても分かる */ x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
-  bar.ondblclick = e => { const t0 = e?.target, b = t0?.closest ? t0.closest('button') : t0; if (!b || t0?.className === 'tabX' || t0?.closest?.('.tabX')) return; const i = [...bar.children].indexOf(b); return i >= 0 ? openTabFolder(tabs[i]) : undefined; };   /* ダブルクリックは、タブの並び全体で受ける（1回目のクリックでタブを描き直すため、ボタンごとに付けると取りこぼす） */
+  if (closedTabs.length) { const r = document.createElement('button'); r.className = 'tabReopen'; r.textContent = '↩'; r.title = t('tabReopenTip', { name: closedTabs[closedTabs.length - 1].name }); r.onclick = reopenClosedTab; bar.appendChild(r); }   /* 閉じたタブがあるあいだだけ出る「戻す」ボタン */
+  bar.ondblclick = e => { const t0 = e?.target, b = t0?.closest ? t0.closest('button') : t0; if (!b || t0?.className === 'tabX' || t0?.closest?.('.tabX')) return; const i = [...bar.children].indexOf(b); return i >= 0 && i < tabs.length ? openTabFolder(tabs[i]) : undefined; };   /* 末尾の「↩」は図面タブではない */   /* ダブルクリックは、タブの並び全体で受ける（1回目のクリックでタブを描き直すため、ボタンごとに付けると取りこぼす） */
   $('tabName').value = tabs[activeTab]?.name || '';
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
 }
@@ -4789,6 +4790,8 @@ function switchTab(i) {
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
 let closeArmed = 0, closeArmedTab = null;
+const closedTabs = [];   /* 閉じたタブ（新しく閉じたものが後ろ・最大10枚）。「↩」で新しい順に戻す（事業主指示 2026-11-04） */
+const CLOSED_TABS_MAX = 10;
 const tabHasWork = tab => { const d = tab === tabs[activeTab] ? doc : tab?.doc; return !!(d && (d.shapes?.length || d.calcMemos?.length)); };   /* 図（または計算メモ）が入っているタブか。開いているタブは、まだ tab.doc に書き戻していない最新の doc を見る */
 const closeArmedFor = tab => closeArmedTab === tab && Date.now() - closeArmed <= 5000;   /* 「閉じる？」の確認中（5秒）か */
 function closeTab() { closeTabAt(activeTab); }
@@ -4797,9 +4800,18 @@ function closeTabAt(i) { const tab = tabs[i]; if (!tab) return; const last = tab
   if (last && !tabHasWork(tab)) { $('hint').textContent = t('lastTabEmpty'); return; } // 空の1枚は、閉じても同じ（新しく作り直す意味がない）
   if ((tab.dirty || last) && !closeArmedFor(tab)) { closeArmed = Date.now(); closeArmedTab = tab; $('hint').textContent = t('closeTabConfirm'); renderTabs(); if (typeof setTimeout === 'function') setTimeout(renderTabs, 5100); return; } // 埋め込みブラウザでは confirm が出ないので 2 段押し（最後の1枚は図が入っていれば未保存でなくても確認する：閉じると空の新規タブに置き換わる）
   closeArmedTab = null; const cur = tabs[activeTab];
-  if (last) { const d = newDoc(); d.tools = loadTools(); tabs.push({ name: t('tabDefault', { n: 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); } /* 最後の1枚を閉じたら、空の新規タブを作ってから入れ替える（タブが0枚にならない） */
+  if (tab === cur) snapshotTab();   /* 開いているタブは、最新の図・履歴をタブに書き戻してから取っておく */
+  closedTabs.push(tab); if (closedTabs.length > CLOSED_TABS_MAX) closedTabs.shift();
+  if (last) { const d = newDoc(); d.tools = loadTools(); tabs.push({ name: t('tabDefault', { n: 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false, autoBlank: true }); } /* 最後の1枚を閉じたら、空の新規タブを作ってから入れ替える（タブが0枚にならない） */
   tabs.splice(i, 1);
-  if (tab === cur) { const next = Math.min(i, tabs.length - 1); activeTab = -1; switchTab(next); } else { activeTab = tabs.indexOf(cur); renderTabs(); } }
+  if (tab === cur) { const next = Math.min(i, tabs.length - 1); activeTab = -1; switchTab(next); } else { activeTab = tabs.indexOf(cur); renderTabs(); }
+  $('hint').textContent = t('tabClosedUndo', { name: tab.name }); }
+/** 最後に閉じたタブを戻す（タブ欄の「↩」）。空の1枚（最後のタブを閉じたときの自動の新規タブ）だけのときは、それと入れ替える。 */
+function reopenClosedTab() {
+  const tab = closedTabs.pop(); if (!tab) { $('hint').textContent = t('tabReopenNone'); return; }
+  snapshotTab(); const empty = tabs.length === 1 && tabs[0].autoBlank && !tabHasWork(tabs[0]) && !tabs[0].dirty && !tabs[0].fileHandle;   /* 自動でできた空のタブ（autoBlank）だけ。自分で作った空のタブは残す */
+  tabs.push(tab); if (empty) tabs.splice(0, 1);
+  activeTab = -1; switchTab(tabs.length - 1); $('hint').textContent = t('tabReopened', { name: tab.name }); }
 /** 選択図形を別タブへコピー（move=true なら元を削除）。 */
 function sendToTab(move) {
   const target = Number($('tabTarget').value); if (!tabs[target] || target === activeTab) { $('hint').textContent = t('needTab'); return; }
