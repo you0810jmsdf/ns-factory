@@ -4777,7 +4777,7 @@ function snapshotTab() { if (tabs[activeTab]) Object.assign(tabs[activeTab], { d
 function renderTabs() {
   scheduleAutosave(); syncAutosaveBar();
   const bar = $('tabBar'); bar.textContent = '';
-  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip'); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1) { const x = document.createElement('span'); x.className = 'tabX'; x.textContent = '×'; x.title = t('tabClose'); x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
+  tabs.forEach((tab, i) => { const b = document.createElement('button'); b.textContent = tab.name + (tab.dirty ? ' •' : ''); b.classList.toggle('active', i === activeTab); b.onclick = () => switchTab(i); b.title = t('tabDblTip'); b.onauxclick = e => { if (e.button === 1) { e.preventDefault(); closeTabAt(i); } }; if (tab.fileHandle?.name) { const f = document.createElement('span'); f.className = 'tabFile'; f.textContent = tab.fileHandle.name; f.title = t('tabFileTip'); b.appendChild(f); } /* 上書き保存の行き先（保存先のファイル名）を小さく添える */ if (tabs.length > 1 || tabHasWork(tab)) { const x = document.createElement('span'); x.className = 'tabX'; const armed = closeArmedFor(tab); x.textContent = armed ? t('closeTabAsk') : '×'; x.title = t('tabClose'); if (armed) { x.style.opacity = '1'; x.style.background = '#c0392b'; x.style.color = '#fff'; } /* 確認中（5秒）は、×が赤い「閉じる？」になる＝下のヒント文を見落としても分かる */ x.onclick = e => { e.stopPropagation(); closeTabAt(i); }; b.appendChild(x); } bar.appendChild(b); });
   bar.ondblclick = e => { const t0 = e?.target, b = t0?.closest ? t0.closest('button') : t0; if (!b || t0?.className === 'tabX' || t0?.closest?.('.tabX')) return; const i = [...bar.children].indexOf(b); return i >= 0 ? openTabFolder(tabs[i]) : undefined; };   /* ダブルクリックは、タブの並び全体で受ける（1回目のクリックでタブを描き直すため、ボタンごとに付けると取りこぼす） */
   $('tabName').value = tabs[activeTab]?.name || '';
   const sel = $('tabTarget'); sel.textContent = ''; tabs.forEach((tab, i) => { if (i === activeTab) return; const o = document.createElement('option'); o.value = String(i); o.textContent = tab.name; sel.appendChild(o); });
@@ -4789,11 +4789,16 @@ function switchTab(i) {
 }
 function newTab(name = null) { snapshotTab(); const d = newDoc(); d.tools = loadTools(); tabs.push({ name: name || t('tabDefault', { n: tabs.length + 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); switchTab(tabs.length - 1); }
 let closeArmed = 0, closeArmedTab = null;
+const tabHasWork = tab => { const d = tab === tabs[activeTab] ? doc : tab?.doc; return !!(d && (d.shapes?.length || d.calcMemos?.length)); };   /* 図（または計算メモ）が入っているタブか。開いているタブは、まだ tab.doc に書き戻していない最新の doc を見る */
+const closeArmedFor = tab => closeArmedTab === tab && Date.now() - closeArmed <= 5000;   /* 「閉じる？」の確認中（5秒）か */
 function closeTab() { closeTabAt(activeTab); }
 /** タブ i を閉じる（右上の×・中クリック・「図面タブを閉じる」ボタン共通）。未保存なら5秒以内にもう一度押すと閉じる。最後の1枚は閉じない。 */
-function closeTabAt(i) { if (tabs.length < 2) { $('hint').textContent = t('lastTab'); return; } const tab = tabs[i]; if (!tab) return;
-  if (tab.dirty && !(closeArmedTab === tab && Date.now() - closeArmed <= 5000)) { closeArmed = Date.now(); closeArmedTab = tab; $('hint').textContent = t('closeTabConfirm'); return; } // 埋め込みブラウザでは confirm が出ないので 2 段押し
-  closeArmedTab = null; const cur = tabs[activeTab]; tabs.splice(i, 1);
+function closeTabAt(i) { const tab = tabs[i]; if (!tab) return; const last = tabs.length < 2;
+  if (last && !tabHasWork(tab)) { $('hint').textContent = t('lastTabEmpty'); return; } // 空の1枚は、閉じても同じ（新しく作り直す意味がない）
+  if ((tab.dirty || last) && !closeArmedFor(tab)) { closeArmed = Date.now(); closeArmedTab = tab; $('hint').textContent = t('closeTabConfirm'); renderTabs(); if (typeof setTimeout === 'function') setTimeout(renderTabs, 5100); return; } // 埋め込みブラウザでは confirm が出ないので 2 段押し（最後の1枚は図が入っていれば未保存でなくても確認する：閉じると空の新規タブに置き換わる）
+  closeArmedTab = null; const cur = tabs[activeTab];
+  if (last) { const d = newDoc(); d.tools = loadTools(); tabs.push({ name: t('tabDefault', { n: 1 }), doc: d, undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: false }); } /* 最後の1枚を閉じたら、空の新規タブを作ってから入れ替える（タブが0枚にならない） */
+  tabs.splice(i, 1);
   if (tab === cur) { const next = Math.min(i, tabs.length - 1); activeTab = -1; switchTab(next); } else { activeTab = tabs.indexOf(cur); renderTabs(); } }
 /** 選択図形を別タブへコピー（move=true なら元を削除）。 */
 function sendToTab(move) {
