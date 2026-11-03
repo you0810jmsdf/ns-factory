@@ -3237,9 +3237,9 @@ function initDesign() {
   $('ctx-lattice-round').onclick = () => { hideCtxMenu(); removeLatticeLines('both'); };
   $('ctx-move').onclick = () => { hideCtxMenu(); setCardWin('moveCard', true); $('moveDx').focus?.(); $('moveDx').select?.(); };   /* 移動のカードは、右列でなく窓で開く（事業主指示 2026-10-21） */   /* 右クリック → 移動…（選んだ図形・菱目を、距離を入れて動かす。移動カードを開いて距離の欄に入る・事業主の質問 2026-10-20「菱目の移動のボタンがみつからない」） */
   $('bugLog').onclick = async e => { /* 不具合記録：操作の記録と図面を、共有フォルダ（OneDrive の中のフォルダ。いちど選ぶと次から自動）へ保存する。使えないブラウザ・選ばなかったときは、ダウンロードに保存（外部へは送らない） */
-    const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), repick = !!e?.shiftKey;
-    if (canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
-    const res = await saveToSharedDir(name, text, { repick });
+    const r = bugReport(), name = bugReportName(), text = JSON.stringify(r), shared = bugLogUsesSharedDir(), repick = shared && !!e?.shiftKey;   /* 共有フォルダ（OneDrive）を選ぶのは作者の端末だけ。ほかの人は飛ばして、ダウンロードに保存する（事業主決定 2026-11-04） */
+    if (shared && canPickDir() && (repick || !(await getSavedDir()))) $('hint').textContent = t('bugLogPick');
+    const res = shared ? await saveToSharedDir(name, text, { repick }) : { status: 'skipped' };
     if (res.status === 'saved') { $('hint').textContent = t('bugLogSavedDir', { n: r.log.length, dir: res.dir }) + (res.expected ? '' : ' ' + t('bugLogWrongDir', { name: BUGDIR_NAME })) + (res.why && !repick ? ' ' + t('bugLogWhy', { why: res.why }) : ''); if (!repick) openFeedback(true); return; }   /* 保存のあと、一言を送る窓を開く（送るかどうかは本人が決める。保存先の選び直し＝Shift のときは開かない） */ /* 約束のフォルダ名でなければ、共有されない場所かもしれないと知らせる */
     download(name, text, 'application/json', false); $('hint').textContent = t('bugLogSaved', { n: r.log.length }) + (res.status === 'cancelled' || res.status === 'error' ? ' ' + t('bugLogFallback') : ''); if (!repick) openFeedback(true);
   };
@@ -8774,6 +8774,8 @@ async function submitFeedback() {
   const key = { short: 'fbShort', long: 'fbLong', links: 'fbLinks', contact: 'fbContactLong', busy: 'fbBusy' }[r.error] || 'fbNet';
   st.textContent = t(key); st.className = 'fb-status ng';
 }
+/** 不具合記録を共有フォルダ（OneDrive の NsCAD_不具合記録）へ保存するのは、作者の端末（管理画面で計測除外の印 nsf_ga_optout を付けた端末）だけ。ほかの人には意味が分からない案内なので出さない。 */
+function bugLogUsesSharedDir() { try { return globalThis.localStorage?.getItem('nsf_ga_optout') === '1'; } catch { return false; } }
 function bugReportName() { const d = new Date(), z = n => String(n).padStart(2, '0'); return `ncad-bug-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`; }
 document.addEventListener?.('pointerdown', e => { if (e.target === canvas) pointerLog('down', e); }, true);
 document.addEventListener?.('pointerup', e => { if (e.target === canvas) setTimeout(() => pointerLog('up', e), 0); }, true); /* 離した直後の状態（選択の結果・ヒント）を残す */
