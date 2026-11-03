@@ -128,6 +128,10 @@ a{color:var(--accent-dark)}
 .btn-sub{background:var(--white);color:var(--accent-dark);border-color:var(--line);font-weight:400;font-size:12px}
 .btn-sub:hover{border-color:var(--accent)}
 
+.price-sheet{max-width:420px;margin:14px 0 0}
+.price-sheet img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px}
+.price-sheet .btn{display:inline-block}
+
 /* ---- order ---- */
 .order-box{
   max-width:1080px;margin:34px auto 0;padding:22px 24px;
@@ -241,6 +245,11 @@ a{color:var(--accent-dark)}
   <p class="section-lead">
     価格はすべて税込です。購入はSTORESの通販ページから。売り切れの場合は、同じものを受注製作でお作りできます。
   </p>
+  <!-- 価格表（店頭チラシ 2026-11-01 と同じもの・2026-11-03 事業主指示で掲載） -->
+  <div class="price-sheet">
+    <a data-log="価格表（PDF）を開いた" data-id="inzai-goods" data-name="いんザイ君グッズ" href="assets/inzai-goods/price-list.pdf" target="_blank" rel="noopener"><img src="assets/inzai-goods/price-list.jpg" alt="いんザイ君オリジナルグッズ 価格表（ホースバット茶芯ブラック2,000円、アラスカピンク1,500円、従来モデル1,000円、アンブレラマーカー1,000円、ナスカン1個100円）" loading="lazy"></a>
+    <a class="btn btn-sub" data-log="価格表（PDF）を開いた" data-id="inzai-goods" data-name="いんザイ君グッズ" href="assets/inzai-goods/price-list.pdf" target="_blank" rel="noopener">価格表をPDFで開く</a>
+  </div>
 </section>
 
 <div class="gallery" id="gallery"></div>
@@ -361,15 +370,17 @@ function sendLog(type, id, name, detail){
 
 var GOODS = [
   { id:'inzai-keyholder-horsebutt', name:'キーホルダー（ホースバット・黒）',
-    spec:'馬のお尻の革／真鍮金具付き／直径約4cm', price:2500, photo:'keyholder-black.jpg' },
+    spec:'馬のお尻の革／真鍮金具付き／直径約4cm', price:2000, photo:'keyholder-black.jpg' },
+  { id:'inzai-keyholder-alaska-new', name:'キーホルダー 新モデル（アラスカレザー）',
+    spec:'アラスカレザー（ピンク）／表の刻印は7種から選べます／背面に「いんザイ君」の文字／ナスカンはオプション（1個100円）', price:1500, photo:'keyholder-pink-new.jpg' },
+  { id:'inzai-keyholder-alaska', name:'キーホルダー 従来モデル（アウトレット）',
+    spec:'アラスカレザー（ピンク）／キーナスカン3個付き', price:1000, photo:'keyholder-pink-old.jpg' },
   { id:'inzai-cardcase', name:'名刺入れ',
     spec:'アラスカレザー（ピンク）', price:9800, photo:'cardcase.jpg' },
   { id:'inzai-passcase', name:'パスケース（身分証ケース）',
     spec:'アラスカレザー（ピンク）／窓付き', price:9800, photo:'passcase.jpg' },
   { id:'inzai-strap', name:'レザーストラップ',
     spec:'パスケース用／リール付き', price:3500, photo:'strap.jpg' },
-  { id:'inzai-keyholder-alaska', name:'キーホルダー（アラスカレザー）',
-    spec:'アラスカレザー（ピンク）', price:1000, photo:'keyholder-pink.jpg' },
   { id:'inzai-coincase', name:'コインケース／エアタグケース',
     spec:'アラスカレザー（ピンク）／ボールチェーン付き', price:1000, photo:'coincase.jpg' },
   { id:'inzai-charm', name:'チャーム',
