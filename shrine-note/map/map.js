@@ -1145,7 +1145,9 @@ function sourceList(ids) {
   if (!used.length) return '';
   return `<h3>${U('sources', '出典')}</h3><ul class="src">` + used.map((id) => {
     const s = srcMap[id];
-    const url = s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a>` : '';
+    // url_hijacked：公式サイトの該当ページが乗っ取られている出典は、リンクにせず理由だけ示す（tools/check_source_urls.py --mark が付ける）
+    const url = s.url_hijacked ? ` ${TX('（URLは非掲載。公式サイトの該当ページが現在乗っ取られているため）', '(URL not shown: the official page is currently hijacked)')}`
+      : s.url ? ` <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url)}</a>` : '';
     return `<li id="src-${esc(id)}"><b>[${esc(s.label ?? id)}]</b> ${esc(s.title)}${s.publisher ? TX('（', ' (') + esc(s.publisher) + TX('）', ')') : ''}${url}${s.accessed ? TX('（閲覧 ', ' (viewed ') + esc(s.accessed) + TX('）', ')') : ''}</li>`;
   }).join('') + `</ul>`;
 }

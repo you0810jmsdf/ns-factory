@@ -1432,7 +1432,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/history/主祭神/",
       "accessed": "2026-10-12",
-      "label": "179"
+      "label": "179",
+      "url_hijacked": true
     },
     {
       "id": "ud3",
@@ -1440,7 +1441,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/history/ご鎮座/",
       "accessed": "2026-10-12",
-      "label": "180"
+      "label": "180",
+      "url_hijacked": true
     },
     {
       "id": "ud4",
@@ -1448,7 +1450,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/goshintoku/",
       "accessed": "2026-10-12",
-      "label": "181"
+      "label": "181",
+      "url_hijacked": true
     },
     {
       "id": "ud5",
@@ -1456,7 +1459,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/access/",
       "accessed": "2026-10-12",
-      "label": "182"
+      "label": "182",
+      "url_hijacked": true
     },
     {
       "id": "ud6",
@@ -1464,7 +1468,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/history/県指定-建造物「鵜戸神宮本殿」/",
       "accessed": "2026-10-12",
-      "label": "183"
+      "label": "183",
+      "url_hijacked": true
     },
     {
       "id": "ud7",
@@ -1472,7 +1477,8 @@
       "publisher": "鵜戸神宮",
       "url": "https://www.udojingu.or.jp/history/国指定-名勝「鵜戸」/",
       "accessed": "2026-10-12",
-      "label": "184"
+      "label": "184",
+      "url_hijacked": true
     },
     {
       "id": "sk1",
