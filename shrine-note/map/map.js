@@ -1336,6 +1336,7 @@ function shrineHTML(s0) {
     ${staysHTML(s.id)}
     <h3 class="chh sub">${EN ? U('noteArticle', '') + (s.article_url_en ? '' : ' (Japanese)') : 'note 記事'}</h3>
     ${EN && s.article_url_en ? `<a class="btn" data-art="en" href="${esc(s.article_url_en)}" target="_blank" rel="noopener">${U('readNoteEn', '')}</a>${s.article_url ? ` <a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">${U('readNoteJa', '')}</a>` : ''}` : s.article_url ? `<a class="btn" data-art="ja" href="${esc(s.article_url)}" target="_blank" rel="noopener">note で読む</a>` : `<span class="btn off">記事は準備中</span>`}
+    ${(s.extra_articles || []).map(a => `<p class="meta">${TX('あわせて読む：', 'Also (Japanese): ')}<a class="btn" data-art="extra" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title)}</a></p>`).join('')}
     ${sourceList(used)}
     <p class="meta">${EN ? U('checked', '') + ': ' + esc(s.checked || 'not checked') + ' / ' + U('respect', '') : '情報確認日：' + esc(s.checked || '未確認') + '／神社への敬意をもって、境内では現地の表示と作法に従ってください。'}</p>`;
   const cs = [c1, c2, c3, c4, c5];
