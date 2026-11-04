@@ -225,6 +225,26 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       margin-left: 4px;
     }
     .filter-row-sub .filter-btn { font-size: 12px; padding: 5px 12px; }
+    /* 分類から探す（2026-11-05）：分類ごとの代表写真を横に並べた入口。押すと下の絞り込み（大→中）と同じ状態になる */
+    .cat-entrance { max-width: 1080px; margin: 0 auto; padding: 18px 24px 0; }
+    .cat-entrance-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; margin-bottom: 10px; }
+    .cat-entrance-title { margin: 0; font-size: 15px; font-weight: 700; letter-spacing: .06em; color: var(--ink); white-space: nowrap; }
+    .cat-entrance-note { font-size: 12px; color: var(--muted); }
+    .cat-strip { display: grid; grid-auto-flow: column; grid-auto-columns: 138px; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding: 2px 2px 10px; scrollbar-width: thin; }
+    .cat-card { scroll-snap-align: start; align-self: start; display: block; width: 138px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .cat-card img { display: block; width: 138px; height: 172px; object-fit: cover; border-radius: var(--radius); box-shadow: var(--shadow); background: #222; transition: transform .2s ease; }
+    .cat-card:hover img, .cat-card:focus-visible img { transform: translateY(-2px); }
+    .cat-card:focus-visible { outline: none; }
+    .cat-card:focus-visible img { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .cat-card.active img { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .cat-card-name { display: block; margin-top: 7px; font-size: 12px; font-weight: 700; line-height: 1.35; color: var(--ink); }
+    .cat-card-count { display: block; font-size: 11px; color: var(--muted); }
+    @media (max-width: 600px) {
+      .cat-entrance { padding: 14px 16px 0; }
+      .cat-strip { grid-auto-columns: 118px; gap: 10px; }
+      .cat-card, .cat-card img { width: 118px; }
+      .cat-card img { height: 147px; }
+    }
     .tools {
       max-width: 1080px;
       margin: 0 auto;
@@ -1409,6 +1429,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </div>
 
   <main>
+    <!-- 分類から探す（2026-11-05 事業主決定）。写真は assets/works-category/NN.jpg（広報部の分類別代表写真から縮小）。中身は buildEntrance() が作る -->
+    <section id="cat-entrance" class="cat-entrance" aria-labelledby="cat-entrance-title" hidden></section>
     <div id="filters" class="filters"></div>
     <div class="tools">
       <input id="search" class="search" type="search" placeholder="作品名で探す" aria-label="作品名で探す" data-i18n-placeholder="tools.search">
@@ -1983,7 +2005,62 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       }
 
       filtersEl.innerHTML = rows.join('');
+      buildEntrance();
     }
+
+    // ===== 分類から探す（2026-11-05） =====
+    // label＝表示名（商品マスターの分類名）、cat＝絞り込みに使う中カテゴリ（workCats は「／」で分けるので、
+    // 「名刺ケース／カードケース」「ＩＤ／パスケース」は前半の名前で絞る）。写真を差し替えるときは同じ番号のファイルを置き換える。
+    const CATEGORY_COVERS = [
+      ['01', 'システム手帳'], ['02', 'システム手帳用リフィル'], ['03', '名刺ケース／カードケース', '名刺ケース'],
+      ['04', 'キーホルダー'], ['05', 'システム手帳用リングサポーター'], ['06', 'キーケース'], ['07', '手帳カバー'],
+      ['08', 'システム手帳用パーツ'], ['09', 'ハーフウォレット'], ['10', 'アクセサリ'], ['11', 'ＩＤ／パスケース', 'ＩＤ'],
+      ['12', 'ペンケース'], ['13', 'ポーチ'], ['14', 'コインケース'], ['15', 'ロングウォレット'], ['16', 'リップケース'],
+      ['17', 'メガネケース'], ['18', 'スマホケース'], ['19', 'トラッカーズウォレット'], ['20', 'ミニウォレット'],
+      ['21', 'ストラップ'], ['22', 'リメイク'], ['23', 'マネークリップ'], ['24', 'サコッシュ'], ['25', '時計ベルト'],
+      ['26', 'オリジナルウォレット'], ['27', 'ベルト'], ['28', 'トートバッグ'], ['29', 'アコーディオンウォレット'], ['30', '三つ折りウォレット'],
+    ].map(([n, label, cat]) => ({ img: `assets/works-category/${n}.jpg`, label, cat: cat || label }));
+
+    function buildEntrance() {
+      const el = document.getElementById('cat-entrance');
+      if (!el) return;
+      const cards = CATEGORY_COVERS
+        .map((c) => ({ ...c, count: works.filter((w) => workCats(w).includes(c.cat)).length }))
+        .filter((c) => c.count > 0);   // 作品が無くなった分類は出さない
+      if (!cards.length) { el.hidden = true; return; }
+      el.innerHTML = '<div class="cat-entrance-head">'
+        + `<h2 class="cat-entrance-title" id="cat-entrance-title">${T('entrance.title', '分類から探す')}</h2>`
+        + `<span class="cat-entrance-note">${T('entrance.note', '写真を押すと、その分類の作品だけを表示します')}</span>`
+        + '</div><div class="cat-strip">'
+        + cards.map((c) => {
+            const on = activeCategory === c.cat && activeMajor === majorOf(c.cat);
+            return `<button class="cat-card${on ? ' active' : ''}" type="button" data-entrance-cat="${esc(c.cat)}" aria-pressed="${on}">`
+              + `<img src="${esc(c.img)}" alt="${esc(c.label)}の代表作品" loading="lazy" decoding="async" width="300" height="375">`
+              + `<span class="cat-card-name">${esc(c.label)}</span>`
+              + `<span class="cat-card-count">${isEN() ? c.count + ' items' : c.count + '点'}</span>`
+              + '</button>';
+          }).join('')
+        + '</div>';
+      el.hidden = false;
+    }
+
+    document.getElementById('cat-entrance').addEventListener('click', (e) => {
+      const btn = e.target.closest('.cat-card');
+      if (!btn) return;
+      const cat = btn.dataset.entranceCat;
+      if (activeCategory === cat && activeMajor === majorOf(cat)) {   // もう一度押したら解除
+        activeMajor = ''; activeCategory = '';
+      } else {
+        activeMajor = majorOf(cat); activeCategory = cat;
+      }
+      activeSize = '';
+      buildFilters();
+      render();
+      // 上に張り付くメニュー（スマホでは約180pxの高さ）の下に絞り込みが隠れないよう、その高さぶん手前で止める
+      const nav = document.querySelector('nav.nav');
+      const offset = (nav && getComputedStyle(nav).position === 'sticky') ? nav.getBoundingClientRect().height + 8 : 8;
+      window.scrollTo({ top: document.getElementById('filters').getBoundingClientRect().top + window.scrollY - offset, behavior: 'smooth' });
+    });
 
     document.getElementById('filters').addEventListener('click', (e) => {
       const btn = e.target.closest('.filter-btn');
