@@ -986,7 +986,7 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
       { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
       /* ③背の半径・リングの位置（事業主決定 2026-11-04：全部の寸法を「文字を押せば打てる」に揃える）。リングの位置は、リングがあるときだけ */
       { key: 'rr', value: n(d.rinR), items: bifoldDimensions(d, p, 'rr', '').map(it => it.type === 'text' ? { ...it, text: `${nm('rr')} ${n(d.rinR)} mm`, align: 'left' } : it) },
-      ...(d.ring ? [{ key: 'ring', value: n(d.ring.pos ?? 0), items: bifoldDimensions(d, p, 'ring', '').map(it => it.type === 'text' ? { ...it, ...pt(pointOnFoldPath(foldSectionPath(p), d.ring.s ?? p.flats[0] + p.bends[0] / 2).u, -p.T / 2 - 18), text: `${nm('ring')} ${n(d.ring.pos ?? 0)} mm` } : it) }] : []),   /* リングの文字は、断面の外（リングの真下・全幅の線より外）に置く：リングの絵や厚みの文字と重ならないように */
+      ...(d.ring ? [{ key: 'ring', value: n(d.ring.pos ?? 0), items: bifoldDimensions(d, p, 'ring', '').map(it => it.type === 'text' ? { ...it, ...pt(pointOnFoldPath(foldSectionPath(p), d.ring.s ?? p.flats[0] + p.bends[0] / 2).u, -p.T / 2 - 16 - 14 * px), text: `${nm('ring')} ${n(d.ring.pos ?? 0)} mm` } : it) }] : []),   /* リングの文字は、断面の外（リングの真上・①全幅の文字の段よりさらに画面で14px外）に置く：リングの絵・厚みの文字・①の文字と重ならないように（事業主 2026-11-04「文字が重なる」） */
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(p.flats[0] + (d.rinR + p.T) / 2, 2 * p.rc[0] + p.T / 2 + 14), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm` }) },   /* 厚みの文字は断面の下・背の下の空いた所（中央そろえ）。背の脇だと、画面の端で押し戻されてリングの絵に重なった（事業主決定 2026-11-04） */
     ]);
   }
