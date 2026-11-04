@@ -1621,7 +1621,7 @@ async function loadProduct() {
     const p = d.product;
     document.getElementById('f_name').value = p.name;
     setNameJa(p.nameJa || '');
-    const _cats = String(p.category || '').split('／').map(c => c.trim()).filter(Boolean);
+    const _cats = splitCategories(p.category);
     setSelectValue('f_category', _cats[0] || '');
     setSelectValue('f_subcategory', _cats[1] || '');
     setSelectValue('f_material', p.material);
@@ -1978,6 +1978,27 @@ function catValue() {
   const subEl = document.getElementById('f_subcategory');
   const sub = subEl ? subEl.value.trim() : '';
   return (main && sub && sub !== main) ? main + '／' + sub : main;
+}
+// 保存されたカテゴリ文字列を主・副に分ける。「名刺ケース／カードケース」のように「／」を含む分類名があるので、
+// マスターの分類名（長い順）に先に当てはめてから残りを「／」で区切る（2026-11-05）。
+// ⛔ 単純な split('／') に戻さない（読み込み→保存で「システム手帳用リフィル／名刺ケース」のように後半が落ちた・NF2026_640）
+const COMPOUND_CATEGORIES = ['名刺ケース／カードケース', 'ＩＤ／パスケース'];   // マスター未読込のときの控え
+function splitCategories(s) {
+  const sel = document.getElementById('f_category');
+  const known = Array.from(new Set([
+    ...COMPOUND_CATEGORIES,
+    ...(sel ? Array.from(sel.options).map(o => o.value.trim()) : [])
+  ])).filter(v => v.includes('／')).sort((a, b) => b.length - a.length);
+  const out = [];
+  let rest = String(s || '').trim();
+  while (rest) {
+    const hit = known.find(k => rest === k || rest.startsWith(k + '／'));
+    if (hit) { out.push(hit); rest = rest.slice(hit.length).replace(/^／/, '').trim(); continue; }
+    const i = rest.indexOf('／');
+    out.push((i < 0 ? rest : rest.slice(0, i)).trim());
+    rest = i < 0 ? '' : rest.slice(i + 1).trim();
+  }
+  return out.filter(Boolean);
 }
 
 function validateStep1() {
