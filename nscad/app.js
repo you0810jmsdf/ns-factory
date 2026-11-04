@@ -2279,17 +2279,17 @@ function foldFlowStates(d = doc) {
 /* ───────── ⓪ リングとリフィル（事業主 2026-10-23「２つ折りの断面図描画時にリフィルとリングが勝手に決まっている。どちらも断面図を決める前に情報として設定したい」「全てが手帳というわけではない。２つ折りか３つ折りを決定し…直前でリングとリフィルを決めて、断面図ボタンの流れがよい」）
    断面を作る前に、手帳（kind 'book'）か手帳ではない（'plain'）かを自分で決める。手帳なら、リフィルの規格 spec・リング内径 dia・束の厚み stack も（どれも最初は空で、勝手に決まらない）。
    図面に doc.foldBook として残す（図面ファイルと一緒に保存）。断面がすでにあって doc.foldBook が無いときは、断面の中身（doc.foldDesign.ring の有無）から読む。値は、金具カード・設計カードの今ある欄（binderSpecSel・ringD・fdStackT・fdRingOn）に写して使う。 ───────── */
-const FOLD_BOOK_NONE = { kind: '', spec: '', dia: '', stack: '' };
+const FOLD_BOOK_NONE = { kind: '', spec: '', dia: '', stack: '', refillR: '' };   /* refillR＝平面図のリフィルの角の丸み（空＝規格の既定。事業主 2026-11-05「Rを指定したい」） */
 function foldBookState() {
   const b = doc.foldBook, d = doc.foldDesign, str = v => typeof v === 'string' ? v.slice(0, 40) : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
-  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), dia: str(b.dia), stack: str(b.stack) };
-  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), dia: str(d.ring.ringD), stack: str(d.ring.stackT) } : { kind: 'plain', spec: '', dia: '', stack: '' };
+  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), dia: str(b.dia), stack: str(b.stack), refillR: str(b.refillR) };
+  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), dia: str(d.ring.ringD), stack: str(d.ring.stackT), refillR: '' } : { kind: 'plain', spec: '', dia: '', stack: '', refillR: '' };
   return FOLD_BOOK_NONE;
 }
 const foldBookComplete = s => s.kind === 'plain' || (s.kind === 'book' && s.spec !== '' && s.dia !== '' && Number(s.stack) > 0);
 /** 手帳か・規格・リング内径・束の厚みのどれかを変える。手帳でなくなるときは、規格などを空に戻す。そろったら、今ある欄に写す（断面があれば作り直す）。 */
 function setFoldBook(patch) {
-  const next = { ...foldBookState(), ...patch }; if (next.kind !== 'book') { next.spec = ''; next.dia = ''; next.stack = ''; }
+  const next = { ...foldBookState(), ...patch }; if (next.kind !== 'book') { next.spec = ''; next.dia = ''; next.stack = ''; next.refillR = ''; }
   doc.foldBook = next; if (tabs[activeTab]) tabs[activeTab].dirty = true;
   if (foldBookComplete(next)) applyFoldBook(true);
   if ('spec' in patch && next.kind === 'book' && next.spec) applyPlanHeight();   /* リフィルの規格を選んだ・替えたとき：平面図の高さの初めの数字を決める */
@@ -2337,6 +2337,7 @@ function renderFoldBook(done = foldBookComplete(foldBookState())) {
     const dkey = lang + '|' + (sp ? sp.id : ''); if (dia.dataset.key !== dkey) { fillRingOptions(dia, sp, true); dia.dataset.key = dkey; } dia.disabled = !sp;
     if (spec.value !== s.spec) spec.value = s.spec; if (dia.value !== s.dia) dia.value = s.dia; if (document.activeElement !== stack && stack.value !== s.stack) stack.value = s.stack;
   }
+  { const rr = $('flowRefillR'), sp = s.kind === 'book' && s.spec ? binderSpec(s.spec) : null; if (rr) { const ph = sp ? String(refillLibraryItem(sp)?.vars?.R ?? 0) : ''; if (rr.placeholder !== ph) rr.placeholder = ph; if (document.activeElement !== rr && rr.value !== s.refillR) rr.value = s.refillR; } }   /* 角R：空のときは規格の既定を薄く見せる。手帳でなければ空 */
   { const note = $('flowHeightNote'), r = refillPlanHeight(); if (note) { const txt = r ? t('foldFlowHeightNote', { h: +r.h.toFixed(2), m: +r.m.toFixed(2), v: +r.v.toFixed(2) }) : ''; if (note.textContent !== txt) note.textContent = txt; if (r && !planHeightTouched) { const v = String(r.v), fh = $('flowH'); if ($('fdH').value !== v) $('fdH').value = v; if (fh && document.activeElement !== fh && fh.value !== v) fh.value = v; } } }   /* 平面図の高さの計算を、常に見せる */
   const v = done ? 'done' : 'now', text = t(done ? 'foldFlowDone' : 'foldFlowNow'); if (li && li.dataset.state !== v) li.dataset.state = v; if (tag && tag.textContent !== text) tag.textContent = text;
 }
@@ -3186,6 +3187,7 @@ function initDesign() {
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
   $('flowFoldMode').onchange = () => { if (!lockGate('fold')) { renderFoldFlow(); return; } $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); if (foldIsBifold()) $('foldFlowMore').open = true; renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
+  $('flowRefillR').oninput = () => { const raw = String($('flowRefillR').value).trim(); doc.foldBook = { ...foldBookState(), refillR: raw !== '' && Number.isFinite(Number(raw)) ? raw : '' }; if (tabs[activeTab]) tabs[activeTab].dirty = true; foldFollowSoon(); };   /* リフィルの角R：図面に残す・平面図だけ作りなおす（断面には関係ない） */
   $('flowBook').onchange = () => setFoldBook({ kind: $('flowBook').value }); $('flowRingSpec').onchange = () => setFoldBook({ spec: $('flowRingSpec').value, dia: '' }); $('flowRingDia').onchange = () => setFoldBook({ dia: $('flowRingDia').value }); $('flowStackT').oninput = () => setFoldBook({ stack: $('flowStackT').value });   /* ⓪：リングとリフィルを、断面を作る前に決める */
   $('fhbVal').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyFoldHandleBar(); } else if (e.key === 'Escape') { e.stopPropagation?.(); closeFoldHandleBar(); } }); $('fhbSame').onclick = () => applyFoldHandleBar(true); $('fhbClose').onclick = closeFoldHandleBar;   /* 断面の取っ手の数字の小窓 */
   $('flowMake').onclick = () => { const s = foldBookState(); if (!foldBookComplete(s)) { $('hint').textContent = t(s.kind === 'book' ? 'foldFlowBookIncomplete' : 'foldFlowBookFirst'); $('flowBook').focus?.(); return; } applyFoldBook(false); $('fdMake').click(); };   /* ⓪が決まるまで①は進めない（案内を出す）。決まっていれば、⓪の値を欄に写してから、今までの「断面を作る」を押す */
@@ -5947,9 +5949,17 @@ function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_
 /** 平面図に重ねる「リフィルと本体の差」（事業主 2026-10-24「平面図にリフィルと本体の差を寸法で表示させたい」「畳んだ状態と開いた状態では左右の差はかなり違うはず」）。
  *  上下＝（革の高さ−リフィルの高さ）÷2。開いた状態＝革を平らに置いたとき：リングの位置 s（取付穴の中心）を軸に、ページが左右に広がる（軸から リフィル幅−穴の縁 ずつ）ので、革の両端との差が左右の余り。
  *  畳んだ状態＝断面のリフィルの範囲と、革の端（表紙・裏表紙）・背の外側との水平の距離（背の丸みで革の長さが使われるぶん、開いた状態より小さくなる）。断面が無い・リフィルを垂直に置いたときは null。2つ折りのみ。 */
+/** 規格のリフィルの部品（部品ライブラリ）。ロルバーンのような製品（notebook-）が先、無ければ規格のリフィル（refill-） */
+function refillLibraryItem(sp) { return sp ? libraryItems().find(i => i.id === 'notebook-' + sp.id) || libraryItems().find(i => i.id === 'refill-' + sp.id) || null : null; }
+/** 平面図のリフィルの角の丸み（事業主 2026-11-05「Rを指定したい」）：⓪の欄に数字があればそれ（部品の R の範囲に丸める）。空なら部品の既定。部品が R を持たなければ null */
+function refillCornerR(item) {
+  if (!item || !('R' in (item.vars || {}))) return null;
+  const raw = foldBookState().refillR, [lo, hi] = item.varLimits?.R || [0, 15]; if (raw === '' || !Number.isFinite(Number(raw))) return Number(item.vars.R) || 0;
+  return Math.min(hi, Math.max(lo, Number(raw)));
+}
 function refillGaps(d, p, h) {
   const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
-  const item = libraryItems().find(i => i.id === 'notebook-' + sp.id) || libraryItems().find(i => i.id === 'refill-' + sp.id) || null, pv = item?.vars || {}, num = (v, fb) => Number.isFinite(Number(v)) && v !== '' && v !== null && v !== undefined ? Number(v) : fb;   /* 部品ライブラリのリフィル（ロルバーンM・Mini6 など）。あれば、その部品そのものを置く（事業主 2026-10-24「リフィルの青印字と実際に部品を置いたときの差が大きい。そのままリングバインダと同様にリフィル部品を置くだけでよい」） */
+  const item = refillLibraryItem(sp), pv = item?.vars || {}, num = (v, fb) => Number.isFinite(Number(v)) && v !== '' && v !== null && v !== undefined ? Number(v) : fb;   /* 部品ライブラリのリフィル（ロルバーンM・Mini6 など）。あれば、その部品そのものを置く（事業主 2026-10-24「リフィルの青印字と実際に部品を置いたときの差が大きい。そのままリングバインダと同様にリフィル部品を置くだけでよい」） */
   const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s < p.flats[0] - 1e-6 ? -1 : 1, holeT = ringHoleOffset(d.ring, { holeD: item ? num(pv.D, num(pv.Dw, 5)) : 5 }),   /* 穴の径（長穴は左右の幅 Dw） */   /* リフィルの向き：表紙側の平らな部分にリングがあるときだけ左（−）。背の丸み（弧）の上・裏表紙側は右（＋）。事業主 2026-10-25「平面図作るとリフィルが逆側に描画されてしまう」（リング位置 0 → −0.45 で、頂点をまたいだだけで左右が入れ替わっていた） */
      hole = d.ring.s + dir * holeT, x0 = dir > 0 ? hole - E : hole - (Wp - E), x1 = x0 + Wp, top = h / 2 - (Hp / 2 + Yp);   /* 部品の穴の並びの中心（H/2＋Y）を、平面図の高さの真ん中（リングの並びの中心）に合わせる */
    /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
@@ -5960,7 +5970,8 @@ function refillGaps(d, p, h) {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
     if (rf && [xw, xA, xB].every(Number.isFinite)) { const xs = rf.map(q => q.x), a = Math.min(...xs), b = Math.max(...xs), far = Math.abs(b - xw) > Math.abs(a - xw), tip = far ? b : a, heel = far ? a : b, out = Math.sign(xA - xw) || 1; closed = { cover: (xA - tip) * out, back: (xB - tip) * out, spine: (heel - xw) * out }; }
   }
-  return { W: Wp, Hr: Hp, E, dir, item, axis: d.ring.s, hole, holeT, spec: hwSpec, ringD: d.ring.ringD, holeYs, vert: top, bottom: h - Hp - top, open: { x0, x1, left: x0, right: p.length - x1, side: dir > 0 ? 'right' : 'left', gap: dir > 0 ? p.length - x1 : x0 }, closed };
+  const R = refillCornerR(item);   /* 角の丸み：⓪の欄（図面ごと）。空なら部品の既定 */
+  return { W: Wp, Hr: Hp, E, R, dir, item, axis: d.ring.s, hole, holeT, spec: hwSpec, ringD: d.ring.ringD, holeYs, vert: top, bottom: h - Hp - top, open: { x0, x1, left: x0, right: p.length - x1, side: dir > 0 ? 'right' : 'left', gap: dir > 0 ? p.length - x1 : x0 }, closed };
 }
 /** 平面図のリフィルの穴の線は、リングの軸ではなく、リングの針金が束を通る位置（リングの右端側）に合わせる（事業主 2026-10-24「リフィルの穴の中心にリングの右端が通るのでもっと右になるはず」「さっき位置関係を作図したはず」）。
  *  断面（hardware.js の foldRingParts）の holeT と同じ式：針金は、束の面では √(内半径²−(束の厚み/2)²)・中心の高さでは外半径にあり、その真ん中。外半径が分からない古い図面は 0（今までどおり軸に合わせる）。 */
@@ -6039,7 +6050,7 @@ function projectFoldDesign(withStitch) {
     if (gap) {
       const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
       if (gap.item) {   /* リフィルの部品（部品ライブラリのもの）を、そのまま置く：穴の列（E）をリング軸に合わせ、向きが逆なら左右反転。層はガイド・色は青（切り抜きではない参考） */
-        const payload = instantiateItem(gap.item, {}, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
+        const payload = instantiateItem(gap.item, gap.R == null ? {} : { R: gap.R }, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
         const refillIds = placed.map(sh => add({ ...sh, layer: guide, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, guide);   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
         seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
