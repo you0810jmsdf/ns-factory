@@ -2862,9 +2862,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "outerDiameterMm": 17,
@@ -2873,9 +2873,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "outerDiameterMm": 19,
@@ -2884,9 +2884,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "outerDiameterMm": 23,
@@ -2895,9 +2895,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "outerDiameterMm": 24,
@@ -2906,9 +2906,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "innerDiameterMm": 25,
@@ -2917,9 +2917,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）／線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     },
     {
      "innerDiameterMm": 30,
@@ -2928,9 +2928,9 @@ export const BINDER_SPECS = [
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "confidence": "estimated",
+     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）／線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+     "wireSource": "measured"
     }
    ]
   },
