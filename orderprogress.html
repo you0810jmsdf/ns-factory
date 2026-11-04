@@ -1254,16 +1254,26 @@ function renderCards(records) {
     grid.innerHTML = '<div class="empty">' + T('empty.orders', '該当するオーダーはありません') + '</div>';
     return;
   }
-  // Sort: unfinished first, then newest reception date first.
+  // Sort: unfinished first, then most recently moved first (ties: newest reception date).
   // お客様への確認待ち（ご連絡先待ち／ご連絡待ち）は対応が必要なため未完了グループの先頭に置く
   const ORDER = ['ご連絡先待ち','ご連絡待ち','見積書作成','設計中','受付中','素材準備中','制作中','仕上げ中','完成','発送済み','お渡し済み'];
   records = [...records].sort((a,b) => {
     const groupDiff = Number(isDone(a)) - Number(isDone(b));
     if (groupDiff) return groupDiff;
-    const dateDiff = (b['受付日']||'').localeCompare(a['受付日']||'');
-    if (dateDiff) return dateDiff;
+    // 完成・発送済み（お渡し待ち）は、未完了の中でいちばん下にまとめる。対応が要るカードを上にするため（事業主ルール）
+    const waitBand = s => (s === '完成' || s === '発送済み') ? 1 : 0;
+    const bandDiff = waitBand(a['ステータス']) - waitBand(b['ステータス']);
+    if (bandDiff) return bandDiff;
+    // 最後に動いた日（タイムライン最新日→状態の変更日→更新日→受付日）の新しい順（事業主指示 2026-11-04）。
+    // 受付日が古くても、最近やり取りのあったカードが上に来る。同じ日は状態の優先順（ご連絡待ち等が上・発送済みが下）→受付日の新しい順
+    const sa = statusSinceOf(a), sb = statusSinceOf(b);
+    const sinceDiff = (sb ? sb.getTime() : 0) - (sa ? sa.getTime() : 0);
+    if (sinceDiff) return sinceDiff;
+    // 同じ日に動いたものは、対応が要る状態（ご連絡待ち等）を上、完成・発送済みを下にする（上の ORDER の順）
     const si = ORDER.indexOf(a['ステータス']), sj = ORDER.indexOf(b['ステータス']);
-    return (si < 0 ? 99 : si) - (sj < 0 ? 99 : sj);
+    const stDiff = (si < 0 ? 99 : si) - (sj < 0 ? 99 : sj);
+    if (stDiff) return stDiff;
+    return (b['受付日']||'').localeCompare(a['受付日']||'');
   });
 
   const STAMP_MAP = {
