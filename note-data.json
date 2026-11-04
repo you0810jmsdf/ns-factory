@@ -1,8 +1,152 @@
 {
- "generatedAt": "2026-11-03T23:32:21",
+ "generatedAt": "2026-11-04T22:10:43",
  "profileUrl": "https://note.com/you0810jmsdf",
- "count": 369,
+ "count": 385,
  "items": [
+  {
+   "title": "2026-11-04（水） - 現物と寸法を確かめた日",
+   "url": "https://note.com/you0810jmsdf/n/n0c0dc1535fe3",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/332234149/rectangle_large_type_2_28e39eee10396f41c4cb234ab5bd1bc1.png?fit=bounds&quality=85&width=1280",
+   "key": "n0c0dc1535fe3",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "2026-11-04（水） - 現物と寸法を確かめた日",
+   "url": "https://note.com/you0810jmsdf/n/nd58d20a83498",
+   "date": "2026-11-04",
+   "image": "https://you0810jmsdf.github.io/ns-factory/assets/diary-cards/2026-11-04_ig.jpg",
+   "key": "nd58d20a83498",
+   "imageSource": "sns",
+   "summary": "手帳に使うリングが本当に売っているのか、外側と内側の寸法の違いに気づいて確かめた日。そのほか、相談への返信の下書きと書類の共有、道具へのリンク集の追加と記録の整理も進んだ。"
+  },
+  {
+   "title": "越前国一宮の氣比神宮｜古事記と日本書紀の角鹿、名易えの伝えと大鳥居を読む",
+   "url": "https://note.com/you0810jmsdf/n/n92e096c307a6",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/332205073/rectangle_large_type_2_e637c9112a85b1ebf7a77f6c8ca4d1e8.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n92e096c307a6",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "阿蘇山の火口を拝む肥後一の宮｜阿蘇神社を、日本書紀・六国史・延喜式と、熊本地震からの復旧で読む",
+   "url": "https://note.com/you0810jmsdf/n/n82a8ced273fd",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/332203926/rectangle_large_type_2_4ad7f8fe63be35852075bee645516d60.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n82a8ced273fd",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "海幸山幸の神話と青島神社｜記紀の本文、社伝、棟札、国指定の自然を重ねて読む",
+   "url": "https://note.com/you0810jmsdf/n/nb6fcf866c0b2",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/332189579/rectangle_large_type_2_67584effd496b8d0ac8479cd5e392a59.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "nb6fcf866c0b2",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "山幸彦を祀る社は隼人の地にある｜鹿児島神宮の海幸山幸と、大隅正八幡の記録",
+   "url": "https://note.com/you0810jmsdf/n/n3ff8e07c3e71",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/332188140/rectangle_large_type_2_41b60d0194c5a7ef01b246c99aae92a0.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n3ff8e07c3e71",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "日向国一宮に伝わる神武天皇東征の話｜都農神社を、古い記録から読む",
+   "url": "https://note.com/you0810jmsdf/n/n5fcc2208c857",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331985542/rectangle_large_type_2_9a778922443af0347859fb28d887eccb.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n5fcc2208c857",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "神武天皇の宮の跡と伝わる社｜宮﨑神宮の由緒を、記紀と明治の社殿から読む",
+   "url": "https://note.com/you0810jmsdf/n/n6e4a0e52869f",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331984555/rectangle_large_type_2_2506472c8f9cd3155ad664ff050eb980.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n6e4a0e52869f",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "丹波の「元出雲」を読む｜出雲大神宮の社伝と、記紀・風土記・重要文化財",
+   "url": "https://note.com/you0810jmsdf/n/n3177a9eb07a1",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331983738/rectangle_large_type_2_2d5ec08c7353eee063301f1e21850581.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n3177a9eb07a1",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "記紀は産屋を海辺に建てたと書く｜鵜戸神宮の洞窟の本殿と、鵜の羽の産屋の伝え",
+   "url": "https://note.com/you0810jmsdf/n/n9a7607042f16",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331982849/rectangle_large_type_2_90007150bd74837c53508bcc509e039c.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n9a7607042f16",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "天孫降臨の山を背にする社｜霧島神宮の国宝社殿と、噴火と再建を重ねた歴史",
+   "url": "https://note.com/you0810jmsdf/n/nbab8f30d409a",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331981881/rectangle_large_type_2_46d4ec878eb5b4ae5a60f3034478af64.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "nbab8f30d409a",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "元伊勢と呼ばれる丹後一宮｜籠神社の伝承と、六国史・延喜式・国宝の系図",
+   "url": "https://note.com/you0810jmsdf/n/n81e518bf3f97",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331980971/rectangle_large_type_2_4f0294ec5bebf6dfc3122792a09e6dd1.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n81e518bf3f97",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "那智の名は延喜式の神名帳にも三代実録の叙位記事にも見えない｜熊野那智大社の滝の信仰と、隣の寺との分かれ道",
+   "url": "https://note.com/you0810jmsdf/n/nd3966e106212",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331979970/rectangle_large_type_2_6df9d8ad6eb8edef5eee887c80d13fc6.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "nd3966e106212",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "「新宮」の名は旧い宮に対する呼び名と伝わる｜熊野速玉大社と神倉山、古い記録に見える熊野の神",
+   "url": "https://note.com/you0810jmsdf/n/ne3dee190b647",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331979149/rectangle_large_type_2_a1d5ec34ca6e89aec27592f258b9b009.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "ne3dee190b647",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "出雲にも「熊野坐神社」があった｜熊野大社の風土記と神階、鑽火祭",
+   "url": "https://note.com/you0810jmsdf/n/n5ceafeef56f5",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331978299/rectangle_large_type_2_b8ef1b8276cb8f541491e8cb83b1552a.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n5ceafeef56f5",
+   "imageSource": "note",
+   "summary": ""
+  },
+  {
+   "title": "稲荷山の三つの峰から山麓の本殿へ｜伏見稲荷大社の起源伝承と、千本鳥居の成り立ち",
+   "url": "https://note.com/you0810jmsdf/n/n3a91593eff0f",
+   "date": "2026-11-04",
+   "image": "https://assets.st-note.com/production/uploads/images/331977497/rectangle_large_type_2_b3595183797d19c16206a4832a090f72.jpeg?fit=bounds&quality=85&width=1280",
+   "key": "n3a91593eff0f",
+   "imageSource": "note",
+   "summary": ""
+  },
   {
    "title": "AI利用状況の記録を3つのファイルに分割｜Jarvis日記 2026.11.03（火）",
    "url": "https://note.com/you0810jmsdf/n/n8929a05dc914",
