@@ -4132,7 +4132,7 @@ function fillOwnerLayer(fl, byId) {
 /** 領域の塗りが属する層（事業主 2026-10-25「金具よりリングサポータが全面にくるはずなのに金具が一番全面にきている」）：境目の線がいちばん多く乗っている図形の層。
  *  塗ったときの作図先（fl.layer）は、金具を型紙の層が作図先のまま塗ると、金具の塗りまで型紙の層になって、同じ層の中では小さい金具が上に出た。作図先は、境目の図形が見つからないときだけ使う。 */
 const fillEffectiveLayer = (fl, byId) => fillOwnerLayer(fl, byId) || fl.layer || null;
-const fillLayerRank = (fl, rank, byId) => { const l = fillEffectiveLayer(fl, byId); return l && rank.has(l) ? rank.get(l) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)); };
+const fillLayerRank = (fl, rank, byId) => { if (fl.under && rank.has(fl.under)) return rank.get(fl.under) - 0.5; const l = fillEffectiveLayer(fl, byId);   /* under＝その層のすぐ下に描く塗り（平面図のリフィルの紙は金具の下） */ return l && rank.has(l) ? rank.get(l) : Math.max(0, ...(fl.ids || []).map(id => rank.get(byId.get(id)?.layer) || 0)); };
 const fillLayerNow = () => doc.layers.some(l => l.id === activeLayer) ? { layer: activeLayer } : {};
 /** 図形を別の層へ移したとき、その図形で（半分以上）囲まれている領域の塗りも、同じ層へ移す。 */
 function moveFillsWithShapes(movedIds, destId) { let n = 0; for (const f of doc.fills || []) { const k = (f.ids || []).filter(id => movedIds.has(id)).length; if (k > 0 && k * 2 >= f.ids.length && f.layer !== destId) { f.layer = destId; n++; } } return n; }
@@ -5925,7 +5925,7 @@ function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_
 function refillGaps(d, p, h) {
   const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
   const item = libraryItems().find(i => i.id === 'notebook-' + sp.id) || libraryItems().find(i => i.id === 'refill-' + sp.id) || null, pv = item?.vars || {}, num = (v, fb) => Number.isFinite(Number(v)) && v !== '' && v !== null && v !== undefined ? Number(v) : fb;   /* 部品ライブラリのリフィル（ロルバーンM・Mini6 など）。あれば、その部品そのものを置く（事業主 2026-10-24「リフィルの青印字と実際に部品を置いたときの差が大きい。そのままリングバインダと同様にリフィル部品を置くだけでよい」） */
-  const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s < p.flats[0] - 1e-6 ? -1 : 1, holeT = ringHoleOffset(d.ring),   /* リフィルの向き：表紙側の平らな部分にリングがあるときだけ左（−）。背の丸み（弧）の上・裏表紙側は右（＋）。事業主 2026-10-25「平面図作るとリフィルが逆側に描画されてしまう」（リング位置 0 → −0.45 で、頂点をまたいだだけで左右が入れ替わっていた） */
+  const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s < p.flats[0] - 1e-6 ? -1 : 1, holeT = ringHoleOffset(d.ring, { holeD: item ? num(pv.D, num(pv.Dw, 5)) : 5 }),   /* 穴の径（長穴は左右の幅 Dw） */   /* リフィルの向き：表紙側の平らな部分にリングがあるときだけ左（−）。背の丸み（弧）の上・裏表紙側は右（＋）。事業主 2026-10-25「平面図作るとリフィルが逆側に描画されてしまう」（リング位置 0 → −0.45 で、頂点をまたいだだけで左右が入れ替わっていた） */
      hole = d.ring.s + dir * holeT, x0 = dir > 0 ? hole - E : hole - (Wp - E), x1 = x0 + Wp, top = h / 2 - (Hp / 2 + Yp);   /* 部品の穴の並びの中心（H/2＋Y）を、平面図の高さの真ん中（リングの並びの中心）に合わせる */
    /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
   const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リフィルの穴の並び（規格の穴の数・間隔・中心から）。ロルバーンのように、リフィルの穴の数が金具のリングの数と違う製品でも、並びの中心を合わせるだけ（事業主 2026-10-24「ロルバーンの穴はリングの穴と数は合いません。位置だけ中心に合わせてください」） */
@@ -5939,10 +5939,12 @@ function refillGaps(d, p, h) {
 }
 /** 平面図のリフィルの穴の線は、リングの軸ではなく、リングの針金が束を通る位置（リングの右端側）に合わせる（事業主 2026-10-24「リフィルの穴の中心にリングの右端が通るのでもっと右になるはず」「さっき位置関係を作図したはず」）。
  *  断面（hardware.js の foldRingParts）の holeT と同じ式：針金は、束の面では √(内半径²−(束の厚み/2)²)・中心の高さでは外半径にあり、その真ん中。外半径が分からない古い図面は 0（今までどおり軸に合わせる）。 */
-function ringHoleOffset(ring) {
-  const innerR = Number(ring?.ringD) / 2, outerR = Number(ring?.rOut), stackT = Number(ring?.stackT);
-  if (!(innerR > 0) || !(outerR >= innerR) || !(stackT > 0)) return 0;
-  return (Math.sqrt(Math.max(0, innerR * innerR - (stackT / 2) * (stackT / 2))) + outerR) / 2;
+const RING_WIRE_MM = 1.5;   /* リングのアーム（針金）の太さ（事業主 2026-11-04「アームはおそらく直径1.5mm程度」） */
+function ringHoleOffset(ring, { holeD = 5, wireD = RING_WIRE_MM } = {}) {
+  /* 事業主決定 2026-11-04（左右）：アームの右端（軸＋外径の半分）が、リフィルの穴の左の縁に内接する → 穴の中心＝軸＋外径の半分＋（穴の半径−アームの太さ）。束の厚みには依らない */
+  const innerR = Number(ring?.ringD) / 2, outerR = Number(ring?.rOut);
+  if (!(innerR > 0) || !(outerR >= innerR)) return 0;
+  return outerR + holeD / 2 - wireD;
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
@@ -5956,7 +5958,7 @@ function addRefillPaperFill(refillIds, layer) {
     if (!closed.length) return null; poly = closed[0].poly; holeShapes = holeShapes.filter(s => s !== closed[0].s);
   }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), holes = holeShapes.map(h => outlinePolygon([h], h.id)?.points).filter(Boolean).map(h => h.map(rd));
-  const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd' };
+  const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd', under: 'hardware' };   /* under：金具の層より下に描く（実物は輪が紙の上をまたぐ・事業主決定 2026-11-04 案A） */
   doc.fills = [...(doc.fills || []), fl]; return fl;
 }
 /** 作りなおす図形に、前の図形と同じ番号を使わせる（事業主 2026-10-25「色塗る範囲も追従させてね」「色だけが宙に浮かないように処置するのが普通では」：作りなおすたびに番号を振り直すと、塗りが、無くなった図形を指したまま取り残された）。
