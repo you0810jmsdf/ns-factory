@@ -2681,7 +2681,7 @@ function gridInSelection(cols, rows) {
   const regions = outerRegions(closedRegions(mine, 0.01, { dashed: true }));
   if (!regions.length) {
     /* 枠が閉じていないとき、線の端が離れている所（2mm 以内）があれば、橙の丸印と隙間の長さで知らせ、「隙間を閉じる」で枠そのものを直してもらう（事業主指示 2026-10-21「隙間があるならそもそもそこを修正したい」「丸印で警告するのではなかったか」・不具合記録 1902：端が最大 0.16mm 離れた所が2か所で、枠を選んでいるのに格子が作れなかった）。許容してつなぐことはしない */
-    const mineGaps = gaps.filter(g => ids.has(g.a.id) || ids.has(g.b.id));
+    const mineGaps = mine.some(x => x.foldSec || x.foldFlat) ? [] : gaps.filter(g => ids.has(g.a.id) || ids.has(g.b.id));   /* 断面・平面図の線は、枠の隙間として扱わない（2026-11-04） */
     if (mineGaps.length) {
       /* 隙間は 0.1mm ほどで線の上では見えず、画面の外にあることもある（記録 1902：2か所のうち1か所は画面の上の外）。→ 隙間の所へ画面を移して拡大し、もう一度押すと、次の隙間へ（事業主「隙間が見つけられない」） */
       const same = prevAlert && prevAlert.ids.size === ids.size && [...ids].every(id => prevAlert.ids.has(id)), i = same ? (prevAlert.i + 1) % mineGaps.length : 0, at = mineGaps[i];
@@ -6037,7 +6037,7 @@ function projectFoldDesign(withStitch) {
     { const { stitch: _drop, ...rest } = doc.foldDesign; doc.foldDesign = { ...(noStitch ? rest : doc.foldDesign), ...(st ? { stitch: st } : {}) }; }
   });
   const f2s = v => v.toFixed(2);
-  $('hint').textContent = t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + (layout === 'loop' ? t('foldFixStitchLoop', { edge: f2s(st.edge), pitch: f2s(holeInfo.step), n: holeInfo.n, r: f2s(corner) }) : t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n })) : ''); rebuildSnaps(); draw();
+  $('hint').textContent = (!viewShow.dashed ? t('foldFixDashedOff') + ' ' : '') + t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + (layout === 'loop' ? t('foldFixStitchLoop', { edge: f2s(st.edge), pitch: f2s(holeInfo.step), n: holeInfo.n, r: f2s(corner) }) : t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n })) : ''); rebuildSnaps(); draw();
 }
 /** 表（折りの外側の革）・裏（内側の革）の展開図を、図面に並べる（FIX の平面図の下に、表→裏の順）。それぞれに、折りの点線・ボタン穴・菱目打ちライン（菱目の穴）を描き、平らな部分と曲げ部の菱目間の寸法（数字つき）を書き込む。
  *  菱目は同じ個数・同じ位置（革の長さに沿った割り当て）で、曲げ部の間隔だけが革ごとに違う。前の展開図は置き換える（元に戻すは1回）。 */
@@ -9260,7 +9260,7 @@ canvas.addEventListener('dblclick', e => {
     }
     if (s && !nodeHit(s, w) && distTo(s, w) <= 7 / scale && (!chain || chain.shapeIds.length === 1)) { const next = pathInsertNode(s, projectOnPath(s, w).s); nodeSel = null; transformSelectedTo(next); } /* ペンの線だけなら節点を足す */
     else if (chain && chain.shapeIds.length > 1) { /* ダブルクリック＝つながった図形をすべて選ぶ（端点でつながる線・円弧・曲線。ロックした層の図形は除く） */
-      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id)); gapAlert = mine.length ? { ids: new Set(ids), pts: mine.map(g => ({ x: g.x, y: g.y, d: g.d })), i: -1 } : null;   /* つながっていない所の丸印（事業主「ダブルクリックしたときにつながっていないところが〇で表示されるのではなかったか」：丸印は、ポインタが近いときだけだった）。選んでいる間は、全部の隙間に出し続ける */
+      const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = ids.some(id => { const x = doc.shapes.find(y => y.id === id); return x?.foldSec || x?.foldFlat; }) ? [] : gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id));   /* 断面・平面図は格子の枠ではない：革の端で中心線と縁の端が厚みぶん離れているのを「隙間」と言わない（事業主 2026-11-04「閉じて作るを押すとおかしくなる」） */ gapAlert = mine.length ? { ids: new Set(ids), pts: mine.map(g => ({ x: g.x, y: g.y, d: g.d })), i: -1 } : null;   /* つながっていない所の丸印（事業主「ダブルクリックしたときにつながっていないところが〇で表示されるのではなかったか」：丸印は、ポインタが近いときだけだった）。選んでいる間は、全部の隙間に出し続ける */
   $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : '') + (chainStops ? ' ' + t('chainBranchNote', { n: chainStops.stops.length }) : ''); draw(); }
   }
 });
