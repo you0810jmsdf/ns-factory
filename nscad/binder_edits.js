@@ -37,13 +37,15 @@ export function applyBinderEdits(specs, edits) {
       s.rings = { ...s.rings, options, diameterOptionsMm: options.map(o => round1(ringSizeOf(null, o).inner)) };
     }
     if (e.rivets) s.rivets = clone(e.rivets);
+    if (e.holes) { s.holes = { ...s.holes, ...clone(e.holes) }; s.rings = { ...s.rings, countPerSide: e.holes.count }; }   /* アームの本数・間隔（2026-11-04） */
     s.edited = true;
   }
   return out;
 }
 
 /** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / dup / mount）。
- *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }] } */
+ *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }], arms?: { count, pitchMm } }
+ *  arms（事業主決定A 2026-11-04：金具＝土台（ブランドごと）＋アーム（規格ごと））：本数と間隔。空欄なら触らない。入れると holes（count・pitchMm・centerPitchMm・span1toLastMm）と rings.countPerSide を上書きする */
 export function editFromForm(form) {
   const num = v => (v === '' || v == null) ? null : Number(v), pos = v => Number.isFinite(v) && v > 0, fin = v => Number.isFinite(v);
   const p = form.plate || {}, plate = { lengthMm: num(p.lengthMm), widthMm: num(p.widthMm), thicknessMm: num(p.thicknessMm), cornerRMm: num(p.cornerRMm) ?? 0 };
@@ -66,6 +68,11 @@ export function editFromForm(form) {
     return o;
   }) };
   out.rivets = (form.rivets || []).filter(m => m && !(m.xMm === '' && m.yMm === '' && m.dMm === '')).map(m => { const x = num(m.xMm) ?? 0, y = num(m.yMm) ?? 0, d = num(m.dMm); if (!fin(x) || !fin(y) || !pos(d)) throw new Error('mount'); return { xMm: x, yMm: y, dMm: d }; });
+  const ac = num(form.arms?.count), ap = num(form.arms?.pitchMm);
+  if (ac != null) {
+    if (!(Number.isInteger(ac) && ac >= 1) || (ac > 1 && !pos(ap))) throw new Error('arms');
+    const pitch = ac > 1 ? ap : 0; out.holes = { count: ac, pitchMm: Array.from({ length: ac - 1 }, () => pitch), centerPitchMm: pitch, span1toLastMm: round1(pitch * (ac - 1)) }; out.rings.countPerSide = ac;
+  }
   return out;
 }
 
@@ -73,16 +80,16 @@ export function editFromForm(form) {
 export function editsToCsv(applied, edits) {
   const ids = Object.keys(edits?.specs || {}).filter(id => applied.some(s => s.id === id)); if (!ids.length) return null;
   const enc = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }, row = a => a.map(enc).join(',');
-  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind'];
+  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base,ring_count,ring_pitch_mm,ring_span_mm,ring_center_pitch_mm'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind'];
   const parents = new Set();
   for (const id of ids) {
     const s = applied.find(x => x.id === id), p = s.plate || {};
     if (s.parent && !ids.includes(s.parent)) parents.add(s.parent);
-    specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '']));
+    const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes ? s.holes.count : '', ed?.holes ? s.holes.pitchMm.join(';') : '', ed?.holes ? s.holes.span1toLastMm : '', ed?.holes ? s.holes.centerPitchMm : '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したときだけ出す */
     for (const o of s.rings.options || []) { const size = ringSizeOf(s, o); rings.push(row([s.id, size.inner, size.outer, size.wire, size.wireSource, o.embedDepthMm ?? '', o.confidence || ''])); }
     for (const r of s.rivets || []) parts.push(row([s.id, 'mount', r.xMm, r.yMm, r.dMm, 'rivet']));
   }
-  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
+  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
   return { 'binder_specs.csv': specs.join('\n') + '\n', 'binder_rings.csv': rings.join('\n') + '\n', 'binder_parts.csv': parts.join('\n') + '\n' };
 }
 
