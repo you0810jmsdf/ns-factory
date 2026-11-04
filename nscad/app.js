@@ -5949,8 +5949,12 @@ function ringHoleOffset(ring) {
 /** 平面図のリフィルを白い紙として塗る（事業主 2026-10-25「リフィルの穴は透明にしたい。下の革を表示させたい」）：リフィルの外形（線と弧）を一周たどった形から、穴（閉じた図形）をくり抜いた領域の塗り（白）にする。穴の中は塗られないので、下の革が見える。
  *  平面図を作りなおすたびに置き換わる（foldFlat 'fd'）。外形が一周につながらないときは、何も塗らない。 */
 function addRefillPaperFill(refillIds, layer) {
-  const added = refillIds.map(id => doc.shapes.find(s => s.id === id)).filter(Boolean), outline = added.filter(s => !(s.closed || s.type === 'circle')), holeShapes = added.filter(s => s.closed || s.type === 'circle');
-  const poly = outline.length ? outlinePolygon(outline, outline[0].id) : null; if (!poly) return null;
+  const added = refillIds.map(id => doc.shapes.find(s => s.id === id)).filter(Boolean), outline = added.filter(s => !(s.closed || s.type === 'circle')); let holeShapes = added.filter(s => s.closed || s.type === 'circle');
+  let poly = outline.length ? outlinePolygon(outline, outline[0].id) : null;
+  if (!poly) {   /* 外形が「閉じた折れ線」1つの部品（Mini6・M5・A5スリム…）：いちばん大きい閉じた図形を外形・残りを穴にする（事業主 2026-11-04「リフィルが描かれていない」＝白い紙が塗られなかった） */
+    const closed = holeShapes.filter(s => s.closed && s.type !== 'circle').map(s => ({ s, poly: outlinePolygon([s], s.id) })).filter(o => o.poly).sort((x, y) => leatherItemArea(y.poly.points) - leatherItemArea(x.poly.points));
+    if (!closed.length) return null; poly = closed[0].poly; holeShapes = holeShapes.filter(s => s !== closed[0].s);
+  }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), holes = holeShapes.map(h => outlinePolygon([h], h.id)?.points).filter(Boolean).map(h => h.map(rd));
   const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd' };
   doc.fills = [...(doc.fills || []), fl]; return fl;
