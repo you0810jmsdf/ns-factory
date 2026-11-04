@@ -1299,7 +1299,7 @@ function renderCards(records) {
     const stampHtml = stampSrc
       ? `<img class="status-stamp" src="${stampSrc}" alt="${esc(r['ステータス']||'')}">`
       : '';
-    const adminHtml = gasReady
+    const adminHtml = gasReady && isAdmin()
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
@@ -1421,7 +1421,7 @@ function renderRrCards(records) {
     const endLabel = isOp ? T('card.dueShort','予定完了') : T('card.doneDate','完了日');
     const endVal   = isOp ? fmtDate(r['予定完了日']||'—') : esc(r['完了日']||'—');
     const desc     = r['説明']||'';
-    const adminHtml = isOp && gasReady
+    const adminHtml = isOp && gasReady && isAdmin()
       ? `<div class="admin-bar visible">
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
