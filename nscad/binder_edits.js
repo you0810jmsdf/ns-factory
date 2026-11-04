@@ -32,6 +32,8 @@ export function applyBinderEdits(specs, edits) {
     if (e.plate) {
       s.plate = { ...s.plate, ...e.plate };
       if (s.base) { const m = { lengthMm: 'lengthMm', widthMm: 'sectionWidthMm', thicknessMm: 'thicknessMm', cornerRMm: 'cornerRMm' }; for (const [k, b] of Object.entries(m)) if (e.plate[k] != null) s.base[b] = e.plate[k]; }
+      /* 実測の断面（sectionPoints）がある規格で幅を直したときは、断面の点を中心から横に同じ割合で伸縮して新しい幅に合わせる（形は保つ）。そうしないと平面図の台座だけ変わり、断面の台座は実測の幅のままになる（事業主 2026-11-04「台座の幅が反映されません」） */
+      if (e.plate.widthMm != null && Array.isArray(s.base?.sectionPoints) && s.base.sectionPoints.length >= 2) { const xs = s.base.sectionPoints.map(q => q.x), lo = Math.min(...xs), hi = Math.max(...xs), w0 = hi - lo; if (w0 > 0 && Math.abs(w0 - e.plate.widthMm) > 1e-9) { const cx = (lo + hi) / 2, k = e.plate.widthMm / w0; s.base.sectionPoints = s.base.sectionPoints.map(q => ({ ...q, x: Math.round((cx + (q.x - cx) * k) * 1000) / 1000 })); } }
     }
     if (e.rings?.options) {
       const options = e.rings.options.map(clone);

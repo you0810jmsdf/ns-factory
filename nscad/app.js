@@ -5485,11 +5485,13 @@ function saveBinderEdit() {
   const spec = binderSpec(bdeSpecId); let id = bdeSpecId;
   if (edit.parent) id = newProductId(BINDER_SPECS, edit.parent); else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
   binderEdits.specs[id] = edit; if (!persistBinderEdits()) return;
-  rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved');
+  rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); bdeRefreshDrawing();
 }
+/** 寸法を直したあと：いまの図面に折りの断面があれば、断面（リング・台座）と平面図・展開図を新しい寸法で作り直す（事業主 2026-11-04「台座の幅が反映されません」：FIX を押し直さないと変わらなかった）。 */
+function bdeRefreshDrawing() { if (!doc.foldDesign?.ring) return; const note = $('hint').textContent; liveFoldDesign(); foldFollowSoon(); $('hint').textContent = note + ' ' + t('bdeRedrawn'); }
 function resetBinderEdit() {
   delete binderEdits.specs[bdeSpecId]; if (!persistBinderEdits()) return;
-  rebuildBinderSpecs(); refreshBinderSelects(binderSpec(bdeSpecId) ? bdeSpecId : BINDER_SPECS[0].id); $('bdEditDialog').close(); $('hint').textContent = t('bdeResetDone');
+  rebuildBinderSpecs(); refreshBinderSelects(binderSpec(bdeSpecId) ? bdeSpecId : BINDER_SPECS[0].id); $('bdEditDialog').close(); $('hint').textContent = t('bdeResetDone'); bdeRefreshDrawing();
 }
 function exportBinderEditsCsv() {
   const files = editsToCsv(BINDER_SPECS, binderEdits); if (!files) { $('hint').textContent = t('bdeCsvNone'); return; }
@@ -6047,7 +6049,7 @@ function projectFoldDesign(withStitch) {
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
         const hwMetal = flatHwMetalNow(), mt = hwMetal ? { metal: hwMetal } : {};   /* 金具の色（選んでいれば、金具の図形に金属の色を付ける） */
-        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach((s, i) => { const on = hwMetal && i > 0 ? { metalSolid: true } : hwMetal ? { metalBelow: true } : {};   /* 台座（1つ目）は紙の下・アームは紙の上（実物は紙が台座に乗り、輪が紙をまたぐ・2026-11-04） */ if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
+        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach(s => { const on = !hwMetal ? {} : s.role === 'ring' ? { metalSolid: true } : { metalBelow: true };   /* 台座とレバー（開閉部品）は紙の下・リングのアームだけ紙の上（実物は紙が台座に乗り、輪が紙をまたぐ・事業主 2026-11-04「レバーだけが前面に飛び出ている」） */ const role = s.role ? { role: s.role } : {}; if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on, ...role }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on, ...role }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
       } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }

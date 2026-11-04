@@ -543,10 +543,11 @@ export function binderViewDrawing(spec, ringD, which) {
   const part = (q, i, outlines) => outlines?.[i] ? { type: 'polyline', closed: true, points: outlines[i].map(p => ({ x: p.x, y: p.y })) } : q.shape === 'circle' ? { type: 'circle', cx: (q.box.minX + q.box.maxX) / 2, cy: (q.box.minY + q.box.maxY) / 2, r: q.r ?? (q.box.maxX - q.box.minX) / 2 } : box(q.box);
   if (which === 'plan') {
     const base = binderBase(spec), r = Math.min(base.cornerRMm || 0, v.W / 2, v.L / 2), hl = v.L / 2, hw = v.W / 2, arc = (cx, cy, a0) => Array.from({ length: 7 }, (_, i) => ({ x: cx + r * Math.cos(a0 + i * Math.PI / 12), y: cy + r * Math.sin(a0 + i * Math.PI / 12) }));
-    out.push(r > 0 ? { type: 'polyline', closed: true, points: [...arc(hl - r, -hw + r, -Math.PI / 2), ...arc(hl - r, hw - r, 0), ...arc(-hl + r, hw - r, Math.PI / 2), ...arc(-hl + r, -hw + r, Math.PI)] } : box(v.plan.plate));
-    for (const rb of v.plan.rings) out.push(box(rb));
-    for (const rv of spec.rivets) out.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2 });
-    v.plan.parts.forEach((q, i) => out.push(part(q, i, v.plan.partOutlines)));
+    /* role：台座 plate・リングのアーム ring・取付穴 mount・開閉部品（レバー等）part。平面図では台座と部品は紙の下、アームだけ紙の上に描く（2026-11-04） */
+    out.push({ ...(r > 0 ? { type: 'polyline', closed: true, points: [...arc(hl - r, -hw + r, -Math.PI / 2), ...arc(hl - r, hw - r, 0), ...arc(-hl + r, hw - r, Math.PI / 2), ...arc(-hl + r, -hw + r, Math.PI)] } : box(v.plan.plate)), role: 'plate' });
+    for (const rb of v.plan.rings) out.push({ ...box(rb), role: 'ring' });
+    for (const rv of spec.rivets) out.push({ type: 'circle', cx: rv.xMm, cy: rv.yMm, r: rv.dMm / 2, role: 'mount' });
+    v.plan.parts.forEach((q, i) => out.push({ ...part(q, i, v.plan.partOutlines), role: 'part' }));
   } else if (which === 'front') {
     out.push(box(v.front.plate)); for (const rb of v.front.rings) out.push(box(rb)); v.front.parts.forEach((q, i) => out.push(part(q, i)));
   } else {
