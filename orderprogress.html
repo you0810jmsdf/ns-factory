@@ -649,6 +649,9 @@ window.NSF_I18N_DICT = {
   'card.dueShort': 'Est. completion',
   'card.doneDate': 'Completed',
   'card.timeline': '📋 Progress timeline',
+  'tl.private': 'Detailed progress is available from the personal link we sent you.',
+  'view.ok': 'This is your personal page. Showing the detailed progress of your order.',
+  'view.ng': 'The link is incorrect or no longer valid. Please contact us.',
   'card.colorOrder': '🎨 Color order details',
   'card.leather': 'Leather:',
   'card.hearing': 'Consultation notes:',
@@ -879,6 +882,7 @@ async function loadRecords() {
       showMsg('GASが空のため転載データを表示しています。必要に応じてGASへ取り込んでください。');
     }
     renderAll(allRecords);
+    applyViewLink();   // 本人用リンク（?no=…&t=…）で開いたときだけ、その1件の詳細を取って表示する
   } catch(e) {
     const savedUrl = localStorage.getItem(GAS_KEY) || '';
     if (savedUrl && gasUrl === savedUrl && savedUrl !== DEFAULT_GAS_URL) {
@@ -1174,6 +1178,53 @@ function applyFilter() {
   setTimeout(focusOrderByNumber, 100);
 }
 
+// 本人用リンク（?no=受付番号&t=閲覧キー）で開いたとき、合う1件だけ詳細（タイムライン・写真）を取って差し替え、開いて見せる（2026-11-04）。
+// 公開の一覧には詳細が入っていない。キーが合わなければ案内だけ出し、他のカードは今までどおり状態と日付だけ見える
+async function applyViewLink() {
+  const p = new URLSearchParams(location.search);
+  const no = (p.get('no') || '').trim();
+  const t  = (p.get('t')  || '').trim();
+  if (!no || !t || !gasUrl) return;
+  const url = gasUrl + (gasUrl.includes('?') ? '&' : '?') + 'action=view&no=' + encodeURIComponent(no) + '&t=' + encodeURIComponent(t);
+  let data = null;
+  for (let i = 0; i < 3 && !data; i++) {   // GAS は間欠的にHTMLを返すことがある。3回まで取り直す
+    if (i) await new Promise(r => setTimeout(r, 1500));
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      const text = await res.text();
+      if (res.ok && !text.trim().startsWith('<')) data = JSON.parse(text);
+    } catch (e) {}
+  }
+  if (!data || !data.ok || !data.record) { showViewLinkNote(false); return; }
+  const rec = Object.assign({}, data.record, { _viewKey: true });
+  const i = allRecords.findIndex(r => r['受付番号'] === rec['受付番号']);
+  if (i >= 0) allRecords[i] = rec; else allRecords.push(rec);
+  renderAll(allRecords);
+  showViewLinkNote(true);
+  const hdr = document.getElementById('hdr-' + rec['ID']);
+  const card = document.getElementById('card-' + rec['ID']);
+  if (hdr && card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const body = document.getElementById('body-' + rec['ID']);
+    if (body && !body.classList.contains('open')) hdr.click();
+  }
+}
+function showViewLinkNote(ok) {
+  let el = document.getElementById('view-link-note');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'view-link-note';
+    el.style.cssText = 'max-width:720px;margin:12px auto;padding:10px 14px;border-radius:10px;font-size:.85rem;';
+    const grid = document.getElementById('order-grid');
+    grid.parentNode.insertBefore(el, grid);
+  }
+  el.style.background = ok ? '#eef7ee' : '#fdf0ee';
+  el.style.color = ok ? '#2f5d2f' : '#8a3b2f';
+  el.textContent = ok
+    ? T('view.ok', '本人用ページです。ご自身のオーダーの詳しい進捗を表示しています。')
+    : T('view.ng', 'リンクが正しくないか、無効になっています。お手数ですが、お問い合わせください。');
+}
+
 // 書類台帳editor からの逆方向ジャンプ（?focus=OP-xxx）
 function focusOrderByNumber() {
   const params = new URLSearchParams(location.search);
@@ -1243,7 +1294,12 @@ function renderCards(records) {
            <button class="btn btn-edit" onclick="openModal('${id}')">✏️ 編集</button>
            <button class="btn btn-delete" onclick="deleteRecord('${id}')">🗑 削除</button>
          </div>` : '';
-    const tlHtml = tl.length
+    // 詳しい進捗（タイムライン本文・写真）は、本人用リンクで開いたときと管理者だけ（2026-11-04）。
+    // 公開の一覧は GAS が本文を返さない。空の行を並べず、案内を出す
+    const detailHidden = !isAdmin() && !r._viewKey;
+    const tlHtml = detailHidden
+      ? '<div style="font-size:.8rem;color:var(--color-text-mute)">' + T('tl.private', 'ご自身の詳しい進捗は、お送りした「本人用リンク」から確認できます') + '</div>'
+      : tl.length
       ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
           <div class="tl-date">${esc(t.date||'')}</div>
           <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
@@ -1254,7 +1310,7 @@ function renderCards(records) {
     const clientDisplay = isAdmin() ? client : (client ? T('card.client', 'ご依頼者様') : '');
     // 写真の有無は事前判定できない（GASから非同期取得のため）。
     // 枠だけ出し、0件なら lazyLoadImages 側で空にする。
-    const hasLocal = !folderId && !!client;
+    const hasLocal = !detailHidden && !folderId && !!client;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}">${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
@@ -1331,7 +1387,11 @@ function renderRrCards(records) {
     const headerSub = isOp
       ? `${orderNoHtml(r['受付番号'])}<div style="font-size:.7rem;color:var(--color-text-mute)">${T('rr.label','リメイク・修理')}</div>`
       : `<div class="order-no">${esc(r['受付日']||'')}</div>${catHtml}`;
-    const tlHtml = tl.length
+    // オーダー進捗の案件（isOp）は、上と同じく本人用リンクか管理者でなければ詳細を出さない（2026-11-04）
+    const detailHidden = isOp && !isAdmin() && !r._viewKey;
+    const tlHtml = detailHidden
+      ? '<div style="font-size:.8rem;color:var(--color-text-mute)">' + T('tl.private','ご自身の詳しい進捗は、お送りした「本人用リンク」から確認できます') + '</div>'
+      : tl.length
       ? tl.map(t => `<div class="tl-item"><div class="tl-dot"></div>
           <div class="tl-date">${esc(t.date||'')}</div>
           <div class="tl-text">${esc(t.text||'').replace(/\n/g,'<br>')}</div>
@@ -1342,7 +1402,7 @@ function renderRrCards(records) {
     const client   = r['依頼者']||'';
     const clientDisplay = isAdmin() ? client : (client ? T('card.client','ご依頼者様') : '');
     // 写真の有無は事前判定できない（GASから非同期取得のため）。上と同じ扱い。
-    const hasLocal = isOp && !folderId && !!client;
+    const hasLocal = isOp && !detailHidden && !folderId && !!client;
     const carHtml  = folderId
       ? `<div class="carousel-wrap"><div class="car-loading" id="car-${id}" data-folderid="${folderId}"${gastype}>${T('car.loading','📷 画像を読み込み中…')}</div></div>`
       : hasLocal
