@@ -976,7 +976,7 @@ export function foldDimensions(d, key, { refill = null } = {}) {
 export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
   if (d.mode === 'bifold') {
-    const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -14 * px;
+    const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -26 * px;   /* ④全高の線は、①表紙の端の取っ手（半径10px）と寸法の当たり（7px）が重ならない距離（事業主決定 2026-11-04） */
     const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
     const wBItems = Math.abs(p.widthB - d.width) > 0.005 ? [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }] : [];   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
     const swap = list => d.flipH ? list.map(g => ({ ...g, items: g.items.map(it => it.align ? { ...it, align: it.align === 'left' ? 'right' : 'left' } : it) })) : list;   /* 左右反転すると、文字を置く側も入れ替わる（外側へのばす） */
@@ -984,6 +984,9 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
       { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
       ...wBItems,
       { key: 'h', value: n(H), items: [line([x, -p.T / 2], [x, 2 * p.rc[0] + p.T / 2], 'both'), { type: 'text', ...pt(x - 6 * px, p.rc[0]), text: `${nm('h')} ${n(H)} mm`, align: 'right' }] },
+      /* ③背の半径・リングの位置（事業主決定 2026-11-04：全部の寸法を「文字を押せば打てる」に揃える）。リングの位置は、リングがあるときだけ */
+      { key: 'rr', value: n(d.rinR), items: bifoldDimensions(d, p, 'rr', '').map(it => it.type === 'text' ? { ...it, text: `${nm('rr')} ${n(d.rinR)} mm`, align: 'left' } : it) },
+      ...(d.ring ? [{ key: 'ring', value: n(d.ring.pos ?? 0), items: bifoldDimensions(d, p, 'ring', '').map(it => it.type === 'text' ? { ...it, text: `${nm('ring')} ${n(d.ring.pos ?? 0)} mm` } : it) }] : []),
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(d.width + 10 * px, p.rc[0]), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm`, align: 'left' }) },
     ]);
   }
