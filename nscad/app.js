@@ -5443,19 +5443,36 @@ function openBinderEdit() {
   bdeRingCount = opts.length; bdeMountCount = rivets.length;
   $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '');
   $('bdeAsNewLabel').textContent = t('bdeNewProduct', { parent: nameOf(spec.parent ? binderSpec(spec.parent) || spec : spec) });
-  $('bdePlateConf').innerHTML = bdeConfOptions(); $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); $('bdeMountRows').innerHTML = rivets.map((r, i) => bdeMountRow(i)).join('');
+  $('bdePlateConf').innerHTML = bdeConfOptions(); $('bdeMountRows').innerHTML = rivets.map((r, i) => bdeMountRow(i)).join('');   /* リングの行は bdeFillArms が作る */
   $('bdeAsNew').checked = false; bdeSet('bdeNameJa', spec.names.ja); bdeSet('bdeNameEn', spec.names.en);
   bdeSet('bdePlateL', base.lengthMm); bdeSet('bdePlateW', base.sectionWidthMm); bdeSet('bdePlateT', base.thicknessMm); bdeSet('bdePlateR', base.cornerRMm ?? 0); bdeSet('bdePlateConf', base.confidence ?? spec.plate?.confidence ?? '');
-  bdeSet('bdeArmCount', spec.holes?.count ?? spec.rings?.countPerSide); bdeSet('bdeArmPitch', spec.holes?.centerPitchMm ?? spec.holes?.pitchMm?.[0]);   /* アーム（規格ごと）：本数・間隔（2026-11-04） */
-  opts.forEach((o, i) => bdeWireRing(i, o)); rivets.forEach((r, i) => bdeWireMount(i, r));
+  bdeFillArms(spec);
+  { const sel = $('bdeArmsFrom'); sel.textContent = ''; const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('bdeArmsFromNone'); sel.appendChild(o0); for (const x of BINDER_SPECS.filter(x => !x.parent)) { const o = document.createElement('option'); o.value = x.id; o.textContent = nameOf(x); sel.appendChild(o); } sel.value = ''; sel.onchange = () => bdeApplyArmsFrom(); bdeSetArmsLocked(false); }   /* アームの規格を借りる（2026-11-04 改善案1） */
+  rivets.forEach((r, i) => bdeWireMount(i, r));
   $('bdEditDialog').showModal();
+}
+/** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
+function bdeFillArms(spec) {
+  const opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), uniform = (spec.holes?.pitchMm || []).every(q => Math.abs(q - spec.holes.pitchMm[0]) < 1e-9);
+  bdeSet('bdeArmCount', spec.holes?.count ?? spec.rings?.countPerSide); bdeSet('bdeArmPitch', spec.holes?.centerPitchMm ?? (uniform ? spec.holes?.pitchMm?.[0] : ''));
+  bdeRingCount = opts.length; $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); opts.forEach((o, i) => bdeWireRing(i, o));
+}
+/** 借りている間は、アームの欄を触れなくする。 */
+function bdeSetArmsLocked(locked) {
+  for (const id of ['bdeArmCount', 'bdeArmPitch', 'bdeAddRing']) $(id).disabled = locked;
+  for (let i = 0; i < bdeRingCount; i++) for (const k of ['Inner', 'Outer', 'Wire', 'Embed', 'Conf', 'Del']) { const el = $('bdeRing' + i + k); if (el) el.disabled = locked; }
+}
+/** 「アームの規格を借りる」を変えたとき：借りる規格の値で埋めて触れなくする。「この規格のまま」ならこの規格の値に戻して触れるようにする。 */
+function bdeApplyArmsFrom() {
+  const id = $('bdeArmsFrom').value, src = id ? binderSpec(id) : null, cur = binderSpec(bdeSpecId); if (!cur) return;
+  bdeFillArms(src || cur); bdeSetArmsLocked(!!src); $('hint').textContent = src ? t('bdeArmsFromTip') : '';
 }
 function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
   for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value }); }
   for (let i = 0; i < bdeMountCount; i++) { if ($('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
   const asNew = !!$('bdeAsNew').checked;
-  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value } };
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, armsFrom: $('bdeArmsFrom')?.value || undefined };
 }
 function refreshBinderSelects(id) {
   for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel); }
