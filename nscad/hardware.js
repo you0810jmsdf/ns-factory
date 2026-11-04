@@ -268,6 +268,8 @@ export function closedBinderTop(p = {}) {
  *  戻り値 {shapes:[{type:'polyline',role,points:[{h,w}]}|{type:'circle',role,h,w,r}|{type:'arc',role,h,w,r,a0,a1}（a0→a1 は h 軸から w 軸へ向かう角度・ラジアン）]（台座・リング。リフィルは含まない・リングは台座の外に出る弧だけ）, ringH（革の面からリング中心までの高さ＝台座込みの最長部 内径+5mm − 外半径）, refill:{t0,t1,thick,holeT:[穴の両端]}（t はリング中心から向き e への距離）, ringFits}。不正な数値は null。 */
 /** 三つ折りの断面の、台座込みの最長部（革の内側の面からリングの先端まで）は、リングの内径＋5mm（内径20mmなら25mm・事業主指示 2026-10-15）。リングの下側は台座に食い込む。 */
 export const FOLD_RING_EXTRA_MM = 5;
+/** リングのアーム（針金）の太さ（mm）。金具データに無いので共通の既定値（事業主 2026-11-04「おそらく直径1.5mm程度」）。平面図の穴の位置（app.js ringHoleOffset）と断面の穴の点線で同じ値を使う */
+export const RING_WIRE_MM = 1.5;
 export function foldRingParts(p = {}) {
   const sim = spineSim(p); if (!sim) return null;
   const { plateT = 2, supporterT = 0 } = p, bossT = p.bossT ?? supporterT, stackT = p.stackT ?? 6, refillW = p.refillW ?? 110, holeEdge = p.holeEdge ?? 6, holeD = p.holeD ?? 5, plateW = Math.min(p.plateW ?? 24, sim.innerW);
@@ -279,7 +281,15 @@ export function foldRingParts(p = {}) {
   else { if (bossT > 0) shapes.push(rect(0, -plateW / 2, bossT, plateW / 2, 'boss')); shapes.push(rect(bossT, -plateW / 2, bossT + plateT, plateW / 2, 'plate')); }
   const outerR = sim.outerRingD / 2, innerR = p.ringD / 2, ringH = Math.max(outerR, p.ringD + FOLD_RING_EXTRA_MM - outerR);
   /* リフィルの穴：リングの針金が束を貫く範囲を覆う位置・幅にする（事業主指摘 2026-10-15：穴でない所を針金が貫通していた）。束の厚み stackT の上下の面では、針金（外径の円〜内径の円）は中心の高さより内側へ寄る：中心の高さでは外半径 outerR・面では √(内半径²−(stackT/2)²)。その範囲の中心に、穴（直径 holeD 以上・範囲より狭ければ範囲いっぱい）を置く */
-  const wireNear = Math.sqrt(Math.max(0, innerR * innerR - (stackT / 2) * (stackT / 2))), holeT = (wireNear + outerR) / 2, holeW = Math.max(holeD, outerR - wireNear), left = holeT - holeEdge, tip = left + refillW;
+  /* 2026-11-04 事業主決定：穴の位置は平面図と同じ式に揃える（アームの右端＝外径の半分 が、穴の左の縁に内接 → 穴の中心＝外径の半分＋穴の半径−アームの太さ・幅は穴の径）。10-15 の「針金が束を貫く範囲を覆う」式（内径と束の厚みから）は、平面図と 5.75mm ずれていたのでやめた */
+  /* アームの太さ＝リングの外径と内径の差（規格の実測）。無ければ既定値。穴の中心＝針金の中心 w(z)＋（穴の半径−アームの半径）＝穴の左の縁に針金が内接 */
+  const wireD = p.wireD ?? (outerR - innerR > 0 ? outerR - innerR : RING_WIRE_MM), Rw = outerR - wireD / 2, hh = stackT / 2;
+  /* 束は長方形ではなく弓なり（事業主 2026-11-04「15mm 厚みのリフィルを使う場合、中心部が右にずれ上下が左にずれて弓なりになるはず」）：ページごとの高さ z（リング中心から）で、針金の中心は w(z)＝√(Rw²−z²) にあり、
+     そのページの穴の中心＝w(z)＋（穴の半径−アームの半径）、ページの端＝穴の中心−holeEdge、反対の端＝端＋refillW。穴の点線2本も同じ弓なり。束の厚みの半分がリングの針金の円より大きいページは、針金の位置を 0（リングの軸）とする */
+  const wOf = z => Math.sqrt(Math.max(0, Rw * Rw - z * z)), holeAt = z => wOf(z) + holeD / 2 - wireD / 2, N = 24, zs = Array.from({ length: N + 1 }, (_, i) => -hh + stackT * i / N);
+  const holeT = holeAt(0), holeW = holeD, left = holeT - holeEdge, tip = left + refillW;
+  const outline = [...zs.map(z => ({ t: holeAt(z) - holeEdge, z })), ...zs.slice().reverse().map(z => ({ t: holeAt(z) - holeEdge + refillW, z }))];
+  const holeCurves = holeD > 0 ? [zs.map(z => ({ t: holeAt(z) - holeD / 2, z })), zs.map(z => ({ t: holeAt(z) + holeD / 2, z }))] : [];
   /* リングは台座に差し込まれたC形：円のうち台座（台座・ビス穴金具部）の輪郭の中は描かず、外に出る弧だけを描く（事業主指摘 2026-10-15：円が台座を突き抜けて見えた）。台座の外にしか出ない円はそのまま円 */
   const baseShapes = shapes.filter(q => q.role === 'plate' || q.role === 'boss'), inBase = (hh, ww) => baseShapes.some(q => { let c = false; for (let a = 0, b = q.points.length - 1; a < q.points.length; b = a++) { const u = q.points[a], v = q.points[b]; if ((u.w > ww) !== (v.w > ww) && hh < (v.h - u.h) * (ww - u.w) / (v.w - u.w) + u.h) c = !c; } return c; });   /* 台座の輪郭の中（レンズ形の台座は縁が低いので、水平な線ではなく輪郭で切る・リングは台座の輪郭に接して終わる） */
   const ringArcs = (role, r) => {
@@ -291,7 +301,7 @@ export function foldRingParts(p = {}) {
     return [out.reduce((m, x) => (x.a1 - x.a0 > m.a1 - m.a0 ? x : m))];   /* 台座の中を抜けて細切れになる弧は捨て、台座の上に出ている1本のC形だけ残す */
   };
   shapes.push(...ringArcs('ring-outer', sim.outerRingD / 2), ...ringArcs('ring-inner', p.ringD / 2));
-  return { shapes, ringH, refill: { t0: left, t1: tip, thick: stackT, holeT: holeD > 0 ? [holeT - holeW / 2, holeT + holeW / 2] : [] }, ringFits: stackT <= p.ringD };
+  return { shapes, ringH, refill: { t0: left, t1: tip, thick: stackT, holeT: holeD > 0 ? [holeT - holeW / 2, holeT + holeW / 2] : [], outline, holeCurves, wireD }, ringFits: stackT <= p.ringD };
 }
 /** 閉じた手帳の3面図（第三角法）：天を正面の上、右側面を正面の右に置く。mm・Y 下向き・正面の左上が原点。隠れる部分は hidden（破線）。
  *  p は closedBinderTop の引数に加え {refillH（リフィル高さ）, coverH（表紙の高さ。省略でリフィル高さ+6）, ringPos（リング中心の高さ方向の位置の配列。省略時は中央に等間隔 3 個）, plateL（台座の長さ）, gap（図の間隔）}。

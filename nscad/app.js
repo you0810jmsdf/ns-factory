@@ -13,7 +13,7 @@ import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attach
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { threeViewSolidAuto } from './threeview.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } from './threeview.js';
-import { SUPPORTER_T_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
+import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
@@ -4329,7 +4329,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
   const items = [], loops = new Map(), nonGeom = ['text', 'dimension', 'image', 'fold'];
   for (const s of d.shapes) {
     if (!s.metal || s.occlude || s.holeLink || nonGeom.includes(s.type) || !vis(s)) continue;
-    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ layer: s.layer, metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear', solid: !!s.metalSolid }); }
+    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ layer: s.layer, metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear', solid: !!s.metalSolid, below: !!s.metalBelow }); }
     else if (s.metalGroup) { if (!loops.has(s.metalGroup)) loops.set(s.metalGroup, []); loops.get(s.metalGroup).push(move(s)); }
   }
   for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id) || metalBrokenLoop(list); if (poly) items.push({ layer: list[0].layer, metal: list[0].metal, points: poly.points, style: list[0].metalStyle === 'radial' ? 'radial' : 'linear' }); }
@@ -4341,7 +4341,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
     const parents = items.filter(o => o !== it && o.area > it.area && o.metal === it.metal && it.points.every(p => inside(p, o.points))).sort((x, y) => x.area - y.area);
     it.parent = parents[0] || null; it.hole = !!it.parent && !it.parent.hole && !it.solid;   /* solid＝台座の上に重ねた部品（金具のアームなど）：中にあっても穴にしない */
   }
-  return items.filter(it => !it.hole).map(it => ({ layer: it.layer, metal: it.metal, style: it.style, body: it.points, holes: items.filter(h => h.hole && h.parent === it).map(h => h.points) }));
+  return items.filter(it => !it.hole).map(it => ({ layer: it.layer, metal: it.metal, style: it.style, below: it.below, body: it.points, holes: items.filter(h => h.hole && h.parent === it).map(h => h.points) }));
 }
 /** 2色を割合 t（0〜1）で混ぜた色（#RRGGBB）。 */
 function mixHex(a, b, t) { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); }
@@ -4378,7 +4378,7 @@ function metalDrawItems(vis = visible) {
   };
   const rank = layerRankMap(doc), byId = new Map(doc.shapes.map(s => [s.id, s])), items = [];
   for (const fl of visibleFills(doc, vis, 'metal')) { const m = METAL_COLORS.find(x => x.id === fl.metal); if (m) items.push({ li: fillLayerRank(fl, rank, byId), area: leatherItemArea(fl.points), direct: true, alpha: 1, draw: () => paint(m, fl.points, fl.holes || [], fl.style) }); }   /* 線で囲まれた場所の金属の塗り */
-  for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) items.push({ li: rank.get(r.layer) || 0, area: leatherItemArea(r.body), direct: true, alpha: 1, draw: () => paint(m, r.body, r.holes, r.style) }); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
+  for (const r of metalFillPlan(doc, vis, previewMoved)) { const m = METAL_COLORS.find(x => x.id === r.metal); if (m) items.push({ li: (rank.get(r.layer) || 0) - (r.below ? 0.75 : 0),   /* below＝その層の紙（under −0.5）よりさらに下（平面図の台座） */ area: leatherItemArea(r.body), direct: true, alpha: 1, draw: () => paint(m, r.body, r.holes, r.style) }); }   /* 図形そのものの形で塗る（動かしている最中も、線と同じ位置） */
   return items;
 }
 function applyMetal(id, style = currentMetalStyle()) {   /* style：光沢の形（帯・放射）。省略は、選択欄の値 */
@@ -5813,8 +5813,11 @@ function foldRingShapes(path, T, origin, ring) {
   /* リフィルは、革の面の向きに関係なく、水平か垂直に置く（事業主指示 2026-10-15）。水平＝リングの中心から、面が左を向くなら左へ・右を向くなら右へ（面が水平のときは左へ）・厚みは縦。垂直＝面が上を向くなら上へ・下を向くなら下へ（面が垂直のときは上へ）・厚みは横 */
   const c = at(ring.parts.ringH, 0), vert = ring.dir === 'v', e = vert ? { x: 0, y: Math.abs(ny) > 1e-6 ? -Math.sign(ny) : -1 } : { x: Math.abs(nx) > 1e-6 ? Math.sign(nx) : -1, y: 0 }, rf = ring.parts.refill, hh = rf.thick / 2;
   const P = (t, k) => vert ? { x: c.x + k * hh, y: c.y + e.y * t } : { x: c.x + e.x * t, y: c.y + k * hh };   /* t＝リングの中心から向き e への距離・k＝厚みの向き（−1・＋1） */
-  shapes.push({ type: 'polyline', role: 'refills', closed: true, points: [P(rf.t0, -1), P(rf.t1, -1), P(rf.t1, 1), P(rf.t0, 1)] });
-  for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
+  /* 束は弓なり（foldRingParts の outline・holeCurves・2026-11-04）。outline/holeCurves が無い古い返り値のときは長方形 */
+  const Q = q => P(q.t, hh > 0 ? q.z / hh : 0);
+  shapes.push({ type: 'polyline', role: 'refills', closed: true, points: rf.outline?.length ? rf.outline.map(Q) : [P(rf.t0, -1), P(rf.t1, -1), P(rf.t1, 1), P(rf.t0, 1)] });
+  if (rf.holeCurves?.length) for (const cv of rf.holeCurves) shapes.push({ type: 'polyline', role: 'refill-hole', lineStyle: 'dashed', closed: false, points: cv.map(Q) });
+  else for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
   return { shapes, s, rOut, clamped, ...(clamped ? { pos: s - arcMid } : {}) };   /* clamped＝端から飛び出さないよう位置をとどめた（そのときの pos は、とどめたあとの値） */
 }
 function foldIsBifold() { return $('fdMode')?.value === 'bifold'; }
@@ -5939,12 +5942,13 @@ function refillGaps(d, p, h) {
 }
 /** 平面図のリフィルの穴の線は、リングの軸ではなく、リングの針金が束を通る位置（リングの右端側）に合わせる（事業主 2026-10-24「リフィルの穴の中心にリングの右端が通るのでもっと右になるはず」「さっき位置関係を作図したはず」）。
  *  断面（hardware.js の foldRingParts）の holeT と同じ式：針金は、束の面では √(内半径²−(束の厚み/2)²)・中心の高さでは外半径にあり、その真ん中。外半径が分からない古い図面は 0（今までどおり軸に合わせる）。 */
-const RING_WIRE_MM = 1.5;   /* リングのアーム（針金）の太さ（事業主 2026-11-04「アームはおそらく直径1.5mm程度」） */
-function ringHoleOffset(ring, { holeD = 5, wireD = RING_WIRE_MM } = {}) {
-  /* 事業主決定 2026-11-04（左右）：アームの右端（軸＋外径の半分）が、リフィルの穴の左の縁に内接する → 穴の中心＝軸＋外径の半分＋（穴の半径−アームの太さ）。束の厚みには依らない */
+function ringHoleOffset(ring, { holeD = 5, wireD } = {}) {
+  /* 事業主決定 2026-11-04（左右）：アームの右端（軸＋外径の半分）が、リフィルの穴の左の縁に内接する → 穴の中心＝軸＋外径の半分＋（穴の半径−アームの太さ）。束の厚みには依らない。
+     アームの太さは、リングの外径と内径の差（規格の実測。Mini6 15/19 なら 2mm）。無ければ既定値（RING_WIRE_MM）。断面（hardware.js foldRingParts）と同じ */
   const innerR = Number(ring?.ringD) / 2, outerR = Number(ring?.rOut);
   if (!(innerR > 0) || !(outerR >= innerR)) return 0;
-  return outerR + holeD / 2 - wireD;
+  const wd = wireD ?? (outerR - innerR > 0 ? outerR - innerR : RING_WIRE_MM);
+  return outerR + holeD / 2 - wd;
 }
 /** 平面図へ投影する。革の長さの帯（長方形）・折りの点線6本・ボタンの〇2つ（ボタン線が3枚を通る位置のうち、両端の2枚。真ん中の1枚には穴をあけない。直径は欄で指定）。前の投影は置き換える。
  *  withStitch＝true のときは、欄の縁からの距離・ピッチ・端の余白から、帯の上と下に菱目打ちライン（縫い線の点線）と菱目の穴を並べる（曲面の部分は平らに伸ばした直線の長さで測る）。false のときは、前に描いた列があれば同じ値で引き継ぐ。 */
@@ -6023,7 +6027,7 @@ function projectFoldDesign(withStitch) {
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
         const hwMetal = flatHwMetalNow(), mt = hwMetal ? { metal: hwMetal } : {};   /* 金具の色（選んでいれば、金具の図形に金属の色を付ける） */
-        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach((s, i) => { const on = hwMetal && i > 0 ? { metalSolid: true } : {}; if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
+        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach((s, i) => { const on = hwMetal && i > 0 ? { metalSolid: true } : hwMetal ? { metalBelow: true } : {};   /* 台座（1つ目）は紙の下・アームは紙の上（実物は紙が台座に乗り、輪が紙をまたぐ・2026-11-04） */ if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
       } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }

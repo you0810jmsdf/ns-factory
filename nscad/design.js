@@ -978,7 +978,7 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
   if (d.mode === 'bifold') {
     const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -26 * px;   /* ④全高の線は、①表紙の端の取っ手（半径10px）と寸法の当たり（7px）が重ならない距離（事業主決定 2026-11-04） */
     const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
-    const wBItems = Math.abs(p.widthB - d.width) > 0.005 ? [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }] : [];   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
+    const wBItems = [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }];   /* ②は表紙と同じ幅でも出す（数字を入れる入口が消えないように・事業主 2026-11-04「裏表紙の数値をいれたら寸法線が消えた」）   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
     const swap = list => d.flipH ? list.map(g => ({ ...g, items: g.items.map(it => it.align ? { ...it, align: it.align === 'left' ? 'right' : 'left' } : it) })) : list;   /* 左右反転すると、文字を置く側も入れ替わる（外側へのばす） */
     return swap([
       { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
