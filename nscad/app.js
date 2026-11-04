@@ -6245,25 +6245,25 @@ function startFoldHandleDrag(h, w, p = null) {
 }
 /** 図面の点 (x, y) → 2つ折りの断面の座標 (u, v)（origin と上下反転から逆算）。計画が成り立たないとき null。 */
 function foldLocal(d, x, y) { const p = foldDesignPlan(d); return p.ok && d.origin ? { p, u: (d.flipH ? 2 * (d.origin.x + (d.flipDx ?? 0)) - x : x) - d.origin.x, v: d.flipV !== false ? y - d.origin.y + 2 * p.rc[0] : d.origin.y - y } : null; }
-function dragFoldHandle(w) {
-  const g = gesture, v = g.vals; if (!g.moved) { if (Math.hypot(w.x - g.start.x, w.y - g.start.y) * scale > 3) g.moved = true; else return; }   /* 3ピクセル以上動かしてからドラッグ（それまでは何も変えない）。動かさずに離したら、数字の小窓を開く */ let dx = Math.round((w.x - g.start.x) * 10) / 10; if (g.d0?.flipH) dx = -dx; const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
+function dragFoldHandle(w, e = {}) {
+  const g = gesture, v = g.vals; if (!g.moved) { if (Math.hypot(w.x - g.start.x, w.y - g.start.y) * scale > 3) g.moved = true; else return; }   /* 3ピクセル以上動かしてからドラッグ（それまでは何も変えない）。動かさずに離したら、数字の小窓を開く */ let raw = w.x - g.start.x; if (g.d0?.flipH) raw = -raw;   /* 刻み：ふつう 0.5 mm・Shift 1 mm・Alt 0.1 mm。動かした「結果の数字」が刻みの倍数に乗るようにする（事業主 2026-11-04「数値をぴったりに変えたいのに中途半端にしか調整できない」：縮小表示では1ピクセルが数 mm になり、0.1 刻みでは狙った数字に止まらなかった） */ const step = e.altKey ? 0.1 : e.shiftKey ? 1 : 0.5, snapTo = x => +(Math.round(x / step) * step).toFixed(4), dxFor = (base, sign = 1) => +(sign * (snapTo(base + sign * raw) - base)).toFixed(4); let dx = snapTo(raw); const set = (id, val) => { $(id).value = String(Math.round(val * 100) / 100); };
   switch (g.h.key) {
-    case 'w': set('fdBiW', Math.max(1, v.width + dx)); if (Number.isFinite(v.widthB)) foldPend = { widthB: Math.max(1, v.widthB + dx), shiftX: v.shiftX }; break;   /* 全幅：両方の端を同じだけ（裏表紙の幅を別に決めてあれば、それも同じだけ） */
-    case 'endA': { const nw = Math.max(1, v.width - dx); set('fdBiW', nw); foldPend = { widthB: v.widthB ?? v.width, shiftX: v.shiftX + (v.width - nw) }; break; }   /* 表紙の端：背（頂点）は動かさず、端だけが動く。裏表紙の幅は今のまま */
-    case 'endB': foldPend = { widthB: Math.max(1, (v.widthB ?? v.width) - dx), shiftX: v.shiftX }; break;   /* 裏表紙の端 */
+    case 'w': dx = dxFor(v.width); set('fdBiW', Math.max(1, v.width + dx)); if (Number.isFinite(v.widthB)) foldPend = { widthB: Math.max(1, v.widthB + dx), shiftX: v.shiftX }; break;   /* 全幅：両方の端を同じだけ（裏表紙の幅を別に決めてあれば、それも同じだけ） */
+    case 'endA': { dx = dxFor(v.width, -1); const nw = Math.max(1, v.width - dx); set('fdBiW', nw); foldPend = { widthB: v.widthB ?? v.width, shiftX: v.shiftX + (v.width - nw) }; break; }   /* 表紙の端：背（頂点）は動かさず、端だけが動く。裏表紙の幅は今のまま */
+    case 'endB': dx = dxFor(v.widthB ?? v.width, -1); foldPend = { widthB: Math.max(1, (v.widthB ?? v.width) - dx), shiftX: v.shiftX }; break;   /* 裏表紙の端 */
     case 'ring': {   /* リング：つかんだ所に近い革の位置へ（端から飛び出さない範囲）。上の革・下の革の真ん中をつかむと、どちらの側か決まらないので、今の側（頂点なら表紙側）に付けたまま動かす */
       const L = foldLocal(g.d0, w.x, w.y); if (!L) break;
       const path = foldSectionPath({ flats: L.p.flats, bends: L.p.bends }), arc = path.pieces.find(pc => pc.kind === 'arc'), mid = (arc.s0 + arc.s1) / 2, rc = L.p.rc[0], lim = foldRingLimits(path, g.d0.ring?.rOut ?? 0);
       const sideB = L.v > rc + 1e-9 ? true : L.v < rc - 1e-9 ? false : (g.d0.ring?.pos ?? 0) > 1e-9, pieces = path.pieces.filter(pc => sideB ? pc.s1 > mid : pc.s0 < mid);
-      let sNew = projectOnFoldPath({ pieces }, L.u, L.v).s; sNew = sideB ? Math.max(sNew, mid) : Math.min(sNew, mid); sNew = Math.max(lim.lo, Math.min(lim.hi, sNew)); set('fdRingPos', sNew - mid); break;
+      let sNew = projectOnFoldPath({ pieces }, L.u, L.v).s; sNew = sideB ? Math.max(sNew, mid) : Math.min(sNew, mid); sNew = Math.max(lim.lo, Math.min(lim.hi, sNew)); set('fdRingPos', Math.max(lim.lo - mid, Math.min(lim.hi - mid, snapTo(sNew - mid)))); break;
     }
     case 'btn': { dx = Math.max(-Math.min(v.dL - 0.1, v.cL), Math.min(dx, Math.min(v.dR - 0.1, v.cR))); set('fdDL', v.dL + dx); set('fdDR', v.dR - dx); set('fdCL', v.cL + dx); set('fdCR', v.cR - dx); break; }   /* ボタン線を右へ dx：左の距離は＋dx・右の距離は−dx（全幅は変わらない） */
-    case 'dl': set('fdDL', Math.max(0.1, v.dL - dx)); break;
-    case 'dr': set('fdDR', Math.max(0.1, v.dR + dx)); break;
-    case 'cl': set('fdCL', Math.max(0, v.cL - dx)); break;
-    case 'cr': set('fdCR', Math.max(0, v.cR + dx)); break;
-    case 'rl': set('fdRL', Math.max(0.1, v.rinL - dx)); break;
-    case 'rr': set('fdRR', Math.max(0.1, v.rinR + dx)); break;
+    case 'dl': dx = dxFor(v.dL, -1); set('fdDL', Math.max(0.1, v.dL - dx)); break;
+    case 'dr': dx = dxFor(v.dR); set('fdDR', Math.max(0.1, v.dR + dx)); break;
+    case 'cl': dx = dxFor(v.cL, -1); set('fdCL', Math.max(0, v.cL - dx)); break;
+    case 'cr': dx = dxFor(v.cR); set('fdCR', Math.max(0, v.cR + dx)); break;
+    case 'rl': dx = dxFor(v.rinL, -1); set('fdRL', Math.max(0.1, v.rinL - dx)); break;
+    case 'rr': dx = dxFor(v.rinR); set('fdRR', Math.max(0.1, v.rinR + dx)); break;
   }
   refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); foldPend = null;
 }
@@ -8950,7 +8950,7 @@ canvas.addEventListener('pointermove', e => {
   if (touchPinchMove(e)) return;
   longPressMove(e);
   const p = local(e);
-  if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p)); return; }
+  if (gesture?.kind === 'foldHandle') { dragFoldHandle(world(p), e); return; }
   if (gesture?.kind === 'rotate') { const c = world(p); cursor = c; gesture.cursor = c; gesture.angle = rotateAngleNow(gesture, c, e.shiftKey); $('hint').textContent = t('rotDrag', { a: gesture.angle }); draw(); return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'textR') { const c = world(p), sh = doc.shapes.find(x => x.id === gesture.id); cursor = c; if (sh) { gesture.size = textSizeFrom(gesture, sh, c); $('hint').textContent = t('textDrag', { size: circleNum(gesture.size) }); } draw(); return; }
@@ -8958,7 +8958,7 @@ canvas.addEventListener('pointermove', e => {
   if (!gesture && (mode === 'select' || mode === 'text')) { const hot = !!textHandleHit(world(p)); if (hot !== textHot) { textHot = hot; canvas.style.cursor = hot ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = circleHandleHit(world(p))?.k ?? null; if (hot !== circleHot) { circleHot = hot; canvas.style.cursor = hot !== null ? 'nesw-resize' : ''; draw(); } }
-  if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null, dimHot = hot ? null : foldDimKeyAt(p); if (hot !== fdHandleHot || dimHot !== fdDimHot) { fdHandleHot = hot; fdDimHot = dimHot; canvas.style.cursor = hot ? 'ew-resize' : dimHot ? 'pointer' : ''; draw(); } }
+  if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null, dimHot = hot ? null : foldDimKeyAt(p); if (hot !== fdHandleHot || dimHot !== fdDimHot) { fdHandleHot = hot; fdDimHot = dimHot; canvas.style.cursor = hot ? 'ew-resize' : dimHot ? 'pointer' : ''; if (hot) $('hint').textContent = t('fdHandleTip'); draw(); } }   /* 取っ手に触れたら、動かし方（刻み）と「動かさずにクリックで数字」の案内 */
   if (quadOn()) quadHover = quadRoleAt(p);
   stitchHover = mode === 'stitch' && !gesture ? stitchHoverAt(world(p)) : null; /* 目打ち：吸い付く点に印（輪）を出す */
   if (mode === 'stitch' && !gesture) { stitchLastW = world(p); syncStitchPreview(stitchLastW, e.shiftKey); } else if (stitchPreview || stitchRouteIds) clearStitchPreview();   /* 目打ち：打つ前の薄い表示（打つ穴・経路） */
