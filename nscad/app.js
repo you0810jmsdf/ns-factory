@@ -4325,6 +4325,8 @@ function metalBrokenLoop(list) {
   const out = []; for (const q of best.pts) if (!out.length || distance(out.at(-1), q) > 1e-6) out.push({ x: q.x, y: q.y }); if (out.length > 1 && distance(out[0], out.at(-1)) <= 1e-6) out.pop();
   return out.length >= 3 ? { points: out } : null;
 }
+/** 図形の線を描く順位：層の順位。平面図の台座（metalBelow）は、塗りと同じく紙（金具層−0.5）より下（金具層−0.75）に線も描く（事業主 2026-11-04「リングのベースラインが透けて見える」：線だけが紙の上に出ていた）。 */
+const shapeDrawRank = (s, rank) => (rank.get(s.layer) || 0) - (s.metalBelow ? 0.75 : 0);
 function metalFillPlan(d = doc, vis = visible, move = s => s) {
   const items = [], loops = new Map(), nonGeom = ['text', 'dimension', 'image', 'fold'];
   for (const s of d.shapes) {
@@ -8558,7 +8560,7 @@ function drawSheetBody(lo, hi) {
   const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) && !(s.type === 'text' && isHex6(s.textColor)) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   /* 重なりは、層ごとに「その層の塗り → その層の線」の順（事業主 2026-10-25「レイヤーの表示が崩れている」：塗りは層の順に重なるのに、線はいつも全部の塗りの上に出て、手前の層の白い塗りがリングの塗りを隠しても、リングの輪郭だけが白の上に残った）。
      塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
-  const rankOfStroke = s => rankDraw.get(s.layer) || 0, opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
+  const rankOfStroke = s => shapeDrawRank(s, rankDraw), opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
   const stackRanks = [...new Set([...strokeList.map(rankOfStroke), ...opaqueItems.map(it => it.li || 0)])].sort((a, b) => a - b);
   for (const r of stackRanks) {
     if (r !== stackRanks[0]) for (const it of opaqueItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = it.direct ? 1 : it.alpha; paintItem(it); ctx.restore(); }
