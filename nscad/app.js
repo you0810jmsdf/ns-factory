@@ -7307,8 +7307,9 @@ function refollowFills(snap) {
     if (Date.now() > deadline) { stale++; return fl; }   /* 時間の上限：残りの塗りは取り直さない（案内は commit が出す） */
     shapes ??= regionShapes(); const want = new Set(ids);
     let r = pickNearestRegion(enclosedAreasAround(shapes, want).filter(x => x.ids.length === want.size && x.ids.every(id => want.has(id))), fl, used);
-    if (!r) r = fillRegionByProbe(fl, deadline);   /* 同じ図形の組み合わせでは見つからないとき：塗りの中の点（今も同じ場所の内側）を目印に、いまそこを囲んでいる場所を取り直す（取り残される図形が動いて、囲みが変わっても、色は場所についてくる） */
-    if (!r) { stale++; return fl; }
+    if (!r && !fl.foldFlat) r = fillRegionByProbe(fl, deadline);   /* 同じ図形の組み合わせでは見つからないとき：塗りの中の点（今も同じ場所の内側）を目印に、いまそこを囲んでいる場所を取り直す（取り残される図形が動いて、囲みが変わっても、色は場所についてくる）。
+       平面図が自動で作る塗り（白い紙・foldFlat）は探し直さない：リフィルの線をクリックして区間に分けただけで、囲みが崩れて革の本体まで白く塗られた（事業主 2026-11-05「リフィルをいじろうとしたら本体の色が白になった」）。平面図を作りなおすときに塗りも作りなおされる */
+    if (!r) { if (!fl.foldFlat) stale++; return fl; }
     if (!r.ids.every(id => want.has(id)) || r.ids.length !== want.size) { const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }); return { ...fl, ids: r.ids, points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), area: Math.round(r.area * 10) / 10 }; }
     const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) });
     return { ...fl, points: r.points.map(rd), holes: r.holes.map(h => h.map(rd)), area: Math.round(r.area * 10) / 10 };
