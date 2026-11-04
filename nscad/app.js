@@ -4329,7 +4329,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
   const items = [], loops = new Map(), nonGeom = ['text', 'dimension', 'image', 'fold'];
   for (const s of d.shapes) {
     if (!s.metal || s.occlude || s.holeLink || nonGeom.includes(s.type) || !vis(s)) continue;
-    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ layer: s.layer, metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear' }); }
+    if (s.closed || s.type === 'circle') { const poly = outlinePolygon([move(s)], s.id); if (poly) items.push({ layer: s.layer, metal: s.metal, points: poly.points, style: s.metalStyle === 'radial' ? 'radial' : 'linear', solid: !!s.metalSolid }); }
     else if (s.metalGroup) { if (!loops.has(s.metalGroup)) loops.set(s.metalGroup, []); loops.get(s.metalGroup).push(move(s)); }
   }
   for (const list of loops.values()) { const poly = outlinePolygon(list, list[0].id) || metalBrokenLoop(list); if (poly) items.push({ layer: list[0].layer, metal: list[0].metal, points: poly.points, style: list[0].metalStyle === 'radial' ? 'radial' : 'linear' }); }
@@ -4339,7 +4339,7 @@ function metalFillPlan(d = doc, vis = visible, move = s => s) {
   items.sort((x, y) => y.area - x.area);
   for (const it of items) {   /* いちばん小さい入れ物（同じ金属で、全部の点が中にある）。入れ物が穴でなければ、自分は穴 */
     const parents = items.filter(o => o !== it && o.area > it.area && o.metal === it.metal && it.points.every(p => inside(p, o.points))).sort((x, y) => x.area - y.area);
-    it.parent = parents[0] || null; it.hole = !!it.parent && !it.parent.hole;
+    it.parent = parents[0] || null; it.hole = !!it.parent && !it.parent.hole && !it.solid;   /* solid＝台座の上に重ねた部品（金具のアームなど）：中にあっても穴にしない */
   }
   return items.filter(it => !it.hole).map(it => ({ layer: it.layer, metal: it.metal, style: it.style, body: it.points, holes: items.filter(h => h.hole && h.parent === it).map(h => h.points) }));
 }
@@ -6017,7 +6017,7 @@ function projectFoldDesign(withStitch) {
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
         const hwMetal = flatHwMetalNow(), mt = hwMetal ? { metal: hwMetal } : {};   /* 金具の色（選んでいれば、金具の図形に金属の色を付ける） */
-        for (const s of binderViewDrawing(gap.spec, gap.ringD, 'plan')) { if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt }); } }
+        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach((s, i) => { const on = hwMetal && i > 0 ? { metalSolid: true } : {}; if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
       } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
@@ -6201,7 +6201,11 @@ function foldDimTargets() {
   const box = it => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(it.text)?.width ?? it.text.length * font * 0.62; ctx.restore(); const x0 = it.align === 'right' ? it.x - w : it.align === 'left' ? it.x : it.x - w / 2; return { x0, x1: x0 + w, y0: it.y - font * 0.7, y1: it.y + font * 0.7 }; };
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
   for (const g of groups) {
-    if (g.key === 't') { const to = { key: 'to', ...parts((foldDimensions(d, 'to') ?? []).filter(i => i.type === 'line')) }, ti = { key: 'ti', ...parts((foldDimensions(d, 'ti') ?? []).filter(i => i.type === 'line')) }; to.boxes.push(...parts(g.items).boxes); out.push(to, ti); }   /* 厚みの文字は「⑤表」へ。線は、押した方 */
+    if (g.key === 't') {   /* 厚みの文字「厚み ⑤表 1.5 + ⑥裏 1.5 = 3 mm」は、「+」の手前を⑤表・後ろを⑥裏にする（事業主 2026-11-04「断面図から修正できないか」：⑥裏は小さな線を狙うしかなかった）。線は、押した方 */
+      const to = { key: 'to', ...parts((foldDimensions(d, 'to') ?? []).filter(i => i.type === 'line')) }, ti = { key: 'ti', ...parts((foldDimensions(d, 'ti') ?? []).filter(i => i.type === 'line')) };
+      for (const it of g.items.filter(i => i.type === 'text')) { const k = it.text.indexOf(' + '), whole = box(it); if (k < 0) { to.boxes.push(whole); continue; } const cut = box({ ...it, text: it.text.slice(0, k + 2), align: 'left' }), xs = whole.x0 + (cut.x1 - cut.x0); to.boxes.push({ ...whole, x1: xs }); ti.boxes.push({ ...whole, x0: xs }); }
+      out.push(to, ti);
+    }
     else if (FD_DIM_EDIT[g.key]) out.push({ key: FD_DIM_EDIT[g.key], ...parts(g.items) });
   }
   return out;
