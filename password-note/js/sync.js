@@ -39,6 +39,11 @@ const Sync = (() => {
   let lastPullAt = 0;
   let pendingToast = '';
   let changeSeq = 0;        // 保存通知の通し番号。取得のあいだに新しい保存が無ければ、まとめ待ちの送信を取り消せる
+  let remote = { checked: false, fail: '', rev: 0 };   // 中継の rev の照合結果（起動時・画面に戻ったとき・5分ごと）
+  let checking = null;      // 照合中（Promise）。重ねて問い合わせない
+  let lastCheckAt = 0;
+  const CHECK_GAP_MS = 30 * 1000;          // 画面に戻ったときの照合は30秒に1回まで
+  const CHECK_EVERY_MS = 5 * 60 * 1000;    // 開いている間の定期照合
 
   const ls = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
@@ -112,6 +117,75 @@ const Sync = (() => {
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  // ---- 最新かどうかの照合（中継の rev と、この端末が最後に合流した rev を比べる） ----
+  // level: stale（古い）・diverged（食い違い）→ 登録・編集・削除を止める。dirty・unknown・nokey → 警告だけ。null → 問題なし（または未確認）。
+  // 純粋関数（s=端末の同期状態, r=中継の照合結果, c=画面の状況）。テストしやすいよう外へも出す。
+  function freshness(s, r, c) {
+    if (!c.configured) return c.uiFlag ? { level: 'nokey', text: 'この端末には同期の鍵がありません。最新かどうか確認できません。' } : null;
+    if (!r.checked) return null;
+    if (r.fail) return { level: 'unknown', text: '最新かどうか確認できません（' + r.fail + '）。他の端末の変更を見落とす恐れがあります。' };
+    const rm = Number(r.rev) || 0;
+    const sl = Number(s.rev) || 0;
+    const why = (c.unlocked && !c.busy && s.ok === false && s.msg) ? '（直近の同期: ' + s.msg + '）' : '';
+    if (rm > sl) {
+      const diverged = !!s.dirty;
+      const head = diverged ? 'この端末と中継の両方に変更があります' : 'この端末は最新ではありません';
+      const nums = '（中継 rev ' + rm + '／この端末 rev ' + sl + (diverged ? '・未送信あり' : '') + '）。';
+      const how = c.unlocked
+        ? '設定 →「スマホと同期」→「今すぐ同期」で合流するまで、登録・編集・削除は止めています。'
+        : '合言葉で開くと合流します。合流するまで、登録・編集・削除は止めます。';
+      return { level: diverged ? 'diverged' : 'stale', text: head + nums + how + why };
+    }
+    if (s.dirty && !c.busy && !c.pending) return { level: 'dirty', text: 'この端末の変更がまだ中継に届いていません（未送信）。' + why };
+    if (c.unlocked && !c.busy && s.ok === false) return { level: 'unknown', text: '直近の同期に失敗しました' + (s.msg ? '：' + s.msg : '') + '。最新でない可能性があります。' };
+    return null;
+  }
+  function freshCtx() { return { configured: isConfigured(), uiFlag: ls.get(UI_FLAG) === '1', unlocked: !!masterPassword, busy: !!busy, pending: !!pushTimer }; }
+  function curFresh() { return freshness(state, remote, freshCtx()); }
+  function isBlocked() { const f = curFresh(); return !!f && (f.level === 'stale' || f.level === 'diverged'); }
+
+  /** 登録・編集・削除・取り込み・復元の入口で呼ぶ。止めるときは true（理由を出す） */
+  function guardEdit() {
+    if (!isBlocked()) return false;
+    if (typeof toast === 'function') toast('最新ではないため、登録・編集・削除は止めています。「今すぐ同期」で合流すると使えます。', 'error');
+    return true;
+  }
+
+  // 画面の最上部に警告帯を出す（問題が無ければ消す）。合言葉を入れる前のログイン画面でも出る。
+  function updateBanner() {
+    if (typeof document === 'undefined' || !document.body) return;
+    const f = curFresh();
+    let b = document.getElementById('sync-fresh-banner');
+    if (!f) { if (b) b.remove(); return; }
+    if (!b) {
+      b = document.createElement('div');
+      b.id = 'sync-fresh-banner';
+      b.setAttribute('role', 'alert');
+      b.style.cssText = 'padding:10px 14px;color:#fff;font-size:0.9rem;font-weight:700;line-height:1.5;text-align:center';
+      document.body.insertBefore(b, document.body.firstChild);
+    }
+    const stop = f.level === 'stale' || f.level === 'diverged';
+    b.dataset.level = f.level;
+    b.style.background = stop ? '#b42318' : '#b45309';
+    b.textContent = (stop ? '⛔ ' : '⚠ ') + f.text;
+  }
+
+  // 中継の rev だけを読む（鍵があれば合言葉は要らない）。失敗は理由つきで残し、警告に出す。
+  function checkFresh() {
+    if (!isConfigured()) { remote = { checked: false, fail: '', rev: 0 }; updateBanner(); return Promise.resolve(); }
+    if (checking) return checking;
+    checking = (async () => {
+      const res = await api('GET', '/vault/meta');
+      lastCheckAt = Date.now();
+      if (!res) remote = { checked: true, fail: 'ネットにつながりません', rev: 0 };
+      else if (res.status === 401) remote = { checked: true, fail: '鍵が違います。設定し直してください', rev: 0 };
+      else if (!res.ok || !res.json) remote = { checked: true, fail: '中継の応答が不正です（' + res.status + '）', rev: 0 };
+      else remote = { checked: true, fail: '', rev: Number(res.json.rev) || 0 };
+      updateBanner();
+    })().catch(() => {}).then(() => { checking = null; });
+    return checking;
   }
 
   // ---- 合流（純粋関数。テストしやすいよう外へも出す） ----
@@ -304,7 +378,13 @@ const Sync = (() => {
 
   // 同期を1本ずつ走らせる
   function run(fn) {
-    const job = (busy || Promise.resolve()).then(fn).catch(() => {}).then(() => { if (busy === job) busy = null; render(); });
+    const job = (busy || Promise.resolve()).then(fn).catch(() => {}).then(() => {
+      if (busy === job) busy = null;
+      // 同期が成功したなら、この端末の rev が中継の rev（送った・合流した直後）。照合結果を追い付かせる
+      if (state.ok === true && remote.checked && !remote.fail && state.rev > remote.rev) remote.rev = state.rev;
+      render();
+      updateBanner();
+    });
     busy = job;
     return job;
   }
@@ -321,6 +401,16 @@ const Sync = (() => {
         lastPullAt = Date.now();
         run(() => pullInner('画面に戻った'));
       });
+      // 最新かどうかの照合（合言葉を入れる前でも動く）: 起動時・画面に戻ったとき・オンライン復帰・5分ごと
+      window.addEventListener('online', () => { if (isConfigured()) checkFresh(); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden || !isConfigured()) return;
+        if (Date.now() - lastCheckAt >= CHECK_GAP_MS) checkFresh();
+      });
+      const tick = setInterval(() => { if (!document.hidden && isConfigured()) checkFresh(); }, CHECK_EVERY_MS);
+      if (tick && tick.unref) tick.unref();
+      updateBanner();
+      checkFresh();
     })().catch(() => {});
     return initDone;
   }
@@ -395,6 +485,7 @@ const Sync = (() => {
     await DB.set(CFG_KEY, cfg);
     await saveState({ rev: 0, dirty: false, at: 0, ok: null, msg: '' });
     ls.set(UI_FLAG, '1');
+    checkFresh();
     if (masterPassword) run(() => pullInner('設定した'));
     return { ok: true, msg: '設定しました。同期を始めます。' };
   }
@@ -405,6 +496,8 @@ const Sync = (() => {
     state = { rev: 0, dirty: false, at: 0, ok: null, msg: '' };
     clearTimeout(pushTimer);
     pushTimer = null;
+    remote = { checked: false, fail: '', rev: 0 };
+    updateBanner();
   }
 
   function lastText() {
@@ -593,5 +686,5 @@ const Sync = (() => {
     if (typeof Inbox !== 'undefined') Inbox.renderSection(body);
   }
 
-  return { init, onOpen, notifyChange, flush, noteDeleted, noteReplaced, render, isConfigured, merge, canon, run, inboxApi, status, flushNow };
+  return { init, onOpen, notifyChange, flush, noteDeleted, noteReplaced, render, isConfigured, merge, canon, run, inboxApi, status, flushNow, freshness, guardEdit, isBlocked, checkFresh, updateBanner };
 })();

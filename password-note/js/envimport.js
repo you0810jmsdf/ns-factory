@@ -163,6 +163,7 @@ const EnvImport = (() => {
   }
 
   async function apply() {
+    if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;   // 古い・食い違いのあいだは止める
     const today = localToday();
     let added = 0, changed = 0, filled = 0;
     rows.filter(r => r.checked && applicable(r)).forEach(r => {

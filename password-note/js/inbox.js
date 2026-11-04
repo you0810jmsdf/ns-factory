@@ -422,6 +422,7 @@ const Inbox = (() => {
   // ---- 取り込み・捨てる（同期の列に乗せて実行する） ----
   async function doImport(chosen, leftCount) {
     if (!enabled()) return;
+    if (typeof Sync.guardEdit === 'function' && Sync.guardEdit()) return;   // 古い・食い違いのあいだは止める（箱には残る）
     const today = localToday();
     let added = 0, changed = 0, memos = 0;
     for (const r of chosen) { const k = applyOne(r, today); if (k === 'added') added++; else if (k === 'memo') memos++; else changed++; }

@@ -131,6 +131,7 @@ function closeSnapshotModal() {
 }
 
 async function restoreSnapshot(idx) {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
   try {
     const snapshots = await DB.getSnapshots();
     const snap = snapshots[idx];
@@ -420,6 +421,7 @@ function chooseImportFile() {
 async function importBackupFile(file) {
   if (!file) return;
   try {
+    if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;   // finally で入力欄は空に戻る
     const text = await file.text();
     const backup = JSON.parse(text);
     const encryptedVault = backup.encryptedVault || backup.vault || backup.data;
@@ -488,15 +490,27 @@ function saveGistSettings() {
   toast(token ? '家族共有設定を保存しました' : '家族共有設定をクリアしました', 'success');
 }
 
+// 検索用に文字をそろえる: 全角半角（NFKC）・大文字小文字・ひらがな→カタカナ
+function normSearch(s) {
+  return String(s == null ? '' : s).normalize('NFKC').toLowerCase()
+    .replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+}
+
+// 検索の対象: サービス名・担当者・URL・サービス概要・履歴のメモ。⛔ ID・パスワードは含めない
+function entrySearchText(e) {
+  return normSearch([e.title, e.owner, e.url, e.description, ...(e.history || []).map(h => h && h.note)].filter(Boolean).join('\n'));
+}
+
+// 空白（全角も可）で区切った語が、すべて含まれる項目を残す（AND 検索）
+function matchesQuery(e, terms) {
+  const hay = entrySearchText(e);
+  return terms.every(t => hay.includes(t));
+}
+
 function getFiltered() {
-  const q = currentQuery.toLowerCase();
-  let entries = q
-    ? vault.entries.filter(e =>
-        e.title?.toLowerCase().includes(q) ||
-        e.owner?.toLowerCase().includes(q) ||
-        e.url?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q)
-      )
+  const terms = normSearch(currentQuery).split(/\s+/).filter(Boolean);
+  let entries = terms.length
+    ? vault.entries.filter(e => matchesQuery(e, terms))
     : [...vault.entries];
 
   if (currentSort === 'owner') {
@@ -655,6 +669,7 @@ function toggleSelectAll() {
 }
 
 function openNewEntry() {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
   editingId = null;
   const entry = {
     id: uuid(), type: 'website', title: '', owner: '', url: '',
@@ -834,6 +849,7 @@ function collectHistory() {
 
 async function saveEntry(e) {
   e.preventDefault();
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
   const title = document.getElementById('e-title').value.trim();
   if (!title) { toast('サービス名を入力してください', 'error'); return; }
 
@@ -866,6 +882,7 @@ async function saveEntry(e) {
 
 async function deleteEntry() {
   if (!editingId) return;
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
   if (!confirm('この登録を削除しますか？')) return;
   if (typeof Sync !== 'undefined') Sync.noteDeleted([editingId]);
   vault.entries = vault.entries.filter(e => e.id !== editingId);
@@ -878,6 +895,7 @@ async function deleteEntry() {
 }
 
 async function deleteSelectedEntries() {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
   if (selectedIds.size === 0) {
     toast('削除する登録を選択してください', 'error');
     return;
