@@ -78,7 +78,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <div id="app-screen">
   <header>
     <span class="app-title">N's notebook パスワード管理</span>
-    <button class="icon-btn print-btn" id="print-btn" style="display:none" title="A6カード（システム手帳用）で印刷">
+    <select id="print-size" class="print-size" style="display:none" title="カード印刷の判型（システム手帳の規格）">
+      <option value="a6">A6</option>
+      <option value="a5slim">A5スリム</option>
+    </select>
+    <button class="icon-btn print-btn" id="print-btn" style="display:none" title="選んだ判型のカード（システム手帳用）で印刷">
       カード印刷 <span>(<span id="print-count">0</span>)</span>
     </button>
     <button class="icon-btn print-btn" id="print-list-btn" style="display:none" title="A4一覧表（保管用）で印刷">
@@ -286,12 +290,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 <script src="js/db.js?v=28"></script>
 <script src="js/remember.js?v=44"></script>
 <script src="js/gist.js?v=28"></script>
-<script src="js/print.js?v=28"></script>
+<script src="js/print.js?v=29"></script>
 <script src="js/autobackup.js?v=34"></script>
 <script src="js/guard.js?v=2"></script>
 <script src="js/inbox.js?v=4"></script>
 <script src="js/sync.js?v=4"></script>
-<script src="js/app.js?v=35"></script>
+<script src="js/app.js?v=36"></script>
 <script src="js/envimport.js?v=33"></script>
 <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 <script src="../assets/access-counter.js" data-badge="off"></script>

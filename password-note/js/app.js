@@ -554,6 +554,7 @@ function renderList() {
   const entries = getFiltered();
 
   document.getElementById('entry-count').textContent = `${entries.length}件`;
+  document.getElementById('print-size').style.display = selectedIds.size > 0 ? '' : 'none';
   document.getElementById('print-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
   document.getElementById('print-count').textContent = selectedIds.size;
   document.getElementById('print-list-btn').style.display = selectedIds.size > 0 ? 'flex' : 'none';
@@ -920,7 +921,27 @@ function printSelected() {
     return;
   }
   const entries = vault.entries.filter(e => selectedIds.has(e.id));
-  PrintManager.printEntries(entries);
+  PrintManager.printEntries(entries, currentPrintSize());
+}
+
+// カード印刷の判型（A6 / A5スリム・選択肢は index.html の #print-size、寸法は print.js の PRINT_SIZES）。
+// 選んだ値はこの端末に覚える（保管庫・同期には入れない）。
+const PRINT_SIZE_KEY = 'pwn_print_size';
+
+function currentPrintSize() {
+  const sel = document.getElementById('print-size');
+  return sel ? sel.value : 'a6';
+}
+
+function initPrintSize() {
+  const sel = document.getElementById('print-size');
+  if (!sel) return;
+  let saved = '';
+  try { saved = localStorage.getItem(PRINT_SIZE_KEY) || ''; } catch (e) { /* 読めなくても既定（A6）で動く */ }
+  if (saved && Array.from(sel.options).some(o => o.value === saved)) sel.value = saved;
+  sel.addEventListener('change', () => {
+    try { localStorage.setItem(PRINT_SIZE_KEY, sel.value); } catch (e) { /* 保存できなくても今回は有効 */ }
+  });
 }
 
 function printSelectedList() {
@@ -944,6 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('sync-btn').addEventListener('click', () => loadFromGist());
   document.getElementById('add-btn').addEventListener('click', openNewEntry);
   document.getElementById('print-btn').addEventListener('click', printSelected);
+  initPrintSize();
   document.getElementById('print-list-btn').addEventListener('click', printSelectedList);
   document.getElementById('delete-selected-btn').addEventListener('click', deleteSelectedEntries);
   document.getElementById('export-btn').addEventListener('click', exportBackup);

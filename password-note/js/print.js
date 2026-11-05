@@ -28,6 +28,7 @@ const PrintManager = (() => {
   // カード印刷の履歴欄は 62mm・6pt。68字だと 75.8mm になり右が切れていた（2026-09-23 実測）。
   // 実測の目安は1字あたり約1.11mm＝約55字。余裕を見て54字で折り返す。
   // ⛔ この値を上げるときは、必ず描画して欄（.col-hist）からはみ出さないか測ること。
+  // 判型ごとの値は PRINT_SIZES[].histUnits（A6=54・A5スリム=58）。
   function splitPrintText(text, maxUnits = 54) {
     const chunks = [];
     let current = '';
@@ -71,7 +72,7 @@ const PrintManager = (() => {
       });
     }
 
-    return lines.flatMap(line => splitPrintText(line));
+    return lines.flatMap(line => splitPrintText(line, size.histUnits));
   }
 
   function historyRowsHTML(history, maxRows = Infinity) {
@@ -108,7 +109,7 @@ const PrintManager = (() => {
   }
 
   function expandPrintCards(entries) {
-    const maxRows = TOTAL_ROWS + 1;
+    const maxRows = size.rows;
     return entries.flatMap(entry => {
       const rows = printRowsForEntry(entry);
       const pageCount = Math.max(1, Math.ceil(rows.length / maxRows));
@@ -126,11 +127,64 @@ const PrintManager = (() => {
     create: '初期設定', update: 'PW変更', alert: 'その他', warning: 'その他'
   };
 
-  const TOTAL_ROWS = 13;
-  const SUB_LONG_UNITS = 100; // これを超えたら .svc-sub--long（実測で調整済みの値を入れる）
+  // ===== 判型（システム手帳の規格）=====
+  // A4 1枚に「表（左に穴あけ代）＋裏メモ（右に穴あけ代）」の組を perSheet 組並べ、切り離して綴じる。
+  // 判型を足すときは、ここに1件足し、index.html の #print-size に option を足す。
+  //  rows         … 履歴表の行数（thead を除く）。カードの高さ − 上3mm − 下9mm − ヘッダー21mm − 見出し約4.4mm を 7.6mm で割って切り捨て
+  //  histUnits    … 履歴欄の折り返し（半角換算の字数）。欄の幅 ÷ 約1.11mm（A6 の 2026-09-23 実測）から余裕を引いた値
+  //  subLongUnits … 担当者・URL の行をこれより長いときに小さい字（.svc-sub--long）にする字数
+  // ⛔ A6 の値（旧 TOTAL_ROWS 13＋about 行 1＝14 行・54字）は変えない。変えるときは描画して欄からはみ出さないか測ること。
+  const PRINT_SIZES = {
+    a6: {
+      label: 'A6',
+      page: 'A4 portrait', sheetW: 210, sheetH: 296, padLeft: 0, // 297mm だと末尾に白紙が出ることがあるので 1mm 短く
+      cardW: 105, cardH: 148, cols: 2, perSheet: 2,                // 2列×2段＝A4 1枚に 2組
+      punch: 13, footerBottom: 5,
+      rows: 14, histUnits: 54, subLongUnits: 100,                 // 履歴欄 62mm・6pt
+      cutCSS: `
+.a4::before {
+  content:''; position:absolute; left:105mm; top:0; bottom:0;
+  border-left:0.2mm dashed #000; pointer-events:none; z-index:10;
+}
+.a4::after {
+  content:''; position:absolute; top:148mm; left:0; right:0;
+  border-top:0.2mm dashed #000; pointer-events:none; z-index:10;
+}`
+    },
+    a5slim: {
+      label: 'A5スリム',
+      page: 'A4 landscape', sheetW: 297, sheetH: 209, padLeft: 38.5, // 用紙の上下端がカードの上下端。左右 38.5mm は余白（リフィル印刷ツール a5slim-* と同じ面付け・カット線 38.5/148.5/258.5mm）
+      cardW: 110, cardH: 210, cols: 2, perSheet: 1,                  // 左＝表・右＝裏メモ＝A4 1枚に 1組
+      punch: 12, footerBottom: 6,                                     // 穴中心は端から 6mm・径 5mm（A5 規格）
+      rows: 22, histUnits: 58, subLongUnits: 107,                     // 履歴欄 68mm
+      cutCSS: `
+.a4::before {
+  content:''; position:absolute; left:38.5mm; top:0; bottom:0;
+  border-left:0.2mm dashed #000; pointer-events:none; z-index:10;
+}
+.a4::after {
+  content:''; position:absolute; left:148.5mm; top:0; bottom:0;
+  border-left:0.2mm dashed #000; pointer-events:none; z-index:10;
+}
+.slot:nth-child(2)::after {
+  content:''; position:absolute; right:0; top:0; bottom:0;
+  border-right:0.2mm dashed #000; pointer-events:none; z-index:10;
+}`
+    }
+  };
+  const DEFAULT_SIZE = 'a6';
+  let size = PRINT_SIZES[DEFAULT_SIZE]; // printEntries が選ばれた判型に差し替える
+
+  function getSize(id) {
+    return PRINT_SIZES[id] || PRINT_SIZES[DEFAULT_SIZE];
+  }
+
+  function listSizes() {
+    return Object.keys(PRINT_SIZES).map(id => ({ id, label: PRINT_SIZES[id].label }));
+  }
 
   function cardFrontHTML(entry) {
-    const maxRows = TOTAL_ROWS + 1;
+    const maxRows = size.rows;
     const printRows = entry.printRows || printRowsForEntry(entry).slice(0, maxRows);
     const blankRows = Array(Math.max(0, maxRows - printRows.length))
       .fill('<tr class="blank-row"><td class="col-date"></td><td class="col-hist"></td></tr>');
@@ -139,7 +193,7 @@ const PrintManager = (() => {
       ? `${entry.owner}${entry.type === 'website' && entry.url ? '　' + entry.url : ''}`
       : (entry.type === 'website' && entry.url ? entry.url : '');
     // 長いURLは字を小さくして3行まで入れる（2行・7.5ptで約110字、3行・6ptで約190字が目安）
-    const subCls = textUnits(subText) > SUB_LONG_UNITS ? 'svc-sub svc-sub--long' : 'svc-sub';
+    const subCls = textUnits(subText) > size.subLongUnits ? 'svc-sub svc-sub--long' : 'svc-sub';
     const ownerLine = subText ? `<div class="${subCls}">${subText}</div>` : '';
 
     return `
@@ -166,7 +220,7 @@ const PrintManager = (() => {
   }
 
   function cardBackHTML(entry) {
-    const blankRows = Array(TOTAL_ROWS + 1)
+    const blankRows = Array(size.rows)
       .fill('<tr class="blank-row"><td class="col-memo"></td></tr>')
       .join('');
 
@@ -195,13 +249,15 @@ const PrintManager = (() => {
     return `
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif; background:#fff; color:#000; }
-@page { size:A4 portrait; margin:0; }
+@page { size:${size.page}; margin:0; }
 
+/* 用紙 1枚（判型は PRINT_SIZES） */
 .a4 {
-  width:210mm; height:296mm;
+  width:${size.sheetW}mm; height:${size.sheetH}mm;
+  padding-left:${size.padLeft}mm;
   display:grid;
-  grid-template-columns:105mm 105mm;
-  grid-template-rows:148mm 148mm;
+  grid-template-columns:${Array(size.cols).fill(size.cardW + 'mm').join(' ')};
+  grid-template-rows:${Array(Math.ceil(size.perSheet * 2 / size.cols)).fill(size.cardH + 'mm').join(' ')};
   page-break-after:always;
   position:relative;
   overflow:hidden;
@@ -209,35 +265,28 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 .a4:last-child { page-break-after:avoid; }
 
 /* カット目安線 */
-.a4::before {
-  content:''; position:absolute; left:105mm; top:0; bottom:0;
-  border-left:0.2mm dashed #000; pointer-events:none; z-index:10;
-}
-.a4::after {
-  content:''; position:absolute; top:148mm; left:0; right:0;
-  border-top:0.2mm dashed #000; pointer-events:none; z-index:10;
-}
+${size.cutCSS}
 
 .slot {
-  width:105mm; height:148mm;
+  width:${size.cardW}mm; height:${size.cardH}mm;
   overflow:hidden; position:relative;
 }
 
 /* カード共通 */
 .card-front, .card-back {
-  width:105mm; height:148mm;
+  width:${size.cardW}mm; height:${size.cardH}mm;
   display:flex; flex-direction:row;
 }
 
 /* 穴あけ代（front=左、back=右、穴は印刷しない） */
 .punch-col {
-  width:13mm; flex-shrink:0;
+  width:${size.punch}mm; flex-shrink:0;
 }
 
-/* カード本体 */
+/* カード本体（上3mm・下9mm は全スロット共通。コンテンツは上から、N's notebookは絶対配置で下固定） */
 .card-body {
   flex:1;
-  padding:3mm 3mm 3mm 2mm;
+  padding:3mm 3mm 9mm 2mm;
   display:flex; flex-direction:column;
   overflow:hidden;
   position:relative;
@@ -247,19 +296,6 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 .card-front .card-body { padding-right:7mm; }
 /* 裏面: 左端が切断線 → 左に余白 */
 .card-back  .card-body { padding-left:7mm; }
-
-/* 上段: 下端が切断線 → 下に余白（外側=上は小さくてよい） */
-.slot:nth-child(1) .card-body,
-.slot:nth-child(2) .card-body {
-  padding-top:3mm;
-  padding-bottom:9mm;
-}
-/* 下段: 上段と同じ配置（コンテンツは上から、N's notebookは絶対配置で下固定） */
-.slot:nth-child(3) .card-body,
-.slot:nth-child(4) .card-body {
-  padding-top:3mm;
-  padding-bottom:9mm;
-}
 
 /* ヘッダー — 高さ固定で表裏の罫線位置を揃える */
 .card-header {
@@ -298,7 +334,7 @@ body { font-family: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-
 /* N's notebook 刻印 */
 .card-footer {
   position:absolute;
-  bottom:5mm; left:0; right:0;
+  bottom:${size.footerBottom}mm; left:0; right:0;
   text-align:center;
   font-family:'Times New Roman', Times, serif;
   font-size:10pt; color:#000;
@@ -499,29 +535,28 @@ table.list th { background:#eee; font-weight:bold; font-size:7pt; text-align:lef
     setTimeout(() => { win.focus(); win.print(); }, 600);
   }
 
-  function printEntries(entries) {
-    // 2エントリーずつ処理: 左列=表, 右列=裏メモ
+  // sizeId: PRINT_SIZES のキー（'a6' / 'a5slim'）。省略・不明なら A6。
+  function printEntries(entries, sizeId) {
+    size = getSize(sizeId);
+    // perSheet 組ずつ処理: 左列=表, 右列=裏メモ（同じエントリのメモ面）
     const win = window.open('', '_blank');
     const doc = win.document;
     doc.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
-      <title>パスワードカード印刷</title>
+      <title>パスワードカード印刷（${size.label}）</title>
       <style>${getPrintCSS()}</style></head><body>`);
 
     const cards = expandPrintCards(entries);
+    const per = size.perSheet;
 
-    for (let i = 0; i < cards.length; i += 2) {
-      const a = cards[i]     || null;
-      const b = cards[i + 1] || null;
-
+    for (let i = 0; i < cards.length; i += per) {
       doc.write(`<div class="a4">`);
-      // 左列: 表
-      doc.write(`<div class="slot">${a ? cardFrontHTML(a) : ''}</div>`);
-      // 右列: 裏メモ（同じエントリのメモ面）
-      doc.write(`<div class="slot">${a ? cardBackHTML(a) : ''}</div>`);
-      // 左列: 表（2枚目）
-      doc.write(`<div class="slot">${b ? cardFrontHTML(b) : ''}</div>`);
-      // 右列: 裏メモ（2枚目）
-      doc.write(`<div class="slot">${b ? cardBackHTML(b) : ''}</div>`);
+      for (let j = 0; j < per; j++) {
+        const c = cards[i + j] || null;
+        // 左列: 表
+        doc.write(`<div class="slot">${c ? cardFrontHTML(c) : ''}</div>`);
+        // 右列: 裏メモ
+        doc.write(`<div class="slot">${c ? cardBackHTML(c) : ''}</div>`);
+      }
       doc.write(`</div>`);
     }
 
@@ -530,5 +565,5 @@ table.list th { background:#eee; font-weight:bold; font-size:7pt; text-align:lef
     setTimeout(() => { win.focus(); win.print(); }, 600);
   }
 
-  return { printEntries, printList };
+  return { printEntries, printList, listSizes, getSize };
 })();
