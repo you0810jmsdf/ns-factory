@@ -3167,7 +3167,7 @@ export const DATA_TEXTURES = {
     {
       "id": "lvb_ner",
       "name": "LINEA VASCA Box ネロ（黒）",
-      "sub": "Virgilio / ボックスカーフ仕上げ",
+      "sub": "Virgilio / ボックスカーフ仕上げ（事業主の接写 2026-11-05・実寸は推定）",
       "tags": [
         "LINEA VASCA Box",
         "タンニン鞣し",
@@ -3175,8 +3175,10 @@ export const DATA_TEXTURES = {
         "ダーク系"
       ],
       "file": "assets/textures/lvb_ner.jpg",
-      "px": 384,
-      "avg": "#232427"
+      "px": 512,
+      "avg": "#413f3e",
+      "mm": 50,
+      "grain": "photo"
     },
     {
       "id": "lvb_ort",

@@ -4481,11 +4481,39 @@ function texImage(id) {
 let grainPreview = null;
 const textureGrain = () => { const v = Number(grainPreview ?? doc.textureGrain); return v >= 1 && v <= 5 ? v : 1; };
 const grainAdjust = (v, avg, k) => Math.max(0, Math.min(255, Math.round(avg + (v - avg) * k)));
+/** 合成しぼ（事業主 2026-11-05 案A「合成しぼを作る」）：写真にしぼが写っていない革（リネアヴァスカ Box・13色）は、写真の平均色の上に、粒（セル）を敷き詰めた凹凸の陰影を合成して描く。
+ *  粒の位置は格子ごとに乱数で決め、端は反対側につなぐので、繰り返しても継ぎ目が出ない。光は左上から。sizeMm＝粒の大きさ（実寸）・amp＝陰影の強さ（明るさの差）。「しぼの強さ」のスライダーは amp に掛ける。写真の傷（縦線）は使わない */
+const SYNTH_GRAIN = [{ test: id => String(id).startsWith('lvb_'), kind: 'pebble', sizeMm: 3.5, amp: 20 }];   /* 粒 3.5mm：事業主の接写（ネロ）に合わせた */
+const synthGrainFor = id => { const x = textureById(id); if (!x || x.grain === 'photo') return null; return SYNTH_GRAIN.find(g => g.test(id)) || null; };   /* 接写の写真がある色（grain:'photo'）は写真のまま */
+const hexRgb = hex => { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '')); const v = m ? parseInt(m[1], 16) : 0x808080; return [v >> 16 & 255, v >> 8 & 255, v & 255]; };
+/** w×h の画素（RGBA）を返す純関数：平均色 avg＝[r,g,b]・粒の大きさ cellPx・陰影の強さ amp。テストで中身を確かめられるように canvas を使わない */
+function synthGrainPixels(w, h, avg, cellPx, amp, seed = 7) {
+  const nx = Math.max(1, Math.round(w / cellPx)), ny = Math.max(1, Math.round(h / cellPx)), cw = w / nx, ch = h / ny;
+  const rnd = (i, j, k) => { let t = (Math.imul(i + 1, 374761393) + Math.imul(j + 1, 668265263) + Math.imul(k + 1, 1274126177) + seed * 97) >>> 0; t = Math.imul(t ^ (t >>> 13), 1274126177) >>> 0; return ((t ^ (t >>> 16)) >>> 0) / 4294967296; };
+  const pts = []; for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) pts.push({ x: (i + 0.15 + 0.7 * rnd(i, j, 1)) * cw, y: (j + 0.15 + 0.7 * rnd(i, j, 2)) * ch, r: 0.6 + 0.4 * rnd(i, j, 3), tint: rnd(i, j, 4) - 0.5 });
+  const H = new Float32Array(w * h), T = new Float32Array(w * h), rad = Math.min(cw, ch) * 0.95;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const ci = Math.floor(x / cw), cj = Math.floor(y / ch); let best = Infinity, br = 1, bt = 0;
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { const gi = ci + di, gj = cj + dj, ii = (gi + nx) % nx, jj = (gj + ny) % ny, p = pts[jj * nx + ii], px = p.x + (gi - ii) * cw, py = p.y + (gj - jj) * ch, d = Math.hypot(x + 0.5 - px, y + 0.5 - py); if (d < best) { best = d; br = p.r; bt = p.tint; } }   /* 端の粒は反対側に写して、つながる */
+    const t = Math.min(1, best / (br * rad)); H[y * w + x] = 1 - t * t; T[y * w + x] = bt;
+  }
+  const out = new Uint8ClampedArray(w * h * 4), at = (x, y) => H[((y + h) % h) * w + ((x + w) % w)];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const shade = (at(x + 1, y) - at(x - 1, y)) + (at(x, y + 1) - at(x, y - 1)), i = (y * w + x) * 4, v = shade * amp * 1.6 + T[y * w + x] * amp * 0.4;   /* 左上からの光：左上の斜面が明るい。粒ごとの薄い色むら */
+    out[i] = Math.max(0, Math.min(255, Math.round(avg[0] + v))); out[i + 1] = Math.max(0, Math.min(255, Math.round(avg[1] + v))); out[i + 2] = Math.max(0, Math.min(255, Math.round(avg[2] + v))); out[i + 3] = 255;
+  }
+  return out;
+}
 const texGrainImages = new Map();
 function texGrainImage(id, k) {
-  const key = id + '|' + k; if (texGrainImages.has(key)) return texGrainImages.get(key);
-  const img = texImage(id); if (!img || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;   /* まだ読み込み中なら、次の描画でまた試す */
+  const x = textureById(id), synth = x ? synthGrainFor(id) : null, mm = textureMm(id), key = id + '|' + k + (synth ? '|' + mm : ''); if (texGrainImages.has(key)) return texGrainImages.get(key);
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
   let out = null;
+  if (synth) {   /* 合成しぼ：写真は使わず、平均色＋粒の陰影 */
+    try { const w = 384, h = 384, c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), im = g.createImageData(w, h); im.data.set(synthGrainPixels(w, h, hexRgb(x.avg), Math.max(4, synth.sizeMm / mm * w), synth.amp * k)); g.putImageData(im, 0, 0); out = c; } catch { out = null; }
+    texGrainImages.set(key, out); return out;
+  }
+  const img = texImage(id); if (!img) return null;   /* まだ読み込み中なら、次の描画でまた試す */
   try {
     const c = document.createElement('canvas'); c.width = img.naturalWidth || img.width; c.height = img.naturalHeight || img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
     const im = g.getImageData(0, 0, c.width, c.height), d = im.data, n = d.length / 4; let r = 0, gg = 0, b = 0; for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; } r /= n; gg /= n; b /= n;
@@ -4494,7 +4522,7 @@ function texGrainImage(id, k) {
   texGrainImages.set(key, out); return out;
 }
 function textureFill(id) {
-  const x = textureById(id), k = textureGrain(), base = texImage(id), img = k > 1 ? (texGrainImage(id, k) || base) : base, pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
+  const x = textureById(id), k = textureGrain(), base = texImage(id), img = (k > 1 || synthGrainFor(id)) ? (texGrainImage(id, k) || base) : base, pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
   if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0])); return pat; } /* ctx は mm に変換済み（draw()）なので、画像 1px＝k mm・図面の原点に固定 */
   return x ? x.avg : '#d9c7a0';
 }
