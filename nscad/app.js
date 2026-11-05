@@ -4436,7 +4436,24 @@ function svgTextures() {
   }
   return out;
 }
-function textureList() { const q = String($('textureSearch').value ?? '').toLowerCase(); return TEXTURES.filter(x => !q || (x.name + ' ' + (x.sub || '') + ' ' + (x.tags || []).join(' ') + ' ' + x.id).toLowerCase().includes(q)); }
+/** 色の言葉の仲間（事業主 2026-11-05「色で検索しても出せるようにしてほしい」）：革の名前の色はカタカナ（ネロ・ブラック・ロッソ…）、色の印は「〜系」のタグ。
+ *  日本語・英語・イタリア語（革の品名）のどれで打っても、同じ仲間の言葉を名前・タグから探す。打った言葉が仲間のどれかに含まれる（部分一致）とき、その仲間の言葉のどれかを含む革が出る */
+const TEXTURE_COLOR_WORDS = [
+  ['黒', 'くろ', 'ブラック', 'black', 'ネロ', 'nero', 'ダーク系', 'ダーク', 'dark'],
+  ['茶', 'ちゃ', 'ブラウン', 'brown', 'マローネ', 'marrone', 'キャメル', 'camel', 'コニャック', 'cognac', 'チョコ', 'choco', 'ブラウン系'],
+  ['赤', 'あか', 'レッド', 'red', 'ロッソ', 'rosso', 'ワイン', 'wine', 'ボルドー', 'bordeaux', 'レッド系'],
+  ['青', 'あお', 'ブルー', 'blue', 'ブル', 'blu', 'ネイビー', 'navy', 'コバルト', 'cobalt', 'アズーロ', 'azzurro', 'ブルー系'],
+  ['緑', 'みどり', 'グリーン', 'green', 'ヴェルデ', 'verde', 'オリーブ', 'olive', 'グリーン系'],
+  ['黄', 'き', 'イエロー', 'yellow', 'ジアロ', 'giallo', 'マスタード', 'mustard', 'イエロー系'],
+  ['白', 'しろ', 'ホワイト', 'white', 'ビアンコ', 'bianco'],
+  ['灰', 'グレー', 'グレイ', 'gray', 'grey', 'グリージョ', 'grigio'],
+  ['桃', 'ピンク', 'pink', 'ローザ', 'rosa'],
+  ['紫', 'むらさき', 'パープル', 'purple', 'ヴィオラ', 'viola'],
+  ['橙', 'オレンジ', 'orange', 'アランチョ', 'arancio'],
+  ['生成り', 'きなり', 'ナチュラル', 'natural', 'ヌメ', 'ベージュ', 'beige', 'ナチュラル系'],
+];
+function textureSearchWords(q) { const k = q.toLowerCase(); return k ? [k, ...TEXTURE_COLOR_WORDS.filter(g => g.some(w => w.toLowerCase().includes(k) || (k.length >= 2 && k.includes(w.toLowerCase())))).flat().map(w => w.toLowerCase())] : []; }
+function textureList() { const words = textureSearchWords(String($('textureSearch').value ?? '').trim()); return TEXTURES.filter(x => { if (!words.length) return true; const text = (x.name + ' ' + (x.sub || '') + ' ' + (x.tags || []).join(' ') + ' ' + x.id).toLowerCase(); return words.some(w => text.includes(w)); }); }
 /** 色カードの質感の一覧・見本と、柄カードの質感A／Bの一覧を作り直す */
 function renderTextures() {
   const fillSel = (sel, list) => { const keep = sel.value; sel.textContent = ''; const none = document.createElement('option'); none.value = ''; none.textContent = t('textureNone'); sel.appendChild(none); for (const x of list) { const o = document.createElement('option'); o.value = x.id; o.textContent = x.name; sel.appendChild(o); } sel.value = list.some(x => x.id === keep) ? keep : ''; };
