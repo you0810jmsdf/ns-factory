@@ -8539,7 +8539,7 @@ function bezierShape(p) {
   return { type: 'bezier', x1: stage.start.x, y1: stage.start.y, x2: stage.end.x, y2: stage.end.y, c1x: c1.x, c1y: c1.y, c2x: c2.x, c2y: c2.y };
 }
 /** ベジェ：シングルクリックで始点・中点（何個でも）を足す。通る点を結ぶ滑らかな曲線。ダブルクリックか Enter で確定。 */
-/** ベジエ道具のクリック（lcc 方式・事業主 2026-11-05「通過点はハンドルの端点の目標であって通過させない」「lcc は最高によかった」）：始点 → 制御点1 → 制御点2 → 終点、続けて 制御点 → 制御点 → 終点 … を繰り返して1本の曲線を伸ばす。ダブルクリック／Enter で確定。 */
+/** ベジエ道具のクリック（4点方式・事業主 2026-11-05「通過点はハンドルの端点の目標であって通過させない」）：始点 → 制御点1 → 制御点2 → 終点、続けて 制御点 → 制御点 → 終点 … を繰り返して1本の曲線を伸ばす。ダブルクリック／Enter で確定。 */
 function bezierClick(p) {
   if (stage?.kind !== 'bzpts') { stage = { kind: 'bzpts', points: [p] }; $('hint').textContent = bezierStepHint(1); draw(); return; }
   if (distance(stage.points.at(-1), p) >= 6 / scale) { stage.points.push(p); $('hint').textContent = bezierStepHint(stage.points.length); } /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。点を増やさない */
