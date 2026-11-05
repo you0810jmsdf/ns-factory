@@ -5668,7 +5668,7 @@ function placePhrase(at) {
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
 let lastPhrase = null;
 function restylePlacedPhrase() {
-  if (!lastPhrase || mode !== 'select' && mode !== 'text') return false; const ids = lastPhrase.ids; if (!ids.length || selected.size !== ids.length || !ids.every(id => selected.has(id))) return false;
+  if (!lastPhrase) return false; const ids = lastPhrase.ids;   /* 置いた直後は道具が「定型句」のまま（続けて置ける）なので、道具は見ない。置いた行がそのまま選ばれているかだけ */ if (!ids.length || selected.size !== ids.length || !ids.every(id => selected.has(id))) return false;
   const size = Number($('phraseSize').value), font = $('phraseFont').value; if (!(size > 0)) return false;
   const rows = ids.map(id => doc.shapes.find(s => s.id === id)).filter(s => s && s.type === 'text'); if (rows.length !== ids.length) { lastPhrase = null; return false; }
   const lines = phraseLines($('phraseText').value), at = lastPhrase.at, want = phraseShapes(lines, at, size, rows[0].layer, undefined, font);   /* 行間＝文字高×1.4 で置き直す */
