@@ -43,7 +43,7 @@ import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRi
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases } from './phrases.js';
+import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP } from './phrases.js';
 import { coverLayout } from './hardware.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -5718,9 +5718,11 @@ function bookSpecText(data, pockets = []) {
   const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
   const leather = data?.colors?.leather, hexName = h => DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(h).toLowerCase())?.name || h;   /* 色の見本の名前（無ければ色コード） */
   const leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || blank, leatherColor = leather?.kind === 'leather' && leather.hex ? hexName(leather.hex) : blank;
+  /* 事業主 2026-11-05「オーダー受注日と受注サイトおよびニックネーム（わかれば本名）も記載したい」「リフィル束の厚みは要らない」「革の種類と色は、外装、内装、内張で分けて記載する」。色カードで選んだ革は外装に入れる */
+  const sites = en ? 'Creema / minne / BASE / STORES / Mercari / Rakuma / PayPay Flea / Pinkoi / direct' : 'Creema／minne／BASE／STORES／メルカリ／ラクマ／PayPayフリマ／Pinkoi／直接';
   const dims = list => list.map(q => `${q.name} ${n1(q.w)}×${n1(q.h)} mm`).join(en ? ', ' : '・'), pk = pockets.filter(q => q.kind === 'pocket'), fl = pockets.filter(q => q.kind === 'flap');   /* 図面の部品の縦横（外形の幅×高さ） */
-  return en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${leatherColor}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, stack ${b.stack || blank} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
-    : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${leatherColor}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・束 ${b.stack || blank} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
+  return en ? [`Order: ${blank}/${blank}/${blank}, site ${blank} (${sites}), nickname ${blank} (real name ${blank})`, `Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: outer ${leatherName} / color ${leatherColor}; inner ${blank} / color ${blank}; lining ${blank} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
+    : [`受注：${blank}年${blank}月${blank}日・サイト ${blank}（${sites}）・ニックネーム ${blank}（本名 ${blank}）`, `システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：外装 ${leatherName}・色 ${leatherColor}／内装 ${blank}・色 ${blank}／内張 ${blank}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
 }
 /** 図面の部品のうち、名前が「あおり」「煽り」「flap」の部品はあおり、名前が「ポケット」「pocket」か役割 pocket（自動設計）の部品はポケットとして、外形の幅×高さ（mm）を返す。形の無い部品は拾わない。 */
 function docPockets() {
@@ -5772,13 +5774,21 @@ function placePhrase(at) {
 }
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
 let lastPhrase = null;
+/** 選んでいるのが、定型句で置いた1つのまとまり（同じグループの文字だけ・そのグループ全部・2行以上）なら、上から順の行。違えば null。 */
+function selectedTextBlock() {
+  const list = pickedTexts(); if (list.length < 2) return null; const g = groupIdOf(list[0]); if (!g || list.some(s => groupIdOf(s) !== g)) return null;
+  if (doc.shapes.filter(s => groupIdOf(s) === g).length !== list.length) return null; return list.slice().sort((p, q) => p.y - q.y || p.x - q.x);
+}
+/** まとまりの行を、文字高に合わせた行間（×1.4）で並べ直す。1行目の位置は動かさない。 */
+function respaceTextBlock(rows, size) { const y0 = rows[0].y; rows.forEach((sh, i) => { sh.y = +(y0 + i * size * PHRASE_LINE_GAP).toFixed(4); }); }
 function restylePlacedPhrase() {
-  if (!lastPhrase) return false; const ids = lastPhrase.ids;   /* 置いた直後は道具が「定型句」のまま（続けて置ける）なので、道具は見ない。置いた行がそのまま選ばれているかだけ */ if (!ids.length || selected.size !== ids.length || !ids.every(id => selected.has(id))) return false;
   const size = Number($('phraseSize').value), font = $('phraseFont').value; if (!(size > 0)) return false;
-  const rows = ids.map(id => doc.shapes.find(s => s.id === id)).filter(s => s && s.type === 'text'); if (rows.length !== ids.length) { lastPhrase = null; return false; }
-  const lines = phraseLines($('phraseText').value), at = lastPhrase.at, want = phraseShapes(lines, at, size, rows[0].layer, undefined, font);   /* 行間＝文字高×1.4 で置き直す */
-  if (want.length !== rows.length) return false;
-  commit(() => { rows.forEach((sh, i) => { sh.sizeMm = size; sh.y = want[i].y; if (want[i].font) sh.font = want[i].font; else delete sh.font; }); });
+  let rows = null, want = null;
+  if (lastPhrase) { const ids = lastPhrase.ids; if (ids.length && selected.size === ids.length && ids.every(id => selected.has(id))) { rows = ids.map(id => doc.shapes.find(s => s.id === id)).filter(s => s && s.type === 'text'); if (rows.length !== ids.length) { lastPhrase = null; rows = null; } else { const w = phraseShapes(phraseLines($('phraseText').value), lastPhrase.at, size, rows[0].layer, undefined, font); if (w.length === rows.length) want = w; } } }   /* 置いた直後：カードの本文（空行も）どおりの行間で置き直す */
+  if (!rows) rows = selectedTextBlock();   /* 選び直したあと・行を書き換えたあとでも、まとまりを選んでいれば効く（事業主 2026-11-05「定型句全体を小さくできない」） */
+  if (!rows) return false;
+  const f = font && font !== 'gothic' && Object.hasOwn(TEXT_FONTS, font) ? font : null;
+  commit(() => { rows.forEach((sh, i) => { sh.sizeMm = size; if (f) sh.font = f; else delete sh.font; if (want) sh.y = want[i].y; }); if (!want) respaceTextBlock(rows, size); });   /* 行間＝文字高×1.4 で並べ直す */
   $('hint').textContent = t('phraseRestyled', { n: rows.length, size, font: fontLabel(font) }); return true;
 }
 /** 文字高の目安（事業主 2026-11-05「どのくらいの大きさかわかるように目安を表示してほしい」）：本文の1行目を今の文字高・フォントで測った幅を出す */
@@ -5798,7 +5808,7 @@ function applyTextFont({ font, size, color }) {
   const f = font && Object.hasOwn(TEXT_FONTS, font) ? font : null, z = typeof size === 'number' && Number.isFinite(size) ? size : null, c = isHex6(color) ? color.toLowerCase() : color === 'default' ? 'default' : null;   /* color＝文字の色（#RRGGBB）。null は変えない */
   const plan = list.filter(s => (f && (s.font || 'gothic') !== f) || (z !== null && s.sizeMm !== z) || (c && (c === 'default' ? isHex6(s.textColor) : (isHex6(s.textColor) ? s.textColor.toLowerCase() : '') !== c)));
   if (!plan.length) { $('hint').textContent = t('textFontSame'); return 0; }
-  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; if (c === 'default') delete sh.textColor; else if (c) sh.textColor = c; } });
+  commit(() => { for (const p of plan) { const sh = doc.shapes.find(x => x.id === p.id); if (!sh) continue; if (f) { if (f === 'gothic') delete sh.font; else sh.font = f; } if (z !== null) sh.sizeMm = z; if (c === 'default') delete sh.textColor; else if (c) sh.textColor = c; } if (z !== null) { const block = selectedTextBlock(); if (block) respaceTextBlock(block, z); } });   /* 句のまとまりなら、行間も文字高に合わせる */
   $('hint').textContent = t('textFontDone', { n: plan.length }); return plan.length;
 }
 /** 窓の「選んだ文字：n 個（書体・大きさ）」。 */
