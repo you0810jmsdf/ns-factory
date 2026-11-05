@@ -966,7 +966,7 @@ function divideAt(p) {
   const nearLine = px => cand.filter(s => s.type !== 'circle' && distTo(s, p) <= px / scale).sort((u, v) => distTo(u, p) - distTo(v, p))[0];
   const onLine = nearLine(7); if (onLine && divideSegmentAt(onLine, p)) return;   /* 線の上（7px 以内）をクリック：その線を等分する点から垂線（事業主 2026-10-28「分割線は線を二等分線したいのに角の二等分線しか機能がない」）。角の等分は、線から離れた角の中でクリック */
   const xs = cand.length >= 2 ? allIntersections(cand).filter(q => distance(p, q) <= reach) : [];
-  if (!xs.length) { const nl = nearLine(10); if (nl && divideSegmentAt(nl, p)) return; $('hint').textContent = t('divideNoCross'); return; }   /* 交点が近くに無ければ、少し離れていても（10px）線を等分する */
+  if (!xs.length) { const nl = nearLine(10); if (nl && divideSegmentAt(nl, p)) return; if (divideBetweenParallel(p)) return; $('hint').textContent = t('divideNoCross'); return; }   /* 交点が近くに無ければ、少し離れていても（10px）線を等分する */
   const X = xs.reduce((b, q) => distance(p, q) < distance(p, b) ? q : b), norm = a => ((a % 360) + 360) % 360, rays = [];
   const here = [...new Set(xs.filter(q => distance(q, X) < 0.02).flatMap(q => q.ids))];   /* 同じ点に集まる線は全部（端どうしがつながった線は、組ごとの交点として別々に出てくる） */
   for (const id of here) {   /* 交点を通る各線の、両方向の腕（端が交点なら、片方向だけ）と、その腕の長さ */
@@ -992,6 +992,49 @@ function divideAt(p) {
   const f = v => +v.toFixed(2);
   $('hint').textContent = t('divideDone', { x: f(X.x), y: f(X.y), a: f(theta), n, k: made.length, each: f(theta / n), len: f(len) }) + (marks ? ' ' + t('divideMarkNote', { m: marks, d: f(mark) }) : markOut ? ' ' + t('divideMarkOut', { len: f(len) }) : ''); rebuildSnaps(); draw();
 }
+/** 点 q から向き a（度）へ伸ばした半直線が、見えている線（自分の辺も含む・ただし q のすぐ近くは除く）に最初に当たるまでの距離。当たらなければ 0。 */
+function rayHitDistance(q, a) {
+  const rad = a * Math.PI / 180, far = 5000, probe = { id: '__probe', type: 'line', x1: q.x, y1: q.y, x2: q.x + far * Math.cos(rad), y2: q.y + far * Math.sin(rad) };
+  const others = doc.shapes.filter(o => visible(o) && stitchable(o) && !o.markOf && !['text', 'dimension', 'image', 'fold'].includes(o.type) && o.id !== '__probe');
+  let best = 0; for (const x of allIntersections([probe, ...others])) { if (!x.ids?.includes('__probe')) continue; const d = distance(q, x); if (d > 0.5 && (!best || d < best)) best = d; }
+  return best;
+}
+/** 平行な2本の線（本体の上下・左右の辺など）のあいだをクリック：そのあいだを n 等分する線（2＝真ん中の中心線）を、2本の重なる範囲いっぱいに引く（事業主 2026-11-05「本体の中心を作図するのに、二等分線を作図しようとしても…」）。
+ *  候補＝クリック点をはさむ（両側にある）同じ向きの線のうち、いちばん近い組（間隔が最小）。長さの欄が入っていればその長さ（クリック点を中心）。引けなければ false。 */
+function divideBetweenParallel(p) {
+  const segs = [], cand = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.markOf && (s.type === 'line' || s.type === 'polyline'));   /* 辺は遠くてもよい（本体の中心は辺から 60mm 以上離れる） */
+  for (const s of cand) {
+    if (s.type === 'line') segs.push({ A: { x: s.x1, y: s.y1 }, B: { x: s.x2, y: s.y2 } });
+    else if (s.type === 'polyline') { const pts = s.points, m = pts.length, cnt = s.closed ? m : m - 1; for (let i = 0; i < cnt; i++) segs.push({ A: pts[i], B: pts[(i + 1) % m] }); }
+  }
+  const items = [];
+  for (const g of segs) {
+    const dx = g.B.x - g.A.x, dy = g.B.y - g.A.y, L = Math.hypot(dx, dy); if (L < 1) continue; const u = { x: dx / L, y: dy / L }, nrm = { x: -u.y, y: u.x };
+    const ta = (g.A.x - p.x) * u.x + (g.A.y - p.y) * u.y, tb = (g.B.x - p.x) * u.x + (g.B.y - p.y) * u.y, d = (g.A.x - p.x) * nrm.x + (g.A.y - p.y) * nrm.y;
+    if (Math.abs(d) < 0.5 || Math.min(ta, tb) > 1 || Math.max(ta, tb) < -1) continue;   /* 線の上・横にずれた線は相手にしない */
+    items.push({ ang: ((Math.atan2(u.y, u.x) * 180 / Math.PI) % 180 + 180) % 180, u, nrm, d, lo: Math.min(ta, tb), hi: Math.max(ta, tb) });
+  }
+  let best = null;
+  for (const a of items) for (const b of items) {   /* a＝片側・b＝反対側（同じ向き・1° 以内） */
+    if (a === b || Math.min(Math.abs(a.ang - b.ang), 180 - Math.abs(a.ang - b.ang)) > 1) continue;
+    const da = a.d, db = b.d * (a.nrm.x * b.nrm.x + a.nrm.y * b.nrm.y > 0 ? 1 : -1); if (!((da > 0 && db < 0) || (da < 0 && db > 0))) continue;   /* a の法線で測って符号が逆＝p をはさむ */
+    const gap = Math.min(Math.abs(da), Math.abs(db)); if (!best || gap < best.gap) best = { a, b, da, db, gap };   /* クリックにいちばん近い線を含む組（左の辺の近くを押せば左右の真ん中） */
+  }
+  if (!best) return false;
+  const { a, b, da, db } = best, same = a.u.x * b.u.x + a.u.y * b.u.y > 0, blo = same ? b.lo : -b.hi, bhi = same ? b.hi : -b.lo;   /* b の範囲を a の向きで */
+  let lo = Math.max(a.lo, blo), hi = Math.min(a.hi, bhi); if (hi - lo < 1) { if (a.hi - a.lo <= bhi - blo) { lo = a.lo; hi = a.hi; } else { lo = blo; hi = bhi; } }   /* 重ならなければ短い方の範囲 */
+  const user = divisionNumber('divLen'); if (user > 0) { lo = -user / 2; hi = user / 2; }
+  const n = divisionCount(), layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer, made = [];
+  cancel();
+  commit(() => {
+    for (let k = 1; k < n; k++) {
+      const off = db + (da - db) * k / n, c = { x: p.x + a.nrm.x * off, y: p.y + a.nrm.y * off }, id = freshId(doc.shapes, 's');
+      doc.shapes.push({ id, layer, type: 'line', lineStyle: 'dashed', color: 'blue', x1: +(c.x + a.u.x * lo).toFixed(4), y1: +(c.y + a.u.y * lo).toFixed(4), x2: +(c.x + a.u.x * hi).toFixed(4), y2: +(c.y + a.u.y * hi).toFixed(4) }); made.push(id);
+    }
+    selected = new Set(made);
+  });
+  const f = v => +v.toFixed(2); $('hint').textContent = t('divideMidDone', { gap: f(Math.abs(da - db)), n, k: made.length, len: f(hi - lo) }); rebuildSnaps(); draw(); return true;
+}
 /** 線の等分：1本の線（直線・折れ線のクリックした辺・円弧・曲線）を n 等分する点（2＝中点）から、クリックした側へ垂直な線を引く。長さは欄の値、空なら線の半分（最大 30mm）。目印は分割点から垂線に沿って欄の距離。すでにその向きに線がある所には引かない。描けないときは false。 */
 function divideSegmentAt(s, p) {
   let seg = s;
@@ -1002,8 +1045,8 @@ function divideSegmentAt(s, p) {
   }
   const L = arcLength(seg); if (!(L > 1e-6)) return false;
   const n = divisionCount(), user = divisionNumber('divLen'), mark = divisionNumber('divMark'), norm = a => ((a % 360) + 360) % 360;
-  const len = user > 0 ? user : Math.min(30, L / 2), layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer;
-  const tool = doc.tools.find(x => x.id === $('stitchTool').value) || doc.tools[0], markOut = mark > len + 1e-9, putMarks = mark > 0 && !markOut && !!tool; let marks = 0;
+  const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer;
+  const tool = doc.tools.find(x => x.id === $('stitchTool').value) || doc.tools[0]; let marks = 0, len = user > 0 ? user : Math.min(30, L / 2);
   const lineDir = o => norm(Math.atan2(o.y2 - o.y1, o.x2 - o.x1) * 180 / Math.PI), sameDir = (u, v) => Math.abs(norm(u - v + 180) - 180) < 0.5;
   const plan = [];
   for (let k = 1; k < n; k++) {
@@ -1013,6 +1056,8 @@ function divideSegmentAt(s, p) {
     if (!exists) plan.push({ q, a });
   }
   if (!plan.length) { $('hint').textContent = t('divideExists'); return true; }
+  if (!(user > 0)) { const hit = plan.map(({ q, a }) => rayHitDistance(q, a)).filter(v => v > 0.5); if (hit.length) len = Math.min(...hit); }   /* 長さが空：向かいの線に当たるまで伸ばす（矩形の辺の中点→反対側の辺＝中心線。事業主 2026-11-05「本体の中心を作図」）。当たらなければ今までどおり半分（最大 30mm） */
+  const markOut = mark > len + 1e-9, putMarks = mark > 0 && !markOut && !!tool;
   const made = []; cancel();
   commit(() => {   /* 線と目印は同じ1回の保存（元に戻すは1回） */
     for (const { q, a } of plan) {
