@@ -101,8 +101,13 @@ let attachState = null; /* 線に着ける：1本目に着けたあと、2本目
 let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
+/** 「実線／点線を隠しています」の印（事業主 2026-11-05 改善提案）：表示メニューで隠している間、上の帯に出す。押すと両方とも表示に戻す。折り線・リフィル・オフセット・縫い線が「消えた」と思われる場面が続いたため */
+function syncViewHiddenBadge() {
+  const b = $('viewHiddenBadge'); if (!b) return; const off = [!viewShow.solid && 'Solid', !viewShow.dashed && 'Dashed'].filter(Boolean);
+  b.hidden = !off.length; b.textContent = off.length === 2 ? t('viewHiddenBoth') : off.length ? t('viewHidden' + off[0]) : '';
+}
 function syncViewShow(save) {
-  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
+  $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed; syncViewHiddenBadge();
   if (save) { try { localStorage.setItem('leather-cad.view', JSON.stringify(viewShow)); } catch { /* 保存できなくても続ける */ } }
   selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || viewShows(x); })); cancel(); draw(); scheduleOutSummary();
 }
@@ -1609,6 +1614,7 @@ function initLayers() {
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
   $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
+  if ($('viewHiddenBadge')) { $('viewHiddenBadge').onclick = () => { viewShow.solid = true; viewShow.dashed = true; syncViewShow(true); $('hint').textContent = t('viewHiddenRestored'); }; syncViewHiddenBadge(); }   /* 開いた直後（前回オフのまま）も印を出す */
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
