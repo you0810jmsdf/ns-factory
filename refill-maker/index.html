@@ -851,15 +851,15 @@ function cuClean(p) {
     size: r1(num(p.size, d.size || 2.4, 1.2, 12)), bold: p.bold === undefined ? !!d.bold : !!p.bold,
     align: ['left', 'center', 'right'].includes(p.align) ? p.align : (d.align || 'left'),
     sp: num(p.sp, d.sp || 6, 3, 20), rows: Math.round(num(p.rows, d.rows || 6, 1, 40)), thick: !!p.thick,
-    pg: (v => (v === -1 || (v >= 0 && v <= 120)) ? v : 0)(parseInt(p.pg))   // 0=全ページ共通 / n=nページ目だけ / -1=2ページ目以降すべて
+    pg: (v => (v >= -3 && v <= 120) ? v : 0)(parseInt(p.pg))   // 0=全ページ共通 / n=nページ目だけ / -1=2ページ目以降すべて / -2=奇数ページだけ / -3=偶数ページだけ
   };
 }
 function cuGet(id) { return CU.parts.find(p => p.id === id) || null; }
 // --- ページごとの出し分け：pg 0=全ページ / n=nページ目だけ / -1=2ページ目以降すべて ---
-function cuOn(p, n) { return p.pg === 0 || p.pg === n || (p.pg === -1 && n >= 2); }
-function cuGhost(p) { const v = CU.view; if (v === 0 || p.pg === v) return false; return v > 0 ? cuOn(p, v) : p.pg === 0; }   // 編集中のページに一緒に出る別グループの部品（薄く表示・動かせない）
+function cuOn(p, n) { return p.pg === 0 || p.pg === n || (p.pg === -1 && n >= 2) || (p.pg === -2 && n % 2 === 1) || (p.pg === -3 && n % 2 === 0); }
+function cuGhost(p) { const v = CU.view; if (v === 0 || p.pg === v) return false; if (v > 0) return cuOn(p, v); return p.pg === 0 || (v === -3 && p.pg === -1); }   // 編集中のページに一緒に出る別グループの部品（薄く表示・動かせない）
 function cuShown(p) { return p.pg === CU.view || cuGhost(p); }
-function cuPgLabel(g) { return g === 0 ? '全ページ共通' : g === -1 ? '2ページ目以降すべて' : g + 'ページ目だけ'; }
+function cuPgLabel(g) { return g === 0 ? '全ページ共通' : g === -1 ? '2ページ目以降すべて' : g === -2 ? '奇数ページだけ（1・3・5…）' : g === -3 ? '偶数ページだけ（2・4・6…）' : g + 'ページ目だけ'; }
 function cuPgCount() { return Math.min(120, Math.max(1, parseInt($('pageCount').value) || 1)); }
 function cuSetParts(arr) { CU.parts = arr.map(cuClean).filter(Boolean); CU.parts.forEach(p => { p.id = CU.nextId++; }); CU.sel = null; CU.view = 0; }
 function cuClampAll() {
@@ -934,12 +934,12 @@ function cuSync() {
 }
 function cuDrawTabs() {
   const n = cuPgCount(), sig = n + ':' + CU.view;
-  const note = CU.view === 0 ? '全ページに同じ部品を置きます。ページごとに変えたい部品は、上の「1ページ目」「2ページ目以降」などに切り替えて置いてください。'
+  const note = CU.view === 0 ? '全ページに同じ部品を置きます。ページごとに変えたい部品は、上の「1ページ目」「奇数ページ」「偶数ページ」などに切り替えて置いてください。'
     : `いま編集：<b>${cuPgLabel(CU.view)}</b>に出る部品。${CU.view === -1 ? '' : '薄く見えるのは、このページにも出る別の部品で、ここでは動かせません。'}`;
   $('cuViewNote').innerHTML = note;
   if (CU.tabSig === sig) return; CU.tabSig = sig;
   const chip = (v, label) => `<button type="button" class="${CU.view === v ? 'on' : ''}" onclick="cuSetView(${v})">${label}</button>`;
-  let h = chip(0, '全ページ共通') + chip(1, '1ページ目') + chip(-1, '2ページ目以降');
+  let h = chip(0, '全ページ共通') + chip(1, '1ページ目') + chip(-1, '2ページ目以降') + chip(-2, '奇数ページ') + chip(-3, '偶数ページ');
   if (n >= 2) { h += `<select onchange="cuSetView(this.value)" title="2ページ目以降の、特定の1ページだけを編集">` + `<option value="">ほかの1ページだけ…</option>` + Array.from({ length: n - 1 }, (_, i) => `<option value="${i + 2}"${CU.view === i + 2 ? ' selected' : ''}>${i + 2}ページ目だけ</option>`).join('') + `</select>`; }
   $('cuTabs').innerHTML = h;
 }
@@ -955,7 +955,7 @@ function cuSetPg(v) {
 }
 function cuDrawProps() {
   const box = $('cuProps'), p = cuGet(CU.sel); if (!box) return;
-  if (!p) { box.innerHTML = '<div class="cu-tip"><b>部品をタップ（クリック）すると、ここで文字や大きさを直せます。</b><br>部品はドラッグで動かせます。上の「全ページ共通」に置いた部品は全ページに、「1ページ目」などに置いた部品はそのページだけに印刷されます。<br>まちがえたときは「取り消し」で戻せます。</div>'; return; }
+  if (!p) { box.innerHTML = '<div class="cu-tip"><b>部品をタップ（クリック）すると、ここで文字や大きさを直せます。</b><br>部品はドラッグで動かせます。上の「全ページ共通」に置いた部品は全ページに、「1ページ目」「奇数ページ」などに置いた部品はそのページだけに印刷されます。<br>まちがえたときは「取り消し」で戻せます。</div>'; return; }
   const T = CU_TYPES[p.t], f = (label, inner) => `<div class="cu-f"><label>${label}</label>${inner}</div>`;
   const tLabel = { check: '選択肢（1行に1つ）', table: '見出し（カンマ区切り）', photo: '枠の中の文字', memo: 'ラベル', box: '枠の見出し' }[p.t] || '文字';
   let h = `<h4>${T.label}</h4>`;
@@ -968,7 +968,7 @@ function cuDrawProps() {
   if (!['line', 'photo'].includes(p.t)) h += f('書き方', btn(p.bold, '太字', `cuSet('bold',${!p.bold},true)`) + (['title', 'band', 'text'].includes(p.t) ? aligns.map(([v, label]) => btn(p.align === v, label, `cuSet('align','${v}',true)`)).join('') : ''));
   if (p.t === 'line') h += f('太さ', btn(!p.thick, '細い', `cuSet('thick',false,true)`) + btn(p.thick, '太い', `cuSet('thick',true,true)`)) + '<div class="hint" style="color:#8a7362">横長にすると横線、縦長にすると縦線になります。</div>';
   { const n = Math.max(cuPgCount(), p.pg > 0 ? p.pg : 0), opt = (v, label) => `<option value="${v}"${p.pg === v ? ' selected' : ''}>${label}</option>`;
-    h += f('出すページ', `<select onchange="cuSetPg(this.value)">` + opt(0, '全ページ共通') + opt(1, '1ページ目だけ') + opt(-1, '2ページ目以降すべて') + Array.from({ length: Math.max(0, n - 1) }, (_, i) => opt(i + 2, (i + 2) + 'ページ目だけ')).join('') + `</select>`); }
+    h += f('出すページ', `<select onchange="cuSetPg(this.value)">` + opt(0, '全ページ共通') + opt(1, '1ページ目だけ') + opt(-1, '2ページ目以降すべて') + opt(-2, '奇数ページだけ（1・3・5…）') + opt(-3, '偶数ページだけ（2・4・6…）') + Array.from({ length: Math.max(0, n - 1) }, (_, i) => opt(i + 2, (i + 2) + 'ページ目だけ')).join('') + `</select>`); }
   const nin = (k, id) => `<input type="number" id="${id}" step="0.5" value="${p[k]}" oninput="cuNum('${k}',this.value)">`;
   h += f('位置（mm）', 'よこ' + nin('x', 'cuX') + 'たて' + nin('y', 'cuY')) + f('大きさ（mm）', '幅' + nin('w', 'cuW') + '高さ' + nin('h', 'cuH'));
   h += `<div class="cu-acts"><button type="button" onclick="cuDup()">複製</button><button type="button" onclick="cuOrder('front')">前面へ</button><button type="button" onclick="cuOrder('back')">背面へ</button><button type="button" class="danger" onclick="cuDel()">削除</button></div>`;
