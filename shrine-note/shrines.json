@@ -10568,7 +10568,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/nf103fb443491",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/kashima.jpg",
+        "note": "祀られる神様を描いた想像図（AI生成）。背景は実在の神社の雰囲気を描いたもので、実際の景観やご神体とは異なります。"
       },
       "note_geo": "国土地理院の注記『鹿島神宮』と約5m以内で一致（2026-10-11 確認）。",
       "checked": "2026-10-11"
@@ -11660,7 +11662,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n1ae9898497f3",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/suwa.jpg",
+        "note": "祀られる神様を描いた想像図（AI生成）。背景は実在の神社の雰囲気を描いたもので、実際の景観やご神体とは異なります。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『諏訪大社上社本宮』と約5m以内で一致（2026-10-12 確認）。"
@@ -11809,7 +11813,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n75cb3a72c162",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/omiwa.jpg",
+        "note": "祀られる神様を描いた想像図（AI生成）。背景は実在の神社の雰囲気を描いたもので、実際の景観やご神体とは異なります。"
       },
       "checked": "2026-10-12",
       "note_geo": "住所検索の点は国土地理院の注記『大神神社』から約379m離れていたため、注記の位置に合わせた（2026-10-12 確認）。"
@@ -14052,7 +14058,9 @@
       },
       "article_url": "https://note.com/you0810jmsdf/n/n3a91593eff0f",
       "photo": {
-        "kind": "placeholder"
+        "kind": "ai",
+        "src": "../assets/generated/fushimi.jpg",
+        "note": "祀られる神様を描いた想像図（AI生成）。背景は実在の神社の雰囲気を描いたもので、実際の景観やご神体とは異なります。"
       },
       "checked": "2026-10-12",
       "note_geo": "国土地理院の注記『伏見稲荷大社』と約28m以内で一致（2026-10-12 確認）。"
