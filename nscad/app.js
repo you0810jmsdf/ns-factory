@@ -6509,7 +6509,9 @@ function drawFoldHandles() {
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
 const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
 const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
-function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdLinesInView(list.flatMap(g => g.items)); for (const g of list) drawFdItems(g.items, { color: TEXT_COLOR_DEFAULT, lineW: 1.6, font: 15, keepIn }); }   /* 寄せるのは、断面の寸法の線がどれか1本でも画面にあるときだけ */   /* 色は、ほかの寸法・文字と同じ標準の色（事業主 2026-11-05「断面図の文字が青で統一感がまるでない」） */
+/** 断面図の寸法の文字の大きさ（画面 px）：ふつうの寸法と同じ決め方（2.5mm、縮小しても 12px）。事業主 2026-11-05「断面図のみやけに寸法線がでかい（数字）」：前は常に 15px だった */
+const fdFontPx = () => Math.max(2.5 * scale, 12);
+function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdLinesInView(list.flatMap(g => g.items)); for (const g of list) drawFdItems(g.items, { color: TEXT_COLOR_DEFAULT, lineW: 1.6, font: fdFontPx(), keepIn }); }   /* 寄せるのは、断面の寸法の線がどれか1本でも画面にあるときだけ */   /* 色は、ほかの寸法・文字と同じ標準の色（事業主 2026-11-05「断面図の文字が青で統一感がまるでない」） */
 /* ───────── 断面の寸法を、いつも画面に出す＋寸法をクリックして数字を入れる（事業主 2026-10-25「断面図の寸法を入力したい」「見てもサイズがわからない」・案C）：
    表示メニューの「断面の寸法」（初めからオン）がオンの間は、設計カードや手順の小窓を閉じていても、全幅・全高・厚みの寸法（foldSectionDims）を出し続ける。2つ折りでは、線や文字をクリックすると、その寸法の数字を入れる小窓（FHB）が開く。
    ①表紙の幅＝endA・②裏表紙の幅＝endB・④全高＝h（背の内側の半径が変わる）・⑤表の厚み＝to・⑥裏の厚み＝ti。画面だけ（書き出し・印刷には入らない）。 ───────── */
@@ -6517,9 +6519,9 @@ const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign &&
 const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
-  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = 15 / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
+  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
   const measure = text => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
-  const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, 15, pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
+  const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, fdFontPx(), pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
   for (const g of groups) {
     if (g.key === 't') {   /* 厚みの文字「厚み ⑤表 1.5 + ⑥裏 1.5 = 3 mm」は、「+」の手前を⑤表・後ろを⑥裏にする（事業主 2026-11-04「断面図から修正できないか」：⑥裏は小さな線を狙うしかなかった）。線は、押した方 */
