@@ -30,6 +30,7 @@ import { loadDesign, filterDesigns, rankLocalDesigns, localDesignRequest, design
 import { DATA_DESIGNS } from './data/designs.js';
 import { DATA_STYLE } from './data/style.js';
 import { DATA_RELEASE_NOTES } from './data/release-notes.js';
+import { DATA_BOOK_SPECS } from './data/book-specs.js';
 import { DATA_RELEASE_HISTORY } from './data/release-history.js';
 import { TUTORIALS_BASICS } from './tutorials/basics.js';
 import { TUTORIALS_STITCH } from './tutorials/stitch.js';
@@ -2377,6 +2378,9 @@ function toggleFlowCard(id) { const li = $(id); if (!li) return; flowOpenOverrid
 const BOOK_SPEC_KEY = 'leather-cad.bookSpecs', BOOK_SPEC_MAX = 50;
 const BOOK_SPEC_FIELDS = ['flowFoldMode', 'flowSide', 'flowMargin', 'fdBiW', 'fdRR', 'foldSecT', 'fdTO', 'fdTI', 'fdH', 'flowCorner', 'fdEdge', 'fdMargin', 'fdPitch', 'flowStitchLayout', 'flowHwMetal', 'fdRingPos'], BOOK_SPEC_CHECKS = ['flowRefillPaper', 'flowAutoDims'];
 function loadBookSpecs() { try { const l = JSON.parse(localStorage.getItem(BOOK_SPEC_KEY) || '[]'); return Array.isArray(l) ? l.filter(x => x && typeof x.name === 'string' && x.name && x.data && typeof x.data === 'object') : []; } catch { return []; } }
+/** 標準の仕様（data/book-specs.json・事業主 2026-11-05「仕様の定型句を考えて登録してください」）。同じ名前で自分が保存したものがあれば、そちらが勝つ（＝上書き）。自分の保存を消すと標準に戻る */
+const builtinBookSpecs = () => ((DATA_BOOK_SPECS && DATA_BOOK_SPECS.presets) || []).filter(p => p && typeof p.name === 'string' && p.data).map(p => ({ ...p, builtin: true }));
+function allBookSpecs() { const mine = loadBookSpecs(), names = new Set(mine.map(p => p.name)); return [...mine, ...builtinBookSpecs().filter(p => !names.has(p.name))]; }
 function saveBookSpecs(list) { try { localStorage.setItem(BOOK_SPEC_KEY, JSON.stringify(list.slice(0, BOOK_SPEC_MAX))); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
 /** いまの欄と色を、保存用のデータにまとめる */
 function bookSpecCapture() {
@@ -2401,22 +2405,27 @@ function bookSpecApply(data) {
 }
 function renderBookSpecSel(selectName) {
   const sel = $('bookSpecSel'); if (!sel) return; const keep = selectName ?? sel.value; sel.textContent = ''; const none = document.createElement('option'); none.value = ''; none.textContent = t('bookSpecPick'); sel.appendChild(none);
-  for (const p of loadBookSpecs()) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); } sel.value = loadBookSpecs().some(p => p.name === keep) ? keep : '';
+  const all = allBookSpecs(), groups = [[t('bookSpecMine'), all.filter(p => !p.builtin)], [t('bookSpecBuiltin'), all.filter(p => p.builtin)]];
+  for (const [label, list] of groups) { if (!list.length) continue; const g = document.createElement('optgroup'); g.label = label; for (const p of list) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; g.appendChild(o); } sel.appendChild(g); }   /* 自分で保存したもの → 標準 */
+  sel.value = all.some(p => p.name === keep) ? keep : ''; syncBookSpecSaveLabel();
 }
+/** 保存ボタンの文字：一覧で選んでいて名前が空なら「〇〇に上書き」（事業主 2026-11-05「上書き修正できるようにして」） */
+function syncBookSpecSaveLabel() { const b = $('bookSpecSave'), sel = $('bookSpecSel'); if (!b || !sel) return; const name = String($('bookSpecName')?.value ?? '').trim(); b.textContent = sel.value && !name ? t('bookSpecOverwrite', { name: sel.value }) : t('bookSpecSave'); }
 function saveBookSpec() {
   const name = String($('bookSpecName').value ?? '').trim() || String($('bookSpecSel').value ?? '').trim(); if (!name) { $('hint').textContent = t('bookSpecNoName'); return; }
   const list = loadBookSpecs().filter(p => p.name !== name); list.unshift({ name, savedAt: new Date().toISOString(), data: bookSpecCapture() }); if (!saveBookSpecs(list)) return;
   renderBookSpecSel(name); $('bookSpecName').value = ''; $('hint').textContent = t('bookSpecSaved', { name, n: Math.min(list.length, BOOK_SPEC_MAX) });
 }
 function loadBookSpec() {
-  const name = String($('bookSpecSel').value ?? ''), p = loadBookSpecs().find(x => x.name === name); if (!p) { $('hint').textContent = t('bookSpecPickFirst'); return; }
+  const name = String($('bookSpecSel').value ?? ''), p = allBookSpecs().find(x => x.name === name); if (!p) { $('hint').textContent = t('bookSpecPickFirst'); return; }
   bookSpecApply(p.data); $('hint').textContent = t('bookSpecLoaded', { name }) + (doc.foldDesign ? ' ' + t('bdeRedrawn') : '');
 }
 function deleteBookSpec() {
   const name = String($('bookSpecSel').value ?? ''); if (!name) { $('hint').textContent = t('bookSpecPickFirst'); return; }
-  if (!saveBookSpecs(loadBookSpecs().filter(p => p.name !== name))) return; renderBookSpecSel(''); $('hint').textContent = t('bookSpecDeleted', { name });
+  const mine = loadBookSpecs(); if (!mine.some(p => p.name === name)) { $('hint').textContent = t('bookSpecBuiltinKeep', { name }); return; }   /* 標準は消せない（同じ名前で保存すれば上書きできる） */
+  if (!saveBookSpecs(mine.filter(p => p.name !== name))) return; const back = builtinBookSpecs().some(p => p.name === name); renderBookSpecSel(back ? name : ''); $('hint').textContent = t(back ? 'bookSpecRestored' : 'bookSpecDeleted', { name });
 }
-function initBookSpecs() { if (!$('bookSpecSel')) return; renderBookSpecSel(''); $('bookSpecSave').onclick = saveBookSpec; $('bookSpecLoad').onclick = loadBookSpec; $('bookSpecDel').onclick = deleteBookSpec; $('bookSpecSel').onchange = () => { if ($('bookSpecSel').value) $('bookSpecName').value = ''; }; }
+function initBookSpecs() { if (!$('bookSpecSel')) return; renderBookSpecSel(''); $('bookSpecSave').onclick = saveBookSpec; $('bookSpecLoad').onclick = loadBookSpec; $('bookSpecDel').onclick = deleteBookSpec; $('bookSpecSel').onchange = () => { if ($('bookSpecSel').value) $('bookSpecName').value = ''; syncBookSpecSaveLabel(); }; $('bookSpecName').oninput = syncBookSpecSaveLabel; }
 function initFlowFold() {
   for (const id of FLOW_CARDS) { const head = $(id)?.querySelector?.('.flow-head'); if (!head) continue; head.tabIndex = 0; head.setAttribute('role', 'button'); head.addEventListener('click', () => toggleFlowCard(id)); head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlowCard(id); } }); }
 }
