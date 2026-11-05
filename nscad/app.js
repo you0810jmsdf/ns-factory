@@ -104,8 +104,8 @@ const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 「実線／点線を隠しています」の印（事業主 2026-11-05 改善提案）：表示メニューで隠している間、上の帯に出す。押すと両方とも表示に戻す。折り線・リフィル・オフセット・縫い線が「消えた」と思われる場面が続いたため */
 function syncViewHiddenBadge() {
   const b = $('viewHiddenBadge'); if (!b) return; const off = [!viewShow.solid && 'Solid', !viewShow.dashed && 'Dashed'].filter(Boolean);
-  const lines = off.length === 2 ? t('viewHiddenBoth') : off.length ? t('viewHidden' + off[0]) : '', refs = !viewShow.refs ? t('viewHiddenRefs') : '';
-  b.hidden = !lines && !refs; b.textContent = [lines, refs].filter(Boolean).join(' / ');
+  const lines = off.length === 2 ? t('viewHiddenBoth') : off.length ? t('viewHidden' + off[0]) : '', hiddenLayers = doc.layers.filter(l => !l.visible).map(layerName), layers = hiddenLayers.length ? t('viewHiddenLayers', { names: hiddenLayers.join('・') }) : '';
+  b.hidden = !lines && !layers; b.textContent = [lines, layers].filter(Boolean).join(' / ');
 }
 function syncViewShow(save) {
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed; syncViewHiddenBadge();
@@ -415,7 +415,7 @@ function drawQuad(dpr) {
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && !hwHidden(s) && (exporting || viewShows(s)); };
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
-const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false, refs: true };   /* refs：当てもの（平面図のリフィルの線＋白い紙・部品ライブラリの参考用の部品）を見せるか（事業主 2026-11-05「リフィルだけ一時非表示」→ 案A。保存しない） */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
+const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false };   /* hardware：「金具」の層の表示と連動（金属の色を付けた図形も一緒に隠す）。レイヤーの表示は「表示」メニューのレイヤー一覧（renderViewLayers）からも切り替えられる */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
@@ -430,11 +430,10 @@ const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fi
 /** 金具の図形か：「金具」の層・置いた金具の外形（hw）・金属の色を付けた図形。「金具を表示」を切ると、これらを隠す。 */
 const isHardwareShape = s => s.layer === 'hardware' || !!s.hw || !!s.metal;
 const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
-const refHidden = s => !viewShow.refs && !!s.ref;   /* ref：'refill'（平面図のリフィル）・'reference'（部品ライブラリの当てもの） */
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = doc.shapes.filter(s => !hwHidden(s) && !refHidden(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(isSelHole).map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
+const outputDoc = () => { let shapes = doc.shapes.filter(s => !hwHidden(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(isSelHole).map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 /** 書き出し用（SVG・PDF・DXF）：重なった線を1本にした図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた図形は、そのまま（穴が付いたまま出る）。除いた長さは lastDedupe（書き出し後の案内に使う）。
  *  事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に。…起動のたびに重複する線を削除する機能」 */
@@ -468,7 +467,7 @@ const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
 /* ガイド層の図形は「点線を表示」の側（2026-10-16）。ただし平面図が置いたリフィル（foldFlat・青い実線と穴の〇）は実線の側：点線を切ると白い紙ごと消えた（事業主 2026-11-05「点線表示を消すとリフィルまで消えてしまう」） */
 const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || (s.layer === 'guide' && !s.foldFlat) ? 'dashed' : 'solid'];
 try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; if (v.secDims === false) viewShow.secDims = false; } catch { /* 保存できない環境でも操作を続ける */ }
-const visible = s => layerVisible(s) && !s.holeLink && !hwHidden(s) && !refHidden(s) && (exporting || viewShows(s));
+const visible = s => layerVisible(s) && !s.holeLink && !hwHidden(s) && (exporting || viewShows(s));
 /** 三面図・金具の自動生成など、図形の数値を使う計算では、実線・点線の表示切り替えを見ない（画面だけの切り替えのため）。 */
 const visibleData = s => layerVisible(s) && !s.holeLink;
 const editable = s => layerEditable(s); /* holeLink も「選べる」側（全選択・範囲選択に入れて、コピー・移動・複製に穴ごと付けるため）。クリックでは選ばれない（visible で除く） */
@@ -481,7 +480,7 @@ function selectedLayerText() {
   const names = [...new Set(picked.map(s => s.layer))].map(id => { const l = doc.layers.find(x => x.id === id); return l ? layerName(l) : id; });
   return ' · ' + (names.length === 1 ? t('countLayer', { name: names[0] }) : t('countLayers', { n: names.length, names: names.slice(0, 3).join('・') }));
 }
-const layerName = l => l.name === l.id && ['pattern', 'hardware', 'guide'].includes(l.id) ? t('layer.' + l.id) : l.name;
+const layerName = l => l.name === l.id && ['pattern', 'hardware', 'guide', 'parts'].includes(l.id) ? t('layer.' + l.id) : l.name;
 /** 層 id が無ければ作って返す（金具を置くときなど）。2番目（型紙の次）に入れる。 */
 function ensureLayer(d, id) { if (!d.layers.some(l => l.id === id)) d.layers.splice(Math.min(1, d.layers.length), 0, { id, name: id, visible: true, locked: false }); return id; }
 
@@ -1542,6 +1541,27 @@ function markSelectedLayers() {
   if (selected.size) for (const s of doc.shapes) if (!s.holeLink && selected.has(s.id)) count.set(s.layer, (count.get(s.layer) || 0) + 1);
   for (const { id, row, tag, mv } of layerRowRefs) { if (mv && mv.disabled !== !selected.size) mv.disabled = !selected.size; const n = count.get(id) || 0, cls = 'row' + (id === activeLayer ? ' active' : '') + (n ? ' has-sel' : ''), text = n ? t('layerSelCount', { n }) : ''; if (row.className !== cls) row.className = cls; if (tag.textContent !== text) tag.textContent = text; }
 }
+/** 表示メニューの「レイヤー」一覧：図面のレイヤー全部のチェック（足した層も）。チェック＝その層の表示（レイヤーカードの目と同じ・書き出し・印刷にも効く）。金具の層の表示は viewShow.hardware にも写す（金属の色を付けた図形も一緒に隠す）。
+ *  事業主 2026-11-05「表示メニューもレイヤーと連動していると認識」「追加したレイヤーを柔軟に反映させては」 */
+let viewLayersSig = '';   /* 表示メニューのレイヤー一覧を作ったときの層の状態（変わったときだけ作り直す） */
+const viewLayersSigNow = () => doc.layers.map(l => l.id + ':' + layerName(l) + ':' + (l.visible ? 1 : 0)).join('|');
+function syncViewLayers() { const sig = viewLayersSigNow(); if (sig !== viewLayersSig) renderViewLayers(); }   /* draw() のたびに軽く確かめる（平面図などが層を足したあとも一覧が追いつく） */
+function renderViewLayers() {
+  const box = $('viewLayers'); if (!box) return; box.textContent = ''; if (Array.isArray(box.children)) box.children.length = 0; viewLayersSig = viewLayersSigNow();   /* ブラウザの children（HTMLCollection）は書き換え不可。textContent で空になる */
+  for (const l of doc.layers) {
+    const label = document.createElement('label'), inp = document.createElement('input'), span = document.createElement('span');
+    inp.type = 'checkbox'; inp.checked = !!l.visible; inp.dataset.layer = l.id; inp.addEventListener('change', () => setLayerShown(l.id, !!inp.checked)); span.textContent = layerName(l); label.title = t('viewLayerTip');
+    label.appendChild(inp); label.appendChild(span); box.appendChild(label);
+  }
+  viewShow.hardware = doc.layers.find(l => l.id === 'hardware')?.visible !== false;
+  syncViewHiddenBadge();
+}
+/** レイヤーの表示を切り替える（表示メニューのチェックから。レイヤーカードの目と同じ処理：元に戻すは1回・隠した層の図形は選択から外す） */
+function setLayerShown(id, on) {
+  const l = doc.layers.find(x => x.id === id); if (!l || !!l.visible === !!on) return;
+  commit(() => { l.visible = !!on; if (!on) selected = new Set([...selected].filter(sid => { const x = doc.shapes.find(y => y.id === sid); return !x || x.layer !== id; })); });
+  cancel(); renderLayers(); draw(); scheduleOutSummary();
+}
 function renderLayers() {
   if (!doc.layers.some(l => l.id === activeLayer)) activeLayer = doc.layers[0].id;
   for (const id of ['layerList', 'info-layer', 'prop-layer']) {
@@ -1573,6 +1593,7 @@ function renderLayers() {
     const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); row.appendChild(mvBtn); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
   markSelectedLayers();
+  renderViewLayers();   /* 表示メニューのレイヤー一覧も作り直す */
 }
 /** 層の名前を直す（事業主 2026-10-25「レイヤーの名前を変えれないと、どこのレイヤーに属しているかわからない」「型紙の大属性のあとに自由に名前をつけたい」）：一覧の名前の欄から、どの層でも直接書き換える。「型紙 表紙」のように、元の名前のあとに自由に足せる。
  *  空にしたら今の名前のまま。同じ名前も付けられる（右クリックの一覧に✓が付くので見分けられる）。元に戻すは1回。 */
@@ -1661,15 +1682,13 @@ function initLayers() {
   $('showSolid').checked = viewShow.solid; $('showDashed').checked = viewShow.dashed;
   $('showSolid').addEventListener('change', e => { viewShow.solid = e.target.checked; syncViewShow(true); });
   $('showDashed').addEventListener('change', e => { viewShow.dashed = e.target.checked; syncViewShow(true); });
-  if ($('viewHiddenBadge')) { $('viewHiddenBadge').onclick = () => { viewShow.solid = true; viewShow.dashed = true; viewShow.refs = true; if ($('showRefs')) $('showRefs').checked = true; syncViewShow(true); $('hint').textContent = t('viewHiddenRestored'); }; syncViewHiddenBadge(); }   /* 開いた直後（前回オフのまま）も印を出す */
+  if ($('viewHiddenBadge')) { $('viewHiddenBadge').onclick = () => { viewShow.solid = true; viewShow.dashed = true; if (doc.layers.some(l => !l.visible)) showAllLayers(); syncViewShow(true); $('hint').textContent = t('viewHiddenRestored'); };   /* 隠しているレイヤーも全部表示に戻す */ syncViewHiddenBadge(); }   /* 開いた直後（前回オフのまま）も印を出す */
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
   restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
   $('backBadge')?.addEventListener('click', () => { $('stitchFace').value = 'front'; draw(); });   /* 「裏面表示中」の印を押すと、表に戻す */
-  $('showRefs').checked = viewShow.refs; $('showRefs').addEventListener('change', e => { scheduleOutSummary(); viewShow.refs = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !refHidden(x); })); syncViewHiddenBadge(); cancel(); draw(); });   /* 当てものの表示（画面と書き出し。保存しない） */
-  $('showHardware').checked = viewShow.hardware; $('showHardware').addEventListener('change', e => { scheduleOutSummary(); viewShow.hardware = e.target.checked; selected = new Set([...selected].filter(id => { const x = doc.shapes.find(y => y.id === id); return !x || !hwHidden(x); })); cancel(); draw(); });   /* 金具の表示（画面と書き出しの両方。レイヤー・データは変えない） */
   initSideTabs(); restoreAskWhere(); restoreBeamFix(); $('outBeamFix')?.addEventListener('change', () => { try { localStorage.setItem(BEAM_FIX_KEY, $('outBeamFix').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } }); $('outAskWhere')?.addEventListener('change', () => { try { localStorage.setItem(ASK_WHERE_KEY, $('outAskWhere').checked ? '1' : '0'); } catch { /* 保存できなくても続ける */ } });
   restoreDiamondStyle(); $('diamondStyle').addEventListener('change', () => { try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ } draw(); refreshInfo(); });
   $('info-flipSlant').onclick = flipSlantOfSelection; $('info-slantFwd').onclick = () => unifySlantOfSelection('fwd'); $('info-slantRev').onclick = () => unifySlantOfSelection('rev');
@@ -4896,7 +4915,7 @@ function placeLibrary(at) {
   const bad = varOutOfRange(it, libVars()); if (bad.length) { $('hint').textContent = bad.map(b => t('varOutOfRange', { k: b.key, min: b.min, max: b.max })).join(' '); return; }
   let payload; try { payload = instantiateItem(it, libVars(), at, { scale: Number($('pasteScale').value) || 1 }); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel(); let ids = [];
-  commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); if ((it.tags || []).includes('reference')) for (const s of doc.shapes) if (ids.includes(s.id)) s.ref = 'reference'; selected = new Set(ids); });   /* 参考用（名刺・カード・札）＝当てもの */
+  commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); if ((it.tags || []).includes('reference')) { const parts = ensureLayer(doc, 'parts'); for (const s of doc.shapes) if (ids.includes(s.id)) s.layer = parts; } selected = new Set(ids); });   /* 参考用（名刺・カード・札）は「部品」の層 */
   renderLayers(); setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
 }
 /** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
@@ -6242,7 +6261,7 @@ function addRefillPaperFill(refillIds, layer) {
     if (!closed.length) return null; poly = closed[0].poly; holeShapes = holeShapes.filter(s => s !== closed[0].s);
   }
   const rd = q => ({ x: +q.x.toFixed(2), y: +q.y.toFixed(2) }), holes = holeShapes.map(h => outlinePolygon([h], h.id)?.points).filter(Boolean).map(h => h.map(rd));
-  const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd', under: 'hardware', ref: 'refill' };   /* under：金具の層より下に描く（実物は輪が紙の上をまたぐ・事業主決定 2026-11-04 案A） */
+  const fl = { id: freshId(doc.fills || [], 'f'), points: poly.points.map(rd), holes, ids: refillIds.slice(), area: Math.round(leatherItemArea(poly.points) * 10) / 10, leather: '#FFFFFF', layer, foldFlat: 'fd', under: 'hardware' };   /* under：金具の層より下に描く（実物は輪が紙の上をまたぐ・事業主決定 2026-11-04 案A） */
   doc.fills = [...(doc.fills || []), fl]; return fl;
 }
 /** 作りなおす図形に、前の図形と同じ番号を使わせる（事業主 2026-10-25「色塗る範囲も追従させてね」「色だけが宙に浮かないように処置するのが普通では」：作りなおすたびに番号を振り直すと、塗りが、無くなった図形を指したまま取り残された）。
@@ -6298,7 +6317,7 @@ function projectFoldDesign(withStitch) {
       const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
       if (gap.item) {   /* リフィルの部品（部品ライブラリのもの）を、そのまま置く：穴の列（E）をリング軸に合わせ、向きが逆なら左右反転。層はガイド・色は青（切り抜きではない参考） */
         const payload = instantiateItem(gap.item, gap.R == null ? {} : { R: gap.R }, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
-        const refillIds = placed.map(sh => add({ ...sh, layer: guide, color: 'blue', ref: 'refill' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, guide);   /* ref：「当てものを表示」で隠せる */   /* 白い紙（穴は透明） */
+        const parts = ensureLayer(doc, 'parts'), refillIds = placed.map(sh => add({ ...sh, layer: parts, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, parts);   /* リフィルは「部品」の層（事業主 2026-11-05「シミュレーションで作ったリフィルは部品レイヤーとして管理」：レイヤーの目で隠せる） */   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
         seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
         for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });
@@ -8878,6 +8897,7 @@ function syncBackBadge() {
   const on = !!viewShow.stitch && stitchFace() === 'back' && !!$('canvas3d')?.hidden; if (b.hidden === on) b.hidden = !on;
 }
 function draw() {
+  syncViewLayers();
   if (!exporting) syncBackBadge();
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 
