@@ -5634,9 +5634,13 @@ function builtinPhrases() {
   const en = document.documentElement.lang === 'en', out = [];
   for (const p of ((DATA_BOOK_SPECS && DATA_BOOK_SPECS.presets) || [])) {
     const b = p.data?.book || {}, f = p.data?.fields || {}, sp = binderSpec(b.spec); if (!sp) continue;
-    const name = (en ? 'Spec: ' : '仕様：') + p.name, nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '';
-    const text = en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Ring inner ${b.dia} mm, stack ${b.stack} mm`, `Width ${f.fdBiW} mm, spine radius ${f.fdRR} mm, height ${f.fdH} mm`, `Leather outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, metal ? `Hardware ${metal}` : ''].filter(Boolean).join('\n')
-      : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `リング 内径 ${b.dia} mm・束 ${b.stack} mm`, `全幅 ${f.fdBiW} mm・背の半径 ${f.fdRR} mm・高さ ${f.fdH} mm`, `革 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, metal ? `金具 ${metal}` : ''].filter(Boolean).join('\n');
+    const name = (en ? 'Spec: ' : '仕様：') + p.name, nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿';
+    /* 事業主 2026-11-05「革の種類、色／手帳のサイズ全般（縦、横、マチ）／リングの形式（クラウゼ社製、標準型、爪折式、スライドロック式、ビス式）／リングの内径、外径、色 を追加」。分からない所は ＿＿ にして、選ぶ候補を（ ）に */
+    const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
+    const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
+    const leather = p.data?.colors?.leather, leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || leather?.hex || blank;
+    const text = en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia} mm, outer ${outer} mm, stack ${b.stack} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`].join('\n')
+      : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia} mm・外径 ${outer} mm・束 ${b.stack} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`].join('\n');
     out.push({ name, text, size: 3, builtin: true });
   }
   return out;
@@ -5658,8 +5662,26 @@ function placePhrase(at) {
   const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
-  cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); });
-  renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length });
+  cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });
+  renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');
+}
+/** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
+let lastPhrase = null;
+function restylePlacedPhrase() {
+  if (!lastPhrase || mode !== 'select' && mode !== 'text') return false; const ids = lastPhrase.ids; if (!ids.length || selected.size !== ids.length || !ids.every(id => selected.has(id))) return false;
+  const size = Number($('phraseSize').value), font = $('phraseFont').value; if (!(size > 0)) return false;
+  const rows = ids.map(id => doc.shapes.find(s => s.id === id)).filter(s => s && s.type === 'text'); if (rows.length !== ids.length) { lastPhrase = null; return false; }
+  const lines = phraseLines($('phraseText').value), at = lastPhrase.at, want = phraseShapes(lines, at, size, rows[0].layer, undefined, font);   /* 行間＝文字高×1.4 で置き直す */
+  if (want.length !== rows.length) return false;
+  commit(() => { rows.forEach((sh, i) => { sh.sizeMm = size; sh.y = want[i].y; if (want[i].font) sh.font = want[i].font; else delete sh.font; }); });
+  $('hint').textContent = t('phraseRestyled', { n: rows.length, size, font: fontLabel(font) }); return true;
+}
+/** 文字高の目安（事業主 2026-11-05「どのくらいの大きさかわかるように目安を表示してほしい」）：本文の1行目を今の文字高・フォントで測った幅を出す */
+function syncPhraseSizeNote() {
+  const el = $('phraseSizeNote'); if (!el) return; const size = Number($('phraseSize').value), line = phraseLines($('phraseText').value).find(Boolean) || '';
+  if (!(size > 0) || !line) { el.textContent = ''; return; }
+  const w = textWidthMm({ text: line, sizeMm: size, font: $('phraseFont').value }), short = [...line].length > 12 ? [...line].slice(0, 12).join('') + '…' : line;
+  el.textContent = t('phraseSizeNote', { line: short, w: Math.round(w), size });
 }
 /* ---- 文字のフォントと大きさをまとめて変える（選んだ文字。定型句で置いた文字も同じ文字図形）----
    事業主指示 2026-10-26「定型句、文字ともにフォントとフォントサイズを後から変更したい」（フォントは数種類から選ぶ）。「そのまま」（書体＝空・大きさ＝空）の項目は変えない。 */
@@ -6668,6 +6690,7 @@ function initPhrases() {
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
+  $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
 }
 /** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
 function drawCoverFromSpine() {
