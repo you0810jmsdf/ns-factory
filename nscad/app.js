@@ -5630,18 +5630,43 @@ let phrases = [];
 function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); }
 function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
 /** 標準の定型句（事業主 2026-11-05「定型句はまだ登録されていない、案を登録して」）：標準の手帳の仕様（data/book-specs.json）から、図面に書き添える仕様の文を作る。自分で同じ名前を保存すればそちらが勝つ（上書き）。消すと標準に戻る */
+/** 手帳の仕様の文（定型句・メッセージ用）。data は bookSpecCapture() と同じ形（標準の仕様 DATA_BOOK_SPECS の data も同じ）。pockets は図面の部品から拾ったポケット・あおり（docPockets()）。規格が無ければ null。
+   事業主 2026-11-05「革の種類、色／手帳のサイズ全般（縦、横、マチ）／リングの形式（クラウゼ社製、標準型、爪折式、スライドロック式、ビス式）／リングの内径、外径、色 を追加」「ポケットとあおりが抜けている」「寸法は実際の設計内容を反映できるか？」。分からない所は ＿＿ にして、選ぶ候補を（ ）に */
+function bookSpecText(data, pockets = []) {
+  const en = document.documentElement.lang === 'en', b = data?.book || {}, f = data?.fields || {}, sp = binderSpec(b.spec); if (!sp) return null;
+  const nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿', b1 = en ? '__' : '＿';   /* b1＝数字の空欄 */
+  const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
+  const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
+  const leather = data?.colors?.leather, leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || leather?.hex || blank;
+  const dims = list => list.map(q => `${q.name} ${n1(q.w)}×${n1(q.h)} mm`).join(en ? ', ' : '・'), pk = pockets.filter(q => q.kind === 'pocket'), fl = pockets.filter(q => q.kind === 'flap');   /* 図面の部品の縦横（外形の幅×高さ） */
+  return en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, stack ${b.stack || blank} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
+    : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・束 ${b.stack || blank} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
+}
+/** 図面の部品のうち、名前が「あおり」「煽り」「flap」の部品はあおり、名前が「ポケット」「pocket」か役割 pocket（自動設計）の部品はポケットとして、外形の幅×高さ（mm）を返す。形の無い部品は拾わない。 */
+function docPockets() {
+  const out = [];
+  for (const part of doc.parts || []) {
+    const name = String(part.name || ''), kind = /あおり|煽り|flap/i.test(name) ? 'flap' : (/ポケット|pocket/i.test(name) || part.role === 'pocket') ? 'pocket' : null; if (!kind) continue;
+    const boxes = (part.shapeIds || []).map(id => doc.shapes.find(x => x.id === id)).filter(Boolean).map(bboxOf).filter(Boolean); if (!boxes.length) continue;
+    const bb = boxes.reduce((a, c) => ({ minX: Math.min(a.minX, c.minX), minY: Math.min(a.minY, c.minY), maxX: Math.max(a.maxX, c.maxX), maxY: Math.max(a.maxY, c.maxY) }));
+    out.push({ name, kind, w: bb.maxX - bb.minX, h: bb.maxY - bb.minY });
+  }
+  return out;
+}
+/** 「今の設計から仕様をコピー」：図面の欄の値と部品（ポケット・あおり）から仕様の文を作って本文欄に入れ、クリップボードへ1かたまりでコピーする（LINE・メールにそのまま貼れる。事業主 2026-11-05「そのままメッセージに貼り付けて送付したい。今は1行ごとばらばらで加工しにくい」） */
+async function copySpecFromDesign() {
+  const text = bookSpecText(bookSpecCapture(), docPockets()); if (!text) { $('hint').textContent = t('phraseSpecNone'); return; }
+  const nm = $('phraseName').value.trim(); if (!nm || builtinPhrases().some(p => p.name === nm)) $('phraseName').value = t('phraseSpecName');   /* 名前が空か標準の句の名前のままなら「仕様（今の設計）」に（そのまま保存しても標準の句を上書きしない） */
+  $('phraseText').value = text; syncPhraseSizeNote();
+  let ok = false; if (typeof document.execCommand === 'function') { try { $('phraseText').select(); ok = !!document.execCommand('copy'); } catch { /* 次へ */ } }   /* 先に本文欄を選んで同期で写す（クリックの最中でないと効かないので await の前。クリップボード API が拒否される環境でも動く） */
+  if (!ok) { try { const clipboard = globalThis.navigator?.clipboard; if (clipboard?.writeText) { await clipboard.writeText(text); ok = true; } } catch { /* 手動コピー */ } }
+  $('hint').textContent = t(ok ? 'phraseSpecCopied' : 'phraseSpecCopyFail');
+}
 function builtinPhrases() {
   const en = document.documentElement.lang === 'en', out = [];
   for (const p of ((DATA_BOOK_SPECS && DATA_BOOK_SPECS.presets) || [])) {
-    const b = p.data?.book || {}, f = p.data?.fields || {}, sp = binderSpec(b.spec); if (!sp) continue;
-    const name = (en ? 'Spec: ' : '仕様：') + p.name, nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿';
-    /* 事業主 2026-11-05「革の種類、色／手帳のサイズ全般（縦、横、マチ）／リングの形式（クラウゼ社製、標準型、爪折式、スライドロック式、ビス式）／リングの内径、外径、色 を追加」。分からない所は ＿＿ にして、選ぶ候補を（ ）に */
-    const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
-    const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
-    const leather = p.data?.colors?.leather, leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || leather?.hex || blank;
-    const text = en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia} mm, outer ${outer} mm, stack ${b.stack} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`].join('\n')
-      : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia} mm・外径 ${outer} mm・束 ${b.stack} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`].join('\n');
-    out.push({ name, text, size: 3, builtin: true });
+    const text = bookSpecText(p.data); if (!text) continue;
+    out.push({ name: (en ? 'Spec: ' : '仕様：') + p.name, text, size: 3, builtin: true });
   }
   return out;
 }
@@ -6689,7 +6714,7 @@ function initPhrases() {
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
-  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
+  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase'); $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
 }
 /** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
