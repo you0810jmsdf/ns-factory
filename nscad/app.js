@@ -6714,7 +6714,11 @@ function initPhrases() {
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
-  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase'); $('phraseCopySpec').onclick = copySpecFromDesign;
+  $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
+  $('textEditInput').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter') { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });
+  $('textEditInput').addEventListener('blur', () => closeTextEdit(true));   /* 欄の外をクリック＝確定 */
+  $('textEditFont').addEventListener('pointerdown', e => e.preventDefault());   /* 押してもフォーカスを奪わない（blur で先に閉じてから窓を開かないように） */
+  $('textEditFont').onclick = () => { const id = textEdit?.id; closeTextEdit(true); if (id) { selected = new Set([id]); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
 }
 /** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
@@ -8535,13 +8539,30 @@ function bezierShape(p) {
   return { type: 'bezier', x1: stage.start.x, y1: stage.start.y, x2: stage.end.x, y2: stage.end.y, c1x: c1.x, c1y: c1.y, c2x: c2.x, c2y: c2.y };
 }
 /** ベジェ：シングルクリックで始点・中点（何個でも）を足す。通る点を結ぶ滑らかな曲線。ダブルクリックか Enter で確定。 */
+/** ベジエ道具のクリック（lcc 方式・事業主 2026-11-05「通過点はハンドルの端点の目標であって通過させない」「lcc は最高によかった」）：始点 → 制御点1 → 制御点2 → 終点、続けて 制御点 → 制御点 → 終点 … を繰り返して1本の曲線を伸ばす。ダブルクリック／Enter で確定。 */
 function bezierClick(p) {
-  if (stage?.kind !== 'bzpts') { stage = { kind: 'bzpts', points: [p] }; $('hint').textContent = t('bezierNext'); draw(); return; }
-  if (distance(stage.points.at(-1), p) >= 6 / scale) stage.points.push(p); /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。点を増やさない */
+  if (stage?.kind !== 'bzpts') { stage = { kind: 'bzpts', points: [p] }; $('hint').textContent = bezierStepHint(1); draw(); return; }
+  if (distance(stage.points.at(-1), p) >= 6 / scale) { stage.points.push(p); $('hint').textContent = bezierStepHint(stage.points.length); } /* 直前の点から画面上で6px未満＝ダブルクリックの手ぶれ。点を増やさない */
   draw();
 }
+function bezierStepHint(n) { const k = (n - 1) % 3; return t(k === 0 ? (n === 1 ? 'bezierStepC1' : 'bezierStepMore') : k === 1 ? 'bezierStepC2' : 'bezierStepEnd'); }   /* 打った点の数から、次に打つ点の案内 */
+/** クリックした点の列（始点, 制御点, 制御点, 終点, 制御点, 制御点, 終点 …）をペンの線の節点にする。最後の点はつねに終点（途中で終えたら、残りの制御点は入る側のハンドルに使う）。
+ *  つなぎ目（途中の終点）は滑らかな節点：入るハンドルを、次の制御点の反対向きにそろえる（長さはそのまま）。2点未満（重なりを除く）は null。 */
+function controlPointsToNodes(pts) {
+  const P = pts.filter((q, i) => i === 0 || distance(q, pts[i - 1]) > 1e-9); if (P.length < 2) return null;
+  const nodes = [{ x: P[0].x, y: P[0].y, inX: P[0].x, inY: P[0].y, outX: P[0].x, outY: P[0].y, smooth: false }];
+  let i = 1;
+  while (i < P.length) {
+    const rest = P.length - i, c1 = rest >= 3 ? P[i] : rest === 2 ? P[i] : null, c2 = rest >= 3 ? P[i + 1] : null, end = P[i + Math.min(rest, 3) - 1];
+    const prev = nodes[nodes.length - 1]; if (c1) { prev.outX = c1.x; prev.outY = c1.y; }
+    const inP = c2 || end; nodes.push({ x: end.x, y: end.y, inX: inP.x, inY: inP.y, outX: end.x, outY: end.y, smooth: false });
+    i += Math.min(rest, 3);
+  }
+  for (let k = 1; k < nodes.length - 1; k++) { const n = nodes[k], dx = n.outX - n.x, dy = n.outY - n.y, d = Math.hypot(dx, dy), lenIn = Math.hypot(n.inX - n.x, n.inY - n.y); n.smooth = true; if (d > 1e-9 && lenIn > 1e-9) { n.inX = n.x - dx / d * lenIn; n.inY = n.y - dy / d * lenIn; } }   /* つなぎ目は滑らか：次の制御点の向きが勝ち、前の制御点はその反対へ */
+  return nodes;
+}
 function finishBezier() {
-  if (stage?.kind !== 'bzpts') return; const nodes = smoothPathNodes(stage.points); stage = null;
+  if (stage?.kind !== 'bzpts') return; const nodes = controlPointsToNodes(stage.points); stage = null;
   if (!nodes) { $('hint').textContent = t('bezierNeedTwo'); draw(); return; }
   addCurveNodes(nodes); draw();
 }
@@ -8785,6 +8806,26 @@ function draw() {
     return;
   }
   drawSheetBody(lo, hi);
+  placeTextEdit();   /* 書き換え中の入力欄を文字に追従させる（ズーム・パンのあと） */
+}
+// ---- 文字をその場で書き換える（ダブルクリック・事業主 2026-11-05「直接文字を図面上で修正したい」→ A） ----
+let textEdit = null;   /* { id }：図面の上で書き換え中の文字 */
+function placeTextEdit() {
+  if (!textEdit) return; const s = doc.shapes.find(x => x.id === textEdit.id); if (!s) { closeTextEdit(false); return; }
+  const box = $('textEditBox'), inp = $('textEditInput'), p = screenOf(s.x, s.y), o = paneOff(), px = Math.max(10, s.sizeMm * scale);
+  box.style.left = `${(canvas.offsetLeft || 0) + o.x + p.x}px`; box.style.top = `${(canvas.offsetTop || 0) + o.y + p.y - px}px`;   /* 文字の左上（ベースラインの上 1 文字ぶん）に合わせる */
+  box.style.transformOrigin = `0 ${px}px`; box.style.transform = s.angleDeg ? `rotate(${s.angleDeg}deg)` : ''; inp.style.font = `${px}px ${textFontCss(s.font)}`;
+}
+function openTextEdit(s) {
+  textEdit = { id: s.id }; const box = $('textEditBox'), inp = $('textEditInput'); box.hidden = false; inp.value = s.text; inp.size = Math.min(60, Math.max(6, [...s.text].length + 2)); placeTextEdit();
+  inp.focus?.(); inp.select?.(); $('hint').textContent = t('textEditOpened');
+}
+/** save＝true なら欄の文字で置き換える（空にはしない・同じなら何もしない・元に戻すは1回）。false なら取り消し。 */
+function closeTextEdit(save) {
+  if (!textEdit) return; const id = textEdit.id, v = $('textEditInput').value; textEdit = null; $('textEditBox').hidden = true;
+  const s = doc.shapes.find(x => x.id === id);
+  if (save && s && editable(s)) { if (!v.trim()) $('hint').textContent = t('textEditEmpty'); else if (v !== s.text) { commit(() => { const x = doc.shapes.find(y => y.id === id); if (x) x.text = v; }); $('hint').textContent = t('textEdited', { text: v }); } }
+  draw();
 }
 /** 紙 1 枚ぶんの描画（目盛り・図形・穴・作図中の線・吸着の印など）。ctx はその紙の座標に変換済み。 */
 function drawSheetBody(lo, hi) {
@@ -8878,7 +8919,10 @@ function drawSheetBody(lo, hi) {
   if (stage?.kind === 'half') { const pv = distance(stage.pts[0], cursor) > 1e-8 ? halfCircleShape(stage.pts[0], cursor) : null; if (pv) strokeShape(pv, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
   if (stage?.kind === 'arc3') { const pv = stage.pts.length >= 2 ? arcThroughPoints(stage.pts[0], stage.pts[1], cursor) : null; strokeShape(pv || { type: 'line', x1: stage.pts[0].x, y1: stage.pts[0].y, x2: (stage.pts[1] || cursor).x, y2: (stage.pts[1] || cursor).y }, '#c9a96e'); for (const q of stage.pts) strokeShape({ type: 'circle', cx: q.x, cy: q.y, r: 2 / scale }, '#c9a96e'); }
   if (stage?.kind === 'arcR') { const ang = Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x); strokeShape({ type: 'line', x1: stage.center.x, y1: stage.center.y, x2: stage.center.x + stage.r * Math.cos(ang), y2: stage.center.y + stage.r * Math.sin(ang) }, '#c9a96e'); }
-  if (stage?.kind === 'bzpts') { const pv = smoothPathNodes([...stage.points, cursor]); if (pv) strokeShape({ type: 'path', closed: false, nodes: pv }, '#c9a96e'); ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#c9a96e'; for (const q of stage.points) ctx.fillRect(q.x - 2.5 / scale, q.y - 2.5 / scale, 5 / scale, 5 / scale); ctx.restore(); }
+  if (stage?.kind === 'bzpts') {   /* 作図中の見え方：いまの点＋カーソルで曲線を仮に描き、打った点（四角）と、節点→制御点の線（ハンドル）を出す */
+    const pv = controlPointsToNodes([...stage.points, cursor]); if (pv) { strokeShape({ type: 'path', closed: false, nodes: pv }, '#c9a96e'); ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#888'; ctx.lineWidth = 1 / scale; ctx.beginPath(); for (const n of pv) { for (const h of [[n.inX, n.inY], [n.outX, n.outY]]) if (Math.hypot(h[0] - n.x, h[1] - n.y) > 1e-9) { ctx.moveTo(n.x, n.y); ctx.lineTo(h[0], h[1]); } } ctx.stroke(); ctx.restore(); }
+    ctx.save(); ctx.setLineDash([]); ctx.fillStyle = '#c9a96e'; for (const q of stage.points) ctx.fillRect(q.x - 2.5 / scale, q.y - 2.5 / scale, 5 / scale, 5 / scale); ctx.restore();
+  }
   if (stage?.kind === 'polyline') strokeShape({ type: 'polyline', points: [...stage.points, cursor], closed: false }, '#c9a96e');
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
@@ -9524,7 +9568,7 @@ canvas.addEventListener('dblclick', e => {
   if (mode === 'select') {
     /* 文字をダブルクリック＝その文字を選んで「文字のフォントと大きさ」の窓を開く（事業主 2026-11-01「文字をダブルクリックしても窓が出てこない」）。文字の枠に線が重なっていて、線のすぐ近く（7px）なら、今までどおり線の操作（つながった線を選ぶ）を先にする */
     const textHit = doc.shapes.filter(x => x.type === 'text' && visible(x) && editable(x)).reverse().find(x => distTo(x, w) <= 7 / scale);
-    if (textHit && !doc.shapes.some(x => x.type !== 'text' && visible(x) && editable(x) && stitchable(x) && distTo(x, w) <= 7 / scale)) { selected = new Set([textHit.id]); nodeSel = null; openTextFontWin(); draw(); return; }
+    if (textHit && !doc.shapes.some(x => x.type !== 'text' && visible(x) && editable(x) && stitchable(x) && distTo(x, w) <= 7 / scale)) { selected = new Set([textHit.id]); nodeSel = null; draw(); openTextEdit(textHit); return; }   /* 事業主 2026-11-05「直接文字を図面上で修正したい」→ A：その場で書き換え（フォント窓は入力欄の横の「書体…」から。11-01 のダブルクリック＝フォント窓を置き換え） */
     const inGroup = doc.shapes.filter(x => visible(x) && editable(x)).reverse().find(x => groupIdOf(x) && selected.has(x.id) && distTo(x, w) <= 7 / scale);
     const groupMode = !!inGroup && selected.size > 1;   /* グループ全体を選んでいるときのダブルクリック */
     if (!groupMode) { const gp = gridDoubleClickPick(w); if (gp?.ids.length) { selected = new Set(gp.ids); nodeSel = null; $('hint').textContent = t(gp.frame ? 'gridFrameSelected' : 'gridWholeSelected', { n: gp.n }); draw(); return; } }   /* 格子の外周線なら枠、パッチの内側の線ならその格子のピース全部（選びなおした直後は、欄を変えると、その格子が作りなおされる） */
@@ -9577,7 +9621,7 @@ canvas.addEventListener('pointerup', e => {
     else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
     else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
-      if (only && ['line', 'arc', 'polyline', 'path'].includes(only.type) && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
+      if (only && ['line', 'arc', 'polyline'].includes(only.type) && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 曲線（ペンの線）は、クリックしただけでは交点で切らない（事業主 2026-11-05「曲線が切れる」。切るのはトリムか Alt+クリック） */   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
    /* 「1本に結合」した線は、クリックで交点ごとに切らない（事業主 2026-10-24「１本に結合されるのはその瞬間だけで移動させるときにばらばらになる」） */ spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
     }
   } else if (g.kind === 'dimOff') {
