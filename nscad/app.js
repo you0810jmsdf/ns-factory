@@ -2371,6 +2371,52 @@ function applyFlowFold() {
   }
 }
 function toggleFlowCard(id) { const li = $(id); if (!li) return; flowOpenOverride.set(id, li.dataset.open !== '1'); applyFlowFold(); }
+/* ───────── 手帳の仕様の定型句（事業主 2026-11-05「お客さんのシステム手帳の仕様を毎回入力するのは大変なので、定型句を登録して」）：
+   折りシミュレーションの欄（⓪規格・リング内径・束の厚み・余り・角R／①折り方・向き・全幅・背の半径・革の厚み／②高さ・角の丸め・縫い線・金具の色・リフィルの紙）と、
+   断面に色をつけるときの革の色（質感）・金属の色を、名前（お客さん名など）で保存し、呼び出すと欄にまとめて入れて、断面・平面図があれば作りなおす。ブラウザに保存（最大50件） ───────── */
+const BOOK_SPEC_KEY = 'leather-cad.bookSpecs', BOOK_SPEC_MAX = 50;
+const BOOK_SPEC_FIELDS = ['flowFoldMode', 'flowSide', 'flowMargin', 'fdBiW', 'fdRR', 'foldSecT', 'fdTO', 'fdTI', 'fdH', 'flowCorner', 'fdEdge', 'fdMargin', 'fdPitch', 'flowStitchLayout', 'flowHwMetal', 'fdRingPos'], BOOK_SPEC_CHECKS = ['flowRefillPaper', 'flowAutoDims'];
+function loadBookSpecs() { try { const l = JSON.parse(localStorage.getItem(BOOK_SPEC_KEY) || '[]'); return Array.isArray(l) ? l.filter(x => x && typeof x.name === 'string' && x.name && x.data && typeof x.data === 'object') : []; } catch { return []; } }
+function saveBookSpecs(list) { try { localStorage.setItem(BOOK_SPEC_KEY, JSON.stringify(list.slice(0, BOOK_SPEC_MAX))); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+/** いまの欄と色を、保存用のデータにまとめる */
+function bookSpecCapture() {
+  const fields = {}; for (const id of BOOK_SPEC_FIELDS) { const el = $(id); if (el) fields[id] = String(el.value ?? ''); } const checks = {}; for (const id of BOOK_SPEC_CHECKS) { const el = $(id); if (el) checks[id] = !!el.checked; }
+  const b = foldBookState(), colors = { leather: lastLeatherBrush ? { ...lastLeatherBrush } : null, metal: lastMetalBrush ? { ...lastMetalBrush } : null };
+  return { v: 1, book: { kind: b.kind, spec: b.spec, dia: b.dia, stack: b.stack, refillR: b.refillR }, fields, checks, colors };
+}
+/** 保存したデータを欄に入れる。断面があれば作りなおす（⓪を入れたときと同じ道筋）。 */
+function bookSpecApply(data) {
+  if (!data || typeof data !== 'object') return false; const f = data.fields || {}, c = data.checks || {};
+  if (f.flowFoldMode && $('fdMode') && $('fdMode').value !== f.flowFoldMode) { $('flowFoldMode').value = f.flowFoldMode; $('fdMode').value = f.flowFoldMode; syncFoldModeUI(); }
+  for (const id of BOOK_SPEC_FIELDS) { if (!(id in f) || id === 'flowFoldMode' || id === 'flowSide') continue; const el = $(id); if (!el) continue; if (el.tagName === 'SELECT') { if ([...el.options].some(o => o.value === String(f[id]))) el.value = String(f[id]); } else el.value = String(f[id]); }
+  for (const id of BOOK_SPEC_CHECKS) { const el = $(id); if (el && id in c) el.checked = !!c[id]; }
+  if (f.flowSide) setFoldSide(f.flowSide); if (f.flowH !== undefined || f.fdH !== undefined) { planHeightTouched = true; if ($('flowH')) $('flowH').value = String(f.fdH ?? ''); }
+  if ($('flowMargin')) { try { localStorage.setItem(FLAT_MARGIN_KEY, String($('flowMargin').value)); } catch { /* 保存できなくても続ける */ } }
+  try { localStorage.setItem(FLAT_METAL_KEY, String($('flowHwMetal').value)); localStorage.setItem(FLAT_PAPER_KEY, $('flowRefillPaper').checked ? '1' : '0'); localStorage.setItem(FLAT_DIMS_KEY, $('flowAutoDims').checked ? '1' : '0'); localStorage.setItem(FLAT_CORNER_KEY, String($('flowCorner').value)); localStorage.setItem(FLAT_LAYOUT_KEY, String($('flowStitchLayout').value)); } catch { /* 保存できなくても続ける */ }
+  const col = data.colors || {}; if (col.leather && typeof col.leather === 'object') lastLeatherBrush = { ...col.leather }; if (col.metal && typeof col.metal === 'object') lastMetalBrush = { ...col.metal };
+  const b = data.book || {}; refreshFoldWidth(); refreshFoldPitch();
+  setFoldBook({ kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: String(b.spec ?? ''), dia: String(b.dia ?? ''), stack: String(b.stack ?? ''), refillR: String(b.refillR ?? '') });   /* そろっていれば、断面を作り直す（欄にも写す） */
+  if (doc.foldDesign) { liveFoldDesign(); foldFollowSoon(); } else if (foldBookComplete(foldBookState())) makeFoldDesign(false);   /* 断面がまだ無ければ、①を押したのと同じに作る（呼び出し1回で断面まで） */
+  renderFoldFlow(); return true;
+}
+function renderBookSpecSel(selectName) {
+  const sel = $('bookSpecSel'); if (!sel) return; const keep = selectName ?? sel.value; sel.textContent = ''; const none = document.createElement('option'); none.value = ''; none.textContent = t('bookSpecPick'); sel.appendChild(none);
+  for (const p of loadBookSpecs()) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); } sel.value = loadBookSpecs().some(p => p.name === keep) ? keep : '';
+}
+function saveBookSpec() {
+  const name = String($('bookSpecName').value ?? '').trim() || String($('bookSpecSel').value ?? '').trim(); if (!name) { $('hint').textContent = t('bookSpecNoName'); return; }
+  const list = loadBookSpecs().filter(p => p.name !== name); list.unshift({ name, savedAt: new Date().toISOString(), data: bookSpecCapture() }); if (!saveBookSpecs(list)) return;
+  renderBookSpecSel(name); $('bookSpecName').value = ''; $('hint').textContent = t('bookSpecSaved', { name, n: Math.min(list.length, BOOK_SPEC_MAX) });
+}
+function loadBookSpec() {
+  const name = String($('bookSpecSel').value ?? ''), p = loadBookSpecs().find(x => x.name === name); if (!p) { $('hint').textContent = t('bookSpecPickFirst'); return; }
+  bookSpecApply(p.data); $('hint').textContent = t('bookSpecLoaded', { name }) + (doc.foldDesign ? ' ' + t('bdeRedrawn') : '');
+}
+function deleteBookSpec() {
+  const name = String($('bookSpecSel').value ?? ''); if (!name) { $('hint').textContent = t('bookSpecPickFirst'); return; }
+  if (!saveBookSpecs(loadBookSpecs().filter(p => p.name !== name))) return; renderBookSpecSel(''); $('hint').textContent = t('bookSpecDeleted', { name });
+}
+function initBookSpecs() { if (!$('bookSpecSel')) return; renderBookSpecSel(''); $('bookSpecSave').onclick = saveBookSpec; $('bookSpecLoad').onclick = loadBookSpec; $('bookSpecDel').onclick = deleteBookSpec; $('bookSpecSel').onchange = () => { if ($('bookSpecSel').value) $('bookSpecName').value = ''; }; }
 function initFlowFold() {
   for (const id of FLOW_CARDS) { const head = $(id)?.querySelector?.('.flow-head'); if (!head) continue; head.tabIndex = 0; head.setAttribute('role', 'button'); head.addEventListener('click', () => toggleFlowCard(id)); head.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlowCard(id); } }); }
 }
@@ -9211,7 +9257,7 @@ function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
   showSideTab(SIDE_TABS.includes(v) ? v : 'shape', { save: false });
   for (const b of document.querySelectorAll('#sideTabs [data-side-tab]') || []) b.onclick = () => showSideTab(b.dataset.sideTab);
-  initWinDrag(); initFlowNotes(); initFlowMargin(); initFlowPlanOptions(); initFlowFold(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
+  initWinDrag(); initFlowNotes(); initFlowMargin(); initFlowPlanOptions(); initFlowFold(); initBookSpecs(); $('sideClose').onclick = closeSidePanel; $('sideAll').onclick = () => openSidePanel(null); $('sidePanelBtn').onclick = () => { if (sidePanelOpen()) closeSidePanel(); else openSidePanel(null); };
 }
 const ctxCardList = () => [...(document.querySelectorAll('#side details.card') || [])].filter(c => !c.hidden && c.querySelector('summary')).map((c, i) => ({ c, i, k: SIDE_TABS.indexOf(sideGroupOf(c)) })).sort((x, y) => (x.k < 0 ? 99 : x.k) - (y.k < 0 ? 99 : y.k) || x.i - y.i).map(x => x.c);
 /** 右クリック →「シミュレーション」→「2つ折り」「3つ折り」：折りシミュレーションの小窓を、その折り方で開く（折り方が変わるときは、小窓の「折り方」を切り替えたときと同じ＝有料版のロックも同じ）。 */
