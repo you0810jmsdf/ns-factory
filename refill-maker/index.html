@@ -50,13 +50,14 @@ button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; f
 .btn-toggle { background: #2a2a4a; color: #aaa; border: 1px solid #555; }
 .btn-toggle.on { background: #7ec8e3; color: #1a1a2e; border-color: #7ec8e3; }
 body.undated .dated-only { display: none; }
-.fmt-weekly-only, .fmt-okusuri-only, .fmt-memo-only, .fmt-paged-only, .fmt-monthly-only { display: none; }
+.fmt-weekly-only, .fmt-okusuri-only, .fmt-memo-only, .fmt-paged-only, .fmt-monthly-only, .fmt-custom-only { display: none; }
 body[data-fmt="weekly"] .fmt-weekly-only { display: block; }
 body[data-fmt="monthly"] .fmt-monthly-only { display: block; }
 body[data-fmt="okusuri"] .fmt-okusuri-only { display: block; }
 body[data-fmt="memo"] .fmt-memo-only { display: block; }
-body[data-fmt="okusuri"] .fmt-paged-only, body[data-fmt="memo"] .fmt-paged-only { display: block; }
-body[data-fmt="weekly"] .ctrl-row.fmt-weekly-only, body[data-fmt="okusuri"] .ctrl-row.fmt-okusuri-only, body[data-fmt="memo"] .ctrl-row.fmt-memo-only, body[data-fmt="okusuri"] .ctrl-row.fmt-paged-only, body[data-fmt="memo"] .ctrl-row.fmt-paged-only { display: flex; }
+body[data-fmt="custom"] .fmt-custom-only { display: block; }
+body[data-fmt="okusuri"] .fmt-paged-only, body[data-fmt="memo"] .fmt-paged-only, body[data-fmt="custom"] .fmt-paged-only { display: block; }
+body[data-fmt="weekly"] .ctrl-row.fmt-weekly-only, body[data-fmt="okusuri"] .ctrl-row.fmt-okusuri-only, body[data-fmt="memo"] .ctrl-row.fmt-memo-only, body[data-fmt="okusuri"] .ctrl-row.fmt-paged-only, body[data-fmt="memo"] .ctrl-row.fmt-paged-only, body[data-fmt="custom"] .ctrl-row.fmt-paged-only { display: flex; }
 
 /* === MODULE: Preview Area === */
 #preview { margin-left: 0; padding: 60px 20px 20px; }
@@ -156,6 +157,49 @@ body.panel-open #preview { margin-left: 280px; }
 /* === MODULE: 方眼・ドット・罫線 === */
 .bg-svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0; }
 
+/* === MODULE: 自作様式（パーツ配置）。部品の見た目（.cu-p）は印刷・PDFと編集画面で共通 === */
+.cu-p { position: absolute; overflow: hidden; box-sizing: border-box; color: #222; line-height: 1.3; }
+.cu-p, .cu-p * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+#cuEditor { display: none; padding: 60px 20px 0; }
+body[data-fmt="custom"] #cuEditor { display: block; }
+body[data-fmt="custom"] #preview { padding-top: 14px; }
+body.panel-open #cuEditor { margin-left: 280px; }
+.cu-box { background: #fff; border: 1px solid #d9d2c6; border-radius: 8px; padding: 12px; max-width: 980px; color: #4a3a2c; font-family: -apple-system, 'Hiragino Sans', Meiryo, sans-serif; }
+.cu-box h3 { font-size: 14px; margin-bottom: 4px; }
+.cu-hint { font-size: 12px; color: #6b5a48; line-height: 1.7; margin-bottom: 8px; }
+.cu-pal, .cu-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+.cu-pal button { background: #1a1a2e; color: #7ec8e3; font-size: 12px; padding: 7px 10px; }
+.cu-tools button, .cu-tools select, .cu-tools input { font-size: 12px; padding: 5px 8px; border: 1px solid #c9bfae; border-radius: 4px; background: #f6f1ea; color: #4a3a2c; }
+.cu-tools input { width: 56px; }
+.cu-tools button:disabled { opacity: .4; }
+.cu-main { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.cu-stage { flex: none; background: #e9e5de; border: 1px solid #cfc7b8; border-radius: 4px; overflow: hidden; position: relative; }
+#cuCanvas { position: relative; transform-origin: 0 0; background-color: #fff;
+  background-image: linear-gradient(to right, rgba(0,0,0,.06) 0.12mm, transparent 0.12mm), linear-gradient(to bottom, rgba(0,0,0,.06) 0.12mm, transparent 0.12mm); background-size: 5mm 5mm; }
+.cu-ed .cu-p { outline: 0.15mm dashed rgba(70,120,200,.45); cursor: move; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.cu-ed .cu-p.cu-sel { outline: 0.45mm solid #2b7de9; }
+.cu-h { position: absolute; right: 0; bottom: 0; width: var(--cu-hs, 4mm); height: var(--cu-hs, 4mm); background: #2b7de9; cursor: nwse-resize; z-index: 3; touch-action: none; }
+.cu-guide { position: absolute; background: #e8453c; pointer-events: none; z-index: 4; }
+.cu-side { flex: 1 1 260px; min-width: 240px; max-width: 380px; font-size: 12px; color: #4a3a2c; }
+.cu-side .cu-tip { background: #f3ece4; border-radius: 6px; padding: 10px; line-height: 1.7; }
+.cu-side h4 { font-size: 13px; margin-bottom: 6px; }
+.cu-f { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.cu-f > label { min-width: 62px; color: #6b5a48; }
+.cu-f input[type=number], .cu-f input[type=text], .cu-f textarea { flex: 1; min-width: 0; padding: 4px 6px; border: 1px solid #c9bfae; border-radius: 4px; font-size: 12px; font-family: inherit; }
+.cu-f textarea { width: 100%; flex-basis: 100%; resize: vertical; }
+.cu-f input[type=range] { flex: 1; min-width: 80px; }
+.cu-f button, .cu-acts button { font-size: 12px; padding: 5px 9px; border: 1px solid #c9bfae; border-radius: 4px; background: #f6f1ea; color: #4a3a2c; }
+.cu-f button.on { background: #1a1a2e; color: #7ec8e3; border-color: #1a1a2e; }
+.cu-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.cu-acts button.danger { color: #b3261e; }
+@media screen and (max-width: 600px) {
+  #cuEditor { padding: 6px 12px 0; }
+  .cu-pal button { min-height: 40px; }
+  .cu-tools button, .cu-tools select, .cu-tools input, .cu-f button, .cu-acts button { min-height: 38px; font-size: 14px; }
+  .cu-f input[type=number], .cu-f input[type=text], .cu-f textarea { font-size: 16px; min-height: 38px; }
+  .cu-side { max-width: none; flex-basis: 100%; }
+}
+
 /* === MODULE: Screen Scale === */
 @media screen {
   .a4-sheet { transform: scale(0.65); transform-origin: top left; margin-bottom: calc(var(--sheet-h) * -0.35); }
@@ -217,7 +261,7 @@ body.panel-open #preview { margin-left: 280px; }
   .slot.empty { background: white !important; }
   .vt-colhead.is-sat, .vt-colhead.is-sun { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body.panel-open #preview { margin-left: 0 !important; }
-  #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch { display: none !important; }
+  #controls, #ctrl-toggle-btn, .history-overlay, #nsf-free-notice, #nsf-size-switch, #cuEditor { display: none !important; }
   #preview { margin: 0 !important; padding: 0 !important; width: var(--sheet-w) !important; }
   .sheet-wrap { width: var(--sheet-w) !important; height: var(--sheet-h) !important; margin: 0 !important; padding: 0 !important; page-break-after: always; break-after: page; page-break-inside: avoid; break-inside: avoid; overflow: hidden; position: relative; }
   .sheet-wrap:last-child { page-break-after: auto; break-after: auto; }
@@ -269,8 +313,10 @@ body.panel-open #preview { margin-left: 280px; }
         <option value="monthly">マンスリー（見開き1ヶ月）</option>
         <option value="okusuri">お薬手帳（本人情報＋記録ページ）</option>
         <option value="memo">方眼・ドット・罫線のメモ</option>
+        <option value="custom">自作様式（部品を置いて作る）</option>
       </select>
     </div>
+    <div class="hint fmt-custom-only">紙面の上の編集画面で、部品を置いて自分の様式を作れます。同じ内容が全ページに印刷されます。作った様式はこの端末に自動で保存されます。</div>
     <div class="hint fmt-okusuri-only">1ページ目が本人情報（アレルギー歴・副作用歴・既往歴など）、以降が服薬の記録（薬剤情報シールを貼る欄つき）です。自分用の記録で、薬局・病院の指示が優先です。</div>
     <div class="ctrl-row fmt-okusuri-only"><label>1ページの記録数</label>
       <select id="recSel" onchange="rerender()"><option value="0">おまかせ</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
@@ -391,6 +437,7 @@ body.panel-open #preview { margin-left: 280px; }
         <li><b>週間バーチカル</b>: 見開き1週間。左ページ月〜木、右ページ金〜日＋MEMO列。時間軸の開始・終了時を選べます（0〜24時も可）。最初と最後の紙の外側はメモページ</li>
         <li><b>お薬手帳</b>: 1ページ目が本人情報（氏名・生年月日・血液型・連絡先・かかりつけ・アレルギー歴・副作用歴・既往歴・服用中の市販薬）、以降が記録ページ（日付・病院／薬局・薬剤情報シール貼付欄・メモ）。自分用の記録です。薬局・病院の指示を優先してください</li>
         <li><b>方眼・ドット・罫線メモ</b>: 間隔を3〜7mmで選べます（ロルバーンの方眼は5mm）</li>
+        <li><b>自作様式</b>: 紙面の上の編集画面で、見出し・見出し帯・文字・記入欄・チェック欄・貼付枠・罫線メモ・表・枠・区切り線を置いて、自分の様式を作れます。部品をドラッグして動かし、右下の青い■で大きさを変えます。文字・文字の大きさ・太さは、部品を選んで右（スマホは下）の欄で直します。「見本を読み込む」で予防接種の記録などから始められます。作った様式は自動で保存され、「ファイルに保存」で書き出して別の端末へ持ち運べます。パソコンでは、矢印キーで1mm動かし、Delete で消し、Ctrl+Z で取り消せます。</li>
       </ul>
       <p style="color:#7ec8e3; font-weight:bold; margin-top:12px;">■ 困ったとき</p>
       <ul style="padding-left:18px; margin:4px 0;">
@@ -409,6 +456,29 @@ body.panel-open #preview { margin-left: 280px; }
   </div>
 </div>
 
+<div id="cuEditor" class="cu-ed"><div class="cu-box" id="cuBox">
+  <h3>自作様式を作る</h3>
+  <details class="cu-hint" id="cuHelp"><summary style="cursor:pointer;font-weight:700">操作のしかた</summary>① 下の部品ボタンで紙面に置く　② 部品をドラッグして動かす（端や中央がそろうと赤い線が出ます）　③ 選んだ部品の右下の青い■をドラッグすると大きさが変わります　④ 文字・文字の大きさ・太さは、右（スマホは下）の欄で直します。綴じ穴の側の余白は、あらかじめ空けてあります。</details>
+  <div class="cu-pal" id="cuPal"></div>
+  <div class="cu-tools">
+    <button type="button" id="cuUndo" onclick="cuUndo()">↶ 取り消し</button>
+    <button type="button" id="cuRedo" onclick="cuRedo()">↷ やり直し</button>
+    <select id="cuSnapSel" onchange="cuSetSnap(this.value)" title="動かすときの刻み"><option value="0">刻み：なし</option><option value="1">刻み：1mm</option><option value="2.5">刻み：2.5mm</option></select>
+    <span>ページ数</span><input type="number" id="cuPages" min="1" max="120" onchange="cuSetPages(this.value)">
+  </div>
+  <details class="cu-hint" id="cuMore"><summary style="cursor:pointer;font-weight:700">見本・ファイルの保存と読み込み</summary>
+    <div class="cu-tools" style="margin-top:6px">
+      <select id="cuTplSel"></select><button type="button" onclick="cuLoadTpl()">見本を読み込む</button>
+      <button type="button" onclick="cuExport()">ファイルに保存</button>
+      <button type="button" onclick="$('cuImportFile').click()">ファイルから開く</button>
+      <input type="file" id="cuImportFile" accept=".json,application/json" style="display:none" onchange="cuImport(this)">
+    </div>
+  </details>
+  <div class="cu-main">
+    <div class="cu-stage" id="cuStage"><div id="cuCanvas"></div></div>
+    <div class="cu-side" id="cuProps"></div>
+  </div>
+</div></div>
 <div id="preview"><p style="color:#666; font-size:12px; margin-bottom:10px;">← 左パネル（☰）で設定すると自動で描画されます</p></div>
 <script>
 // === MODULE: Constants ===
@@ -704,6 +774,329 @@ function buildMemo(item, pageNum, holeSide) {
   return wrapSlot(inner, pageNum, holeSide);
 }
 
+// === MODULE: 自作様式（パーツ配置） ===
+// 部品は「紙面の中身の領域（綴じ穴の列と左右2mmの余白、下の3mmのページ番号を除いた長方形）」の左上を原点に、mm で置く。
+// 編集画面と印刷・PDFは同じ cuPartHTML で描くので、画面で見たとおりに印刷される。
+const CU_KEY = 'nsf_refill_maker_custom_g1', PXMM = 96 / 25.4;
+const CU_TYPES = {
+  title: { label: '見出し', def: { text: 'タイトル', size: 4.4, bold: true, align: 'center', w: 100, h: 9 } },
+  band:  { label: '見出し帯', def: { text: '項目名', size: 2.5, bold: true, align: 'left', w: 100, h: 6 } },
+  text:  { label: '文字', def: { text: '文字を入力', size: 2.6, bold: false, align: 'left', w: 50, h: 5 } },
+  field: { label: '記入欄', def: { text: '項目名', size: 2.4, bold: true, w: 70, h: 6 } },
+  check: { label: 'チェック欄', def: { text: '選択肢1\n選択肢2\n選択肢3', size: 2.2, w: 70, h: 8 } },
+  photo: { label: '貼付枠', def: { text: 'シール・証明書\n貼付枠', size: 2, w: 45, h: 36 } },
+  memo:  { label: '罫線メモ', def: { text: 'メモ', size: 2, sp: 6, w: 100, h: 30 } },
+  table: { label: '表', def: { text: '項目,1回目,2回目,3回目', labels: '', rows: 6, size: 2.2, w: 100, h: 50 } },
+  box:   { label: '枠', def: { text: '', size: 2.3, bold: true, w: 100, h: 30 } },
+  line:  { label: '区切り線', def: { thick: false, w: 100, h: 3 } }
+};
+const CU_TEMPLATES = {
+  blank: { label: '見本：白紙から作る', pages: 4, build: () => [] },
+  vaccine: { label: '見本：予防接種の記録（1ページに2回分）', pages: 4, build(W, H) {
+    const P = [], a = (t, o) => P.push(Object.assign({ t }, o));
+    a('title', { x: 0, y: 0, w: W, h: 9, text: '予防接種の記録', size: 4.4 });
+    const bh = (H - 11) / 2;
+    for (let i = 0; i < 2; i++) {
+      const y = 11 + i * bh, lw = W * 0.4, rx = lw + 3, rw = W - rx;
+      a('band', { x: 0, y, w: W, h: 6, text: '接種の記録 ' + (i + 1) });
+      a('field', { x: 0, y: y + 8, w: W * 0.6, h: 6, text: 'ワクチン名' });
+      a('field', { x: W * 0.62, y: y + 8, w: W * 0.38, h: 6, text: '接種日' });
+      a('field', { x: 0, y: y + 15.5, w: W * 0.6, h: 6, text: '医療機関名' });
+      a('field', { x: W * 0.62, y: y + 15.5, w: W * 0.38, h: 6, text: '費用（円）' });
+      a('photo', { x: 0, y: y + 24, w: lw, h: 33, text: 'ロットシール・証明書\n貼付枠' });
+      a('text', { x: rx, y: y + 24, w: rw, h: 4, text: 'Q. 接種後すぐの体調は？', bold: true, size: 2.3 });
+      a('check', { x: rx, y: y + 29, w: rw, h: 5, text: '異常なし\n気分不良・その他', size: 2.1 });
+      a('text', { x: rx, y: y + 36, w: rw, h: 4, text: 'Q. 翌日〜数日後の副反応は？', bold: true, size: 2.3 });
+      a('check', { x: rx, y: y + 41, w: rw, h: 16, text: 'なし\n発熱（　℃）\nだるさ\n腕の腫れ・痛み\nその他', size: 2.1 });
+      a('memo', { x: 0, y: y + 59, w: W, h: bh - 61, text: '今回のメモ・次回の予定', sp: 6, size: 2.1 });
+    }
+    return P;
+  } },
+  vaccineList: { label: '見本：ワクチン接種の一覧表', pages: 2, build(W, H) { return [
+    { t: 'title', x: 0, y: 0, w: W, h: 9, text: 'ワクチン接種の一覧', size: 4.4 },
+    { t: 'text', x: 0, y: 10.5, w: W, h: 4, text: '接種した日を、ワクチン名ごとに書き込みます。', size: 2.1 },
+    { t: 'table', x: 0, y: 15.5, w: W, h: H - 17, text: 'ワクチン名,1回目,2回目,3回目', rows: 13, size: 2.3,
+      labels: 'インフルエンザ\n新型コロナ\n帯状疱疹\n肺炎球菌\nRSウイルス\n麻しん・風しん\n破傷風\nHPV\nB型肝炎\nA型肝炎\n狂犬病\n水痘\nおたふくかぜ' }
+  ]; } }
+};
+const CU = { parts: [], sel: null, nextId: 1, snap: 1, k: 1, hist: [], hi: -1, lastKey: '', lastAt: 0, drag: null, guides: null, propsOk: false, dims: '', rt: 0, qt: 0 };
+
+function cuDims() { return { W: r1(paper.w - stripW() - 4), H: r1(paper.h - 3) }; }
+function cuClean(p) {
+  const T = p && CU_TYPES[p.t]; if (!T) return null;
+  const d = T.def, num = (v, def, lo, hi) => { v = parseFloat(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : def; };
+  return {
+    t: p.t, id: 0,
+    x: r1(num(p.x, 0, 0, 400)), y: r1(num(p.y, 0, 0, 400)), w: r1(num(p.w, d.w, 1, 400)), h: r1(num(p.h, d.h, 1, 400)),
+    text: typeof p.text === 'string' ? p.text.slice(0, 400) : (d.text || ''),
+    labels: typeof p.labels === 'string' ? p.labels.slice(0, 800) : (d.labels || ''),
+    size: r1(num(p.size, d.size || 2.4, 1.2, 12)), bold: p.bold === undefined ? !!d.bold : !!p.bold,
+    align: ['left', 'center', 'right'].includes(p.align) ? p.align : (d.align || 'left'),
+    sp: num(p.sp, d.sp || 6, 3, 20), rows: Math.round(num(p.rows, d.rows || 6, 1, 40)), thick: !!p.thick
+  };
+}
+function cuGet(id) { return CU.parts.find(p => p.id === id) || null; }
+function cuSetParts(arr) { CU.parts = arr.map(cuClean).filter(Boolean); CU.parts.forEach(p => { p.id = CU.nextId++; }); CU.sel = null; }
+function cuClampAll() {
+  const { W, H } = cuDims();
+  CU.parts.forEach(p => { p.w = Math.min(p.w, W); p.h = Math.min(p.h, H); p.x = r1(Math.min(Math.max(0, p.x), W - p.w)); p.y = r1(Math.min(Math.max(0, p.y), H - p.h)); });
+}
+
+// --- 部品の描画（編集画面・印刷・PDF 共通） ---
+function cuPartInner(p) {
+  const fs = `font-size:${p.size}mm;`, fw = p.bold ? 'font-weight:700;' : '';
+  const jc = { left: 'flex-start', center: 'center', right: 'flex-end' }[p.align] || 'flex-start', t = escapeHTML(p.text);
+  switch (p.t) {
+    case 'title': return `<div style="height:100%;display:flex;align-items:flex-end;justify-content:${jc};padding-bottom:1mm;border-bottom:0.45mm solid #222;letter-spacing:0.3mm;white-space:pre-wrap;${fs}${fw}">${t}</div>`;
+    case 'band': return `<div style="height:100%;display:flex;align-items:center;justify-content:${jc};padding:0 1.5mm;background:#eceeec;border-left:1.2mm solid #666;border-top:0.2mm solid #aaa;border-bottom:0.2mm solid #aaa;white-space:pre-wrap;${fs}${fw}">${t}</div>`;
+    case 'text': return `<div style="white-space:pre-wrap;text-align:${p.align};color:#333;${fs}${fw}">${t}</div>`;
+    case 'field': return `<div style="height:100%;display:flex;align-items:flex-end;gap:1.2mm;${fs}"><span style="white-space:nowrap;padding-bottom:0.5mm;color:#333;${fw}">${t}</span><i style="flex:1;align-self:stretch;min-width:2mm;border-bottom:0.2mm solid #888"></i></div>`;
+    case 'check': {
+      const bs = r1(p.size * 1.1), items = p.text.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 40);
+      return `<div style="display:flex;flex-wrap:wrap;align-content:flex-start;gap:1.2mm 3.4mm;${fs}${fw}">${items.map(s => `<span style="display:inline-flex;align-items:center;gap:1mm;white-space:nowrap"><i style="flex:none;width:${bs}mm;height:${bs}mm;border:0.25mm solid #666;background:#fff"></i>${escapeHTML(s)}</span>`).join('')}</div>`;
+    }
+    case 'photo': return `<div style="height:100%;border:0.25mm dashed #aaa;border-radius:1.5mm;display:flex;align-items:center;justify-content:center;text-align:center;color:#aaa;white-space:pre-wrap;${fs}">${t}</div>`;
+    case 'memo': {
+      const lab = p.text.trim() ? 1 : 0, n = Math.min(60, Math.max(0, Math.floor(p.h / p.sp) - lab));
+      return `<div style="${fs}">${lab ? `<div style="height:${p.sp}mm;line-height:${p.sp}mm;color:#777;white-space:nowrap;${fw}">${t}</div>` : ''}${Array(n).fill(`<div style="height:${p.sp}mm;border-bottom:0.15mm dashed #aaa"></div>`).join('')}</div>`;
+    }
+    case 'table': {
+      const cols = p.text.split(/[,，、]/).map(s => s.trim()).slice(0, 12), labels = p.labels.split('\n'), rows = p.rows;
+      const edge = 'border-right:0.25mm solid #777;border-bottom:0.25mm solid #777;min-width:0;overflow:hidden;';
+      const gc = cols.length > 2 ? `1.6fr repeat(${cols.length - 1},1fr)` : `repeat(${cols.length},1fr)`;
+      const head = cols.map(c => `<div style="${edge}background:#eceeec;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 0.8mm">${escapeHTML(c)}</div>`).join('');
+      let body = '';
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols.length; c++) body += `<div style="${edge}display:flex;align-items:center;padding:0 1mm;${c === 0 ? fw : ''}">${c === 0 ? escapeHTML(labels[r] || '') : ''}</div>`;
+      return `<div style="height:100%;display:grid;grid-template-columns:${gc};grid-template-rows:repeat(${rows + 1},1fr);border-top:0.25mm solid #777;border-left:0.25mm solid #777;${fs}">${head}${body}</div>`;
+    }
+    case 'box': return `<div style="height:100%;border:0.25mm solid #999;border-radius:1.2mm;padding:1mm 1.5mm;white-space:pre-wrap;${fs}${fw}">${t}</div>`;
+    case 'line': { const th = p.thick ? 0.5 : 0.2; return p.w >= p.h ? `<div style="position:absolute;left:0;right:0;top:50%;border-top:${th}mm solid #555"></div>` : `<div style="position:absolute;top:0;bottom:0;left:50%;border-left:${th}mm solid #555"></div>`; }
+  }
+  return '';
+}
+function cuPartHTML(p, ed) {
+  const sel = ed && p.id === CU.sel;
+  return `<div class="cu-p${sel ? ' cu-sel' : ''}" data-id="${p.id}" style="left:${p.x}mm;top:${p.y}mm;width:${p.w}mm;height:${p.h}mm">${cuPartInner(p)}${sel ? '<div class="cu-h"></div>' : ''}</div>`;
+}
+function cuPageHTML() {
+  const { W, H } = cuDims();
+  return `<div style="position:relative;width:${W}mm;height:${H}mm;flex:none;overflow:hidden">${CU.parts.map(p => cuPartHTML(p, false)).join('')}</div>`;
+}
+
+// --- 編集画面 ---
+function cuDrawCanvas() {
+  const box = $('cuBox'), cv = $('cuCanvas'), st = $('cuStage');
+  if (!cv || !box.clientWidth) return;
+  const { W, H } = cuDims(), bw = box.clientWidth - 24, side = bw >= 760;
+  CU.k = Math.min(1.15, Math.max(0.45, (side ? bw - 14 - 300 : bw) / (W * PXMM)));
+  st.style.width = r1(W * PXMM * CU.k) + 'px'; st.style.height = r1(H * PXMM * CU.k) + 'px';
+  cv.style.width = W + 'mm'; cv.style.height = H + 'mm'; cv.style.transform = `scale(${CU.k})`;
+  cv.style.setProperty('--cu-hs', r1(18 / (PXMM * CU.k)) + 'mm');
+  const g = CU.guides, guides = g ? g.x.map(x => `<div class="cu-guide" style="left:${x}mm;top:0;width:0.3mm;height:100%"></div>`).join('') + g.y.map(y => `<div class="cu-guide" style="top:${y}mm;left:0;height:0.3mm;width:100%"></div>`).join('') : '';
+  cv.innerHTML = CU.parts.map(p => cuPartHTML(p, true)).join('') + guides;
+}
+function cuSync() {
+  if (fmt !== 'custom') return;
+  const { W, H } = cuDims(), key = W + 'x' + H;
+  if (CU.dims && CU.dims !== key) { cuClampAll(); cuSave(); }
+  CU.dims = key;
+  cuDrawCanvas();
+  if (!CU.propsOk) { cuDrawProps(); CU.propsOk = true; }
+  if ($('cuPages') !== document.activeElement) $('cuPages').value = $('pageCount').value;
+  $('cuUndo').disabled = CU.hi <= 0; $('cuRedo').disabled = CU.hi >= CU.hist.length - 1;
+}
+function cuDrawProps() {
+  const box = $('cuProps'), p = cuGet(CU.sel); if (!box) return;
+  if (!p) { box.innerHTML = '<div class="cu-tip"><b>部品をタップ（クリック）すると、ここで文字や大きさを直せます。</b><br>部品はドラッグで動かせます。同じ内容が、ページ数ぶんの全ページに印刷されます。<br>まちがえたときは「取り消し」で戻せます。</div>'; return; }
+  const T = CU_TYPES[p.t], f = (label, inner) => `<div class="cu-f"><label>${label}</label>${inner}</div>`;
+  const tLabel = { check: '選択肢（1行に1つ）', table: '見出し（カンマ区切り）', photo: '枠の中の文字', memo: 'ラベル', box: '枠の見出し' }[p.t] || '文字';
+  let h = `<h4>${T.label}</h4>`;
+  if (p.t !== 'line') h += `<div class="cu-f"><label>${tLabel}</label><textarea rows="${['text', 'check', 'photo'].includes(p.t) ? 3 : 2}" oninput="cuSet('text',this.value)">\n${escapeHTML(p.text)}</textarea></div>`;
+  if (p.t === 'table') h += `<div class="cu-f"><label>1列目の文字（1行に1つ）</label><textarea rows="3" oninput="cuSet('labels',this.value)">\n${escapeHTML(p.labels)}</textarea></div>` + f('行の数', `<input type="number" min="1" max="40" step="1" value="${p.rows}" oninput="cuSet('rows',this.value)">`);
+  if (p.t !== 'line') h += f('文字の大きさ', `<input type="range" min="1.5" max="9" step="0.1" value="${p.size}" oninput="cuSet('size',+this.value);$('cuSz').textContent=this.value"><span><span id="cuSz">${p.size}</span>mm</span>`);
+  if (p.t === 'memo') h += f('罫線の間隔', `<input type="range" min="3" max="12" step="0.5" value="${p.sp}" oninput="cuSet('sp',+this.value);$('cuSp').textContent=this.value"><span><span id="cuSp">${p.sp}</span>mm</span>`);
+  const btn = (on, label, js) => `<button type="button" class="${on ? 'on' : ''}" onclick="${js}">${label}</button>`;
+  const aligns = [['left', '左'], ['center', '中央'], ['right', '右']];
+  if (!['line', 'photo'].includes(p.t)) h += f('書き方', btn(p.bold, '太字', `cuSet('bold',${!p.bold},true)`) + (['title', 'band', 'text'].includes(p.t) ? aligns.map(([v, label]) => btn(p.align === v, label, `cuSet('align','${v}',true)`)).join('') : ''));
+  if (p.t === 'line') h += f('太さ', btn(!p.thick, '細い', `cuSet('thick',false,true)`) + btn(p.thick, '太い', `cuSet('thick',true,true)`)) + '<div class="hint" style="color:#8a7362">横長にすると横線、縦長にすると縦線になります。</div>';
+  const nin = (k, id) => `<input type="number" id="${id}" step="0.5" value="${p[k]}" oninput="cuNum('${k}',this.value)">`;
+  h += f('位置（mm）', 'よこ' + nin('x', 'cuX') + 'たて' + nin('y', 'cuY')) + f('大きさ（mm）', '幅' + nin('w', 'cuW') + '高さ' + nin('h', 'cuH'));
+  h += `<div class="cu-acts"><button type="button" onclick="cuDup()">複製</button><button type="button" onclick="cuOrder('front')">前面へ</button><button type="button" onclick="cuOrder('back')">背面へ</button><button type="button" class="danger" onclick="cuDel()">削除</button></div>`;
+  box.innerHTML = h;
+}
+function cuSyncNums() {
+  const p = cuGet(CU.sel); if (!p) return;
+  [['cuX', 'x'], ['cuY', 'y'], ['cuW', 'w'], ['cuH', 'h']].forEach(([id, k]) => { const e = $(id); if (e && e !== document.activeElement) e.value = p[k]; });
+}
+function cuSet(k, v, refresh) {
+  const p = cuGet(CU.sel); if (!p) return;
+  if (k === 'size') v = r1(Math.min(12, Math.max(1.2, +v || p.size)));
+  if (k === 'sp') v = Math.min(20, Math.max(3, +v || p.sp));
+  if (k === 'rows') v = Math.min(40, Math.max(1, Math.round(+v) || 1));
+  if (k === 'text') v = String(v).slice(0, 400);
+  if (k === 'labels') v = String(v).slice(0, 800);
+  p[k] = v; cuDrawCanvas(); if (refresh) cuDrawProps(); cuCommit('set-' + k);
+}
+function cuNum(k, v) {
+  const p = cuGet(CU.sel), n = parseFloat(v); if (!p || !isFinite(n)) return;
+  const { W, H } = cuDims();
+  if (k === 'x') p.x = Math.min(Math.max(0, n), W - p.w); if (k === 'y') p.y = Math.min(Math.max(0, n), H - p.h);
+  if (k === 'w') p.w = Math.min(Math.max(1, n), W - p.x); if (k === 'h') p.h = Math.min(Math.max(1, n), H - p.y);
+  cuDrawCanvas(); cuCommit('num-' + k);
+}
+
+// --- 部品の追加・複製・削除・重なり順 ---
+function cuAdd(t) {
+  const { W, H } = cuDims(), q = cuClean(Object.assign({ t }, CU_TYPES[t].def));
+  q.w = Math.min(q.w, W); q.h = Math.min(q.h, H);
+  q.x = q.w >= W * 0.9 ? 0 : r1((W - q.w) / 2);
+  let bottom = 0; CU.parts.forEach(p => { bottom = Math.max(bottom, p.y + p.h); });
+  q.y = bottom + 2 + q.h <= H ? r1(bottom + 2) : r1(Math.max(0, Math.min(H - q.h, 6 + (CU.parts.length % 6) * 4)));
+  q.id = CU.nextId++; CU.parts.push(q); CU.sel = q.id;
+  cuDrawCanvas(); cuDrawProps(); cuCommit('add');
+}
+function cuDup() {
+  const p = cuGet(CU.sel); if (!p) return; const { W, H } = cuDims();
+  const q = Object.assign({}, p, { id: CU.nextId++, x: r1(Math.min(p.x + 3, W - p.w)), y: r1(Math.min(p.y + 3, H - p.h)) });
+  CU.parts.push(q); CU.sel = q.id; cuDrawCanvas(); cuDrawProps(); cuCommit('dup');
+}
+function cuDel() {
+  if (CU.sel == null) return;
+  CU.parts = CU.parts.filter(p => p.id !== CU.sel); CU.sel = null; cuDrawCanvas(); cuDrawProps(); cuCommit('del');
+}
+function cuOrder(where) {
+  const i = CU.parts.findIndex(p => p.id === CU.sel); if (i < 0) return;
+  const [p] = CU.parts.splice(i, 1); if (where === 'front') CU.parts.push(p); else CU.parts.unshift(p);
+  cuDrawCanvas(); cuCommit('order');
+}
+
+// --- 取り消し・保存 ---
+function cuSave() { try { localStorage.setItem(CU_KEY, JSON.stringify({ v: 1, snap: CU.snap, parts: CU.parts })); } catch (e) {} }
+function cuQueueRender() { clearTimeout(CU.qt); CU.qt = setTimeout(rerender, 250); }
+function cuCommit(key) {
+  const s = JSON.stringify(CU.parts), now = Date.now();
+  if (CU.hist[CU.hi] !== s) {
+    if (key && /^(set-|num-|key$)/.test(key) && key === CU.lastKey && now - CU.lastAt < 1200 && CU.hi >= 1) CU.hist[CU.hi] = s;   // 文字入力・数値・矢印キーなど連続する操作だけ、1回の取り消しにまとめる
+    else { CU.hist = CU.hist.slice(0, CU.hi + 1); CU.hist.push(s); if (CU.hist.length > 60) CU.hist.shift(); CU.hi = CU.hist.length - 1; }
+  }
+  CU.lastKey = key || ''; CU.lastAt = now;
+  cuSave(); cuQueueRender();
+  $('cuUndo').disabled = CU.hi <= 0; $('cuRedo').disabled = CU.hi >= CU.hist.length - 1;
+}
+function cuRestore(i) {
+  CU.hi = i; CU.parts = JSON.parse(CU.hist[i]); CU.lastKey = '';
+  if (!cuGet(CU.sel)) CU.sel = null;
+  cuDrawCanvas(); cuDrawProps(); cuSave(); cuQueueRender();
+  $('cuUndo').disabled = CU.hi <= 0; $('cuRedo').disabled = CU.hi >= CU.hist.length - 1;
+}
+function cuUndo() { if (CU.hi > 0) cuRestore(CU.hi - 1); }
+function cuRedo() { if (CU.hi < CU.hist.length - 1) cuRestore(CU.hi + 1); }
+function cuSetSnap(v) { CU.snap = parseFloat(v) || 0; cuSave(); }
+function cuSetPages(v) { $('pageCount').value = Math.min(120, Math.max(1, parseInt(v) || 1)); rerender(); }
+function cuLoadTpl() {
+  const T = CU_TEMPLATES[$('cuTplSel').value]; if (!T) return;
+  if (CU.parts.length && !confirm('今の様式を、選んだ見本に置き換えます。よろしいですか？\n（置き換えたあとも「取り消し」で戻せます）')) return;
+  const { W, H } = cuDims();
+  cuSetParts(T.build(W, H)); cuClampAll(); $('pageCount').value = T.pages;
+  cuDrawCanvas(); cuDrawProps(); cuCommit('tpl');
+  if (H < 150 && CU.parts.length) alert('この見本は、ロルバーンLくらいの大きさの用紙向けに作ってあります。小さい用紙では、部品の位置や大きさを直してください。');
+}
+function cuExport() {
+  const data = { app: 'nsf-refill-maker-custom', v: 1, paper: { w: paper.w, h: paper.h }, parts: CU.parts.map(({ id, ...r }) => r) };
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+  a.download = `refill-custom-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+}
+function cuImport(inp) {
+  const file = inp.files && inp.files[0]; inp.value = ''; if (!file) return;
+  if (file.size > 1000000) { alert('ファイルが大きすぎます。'); return; }
+  const rd = new FileReader();
+  rd.onload = () => {
+    let d; try { d = JSON.parse(rd.result); } catch (e) {}
+    if (!d || d.app !== 'nsf-refill-maker-custom' || !Array.isArray(d.parts)) { alert('このファイルは読み込めません。「ファイルに保存」で書き出したものを選んでください。'); return; }
+    if (CU.parts.length && !confirm('今の様式を、ファイルの内容に置き換えます。よろしいですか？（「取り消し」で戻せます）')) return;
+    cuSetParts(d.parts.slice(0, 200)); cuClampAll(); cuDrawCanvas(); cuDrawProps(); cuCommit('import');
+    if (d.paper && (Math.abs(d.paper.w - paper.w) > 0.5 || Math.abs(d.paper.h - paper.h) > 0.5)) alert('保存したときと用紙の大きさが違います。部品の位置を確かめてください。');
+  };
+  rd.readAsText(file);
+}
+
+// --- ドラッグ操作（動かす・大きさを変える・ほかの部品や中央にそろえる） ---
+function cuSnapD(feats, axis, id, max) {
+  const thr = 6 / (PXMM * CU.k), cands = [0, max / 2, max];
+  CU.parts.forEach(q => { if (q.id === id) return; const a = axis === 'x' ? q.x : q.y, l = axis === 'x' ? q.w : q.h; cands.push(a, a + l / 2, a + l); });
+  let best = null;
+  for (const c of cands) for (const f of feats) { const d = c - f; if (Math.abs(d) < thr && (!best || Math.abs(d) < Math.abs(best.d))) best = { d, c }; }
+  return best;
+}
+function cuBind() {
+  const cv = $('cuCanvas'), gs = v => CU.snap ? Math.round(v / CU.snap) * CU.snap : v;
+  cv.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const el = e.target.closest('.cu-p');
+    if (!el) { if (CU.sel != null) { CU.sel = null; cuDrawCanvas(); cuDrawProps(); } return; }
+    const p = cuGet(+el.dataset.id); if (!p) return;
+    e.preventDefault();
+    const was = CU.sel, size = !!e.target.closest('.cu-h') && was === p.id;
+    CU.sel = p.id;
+    CU.drag = { id: p.id, mode: size ? 'size' : 'move', sx: e.clientX, sy: e.clientY, ox: p.x, oy: p.y, ow: p.w, oh: p.h, moved: false };
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    if (was !== p.id) { cuDrawCanvas(); cuDrawProps(); }
+  });
+  cv.addEventListener('pointermove', e => {
+    const d = CU.drag; if (!d) return;
+    const p = cuGet(d.id); if (!p) return;
+    const u = PXMM * CU.k, dx = (e.clientX - d.sx) / u, dy = (e.clientY - d.sy) / u;
+    if (!d.moved && Math.hypot(dx, dy) * u < 3) return;
+    d.moved = true;
+    const { W, H } = cuDims(); CU.guides = { x: [], y: [] };
+    if (d.mode === 'move') {
+      let nx = d.ox + dx, ny = d.oy + dy;
+      const sx = cuSnapD([nx, nx + p.w / 2, nx + p.w], 'x', p.id, W), sy = cuSnapD([ny, ny + p.h / 2, ny + p.h], 'y', p.id, H);
+      if (sx) { nx += sx.d; CU.guides.x.push(sx.c); } else nx = gs(nx);
+      if (sy) { ny += sy.d; CU.guides.y.push(sy.c); } else ny = gs(ny);
+      p.x = r1(Math.min(Math.max(0, nx), W - p.w)); p.y = r1(Math.min(Math.max(0, ny), H - p.h));
+    } else {
+      let nw = d.ow + dx, nh = d.oh + dy;
+      const sx = cuSnapD([p.x + nw], 'x', p.id, W), sy = cuSnapD([p.y + nh], 'y', p.id, H);
+      if (sx) { nw += sx.d; CU.guides.x.push(sx.c); } else nw = gs(nw);
+      if (sy) { nh += sy.d; CU.guides.y.push(sy.c); } else nh = gs(nh);
+      p.w = r1(Math.min(Math.max(1, nw), W - p.x)); p.h = r1(Math.min(Math.max(1, nh), H - p.y));
+    }
+    cuDrawCanvas(); cuSyncNums();
+  });
+  const end = () => {
+    const d = CU.drag; if (!d) return;
+    CU.drag = null; CU.guides = null;
+    if (d.moved) { cuDrawCanvas(); cuSyncNums(); cuCommit('drag'); } else cuDrawCanvas();
+  };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  document.addEventListener('keydown', e => {
+    if (fmt !== 'custom' || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) return;
+    const mod = e.ctrlKey || e.metaKey, k = (e.key || '').toLowerCase();
+    if (mod && k === 'z') { e.preventDefault(); if (e.shiftKey) cuRedo(); else cuUndo(); return; }
+    if (mod && k === 'y') { e.preventDefault(); cuRedo(); return; }
+    const p = cuGet(CU.sel); if (!p) return;
+    if (mod && k === 'd') { e.preventDefault(); cuDup(); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); cuDel(); return; }
+    const st = e.shiftKey ? 5 : 1, mv = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
+    if (mv) { e.preventDefault(); const { W, H } = cuDims(); p.x = r1(Math.min(Math.max(0, p.x + mv[0]), W - p.w)); p.y = r1(Math.min(Math.max(0, p.y + mv[1]), H - p.h)); cuDrawCanvas(); cuSyncNums(); cuCommit('key'); }
+  });
+  window.addEventListener('resize', () => { if (fmt === 'custom') { clearTimeout(CU.rt); CU.rt = setTimeout(cuDrawCanvas, 150); } });
+}
+function cuInit() {
+  $('cuPal').innerHTML = Object.keys(CU_TYPES).map(k => `<button type="button" onclick="cuAdd('${k}')">＋ ${CU_TYPES[k].label}</button>`).join('');
+  $('cuTplSel').innerHTML = Object.keys(CU_TEMPLATES).map(k => `<option value="${k}">${CU_TEMPLATES[k].label}</option>`).join('');
+  let s; try { s = JSON.parse(localStorage.getItem(CU_KEY)); } catch (e) {}
+  if (s && Array.isArray(s.parts)) { cuSetParts(s.parts.slice(0, 200)); if ([0, 1, 2.5].includes(+s.snap)) CU.snap = +s.snap; cuClampAll(); }
+  else { const d = cuDims(); cuSetParts(CU_TEMPLATES.vaccine.build(d.W, d.H)); cuClampAll(); }
+  $('cuSnapSel').value = String(CU.snap);
+  CU.hist = [JSON.stringify(CU.parts)]; CU.hi = 0;
+  cuBind();
+  if (innerWidth > 600) { $('cuHelp').open = true; $('cuMore').open = true; }
+  window.addEventListener('load', () => { if (fmt === 'custom') cuDrawCanvas(); });
+}
+
 // === MODULE: Sheet Builder ===
 function buildItems() {
   if (fmt === 'monthly') { const months = monthlyMonths(); return { items: monthlyPages(months), label: `${months[0].getFullYear()}年${months[0].getMonth() + 1}月〜 ${months.length}か月（見開き1ヶ月）` }; }
@@ -720,12 +1113,14 @@ function buildItems() {
   }
   const n = Math.min(120, Math.max(1, parseInt($('pageCount').value) || 8));
   if (fmt === 'okusuri') return { items: Array.from({ length: n }, (_, i) => ({ t: i === 0 ? 'info' : 'rec' })), label: `お薬手帳 ${n}ページ` };
+  if (fmt === 'custom') return { items: Array.from({ length: n }, () => ({ t: 'custom' })), label: `自作様式 ${n}ページ` };
   return { items: Array.from({ length: n }, () => ({ t: 'memo' })), label: `メモ ${n}ページ` };
 }
 function buildPage(item, pageNum, holeSide) {
   if (fmt === 'weekly') return buildWeekly(item, pageNum, holeSide);
   if (fmt === 'monthly') return buildMonthly(item, pageNum, holeSide);
   if (fmt === 'okusuri') return buildOkusuri(item, pageNum, holeSide);
+  if (fmt === 'custom') return wrapSlot(cuPageHTML(), pageNum, holeSide);
   return buildMemo(item, pageNum, holeSide);
 }
 function makeSheetHTML(sideKey, sheetIndex, items) {
@@ -757,10 +1152,11 @@ function render() {
   }
   $('preview').dataset.orient = 'portrait';
   $('preview').innerHTML = html;
+  cuSync();
   saveSettings();
 }
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; $(btnId).classList.toggle('on', opts[key]); rerender(); }
-function setFormat(f) { fmt = f; $('fmtSel').value = f; rerender(); }
+function setFormat(f) { fmt = f; $('fmtSel').value = f; CU.propsOk = false; rerender(); }
 function setLang(en) { isEN = en; $('btnJA').classList.toggle('on', !en); $('btnEN').classList.toggle('on', en); rerender(); }
 function setUndatedQuiet(u) { opts.undated = u; $('btnDated').classList.toggle('on', !u); $('btnUndated').classList.toggle('on', u); document.body.classList.toggle('undated', u); $('undatedCountRow').style.display = u ? 'flex' : 'none'; }
 function setUndated(u) { setUndatedQuiet(u); rerender(); }
@@ -809,7 +1205,7 @@ function loadSettings() {
   let s; try { s = JSON.parse(localStorage.getItem(SETTINGS_KEY)); } catch (e) {}
   if (!s) return;
   if (s.paper && s.paper.w > 0 && s.paper.h > 0 && Array.isArray(s.paper.holes)) paper = { preset: PRESETS[s.paper.preset] ? s.paper.preset : 'custom', w: +s.paper.w, h: +s.paper.h, d: +s.paper.d || 5, edge: +s.paper.edge || 6, holes: s.paper.holes.map(Number).filter(isFinite) };
-  if (['weekly', 'monthly', 'okusuri', 'memo'].includes(s.fmt)) fmt = s.fmt;
+  if (['weekly', 'monthly', 'okusuri', 'memo', 'custom'].includes(s.fmt)) fmt = s.fmt;
   const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta' };
   if (s.opts) for (const [k, id] of Object.entries(btnMap)) if (s.opts[k] != null) { opts[k] = !!s.opts[k]; $(id).classList.toggle('on', opts[k]); }
   ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount', 'monthStart', 'monthCount', 'monthWeekStart'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
@@ -824,6 +1220,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-11-05', type: 'feat', title: '自作様式（部品を置いて自分の様式を作る）を追加',
+    detail: '書式「自作様式」を追加しました。紙面の上の編集画面に、見出し・見出し帯・文字・記入欄・チェック欄・貼付枠・罫線メモ・表・枠・区切り線の部品を置き、ドラッグで動かし、右下の青い■で大きさを変えて、自分の様式を作れます。ほかの部品や紙面の中央に端がそろうと、赤いガイド線が出ます。文字・文字の大きさ・太さ・位置・大きさは、部品を選んで数値でも直せます。「見本を読み込む」で、予防接種の記録（1ページに2回分）やワクチン接種の一覧表から始められます。取り消し・やり直し、自動保存、ファイルへの書き出し・読み込みに対応しています。用紙のサイズ・穴の位置・面付け・PDF生成は、ほかの書式と同じです。実物での印刷確認は未了です。' },
   { date: '2026-10-31', type: 'improve', title: 'スマホで、フリックでメニューと紙面を切り替え',
     detail: 'スマホの画面で、横に払う（フリック）操作でメニューと紙面を切り替えられるようにしました。右へ払うとメニューが開き、左へ払うと紙面に戻ります。入力欄やスライダーを触っているとき、画面を拡大しているときは、切り替わりません。☰ボタンや、メニューの外をタップする従来の操作もそのまま使えます。' },
   { date: '2026-10-31', type: 'improve', title: 'スマホで使いやすくしました',
@@ -859,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // 入力欄・スライダー・各ダイアログの上、2本指（拡大）や拡大中は効かせない。縦の動きが大きいときは、ふつうのスクロール。
 (function () {
   let sx = 0, sy = 0, st = 0, ok = false;
-  const NO = 'input, select, textarea, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge';
+  const NO = 'input, select, textarea, .cu-ed, .history-overlay, #nsf-flip-ov, #nsf-bug-overlay, #nsfNudge';
   document.addEventListener('touchstart', e => {
     const zoomed = window.visualViewport && window.visualViewport.scale > 1.05;
     ok = innerWidth <= 600 && e.touches.length === 1 && !zoomed && !(e.target.closest && e.target.closest(NO));
@@ -886,6 +1284,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   $('fmtSel').value = fmt;
   syncPaperUI();
+  cuInit();
   render();
 });
 </script>
