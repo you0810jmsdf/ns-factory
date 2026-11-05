@@ -1836,7 +1836,7 @@ async function loadCustomerMaster() {
   try {
     const res = await fetch(INVOICE_GAS_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'listCustomers' })
+      body: JSON.stringify({ action: 'listCustomers', adminKey: (function () { try { return sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) { return ''; } })() })
     });
     const data = await res.json();
     if (data && data.success && Array.isArray(data.data)) {

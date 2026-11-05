@@ -10,10 +10,13 @@ const API = {
    */
   async post(body) {
     const url = CONFIG.GAS_WEBAPP_URL;
+    // 管理者の鍵（ログイン後に sessionStorage へ入る）を毎回付ける。GAS側が検査する（2026-11-05）
+    let adminKey = '';
+    try { adminKey = sessionStorage.getItem('nsf_admin_key') || ''; } catch (e) {}
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' }, // GAS CORS対策でtext/plain
-      body: JSON.stringify(body)
+      body: JSON.stringify(adminKey ? Object.assign({}, body, { adminKey: adminKey }) : body)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
