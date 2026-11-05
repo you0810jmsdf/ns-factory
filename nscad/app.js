@@ -4422,8 +4422,24 @@ function texImage(id) {
   const img = new Image(); img.onload = () => { draw(); if (view3d) render3d(); }; img.onerror = () => texImages.set(id, null); img.src = x.file; texImages.set(id, img); return null;
 }
 /** 画面の塗り：画像が読めていれば繰り返し模様（図面の mm に合わせて拡大縮小し、図面の原点に固定）、まだなら平均色 */
+/** しぼの強さ（事業主 2026-11-05「リネアヴァスカボックスのしぼ感がシミュレーションでなかなか伝わらない」案A）：写真の各点の色を「写真の平均色からの差 × k」にして描く。1＝写真のまま。図面に保存（doc.textureGrain）。写真そのものは変えない。スライダーを動かしている間は仮の値で描き、離したときに元に戻せる1回として記録する。 */
+let grainPreview = null;
+const textureGrain = () => { const v = Number(grainPreview ?? doc.textureGrain); return v >= 1 && v <= 5 ? v : 1; };
+const grainAdjust = (v, avg, k) => Math.max(0, Math.min(255, Math.round(avg + (v - avg) * k)));
+const texGrainImages = new Map();
+function texGrainImage(id, k) {
+  const key = id + '|' + k; if (texGrainImages.has(key)) return texGrainImages.get(key);
+  const img = texImage(id); if (!img || typeof document === 'undefined' || typeof document.createElement !== 'function') return null;   /* まだ読み込み中なら、次の描画でまた試す */
+  let out = null;
+  try {
+    const c = document.createElement('canvas'); c.width = img.naturalWidth || img.width; c.height = img.naturalHeight || img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+    const im = g.getImageData(0, 0, c.width, c.height), d = im.data, n = d.length / 4; let r = 0, gg = 0, b = 0; for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; } r /= n; gg /= n; b /= n;
+    for (let i = 0; i < d.length; i += 4) { d[i] = grainAdjust(d[i], r, k); d[i + 1] = grainAdjust(d[i + 1], gg, k); d[i + 2] = grainAdjust(d[i + 2], b, k); } g.putImageData(im, 0, 0); out = c;
+  } catch { out = null; }   /* 画像が読めない（別の場所の画像など）ときは写真のまま */
+  texGrainImages.set(key, out); return out;
+}
 function textureFill(id) {
-  const x = textureById(id), img = texImage(id), pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
+  const x = textureById(id), k = textureGrain(), base = texImage(id), img = k > 1 ? (texGrainImage(id, k) || base) : base, pat = img && typeof ctx.createPattern === 'function' ? ctx.createPattern(img, 'repeat') : null;
   if (pat && typeof DOMMatrix !== 'undefined' && typeof pat.setTransform === 'function') { const k = textureMm(id) / img.width; pat.setTransform(new DOMMatrix([k, 0, 0, k, 0, 0])); return pat; } /* ctx は mm に変換済み（draw()）なので、画像 1px＝k mm・図面の原点に固定 */
   return x ? x.avg : '#d9c7a0';
 }
@@ -4462,6 +4478,7 @@ function renderTextures() {
   for (const id of ['patchTexA', 'patchTexB']) fillSel($(id), TEXTURES);
   const cur = textureById($('textureSel').value), pv = $('texturePreview'); pv.style.background = cur ? `${cur.avg} url("${cur.file}") center / 48px` : 'transparent'; pv.title = cur ? cur.name + (cur.sub ? ' / ' + cur.sub : '') : '';
   $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; /* 空欄＝写真ごとの実寸 */
+  if ($('textureGrain')) { const g = textureGrain(); $('textureGrain').value = String(g); $('textureGrainVal').textContent = g.toFixed(1); }
 }
 /** 選んだ図形の部品に質感を付ける（id が空なら外して革色に戻す）。部品に入っていない閉じた図形には、図形自身に付ける */
 function applyTexture(id, quiet = false) {   /* quiet：塗りモードのクリックから呼ぶとき。付けられなければ案内を出さず 0 を返す（そのあと囲まれた場所を塗る）。返り値：付けた数 */
@@ -4523,6 +4540,8 @@ function initColors() {
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
   $('textureSel').addEventListener('change', () => { if (mode === 'paint' && paintBrush?.kind === 'texture' && $('textureSel').value) { paintBrush = { kind: 'texture', id: $('textureSel').value }; $('hint').textContent = t('paintStart', { name: paintName(paintBrush) }); } });   /* 塗りモードの途中で質感を選び直したら、その質感で塗る */
+  $('textureGrain')?.addEventListener('input', () => { const v = Number($('textureGrain').value); if (!(v >= 1)) return; grainPreview = v; $('textureGrainVal').textContent = v.toFixed(1); draw(); });   /* 動かしている間は仮に描く */
+  $('textureGrain')?.addEventListener('change', () => { const v = Number($('textureGrain').value); grainPreview = null; if (!(v >= 1)) return; if (v > 1 ? doc.textureGrain !== v : doc.textureGrain !== undefined) commit(() => { if (v > 1) doc.textureGrain = v; else delete doc.textureGrain; }); else draw(); });
   $('textureMm').addEventListener('change', () => { /* 数値＝全部その大きさ・空欄＝写真ごとの実寸に戻す・数でなければ元の表示に戻す */
     const raw = String($('textureMm').value ?? '').trim(), v = Number(raw);
     if (raw !== '' && !(v > 0)) { $('textureMm').value = Number(doc.textureMm) > 0 ? String(doc.textureMm) : ''; return; }
@@ -9505,7 +9524,7 @@ async function save(asNew = false) {
 function selectedDoc() {
   const ids = selectedShapeIds(); if (!ids.size) return null;
   const sel = extractSelection(doc, ids, { originAtBbox: false }), pathIds = new Set(sel.paths.map(p => p.id)), copy = v => JSON.parse(JSON.stringify(v));
-  const out = { ...newDoc(), unit: doc.unit, mark: doc.mark, dotD: doc.dotD, ...(doc.textureMm !== undefined && doc.textureMm !== null ? { textureMm: doc.textureMm } : {}), layers: copy(doc.layers), tools: copy(doc.tools), shapes: sel.shapes, holes: sel.holes, paths: sel.paths, parts: sel.parts.filter(p => p.shapeIds.length), seams: copy((doc.seams || []).filter(m => pathIds.has(m?.a?.pathId) && pathIds.has(m?.b?.pathId))), fills: copy((doc.fills || []).filter(f => Array.isArray(f.ids) && f.ids.length && f.ids.every(id => ids.has(id)))) };
+  const out = { ...newDoc(), unit: doc.unit, mark: doc.mark, dotD: doc.dotD, ...(doc.textureMm !== undefined && doc.textureMm !== null ? { textureMm: doc.textureMm } : {}), ...(Number(doc.textureGrain) > 1 ? { textureGrain: doc.textureGrain } : {}), layers: copy(doc.layers), tools: copy(doc.tools), shapes: sel.shapes, holes: sel.holes, paths: sel.paths, parts: sel.parts.filter(p => p.shapeIds.length), seams: copy((doc.seams || []).filter(m => pathIds.has(m?.a?.pathId) && pathIds.has(m?.b?.pathId))), fills: copy((doc.fills || []).filter(f => Array.isArray(f.ids) && f.ids.length && f.ids.every(id => ids.has(id)))) };
   for (const s of out.shapes) if (s.type === 'dimension' && Array.isArray(s.anchors)) { s.anchors = s.anchors.map(a => a && ids.has(a.id) ? a : null); if (!s.anchors.some(Boolean)) delete s.anchors; }   /* 選んでいない図形への追従の覚えは外す */
   healDoc(out); return validateDoc(out) ? out : null;
 }
