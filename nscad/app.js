@@ -3334,6 +3334,10 @@ function initInfo() {
   for (const f of ['x','y','x1','y1','x2','y2','cx','cy','r','startDeg','endDeg','length','text','sizeMm','angleDeg','offset','closed','inner','layer','color','lineStyle','font']) $('info-' + f).addEventListener('change', () => applyInfo(f));
   buildTextSwatches($('info-textColor'), key => { const s = infoShape(); if (!s || s.type !== 'text' || !editable(s)) return; const next = { ...s }; if (key === '') delete next.textColor; else next.textColor = SHAPE_DRAW_COLOR[key]; if ((next.textColor || '') === (s.textColor || '')) return; transformSelectedTo(next); });   /* 情報カードの文字の色＝図形と同じ候補（標準・青・緑・赤・白・黄）の色見本（事業主 2026-11-01「図形と同じ候補の色のみでよい」） */
   $('toggleSmooth').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; transformSelectedTo(toggleNodeSmooth(s, nodeSel.index)); };
+  $('vmRemove').onclick = () => { const s = vertexMenuShape(), i = vertexMenuAt?.index; hideVertexMenu(); if (s) vertexRemove(s, i); };
+  $('vmSmooth').onclick = () => { const s = vertexMenuShape(), i = vertexMenuAt?.index; hideVertexMenu(); if (s) vertexSmooth(s, i); };
+  $('vmAdd').onclick = () => { const s = vertexMenuShape(), i = vertexMenuAt?.index; hideVertexMenu(); if (s) vertexAddAfter(s, i); };
+  $('vmShapeMenu').onclick = () => { const at = vertexMenuAt, s = vertexMenuShape(); hideVertexMenu(); if (!s) return; selected = new Set([s.id]); nodeSel = null; showCtxMenu({ clientX: at.clientX, clientY: at.clientY }); };   /* 図形のメニュー（線種など）を同じ場所に */
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
   $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections; $('offsetSel').onclick = offsetSelectedShapes;
@@ -4057,7 +4061,16 @@ const currentMetalStyle = () => $('metalStyle')?.value === 'radial' ? 'radial' :
 const paintName = b => b.kind === 'clear' ? t('clearName') : b.kind === 'eraseFill' ? t('eraseFillName') : b.kind === 'erase' ? t('metalEraseName') : b.kind === 'texture' ? (textureById(b.id)?.name || b.id) : b.kind === 'metal' ? t('metal.' + b.id) + (b.style === 'radial' ? '（' + t('metalStyleRadialShort') + '）' : '') : (() => { const c = DATA_LEATHER_COLORS.leatherColors.find(x => String(x.hex).toLowerCase() === b.hex.toLowerCase()); return c ? c.name + ' ' + b.hex : b.hex; })();
 /** 塗りモード（事業主の希望 2026-10-18「金具の色が塗れない・スポイトでの塗り機能は」）：色の見本を、図形を選ばずに押すと、その色を持って塗りモードになる。図形をクリックすると塗れる。Alt＋クリックで図形の色を拾う（スポイト）。Esc で終わる。 */
 let lastLeatherBrush = null, lastMetalBrush = null;   /* 直前に選んだ革色・質感・金属の色（「断面に色をつける」が使う） */
-function rememberBrush(brush) { if (brush?.kind === 'leather' || brush?.kind === 'texture') lastLeatherBrush = brush; else if (brush?.kind === 'metal') lastMetalBrush = brush; }
+function rememberBrush(brush) { if (brush?.kind === 'leather' || brush?.kind === 'texture') lastLeatherBrush = brush; else if (brush?.kind === 'metal') lastMetalBrush = brush; else return; saveBrush(); }
+/** 最後に選んだ革の色・質感・金具の色をブラウザに覚え、次に開いたときに復元する（事業主 2026-11-05「革の種類と色は、前回の入力を記憶できないか？」）。壊れた値・無い質感は無視。 */
+const BRUSH_KEY = 'leather-cad.brush';
+function saveBrush() { try { localStorage.setItem(BRUSH_KEY, JSON.stringify({ leather: lastLeatherBrush, metal: lastMetalBrush })); } catch { /* 保存できなくても続ける */ } }
+function restoreBrush() {
+  let v = null; try { v = JSON.parse(localStorage.getItem(BRUSH_KEY) || 'null'); } catch { v = null; } if (!v || typeof v !== 'object') return;
+  const le = v.leather; if (le && typeof le === 'object') { if (le.kind === 'texture' && typeof le.id === 'string' && textureById(le.id)) lastLeatherBrush = { kind: 'texture', id: le.id }; else if (le.kind === 'leather' && /^#[0-9a-fA-F]{6}$/.test(String(le.hex || ''))) lastLeatherBrush = { kind: 'leather', hex: le.hex }; }
+  const me = v.metal; if (me && typeof me === 'object' && me.kind === 'metal' && typeof me.id === 'string' && METAL_COLORS.some(m => m.id === me.id)) lastMetalBrush = { kind: 'metal', id: me.id, ...(me.style === 'radial' ? { style: 'radial' } : {}) };
+  if (lastLeatherBrush?.kind === 'texture') { $('textureSel').value = lastLeatherBrush.id; renderTextures(); } else if (lastLeatherBrush?.kind === 'leather') $('leatherHex').value = lastLeatherBrush.hex;   /* 色カードの欄にも戻す */
+}
 function startPaint(brush) { rememberBrush(brush); paintBrush = brush; selected = new Set(); if (brush.kind === 'metal' && $('metalStyle')) $('metalStyle').value = brush.style === 'radial' ? 'radial' : 'linear'; setMode('paint'); $('hint').textContent = brush.kind === 'eraseFill' ? t('eraseFillStart') : brush.kind === 'erase' ? t('metalEraseStart') : t('paintStart', { name: paintName(brush) }); draw(); }
 /** 領域の塗り（doc.fills）：線で囲まれた場所を塗る。取り込んだ型紙の輪郭が T字・すき間で閉じて見えなくても塗れる（事業主の指摘 2026-10-18「つながっていないと警告が出て色が塗れない」）。計算は geometry.js の regionAt。 */
 const regionShapes = () => doc.shapes.filter(s => visible(s) && !s.holeLink && s.layer !== 'guide' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type));   /* 囲む線：見えている実線（ガイド層・点線は囲まない） */
@@ -4625,6 +4638,7 @@ function initColors() {
   $('paintSection').onclick = paintSectionAuto; $('flowPaint').onclick = paintSectionAuto;
   $('leatherHex').addEventListener('change', () => { const raw = String($('leatherHex').value).trim().replace(/^#/, ''), v = /^[0-9a-fA-F]{3}$/.test(raw) ? '#' + raw.split('').map(c => c + c).join('') : /^[0-9a-fA-F]{6}$/.test(raw) ? '#' + raw : null; if (v) { $('leatherHex').value = v.toUpperCase(); applyLeather(v.toUpperCase()); } });   /* FFFFFF・#fff・#FFFFFF のどれでも（事業主 2026-10-24「白に塗りつぶせない」） */
   $('textureSearch').addEventListener('input', renderTextures); $('textureSel').addEventListener('change', renderTextures);
+  restoreBrush();   /* 前回の革の色・質感・金具の色 */
   $('applyTexture').onclick = () => applyTexture($('textureSel').value);
   $('textureSel').addEventListener('change', () => { if (mode === 'paint' && paintBrush?.kind === 'texture' && $('textureSel').value) { paintBrush = { kind: 'texture', id: $('textureSel').value }; $('hint').textContent = t('paintStart', { name: paintName(paintBrush) }); } });   /* 塗りモードの途中で質感を選び直したら、その質感で塗る */
   $('textureGrain')?.addEventListener('input', () => { const v = Number($('textureGrain').value); if (!(v >= 1)) return; grainPreview = v; $('textureGrainVal').textContent = v.toFixed(1); draw(); });   /* 動かしている間は仮に描く */
@@ -5635,10 +5649,11 @@ function bookSpecText(data, pockets = []) {
   const nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿', b1 = en ? '__' : '＿';   /* b1＝数字の空欄 */
   const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
   const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
-  const leather = data?.colors?.leather, leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || leather?.hex || blank;
+  const leather = data?.colors?.leather, hexName = h => DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(h).toLowerCase())?.name || h;   /* 色の見本の名前（無ければ色コード） */
+  const leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || blank, leatherColor = leather?.kind === 'leather' && leather.hex ? hexName(leather.hex) : blank;
   const dims = list => list.map(q => `${q.name} ${n1(q.w)}×${n1(q.h)} mm`).join(en ? ', ' : '・'), pk = pockets.filter(q => q.kind === 'pocket'), fl = pockets.filter(q => q.kind === 'flap');   /* 図面の部品の縦横（外形の幅×高さ） */
-  return en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, stack ${b.stack || blank} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
-    : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・束 ${b.stack || blank} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
+  return en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: ${leatherName} / color ${leatherColor}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, stack ${b.stack || blank} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
+    : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：${leatherName}・色 ${leatherColor}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・束 ${b.stack || blank} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
 }
 /** 図面の部品のうち、名前が「あおり」「煽り」「flap」の部品はあおり、名前が「ポケット」「pocket」か役割 pocket（自動設計）の部品はポケットとして、外形の幅×高さ（mm）を返す。形の無い部品は拾わない。 */
 function docPockets() {
@@ -6787,6 +6802,32 @@ function polylineInsertVertex(s, p) {
   for (let k = 0; k < segs; k++) { const a = pts[k], b = pts[(k + 1) % n], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2)), q = { x: a.x + dx * t, y: a.y + dy * t }, d = distance(p, q); if (!best || d < best.d) best = { k, q, d }; }
   if (!best) return null; const points = pts.slice(); points.splice(best.k + 1, 0, best.q); return { ...s, points };
 }
+// ---- 頂点メニュー（事業主 2026-11-05「頂点メニューでもよい」）：頂点を右クリック → 消す／滑らかにする・角にする／頂点を足す／図形のメニュー… ----
+let vertexMenuAt = null;   /* { id, index, clientX, clientY } */
+function showVertexMenu(e, s, i) {
+  hideCtxMenu(); vertexMenuAt = { id: s.id, index: i, clientX: e.clientX, clientY: e.clientY }; selected = new Set([s.id]); nodeSel = s.type === 'path' ? { id: s.id, index: i } : null; draw();
+  const menu = $('vertexMenu'), p = local(e), node = s.type === 'path' ? s.nodes[i] : null; $('vmSmooth').textContent = t(node?.smooth ? 'vertexMenuCorner' : 'vertexMenuSmooth');
+  menu.hidden = false; const w = menu.offsetWidth || 180, h = menu.offsetHeight || 120; menu.style.left = Math.round(Math.max(8, Math.min(width - w - 8, p.x))) + 'px'; menu.style.top = Math.round(Math.max(36, Math.min(height - h - 8, p.y))) + 'px';
+  $('hint').textContent = t('vertexMenuHint');
+}
+function hideVertexMenu() { const m = $('vertexMenu'); if (m && m.hidden === false) m.hidden = true; vertexMenuAt = null; }
+/** メニューの相手（折れ線か、ペンの線。古い制御点型のベジエはペンの線にして扱う）。消えていれば null。 */
+function vertexMenuShape() { if (!vertexMenuAt) return null; const s = doc.shapes.find(x => x.id === vertexMenuAt.id); if (!s || !editable(s)) return null; return s.type === 'polyline' || s.type === 'path' ? s : s.type === 'bezier' ? toPath(s) : null; }
+function vertexRemove(s, i) {
+  selected = new Set([s.id]); nodeSel = null;
+  if (s.type === 'polyline') { if (s.points.length <= (s.closed ? 3 : 2)) { $('hint').textContent = t('vertexRemoveImpossible'); return false; } transformSelectedTo({ ...s, points: s.points.filter((_, k) => k !== i) }); $('hint').textContent = t('vertexRemoved'); return true; }
+  const next = pathRemoveNode(s, i); if (!next) { $('hint').textContent = t('nodeRemoveImpossible'); return false; } transformSelectedTo(next); $('hint').textContent = t('nodeRemoved'); return true;
+}
+function vertexSmooth(s, i) {
+  const p = s.type === 'path' ? s : toPath(s); if (!p || i >= p.nodes.length) return; const next = toggleNodeSmooth(p, i); selected = new Set([s.id]); nodeSel = { id: s.id, index: i }; transformSelectedTo(next); $('hint').textContent = t(next.nodes[i].smooth ? 'nodeSmoothed' : 'nodeCornered');
+}
+/** その点と次の点の間（真ん中）に頂点を足す。開いた線の最後の点なら、ひとつ前との間。 */
+function vertexAddAfter(s, i) {
+  selected = new Set([s.id]); nodeSel = null;
+  if (s.type === 'polyline') { const n = s.points.length, k = !s.closed && i === n - 1 ? i - 1 : i, a = s.points[k], b = s.points[(k + 1) % n], points = s.points.slice(); points.splice(k + 1, 0, { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }); transformSelectedTo({ ...s, points }); }
+  else { const n = s.nodes.length, k = !s.closed && i === n - 1 ? i - 1 : i, a = s.nodes[k], b = s.nodes[(k + 1) % n], mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; transformSelectedTo(pathInsertNode(s, projectOnPath(s, mid).s)); }   /* 曲線は、2点を結ぶ線の真ん中にいちばん近い所 */
+  $('hint').textContent = t('vertexAdded');
+}
 // ---- ペン（連続ベジェ）・テキスト・寸法・トリム・線対称 ----
 function finishPath(closed = false) {
   if (stage?.kind !== 'path') return;
@@ -7617,7 +7658,7 @@ function syncToolCards() {
 }
 function setMode(next) {
   if (next === 'patchfill' && !lockGate('patchwork')) return;
-  cancel(); manualNext = null; nodeSel = null; mode = next; logOp('tool', { mode }); syncToolCards(); refreshModHelp();
+  cancel(); manualNext = null; nodeSel = null; mode = next; hideVertexMenu(); logOp('tool', { mode }); syncToolCards(); refreshModHelp();
   document.querySelectorAll('[data-tool]').forEach(b => { b.classList.toggle('active', b.dataset.tool === mode); b.setAttribute('aria-pressed', String(b.dataset.tool === mode)); });
   $('hint').textContent = modeHint(mode); syncKomaBar(); canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair'; resize();
 }
@@ -9179,6 +9220,7 @@ function touchPinchUp(e) {
   pinch = null; gesture = null; if (canvas.hasPointerCapture?.(e.pointerId)) canvas.releasePointerCapture(e.pointerId); draw(); return true;   /* 2本指の操作は、指を離しても、クリックにしない */
 }
 canvas.addEventListener('pointerdown', e => {
+  hideVertexMenu();   /* 頂点メニューは、図面を押したら閉じる */
   if (touchPinchDown(e)) return;
   longPressStart(e); hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
@@ -9545,31 +9587,17 @@ function longPressStart(e) {
 }
 const longPressMove = e => { if (longPressAt && Math.hypot(e.clientX - longPressAt.x, e.clientY - longPressAt.y) > 10) longPressCancel(); };
 canvas.addEventListener('contextmenu', e => {
-  e.preventDefault(); hideCtxMenu();
+  e.preventDefault(); hideCtxMenu(); hideVertexMenu();
   if (Date.now() - lastPanDragAt < 400) return; /* 画面を動かしたあとは、メニューを出さない（動かさずに右クリックしたときだけ出す） */
   if (!['select', 'bezier', 'path'].includes(mode) || stage) return;
   if (mode === 'select' && selected.size > 1) { showCtxMenu(e); return; } /* 複数選択（全体選択など）：メニュー。ペンの経由点の編集は、選択が1つ以下のとき */
-  const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse();
-  for (const s0 of curves) { /* まず、経由点の上かどうか */
-    const s = s0.type === 'path' ? s0 : toPath(s0), i = s.nodes.findIndex(n => distance(n, w) <= r);
-    if (i >= 0) {
-      if (e.shiftKey) { const next = toggleNodeSmooth(s, i); selected = new Set([s0.id]); nodeSel = { id: s0.id, index: i }; transformSelectedTo(next); $('hint').textContent = t(next.nodes[i].smooth ? 'nodeSmoothed' : 'nodeCornered'); return; }   /* Shift+右クリック＝その点を滑らか／角（事業主 2026-11-05「特定の点を滑らかな曲線にしたい」） */
-      const next = pathRemoveNode(s, i); if (!next) { $('hint').textContent = t('nodeRemoveImpossible'); return; } selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeRemoved'); return;
-    }
-  }
-  for (const s0 of curves) { /* 次に、曲線の上かどうか */
-    if (distTo(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s);
-    selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('nodeAdded'); return;
-  }
-  /* 折れ線（部品ライブラリのポケットなど）：頂点の上で右クリック＝その頂点を消す（Shift なら滑らかな曲線に＝ペンの線になる）。辺の上＝そこに頂点を足す（事業主 2026-11-05「途中のコネクタを削除したい」「特定の点を滑らかな曲線にしたい」） */
-  if (mode === 'select') {
-    const polys = doc.shapes.filter(s => visible(s) && editable(s) && s.type === 'polyline' && !isHardwareShape(s)).reverse();
-    for (const s of polys) {
-      const i = s.points.findIndex(q => distance(q, w) <= r); if (i < 0) continue;
-      if (e.shiftKey) { const p = toPath(s); if (!p || i >= p.nodes.length) return; const next = toggleNodeSmooth(p, i); selected = new Set([s.id]); nodeSel = { id: s.id, index: i }; transformSelectedTo(next); $('hint').textContent = t('nodeSmoothed'); return; }
-      if (s.points.length <= (s.closed ? 3 : 2)) { $('hint').textContent = t('vertexRemoveImpossible'); return; }
-      selected = new Set([s.id]); nodeSel = null; transformSelectedTo({ ...s, points: s.points.filter((_, k) => k !== i) }); $('hint').textContent = t('vertexRemoved'); return;
-    }
+  /* 右クリックで勝手に点を消したり足したりしない（事業主 2026-11-05「線種を変えたいときに点が消えたり、追加されると困る。頂点メニューでもよい」）：
+     頂点（経由点）の上＝頂点メニュー（Shift なら、その場で滑らか／角）。辺・曲線の上＝Shift のときだけ、そこに頂点を足す。それ以外は図形のメニュー */
+  const w = world(local(e)), r = 7 / scale, curves = doc.shapes.filter(s => visible(s) && editable(s) && (s.type === 'path' || s.type === 'bezier')).reverse(), polys = doc.shapes.filter(s => visible(s) && editable(s) && s.type === 'polyline' && !isHardwareShape(s)).reverse();
+  for (const s0 of curves) { const s = s0.type === 'path' ? s0 : toPath(s0), i = s.nodes.findIndex(n => distance(n, w) <= r); if (i >= 0) { if (e.shiftKey) vertexSmooth(s0, i); else showVertexMenu(e, s0, i); return; } }
+  for (const s of polys) { const i = s.points.findIndex(q => distance(q, w) <= r); if (i >= 0) { if (e.shiftKey) vertexSmooth(s, i); else showVertexMenu(e, s, i); return; } }
+  if (e.shiftKey) {
+    for (const s0 of curves) { if (distTo(s0, w) > r) continue; const s = s0.type === 'path' ? s0 : toPath(s0), next = pathInsertNode(s, projectOnPath(s, w).s); selected = new Set([s0.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('vertexAdded'); return; }
     for (const s of polys) { if (distTo(s, w) > r) continue; const next = polylineInsertVertex(s, w); if (!next) continue; selected = new Set([s.id]); nodeSel = null; transformSelectedTo(next); $('hint').textContent = t('vertexAdded'); return; }
   }
   if (mode === 'select' && (selected.size >= 1 || ctxCardList().length)) showCtxMenu(e); /* 経由点・曲線の上でなければ、選んだ図形のメニューと右メニューの項目 */
@@ -9897,7 +9925,7 @@ window.addEventListener('keydown', e => {
   else if (isSelectAll(e)) { e.preventDefault(); selectAllShapes(); }
   else if (isShortcut(e, 'g')) { e.preventDefault(); if (e.shiftKey) ungroupSelected(); else groupSelected(); }
   else if (e.code === 'Space') { if (e.target === canvas || e.target === document.body) { e.preventDefault(); space = true; } }
-  else if (e.key === 'Escape') { hideCtxMenu(); gridPreviewCancel(); dotPreviewClear(); if (pasteGhost) { pasteGhost = null; $('hint').textContent = ''; draw(); return; } if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
+  else if (e.key === 'Escape') { hideCtxMenu(); hideVertexMenu(); gridPreviewCancel(); dotPreviewClear(); if (pasteGhost) { pasteGhost = null; $('hint').textContent = ''; draw(); return; } if (foldCutPicking) { foldCutPicking = false; $('hint').textContent = ''; draw(); return; } if (stage?.kind === 'path' && stage.nodes.length) { stage.nodes.pop(); if (!stage.nodes.length) stage = null; draw(); } else if (stage?.kind === 'radius') { stage = null; radiusHover = null; $('hint').textContent = t('hint.dimension'); draw(); } /* R の角を選んだあと：Esc で選びなおし（寸法ツールのまま） */ else if (mode === 'select' && !stage && !gesture && selected.size) { selected.clear(); nodeSel = null; draw(); } /* 選択ツールで作図中でなければ、Esc で選択を解除 */ else setMode('select'); }
   else if (isDelete(e) && e.shiftKey && e.key === 'Delete' && !(nodeSel && mode === 'select')) { e.preventDefault(); removeSelectedKeepHoles(); }   /* Shift+Delete：線だけ削除（菱目は残す） */
   else if (isDelete(e)) { e.preventDefault(); if (nodeSel && mode === 'select') $('removeNode').click(); else removeSelected(); }
   else if (e.key === 'F1' || e.key === '?') { e.preventDefault(); showHelp(e.key === 'F1'); }
