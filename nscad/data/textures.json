@@ -3166,7 +3166,7 @@
     {
       "id": "lvb_ner",
       "name": "LINEA VASCA Box ネロ（黒）",
-      "sub": "Virgilio / ボックスカーフ仕上げ（事業主の接写 2026-11-05・実寸は推定）",
+      "sub": "Virgilio / ボックスカーフ仕上げ（しぼは事業主の接写 2026-11-05・色はサイトの写真・実寸は推定）",
       "tags": [
         "LINEA VASCA Box",
         "タンニン鞣し",
@@ -3175,7 +3175,7 @@
       ],
       "file": "assets/textures/lvb_ner.jpg",
       "px": 512,
-      "avg": "#413f3e",
+      "avg": "#232427",
       "mm": 50,
       "grain": "photo"
     },
