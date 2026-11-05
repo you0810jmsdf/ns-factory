@@ -306,6 +306,8 @@ body.panel-open #cuEditor { margin-left: 280px; }
     <div class="ctrl-row"><label>穴の位置</label><input type="text" id="pHoles" placeholder="上端から（mm）をカンマ区切り" oninput="onHolesInput()"></div>
     <div class="ctrl-row"><label>等間隔で作る</label><input type="number" id="uN" min="1" max="40" value="18" style="max-width:48px"><span>個</span><input type="number" id="uP" min="5" max="40" step="0.1" value="9.5" style="max-width:56px"><span>mm間隔</span><button type="button" class="btn-secondary" onclick="makeUniformHoles()">入れる</button></div>
     <div class="hint" id="layoutInfo"></div>
+    <div class="btn-row"><button class="btn-toggle" id="btnActual" onclick="toggleActual()">原寸で出す（1ページ1枚）</button></div>
+    <div class="hint" id="actualNote"></div>
   </div>
 
   <div class="ctrl-section">
@@ -512,7 +514,7 @@ const PRESET_ORDER = ['rollbahnL', 'rollbahnM', 'a6', 'bible', 'a5', 'a5slim', '
 let paper = { preset: 'rollbahnL', w: 132, h: 178, d: 5, edge: 6, holes: PRESETS.rollbahnL.holes.slice() };
 let fmt = 'weekly', isEN = false;
 let opts = { showHoles: true, showHoleLine: true, showPunchGuide: true, showCutLine: true, showLogo: true, showHoliday: true,
-  showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false };
+  showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false, actualSize: false };
 let LAY = null; // 面付けの計算結果
 
 // === MODULE: Utility ===
@@ -600,6 +602,9 @@ function makeUniformHoles() {
 // 縦・横のうち多く入るほうを選ぶ（同数なら縦・余白の大きいほう）。余白は 3mm → 0.5mm → 0 の順に試す。
 function computeLayout() {
   const w = paper.w, h = paper.h; let best = null;
+  if (opts.actualSize) {   // 原寸モード：A4に並べず、用紙の大きさそのままで1ページ1枚（表面に1ページ・裏面に1ページ）
+    return { n: 1, m: 0, PW: w, PH: h, cols: 1, rows: 1, over: false, actual: true, slots: [{ k: 0, r: 0, c: 0, x: 0, y: 0 }], cuts: { x: [], y: [] }, perSheet: 2, portrait: w <= h };
+  }
   for (const m of [3, 0.5, 0]) for (const o of [[210, 297], [297, 210]]) {
     const cols = Math.floor((o[0] - 2 * m) / w + 1e-9), rows = Math.floor((o[1] - 2 * m) / h + 1e-9), n = cols * rows;
     if (n < 1) continue;
@@ -627,9 +632,14 @@ function applyLayoutVars() {
   root.setProperty('--sheet-w', LAY.PW + 'mm'); root.setProperty('--sheet-h', LAY.PH + 'mm');
   root.setProperty('--strip-w', stripW() + 'mm'); root.setProperty('--hole-d', paper.d + 'mm'); root.setProperty('--page-h', paper.h + 'mm');
   $('nsf-page-size').textContent = `@page { size: ${LAY.PW}mm ${LAY.PH}mm; margin: 0; }`;
-  $('printOrient').textContent = LAY.portrait ? 'A4 縦向き' : 'A4 横向き';
+  $('printOrient').textContent = LAY.actual ? `${paper.w}×${paper.h}mm（${LAY.portrait ? '縦' : '横'}向き）` : (LAY.portrait ? 'A4 縦向き' : 'A4 横向き');
   $('printDuplex').textContent = LAY.portrait ? '長辺綴じ' : '短辺綴じ';
-  $('layoutInfo').textContent = `A4${LAY.portrait ? '縦' : '横'}に ${LAY.cols}列×${LAY.rows}段 = ${LAY.n}面（用紙1枚で${LAY.perSheet}ページ）` + (LAY.over ? '。A4に収まらないサイズです' : '');
+  $('layoutInfo').textContent = LAY.actual ? `原寸：${paper.w}×${paper.h}mm の用紙に1ページずつ（用紙1枚で${LAY.perSheet}ページ・表と裏）`
+    : `A4${LAY.portrait ? '縦' : '横'}に ${LAY.cols}列×${LAY.rows}段 = ${LAY.n}面（用紙1枚で${LAY.perSheet}ページ）` + (LAY.over ? '。A4に収まらないサイズです' : '');
+  $('btnActual').classList.toggle('on', !!opts.actualSize);
+  $('actualNote').innerHTML = LAY.actual
+    ? `<b>原寸モード：オン。</b>穴あけ済みの用紙にそのまま印刷します。穴印刷・パンチガイド・カット線はオフにしてあります。<br>① プリンタの用紙サイズに <b>${paper.w}×${paper.h}mm</b> を登録して手差し　② 印刷は「実際のサイズ（100%）」　③ プリンタが印刷できない縁（機種により約3〜5mm）は欠けることがあります　④ まず普通紙で1枚試してください。`
+    : '穴あけ済みの用紙（純正の無地リフィルなど）にそのまま印刷するときは、オンにします。A4に並べず、用紙の大きさで1ページずつ出します（どの規格でも使えます）。';
   $('layoutInfo').className = 'hint' + (LAY.over ? ' warn' : '');
   const G = window.NSF_PRINT_GEOMETRY;
   if (G) {
@@ -1207,6 +1217,14 @@ function render() {
   cuSync();
   saveSettings();
 }
+let ACT_PREV = null;   // 原寸モードに入る前の穴印刷・パンチガイド・カット線の状態
+function toggleActual() {
+  opts.actualSize = !opts.actualSize;
+  const keys = [['showHoles', 'btnHoles'], ['showPunchGuide', 'btnPunch'], ['showCutLine', 'btnCutLine']];
+  if (opts.actualSize) { ACT_PREV = {}; keys.forEach(([k, id]) => { ACT_PREV[k] = opts[k]; opts[k] = false; $(id).classList.remove('on'); }); }
+  else if (ACT_PREV) { keys.forEach(([k, id]) => { opts[k] = !!ACT_PREV[k]; $(id).classList.toggle('on', opts[k]); }); ACT_PREV = null; }
+  rerender();
+}
 function toggleOpt(key, btnId) { opts[key] = !opts[key]; $(btnId).classList.toggle('on', opts[key]); rerender(); }
 function setFormat(f) { fmt = f; $('fmtSel').value = f; CU.propsOk = false; rerender(); }
 function setLang(en) { isEN = en; $('btnJA').classList.toggle('on', !en); $('btnEN').classList.toggle('on', en); rerender(); }
@@ -1226,7 +1244,7 @@ async function generatePDF(ev) {
   document.body.appendChild(stage);
   try {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: LAY.portrait ? 'portrait' : 'landscape' });
+    const pdf = new jsPDF({ unit: 'mm', format: LAY.actual ? [Math.min(PW, PH), Math.max(PW, PH)] : 'a4', orientation: LAY.portrait ? 'portrait' : 'landscape' });
     for (let i = 0; i < sheets.length; i++) {
       btn.textContent = `PDF生成中 ${i+1}/${sheets.length}`;
       const clone = sheets[i].cloneNode(true);
@@ -1258,7 +1276,7 @@ function loadSettings() {
   if (!s) return;
   if (s.paper && s.paper.w > 0 && s.paper.h > 0 && Array.isArray(s.paper.holes)) paper = { preset: PRESETS[s.paper.preset] ? s.paper.preset : 'custom', w: +s.paper.w, h: +s.paper.h, d: +s.paper.d || 5, edge: +s.paper.edge || 6, holes: s.paper.holes.map(Number).filter(isFinite) };
   if (['weekly', 'monthly', 'okusuri', 'memo', 'custom'].includes(s.fmt)) fmt = s.fmt;
-  const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta' };
+  const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta', actualSize: 'btnActual' };
   if (s.opts) for (const [k, id] of Object.entries(btnMap)) if (s.opts[k] != null) { opts[k] = !!s.opts[k]; $(id).classList.toggle('on', opts[k]); }
   ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount', 'monthStart', 'monthCount', 'monthWeekStart'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
   if (s.isEN) { isEN = true; $('btnJA').classList.remove('on'); $('btnEN').classList.add('on'); }
