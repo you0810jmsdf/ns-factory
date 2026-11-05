@@ -5768,7 +5768,7 @@ function placePhrase(at) {
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
   cancel(); commit(() => { const ids = [], groupId = shapes.length >= 2 ? nextGroupId(doc.shapes) : null; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh, ...(groupId ? { groupId } : {}) }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });   /* 行は1つのグループ：クリックで全行を選んでまとめて動かせ、ダブルクリックで改行つきの編集（事業主 2026-11-05「まとめて動かすときにめんどくさい」「改行編集もしたい」） */
-  renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');
+  renderLayers(); const placedIds = [...selected]; setMode('select'); selected = new Set(placedIds); draw(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「クリックするたびに定型句が貼り付けられる」）。置いた行は選んだまま＝文字高・フォントの即時反映はそのまま */
 }
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
 let lastPhrase = null;
