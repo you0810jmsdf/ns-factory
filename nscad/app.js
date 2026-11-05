@@ -4849,7 +4849,7 @@ function placeLibrary(at) {
   let payload; try { payload = instantiateItem(it, libVars(), at, { scale: Number($('pasteScale').value) || 1 }); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel(); let ids = [];
   commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); selected = new Set(ids); });
-  renderLayers(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });
+  renderLayers(); setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
 }
 /** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
 function uniqueLibraryId() { let id = 'user-' + Date.now().toString(36); while (userLibrary.some(x => x.id === id)) id += 'x'; return id; }
