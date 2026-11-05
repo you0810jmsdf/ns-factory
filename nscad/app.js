@@ -6195,6 +6195,12 @@ function revealFdDims(items) {
 }
 function drawFoldDims() { const items = fdDimItems(fdDimKey); if (items) drawFdItems(items); }   /* 触っている寸法（欄・取っ手）を金色で強調する */
 /** 寸法の図形（foldDimensions／foldSectionDims の形）を重ねて描く。color・lineW（実線の太さpx）・font（文字の大きさpx）。文字の寄せは it.align（既定は中央）。 */
+/** 文字を画面の端で切れないように中へ寄せた位置（keepIn）。描画（drawFdItems）とクリック判定（foldDimTargets）が同じ式を使う：寄せた文字と判定の範囲がずれて、見えている⑤表を押しても⑥裏の小窓が開いた（事業主 2026-11-05「裏表とも同じ数字しか入れられない」）。w＝文字の幅（図面の単位）・font＝画面の px */
+function fdKeepIn(it, w, font) {
+  const k = 1 / scale, m = 6 * k, h = (font / 2 + 3) * k, x0 = -origin.x / scale + m, x1 = (width - origin.x) / scale - m, y0 = -origin.y / scale + h, y1 = (height - origin.y) / scale - h;
+  let tx = it.x, ty = it.y; const left = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; if (w <= x1 - x0) tx += Math.min(Math.max(left, x0), x1 - w) - left; if (y1 > y0) ty = Math.min(Math.max(ty, y0), y1);
+  return { tx, ty };
+}
 function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn = false } = {}) {   /* keepIn＝文字が画面の端で切れないように、画面の中へ寄せる（幅が画面より広いときは寄せない） */
   const gold = color, k = 1 / scale, head = (x, y, ang) => { const L = 9 * k, W = 4.5 * k, c = Math.cos(ang), n = Math.sin(ang); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L * c + W * n, y - L * n - W * c); ctx.lineTo(x - L * c - W * n, y - L * n + W * c); ctx.closePath(); ctx.fill(); };
   ctx.save(); ctx.strokeStyle = gold; ctx.fillStyle = gold; ctx.lineJoin = 'round';
@@ -6205,10 +6211,7 @@ function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn 
     } else if (it.type === 'dot') { ctx.beginPath(); ctx.arc(it.x, it.y, 3.5 * k, 0, Math.PI * 2); ctx.fill(); }
     else {
       ctx.font = `700 ${font * k}px sans-serif`; ctx.textAlign = it.align || 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 4 * k; ctx.strokeStyle = '#000'; let tx = it.x, ty = it.y;
-      if (keepIn) {
-        const w = ctx.measureText?.(it.text)?.width ?? 0, m = 6 * k, h = (font / 2 + 3) * k, x0 = -origin.x / scale + m, x1 = (width - origin.x) / scale - m, y0 = -origin.y / scale + h, y1 = (height - origin.y) / scale - h;
-        const left = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; if (w <= x1 - x0) tx += Math.min(Math.max(left, x0), x1 - w) - left; if (y1 > y0) ty = Math.min(Math.max(ty, y0), y1);
-      }
+      if (keepIn) ({ tx, ty } = fdKeepIn(it, ctx.measureText?.(it.text)?.width ?? 0, font));
       ctx.strokeText(it.text, tx, ty); ctx.fillStyle = gold; ctx.fillText(it.text, tx, ty); ctx.strokeStyle = gold;
     }
   }
@@ -6241,12 +6244,13 @@ const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring' };  
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
   const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = 15 / scale;
-  const box = it => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(it.text)?.width ?? it.text.length * font * 0.62; ctx.restore(); const x0 = it.align === 'right' ? it.x - w : it.align === 'left' ? it.x : it.x - w / 2; return { x0, x1: x0 + w, y0: it.y - font * 0.7, y1: it.y + font * 0.7 }; };
+  const measure = text => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
+  const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, 15), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
   for (const g of groups) {
     if (g.key === 't') {   /* 厚みの文字「厚み ⑤表 1.5 + ⑥裏 1.5 = 3 mm」は、「+」の手前を⑤表・後ろを⑥裏にする（事業主 2026-11-04「断面図から修正できないか」：⑥裏は小さな線を狙うしかなかった）。線は、押した方 */
       const to = { key: 'to', ...parts((foldDimensions(d, 'to') ?? []).filter(i => i.type === 'line')) }, ti = { key: 'ti', ...parts((foldDimensions(d, 'ti') ?? []).filter(i => i.type === 'line')) };
-      for (const it of g.items.filter(i => i.type === 'text')) { const k = it.text.indexOf(' + '), whole = box(it); if (k < 0) { to.boxes.push(whole); continue; } const cut = box({ ...it, text: it.text.slice(0, k + 2), align: 'left' }), xs = whole.x0 + (cut.x1 - cut.x0); to.boxes.push({ ...whole, x1: xs }); ti.boxes.push({ ...whole, x0: xs }); }
+      for (const it of g.items.filter(i => i.type === 'text')) { const k = it.text.indexOf(' + '), whole = box(it); if (k < 0) { to.boxes.push(whole); continue; } const xs = whole.x0 + measure(it.text.slice(0, k + 2)); to.boxes.push({ ...whole, x1: xs }); ti.boxes.push({ ...whole, x0: xs }); }
       out.push(to, ti);
     }
     else if (FD_DIM_EDIT[g.key]) out.push({ key: FD_DIM_EDIT[g.key], ...parts(g.items) });
@@ -6256,9 +6260,10 @@ function foldDimTargets() {
 /** 画面の点 p にある、数字を直せる断面の寸法（線の近く・文字の中）。無ければ null。 */
 function foldDimKeyAt(p) {
   const w = world(p), r = 7 / scale; let best = null, bd = Infinity;
+  /* 点数が小さいほど近い。文字の範囲（箱）は線より優先（箱の点数 < 1000 ≦ 線の点数）。箱どうしが重なっているとき（画面の端で押し戻された②裏表紙の幅と厚みの文字など）は、箱の外へのはみ出し→段の中心への近さの順で近い方（事業主 2026-11-05「裏表とも同じ数字しか入れられない」＝先に並ぶ②が勝って、⑤を押しても②の小窓が開いた） */
   for (const tg of foldDimTargets()) {
-    for (const l of tg.lines) { const dd = distToShape({ type: 'line', x1: l.a.x, y1: l.a.y, x2: l.b.x, y2: l.b.y }, w); if (dd <= r && dd < bd) { best = tg.key; bd = dd; } }
-    for (const b of tg.boxes) if (w.x >= b.x0 - r && w.x <= b.x1 + r && w.y >= b.y0 - r && w.y <= b.y1 + r && 0 < bd) { best = tg.key; bd = 0; }
+    for (const l of tg.lines) { const dd = distToShape({ type: 'line', x1: l.a.x, y1: l.a.y, x2: l.b.x, y2: l.b.y }, w); if (dd <= r && 1000 + dd < bd) { best = tg.key; bd = 1000 + dd; } }
+    for (const b of tg.boxes) { const out = Math.hypot(Math.max(b.x0 - w.x, 0, w.x - b.x1), Math.max(b.y0 - w.y, 0, w.y - b.y1)); if (out <= r) { const sc = out * 100 + Math.abs(w.y - (b.y0 + b.y1) / 2); if (sc < bd) { best = tg.key; bd = sc; } } }
   }
   return best;
 }
