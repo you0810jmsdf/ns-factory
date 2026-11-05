@@ -6083,7 +6083,7 @@ function projectFoldDesign(withStitch) {
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
       if (gap.open.gap > 0.005) { if (gap.dir > 0) dim(gx1, ym, fx + p.length, ym); else dim(fx, ym, gx0, ym); }   /* 左右は、リフィルを開いた側の端〜革の端だけ（事業主 2026-10-24「開いた側の端部と革の端部の距離がわかればよいので右側のみに寸法を入れるだけでよい」） */
-      const noteTop = $('flowAutoDims')?.checked && d.ring && Number.isFinite(d.ring.s) ? 18 : 8;   /* 自動の寸法（リング取付穴の位置：下に12mm）があるときは、その下へ（注記の2行目が寸法線に重なっていた・事業主 2026-11-05「寸法も見えない」） */
+      const noteTop = $('flowAutoDims')?.checked && d.ring && Number.isFinite(d.ring.s) ? 26 : 8;   /* 自動の寸法（リング取付穴の位置：線は下に12mm・数字はその下）があるときは、数字のさらに下へ（注記の2行目が寸法線に重なっていた・事業主 2026-11-05「寸法も見えない」） */
       const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + noteTop + i * 5, text, sizeMm: 3, angleDeg: 0 });
       tx(0, Math.abs(gap.vert - gap.bottom) < 0.005 ? t('foldGapNote1', { w: n(gap.W), h: n(gap.Hr), tb: n(gap.vert) }) : t('foldGapNote1b', { w: n(gap.W), h: n(gap.Hr), a: n(gap.vert), b: n(gap.bottom) })); tx(1, t('foldGapNote2', { side: t(gap.dir > 0 ? 'foldGapSideRight' : 'foldGapSideLeft'), v: n(gap.open.gap) })); if (gap.closed) tx(2, t('foldGapNote3', { ca: n(gap.closed.cover), cb: n(gap.closed.back), cs: n(gap.closed.spine) }));
     }
