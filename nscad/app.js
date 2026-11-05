@@ -457,7 +457,8 @@ let outSummaryTimer = 0;
 const scheduleOutSummary = () => { clearTimeout(outSummaryTimer); outSummaryTimer = setTimeout(syncOutSummary, 300); };
 const outScopeNote = () => { const n = outputSelIds().size; return ' ' + (n ? t('outScopeSel', { n }) : t('outScopeAll')); };
 const VIEW_FREE_TYPES = ['text', 'dimension', 'fold', 'image'];
-const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || s.layer === 'guide' ? 'dashed' : 'solid'];
+/* ガイド層の図形は「点線を表示」の側（2026-10-16）。ただし平面図が置いたリフィル（foldFlat・青い実線と穴の〇）は実線の側：点線を切ると白い紙ごと消えた（事業主 2026-11-05「点線表示を消すとリフィルまで消えてしまう」） */
+const viewShows = s => VIEW_FREE_TYPES.includes(s.type) || viewShow[s.lineStyle === 'dashed' || (s.layer === 'guide' && !s.foldFlat) ? 'dashed' : 'solid'];
 try { const v = JSON.parse(localStorage.getItem('leather-cad.view') || '{}'); if (v.solid === false) viewShow.solid = false; if (v.dashed === false) viewShow.dashed = false; if (v.secDims === false) viewShow.secDims = false; } catch { /* 保存できない環境でも操作を続ける */ }
 const visible = s => layerVisible(s) && !s.holeLink && !hwHidden(s) && (exporting || viewShows(s));
 /** 三面図・金具の自動生成など、図形の数値を使う計算では、実線・点線の表示切り替えを見ない（画面だけの切り替えのため）。 */
@@ -6082,7 +6083,8 @@ function projectFoldDesign(withStitch) {
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
       if (gap.open.gap > 0.005) { if (gap.dir > 0) dim(gx1, ym, fx + p.length, ym); else dim(fx, ym, gx0, ym); }   /* 左右は、リフィルを開いた側の端〜革の端だけ（事業主 2026-10-24「開いた側の端部と革の端部の距離がわかればよいので右側のみに寸法を入れるだけでよい」） */
-      const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + 8 + i * 5, text, sizeMm: 3, angleDeg: 0 });
+      const noteTop = $('flowAutoDims')?.checked && d.ring && Number.isFinite(d.ring.s) ? 18 : 8;   /* 自動の寸法（リング取付穴の位置：下に12mm）があるときは、その下へ（注記の2行目が寸法線に重なっていた・事業主 2026-11-05「寸法も見えない」） */
+      const n = v => +v.toFixed(2), tx = (i, text) => add({ type: 'text', layer: guide, x: fx, y: fy + h + noteTop + i * 5, text, sizeMm: 3, angleDeg: 0 });
       tx(0, Math.abs(gap.vert - gap.bottom) < 0.005 ? t('foldGapNote1', { w: n(gap.W), h: n(gap.Hr), tb: n(gap.vert) }) : t('foldGapNote1b', { w: n(gap.W), h: n(gap.Hr), a: n(gap.vert), b: n(gap.bottom) })); tx(1, t('foldGapNote2', { side: t(gap.dir > 0 ? 'foldGapSideRight' : 'foldGapSideLeft'), v: n(gap.open.gap) })); if (gap.closed) tx(2, t('foldGapNote3', { ca: n(gap.closed.cover), cb: n(gap.closed.back), cs: n(gap.closed.spine) }));
     }
     if ($('flowAutoDims')?.checked) {   /* 寸法を自動で入れる（事業主 2026-10-25「平面図に自分で寸法入れましたが自動で入れられない？」）：全長（上）・高さ（左）・リング取付穴の位置（下・革の左の端から）。平面図を作りなおすたびに置き換わる */
@@ -6213,10 +6215,17 @@ function revealFdDims(items) {
 function drawFoldDims() { const items = fdDimItems(fdDimKey); if (items) drawFdItems(items); }   /* 触っている寸法（欄・取っ手）を金色で強調する */
 /** 寸法の図形（foldDimensions／foldSectionDims の形）を重ねて描く。color・lineW（実線の太さpx）・font（文字の大きさpx）。文字の寄せは it.align（既定は中央）。 */
 /** 文字を画面の端で切れないように中へ寄せた位置（keepIn）。描画（drawFdItems）とクリック判定（foldDimTargets）が同じ式を使う：寄せた文字と判定の範囲がずれて、見えている⑤表を押しても⑥裏の小窓が開いた（事業主 2026-11-05「裏表とも同じ数字しか入れられない」）。w＝文字の幅（図面の単位）・font＝画面の px */
-function fdKeepIn(it, w, font) {
+function fdKeepIn(it, w, font, pull = true) {
   const k = 1 / scale, m = 6 * k, h = (font / 2 + 3) * k, x0 = -origin.x / scale + m, x1 = (width - origin.x) / scale - m, y0 = -origin.y / scale + h, y1 = (height - origin.y) / scale - h;
-  let tx = it.x, ty = it.y; const left = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; if (w <= x1 - x0) tx += Math.min(Math.max(left, x0), x1 - w) - left; if (y1 > y0) ty = Math.min(Math.max(ty, y0), y1);
+  let tx = it.x, ty = it.y; const left = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2;
+  if (!pull) return { tx, ty };   /* 断面の寸法の線が1本も画面に無い（断面が画面の外）：寄せない。寄せると、全部の文字が端に集まって重なり読めなかった（事業主 2026-11-05「文字と寸法が重なっていても文字が見えない」）。線が見えている寸法の文字は、今までどおり中へ寄せる */
+  if (w <= x1 - x0) tx += Math.min(Math.max(left, x0), x1 - w) - left; if (y1 > y0) ty = Math.min(Math.max(ty, y0), y1);
   return { tx, ty };
+}
+/** 寸法の線（矢印の線）のどれかが画面に少しでも入っているか（線の外接の四角で見る） */
+function fdLinesInView(items) {
+  const vx0 = -origin.x / scale, vx1 = (width - origin.x) / scale, vy0 = -origin.y / scale, vy1 = (height - origin.y) / scale;
+  return items.some(it => it.type === 'line' && Math.min(it.a.x, it.b.x) <= vx1 && Math.max(it.a.x, it.b.x) >= vx0 && Math.min(it.a.y, it.b.y) <= vy1 && Math.max(it.a.y, it.b.y) >= vy0);
 }
 function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn = false } = {}) {   /* keepIn＝文字が画面の端で切れないように、画面の中へ寄せる（幅が画面より広いときは寄せない） */
   const gold = color, k = 1 / scale, head = (x, y, ang) => { const L = 9 * k, W = 4.5 * k, c = Math.cos(ang), n = Math.sin(ang); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - L * c + W * n, y - L * n - W * c); ctx.lineTo(x - L * c - W * n, y - L * n + W * c); ctx.closePath(); ctx.fill(); };
@@ -6252,7 +6261,7 @@ function drawFoldHandles() {
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
 const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
 const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
-function drawFoldSectionDims() { for (const g of foldSectionDimList()) drawFdItems(g.items, { color: '#4fb3ff', lineW: 1.6, font: 15, keepIn: true }); }
+function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdLinesInView(list.flatMap(g => g.items)); for (const g of list) drawFdItems(g.items, { color: TEXT_COLOR_DEFAULT, lineW: 1.6, font: 15, keepIn }); }   /* 寄せるのは、断面の寸法の線がどれか1本でも画面にあるときだけ */   /* 色は、ほかの寸法・文字と同じ標準の色（事業主 2026-11-05「断面図の文字が青で統一感がまるでない」） */
 /* ───────── 断面の寸法を、いつも画面に出す＋寸法をクリックして数字を入れる（事業主 2026-10-25「断面図の寸法を入力したい」「見てもサイズがわからない」・案C）：
    表示メニューの「断面の寸法」（初めからオン）がオンの間は、設計カードや手順の小窓を閉じていても、全幅・全高・厚みの寸法（foldSectionDims）を出し続ける。2つ折りでは、線や文字をクリックすると、その寸法の数字を入れる小窓（FHB）が開く。
    ①表紙の幅＝endA・②裏表紙の幅＝endB・④全高＝h（背の内側の半径が変わる）・⑤表の厚み＝to・⑥裏の厚み＝ti。画面だけ（書き出し・印刷には入らない）。 ───────── */
@@ -6260,9 +6269,9 @@ const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign &&
 const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
-  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = 15 / scale;
+  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = 15 / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
   const measure = text => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
-  const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, 15), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
+  const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, 15, pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
   for (const g of groups) {
     if (g.key === 't') {   /* 厚みの文字「厚み ⑤表 1.5 + ⑥裏 1.5 = 3 mm」は、「+」の手前を⑤表・後ろを⑥裏にする（事業主 2026-11-04「断面図から修正できないか」：⑥裏は小さな線を狙うしかなかった）。線は、押した方 */
