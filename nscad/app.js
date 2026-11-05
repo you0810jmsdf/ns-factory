@@ -5623,17 +5623,30 @@ function exportBinderEditsCsv() {
 let phrases = [];
 function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); }
 function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
+/** 標準の定型句（事業主 2026-11-05「定型句はまだ登録されていない、案を登録して」）：標準の手帳の仕様（data/book-specs.json）から、図面に書き添える仕様の文を作る。自分で同じ名前を保存すればそちらが勝つ（上書き）。消すと標準に戻る */
+function builtinPhrases() {
+  const en = document.documentElement.lang === 'en', out = [];
+  for (const p of ((DATA_BOOK_SPECS && DATA_BOOK_SPECS.presets) || [])) {
+    const b = p.data?.book || {}, f = p.data?.fields || {}, sp = binderSpec(b.spec); if (!sp) continue;
+    const name = (en ? 'Spec: ' : '仕様：') + p.name, nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '';
+    const text = en ? [`Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Ring inner ${b.dia} mm, stack ${b.stack} mm`, `Width ${f.fdBiW} mm, spine radius ${f.fdRR} mm, height ${f.fdH} mm`, `Leather outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, metal ? `Hardware ${metal}` : ''].filter(Boolean).join('\n')
+      : [`システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `リング 内径 ${b.dia} mm・束 ${b.stack} mm`, `全幅 ${f.fdBiW} mm・背の半径 ${f.fdRR} mm・高さ ${f.fdH} mm`, `革 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, metal ? `金具 ${metal}` : ''].filter(Boolean).join('\n');
+    out.push({ name, text, size: 3, builtin: true });
+  }
+  return out;
+}
+function allPhrases() { const names = new Set(phrases.map(p => p.name)); return [...phrases, ...builtinPhrases().filter(p => !names.has(p.name))]; }
 function renderPhraseList(selectName) {
-  const sel = $('phraseSel'), keep = selectName ?? sel.value; sel.textContent = '';
-  for (const p of phrases) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; sel.appendChild(o); }
-  sel.value = phrases.some(p => p.name === keep) ? keep : (phrases[0]?.name || '');
-  const cur = phrases.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; $('phraseFont').value = cur.font || 'gothic'; if (cur.size) $('phraseSize').value = String(cur.size); }   /* 句が覚えている書体・大きさ（覚えていなければ、欄はそのまま） */
+  const sel = $('phraseSel'), keep = selectName ?? sel.value; sel.textContent = ''; const all = allPhrases();
+  for (const [label, list] of [[t('phraseMine'), all.filter(p => !p.builtin)], [t('phraseBuiltin'), all.filter(p => p.builtin)]]) { if (!list.length) continue; const g = document.createElement('optgroup'); g.label = label; for (const p of list) { const o = document.createElement('option'); o.value = p.name; o.textContent = p.name; g.appendChild(o); } sel.appendChild(g); }   /* 自分で保存した句 → 標準の句（仕様） */
+  sel.value = all.some(p => p.name === keep) ? keep : (all[0]?.name || '');
+  const cur = all.find(p => p.name === sel.value); if (cur) { $('phraseName').value = cur.name; $('phraseText').value = cur.text; $('phraseFont').value = cur.font || 'gothic'; if (cur.size) $('phraseSize').value = String(cur.size); }   /* 句が覚えている書体・大きさ（覚えていなければ、欄はそのまま） */
 }
 function savePhrase() {
   let r; try { r = upsertPhrase(phrases, $('phraseName').value, $('phraseText').value, { font: $('phraseFont').value, size: Number($('phraseSize').value) }); } catch { $('hint').textContent = t('phraseEmpty'); return; }
   phrases = r.items; if (!persistPhrases()) return; renderPhraseList(r.name); $('hint').textContent = t('phraseSaved', { name: r.name });
 }
-function deletePhrase() { const name = $('phraseSel').value; if (!name) return; phrases = removePhrase(phrases, name); if (!persistPhrases()) return; $('phraseName').value = ''; $('phraseText').value = ''; renderPhraseList(''); $('hint').textContent = t('phraseDeleted', { name }); }
+function deletePhrase() { const name = $('phraseSel').value; if (!name) return; if (!phrases.some(p => p.name === name)) { $('hint').textContent = t('phraseBuiltinKeep', { name }); return; } phrases = removePhrase(phrases, name);   /* 標準の句は消せない（同じ名前で保存すれば上書き） */ if (!persistPhrases()) return; $('phraseName').value = ''; $('phraseText').value = ''; renderPhraseList(''); $('hint').textContent = t('phraseDeleted', { name }); }
 function placePhrase(at) {
   const lines = phraseLines($('phraseText').value); if (!lines.some(Boolean)) { $('hint').textContent = t('phraseEmpty'); return; }
   const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
