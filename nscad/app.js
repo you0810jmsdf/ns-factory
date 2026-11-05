@@ -6184,7 +6184,7 @@ function projectFoldDesign(withStitch) {
   if (st && layout === 'loop' && !rimLine([{ x: 0, y: 0 }, { x: p.length, y: 0 }, { x: p.length, y: h }, { x: 0, y: h }], st.edge, Math.max(corner - st.edge, 0))) { $('hint').textContent = t('foldStitchLoopFail'); return; }
   const fx = d.origin.x + (d.flatOff?.x ?? 0), fy = d.origin.y + p.T / 2 + 2 + 40 + (d.flatOff?.y ?? 0), [f1, f2] = p.flats, [b1, b2] = p.bends, xs = d.mode === 'bifold' ? [f1, f1 + b1 / 2, f1 + b1] : [f1, f1 + b1 / 2, f1 + b1, f1 + b1 + f2, f1 + b1 + f2 + b2 / 2, f1 + b1 + f2 + b2];
   const buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];   /* ボタン線が1枚目・2枚目・3枚目を通る、革の端からの長さ。穴をあけるのは両端の1枚目と3枚目だけ（2枚目は真ん中なので穴なし） */
-  const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null, hwSkipped = 0;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
+  const mounts = (d.ring && planHardwareSpec(d.ring.specId)?.rivets) || [], tool = stitchToolCurrent(); let holeInfo = null;   /* 取付穴は、金具の規格のもの（平面図に置く金具の取付穴と同じ位置） */
   commit(() => {
     const oldFlat = doc.shapes.filter(s => s.foldFlat === 'fd'), mineShapes = new Set(oldFlat.map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.foldFlat === 'fd').map(q => q.id)), idFor = makeIdReuser(oldFlat);   /* 前の平面図の図形（同じ番号を使い回す） */
     doc.fills = (doc.fills || []).filter(f => f.foldFlat !== 'fd'); dropDimAnchorsTo(mineShapes); for (const p of doc.parts) p.shapeIds = p.shapeIds.filter(id => !mineShapes.has(id)); doc.shapes = doc.shapes.filter(s => !mineShapes.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(q => q.foldFlat !== 'fd' && !minePaths.has(q.pathId));
@@ -6217,17 +6217,12 @@ function projectFoldDesign(withStitch) {
         seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
         for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });
       }
-      const hwPolys = [];   /* 台座・開閉部品（レバー）の多角形：菱目がこれに重なるところは打たない（事業主 2026-11-05「菱目が金具を貫通している」） */
       try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
         const map = q => ({ x: +(fx + gap.axis + q.y).toFixed(4), y: +(fy + h / 2 + q.x).toFixed(4) });   /* 金具の絵（x＝台座の長さ・y＝幅）→ 平面図（縦＝長さ・横＝幅） */
         const hwMetal = flatHwMetalNow(), mt = hwMetal ? { metal: hwMetal } : {};   /* 金具の色（選んでいれば、金具の図形に金属の色を付ける） */
-        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach(s => { const on = !hwMetal ? {} : s.role === 'ring' ? { metalSolid: true } : { metalBelow: true };   /* 台座とレバー（開閉部品）は紙の下・リングのアームだけ紙の上（実物は紙が台座に乗り、輪が紙をまたぐ・事業主 2026-11-04「レバーだけが前面に飛び出ている」） */ const role = s.role ? { role: s.role } : {}; if (s.type === 'polyline') { const pts = s.points.map(map); if (s.role === 'plate' || s.role === 'part') hwPolys.push(pts); add({ type: 'polyline', layer: hwLayer, closed: true, points: pts, ...mt, ...on, ...role }); } else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on, ...role }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
+        binderViewDrawing(gap.spec, gap.ringD, 'plan').forEach(s => { const on = !hwMetal ? {} : s.role === 'ring' ? { metalSolid: true } : { metalBelow: true };   /* 台座とレバー（開閉部品）は紙の下・リングのアームだけ紙の上（実物は紙が台座に乗り、輪が紙をまたぐ・事業主 2026-11-04「レバーだけが前面に飛び出ている」） */ const role = s.role ? { role: s.role } : {}; if (s.type === 'polyline') add({ type: 'polyline', layer: hwLayer, closed: true, points: s.points.map(map), ...mt, ...on, ...role }); else if (!isRivet(s)) { const c = map({ x: s.cx, y: s.cy }); add({ type: 'circle', layer: hwLayer, cx: c.x, cy: c.y, r: s.r, ...mt, ...on, ...role }); } });   /* 1つ目＝台座。リングのアーム・レバーは、台座の上に重ねた部品＝穴にしない（metalSolid・事業主 2026-11-04「リングのアームが黒抜きになってしまっている」） */
       } catch { /* 金具の絵が作れない規格は、リフィルだけ */ }
-      if (hwPolys.length && st) {   /* 金具（台座・レバー）に重なる菱目は打たない：穴の中心が多角形の中か、縁から 1.5mm 以内（事業主 2026-11-05「菱目が金具を貫通している」）。残す穴の間隔は変えない（金具の所だけ空く） */
-        const hit = q => hwPolys.some(pg => insidePolygon({ x: q.x, y: q.y }, pg) || distToShape({ type: 'polyline', closed: true, points: pg }, { x: q.x, y: q.y }) < 1.5);
-        const drop = new Set(doc.holes.filter(q => q.foldFlat === 'fd' && hit(q)).map(q => q.id ?? q)); if (drop.size) { doc.holes = doc.holes.filter(q => !drop.has(q.id ?? q)); hwSkipped = drop.size; if (holeInfo) holeInfo.n -= drop.size; }
-      }
       const xd = fx + Math.min(Math.max(gap.open.x0, 0) + 12, p.length - 2), ym = fy + h / 2 + (gap.holeYs.length > 1 ? (gap.holeYs[gap.holeYs.length >> 1] - gap.holeYs[(gap.holeYs.length >> 1) - 1]) / 2 : 0);   /* 横の寸法線は、真ん中の2つのリングの間の高さに */
       if (gap.vert > 0.005) { dim(xd, fy, xd, y0); dim(xd, y1, xd, fy + h); }
       if (gap.open.gap > 0.005) { if (gap.dir > 0) dim(gx1, ym, fx + p.length, ym); else dim(fx, ym, gx0, ym); }   /* 左右は、リフィルを開いた側の端〜革の端だけ（事業主 2026-10-24「開いた側の端部と革の端部の距離がわかればよいので右側のみに寸法を入れるだけでよい」） */
@@ -6243,7 +6238,7 @@ function projectFoldDesign(withStitch) {
     { const { stitch: _drop, ...rest } = doc.foldDesign; doc.foldDesign = { ...(noStitch ? rest : doc.foldDesign), ...(st ? { stitch: st } : {}) }; }
   });
   const f2s = v => v.toFixed(2);
-  $('hint').textContent = (!viewShow.dashed ? t('foldFixDashedOff') + ' ' : '') + t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + (layout === 'loop' ? t('foldFixStitchLoop', { edge: f2s(st.edge), pitch: f2s(holeInfo.step), n: holeInfo.n, r: f2s(corner) }) : t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n })) : '') + (hwSkipped ? ' ' + t('foldFixHoleSkipHw', { n: hwSkipped }) : ''); rebuildSnaps(); draw();
+  $('hint').textContent = (!viewShow.dashed ? t('foldFixDashedOff') + ' ' : '') + t(d.mode === 'bifold' ? 'bifoldFixDone' : 'foldFixDone', { len: f2s(p.length), d: f2s(btnD), s1: f2s(buttons[0] ?? 0), s3: f2s(buttons[2] ?? 0) }) + (mounts.length ? ' ' + t('foldFixMounts', { n: mounts.length, d: f2s(mounts[0].dMm), x: f2s(d.ring.s) }) : '') + (st && holeInfo ? ' ' + (layout === 'loop' ? t('foldFixStitchLoop', { edge: f2s(st.edge), pitch: f2s(holeInfo.step), n: holeInfo.n, r: f2s(corner) }) : t('foldFixStitch', { edge: f2s(st.edge), pitch: f2s(st.pitch), lead: f2s(holeInfo.lead), n: holeInfo.n })) : ''); rebuildSnaps(); draw();
 }
 /** 表（折りの外側の革）・裏（内側の革）の展開図を、図面に並べる（FIX の平面図の下に、表→裏の順）。それぞれに、折りの点線・ボタン穴・菱目打ちライン（菱目の穴）を描き、平らな部分と曲げ部の菱目間の寸法（数字つき）を書き込む。
  *  菱目は同じ個数・同じ位置（革の長さに沿った割り当て）で、曲げ部の間隔だけが革ごとに違う。前の展開図は置き換える（元に戻すは1回）。 */
@@ -8757,6 +8752,9 @@ function drawSheetBody(lo, hi) {
      塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
   const rankOfStroke = s => shapeDrawRank(s, rankDraw), opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
   const stackRanks = [...new Set([...strokeList.map(rankOfStroke), ...opaqueItems.map(it => it.li || 0)])].sort((a, b) => a - b);
+  /* 菱目（穴）は、その線と同じ層の番で描く：上の層の不透明な塗り（金具の台座・レバー・白い紙・質感）が穴の上に重なる＝実物どおり金具の下に隠れる（事業主 2026-11-05「貫通は重ね合わせの順番だけの問題です」：前は穴を最後に全部の上へ描いていた） */
+  const holeAngle = faceAngler(doc, viewShow.stitch ? stitchFace() : 'front');   /* 「縫い目を見る」が入っていて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
+  const holeRankOf = h => { const owner = doc.paths.find(p => p.id === h.pathId)?.shapeIds[0], s = owner ? doc.shapes.find(x => x.id === owner) : null; return s && visible(s) ? rankOfStroke(s) : null; }, holeRanks = new Map(doc.holes.map(h => [h, holeRankOf(h)]));
   for (const r of stackRanks) {
     if (r !== stackRanks[0]) for (const it of opaqueItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = it.direct ? 1 : it.alpha; paintItem(it); ctx.restore(); }
     const layerStrokes = strokeList.filter(s => rankOfStroke(s) === r);
@@ -8765,18 +8763,19 @@ function drawSheetBody(lo, hi) {
     for (const s of layerStrokes) if (!s.occlude) strokeOne(s);
     for (const lp of occluderLoops(layerStrokes)) drawOccluder(lp);   /* 分解した棒：一周の印のある線から塗る */
     for (const s of layerStrokes) if (s.occlude) { drawOccluder(s); strokeOne(s); }
+    for (const h of doc.holes) if (holeRanks.get(h) === r) drawHoleOne(h);   /* この層の線に打った穴 */
   }
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   if (mode === 'select' && selected.size > 1) { const ce = chainEndHandles(); if (ce) { const r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const c of ce) { const v = gesture?.kind === 'lineEnd' && gesture.id === c.shape.id ? handleMoved(c.shape, gesture.h, cursor) : c.shape, q = shapeHandles(v).find(h => h.end === c.handle.end); ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } }   /* 一直線につながった複数の線を選ぶと、全体の両端にハンドル（外側の端の線だけが伸びる） */
-  const holeAngle = faceAngler(doc, viewShow.stitch ? stitchFace() : 'front');   /* 「縫い目を見る」が入っていて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
-  for (const originalHole of doc.holes) {
-    if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) continue;
+  for (const originalHole of doc.holes) { const rk = holeRanks.get(originalHole); if (rk === null || rk === undefined || !stackRanks.includes(rk)) drawHoleOne(originalHole); }   /* 線の無い穴・隠れた線の穴は、今までどおり最後に上へ */
+  function drawHoleOne(originalHole) {
+    if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) return;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
     let h = previewMoved(originalHole, owner);
     if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
-    const appearance = holeAppearance(h, doc); if (!appearance) continue;
+    const appearance = holeAppearance(h, doc); if (!appearance) return;
     const {kind,width:w,height:heightMM} = appearance;
     const halfDepth = h.depth === 'half';   /* 駒合わせの B（コバ側）の穴＝半分の深さ（貫通させない）：中抜きに真ん中の点 */
     ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(holeAngle(h)*Math.PI/180); ctx.beginPath();
