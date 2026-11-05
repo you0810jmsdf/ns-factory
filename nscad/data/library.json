@@ -2429,6 +2429,172 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ref-meishi",
+      "name": "名刺（91×55）",
+      "name_en": "Business card (91×55)",
+      "tags": [
+        "reference",
+        "card",
+        "meishi"
+      ],
+      "desc": "日本の名刺の標準寸法。ポケットの大きさを決めるときの当てもの。W=幅 H=高さ",
+      "vars": {
+        "W": 91,
+        "H": 55
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "guide",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ref-credit-card",
+      "name": "クレジットカード（85.6×54・角R3.2）",
+      "name_en": "Credit card (85.6×54, R3.2)",
+      "tags": [
+        "reference",
+        "card",
+        "credit"
+      ],
+      "desc": "ISO/IEC 7810 ID-1（クレジットカード・キャッシュカード・免許証）。W=幅 H=高さ R=角丸",
+      "vars": {
+        "W": 85.6,
+        "H": 53.98,
+        "R": 3.18
+      },
+      "shapes": [
+        {
+          "type": "line",
+          "layer": "guide",
+          "x1": "R",
+          "y1": 0,
+          "x2": "W-R",
+          "y2": 0
+        },
+        {
+          "type": "line",
+          "layer": "guide",
+          "x1": "W",
+          "y1": "R",
+          "x2": "W",
+          "y2": "H-R"
+        },
+        {
+          "type": "line",
+          "layer": "guide",
+          "x1": "W-R",
+          "y1": "H",
+          "x2": "R",
+          "y2": "H"
+        },
+        {
+          "type": "line",
+          "layer": "guide",
+          "x1": 0,
+          "y1": "H-R",
+          "x2": 0,
+          "y2": "R"
+        },
+        {
+          "type": "arc",
+          "layer": "guide",
+          "cx": "W-R",
+          "cy": "R",
+          "r": "R",
+          "startDeg": -90,
+          "endDeg": 0
+        },
+        {
+          "type": "arc",
+          "layer": "guide",
+          "cx": "W-R",
+          "cy": "H-R",
+          "r": "R",
+          "startDeg": 0,
+          "endDeg": 90
+        },
+        {
+          "type": "arc",
+          "layer": "guide",
+          "cx": "R",
+          "cy": "H-R",
+          "r": "R",
+          "startDeg": 90,
+          "endDeg": 180
+        },
+        {
+          "type": "arc",
+          "layer": "guide",
+          "cx": "R",
+          "cy": "R",
+          "r": "R",
+          "startDeg": 180,
+          "endDeg": 270
+        }
+      ]
+    },
+    {
+      "id": "ref-bill-10000",
+      "name": "1万円札（160×76）",
+      "name_en": "10,000 yen note (160×76)",
+      "tags": [
+        "reference",
+        "bill",
+        "money"
+      ],
+      "desc": "日本銀行券 1万円札の寸法（5千円札は 156×76・千円札は 150×76）。札入れの当てもの。W=幅 H=高さ",
+      "vars": {
+        "W": 160,
+        "H": 76
+      },
+      "shapes": [
+        {
+          "type": "polyline",
+          "closed": true,
+          "layer": "guide",
+          "points": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": 0
+            },
+            {
+              "x": "W",
+              "y": "H"
+            },
+            {
+              "x": 0,
+              "y": "H"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
