@@ -379,6 +379,14 @@ export function dropDetachedFills(d) {
 }
 export function healDoc(d) {
   let fixed = 0; if (!d || !Array.isArray(d.paths) || !Array.isArray(d.shapes)) return fixed;
+  { /* 以前の平面図のリフィル（ガイド層の青い実線・穴の〇・白い紙）を「部品」層へ（事業主 2026-11-05「リフィルはガイドではなく部品の方がいい」：統合より前に作った平面図はガイド層に残っていた）。点線の目安・文字・寸法はそのまま */
+    const isOldRefill = s => s && s.foldFlat === 'fd' && s.layer === 'guide' && s.color === 'blue' && s.lineStyle !== 'dashed' && !['text', 'dimension', 'image', 'fold'].includes(s.type);
+    const moving = d.shapes.filter(isOldRefill), paper = Array.isArray(d.fills) ? d.fills.filter(f => f && f.foldFlat === 'fd' && f.layer === 'guide' && f.leather === '#FFFFFF') : [];
+    if ((moving.length || paper.length) && Array.isArray(d.layers)) {
+      if (!d.layers.some(l => l.id === 'parts')) d.layers.splice(Math.min(1, d.layers.length), 0, { id: 'parts', name: 'parts', visible: true, locked: false });
+      for (const s of moving) { s.layer = 'parts'; fixed++; } for (const f of paper) { f.layer = 'parts'; fixed++; }
+    }
+  }
   { /* 部品が、消えた図形を指したままの図面（どこかの消し方で、部品の掃除が漏れた・2026-10-18）：検査に通らず、色の変更・保存・「前回の続き」が止まる。消えた図形を、部品の中身から外す */
     const ids = new Set(d.shapes.map(s => s.id)); for (const p of Array.isArray(d.parts) ? d.parts : []) if (Array.isArray(p.shapeIds) && p.shapeIds.some(id => !ids.has(id))) { p.shapeIds = p.shapeIds.filter(id => ids.has(id)); fixed++; }
   }

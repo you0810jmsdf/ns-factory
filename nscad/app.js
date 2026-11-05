@@ -8897,8 +8897,8 @@ function syncBackBadge() {
   const on = !!viewShow.stitch && stitchFace() === 'back' && !!$('canvas3d')?.hidden; if (b.hidden === on) b.hidden = !on;
 }
 function draw() {
-  syncViewLayers();
   if (!exporting) syncBackBadge();
+  syncViewLayers();   /* 表示メニューのレイヤー一覧（層が変わったときだけ作り直す） */
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 
   ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
