@@ -43,7 +43,7 @@ import { laminateCheck, laminateNow, partBox, lamFoldSpec, lamRimRelayout, lamRi
 import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.js';
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
-import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP } from './phrases.js';
+import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout } from './hardware.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -5706,23 +5706,45 @@ function exportBinderEditsCsv() {
 }
 /** 定型句：名前付きの文（複数行）をこの PC のブラウザに保存し、クリックした位置に 1 行ずつ文字図形として置く。 */
 let phrases = [];
-function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); }
+function loadPhrases() { try { phrases = parsePhrases(localStorage.getItem(PHRASES_KEY) || ''); } catch { phrases = []; } renderPhraseList(); loadPhraseHistory(); }
+/** 置いた句の履歴（この PC のブラウザだけ・他の人には見えない・最新 50 件）。「図面に置く」と改行つき編集の確定で残す。 */
+let phraseHistory = [];
+function loadPhraseHistory() { try { phraseHistory = parsePhraseHistory(localStorage.getItem(PHRASE_HISTORY_KEY) || ''); } catch { phraseHistory = []; } renderPhraseHistory(); }
+function persistPhraseHistory() { try { localStorage.setItem(PHRASE_HISTORY_KEY, serializePhraseHistory(phraseHistory)); } catch { /* 保存できなくても続ける */ } }
+function recordPhraseHistory(text) { const d = new Date(), p = n => String(n).padStart(2, '0'); phraseHistory = pushPhraseHistory(phraseHistory, text, `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`); persistPhraseHistory(); renderPhraseHistory(); }
+function renderPhraseHistory() {
+  const sel = $('phraseHistSel'); if (!sel) return; const keep = sel.value; sel.textContent = ''; if (Array.isArray(sel.children)) sel.children.length = 0;
+  phraseHistory.forEach((it, i) => { const o = document.createElement('option'); o.value = String(i); const first = it.text.split('\n')[0]; o.textContent = `${it.at} ${[...first].length > 28 ? [...first].slice(0, 28).join('') + '…' : first}`; sel.appendChild(o); });
+  if (keep !== '' && phraseHistory[Number(keep)]) sel.value = keep; else if (phraseHistory.length) sel.value = '0';
+}
 function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
 /** 標準の定型句（事業主 2026-11-05「定型句はまだ登録されていない、案を登録して」）：標準の手帳の仕様（data/book-specs.json）から、図面に書き添える仕様の文を作る。自分で同じ名前を保存すればそちらが勝つ（上書き）。消すと標準に戻る */
 /** 手帳の仕様の文（定型句・メッセージ用）。data は bookSpecCapture() と同じ形（標準の仕様 DATA_BOOK_SPECS の data も同じ）。pockets は図面の部品から拾ったポケット・あおり（docPockets()）。規格が無ければ null。
    事業主 2026-11-05「革の種類、色／手帳のサイズ全般（縦、横、マチ）／リングの形式（クラウゼ社製、標準型、爪折式、スライドロック式、ビス式）／リングの内径、外径、色 を追加」「ポケットとあおりが抜けている」「寸法は実際の設計内容を反映できるか？」。分からない所は ＿＿ にして、選ぶ候補を（ ）に */
-function bookSpecText(data, pockets = []) {
+function bookSpecText(data, pockets = [], leathers = {}) {
   const en = document.documentElement.lang === 'en', b = data?.book || {}, f = data?.fields || {}, sp = binderSpec(b.spec); if (!sp) return null;
   const nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿', b1 = en ? '__' : '＿';   /* b1＝数字の空欄 */
   const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
   const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
   const leather = data?.colors?.leather, hexName = h => DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(h).toLowerCase())?.name || h;   /* 色の見本の名前（無ければ色コード） */
   const leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || blank, leatherColor = leather?.kind === 'leather' && leather.hex ? hexName(leather.hex) : blank;
+  const inner = leathers.inner || {}, lining = leathers.lining || {}, nm2 = v => v?.name || blank, cl2 = v => v?.color || blank;   /* 内装・内張＝部品名に「内装」「内張」の付いた部品の革（docLeatherByRole・事業主 2026-11-05「内装・内張を設計から拾う」） */
   /* 事業主 2026-11-05「オーダー受注日と受注サイトおよびニックネーム（わかれば本名）も記載したい」「リフィル束の厚みは要らない」「革の種類と色は、外装、内装、内張で分けて記載する」。色カードで選んだ革は外装に入れる */
   const sites = en ? 'Creema / minne / BASE / STORES / Mercari / Rakuma / PayPay Flea / Pinkoi / direct' : 'Creema／minne／BASE／STORES／メルカリ／ラクマ／PayPayフリマ／Pinkoi／直接';
   const dims = list => list.map(q => `${q.name} ${n1(q.w)}×${n1(q.h)} mm`).join(en ? ', ' : '・'), pk = pockets.filter(q => q.kind === 'pocket'), fl = pockets.filter(q => q.kind === 'flap');   /* 図面の部品の縦横（外形の幅×高さ） */
-  return en ? [`Order: ${blank}/${blank}/${blank}, site ${blank} (${sites}), nickname ${blank} (real name ${blank})`, `Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: outer ${leatherName} / color ${leatherColor}; inner ${blank} / color ${blank}; lining ${blank} / color ${blank}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
-    : [`受注：${blank}年${blank}月${blank}日・サイト ${blank}（${sites}）・ニックネーム ${blank}（本名 ${blank}）`, `システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：外装 ${leatherName}・色 ${leatherColor}／内装 ${blank}・色 ${blank}／内張 ${blank}・色 ${blank}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
+  return en ? [`Order: ${blank}/${blank}/${blank}, site ${blank} (${sites}), nickname ${blank} (real name ${blank})`, `Binder ${nm} (refill ${sp.refill?.wMm}×${sp.refill?.hMm} mm)`, `Leather: outer ${leatherName} / color ${leatherColor}; inner ${nm2(inner)} / color ${cl2(inner)}; lining ${nm2(lining)} / color ${cl2(lining)}`, `Size: height ${f.fdH} mm, width ${f.fdBiW} mm (cover) + ${f.fdBiW} mm (back), spine ${gusset} mm`, `Rings: type ${blank} (Krause / standard / tab-fold / slide-lock / screw), inner ${b.dia || blank} mm, outer ${outer} mm, color ${metal || blank}`, `Leather thickness outer ${f.fdTO} mm / inner ${f.fdTI} mm, corner R ${f.flowCorner} mm`, `Pockets: ${pk.length ? dims(pk) : `left ${blank} (free / card x${b1} / none), right ${blank} (free / card x${b1} / none), size ${b1}×${b1} mm`}`, `Flap: ${fl.length ? dims(fl) : `${blank} (left / right / both / none), size ${b1}×${b1} mm`}`].join('\n')
+    : [`受注：${blank}年${blank}月${blank}日・サイト ${blank}（${sites}）・ニックネーム ${blank}（本名 ${blank}）`, `システム手帳 ${nm}（リフィル ${sp.refill?.wMm}×${sp.refill?.hMm} mm）`, `革：外装 ${leatherName}・色 ${leatherColor}／内装 ${nm2(inner)}・色 ${cl2(inner)}／内張 ${nm2(lining)}・色 ${cl2(lining)}`, `大きさ：縦 ${f.fdH} mm・横 ${f.fdBiW} mm（表紙）＋${f.fdBiW} mm（裏表紙）・マチ ${gusset} mm`, `リング：形式 ${blank}（クラウゼ社製／標準型／爪折式／スライドロック式／ビス式）・内径 ${b.dia || blank} mm・外径 ${outer} mm・色 ${metal || blank}`, `革の厚み 表 ${f.fdTO} mm／裏 ${f.fdTI} mm・角R ${f.flowCorner} mm`, `ポケット：${pk.length ? dims(pk) : `左 ${blank}（フリー／カード ${b1}段／なし）・右 ${blank}（フリー／カード ${b1}段／なし）・大きさ ${b1}×${b1} mm`}`, `あおり：${fl.length ? dims(fl) : `${blank}（左／右／両方／なし）・大きさ ${b1}×${b1} mm`}`].join('\n');
+}
+/** 内装・内張の革：部品名に「内装」「内張」（inner / lining）の付いた部品に付けた質感（texture）か革色（color）。無ければ、その部品の図形を囲む塗りから。見つかった役だけ返す { inner: { name, color }, lining: … }。 */
+function docLeatherByRole() {
+  const out = {}, hexName = h => DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(h).toLowerCase())?.name || h, isHex = h => /^#[0-9a-fA-F]{6}$/.test(String(h || ''));
+  for (const part of doc.parts || []) {
+    const name = String(part.name || ''), role = /内張|lining/i.test(name) ? 'lining' : /内装|inner/i.test(name) ? 'inner' : null; if (!role || out[role]) continue;
+    let tex = part.texture && textureById(part.texture) ? part.texture : null, hex = isHex(part.color) ? part.color : null;
+    if (!tex && !hex) { const fl = (doc.fills || []).find(f => (f.ids || []).some(id => (part.shapeIds || []).includes(id)) && ((f.texture && textureById(f.texture)) || (isHex(f.leather) && f.leather.toUpperCase() !== '#FFFFFF'))); if (fl) { tex = fl.texture && textureById(fl.texture) ? fl.texture : null; hex = !tex && isHex(fl.leather) ? fl.leather : null; } }
+    if (tex) out[role] = { name: textureById(tex).name, color: '' }; else if (hex) out[role] = { name: '', color: hexName(hex) };
+  }
+  return out;
 }
 /** 図面の部品のうち、名前が「あおり」「煽り」「flap」の部品はあおり、名前が「ポケット」「pocket」か役割 pocket（自動設計）の部品はポケットとして、外形の幅×高さ（mm）を返す。形の無い部品は拾わない。 */
 function docPockets() {
@@ -5737,7 +5759,7 @@ function docPockets() {
 }
 /** 「今の設計から仕様をコピー」：図面の欄の値と部品（ポケット・あおり）から仕様の文を作って本文欄に入れ、クリップボードへ1かたまりでコピーする（LINE・メールにそのまま貼れる。事業主 2026-11-05「そのままメッセージに貼り付けて送付したい。今は1行ごとばらばらで加工しにくい」） */
 async function copySpecFromDesign() {
-  const text = bookSpecText(bookSpecCapture(), docPockets()); if (!text) { $('hint').textContent = t('phraseSpecNone'); return; }
+  const text = bookSpecText(bookSpecCapture(), docPockets(), docLeatherByRole()); if (!text) { $('hint').textContent = t('phraseSpecNone'); return; }
   const nm = $('phraseName').value.trim(); if (!nm || builtinPhrases().some(p => p.name === nm)) $('phraseName').value = t('phraseSpecName');   /* 名前が空か標準の句の名前のままなら「仕様（今の設計）」に（そのまま保存しても標準の句を上書きしない） */
   $('phraseText').value = text; syncPhraseSizeNote();
   let ok = false; if (typeof document.execCommand === 'function') { try { $('phraseText').select(); ok = !!document.execCommand('copy'); } catch { /* 次へ */ } }   /* 先に本文欄を選んで同期で写す（クリックの最中でないと効かないので await の前。クリップボード API が拒否される環境でも動く） */
@@ -5770,7 +5792,7 @@ function placePhrase(at) {
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
   cancel(); commit(() => { const ids = [], groupId = shapes.length >= 2 ? nextGroupId(doc.shapes) : null; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh, ...(groupId ? { groupId } : {}) }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });   /* 行は1つのグループ：クリックで全行を選んでまとめて動かせ、ダブルクリックで改行つきの編集（事業主 2026-11-05「まとめて動かすときにめんどくさい」「改行編集もしたい」） */
-  renderLayers(); const placedIds = [...selected]; setMode('select'); selected = new Set(placedIds); draw(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「クリックするたびに定型句が貼り付けられる」）。置いた行は選んだまま＝文字高・フォントの即時反映はそのまま */
+  renderLayers(); recordPhraseHistory(lines.join('\n')); const placedIds = [...selected]; setMode('select'); selected = new Set(placedIds); draw(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「クリックするたびに定型句が貼り付けられる」）。置いた行は選んだまま＝文字高・フォントの即時反映はそのまま */
 }
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
 let lastPhrase = null;
@@ -6804,6 +6826,8 @@ function initCalc() {
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
+  $('phraseHistLoad').onclick = () => { const it = phraseHistory[Number($('phraseHistSel').value)]; if (!it) { $('hint').textContent = t('phraseHistEmpty'); return; } $('phraseText').value = it.text; syncPhraseSizeNote(); $('hint').textContent = t('phraseHistLoaded'); };
+  $('phraseHistDel').onclick = () => { const i = Number($('phraseHistSel').value); if (!phraseHistory[i]) { $('hint').textContent = t('phraseHistEmpty'); return; } phraseHistory = phraseHistory.filter((_, k) => k !== i); persistPhraseHistory(); renderPhraseHistory(); $('hint').textContent = t('phraseHistDeleted'); };
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
@@ -8985,7 +9009,7 @@ function closeTextEdit(save) {
       const drop = new Set(rows.slice(lines.length).map(x => x.id)); if (drop.size) doc.shapes = doc.shapes.filter(x => !drop.has(x.id));
       selected = new Set(made);
     });
-    $('hint').textContent = t('textEditedBlock', { n: lines.length }); draw(); return;
+    recordPhraseHistory(lines.join('\n')); $('hint').textContent = t('textEditedBlock', { n: lines.length }); draw(); return;
   }
   const id = textEdit.id, v = $('textEditInput').value; textEdit = null; $('textEditBox').hidden = true;
   const s = doc.shapes.find(x => x.id === id);

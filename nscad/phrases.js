@@ -44,3 +44,14 @@ export function mergePhrases(items, incoming) {
   for (const p of incoming) { const i = out.findIndex(q => q.name === p.name), item = { name: p.name, text: p.text, ...extrasOf(p) }; if (i >= 0) { out[i] = item; replaced++; } else { out.push(item); added++; } }
   return { items: out, added, replaced };
 }
+
+/** 置いた句の履歴（事業主 2026-11-05「置いた句を次回も再利用できるように履歴を蓄積」「他の人には見えないように」）：この PC のブラウザ（localStorage）だけに残す。同じ文は1つにまとめて先頭へ。最新 50 件。 */
+export const PHRASE_HISTORY_KEY = 'leather-cad.phraseHistory', PHRASE_HISTORY_MAX = 50;
+export function parsePhraseHistory(text) {
+  try { const d = JSON.parse(text || ''); const items = Array.isArray(d?.items) ? d.items : []; return items.filter(it => it && typeof it.text === 'string' && it.text.trim()).map(it => ({ text: it.text, at: typeof it.at === 'string' ? it.at : '' })).slice(0, PHRASE_HISTORY_MAX); } catch { return []; }
+}
+export function pushPhraseHistory(items, text, at) {
+  const t = String(text ?? '').replace(/\r\n?/g, '\n').trim(); if (!t) return items;
+  return [{ text: t, at: String(at ?? '') }, ...items.filter(it => it.text !== t)].slice(0, PHRASE_HISTORY_MAX);
+}
+export function serializePhraseHistory(items) { return JSON.stringify({ v: 1, items: items.map(it => ({ text: it.text, at: it.at })) }); }
