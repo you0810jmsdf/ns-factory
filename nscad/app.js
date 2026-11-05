@@ -6798,10 +6798,23 @@ function editedNodePath(s, g, p) {
   }
   return { ...s, nodes };
 }
+/** 制御点型のベジエ（選んでいる1本）の制御点の当たり（画面で 6px）。 */
+function bezierCtrlHit(p) {
+  const s = selected.size === 1 ? doc.shapes.find(x => selected.has(x.id) && x.type === 'bezier' && editable(x)) : null; if (!s) return null;
+  const r = 6 / scale; for (const part of ['c1', 'c2']) if (distance({ x: s[part + 'x'], y: s[part + 'y'] }, p) <= r) return { shape: s, part }; return null;
+}
+function editedBezierCtrl(s, g, p) { return { ...s, [g.part + 'x']: p.x, [g.part + 'y']: p.y }; }
+function drawBezierCtrl(s) {
+  const r = 3.5 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1 / scale; ctx.strokeStyle = '#888'; ctx.beginPath(); ctx.moveTo(s.x1, s.y1); ctx.lineTo(s.c1x, s.c1y); ctx.moveTo(s.x2, s.y2); ctx.lineTo(s.c2x, s.c2y); ctx.stroke();
+  ctx.fillStyle = '#c9a96e'; for (const h of [[s.c1x, s.c1y], [s.c2x, s.c2y]]) { ctx.beginPath(); ctx.arc(h[0], h[1], r * 0.8, 0, Math.PI * 2); ctx.fill(); } ctx.restore();
+}
 function nodeHit(s, p) {
   const r = 6 / scale;
   for (let i = 0; i < s.nodes.length; i++) { const n = s.nodes[i];
     if (nodeSel && nodeSel.id === s.id && nodeSel.index === i) { if (distance({ x: n.outX, y: n.outY }, n) > r && distance({ x: n.outX, y: n.outY }, p) <= r) return { index: i, part: 'out' }; if (distance({ x: n.inX, y: n.inY }, n) > r && distance({ x: n.inX, y: n.inY }, p) <= r) return { index: i, part: 'in' }; }
+  }
+  for (let i = 0; i < s.nodes.length; i++) { const n = s.nodes[i];   /* 選んでいる節点でなくても、ハンドルはそのままつかめる（事業主 2026-11-05「作図後にハンドルで角度を変えたい」） */
+    if (distance({ x: n.outX, y: n.outY }, n) > r && distance({ x: n.outX, y: n.outY }, p) <= r) return { index: i, part: 'out' }; if (distance({ x: n.inX, y: n.inY }, n) > r && distance({ x: n.inX, y: n.inY }, p) <= r) return { index: i, part: 'in' };
   }
   for (let i = 0; i < s.nodes.length; i++) if (distance(s.nodes[i], p) <= r) return { index: i, part: 'anchor' };
   return null;
@@ -8343,7 +8356,7 @@ function movePosition(p, shift, free = false) {
 /** ドラッグ中の図形の見た目（動かす・線の端・節点・矩形の取っ手・回す）。寸法が追従する端の位置を、ドラッグ中の位置から求めるために使う。 */
 function livePreviewOf(sh) {
   if (!gesture) return sh;
-  if (gesture.kind === 'node' && gesture.id === sh.id) return gesture.preview || sh;
+  if ((gesture.kind === 'node' || gesture.kind === 'bzctrl') && gesture.id === sh.id) return gesture.preview || sh;
   if (gesture.kind === 'lineEnd' && gesture.id === sh.id) return handleMoved(sh, gesture.h, cursor);
   if (gesture.kind === 'move') return previewMoved(sh);
   if (gesture.kind === 'rectR' && gesture.id === sh.id && gesture.box) { const b = gesture.box; return { ...sh, points: rectShape({ x: b.x0, y: b.y0 }, { x: b.x1, y: b.y1 }).points }; }
@@ -8530,7 +8543,23 @@ function bezierClick(p) {
 function finishBezier() {
   if (stage?.kind !== 'bzpts') return; const nodes = smoothPathNodes(stage.points); stage = null;
   if (!nodes) { $('hint').textContent = t('bezierNeedTwo'); draw(); return; }
-  addShape({ type: 'path', nodes, closed: false }); $('hint').textContent = t('hint.bezier'); draw();
+  addCurveNodes(nodes); draw();
+}
+/** 制御点型のベジエ（4点）を、ペンの線の節点2つにする：始点の出るハンドル＝1つ目の制御点、終点の入るハンドル＝2つ目。 */
+function bezierNodes(s) { return [{ x: s.x1, y: s.y1, inX: s.x1, inY: s.y1, outX: s.c1x, outY: s.c1y, smooth: false }, { x: s.x2, y: s.y2, inX: s.c2x, inY: s.c2y, outX: s.x2, outY: s.y2, smooth: false }]; }
+/** 節点の並びを逆にする（入る・出るハンドルも入れ替え）。 */
+function reversePathNodes(nodes) { return nodes.slice().reverse().map(n => ({ ...n, inX: n.outX, inY: n.outY, outX: n.inX, outY: n.inY })); }
+/** 曲線（節点の列）を図面に足す。先頭の点が、開いたペンの線の端（画面で 8px 以内）に重なっていれば、その線に続けて1本にする（事業主 2026-11-05「バラバラにしないで連続した曲線にして」）。
+ *  つなぎ目は滑らかな節点にし、前の線の入るハンドルを新しい出る向きの反対にそろえる（長さはそのまま＝追従）。始点側の端に重ねたときは、前の線の向きを入れ替えてからつなぐ。 */
+function addCurveNodes(nodes) {
+  const head = nodes[0], r = 8 / scale; let best = null, bd = r;
+  for (const s of doc.shapes) { if (s.type !== 'path' || s.closed || s.nodes.length < 2 || !visible(s) || !editable(s)) continue; for (const [i, end] of [[s.nodes.length - 1, 'tail'], [0, 'head']]) { const d = distance(s.nodes[i], head); if (d < bd) { bd = d; best = { s, end }; } } }
+  if (!best) { addShape({ type: 'path', nodes, closed: false }); $('hint').textContent = t('hint.bezier'); return false; }
+  const base = (best.end === 'head' ? reversePathNodes(best.s.nodes) : best.s.nodes).map(n => ({ ...n })), j = base[base.length - 1];
+  const lenIn = Math.hypot(j.inX - j.x, j.inY - j.y), dx = head.outX - head.x, dy = head.outY - head.y, d = Math.hypot(dx, dy);
+  if (d > 1e-9) { j.outX = j.x + dx; j.outY = j.y + dy; if (lenIn > 1e-9) { j.inX = j.x - dx / d * lenIn; j.inY = j.y - dy / d * lenIn; } }   /* 新しい曲線のハンドルを優先し、前のハンドルをその反対に */
+  else if (lenIn > 1e-9) { j.outX = j.x - (j.inX - j.x); j.outY = j.y - (j.inY - j.y); }   /* 新しい曲線に出るハンドルが無ければ、前のハンドルの鏡写し */
+  j.smooth = true; transformSelectedTo({ ...best.s, nodes: [...base, ...nodes.slice(1)] }); lastPoint = nodes[nodes.length - 1]; $('hint').textContent = t('curveJoined'); return true;
 }
 function finishPolyline(closed = false) {
   if (stage?.kind !== 'polyline' || stage.points.length < (closed ? 3 : 2)) return;
@@ -8682,7 +8711,9 @@ function drawNodes(s) {
   const r = 3.5 / scale; ctx.lineWidth = 1 / scale;
   s.nodes.forEach((n, i) => {
     const current = !!nodeSel && nodeSel.id === s.id && nodeSel.index === i;
-    if (current) { ctx.strokeStyle = '#888'; ctx.beginPath(); ctx.moveTo(n.inX, n.inY); ctx.lineTo(n.x, n.y); ctx.lineTo(n.outX, n.outY); ctx.stroke(); for (const h of [[n.inX, n.inY], [n.outX, n.outY]]) { ctx.beginPath(); ctx.arc(h[0], h[1], r * 0.8, 0, Math.PI * 2); ctx.fillStyle = '#c9a96e'; ctx.fill(); } }
+    /* ハンドルは全部の節点ぶん見せる（選んだ節点は濃く）。節点と同じ位置のハンドル（角）は描かない */
+    const hs = [[n.inX, n.inY], [n.outX, n.outY]].filter(h => Math.hypot(h[0] - n.x, h[1] - n.y) > r);
+    if (hs.length) { ctx.strokeStyle = current ? '#888' : '#666'; ctx.beginPath(); for (const h of hs) { ctx.moveTo(n.x, n.y); ctx.lineTo(h[0], h[1]); } ctx.stroke(); for (const h of hs) { ctx.beginPath(); ctx.arc(h[0], h[1], r * 0.8, 0, Math.PI * 2); ctx.fillStyle = current ? '#c9a96e' : '#8a7a50'; ctx.fill(); } }
     ctx.fillStyle = current ? '#c9a96e' : '#111'; ctx.strokeStyle = '#c9a96e';
     if (n.smooth) { ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } else { ctx.fillRect(n.x - r, n.y - r, 2 * r, 2 * r); ctx.strokeRect(n.x - r, n.y - r, 2 * r, 2 * r); }
   });
@@ -8792,6 +8823,7 @@ function drawSheetBody(lo, hi) {
   }
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
+  if (mode === 'select' && selected.size === 1) { const bz = doc.shapes.find(s => selected.has(s.id) && s.type === 'bezier' && editable(s)); if (bz) drawBezierCtrl(gesture?.kind === 'bzctrl' && gesture.preview ? gesture.preview : bz); }
   if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   if (mode === 'select' && selected.size > 1) { const ce = chainEndHandles(); if (ce) { const r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const c of ce) { const v = gesture?.kind === 'lineEnd' && gesture.id === c.shape.id ? handleMoved(c.shape, gesture.h, cursor) : c.shape, q = shapeHandles(v).find(h => h.end === c.handle.end); ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } }   /* 一直線につながった複数の線を選ぶと、全体の両端にハンドル（外側の端の線だけが伸びる） */
   for (const originalHole of doc.holes) { const rk = holeRanks.get(originalHole); if (rk === null || rk === undefined || !stackRanks.includes(rk)) drawHoleOne(originalHole); }   /* 線の無い穴・隠れた線の穴は、今までどおり最後に上へ */
@@ -9121,7 +9153,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); lastPoint = cursor; } return; }
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
-  if (mode === 'bezier') { bezierClick(cursor); return; }
+  if (mode === 'bezier') { if (stage?.kind === 'bzpts') bezierClick(cursor); else if (stage?.kind === 'bezier') gesture = { kind: 'stage' }; else gesture = { kind: 'draw', start: cursor }; draw(); return; }   /* 点をクリックする連続方式と、ドラッグで始める4点方式（離したときに分ける） */
   if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
   if (mode === 'dimension') { dimToolClick(cursor, world(p)); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る（1回目が丸めた角の上なら、その角の R の寸法） */
   if (mode === 'mirror') {
@@ -9157,6 +9189,8 @@ canvas.addEventListener('pointerdown', e => {
       if (rectHasHoles(rh.shape)) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
       const b = rectBoxOf(rh.shape); gesture = { kind: 'rectR', id: rh.shape.id, h: rh.h, box0: b, box: b }; $('hint').textContent = t('rectDrag', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); draw(); return;
     }
+    const bh = handleOk ? bezierCtrlHit(cursor) : null;   /* 制御点型のベジエ：制御点をつかんで角度を変える */
+    if (bh) { gesture = { kind: 'bzctrl', id: bh.shape.id, part: bh.part, screen: p, preview: null }; draw(); return; }
     const le = handleOk ? lineEndHit(cursor) : null;
     if (le) { let fixed = null, dir = null, orig = null; const sh = le.shape, h = le.handle; if (sh.type === 'line' || (sh.type === 'polyline' && !sh.closed && sh.points.length === 2)) { /* 直線、または節点が2つだけの折れ線（実質は直線）：動かさない側の端から元の向きに延長できる */ fixed = sh.type === 'line' ? (h.end === 1 ? { x: sh.x2, y: sh.y2 } : { x: sh.x1, y: sh.y1 }) : sh.points[1 - h.index]; const ln = Math.hypot(h.x - fixed.x, h.y - fixed.y); dir = ln > 1e-9 ? { x: (h.x - fixed.x) / ln, y: (h.y - fixed.y) / ln } : null; } else if (sh.type === 'polyline') orig = { x: h.x, y: h.y }; const holed = doc.paths.some(pt => pt.shapeIds.includes(sh.id) && doc.holes.some(hh => hh.pathId === pt.id)); if (holed && !dir) { $('hint').textContent = t('lineEndHoles'); draw(); return; } /* 菱目付きは、直線を元の向きに延ばす・縮めるだけ（向きは自動で固定） */ gesture = { kind: 'lineEnd', id: sh.id, h, screen: p, fixed, dir, orig, holed }; $('hint').textContent = t(sh.type === 'line' || dir ? 'lineEndDrag' : sh.type === 'arc' ? 'arcEndDrag' : 'vertexDrag'); draw(); return; } /* 端・角のハンドルをつかむと、ほかは動かさずその端・角だけ動かす */
     const nh = pathShape && handleOk && nodeHit(pathShape, cursor);
@@ -9214,6 +9248,7 @@ canvas.addEventListener('pointermove', e => {
   updateRadiusHover(world(p));
   if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
+  if (gesture?.kind === 'bzctrl') { const s = doc.shapes.find(s => s.id === gesture.id); if (s) gesture.preview = editedBezierCtrl(s, gesture, cursor); }
   if (gesture?.kind === 'dimOff') gesture.preview = dimOffPreview(gesture, cursor);
   draw();
 });
@@ -9533,6 +9568,9 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
+  } else if (g.kind === 'bzctrl') {
+    const s = doc.shapes.find(s => s.id === g.id);
+    if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedBezierCtrl(s, g, cursor));
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
     else if (g.ctrlToggle) selected.delete(g.ctrlToggle);   /* Ctrl を押したまま選択済みの図形をクリックだけ：その1つを選択から外す */
@@ -9573,8 +9611,10 @@ canvas.addEventListener('pointerup', e => {
     if (mode === 'rect') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
     else if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
-    else if (mode === 'bezier') stage = { kind: 'bezier', start: g.start, end: cursor };
+    else if (mode === 'bezier') { if (distance(g.start, cursor) > 6 / scale) { stage = { kind: 'bezier', start: g.start, end: cursor }; $('hint').textContent = t('bezierCtrlNext'); } else bezierClick(cursor); }   /* 6px 以上ドラッグ＝4点方式（次に制御点を2回）、それ未満＝点を打つ */
     else if (mode === 'polyline') stage = { kind: 'polyline', points: [g.start, cursor] };
+  } else if (g.kind === 'draw' && mode === 'bezier') {
+    bezierClick(cursor);
   } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline', 'rect'].includes(mode)) {
     runCommand(`${cursor.x},${cursor.y}`);
   } else if (g.kind === 'stage') {
@@ -9589,7 +9629,7 @@ canvas.addEventListener('pointerup', e => {
     else if (stage.kind === 'arc3') arc3Click(cursor);
     else if (stage.kind === 'arcR') { if (distance(stage.center, cursor) > 1e-8) stage = { kind: 'arc', center: stage.center, r: stage.r, startDeg: Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI }; }
     else if (stage.kind === 'arc') { const s = arcShape(cursor); if (arcSweep(s) > 1e-8) { stage = null; addShape(s); } }
-    else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addShape(s); } }
+    else if (stage.kind === 'bezier') { if (!stage.c1) stage.c1 = cursor; else { const s = bezierShape(cursor); stage = null; addCurveNodes(bezierNodes(s)); } }   /* 4点方式もペンの線（節点つき）にする。前の曲線の端から始めていれば続けて1本（事業主 2026-11-05「バラバラにしないで連続した曲線にして」） */
     else if (stage.kind === 'polyline') {
       if (stage.points.length >= 3 && distance(cursor, stage.points[0]) < 9 / scale) finishPolyline(true);
       else if (distance(cursor, stage.points.at(-1)) > 1e-8) stage.points.push(cursor);
