@@ -3313,6 +3313,7 @@ function patchFillApply(region, fill, layer, opts = {}) {
 function initDesign() {
   $('info-part').addEventListener('change', assignPart);
   for (const f of ['thickness', 'partName', 'partOrder']) $('info-' + f).addEventListener('change', () => applyPartField(f));
+  { const pick = $('info-partNamePick'); if (pick) { const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('partNamePick'); pick.appendChild(o0); for (const k of ['body', 'outer', 'inner', 'lining', 'flap', 'pocket', 'pocketL', 'pocketR', 'pen', 'ringpad', 'belt']) { const o = document.createElement('option'); o.value = t('part.' + k); o.textContent = t('part.' + k); pick.appendChild(o); } pick.addEventListener('change', () => { const v = pick.value; if (!v) return; $('info-partName').value = v; applyPartField('partName'); pick.value = ''; }); } }   /* 部品名の候補（事業主 2026-11-05 改善点：内装・内張・あおり・ポケットの拾い漏れを減らす） */
   $('lamTarget').value = '';   /* 目標の全長は、最初は空（いまの長さを使う） */
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
   $('flowFoldMode').onchange = () => { if (!lockGate('fold')) { renderFoldFlow(); return; } $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); if (foldIsBifold()) $('foldFlowMore').open = true; renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
@@ -5712,10 +5713,14 @@ let phraseHistory = [];
 function loadPhraseHistory() { try { phraseHistory = parsePhraseHistory(localStorage.getItem(PHRASE_HISTORY_KEY) || ''); } catch { phraseHistory = []; } renderPhraseHistory(); }
 function persistPhraseHistory() { try { localStorage.setItem(PHRASE_HISTORY_KEY, serializePhraseHistory(phraseHistory)); } catch { /* 保存できなくても続ける */ } }
 function recordPhraseHistory(text) { const d = new Date(), p = n => String(n).padStart(2, '0'); phraseHistory = pushPhraseHistory(phraseHistory, text, `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`); persistPhraseHistory(); renderPhraseHistory(); }
+/** 検索用にそろえる：全角半角（NFKC）・大文字小文字を区別しない。 */
+const histNorm = s => String(s ?? '').normalize('NFKC').toLowerCase();
 function renderPhraseHistory() {
   const sel = $('phraseHistSel'); if (!sel) return; const keep = sel.value; sel.textContent = ''; if (Array.isArray(sel.children)) sel.children.length = 0;
-  phraseHistory.forEach((it, i) => { const o = document.createElement('option'); o.value = String(i); const first = it.text.split('\n')[0]; o.textContent = `${it.at} ${[...first].length > 28 ? [...first].slice(0, 28).join('') + '…' : first}`; sel.appendChild(o); });
-  if (keep !== '' && phraseHistory[Number(keep)]) sel.value = keep; else if (phraseHistory.length) sel.value = '0';
+  const terms = histNorm($('phraseHistSearch')?.value).split(/\s+/).filter(Boolean); let shown = 0, firstIdx = '';   /* 検索欄：スペース区切りで全部含む履歴だけ（受注日・ニックネームで探す） */
+  phraseHistory.forEach((it, i) => { if (terms.length) { const hay = histNorm(it.at + ' ' + it.text); if (!terms.every(w => hay.includes(w))) return; } const o = document.createElement('option'); o.value = String(i); const first = it.text.split('\n')[0]; o.textContent = `${it.at} ${[...first].length > 28 ? [...first].slice(0, 28).join('') + '…' : first}`; sel.appendChild(o); shown++; if (firstIdx === '') firstIdx = String(i); });
+  if (keep !== '' && phraseHistory[Number(keep)] && (!terms.length || terms.every(w => histNorm(phraseHistory[Number(keep)].at + ' ' + phraseHistory[Number(keep)].text).includes(w)))) sel.value = keep; else sel.value = firstIdx;
+  const n = $('phraseHistCount'); if (n) n.textContent = terms.length ? t('phraseHistCount', { shown, all: phraseHistory.length }) : '';
 }
 function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhrases(phrases)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
 /** 標準の定型句（事業主 2026-11-05「定型句はまだ登録されていない、案を登録して」）：標準の手帳の仕様（data/book-specs.json）から、図面に書き添える仕様の文を作る。自分で同じ名前を保存すればそちらが勝つ（上書き）。消すと標準に戻る */
@@ -6826,6 +6831,7 @@ function initCalc() {
 function initPhrases() {
   loadPhrases();
   $('phraseExport').onclick = exportPhrases; $('phraseImport').onclick = () => $('phraseFile').click();
+  $('phraseHistSearch').addEventListener('input', renderPhraseHistory);
   $('phraseHistLoad').onclick = () => { const it = phraseHistory[Number($('phraseHistSel').value)]; if (!it) { $('hint').textContent = t('phraseHistEmpty'); return; } $('phraseText').value = it.text; syncPhraseSizeNote(); $('hint').textContent = t('phraseHistLoaded'); };
   $('phraseHistDel').onclick = () => { const i = Number($('phraseHistSel').value); if (!phraseHistory[i]) { $('hint').textContent = t('phraseHistEmpty'); return; } phraseHistory = phraseHistory.filter((_, k) => k !== i); persistPhraseHistory(); renderPhraseHistory(); $('hint').textContent = t('phraseHistDeleted'); };
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
