@@ -5767,7 +5767,7 @@ function placePhrase(at) {
   const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
-  cancel(); commit(() => { const ids = []; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });
+  cancel(); commit(() => { const ids = [], groupId = shapes.length >= 2 ? nextGroupId(doc.shapes) : null; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh, ...(groupId ? { groupId } : {}) }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });   /* 行は1つのグループ：クリックで全行を選んでまとめて動かせ、ダブルクリックで改行つきの編集（事業主 2026-11-05「まとめて動かすときにめんどくさい」「改行編集もしたい」） */
   renderLayers(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');
 }
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
@@ -6797,6 +6797,8 @@ function initPhrases() {
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
   $('textEditInput').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter') { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });
   $('textEditInput').addEventListener('blur', () => closeTextEdit(true));   /* 欄の外をクリック＝確定 */
+  $('textEditArea').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });   /* 複数行：Enter は改行、Ctrl+Enter で確定 */
+  $('textEditArea').addEventListener('blur', () => closeTextEdit(true));
   $('textEditFont').addEventListener('pointerdown', e => e.preventDefault());   /* 押してもフォーカスを奪わない（blur で先に閉じてから窓を開かないように） */
   $('textEditFont').onclick = () => { const id = textEdit?.id; closeTextEdit(true); if (id) { selected = new Set([id]); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
@@ -8933,19 +8935,47 @@ function draw() {
 }
 // ---- 文字をその場で書き換える（ダブルクリック・事業主 2026-11-05「直接文字を図面上で修正したい」→ A） ----
 let textEdit = null;   /* { id }：図面の上で書き換え中の文字 */
+/** 文字のまとまり（定型句で置いた行＝同じグループの文字だけ）：上から順の行。グループでなければ null。 */
+function textBlockOf(s) {
+  const g = groupIdOf(s); if (!g) return null; const rows = doc.shapes.filter(x => groupIdOf(x) === g); if (rows.length < 2 || rows.some(x => x.type !== 'text' || !editable(x))) return null;
+  return rows.slice().sort((p, q) => p.y - q.y || p.x - q.x);
+}
 function placeTextEdit() {
   if (!textEdit) return; const s = doc.shapes.find(x => x.id === textEdit.id); if (!s) { closeTextEdit(false); return; }
-  const box = $('textEditBox'), inp = $('textEditInput'), p = screenOf(s.x, s.y), o = paneOff(), px = Math.max(10, s.sizeMm * scale);
+  const box = $('textEditBox'), inp = textEdit.block ? $('textEditArea') : $('textEditInput'), p = screenOf(s.x, s.y), o = paneOff(), px = Math.max(10, s.sizeMm * scale);
   box.style.left = `${(canvas.offsetLeft || 0) + o.x + p.x}px`; box.style.top = `${(canvas.offsetTop || 0) + o.y + p.y - px}px`;   /* 文字の左上（ベースラインの上 1 文字ぶん）に合わせる */
   box.style.transformOrigin = `0 ${px}px`; box.style.transform = s.angleDeg ? `rotate(${s.angleDeg}deg)` : ''; inp.style.font = `${px}px ${textFontCss(s.font)}`;
+  if (textEdit.block) inp.style.lineHeight = `${Math.max(px, textEdit.pitch * scale)}px`;   /* 行間を図面の行間に合わせる */
 }
 function openTextEdit(s) {
-  textEdit = { id: s.id }; const box = $('textEditBox'), inp = $('textEditInput'); box.hidden = false; inp.value = s.text; inp.size = Math.min(60, Math.max(6, [...s.text].length + 2)); placeTextEdit();
+  const block = textBlockOf(s), box = $('textEditBox'), inp = $('textEditInput'), area = $('textEditArea');
+  if (block) {   /* 複数行：全行を改行つきで（事業主 2026-11-05「一行ずつ編集ではなく改行編集もしたい」） */
+    const first = block[0], pitch = block.length > 1 ? (block[block.length - 1].y - first.y) / (block.length - 1) : first.sizeMm * 1.4;
+    textEdit = { id: first.id, block: block.map(x => x.id), pitch: pitch > 0 ? pitch : first.sizeMm * 1.4 }; selected = new Set(block.map(x => x.id)); draw();
+    box.hidden = false; inp.hidden = true; area.hidden = false; area.value = block.map(x => x.text).join('\n'); area.rows = Math.min(12, block.length + 1); area.cols = Math.min(60, Math.max(8, Math.max(...block.map(x => [...x.text].length)) + 2)); placeTextEdit();
+    area.focus?.(); $('hint').textContent = t('textEditBlockTip'); return;
+  }
+  textEdit = { id: s.id }; box.hidden = false; area.hidden = true; inp.hidden = false; inp.value = s.text; inp.size = Math.min(60, Math.max(6, [...s.text].length + 2)); placeTextEdit();
   inp.focus?.(); inp.select?.(); $('hint').textContent = t('textEditOpened');
 }
 /** save＝true なら欄の文字で置き換える（空にはしない・同じなら何もしない・元に戻すは1回）。false なら取り消し。 */
 function closeTextEdit(save) {
-  if (!textEdit) return; const id = textEdit.id, v = $('textEditInput').value; textEdit = null; $('textEditBox').hidden = true;
+  if (!textEdit) return;
+  if (textEdit.block) {   /* 複数行：行の書き換え・追加（下に同じ行間）・削除を1回の保存で */
+    const ids = textEdit.block, pitch = textEdit.pitch, lines = $('textEditArea').value.split('\n').map(x => x.trim()).filter(Boolean); textEdit = null; $('textEditBox').hidden = true;
+    const rows = ids.map(i => doc.shapes.find(x => x.id === i)).filter(x => x && editable(x));
+    if (!save || !rows.length) { draw(); return; } if (!lines.length) { $('hint').textContent = t('textEditEmpty'); draw(); return; }
+    if (lines.length === rows.length && lines.every((l, i) => l === rows[i].text)) { draw(); return; }
+    const first = rows[0], base = rows[rows.length - 1];
+    commit(() => {
+      const made = [];
+      lines.forEach((text, i) => { if (i < rows.length) { const x = doc.shapes.find(y => y.id === rows[i].id); if (x) { x.text = text; made.push(x.id); } } else { const id = freshId(doc.shapes, 's'), { id: _id, ...style } = base; doc.shapes.push({ ...style, id, text, x: first.x, y: +(first.y + pitch * i).toFixed(4) }); made.push(id); } });
+      const drop = new Set(rows.slice(lines.length).map(x => x.id)); if (drop.size) doc.shapes = doc.shapes.filter(x => !drop.has(x.id));
+      selected = new Set(made);
+    });
+    $('hint').textContent = t('textEditedBlock', { n: lines.length }); draw(); return;
+  }
+  const id = textEdit.id, v = $('textEditInput').value; textEdit = null; $('textEditBox').hidden = true;
   const s = doc.shapes.find(x => x.id === id);
   if (save && s && editable(s)) { if (!v.trim()) $('hint').textContent = t('textEditEmpty'); else if (v !== s.text) { commit(() => { const x = doc.shapes.find(y => y.id === id); if (x) x.text = v; }); $('hint').textContent = t('textEdited', { text: v }); } }
   draw();
