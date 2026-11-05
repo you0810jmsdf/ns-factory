@@ -78,6 +78,9 @@ body.panel-open #preview { margin-left: 280px; }
 .page-body { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 0 2mm; min-width: 0; }
 .cut-line-h { position: absolute; left: 0; right: 0; height: 0; border-top: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
 .cut-line-v { position: absolute; top: 0; bottom: 0; width: 0; border-left: 0.2mm dashed #aaa; z-index: 5; pointer-events: none; }
+.tombo { position: absolute; z-index: 5; pointer-events: none; }
+.tombo.v { width: 0; border-left: 0.2mm solid #444; }
+.tombo.h { height: 0; border-top: 0.2mm solid #444; }
 .logo-wm { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; pointer-events: none; z-index: 0; }
 .logo-wm img { width: 100%; height: auto; display: block; opacity: 0.08; }
 
@@ -378,6 +381,7 @@ body.panel-open #cuEditor { margin-left: 280px; }
       <button class="btn-toggle on" id="btnPunch" onclick="toggleOpt('showPunchGuide','btnPunch')">パンチガイド</button></div>
     <div class="btn-row">
       <button class="btn-toggle on" id="btnCutLine" onclick="toggleOpt('showCutLine','btnCutLine')">カット線</button>
+      <button class="btn-toggle" id="btnTombo" onclick="toggleOpt('showTombo','btnTombo')" title="切る位置の延長線上に、A4の余白へ短い目印を出します">トンボ</button>
       <button class="btn-toggle on" id="btnLogo" onclick="toggleOpt('showLogo','btnLogo')">ロゴ透かし</button>
       <button class="btn-toggle on" id="btnHoliday" onclick="toggleOpt('showHoliday','btnHoliday')">祝日表示</button></div>
     <div class="btn-row">
@@ -514,7 +518,7 @@ const PRESET_ORDER = ['rollbahnL', 'rollbahnM', 'a6', 'bible', 'a5', 'a5slim', '
 let paper = { preset: 'rollbahnL', w: 132, h: 178, d: 5, edge: 6, holes: PRESETS.rollbahnL.holes.slice() };
 let fmt = 'weekly', isEN = false;
 let opts = { showHoles: true, showHoleLine: true, showPunchGuide: true, showCutLine: true, showLogo: true, showHoliday: true,
-  showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false, actualSize: false };
+  showHalfLine: true, showMajorLine: false, showMonthAbbr: true, showWeekMeta: true, undated: false, actualSize: false, showTombo: false };
 let LAY = null; // 面付けの計算結果
 
 // === MODULE: Utility ===
@@ -637,6 +641,10 @@ function applyLayoutVars() {
   $('layoutInfo').textContent = LAY.actual ? `原寸：${paper.w}×${paper.h}mm の用紙に1ページずつ（用紙1枚で${LAY.perSheet}ページ・表と裏）`
     : `A4${LAY.portrait ? '縦' : '横'}に ${LAY.cols}列×${LAY.rows}段 = ${LAY.n}面（用紙1枚で${LAY.perSheet}ページ）` + (LAY.over ? '。A4に収まらないサイズです' : '');
   $('btnActual').classList.toggle('on', !!opts.actualSize);
+  if (opts.showTombo) {
+    const L = tomboLens(), sides = [L.t && '上', L.b && '下', L.l && '左', L.r && '右'].filter(Boolean).join('');
+    $('layoutInfo').textContent += LAY.actual ? '　トンボ：原寸モードでは紙面の外に出せないため出ません。' : sides ? `　トンボ：${sides}の余白に出ます。` : '　トンボ：A4に余白が無いので出ません（カット線を使ってください）。';
+  }
   $('actualNote').innerHTML = LAY.actual
     ? `<b>原寸モード：オン。</b>穴あけ済みの用紙にそのまま印刷します。穴印刷・パンチガイド・カット線はオフにしてあります。<br>① プリンタの用紙サイズに <b>${paper.w}×${paper.h}mm</b> を登録して手差し　② 印刷は「実際のサイズ（100%）」　③ プリンタが印刷できない縁（機種により約3〜5mm）は欠けることがあります　④ まず普通紙で1枚試してください。`
     : '穴あけ済みの用紙（純正の無地リフィルなど）にそのまま印刷するときは、オンにします。A4に並べず、用紙の大きさで1ページずつ出します（どの規格でも使えます）。';
@@ -1185,6 +1193,24 @@ function buildPage(item, pageNum, holeSide) {
   if (fmt === 'custom') return wrapSlot(cuPageHTML(pageNum), pageNum, holeSide);
   return buildMemo(item, pageNum, holeSide);
 }
+// トンボ：切る位置の延長線上に、A4の余白（紙面の外側）へ短い実線を出す。余白が足りない辺には出さない（紙面にはかけない）
+function tomboLens() {
+  if (!LAY || LAY.actual || !LAY.cuts.x.length || !LAY.cuts.y.length) return { t: 0, b: 0, l: 0, r: 0 };
+  const cx = LAY.cuts.x, cy = LAY.cuts.y, GAP = 1, mk = m => { const v = Math.min(4, m - GAP - 0.5); return v >= 1.5 ? r1(v) : 0; };
+  return { t: mk(cy[0]), b: mk(LAY.PH - cy[cy.length - 1]), l: mk(cx[0]), r: mk(LAY.PW - cx[cx.length - 1]) };
+}
+function tomboHTML() {
+  const L = tomboLens(), cx = LAY.cuts.x, cy = LAY.cuts.y, GAP = 1; if (!L.t && !L.b && !L.l && !L.r) return '';
+  const x0 = cx[0], x1 = cx[cx.length - 1], y0 = cy[0], y1 = cy[cy.length - 1];
+  const V = (x, top, len) => `<div class="tombo v" style="left:${x}mm;top:${r1(top)}mm;height:${len}mm"></div>`;
+  const H = (y, left, len) => `<div class="tombo h" style="top:${y}mm;left:${r1(left)}mm;width:${len}mm"></div>`;
+  let h = '';
+  if (L.t) cx.forEach(x => { h += V(x, y0 - GAP - L.t, L.t); });
+  if (L.b) cx.forEach(x => { h += V(x, y1 + GAP, L.b); });
+  if (L.l) cy.forEach(y => { h += H(y, x0 - GAP - L.l, L.l); });
+  if (L.r) cy.forEach(y => { h += H(y, x1 + GAP, L.r); });
+  return h;
+}
 function makeSheetHTML(sideKey, sheetIndex, items) {
   const cuts = opts.showCutLine ? (LAY.cuts.x.map(x => `<div class="cut-line-v" style="left:${x}mm;"></div>`).join('') + LAY.cuts.y.map(y => `<div class="cut-line-h" style="top:${y}mm;"></div>`).join('')) : '';
   const slots = LAY.slots.map(s => {
@@ -1197,7 +1223,7 @@ function makeSheetHTML(sideKey, sheetIndex, items) {
     if (idx >= items.length) return `<div class="slot empty" data-pos="P${s.k}"${dl} style="${style}"></div>`;
     return `<div class="slot" data-pos="P${s.k}"${dl} style="${style}">${buildPage(items[idx], idx + 1, sideKey === 'front' ? 'left' : 'right')}</div>`;
   }).join('');
-  return `<div class="a4-sheet">${cuts}${slots}</div>`;
+  return `<div class="a4-sheet">${cuts}${opts.showTombo ? tomboHTML() : ''}${slots}</div>`;
 }
 
 // === MODULE: Render ===
@@ -1276,7 +1302,7 @@ function loadSettings() {
   if (!s) return;
   if (s.paper && s.paper.w > 0 && s.paper.h > 0 && Array.isArray(s.paper.holes)) paper = { preset: PRESETS[s.paper.preset] ? s.paper.preset : 'custom', w: +s.paper.w, h: +s.paper.h, d: +s.paper.d || 5, edge: +s.paper.edge || 6, holes: s.paper.holes.map(Number).filter(isFinite) };
   if (['weekly', 'monthly', 'okusuri', 'memo', 'custom'].includes(s.fmt)) fmt = s.fmt;
-  const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta', actualSize: 'btnActual' };
+  const btnMap = { showHoles: 'btnHoles', showHoleLine: 'btnHoleLine', showPunchGuide: 'btnPunch', showCutLine: 'btnCutLine', showLogo: 'btnLogo', showHoliday: 'btnHoliday', showHalfLine: 'btnHalfLine', showMajorLine: 'btnMajorLine', showMonthAbbr: 'btnMonthAbbr', showWeekMeta: 'btnWeekMeta', actualSize: 'btnActual', showTombo: 'btnTombo' };
   if (s.opts) for (const [k, id] of Object.entries(btnMap)) if (s.opts[k] != null) { opts[k] = !!s.opts[k]; $(id).classList.toggle('on', opts[k]); }
   ['recSel', 'memoKind', 'memoSp', 'pageCount', 'weekStartDay', 'startHour', 'endHour', 'undatedCount', 'monthStart', 'monthCount', 'monthWeekStart'].forEach(id => { if (s[id] != null && $(id)) $(id).value = s[id]; });
   if (s.isEN) { isEN = true; $('btnJA').classList.remove('on'); $('btnEN').classList.add('on'); }
