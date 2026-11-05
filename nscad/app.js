@@ -8095,7 +8095,8 @@ function runOffset(override = null) {
   /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
   const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer; /* 点線はガイド。ガイドが使えないときだけ作図先・元の層 */
   offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } }); /* 両側でも元に戻すのは1回で済む */
-  $('hint').textContent = sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) }); draw();
+  const turnedOn = showDashedView();   /* 結果は点線：「点線を表示」がオフなら、見えるようにオンにする（事業主 2026-11-05「オフセットした線が見えない」） */
+  $('hint').textContent = (sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) })) + (turnedOn ? ' ' + t('dashedViewAutoOn') : ''); draw();
 }
 /** すでに丸めた角（円弧）を、もっと丸く（または小さく）しなおす：円弧の両端につながる2本の線を、交わる角まで延ばして戻し、新しい半径で丸めなおす。つながる2本が直線（2点だけの折れ線を含む）でなければ、できない。 */
 function reroundArc(arc) {
