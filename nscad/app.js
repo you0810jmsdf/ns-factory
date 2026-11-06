@@ -2061,8 +2061,9 @@ function applyInfo(field) {
 function selectedLineForBar() { if (mode !== 'select' || selected.size !== 1) return null; const s = doc.shapes.find(x => selected.has(x.id) && x.type === 'line' && editable(x)); return s || null; }
 function syncLineBar() {
   const bar = $('lineBar'); if (!bar) return; const one = selectedLineForBar(), draw = mode === 'line';
-  bar.hidden = !(draw || one); $('l-lineLen').hidden = !draw; $('l-lineAng').hidden = !draw; $('l-lineSelLen').hidden = !one; $('l-lineFix').hidden = !one;
+  bar.hidden = !(draw || one); $('l-lineLen').hidden = !draw; $('l-lineAng').hidden = !draw; $('l-lineSelLen').hidden = !one; $('l-lineSelAng').hidden = !one; $('l-lineFix').hidden = !one;
   if (one && !(typeof document !== 'undefined' && document.activeElement === $('lineSelLen'))) $('lineSelLen').value = String(+distance({ x: one.x1, y: one.y1 }, { x: one.x2, y: one.y2 }).toFixed(2));
+  if (one && !(typeof document !== 'undefined' && document.activeElement === $('lineSelAng'))) { let a = Math.atan2(-(one.y2 - one.y1), one.x2 - one.x1) * 180 / Math.PI; if (a < 0) a += 360; a = +a.toFixed(2); $('lineSelAng').value = String(a >= 360 ? 0 : a); }   /* 始点から終点への向き：水平（右向き）が0・左まわり・0〜360 */
 }
 /** 選んだ直線の長さを、入れた数字にする。動かさない端（始点・終点・中心）は選べる。向きは変えない。 */
 function applyLineLength() {
@@ -2075,6 +2076,18 @@ function applyLineLength() {
   else next = { ...s, x2: r4(s.x1 + ux * len), y2: r4(s.y1 + uy * len) };
   if (!validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === s.id ? next : x) })) { $('hint').textContent = t('invalidNumber'); syncLineBar(); return; }
   transformSelectedTo(next); $('hint').textContent = t('lineLenDone', { len: +len.toFixed(2), fix: t(fix === 'end' ? 'lineFixEnd' : fix === 'center' ? 'lineFixCenter' : 'lineFixStart') }); syncLineBar();
+}
+/** 選んだ直線の角度（始点から終点への向き・水平から左まわり）を、入れた数字にする。動かさない端（始点・終点・中心）を軸に回り、長さは変わらない。 */
+function applyLineAngle() {
+  const s = selectedLineForBar(); if (!s) return; const raw = String($('lineSelAng').value ?? '').trim(), ang = Number(raw), fix = $('lineFix').value;
+  if (raw === '' || !Number.isFinite(ang)) { $('hint').textContent = t('invalidNumber'); syncLineBar(); return; }
+  const len = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (len < 1e-9) { $('hint').textContent = t('invalidNumber'); return; }
+  const rad = ang * Math.PI / 180, dx = Math.cos(rad) * len, dy = -Math.sin(rad) * len, r4 = v => +v.toFixed(4); let next;
+  if (fix === 'end') next = { ...s, x1: r4(s.x2 - dx), y1: r4(s.y2 - dy) };
+  else if (fix === 'center') { const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2; next = { ...s, x1: r4(mx - dx / 2), y1: r4(my - dy / 2), x2: r4(mx + dx / 2), y2: r4(my + dy / 2) }; }
+  else next = { ...s, x2: r4(s.x1 + dx), y2: r4(s.y1 + dy) };
+  if (!validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === s.id ? next : x) })) { $('hint').textContent = t('invalidNumber'); syncLineBar(); return; }
+  transformSelectedTo(next); $('hint').textContent = t('lineAngDone', { ang: +ang.toFixed(2), fix: t(fix === 'end' ? 'lineFixEnd' : fix === 'center' ? 'lineFixCenter' : 'lineFixStart') }); syncLineBar();
 }
 /** 選択中の 1 図形を next に置き換え、経路の穴を追従させる。 */
 /** 縫い穴の付いた線の端を動かしても、菱目が線の上に残るか：直線（2点だけの折れ線を含む）を、同じ直線の上で延ばす・縮めるだけなら true。向きを変える動かし方（菱目が線から外れる）や、直線以外は false。 */
@@ -9951,6 +9964,7 @@ document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click'
 /** 数字の欄を選んだまま、その上でマウスのホイールを回すと、ブラウザの標準動作で数字が増減する（右のカードを動かそうとして、工具の穴の高さが 0.8 → 5 になった・事業主の指摘 2026-10-18「数字が勝手に増えていく」）。
  *  数字の欄の上でホイールを回したら、欄の選択を外す：数字は変わらず、画面のスクロールはそのまま通る。 */
 document.addEventListener('wheel', blurNumberOnWheel, { passive: true, capture: true });   /* 登録は1つだけ（以前は同じ処理が2か所に重なっていた） */
+$('lineSelAng').addEventListener('change', applyLineAngle); $('lineSelAng').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyLineAngle(); } });
 $('lineSelLen').addEventListener('change', applyLineLength); $('lineSelLen').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyLineLength(); } });
 $('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
