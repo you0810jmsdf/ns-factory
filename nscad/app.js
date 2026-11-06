@@ -6558,7 +6558,7 @@ function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdL
    表示メニューの「断面の寸法」（初めからオン）がオンの間は、設計カードや手順の小窓を閉じていても、全幅・全高・厚みの寸法（foldSectionDims）を出し続ける。2つ折りでは、線や文字をクリックすると、その寸法の数字を入れる小窓（FHB）が開く。
    ①表紙の幅＝endA・②裏表紙の幅＝endB・④全高＝h（背の内側の半径が変わる）・⑤表の厚み＝to・⑥裏の厚み＝ti。画面だけ（書き出し・印刷には入らない）。 ───────── */
 const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign && doc.shapes.some(s => s.foldSec === 'fd' && visible(s));
-const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
+const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring', gap: 'gap' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
   const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
@@ -6636,7 +6636,9 @@ function endFoldHandleDrag(g) {
   if (g && !g.moved) openFoldHandleBar(g.h);   /* 動かさずに離した＝クリック：その寸法の数字を入れる小窓を開く */
 }
 /* ───────── 断面の取っ手をクリック：その寸法の数字を入れる小窓（事業主 2026-10-23「寸法指定の窓がどこにあるか見つからない」）。Enter で確定・Esc で閉じる ───────── */
-const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0], h: ['fhbH', d => { const p = foldDesignPlan(d); return p.ok ? 2 * (d.rinR + p.T) : 0; }], to: ['fhbTO', d => d.tOuter], ti: ['fhbTI', d => d.tInner] };
+/** 断面の「内張りとの隙間」の今の数字（上下の狭いほう・mm）。リフィルの束が無い・隙間が無いときは null。 */
+const sectionGapNow = d => foldSectionDims(d, { labels: {}, refill: sectionRefillPoints() })?.find(g => g.key === 'gap')?.value ?? null;
+const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0], h: ['fhbH', d => { const p = foldDesignPlan(d); return p.ok ? 2 * (d.rinR + p.T) : 0; }], gap: ['fhbGap', d => sectionGapNow(d) ?? 0], to: ['fhbTO', d => d.tOuter], ti: ['fhbTI', d => d.tInner] };
 let fhbKey = null;
 function openFoldHandleBar(h) {
   const d = doc.foldDesign, spec = FHB[h?.key]; if (!d || !spec || d.mode !== 'bifold' || !$('foldHandleBar')) return; fhbKey = h.key;
@@ -6654,6 +6656,7 @@ function applyFoldHandleBar(same = false) {
   else if (key === 'endB') foldPend = { widthB: same ? undefined : val, shiftX: sx };
   else if (key === 'rr') $('fdRR').value = String(val);
   else if (key === 'h') { const p = foldDesignPlan(d), rin = val / 2 - (p.ok ? p.T : 0); if (!(rin >= 0.1)) { $('hint').textContent = t('fhbBad'); return; } $('fdRR').value = String(+rin.toFixed(2)); }   /* ④全高：背の内側の半径で決まる（全高＝2×（半径＋厚み）） */
+  else if (key === 'gap') { const cur = sectionGapNow(d), rin = cur === null ? NaN : d.rinR + (val - cur); if (!(rin >= 0.1)) { $('hint').textContent = t('fhbBad'); return; } $('fdRR').value = String(+rin.toFixed(2)); }   /* 隙間：束の厚みは変えず、背の内側の半径を、隙間の差だけ動かす（上下の狭いほうが入れた数字になる） */
   else if (key === 'to') $('fdTO').value = String(val);
   else if (key === 'ti') $('fdTI').value = String(val);
   else if (key === 'ring') $('fdRingPos').value = String(val);
