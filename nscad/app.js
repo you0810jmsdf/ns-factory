@@ -2061,7 +2061,7 @@ function applyInfo(field) {
 function selectedLineForBar() { if (mode !== 'select' || selected.size !== 1) return null; const s = doc.shapes.find(x => selected.has(x.id) && x.type === 'line' && editable(x)); return s || null; }
 function syncLineBar() {
   const bar = $('lineBar'); if (!bar) return; const one = selectedLineForBar(), draw = mode === 'line';
-  bar.hidden = !(draw || one); $('l-lineLen').hidden = !draw; $('l-lineSelLen').hidden = !one; $('l-lineFix').hidden = !one;
+  bar.hidden = !(draw || one); $('l-lineLen').hidden = !draw; $('l-lineAng').hidden = !draw; $('l-lineSelLen').hidden = !one; $('l-lineFix').hidden = !one;
   if (one && !(typeof document !== 'undefined' && document.activeElement === $('lineSelLen'))) $('lineSelLen').value = String(+distance({ x: one.x1, y: one.y1 }, { x: one.x2, y: one.y2 }).toFixed(2));
 }
 /** 選んだ直線の長さを、入れた数字にする。動かさない端（始点・終点・中心）は選べる。向きは変えない。 */
@@ -8697,7 +8697,16 @@ function rectShape(a, b) {
 /** 直線の「長さ」欄（描くとき）：0 より大きい数なら、その長さ。それ以外は null＝マウスで自由に決める。 */
 const lineLenNow = () => { const v = Number($('lineLen')?.value); return Number.isFinite(v) && v > 0 ? v : null; };
 /** 直線の終点：長さが入っていれば、始点から p の向きへ、その長さの点（事業主 2026-11-06「直線を引くときも長さを数値指定したい」）。 */
-function lineEndFor(a, p) { const len = lineLenNow(), d = len ? distance(a, p) : 0; return len && d > 1e-9 ? { x: +(a.x + (p.x - a.x) * len / d).toFixed(4), y: +(a.y + (p.y - a.y) * len / d).toFixed(4) } : p; }
+/** 直線の「角度」欄（描くとき）：水平から左まわり（画面で反時計まわり）の度数。空・文字は null＝向きは自由。0 は水平（右向き）。 */
+const lineAngNow = () => { const raw = String($('lineAng')?.value ?? '').trim(), v = Number(raw); return raw !== '' && Number.isFinite(v) ? v : null; };
+function lineEndFor(a, p) {
+  const len = lineLenNow(), ang = lineAngNow(), r4 = v => +v.toFixed(4);
+  if (ang !== null) {   /* 向きが決まっている：長さがあればその長さ・無ければマウスをその向きの線の上へ落とした位置（向きの反対側へも） */
+    const rad = ang * Math.PI / 180, dx = Math.cos(rad), dy = -Math.sin(rad), k = len ?? ((p.x - a.x) * dx + (p.y - a.y) * dy);
+    return { x: r4(a.x + dx * k), y: r4(a.y + dy * k) };
+  }
+  const d = len ? distance(a, p) : 0; return len && d > 1e-9 ? { x: r4(a.x + (p.x - a.x) * len / d), y: r4(a.y + (p.y - a.y) * len / d) } : p;
+}
 function shapeFromDrag(a, b) {
   if (mode === 'rect') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
