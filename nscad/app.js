@@ -639,7 +639,8 @@ function stitchPointCandidates(w) {
     if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
     const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
-    for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); } /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
+    for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); }
+    for (const sh of mine) for (const mp of straightRunMidpoints(sh)) { const pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); }   /* まっすぐな辺の真ん中にも吸い付く（角丸の四角の左辺の中央など・事業主 2026-11-06） */ /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
     for (const o of others) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > STITCH_FOOT_MAX_MM + 14 / scale) continue; const pr = projectOnPath(route, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) cands.push(pr.s); } /* 近くの別の図形（外形など）の端・中心から、この経路へ垂直に降ろした点にも吸い付く（事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側の点線は中心へ吸い付かない） */
     if (!state.fresh) for (const sg of saved.segments) cands.push(sg.from, sg.to); /* 前に打った区間の始まり・終わり（つなぎ目）も吸着の点：隣のピッチの位置より、ちょうどそこをクリックしたときは、そこが優先される */
     if (!state.fresh) { const cur = doc.tools.find(x => x.id === $('stitchTool').value); for (const h of doc.holes) if (h.pathId === saved.id) { cands.push(h.s); /* 隣のピッチの位置（穴の位置 ± ピッチ）にも吸い付く：前の続きを、同じ固定幅でぴったり続けられる（事業主指摘 2026-10-17：均等化した場所だけで、隣のピッチからだとずれる） */ for (const pt of new Set([cur?.pitch, doc.tools.find(x => x.id === h.toolId)?.pitch].filter(v => Number.isFinite(v) && v > 0))) for (const q of [h.s - pt, h.s + pt]) if (q > 1e-6 && q < len - 1e-6) cands.push(q); } }
@@ -847,7 +848,26 @@ let stitchHover = null;
  *  事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側に引いた点線は、自分の端・中点・交点にしか吸い付かず、外形の中心へ吸い付かなかった。 */
 const STITCH_FOOT_MAX_MM = 12;
 /** 図形の端と中心（中点）。 */
-function stitchSpecialPoints(s) { const len = arcLength(s); return [pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2)]; }
+/** 折れ線（角丸の四角など）の「まっすぐな辺」の真ん中の点。角の丸みの点は辺に数えない：同じ向きに続く区間をひとつの辺にまとめ（角が 0.5° 以内なら同じ向き）、3mm 以上のものだけ。閉じた折れ線は、終点と始点をまたぐ辺もまとめる。
+ *  目打ちの始点・終点の吸着に使う（事業主 2026-11-06「目打ちの始点を左辺の中央からにしたいけどスナップが出てこない」：図形全体の半分の長さの点しか無く、角丸の四角の辺の中央には吸い付かなかった）。 */
+function straightRunMidpoints(s) {
+  if (s?.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 3) return [];
+  const pts = s.points, n = pts.length, segCount = s.closed ? n : n - 1, segs = [];
+  for (let i = 0; i < segCount; i++) { const p = pts[i], q = pts[(i + 1) % n], l = Math.hypot(q.x - p.x, q.y - p.y); if (l > 1e-9) segs.push({ p, q, l, ux: (q.x - p.x) / l, uy: (q.y - p.y) / l }); }
+  if (segs.length < 2) return [];
+  const same = (a, b) => a.ux * b.ux + a.uy * b.uy > Math.cos(0.5 * Math.PI / 180);
+  const runs = []; let cur = [segs[0]];
+  for (let i = 1; i < segs.length; i++) { if (same(segs[i - 1], segs[i])) cur.push(segs[i]); else { runs.push(cur); cur = [segs[i]]; } }
+  runs.push(cur);
+  if (s.closed && runs.length > 1 && same(segs[segs.length - 1], segs[0])) { runs[0] = runs.pop().concat(runs[0]); }   /* 終点と始点をまたぐ辺 */
+  const out = [];
+  for (const r of runs) {
+    const total = r.reduce((t, g) => t + g.l, 0); if (total < 3) continue;
+    let rest = total / 2; for (const g of r) { if (rest <= g.l + 1e-9) { out.push({ x: g.p.x + g.ux * rest, y: g.p.y + g.uy * rest }); break; } rest -= g.l; }
+  }
+  return out;
+}
+function stitchSpecialPoints(s) { const len = arcLength(s); return [pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2), ...straightRunMidpoints(s)]; }
 function stitchHoverAt(w) {
   const reach = 14 / scale, foot = STITCH_FOOT_MAX_MM + reach, cand = [];
   for (const s of doc.shapes) { if (!(visible(s) && editable(s) && stitchable(s)) || ['text', 'dimension', 'image'].includes(s.type)) continue; const d = distTo(s, w); if (d <= foot) cand.push({ s, d }); }
