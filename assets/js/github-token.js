@@ -11,6 +11,15 @@
  *   NSFGitHubToken.isPersisted()          … localStorage に永続保存中か
  *   NSFGitHubToken.prompt()               … 設定ダイアログを開く（Promise<boolean> 設定されたらtrue）
  *   NSFGitHubToken.onChange(cb)           … 変更通知 cb(token, persisted)
+ *   NSFGitHubToken.refresh()              … このPCの token_server（127.0.0.1:18765）から現行トークンを取り直す
+ *                                             Promise<{ok, changed}>。無いPC・スマホでは 1.5秒で諦めて {ok:false}
+ *
+ * 自動の取り直し（2026-11-06）:
+ *   PAT を再発行するたびに、ブラウザに保存された旧トークンで GitHub が 401 になり管理画面が止まっていた。
+ *   ① 保存済みトークンがあるブラウザでは、ページを開くたびに token_server の値で上書きする
+ *      （保存が無い＝一般の訪問者のブラウザからは 127.0.0.1 へ接続しない）
+ *   ② window.fetch を包み、api.github.com への自分のトークン付き呼び出しが 401/403 なら
+ *      取り直して1回だけ再送する（取り直せない・同じ値なら元の応答をそのまま返す）
  */
 (function () {
   'use strict';
@@ -152,13 +161,110 @@
     });
   }
 
+  // ── このPCの token_server（保全部\token_server.py）から取り直す ──
+  var TOKEN_SERVER_URL = 'http://127.0.0.1:18765/token';
+  var TOKEN_SERVER_TIMEOUT_MS = 1500;
+  var GITHUB_API_PREFIX = 'https://api.github.com/';
+  var nativeFetch = (typeof window.fetch === 'function') ? window.fetch.bind(window) : null;
+  var refreshPromise = null;
+
+  function timeoutSignal(ms) {
+    try { if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms); } catch (e) { /* 古いブラウザ */ }
+    try {
+      var c = new AbortController();
+      setTimeout(function () { c.abort(); }, ms);
+      return c.signal;
+    } catch (e) { return undefined; }
+  }
+
+  function refresh() {
+    if (refreshPromise) return refreshPromise;   // 同時に何度呼ばれても token_server への問い合わせは1回
+    var before = get();
+    var p;
+    if (!nativeFetch) {
+      p = Promise.resolve({ ok: false, changed: false });
+    } else {
+      try {
+        p = nativeFetch(TOKEN_SERVER_URL, { signal: timeoutSignal(TOKEN_SERVER_TIMEOUT_MS), cache: 'no-store' })
+          .then(function (res) { return res.ok ? res.text() : ''; })
+          .then(function (text) {
+            var token = (text || '').trim();
+            if (!token) return { ok: false, changed: false };
+            var changed = token !== before;
+            if (changed) set(token, true);   // admin.html の従来の自動取得と同じく「このブラウザに保存」
+            return { ok: true, changed: changed };
+          })
+          .catch(function () { return { ok: false, changed: false }; });
+      } catch (e) {
+        p = Promise.resolve({ ok: false, changed: false });
+      }
+    }
+    refreshPromise = p;
+    p.then(function () { refreshPromise = null; }, function () { refreshPromise = null; });
+    return p;
+  }
+
+  function headerGet(h, name) {
+    try {
+      if (!h) return null;
+      if (typeof Headers !== 'undefined' && h instanceof Headers) return h.get(name);
+      var lname = name.toLowerCase();
+      if (Array.isArray(h)) {
+        for (var i = 0; i < h.length; i++) if (String(h[i][0]).toLowerCase() === lname) return h[i][1];
+        return null;
+      }
+      var keys = Object.keys(h);
+      for (var j = 0; j < keys.length; j++) if (keys[j].toLowerCase() === lname) return h[keys[j]];
+    } catch (e) { /* 想定外の形はそのまま */ }
+    return null;
+  }
+
+  function headerSet(h, name, value) {
+    var lname = name.toLowerCase();
+    if (typeof Headers !== 'undefined' && h instanceof Headers) {
+      var copy = new Headers(h);
+      copy.set(name, value);
+      return copy;
+    }
+    if (Array.isArray(h)) {
+      return h.map(function (pair) { return String(pair[0]).toLowerCase() === lname ? [pair[0], value] : pair; });
+    }
+    var out = {};
+    Object.keys(h).forEach(function (k) { out[k] = (k.toLowerCase() === lname) ? value : h[k]; });
+    return out;
+  }
+
+  // api.github.com への「自分のトークン付き」呼び出しだけを対象に、401/403 なら取り直して1回だけ再送する
+  function wrappedFetch(input, init) {
+    var url = (typeof input === 'string') ? input : ((input && input.url) || String(input || ''));
+    if (url.indexOf(GITHUB_API_PREFIX) !== 0 || !init || !init.headers) return nativeFetch(input, init);
+    var current = get();
+    var auth = headerGet(init.headers, 'Authorization');
+    if (!current || !auth || String(auth).indexOf(current) === -1) return nativeFetch(input, init);
+    if (init.body != null && typeof init.body !== 'string') return nativeFetch(input, init);   // 再送できない本文（ストリーム等）
+    return nativeFetch(input, init).then(function (res) {
+      if (res.status !== 401 && res.status !== 403) return res;
+      return refresh().then(function (r) {
+        var fresh = get();
+        if (!r.ok || !fresh || fresh === current) return res;   // 取り直せない・同じ値 → 元の応答（従来どおりの案内へ）
+        var retryInit = Object.assign({}, init, { headers: headerSet(init.headers, 'Authorization', String(auth).replace(current, fresh)) });
+        return nativeFetch(input, retryInit);
+      });
+    });
+  }
+  if (nativeFetch) window.fetch = wrappedFetch;
+
   window.NSFGitHubToken = {
     get: get,
     set: set,
     isPersisted: isPersisted,
     prompt: prompt,
     onChange: onChange,
+    refresh: refresh,
     SESSION_KEY: SESSION_KEY,
     LOCAL_KEY: LOCAL_KEY
   };
+
+  // 保存済みトークンがあるブラウザ（＝管理者の端末）だけ、開くたびに token_server の値で上書きする
+  if (get()) refresh();
 })();
