@@ -2909,8 +2909,23 @@ function matRingSortKey(row) {
   ];
 }
 
-function matRenderSelects() {
+// 商品の「サイズ」から、リングの手帳規格（CSVの planner_type）を決める。対応がなければ ''（並べ替えなし）。
+function matRingPlannerForSize(sizeVal) {
+  const v = String(sizeVal || '');
+  if (v.indexOf('Micro5') !== -1) return 'Micro5';
+  if (v.indexOf('Mini6') !== -1 || v.indexOf('M6') !== -1) return 'Mini6';
+  if (v.indexOf('バイブル') !== -1 || v.indexOf('Bible') !== -1) return 'Bible';
+  if (v.indexOf('A6') !== -1) return 'A6';
+  if (v.indexOf('A5') !== -1) return 'A5';
+  return '';
+}
+
+// リング欄だけを描き直す（サイズを選び直したときにも呼ぶ。選択中のリングは維持する）。
+// 選んだ手帳規格のグループを先頭に出す（2026-11-06：規格が多くA6のゴールドが約65番目に埋もれていたため）。
+function matRenderRing() {
   const ringSel = document.getElementById('matRing');
+  const prevKey = ringSel.value;
+  const want = matRingPlannerForSize(typeof val === 'function' ? val('f_size') : '');
   const sorted = matData.ring.slice().sort((a, b) => {
     const ka = matRingSortKey(a), kb = matRingSortKey(b);
     for (let i = 0; i < ka.length; i++) { if (ka[i] !== kb[i]) return ka[i] - kb[i]; }
@@ -2924,8 +2939,9 @@ function matRenderSelects() {
       .filter(Boolean).join(' ') + '（残' + (raw === '' ? '—' : raw) + note + '）';
     return '<option value="' + matRingKey(r).replace(/"/g, '&quot;') + '">' + label + '</option>';
   };
-  const inStock = sorted.filter(r => matRingStockNum(r) > 0);
-  const noStock = sorted.filter(r => matRingStockNum(r) <= 0);
+  const first = (r) => (want && String(r.planner_type || '') === want) ? 0 : 1;
+  const inStock = sorted.filter(r => matRingStockNum(r) > 0).sort((a, b) => first(a) - first(b));
+  const noStock = sorted.filter(r => matRingStockNum(r) <= 0).sort((a, b) => first(a) - first(b));
   let html = '<option value="">（引当しない）</option>';
   const groups = [];
   inStock.forEach(r => {
@@ -2934,14 +2950,20 @@ function matRenderSelects() {
     if (!g) { g = { key: key, items: [] }; groups.push(g); }
     g.items.push(r);
   });
+  groups.sort((a, b) => (a.key === want ? 0 : 1) - (b.key === want ? 0 : 1));
   groups.forEach(g => {
-    html += '<optgroup label="' + g.key + '">' + g.items.map(ringOption).join('') + '</optgroup>';
+    html += '<optgroup label="' + g.key + (g.key === want ? '（選んだ規格）' : '') + '">' + g.items.map(ringOption).join('') + '</optgroup>';
   });
   if (noStock.length) {
     html += '<optgroup label="― 在庫なし（' + noStock.length + '件）―">'
       + noStock.map(ringOption).join('') + '</optgroup>';
   }
   ringSel.innerHTML = html;
+  if (prevKey && Array.prototype.some.call(ringSel.options, o => o.value === prevKey)) ringSel.value = prevKey;
+}
+
+function matRenderSelects() {
+  matRenderRing();
   const thSel = document.getElementById('matThread');
   thSel.innerHTML = '<option value="">（引当しない）</option>' + matData.thread
     .filter(t => String(t.available).toUpperCase() === 'TRUE')
@@ -3036,6 +3058,7 @@ function matUsageForSize(sizeVal) {
 
 function matApplySizeDefault() {
   if (!matLoaded) return;
+  matRenderRing();
   const pct = matUsageForSize(val('f_size'));
   document.querySelectorAll('#matLeatherRows .mat-pct').forEach(inp => {
     if (!inp.dataset.userEdited) inp.value = pct;
