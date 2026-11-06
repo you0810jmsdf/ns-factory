@@ -16,6 +16,22 @@ export function parseLcc(input) {
   if (!d || typeof d !== 'object' || !Array.isArray(d.shapes) || d.meta?.file_type !== 'LeathercraftCAD') return null;
   return d;
 }
+/** .lcc の円弧 1 個の「どこからどこへ・どちら回りか」を求める（N's CAD の角度＝Y 下向き・時計回り正）。
+ *  .lcc の sta／swa は、時計回りで保存されたもの（全体の約 87%）と、反対回りで保存されたもの（約 10%・同じ 180°・90° でも向きが逆）が混ざっていて、角度の値だけでは向きが決まらない
+ *  （事業主 2026-11-07「lcc を読み込んだら角Rが反転して崩れる」。反転フラグ iv／ih も 0 のまま）。確かなのは、始点 sp・終点 ep と、輪郭の点列 path。
+ *  始点・終点が円周上にあれば、その 2 点で円弧を決める：どちら回りかは path の中間の点（無ければ sweep の長さが近い方）で選ぶ。円周上になければ null（角度の値で読む）。 */
+export function lccArcSpan(s, ct, w, sp, ep) {
+  const onCircle = p => Math.abs(Math.hypot(p.x - ct.x, p.y - ct.y) - w) <= Math.max(0.05, w * 0.05);   /* 実ファイルに、始点が円周から 3% ほどずれた弧がある（半径 3 に対し 3.08） */
+  if (!Array.isArray(s.sp) || !Array.isArray(s.ep) || !(w > 0) || !onCircle(sp) || !onCircle(ep)) return null;
+  const ang = p => Math.atan2(p.y - ct.y, p.x - ct.x) * 180 / Math.PI;
+  const a0 = ang(sp), a1 = ang(ep), swCW = normDeg(a1 - a0);
+  if (Math.hypot(sp.x - ep.x, sp.y - ep.y) < 1e-6) return null;   /* 始点＝終点（全円）は、角度の値で読む */
+  const pts = [...String(s.path || '').matchAll(/[ML]\s*(-?[\d.]+(?:e[-+]?\d+)?)\s*,\s*(-?[\d.]+(?:e[-+]?\d+)?)/gi)].map(m => ({ x: Number(m[1]), y: Number(m[2]) })).filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+  let cw;
+  if (pts.length >= 3 && onCircle(pts[pts.length >> 1])) cw = normDeg(ang(pts[pts.length >> 1]) - a0) < swCW;   /* 中間の点が、始点から時計回りで終点より手前にあれば、時計回りの弧 */
+  else { const want = Math.abs(num(s.swa)); cw = Math.abs(swCW - want) <= Math.abs((360 - swCW) - want); }
+  return cw ? { startDeg: normDeg(a0), sweep: swCW } : { startDeg: normDeg(a1), sweep: normDeg(a0 - a1) };
+}
 /** 1 図形を N's CAD 図形の配列へ（穴は除く）。ellipse 弧や未知型は path（SVG d）を平坦化して受ける。 */
 export function lccShapeToShapes(s) {
   const t = s.type, w = num(s.w), h = num(s.h), sp = pt(s.sp), ep = pt(s.ep), ct = pt(s.ct);
@@ -23,7 +39,8 @@ export function lccShapeToShapes(s) {
   if (t === 'LINE') return [{ type: 'line', x1: sp.x, y1: sp.y, x2: ep.x, y2: ep.y }];
   if (t === 'BEZIER') { const c1 = pt(s.bz1), c2 = pt(s.bz2); return [{ type: 'bezier', x1: sp.x, y1: sp.y, c1x: c1.x, c1y: c1.y, c2x: c2.x, c2y: c2.y, x2: ep.x, y2: ep.y }]; }
   if (t === 'ARC') {
-    const sta = num(s.sta), swa = num(s.swa);
+    const sta = num(s.sta), swa = num(s.swa), span = w > 0 && Math.abs(w - h) < 1e-6 ? lccArcSpan(s, ct, w, sp, ep) : null;
+    if (span) return [{ type: 'arc', cx: ct.x, cy: ct.y, r: w, startDeg: span.startDeg, endDeg: span.startDeg + span.sweep }];   /* 始点・終点から決めた向き（角度の値は、向きが混在していて当てにならない） */
     if (w > 0 && Math.abs(w - h) < 1e-6 && Math.abs(swa) > 1e-9) { const start = swa >= 0 ? sta : sta + swa; return [{ type: 'arc', cx: ct.x, cy: ct.y, r: w, startDeg: normDeg(start), endDeg: normDeg(start) + Math.min(360, Math.abs(swa)) }]; }
     return viaPath();
   }
