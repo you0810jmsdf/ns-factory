@@ -6355,14 +6355,15 @@ function projectFoldDesign(withStitch) {
     }
     const gap = refillGaps(d, p, h);   /* リフィルと本体の差：点線の枠（開いた状態の位置）・上下と左右の寸法・畳んだ状態の数字（平面図の下の文字） */
     if (gap) {
-      const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, seg = (a, b, c, e) => add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e }), dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
+      const y0 = fy + gap.vert, y1 = y0 + gap.Hr, gx0 = fx + gap.open.x0, gx1 = fx + gap.open.x1, dim = (a, b, c, e) => add({ type: 'dimension', layer: guide, x1: a, y1: b, x2: c, y2: e, offset: 0, fresh: true });
       if (gap.item) {   /* リフィルの部品（部品ライブラリのもの）を、そのまま置く：穴の列（E）をリング軸に合わせ、向きが逆なら左右反転。層はガイド・色は青（切り抜きではない参考） */
         const payload = instantiateItem(gap.item, gap.R == null ? {} : { R: gap.R }, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
         const parts = ensureLayer(doc, 'parts'), refillIds = placed.map(sh => add({ ...sh, layer: parts, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, parts);   /* リフィルは「部品」の層（事業主 2026-11-05「シミュレーションで作ったリフィルは部品レイヤーとして管理」：レイヤーの目で隠せる） */   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
-        const frameIds = [seg(gx0, y0, gx1, y0), seg(gx1, y0, gx1, y1), seg(gx1, y1, gx0, y1), seg(gx0, y1, gx0, y0)];
-        for (const hy of gap.holeYs) frameIds.push(add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' }));
-        if ($('flowRefillPaper')?.checked) addRefillPaperFill(frameIds, guide);   /* 部品が無い規格（クラウゼ A6 内径20mm など）でも、枠と穴の〇から白い紙を塗る（事業主 2026-11-06「リフィルに色がつかない」：チェックを入れても塗られなかった） */
+        const parts = ensureLayer(doc, 'parts'), edge = (a, b, c, e) => add({ type: 'line', layer: parts, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e });   /* 部品の無い規格のリフィル（枠と穴の〇）も、「部品」の層に入れる：表示メニューで「部品」を切ると隠れる（事業主 2026-11-06「リフィルは部品として扱うのでは・非表示にしても出てくる」：ガイドの層にあった） */
+        const frameIds = [edge(gx0, y0, gx1, y0), edge(gx1, y0, gx1, y1), edge(gx1, y1, gx0, y1), edge(gx0, y1, gx0, y0)];
+        for (const hy of gap.holeYs) frameIds.push(add({ type: 'circle', layer: parts, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' }));
+        if ($('flowRefillPaper')?.checked) addRefillPaperFill(frameIds, parts);   /* 部品が無い規格（クラウゼ A6 内径20mm など）でも、枠と穴の〇から白い紙を塗る（事業主 2026-11-06「リフィルに色がつかない」：チェックを入れても塗られなかった） */
       }
       try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
