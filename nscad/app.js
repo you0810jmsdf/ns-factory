@@ -850,7 +850,7 @@ const STITCH_FOOT_MAX_MM = 12;
 /** 図形の端と中心（中点）。 */
 /** 折れ線（角丸の四角など）の「まっすぐな辺」の真ん中の点。角の丸みの点は辺に数えない：同じ向きに続く区間をひとつの辺にまとめ（角が 0.5° 以内なら同じ向き）、3mm 以上のものだけ。閉じた折れ線は、終点と始点をまたぐ辺もまとめる。
  *  目打ちの始点・終点の吸着に使う（事業主 2026-11-06「目打ちの始点を左辺の中央からにしたいけどスナップが出てこない」：図形全体の半分の長さの点しか無く、角丸の四角の辺の中央には吸い付かなかった）。 */
-function straightRunMidpoints(s) {
+function polylineStraightRuns(s) {
   if (s?.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 3) return [];
   const pts = s.points, n = pts.length, segCount = s.closed ? n : n - 1, segs = [];
   for (let i = 0; i < segCount; i++) { const p = pts[i], q = pts[(i + 1) % n], l = Math.hypot(q.x - p.x, q.y - p.y); if (l > 1e-9) segs.push({ p, q, l, ux: (q.x - p.x) / l, uy: (q.y - p.y) / l }); }
@@ -860,13 +860,9 @@ function straightRunMidpoints(s) {
   for (let i = 1; i < segs.length; i++) { if (same(segs[i - 1], segs[i])) cur.push(segs[i]); else { runs.push(cur); cur = [segs[i]]; } }
   runs.push(cur);
   if (s.closed && runs.length > 1 && same(segs[segs.length - 1], segs[0])) { runs[0] = runs.pop().concat(runs[0]); }   /* 終点と始点をまたぐ辺 */
-  const out = [];
-  for (const r of runs) {
-    const total = r.reduce((t, g) => t + g.l, 0); if (total < 3) continue;
-    let rest = total / 2; for (const g of r) { if (rest <= g.l + 1e-9) { out.push({ x: g.p.x + g.ux * rest, y: g.p.y + g.uy * rest }); break; } rest -= g.l; }
-  }
-  return out;
+  return runs.map(r => ({ x1: r[0].p.x, y1: r[0].p.y, x2: r[r.length - 1].q.x, y2: r[r.length - 1].q.y, len: r.reduce((t, g) => t + g.l, 0) }));
 }
+function straightRunMidpoints(s) { return polylineStraightRuns(s).filter(r => r.len >= 3).map(r => ({ x: (r.x1 + r.x2) / 2, y: (r.y1 + r.y2) / 2 })); }
 function stitchSpecialPoints(s) { const len = arcLength(s); return [pointAtLength(s, 0), pointAtLength(s, len), pointAtLength(s, len / 2), ...straightRunMidpoints(s)]; }
 function stitchHoverAt(w) {
   const reach = 14 / scale, foot = STITCH_FOOT_MAX_MM + reach, cand = [];
@@ -1063,6 +1059,8 @@ function divideSegmentAt(s, p) {
     const pts = s.points, m = pts.length, cnt = s.closed ? m : m - 1; let best = null;
     for (let i = 0; i < cnt; i++) { const e = { type: 'line', x1: pts[i].x, y1: pts[i].y, x2: pts[(i + 1) % m].x, y2: pts[(i + 1) % m].y }; const d = distTo(e, p); if (!best || d < best.d) best = { d, e }; }
     if (!best) return false; seg = best.e;
+    const run = polylineStraightRuns(s).map(e => ({ type: 'line', x1: e.x1, y1: e.y1, x2: e.x2, y2: e.y2 })).filter(e => distTo(e, best.e.x1 === undefined ? p : { x: (best.e.x1 + best.e.x2) / 2, y: (best.e.y1 + best.e.y2) / 2 }) < 1e-3).sort((u, v) => arcLength(v) - arcLength(u))[0];
+    if (run) seg = run;   /* まっすぐ続く複数の点（角丸の四角の左辺など）は、ひとつの辺として等分する：辺の真ん中が、左辺の中央になる（事業主 2026-11-06「分割線の始点がスナップに吸着しない」） */
   }
   const L = arcLength(seg); if (!(L > 1e-6)) return false;
   const n = divisionCount(), user = divisionNumber('divLen'), mark = divisionNumber('divMark'), norm = a => ((a % 360) + 360) % 360;
