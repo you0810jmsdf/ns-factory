@@ -6527,7 +6527,7 @@ function drawFdItems(items, { color = '#f0b429', lineW = 2.2, font = 22, keepIn 
       const ang = Math.atan2(it.b.y - it.a.y, it.b.x - it.a.x); if (it.arrows !== 'none') head(it.b.x, it.b.y, ang); if (it.arrows === 'both') head(it.a.x, it.a.y, ang + Math.PI);
     } else if (it.type === 'dot') { ctx.beginPath(); ctx.arc(it.x, it.y, 3.5 * k, 0, Math.PI * 2); ctx.fill(); }
     else {
-      ctx.font = `700 ${font * k}px sans-serif`; ctx.textAlign = it.align || 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 4 * k; ctx.strokeStyle = '#000'; let tx = it.x, ty = it.y;
+      ctx.font = `${font * k}px sans-serif`; ctx.textAlign = it.align || 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3 * k; ctx.strokeStyle = '#000'; let tx = it.x, ty = it.y;
       if (keepIn) ({ tx, ty } = fdKeepIn(it, ctx.measureText?.(it.text)?.width ?? 0, font));
       ctx.strokeText(it.text, tx, ty); ctx.fillStyle = gold; ctx.fillText(it.text, tx, ty); ctx.strokeStyle = gold;
     }
@@ -6554,7 +6554,7 @@ const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = 
 const sectionRefillPoints = () => doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills' && s.points && visible(s))?.points ?? null;   /* 断面のリフィルの束の外形（内張りとの隙間の寸法に使う） */
 const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? []) : [];
 /** 断面図の寸法の文字の大きさ（画面 px）：ふつうの寸法と同じ決め方（2.5mm、縮小しても 12px）。事業主 2026-11-05「断面図のみやけに寸法線がでかい（数字）」：前は常に 15px だった */
-const fdFontPx = () => Math.max(2.5 * scale, 12);
+const fdFontPx = () => Math.max(2.5 * scale, 8);   /* 縮小時の下限 8px・太字なし（事業主 2026-11-06「断面図の文字がまだでかい」：下限12px の太字だった） */
 function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdLinesInView(list.flatMap(g => g.items)); for (const g of list) drawFdItems(g.items, { color: TEXT_COLOR_DEFAULT, lineW: 1.6, font: fdFontPx(), keepIn }); }   /* 寄せるのは、断面の寸法の線がどれか1本でも画面にあるときだけ */   /* 色は、ほかの寸法・文字と同じ標準の色（事業主 2026-11-05「断面図の文字が青で統一感がまるでない」） */
 /* ───────── 断面の寸法を、いつも画面に出す＋寸法をクリックして数字を入れる（事業主 2026-10-25「断面図の寸法を入力したい」「見てもサイズがわからない」・案C）：
    表示メニューの「断面の寸法」（初めからオン）がオンの間は、設計カードや手順の小窓を閉じていても、全幅・全高・厚みの寸法（foldSectionDims）を出し続ける。2つ折りでは、線や文字をクリックすると、その寸法の数字を入れる小窓（FHB）が開く。
@@ -6564,7 +6564,7 @@ const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring', gap
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
   const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
-  const measure = text => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
+  const measure = text => { ctx.save(); ctx.font = `${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
   const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, fdFontPx(), pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
   for (const g of groups) {
