@@ -6147,6 +6147,8 @@ function foldRingShapes(path, T, origin, ring) {
   else for (const t of rf.holeT) { const a = P(t, -1), b = P(t, 1); shapes.push({ type: 'line', role: 'refill-hole', lineStyle: 'dashed', x1: a.x, y1: a.y, x2: b.x, y2: b.y }); }
   return { shapes, s, rOut, clamped, ...(clamped ? { pos: s - arcMid } : {}) };   /* clamped＝端から飛び出さないよう位置をとどめた（そのときの pos は、とどめたあとの値） */
 }
+/** 断面のリフィルの束の色：白だと、白っぽい線（リングの輪・束の輪郭）が見えなくなるので、線が読める青みの紙色にする（平面図は穴の線が青なので白のまま）。 */
+const SECTION_REFILL_COLOR = '#9DB4CC';
 function foldIsBifold() { return $('fdMode')?.value === 'bifold'; }
 /** 断面の背（折り目）の向き：設計カードの欄と、折りの小窓の欄を同じにして、選んだ向きをブラウザに覚える（次の断面もその向きで作る）。 */
 function setFoldSide(v, save = true) { const side = v === 'left' ? 'left' : 'right'; if ($('fdSide')) $('fdSide').value = side; if ($('flowSide')) $('flowSide').value = side; if (save) { try { localStorage.setItem('leather-cad.foldSide', side); } catch { /* 保存できなくても続ける */ } } }
@@ -6182,7 +6184,8 @@ function makeFoldDesign(live = false) {
     const flip = shapes => { const v = flipOn ? flipSectionV(shapes, origin.y - p.rc[0]) : shapes; return sideLeft ? flipSectionH(v, origin.x + flipDx) : v; };   /* 実際に机に置いた向きにするため、断面全体を上下反転（事業主指示 2026-10-15・切り替えできる）。右の丸折りの中心の高さを軸にするので、範囲は変わらない。左右は変わらない */
     for (const sh of flip(foldSectionShapes(path, p.T, origin, FOLD_SEC_PLIES, p.T / 2 - p.tI))) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', groupId: gid, foldSec: 'fd' });   /* 貼り合わせ線は、裏の革の厚みぶん内側の面から（表裏の厚みが違うと中心ではない） */
     for (const sh of flip(vals.mode === 'bifold' ? [] : [{ type: 'line', x1: axisX, y1: origin.y + p.T / 2 + 2, x2: axisX, y2: origin.y - (2 * p.rc[0] + p.T / 2 + 2), lineStyle: 'dashed', color: 'blue', role: 'axis' }])) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', foldSec: 'fd' });   /* ボタン線 */
-    if (ring) for (const sh of flip(ring.shapes)) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', groupId: gid, foldSec: 'fd' });
+    const paperOn = $('flowRefillPaper')?.checked === true;   /* 断面のリフィルの束も、平面図と同じ「リフィルを白く塗る」で白い紙にする（事業主 2026-11-06「リフィルに色がつかない・どっちも」） */
+    if (ring) for (const sh of flip([...ring.shapes.filter(x => x.role === 'refills'), ...ring.shapes.filter(x => x.role !== 'refills')])) doc.shapes.push({ ...sh, id: idFor(sh, 'section'), layer: 'section', groupId: gid, foldSec: 'fd', ...(paperOn && sh.role === 'refills' && sh.type === 'polyline' ? { leather: SECTION_REFILL_COLOR } : {}) });
     doc.foldDesign = { ...vals, flats: p.flats, bends: p.bends, origin, flipV: flipOn, ...(sideLeft ? { flipH: true, flipDx } : {}), ...(shiftX ? { shiftX } : {}), ...(moveOff ? { moveOff } : {}), ...(prevD?.flatOff ? { flatOff: prevD.flatOff } : {}), ...(prevStitch ? { stitch: prevStitch } : {}), ...(ring ? { ring: { specId: ring.spec.id, ringD: ring.ringD, pos: ring.pos, stackT: ring.stackT, s: ring.s, dir: ring.dir, h: ring.parts.ringH, rOut: ring.rOut } } : {}) };
   }, live);
   const f2 = v => v.toFixed(2); if (ring?.clamped) $('fdRingPos').value = String(+ring.pos.toFixed(2));   /* 端から飛び出すところへは置かない：欄も、とどめた値に */
@@ -6356,8 +6359,9 @@ function projectFoldDesign(withStitch) {
         const payload = instantiateItem(gap.item, gap.R == null ? {} : { R: gap.R }, { x: fx + gap.axis + gap.holeT - gap.E, y: y0 }), placed = gap.dir > 0 ? payload.shapes : flipSectionH(payload.shapes, fx + gap.axis);
         const parts = ensureLayer(doc, 'parts'), refillIds = placed.map(sh => add({ ...sh, layer: parts, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, parts);   /* リフィルは「部品」の層（事業主 2026-11-05「シミュレーションで作ったリフィルは部品レイヤーとして管理」：レイヤーの目で隠せる） */   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
-        seg(gx0, y0, gx1, y0); seg(gx1, y0, gx1, y1); seg(gx1, y1, gx0, y1); seg(gx0, y1, gx0, y0);
-        for (const hy of gap.holeYs) add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' });
+        const frameIds = [seg(gx0, y0, gx1, y0), seg(gx1, y0, gx1, y1), seg(gx1, y1, gx0, y1), seg(gx0, y1, gx0, y0)];
+        for (const hy of gap.holeYs) frameIds.push(add({ type: 'circle', layer: guide, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' }));
+        if ($('flowRefillPaper')?.checked) addRefillPaperFill(frameIds, guide);   /* 部品が無い規格（クラウゼ A6 内径20mm など）でも、枠と穴の〇から白い紙を塗る（事業主 2026-11-06「リフィルに色がつかない」：チェックを入れても塗られなかった） */
       }
       try {   /* リングバインダ金具の平面図（台座・リング・開閉部品）：台座の長さを縦に、リング軸 s の上に置く。取付穴の〇は上で切り抜きの穴として描いてあるので、ここでは描かない（事業主 2026-10-24「平面図にリングバインダ金具とリフィルも配置してください」） */
         const hwLayer = (() => { if (!doc.layers.some(l => l.id === 'hardware')) doc.layers.push({ id: 'hardware', name: 'hardware', visible: true, locked: false }); return 'hardware'; })(), rivs = gap.spec.rivets || [], isRivet = c => rivs.some(rv => Math.abs(c.cx - rv.xMm) < 1e-6 && Math.abs(c.cy - rv.yMm) < 1e-6);
@@ -6544,8 +6548,9 @@ function drawFoldHandles() {
   ctx.restore();
 }
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
-const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
-const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels() }) ?? []) : [];
+const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing'), gap: t('fdSecGap') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
+const sectionRefillPoints = () => doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills' && s.points && visible(s))?.points ?? null;   /* 断面のリフィルの束の外形（内張りとの隙間の寸法に使う） */
+const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? []) : [];
 /** 断面図の寸法の文字の大きさ（画面 px）：ふつうの寸法と同じ決め方（2.5mm、縮小しても 12px）。事業主 2026-11-05「断面図のみやけに寸法線がでかい（数字）」：前は常に 15px だった */
 const fdFontPx = () => Math.max(2.5 * scale, 12);
 function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdLinesInView(list.flatMap(g => g.items)); for (const g of list) drawFdItems(g.items, { color: TEXT_COLOR_DEFAULT, lineW: 1.6, font: fdFontPx(), keepIn }); }   /* 寄せるのは、断面の寸法の線がどれか1本でも画面にあるときだけ */   /* 色は、ほかの寸法・文字と同じ標準の色（事業主 2026-11-05「断面図の文字が青で統一感がまるでない」） */
@@ -6556,7 +6561,7 @@ const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign &&
 const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
 function foldDimTargets() {
   const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
-  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
+  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
   const measure = text => { ctx.save(); ctx.font = `700 ${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
   const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, fdFontPx(), pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });

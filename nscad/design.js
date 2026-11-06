@@ -969,17 +969,31 @@ export function foldDimensions(d, key, { refill = null } = {}) {
   }
   return items;
 }
+/** 2つ折りの断面で、内張り（裏の革）の内側の面からリフィルの束の面までの隙間（縦）を、上側・下側の2本の寸法線にして返す。
+ *  refill＝断面のリフィルの束の外形（図面の座標の点列）。束の左右の真ん中の位置で、外形と縦の線の交わる高さを測る。束が無い・縦向き・隙間が 0 以下のときは出さない。
+ *  内側の面の高さは、背の内側の半径 rinR から決まる（外の面 -T/2 と 2rc+T/2 から厚み T だけ内側）。返り値は foldSectionDims のグループの配列（key:'gap'）。 */
+function bifoldRefillGapItems(d, p, refill, n, label, px) {
+  if (!Array.isArray(refill) || refill.length < 3 || d.ring?.dir === 'v') return [];
+  const pt = bifoldPoint(d, p), a = pt(0, p.T / 2), b = pt(0, 2 * p.rc[0] - p.T / 2), yLo = Math.min(a.y, b.y), yHi = Math.max(a.y, b.y);   /* 内張りの内側の面の高さ（図面の y・小さいほうが画面の上） */
+  const xs = refill.map(q => q.x), x = (Math.min(...xs) + Math.max(...xs)) / 2, hits = [];
+  for (let i = 0; i < refill.length; i++) { const q = refill[i], r = refill[(i + 1) % refill.length]; if ((q.x - x) * (r.x - x) <= 0 && q.x !== r.x) hits.push(q.y + (r.y - q.y) * (x - q.x) / (r.x - q.x)); }
+  if (hits.length < 2) return [];
+  const top = Math.min(...hits), bot = Math.max(...hits), out = [], one = (y0, y1) => { const g = Math.abs(y1 - y0); if (!(g > 1e-6)) return; out.push({ type: 'line', a: { x, y: y0 }, b: { x, y: y1 }, arrows: 'both', dash: false }, { type: 'text', x: x + 5 * px, y: (y0 + y1) / 2, text: `${label} ${n(g)} mm`, align: 'left' }); };
+  if (top > yLo) one(yLo, top); if (bot < yHi) one(bot, yHi);
+  return out.length ? [{ key: 'gap', value: n(Math.min(top - yLo, yHi - bot)), items: out }] : [];
+}
 /** 断面を直すときに常に見せる寸法（事業主指示 2026-10-20「断面の修正をする際に全体寸法、革の厚みがわかるとよい。動かすと寸法も追従させる」・画面だけの表示）。
  *  全幅（③と同じ線）・全高（大きい方の折りの外径）・厚み（表＋裏）を、数字（mm・小数2桁まで）つきの寸法線で返す。数字は d（doc.foldDesign）から毎回計算するので、設計が変われば追従する。
  *  opts：labels＝{ w, h, t, to, ti }（文字・省略時は空）、px＝画面の1ピクセルが図面の何mmか（既定1・文字のずらしに使う）。
  *  返り値 [{ key:'w'|'h'|'t', value（mm）, items }]。items は foldDimensions と同じ形で、type:'text' には align（'left'｜'right'）が付くことがある。計画が成り立たない・origin が無いとき null。 */
-export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
+export function foldSectionDims(d, { labels = {}, px = 1, refill = null } = {}) {
   if (!d || !d.origin) return null; const p = foldDesignPlan(d); if (!p.ok) return null;
   if (d.mode === 'bifold') {
     const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', H = 2 * (d.rinR + p.T), pt = bifoldPoint(d, p), x = -26 * px;   /* ④全高の線は、①表紙の端の取っ手（半径10px）と寸法の当たり（7px）が重ならない距離（事業主決定 2026-11-04） */
     const line = (a, b, arrows = 'none') => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash: false });
     const wBItems = [{ key: 'wB', value: n(p.widthB), items: bifoldDimensions(d, p, 'wB', '').map(it => it.type === 'text' ? { ...it, text: `${nm('wb')} ${n(p.widthB)} mm` } : it) }];   /* ②は表紙と同じ幅でも出す（数字を入れる入口が消えないように・事業主 2026-11-04「裏表紙の数値をいれたら寸法線が消えた」）   /* 裏表紙が表紙と違う長さのときだけ、もう1本 */
     const swap = list => d.flipH ? list.map(g => ({ ...g, items: g.items.map(it => it.align ? { ...it, align: it.align === 'left' ? 'right' : 'left' } : it) })) : list;   /* 左右反転すると、文字を置く側も入れ替わる（外側へのばす） */
+    const gapItems = bifoldRefillGapItems(d, p, refill, n, nm('gap'), px);   /* 内張り（裏の革）の内側の面とリフィルの束の隙間（事業主 2026-11-06「内張りとリフィルとの隙間間隔を寸法として表示したい」） */
     return swap([
       { key: 'w', value: n(d.width), items: bifoldDimensions(d, p, 'w', '').map(it => it.type === 'text' ? { ...it, text: `${nm('w')} ${n(d.width)} mm` } : it) },
       ...wBItems,
@@ -988,6 +1002,7 @@ export function foldSectionDims(d, { labels = {}, px = 1 } = {}) {
       { key: 'rr', value: n(d.rinR), items: bifoldDimensions(d, p, 'rr', '').map(it => it.type === 'text' ? { ...it, text: `${nm('rr')} ${n(d.rinR)} mm`, align: 'left' } : it) },
       ...(d.ring ? [{ key: 'ring', value: n(d.ring.pos ?? 0), items: bifoldDimensions(d, p, 'ring', '').map(it => it.type === 'text' ? { ...it, ...pt(pointOnFoldPath(foldSectionPath(p), d.ring.s ?? p.flats[0] + p.bends[0] / 2).u, -p.T / 2 - 16 - 14 * px), text: `${nm('ring')} ${n(d.ring.pos ?? 0)} mm` } : it) }] : []),   /* リングの文字は、断面の外（リングの真上・①全幅の文字の段よりさらに画面で14px外）に置く：リングの絵・厚みの文字・①の文字と重ならないように（事業主 2026-11-04「文字が重なる」） */
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(p.flats[0] + (d.rinR + p.T) / 2, 2 * p.rc[0] + p.T / 2 + 16 + 16 * px), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm` }) },   /* 厚みの文字は断面の下・背の下の空いた所（中央そろえ）。背の脇だと、画面の端で押し戻されてリングの絵に重なった（事業主決定 2026-11-04）。②裏表紙の幅の文字（2r＋T/2＋16）と同じ高さから画面で16px下の段（mm だけだと拡大率で段が重なる）：画面の左端で両方が押し戻されると同じ段で重なり、⑤表を押しても②の小窓が開いた（事業主 2026-11-05「裏表とも同じ数字しか入れられない」） */
+      ...gapItems,
     ]);
   }
   const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
