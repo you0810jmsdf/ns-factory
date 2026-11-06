@@ -1965,7 +1965,7 @@ function runHoleShapeApply() {
   const onlyDiamond = $('holeShapeOnlyDiamond').checked, onlyRound = $('holeShapeOnlyRound').checked; if (!onlyDiamond && !onlyRound) { $('hint').textContent = t('holeShapeNoKind'); return; }
   applyHoleShape({ shape, w, h, d, onlyDiamond, onlyRound }); refreshHoleShapeCard(true);
 }
-function refreshInfo() { try { refreshInfoCore(); } finally { syncPropPanel(); } }   /* 右列のカードを直したあと、左の3つの欄へ写す */
+function refreshInfo() { try { refreshInfoCore(); } finally { syncPropPanel(); syncLineBar(); } }   /* 右列のカードを直したあと、左の3つの欄へ写す */
 function refreshInfoCore() {
   const s = infoShape(), many = s ? [] : infoShapes(); infoBusy = true; propMixed.color = propMixed.lineStyle = propMixed.layer = false;
   const hs = !s && !many.length ? doc.holes.filter(h => selected.has(h.id)) : [], dl = s ? diamondLoopSizes([s]) : many.length ? diamondLoopSizes(many) : [], spec = hs.length ? holeSpecText(hs) : dl.length ? diamondLineSpecText(dl) : '', subj = s ? [s] : many, dOnly = !!subj.length && dl.length === subj.length;   /* dOnly：選んだのが菱の線だけ（穴と同じ並びで出す） */   /* 選んだ菱目の工具の規格・菱の線の大きさ */
@@ -2056,6 +2056,25 @@ function applyInfo(field) {
   if (s.type === 'bezier' && ['x1','y1','x2','y2'].includes(field)) { const dx = next[field] - s[field]; const c = field[0] === 'x' ? (field === 'x1' ? 'c1x' : 'c2x') : (field === 'y1' ? 'c1y' : 'c2y'); next[c] = s[c] + dx; }
   if (!validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === s.id ? next : x) })) { $('hint').textContent = t('invalidNumber'); refreshInfo(); return; }
   transformSelectedTo(next);
+}
+/** 直線の長さの小窓：直線ツールのとき（描く長さ）と、直線を1本だけ選んでいるとき（選んだ線の長さ・動かさない端）に出す。 */
+function selectedLineForBar() { if (mode !== 'select' || selected.size !== 1) return null; const s = doc.shapes.find(x => selected.has(x.id) && x.type === 'line' && editable(x)); return s || null; }
+function syncLineBar() {
+  const bar = $('lineBar'); if (!bar) return; const one = selectedLineForBar(), draw = mode === 'line';
+  bar.hidden = !(draw || one); $('l-lineLen').hidden = !draw; $('l-lineSelLen').hidden = !one; $('l-lineFix').hidden = !one;
+  if (one && !(typeof document !== 'undefined' && document.activeElement === $('lineSelLen'))) $('lineSelLen').value = String(+distance({ x: one.x1, y: one.y1 }, { x: one.x2, y: one.y2 }).toFixed(2));
+}
+/** 選んだ直線の長さを、入れた数字にする。動かさない端（始点・終点・中心）は選べる。向きは変えない。 */
+function applyLineLength() {
+  const s = selectedLineForBar(); if (!s) return; const len = Number($('lineSelLen').value), fix = $('lineFix').value;
+  if (!(len > 0)) { $('hint').textContent = t('invalidNumber'); syncLineBar(); return; }
+  const cur = distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }); if (cur < 1e-9) { $('hint').textContent = t('invalidNumber'); return; }
+  const ux = (s.x2 - s.x1) / cur, uy = (s.y2 - s.y1) / cur, r4 = v => +v.toFixed(4); let next;
+  if (fix === 'end') next = { ...s, x1: r4(s.x2 - ux * len), y1: r4(s.y2 - uy * len) };
+  else if (fix === 'center') { const mx = (s.x1 + s.x2) / 2, my = (s.y1 + s.y2) / 2; next = { ...s, x1: r4(mx - ux * len / 2), y1: r4(my - uy * len / 2), x2: r4(mx + ux * len / 2), y2: r4(my + uy * len / 2) }; }
+  else next = { ...s, x2: r4(s.x1 + ux * len), y2: r4(s.y1 + uy * len) };
+  if (!validateDoc({ ...doc, shapes: doc.shapes.map(x => x.id === s.id ? next : x) })) { $('hint').textContent = t('invalidNumber'); syncLineBar(); return; }
+  transformSelectedTo(next); $('hint').textContent = t('lineLenDone', { len: +len.toFixed(2), fix: t(fix === 'end' ? 'lineFixEnd' : fix === 'center' ? 'lineFixCenter' : 'lineFixStart') }); syncLineBar();
 }
 /** 選択中の 1 図形を next に置き換え、経路の穴を追従させる。 */
 /** 縫い穴の付いた線の端を動かしても、菱目が線の上に残るか：直線（2点だけの折れ線を含む）を、同じ直線の上で延ばす・縮めるだけなら true。向きを変える動かし方（菱目が線から外れる）や、直線以外は false。 */
@@ -7785,6 +7804,7 @@ function keepPatchWinInView() { keepCardWinInView('patchCard'); }
 function syncToolCards() {
   if ($('foldHandleBar') && !$('foldHandleBar').hidden && !foldHandleList().length && !secDimsShown()) closeFoldHandleBar();   /* 取っ手が出ていないときは、数字の小窓も閉じる */
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
+  syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
@@ -8674,10 +8694,14 @@ function rectShape(a, b) {
   if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
   return { type: 'polyline', closed: true, points: [{ x: a.x, y: a.y }, { x: b.x, y: a.y }, { x: b.x, y: b.y }, { x: a.x, y: b.y }] };
 }
+/** 直線の「長さ」欄（描くとき）：0 より大きい数なら、その長さ。それ以外は null＝マウスで自由に決める。 */
+const lineLenNow = () => { const v = Number($('lineLen')?.value); return Number.isFinite(v) && v > 0 ? v : null; };
+/** 直線の終点：長さが入っていれば、始点から p の向きへ、その長さの点（事業主 2026-11-06「直線を引くときも長さを数値指定したい」）。 */
+function lineEndFor(a, p) { const len = lineLenNow(), d = len ? distance(a, p) : 0; return len && d > 1e-9 ? { x: +(a.x + (p.x - a.x) * len / d).toFixed(4), y: +(a.y + (p.y - a.y) * len / d).toFixed(4) } : p; }
 function shapeFromDrag(a, b) {
   if (mode === 'rect') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
-  return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  { const e = mode === 'line' ? lineEndFor(a, b) : b; return { type: 'line', x1: a.x, y1: a.y, x2: e.x, y2: e.y }; }
 }
 /** 円弧の作図方式が「3点」か。 */
 function arcThreePoint() { return $('arcMethod').value === 'three'; }
@@ -9162,7 +9186,7 @@ function drawSheetBody(lo, hi) {
   else if (mode === 'dimension' && !stage && radiusCorner) strokeShape({ type: 'polyline', points: radiusCorner.pts, closed: false }, '#4fd0ff');   /* 1回目の前：選ばれる角の曲線を強調 */
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
-  else if (stage?.kind === 'cmd' && stage.start) strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
+  else if (stage?.kind === 'cmd' && stage.start) { const e = mode === 'line' ? lineEndFor(stage.start, cursor) : cursor; strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: e.x, y2: e.y }, '#c9a96e'); }
   if (stage?.kind === 'cmd' && mode === 'circle' && stage.center && distance(stage.center, cursor) > 1e-8) strokeShape(shapeFromDrag(stage.center, cursor), '#c9a96e'); /* 中心クリック後は中心固定で半径が伸縮 */
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
   if (stage?.kind === 'imgScale') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
@@ -9888,7 +9912,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
       if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
-      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) { runCommand(`${cursor.x},${cursor.y}`); stage = null; lastPoint = cursor; $('hint').textContent = t('hint.line'); } /* 終点のクリックで1本できて終わり（ペンのような連続線にしない・事業主要望 2026-10-21）。始点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
+      else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) { const e = lineEndFor(stage.start, cursor); runCommand(`${e.x},${e.y}`); stage = null; lastPoint = cursor; $('hint').textContent = t('hint.line'); } /* 終点のクリックで1本できて終わり（ペンのような連続線にしない・事業主要望 2026-10-21）。始点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
     }
@@ -9918,6 +9942,7 @@ document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click'
 /** 数字の欄を選んだまま、その上でマウスのホイールを回すと、ブラウザの標準動作で数字が増減する（右のカードを動かそうとして、工具の穴の高さが 0.8 → 5 になった・事業主の指摘 2026-10-18「数字が勝手に増えていく」）。
  *  数字の欄の上でホイールを回したら、欄の選択を外す：数字は変わらず、画面のスクロールはそのまま通る。 */
 document.addEventListener('wheel', blurNumberOnWheel, { passive: true, capture: true });   /* 登録は1つだけ（以前は同じ処理が2か所に重なっていた） */
+$('lineSelLen').addEventListener('change', applyLineLength); $('lineSelLen').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyLineLength(); } });
 $('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
