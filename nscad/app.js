@@ -6651,6 +6651,34 @@ function syncFoldFields() {
   if (d.ring) { set('fdRingPos', d.ring.pos); set('fdStackT', d.ring.stackT); set('fdRefillDir', d.ring.dir === 'v' ? 'v' : 'h'); if ([...($('binderSpecSel')?.options || [])].some?.(o => o.value === d.ring.specId)) { set('binderSpecSel', d.ring.specId); const sp = binderSpec(d.ring.specId); if (sp && $('ringD')) fillRingOptions($('ringD'), sp); } /* 規格を替えたら、リング径の選択肢もその規格の一覧に作り直す（前の規格の一覧が残ると、Micro5 なのに 25〜40 が出て 20 が選べなかった・事業主指摘 2026-10-17） */ set('ringD', d.ring.ringD); if ($('ringD') && !Array.from($('ringD').children || []).some(o => o.value === $('ringD').value)) { const sp = binderSpec($('binderSpecSel').value); if (sp) $('ringD').value = String(sp.rings.diameterOptionsMm[0]); } syncFoldRingSelects(); }
   refreshFoldWidth(); refreshFoldPitch();
 }
+/** 図面に平面図があれば、平面図の縦の長さ（fdH・②の高さ）と金具の色（flowHwMetal）を、図面から読んで欄に入れる。余りの欄は、縦とリフィルの高さから逆算して合わせる。
+ *  ブラウザに覚えた余り（初めは5mm）・金具の色（初めは色なし）より、図面を優先する。ブラウザの設定は書き換えない（読んで欄に入れるだけ）。
+ *  事業主 2026-11-06「できないならできない理由がある…もっと使いやすく」：番宣動画の撮影で、別のブラウザで開いて断面を動かすと、A6 の縦が 165→158mm に黙って縮み、リングの銀色が消えた。 */
+function syncFlatFieldsFromDoc() {
+  const flat = doc.shapes.filter(s => s.foldFlat === 'fd'), outline = flat.filter(s => s.layer === 'pattern' && s.type === 'polyline' && s.closed && s.points?.length);
+  if (outline.length) {
+    let best = null; for (const s of outline) { const xs = s.points.map(q => q.x), ys = s.points.map(q => q.y), w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys); if (!best || w * h > best.a) best = { s, h, a: w * h }; }   /* 外形が複数あれば、いちばん大きいもの */
+    const h = Math.round(best.h * 100) / 100;
+    { /* 角の丸め：外形の上の辺のいちばん左の点と、外形の左端の差（角が丸くなければ0）。事業主 2026-11-06「同じ型の問題が、ほかの平面図の設定にも…調査して直して」 */
+      const pts = best.s.points, x0 = Math.min(...pts.map(q => q.x)), y0 = Math.min(...pts.map(q => q.y)), top = pts.filter(q => Math.abs(q.y - y0) < 1e-6).map(q => q.x);
+      const r = top.length ? Math.round((Math.min(...top) - x0) * 100) / 100 : NaN; if (Number.isFinite(r) && r >= 0 && $('flowCorner')) $('flowCorner').value = String(r);
+    }
+    if ($('flowAutoDims')) $('flowAutoDims').checked = flat.some(s => s.type === 'dimension' && Math.abs(s.offset) === 12);   /* 自動寸法＝全長・高さ・取付穴の位置（ずらし12mm）。余りなどの寸法（ずらし0）は毎回付くので数えない */
+    const refillParts = flat.filter(s => s.layer === 'parts');
+    if (refillParts.length && $('flowRefillPaper')) $('flowRefillPaper').checked = (doc.fills || []).some(f => f.foldFlat === 'fd' && f.leather === '#FFFFFF');   /* リフィルの紙＝平面図の白い塗り（リフィルが無い図面は触らない） */
+    if (h > 0) {
+      $('fdH').value = String(h); if ($('flowH')) $('flowH').value = String(h); planHeightTouched = true;   /* 図面の縦＝「自分で決めた高さ」として扱う（余りを変えたときだけ、決め直す） */
+      const s = foldBookState(), rh = s.kind === 'book' && s.spec ? binderSpec(s.spec)?.refill?.hMm : null, m = rh > 0 ? Math.round((h - rh) / 2 * 100) / 100 : NaN;
+      if (Number.isFinite(m) && m >= 0 && $('flowMargin')) $('flowMargin').value = String(m);
+    }
+  }
+  const hwShapes = flat.filter(s => s.layer === 'hardware');
+  if (hwShapes.length && $('flowHwMetal')) $('flowHwMetal').value = hwShapes.find(s => ['gold', 'silver', 'pinkgold', 'blackgold'].includes(s.metal))?.metal ?? '';
+  const stitchPaths = (doc.paths || []).filter(q => q.foldFlat === 'fd');   /* 菱目の並べ方：平面図の縫い線が閉じていれば一周、開いていれば上下2本。菱目の無い平面図は触らない（「打たない」と「まだ打っていない」を区別できない） */
+  if (stitchPaths.length && $('flowStitchLayout')) $('flowStitchLayout').value = stitchPaths.some(q => q.closed) ? 'loop' : 'rows';
+  const st = doc.foldDesign?.stitch;   /* 菱目の縁・ピッチ・余白は図面に残っている（作り直しはそれを使う）が、欄に戻っていなかった＝次に「菱目打ちラインを描く」を押すと初めの値で打ち直された */
+  if (st) for (const [id, k] of [['fdEdge', 'edge'], ['fdPitch', 'pitch'], ['fdMargin', 'margin']]) if (Number.isFinite(st[k]) && $(id)) $(id).value = String(st[k]);
+}
 function startFoldHandleDrag(h, w, p = null) {
   syncFoldFields(); const d = doc.foldDesign; designUndoLen = -1;   /* ドラッグ全体を、新しい「元に戻す」1回にする */
   gesture = { kind: 'foldHandle', h, start: w, d0: { ...d }, vals: { ...Object.fromEntries(FD_HANDLE_FIELDS.map(([, k]) => [k, d[k]])), width: d.width, widthB: d.widthB, shiftX: d.shiftX ?? 0 } }; setFdDimKey(h.dim);
@@ -9019,7 +9047,7 @@ function draw() {
   syncViewLayers();   /* 表示メニューのレイヤー一覧（層が変わったときだけ作り直す） */
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 
-  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
+  ownPathsCache = null; if (doc !== foldSyncDoc) { foldSyncDoc = doc; pruneFoldSections(); syncFoldFields(); syncFlatFieldsFromDoc(); syncFoldCutField(); } /* 読み込んだ図面に、図形の無い断面図の情報が残っていたら、ここで消す（寸法・取っ手が残らないように） */ /* 図面が入れ替わったら、設計カードの欄を図面の設計に合わせる */
   const dpr = exporting ? 1 : (window.devicePixelRatio || 1);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (!exporting) { ctx.fillStyle = '#080808'; ctx.fillRect(0, 0, width, height); }
   if (quadOn() && !exporting) { drawQuad(dpr); return; }
