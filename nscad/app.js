@@ -425,7 +425,11 @@ function setDiamondMode(mode) {
   $('diamondStyle').value = mode; try { localStorage.setItem(DIAMOND_KEY, diamondMode()); } catch { /* 保存できなくても続ける */ }
   draw(); refreshInfo(); $('hint').textContent = t('diamondModeSet', { name: t('diamondModeName_' + diamondMode()) });
 }
-function restoreDiamondStyle() { try { const v = localStorage.getItem(DIAMOND_KEY); if ((v === 'auto' || v === 'fill' || v === 'line') && $('diamondStyle')) $('diamondStyle').value = v; } catch { /* 保存できない環境でも続ける */ } }
+function restoreDiamondStyle() {
+  let v = null; try { v = localStorage.getItem(DIAMOND_KEY); } catch { /* 保存を読めなくても続ける */ }
+  if (v !== 'auto' && v !== 'fill' && v !== 'line') v = 'fill';   /* 保存が無いときの初期値は「中塗り」（事業主 2026-11-07「菱目は最初から実線で・書き出しも中塗り」：以前の初期値は 'auto'＝画面は塗り・書き出しは線で、書き出しの小さな菱目が点線のように見えた）。選び直した人は、その選択のまま */
+  if ($('diamondStyle')) $('diamondStyle').value = v;
+}
 const diamondMode = () => { const v = $('diamondStyle')?.value; return v === 'fill' || v === 'line' ? v : 'auto'; };
 /** 金具の図形か：「金具」の層・置いた金具の外形（hw）・金属の色を付けた図形。「金具を表示」を切ると、これらを隠す。 */
 const isHardwareShape = s => s.layer === 'hardware' || !!s.hw || !!s.metal;
@@ -3598,7 +3602,7 @@ function exportPdf() {
  *  寸法線・文字があるときは 10mm（数字が 3.5mm でも、まわりに十分あく）。無いときは今までどおり 2mm。 */
 const pngMarginMm = shapes => shapes.some(s => s.type === 'dimension' || s.type === 'text') ? 10 : 2;
 function exportPng() {
-  const selIds = new Set(selected), only = doc.shapes.some(sh => selIds.has(sh.id) && visible(sh)), vis = only ?(sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 図形を選んでいれば自動で、選んだ図形と、その縫い穴だけ（SVG・印刷・PDF・DXF と同じ「選んでいれば自動」。2026-10-26 事業主「本日も同じ不具合が発生しました。選択した図形のみＰＮＧに出力できない」：PNG だけ、出力カードの「選んだ図形だけ出力」（初期は切）の方式のままだった） */
+  const selIds = new Set(selected), only = doc.shapes.some(sh => selIds.has(sh.id) && visible(sh)), vis = only ?(sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || isSelHole(h) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 選んだ穴・選んだ範囲の穴（持ち主の部品の穴）・経路の線を選んだ穴（事業主 2026-11-07「PNG出力時に菱目が出力されない」：外形を選んで出すと、ガイド層の縫い線に付いた菱目が 0 個だった。SVG・印刷・PDF・DXF と同じ判定にそろえる） */   /* 図形を選んでいれば自動で、選んだ図形と、その縫い穴だけ（SVG・印刷・PDF・DXF と同じ「選んでいれば自動」。2026-10-26 事業主「本日も同じ不具合が発生しました。選択した図形のみＰＮＧに出力できない」：PNG だけ、出力カードの「選んだ図形だけ出力」（初期は切）の方式のままだった） */
   const shapes = doc.shapes.filter(vis), holes = doc.holes.filter(hvis), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
   const scopeNote = ' ' + (only ? t('outScopeSel', { n: shapes.length }) : t('outScopeAll'));   /* 出力のあとの案内に、何が出たかを必ず出す（ほかの書き出しと同じ） */
   if (exportIsEmpty(shapes, holes)) return;
@@ -7342,17 +7346,21 @@ function dimOffPreview(g, cur) {
 }
 const dimOnlySelection = () => { const ids = selectedShapeIds(); return ids.size > 0 && [...ids].every(id => doc.shapes.find(s => s.id === id)?.type === 'dimension'); };
 /** 寸法線を自動で入れる（事業主の希望 2026-10-19「図面に全自動で寸法線を入れ、あとから微調整が簡単にできるようにしてほしい」）。対象＝見えている図形のうち、ガイドの層・金具・見えない補助の線・文字・寸法・折り線・下絵を除いたもの。図形を選んでいれば、その図形だけ。計算は autodim.js。 */
-function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && (adIsDiamond(s) || (s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed')) && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)); return $('adSelOnly')?.checked ? all.filter(s => ids.has(s.id)) : all; }   /* 「選んだ図形だけに入れる」を入れたときだけ、選択で絞る（不具合記録 2026-10-19 08:45：前回の続きを開いたときの選択 198 個が残っていて、外形の角の曲線が外れ「全体 0 本」になった） */   /* 菱目（菱の線）は、目印・ガイドの層や点線でも対象に入れる（寸法は付けず、菱目の間隔の比較にだけ使う） */   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
+let adScopeSel = 0, adLast = null;   /* adLast＝直前に入れた寸法の id と、そのとき対象にした図形の id（選んだ図形だけに入れたときだけ） */   /* 直近の autoDimCandidates で、選んでいた図形の数（0＝図面の全部） */
+function autoDimCandidates() { const ids = selectedShapeIds(), all = doc.shapes.filter(s => visible(s) && (adIsDiamond(s) || (s.layer !== 'guide' && s.layer !== 'marks' && s.lineStyle !== 'dashed')) && !isHardwareShape(s) && !['text', 'dimension', 'fold', 'image'].includes(s.type)); const sel = all.filter(s => ids.has(s.id)); adScopeSel = sel.length;
+  if (!sel.length && adLast && selected.size && [...selected].every(id => adLast.dims.has(id))) { const keep = all.filter(x => adLast.shapes.has(x.id)); if (keep.length) { adScopeSel = keep.length; return keep; } }   /* 選んだ図形に入れた直後（選んでいるのは、いま入れた寸法だけ）に、もう一度押したら、同じ図形が対象（図面の全部に広がらない） */
+  return sel.length ? sel : all; }   /* 対象の図形を選んでいれば、その図形だけ。選んでいなければ（寸法・ガイドだけを選んでいる＝入れた直後を含む）図面の全部（事業主 2026-11-07「選択した図形だけ寸法をまとめて入れたいのに全体に入ってしまう」→ チェック欄をやめて自動に。以前の不具合記録 2026-10-19 08:45：前回の続きを開いたときの古い選択 198 個で「全体 0 本」になった→ 入れたあと、どの範囲に入れたかを案内に出す） */   /* 菱目（菱の線）は、目印・ガイドの層や点線でも対象に入れる（寸法は付けず、菱目の間隔の比較にだけ使う） */   /* 選んでいるのが寸法だけ（入れた直後など）なら、図面の全部を対象にする */
 function runAutoDims(only = null) {   /* only＝'size'｜'edge'｜'circle'｜'radius'｜'hole'：その種類だけ入れる（チェックを入れたとき）。省略はチェックの付いた種類ぜんぶ（「寸法線を入れる」ボタン） */
   const gap = Number($('adGap').value); if (!(gap > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const tool = doc.tools.find(x => x.id === $('stitchTool')?.value) || doc.tools[0], toolPitch = tool && tool.pitch > 0 ? tool.pitch : null;   /* 菱の線の間隔は、目打ちカードで選んでいる工具のピッチと比べる */
   const cand = autoDimCandidates(), full = autoDimensionPlan(doc, cand, { size: $('adSize').checked, edges: $('adEdges').checked, circles: $('adCircles').checked, holes: $('adHoles').checked, radii: $('adRadius').checked, radiusSide: $('adRadiusSide')?.value === 'out' ? 'out' : 'in', gap, toolPitch, pitchLabel: (p, n) => t('adPitchLabel', { p: p.toFixed(2), n }) }), plan = only ? Object.assign(full.filter(d => d.autoDim === only), { info: full.info }) : full;   /* 種類を絞るときも、ほかのチェックの状態で計算する（全体の幅・高さが入っていれば、その辺は「辺ごと」に入れない・同じ所には入れない） */
   const noPiece = $('adSize').checked && !autoDimCounts(plan).size && plan.info?.biggest ? ' ' + t('adNoPiece', { n: plan.info.clusters, w: plan.info.biggest.w, h: plan.info.biggest.h, why: t('adWhy_' + (plan.info.biggest.why || 'exists')) }) : '';   /* 全体の幅・高さが1本も入らなかったとき：いちばん大きいかたまりの大きさと理由（不具合の切り分け用） */
-  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : $('adSelOnly')?.checked ? 'adSelNone' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
+  if (!plan.length) { $('hint').textContent = t(cand.length ? 'adNothingNew' : 'adNoShapes') + noPiece; $('adInfo').textContent = noPiece.trim(); return; }
   const layer = doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked) ? 'guide' : activeLayer, ids = [];   /* 寸法線はガイドの層（見えていて動かせるとき）。addShape と同じ決め方 */
   cancel(); commit(() => { for (const d of plan) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, ...d }); ids.push(id); } });
+  adLast = adScopeSel ? { dims: new Set(ids), shapes: new Set(cand.map(c => c.id)) } : null;
   selected = new Set(ids); refreshInfo(); draw();
-  $('hint').textContent = t('adDone', { n: plan.length }) + noPiece; $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan)) + noPiece;
+  $('hint').textContent = t('adDone', { n: plan.length }) + (adScopeSel ? ' ' + t('adScopeSel', { n: adScopeSel }) : '') + noPiece; $('adInfo').textContent = t('adDoneDetail', autoDimCounts(plan)) + noPiece;
 }
 function clearAutoDims() {
   const gone = doc.shapes.filter(s => s.type === 'dimension' && s.autoDim); if (!gone.length) { $('hint').textContent = t('adNoneToClear'); return; }
@@ -9214,7 +9222,7 @@ function drawSheetBody(lo, hi) {
     else if (kind === 'circle') ctx.arc(0,0,w/2,0,Math.PI*2);
     else if (kind === 'slit') { ctx.moveTo(-w/2,0); ctx.lineTo(w/2,0); }
     else { ctx.moveTo(-w/2,0); ctx.lineTo(0,-heightMM/2); ctx.lineTo(w/2,0); ctx.lineTo(0,heightMM/2); ctx.closePath(); }
-    ctx.fillStyle = ctx.strokeStyle = isSelHole(h) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
+    ctx.fillStyle = ctx.strokeStyle = !exporting && isSelHole(h) ? '#c9a96e' : ((viewShow.colors && doc.paths.find(p => p.id === h.pathId)?.threadHex) || '#fff');
     if (kind === 'dot') { ctx.strokeStyle = ctx.fillStyle = selected.has(h.id) ? '#c9a96e' : SHAPE_DRAW_COLOR.yellow; ctx.lineWidth = 1.5/scale; ctx.beginPath(); ctx.arc(0, 0, Math.max(w / 2, DOT_MIN_PX / scale), 0, Math.PI * 2); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1; ctx.lineWidth = 1 / scale; ctx.stroke(); }   /* 点の穴は、点の直径どおりの丸も描く（書き出しの形）。縮小で小さすぎるときだけ、画面で見える最小の大きさにする */
     else if (kind === 'slit') { ctx.lineWidth = halfDepth ? Math.max(0.1, heightMM / 2) : heightMM; ctx.stroke(); } else if (halfDepth || (kind === 'diamond' && diamondMode() === 'line')) { ctx.lineWidth = 1.5 / scale; ctx.stroke(); } else ctx.fill();
     if (halfDepth && kind !== 'dot') { ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(w, heightMM) * 0.15), 0, Math.PI * 2); ctx.fill(); }   /* 菱目：線にすると輪郭だけ（レーザーで塗りがNGのとき） */
@@ -9955,7 +9963,7 @@ canvas.addEventListener('pointerup', e => {
     else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
     else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
-      if (only && ['line', 'arc', 'polyline'].includes(only.type) && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 曲線（ペンの線）は、クリックしただけでは交点で切らない（事業主 2026-11-05「曲線が切れる」。切るのはトリムか Alt+クリック） */   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
+      if (only && ['line', 'arc', 'polyline'].includes(only.type) && !(only.type === 'polyline' && only.closed && only.lineStyle !== 'dashed' && only.layer !== 'guide') && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 実線の閉じた折れ線（型紙の四角など）は、クリックだけでは交点で切らない（点線・ガイド層の閉じた線＝オフセットの外形は、これまでどおり区間で選ぶ）（事業主 2026-11-07「グループ化しているはずの図形が移動時に分裂する」：部品ライブラリから置いた四角が、縦線との交点で2つに割れ、区間だけが動いた）。区間で選ぶのは、トリムか Alt+クリック */   /* 曲線（ペンの線）は、クリックしただけでは交点で切らない（事業主 2026-11-05「曲線が切れる」。切るのはトリムか Alt+クリック） */   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
    /* 「1本に結合」した線は、クリックで交点ごとに切らない（事業主 2026-10-24「１本に結合されるのはその瞬間だけで移動させるときにばらばらになる」） */ spanClickTimer = setTimeout(() => { spanClickTimer = null; if (!gesture && mode === 'select' && selected.size === 1 && selected.has(only.id) && doc.shapes.includes(only)) selectSpanAt(at, false, { auto: true }); }, 400); }
     }
   } else if (g.kind === 'dimOff') {
