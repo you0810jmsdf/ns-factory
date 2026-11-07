@@ -164,6 +164,20 @@ body{
 .hr-contact input:focus{border-color:#b5895a}
 .hr-contact input.hr-missing{border-color:#c0392b;background:#fdf1f0}
 .hr-contact[hidden]{display:none}
+/* 最初の画面の作例と案内（2026-11-07）。何も押さず帰る人（7人中3人）向けに「見るもの」を置く。商品を選んだら消す */
+.intro{margin:10px 12px 0;padding:10px 12px;border:1px solid #ede0d4;border-radius:12px;background:#fff}
+.intro .pics{display:flex;gap:6px}
+.intro .pics img{flex:1;min-width:0;aspect-ratio:4/5;object-fit:cover;border-radius:8px;background:#f1ebe4}
+.intro p{font-size:12px;color:#6b3a1f;margin-top:8px;line-height:1.6}
+.intro p b{color:#3d1a08}
+.intro[hidden]{display:none}
+/* ガイド対話の進み具合（2026-11-07）。あと何問かが見えると途中で帰りにくい */
+.progress{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:11px;color:#8a6a50;background:#faf7f4;border-bottom:1px solid #ede0d4}
+.progress .bar{flex:1;height:5px;border-radius:3px;background:#ede0d4;overflow:hidden}
+.progress .bar i{display:block;height:100%;width:0;background:#b5895a;transition:width .3s}
+.progress[hidden]{display:none}
+/* 改善要望ボタン（assets/bug-report.js）は右下固定なので、入力欄の送信ボタンと重ならない高さへ（2026-11-07） */
+#nsf-bug-btn{bottom:96px !important}
 
 /* input */
 .inputbar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #ede0d4;background:#fff;position:sticky;bottom:0}
@@ -243,6 +257,17 @@ body{
     <button class="tip-close" id="modeTipClose" type="button" aria-label="閉じる">✕</button>
     💡 ボタンを押さなくても、下の入力欄に<b>文章で話しかけると自動でAIとの会話に切り替わります</b>。<br>
     「⚙ AI会話モード」ボタンは、最初から自由にAIと会話したいとき用です。
+  </div>
+  <!-- ガイド対話の進み具合（updateProgress・2026-11-07） -->
+  <div class="progress" id="progress" hidden><span id="progressText"></span><div class="bar"><i id="progressFill"></i></div></div>
+  <!-- 最初の画面の作例（作品集の分類別代表写真を流用・2026-11-07）。商品を選ぶか AI会話モードに入ると消す（hideIntro） -->
+  <div class="intro" id="intro">
+    <div class="pics">
+      <img src="../assets/works-category/01.jpg" alt="システム手帳の作例">
+      <img src="../assets/works-category/15.jpg" alt="長財布の作例">
+      <img src="../assets/works-category/06.jpg" alt="キーケースの作例">
+    </div>
+    <p>作例の一部です。下のボタンから選んで質問に答えるだけで、<b>金額の目安がその場で出ます</b>（システム手帳は見積もりページと同じ計算）。</p>
   </div>
 
   <div class="chat" id="chat"></div>
@@ -955,7 +980,7 @@ function startPicker(){
 /* 英語モード: ガイド（日本語のみ）を出さず、最初からAI会話モードで応対する */
 function startEnglishLive(){
   state.liveMode=true; state._autoLive=false; state._picking=false;
-  showContactBar();
+  showContactBar(); hideIntro(); updateProgress();
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   history=[];
   saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
@@ -967,7 +992,49 @@ function startEnglishLive(){
     addMsg('bot', T('live.greeting','AI会話モードでご案内します🧵'));
   }, 400);
 }
+function hideIntro(){ const el=document.getElementById('intro'); if(el) el.hidden=true; }
+/* 作品集の「この作品をもとに相談する」から来たとき（2026-11-07）。
+   作品集→相談ページは90日で 376人→31人（8%）。作品の仕様を見せたまま、同じ商品の質問から始める。
+   ⛔ 作品の仕様を回答に先回りして入れない（サイズ・革は質問で選び直せるようにする）。発注票に「参考作品」として残す。 */
+const WORK_CATEGORY_TO_PRODUCT=[[/システム手帳(?!用)/,'planner'],[/ウォレット|財布|マネークリップ/,'wallet'],[/キーケース/,'keycase']];
+async function startFromWork(id){
+  let w=null;
+  try{
+    const r=await fetch('../works-data.json',{cache:'no-cache'});
+    const d=await r.json();
+    const list=Array.isArray(d)?d:(d.works||d.items||[]);
+    w=list.find(x=>x && x.id===id)||null;
+  }catch(e){}
+  if(!w) return false;
+  hideIntro();
+  state._refWork=w.id+(w.name?'（'+w.name+'）':'');
+  const m=document.createElement('div'); m.className='msg bot'; m.innerHTML='<div class="ic">🧵</div>';
+  const b=document.createElement('div'); b.className='bubble';
+  const lines=[w.category, w.size, w.material?('革：'+w.material):'', w.color?('色：'+w.color):''].filter(Boolean);
+  b.innerHTML=(w.mainPhoto?'<img src="'+escapeHtml(String(w.mainPhoto))+'" alt="" loading="lazy" style="width:140px;max-width:100%;border-radius:8px;display:block;margin-bottom:6px;background:#f1ebe4">':'')
+    +'作品集の <b>'+escapeHtml(w.id)+'</b> をもとにご相談ですね🧵<br>'+escapeHtml(lines.join('・'))
+    +'<br>同じ仕様でも、サイズや革の色を変えても大丈夫です。質問に答えながら決めていきましょう。';
+  m.appendChild(b); chat.appendChild(m); scrollDown();
+  const hit=WORK_CATEGORY_TO_PRODUCT.find(([re])=>re.test(w.category||''));
+  const prodKey=hit && hit[1];
+  state._picking=true;
+  if(prodKey && PRODUCTS[prodKey]) handleAnswer(prodKey, PRODUCTS[prodKey].emoji+' '+PRODUCTS[prodKey].name);
+  else renderQuick(productQuickItems());
+  return true;
+}
+/* ガイド対話の進み具合（2026-11-07）。お名前・連絡先の2問は数えない */
+function updateProgress(){
+  const el=document.getElementById('progress'); if(!el) return;
+  if(state.liveMode || state._done || state._picking || !state.flow){ el.hidden=true; return; }
+  const total=state.flow.filter(s=>s.key!=='custName' && s.key!=='custContact').length;
+  if(!total){ el.hidden=true; return; }
+  const n=Math.max(1, Math.min(state.step+1, total));
+  el.hidden=false;
+  document.getElementById('progressText').textContent='質問 '+n+' / '+total;
+  document.getElementById('progressFill').style.width=Math.round(n/total*100)+'%';
+}
 function beginProduct(key){
+  hideIntro();
   state.productKey=key; state.prod=PRODUCTS[key];
   state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
   state.step=0; state._picking=false;
@@ -980,6 +1047,7 @@ function runStep(){
   // スキップ条件（例：名入れ無しなら刻印内容を飛ばす）
   while(step && step.skipIf && step.skipIf(a)){ state.step++; step=state.flow[state.step]; }
   if(!step){ finish(); return; }
+  updateProgress();
 
   // お名前・連絡先を聞く前に、発注票（内容と金額の目安）を先に見せる（2026-11-07）。
   // 訪問記録では、最後の質問まで90〜160秒かけて答えた人が「お名前を教えてください」で帰っていた。
@@ -1463,7 +1531,7 @@ function renderSheetCard(){
   if(prod.priceText && prod.priceText(a)) rangeTxt = prod.priceText(a);   // 手帳は見積もりシミュレーターの金額
   if(priceBar) priceBar.hidden=true;   // 発注票に金額を出すので下の目安は消す
 
-    const rows = prod.rows ? prod.rows(a) : [
+    const rows = (prod.rows ? prod.rows(a) : [
       ['アイテム', prod.name],
       ...(prod.summary?prod.summary(a):[]),
       ['革の色', a.leather||'-'],
@@ -1471,7 +1539,8 @@ function renderSheetCard(){
       ['名入れ', a.nameStamp==='希望する'?`あり：${a.nameText||''}`:'なし'],
       ['ご予算', a.budget||'相談'],
       ['ご希望納期', a.due||'相談']
-    ];
+    ]).slice();
+    if(state._refWork) rows.push(['参考作品', state._refWork]);   // 作品集から来た相談（2026-11-07）
     // 最後のボタンは「PDFで保存」と見積もりページへの小さな導線だけ（2026-09-19 事業主決定）。
     // 発注票は自動で工房へ送るので、コピー2つ（発注票・工房へ送る文面）は送信に失敗したときだけ出す（submitToOrderProgress）。
     // 見積もりページは同じ計算で選び直しになるため「正確な見積り」とは呼ばない。
@@ -1499,6 +1568,7 @@ function renderSheetCard(){
 function finish(){
   if(state._done) return; state._done=true; state._awaitKey=null;
   clearSavedGuide();   // 最後まで答えた＝「続きから」の控えは不要
+  updateProgress();
   const a=state.answers;
   const prod=state.prod||PRODUCTS.planner;
 
@@ -1868,7 +1938,7 @@ function saveGuide(){
       if(k==='textureSimulation' || k==='custName' || k==='custContact') return;
       answers[k]=state.answers[k];
     });
-    localStorage.setItem(GUIDE_KEY, JSON.stringify({ at:Date.now(), productKey:state.productKey, step:state.step, answers }));
+    localStorage.setItem(GUIDE_KEY, JSON.stringify({ at:Date.now(), productKey:state.productKey, step:state.step, answers, refWork:state._refWork||'' }));
   }catch(e){ /* 使えなくても相談は続けられる */ }
 }
 function loadSavedGuide(){
@@ -1904,7 +1974,9 @@ function resumeGuided(d){
   state.productKey=d.productKey; state.prod=PRODUCTS[d.productKey];
   state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
   state.answers=Object.assign({}, d.answers);
+  state._refWork=d.refWork||'';
   state.step=Math.max(0, Math.min(parseInt(d.step,10)||0, state.flow.length));
+  hideIntro();
   chat.innerHTML=''; quickEl.innerHTML='';
   if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
   addMsg('bot','前回の続きからうかがいます🧵');
@@ -1932,7 +2004,7 @@ function offerResume(){
 }
 function resumeSaved(d){
   state.liveMode=true; state._autoLive=false;
-  showContactBar();
+  showContactBar(); hideIntro(); updateProgress();
   chat.innerHTML=''; quickEl.innerHTML='';
   history=d.history.slice();
   history.forEach(m=>addMsg(m.role==='user'?'user':'bot', m.content));
@@ -1945,7 +2017,8 @@ function resumeSaved(d){
 function enterLiveMode(){
   dismissModeTip();   // 切替できた＝説明は役目を終えたので消す（2026-08-19）
   state.liveMode=true;
-  showContactBar();
+  showContactBar(); hideIntro(); updateProgress();
+  updatePriceBar();   // AI会話中は「いまの目安」の帯を出さない（2026-11-07）
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
@@ -1956,6 +2029,7 @@ function enterLiveMode(){
 }
 function exitLiveMode(){
   state.liveMode=false;
+  if(priceBar) priceBar.hidden=true;   // ガイドを最初からやり直すので古い目安を出さない（2026-11-07）
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=false;
   chat.innerHTML=''; quickEl.innerHTML='';
@@ -1971,7 +2045,8 @@ function exitLiveMode(){
 function autoEnterLiveMode(userText){
   dismissModeTip();   // 自動切替に気づけた＝説明不要（2026-08-19）
   state.liveMode=true;
-  showContactBar();
+  showContactBar(); hideIntro(); updateProgress();
+  updatePriceBar();   // AI会話中は「いまの目安」の帯を出さない（2026-11-07）
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=true;           // 上限到達時にガイドへ戻すための目印
   quickEl.innerHTML='';
@@ -2187,7 +2262,12 @@ Promise.all([
   // ステッチ全92色（在庫状態つき）をAIにも渡す。在庫16色しか渡しておらず
   // 「シルバーは何番？」に答えられなかった（2026-09-04 実ログ）。
   SYSTEM_PROMPT=NSF_HEARING.buildSystemPrompt(KB, leathers, stockMap, stitchListForPrompt(stitchColors, stitchStock));
-  if(!offerResume()) startPicker();   // 前回の続きがあれば先に提案する（2026-09-05）
+  // 作品集の「この作品をもとに相談する」から来たとき（?work=作品ID・2026-11-07）。読めなければ通常の開始
+  let refWorkId='';
+  try{ refWorkId=new URLSearchParams(location.search).get('work')||''; }catch(e){}
+  if(refWorkId && !isEN()){
+    startFromWork(refWorkId).then(ok=>{ if(!ok && !offerResume()) startPicker(); });
+  }else if(!offerResume()) startPicker();   // 前回の続きがあれば先に提案する（2026-09-05）
   maybeShowModeTip();   // ⚙AI会話モードの説明（初回訪問時のみ・2026-08-19）
 });
 </script>
@@ -2203,6 +2283,8 @@ Promise.all([
 <style>
 @media (max-width: 903px) { #access-counter { display: none !important; } }
 </style>
+<!-- 困ったとき・改善要望（公開ツール共通の部品・2026-11-07 事業主決定A）。ボタンの高さは #nsf-bug-btn の CSS で入力欄の上へ -->
+<script src="../assets/bug-report.js" data-label="💡 困ったら" data-title="困ったこと・改善要望を送る"></script>
 <script src="../assets/access-counter.js"></script>
 </body>
 </html>

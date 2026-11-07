@@ -1537,6 +1537,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
           <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
           <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden data-i18n="modal.textureSim">🎨 革の色を変えて試す</button>
+          <!-- 作品集→オーダー相談ページ（主入口）へ。作品IDを渡し、相談側が作品の仕様を見せて同じ商品の質問から始める（2026-11-07） -->
+          <a id="consult-work-link" class="modal-cta secondary" href="#" data-i18n="modal.consultWork">🧵 この作品をもとに相談する</a>
           <!-- 購入者からの声は 2026-10-01 に紹介カードの札へ移した（詳細画面には出さない・事業主決定） -->
         </div>
 
@@ -1692,6 +1694,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'modal.share': '🔗 Copy the link to this piece',
     'modal.shareCopied': '✓ Copied (ready to paste on SNS)',
     'modal.textureSim': '🎨 Try different leather colors',
+    'modal.consultWork': '🧵 Consult based on this piece',
     'badge.customerVoice': '💬 Customer voice',
     'modal.customerVoiceTitle': 'Customer voice',
     'modal.ocTrigger': '💬 Order consultation AI (ask about leather types & colors)',
@@ -2900,6 +2903,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         compact([activeWork.size, formatPrice(activeWork.price)]),
       ].filter(Boolean).map((line) => `<div>${esc(line)}</div>`).join('');
       modalDesc.textContent = activeWork.longDesc || activeWork.shortDesc || '詳細は公式LINEからお問い合わせください。';
+      const consultLink = document.getElementById('consult-work-link');
+      if (consultLink) {
+        consultLink.href = 'order_estimate/hearing-ai.html?work=' + encodeURIComponent(activeWork.id || '');
+        consultLink.textContent = T('modal.consultWork', '🧵 この作品をもとに相談する');
+        consultLink.onclick = () => { try { logProductAction(activeWork, '相談ページへ'); } catch (e) {} };
+      }
       configureOrderLinks(activeWork);
       configureCardBuy(activeWork);
       updateAdminCardUI();
