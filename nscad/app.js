@@ -16,7 +16,7 @@ import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayo
 import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel } from './library.js';
+import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, groupLibraryItems } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -5056,7 +5056,9 @@ function libraryItems() { return [...DATA_LIBRARY.items, ...userLibrary]; }
 function libCurrent() { return libraryItems().find(i => i.id === $('libItem').value) || libraryItems()[0] || null; }
 function renderLibrary() {
   const sel = $('libItem'), keep = sel.value, q = ($('libSearch').value || '').toLowerCase(); sel.textContent = '';
-  for (const it of libraryItems().filter(it => !q || (it.name + ' ' + (it.name_en || '') + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(q))) { const o = document.createElement('option'); o.value = it.id; o.textContent = (document.documentElement.lang === 'en' && it.name_en ? it.name_en : it.name) + (userLibrary.includes(it) ? ' *' : ''); sel.appendChild(o); }
+  /* 見出し（分類）つきの一覧（事業主 2026-11-07「部品ライブラリはグルーピングして整理したい」）：登録した部品＝自作・同梱の部品はタグから自動で分ける。見出しには件数も出す */
+  const shown = libraryItems().filter(it => !q || (it.name + ' ' + (it.name_en || '') + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(q));
+  for (const g of groupLibraryItems(shown, it => userLibrary.includes(it))) { const og = document.createElement('optgroup'); og.label = t('libGroup_' + g.key) + '（' + g.items.length + '）'; for (const it of g.items) { const o = document.createElement('option'); o.value = it.id; o.textContent = document.documentElement.lang === 'en' && it.name_en ? it.name_en : it.name; og.appendChild(o); } sel.appendChild(og); }
   if (libraryItems().some(i => i.id === keep)) sel.value = keep;
   const it = libCurrent(), box = $('libVars'); box.textContent = ''; $('libDesc').textContent = it ? (it.desc || '') : '';
   if (it) for (const [k, v] of Object.entries(it.vars || {})) { const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = String(varStep(it, k)); if (it.varLimits?.[k]) { input.min = String(it.varLimits[k][0]); input.max = String(it.varLimits[k][1]); } /* 範囲のある変数は入力欄にも範囲を付ける */ input.value = String(v); input.dataset.var = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
@@ -7093,6 +7095,10 @@ function initHardware() {
 function toggleNodeSmooth(s, i) {
   const nodes = s.nodes.map(n => ({ ...n })), n = nodes[i];
   if (n.smooth) { n.smooth = false; n.inX = n.outX = n.x; n.inY = n.outY = n.y; }
+  else if (!s.closed && nodes.length >= 2 && (i === 0 || i === nodes.length - 1)) {   /* 開いた線の端（事業主 2026-11-07「端部にハンドルがない」）：隣の節点は1つだけ。以前は反対側の端（一周）を隣として探して、ハンドルが曲線の外へ逆向きに出ていた。隣の向き（曲線の中）に、隣までの 1/3 の長さで出す。使われない側は点に重ねる（見えない・引いても出てこない） */
+    const nb = nodes[i === 0 ? 1 : i - 1], d = { x: nb.x - n.x, y: nb.y - n.y }, l = Math.hypot(d.x, d.y) || 1, k = l / 3, hx = n.x + d.x / l * k, hy = n.y + d.y / l * k; n.smooth = true;
+    if (i === 0) { n.outX = hx; n.outY = hy; n.inX = n.x; n.inY = n.y; } else { n.inX = hx; n.inY = hy; n.outX = n.x; n.outY = n.y; }
+  }
   else { const prev = nodes[(i - 1 + nodes.length) % nodes.length], nx = nodes[(i + 1) % nodes.length], d = { x: nx.x - prev.x, y: nx.y - prev.y }, l = Math.hypot(d.x, d.y) || 1, k = Math.min(distance(n, prev), distance(n, nx)) / 3; n.smooth = true; n.inX = n.x - d.x / l * k; n.inY = n.y - d.y / l * k; n.outX = n.x + d.x / l * k; n.outY = n.y + d.y / l * k; }
   return { ...s, nodes };
 }
@@ -7150,7 +7156,7 @@ function editedNodePath(s, g, p) {
     const mine = g.part === 'out' ? ['outX', 'outY'] : ['inX', 'inY'], other = g.part === 'out' ? ['inX', 'inY'] : ['outX', 'outY'];
     n[mine[0]] = p.x; n[mine[1]] = p.y;
     if (g.alt) n.smooth = false;
-    else if (n.smooth) { const len = Math.hypot(n[other[0]] - n.x, n[other[1]] - n.y), d = Math.hypot(p.x - n.x, p.y - n.y) || 1; n[other[0]] = n.x - (p.x - n.x) / d * (len || d); n[other[1]] = n.y - (p.y - n.y) / d * (len || d); }
+    else if (n.smooth && !(!s.closed && (g.index === 0 || g.index === nodes.length - 1))) { const len = Math.hypot(n[other[0]] - n.x, n[other[1]] - n.y), d = Math.hypot(p.x - n.x, p.y - n.y) || 1; n[other[0]] = n.x - (p.x - n.x) / d * (len || d); n[other[1]] = n.y - (p.y - n.y) / d * (len || d); }
   }
   return { ...s, nodes };
 }

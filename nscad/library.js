@@ -121,3 +121,25 @@ export function checkLibraryItem(item) {
   try { instantiateItem(item); } catch (err) { out.push('expr:' + err.message); }
   return out;
 }
+
+/* ---- 部品ライブラリの分類（見出し）。事業主 2026-11-07「部品ライブラリはグルーピングして整理したい」→「見出し付き一覧」 ---- */
+/** 見出しの並び。登録した部品（user）が先頭、あとは使う順。 */
+export const LIBRARY_GROUPS = ['user', 'refill', 'rollbahn', 'binder', 'small', 'logo', 'reference', 'other'];
+/** 部品の見出し。登録した部品（isUser）は 'user'。同梱の部品は、タグから決める（先に当たったものが優先）：logo → reference → rollbahn → refill → binder → pocket・pen・dring（small）→ other。 */
+export function libraryGroupOf(item, isUser = false) {
+  if (isUser) return 'user';
+  const tags = new Set(Array.isArray(item?.tags) ? item.tags : []);
+  if (tags.has('logo')) return 'logo';
+  if (tags.has('reference')) return 'reference';
+  if (tags.has('rollbahn')) return 'rollbahn';
+  if (tags.has('refill')) return 'refill';
+  if (tags.has('binder')) return 'binder';
+  if (['pocket', 'pen', 'dring'].some(t => tags.has(t))) return 'small';
+  return 'other';
+}
+/** 部品を、見出しごとにまとめる。[{ key, items }]。見出しは LIBRARY_GROUPS の順・空の見出しは出さない・見出しの中は元の並び。isUserOf(item) が真なら登録した部品。 */
+export function groupLibraryItems(items, isUserOf = () => false) {
+  const by = new Map(LIBRARY_GROUPS.map(k => [k, []]));
+  for (const it of items) by.get(libraryGroupOf(it, !!isUserOf(it))).push(it);
+  return LIBRARY_GROUPS.filter(k => by.get(k).length).map(key => ({ key, items: by.get(key) }));
+}
