@@ -1347,17 +1347,19 @@ function planLinesToHoles(inScope) {
     if (!I.ok || list.length < 3 || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }   /* 穴が1〜2個の経路は、単独では動かさない（1個では、ずれが合っているかを確かめられない。つながる直線が動くときだけ、②でいっしょに動く） */
     add(pid, { dx: mx, dy: my }, fit);
   }
-  /* ④ 動かす点線と同じグループで、元の場所に取り残された点線（ガイド層・点線の線）も、同じだけ動かす（実図面 2243：同じグループの点線の断片36本と円弧が、元の場所に残っていた）。
-     同じグループでも、元の場所のそば（動かす図形の外接の箱を 10mm 広げた中）の点線だけ。型紙の実線・すでに新しい場所にある線・穴を持つ別の経路・グループに入っていない線は動かさない。動かす量がグループ内でそろわないときは動かさない */
-  const info4 = new Map(), shapeOf = new Map(doc.shapes.map(sh => [sh.id, sh]));
-  for (const g of plan) for (const id of g.ids) { const sh = shapeOf.get(id); if (!sh || !sh.groupId) continue; const b = bboxOf(sh), e = info4.get(sh.groupId);
-    if (!e) info4.set(sh.groupId, { dx: g.dx, dy: g.dy, ok: true, b: { ...b } }); else { if (Math.hypot(e.dx - g.dx, e.dy - g.dy) > 0.5) e.ok = false; e.b = { minX: Math.min(e.b.minX, b.minX), minY: Math.min(e.b.minY, b.minY), maxX: Math.max(e.b.maxX, b.maxX), maxY: Math.max(e.b.maxY, b.maxY) }; } }
+  /* ④ 元の場所に取り残された点線（ガイド層・点線の線）も、同じだけ動かす（実図面 2243：同じグループの点線の断片と円弧、中央の案内線が、元の場所に残っていた）。
+     対象：動かした図形の元の場所の外接の箱を 10mm 広げた中に、すっぽり入る点線。① 同じグループの点線は、そのグループの箱の中なら動かす。② グループに入っていない点線は、動かす量が全部の経路でそろっているときだけ、動かす。
+     動かさないもの：型紙の実線・穴を持つ別の経路・別のグループの図形・箱をはみ出す線・動かす量がそろわないとき */
+  const info4 = new Map(), shapeOf = new Map(doc.shapes.map(sh => [sh.id, sh])), union = (a, b) => (a ? { minX: Math.min(a.minX, b.minX), minY: Math.min(a.minY, b.minY), maxX: Math.max(a.maxX, b.maxX), maxY: Math.max(a.maxY, b.maxY) } : { ...b });
+  let allBox = null; for (const g of plan) for (const id of g.ids) { const sh = shapeOf.get(id); if (!sh) continue; const b = bboxOf(sh); allBox = union(allBox, b);
+    if (sh.groupId) { const e = info4.get(sh.groupId); if (!e) info4.set(sh.groupId, { dx: g.dx, dy: g.dy, ok: true, b: { ...b } }); else { if (Math.hypot(e.dx - g.dx, e.dy - g.dy) > 0.5) e.ok = false; e.b = union(e.b, b); } } }
+  const sameAll = plan.length > 0 && plan.every(g => Math.hypot(g.dx - plan[0].dx, g.dy - plan[0].dy) <= 0.5);
   const withHoles = new Set(doc.paths.filter(pp => doc.holes.some(h => h.pathId === pp.id)).flatMap(pp => pp.shapeIds)), extra = new Map();
   for (const sh of doc.shapes) {
-    if (!sh.groupId || moved.has(sh.id) || sh.holeLink || withHoles.has(sh.id) || !(sh.layer === 'guide' || sh.lineStyle === 'dashed')) continue;
-    const e = info4.get(sh.groupId); if (!e || !e.ok) continue; const b = bboxOf(sh), m = 10;
-    if (b.minX < e.b.minX - m || b.maxX > e.b.maxX + m || b.minY < e.b.minY - m || b.maxY > e.b.maxY + m) continue;
-    if (!extra.has(sh.groupId)) extra.set(sh.groupId, { ids: [], dx: e.dx, dy: e.dy, pathIds: [] }); extra.get(sh.groupId).ids.push(sh.id);
+    if (moved.has(sh.id) || sh.holeLink || withHoles.has(sh.id) || !(sh.layer === 'guide' || sh.lineStyle === 'dashed')) continue;
+    let e; if (sh.groupId) { e = info4.get(sh.groupId); if (!e || !e.ok) continue; } else { if (!sameAll || !allBox) continue; e = { dx: plan[0].dx, dy: plan[0].dy, b: allBox }; }
+    const b = bboxOf(sh), m = 10; if (b.minX < e.b.minX - m || b.maxX > e.b.maxX + m || b.minY < e.b.minY - m || b.maxY > e.b.maxY + m) continue;
+    const key = sh.groupId || ''; if (!extra.has(key)) extra.set(key, { ids: [], dx: e.dx, dy: e.dy, pathIds: [] }); extra.get(key).ids.push(sh.id);
   }
   for (const g of extra.values()) plan.push(g);
   return { plan, skipped, fitAll, moved };
