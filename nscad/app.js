@@ -1245,6 +1245,10 @@ let pitchOffCache = { key: '', list: [] };
 function findPitchOffs() {
   const key = commitSeq + '|' + doc.holes.length + '|' + doc.paths.length + '|' + doc.shapes.length;
   if (pitchOffCache.key === key && pitchOffCache.doc === doc) return pitchOffCache.list;
+  const out = computePitchOffs(); pitchOffCache = { key, doc, list: out }; return out;
+}
+/** ずれを数える本体（キャッシュしない）。commit の途中で、図形を動かした直後のずれを数え直すために分けた。 */
+function computePitchOffs() {
   const out = [], own = ownPaths();
   for (const p of doc.paths) {
     const route = resolvePath(doc, p); if (!route) continue;
@@ -1260,7 +1264,7 @@ function findPitchOffs() {
       const dev = g - tool.pitch; if (Math.abs(dev) > PITCH_TOL) out.push({ kind: 'gap', x1: a.x, y1: a.y, x2: b.x, y2: b.y, g, pitch: tool.pitch, dev, pathId: p.id, ids: [a.id, b.id] });
     }
   }
-  pitchOffCache = { key, doc, list: out }; return out;
+  return out;
 }
 function drawPitchMarks() {
   if (exporting || !viewShow.pitchOff) return; let list; try { list = findPitchOffs(); } catch { return; } if (!list.length) return;
@@ -1300,11 +1304,8 @@ function checkHoles() {
   commit(() => { selected = new Set(addGapHoles(add)); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
 }
-/** 持ち主の点線を、外れた穴の位置へ寄せる（事業主 2026-11-07「点線を寄せる」）。橙の輪の穴を持つ経路ごとに、穴と点線の先のずれ（穴 − 線の上の位置）の中央値を求め、その経路の持ち主の線（ガイド層・点線の線だけ）を、そのぶん動かす。
- *  穴の半分以上が、そのずれの 1mm 以内にそろう経路だけ（部品を動かして、点線が置いていかれた形）。持ち主が型紙の実線・ほかの経路と共有・ずれがばらばらの経路は動かさない。穴は動かさない。選んだ穴・選んだ図形の範囲の穴だけ（何も選ばなければ図面全体）。元に戻すは1回。 */
-function moveLinesToHoles() {
-  const offs = findPitchOffs().filter(m => m.kind === 'off'), range = selected.size ? rangeHoleSet() : null, inScope = offs.filter(m => !selected.size || selected.has(m.id) || range.has(m.id));
-  if (!inScope.length) { $('hint').textContent = t('linesToHolesNothing'); return; }
+/** 点線を寄せる計画（図面は変えない）：橙の輪の穴（offs）を経路ごとに見て、持ち主の点線を、どれだけ動かすか決める。{ plan: [{ ids, dx, dy }], skipped（寄せない経路の穴の数）, fitAll, moved（動かす図形の id の集まり） }。 */
+function planLinesToHoles(inScope) {
   const byPath = new Map(); for (const m of inScope) { if (!byPath.has(m.pathId)) byPath.set(m.pathId, []); byPath.get(m.pathId).push(m); }
   const med = a => { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; }, plan = [], moved = new Set(); let skipped = 0, fitAll = 0;
   for (const [pid, list] of byPath) {
@@ -1314,8 +1315,18 @@ function moveLinesToHoles() {
     if (!guideOnly || shared || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }
     plan.push({ ids: p.shapeIds.filter(id => !moved.has(id)), dx: mx, dy: my }); p.shapeIds.forEach(id => moved.add(id)); fitAll += fit;
   }
+  return { plan, skipped, fitAll, moved };
+}
+/** 点線を寄せる計画を、図形に当てる（commit の中で呼ぶ）。 */
+function applyLinePlan(plan) { const to = new Map(); for (const g of plan) for (const id of g.ids) to.set(id, g); doc.shapes = doc.shapes.map(s => to.has(s.id) ? translate(s, to.get(s.id).dx, to.get(s.id).dy) : s); }
+/** 持ち主の点線を、外れた穴の位置へ寄せる（事業主 2026-11-07「点線を寄せる」）。橙の輪の穴を持つ経路ごとに、穴と点線の先のずれ（穴 − 線の上の位置）の中央値を求め、その経路の持ち主の線（ガイド層・点線の線だけ）を、そのぶん動かす。
+ *  穴の半分以上が、そのずれの 1mm 以内にそろう経路だけ（部品を動かして、点線が置いていかれた形）。持ち主が型紙の実線・ほかの経路と共有・ずれがばらばらの経路は動かさない。穴は動かさない。選んだ穴・選んだ図形の範囲の穴だけ（何も選ばなければ図面全体）。元に戻すは1回。 */
+function moveLinesToHoles() {
+  const offs = findPitchOffs().filter(m => m.kind === 'off'), range = selected.size ? rangeHoleSet() : null, inScope = offs.filter(m => !selected.size || selected.has(m.id) || range.has(m.id));
+  if (!inScope.length) { $('hint').textContent = t('linesToHolesNothing'); return; }
+  const { plan, skipped, fitAll, moved } = planLinesToHoles(inScope);
   if (!plan.length) { $('hint').textContent = t('linesToHolesNone', { k: skipped }); return; }
-  cancel(); commit(() => { const to = new Map(); for (const g of plan) for (const id of g.ids) to.set(id, g); doc.shapes = doc.shapes.map(s => to.has(s.id) ? translate(s, to.get(s.id).dx, to.get(s.id).dy) : s); });
+  cancel(); commit(() => applyLinePlan(plan));
   $('hint').textContent = t('linesToHolesDone', { k: moved.size, n: inScope.length, fit: fitAll }); draw();
 }
 /** 線から外れた穴を、持ち主の線の上（橙の点線の先）へ戻す（事業主 2026-11-07「元の位置からの点線ならどうやったら元の位置に戻せるか？」→「穴だけ戻す」）。
@@ -1329,6 +1340,32 @@ function returnHolesToPath() {
   if (!pick.length) { $('hint').textContent = skipped ? t('holesBackAllSkipped', { k: skipped }) : t('holesBackNone'); return; }
   cancel(); commit(() => { for (const m of pick) { const h = doc.holes.find(x => x.id === m.id); if (h) { h.x = +m.qx.toFixed(4); h.y = +m.qy.toFixed(4); } } });
   $('hint').textContent = skipped ? t('holesBackDoneSkip', { n: pick.length, k: skipped }) : t('holesBackDone', { n: pick.length }); draw();
+}
+/** 橙を直す（事業主 2026-11-07「案内しないと解決できない機能は誰もつかいこなせない」→ 案A：橙の輪の穴があると画面に帯が出て、1ボタンで直る）。選んでいる図形に関係なく、図面全体の橙の輪の穴を、次の順に自動で直す。
+ *  ① 持ち主が点線（ガイド層・点線の線）だけで、穴の半分以上が同じずれにそろっている経路は、点線を穴のずれのぶん動かす（planLinesToHoles）。
+ *  ② それでも線から外れている穴は、線の上の位置（s）が他の穴と重ならないなら、線の上へ戻す。
+ *  ③ 位置 s が線の端に張り付いて重なっている穴（元の位置の記録が失われている）は、いまの位置のまま確定する（独立した穴＝ownVisible にして、橙の輪を出さない）。
+ *  直したあと、橙の輪は必ず0個。元に戻すは1回。 */
+function fixPitchOffs() {
+  const offs0 = findPitchOffs().filter(m => m.kind === 'off'); if (!offs0.length) { $('hint').textContent = t('pitchFixNone'); return; }
+  const { plan } = planLinesToHoles(offs0); let lines = 0, back = 0, keep = 0, left = 0;
+  cancel(); commit(() => {
+    if (plan.length) applyLinePlan(plan);
+    const off1 = computePitchOffs().filter(m => m.kind === 'off'), keyOf = h => h.pathId + '|' + Math.round(h.s * 1000), same = new Map(), byId = new Map(doc.holes.map(h => [h.id, h]));
+    for (const h of doc.holes) same.set(keyOf(h), (same.get(keyOf(h)) || 0) + 1);
+    lines = new Set(plan.flatMap(g => g.ids)).size; left = offs0.length - off1.length;
+    for (const m of off1) { const h = byId.get(m.id); if (!h) continue; if (same.get(keyOf(h)) === 1) { h.x = +m.qx.toFixed(4); h.y = +m.qy.toFixed(4); back++; } else { h.ownVisible = true; keep++; } }
+  });
+  const parts = []; if (left) parts.push(t('pitchFixPartLines', { k: lines, a: left })); if (back) parts.push(t('pitchFixPartBack', { a: back })); if (keep) parts.push(t('pitchFixPartKeep', { a: keep }));
+  $('hint').textContent = t('pitchFixDone', { n: offs0.length, parts: parts.join('・') }); draw();
+}
+/** 橙の輪の穴があるとき、画面に出す帯（「橙を直す」1ボタン）。表示→ピッチのずれを表示 を切っているとき・書き出し中は出さない。「閉じる」を押すと、橙の輪の数か図面が変わるまで隠す。 */
+let pitchBarSkip = null;
+function updatePitchFixBar() {
+  const bar = $('pitchFixBar'); if (!bar) return;
+  let n = 0; if (!exporting && viewShow.pitchOff) { try { n = findPitchOffs().filter(m => m.kind === 'off').length; } catch { n = 0; } }
+  const hide = !n || (!!pitchBarSkip && pitchBarSkip.doc === doc && pitchBarSkip.n === n); bar.hidden = hide; if (hide) return;
+  const info = t('pitchFixInfo', { n }); if ($('pitchFixInfo').textContent !== info) $('pitchFixInfo').textContent = info;
 }
 /** 歯抜けの穴を図面に足す（commit の中で呼ぶ）。足した穴の id の並びを返す。 */
 function addGapHoles(list) { const made = []; for (const { gapId, ...h } of list) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } return made; }
@@ -9404,7 +9441,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawPitchMarks(); drawEdgeSnap();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawPitchMarks(); updatePitchFixBar(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -10373,6 +10410,7 @@ $('gRedo').onclick = () => { $('gTitleIn').value = galleryAuto.title; $('gDesc')
 $('gClose').onclick = () => $('galleryDialog').close();
 $('gConsent').addEventListener('change', gallerySync); $('gSubmit').onclick = submitGallery;
 $('autosaveBarSave').onclick = () => save();
+$('pitchFixBtn').onclick = () => { countUse('pitch_fix'); fixPitchOffs(); }; $('pitchFixClose').onclick = () => { pitchBarSkip = { doc, n: findPitchOffs().filter(m => m.kind === 'off').length }; $('pitchFixBar').hidden = true; };   /* 橙を直す帯（事業主 2026-11-07） */
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
