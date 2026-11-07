@@ -75,6 +75,59 @@ function nstPack(order, rasters, gw, gh, gc, deadline) {
   const last = sheets[sheets.length - 1], score = unplaced.length * 1e9 + sheets.length * 1e6 + (last ? last.rows * 1000 : 0);
   return { sheets, unplaced, score };
 }
+/* ---- 間隔 0 のとき：置いたあとの型紙を、ぴったり接するまで寄せる（事業主 2026-11-08「隙間が０にならない」）。
+   格子（既定 2mm）で置くと、少しでもかかる格子は塗るため、型紙どうしに 0.5〜2mm のすき間が残る。置いたあとで、本当の外形の重なりを調べて、左・上へ、重ならない限界まで動かす（0.001mm まで）。 ---- */
+const NST_TOUCH = 1e-6;
+const nstCrossZ = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+/** 2本の線分が、端以外で、はっきり交わるか（端が接する・重なって並ぶだけは、交わりでない）。 */
+function nstProperCross(p1, p2, p3, p4) {
+  const d1 = nstCrossZ(p3, p4, p1), d2 = nstCrossZ(p3, p4, p2), d3 = nstCrossZ(p1, p2, p3), d4 = nstCrossZ(p1, p2, p4);
+  return ((d1 > NST_TOUCH && d2 < -NST_TOUCH) || (d1 < -NST_TOUCH && d2 > NST_TOUCH)) && ((d3 > NST_TOUCH && d4 < -NST_TOUCH) || (d3 < -NST_TOUCH && d4 > NST_TOUCH));
+}
+/** 点 p が、外形 poly の内側に、はっきり入っているか（縁の上は入っていない）。 */
+function nstStrictInside(p, poly, tol) {
+  let c = false, near = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j]; if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) c = !c;
+    const vx = b.x - a.x, vy = b.y - a.y, n = vx * vx + vy * vy, t = n ? Math.max(0, Math.min(1, ((p.x - a.x) * vx + (p.y - a.y) * vy) / n)) : 0; near = Math.min(near, Math.hypot(p.x - (a.x + vx * t), p.y - (a.y + vy * t)));
+  }
+  return c && near > tol;
+}
+/** 2つの外形が重なるか（縁が接するだけは、重ならない）。 */
+function nstPolyOverlap(A, B, boxA, boxB, tol) {
+  if (boxA.maxX <= boxB.minX + tol || boxB.maxX <= boxA.minX + tol || boxA.maxY <= boxB.minY + tol || boxB.maxY <= boxA.minY + tol) return false;
+  const nA = A.length, nB = B.length;
+  for (let i = 0; i < nA; i++) { const a1 = A[i], a2 = A[(i + 1) % nA]; for (let j = 0; j < nB; j++) if (nstProperCross(a1, a2, B[j], B[(j + 1) % nB])) return true; }
+  for (const p of A) if (nstStrictInside(p, B, tol)) return true;
+  for (const q of B) if (nstStrictInside(q, A, tol)) return true;
+  /* 辺をそろえて重なる（頂点が相手の縁の上・辺の交わりが「接するだけ」に見える）ときや、同じ形がそのまま重なるときのため：辺の中点と、頂点の平均の点でも調べる */
+  const mids = P => { const o = []; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; o.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }); } o.push({ x: P.reduce((s, q) => s + q.x, 0) / P.length, y: P.reduce((s, q) => s + q.y, 0) / P.length }); return o; };
+  for (const p of mids(A)) if (nstStrictInside(p, B, tol)) return true;
+  for (const q of mids(B)) if (nstStrictInside(q, A, tol)) return true;
+  return false;
+}
+/** 1枚の用紙の型紙（items＝[{ points, dx, dy }]）を、左・上へ寄せる。bounds＝印刷できる範囲 { minX, minY, maxX, maxY }。限界 tmax mm まで。items を書き換える。 */
+function nstCompactSheet(items, bounds, tmax) {
+  const tol = 0.0005, boxes = items.map(it => nstBox(it.points));
+  const order = items.map((_, i) => i).sort((a, b) => boxes[a].minX - boxes[b].minX || boxes[a].minY - boxes[b].minY);
+  const free = (i, dx, dy) => {
+    const b = boxes[i], nb = { minX: b.minX + dx, maxX: b.maxX + dx, minY: b.minY + dy, maxY: b.maxY + dy };
+    if (nb.minX < bounds.minX - tol || nb.minY < bounds.minY - tol || nb.maxX > bounds.maxX + tol || nb.maxY > bounds.maxY + tol) return false;
+    const moved = dx || dy ? items[i].points.map(p => ({ x: p.x + dx, y: p.y + dy })) : items[i].points;
+    for (let j = 0; j < items.length; j++) if (j !== i && nstPolyOverlap(moved, items[j].points, nb, boxes[j], tol)) return false;
+    return true;
+  };
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    for (const i of order) for (const [ux, uy] of [[-1, 0], [0, -1]]) {
+      const STEP = 0.5; let ok = 0, bad = null;
+      for (let t = STEP; t <= tmax + 1e-9; t += STEP) { if (free(i, ux * t, uy * t)) ok = t; else { bad = t; break; } }
+      if (bad !== null) { let lo = ok, hi = bad; for (let k = 0; k < 16; k++) { const mid = (lo + hi) / 2; if (free(i, ux * mid, uy * mid)) lo = mid; else hi = mid; } ok = lo; }
+      if (ok > 1e-4) { const sx = ux * ok, sy = uy * ok; items[i].points = items[i].points.map(p => ({ x: p.x + sx, y: p.y + sy })); items[i].dx += sx; items[i].dy += sy; boxes[i] = nstBox(items[i].points); moved = true; }
+    }
+    if (!moved) break;
+  }
+}
 /** 型紙を用紙に並べる。pieces＝[{ id, points: [{ x, y }, …]（外形・閉じた形） }]。
  *  opts：sheetW・sheetH（用紙の大きさ mm・既定 A4 縦 210×297）／margin（印刷余白 mm・既定 10）／gap（型紙どうしの間隔 mm・既定 3）／cell（格子 mm・既定 2）／rotate（回転を許す・既定 true）／
  *  orient（'portrait'｜'landscape'｜'auto'＝両方を試す・既定 'auto'）／timeMs（試す時間の上限・既定 1500）／trials（順番を試す回数の上限・既定 60）／seed。
@@ -110,6 +163,7 @@ export function nestPieces(pieces, opts = {}) {
       const R = rasters.get(pl.piece.id)[pl.ri], I = info.get(pl.piece.id), x0 = margin + pl.gx * cell, y0 = margin + pl.gy * cell, dx = x0 - R.minX, dy = y0 - R.minY;
       return { id: pl.piece.id, angle: R.angle, center: I.center, dx, dy, points: R.rp.map(q => ({ x: q.x + dx, y: q.y + dy })) };
     });
+    if (gap <= 1e-9 && items.length > 1) nstCompactSheet(items, { minX: margin, minY: margin, maxX: pw - margin, maxY: ph - margin }, cell * 3);   /* 間隔 0：ぴったり接するまで寄せる */
     return { items, usedArea: items.reduce((s, it) => s + nstArea(it.points), 0) };
   });
   const total = sheets.reduce((s, sh) => s + sh.usedArea, 0), usage = sheets.length ? total / (sheets.length * usableArea) : 0;

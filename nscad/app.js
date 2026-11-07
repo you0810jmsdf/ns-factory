@@ -5721,7 +5721,7 @@ function nestRun() {
   for (const sh of doc.shapes) { if (!visible(sh) || !editable(sh)) continue; const own0 = own.findIndex(o => o.has(sh.id)); if (own0 >= 0) { owner.set(sh.id, own0); continue; } let b; try { b = bboxOf(sh); } catch { continue; } if (![b.minX, b.maxX, b.minY, b.maxY].every(Number.isFinite)) continue; const c = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }; let best = -1; polys.forEach((poly, i) => { if (nestInside(c, poly) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) owner.set(sh.id, best); }
   const pieces = pcs.map((c, i) => ({ ids: [...owner].filter(([, k]) => k === i).map(([id]) => id) }));
   const bb = bboxOfDoc(doc), origin = bb && Number.isFinite(bb.maxX) ? { x: bb.maxX + 30, y: bb.minY } : { x: 0, y: 0 };
-  nestPreview = { res, pieces, origin, sizeName: $('nestSize').value.toUpperCase() };
+  nestPreview = { res, pieces, origin, polys, sizeName: $('nestSize').value.toUpperCase() };
   const orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait'), n = res.sheets.reduce((a, sh) => a + sh.items.length, 0);
   $('nestResult').textContent = res.sheets.length ? t('nestResult', { sheets: res.sheets.length, size: nestPreview.sizeName, orient, usage: (res.usage * 100).toFixed(1), waste: (res.wasteRatio * 100).toFixed(1), n, un: res.unplaced.length ? t('nestUnplaced', { n: res.unplaced.length }) : '' }) : t('nestNoFit');
   $('nestApply').disabled = !res.sheets.length; $('hint').textContent = $('nestResult').textContent; nestFitView(); draw();
@@ -5732,8 +5732,34 @@ function nestFitView() {
   const { res, origin: so } = nestPreview, n = res.sheets.length, w = n * res.sheetW + (n - 1) * 20, h = res.sheetH, vw = viewW(), vh = viewH();
   scale = Math.max(0.1, Math.min(100, (vw - 80) / w, (vh - 110) / h)); origin = { x: vw / 2 - (so.x + w / 2) * scale, y: vh / 2 - (so.y + h / 2) * scale };
 }
+/** 「配置する」の、複製の形（事業主 2026-11-08「別のタブに作図ではなかったですか？」）：元の図形は動かさず、型紙ごとのコピー（中の菱目・線・スロットなどもいっしょに）を、回転・移動して、用紙1枚＝1つの新しいタブに並べる。
+ *  型紙ごとの複製の元＝型紙の外形の中の図形（pieces[i].ids）と、外形の中の穴（いちばん小さい外形に入れる）。「重なった直線を1本にまとめる」が入っていれば、新しいタブの中で、辺が重なった直線を1本にする（革色の塗りは付かない）。 */
+function nestApplyCopies() {
+  if (!nestPreview || !nestPreview.res.sheets.length) return;
+  const { res, pieces, polys, sizeName } = nestPreview, merge = $('nestMerge').checked, orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait');
+  const areas = polys.map(pl => Math.abs(pl.reduce((a, q, i) => a + q.x * pl[(i + 1) % pl.length].y - pl[(i + 1) % pl.length].x * q.y, 0)) / 2), holeOwner = new Map();
+  for (const h of doc.holes) { if (!holeEditable(h)) continue; let best = -1; polys.forEach((pl, i) => { if (nestInside({ x: h.x, y: h.y }, pl) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) holeOwner.set(h.id, best); }
+  const payloads = new Map();
+  for (const i of new Set(res.sheets.flatMap(sh => sh.items.map(it => it.id)))) { const ids = new Set(pieces[i]?.ids || []); if (!ids.size) continue; const holeIds = new Set([...holeOwner].filter(([, k]) => k === i).map(([id]) => id)); payloads.set(i, extractSelection(doc, ids, { holeIds, asIs: asIsWithin(ids) })); }
+  cancel(); const first = tabs.length; let removed = 0, n = 0;
+  res.sheets.forEach((sh, k) => {
+    newTab(t('nestTab', { size: sizeName, orient, k: k + 1, n: res.sheets.length }));
+    const nd = doc;
+    for (const it of sh.items) {
+      const src = payloads.get(it.id); if (!src) continue;
+      const orig = transformPayload(src, src.origin, 1), fn = o => translate(it.angle ? rotate(o, it.angle, it.center) : o, it.dx, it.dy), pt = q => { const r = fn({ x: q.x, y: q.y }); return { x: r.x, y: r.y }; };
+      const fills = merge ? [] : (orig.fills || []).map(fl => ({ ...fl, points: fl.points.map(pt), holes: (fl.holes || []).map(h => h.map(pt)) }));
+      mergePayload(nd, { ...orig, shapes: orig.shapes.map(fn), holes: orig.holes.map(fn), fills: fills.length ? fills : undefined, tools: src.tools, layers: src.layers }, { at: { x: 0, y: 0 }, scale: 1, freshId }); n++;
+    }
+    if (merge) removed += unifyPackLines(nd).removed || 0;
+    rebuildSnaps(); tabs[activeTab].dirty = true;
+  });
+  nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit();
+  $('hint').textContent = t('nestCopyDone', { size: sizeName, orient, sheets: res.sheets.length, n }) + (removed > 0.005 ? ' ' + t('packMerged', { mm: removed.toFixed(1) }) : '');
+}
 function nestApply() {
   if (!nestPreview || !nestPreview.res.sheets.length) return;
+  if ($('nestCopy').checked) { nestApplyCopies(); return; }
   const { res, pieces, origin } = nestPreview, n0 = undo.length, moved = new Set();
   cancel();
   res.sheets.forEach((sh, k) => {
