@@ -1294,7 +1294,18 @@ function holesInSelectedShapes() {
     let box = null; for (const x of sel.filter(y => ids.has(y.id))) { const q = bboxOf(x); box = box ? { minX: Math.min(box.minX, q.minX), minY: Math.min(box.minY, q.minY), maxX: Math.max(box.maxX, q.maxX), maxY: Math.max(box.maxY, q.maxY) } : { ...q }; }
     if (box && box.maxX - box.minX >= 3 && box.maxY - box.minY >= 3) boxes.push(box);   /* 幅・高さが 3mm 未満（1本の直線など）は、部品とは見なさない：線の上の穴は、これまでどおり、補助の線・選んだ穴で決まる */
   }
-  return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX && h.x <= q.maxX && h.y >= q.minY && h.y <= q.maxY));
+  /* 穴の持ち主（事業主 2026-11-07「中心に合わせる機能を使ったら、周囲の菱目を巻き込んで移動してしまう。レイヤーが違うはずなのに」：サポータの下端が表紙の縫い線の上にあり、表紙の縫い穴 16 個が四角の線上に入って、いっしょに動いた）。
+     四角の中にあっても、独立した穴（.lcc の穴）か、穴の経路の線が、その四角の中に収まっている穴だけを入れる。経路が四角の外へ広がる穴（表紙全体の縫い穴など）は、別の部品の穴＝このコメントの「別の部品の穴は入らない」。 */
+  const byId = new Map(doc.shapes.map(s => [s.id, s])), pathBox = new Map();
+  const boxOfPath = pid => {
+    if (pathBox.has(pid)) return pathBox.get(pid);
+    const p = doc.paths.find(x => x.id === pid); let b = null;
+    for (const id of p?.shapeIds || []) { const s = byId.get(id), q = s && bboxOf(s); if (q) b = b ? { minX: Math.min(b.minX, q.minX), minY: Math.min(b.minY, q.minY), maxX: Math.max(b.maxX, q.maxX), maxY: Math.max(b.maxY, q.maxY) } : { ...q }; }
+    pathBox.set(pid, b); return b;
+  };
+  const TOL = 1;   /* 経路の線が、部品の四角から 1mm までのはみ出しは、同じ部品の線とみなす */
+  const ownedBy = (h, q) => { if (holeIsOwn(h, ownPaths())) return true; const b = boxOfPath(h.pathId); return !b || (b.minX >= q.minX - TOL && b.maxX <= q.maxX + TOL && b.minY >= q.minY - TOL && b.maxY <= q.maxY + TOL); };
+  return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX && h.x <= q.maxX && h.y >= q.minY && h.y <= q.maxY && ownedBy(h, q)));
 }
 /** 「選択した範囲はすべて対象」（事業主 2026-10-30）：選んだ図形の範囲（つながった図形ごとの外接の四角）の中の穴は、選んだものとして扱う。移動・コピー・削除・点に置換・書き出し・強調表示が、同じ判定を使う。選択と図面が変わらないあいだは、結果を使い回す。 */
 function rangeHoleSet() {
