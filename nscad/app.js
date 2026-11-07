@@ -1522,7 +1522,36 @@ function moveHiddenLeft() {
   $('hint').textContent = !withHoles ? t('hiddenLeftDone', { n: live.size }) : live.size ? t('hiddenLeftDoneHoles', { n: live.size, m: holeSet.size }) : t('hiddenLeftDoneHolesOnly', { m: holeSet.size });
 }
 /** 歯抜けの穴を図面に足す（commit の中で呼ぶ）。足した穴の id の並びを返す。 */
-function addGapHoles(list) { const made = []; for (const { gapId, ...h } of list) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } return made; }
+/** 補う穴を足す。補う位置（0.05mm 以内）に、別の経路の「1個だけの穴」（行き場の無い穴）がすでに乗っているときは、新しい穴を足さず、その穴をこの列の経路へ付け替える（事業主 2026-11-08「右の列の真ん中が違う」・記録 0643：足した穴が、同じ位置の別経路の穴と重複として消され、「補いました」と出るのに歯抜けが残り続けた）。 */
+function addGapHoles(list) {
+  const made = [], count = new Map(); for (const x of doc.holes) count.set(x.pathId, (count.get(x.pathId) || 0) + 1);
+  for (const { gapId, ...h } of list) {
+    const near = doc.holes.find(x => x.toolId === h.toolId && x.pathId !== h.pathId && (!x.pathId || count.get(x.pathId) <= 1) && Math.hypot(x.x - h.x, x.y - h.y) < 0.05);
+    if (near) { if (near.pathId) count.set(near.pathId, count.get(near.pathId) - 1); near.pathId = h.pathId; near.s = h.s; near.x = h.x; near.y = h.y; near.angleDeg = h.angleDeg; count.set(h.pathId, (count.get(h.pathId) || 0) + 1); made.push(near.id); continue; }
+    const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id);
+  }
+  return made;
+}
+/** 図面全体の歯抜けを、1回で補う（画面の帯の「穴を補う」）。選択は変えない。元に戻すは1回。 */
+function fixAllGaps() {
+  const { add, gapCount } = findHoleGaps(true);
+  if (!add.length) { $('hint').textContent = t('noGapFound'); return; }
+  commit(() => { addGapHoles(add); });
+  $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
+}
+/** 歯抜けがあるとき、画面に出す帯（「穴を補う」1ボタン）。「閉じる」を押すと、歯抜けの数か図面が変わるまで隠す。数えるのは、図面が変わったときだけ。 */
+let gapFixSkip = null, gapFixCache = { key: '', n: 0, doc: null };
+function updateGapFixBar() {
+  const bar = $('gapFixBar'); if (!bar) return;
+  let n = 0;
+  if (!exporting) {
+    const key = [commitSeq, undo.length, doc.holes.length, doc.paths.length, doc.shapes.length, doc.tools.length, doc.layers.map(l => (l.visible ? 1 : 0) + '' + (l.locked ? 1 : 0)).join(''), viewShow.dashed, viewShow.solid].join('|');
+    if (gapFixCache.key !== key || gapFixCache.doc !== doc) { let c = 0; try { c = findHoleGaps(true).gapCount; } catch { c = 0; } gapFixCache = { key, n: c, doc }; }   /* 元に戻す・やり直し・別の図面で、数え直す（undo の数と、図面そのものの入れ替わりも目印にする） */
+    n = gapFixCache.n;
+  }
+  const hide = !n || (!!gapFixSkip && gapFixSkip.doc === doc && gapFixSkip.n === n); bar.hidden = hide; if (hide) return;
+  const info = t('gapFixInfo', { n }); if ($('gapFixInfo').textContent !== info) $('gapFixInfo').textContent = info;
+}
 /** 赤い輪をクリックしたとき：クリックの近くの輪（いちばん近いもの）と、その輪の所属（選んだ線の分／開いた直後の分）を返す。無ければ null。 */
 function gapMarkAt(p) {
   const tol = Math.max(2.2, 9 / scale) + 2 / scale; let best = null, bd = Infinity;
@@ -9641,7 +9670,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawPitchMarks(); updatePitchFixBar(); updateHiddenLeftBar(); drawEdgeSnap();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawPitchMarks(); updatePitchFixBar(); updateHiddenLeftBar(); updateGapFixBar(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
@@ -10611,6 +10640,7 @@ $('gClose').onclick = () => $('galleryDialog').close();
 $('gConsent').addEventListener('change', gallerySync); $('gSubmit').onclick = submitGallery;
 $('autosaveBarSave').onclick = () => save();
 $('pitchFixBtn').onclick = () => { countUse('pitch_fix'); fixPitchOffs(); }; $('pitchFixClose').onclick = () => { pitchBarSkip = { doc, n: findPitchOffs().filter(m => m.kind === 'off').length }; $('pitchFixBar').hidden = true; };
+$('gapFixBtn').onclick = () => { countUse('gap_fix'); fixAllGaps(); }; $('gapFixClose').onclick = () => { gapFixSkip = { doc, n: gapFixCache.n }; $('gapFixBar').hidden = true; };   /* 歯抜けの帯（事業主 2026-11-08） */
 $('hiddenLeftBtn').onclick = () => { countUse('hidden_left'); moveHiddenLeft(); }; $('hiddenLeftClose').onclick = leaveHiddenLeft;   /* 動かなかった隠れた線の帯（事業主 2026-11-08） */   /* 橙を直す帯（事業主 2026-11-07） */
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
