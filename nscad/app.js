@@ -3,6 +3,7 @@ import { arrayOffsets } from './array.js';
 import { alignOffsets, distributeOffsets } from './align.js';
 import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadiusDimension, adPieces } from './autodim.js';
 import { nestPieces } from './nest.js';
+import { packSets } from './pack.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, TEXT_FONT_FILES, textFontStack } from './geometry.js';
 import { stitchSegments, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
@@ -494,6 +495,13 @@ function selectedShapeIds() {
   for(const p of doc.paths) if(p.shapeIds.some(id=>ids.has(id)) && p.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id))))p.shapeIds.forEach(id=>ids.add(id));
   for(const p of doc.paths) if(p.shapeIds.some(id=>!editable(doc.shapes.find(s=>s.id===id))))p.shapeIds.forEach(id=>ids.delete(id));
   return ids;
+}
+/** 複製（コピー・別タブへ送る・詰めて複製）で、持ち主の線を「そのままの線」で運ぶ条件（extractSelection の asIs）：層は見えていて（点線の表示を切っているだけ）、運ぶ図形（ids）の外接の四角（1mm 広げた中）に、すっぽり収まる線。
+ *  四角から外へ長く続く線（ほかの部品とつながった長い列の線）は、見えない補助の線のまま運ぶ（複製から、外へ突き出た点線を出さない）。 */
+function asIsWithin(ids) {
+  let box = null;
+  for (const s of doc.shapes) { if (!ids.has(s.id)) continue; let b; try { b = bboxOf(s); } catch { continue; } if (![b.minX, b.minY, b.maxX, b.maxY].every(Number.isFinite)) continue; box = box ? { minX: Math.min(box.minX, b.minX), minY: Math.min(box.minY, b.minY), maxX: Math.max(box.maxX, b.maxX), maxY: Math.max(box.maxY, b.maxY) } : { ...b }; }
+  return s => { if (!box || !layerEditableAnyView(s)) return false; let b; try { b = bboxOf(s); } catch { return false; } const m = 1; return [b.minX, b.minY, b.maxX, b.maxY].every(Number.isFinite) && b.minX >= box.minX - m && b.maxX <= box.maxX + m && b.minY >= box.minY - m && b.maxY <= box.maxY + m; };
 }
 let ownPathsCache = null; const ownPaths = () => (ownPathsCache ||= ownHolePathIds(doc)); /* 独立した穴（.lcc の穴）の経路の集まり。描き直し・変更のたびに作り直す */
 function holeVisible(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerVisible(s)||s.layer==='guide');}); } /* ガイドの層を隠しても、ガイドの線に乗った穴は消さない（穴は目印の線ではない） */
@@ -5395,7 +5403,7 @@ function selectAllShapes() {
 }
 /** 選んでいる穴（箱で囲む・全選択で選ばれる）の番号。コピーで、縫い線が隠したガイドの層にある穴も運ぶため。 */
 function selectedHoleIdSet() { return new Set(doc.holes.filter(h => isSelHole(h) && holeEditable(h)).map(h => h.id)); }
-function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids, { holeIds: selectedHoleIdSet() }), tabs[activeTab]?.name || 'untitled'); }
+function clipboardText() { const ids = selectedShapeIds(); if (!ids.size) return null; return encodeClipboard(extractSelection(doc, ids, { holeIds: selectedHoleIdSet(), asIs: asIsWithin(ids) }), tabs[activeTab]?.name || 'untitled'); }
 /** 貼り付ける図形全体の中心を、マウスの位置に置くときの、置き場所。マウスの位置は磁石・スナップを効かせる（事業主指示 2026-10-17：中心に貼り付けられない・スナップが効いていない） */
 function pasteTarget(data) { const bb = bboxOfDoc({ shapes: data.payload.shapes || [], holes: [] }), k = Number($('pasteScale').value) || 1, p = snapped(cursor, false, anchor()); snap = null; return { x: p.x - (bb ? (bb.minX + bb.maxX) / 2 : 0) * k, y: p.y - (bb ? (bb.minY + bb.maxY) / 2 : 0) * k }; }
 /** 貼り付け待ち（事業主 2026-10-25「コピーした図形が他の図形と重なったところで貼り付けられてしまう。カーソル位置で移動後に貼り付けられるように」）：Ctrl+V では、すぐに置かず、貼る図形が半透明でカーソルについて動く。クリックした所に貼る（Esc でやめる）。 */
@@ -5459,7 +5467,7 @@ function reopenClosedTab() {
 function sendToTab(move) {
   const target = Number($('tabTarget').value); if (!tabs[target] || target === activeTab) { $('hint').textContent = t('needTab'); return; }
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('selectFirst'); return; }
-  const payload = extractSelection(doc, ids, { holeIds: selectedHoleIdSet() }), other = tabs[target].doc, before = JSON.stringify(other);
+  const payload = extractSelection(doc, ids, { holeIds: selectedHoleIdSet(), asIs: asIsWithin(ids) }), other = tabs[target].doc, before = JSON.stringify(other);
   const newIds = mergePayload(other, payload, { at: payload.origin, scale: 1, freshId, source: 'tab:' + tabs[activeTab].name });
   tabs[target].undo = tabs[target].undo || []; tabs[target].undo.push(before); tabs[target].dirty = true;
   if (move) removeSelected();
@@ -5727,6 +5735,55 @@ function nestApply() {
   selected = moved; nestPreview = null; $('nestApply').disabled = true; refreshInfo(); draw();
   $('hint').textContent = t('nestDone', { n: res.sheets.reduce((a, sh) => a + sh.items.length, 0) });
 }
+/** 選んだ図形を、用紙に詰めて複製し、新しいタブに並べる（事業主 2026-11-08「選択した図形を印刷時に余白を作らないように最適な配置にする（複製して配置）機能が欲しい。共有できる直線は重ねて統合すること」・選択：四角で詰める・回転しない・新しいタブ）。
+ *  部品＝選んだ図形のうち、外接の四角が重なる（0.3mm 以内）図形のまとまり（外形・中の線・スロットなど）。文字は、中心が部品の四角の中にあれば、その部品に入れる。寸法・写真・折りの図形は入れない。
+ *  穴（菱目）は、部品の経路ごと・選んだ穴・部品の外形の中の穴（クリックで選んだときに付いてこない穴も）を、いっしょに複製する。
+ *  並べ方：外接の長方形で、回転なし・すき間 gap（0＝辺がぴったり接する）。1枚に入るだけ（または決めたセット数）を複製して、用紙の枚数ぶん、新しいタブに作る。元の図面・選択は変えない。計算は pack.js。
+ *  重なった直線の統合：置いたあと、新しいタブの中で dedupeStrokes（縫い穴の経路の線・部品の線は除く）。統合すると線が分かれるので、領域の塗り（革色）は付けない。 */
+function packItems() {
+  const ids = selectedShapeIds(), SKIP = ['dimension', 'image', 'fold', 'text'];
+  const cand = doc.shapes.filter(s => ids.has(s.id) && layerVisible(s) && !SKIP.includes(s.type) && !s.foldSec), boxes = new Map();
+  for (const s of cand) { try { const b = bboxOf(s); if ([b.minX, b.minY, b.maxX, b.maxY].every(Number.isFinite)) boxes.set(s.id, b); } catch { /* 外接が出せない図形は入れない */ } }
+  const list = cand.filter(s => boxes.has(s.id)), parent = list.map((_, i) => i), tol = 0.3, find = i => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) { const a = boxes.get(list[i].id), b = boxes.get(list[j].id); if (a.minX <= b.maxX + tol && b.minX <= a.maxX + tol && a.minY <= b.maxY + tol && b.minY <= a.maxY + tol) { const ri = find(i), rj = find(j); if (ri !== rj) parent[rj] = ri; } }
+  const groups = new Map(); list.forEach((s, i) => { const r = find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(s); });
+  const clusters = [...groups.values()].map(members => { const bb = members.map(s => boxes.get(s.id)), box = { minX: Math.min(...bb.map(b => b.minX)), minY: Math.min(...bb.map(b => b.minY)), maxX: Math.max(...bb.map(b => b.maxX)), maxY: Math.max(...bb.map(b => b.maxY)) }; return { ids: new Set(members.map(s => s.id)), box }; });
+  const inBox = (x, y, b, m = 0) => x >= b.minX - m && x <= b.maxX + m && y >= b.minY - m && y <= b.maxY + m;
+  for (const s of doc.shapes) { if (!ids.has(s.id) || s.type !== 'text' || !layerVisible(s)) continue; let b; try { b = bboxOf(s); } catch { continue; } const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2; if (![cx, cy].every(Number.isFinite)) continue; const c = clusters.filter(k => inBox(cx, cy, k.box)).sort((p, q) => (p.box.maxX - p.box.minX) * (p.box.maxY - p.box.minY) - (q.box.maxX - q.box.minX) * (q.box.maxY - q.box.minY))[0]; if (c) c.ids.add(s.id); }
+  const explicit = doc.holes.filter(h => selected.has(h.id) && holeEditable(h)), items = [];
+  clusters.sort((p, q) => Math.round(p.box.minY) - Math.round(q.box.minY) || p.box.minX - q.box.minX).forEach((k, i) => {
+    const holeIds = new Set(explicit.filter(h => inBox(h.x, h.y, k.box, 0.5)).map(h => h.id)); try { for (const h of holesInSelectedShapes({ ids: k.ids })) holeIds.add(h.id); } catch { /* 枠の中の穴が数えられなくても、続ける */ }
+    const payload = extractSelection(doc, k.ids, { holeIds, asIs: asIsWithin(k.ids) }), pb = bboxOfDoc({ ...doc, shapes: payload.shapes.filter(s => !s.holeLink), holes: [] });
+    if (!pb || !(pb.maxX - pb.minX > 0) || !(pb.maxY - pb.minY > 0)) return;
+    items.push({ id: 'c' + (i + 1), w: pb.maxX - pb.minX, h: pb.maxY - pb.minY, payload, shapes: k.ids.size, holes: payload.holes.length });
+  });
+  return items;
+}
+/** 新しいタブの図形のうち、重なった直線・円弧を1本にまとめる。縫い穴の経路の線と部品の線は、そのまま。 */
+function unifyPackLines(d) {
+  const keep = new Set([...d.paths.flatMap(p => p.shapeIds), ...(d.parts || []).flatMap(p => p.shapeIds || [])]), r = dedupeStrokes(d.shapes, { keepIds: keep, splitBy: s => s.foldFlat || '' });
+  if (r.touched) d.shapes = r.shapes; return r;
+}
+function packSelectedToTabs() {
+  const val = id => $(id).value.trim(), margin = Number(val('packMargin') || 0), gap = Number(val('packGap') || 0), raw = val('packCopies'), copies = raw === '' ? null : Number(raw);
+  if (!(margin >= 0) || !(gap >= 0) || (copies !== null && !(copies >= 1 && Number.isInteger(copies)))) { $('hint').textContent = t('invalidNumber'); return; }
+  const items = packItems(); if (!items.length) { $('hint').textContent = t('packNone'); return; }
+  const key = $('paper').value, a3 = key.startsWith('a3'), [pw, ph] = NEST_PAPERS[a3 ? 'a3' : 'a4'], sizeName = a3 ? 'A3' : 'A4';
+  const res = packSets(items.map(it => ({ id: it.id, w: it.w, h: it.h })), pw, ph, { margin, gap, copies, orient: 'auto' });
+  if (!res.ok) { const big = items.find(it => it.id === res.tooBig?.[0]); $('hint').textContent = res.reason === 'tooBig' && big ? t('packTooBig', { size: sizeName, w: big.w.toFixed(1), h: big.h.toFixed(1) }) : t('packNone'); return; }
+  const merge = $('packMerge').checked, byId = new Map(items.map(it => [it.id, it])), orient = t(res.orient === 'landscape' ? 'nestLandscape' : 'nestPortrait');
+  let removed = 0, nParts = 0; cancel(); const first = tabs.length;
+  res.sheets.forEach((sheet, k) => {
+    newTab(t('packTab', { size: sizeName, orient, k: k + 1, n: res.sheets.length }));
+    const nd = doc;
+    for (const p of sheet) { const src = byId.get(p.itemId).payload; mergePayload(nd, merge ? { ...src, fills: undefined } : src, { at: { x: p.x, y: p.y }, scale: 1, freshId }); nParts++; }
+    if (merge) removed += unifyPackLines(nd).removed || 0;
+    rebuildSnaps(); tabs[activeTab].dirty = true;
+  });
+  switchTab(first); renderTabs(); fit();
+  $('hint').textContent = t('packDone', { size: sizeName, orient, sheets: res.sheets.length, sets: res.sets, n: items.length, usage: (res.usage * 100).toFixed(1) }) + (removed > 0.005 ? ' ' + t('packMerged', { mm: removed.toFixed(1) }) : '') + (res.perSheet === 0 ? ' ' + t('packSplit', { sheets: res.sheets.length }) : '');
+}
+$('outPack').onclick = () => { countUse('pack_copy'); packSelectedToTabs(); };
 function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
 /** 用紙の枠・印刷できる範囲・置く位置の薄い点線（draw から）。窓が開いていて、結果があるときだけ。 */
 function drawNestPreview() {

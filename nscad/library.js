@@ -74,12 +74,12 @@ export function transformPayload(payload, at = { x: 0, y: 0 }, scale = 1) {
   return { shapes, holes, paths, parts: payload.parts || [], ...(fills.length ? { fills } : {}) };
 }
 /** 文書と図形 id の集合から、転活用用の payload（図形・それに完結する経路と穴・部品・工具）を取り出す。座標は bbox の左上を原点にする。 */
-export function extractSelection(doc, ids, { originAtBbox = true, holeIds = null } = {}) {
+export function extractSelection(doc, ids, { originAtBbox = true, holeIds = null, asIs = null } = {}) {
   const shapes = doc.shapes.filter(s => ids.has(s.id)), idSet = new Set(shapes.map(s => s.id));
   /* 選んだ穴（holeIds）が乗る経路で、線がぜんぶは選ばれていないもの（縫い線が、隠したガイドの層にあるとき）：その線を、見えない補助の線（holeLink）として運び、選んだ穴も運ぶ（事業主 2026-10-25「菱目が消えた」：全選択→コピー→貼り付けで、穴が0個になっていた） */
   const whole = doc.paths.filter(p => p.shapeIds.every(id => idSet.has(id))), wholeIds = new Set(whole.map(p => p.id));
   const liveIds = new Set(doc.shapes.map(s => s.id)), extra = holeIds && holeIds.size ? doc.paths.filter(p => !wholeIds.has(p.id) && p.shapeIds.length && p.shapeIds.every(id => liveIds.has(id)) && doc.holes.some(h => h.pathId === p.id && holeIds.has(h.id))) : [], extraIds = new Set(extra.map(p => p.id));
-  const supportIds = new Set(extra.flatMap(p => p.shapeIds).filter(id => !idSet.has(id))), support = doc.shapes.filter(s => supportIds.has(s.id)).map(s => ({ ...JSON.parse(JSON.stringify(s)), holeLink: true }));
+  const supportIds = new Set(extra.flatMap(p => p.shapeIds).filter(id => !idSet.has(id))), support = doc.shapes.filter(s => supportIds.has(s.id)).map(s => ({ ...JSON.parse(JSON.stringify(s)), ...(asIs && asIs(s) ? {} : { holeLink: true }) }));   /* asIs（図形 → 真偽）：表示を切っているだけの線（点線の表示を切っている）は、補助の線にせず、そのまま運ぶ（補助の線にすると、複製の縫い線が見えなくなり、穴が独立した穴になって、ピッチのずれの印が出なくなる・事業主 2026-11-08）。層を隠した線は、今までどおり補助の線 */
   const paths = [...whole, ...extra], pathIds = new Set(paths.map(p => p.id));
   const holes = doc.holes.filter(h => wholeIds.has(h.pathId) || (extraIds.has(h.pathId) && holeIds.has(h.id))), toolIds = new Set(holes.map(h => h.toolId));
   const parts = doc.parts.filter(p => p.shapeIds.some(id => idSet.has(id))).map(p => ({ ...p, shapeIds: p.shapeIds.filter(id => idSet.has(id)) }));
