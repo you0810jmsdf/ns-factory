@@ -54,7 +54,7 @@ import { createPresence } from './presence.js';
 import { createRegistration, regIsOwner, REG_GATE_ON } from './registration.js';
 import { parseBuild, latestBuild, isNewerBuild, releasesSince } from './update_check.js';
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
-import { AUTOSAVE_KEY, packAutosave, unpackAutosave } from './autosave.js';
+import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
@@ -1390,13 +1390,14 @@ function showHelp(shortcuts = false, pageId = null) {
 }
 /** 自動保存：変更の1.5秒後に、全タブの図面を localStorage へ入れる。復元するか決める前は、前回の保存を上書きしない。 */
 function scheduleAutosave() { if (typeof setTimeout !== 'function') return; if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = setTimeout(flushAutosave, 1500); }
+let autosaveHadContent = false;   /* このページで、中身のある図面を自動保存したか */
 function flushAutosave() {
   if (typeof clearTimeout === 'function') clearTimeout(autosaveTimer); autosaveTimer = 0; if (!autosaveReady || pendingRestore) return;
   const primary = tabIsPrimary(), key = primary ? AUTOSAVE_KEY : AUTOSAVE_SUB_KEY;   /* 副のタブは別の置き場へ（主の自動保存・元に戻す履歴は上書き・削除しない）。以前は副では保存しなかったので、再読み込みで描いた分が消えた */
   snapshotTab(); const r = packAutosave(tabs.map(tb => ({ name: tb.name, doc: tb.doc, ...(tb.scale && tb.origin ? { view: { scale: tb.scale, cx: (viewW() / 2 - tb.origin.x) / tb.scale, cy: (viewH() / 2 - tb.origin.y) / tb.scale } } : {}) })), activeTab); /* 見ていた位置（画面の中心の図面座標）と倍率も、タブごとに保存する */
   try {
-    if (r.status === 'ok') { localStorage.setItem(key, r.text); autosaveWarned = false; autosaveState = 'ok'; lastAutosaveAt = r.savedAt; lastAutosaveSigs = tabs.map(tb => docSig(JSON.stringify(tb.doc))); scheduleUndoSave(r.savedAt); }   /* 履歴も、主は主の置き場・副は副の置き場へ（scheduleUndoSave が決める） */
-    else if (r.status === 'empty') { localStorage.removeItem(key); autosaveState = 'ok'; clearUndoRecord(primary ? undefined : UST_SUB_KEY).catch(() => {}); }   /* 副は、副の置き場だけ消す（主の履歴・ファイルの行き先は残す） */
+    if (r.status === 'ok') { autosaveHadContent = true; rotateAutosaveGenerations(localStorage, key); try { localStorage.setItem(key, r.text); } catch (e) { for (const gk of genKeys(key)) { try { localStorage.removeItem(gk); } catch { /* 無視 */ } } localStorage.setItem(key, r.text); } autosaveWarned = false;   /* 世代（10 分以上前の保存）を回してから、本体を保存。容量が足りなければ、世代を捨てて、本体を優先 */ autosaveState = 'ok'; lastAutosaveAt = r.savedAt; lastAutosaveSigs = tabs.map(tb => docSig(JSON.stringify(tb.doc))); scheduleUndoSave(r.savedAt); }   /* 履歴も、主は主の置き場・副は副の置き場へ（scheduleUndoSave が決める） */
+    else if (r.status === 'empty') { autosaveState = 'ok'; if (autosaveHadContent) { localStorage.removeItem(key); for (const gk of genKeys(key)) localStorage.removeItem(gk); clearUndoRecord(primary ? undefined : UST_SUB_KEY).catch(() => {}); } }   /* 空にしたのが、このページで描いた図面のときだけ、保存も履歴も消す。起動直後に、前回の続きが読めずに空の図面だったときは、消さない（更新で、自動保存と「元に戻す」の履歴が、空の図面の保存で消された・2026-11-07） */   /* 副は、副の置き場だけ消す（主の履歴・ファイルの行き先は残す） */
     else { autosaveState = 'tooLarge'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('autosaveTooLarge'); } }
   } catch { autosaveState = 'error'; if (!autosaveWarned) { autosaveWarned = true; $('hint').textContent = t('storageUnavailable'); } }
   syncAutosaveBar();
@@ -1462,15 +1463,30 @@ function readRestoreCandidates(keys) {
   return found;
 }
 const restoreKeysNow = () => tabIsPrimary() ? [AUTOSAVE_KEY, AUTOSAVE_SUB_KEY] : [AUTOSAVE_SUB_KEY];
-function offerRestore(keys = restoreKeysNow()) { const found = readRestoreCandidates(keys); if (!found.length) return false; showRestoreOffer(found[0]); return true; }
-function showRestoreOffer(info) {
-  const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'), when = `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
-  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when, n: info.shapes, tabs: info.tabs.length }) + (info.key === AUTOSAVE_SUB_KEY ? ' ' + t('restoreFromSub') : ''); $('restoreBar').hidden = false;
+/** 世代（10 分以上前の保存）の候補。壊れた世代は、消さずに、無視する（最新の保存が読めないときの、最後の頼り）。 */
+function readGenerationCandidates(keys) {
+  const found = [];
+  for (const base of keys) for (const key of genKeys(base)) {
+    let text = null; try { text = localStorage.getItem(key); } catch { /* 読めなければ何もしない */ } if (!text) continue;
+    const info = unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); }); if (info) found.push({ ...info, key, generation: true });
+  }
+  return found.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));
+}
+function offerRestore(keys = restoreKeysNow()) {
+  const found = readRestoreCandidates(keys), gens = readGenerationCandidates(keys), all = [...found, ...gens];
+  if (!all.length) return false; showRestoreOffer(all[0], all); return true;   /* 最新が読めなくても、以前の世代があれば出す */
+}
+const restoreWhen = info => { const d = new Date(info.savedAt), p2 = n => String(n).padStart(2, '0'); return `${d.getMonth() + 1}/${d.getDate()} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+let restoreChoices = [];
+function showRestoreOffer(info, all = null) {
+  const sel = $('restoreGen'); restoreChoices = all && all.length > 1 ? all : [];
+  if (sel) { sel.textContent = ''; sel.hidden = !restoreChoices.length; restoreChoices.forEach((c, i) => { const o = document.createElement('option'); o.value = String(i); o.textContent = (c.generation ? t('restoreGenOld') : t('restoreGenLatest')) + ' ' + restoreWhen(c) + ' · ' + c.shapes + ' ' + t('restoreGenShapes'); sel.appendChild(o); }); sel.value = String(Math.max(0, restoreChoices.indexOf(info))); }
+  pendingRestore = info; $('restoreInfo').textContent = t('restoreInfo', { when: restoreWhen(info), n: info.shapes, tabs: info.tabs.length }) + (info.key === AUTOSAVE_SUB_KEY ? ' ' + t('restoreFromSub') : '') + (info.generation ? ' ' + t('restoreGenNote') : ''); $('restoreBar').hidden = false;
 }
 function restoreAutosave() {
   const info = pendingRestore; if (!info) return; pendingRestore = null; $('restoreBar').hidden = true; snapshotTab();
   info.sigs = info.tabs.map(tb => docSig(JSON.stringify(tb.doc)));   /* 図面を整える（migrateDoc など）前の中身の署名：保管した履歴と照らす */
-  if (info.key === AUTOSAVE_SUB_KEY) { try { localStorage.removeItem(AUTOSAVE_SUB_KEY); } catch { /* 無視 */ } }   /* 副の保存は、戻したら片付ける（主の保存は、次の自動保存が上書きする） */
+  if (info.key === AUTOSAVE_SUB_KEY && !info.generation) { try { localStorage.removeItem(AUTOSAVE_SUB_KEY); } catch { /* 無視 */ } }   /* 副の保存は、戻したら片付ける（主の保存は、次の自動保存が上書きする） */
   const nextUp = readRestoreCandidates(restoreKeysNow().filter(k => k !== info.key))[0] || null;   /* 主の保存と副の保存の両方があったときの、もう一方（復元のあとの自動保存が上書きする前に読んでおく） */
   const empty = tabs.every(tb => !tb.doc.shapes.length), base = empty ? 0 : tabs.length; if (empty) tabs.length = 0;   /* 空の図面なら置き換え・描き始めていれば新しいタブで足す */
   for (const tb of info.tabs) tabs.push({ name: tb.name, doc: (() => { const m = withDefaultTool(migrateDoc(tb.doc)); healDoc(m); dropDetachedFills(m); return m; })(), undo: [], redo: [], selected: new Set(), activeLayer: 'pattern', dirty: true, ...(tb.view ? { scale: tb.view.scale, origin: { x: viewW() / 2 - tb.view.cx * tb.view.scale, y: viewH() / 2 - tb.view.cy * tb.view.scale } } : {}) });   /* 保存に見ていた位置があれば、そのタブの表示（倍率・位置）に戻す */
@@ -1478,7 +1494,8 @@ function restoreAutosave() {
   activeTab = -1; switchTab(base + info.active); if (!info.tabs[info.active].view) fit(); /* 見ていた位置が保存に無い古いデータだけ、全体表示 */ $('hint').textContent = t('restored'); noticeGaps(); undoAttaching = true; const attached = Promise.all([attachSavedUndo(info, base), attachSavedFiles(info, base)]); flushAutosave(); attached.then(() => { if (lastAutosaveAt) scheduleUndoSave(lastAutosaveAt); }); /* 復元しただけで閉じても、次の起動で履歴・行き先が合うよう、新しい時刻で保管し直す */
   if (nextUp) showRestoreOffer(nextUp);   /* もう一方も続けて出す */
 }
-function discardAutosave() { const key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); } catch { /* 無視 */ } clearUndoRecord(key === AUTOSAVE_KEY ? undefined : UST_SUB_KEY).catch(() => {}); flushAutosave(); offerRestore(restoreKeysNow().filter(k => k !== key)); }
+function discardAutosave() { const gen = !!pendingRestore?.generation, key = pendingRestore?.key || AUTOSAVE_KEY; pendingRestore = null; $('restoreBar').hidden = true; if (gen) { try { localStorage.removeItem(key); } catch { /* 無視 */ } offerRestore(restoreKeysNow()); return; }   /* 世代を選んでいるとき：その世代だけ捨てて、ほかの候補を出す */
+  if (key === AUTOSAVE_KEY && !tabIsPrimary()) return; try { localStorage.removeItem(key); for (const gk of genKeys(key)) localStorage.removeItem(gk); } catch { /* 無視 */ } clearUndoRecord(key === AUTOSAVE_KEY ? undefined : UST_SUB_KEY).catch(() => {}); flushAutosave(); offerRestore(restoreKeysNow().filter(k => k !== key)); }
 /** 別のブラウザのタブでも開いているとき（このタブが副）の警告。副のタブは、自動保存・履歴の保管・「捨てる」をしない。 */
 function syncMultiTabBar() { const bar = $('multiTabBar'); if (bar) bar.hidden = tabIsPrimary(); }
 /** 主／副が替わったとき：副→主なら、見送っていた「前回の続き」を出す（なければ、いまの図面を保存する）。 */
@@ -1496,7 +1513,7 @@ function startTabWatch() {
   window.addEventListener('pagehide', () => { flushPendingAutosave(); tabLock.release(); });   /* 閉じるとき：保存待ちを先に書き（主か副かは譲る前の状態で決まる）、主なら譲る */
   window.addEventListener('pageshow', () => tabWatchTick());   /* 戻る・進むで復元されたとき（閉じるときに印を消しているので、主に戻る） */
 }
-$('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave;
+$('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave; $('restoreGen')?.addEventListener('change', () => { const c = restoreChoices[Number($('restoreGen').value)]; if (c) showRestoreOffer(c, restoreChoices); });   /* 世代を選ぶと、その保存を開く対象にする */
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
   if (done) return; let i = 0;

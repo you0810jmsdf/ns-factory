@@ -20,3 +20,22 @@ export function unpackAutosave(text, validate) {
   const shapes = j.tabs.reduce((n, t) => n + t.doc.shapes.length, 0); if (!shapes) return null;
   return { tabs: j.tabs.map(t => ({ name: t.name, doc: t.doc, ...(cleanView(t.view) ? { view: cleanView(t.view) } : {}) })), active: j.active, savedAt: j.savedAt, shapes };
 }
+
+/** 世代（事業主 2026-11-07 14:40「消えたデータはどうすればよい？」「入れる」）：自動保存は 1 つを上書きするので、壊れた保存で上書きされると、前の保存が残らない。
+ *  保存のたびに、いまの保存（key）を、「10 分以上あいたとき」だけ、1 つ前の世代（key.g1）へ回し、その前の世代を key.g2 へ回す。
+ *  大きい保存（既定 150 万字超）は、世代にしない。世代の保存に失敗しても（容量）、世代を捨てるだけで、本体の保存には触らない。 */
+export const GEN_GAP_MS = 10 * 60 * 1000, GEN_MAX_CHARS = 1_500_000;
+export const genKeys = key => [key + '.g1', key + '.g2'];
+const SAVED_AT = /^\{"v":1,"savedAt":"([^"]+)"/;
+/** 保存の文字列の先頭から、保存した時刻（ミリ秒）だけを読む（数 MB を丸ごと解析しない）。読めなければ null。 */
+export const savedAtOf = text => { const m = typeof text === 'string' ? SAVED_AT.exec(text) : null; const t = m ? Date.parse(m[1]) : NaN; return Number.isFinite(t) ? t : null; };
+/** 本体の保存を上書きする直前に呼ぶ。回したら true。 */
+export function rotateAutosaveGenerations(storage, key, { gapMs = GEN_GAP_MS, maxChars = GEN_MAX_CHARS } = {}) {
+  try {
+    const cur = storage.getItem(key), tCur = savedAtOf(cur); if (tCur === null || cur.length > maxChars) return false;
+    const [k1, k2] = genKeys(key), g1 = storage.getItem(k1), t1 = savedAtOf(g1);
+    if (t1 !== null && tCur - t1 < gapMs) return false;   /* 直前の世代から間がない */
+    if (t1 !== null && g1.length <= maxChars) storage.setItem(k2, g1);
+    storage.setItem(k1, cur); return true;
+  } catch { try { for (const k of genKeys(key)) storage.removeItem(k); } catch { /* 無視 */ } return false; }   /* 容量などで失敗：世代を捨てて、本体の保存を通す */
+}
