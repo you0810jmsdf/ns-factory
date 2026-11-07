@@ -415,7 +415,7 @@ function drawQuad(dpr) {
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && !hwHidden(s) && (exporting || viewShows(s)); };
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
-const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false };   /* hardware：「金具」の層の表示と連動（金属の色を付けた図形も一緒に隠す）。レイヤーの表示は「表示」メニューのレイヤー一覧（renderViewLayers）からも切り替えられる */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
+const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false, pitchOff: true };   /* hardware：「金具」の層の表示と連動（金属の色を付けた図形も一緒に隠す）。レイヤーの表示は「表示」メニューのレイヤー一覧（renderViewLayers）からも切り替えられる */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
@@ -1230,6 +1230,42 @@ function findHoleGaps(wholeDoc = false) {
 function noticeGaps() { let n = 0; try { const g = findHoleGaps(true); n = g.gapCount; openGapMarks = g.add; } catch { /* 数えられなくても、開く処理は止めない */ } if (n) $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('gapNotice', { n }); }
 let gapKey = null, selGapMarks = [], openGapMarks = []; /* 歯抜けの赤い輪の位置。selGapMarks＝選んだ線の歯抜け（選んでいる間）／openGapMarks＝図面を開いた直後の図面全体の歯抜け（編集・タブ切り替えで消える） */
 /** 歯抜けの場所に、赤い輪を描く（補う予定の位置・事業主指示 2026-10-16）。書き出し・印刷には出さない。 */
+/** ピッチのずれ（事業主 2026-11-07「たまに勝手に菱目が動いていることがあり、気づけない。指定された工具と異なる間隔は目印でわかりやすく表示してほしい」）。
+ *  ① 間隔：同じ経路・同じ工具で隣り合う穴の間隔（経路に沿った長さ）が、工具のピッチと 0.15mm より違う所（ピッチの整数倍＝歯抜けは、赤い輪に任せる）。個数指定・可変・手動で打った区間と、.lcc の独立した穴は、ピッチと違うのが設計どおりなので対象外。
+ *  ② 線から外れた穴：穴の位置が、自分の経路の上の位置から 0.3mm より離れている（別の図形といっしょに動いた・直接ずらした）。間隔は正常なまま外れるので、間隔だけでは気づけない。 */
+const PITCH_TOL = 0.15, OFF_TOL = 0.3;
+let pitchOffCache = { key: '', list: [] };
+function findPitchOffs() {
+  const key = commitSeq + '|' + doc.holes.length + '|' + doc.paths.length + '|' + doc.shapes.length;
+  if (pitchOffCache.key === key && pitchOffCache.doc === doc) return pitchOffCache.list;
+  const out = [], own = ownPaths();
+  for (const p of doc.paths) {
+    const route = resolvePath(doc, p); if (!route) continue;
+    const hs = doc.holes.filter(h => h.pathId === p.id && h.mark === 'tool' && !holeIsOwn(h, own) && holeVisible(h)).sort((a, b) => a.s - b.s);
+    if (!hs.length) continue;
+    const modeAt = s => (p.segments || []).find(sg => s >= Math.min(sg.from, sg.to) - 1e-6 && s <= Math.max(sg.from, sg.to) + 1e-6)?.mode;
+    for (const h of hs) { const q = pointAtLength(route, h.s), d = Math.hypot(q.x - h.x, q.y - h.y); if (d > OFF_TOL) out.push({ kind: 'off', x: h.x, y: h.y, qx: q.x, qy: q.y, d, id: h.id, pathId: p.id }); }
+    for (let i = 1; i < hs.length; i++) {
+      const a = hs[i - 1], b = hs[i]; if (a.toolId !== b.toolId) continue;
+      const tool = doc.tools.find(t => t.id === a.toolId); if (!tool || !(tool.pitch > 0)) continue;
+      const m = modeAt((a.s + b.s) / 2); if (m && m !== 'fixed') continue;
+      const g = b.s - a.s; if (Math.round(g / tool.pitch) !== 1) continue;
+      const dev = g - tool.pitch; if (Math.abs(dev) > PITCH_TOL) out.push({ kind: 'gap', x1: a.x, y1: a.y, x2: b.x, y2: b.y, g, pitch: tool.pitch, dev, pathId: p.id, ids: [a.id, b.id] });
+    }
+  }
+  pitchOffCache = { key, doc, list: out }; return out;
+}
+function drawPitchMarks() {
+  if (exporting || !viewShow.pitchOff) return; let list; try { list = findPitchOffs(); } catch { return; } if (!list.length) return;
+  const ORANGE = '#ff8a00', px = 1 / scale;
+  ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = ORANGE; ctx.fillStyle = ORANGE; ctx.lineCap = 'round';
+  for (const m of list) {
+    if (m.kind === 'off') { ctx.lineWidth = 2 * px; ctx.beginPath(); ctx.arc(m.x, m.y, Math.max(1.3, 7 * px), 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1 * px; ctx.setLineDash([3 * px, 3 * px]); ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.qx, m.qy); ctx.stroke(); ctx.setLineDash([]); }
+    else { ctx.lineWidth = 3 * px; ctx.beginPath(); ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2, m.y2); ctx.stroke();
+      if (scale >= 1.5) { const mx = (m.x1 + m.x2) / 2, my = (m.y1 + m.y2) / 2; ctx.font = (11 * px) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 3 * px; ctx.strokeStyle = '#000'; const txt = m.g.toFixed(2) + (m.dev > 0 ? ' (+' : ' (') + m.dev.toFixed(2) + ')'; ctx.strokeText(txt, mx, my - 5 * px); ctx.fillStyle = ORANGE; ctx.fillText(txt, mx, my - 5 * px); ctx.strokeStyle = ORANGE; } }
+  }
+  ctx.restore();
+}
 function drawGapMarks() {
   if (exporting) return; const list = [...selGapMarks, ...openGapMarks]; if (!list.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#ff3b3b'; ctx.lineWidth = 2 / scale; const r = Math.max(2.2, 9 / scale);
@@ -1721,7 +1757,8 @@ function initLayers() {
   if ($('viewHiddenBadge')) { $('viewHiddenBadge').onclick = () => { viewShow.solid = true; viewShow.dashed = true; if (doc.layers.some(l => !l.visible)) showAllLayers(); syncViewShow(true); $('hint').textContent = t('viewHiddenRestored'); };   /* 隠しているレイヤーも全部表示に戻す */ syncViewHiddenBadge(); }   /* 開いた直後（前回オフのまま）も印を出す */
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
-  $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });   /* 縫い目を見る */
+  $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });
+  $('showPitchOff').checked = viewShow.pitchOff; $('showPitchOff').addEventListener('change', e => { viewShow.pitchOff = e.target.checked; draw(); });   /* ピッチのずれを表示（画面だけ） */   /* 縫い目を見る */
   restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
   $('backBadge')?.addEventListener('click', () => { $('stitchFace').value = 'front'; draw(); });   /* 「裏面表示中」の印を押すと、表に戻す */
@@ -9249,7 +9286,7 @@ function drawSheetBody(lo, hi) {
     const savedPath=doc.paths.find(p=>p.id===manualNext.pathId), route=savedPath && resolvePath(doc,savedPath);
     if(route && manualNext.s <= arcLength(route)) { const p=pointAtLength(route,manualNext.s); ctx.strokeStyle='#c9a96e';ctx.lineWidth=1/scale;ctx.strokeRect(p.x-4/scale,p.y-4/scale,8/scale,8/scale); }
   }
-  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawEdgeSnap();
+  if (!exporting) drawOverlaps(); drawCenterMarks(); drawJunctions(); drawGapAlert(); drawGridPreview(); drawStitchPreview(); drawStitchHover(); drawCountStage(); drawChainStops(); drawGapMarks(); drawPitchMarks(); drawEdgeSnap();
   placeOffsetFloat(); placeDetourFloat(); syncRulerBar();
   if (detourState && mode === 'detour') { /* 基準の線＝橙、よける図形＝青、迂回路のプレビュー＝黄色の点線 */
     ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 3 / scale; const bs = doc.shapes.find(s => s.id === detourState.baseId), os = doc.shapes.find(s => s.id === detourState.obstId); if (bs) strokeShape(bs, '#ff9f43'); if (os) strokeShape(os, '#4da6ff'); ctx.restore();
