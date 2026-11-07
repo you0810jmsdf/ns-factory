@@ -42,7 +42,9 @@ body{
 .topbar .modebtn:hover{background:rgba(255,255,255,.28)}
 /* ⚙AI会話モードの説明ポップアップ（初回訪問時のみ・2026-08-19 事業主指摘対応） */
 .mode-tip{
-  position:absolute;top:calc(100% + 10px);right:12px;max-width:300px;z-index:60;
+  /* 2026-11-07: 見出しの下に浮かべていたため、最初の挨拶と選択肢を隠していた（訪問記録：何も押さず帰る人が7人中3人）。
+     会話の上に普通の段として置き、挨拶を隠さない */
+  position:relative;margin:8px 12px 0;z-index:6;
   background:#fff;color:#4a2c15;border:1.5px solid #e8c9a8;border-radius:12px;
   padding:12px 30px 12px 14px;font-size:12.5px;line-height:1.7;
   box-shadow:0 6px 20px rgba(61,26,8,.18);animation:tipIn .3s ease;
@@ -161,6 +163,7 @@ body{
   background:#fff;outline:none;font-family:inherit}
 .hr-contact input:focus{border-color:#b5895a}
 .hr-contact input.hr-missing{border-color:#c0392b;background:#fdf1f0}
+.hr-contact[hidden]{display:none}
 
 /* input */
 .inputbar{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #ede0d4;background:#fff;position:sticky;bottom:0}
@@ -219,23 +222,27 @@ body{
     </div>
     <button class="modebtn" id="nsfLangToggle" type="button">EN</button>
     <button class="modebtn" id="modeBtn">⚙ AI会話モード</button>
-    <!-- ⚙AI会話モードの説明（初回訪問時のみ表示。「AI会話モード」という語が
-         初見のお客様に伝わらないという事業主指摘への対応・2026-08-19）。
-         英語表示はボタン自体を隠す（startEnglishLive）ため日本語のみ -->
-    <div class="mode-tip" id="modeTip" hidden>
-      <button class="tip-close" id="modeTipClose" type="button" aria-label="閉じる">✕</button>
-      💡 ボタンを押さなくても、下の入力欄に<b>文章で話しかけると自動でAIとの会話に切り替わります</b>。<br>
-      「⚙ AI会話モード」ボタンは、最初から自由にAIと会話したいとき用です。
-    </div>
   </div>
 
   <!-- 2026-08-05: 発注票確定時、お名前・連絡先が空のまま自動送信され、作家から
        ご返信できないオーダーが発生した（works.htmlの過去事案 OP-2607-011 と同型）。
        本ページには元々この入力欄自体が無かった。works.htmlと同じ方式で常設する。
-       ⛔ この欄を消して未入力のまま送信可能な状態に戻さないこと -->
-  <div class="hr-contact">
+       ⛔ この欄を消して未入力のまま送信可能な状態に戻さないこと
+       2026-11-07: 最初から「（必須）」の欄が最上段にあると、何もせず帰る人が多かった（訪問記録）。
+       欄は残したまま最初は隠し、AI会話モードに入ったとき・発注票を送るときに出す（showContactBar）。
+       ガイド対話では最後にお名前・連絡先を会話で聞き、この欄に書き込んで送る（必須チェックはそのまま） -->
+  <div class="hr-contact" hidden>
     <input id="hr-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name" data-i18n-placeholder="contact.name">
     <input id="hr-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email" data-i18n-placeholder="contact.info">
+  </div>
+  <!-- ⚙AI会話モードの説明（初回訪問時のみ表示。「AI会話モード」という語が
+       初見のお客様に伝わらないという事業主指摘への対応・2026-08-19）。
+       英語表示はボタン自体を隠す（startEnglishLive）ため日本語のみ。
+       2026-11-07: 見出しに重ねず会話の上に置く（挨拶を隠さない） -->
+  <div class="mode-tip" id="modeTip" hidden>
+    <button class="tip-close" id="modeTipClose" type="button" aria-label="閉じる">✕</button>
+    💡 ボタンを押さなくても、下の入力欄に<b>文章で話しかけると自動でAIとの会話に切り替わります</b>。<br>
+    「⚙ AI会話モード」ボタンは、最初から自由にAIと会話したいとき用です。
   </div>
 
   <div class="chat" id="chat"></div>
@@ -271,7 +278,7 @@ body{
     <button id="send">➤</button>
     <input id="attachFile" type="file" accept="image/*" multiple style="display:none">
   </div>
-  <div class="foot" data-i18n="foot.note">試作版プロトタイプ｜最終の仕様確定・お見積りは職人が確認します</div>
+  <div class="foot" data-i18n="foot.note">最終の仕様確定・お見積りは職人が確認します</div>
 </div>
 
 <!-- テクスチャシミュレーター フルスクリーンオーバーレイ -->
@@ -297,7 +304,7 @@ window.NSF_I18N_DICT = {
   'attach.title': 'Attach reference images (the AI will look at them, and they are sent to the studio with your inquiry)',
   'attach.aria': 'Attach reference images',
   'input.placeholder': 'Type a message… (feel free to chat)',
-  'foot.note': 'Prototype | Final specifications and quotes are confirmed by the artisan',
+  'foot.note': 'Final specifications and quotes are confirmed by the artisan',
   'sim.title': '🎨 Try the texture simulator',
   'sim.close': '✕ Close',
   'live.greeting': "Welcome to N's factory! 🧵 I'm the order consultation AI. Tell me what you would like to have made — for example “an A6 ring planner in dark green leather” or “a bifold wallet with contrast stitching”. I can help with sizes, leathers, budgets and delivery times. (Replies are handled by AI in English; the artisan will follow up personally on your order.)",
@@ -537,8 +544,11 @@ function openZoom(i){
   zoomNoteEl.textContent=(zoomList.length>1 ? (i+1)+' / '+zoomList.length+'　' : '')
     +(colorish ? '写真の色味はご覧の画面によって多少変わります。実物の見え方は職人が最終確認いたします。'
                : '写真は製作例です。革の色・オプションはお選びの内容で作ります。');
-  zoomPrevBtn.textContent=colorish ? '◀ 前の色' : '◀ 前へ';
-  zoomNextBtn.textContent=colorish ? '次の色 ▶' : '次へ ▶';
+  // 「次へ ▶」が「次の質問へ進む」と読まれ、押しては「◀ 前へ」で戻り ✕ で帰る訪問が4件続いた（訪問記録・2026-11-07）。
+  // 前後は「別の○○を見る」、決定は「この○○で進む」と、押すと何が起きるかを書く。
+  const noun=({brand:'作り',model:'作り',ring:'リング',stitch:'糸',size:'サイズ',metal:'金具'})[state._awaitKey]||'候補';
+  zoomPrevBtn.textContent=colorish ? '◀ 前の色' : '◀ 前の'+noun;
+  zoomNextBtn.textContent=colorish ? '次の色 ▶' : '別の'+noun+'を見る ▶';
   // 実物見本の写真など、選択の対象でないものは決定ボタンを出さない
   // 実物見本の写真は選ぶ対象ではないので、前後移動を隠し、原寸で開く導線に差し替える
   // （スマホ幅では330px程度に収まり、糸の番号が読めないため）
@@ -551,7 +561,8 @@ function openZoom(i){
     zoomPickBtn.style.display = '';
     zoomPrevBtn.style.display = '';
     zoomNextBtn.style.display = '';
-    zoomPickBtn.textContent = it.pickLabel || ((state._awaitKey==='leather' || state._awaitKey==='stitch') ? 'この色にする' : 'この色を選びたい');
+    zoomPickBtn.textContent = it.pickLabel==='これにする' ? 'この'+noun+'で進む'
+      : (it.pickLabel || ((state._awaitKey==='leather' || state._awaitKey==='stitch') ? 'この色にする' : 'この色を選びたい'));
     zoomPrevBtn.disabled = (i<=0);
     zoomNextBtn.disabled = (i>=zoomList.length-1);
   }
@@ -944,6 +955,7 @@ function startPicker(){
 /* 英語モード: ガイド（日本語のみ）を出さず、最初からAI会話モードで応対する */
 function startEnglishLive(){
   state.liveMode=true; state._autoLive=false; state._picking=false;
+  showContactBar();
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   history=[];
   saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
@@ -968,6 +980,14 @@ function runStep(){
   // スキップ条件（例：名入れ無しなら刻印内容を飛ばす）
   while(step && step.skipIf && step.skipIf(a)){ state.step++; step=state.flow[state.step]; }
   if(!step){ finish(); return; }
+
+  // お名前・連絡先を聞く前に、発注票（内容と金額の目安）を先に見せる（2026-11-07）。
+  // 訪問記録では、最後の質問まで90〜160秒かけて答えた人が「お名前を教えてください」で帰っていた。
+  const nextKey = typeof step.key==='function' ? step.key(a) : step.key;
+  if((nextKey==='custName' || nextKey==='custContact') && !state._sheetShown){
+    addMsg('bot','ここまでの内容を発注票にまとめました。金額の目安もこちらです👇');
+    renderSheetCard();
+  }
 
   const sayText = typeof step.say==='function' ? step.say(a) : step.say;
   const tipText = step.tip ? (typeof step.tip==='function'?step.tip(a):step.tip) : null;
@@ -1019,6 +1039,7 @@ function handleAnswer(val, label){
   // 進行
   if(state._isLast){ finish(); return; }
   state.step++;
+  saveGuide();   // 途中で閉じても「続きから」にできるよう端末に控える（2026-11-07）
   runStep();
 }
 function handleFreeInput(){
@@ -1431,19 +1452,16 @@ function showLeatherGallery(fam){
 }
 
 /* ---------- 発注票の生成 ---------- */
-function finish(){
-  if(state._done) return; state._done=true; state._awaitKey=null;
+/* 発注票のカード（内容の表・金額の目安・PDF保存）だけを出す。送信はしない。
+   2026-11-07: お名前・連絡先を聞く前（runStep）にも呼ぶ。1回しか出さない（state._sheetShown）。 */
+function renderSheetCard(){
+  if(state._sheetShown) return; state._sheetShown=true;
   const a=state.answers;
   const prod=state.prod||PRODUCTS.planner;
   const pr=(prod.price?prod.price(a):[null,null])||[null,null];
   let rangeTxt = pr[0]? `¥${pr[0].toLocaleString()} 〜 ¥${pr[1].toLocaleString()} 前後`:'お見積り';
   if(prod.priceText && prod.priceText(a)) rangeTxt = prod.priceText(a);   // 手帳は見積もりシミュレーターの金額
   if(priceBar) priceBar.hidden=true;   // 発注票に金額を出すので下の目安は消す
-
-  showTyping();
-  setTimeout(()=>{
-    hideTyping();
-    addMsg('bot','ありがとうございました！ヒアリング内容を発注票にまとめました。内容をご確認ください👇');
 
     const rows = prod.rows ? prod.rows(a) : [
       ['アイテム', prod.name],
@@ -1477,6 +1495,21 @@ function finish(){
     state._sheetText=sheetText; state._rangeTxt=rangeTxt;   // 送信に失敗したときのコピー用・送信する金額
     // 控えをPDFで（印刷画面の「PDFとして保存」。スマホも可）2026-09-19 事業主指示
     document.getElementById('savePdf').onclick=()=>{ buildPrintSheet(prod, rows, rangeTxt, a); window.print(); };
+}
+function finish(){
+  if(state._done) return; state._done=true; state._awaitKey=null;
+  clearSavedGuide();   // 最後まで答えた＝「続きから」の控えは不要
+  const a=state.answers;
+  const prod=state.prod||PRODUCTS.planner;
+
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    if(!state._sheetShown){
+      addMsg('bot','ありがとうございました！ヒアリング内容を発注票にまとめました。内容をご確認ください👇');
+      renderSheetCard();
+    }
+    const sheetText=state._sheetText;
 
     const who=contactFields();
     if(who.nameEl.value.trim() && who.contactEl.value.trim()){
@@ -1485,7 +1518,7 @@ function finish(){
       addMsg('bot','このままお店に送っていただければ、職人が仕様を確認して正式なお見積り・制作のご案内をいたします。ありがとうございました🙇\n（内容を変えたい時は、ページを再読み込みしてやり直せます）');
     }
     renderQuick([{label:'最初からやり直す',sub:'',val:'__restart'}]);
-    quickEl.querySelector('button').onclick=()=>location.reload();
+    quickEl.querySelector('button').onclick=()=>{ clearSavedGuide(); location.reload(); };
 
     trySubmitOrder(prod, sheetText, a.textureSimulation);
   },600);
@@ -1497,6 +1530,12 @@ function finish(){
    チェックを追加。従来はclient/contactを常に空文字で送っていた。 */
 function contactFields(){
   return { nameEl: document.getElementById('hr-contact-name'), contactEl: document.getElementById('hr-contact-info') };
+}
+/* 画面上部のお名前・連絡先欄を出す（最初は隠してある・2026-11-07）。
+   AI会話モードに入ったとき、発注票・相談を送るのに欄が空のとき、に呼ぶ。 */
+function showContactBar(){
+  const el=document.querySelector('.hr-contact');
+  if(el) el.hidden=false;
 }
 function markContactMissing(nameEl, contactEl, name, contact){
   nameEl.classList.toggle('hr-missing', !name);
@@ -1513,6 +1552,7 @@ function trySubmitOrder(prod, hearingContent, textureSimulation){
   markContactMissing(nameEl, contactEl, name, contact);
   const sendBox = document.getElementById('sheetSend');
   if(!name || !contact){
+    showContactBar();
     if(sendBox) sendBox.innerHTML =
       '<p style="color:#c0392b;font-size:12.5px;margin:10px 0 6px;line-height:1.6">⚠️ 上部の「お名前」「連絡先」をご記入のうえ、下のボタンを押すと工房へ送信されます。ご記入がないと、こちらからご返信できません。</p>'+
       '<button class="btn-primary" id="sheetSendBtn">📨 工房へ送信する</button>';
@@ -1642,6 +1682,7 @@ function sendLiveConsultation(){
   const name = nameEl.value.trim(), contact = contactEl.value.trim();
   markContactMissing(nameEl, contactEl, name, contact);
   if(!name || !contact){
+    showContactBar();
     alert(T('live.contactAlert','ご返信のため、上部の「お名前」「連絡先」のご記入をお願いします。\nご連絡先はメールアドレスのほか、LINEやInstagramなどのSNS IDでも構いません。\n\n※ ご連絡先がないと、ご相談内容は工房に届いても、こちらからご返信を差し上げることができません。'));
     (!name?nameEl:contactEl).focus();
     return;
@@ -1814,9 +1855,66 @@ function loadSavedHistory(){
 }
 function clearSavedHistory(){ try{ localStorage.removeItem(HIST_KEY); }catch(e){} }
 
+/* ガイド対話の途中経過を端末に控える（2026-11-07）。
+   訪問記録で、同じ人が同じ流れを2回やり直して帰っていた（再読み込みで全部消えるため）。
+   ⛔ 勝手に復元しない。起動時に「続きから／はじめから」を出し、選ばれたときだけ戻す。
+   ⛔ 端末の中だけ（外部へは送らない）。7日で消える。お名前・連絡先・画像は控えない。 */
+const GUIDE_KEY='nsf_hearing_guide';
+function saveGuide(){
+  try{
+    if(state.liveMode || state._done || !state.productKey || !state.flow) return;
+    const answers={};
+    Object.keys(state.answers||{}).forEach(k=>{
+      if(k==='textureSimulation' || k==='custName' || k==='custContact') return;
+      answers[k]=state.answers[k];
+    });
+    localStorage.setItem(GUIDE_KEY, JSON.stringify({ at:Date.now(), productKey:state.productKey, step:state.step, answers }));
+  }catch(e){ /* 使えなくても相談は続けられる */ }
+}
+function loadSavedGuide(){
+  try{
+    const raw=localStorage.getItem(GUIDE_KEY); if(!raw) return null;
+    const d=JSON.parse(raw);
+    if(!d || !d.productKey || !PRODUCTS[d.productKey] || !d.answers) return null;
+    if(Date.now()-(d.at||0) > HIST_KEEP_DAYS*86400000){ localStorage.removeItem(GUIDE_KEY); return null; }
+    return d;
+  }catch(e){ return null; }
+}
+function clearSavedGuide(){ try{ localStorage.removeItem(GUIDE_KEY); }catch(e){} }
+function guideSummary(d){
+  const a=d.answers||{};
+  return ['brand','model','size','leather','ring','stitch']
+    .map(k=>a['_label_'+k]||a[k]).filter(v=>v && !/^おまかせ/.test(String(v))).slice(0,3).join('・');
+}
+function offerGuideResume(){
+  const d=loadSavedGuide(); if(!d) return false;
+  const w=new Date(d.at);
+  const when=(w.getMonth()+1)+'月'+w.getDate()+'日';
+  const sum=guideSummary(d);
+  const prodName=(PRODUCTS[d.productKey]||{}).name||'';
+  addMsg('bot','おかえりなさい🧵 '+when+'にご相談いただいた'+(prodName?prodName+'の':'')+'内容が途中まで残っています'+(sum?'（'+sum+'）':'')+'。\n続きから再開できますし、はじめからでも大丈夫です。');
+  renderQuick([
+    {label:'▶ 前回の続きから', sub:'選んだ内容を覚えています', val:'', onClick:()=>resumeGuided(d)},
+    {label:'はじめから相談する', sub:'前回の内容は消します', val:'', onClick:()=>{ clearSavedGuide(); chat.innerHTML=''; startPicker(); }}
+  ]);
+  return true;
+}
+function resumeGuided(d){
+  state.liveMode=false; state._autoLive=false; state._picking=false; state._done=false; state._sheetShown=false;
+  state.productKey=d.productKey; state.prod=PRODUCTS[d.productKey];
+  state.flow=state.prod.steps.concat(state.prod.tail || withContact(COMMON_TAIL));
+  state.answers=Object.assign({}, d.answers);
+  state.step=Math.max(0, Math.min(parseInt(d.step,10)||0, state.flow.length));
+  chat.innerHTML=''; quickEl.innerHTML='';
+  if(state.prod.tail) simLoad();   // 手帳（見積もり連動）のときだけ見積もりページを裏で読む
+  addMsg('bot','前回の続きからうかがいます🧵');
+  updatePriceBar();
+  runStep();
+}
+
 /* 起動時に「前回の続き」を提案する。復元するものが無ければ false を返す。 */
 function offerResume(){
-  const d=loadSavedHistory(); if(!d) return false;
+  const d=loadSavedHistory(); if(!d) return offerGuideResume();
   const w=new Date(d.at);
   const when=(w.getMonth()+1)+'月'+w.getDate()+'日';
   /* 2026-09-10: 幕僚キャラ接客から会話ごと引き継いできた場合（chat-widget.js の
@@ -1828,12 +1926,13 @@ function offerResume(){
     : 'おかえりなさい🧵 '+when+'にご相談いただいた内容が残っています。\n続きから再開できますし、はじめからでも大丈夫です。');
   renderQuick([
     {label: handedOff?'▶ さきほどの続きから':'▶ 前回の続きから', sub:'内容を覚えています', val:'', onClick:()=>resumeSaved(d)},
-    {label:'はじめから相談する', sub:'前回の内容は消します', val:'', onClick:()=>{ clearSavedHistory(); chat.innerHTML=''; startPicker(); }}
+    {label:'はじめから相談する', sub:'前回の内容は消します', val:'', onClick:()=>{ clearSavedHistory(); clearSavedGuide(); chat.innerHTML=''; startPicker(); }}
   ]);
   return true;
 }
 function resumeSaved(d){
   state.liveMode=true; state._autoLive=false;
+  showContactBar();
   chat.innerHTML=''; quickEl.innerHTML='';
   history=d.history.slice();
   history.forEach(m=>addMsg(m.role==='user'?'user':'bot', m.content));
@@ -1846,6 +1945,7 @@ function resumeSaved(d){
 function enterLiveMode(){
   dismissModeTip();   // 切替できた＝説明は役目を終えたので消す（2026-08-19）
   state.liveMode=true;
+  showContactBar();
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=false;
   quickEl.innerHTML=''; chat.innerHTML='';
@@ -1871,6 +1971,7 @@ function exitLiveMode(){
 function autoEnterLiveMode(userText){
   dismissModeTip();   // 自動切替に気づけた＝説明不要（2026-08-19）
   state.liveMode=true;
+  showContactBar();
   renderPaletteEntry();   // AI会話中だけ色見本ボタンを出す（2026-09-04）
   state._autoLive=true;           // 上限到達時にガイドへ戻すための目印
   quickEl.innerHTML='';
