@@ -1685,7 +1685,7 @@ function renderLayers() {
     const box = (key, text) => { const label = document.createElement('label'), input = document.createElement('input'), span = document.createElement('span'); input.type = 'checkbox'; input.checked = !!lay[key]; span.textContent = text;
       input.addEventListener('change', () => setLayerFlag(lay.id, key, input.checked)); label.appendChild(input); label.appendChild(span); return label; };
     const act = document.createElement('button'); act.type = 'button'; act.className = 'layer-active'; act.textContent = lay.id === activeLayer ? '●' : '○'; act.title = t('layerActiveTip'); act.setAttribute('aria-pressed', String(lay.id === activeLayer)); act.addEventListener('click', () => { activeLayer = lay.id; renderLayers(); $('hint').textContent = t('layerActiveSet', { name: layerName(lay) }); setLayerHover(lay.id, 1500); });   /* 行の頭の丸：この層を作図先にする */
-    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter') name.blur?.(); }); row.appendChild(grip); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
+    const name = document.createElement('input'); name.type = 'text'; name.maxLength = 40; name.value = layerName(lay); name.className = 'layer-name'; name.title = t('layerNameEditTip'); name.addEventListener('change', () => renameLayer(lay.id, name.value)); name.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) name.blur?.(); });   /* 日本語の変換を確定する Enter では、入力を終わらせない（事業主 2026-11-07「レイヤーの名称を入力しにくい」） */ row.appendChild(grip); row.appendChild(act); row.appendChild(name); row.appendChild(selTag);   /* 名前は、その場で書き換えられる欄 */ row.appendChild(box('visible', t('visible'))); row.appendChild(box('locked', t('locked')));
     const arrow = (text, tip, dir) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = t(tip); b.className = 'layer-arrow'; b.addEventListener('click', () => moveLayer(lay.id, dir)); return b; };
     const arrows = document.createElement('span'); arrows.className = 'layer-arrows'; arrows.appendChild(arrow('▲', 'layerUpTip', 1)); arrows.appendChild(arrow('▼', 'layerDownTip', -1)); row.appendChild(arrows); row.appendChild(mvBtn); rows.appendChild(row);   /* ▲▼は、その行の右端に1組だけ（どの層の矢印かが一目で分かる） */
   }
@@ -1718,11 +1718,13 @@ function moveLayer(id, dir) {
 const layerRankMap = d => new Map((d.layers || []).map((l, i) => [l.id, i + 1]));
 /** 層の表示／ロックを1つ変える（元に戻せる）。作図先が使えなくなったら、表示中でロックされていない層へ移す。 */
 function setLayerFlag(id, key, value) {
-  commit(() => { const l = doc.layers.find(x => x.id === id); if (l) l[key] = value; selected.clear(); }); fixActiveLayer(); renderLayers();
+  commit(() => { const l = doc.layers.find(x => x.id === id); if (l) l[key] = value; dropUnselectable(); }); fixActiveLayer(); renderLayers();
 }
+/** 選んでいる図形のうち、見えなくなった・ロックされた層の図形だけを選択から外す（残りは選んだまま）。事業主 2026-11-07「新しいレイヤーに移動できない」：層の表示・ロックを1回切り替えるだけで選択が全部外れ、「新しい層へ」が「先に選んでください」になっていた。 */
+function dropUnselectable() { for (const id of [...selected]) { const s = doc.shapes.find(x => x.id === id); if (!s || !visible(s) || !editable(s)) selected.delete(id); } }
 function fixActiveLayer() { const l = doc.layers.find(x => x.id === activeLayer); if (!l || !l.visible || l.locked) { const n = doc.layers.find(x => x.visible && !x.locked); if (n) activeLayer = n.id; } }
 /** 作図先の層だけを表示し、他の層を隠す。 */
-function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; selected.clear(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
+function soloLayer() { const keep = doc.layers.find(x => x.id === activeLayer); if (!keep) return; commit(() => { for (const l of doc.layers) l.visible = l === keep; dropUnselectable(); }); renderLayers(); $('hint').textContent = t('layerSoloDone', { name: layerName(keep) }); }
 function showAllLayers() { commit(() => { for (const l of doc.layers) l.visible = true; }); renderLayers(); }
 /** 見えていて編集できる図形のうち、点線（lineStyle が dashed）を、色に関わらずすべて選ぶ（事業主指示 2026-10-17：一括でガイド層へ移すため）。 */
 function pickDashedAll() {
@@ -8758,6 +8760,12 @@ function intersectionSnapAt(p) {
 /** 線の上の点に吸い付く（寸法・定規の1・2点目）（事業主 2026-10-25「線までの寸法が引けない。途中で飛んでしまい、線に合わせられない」：スナップが入だと、点が1mm の目盛りに丸められて、線の上に乗らず、横にも縦にもずれた距離になった）。
  *  p の近く（画面9px以内）にある線のうち、いちばん近い線の上の点。始点 a があるときは、a から線へ下ろした垂線の足（線の上にあるとき）が p から画面14px以内なら、そちらを優先する（始点から線までのいちばん短い距離）。端点・交点・穴の吸着が先。 */
 function lineSnapAt(p, a) {
+  const best = lineSnapBest(p); if (!best) return null;
+  if (a) { const { q, dx, dy, len2 } = best, u = ((a.x - q.x) * dx + (a.y - q.y) * dy) / len2; if (u >= 0 && u <= 1) { const perp = { x: q.x + dx * u, y: q.y + dy * u }; if (distance(p, perp) <= 14 / scale) return perp; } }
+  return best.foot;
+}
+/** p にいちばん近い線の上の点と、その区間（画面9px以内・なければ null）。{ foot, q, r, len2, dx, dy } */
+function lineSnapBest(p) {
   const reach = 9 / scale; let best = null, bd = reach;
   for (const s of doc.shapes) {
     if (!visible(s) || !stitchable(s) || ['text', 'dimension', 'image'].includes(s.type) || distTo(s, p) > reach) continue;
@@ -8768,9 +8776,21 @@ function lineSnapAt(p, a) {
       if (d < bd) { bd = d; best = { foot, q, r, len2, dx, dy }; }
     }
   }
-  if (!best) return null;
-  if (a) { const { q, dx, dy, len2 } = best, u = ((a.x - q.x) * dx + (a.y - q.y) * dy) / len2; if (u >= 0 && u <= 1) { const perp = { x: q.x + dx * u, y: q.y + dy * u }; if (distance(p, perp) <= 14 / scale) return perp; } }
-  return best.foot;
+  return best;
+}
+/** 直線ツール用：近くの線の上の点。中心そろえ（alignToCenters）の縦・横の位置があれば、その位置と線の交わる点にする（線の上のまま、中心にもそろう）。
+ *  { point, align } を返す（align は、実際にそろった向きだけ。そろわなければ null）。線から遠ければ null。 */
+function lineSnapAligned(p) {
+  const best = lineSnapBest(p); if (!best) return null;
+  const { q, dx, dy } = best, al = alignToCenters(p), lim = 14 / scale, eps = 1e-6; let point = best.foot, align = null;
+  if (al) {
+    const cands = [];
+    if (al.x !== undefined) { if (Math.abs(point.x - al.x) < eps) cands.push({ pt: point, key: 'x' }); else if (Math.abs(dx) > 1e-9) { const u = (al.x - q.x) / dx; if (u >= -eps && u <= 1 + eps) cands.push({ pt: { x: al.x, y: q.y + dy * u }, key: 'x' }); } }
+    if (al.y !== undefined) { if (Math.abs(point.y - al.y) < eps) cands.push({ pt: point, key: 'y' }); else if (Math.abs(dy) > 1e-9) { const v = (al.y - q.y) / dy; if (v >= -eps && v <= 1 + eps) cands.push({ pt: { x: q.x + dx * v, y: al.y }, key: 'y' }); } }
+    let bd = Infinity, pick = null; for (const c of cands) { const d = distance(p, c.pt); if (d <= lim && d < bd) { bd = d; pick = c; } }
+    if (pick) { point = { x: pick.pt.x, y: pick.pt.y }; align = pick.key === 'x' ? { x: al.x, fromX: al.fromX } : { y: al.y, fromY: al.fromY }; }
+  }
+  return { point: { x: point.x, y: point.y }, align };
 }
 /** 作図中のカーソル p が、「中心」の点（辺の中点・円弧の中点・円や円弧の中心・小さな輪の中心）の近く（画面で 40px 以内＝ひし形の印が出る範囲）にあるとき、その点の縦の線・横の線に 10px（吸着距離）以内なら、そろえる（事業主指摘 2026-10-21「どうみても中心点からずれる」：印から離れた所では、1mm 刻みのグリッドに丸められて、中心から 0.4mm ずれていた）。縦（x）と横（y）は別々。端点にはそろえない。 */
 function alignToCenters(p) {
@@ -8806,8 +8826,10 @@ function snapped(p, shift, anchor) {
     const hit = threeViewSnap(p, threeViewMarksCache, 9 / scale, threeViewLayout);
     if (hit) { const grid = Number($('spacing').value) || 1, onGrid = v => $('snap').checked ? Math.round(v / grid) * grid : v; result = { x: hit.snappedX ? hit.point.x : onGrid(p.x), y: hit.snappedY ? hit.point.y : onGrid(p.y) }; snap = result; }
   }
-  if (!snap && (mode === 'ruler' || mode === 'dimension' || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
+  const onLines = mode === 'line' && reach > 0;   /* 直線ツール：磁石が入のとき、近くの線の上・交点にも吸い付く（事業主 2026-11-07「直線の終点を線上にもっていきたいのに飛んでしまう」：0.5mm 刻みの位置の線の上には、1mm の目盛りに丸められて乗れなかった） */
+  if (!snap && (mode === 'ruler' || mode === 'dimension' || onLines || gesture?.kind === 'lineEnd')) { const ix = intersectionSnapAt(p); if (ix) { result = ix; snap = ix; } }   /* 定規・寸法：線と線の交点にも吸い付く（事業主指摘 2026-10-17：交点から交点までの距離が測れない） */
   if (!snap && (mode === 'ruler' || mode === 'dimension') && stage?.kind !== 'dimPlace' && stage?.kind !== 'radius') { const ln = lineSnapAt(p, anchor); if (ln) { result = ln; snap = ln; } }   /* 定規・寸法：線の上にも吸い付く（始点があれば、始点から線への垂線の足）。目盛りに丸める前 */
+  if (!snap && onLines) { const ln = lineSnapAligned(p); if (ln) { result = ln.point; snap = ln.point; snapAlign = ln.align; } }   /* 直線：カーソルに近い線の上の点（垂線の足には引かない＝思った所に置ける）。Shift の水平・垂直固定は、このあとに効く */
   const al = !snap && (MAGNET_DRAW_MODES.includes(mode) || gesture?.kind === 'lineEnd') ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
   if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
   if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
