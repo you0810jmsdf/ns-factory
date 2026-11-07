@@ -496,7 +496,10 @@ function selectedShapeIds() {
 }
 let ownPathsCache = null; const ownPaths = () => (ownPathsCache ||= ownHolePathIds(doc)); /* 独立した穴（.lcc の穴）の経路の集まり。描き直し・変更のたびに作り直す */
 function holeVisible(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerVisible(s)||s.layer==='guide');}); } /* ガイドの層を隠しても、ガイドの線に乗った穴は消さない（穴は目印の線ではない） */
-function holeEditable(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerEditable(s)||s.layer==='guide');}); }
+/** 穴が編集できるか：経路の線が、どれも「層が見えていて・ロックされていない」（ガイドの層は、見えなくても可）。「点線を表示」「実線を表示」の入・切には、左右されない（穴は目印の線ではなく、画面に描かれている間は選べる）。
+ *  事業主 2026-11-07「PNG出力で菱目が消えている」：点線を隠して囲み選択すると、型紙の層の点線が混ざった経路（丸めなどで足した点線）の穴 189 個が「編集できない」とされ、選ばれず、PNG にも出なかった。ガイドの層の点線だけの経路（p5・p6）は出ていた。 */
+const layerEditableAnyView = s => { const l = doc.layers.find(l => l.id === s.layer); return !!(l?.visible && !l.locked && !hwHidden(s)); };
+function holeEditable(h) { if (holeIsOwn(h, ownPaths())) return true; const p=doc.paths.find(p=>p.id===h.pathId);return p && p.shapeIds.every(id=>{const s=doc.shapes.find(s=>s.id===id);return s&&(layerEditableAnyView(s)||s.layer==='guide');}); }
 function loadTools() {
   try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d)){const have=new Set(list.map(x=>x.id)),added=defaultTools().filter(x=>!have.has(x.id));return added.length?[...list,...added]:list;}} } catch { /* 保存制限・旧設定は既定値で継続。 */ } /* 保存済みの工具一覧に、あとから増えた既定の工具（3.95mm など）が無いときは、足して返す */
   return defaultTools();
@@ -1109,6 +1112,9 @@ function markByDivision(click) {
   if (undo.length > before + 1) undo.splice(before + 1); /* 途中の保存をまとめて、元に戻すを1回にする */
   $('hint').textContent = t('markDivDone', { n: n - 1 }); draw();
 }
+/** 穴をつかんで動かしたと見なす距離（画面の px）。これ未満で離したときは、選んだだけ。 */
+const HOLE_DRAG_PX = 4;
+function holeDragMoved(g) { if (g.moved) return true; if (g.screen && cursor && distance(world(g.screen), cursor) * scale >= HOLE_DRAG_PX) { g.moved = true; return true; } return false; }
 function holePosition(h,p) {
   if(!$('constrainHole').checked)return {...h,x:p.x,y:p.y};
   const saved=doc.paths.find(path=>path.id===h.pathId),route=saved&&resolvePath(doc,saved);if(!route)return h;
@@ -9276,7 +9282,7 @@ function drawSheetBody(lo, hi) {
     if (!holeVisible(originalHole) || (holeAppearance(originalHole, doc)?.kind === 'dot' && markHidden(originalHole))) return;
     const owner = doc.paths.find(p=>p.id===originalHole.pathId)?.shapeIds[0];
     let h = previewMoved(originalHole, owner);
-    if (gesture?.kind === 'hole' && gesture.id === h.id) h = holePosition(h, cursor);
+    if (gesture?.kind === 'hole' && gesture.id === h.id && holeDragMoved(gesture)) h = holePosition(h, cursor);   /* 押しただけ（約4px 未満）では動かさない */
     const appearance = holeAppearance(h, doc); if (!appearance) return;
     const {kind,width:w,height:heightMM} = appearance;
     const halfDepth = h.depth === 'half';   /* 駒合わせの B（コバ側）の穴＝半分の深さ（貫通させない）：中抜きに真ん中の点 */
@@ -9655,7 +9661,7 @@ canvas.addEventListener('pointerdown', e => {
     let hole = doc.holes.filter(h => holeEditable(h) && !markHidden(h)).map(h => ({ h, d: holeHitDistance(h, cursor) })).filter(c => c.d <= Math.max(12 / scale, holeAppearance(c.h, doc)?.kind === 'dot' ? 0 : (holeAppearance(c.h, doc)?.width || 0) / 2)).sort((p, q) => p.d - q.d)[0];
     if (hole) { const ln = pickShapeAt(cursor); if (ln && distTo(ln, cursor) < 4 / scale && hole.d > 7 / scale) hole = undefined; }
     hole = hole?.h;
-    if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else if(selected.has(hole.id)&&selectedShapeIds().size){ /* 線などの図形といっしょに選んだ菱目をつかんだら、その菱目だけを滑らせず、選んだ全体を動かす（不具合記録 2026-10-17：菱目の近くをつかむと、選んだ図形が移動できなかった） */ gesture={kind:'move',start:cursor,screen:p,ids:selectedShapeIds()}; beginMoveSnap(gesture);} else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor};} draw();return;}
+    if(hole){ if(e.shiftKey){if(selected.has(hole.id))selected.delete(hole.id);else selected.add(hole.id);}else if(selected.has(hole.id)&&selectedShapeIds().size){ /* 線などの図形といっしょに選んだ菱目をつかんだら、その菱目だけを滑らせず、選んだ全体を動かす（不具合記録 2026-10-17：菱目の近くをつかむと、選んだ図形が移動できなかった） */ gesture={kind:'move',start:cursor,screen:p,ids:selectedShapeIds()}; beginMoveSnap(gesture);} else {if(!selected.has(hole.id))selected=new Set([hole.id]);gesture={kind:'hole',id:hole.id,start:cursor,screen:p};} draw();return;}
     const hit = pickShapeAt(cursor);
     cancelSpanClick();
     if (e.altKey && hit) { selectSpanAt(cursor, e.shiftKey, { byHoles: true }); return; } /* Alt+クリック：菱目と菱目の間だけを選ぶ（Shift で追加） */
@@ -10019,7 +10025,7 @@ canvas.addEventListener('pointerup', e => {
   if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c), { rotates: true }); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
   if (g.kind === 'textR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.size - sh.sizeMm) > 1e-9) { commit(() => { sh.sizeMm = g.size; }); $('hint').textContent = t('textResized', { size: circleNum(g.size) }); } draw(); return; }
   if (g.kind === 'circleR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.r - sh.r) > 1e-9) { commit(() => { sh.r = g.r; }); $('hint').textContent = t('circleResized', { r: circleNum(g.r), d: circleNum(g.r * 2) }); } snap = null; draw(); return; }
-  if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h))commit(()=>Object.assign(h,holePosition(h,cursor)));
+  if (g.kind === 'hole') { const h=doc.holes.find(h=>h.id===g.id); if(h && holeEditable(h) && (g.moved || distance(p, g.screen) >= HOLE_DRAG_PX))commit(()=>Object.assign(h,holePosition(h,cursor)));   /* 動かさずに離したら、位置は変えない（事業主 2026-11-07「菱目を1つ選択するときにワンクリックですぐ位置がずれてしまう」：離した位置へ毎回動いていた） */
   } else if (g.kind === 'pen') {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'lineEnd') {
