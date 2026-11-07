@@ -8543,7 +8543,12 @@ function roundLineToPolylineRun(first0, poly, p) {
 }
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && curveType(s))));
+  /* クリックの範囲（7px）にある図形のうち、いちばん近い図形（同じ距離なら、描画順の後ろ＝上に見えるもの）。以前は、範囲内で描画順の後ろのものを先に取ったので、狙った線のすぐ近くの別の短い線に取られた（事業主 2026-11-07：外側の縫い線を狙ったのに、1.4mm 離れた切り込みの線の端に当たって「作成できません」）。 */
+  let hit = null, hitD = Infinity;
+  for (const s of doc.shapes.filter(s => editable(s) && stitchable(s)).reverse()) {
+    if (['chamfer', 'fillet'].includes(mode) && !(s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && curveType(s)))) continue;
+    const d = distTo(s, p); if (d <= 7 / scale && d < hitD - 1e-9) { hit = s; hitD = d; }
+  }
   if (!hit) return;
   if (hit.type === 'arc' && !stage && reroundArc(hit)) return; /* 丸めた角（円弧）をもう一度クリック：半径を入れなおして丸めなおす */
   if (mode === 'fillet') { /* 曲線と曲線（または線）の交点を丸める：残したい側を1本ずつクリック */
