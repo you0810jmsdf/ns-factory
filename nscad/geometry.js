@@ -1321,7 +1321,7 @@ export function splitShapeAt(s, positions) {
   const r = splitShapeAtRaw(s, positions); return r.length === 1 && r[0] === s ? r : r.map(straightenPath);
 }
 function splitShapeAtRaw(s, positions) {
-  const len = arcLength(s), closedLoop = !!s.closed && s.type !== 'circle'; /* 閉じた図形は、始点（位置 0＝終点）も区切りになりうる（始点にある頂点に別の線がつながっている場合） */
+  const len = arcLength(s), closedLoop = (!!s.closed && s.type !== 'circle') || s.type === 'circle'; /* 閉じた図形は、始点（位置 0＝終点）も区切りになりうる（始点にある頂点に別の線がつながっている場合）。円も：始点は右端（角度 0）で、横の直径の線はそこで円と交わる。以前は円だけ始点の切り口が捨てられ、切り口が1つ＝区切れない円になって、トリムで円全体が消えた（事業主 2026-11-07「トリムしても図形全体が消える」） */
   const norm = p => closedLoop && p >= len - 1e-6 && p <= len + 1e-6 ? 0 : p;
   const cuts = [...new Set(positions.map(norm).filter(p => Number.isFinite(p) && (p > 1e-6 || (closedLoop && p >= 0)) && p < len - 1e-6).map(p => +p.toFixed(9)))].sort((x, y) => x - y);
   if (!cuts.length || s.type === 'text' || s.type === 'dimension') return [s];

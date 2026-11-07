@@ -1300,6 +1300,18 @@ function checkHoles() {
   commit(() => { selected = new Set(addGapHoles(add)); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
 }
+/** 線から外れた穴を、持ち主の線の上（橙の点線の先）へ戻す（事業主 2026-11-07「元の位置からの点線ならどうやったら元の位置に戻せるか？」→「穴だけ戻す」）。
+ *  対象：橙の輪が付く穴（findPitchOffs の 'off'）のうち、選んだ穴と、選んだ図形の範囲の穴（rangeHoleSet）。何も選んでいなければ図面全体。位置だけ戻す（向き・線上の位置 s は変えない）。元に戻すは1回。 */
+function returnHolesToPath() {
+  const offs = findPitchOffs().filter(m => m.kind === 'off'), range = selected.size ? rangeHoleSet() : null;
+  const picked = offs.filter(m => !selected.size || selected.has(m.id) || range.has(m.id));
+  /* 戻せない穴：同じ線の上の同じ位置（s）に重なっている穴。穴が線から遠い所で線に付け直されると、位置が線の両端（s＝0 と線の長さ）に張り付いて、元の位置の情報が失われる（実図面 1626：鍵の穴14個が s＝0 と 68.6 に集まっていた）。戻すと、穴が2点に集まって壊れるので、動かさない */
+  const same = new Map(), byId = new Map(doc.holes.map(h => [h.id, h])), keyOf = h => h.pathId + '|' + Math.round(h.s * 1000); for (const h of doc.holes) same.set(keyOf(h), (same.get(keyOf(h)) || 0) + 1);
+  const pick = picked.filter(m => { const h = byId.get(m.id); return h && same.get(keyOf(h)) === 1; }), skipped = picked.length - pick.length;
+  if (!pick.length) { $('hint').textContent = skipped ? t('holesBackAllSkipped', { k: skipped }) : t('holesBackNone'); return; }
+  cancel(); commit(() => { for (const m of pick) { const h = doc.holes.find(x => x.id === m.id); if (h) { h.x = +m.qx.toFixed(4); h.y = +m.qy.toFixed(4); } } });
+  $('hint').textContent = skipped ? t('holesBackDoneSkip', { n: pick.length, k: skipped }) : t('holesBackDone', { n: pick.length }); draw();
+}
 /** 歯抜けの穴を図面に足す（commit の中で呼ぶ）。足した穴の id の並びを返す。 */
 function addGapHoles(list) { const made = []; for (const { gapId, ...h } of list) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } return made; }
 /** 赤い輪をクリックしたとき：クリックの近くの輪（いちばん近いもの）と、その輪の所属（選んだ線の分／開いた直後の分）を返す。無ければ null。 */
@@ -3488,7 +3500,7 @@ function initDesign() {
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
-  $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); };   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
+  $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); openOffsetSelBar(false); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); openOffsetSelBar(true); };   /* 右クリックで選んだら、すぐ実行せず、距離を入れる小窓を出す（事業主 2026-10-26「右クリック直後のオフセットコマンド選択後に数値を入れる」）。実線は、元の図形と同じ層・同じ色 */
   $('ctx-chamfer').onclick = e => { e?.stopPropagation?.(); const sub = $('ctxChamferSub'); sub.hidden = !sub.hidden; };   /* 右クリック → 面取り（丸・角）：押すと、丸め・面取りの2つが、その下に開く（左の「編集」から移した・事業主指示 2026-10-26「面取り（丸、角）として統合」。キー F・Shift+C は今までどおり） */
@@ -9931,7 +9943,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
