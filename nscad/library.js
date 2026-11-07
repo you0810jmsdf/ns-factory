@@ -71,7 +71,7 @@ export function transformPayload(payload, at = { x: 0, y: 0 }, scale = 1) {
   const holes = (payload.holes || []).map(h => { const p = mv(h.x, h.y); return { ...h, x: p.x, y: p.y, s: h.s * scale }; });
   const paths = (payload.paths || []).map(p => ({ ...p, segments: (p.segments || []).map(s => ({ ...s, from: s.from * scale, to: s.to * scale, pitch: s.pitch })) }));
   const mvPts = ps => (ps || []).map(q => mv(q.x, q.y)), fills = (payload.fills || []).map(f => ({ ...f, points: mvPts(f.points), holes: (f.holes || []).map(mvPts), ...(scale !== 1 && Number.isFinite(f.area) ? { area: +(f.area * scale * scale).toFixed(1) } : {}) }));   /* 領域の塗り（色・質感・金属）も、図形と同じに動かす */
-  return { shapes, holes, paths, parts: payload.parts || [], ...(fills.length ? { fills } : {}) };
+  return { shapes, holes, paths, parts: payload.parts || [], ...(fills.length ? { fills } : {}), ...((payload.gapOk || []).length ? { gapOk: payload.gapOk } : {}) };
 }
 /** 文書と図形 id の集合から、転活用用の payload（図形・それに完結する経路と穴・部品・工具）を取り出す。座標は bbox の左上を原点にする。 */
 export function extractSelection(doc, ids, { originAtBbox = true, holeIds = null, asIs = null } = {}) {
@@ -84,8 +84,9 @@ export function extractSelection(doc, ids, { originAtBbox = true, holeIds = null
   const holes = doc.holes.filter(h => wholeIds.has(h.pathId) || (extraIds.has(h.pathId) && holeIds.has(h.id))), toolIds = new Set(holes.map(h => h.toolId));
   const parts = doc.parts.filter(p => p.shapeIds.some(id => idSet.has(id))).map(p => ({ ...p, shapeIds: p.shapeIds.filter(id => idSet.has(id)) }));
   const live = new Set(doc.shapes.map(s => s.id)), fills = (doc.fills || []).filter(f => !f.foldFlat && Array.isArray(f.ids)).map(f => ({ ...f, ids: f.ids.filter(id => live.has(id)) })).filter(f => f.ids.length && f.ids.every(id => idSet.has(id))).map(f => JSON.parse(JSON.stringify(f)));   /* 色付きでコピー（事業主 2026-10-25）：囲んでいる図形がぜんぶ選ばれている領域の塗りを、いっしょに持っていく（折りシミュレーションの塗りは、作りなおされるので除く） */
+  const holeIdSet = new Set(holes.map(h => h.id)), gapOk = (doc.gapOk || []).filter(k => String(k).split('|').every(id => holeIdSet.has(id)));   /* 「わざと空けた」と覚えた空きのうち、運ぶ穴どうしのもの（複製でも、もう歯抜けとして出さない） */
   const tools = doc.tools.filter(t => toolIds.has(t.id)), b = originAtBbox && shapes.length ? bboxOfDoc({ ...doc, shapes, holes: [] }) : null; // 原点は図形だけの外接矩形の左上（穴の輪郭は含めない）
-  const payload = { shapes: [...shapes.map(s => JSON.parse(JSON.stringify(s))), ...support], holes: holes.map(h => ({ ...h })), paths: paths.map(p => JSON.parse(JSON.stringify(p))), parts: parts.map(p => JSON.parse(JSON.stringify(p))), tools: tools.map(t => ({ ...t })), ...(fills.length ? { fills } : {}), layers: [...new Set([...shapes, ...support].map(s => s.layer))].map(id => ({ id, name: doc.layers.find(l => l.id === id)?.name || id })) };
+  const payload = { shapes: [...shapes.map(s => JSON.parse(JSON.stringify(s))), ...support], holes: holes.map(h => ({ ...h })), paths: paths.map(p => JSON.parse(JSON.stringify(p))), parts: parts.map(p => JSON.parse(JSON.stringify(p))), tools: tools.map(t => ({ ...t })), ...(fills.length ? { fills } : {}), layers: [...new Set([...shapes, ...support].map(s => s.layer))].map(id => ({ id, name: doc.layers.find(l => l.id === id)?.name || id })), ...(gapOk.length ? { gapOk } : {}) };
   return b ? { ...transformPayload(payload, { x: -b.minX, y: -b.minY }, 1), tools: payload.tools, layers: payload.layers, origin: { x: b.minX, y: b.minY } } : { ...payload, origin: { x: 0, y: 0 } };
 }
 /** payload をクリップボード用の文字列にする。 */
@@ -106,7 +107,9 @@ export function mergePayload(doc, payload, { at = { x: 0, y: 0 }, scale = 1, fre
   for (const s of moved.shapes) { const id = next(doc.shapes, 's'); shapeMap.set(s.id, id); const g = groupIdOf(s), { groupId, ...rest } = s; doc.shapes.push({ ...rest, ...(g ? { groupId: pasteGroup(g) } : {}), id, layer: doc.layers.some(l => l.id === s.layer) ? s.layer : doc.layers[0].id }); ids.push(id); }
   if ((moved.fills || []).length) { if (!Array.isArray(doc.fills)) doc.fills = []; for (const f of moved.fills) { const fids = (f.ids || []).map(x => shapeMap.get(x)).filter(Boolean); if (!fids.length) continue; doc.fills.push({ ...f, id: next(doc.fills, 'f'), ids: fids, ...(f.layer ? { layer: doc.layers.some(l => l.id === f.layer) ? f.layer : doc.layers[0].id } : {}) }); } }   /* 貼り付け先の図形に付け替えた、領域の塗り */
   for (const p of moved.paths) { const id = next(doc.paths, 'p'); pathMap.set(p.id, id); doc.paths.push({ ...p, id, shapeIds: p.shapeIds.map(x => shapeMap.get(x)).filter(Boolean), segments: (p.segments || []).map(sg => ({ ...sg, toolId: toolMap.get(sg.toolId) || sg.toolId })) }); }
-  for (const h of moved.holes) { if (!pathMap.has(h.pathId)) continue; const id = next(doc.holes, 'h'); doc.holes.push({ ...h, id, pathId: pathMap.get(h.pathId), toolId: toolMap.get(h.toolId) || h.toolId }); }
+  const holeMap = new Map();
+  for (const h of moved.holes) { if (!pathMap.has(h.pathId)) continue; const id = next(doc.holes, 'h'); holeMap.set(h.id, id); doc.holes.push({ ...h, id, pathId: pathMap.get(h.pathId), toolId: toolMap.get(h.toolId) || h.toolId }); }
+  if ((moved.gapOk || []).length) { const add = moved.gapOk.map(k => String(k).split('|').map(x => holeMap.get(x))).filter(pr => pr.length === 2 && pr.every(Boolean)).map(pr => pr.join('|')); if (add.length) doc.gapOk = [...new Set([...(doc.gapOk || []), ...add])]; }   /* 「わざと空けた」も、新しい穴の id に付け替えて引き継ぐ */
   for (const part of moved.parts || []) { const sids = part.shapeIds.map(x => shapeMap.get(x)).filter(Boolean); if (!sids.length) continue; doc.parts.push({ ...part, id: next(doc.parts, 'part'), shapeIds: sids }); }
   // 経路の穴の弧長位置を解決し直す（拡大縮小やレイヤー差で狂わないように）
   for (const [, pid] of pathMap) { const saved = doc.paths.find(p => p.id === pid), route = saved && resolvePath(doc, saved); if (!route) { doc.holes = doc.holes.filter(h => h.pathId !== pid); doc.paths = doc.paths.filter(p => p.id !== pid); continue; } const len = arcLength(route); for (const h of doc.holes.filter(h => h.pathId === pid)) { const q = projectOnPath(route, h); h.s = Math.min(len, q.s); } }

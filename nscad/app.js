@@ -1200,10 +1200,11 @@ function findHoleGaps(wholeDoc = false) {
   for (const p of doc.paths) if (wholeDoc || p.shapeIds.some(id => selected.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))) ids.add(p.id);
   const nearSel = nearShapeFn(sel, 0.5, distToShape);
   for (const p of doc.paths) if (!wholeDoc && !ids.has(p.id) && sel.length && doc.holes.some(h => h.pathId === p.id && nearSel(h))) { ids.add(p.id); onlyNear.add(p.id); }
-  const add = []; let gapCount = 0;
+  const add = [], okSet = new Set(doc.gapOk || []), keys = []; let gapCount = 0;   /* okSet：「わざと空けた」と覚えた空き（穴 id の組）・keys：数えた空きの組（帯の「わざと空けた」で覚える） */
+  const onLine = (route, h) => { const q = pointAtLength(route, h.s); return Math.hypot(q.x - h.x, q.y - h.y) <= OFF_TOL; };   /* 自分の線の上にない穴（複製・移動で、線だけ取り残された穴）は、歯抜けの判定に使わない：ずれた線から「抜けている」と数えてしまう（事業主 2026-11-08「別に菱目抜けていない」・記録 0756） */
   for (const pid of ids) {
     const path = doc.paths.find(p => p.id === pid), route = path && resolvePath(doc, path); if (!route) continue;
-    const hs = doc.holes.filter(h => h.pathId === pid && h.mark === 'tool' && holeEditable(h)).sort((p, q) => p.s - q.s);
+    const hs = doc.holes.filter(h => h.pathId === pid && h.mark === 'tool' && holeEditable(h) && onLine(route, h)).sort((p, q) => p.s - q.s);
     for (let i = 1; i < hs.length; i++) {
       const a = hs[i - 1], b = hs[i], tool = doc.tools.find(t => t.id === a.toolId); if (!tool || a.toolId !== b.toolId) continue;
       const g = b.s - a.s, n = Math.round(g / tool.pitch) - 1; if (n < 1 || n > MAX_GAP_HOLES || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
@@ -1211,6 +1212,7 @@ function findHoleGaps(wholeDoc = false) {
       while (iv(lo - 1) !== null && isGapLike(iv(lo - 1), tool.pitch)) lo--; while (iv(hi + 1) !== null && isGapLike(iv(hi + 1), tool.pitch)) hi++;
       const fl = iv(lo - 1), fr = iv(hi + 1); if ((fl === null && fr === null) || !regularGap(fl, tool.pitch) || !regularGap(fr, tool.pitch)) continue; /* もともと2倍ピッチで並ぶ列・ピッチが途中で変わる列は、対象外 */
       const mid = pointAtLength(route, a.s + g / 2); if (onlyNear.has(pid) && !nearSel(mid)) continue; /* 重なった線を選んだときは、その線の上の歯抜けだけ */
+      const key = a.id + '|' + b.id; if (okSet.has(key)) continue; keys.push(key);
       gapCount++; const gid = gapCount, dAng = ((b.angleDeg - a.angleDeg + 540) % 360) - 180;
       for (let k = 1; k <= n; k++) { const t01 = k / (n + 1), s = a.s + g * t01, pt = pointAtLength(route, s); add.push({ ...pt, s, gapId: gid, pathId: pid, toolId: a.toolId, angleDeg: a.angleDeg + dAng * t01, mark: 'tool' }); }
     }
@@ -1219,7 +1221,7 @@ function findHoleGaps(wholeDoc = false) {
   const ends = [];
   for (const p of doc.paths) {
     if (p.closed) continue; const route = resolvePath(doc, p); if (!route || route.closed) continue; const L = arcLength(route);
-    const hs = doc.holes.filter(h => h.pathId === p.id && h.mark === 'tool' && holeEditable(h)); if (!hs.length) continue;
+    const hs = doc.holes.filter(h => h.pathId === p.id && h.mark === 'tool' && holeEditable(h) && onLine(route, h)); if (!hs.length) continue;
     const sorted = [...hs].sort((a, b) => a.s - b.s), first = sorted[0], last = sorted.at(-1);
     ends.push({ pid: p.id, route, L, which: 'start', pt: pointAtLength(route, 0), hole: first, d: first.s, nb: sorted.length > 1 ? sorted[1].s - first.s : null }, { pid: p.id, route, L, which: 'end', pt: pointAtLength(route, L), hole: last, d: L - last.s, nb: sorted.length > 1 ? last.s - sorted.at(-2).s : null });
   }
@@ -1230,6 +1232,7 @@ function findHoleGaps(wholeDoc = false) {
     const tool = doc.tools.find(t => t.id === e1.hole.toolId); if (!tool) continue;
     const g = e1.d + e2.d, n = Math.round(g / tool.pitch) - 1; if (n < 1 || n > MAX_GAP_HOLES || Math.abs(g - (n + 1) * tool.pitch) > 0.3 * tool.pitch) continue;
     if ((e1.nb === null && e2.nb === null) || !regularGap(e1.nb, tool.pitch) || !regularGap(e2.nb, tool.pitch)) continue; /* 両隣がピッチどおりのときだけ */
+    const key2 = e1.hole.id + '|' + e2.hole.id; if (okSet.has(key2) || okSet.has(e2.hole.id + '|' + e1.hole.id)) continue; keys.push(key2);
     gapCount++; const gid = gapCount, dAng = ((e2.hole.angleDeg - e1.hole.angleDeg + 540) % 360) - 180;
     for (let k = 1; k <= n; k++) {
       const tt = k * g / (n + 1); let pid, s;
@@ -1238,7 +1241,7 @@ function findHoleGaps(wholeDoc = false) {
       add.push({ ...pt, s, gapId: gid, pathId: pid, toolId: e1.hole.toolId, angleDeg: e1.hole.angleDeg + dAng * k / (n + 1), mark: 'tool' });
     }
   }
-  return { add, gapCount };
+  return { add, gapCount, keys };
 }
 /** ボタンの表示：押す前に、歯抜けが何か所ありそうかを知らせる。選択・穴が変わったときだけ数え直す（描き直しのたびには数えない）。 */
 /** 図面を開いた直後の案内：図面全体の歯抜けの可能性を数え、あれば案内の末尾に足す（無ければ何も言わない・事業主指示 2026-10-16）。 */
@@ -1546,6 +1549,12 @@ function fixAllGaps() {
   if (!add.length) { $('hint').textContent = t('noGapFound'); return; }
   commit(() => { addGapHoles(add); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
+}
+/** 帯の「わざと空けた」：いま数えている空きを、「わざと空けた所」として図面に覚える（保存される）。もう歯抜けとして出さない。元に戻すは1回。複製にも引き継ぐ（library.js）。 */
+function ignoreAllGaps() {
+  const { keys } = findHoleGaps(true); if (!keys.length) return;
+  commit(() => { doc.gapOk = [...new Set([...(doc.gapOk || []), ...keys])]; });
+  $('hint').textContent = t('gapOkDone', { n: keys.length });
 }
 /** 歯抜けがあるとき、画面に出す帯（「穴を補う」1ボタン）。「閉じる」を押すと、歯抜けの数か図面が変わるまで隠す。数えるのは、図面が変わったときだけ。 */
 let gapFixSkip = null, gapFixCache = { key: '', n: 0, doc: null };
@@ -10711,7 +10720,7 @@ $('gClose').onclick = () => $('galleryDialog').close();
 $('gConsent').addEventListener('change', gallerySync); $('gSubmit').onclick = submitGallery;
 $('autosaveBarSave').onclick = () => save();
 $('pitchFixBtn').onclick = () => { countUse('pitch_fix'); fixPitchOffs(); }; $('pitchFixClose').onclick = () => { pitchBarSkip = { doc, n: findPitchOffs().filter(m => m.kind === 'off').length }; $('pitchFixBar').hidden = true; };
-$('gapFixBtn').onclick = () => { countUse('gap_fix'); fixAllGaps(); }; $('gapFixClose').onclick = () => { gapFixSkip = { doc, n: gapFixCache.n }; $('gapFixBar').hidden = true; };   /* 歯抜けの帯（事業主 2026-11-08） */
+$('gapFixBtn').onclick = () => { countUse('gap_fix'); fixAllGaps(); }; $('gapFixOk').onclick = () => { countUse('gap_ok'); ignoreAllGaps(); }; $('gapFixClose').onclick = () => { gapFixSkip = { doc, n: gapFixCache.n }; $('gapFixBar').hidden = true; };   /* 歯抜けの帯（事業主 2026-11-08） */
 $('hiddenLeftBtn').onclick = () => { countUse('hidden_left'); moveHiddenLeft(); }; $('hiddenLeftClose').onclick = leaveHiddenLeft;   /* 動かなかった隠れた線の帯（事業主 2026-11-08） */   /* 橙を直す帯（事業主 2026-11-07） */
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
