@@ -1300,6 +1300,24 @@ function checkHoles() {
   commit(() => { selected = new Set(addGapHoles(add)); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
 }
+/** 持ち主の点線を、外れた穴の位置へ寄せる（事業主 2026-11-07「点線を寄せる」）。橙の輪の穴を持つ経路ごとに、穴と点線の先のずれ（穴 − 線の上の位置）の中央値を求め、その経路の持ち主の線（ガイド層・点線の線だけ）を、そのぶん動かす。
+ *  穴の半分以上が、そのずれの 1mm 以内にそろう経路だけ（部品を動かして、点線が置いていかれた形）。持ち主が型紙の実線・ほかの経路と共有・ずれがばらばらの経路は動かさない。穴は動かさない。選んだ穴・選んだ図形の範囲の穴だけ（何も選ばなければ図面全体）。元に戻すは1回。 */
+function moveLinesToHoles() {
+  const offs = findPitchOffs().filter(m => m.kind === 'off'), range = selected.size ? rangeHoleSet() : null, inScope = offs.filter(m => !selected.size || selected.has(m.id) || range.has(m.id));
+  if (!inScope.length) { $('hint').textContent = t('linesToHolesNothing'); return; }
+  const byPath = new Map(); for (const m of inScope) { if (!byPath.has(m.pathId)) byPath.set(m.pathId, []); byPath.get(m.pathId).push(m); }
+  const med = a => { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; }, plan = [], moved = new Set(); let skipped = 0, fitAll = 0;
+  for (const [pid, list] of byPath) {
+    const p = doc.paths.find(x => x.id === pid), shs = p ? p.shapeIds.map(id => doc.shapes.find(s => s.id === id)) : [];
+    const mx = med(list.map(m => m.x - m.qx)), my = med(list.map(m => m.y - m.qy)), fit = list.filter(m => Math.hypot(m.x - m.qx - mx, m.y - m.qy - my) < 1).length;
+    const guideOnly = shs.length > 0 && shs.every(s => s && !s.holeLink && (s.layer === 'guide' || s.lineStyle === 'dashed')), shared = shs.some(s => s && doc.paths.some(o => o.id !== pid && o.shapeIds.includes(s.id)));
+    if (!guideOnly || shared || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }
+    plan.push({ ids: p.shapeIds.filter(id => !moved.has(id)), dx: mx, dy: my }); p.shapeIds.forEach(id => moved.add(id)); fitAll += fit;
+  }
+  if (!plan.length) { $('hint').textContent = t('linesToHolesNone', { k: skipped }); return; }
+  cancel(); commit(() => { const to = new Map(); for (const g of plan) for (const id of g.ids) to.set(id, g); doc.shapes = doc.shapes.map(s => to.has(s.id) ? translate(s, to.get(s.id).dx, to.get(s.id).dy) : s); });
+  $('hint').textContent = t('linesToHolesDone', { k: moved.size, n: inScope.length, fit: fitAll }); draw();
+}
 /** 線から外れた穴を、持ち主の線の上（橙の点線の先）へ戻す（事業主 2026-11-07「元の位置からの点線ならどうやったら元の位置に戻せるか？」→「穴だけ戻す」）。
  *  対象：橙の輪が付く穴（findPitchOffs の 'off'）のうち、選んだ穴と、選んだ図形の範囲の穴（rangeHoleSet）。何も選んでいなければ図面全体。位置だけ戻す（向き・線上の位置 s は変えない）。元に戻すは1回。 */
 function returnHolesToPath() {
@@ -3500,7 +3518,7 @@ function initDesign() {
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
-  $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
+  $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); }; $('ctx-lines-to-holes').onclick = () => { countUse('ctx_lines_to_holes'); hideCtxMenu(); moveLinesToHoles(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); openOffsetSelBar(false); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); openOffsetSelBar(true); };   /* 右クリックで選んだら、すぐ実行せず、距離を入れる小窓を出す（事業主 2026-10-26「右クリック直後のオフセットコマンド選択後に数値を入れる」）。実線は、元の図形と同じ層・同じ色 */
   $('ctx-chamfer').onclick = e => { e?.stopPropagation?.(); const sub = $('ctxChamferSub'); sub.hidden = !sub.hidden; };   /* 右クリック → 面取り（丸・角）：押すと、丸め・面取りの2つが、その下に開く（左の「編集」から移した・事業主指示 2026-10-26「面取り（丸、角）として統合」。キー F・Shift+C は今までどおり） */
@@ -8128,9 +8146,24 @@ const fillFollows = (fl, ids, shapeById) => {
   const bs = outer.map(bboxOf), minX = Math.min(...bs.map(q => q.minX)), minY = Math.min(...bs.map(q => q.minY)), maxX = Math.max(...bs.map(q => q.maxX)), maxY = Math.max(...bs.map(q => q.maxY)), e = 0.05;
   return fl.points.every(q => q.x >= minX - e && q.x <= maxX + e && q.y >= minY - e && q.y <= maxY + e);
 };
+/** 動かす図形の集まり ids に、いっしょに動かす持ち主の点線を足す（事業主 2026-11-07「毎回発生するのでなんとかしてほしい」「グループ化がうまく機能していない証拠です」）。
+ *  動かす穴（選んだ穴・選んだ範囲の穴）の持ち主の線が、ガイド層・点線の線だけでできていて、その経路の穴がぜんぶ動く穴なら、その点線も動かす。
+ *  穴だけ動いて点線が残ると、穴が線から外れて橙の輪になり、穴の線上の位置 s も、線の端に張り付いて元の位置が失われる（実図面 1626・1657）。穴の一部だけを選んで動かすときは、点線は動かさない。 */
+function addOwnerLines(ids) {
+  const range = selected.size ? rangeHoleSet() : null;
+  for (const p of doc.paths) {
+    if (!p.shapeIds.length || p.shapeIds.every(id => ids.has(id))) continue;
+    const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (!shs.every(s => s && !s.holeLink && (s.layer === 'guide' || s.lineStyle === 'dashed'))) continue;
+    const hs = doc.holes.filter(h => h.pathId === p.id && holeEditable(h)); if (!hs.length || !hs.every(h => selected.has(h.id) || range?.has(h.id))) continue;
+    p.shapeIds.forEach(id => ids.add(id));
+  }
+  return ids;
+}
 function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転のとき true：寸法を「傾けない」で引き戻さず、図形といっしょに回す */
+  if (selected.size) rangeHoleSet();   /* 動かす前の図形で、範囲の穴を先に確定する（動かしたあとでは、穴が範囲の外になる） */
   const ids = selectedShapeIds();
   for (const p of doc.paths) { const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (shs.length && shs.every(s => s && s.layer === 'guide' && !editable(s)) && doc.holes.some(h => h.pathId === p.id && selected.has(h.id) && holeEditable(h))) p.shapeIds.forEach(id => ids.add(id)); } /* 選んだ菱目がついた、非表示のガイド層の線は、菱目といっしょに動かす（取り残して、菱目が線から外れないように） */
+  addOwnerLines(ids);   /* 見えているガイド・点線の持ち主も、その経路の穴がぜんぶ動くなら、いっしょに動かす */
   cancel(); dimRotating = rotates;
   try { commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
@@ -9739,7 +9772,7 @@ canvas.addEventListener('pointerdown', e => {
       else if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
       else if (!selected.has(hit.id)) { selected = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = groupPickedText(); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
       if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
-      gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}), ...(ctrlMulti && wasSel ? { ctrlToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
+      gesture = { kind: 'move', start: cursor, screen: p, ids: addOwnerLines(selectedShapeIds()), ...(e.shiftKey ? { shiftToggle: hit.id } : {}), ...(ctrlMulti && wasSel ? { ctrlToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
     } else { gesture = { kind: 'select', start: cursor, screen: p, additive: e.shiftKey }; if (!e.shiftKey) nodeSel = null; }
   }
@@ -9949,7 +9982,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
