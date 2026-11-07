@@ -75,6 +75,7 @@ let lamSig = null;   /* 検証カードの選択欄に出した部品の一覧�
 let lastAutosaveAt = ''; /* 最後の自動保存の時刻（復元のあとの保管し直しに使う） */
 let tabLock = null, restoreSkipped = false; try { tabLock = createTabLock({ storage: localStorage }); } catch { /* 保存を読めない環境では、タブの取り合いを見ない（いつも主＝今までどおり保存する） */ }   /* 別のブラウザのタブでも開いているとき、保存してよいのは主のタブだけ（tablock.js・事業主 2026-10-23） */
 const tabIsPrimary = () => !tabLock || tabLock.isPrimary();
+const AUTOSAVE_REJECTED_KEY = 'leather-cad.autosave.rejected';   /* 検査に通らなかった自動保存の退避先（消さずに残す・2026-11-07） */
 const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別のブラウザタブが主）の自動保存の置き場。主の置き場（AUTOSAVE_KEY）を上書き・削除しないための別のキー（2026-10-28 事業主「更新したら作業中の作図が消えた」：副のタブで描いた分が自動保存に乗っていなかった） */
 let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
 let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';
@@ -1454,7 +1455,7 @@ function readRestoreCandidates(keys) {
     let text = null; try { text = localStorage.getItem(key); } catch { /* 保存を読めない環境では何もしない */ }
     if (!text) continue;
     const info = unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); });   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */
-    if (!info) { try { localStorage.removeItem(key); } catch { /* 無視 */ } continue; }
+    if (!info) { try { localStorage.setItem(AUTOSAVE_REJECTED_KEY, text); localStorage.removeItem(key); } catch { /* 移せない（容量など）ときは、消さずにそのまま残す */ } continue; }   /* 検査に通らない保存も、消さずに別の置き場へ移す（事業主 2026-11-07「更新ボタン押したらいきなりデータが全部消えた」：1タブの小さな不整合で、全タブの保存を消していた）。あとで取り出して直せる */
     found.push({ ...info, key });
   }
   found.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));   /* 新しいほうから */

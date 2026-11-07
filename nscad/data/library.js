@@ -5896,15 +5896,24 @@ export const DATA_LIBRARY = {
               "y": 50.49,
               "inX": 31.547,
               "inY": 50.58,
-              "outX": 33.313,
-              "outY": 50.711,
+              "outX": 33.024,
+              "outY": 50.6,
+              "smooth": false
+            },
+            {
+              "x": 32.971,
+              "y": 51.805,
+              "inX": 33.077,
+              "inY": 51.188,
+              "outX": 32.866,
+              "outY": 52.423,
               "smooth": false
             },
             {
               "x": 32.253,
               "y": 53.3,
-              "inX": 32.948,
-              "inY": 52.84,
+              "inX": 32.601,
+              "inY": 53.07,
               "outX": 31.045,
               "outY": 54.078,
               "smooth": false
@@ -12717,7 +12726,7 @@ export const DATA_LIBRARY = {
               },
               {
                 "x": 32.97,
-                "y": 51.81
+                "y": 51.8
               },
               {
                 "x": 32.7,
@@ -13347,7 +13356,7 @@ export const DATA_LIBRARY = {
             "a34",
             "a42"
           ],
-          "area": 1098.61,
+          "area": 1098.612,
           "layer": "pattern",
           "leather": "#222222"
         },
@@ -22219,15 +22228,24 @@ export const DATA_LIBRARY = {
               "y": 50.49,
               "inX": 31.547,
               "inY": 50.58,
-              "outX": 33.313,
-              "outY": 50.711,
+              "outX": 33.024,
+              "outY": 50.6,
+              "smooth": false
+            },
+            {
+              "x": 32.971,
+              "y": 51.805,
+              "inX": 33.077,
+              "inY": 51.188,
+              "outX": 32.866,
+              "outY": 52.423,
               "smooth": false
             },
             {
               "x": 32.253,
               "y": 53.3,
-              "inX": 32.948,
-              "inY": 52.84,
+              "inX": 32.601,
+              "inY": 53.07,
               "outX": 31.045,
               "outY": 54.078,
               "smooth": false
@@ -36048,7 +36066,7 @@ export const DATA_LIBRARY = {
               },
               {
                 "x": 32.97,
-                "y": 51.81
+                "y": 51.8
               },
               {
                 "x": 32.7,
@@ -36678,7 +36696,7 @@ export const DATA_LIBRARY = {
             "a34",
             "a42"
           ],
-          "area": 1098.599,
+          "area": 1098.6,
           "layer": "pattern",
           "leather": "#222222"
         },

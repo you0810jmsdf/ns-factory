@@ -408,6 +408,17 @@ export function healDoc(d) {
       fixed++;
     }
   }
+  { /* 点が2つの閉じた曲線（ロゴの部品の小さな輪郭など）：検査は閉じた曲線に3点以上を求めるので、図面ごと読めず、「前回の続き」も捨てられた（事業主 2026-11-07「更新ボタン押したらいきなりデータが全部消えた」）。
+       閉じる側の曲線（最後の点→最初の点）を真ん中で2つに分けて、点を1つ足す（形は変わらない） */
+    const fin = v => Number.isFinite(v), mixP = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+    for (const s of d.shapes) {
+      if (!s || s.type !== 'path' || s.closed !== true || !Array.isArray(s.nodes) || s.nodes.length !== 2) continue;
+      const a = s.nodes[1], b = s.nodes[0]; if (![a.x, a.y, a.outX, a.outY, b.x, b.y, b.inX, b.inY].every(fin)) continue;
+      const p0 = { x: a.x, y: a.y }, p1 = { x: a.outX, y: a.outY }, p2 = { x: b.inX, y: b.inY }, p3 = { x: b.x, y: b.y };
+      const q0 = mixP(p0, p1), q1 = mixP(p1, p2), q2 = mixP(p2, p3), r0 = mixP(q0, q1), r1 = mixP(q1, q2), m = mixP(r0, r1);
+      a.outX = q0.x; a.outY = q0.y; b.inX = q2.x; b.inY = q2.y; s.nodes.push({ x: m.x, y: m.y, inX: r0.x, inY: r0.y, outX: r1.x, outY: r1.y, smooth: true }); fixed++;
+    }
+  }
   for (const p of d.paths) { try { const route = resolvePath(d, p); if (route && typeof route.closed === 'boolean' && route.closed !== p.closed) { p.closed = route.closed; fixed++; } } catch { /* 直せない経路は、そのまま（検査で弾く） */ } }
   return fixed;
 }
