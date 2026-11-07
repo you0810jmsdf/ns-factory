@@ -8522,6 +8522,25 @@ function oldCornerConnector(first, second) {
   const same = (u, v) => distance(u, v) < 1e-4;
   return doc.shapes.find(o => { if (o.id === first.id || o.id === second.id || !editable(o)) return false; let e = null; if (o.type === 'arc') e = [circlePoint(o, o.startDeg), circlePoint(o, o.endDeg)]; else if (o.type === 'line') e = [{ x: o.x1, y: o.y1 }, { x: o.x2, y: o.y2 }]; return !!e && ((same(e[0], P) && same(e[1], Q)) || (same(e[0], Q) && same(e[1], P))); }) || null;
 }
+/** 1本目が直線・2本目が折れ線（辺が3本以上）のとき：折れ線のクリックした所の「まっすぐ続く辺」を仮の直線として、1本目の端を丸める（面取りする）。折れ線そのもの（縫い穴の経路）は変えない。つなぎの円弧は 1本目の線種・色を引き継ぐ。
+ *  事業主 2026-11-07「面取り（丸め）が外側の菱目点線とリングサポータの左点線で作用しない」（外側の縫い線は縫い穴付きの折れ線で、分解できない・2本目に選ぶと「作成できません」になっていた）→ 案B：T字の根元だけを丸める。処理したら true。 */
+function roundLineToPolylineRun(first0, poly, p) {
+  const lineOf = x => x.type === 'line' ? x : { ...x, type: 'line', x1: x.points[0].x, y1: x.points[0].y, x2: x.points[1].x, y2: x.points[1].y }, backOf = (orig, ln) => orig.type === 'line' ? ln : { ...orig, points: [{ x: ln.x1, y: ln.y1 }, { x: ln.x2, y: ln.y2 }] };
+  const first = lineOf(first0); let best = null;
+  for (const r of polylineStraightRuns(poly)) { const d = distToShape({ type: 'line', x1: r.x1, y1: r.y1, x2: r.x2, y2: r.y2 }, p); if (!best || d < best.d) best = { r, d }; }
+  if (!best || best.d > 7 / scale + 0.5) return false;
+  const virt = { type: 'line', x1: best.r.x1, y1: best.r.y1, x2: best.r.x2, y2: best.r.y2 }, click = stage.click;
+  const affectedPaths = new Set(doc.paths.filter(q => q.shapeIds.includes(first0.id)).map(q => q.id));   /* 動かすのは 1本目だけ（折れ線の経路・穴は触らない） */
+  if (roundPrepare(affectedPaths, () => editAt(p))) return true;
+  const r = askNumber(mode === 'fillet' ? 'radius' : 'chamferSize', 3, mode === 'fillet' ? 'fillet' : 'chamfer'); if (r === null) return true;
+  const gen = roundLinesAt(first, click, virt, p, r, mode);
+  if (!gen) { const lim = cornerLimit(first, click, virt, p, mode); $('hint').textContent = lim && r > lim.max + 1e-9 ? t('roundTooBig', { r: +r.toFixed(2), max: Math.floor(lim.max * 100 + 1e-6) / 100, short: +lim.short.toFixed(2) }) : t('impossible'); return true; }
+  const a = backOf(first0, gen.a), id = freshId(doc.shapes, 's');
+  cancel();
+  commit(() => { doc.shapes = doc.shapes.map(s => s.id === first0.id ? a : s); doc.shapes.push({ ...roundStyle(first0), ...gen.arc, id, layer: first0.layer }); selected = new Set([first0.id, id]); reattachMarks(affectedPaths); });
+  $('hint').textContent = roundStyleNote(first0, poly) + t(mode === 'fillet' ? 'hint.fillet' : 'hint.chamfer');
+  return true;
+}
 function editAt(p) {
   if (mode === 'offset') { offsetClick(p, false); offsetAlt = false; return; }
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale && (!['chamfer', 'fillet'].includes(mode) || s.type === 'line' || s.type === 'polyline' || (mode === 'fillet' && curveType(s))));
@@ -8533,6 +8552,7 @@ function editAt(p) {
     if (f0 && stage.id !== hit.id && (curveType(f0) || curveType(hit)) && stage.click) { curveFillet(f0, stage.click, hit, p); return; }
   }
   const twoPt = x => x.type === 'polyline' && !x.closed && x.points.length === 2; /* 2点だけの折れ線は、1本の線として2本の線の丸め・面取りに使う */
+  if (stage?.click && stage.id !== hit.id && hit.type === 'polyline' && !twoPt(hit) && (mode === 'fillet' || mode === 'chamfer')) { const f0 = doc.shapes.find(x => x.id === stage.id && editable(x)); if (f0 && (f0.type === 'line' || twoPt(f0)) && roundLineToPolylineRun(f0, hit, p)) return; }   /* 1本目が直線で、2本目に折れ線をクリック：折れ線の辺に向けて、1本目の端を丸める */
   if (hit.type === 'polyline' && !twoPt(hit)) { roundPolylineAt(hit, p); return; }
   if (!stage) { stage = { kind: 'chamfer', id: hit.id, click: p }; selected = new Set([hit.id]); draw(); $('hint').textContent = t('secondLine'); return; }
   if (stage.id === hit.id) return;
