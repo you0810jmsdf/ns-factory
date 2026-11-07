@@ -1427,6 +1427,10 @@ function updatePitchFixBar() {
 let hiddenLeft = null, hiddenLeftKey = '', hiddenLeftN = 0;
 const HIDDEN_LEFT_SKIP = ['dimension', 'text', 'image', 'fold'];
 const shapeLocked = s => !!doc.layers.find(l => l.id === s.layer)?.locked;
+/** 「このまま」を押した線は、この図面（タブ）を開いている間、帯に数えない（事業主 2026-11-08「改善提案実行」）。目印は、線の識別番号と位置（元に戻すで図面が作り直されても同じ・線を動かしたら別の線として数え直す）。保存はしない。 */
+const hiddenLeftIgnore = new WeakMap(), hiddenLeftNoTab = {};
+const ignoreKeyOf = s => { const b = bboxOf(s); return s.id + '|' + [b.minX, b.minY, b.maxX, b.maxY].map(v => Math.round(v * 100)).join(','); };
+const ignoredHiddenLeft = () => { const k = tabs[activeTab] || hiddenLeftNoTab; let set = hiddenLeftIgnore.get(k); if (!set) hiddenLeftIgnore.set(k, set = new Set()); return set; };
 /** 変換 fn が平行移動だけのとき {dx, dy}（そうでなければ null）。followSectionMove と同じ見分け方。 */
 function pureShift(fn) {
   let r0, r1, r2; try { r0 = fn({ x: 0, y: 0 }); r1 = fn({ x: 100, y: 0 }); r2 = fn({ x: 0, y: 100 }); } catch { return null; }
@@ -1439,9 +1443,10 @@ function boxOfShapeIds(ids) {
   return box;
 }
 function findHiddenLeft(ids, oldBox, movedHoles) {
-  const movedGroups = new Set(doc.shapes.filter(s => ids.has(s.id)).map(groupIdOf).filter(Boolean)), m = 10, cand = new Set(), layerIds = new Set(doc.layers.map(l => l.id));
+  const movedGroups = new Set(doc.shapes.filter(s => ids.has(s.id)).map(groupIdOf).filter(Boolean)), m = 10, cand = new Set(), layerIds = new Set(doc.layers.map(l => l.id)), ign = ignoredHiddenLeft();
   for (const s of doc.shapes) {
     if (ids.has(s.id) || HIDDEN_LEFT_SKIP.includes(s.type) || s.foldSec || s.foldFlat || s.hwSection || s.hwFor || isHardwareShape(s) || !layerIds.has(s.layer) || shapeLocked(s) || layerEditable(s)) continue;
+    if (ign.size) { let key = null; try { key = ignoreKeyOf(s); } catch { key = null; } if (key && ign.has(key)) continue; }   /* 「このまま」を押した線 */
     const g = groupIdOf(s); let ok;
     if (g) ok = movedGroups.has(g); else { const b = bboxOf(s); ok = b.minX >= oldBox.minX - m && b.maxX <= oldBox.maxX + m && b.minY >= oldBox.minY - m && b.maxY <= oldBox.maxY + m; }
     if (ok) cand.add(s.id);
@@ -1466,6 +1471,12 @@ function updateHiddenLeftBar() {
   }
   bar.hidden = !show; if (!show) return;
   const info = t('hiddenLeftInfo', { n: hiddenLeftN }); if ($('hiddenLeftInfo').textContent !== info) $('hiddenLeftInfo').textContent = info;
+}
+/** 帯の「このまま」：帯を閉じて、いま帯に数えていた線を、この図面では数えないように覚える。 */
+function leaveHiddenLeft() {
+  const h = hiddenLeft;
+  if (h && h.doc === doc) { const set = ignoredHiddenLeft(), ids = new Set(h.ids); for (const s of doc.shapes) if (ids.has(s.id)) { try { set.add(ignoreKeyOf(s)); } catch { /* 目印が作れない線は、覚えない */ } } }
+  hiddenLeft = null; const bar = $('hiddenLeftBar'); if (bar) bar.hidden = true;
 }
 function moveHiddenLeft() {
   const h = hiddenLeft; if (!h || h.doc !== doc || h.seq !== commitSeq) return;
@@ -10571,7 +10582,7 @@ $('gClose').onclick = () => $('galleryDialog').close();
 $('gConsent').addEventListener('change', gallerySync); $('gSubmit').onclick = submitGallery;
 $('autosaveBarSave').onclick = () => save();
 $('pitchFixBtn').onclick = () => { countUse('pitch_fix'); fixPitchOffs(); }; $('pitchFixClose').onclick = () => { pitchBarSkip = { doc, n: findPitchOffs().filter(m => m.kind === 'off').length }; $('pitchFixBar').hidden = true; };
-$('hiddenLeftBtn').onclick = () => { countUse('hidden_left'); moveHiddenLeft(); }; $('hiddenLeftClose').onclick = () => { hiddenLeft = null; $('hiddenLeftBar').hidden = true; };   /* 動かなかった隠れた線の帯（事業主 2026-11-08） */   /* 橙を直す帯（事業主 2026-11-07） */
+$('hiddenLeftBtn').onclick = () => { countUse('hidden_left'); moveHiddenLeft(); }; $('hiddenLeftClose').onclick = leaveHiddenLeft;   /* 動かなかった隠れた線の帯（事業主 2026-11-08） */   /* 橙を直す帯（事業主 2026-11-07） */
 $('saveAs').onclick = () => { $('saveMenu').hidden = true; save(true); };
 $('saveSelected').onclick = () => { $('saveMenu').hidden = true; saveSelectedAs(); };
 for (const b of ($('saveMenu').querySelectorAll ? $('saveMenu').querySelectorAll('button[data-export]') : [])) b.addEventListener('click', () => { $(b.dataset.export).click(); $('saveMenu').hidden = true; }); /* 右の出力カードと同じ書き出しを呼ぶ */
