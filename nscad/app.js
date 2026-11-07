@@ -16,7 +16,7 @@ import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayo
 import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, groupLibraryItems } from './library.js';
+import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, LIBRARY_LAYOUT_KEY, emptyLibraryLayout, normalizeLibraryLayout, arrangeLibrary, addLibraryGroup, renameLibraryGroup, deleteLibraryGroup, moveLibraryGroup, moveLibraryItem, stepLibraryItem } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -1304,21 +1304,59 @@ function checkHoles() {
   commit(() => { selected = new Set(addGapHoles(add)); });
   $('hint').textContent = t('holesFilled', { gaps: gapCount, n: add.length });
 }
-/** 点線を寄せる計画（図面は変えない）：橙の輪の穴（offs）を経路ごとに見て、持ち主の点線を、どれだけ動かすか決める。{ plan: [{ ids, dx, dy }], skipped（寄せない経路の穴の数）, fitAll, moved（動かす図形の id の集まり） }。 */
+/** 点線を寄せる計画（図面は変えない）：橙の輪の穴（inScope）を経路ごとに見て、持ち主の点線を、どれだけ動かすか決める。{ plan: [{ ids, dx, dy, pathIds }], skipped（寄せない経路の穴の数）, fitAll, moved（動かす図形の id の集まり） }。
+ *  事業主 2026-11-07「点線の位置がずれている・点線は菱目ラインとして必要」（実図面 1657：穴の線上の位置 s が、動かしたあと線に付け直されて失われていたため、s から縦のずれを求めると、点線が約26mm 低いまま決まった。角の円弧も、別々に動いて、つながりが切れた）。
+ *  決め方：① 持ち主が1本の直線のとき、穴の並びから決める。線と直角の向きは、穴が乗る位置（中央値）で決まる。線に沿う向きは、「線が穴の並びをすべて覆う」範囲の中央（記録の s が、その範囲に合うなら s）。
+ *  ② その直線の端につながっている円弧・線（持ち主がガイド層・点線だけ）は、同じだけ動かす（部品として動いた）。③ それ以外は、これまでどおり、穴と線の上の位置のずれの中央値で決める。
+ *  どの経路も、その経路の見える穴がぜんぶ橙の輪のときだけ動かす（線の上に残る穴を、ずらさないため）。持ち主が型紙の実線・ほかの経路と共有・ずれがばらばらの経路は動かさない。 */
 function planLinesToHoles(inScope) {
   const byPath = new Map(); for (const m of inScope) { if (!byPath.has(m.pathId)) byPath.set(m.pathId, []); byPath.get(m.pathId).push(m); }
-  const med = a => { const s = a.slice().sort((x, y) => x - y); return s[Math.floor(s.length / 2)]; }, plan = [], moved = new Set(); let skipped = 0, fitAll = 0;
-  for (const [pid, list] of byPath) {
-    const p = doc.paths.find(x => x.id === pid), shs = p ? p.shapeIds.map(id => doc.shapes.find(s => s.id === id)) : [];
-    const mx = med(list.map(m => m.x - m.qx)), my = med(list.map(m => m.y - m.qy)), fit = list.filter(m => Math.hypot(m.x - m.qx - mx, m.y - m.qy - my) < 1).length;
+  const med = a => { const x = a.slice().sort((u, v) => u - v); return x[Math.floor(x.length / 2)]; }, plan = [], moved = new Set(), own = ownPaths(), holeById = new Map(doc.holes.map(h => [h.id, h]));
+  let skipped = 0, fitAll = 0;
+  const info = (pid, list) => {
+    const p = doc.paths.find(x => x.id === pid), shs = p ? p.shapeIds.map(id => doc.shapes.find(s => s.id === id)) : [], visible = doc.holes.filter(h => h.pathId === pid && h.mark === 'tool' && !holeIsOwn(h, own) && holeVisible(h)).length;
     const guideOnly = shs.length > 0 && shs.every(s => s && !s.holeLink && (s.layer === 'guide' || s.lineStyle === 'dashed')), shared = shs.some(s => s && doc.paths.some(o => o.id !== pid && o.shapeIds.includes(s.id)));
-    if (!guideOnly || shared || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }
-    plan.push({ ids: p.shapeIds.filter(id => !moved.has(id)), dx: mx, dy: my }); p.shapeIds.forEach(id => moved.add(id)); fitAll += fit;
+    return { p, shs, route: p ? resolvePath(doc, p) : null, ok: !!p && guideOnly && !shared && list.length === visible };
+  };
+  /* ① 直線：穴の並びから、動かす向きと量を決める */
+  const lineEstimate = (I, list) => {
+    if (!I.ok || !I.route || I.shs.length !== 1 || I.shs[0].type !== 'line') return null;
+    const P0 = pointAtLength(I.route, 0), P1 = pointAtLength(I.route, 1e9), L = P1.s; if (!(L > 1)) return null;
+    const ux = (P1.x - P0.x) / L, uy = (P1.y - P0.y) / L, nx = -uy, ny = ux, d = list.map(m => (m.x - P0.x) * nx + (m.y - P0.y) * ny), a = list.map(m => (m.x - P0.x) * ux + (m.y - P0.y) * uy), dm = med(d);
+    const fit = d.filter(v => Math.abs(v - dm) < 1).length; if (list.length < 3 || fit < list.length * 0.8) return null;   /* 穴が3個以上、8割以上が同じ直線の上に並ぶときだけ */
+    const lo = Math.max(...a) - L, hi = Math.min(...a), ds = list.map((m, i) => a[i] - (holeById.get(m.id)?.s ?? NaN)).filter(Number.isFinite), dS = ds.length ? med(ds) : null;
+    let delta; if (lo <= hi + 0.05) delta = dS !== null && dS >= lo - 0.3 && dS <= hi + 0.3 ? Math.max(lo, Math.min(hi, dS)) : (lo + hi) / 2; else if (dS !== null) delta = dS; else return null;
+    const dx = nx * dm + ux * delta, dy = ny * dm + uy * delta; if (Math.hypot(dx, dy) <= OFF_TOL) return null;
+    return { dx, dy, fit, ends: [P0, P1] };
+  };
+  const planned = new Map(), add = (pid, est, fit) => { const g = { ids: doc.paths.find(x => x.id === pid).shapeIds.filter(id => !moved.has(id)), dx: est.dx, dy: est.dy, pathIds: [pid] }; plan.push(g); g.ids.forEach(id => moved.add(id)); planned.set(pid, est); fitAll += fit; };
+  const infos = new Map([...byPath].map(([pid, list]) => [pid, info(pid, list)]));
+  for (const [pid, list] of byPath) { const est = lineEstimate(infos.get(pid), list); if (est) add(pid, est, est.fit); }
+  /* ② 動かす直線の端につながっている円弧・線は、同じだけ動かす */
+  const near = (A, B) => Math.hypot(A.x - B.x, A.y - B.y) <= 1;
+  for (const [pid, list] of byPath) {
+    if (planned.has(pid)) continue; const I = infos.get(pid); if (!I.ok || !I.route) continue;
+    const E = [pointAtLength(I.route, 0), pointAtLength(I.route, 1e9)]; let hit = null;
+    for (const [qid, est] of planned) if (est.ends && E.some(e => est.ends.some(q => near(e, q)))) { hit = est; break; }
+    if (hit) add(pid, { dx: hit.dx, dy: hit.dy }, list.length);
+  }
+  /* ③ そのほか：穴と、線の上の位置のずれの中央値 */
+  for (const [pid, list] of byPath) {
+    if (planned.has(pid)) continue; const I = infos.get(pid);
+    const mx = med(list.map(m => m.x - m.qx)), my = med(list.map(m => m.y - m.qy)), fit = list.filter(m => Math.hypot(m.x - m.qx - mx, m.y - m.qy - my) < 1).length;
+    if (!I.ok || list.length < 3 || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }   /* 穴が1〜2個の経路は、単独では動かさない（1個では、ずれが合っているかを確かめられない。つながる直線が動くときだけ、②でいっしょに動く） */
+    add(pid, { dx: mx, dy: my }, fit);
   }
   return { plan, skipped, fitAll, moved };
 }
-/** 点線を寄せる計画を、図形に当てる（commit の中で呼ぶ）。 */
-function applyLinePlan(plan) { const to = new Map(); for (const g of plan) for (const id of g.ids) to.set(id, g); doc.shapes = doc.shapes.map(s => to.has(s.id) ? translate(s, to.get(s.id).dx, to.get(s.id).dy) : s); }
+/** 点線を寄せる計画を、図形に当てる（commit の中で呼ぶ）。動かした経路の穴は、線の上の位置 s が合わなくなっていたら、動かしたあとの線に付け直す（線から 0.5mm 以内の穴だけ）。 */
+function applyLinePlan(plan) {
+  const to = new Map(); for (const g of plan) for (const id of g.ids) to.set(id, g); doc.shapes = doc.shapes.map(s => to.has(s.id) ? translate(s, to.get(s.id).dx, to.get(s.id).dy) : s);
+  for (const g of plan) for (const pid of g.pathIds || []) {
+    const path = doc.paths.find(x => x.id === pid), route = path && resolvePath(doc, path); if (!route) continue;
+    for (const h of doc.holes) { if (h.pathId !== pid || h.mark !== 'tool') continue; const q = pointAtLength(route, h.s); if (Math.hypot(q.x - h.x, q.y - h.y) <= OFF_TOL) continue; const pr = projectOnPath(route, h); if (Math.hypot(pr.x - h.x, pr.y - h.y) <= 0.5) h.s = +pr.s.toFixed(4); }
+  }
+}
 /** 持ち主の点線を、外れた穴の位置へ寄せる（事業主 2026-11-07「点線を寄せる」）。橙の輪の穴を持つ経路ごとに、穴と点線の先のずれ（穴 − 線の上の位置）の中央値を求め、その経路の持ち主の線（ガイド層・点線の線だけ）を、そのぶん動かす。
  *  穴の半分以上が、そのずれの 1mm 以内にそろう経路だけ（部品を動かして、点線が置いていかれた形）。持ち主が型紙の実線・ほかの経路と共有・ずれがばらばらの経路は動かさない。穴は動かさない。選んだ穴・選んだ図形の範囲の穴だけ（何も選ばなければ図面全体）。元に戻すは1回。 */
 function moveLinesToHoles() {
@@ -5092,6 +5130,7 @@ function initAi() {
 
 // ---- 部品ライブラリ・タブ・クリップボード ----
 let userLibrary = [], tabs = [], activeTab = 0;
+let libLayout = emptyLibraryLayout();   /* 部品ライブラリの整理（見出しの名前・並び・自作の見出し・部品の見出しと並び）。このブラウザに保存する（部品そのものは変えない） */
 function loadLibrary() { try { const list = JSON.parse(localStorage.getItem('leather-cad.library')); if (Array.isArray(list)) userLibrary = list.filter(it => checkLibraryItem(it).length === 0); } catch { /* 保存不可は空のまま。 */ } }
 function persistLibrary() { try { localStorage.setItem('leather-cad.library', JSON.stringify(userLibrary)); } catch { $('hint').textContent = t('storageUnavailable'); return; } snapshotLibrary(); }
 /* 登録した部品の自動バックアップ：変更のたびに、ブラウザの中へ最新10件まで残す（直前と同じ内容なら足さない） */
@@ -5109,11 +5148,52 @@ function restoreLibBackup() { /* 2回押しで戻す（1回目は確認の案内
 function backupLibraryNow() { if (!userLibrary.length) { $('hint').textContent = t('libBackupEmpty'); return; } saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); renderLibBackups(); $('hint').textContent = t('libBackedUp', { n: userLibrary.length }); }
 function libraryItems() { return [...DATA_LIBRARY.items, ...userLibrary]; }
 function libCurrent() { return libraryItems().find(i => i.id === $('libItem').value) || libraryItems()[0] || null; }
+/** 部品ライブラリの整理（事業主 2026-11-07「ライブラリのグルーピングはもっと自由度もって操作したい。順番もよく使う順に入れ替えたい」→ 整理の窓）。 */
+function loadLibLayout() { try { libLayout = normalizeLibraryLayout(JSON.parse(localStorage.getItem(LIBRARY_LAYOUT_KEY))); } catch { libLayout = emptyLibraryLayout(); } }
+function persistLibLayout() { try { localStorage.setItem(LIBRARY_LAYOUT_KEY, JSON.stringify(libLayout)); } catch { $('hint').textContent = t('storageUnavailable'); } }
+const libItemName = it => (document.documentElement.lang === 'en' && it.name_en ? it.name_en : it.name);
+const libGroupName = g => g.name || t('libGroup_' + g.key);
+const libArranged = (items, keepEmpty = false) => arrangeLibrary(items, it => userLibrary.includes(it), libLayout, { keepEmpty });
+let libOrgResetArmed = false;
+/** 整理を変えて、保存し、選択リストと整理の窓を描き直す。focus は、描き直したあとに、もう一度ピントを戻すボタンの印（'種類|id'）。 */
+function setLibLayout(next, focus) { libLayout = normalizeLibraryLayout(next); persistLibLayout(); libOrgResetArmed = false; renderLibrary(); renderLibOrganizer(focus); }
+function renderLibOrganizer(focus) {
+  const box = $('libOrgList'); if (!box) return; const top = box.scrollTop || 0; box.textContent = ''; const made = [];
+  const all = libArranged(libraryItems(), true), mk = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+  const btn = (label, title, tag, on, disabled) => { const b = mk('button', 'lo-b', label); b.type = 'button'; b.title = title; b.disabled = !!disabled; b.onclick = on; made.push([tag, b]); return b; };
+  all.forEach((g, gi) => {
+    const head = mk('div', 'lo-g'), nm = mk('input', 'lo-name'); nm.type = 'text'; nm.maxLength = 30; nm.value = libGroupName(g); nm.title = t('libOrgGroupName');
+    nm.onchange = () => setLibLayout(renameLibraryGroup(libLayout, g.key, !g.custom && nm.value.trim() === t('libGroup_' + g.key) ? '' : nm.value));   /* 組み込みの見出しは、もとの名前と同じなら、上書きしない */
+    head.appendChild(nm); head.appendChild(mk('span', 'lo-n', '（' + g.items.length + '）'));
+    head.appendChild(btn('↑', t('libOrgUp'), 'gup|' + g.key, () => setLibLayout(moveLibraryGroup(libLayout, g.key, -1), 'gup|' + g.key), gi === 0));
+    head.appendChild(btn('↓', t('libOrgDown'), 'gdown|' + g.key, () => setLibLayout(moveLibraryGroup(libLayout, g.key, 1), 'gdown|' + g.key), gi === all.length - 1));
+    if (g.custom) head.appendChild(btn('×', t('libOrgDelGroup'), 'gdel|' + g.key, () => setLibLayout(deleteLibraryGroup(libLayout, g.key))));
+    box.appendChild(head);
+    if (!g.items.length) box.appendChild(mk('div', 'lo-empty', t('libOrgEmpty')));
+    g.items.forEach((it, ii) => {
+      const row = mk('div', 'lo-i'), sel = mk('select', 'lo-sel'); row.appendChild(mk('span', 'lo-iname', libItemName(it))); sel.title = t('libOrgMoveTo');
+      for (const o of all) { const op = document.createElement('option'); op.value = o.key; op.textContent = libGroupName(o); sel.appendChild(op); } sel.value = g.key;
+      sel.onchange = () => setLibLayout(moveLibraryItem(libLayout, all, it.id, sel.value), 'iup|' + it.id); row.appendChild(sel);
+      row.appendChild(btn('↑', t('libOrgUp'), 'iup|' + it.id, () => setLibLayout(stepLibraryItem(libLayout, all, it.id, -1), 'iup|' + it.id), ii === 0));
+      row.appendChild(btn('↓', t('libOrgDown'), 'idown|' + it.id, () => setLibLayout(stepLibraryItem(libLayout, all, it.id, 1), 'idown|' + it.id), ii === g.items.length - 1)); box.appendChild(row);
+    });
+  });
+  box.scrollTop = top; const f = focus && made.find(([tag, b]) => tag === focus && !b.disabled); (f ? f[1] : null)?.focus?.();
+  const reset = $('libOrgReset'); if (reset) reset.textContent = t(libOrgResetArmed ? 'libOrgResetSure' : 'libOrgReset');
+}
+function addLibOrgGroup() { const r = addLibraryGroup(libLayout, $('libOrgNew').value); if (!r.id) { $('libOrgNew').focus?.(); return; } $('libOrgNew').value = ''; setLibLayout(r.layout); }
+function wireLibOrganizer() {
+  const open = $('libOrganize'); if (!open) return;
+  open.onclick = () => { countUse('lib_organize'); libOrgResetArmed = false; renderLibOrganizer(); $('libOrgDialog').showModal(); };
+  $('libOrgClose').onclick = () => { $('libOrgDialog').close(); };
+  $('libOrgAdd').onclick = addLibOrgGroup; $('libOrgNew').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); addLibOrgGroup(); } });
+  $('libOrgReset').onclick = () => { if (!libOrgResetArmed) { libOrgResetArmed = true; renderLibOrganizer(); return; } setLibLayout(emptyLibraryLayout()); };   /* 2回押して、もとの並びに戻す（部品は消えない） */
+}
 function renderLibrary() {
   const sel = $('libItem'), keep = sel.value, q = ($('libSearch').value || '').toLowerCase(); sel.textContent = '';
   /* 見出し（分類）つきの一覧（事業主 2026-11-07「部品ライブラリはグルーピングして整理したい」）：登録した部品＝自作・同梱の部品はタグから自動で分ける。見出しには件数も出す */
   const shown = libraryItems().filter(it => !q || (it.name + ' ' + (it.name_en || '') + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(q));
-  for (const g of groupLibraryItems(shown, it => userLibrary.includes(it))) { const og = document.createElement('optgroup'); og.label = t('libGroup_' + g.key) + '（' + g.items.length + '）'; for (const it of g.items) { const o = document.createElement('option'); o.value = it.id; o.textContent = document.documentElement.lang === 'en' && it.name_en ? it.name_en : it.name; og.appendChild(o); } sel.appendChild(og); }
+  for (const g of libArranged(shown)) { const og = document.createElement('optgroup'); og.label = libGroupName(g) + '（' + g.items.length + '）'; for (const it of g.items) { const o = document.createElement('option'); o.value = it.id; o.textContent = libItemName(it); og.appendChild(o); } sel.appendChild(og); }
   if (libraryItems().some(i => i.id === keep)) sel.value = keep;
   const it = libCurrent(), box = $('libVars'); box.textContent = ''; $('libDesc').textContent = it ? (it.desc || '') : '';
   if (it) for (const [k, v] of Object.entries(it.vars || {})) { const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = String(varStep(it, k)); if (it.varLimits?.[k]) { input.min = String(it.varLimits[k][0]); input.max = String(it.varLimits[k][1]); } /* 範囲のある変数は入力欄にも範囲を付ける */ input.value = String(v); input.dataset.var = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
@@ -5241,7 +5321,7 @@ function sendToTab(move) {
   renderTabs(); $('hint').textContent = t('sentToTab', { n: newIds.length, name: tabs[target].name });
 }
 function initLibrary() {
-  loadLibrary(); renderLibrary(); renderLibBackups(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
+  loadLibrary(); loadLibLayout(); renderLibrary(); renderLibBackups(); wireLibOrganizer(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
   $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libRemoveSel').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
   $('libImport').onclick = () => $('libFile').click(); $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });

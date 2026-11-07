@@ -143,3 +143,71 @@ export function groupLibraryItems(items, isUserOf = () => false) {
   for (const it of items) by.get(libraryGroupOf(it, !!isUserOf(it))).push(it);
   return LIBRARY_GROUPS.filter(k => by.get(k).length).map(key => ({ key, items: by.get(key) }));
 }
+
+/* ---- 部品ライブラリの整理（事業主 2026-11-07「ライブラリのグルーピングはもっと自由度もって操作したい。順番もよく使う順に入れ替えたい」→「整理の窓」） ----
+ *  整理の保存（layout）：{ v: 1, groups: [見出し id の並び], names: { 見出し id: 名前の上書き }, assign: { 部品 id: 見出し id }, order: { 見出し id: [部品 id の並び] } }。
+ *  見出し id は、組み込みの見出し（LIBRARY_GROUPS）と、自分で作った見出し（'g-…'）。何も整理していない（空の保存の）ときは、groupLibraryItems と同じ並びになる。 */
+export const LIBRARY_LAYOUT_KEY = 'leather-cad.library-layout';
+export const LIBRARY_GROUP_NAME_MAX = 30;
+export const emptyLibraryLayout = () => ({ v: 1, groups: [...LIBRARY_GROUPS], names: {}, assign: {}, order: {} });
+/** 自分で作った見出しか（組み込みの見出しではない）。 */
+export const isCustomGroup = key => !LIBRARY_GROUPS.includes(key);
+const isObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
+/** 保存の中身を、使える形に整える（壊れた保存・知らない見出しは捨てる）。組み込みの見出しは、必ず全部入る。 */
+export function normalizeLibraryLayout(raw) {
+  const L = emptyLibraryLayout(); if (!isObj(raw)) return L;
+  const seen = new Set(), groups = [];
+  for (const k of Array.isArray(raw.groups) ? raw.groups : []) if (typeof k === 'string' && !seen.has(k) && (LIBRARY_GROUPS.includes(k) || /^g-[\w-]{1,24}$/.test(k))) { seen.add(k); groups.push(k); }
+  for (const k of LIBRARY_GROUPS) if (!seen.has(k)) { seen.add(k); groups.push(k); }
+  L.groups = groups;
+  if (isObj(raw.names)) for (const [k, v] of Object.entries(raw.names)) if (seen.has(k) && typeof v === 'string' && v.trim()) L.names[k] = v.trim().slice(0, LIBRARY_GROUP_NAME_MAX);
+  if (isObj(raw.assign)) for (const [id, k] of Object.entries(raw.assign)) if (typeof k === 'string' && seen.has(k)) L.assign[id] = k;
+  if (isObj(raw.order)) for (const [k, list] of Object.entries(raw.order)) if (seen.has(k) && Array.isArray(list)) L.order[k] = [...new Set(list.filter(x => typeof x === 'string'))];
+  return L;
+}
+/** 部品を、整理（layout）のとおりの見出し・並びにまとめる。[{ key, custom, name（名前の上書き。無ければ ''）, items }]。見出しは layout.groups の順。部品は、assign で決めた見出し（無ければタグからの自動）に入り、見出しの中は order の順（order に無い部品は、元の並びで、その後ろ）。keepEmpty が偽なら、空の見出しは出さない。 */
+export function arrangeLibrary(items, isUserOf = () => false, layout = null, { keepEmpty = false } = {}) {
+  const L = normalizeLibraryLayout(layout), has = new Set(L.groups), by = new Map(L.groups.map(k => [k, []]));
+  for (const it of items) { const a = L.assign[it.id], k = a && has.has(a) ? a : libraryGroupOf(it, !!isUserOf(it)); by.get(k).push(it); }
+  return L.groups.map(key => {
+    const pos = new Map((L.order[key] || []).map((id, i) => [id, i])), rank = it => (pos.has(it.id) ? pos.get(it.id) : Infinity);
+    const sorted = by.get(key).map((it, i) => ({ it, i })).sort((a, b) => (rank(a.it) - rank(b.it)) || (a.i - b.i)).map(x => x.it);
+    return { key, custom: isCustomGroup(key), name: L.names[key] || '', items: sorted };
+  }).filter(g => keepEmpty || g.items.length);
+}
+const cloneLayout = layout => JSON.parse(JSON.stringify(normalizeLibraryLayout(layout)));
+/** 新しい見出しを作る。{ layout, id }（名前が空なら id は null で、整理は変わらない）。 */
+export function addLibraryGroup(layout, name, id = 'g-' + Date.now().toString(36)) {
+  const L = cloneLayout(layout), nm = String(name ?? '').trim().slice(0, LIBRARY_GROUP_NAME_MAX); if (!nm) return { layout: L, id: null };
+  let gid = id; while (L.groups.includes(gid)) gid += 'x'; L.groups.push(gid); L.names[gid] = nm; return { layout: L, id: gid };
+}
+/** 見出しの名前を変える。空にすると、組み込みの見出しは、もとの名前に戻る（自作の見出しは、空にはできない）。 */
+export function renameLibraryGroup(layout, key, name) {
+  const L = cloneLayout(layout), nm = String(name ?? '').trim().slice(0, LIBRARY_GROUP_NAME_MAX); if (!L.groups.includes(key)) return L;
+  if (nm) L.names[key] = nm; else if (!isCustomGroup(key)) delete L.names[key]; return L;
+}
+/** 自作の見出しを消す。中の部品は、タグからの自動の見出しへ戻る。組み込みの見出しは消せない。 */
+export function deleteLibraryGroup(layout, key) {
+  const L = cloneLayout(layout); if (!isCustomGroup(key) || !L.groups.includes(key)) return L;
+  L.groups = L.groups.filter(k => k !== key); delete L.names[key]; delete L.order[key]; for (const id of Object.keys(L.assign)) if (L.assign[id] === key) delete L.assign[id]; return L;
+}
+/** 見出しを、1つ上（dir < 0）か下へ動かす。 */
+export function moveLibraryGroup(layout, key, dir) {
+  const L = cloneLayout(layout), i = L.groups.indexOf(key), j = i + (dir < 0 ? -1 : 1); if (i < 0 || j < 0 || j >= L.groups.length) return L;
+  [L.groups[i], L.groups[j]] = [L.groups[j], L.groups[i]]; return L;
+}
+/** 部品を、見出し toKey の中の toIndex 番目（省略で最後）へ動かす。見出しをまたいでもよい。arranged は、いま画面に出ている並び＝arrangeLibrary(全部品, …, layout, { keepEmpty: true })。動かしたあとの並びを、全見出しぶん保存する。 */
+export function moveLibraryItem(layout, arranged, itemId, toKey, toIndex = Infinity) {
+  const L = cloneLayout(layout), lists = new Map(arranged.map(g => [g.key, g.items.map(i => i.id)]));
+  if (!lists.has(toKey) || !L.groups.includes(toKey)) return L;
+  let found = false; for (const ids of lists.values()) { const i = ids.indexOf(itemId); if (i >= 0) { ids.splice(i, 1); found = true; } }
+  if (!found) return L;
+  const dst = lists.get(toKey), at = Number.isFinite(toIndex) ? Math.max(0, Math.min(dst.length, toIndex)) : dst.length; dst.splice(at, 0, itemId);
+  L.assign[itemId] = toKey; for (const [k, ids] of lists) if (L.groups.includes(k)) L.order[k] = ids; return L;
+}
+/** 部品を、同じ見出しの中で1つ上（dir < 0）か下へ。端では動かない。 */
+export function stepLibraryItem(layout, arranged, itemId, dir) {
+  const g = arranged.find(x => x.items.some(i => i.id === itemId)); if (!g) return cloneLayout(layout);
+  const i = g.items.findIndex(x => x.id === itemId), j = i + (dir < 0 ? -1 : 1); if (j < 0 || j >= g.items.length) return cloneLayout(layout);
+  return moveLibraryItem(layout, arranged, itemId, g.key, j);
+}
