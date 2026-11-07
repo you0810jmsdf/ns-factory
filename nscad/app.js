@@ -8856,18 +8856,20 @@ function rectSizeNow() { const w = Number($('rectW').value), h = Number($('rectH
 const circleSizeNow = () => { const r = Number($('circleR').value); return Number.isFinite(r) && r > 0 ? r : null; };
 const circleNum = v => String(Math.round(v * 10000) / 10000);
 function placeCircleBySize(p) {
-  const r = circleSizeNow(); if (!r) return; cancel(); addShape({ type: 'circle', cx: +p.x.toFixed(4), cy: +p.y.toFixed(4), r }); lastPoint = p;
-  $('hint').textContent = t('circlePlaced', { r: circleNum(r), d: circleNum(r * 2) });
+  const r = circleSizeNow(); if (!r) return; cancel(); const before = doc.shapes.length; addShape({ type: 'circle', cx: +p.x.toFixed(4), cy: +p.y.toFixed(4), r }); lastPoint = p;
+  returnToSelectAfterPlace(before); $('hint').textContent = t('circlePlaced', { r: circleNum(r), d: circleNum(r * 2) });
 }
+/** 幅・高さ（円は半径・直径）を入れて1個置いたら、置いた図形を選んだまま、選択ツールへ戻る（事業主 2026-11-07「矩形を作図したら連続で同じ矩形が貼り付けられてうざい」：クリックのたびに同じ大きさを置き続けていた）。置けなかったとき（使える層が無い）は、ツールのまま。 */
+function returnToSelectAfterPlace(before) { if (doc.shapes.length > before) setMode('select'); }
 /** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
 function rectBySizeAt(p) {
   const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
   return rectShape({ x: r4(x), y: r4(y) }, { x: r4(x + z.w), y: r4(y + z.h) });
 }
-/** 幅・高さが入っているときの矩形ツールのクリック：その位置に、指定した大きさの矩形を置く（続けて置ける）。 */
+/** 幅・高さが入っているときの矩形ツールのクリック：その位置に、指定した大きさの矩形を1個置き、選択ツールへ戻る（2026-11-07 から。以前は続けて置けた）。 */
 function placeRectBySize(p) {
   const rect = rectBySizeAt(p), z = rectSizeNow(); if (!rect) return;
-  cancel(); addShape(rect); lastPoint = p; $('hint').textContent = t('rectPlaced', { w: z.w, h: z.h });
+  cancel(); const before = doc.shapes.length; addShape(rect); lastPoint = p; returnToSelectAfterPlace(before); $('hint').textContent = t('rectPlaced', { w: z.w, h: z.h });
 }
 function rectShape(a, b) {
   if (Math.abs(a.x - b.x) < 1e-6 || Math.abs(a.y - b.y) < 1e-6) return null;
