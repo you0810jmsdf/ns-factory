@@ -1008,11 +1008,34 @@ async function startFromWork(id){
   if(!w) return false;
   hideIntro();
   state._refWork=w.id+(w.name?'（'+w.name+'）':'');
+  // 作品集のテクスチャシミュレーターで「確定」してから来た場合（2026-11-07）。
+  // 控え（sessionStorage nsf_hearing_sim）は同じ作品・30分以内のときだけ使い、読んだら消す。
+  // 色名は参考作品の行に添え、画像は発注票の送信に添える。⛔ 革の質問の答えには先回りして入れない（選び直せるように）。
+  let simText='';
+  try{
+    const raw=sessionStorage.getItem('nsf_hearing_sim');
+    if(raw){
+      sessionStorage.removeItem('nsf_hearing_sim');
+      const d=JSON.parse(raw);
+      if(d && d.workId===w.id && Date.now()-(d.at||0)<30*60*1000){
+        const parts=Array.isArray(d.parts)?d.parts.filter(p=>p && p.leatherName):[];
+        const names=parts.map(p=>(parts.length>1 && p.label)?(p.label+'：'+p.leatherName):('革色：'+p.leatherName));
+        if(d.metalColor) names.push('金具色：'+d.metalColor);
+        if(names.length){
+          simText=names.join('／');
+          state._refWork+='・シミュレーターで選んだ色：'+simText;
+          const withImg=parts.filter(p=>typeof p.imageDataUrl==='string' && p.imageDataUrl.indexOf('data:')===0);
+          if(withImg.length) state.answers.textureSimulation=withImg;
+        }
+      }
+    }
+  }catch(e){}
   const m=document.createElement('div'); m.className='msg bot'; m.innerHTML='<div class="ic">🧵</div>';
   const b=document.createElement('div'); b.className='bubble';
   const lines=[w.category, w.size, w.material?('革：'+w.material):'', w.color?('色：'+w.color):''].filter(Boolean);
   b.innerHTML=(w.mainPhoto?'<img src="'+escapeHtml(String(w.mainPhoto))+'" alt="" loading="lazy" style="width:140px;max-width:100%;border-radius:8px;display:block;margin-bottom:6px;background:#f1ebe4">':'')
     +'作品集の <b>'+escapeHtml(w.id)+'</b> をもとにご相談ですね🧵<br>'+escapeHtml(lines.join('・'))
+    +(simText?('<br>🎨 シミュレーターで選んだ色：<b>'+escapeHtml(simText)+'</b>（発注票に添えます）'):'')
     +'<br>同じ仕様でも、サイズや革の色を変えても大丈夫です。質問に答えながら決めていきましょう。';
   m.appendChild(b); chat.appendChild(m); scrollDown();
   const hit=WORK_CATEGORY_TO_PRODUCT.find(([re])=>re.test(w.category||''));

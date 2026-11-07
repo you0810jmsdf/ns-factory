@@ -1543,7 +1543,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         </div>
 
         <div class="oc-widget">
-          <button id="oc-trigger" class="oc-trigger" type="button" data-i18n="modal.ocTrigger">💬 オーダー相談AI（革の種類・色について相談する）</button>
+          <!-- 2026-11-07 事業主決定: 画面内の「💬 オーダー相談AI」は「🧵 この作品をもとに相談する」（#consult-work-link）へ統合。戻すときは次の1行を復活させる（JS側は if(ocTrigger) で守られている）: <button id="oc-trigger" class="oc-trigger" type="button" data-i18n="modal.ocTrigger">💬 オーダー相談AI（革の種類・色について相談する）</button> -->
           <img id="sc-avatar" src="" alt="" style="display:none;">
           <span id="sc-name" style="display:none;"></span>
         </div>
@@ -2832,9 +2832,25 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       });
     }
 
-    // 「確定」を押したら、選んだ革色をそのままオーダー相談AIへ引き継ぐ（2026-08-05 事業主指示）。
-    // chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが
-    // 開いているときだけ処理するため、ここで受けても二重には動かない。
+    // 「確定」を押したら、選んだ革色を相談ページ（hearing-ai.html?work=）へ持って行く（2026-11-07 事業主決定）。
+    // 以前は画面内のオーダー相談AIを開いて色を送っていたが、相談の入口を「🧵 この作品をもとに相談する」に統合した。
+    // 控えは sessionStorage（同じタブで移動するので届く）。画像が大きくて置けなければ色名だけ渡す。
+    // ⛔ chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが開いているときだけ処理する。
+    const HEARING_SIM_KEY = 'nsf_hearing_sim';
+    function handOffSimToHearing(work, data) {
+      const parts = (data.parts || []).filter((p) => p && p.leatherName);
+      const payload = { workId: work.id, at: Date.now(), metalColor: data.metalColor || '', parts };
+      try {
+        sessionStorage.setItem(HEARING_SIM_KEY, JSON.stringify(payload));
+      } catch (e) {
+        try {
+          payload.parts = parts.map((p) => ({ label: p.label, leatherName: p.leatherName })); // 画像を落として色名だけ
+          sessionStorage.setItem(HEARING_SIM_KEY, JSON.stringify(payload));
+        } catch (e2) { /* 置けなくても相談ページへは進む */ }
+      }
+      try { logProductAction(work, 'シミュレーター確定→相談ページへ'); } catch (e) {}
+      location.href = 'order_estimate/hearing-ai.html?work=' + encodeURIComponent(work.id || '');
+    }
     window.addEventListener('message', (e) => {
       const data = e.data;
       if (!data || data.type !== 'nsfactory-floodfill-confirm') return;
@@ -2843,22 +2859,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       const withLeather = (data.parts || []).filter((p) => p.leatherName);
       closeTextureSim();
       if (!work) return;
-
-      const picked = withLeather.map((p) => (
-        withLeather.length > 1 ? `${p.label}：${p.leatherName}` : `革色：${p.leatherName}`
-      ));
-      if (data.metalColor) picked.push(`金具色：${data.metalColor}`);
-      if (!picked.length) return; // 何も選ばずに確定した場合は相談を開かない
-
-      ocOpenChat(work); // ここで #chat-input は空にされ、ヒアリング状態も解除される
-      // chat-widget の send は引数を取らず #chat-input の値を送る実装なので、
-      // 入力欄へ流し込んでから呼ぶ。200字を超えると送信されないため切り詰める。
-      const chatInput = document.getElementById('chat-input');
-      if (chatInput && ocWidget && ocWidget.send) {
-        const msg = `シミュレーターで色を選びました。${picked.join('／')}。この内容で作れますか？`;
-        chatInput.value = msg.length > 200 ? msg.slice(0, 200) : msg;
-        ocWidget.send();
-      }
+      if (!withLeather.length && !data.metalColor) return; // 何も選ばずに確定した場合は相談ページへ進まない
+      handOffSimToHearing(work, data);
     });
 
     // ===== 作品紹介動画（Driveプレビュープレーヤーで再生） =====
