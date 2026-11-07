@@ -3642,7 +3642,7 @@ function exportPdf() {
  *  寸法線・文字があるときは 10mm（数字が 3.5mm でも、まわりに十分あく）。無いときは今までどおり 2mm。 */
 const pngMarginMm = shapes => shapes.some(s => s.type === 'dimension' || s.type === 'text') ? 10 : 2;
 function exportPng() {
-  const selIds = new Set(selected), only = doc.shapes.some(sh => selIds.has(sh.id) && visible(sh)), vis = only ?(sh => visible(sh) && selIds.has(sh.id)) : visible, hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || isSelHole(h) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 選んだ穴・選んだ範囲の穴（持ち主の部品の穴）・経路の線を選んだ穴（事業主 2026-11-07「PNG出力時に菱目が出力されない」：外形を選んで出すと、ガイド層の縫い線に付いた菱目が 0 個だった。SVG・印刷・PDF・DXF と同じ判定にそろえる） */   /* 図形を選んでいれば自動で、選んだ図形と、その縫い穴だけ（SVG・印刷・PDF・DXF と同じ「選んでいれば自動」。2026-10-26 事業主「本日も同じ不具合が発生しました。選択した図形のみＰＮＧに出力できない」：PNG だけ、出力カードの「選んだ図形だけ出力」（初期は切）の方式のままだった） */
+  const selIds = new Set(selected), only = doc.shapes.some(sh => selIds.has(sh.id) && visible(sh)), visNow = new Set(doc.shapes.filter(visible).map(sh => sh.id)), vis = only ? (sh => visNow.has(sh.id) && selIds.has(sh.id)) : (sh => visNow.has(sh.id)),   /* 画面で見えている図形（実線・点線の表示の入・切、レイヤー）を、書き出しの前に確定する。書き出し中（exporting）は、visible が表示の入・切を無視するので、書き出し中に判定すると、隠した点線も出てしまう（事業主 2026-11-07「点線や不要な線は非表示にして PNG 出力したのに、不要な線が出力されている」） */ hvis = only ? (h => holeVisible(h) && (selIds.has(h.id) || isSelHole(h) || !!doc.paths.find(p => p.id === h.pathId)?.shapeIds.some(id => selIds.has(id)))) : holeVisible;   /* 選んだ穴・選んだ範囲の穴（持ち主の部品の穴）・経路の線を選んだ穴（事業主 2026-11-07「PNG出力時に菱目が出力されない」：外形を選んで出すと、ガイド層の縫い線に付いた菱目が 0 個だった。SVG・印刷・PDF・DXF と同じ判定にそろえる） */   /* 図形を選んでいれば自動で、選んだ図形と、その縫い穴だけ（SVG・印刷・PDF・DXF と同じ「選んでいれば自動」。2026-10-26 事業主「本日も同じ不具合が発生しました。選択した図形のみＰＮＧに出力できない」：PNG だけ、出力カードの「選んだ図形だけ出力」（初期は切）の方式のままだった） */
   const shapes = doc.shapes.filter(vis), holes = doc.holes.filter(hvis), b = bboxOfDoc({ ...doc, shapes, holes });   /* PNG は画面に見えているものを描く（実線・点線の表示切り替えも反映） */
   const scopeNote = ' ' + (only ? t('outScopeSel', { n: shapes.length }) : t('outScopeAll'));   /* 出力のあとの案内に、何が出たかを必ず出す（ほかの書き出しと同じ） */
   if (exportIsEmpty(shapes, holes)) return;
@@ -3655,7 +3655,7 @@ function exportPng() {
   const k = dpi / 25.4; off.width = Math.ceil(wMm * k); off.height = Math.ceil(hMm * k);
   const saved = { ctx, width, height, scale, origin }; ctx = off.getContext('2d'); exporting = true;
   width = off.width; height = off.height; scale = k; origin = { x: (margin - b.minX) * k, y: (margin - b.minY) * k };
-  exportColor = $('pngColor').checked && viewShow.colors; exportStitch = !!$('pngStitch')?.checked; exportFilter = only ? { vis, hvis, ids: selIds } : null;
+  exportColor = $('pngColor').checked && viewShow.colors; exportStitch = !!$('pngStitch')?.checked; exportFilter = { vis, hvis, ids: only ? selIds : null };
   try { if (!$('pngTransparent').checked) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, off.width, off.height); } draw(); }
   finally { ({ ctx, width, height, scale, origin } = saved); exporting = false; exportColor = false; exportStitch = false; exportFilter = null; exportExtentMm = 0; draw(); }
   if (typeof off.toBlob !== 'function') { $('hint').textContent = t('pngUnavailable'); return; }
@@ -4785,8 +4785,12 @@ function applyTexture(id, quiet = false) {   /* quiet：塗りモードのクリ
 }
 function applyThread() {
   const th = DATA_STITCH_COLORS.stitchColors.find(c => c.id === $('threadSel').value); if (!th) return;
-  const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), paths = doc.paths.filter(p => p.shapeIds.some(id => okIds.has(id)) || doc.holes.some(h => h.pathId === p.id && selected.has(h.id))); if (!paths.length) { $('hint').textContent = t('selectPathFirst'); return; }
-  commit(() => { for (const p of paths) { p.thread = th.id; p.threadHex = th.hex; } }); $('hint').textContent = t('threadApplied', { n: paths.length, name: th.label + ' ' + (th.jp || '') });
+  /* 適用先：選んだ図形の経路・選んだ穴の経路・選んだ範囲の穴（金色で見える穴）の経路。何も選んでいなければ、図面の全部の縫い穴の経路（事業主 2026-11-07「糸色を適用しても適用されない」「何も選択しないときは、全体の菱目に」：画面は「0 選択」で「選んでください」と出て、適用されなかった） */
+  const okIds = new Set(doc.shapes.filter(sh => selected.has(sh.id) && editable(sh)).map(sh => sh.id)), range = selected.size ? rangeHoleSet() : new Set();
+  let paths = doc.paths.filter(p => p.shapeIds.some(id => okIds.has(id)) || doc.holes.some(h => h.pathId === p.id && (selected.has(h.id) || range.has(h.id)))), whole = false;
+  if (!paths.length && !selected.size) { paths = doc.paths.filter(p => doc.holes.some(h => h.pathId === p.id && holeVisible(h))); whole = true; }
+  if (!paths.length) { $('hint').textContent = t('selectPathFirst'); return; }
+  commit(() => { for (const p of paths) { p.thread = th.id; p.threadHex = th.hex; } }); $('hint').textContent = t(whole ? 'threadAppliedAll' : 'threadApplied', { n: paths.length, name: th.label + ' ' + (th.jp || '') });
 }
 function savePattern() {
   const name = ($('patternName').value || '').trim(); if (!name) { $('hint').textContent = t('needName'); return; }
@@ -9122,15 +9126,22 @@ function exportBehindDark(s) {
   return votes >= 2;
 }
 /** 色つき書き出しの、糸の色が無い菱目の色（事業主 2026-11-07「お客から菱目が見えないと言われました」「白実線、背景が白の時は黒実線に」）：革などの色の上は白・白い紙や透明の上は黒。以前は、どこでも赤で、ピンクの革の上では埋もれて見えなかった。
- *  穴の中心の下の画素（3×3）の平均で決める：透明に近い（不透明度が低い）か、明るい（明るさ 225 以上）なら黒。読めない環境では白。 */
-function exportHoleColor(h) {
-  if (typeof ctx.getImageData !== 'function') return '#fff';
+ *  下の色は、いま描いた画像を、約 1000 画素角に縮めて、1回だけ読み取る（穴ごとに、大きい画像を読むと、実際のブラウザ＝GPU の canvas で、1回ごとに全体を読み戻して、数分かかった）。
+ *  返すのは、(x, y)＝図面の座標 → '#000'（透明に近い・明るさ 225 以上＝白い紙）か '#fff'（革などの色の上）。読めない環境では null（呼ぶ側が白にする）。 */
+function holeBackdrop() {
   try {
-    const px = Math.round(origin.x + h.x * scale) - 1, py = Math.round(origin.y + h.y * scale) - 1; if (px < 0 || py < 0 || px + 3 > width || py + 3 > height) return '#fff';
-    const d = ctx.getImageData(px, py, 3, 3)?.data; if (!d || !d.length) return '#fff';
-    let a = 0, l = 0; const n = d.length / 4; for (let i = 0; i < d.length; i += 4) { a += d[i + 3]; l += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]; }
-    a /= n; l /= n; return a < 40 || l >= 225 ? '#000' : '#fff';
-  } catch { return '#fff'; }
+    const src = ctx.canvas; if (!src || !(src.width > 0) || !(src.height > 0) || typeof document.createElement !== 'function') return null;
+    const S = Math.max(1, Math.ceil(Math.max(src.width, src.height) / 1000)), w = Math.max(1, Math.ceil(src.width / S)), h = Math.max(1, Math.ceil(src.height / S));
+    const small = document.createElement('canvas'); small.width = w; small.height = h;
+    const g = small.getContext('2d', { willReadFrequently: true }); if (!g || typeof g.drawImage !== 'function' || typeof g.getImageData !== 'function') return null;
+    g.drawImage(src, 0, 0, w, h); const d = g.getImageData(0, 0, w, h)?.data; if (!d || !d.length) return null;
+    const ox = origin.x, oy = origin.y, k = scale;
+    return (x, y) => {
+      const cx = Math.round((ox + x * k) / S), cy = Math.round((oy + y * k) / S); let a = 0, l = 0, n = 0;
+      for (let yy = cy - 1; yy <= cy + 1; yy++) for (let xx = cx - 1; xx <= cx + 1; xx++) { if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; const i = (yy * w + xx) * 4; a += d[i + 3]; l += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]; n++; }
+      if (!n) return '#fff'; a /= n; l /= n; return a < 40 || l >= 225 ? '#000' : '#fff';
+    };
+  } catch { return null; }
 }
 /** 裏面表示中の印（2026-10-28 事業主「裏面表示のとき、画面の端に「裏面表示中」の印を出す（見間違い防止）」）：「縫い目を見る」が入っていて、縫い目の面が「裏」のとき、画面の右上の隅に出す。押すと表に戻す。3D の表示中は出さない。 */
 function syncBackBadge() {
@@ -9165,7 +9176,8 @@ function draw() {
     }
     ctx.lineWidth = Math.max(0.1, 1 / scale);   /* 縫い穴の印は、いつもの太さ */
     const exAngle = faceAngler(doc, exportStitch ? stitchFace() : 'front');   /* 縫い目を入れて、面が「裏」のときは、穴も裏向き（表の鏡像）に描く */
-    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(exAngle(h) * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || (color ? exportHoleColor(h) : '#c00'); const halfDepth = h.depth === 'half'; if (a.kind === 'diamond' && diamondMode() === 'fill' && !halfDepth) { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } if (halfDepth && a.kind !== 'dot') { ctx.fillStyle = hc; ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(a.width, a.height) * 0.15), 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }   /* 半分の深さの穴は中抜き＋真ん中の点 */   /* 色つき：糸の色 */
+    const holeBg = color ? holeBackdrop() : null;   /* 色つき：穴の下の色を、縮小した画像から読む（穴ごとに大きい画像を読むと、実際のブラウザで数分かかる） */
+    for (const h of doc.holes.filter(ef ? ef.hvis : holeVisible)) { const a = holeAppearance(h, doc); if (!a || (a.kind === 'dot' && markHidden(h))) continue; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(exAngle(h) * Math.PI / 180); ctx.beginPath(); if (a.kind === 'circle' || a.kind === 'dot') ctx.arc(0, 0, a.width / 2, 0, Math.PI * 2); else if (a.kind === 'slit') { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(a.width / 2, 0); } else { ctx.moveTo(-a.width / 2, 0); ctx.lineTo(0, -a.height / 2); ctx.lineTo(a.width / 2, 0); ctx.lineTo(0, a.height / 2); ctx.closePath(); } const hc = (color && doc.paths.find(p => p.id === h.pathId)?.threadHex) || (color ? (holeBg ? holeBg(h.x, h.y) : '#fff') : '#c00'); const halfDepth = h.depth === 'half'; if (a.kind === 'diamond' && diamondMode() === 'fill' && !halfDepth) { ctx.fillStyle = hc; ctx.fill(); } else { ctx.strokeStyle = hc; if (color) ctx.lineWidth = Math.max(0.1, 1.6 / scale); ctx.stroke(); } if (halfDepth && a.kind !== 'dot') { ctx.fillStyle = hc; ctx.beginPath(); ctx.arc(0, 0, Math.max(0.15, Math.min(a.width, a.height) * 0.15), 0, Math.PI * 2); ctx.fill(); } ctx.restore(); }   /* 半分の深さの穴は中抜き＋真ん中の点 */   /* 色つき：糸の色 */
     drawStitches(ef ? ef.hvis : holeVisible, true);   /* 「縫い目を入れて出力」：穴の上に、糸の縫い目を重ねる（選んだ図形だけの出力なら、その穴だけ） */
     return;
   }
@@ -9847,6 +9859,11 @@ function openFoldSim(mode) {
   setFlowWin(true); renderFoldFlow();
 }
 function setFlowWin(on) { $('foldFlowDialog').open = on; if (on && foldIsBifold()) $('foldFlowMore').open = true; if (on) { const fp = readWinPos(FLOW_POS_KEY); if (fp) placeFlowWin(fp.left, fp.top); } }   /* 三つ折りの手順（①〜⑤とボタン）の小窓の開け閉め。モーダルにしないので、開いたまま図面を触れる */
+/** 「縫い目を見る」（ステッチシミュレーション）の入・切。「表示」メニューのチェックと同じ状態を切り替える。 */
+function toggleStitchSim() {
+  viewShow.stitch = !viewShow.stitch; if ($('showStitch')) $('showStitch').checked = viewShow.stitch; draw();
+  $('hint').textContent = t(viewShow.stitch ? 'stitchSimOn' : 'stitchSimOff');
+}
 function fillCtxCards() {
   const box = $('ctxCards'), cards = ctxCardList().filter(c => c !== $('patchCard')).filter(c => c !== $('holeShapeCard')).filter(c => c !== $('nestCard')).filter(c => c !== $('textFontCard')).filter(c => c !== $('moveCard') && c !== $('scaleCard'));   /* 移動・拡大縮小の窓は、「選んだ図形」の「移動…」「拡大縮小」から開く（同じ窓が、作図オプション側にも並んで重なっていた・事業主 2026-10-28「他のメニューも同様」） */   /* 「菱目・丸目をまとめて変える」は、専用の項目（ctx-holeshape）から開く窓。窓を開いている間、一覧に同じ項目が重ねて出ないようにする */ box.innerHTML = '';   /* パッチワークは、上の「パッチワーク」のまとまりの「柄（パッチワーク）」で開く（同じ窓が2つの項目から開く重複をなくす・事業主 2026-10-25） */
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
@@ -9883,6 +9900,12 @@ function distributeCtxCards() {
   const src = $('ctxCards'), items = src?.children ? [...src.children] : [];
   for (const [cat] of CTX_CATS) { const box = $('ctxCards-' + cat); if (box) box.textContent = ''; }
   for (const x of items) { const cat = x?.dataset?.cat, box = cat && $('ctxCards-' + cat); if (box) box.appendChild(x); }
+  /* 「シミュレーション」に、ステッチ（縫い目を見る）を足す（事業主 2026-11-07「ステッチシミュレーション機能をシミュレーションメニューに加えて」：機能は「表示」メニューの「縫い目を見る」にあった）。カードの一覧（fillCtxCards）は通さず、入れ物へ直接足す */
+  const simBox = $('ctxCards-sim');
+  if (simBox) {
+    const b = document.createElement('button'); if (b.dataset) b.dataset.cat = 'sim'; b.id = 'ctxSimStitch'; b.textContent = t('ctxSimStitch'); b.title = t('showStitchTip');
+    b.onclick = () => { countUse('ctx_stitchsim'); hideCtxMenu(); toggleStitchSim(); }; simBox.appendChild(b);
+  }
 }
 const ctxLiveCount = el => { let n = 0; for (const x of el?.children ? [...el.children] : []) { if (x.hidden) continue; if (x.tagName === 'BUTTON' || typeof x.onclick === 'function') n++; else n += ctxLiveCount(x); } return n; };
 function updateCtxTree() { closeCtxCats(); for (const [cat] of CTX_CATS) { const box = $('ctxCat-' + cat), fly = $('ctxFly-' + cat); if (box && fly) box.hidden = !ctxLiveCount(fly); } }

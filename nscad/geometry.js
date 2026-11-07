@@ -1015,7 +1015,7 @@ export function faceAngler(doc, face) {
     return route ? norm(2 * pointAtLength(route, h.s).angleDeg - (h.angleDeg || 0)) : (h.angleDeg || 0);
   };
 }
-export function stitchSegments(doc, { reach = 0.9, maxGap = 1.8, visible = () => true, face = 'front' } = {}) {
+export function stitchSegments(doc, { reach = 0.9, maxGap = 1.5, visible = () => true, face = 'front' } = {}) {
   const out = [], byPath = new Map(), angleOf = faceAngler(doc, face);
   for (const h of doc.holes || []) { if (!STITCH_KINDS.includes(holeAppearance(h, doc)?.kind) || !visible(h)) continue; const list = byPath.get(h.pathId); if (list) list.push(h); else byPath.set(h.pathId, [h]); }   /* 穴を1回なめて経路ごとに分ける（描くたびに呼ぶので、経路の数×穴の数にしない） */
   for (const path of doc.paths || []) {
