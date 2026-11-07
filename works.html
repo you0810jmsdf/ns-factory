@@ -1005,298 +1005,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
        販売状態の識別は .badge-unavailable と詳細側の注記が担う。
        ⛔ ここに opacity / filter: grayscale を復活させないこと。 */
 
-    /* ===== オーダー相談チャット（showroom/chat-widget.js を流用） ===== */
-    .oc-widget {
-      --oc-accent: #c9a96a;
-      --oc-gold-bright: #e8cf9a;
-      --oc-panel-line: rgba(212,180,120,0.40);
-      --oc-panel-text: #f3e9d8;
-      --oc-panel-sub: #bfae8e;
-      margin-top: 14px;
-      border-top: 1px solid var(--line);
-      padding-top: 14px;
-    }
-    .oc-trigger {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      width: 100%;
-      border: 1px solid var(--oc-accent);
-      border-radius: var(--radius);
-      padding: 10px 14px;
-      background: linear-gradient(180deg, #dcbd85, #c9a96a);
-      color: #2a1e10;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .oc-trigger:hover { filter: brightness(1.06); }
-    .oc-widget .sc-header {
-      display: none; /* works.htmlでは商品情報が既にモーダルにあるため非表示 */
-    }
-
-    /* ===== チャット専用オーバーレイ（商品モーダルの上に重ねて表示） =====
-       トリガーボタンは元の場所（.modal-detail内）に残し、押下でこのオーバーレイを開く。
-       閉じるとオーバーレイのみ非表示に戻り、商品モーダル自体は開いたまま。 */
-    #oc-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 4000; /* 商品モーダル(.modal)より上 */
-      background: rgba(10,8,5,0.72);
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    #oc-overlay.oc-overlay-open { display: flex; }
-    .oc-overlay-panel {
-      width: min(920px, 96vw);
-      height: min(90vh, 960px);
-      background: rgba(40,30,20,0.97);
-      border: 1px solid var(--oc-panel-line);
-      border-radius: 14px;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
-      /* .oc-widgetの余白指定（トリガー側の見た目）はここでは不要なので打ち消す */
-      margin-top: 0;
-      border-top: none;
-      padding-top: 16px;
-    }
-    .oc-overlay-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .oc-overlay-head-text { min-width: 0; }
-    #oc-overlay-product {
-      display: block;
-      color: var(--oc-panel-sub);
-      font-size: 12px;
-      margin-top: 4px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .oc-overlay-close {
-      flex-shrink: 0;
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 1px solid var(--oc-panel-line);
-      background: rgba(255,255,255,0.08);
-      color: var(--oc-panel-text);
-      font-size: 18px;
-      line-height: 1;
-      cursor: pointer;
-    }
-    .oc-overlay-close:hover { background: rgba(255,255,255,0.16); }
-    .oc-selection-summary {
-      font-size: 12px;
-      color: var(--oc-gold-bright);
-      background: rgba(201,169,106,0.12);
-      border: 1px solid var(--oc-panel-line);
-      border-radius: 8px;
-      padding: 6px 10px;
-    }
-    .oc-send-fields {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      padding-bottom: 4px;
-    }
-    .oc-send-fields select,
-    .oc-send-fields input {
-      flex: 1 1 140px;
-      min-width: 0;
-      padding: 7px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--oc-panel-line);
-      background: rgba(255,255,255,0.07);
-      color: var(--oc-panel-text);
-      font-size: 12.5px;
-      font-family: inherit;
-    }
-    .oc-send-fields select option { color: #2a1e10; }
-    .oc-send-fields input::placeholder { color: var(--oc-panel-sub); }
-    .oc-send-fields #oc-send-to-artisan {
-      flex: 1 1 100%;
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--oc-gold-bright);
-      background: rgba(201,169,106,0.16);
-      color: var(--oc-gold-bright);
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .oc-send-fields #oc-send-to-artisan:hover { background: rgba(201,169,106,0.28); }
-    .oc-send-fields #oc-send-to-artisan:disabled { opacity: 0.7; cursor: default; }
-    #oc-send-to-artisan {
-      flex-shrink: 0;
-      padding: 7px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--oc-gold-bright);
-      background: rgba(201,169,106,0.16);
-      color: var(--oc-gold-bright);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    #oc-send-to-artisan:hover { background: rgba(201,169,106,0.28); }
-    #oc-send-to-artisan:disabled { opacity: 0.7; cursor: default; }
-    /* AI販売幕僚とオーダー相談中バッジ（sc-headerは復活させず、専用バッジのみ追加）
-       表示/非表示はJS側で#chat-areaの開閉と合わせて直接トグルする */
-    .oc-ai-badge {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(201,169,106,0.18);
-      border: 1px solid var(--oc-panel-line);
-      color: var(--oc-gold-bright);
-      font-size: 12px;
-      font-weight: 700;
-      width: fit-content;
-    }
-    .oc-ai-badge.show { display: inline-flex; }
-    .oc-widget #chat-area {
-      display: none;
-      flex: 1;
-      min-height: 0;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .oc-widget #chat-area.oc-open { display: flex; }
-    .oc-widget #chat-area.chat-closed { opacity: 0.5; pointer-events: none; }
-    .oc-widget #chat-messages {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 4px 2px;
-    }
-    .oc-widget .chat-msg { display: flex; gap: 8px; max-width: 92%; }
-    .oc-widget .chat-msg.user { align-self: flex-end; }
-    .oc-widget .chat-msg.staff { align-self: flex-start; }
-    .oc-widget .chat-avatar {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      object-fit: cover;
-      object-position: top;
-      border: 1.5px solid var(--oc-accent);
-      background: #3a2d20;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .oc-widget .chat-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-    .oc-widget .chat-msg.user .chat-col { align-items: flex-end; }
-    .oc-widget .chat-meta { display: flex; align-items: baseline; gap: 8px; padding: 0 2px; }
-    .oc-widget .chat-name { font-size: 11px; font-weight: 700; color: var(--oc-gold-bright); }
-    .oc-widget .chat-time { font-size: 9.5px; color: var(--oc-panel-sub); }
-    .oc-widget .chat-bubble {
-      padding: 8px 12px;
-      border-radius: 14px;
-      font-size: 13px;
-      line-height: 1.6;
-      word-break: break-all;
-      white-space: pre-line;
-    }
-    .oc-widget .chat-msg.user .chat-bubble {
-      background: linear-gradient(180deg, #dcbd85, #c9a96a);
-      color: #2a1e10;
-      border-top-right-radius: 4px;
-    }
-    .oc-widget .chat-msg.staff .chat-bubble {
-      background: #ffffff;
-      color: #2a1e10;
-      border: 1px solid rgba(212,180,120,0.18);
-      border-top-left-radius: 4px;
-    }
-    .oc-widget .chat-bubble.fallback-notice { font-size: 11px; color: var(--oc-panel-sub); background: rgba(255,255,255,0.04); }
-    .oc-widget .chat-typing {
-      align-self: flex-start;
-      background: rgba(255,255,255,0.07);
-      padding: 8px 14px;
-      border-radius: 14px;
-      border-top-left-radius: 4px;
-      font-size: 16px;
-      letter-spacing: 4px;
-      color: var(--oc-panel-sub);
-      border: 1px solid rgba(212,180,120,0.18);
-    }
-    .oc-widget #chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .oc-widget #chat-input {
-      flex: 1;
-      padding: 9px 14px;
-      border: 1px solid var(--oc-panel-line);
-      border-radius: 20px;
-      font-size: 14px;
-      font-family: inherit;
-      resize: none;
-      outline: none;
-      line-height: 1.5;
-      max-height: 80px;
-      overflow-y: auto;
-      background: rgba(255,255,255,0.07);
-      color: var(--oc-panel-text);
-    }
-    .oc-widget #chat-input::placeholder { color: var(--oc-panel-sub); }
-    .oc-widget #chat-input:focus { border-color: var(--oc-gold-bright); }
-    .oc-widget #chat-send {
-      flex-shrink: 0;
-      width: 40px; height: 40px;
-      background: linear-gradient(180deg, #dcbd85, #c9a96a);
-      color: #2a1e10;
-      border: none;
-      border-radius: 50%;
-      font-size: 17px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-    .oc-widget #chat-send:hover { filter: brightness(1.08); }
-    .oc-widget #chat-send:disabled { background: rgba(255,255,255,0.12); color: var(--oc-panel-sub); cursor: default; }
-    .oc-widget .chat-limit-msg { font-size: 12px; color: var(--oc-panel-sub); text-align: center; padding: 6px 0; font-style: italic; }
-    .oc-widget #chat-quick {
-      display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 2px;
-      max-height: 220px; overflow-y: auto; flex-shrink: 0;
-    }
-    .oc-widget #chat-quick:empty { display: none; }
-    .oc-widget .chat-chip {
-      background: rgba(212,180,120,0.10);
-      border: 1.5px solid var(--oc-panel-line);
-      color: var(--oc-gold-bright);
-      border-radius: 16px;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      max-width: 100%;
-    }
-    .oc-widget .chat-chip .chip-sub { display: block; font-size: 10px; font-weight: 400; opacity: .7; }
-    .oc-widget .chat-chip:hover { background: var(--oc-accent); border-color: var(--oc-accent); color: #2a1e10; }
-    .oc-widget .chat-chip.chip-exit { border-color: rgba(255,255,255,0.20); color: var(--oc-panel-sub); background: transparent; }
-    .oc-widget .chat-chip.chip-exit:hover { background: rgba(255,255,255,0.14); color: var(--oc-panel-text); }
-    .oc-widget .chat-chip.chip-img {
-      width: 92px;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      padding: 5px 5px 7px; border-radius: 10px; text-align: center;
-    }
-    .oc-widget .chat-chip.chip-img img { width: 100%; height: 54px; object-fit: cover; border-radius: 7px; display: block; background: #3a2d20; }
-    .oc-widget .chat-chip.chip-img .chip-label { font-size: 10.5px; line-height: 1.2; word-break: break-word; }
     .footer {
       border-top: 1px solid var(--line);
       padding: 22px 24px;
@@ -1338,9 +1046,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       .modal-media { min-height: 42vh; }
       .modal-img { max-height: 42vh; }
       .modal-foot { justify-content: center; }
-      /* チャットオーバーレイのスマホ表示：画面ほぼ全体を使う */
-      #oc-overlay { padding: 0; }
-      .oc-overlay-panel { width: 100%; height: 100%; border-radius: 0; }
     }
   </style>
 </head>
@@ -1542,11 +1247,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <!-- 購入者からの声は 2026-10-01 に紹介カードの札へ移した（詳細画面には出さない・事業主決定） -->
         </div>
 
-        <div class="oc-widget">
-          <!-- 2026-11-07 事業主決定: 画面内の「💬 オーダー相談AI」は「🧵 この作品をもとに相談する」（#consult-work-link）へ統合。戻すときは次の1行を復活させる（JS側は if(ocTrigger) で守られている）: <button id="oc-trigger" class="oc-trigger" type="button" data-i18n="modal.ocTrigger">💬 オーダー相談AI（革の種類・色について相談する）</button> -->
-          <img id="sc-avatar" src="" alt="" style="display:none;">
-          <span id="sc-name" style="display:none;"></span>
-        </div>
+        <!-- 画面内の「💬 オーダー相談AI」は 2026-11-07 に撤去（上の #consult-work-link に統合）。戻すときは git 履歴（c730dd5 以前）。 -->
       </aside>
     </div>
     <div class="modal-foot">
@@ -1578,44 +1279,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <iframe id="texture-sim-frame" class="texture-sim-frame" src="about:blank" title="テクスチャシミュレーター"></iframe>
   </div>
 
-  <div id="oc-overlay" role="dialog" aria-modal="true" aria-label="オーダー相談チャット">
-    <div class="oc-overlay-panel oc-widget">
-      <div class="oc-overlay-head">
-        <div class="oc-overlay-head-text">
-          <div id="oc-ai-badge" class="oc-ai-badge" data-i18n="oc.badge">💬 オーダー相談AIと相談中</div>
-          <span id="oc-overlay-product"></span>
-        </div>
-        <button id="oc-overlay-close" class="oc-overlay-close" type="button" aria-label="閉じる">×</button>
-      </div>
-      <div id="oc-selection-summary" class="oc-selection-summary" hidden></div>
-      <div class="oc-send-fields">
-        <select id="oc-purchase-method" aria-label="購入手段・希望サイト">
-          <option value="" data-i18n="oc.method">購入手段・希望サイト（未定でも可）</option>
-          <option value="bank" data-i18n="oc.bank">銀行振込</option>
-          <option value="btc">Bitcoin（BTC）</option>
-          <option value="mercari">メルカリ</option>
-          <option value="rakuma">ラクマ</option>
-          <option value="paypay">PayPayフリマ</option>
-          <option value="creema">Creema</option>
-          <option value="minne">minne</option>
-          <option value="base">BASE</option>
-          <option value="store">STORES</option>
-          <option value="pinkoi">Pinkoi</option>
-        </select>
-        <input id="oc-contact-name" type="text" placeholder="お名前（必須）" autocomplete="name" data-i18n-placeholder="oc.name">
-        <input id="oc-contact-info" type="text" placeholder="連絡先（必須・メール／SNS）" autocomplete="email" data-i18n-placeholder="oc.contact">
-        <button id="oc-send-to-artisan" type="button" data-i18n="oc.send">この内容で作家に送信</button>
-      </div>
-      <div id="chat-area" class="chat-closed">
-        <div id="chat-messages"></div>
-        <div id="chat-quick"></div>
-        <div id="chat-input-row">
-          <textarea id="chat-input" rows="1" placeholder="メッセージを入力..." maxlength="200" data-i18n-placeholder="chat.placeholder"></textarea>
-          <button id="chat-send" aria-label="送信">&#x27A4;</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <footer class="footer">© N's factory</footer>
 
@@ -1697,18 +1360,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'modal.consultWork': '🧵 Consult based on this piece',
     'badge.customerVoice': '💬 Customer voice',
     'modal.customerVoiceTitle': 'Customer voice',
-    'modal.ocTrigger': '💬 Order consultation AI (ask about leather types & colors)',
-    'modal.ocTriggerActive': '💬 Consulting with the order AI',
     'modal.prev': 'Prev',
     'modal.next': 'Next',
     'sim.close': '✕ Close',
-    'oc.badge': '💬 Consulting with the order AI',
-    'oc.method': 'Purchase method / preferred site (optional)',
-    'oc.bank': 'Bank transfer',
-    'oc.name': 'Your name (required)',
-    'oc.contact': 'Contact (required: e-mail / SNS)',
-    'oc.send': 'Send this to the maker',
-    'chat.placeholder': 'Type a message...'
   };
   </script>
   <script src="assets/i18n.js"></script>
@@ -2429,7 +2083,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       activeIndex = index;
       updateModal();
       applyModalRankBadge(work);
-      resetOrderChat(work);
       refreshTextureSimCta(work); // 型紙SVGがある作品だけCTAを出す（非同期・判定後に現れる）
       closeCustomerVoicePanel(); // 購入者の声の小窓が開いていたら閉じる（声はカードの札から開く・10-01）
       modal.classList.add('open');
@@ -2551,85 +2204,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       });
     }
 
-    // ===== オーダー相談チャット（showroom/chat-widget.js を流用） =====
-    const ocTrigger = document.getElementById('oc-trigger');
-    const ocChatArea = document.getElementById('chat-area');
-    let ocWidget = null;
-    let ocOpened = false;
-
-    function ocBuildProductContext(work) {
-      return {
-        productId: work.id,
-        name: work.title,
-        price: work.price,
-        tags: [work.category, work.material, work.color, work.size].filter(Boolean),
-        stockStatus: work.soldout ? 'SOLDOUT' : work.noRestock ? '再販予定なし' : '在庫あり',
-        note: work.shortDesc,
-        folderId: work.folderId,
-      };
-    }
-
-    const ocAiBadge = document.getElementById('oc-ai-badge');
-    const ocOverlay = document.getElementById('oc-overlay');
-    const ocOverlayProduct = document.getElementById('oc-overlay-product');
-    const ocOverlayClose = document.getElementById('oc-overlay-close');
-
-    function resetOrderChat(work) {
-      ocOpened = false;
-      if (ocChatArea) ocChatArea.classList.remove('oc-open');
-      if (ocOverlay) ocOverlay.classList.remove('oc-overlay-open');
-      if (ocAiBadge) ocAiBadge.classList.remove('show');
-      if (ocTrigger) {
-        ocTrigger.textContent = T('modal.ocTrigger', '💬 オーダー相談AI（革の種類・色について相談する）');
-        ocTrigger.onclick = () => { logProductAction(work, 'AI相談を開始'); ocOpenChat(work); };
-      }
-      const purchaseSel = document.getElementById('oc-purchase-method');
-      const nameInput = document.getElementById('oc-contact-name');
-      const contactInput = document.getElementById('oc-contact-info');
-      if (purchaseSel) purchaseSel.value = '';
-      if (nameInput) nameInput.value = '';
-      if (contactInput) contactInput.value = '';
-    }
-
-    function ocCloseOverlay() {
-      if (ocOverlay) ocOverlay.classList.remove('oc-overlay-open');
-    }
-
-    if (ocOverlayClose) ocOverlayClose.addEventListener('click', ocCloseOverlay);
-    if (ocOverlay) {
-      ocOverlay.addEventListener('click', (e) => {
-        if (e.target === ocOverlay) ocCloseOverlay(); // 背景クリックでも閉じる
-      });
-    }
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && ocOverlay && ocOverlay.classList.contains('oc-overlay-open')) ocCloseOverlay();
-    });
-
-    function ocOpenChat(work) {
-      if (!window.NsfChatWidget) return;
-      const staff = (window.SHOWROOM_STAFF || []).find((s) => s.id === 'hannbai');
-      const scAvatar = document.getElementById('sc-avatar');
-      const scName = document.getElementById('sc-name');
-      if (staff && scAvatar) scAvatar.src = 'showroom/' + staff.image;
-      if (staff && scName) scName.textContent = staff.name;
-      if (ocOverlayProduct) ocOverlayProduct.textContent = work.title ? ('『' + work.title + '』について' ) : '';
-      if (!ocWidget) ocWidget = window.NsfChatWidget.mount(document, {});
-      ocWidget.open('hannbai', ocBuildProductContext(work));
-      ocOpened = true;
-      if (ocChatArea) ocChatArea.classList.add('oc-open');
-      if (ocOverlay) ocOverlay.classList.add('oc-overlay-open');
-      if (ocAiBadge) ocAiBadge.classList.add('show');
-      if (ocTrigger) ocTrigger.textContent = T('modal.ocTriggerActive', '💬 オーダー相談AI 相談中');
-
-      // SOLDOUT・再販予定なしの商品は、色選び直しの相談になりやすいため、
-      // 該当商品の革系統に絞った色ギャラリーを自動表示する（革カタログ読込完了後）。
-      if ((work.soldout || work.noRestock) && work.material && ocWidget.ready) {
-        ocWidget.ready.then(() => {
-          const tag = ocWidget.resolveSeriesTag && ocWidget.resolveSeriesTag(work.material);
-          if (tag && ocWidget.showColors) ocWidget.showColors(tag);
-        });
-      }
-    }
+    // 画面内のオーダー相談チャット（ocOpenChat ほか）は 2026-11-07 に撤去。相談の入口は #consult-work-link（hearing-ai.html?work=）の1つ。
 
     // ===== テクスチャシミュレーター導線（型紙SVG登録済みの作品だけ） =====
     // 表示条件は chat-widget.js と同一（folderId 内に svg1.svg / svg2.svg があるか）。
@@ -2835,7 +2410,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     // 「確定」を押したら、選んだ革色を相談ページ（hearing-ai.html?work=）へ持って行く（2026-11-07 事業主決定）。
     // 以前は画面内のオーダー相談AIを開いて色を送っていたが、相談の入口を「🧵 この作品をもとに相談する」に統合した。
     // 控えは sessionStorage（同じタブで移動するので届く）。画像が大きくて置けなければ色名だけ渡す。
-    // ⛔ chat-widget.js 側にも同名メッセージのリスナーがあるが、あちらは自前のオーバーレイが開いているときだけ処理する。
+    // 2026-11-07（続2）: 画面内チャット（chat-widget.js）は撤去したので、このメッセージを受けるのはここだけ。
     const HEARING_SIM_KEY = 'nsf_hearing_sim';
     function handOffSimToHearing(work, data) {
       const parts = (data.parts || []).filter((p) => p && p.leatherName);
@@ -3702,10 +3277,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   </script>
 <script src="assets/access-counter.js"></script>
 
-<!-- ===== オーダー相談チャット（showroom/chat-widget.js を流用） ===== -->
-<script src="showroom/data/staffData.js"></script>
-<script src="showroom/data/config.js"></script>
-<script src="order_estimate/hearing-core.js"></script>
-<script src="showroom/chat-widget.js"></script>
+<!-- 画面内のオーダー相談チャット（showroom/chat-widget.js ほか3本）は 2026-11-07 に撤去。相談は order_estimate/hearing-ai.html?work= へ。戻すときは git 履歴（c730dd5 以前）。 -->
 </body>
 </html>
