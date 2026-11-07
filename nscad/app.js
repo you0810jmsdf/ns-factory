@@ -80,7 +80,7 @@ const AUTOSAVE_SUB_KEY = 'leather-cad.autosave.sub';   /* 副のタブ（別の�
 let autosaveState = 'ok';   /* 直近の自動保存の結果：'ok'／'tooLarge'（大きすぎ）／'error'（保存できない）。'ok' 以外で未保存の変更があれば、閉じる・更新の前に確認を出す */
 let dotPreview = null, dotPreviewTimer = 0, dotPreviewText = '';
 let lastAutosaveSigs = [];
-let commitSeq = 0, rangeHoleCache = { key: '', ids: new Set() };   /* 選んだ範囲の穴の使い回し（rangeHoleSet） */   /* 直近の自動保存に入れた、タブごとの図面の署名（履歴の保管に添える：時刻が違っても、図面が同じなら履歴を使える） */   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
+let commitSeq = 0, rangeHoleCache = { key: '', ids: new Set() }, rangeOff = false;   /* rangeOff：図形をクリックで選んだとき true（枠の中の菱目を、いっしょに選ばない・事業主 2026-11-08「線を選ぶと勝手に菱目が選択される」）。囲み選択・全選択では false（今までどおり菱目も入る） */   /* 選んだ範囲の穴の使い回し（rangeHoleSet） */   /* 直近の自動保存に入れた、タブごとの図面の署名（履歴の保管に添える：時刻が違っても、図面が同じなら履歴を使える） */   /* 点の直径を打っている最中の下見：{ d }。選んだ穴の中心に、その直径の薄い丸を重ねる（図面は変えない） */
 let undoSaveTimer = 0, undoAttaching = false, autosaveTimer = 0, autosaveWarned = false, autosaveReady = false, pendingRestore = null; /* 自動保存：保存待ちのタイマー・容量超えの案内を出したか・起動が済んだか（前の保存を見る前に空で消さない）・復元を決めるまでの前回の保存 */
 let ruler = null; /* 定規の測定結果 {a, b}。図形ではなく表示だけ */
 let mode = 'select', gesture = null, stage = null, space = false, cursor = { x: 0, y: 0 }, snap = null, pasteGhost = null;   /* pasteGhost：貼り付け待ち（Ctrl+V のあと、クリックで置く）。cancel() から参照するので、先頭で宣言する */
@@ -1442,23 +1442,48 @@ function boxOfShapeIds(ids) {
   let box = null; for (const s of doc.shapes) { if (!ids.has(s.id) || HIDDEN_LEFT_SKIP.includes(s.type)) continue; let b; try { b = bboxOf(s); } catch { continue; } if (![b?.minX, b?.minY, b?.maxX, b?.maxY].every(Number.isFinite)) continue; box = box ? { minX: Math.min(box.minX, b.minX), minY: Math.min(box.minY, b.minY), maxX: Math.max(box.maxX, b.maxX), maxY: Math.max(box.maxY, b.maxY) } : { ...b }; }
   return box;
 }
-function findHiddenLeft(ids, oldBox, movedHoles) {
+const holeIgnoreKey = h => 'h|' + h.id + '|' + Math.round(h.x * 100) + ',' + Math.round(h.y * 100);
+function findHiddenLeft(ids, oldBox, movedHoles, carryAll = [], stuckAll = []) {
   const movedGroups = new Set(doc.shapes.filter(s => ids.has(s.id)).map(groupIdOf).filter(Boolean)), m = 10, cand = new Set(), layerIds = new Set(doc.layers.map(l => l.id)), ign = ignoredHiddenLeft();
+  const ignored = s => { if (!ign.size) return false; try { return ign.has(ignoreKeyOf(s)); } catch { return false; } };   /* 「このまま」を押した線 */
   for (const s of doc.shapes) {
     if (ids.has(s.id) || HIDDEN_LEFT_SKIP.includes(s.type) || s.foldSec || s.foldFlat || s.hwSection || s.hwFor || isHardwareShape(s) || !layerIds.has(s.layer) || shapeLocked(s) || layerEditable(s)) continue;
-    if (ign.size) { let key = null; try { key = ignoreKeyOf(s); } catch { key = null; } if (key && ign.has(key)) continue; }   /* 「このまま」を押した線 */
+    if (ignored(s)) continue;
     const g = groupIdOf(s); let ok;
     if (g) ok = movedGroups.has(g); else { const b = bboxOf(s); ok = b.minX >= oldBox.minX - m && b.maxX <= oldBox.maxX + m && b.minY >= oldBox.minY - m && b.maxY <= oldBox.maxY + m; }
     if (ok) cand.add(s.id);
   }
-  for (const p of doc.paths) { if (p.shapeIds.some(id => cand.has(id)) && p.shapeIds.some(id => !cand.has(id) && !ids.has(id))) for (const id of p.shapeIds) cand.delete(id); }
-  if (!cand.size) return null;
-  const holeIds = []; for (const p of doc.paths) if (p.shapeIds.some(id => cand.has(id))) for (const h of doc.holes) if (h.pathId === p.id && !movedHoles.has(h.id)) holeIds.push(h.id);
-  return { ids: [...cand], holeIds };
+  /* 枠の中の菱目（クリックで選んだときは、いっしょに選ばれない）：持ち主の線（ガイド層・点線の線）ごと、そろって動かせる経路の穴だけ。経路の穴が一部しか枠に入らない・持ち主が型紙の実線の経路は、動かさない（穴が線から外れて橙の輪になるため） */
+  const carry = new Set(), owner = new Set();
+  if (carryAll.length) {
+    const byId = new Map(doc.shapes.map(s => [s.id, s])), holeById = new Map(doc.holes.map(h => [h.id, h])), holesOf = new Map(), pathOfShape = new Map(), own = ownPaths(), byPath = new Map();
+    for (const h of doc.holes) { if (!holesOf.has(h.pathId)) holesOf.set(h.pathId, []); holesOf.get(h.pathId).push(h); }
+    for (const p of doc.paths) for (const id of p.shapeIds) pathOfShape.set(id, (pathOfShape.get(id) || 0) + 1);
+    for (const hid of carryAll) {
+      const h = holeById.get(hid); if (!h || movedHoles.has(h.id) || !holeEditable(h) || ign.has(holeIgnoreKey(h))) continue;
+      const path = doc.paths.find(x => x.id === h.pathId);
+      if (!path || holeIsOwn(h, own)) { carry.add(h.id); continue; }
+      if (!byPath.has(path.id)) byPath.set(path.id, []); byPath.get(path.id).push(h);
+    }
+    for (const [pid, list] of byPath) {
+      const path = doc.paths.find(x => x.id === pid), listIds = new Set(list.map(h => h.id));
+      if (!(holesOf.get(pid) || []).every(x => movedHoles.has(x.id) || listIds.has(x.id))) continue;   /* 経路の穴が、全部そろっていない */
+      const shapes = path.shapeIds.map(id => byId.get(id)); if (!shapes.length || shapes.some(x => !x)) continue;
+      const movable = x => ids.has(x.id) || cand.has(x.id) || (!shapeLocked(x) && (x.layer === 'guide' || x.lineStyle === 'dashed') && pathOfShape.get(x.id) === 1 && !HIDDEN_LEFT_SKIP.includes(x.type));
+      if (!shapes.every(movable)) continue;
+      for (const h of list) carry.add(h.id);
+      for (const x of shapes) if (!ids.has(x.id) && !cand.has(x.id)) owner.add(x.id);
+    }
+  }
+  const line = new Set([...cand, ...owner]);
+  for (const p of doc.paths) { if (p.shapeIds.some(id => line.has(id)) && p.shapeIds.some(id => !line.has(id) && !ids.has(id))) for (const id of p.shapeIds) { line.delete(id); cand.delete(id); owner.delete(id); } }
+  if (!line.size && !carry.size) return null;
+  const holeSet = new Set(carry); for (const p of doc.paths) if (p.shapeIds.some(id => line.has(id))) for (const h of doc.holes) if (h.pathId === p.id && !movedHoles.has(h.id)) holeSet.add(h.id);
+  return { ids: [...line], ownerIds: [...owner], holeIds: [...holeSet], carryN: carry.size, stuckN: stuckAll.filter(id => !movedHoles.has(id) && !holeSet.has(id)).length };
 }
-/** 平行移動のあと（transformSelected の最後）に呼ぶ：隠れた線が残っていれば覚えて、帯を出す。 */
-function noteHiddenLeft(ids, shift, oldBox, movedHoles) {
-  let f = null; try { f = findHiddenLeft(ids, oldBox, movedHoles); } catch { f = null; }
+/** 平行移動のあと（transformSelected の最後）に呼ぶ：隠れた線・置いていかれた菱目が残っていれば覚えて、帯を出す。 */
+function noteHiddenLeft(ids, shift, oldBox, movedHoles, carryAll = [], stuckAll = []) {
+  let f = null; try { f = findHiddenLeft(ids, oldBox, movedHoles, carryAll, stuckAll); } catch { f = null; }
   hiddenLeft = f ? { ...f, dx: shift.dx, dy: shift.dy, doc, seq: commitSeq, undoLen: undo.length } : null; hiddenLeftKey = ''; updateHiddenLeftBar();
 }
 function updateHiddenLeftBar() {
@@ -1466,22 +1491,24 @@ function updateHiddenLeftBar() {
   const h = hiddenLeft; let show = false;
   if (h && !exporting && h.doc === doc && h.seq === commitSeq && h.undoLen === undo.length) {
     const key = [commitSeq, undo.length, viewShow.solid, viewShow.dashed, viewShow.hardware, doc.layers.map(l => (l.visible ? 1 : 0) + '' + (l.locked ? 1 : 0)).join('')].join('|');
-    if (key !== hiddenLeftKey) { hiddenLeftKey = key; const set = new Set(h.ids); hiddenLeftN = doc.shapes.filter(s => set.has(s.id) && !layerEditable(s) && !shapeLocked(s)).length; }   /* 隠れた線が、いまも隠れている数（点線を表示に戻すなどで見えたら減る） */
-    show = hiddenLeftN > 0;
+    if (key !== hiddenLeftKey) { hiddenLeftKey = key; const set = new Set(h.ids), own = new Set(h.ownerIds || []); hiddenLeftN = doc.shapes.filter(s => set.has(s.id) && !shapeLocked(s) && (own.has(s.id) || !layerEditable(s))).length; }   /* 動かせる線の数（隠れた線は、点線を表示に戻すなどで見えたら減る。持ち主の線は見えていても数える） */
+    show = hiddenLeftN > 0 || h.carryN > 0;
   }
   bar.hidden = !show; if (!show) return;
-  const info = t('hiddenLeftInfo', { n: hiddenLeftN }); if ($('hiddenLeftInfo').textContent !== info) $('hiddenLeftInfo').textContent = info;
+  const withHoles = h.carryN > 0 || (h.ownerIds || []).length > 0, m = h.holeIds.length;
+  const info = (!withHoles ? t('hiddenLeftInfo', { n: hiddenLeftN }) : hiddenLeftN ? t('hiddenLeftInfoHoles', { n: hiddenLeftN, m }) : t('hiddenLeftInfoHolesOnly', { m })) + (h.stuckN > 0 ? t('hiddenLeftStuck', { k: h.stuckN }) : '');
+  if ($('hiddenLeftInfo').textContent !== info) $('hiddenLeftInfo').textContent = info;
 }
-/** 帯の「このまま」：帯を閉じて、いま帯に数えていた線を、この図面では数えないように覚える。 */
+/** 帯の「このまま」：帯を閉じて、いま帯に数えていた線・菱目を、この図面では数えないように覚える。 */
 function leaveHiddenLeft() {
   const h = hiddenLeft;
-  if (h && h.doc === doc) { const set = ignoredHiddenLeft(), ids = new Set(h.ids); for (const s of doc.shapes) if (ids.has(s.id)) { try { set.add(ignoreKeyOf(s)); } catch { /* 目印が作れない線は、覚えない */ } } }
+  if (h && h.doc === doc) { const set = ignoredHiddenLeft(), ids = new Set(h.ids), hs = new Set(h.holeIds); for (const s of doc.shapes) if (ids.has(s.id)) { try { set.add(ignoreKeyOf(s)); } catch { /* 目印が作れない線は、覚えない */ } } for (const x of doc.holes) if (hs.has(x.id)) set.add(holeIgnoreKey(x)); }
   hiddenLeft = null; const bar = $('hiddenLeftBar'); if (bar) bar.hidden = true;
 }
 function moveHiddenLeft() {
   const h = hiddenLeft; if (!h || h.doc !== doc || h.seq !== commitSeq) return;
-  const want = new Set(h.ids), live = new Set(doc.shapes.filter(s => want.has(s.id) && !layerEditable(s) && !shapeLocked(s)).map(s => s.id));
-  if (!live.size) { hiddenLeft = null; updateHiddenLeftBar(); return; }
+  const want = new Set(h.ids), own = new Set(h.ownerIds || []), live = new Set(doc.shapes.filter(s => want.has(s.id) && !shapeLocked(s) && (own.has(s.id) || !layerEditable(s))).map(s => s.id));
+  if (!live.size && !h.carryN) { hiddenLeft = null; updateHiddenLeftBar(); return; }
   const holeSet = new Set(h.holeIds), pids = new Set(doc.paths.filter(p => p.shapeIds.some(id => live.has(id))).map(p => p.id));
   commit(() => {
     doc.shapes = doc.shapes.map(s => live.has(s.id) ? translate(s, h.dx, h.dy) : s);
@@ -1491,7 +1518,8 @@ function moveHiddenLeft() {
       for (const x of doc.holes) { if (x.pathId !== pid || x.mark !== 'tool') continue; const q = pointAtLength(route, x.s); if (Math.hypot(q.x - x.x, q.y - x.y) <= OFF_TOL) continue; const pr = projectOnPath(route, x); if (Math.hypot(pr.x - x.x, pr.y - x.y) <= 0.5) x.s = +pr.s.toFixed(4); }
     }
   });
-  hiddenLeft = null; updateHiddenLeftBar(); $('hint').textContent = t('hiddenLeftDone', { n: live.size });
+  const withHoles = h.carryN > 0 || own.size > 0; hiddenLeft = null; updateHiddenLeftBar();
+  $('hint').textContent = !withHoles ? t('hiddenLeftDone', { n: live.size }) : live.size ? t('hiddenLeftDoneHoles', { n: live.size, m: holeSet.size }) : t('hiddenLeftDoneHolesOnly', { m: holeSet.size });
 }
 /** 歯抜けの穴を図面に足す（commit の中で呼ぶ）。足した穴の id の並びを返す。 */
 function addGapHoles(list) { const made = []; for (const { gapId, ...h } of list) { const id = freshId(doc.holes, 'h'); doc.holes.push({ ...h, id }); made.push(id); } return made; }
@@ -1552,8 +1580,8 @@ function holesInSelectedShapes(opts = {}) {   /* opts.ids＝選んだ図形の i
 }
 /** 「選択した範囲はすべて対象」（事業主 2026-10-30）：選んだ図形の範囲（つながった図形ごとの外接の四角）の中の穴は、選んだものとして扱う。移動・コピー・削除・点に置換・書き出し・強調表示が、同じ判定を使う。選択と図面が変わらないあいだは、結果を使い回す。 */
 function rangeHoleSet() {
-  const key = commitSeq + '|' + doc.holes.length + '|' + doc.shapes.length + '|' + [...selected].join(',');
-  if (rangeHoleCache.key !== key) rangeHoleCache = { key, ids: new Set(selected.size ? holesInSelectedShapes().map(h => h.id) : []) };
+  const key = rangeOff + '|' + commitSeq + '|' + doc.holes.length + '|' + doc.shapes.length + '|' + [...selected].join(',');
+  if (rangeHoleCache.key !== key) rangeHoleCache = { key, ids: new Set(selected.size && !rangeOff ? holesInSelectedShapes().map(h => h.id) : []) };
   return rangeHoleCache.ids;
 }
 const isSelHole = h => selected.has(h.id) || rangeHoleSet().has(h.id);
@@ -5333,7 +5361,7 @@ function onClipCopy(e, cut) {
 }
 /** 全選択（Ctrl+A）：見えていて編集できる図形をすべて選ぶ。 */
 function selectAllShapes() {
-  setMode('select'); selected = new Set([...doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id), ...doc.holes.filter(h => holeVisible(h) && holeEditable(h)).map(h => h.id)]); draw();   /* 見えていて編集できる菱目も選ぶ（事業主指摘 2026-10-17：全体を選んで動かすと菱目だけ取り残された） */
+  setMode('select'); rangeOff = false; selected = new Set([...doc.shapes.filter(s => layerVisible(s) && editable(s)).map(s => s.id), ...doc.holes.filter(h => holeVisible(h) && holeEditable(h)).map(h => h.id)]); draw();   /* 見えていて編集できる菱目も選ぶ（事業主指摘 2026-10-17：全体を選んで動かすと菱目だけ取り残された） */
   $('hint').textContent = selected.size ? t('selectedAll', { n: selected.size }) : t('selectFirst');
 }
 /** 選んでいる穴（箱で囲む・全選択で選ばれる）の番号。コピーで、縫い線が隠したガイドの層にある穴も運ぶため。 */
@@ -8369,10 +8397,11 @@ function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転
   const ids = selectedShapeIds();
   for (const p of doc.paths) { const shs = p.shapeIds.map(id => doc.shapes.find(s => s.id === id)); if (shs.length && shs.every(s => s && s.layer === 'guide' && !editable(s)) && doc.holes.some(h => h.pathId === p.id && selected.has(h.id) && holeEditable(h))) p.shapeIds.forEach(id => ids.add(id)); } /* 選んだ菱目がついた、非表示のガイド層の線は、菱目といっしょに動かす（取り残して、菱目が線から外れないように） */
   addOwnerLines(ids);   /* 見えているガイド・点線の持ち主も、その経路の穴がぜんぶ動くなら、いっしょに動かす */
-  const shift = pureShift(fn), oldBox = shift ? boxOfShapeIds(ids) : null; let movedHoleIds = new Set();   /* 平行移動のとき：動かす前の枠と動いた穴を覚え、動かなかった隠れた線を、あとで帯で知らせる（noteHiddenLeft） */
+  const shift = pureShift(fn), oldBox = shift ? boxOfShapeIds(ids) : null; let movedHoleIds = new Set(), carryAll = [], stuckAll = [];   /* 平行移動のとき：動かす前の枠と動いた穴を覚え、動かなかった隠れた線を、あとで帯で知らせる（noteHiddenLeft） */
   cancel(); dimRotating = rotates;
   try { commit(() => {
     const before=new Map(doc.paths.filter(p=>p.shapeIds.every(id=>ids.has(id))).map(p=>[p.id,resolvePath(doc,p)]));
+    if (shift && rangeOff) { try { carryAll = holesInSelectedShapes().map(h => h.id); stuckAll = holesInSelectedShapes({ ignoreOwner: true }).map(h => h.id); } catch { carryAll = []; stuckAll = []; } }   /* stuckAll：枠の中にあっても、外へ続く列・型紙の実線が持ち主の列の菱目（帯では動かせない分を知らせる） */   /* クリックで選んだときは、枠の中の菱目は付いてこない：今までなら付いてきた菱目を、動かす前に覚える（動かしたあとの帯で連れていく） */
     const followFills = new Set((doc.fills || []).filter(fl => fillFollows(fl, ids, new Map(doc.shapes.map(s => [s.id, s])))).map(fl => fl.id));   /* 動かす前の図形で決める（動かしたあとでは輪郭の位置が変わる） */
     const holeFollow = new Map();   /* 塗りの穴（抜き）の輪が、動かす図形の上に乗っているとき（スロットだけ動かすなど）：その輪だけ、いっしょに動かす。動かす前の図形で決める */
     { const moving = doc.shapes.filter(s => ids.has(s.id) && !['text', 'dimension', 'image', 'fold'].includes(s.type)); if (moving.length) for (const fl of doc.fills || []) { if (followFills.has(fl.id) || fl.clear || !(fl.holes || []).length) continue; const flags = fl.holes.map(h => fillOnShapes({ points: h, holes: [] }, moving) >= 0.9); if (flags.some(Boolean)) holeFollow.set(fl.id, flags); } }
@@ -8398,7 +8427,7 @@ function transformSelected(fn, { rotates = false } = {}) {   /* rotates＝回転
     followSectionMove(ids, fn, paths, alone);
     manualNext=null;
   }); } finally { dimRotating = false; }
-  if (shift && oldBox) noteHiddenLeft(ids, shift, oldBox, movedHoleIds);
+  if (shift && oldBox) noteHiddenLeft(ids, shift, oldBox, movedHoleIds, carryAll, stuckAll);
 }
 /** 断面の図形（foldSec 'fd'）を平行に動かしたとき、設計の原点と、平面図・展開図（foldFlat 'fd'・'fdu'）の図形・菱目も、同じだけ動かす（事業主 2026-10-24「断面図の図形を動かしたら、平面図も連動させたい」）。
  *  回転・拡大縮小・反転では何もしない。平面図・展開図を選んでいっしょに動かしたときは、二重に動かさない（paths・alone＝すでに動いた菱目の判定）。動かした分 moveOff は、断面を作り直しても引き継ぐ。 */
@@ -9976,9 +10005,9 @@ canvas.addEventListener('pointerdown', e => {
     if (hit && (!e.shiftKey || selected.has(hit.id))) {   /* Shift を押したまま、選択済みの図形をつかんでも動かせる（水平・垂直に固定）。動かさずに離したら、これまでどおり選択から外す */
       const ctrlOn = (e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey, wasSel = selected.has(hit.id), ctrlMulti = ctrlOn && selected.size > 0 && !(wasSel && groupIdOf(hit));   /* Ctrl+クリックで複数選択（事業主 2026-10-30「複数の線を Ctrl を押しながら選択しても選択できない」）：何か選んである間は、押した図形を1つ足す（グループは展開しない）。選択済みの図形は、動かさずに離すと外す。選択済みのグループの図形を押したときだけ、今までどおり「その1個だけ」 */
       const oneOfGroup = ctrlOn && !groupIsWhole(hit);   /* Ctrl+クリック（Mac は ⌘）：グループの中の、押した図形1個だけ（事業主 2026-10-26「円だけ消したい。パッチの境界がすべて反応してしまう」） */
-      if (ctrlMulti) { if (!wasSel) { selected = new Set([...selected, hit.id]); nodeSel = null; } }
-      else if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
-      else if (!selected.has(hit.id)) { selected = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = groupPickedText(); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
+      if (ctrlMulti) { if (!wasSel) { selected = new Set([...selected, hit.id]); nodeSel = null; rangeOff = true; } }
+      else if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; rangeOff = true; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
+      else if (!selected.has(hit.id)) { selected = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); nodeSel = null; rangeOff = true; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = groupPickedText(); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
       if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
       gesture = { kind: 'move', start: cursor, screen: p, ids: addOwnerLines(selectedShapeIds()), ...(e.shiftKey ? { shiftToggle: hit.id } : {}), ...(ctrlMulti && wasSel ? { ctrlToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
@@ -10363,10 +10392,10 @@ canvas.addEventListener('pointerup', e => {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
       const hit = pickShapeAt(cursor);
-      if (hit) { const grp = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
+      if (hit) { rangeOff = true; const grp = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
-      let boxShapes = 0; for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) { selected.add(s.id); boxShapes++; } }
+      rangeOff = false; let boxShapes = 0; for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) { selected.add(s.id); boxShapes++; } }
       /* 囲みの中の図形だけを選ぶ。グループ全体になるのは、アプリが作った一式（金具・折り目の断面図）だけ：一部だけ動かすと壊れるため。自分で「グループ化」した型紙・点線のグループは、囲みの中の図形だけ（事業主指示 2026-10-21：右の図形だけ囲んだのに、同じグループの左の点線の輪・菱目まで動いた・消えた。不具合記録 1528・1530）。クリックは今までどおりグループ全体 */
       const wholeGroups = new Set(doc.shapes.filter(s => groupIdOf(s) && (isHardwareShape(s) || s.hwSection || s.hwFor || s.foldSec || s.layer === 'section')).map(groupIdOf));
       if (wholeGroups.size) { const hit = new Set(doc.shapes.filter(s => selected.has(s.id) && wholeGroups.has(groupIdOf(s))).map(groupIdOf)); for (const s of doc.shapes) if (hit.has(groupIdOf(s))) selected.add(s.id); }
