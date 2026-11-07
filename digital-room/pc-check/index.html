@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>常駐点検 — PCが重い原因を日本語で調べる | N's factory デジタル幕僚室</title>
+<meta name="description" content="Windows のパソコンが重いとき、ボタン1つ・約10秒で「何が原因か」「どうすればいいか」を日本語で答える小さなツール。調べるだけで外には何も送りません。無料・登録不要・追加ソフト不要。ZIP で配布。">
+<!-- Google tag (gtag.js) -->
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+  :root {
+    --bg: #16120d;
+    --bg-card: #1e1913;
+    --edge: #2a231a;
+    --gold: #c9a961;
+    --gold-dim: #8a744a;
+    --ink: #e8e2d6;
+    --ink-dim: #a89f8e;
+    --danger: #d46a5a;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Meiryo", "メイリオ", "Hiragino Sans", sans-serif;
+    line-height: 1.8;
+    font-size: 15px;
+  }
+  a { color: var(--gold); }
+  a:hover { color: #e0c27a; }
+  header { border-bottom: 1px solid var(--edge); padding: 18px 22px; }
+  header .back { font-size: 13px; color: var(--ink-dim); text-decoration: none; }
+  header .back:hover { color: var(--gold); }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 22px 80px; }
+  .eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: .14em;
+    color: var(--gold-dim); text-transform: uppercase; margin-bottom: 10px;
+  }
+  h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.4; margin-bottom: 14px; letter-spacing: -.01em; }
+  .lead { color: var(--ink-dim); margin-bottom: 30px; }
+  h2 {
+    font-size: 17px; margin: 40px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--edge); color: var(--gold);
+  }
+  h3 { font-size: 15px; margin: 24px 0 8px; }
+  p { margin-bottom: 14px; }
+  ul, ol { margin: 0 0 16px 22px; }
+  li { margin-bottom: 6px; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--edge);
+    border-radius: var(--radius); padding: 20px; margin-bottom: 18px;
+  }
+  .dl {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--gold); color: #16120d; font-weight: 800;
+    padding: 14px 26px; border-radius: var(--radius); text-decoration: none;
+    font-size: 15px;
+  }
+  .dl:hover { background: #e0c27a; color: #16120d; }
+  .meta { font-size: 12px; color: var(--ink-dim); margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 14px; }
+  th, td { border: 1px solid var(--edge); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #221c15; color: var(--gold-dim); font-weight: 700; white-space: nowrap; }
+  .warn {
+    border-left: 3px solid var(--danger); background: #211712;
+    padding: 14px 16px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 18px;
+  }
+  .warn strong { color: var(--danger); }
+  code {
+    background: #221c15; padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 13px; color: var(--gold);
+  }
+  .scroll { overflow-x: auto; }
+  .hero-img { display: block; width: 100%; max-width: 420px; margin: 0 auto 30px; border-radius: var(--radius); border: 1px solid var(--edge); }
+  .colors span { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  footer { border-top: 1px solid var(--edge); padding: 24px 22px; text-align: center; font-size: 12px; color: var(--ink-dim); }
+</style>
+</head>
+<body>
+
+<header><a class="back" href="../">← デジタル幕僚室へ戻る</a></header>
+
+<main>
+  <div class="eyebrow">FREE TOOL / Windows 10・11 / 登録不要</div>
+  <h1>常駐点検 — PCが重い原因を、日本語で調べる</h1>
+  <p class="lead">
+    パソコンが重いとき、ボタンを1つ押すと、約10秒で「何が原因か」と「どうすればいいか」を日本語で答えます。
+    あなたのパソコンの中だけで動き、調べた内容をインターネットに送ることはありません。
+    調べるだけで、勝手に何かを止めたり設定を変えたりはしません。
+  </p>
+
+  <div class="card">
+    <a class="dl" href="./pc-check.zip" download>⬇ 常駐点検をダウンロード（ZIP・43KB）</a>
+    <div class="meta">v1.0 / 2026-11-07 公開 ・ 「はじめにお読みください.txt」同梱 ・ 無料 ・ 登録不要 ・ 追加ソフト不要</div>
+  </div>
+
+  <img class="hero-img" src="../../assets/pc-check-announce.png" alt="常駐点検の告知画像。スマホ幅で表示した診断結果の画面" loading="lazy">
+
+  <h2>何をするものか</h2>
+  <p>
+    Windows の「タスク マネージャー」は、数字と英語の名前が並ぶだけで、何が悪いのかまでは教えてくれません。
+    このツールは、動いているプログラムを約10秒ながめて、<strong>重くしている原因を順位つきで</strong>、
+    「どういうこと？」「どうすればいい？」の言葉で示します。
+  </p>
+  <ul>
+    <li>答えは <strong>緑・黄・赤</strong> の3色。赤なら、上から順に対処すれば軽くなります。</li>
+    <li>よく見かけるプログラム（ブラウザ・OneDrive・Office・セキュリティソフトなど）には、日本語の「名札」と説明が付きます。</li>
+    <li>「○○を止める」ボタンは、1回押すと確認の表示になり、もう一度押すまで止まりません。</li>
+    <li>ふだんは「かんたん」表示のままで大丈夫です。「くわしい」に切り替えると、プログラムの一覧が出ます。</li>
+  </ul>
+
+  <h2>こういう人に向いています</h2>
+  <ul>
+    <li>「最近パソコンが重い」けれど、何が原因か分からない</li>
+    <li>タスク マネージャーを開いても、英語の名前ばかりで手が止まる</li>
+    <li>家族や知り合いのパソコンを見てあげることがある（フォルダごと渡せます）</li>
+    <li>見慣れないプログラムの正体を、ふだん使っている AI に聞きたい</li>
+  </ul>
+
+  <h3>逆に、向いていません</h3>
+  <ul>
+    <li>ウイルスを探したい人（ウイルス対策ソフトの代わりにはなりません）</li>
+    <li>Mac・スマホの人（Windows 専用です）</li>
+    <li>自動で何かを直してほしい人（このツールは調べるだけです。止めるかどうかは、あなたが決めます）</li>
+  </ul>
+
+  <h2>動作要件</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>必須</th><td>Windows 10 または 11（PowerShell 5.1 は Windows に最初から入っています）</td></tr>
+    <tr><th>必須</th><td>ブラウザ（Edge・Chrome など。ページは自分のパソコンの中だけで開きます）</td></tr>
+    <tr><th>不要</th><td>インストール・管理者権限・アカウント登録</td></tr>
+    <tr><th>不要</th><td>追加のソフト・費用</td></tr>
+  </table>
+  </div>
+
+  <h2>使い方（3ステップ）</h2>
+  <ol>
+    <li>ZIP を右クリック →「すべて展開」。展開したフォルダの中の <code>常駐点検.bat</code> をダブルクリックします。</li>
+    <li>画面の下に小さな窓が出て、ブラウザが開きます。「PCが重い原因を調べる」を押して、約10秒待ちます。</li>
+    <li>答えの下の「どういうこと？」「どうすればいい？」の通りにします。保存していない作業があるときは、先に保存してください。</li>
+  </ol>
+  <p>
+    終わるときは、ブラウザのページを閉じるだけで大丈夫です。10分たつと裏のしくみも自動で終わります。
+  </p>
+  <p class="colors">
+    <span style="background:#2e8b57;"></span>緑 … いまは快適です
+    <span style="background:#c9a961;"></span>黄 … 少し負担がかかっています
+    <span style="background:#d46a5a;"></span>赤 … 重くしている原因が見つかりました
+  </p>
+
+  <h2>自分の AI に相談する（おすすめ）</h2>
+  <p>
+    このツールは「何が重いか」を名前で示しますが、見慣れないプログラムが何者か、止めてよいかまでは答えません。
+    そこで、ふだん使っている AI（ChatGPT・Claude・Gemini など）に点検結果を渡して、その先を会話で聞けるようにしてあります。
+  </p>
+  <ul>
+    <li><strong>AI はあなたのパソコンの中を見られません。</strong>このツールが「目」になり、AI が「説明役」になります。</li>
+    <li>やり方：答えが出たあと、ページの「🤖 自分の AI に相談する」の「AI に相談する文をコピー」を押す → AI のチャット欄に貼る → 「これは何？」「止めていい？」と続けて聞けます。</li>
+    <li>AI に渡るのは、診断の結果と、動いているプログラムの名前・使っている量などです。パスワードなどは <code>***</code> に、あなたのユーザー名は「〈ユーザー〉」に置き換えてあります。貼る前に全文を確認でき、渡すかどうかはあなたが決めます。</li>
+    <li>AI は何も止めません。止めるのは、このページの「止める」ボタンだけです。</li>
+    <li>費用は、あなたが使っている AI の料金だけです。このツールにお金はかかりません。</li>
+  </ul>
+
+  <h3>AI に直接つなぐ（MCP・詳しい人向け）</h3>
+  <p>
+    MCP（AI アプリに道具をつなぐ共通の決まり）に対応した AI アプリ（Claude Desktop・Claude Code・Codex・Gemini CLI・Cursor など）なら、
+    コピーして貼らなくても、「PC が重い。調べて」と言うだけで AI が自分で点検結果を読みに来ます。
+    同梱の <code>AI設定を表示.bat</code> をダブルクリックすると、AI アプリに貼る設定が表示されます。
+    AI ができるのは「調べる」「1つのプログラムの詳しい情報を見る」の2つだけで、止めることはできません。
+    手順は ZIP の中の「はじめにお読みください.txt」にあります。
+  </p>
+
+  <h2>正直にお伝えすること</h2>
+  <div class="warn">
+    <p><strong>初めて開くとき、Windows が「PC が保護されました」と警告することがあります。</strong></p>
+    <p style="margin-bottom:0;">
+      インターネットからもらったファイルには、Windows がこの警告を出します。このツールは、中身がすべて文字で読める小さなプログラムです。
+      展開する前に ZIP を右クリック →「プロパティ」→ 下の方の「許可する」にチェック → OK で出なくなります。
+      それでも出るときは「詳細情報」→「実行」を押してください。信頼できる場所から受け取ったファイルだけで行ってください。
+    </p>
+  </div>
+  <ul>
+    <li>ウイルスを見つけるツールではありません。ウイルス対策ソフトの代わりにはなりません。</li>
+    <li>「止める」を押すと、そのプログラムは強制的に終わります。保存していないデータは失われます。</li>
+    <li>何のプログラムか分からないものは止めないでください。「止められません」「―」と出ているものは、止めると困るものです。</li>
+    <li>名札が付くのは、よく見かけるソフトだけです。付いていないプログラムは「自分の AI に相談する」で聞くのが近道です。</li>
+    <li>もっと細かく調べたい人は、Microsoft の無料ツール「Process Explorer」を入れておくと、「くわしい」表示から開けます（英語版のみ）。</li>
+  </ul>
+
+  <h2>中身</h2>
+  <div class="scroll">
+  <table>
+    <tr><th>常駐点検.bat</th><td>これをダブルクリックします</td></tr>
+    <tr><th>proc_check.ps1</th><td>調べる本体（文字で読めます）</td></tr>
+    <tr><th>page_template.html</th><td>画面のひな形</td></tr>
+    <tr><th>常駐台帳_標準.json</th><td>一般的なソフトの名札と説明（自分で書き足せます）</td></tr>
+    <tr><th>常駐台帳.json</th><td>自分用の名札（空です）</td></tr>
+    <tr><th>proc_check_mcp.ps1</th><td>AI アプリにつなぐ部品（MCP を使う人だけ・文字で読めます）</td></tr>
+    <tr><th>AI設定を表示.bat</th><td>AI アプリに貼る設定を表示します（MCP を使う人だけ）</td></tr>
+    <tr><th>はじめにお読みください.txt</th><td>使い方・注意・AI との使い方</td></tr>
+  </table>
+  </div>
+
+  <h2>お願いと免責</h2>
+  <ul>
+    <li>このツールは<strong>調べて示すだけ</strong>のものです。プログラムを止める・設定を変えるなどの操作は、ご自身の判断と責任でお願いします。</li>
+    <li>改変・個人利用はご自由にどうぞ。再配布や販売はご遠慮ください。</li>
+    <li>無料での配布のため、個別のサポートはお約束できません。不具合に気づいたら <a href="../../links.html">こちらの連絡先</a> まで教えていただけると助かります。</li>
+  </ul>
+
+  <p style="margin-top:30px;color:var(--ink-dim);font-size:13px;">
+    もともとは、自分のパソコンが重くなった朝に「タスク マネージャーでは原因が分からない」と困って作ったものです。
+    同じ困りごとの人に使ってもらえるよう、名札を一般的なソフトに広げて公開しました。
+  </p>
+</main>
+
+<footer>N's factory デジタル幕僚室</footer>
+
+<script src="../../assets/access-counter.js" data-badge="off"></script>
+</body>
+</html>
