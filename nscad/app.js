@@ -1347,6 +1347,19 @@ function planLinesToHoles(inScope) {
     if (!I.ok || list.length < 3 || fit * 2 < list.length || Math.hypot(mx, my) <= OFF_TOL) { skipped += list.length; continue; }   /* 穴が1〜2個の経路は、単独では動かさない（1個では、ずれが合っているかを確かめられない。つながる直線が動くときだけ、②でいっしょに動く） */
     add(pid, { dx: mx, dy: my }, fit);
   }
+  /* ④ 動かす点線と同じグループで、元の場所に取り残された点線（ガイド層・点線の線）も、同じだけ動かす（実図面 2243：同じグループの点線の断片36本と円弧が、元の場所に残っていた）。
+     同じグループでも、元の場所のそば（動かす図形の外接の箱を 10mm 広げた中）の点線だけ。型紙の実線・すでに新しい場所にある線・穴を持つ別の経路・グループに入っていない線は動かさない。動かす量がグループ内でそろわないときは動かさない */
+  const info4 = new Map(), shapeOf = new Map(doc.shapes.map(sh => [sh.id, sh]));
+  for (const g of plan) for (const id of g.ids) { const sh = shapeOf.get(id); if (!sh || !sh.groupId) continue; const b = bboxOf(sh), e = info4.get(sh.groupId);
+    if (!e) info4.set(sh.groupId, { dx: g.dx, dy: g.dy, ok: true, b: { ...b } }); else { if (Math.hypot(e.dx - g.dx, e.dy - g.dy) > 0.5) e.ok = false; e.b = { minX: Math.min(e.b.minX, b.minX), minY: Math.min(e.b.minY, b.minY), maxX: Math.max(e.b.maxX, b.maxX), maxY: Math.max(e.b.maxY, b.maxY) }; } }
+  const withHoles = new Set(doc.paths.filter(pp => doc.holes.some(h => h.pathId === pp.id)).flatMap(pp => pp.shapeIds)), extra = new Map();
+  for (const sh of doc.shapes) {
+    if (!sh.groupId || moved.has(sh.id) || sh.holeLink || withHoles.has(sh.id) || !(sh.layer === 'guide' || sh.lineStyle === 'dashed')) continue;
+    const e = info4.get(sh.groupId); if (!e || !e.ok) continue; const b = bboxOf(sh), m = 10;
+    if (b.minX < e.b.minX - m || b.maxX > e.b.maxX + m || b.minY < e.b.minY - m || b.maxY > e.b.maxY + m) continue;
+    if (!extra.has(sh.groupId)) extra.set(sh.groupId, { ids: [], dx: e.dx, dy: e.dy, pathIds: [] }); extra.get(sh.groupId).ids.push(sh.id);
+  }
+  for (const g of extra.values()) plan.push(g);
   return { plan, skipped, fitAll, moved };
 }
 /** 点線を寄せる計画を、図形に当てる（commit の中で呼ぶ）。動かした経路の穴は、線の上の位置 s が合わなくなっていたら、動かしたあとの線に付け直す（線から 0.5mm 以内の穴だけ）。 */
@@ -1365,7 +1378,7 @@ function moveLinesToHoles() {
   const { plan, skipped, fitAll, moved } = planLinesToHoles(inScope);
   if (!plan.length) { $('hint').textContent = t('linesToHolesNone', { k: skipped }); return; }
   cancel(); commit(() => applyLinePlan(plan));
-  $('hint').textContent = t('linesToHolesDone', { k: moved.size, n: inScope.length, fit: fitAll }); draw();
+  { const mates = plan.filter(g => !g.pathIds?.length).reduce((n, g) => n + g.ids.length, 0); $('hint').textContent = t('linesToHolesDone', { k: moved.size, n: inScope.length, fit: fitAll }) + (mates ? ' ' + t('pitchFixPartGroup', { n: mates }) + '。' : ''); } draw();
 }
 /** 線から外れた穴を、持ち主の線の上（橙の点線の先）へ戻す（事業主 2026-11-07「元の位置からの点線ならどうやったら元の位置に戻せるか？」→「穴だけ戻す」）。
  *  対象：橙の輪が付く穴（findPitchOffs の 'off'）のうち、選んだ穴と、選んだ図形の範囲の穴（rangeHoleSet）。何も選んでいなければ図面全体。位置だけ戻す（向き・線上の位置 s は変えない）。元に戻すは1回。 */
@@ -1386,15 +1399,15 @@ function returnHolesToPath() {
  *  直したあと、橙の輪は必ず0個。元に戻すは1回。 */
 function fixPitchOffs() {
   const offs0 = findPitchOffs().filter(m => m.kind === 'off'); if (!offs0.length) { $('hint').textContent = t('pitchFixNone'); return; }
-  const { plan } = planLinesToHoles(offs0); let lines = 0, back = 0, keep = 0, left = 0;
+  const { plan } = planLinesToHoles(offs0); let lines = 0, back = 0, keep = 0, left = 0, mates = 0;
   cancel(); commit(() => {
     if (plan.length) applyLinePlan(plan);
     const off1 = computePitchOffs().filter(m => m.kind === 'off'), keyOf = h => h.pathId + '|' + Math.round(h.s * 1000), same = new Map(), byId = new Map(doc.holes.map(h => [h.id, h]));
     for (const h of doc.holes) same.set(keyOf(h), (same.get(keyOf(h)) || 0) + 1);
-    lines = new Set(plan.flatMap(g => g.ids)).size; left = offs0.length - off1.length;
+    lines = new Set(plan.filter(g => g.pathIds?.length).flatMap(g => g.ids)).size; mates = plan.filter(g => !g.pathIds?.length).reduce((n, g) => n + g.ids.length, 0); left = offs0.length - off1.length;
     for (const m of off1) { const h = byId.get(m.id); if (!h) continue; if (same.get(keyOf(h)) === 1) { h.x = +m.qx.toFixed(4); h.y = +m.qy.toFixed(4); back++; } else { h.ownVisible = true; keep++; } }
   });
-  const parts = []; if (left) parts.push(t('pitchFixPartLines', { k: lines, a: left })); if (back) parts.push(t('pitchFixPartBack', { a: back })); if (keep) parts.push(t('pitchFixPartKeep', { a: keep }));
+  const parts = []; if (left) parts.push(t('pitchFixPartLines', { k: lines, a: left })); if (mates) parts.push(t('pitchFixPartGroup', { n: mates })); if (back) parts.push(t('pitchFixPartBack', { a: back })); if (keep) parts.push(t('pitchFixPartKeep', { a: keep }));
   $('hint').textContent = t('pitchFixDone', { n: offs0.length, parts: parts.join('・') }); draw();
 }
 /** 橙の輪の穴があるとき、画面に出す帯（「橙を直す」1ボタン）。表示→ピッチのずれを表示 を切っているとき・書き出し中は出さない。「閉じる」を押すと、橙の輪の数か図面が変わるまで隠す。 */
