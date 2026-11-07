@@ -56,7 +56,7 @@ import { parseBuild, latestBuild, isNewerBuild, releasesSince } from './update_c
 import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
-import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf } from './grouping.js';
+import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
 import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
@@ -1331,8 +1331,8 @@ function convertHoleToDot(h) {
   if (h.lineId) { const i = doc.shapes.findIndex(x => x.id === h.lineId && x.markOf === h.id); if (i >= 0) doc.shapes.splice(i, 1); delete h.lineId; }
 }
 /** 選んだ図形の範囲（つながった図形ごとの外接の四角）の中にある穴。穴が見えない補助の線に付いている図面（コピー・貼り付けで作られる）でも、図形（部品）を選べば、その部品の菱目が「点に置換」「選択穴に適用」の対象になる（事業主 2026-10-30「選択した図形の菱目を点に変換できない」）。部品ごとなので、別の部品の穴は入らない。点線・ガイド・寸法・文字は範囲に数えない。 */
-function holesInSelectedShapes() {
-  const sel = doc.shapes.filter(s => selected.has(s.id) && editable(s) && !s.holeLink && !['text', 'dimension', 'image', 'fold'].includes(s.type) && s.lineStyle !== 'dashed' && s.layer !== 'guide');
+function holesInSelectedShapes(opts = {}) {   /* opts.ids＝選んだ図形の id（既定は selected）・opts.ignoreOwner＝穴の持ち主の線を問わない（グループ化の G）・opts.tol＝四角の外への余裕（mm） */
+  const pickedIds = opts.ids || selected, sel = doc.shapes.filter(s => pickedIds.has(s.id) && editable(s) && !s.holeLink && !['text', 'dimension', 'image', 'fold'].includes(s.type) && s.lineStyle !== 'dashed' && s.layer !== 'guide');
   if (!sel.length) return [];
   const left = new Set(sel.map(s => s.id)), boxes = [];
   for (const s of sel) {
@@ -1354,8 +1354,8 @@ function holesInSelectedShapes() {
   const pathSelected = new Map();   /* 経路の線が、ぜんぶ選ばれているか（選んでいれば、四角からはみ出していても、その穴は選んだ範囲の穴＝事業主 2026-11-07「選択したら菱目が中途半端に選択される」：Dカンのタブの縫い線が、実線の外形から 2.6mm はみ出し、17 個が外れた） */
   const allPathSelected = pid => { if (!pathSelected.has(pid)) { const p = doc.paths.find(x => x.id === pid); pathSelected.set(pid, !!p && p.shapeIds.length > 0 && p.shapeIds.every(id => selected.has(id))); } return pathSelected.get(pid); };
   const ownedBy = (h, q) => { if (holeIsOwn(h, ownPaths()) || allPathSelected(h.pathId)) return true; const b = boxOfPath(h.pathId); return !b || (b.minX >= q.minX - TOL && b.maxX <= q.maxX + TOL && b.minY >= q.minY - TOL && b.maxY <= q.maxY + TOL); };
-  const E = 0.01;   /* 四角の縁の穴（2つの外形の境目にある穴が、どちらの四角にも入らない例があった）を拾う小さな許容（mm） */
-  return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX - E && h.x <= q.maxX + E && h.y >= q.minY - E && h.y <= q.maxY + E && ownedBy(h, q)));
+  const E = 0.01 + (opts.tol || 0);   /* 四角の縁の穴（2つの外形の境目にある穴が、どちらの四角にも入らない例があった）を拾う小さな許容（mm） */
+  return doc.holes.filter(h => holeEditable(h) && boxes.some(q => h.x >= q.minX - E && h.x <= q.maxX + E && h.y >= q.minY - E && h.y <= q.maxY + E && (opts.ignoreOwner || ownedBy(h, q))));
 }
 /** 「選択した範囲はすべて対象」（事業主 2026-10-30）：選んだ図形の範囲（つながった図形ごとの外接の四角）の中の穴は、選んだものとして扱う。移動・コピー・削除・点に置換・書き出し・強調表示が、同じ判定を使う。選択と図面が変わらないあいだは、結果を使い回す。 */
 function rangeHoleSet() {
@@ -2852,7 +2852,7 @@ function komaCopy(src, dst, from, to) {
   commit(() => {
     if (dst.fresh) { dst.saved.id = freshId(doc.paths, 'p'); doc.paths.push(dst.saved); dst.fresh = false; }
     holes.forEach((h, i) => {
-      const q = pointAtLength(dst.route, map.s[i]), srcTan = pointAtLength(src.route, h.s).angleDeg, tan = q.angleDeg + (map.reversed ? 180 : 0), nh = { ...h, id: freshId(doc.holes, 'h'), pathId: dst.saved.id, s: map.s[i], x: q.x, y: q.y, angleDeg: ((h.angleDeg - srcTan + tan) % 360 + 360) % 360 };
+      const q = pointAtLength(dst.route, map.s[i]), srcTan = pointAtLength(src.route, h.s).angleDeg, tan = q.angleDeg + (map.reversed ? 180 : 0), nh = { ...withoutGroup(h), id: freshId(doc.holes, 'h'), pathId: dst.saved.id, s: map.s[i], x: q.x, y: q.y, angleDeg: ((h.angleDeg - srcTan + tan) % 360 + 360) % 360 };
       if (to === 'B') nh.depth = 'half'; else delete nh.depth;   /* B（2回目にクリックした線＝コバ側）の穴は半分の深さ */
       doc.holes.push(nh); made.push(nh);
     });
@@ -8168,13 +8168,16 @@ function copySelectedOffsets(offsets) {
   commit(() => {
     const ids = new Set(), paths=[...doc.paths], holes=[...doc.holes];
     for (const { dx, dy } of offsets) {
-      const map = new Map();
+      const map = new Map(), copiedHoles = new Set();
       const copyGroups = new Map(); /* 複製したグループは元とは別のグループにする */
-      for (const s of sources) { const id=freshId(doc.shapes,'s'), g=groupIdOf(s); let c={...translate(s,dx,dy),id}; if(g){ if(!copyGroups.has(g)) copyGroups.set(g,nextGroupId([...doc.shapes,...[...copyGroups.values()].map(groupId=>({groupId}))])); c={...c,groupId:copyGroups.get(g)}; } doc.shapes.push(c);ids.add(id);map.set(s.id,id); }
+      const copyHoleGroup = h => { const w = withoutGroup(h); return h.groupId && copyGroups.has(h.groupId) ? { ...w, groupId: copyGroups.get(h.groupId) } : w; };
+      for (const s of sources) { const id=freshId(doc.shapes,'s'), g=groupIdOf(s); let c={...translate(s,dx,dy),id}; if(g){ if(!copyGroups.has(g)) copyGroups.set(g,nextGroupId([...doc.shapes,...[...copyGroups.values()].map(groupId=>({groupId}))],doc.holes)); c={...c,groupId:copyGroups.get(g)}; } doc.shapes.push(c);ids.add(id);map.set(s.id,id); }
       for(const p of paths.filter(p=>p.shapeIds.every(id=>map.has(id)))){
         const id=freshId(doc.paths,'p');doc.paths.push({...JSON.parse(JSON.stringify(p)),id,shapeIds:p.shapeIds.map(id=>map.get(id))});
-        for(const h of holes.filter(h=>h.pathId===p.id))doc.holes.push({...translate(h,dx,dy),id:freshId(doc.holes,'h'),pathId:id});
+        for(const h of holes.filter(h=>h.pathId===p.id)){ copiedHoles.add(h.id); const nid=freshId(doc.holes,'h'); doc.holes.push({...translate(copyHoleGroup(h),dx,dy),id:nid,pathId:id}); if(h.groupId&&copyGroups.has(h.groupId))ids.add(nid); }
       }
+      /* グループの穴（持ち主の線が遠い穴など）：選んでいれば、図形といっしょに複製のグループへ（元の持ち主の経路のまま） */
+      for(const h of holes) if(selected.has(h.id)&&h.groupId&&copyGroups.has(h.groupId)&&!copiedHoles.has(h.id)){ const nid=freshId(doc.holes,'h'); doc.holes.push({...translate(copyHoleGroup(h),dx,dy),id:nid}); ids.add(nid); }
     }
     selected = ids;
   });
@@ -9716,7 +9719,7 @@ canvas.addEventListener('pointerdown', e => {
       const oneOfGroup = ctrlOn && !groupIsWhole(hit);   /* Ctrl+クリック（Mac は ⌘）：グループの中の、押した図形1個だけ（事業主 2026-10-26「円だけ消したい。パッチの境界がすべて反応してしまう」） */
       if (ctrlMulti) { if (!wasSel) { selected = new Set([...selected, hit.id]); nodeSel = null; } }
       else if (oneOfGroup) { const inGroup = !!groupIdOf(hit) && doc.shapes.some(x => x.id !== hit.id && groupIdOf(x) === groupIdOf(hit)); selected = new Set([hit.id]); nodeSel = null; if (inGroup) $('hint').textContent = t('groupOnePicked'); }
-      else if (!selected.has(hit.id)) { selected = expandToGroups(doc.shapes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = t('groupPickedHint', { n: selected.size }); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
+      else if (!selected.has(hit.id)) { selected = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); nodeSel = null; if (selected.size > 1 && !e.shiftKey) $('hint').textContent = groupPickedText(); } /* グループの図形なら全体を選ぶ（1個だけ選ぶ方法も案内） */
       if (hit.type === 'dimension' && !e.shiftKey && dimOnlySelection()) { const ids = selectedShapeIds(); gesture = { kind: 'dimOff', start: cursor, screen: p, ids, base: new Map([...ids].map(id => [id, doc.shapes.find(s => s.id === id).offset])), preview: null }; draw(); return; }   /* 寸法線だけをつかんだ：線だけ動かす（測る点は動かない）。Shift を押しながらなら、今までどおり寸法ごと動く */
       gesture = { kind: 'move', start: cursor, screen: p, ids: selectedShapeIds(), ...(e.shiftKey ? { shiftToggle: hit.id } : {}), ...(ctrlMulti && wasSel ? { ctrlToggle: hit.id } : {}) }; /* 単なるクリックでは節点を増やさない（右クリック・ダブルクリックのときだけ） */
       beginMoveSnap(gesture); /* 掴んだ所が選んだ図形の端・中点・中心の近くなら、その点を「基点」にして、離す所で相手の点に合わせる */
@@ -10086,7 +10089,7 @@ canvas.addEventListener('pointerup', e => {
   } else if (g.kind === 'move') {
     if (distance(p, g.screen) >= 4) { const dx = cursor.x - g.start.x, dy = cursor.y - g.start.y, all = quadAllSelected(); transformSelected(s => translate(s, dx, dy)); if (all) quadFollowMove(dx, dy); }
     else if (g.ctrlToggle) selected.delete(g.ctrlToggle);   /* Ctrl を押したまま選択済みの図形をクリックだけ：その1つを選択から外す */
-    else if (g.shiftToggle) { for (const id of expandToGroups(doc.shapes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
+    else if (g.shiftToggle) { for (const id of expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([g.shiftToggle]))) selected.delete(id); }   /* Shift を押したまま選択済みの図形をクリックだけ：選択から外す */
     else if (mode === 'select' && !e.shiftKey && !e.altKey && selected.size === 1) { /* シングルクリック＝交点から交点までの区間。ダブルクリック（つながった図形全体）と区別するため、少し待ってから切り分ける */
       const only = doc.shapes.find(x => selected.has(x.id)), at = world(p);
       if (only && ['line', 'arc', 'polyline'].includes(only.type) && !(only.type === 'polyline' && only.closed && only.lineStyle !== 'dashed' && only.layer !== 'guide') && !groupIdOf(only) && !only.joined && !isHardwareShape(only)) { cancelSpanClick();   /* 実線の閉じた折れ線（型紙の四角など）は、クリックだけでは交点で切らない（点線・ガイド層の閉じた線＝オフセットの外形は、これまでどおり区間で選ぶ）（事業主 2026-11-07「グループ化しているはずの図形が移動時に分裂する」：部品ライブラリから置いた四角が、縦線との交点で2つに割れ、区間だけが動いた）。区間で選ぶのは、トリムか Alt+クリック */   /* 曲線（ペンの線）は、クリックしただけでは交点で切らない（事業主 2026-11-05「曲線が切れる」。切るのはトリムか Alt+クリック） */   /* 金具の線は、クリックしただけでは交点で切らない（事業主 2026-10-29「金具を選択するだけで色が消える」）。切るのは、トリムか Alt+クリック */
@@ -10101,7 +10104,7 @@ canvas.addEventListener('pointerup', e => {
     if (!g.additive) selected.clear();
     if (distance(p, g.screen) < 4) {
       const hit = pickShapeAt(cursor);
-      if (hit) { const grp = expandToGroups(doc.shapes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
+      if (hit) { const grp = expandToGroupsWithHoles(doc.shapes, doc.holes, new Set([hit.id])); if (g.additive && selected.has(hit.id)) for (const id of grp) selected.delete(id); else for (const id of grp) selected.add(id); }
     } else {
       const minX = Math.min(g.start.x, cursor.x), maxX = Math.max(g.start.x, cursor.x), minY = Math.min(g.start.y, cursor.y), maxY = Math.max(g.start.y, cursor.y);
       let boxShapes = 0; for (const s of doc.shapes.filter(editable)) { const b = bboxOf(s); if (b.minX >= minX && b.maxX <= maxX && b.minY >= minY && b.maxY <= maxY) { selected.add(s.id); boxShapes++; } }
@@ -10167,8 +10170,27 @@ $('lineSelLen').addEventListener('change', applyLineLength); $('lineSelLen').add
 $('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
-function groupSelected() { const ids = selectedShapeIds(); const r = groupShapes(doc.shapes, ids, nextGroupId(doc.shapes)); if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; } cancel(); commit(() => { doc.shapes = r.shapes; }); selected = expandToGroups(doc.shapes, selected); $('hint').textContent = t('grouped', { n: selected.size }); draw(); }
-function ungroupSelected() { const r = ungroupShapes(doc.shapes, selectedShapeIds()); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */ cancel(); commit(() => { doc.shapes = r.shapes; }); $('hint').textContent = t('ungrouped'); draw(); }
+/** グループ化（G）。選んだ図形といっしょに、図形の範囲（つながった図形ごとの四角・1mm の余裕）の中の菱目を、持ち主の線が遠くてもグループに入れる（事業主 2026-11-07「菱目といっしょにグループ化できない」→「穴を入れる」）。別のグループの穴は入れない。選んでいた穴は、範囲の外でも入れる。 */
+function groupSelected() {
+  const ids = selectedShapeIds(), gid = nextGroupId(doc.shapes, doc.holes), r = groupShapes(doc.shapes, ids, gid);
+  if (!r.changed) { $('hint').textContent = t('groupNeedTwo'); return; }
+  const members = expandToGroups(doc.shapes, ids), oldGroups = new Set(doc.shapes.filter(x => members.has(x.id) && groupIdOf(x)).map(groupIdOf));
+  const free = h => !groupIdOf(h) || oldGroups.has(groupIdOf(h)), holeIds = new Set(holesInSelectedShapes({ ids: members, ignoreOwner: true, tol: 1 }).filter(free).map(h => h.id));
+  for (const h of doc.holes) if (selected.has(h.id) && holeEditable(h) && free(h)) holeIds.add(h.id);
+  const hr = groupHoles(doc.holes, holeIds, gid, oldGroups);
+  cancel(); commit(() => { doc.shapes = r.shapes; doc.holes = hr.holes; }); selected = expandToGroupsWithHoles(doc.shapes, doc.holes, selected);
+  const nh = doc.holes.filter(h => groupIdOf(h) === gid).length, ns = doc.shapes.filter(x => groupIdOf(x) === gid).length;
+  $('hint').textContent = nh ? t('groupedWithHoles', { n: ns, h: nh }) : t('grouped', { n: selected.size }); draw();
+}
+/** グループ全体を選んだときの案内（菱目が入っていれば、その数も） */
+function groupPickedText() { const h = doc.holes.filter(x => selected.has(x.id)).length, n = selected.size - h; return h ? t('groupPickedHintHoles', { n, h }) : t('groupPickedHint', { n }); }
+/** 複製した穴から、元のグループの印を外す（元のグループとつながらないように）。 */
+const withoutGroup = h => { if (h.groupId === undefined) return h; const { groupId, ...rest } = h; return rest; };
+function ungroupSelected() {
+  const ids = selectedShapeIds(), r = ungroupShapes(doc.shapes, ids); if (!r.changed) { explodeSelection(); return; } /* グループが無ければ、矩形・折れ線を辺にばらす（分解） */
+  const members = expandToGroups(doc.shapes, ids), hr = ungroupHoles(doc.holes, new Set(doc.shapes.filter(x => members.has(x.id) && groupIdOf(x)).map(groupIdOf)));   /* 穴のグループも外す */
+  cancel(); commit(() => { doc.shapes = r.shapes; doc.holes = hr.holes; }); $('hint').textContent = t('ungrouped'); draw();
+}
 $('addNodesRun').onclick = addNodesEqually; $('group').onclick = groupSelected; $('ungroup').onclick = ungroupSelected;
 for (const id of ['mirrorX', 'mirrorY', 'rotate']) $(id).onclick = () => transformAboutCenter(id);
 /** 左の「選択中」の「拡大縮小」：右の拡大縮小カードを開き（分類のタブも切り替え）、横（%）の欄へ移る（事業主の指摘 2026-10-20「拡大縮小がどこにあるかわからない」）。何も選んでいなければ案内だけ。 */

@@ -34,9 +34,39 @@ export function remapGroupIds(shapes, newId) {
   return shapes.map(s => { const g = groupIdOf(s); if (!g) return s; if (!map.has(g)) map.set(g, newId()); return { ...s, groupId: map.get(g) }; });
 }
 
-/** まだ使われていない新しい groupId（grp1, grp2, …）を返す。 */
-export function nextGroupId(shapes) {
-  const used = new Set(shapes.map(groupIdOf).filter(Boolean));
+/** まだ使われていない新しい groupId（grp1, grp2, …）を返す。穴（holes）にだけ残っている groupId も使われているものとして数える。 */
+export function nextGroupId(shapes, holes = []) {
+  const used = new Set([...shapes, ...holes].map(groupIdOf).filter(Boolean));
   let n = 1; while (used.has('grp' + n)) n++;
   return 'grp' + n;
+}
+
+/* ───── 穴（菱目）もグループの仲間になれる（事業主 2026-11-07「菱目といっしょにグループ化できない」）：穴にも図形と同じ groupId を付ける。
+         持ち主の線が穴から遠くても、グループ化した時点で範囲の中にあった穴を入れる。入力は変えない。 ───── */
+
+/** groupIds のどれかに入っている穴の id の一覧。 */
+export function holesOfGroups(holes, groupIds) {
+  const out = []; for (const h of holes) { const g = groupIdOf(h); if (g && groupIds.has(g)) out.push(h.id); } return out;
+}
+
+/** 穴（holeIds）を groupId のグループに入れる。旧グループ（oldGroupIds）の穴も、新しい groupId へ移す（図形を足して作り直したとき）。 */
+export function groupHoles(holes, holeIds, groupId, oldGroupIds = new Set()) {
+  const ids = new Set(holeIds); let changed = false;
+  const out = holes.map(h => { if (!ids.has(h.id) && !oldGroupIds.has(groupIdOf(h))) return h; if (h.groupId === groupId) return h; changed = true; return { ...h, groupId }; });
+  return { holes: changed ? out : holes, changed };
+}
+
+/** groupIds のグループに入っている穴を、グループから外す。 */
+export function ungroupHoles(holes, groupIds) {
+  let changed = false;
+  const out = holes.map(h => { const g = groupIdOf(h); if (!g || !groupIds.has(g)) return h; changed = true; const { groupId, ...rest } = h; return rest; });
+  return { holes: changed ? out : holes, changed };
+}
+
+/** expandToGroups に、同じグループの穴も足したもの（クリックでグループ全体を選ぶとき）。 */
+export function expandToGroupsWithHoles(shapes, holes, ids) {
+  const out = expandToGroups(shapes, ids), groups = new Set();
+  for (const s of shapes) if (out.has(s.id)) { const g = groupIdOf(s); if (g) groups.add(g); }
+  if (groups.size) for (const id of holesOfGroups(holes, groups)) out.add(id);
+  return out;
 }
