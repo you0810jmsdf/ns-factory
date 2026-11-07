@@ -4374,6 +4374,7 @@ const leatherAlpha = (tex, hex) => tex ? 1 : /^#?f{3}(f{3})?$/i.test(String(hex 
 const fillOwnerCache = new WeakMap();
 function fillOwnerLayer(fl, byId) {
   const shapes = (fl.ids || []).map(id => byId.get(id)).filter(Boolean), sig = shapes.map(s => s.layer).join(','), hit = fillOwnerCache.get(fl); if (hit && hit.sig === sig) return hit.layer;
+  if (shapes.length && shapes.every(s => s.layer === shapes[0].layer)) { fillOwnerCache.set(fl, { sig, layer: shapes[0].layer }); return shapes[0].layer; }   /* 囲む図形が全部同じ層なら、答えはその層（境目の点ごとに、曲線との距離を測らない：ロゴのように曲線が多い塗りで、描くたびに数秒かかった・事業主 2026-11-07「動作がかなり重たくなる」） */
   const tally = new Map();
   for (const ring of [fl.points, ...(fl.holes || [])]) for (let i = 0; i < ring.length; i++) {
     const a = ring[i], b = ring[(i + 1) % ring.length], len = Math.hypot(b.x - a.x, b.y - a.y), mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };

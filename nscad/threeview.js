@@ -132,9 +132,10 @@ export function threeViewMarks(shapes, layout = THREE_VIEW_LAYOUT) {
   /* 点線の「出発点」：同じ位置の点が複数あるときは、行き先に一番近い点から伸ばす（線が図形の角や端から切れ目なくつながって見えるように） */
   const from = { front: { xFrom: {}, yFrom: {} }, top: { xFrom: {}, depthFrom: {} }, side: { yFrom: {}, depthFrom: {} } };
   const keep = (map, key, value, pick) => { map[key] = key in map ? pick(map[key], value) : value; };
+  const areaOf = new Map();   /* 図形ごとに 1 回だけ（点ごとに図形の範囲を求め直すと、曲線の多い図形で、点の数の二乗の時間がかかり、ロゴを置くと編集のたびに 0.5 秒以上かかった） */
   for (const s of shapes || []) for (const p of threeViewGuidePoints(s)) {
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
-    const area = threeViewShapeArea(s, layout); if (!area) continue;
+    if (!areaOf.has(s)) areaOf.set(s, threeViewShapeArea(s, layout)); const area = areaOf.get(s); if (!area) continue;
     if (area === 'front') { const kx = keyOf(p.x), ky = keyOf(p.y); sets.front.xs.add(kx); sets.front.ys.add(ky); keep(from.front.xFrom, kx, p.y, Math.min); keep(from.front.yFrom, ky, p.x, Math.max); }
     else if (area === 'top') { const kx = keyOf(p.x), kd = keyOf(threeViewDepthOfTopY(p.y, layout)); sets.top.xs.add(kx); sets.top.depths.add(kd); keep(from.top.xFrom, kx, p.y, Math.max); keep(from.top.depthFrom, kd, p.x, Math.max); }
     else { const ky = keyOf(p.y), kd = keyOf(threeViewDepthOfSideX(p.x, layout)); sets.side.ys.add(ky); sets.side.depths.add(kd); keep(from.side.yFrom, ky, p.x, Math.min); keep(from.side.depthFrom, kd, p.y, Math.min); }

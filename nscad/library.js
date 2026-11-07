@@ -59,8 +59,10 @@ export function instantiateItem(item, vars = {}, at = { x: 0, y: 0 }, { scale = 
   let shapes = (item.shapes || []).map(s => instantiateShape(s, v));
   /* 項目の outlineRect（{w, h, r} は変数名）があり、角の半径が0より大きいときは、最初の図形（長方形の外形）を、角を丸めた外形に置き換える */
   if (item.outlineRect && shapes[0]) { const rr = roundedRectShapes(Number(v[item.outlineRect.w]), Number(v[item.outlineRect.h]), Number(v[item.outlineRect.r]), shapes[0].layer); if (rr) shapes = [...rr, ...shapes.slice(1)]; }
-  const payload = { shapes, holes: (item.holes || []).map(h => ({ ...h })), paths: (item.paths || []).map(p => ({ ...p, shapeIds: [...p.shapeIds], segments: (p.segments || []).map(s => ({ ...s })) })), parts: (item.parts || []).map(p => ({ ...p, shapeIds: [...p.shapeIds] })) };
-  return transformPayload(payload, at, scale);
+  const payload = { shapes, holes: (item.holes || []).map(h => ({ ...h })), paths: (item.paths || []).map(p => ({ ...p, shapeIds: [...p.shapeIds], segments: (p.segments || []).map(s => ({ ...s })) })), parts: (item.parts || []).map(p => ({ ...p, shapeIds: [...p.shapeIds] })), ...((item.fills || []).length ? { fills: item.fills.map(f => ({ ...f, ids: [...(f.ids || [])], points: f.points.map(p => ({ ...p })), holes: (f.holes || []).map(h => h.map(p => ({ ...p }))) })) } : {}) };   /* 領域の塗り（ロゴの黒など）：囲む図形の id は、置くときに新しい id へ付け替える（mergePayload） */
+  /* fitWidth（変数名）と baseW（もとの幅 mm）がある項目は、変数の値を「置く幅（mm）」として、全体を同じ比率で拡大縮小する（ロゴ・刻印：幅を入れて置ける） */
+  const fit = item.fitWidth && item.baseW > 0 && Number(v[item.fitWidth]) > 0 ? Number(v[item.fitWidth]) / item.baseW : 1;
+  return transformPayload(payload, at, scale * fit);
 }
 /** payload（図形・穴）を平行移動し、必要なら原点中心に拡大縮小する。 */
 export function transformPayload(payload, at = { x: 0, y: 0 }, scale = 1) {
