@@ -1456,7 +1456,7 @@ function readRestoreCandidates(keys) {
     let text = null; try { text = localStorage.getItem(key); } catch { /* 保存を読めない環境では何もしない */ }
     if (!text) continue;
     const info = unpackAutosave(text, d => { const m = migrateDoc(d); healDoc(m); dropDetachedFills(m); return validateDoc(m); });   /* 部品が消えた図形を指したままの壊れた保存も、直せるなら捨てない */
-    if (!info) { try { localStorage.setItem(AUTOSAVE_REJECTED_KEY, text); localStorage.removeItem(key); } catch { /* 移せない（容量など）ときは、消さずにそのまま残す */ } continue; }   /* 検査に通らない保存も、消さずに別の置き場へ移す（事業主 2026-11-07「更新ボタン押したらいきなりデータが全部消えた」：1タブの小さな不整合で、全タブの保存を消していた）。あとで取り出して直せる */
+    if (!info) { try { localStorage.setItem(AUTOSAVE_REJECTED_KEY, text); localStorage.removeItem(key); } catch { /* 移せない（容量など）ときは、消さずにそのまま残す */ } if ($('rejectBar')) $('rejectBar').hidden = false; continue; }   /* 読めなかった保存があったことを、赤い帯で知らせる（何も出ないと、前回の続きが無いだけに見えて、気づけない・2026-11-07） */   /* 検査に通らない保存も、消さずに別の置き場へ移す（事業主 2026-11-07「更新ボタン押したらいきなりデータが全部消えた」：1タブの小さな不整合で、全タブの保存を消していた）。あとで取り出して直せる */
     found.push({ ...info, key });
   }
   found.sort((a, b) => String(b.savedAt).localeCompare(String(a.savedAt)));   /* 新しいほうから */
@@ -1513,6 +1513,7 @@ function startTabWatch() {
   window.addEventListener('pagehide', () => { flushPendingAutosave(); tabLock.release(); });   /* 閉じるとき：保存待ちを先に書き（主か副かは譲る前の状態で決まる）、主なら譲る */
   window.addEventListener('pageshow', () => tabWatchTick());   /* 戻る・進むで復元されたとき（閉じるときに印を消しているので、主に戻る） */
 }
+if ($('rejectBarClose')) $('rejectBarClose').onclick = () => { $('rejectBar').hidden = true; };
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave; $('restoreGen')?.addEventListener('change', () => { const c = restoreChoices[Number($('restoreGen').value)]; if (c) showRestoreOffer(c, restoreChoices); });   /* 世代を選ぶと、その保存を開く対象にする */
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
