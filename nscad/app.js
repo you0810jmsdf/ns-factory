@@ -14,7 +14,7 @@ import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attach
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
 import { threeViewSolidAuto } from './threeview.js';
 import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayout, threeViewMiter, threeViewMarks, threeViewGuideLines, threeViewCursorLines, threeViewSnap, threeViewOutlines, threeViewSameRect, threeViewSolid, threeViewShapeArea, threeViewFrameValid, threeViewBaseFrom, threeViewRectOf, threeViewFrameFromRect, threeViewSnapToLines, threeViewSheetMarks, threeViewSheetTargets, threeViewSheetCursor, threeViewSolidFromSheets, threeViewFollowDelta, threeViewFollowScale } from './threeview.js';
-import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing } from './hardware.js';
+import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing, binderSampleSvgs } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
 import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, LIBRARY_LAYOUT_KEY, emptyLibraryLayout, normalizeLibraryLayout, arrangeLibrary, addLibraryGroup, renameLibraryGroup, deleteLibraryGroup, moveLibraryGroup, moveLibraryItem, stepLibraryItem } from './library.js';
@@ -6198,7 +6198,8 @@ function openBinderEdit() {
   bdeFillArms(spec);
   { const sel = $('bdeArmsFrom'); sel.textContent = ''; const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('bdeArmsFromNone'); sel.appendChild(o0); for (const x of BINDER_SPECS.filter(x => !x.parent)) { const o = document.createElement('option'); o.value = x.id; o.textContent = nameOf(x); sel.appendChild(o); } const from = spec.armsFrom && BINDER_SPECS.some(x => x.id === spec.armsFrom && !x.parent) ? spec.armsFrom : ''; sel.value = from; sel.onchange = () => bdeApplyArmsFrom(); bdeSetArmsLocked(!!from); }   /* アームの規格を借りる（2026-11-04 改善案1）。借りて保存した製品を開き直したときは、借り元を出して欄は触れないまま */
   rivets.forEach((r, i) => bdeWireMount(i, r));
-  $('bdEditDialog').showModal();
+  { const lv = (spec.mechanism?.parts || []).find(q => q.kind === 'lever'); bdeSet('bdeLeverW', lv?.widthMm); bdeSet('bdeLeverL', lv && Math.abs(Number(lv.lengthMm) - Number(base.sectionWidthMm)) < 1e-9 ? '' : lv?.lengthMm); bdeSet('bdeLeverH', lv?.heightMm); bdeSet('bdeLeverRo', lv?.cornerOuterRMm || ''); bdeSet('bdeLeverRi', lv?.cornerInnerRMm || ''); bdeLeverInit = JSON.stringify(bdeLeverValues()); }   /* レバー：今のレバー（最初の1つ）の値。幅が台座の幅と同じなら空欄（台座の幅に追従） */
+  $('bdEditDialog').showModal(); bdeHl = ''; bdeRingIdx = 0; bdeSampleUpdate();
 }
 /** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
 function bdeFillArms(spec) {
@@ -6217,6 +6218,35 @@ function bdeApplyArmsFrom() {
   const id = $('bdeArmsFrom').value, src = id ? binderSpec(id) : null, cur = binderSpec(bdeSpecId); if (!cur) return;
   bdeFillArms(src || cur); bdeSetArmsLocked(!!src); $('hint').textContent = src ? t('bdeArmsFromTip') : '';
 }
+/* ---- サンプル図（事業主 2026-11-08「リングのサンプル図を付けて、どこの寸法なのかわかるように。数値を入れればリアルタイムに追従して、見ながら変更できること」）----
+   直している途中の値（保存前）で規格を作り、寸法の印つきの平面図・側面図を描く。入力のたびに描き直し、いま触っている欄の寸法を色つきにする。 */
+let bdeHl = '', bdeRingIdx = 0, bdeLeverInit = '';
+function bdeLeverValues() { return { widthMm: $('bdeLeverW').value, lengthMm: $('bdeLeverL').value, heightMm: $('bdeLeverH').value, cornerOuterRMm: $('bdeLeverRo').value, cornerInnerRMm: $('bdeLeverRi').value }; }
+/** レバーの欄：最初に入れた値から変えていなければ送らない（今のレバーをそのまま残す）。製品から新しい製品を作るときは、今のレバーを引き継ぐ。 */
+function bdeLeverForSave(asNew, spec) { const now = bdeLeverValues(); return JSON.stringify(now) !== bdeLeverInit || (asNew && spec.parent) ? now : binderEdits.specs[bdeSpecId]?.lever; }   /* 触っていなければ、前に保存したレバー（あれば）を引き継ぐ。保存は、前の内容を丸ごと置き換えるため */
+const bdeVisibleIndex = (prefix, i) => { let n = 0; for (let k = 0; k < i; k++) if (!$(prefix + k + 'Row').hidden) n++; return n; };
+/** 触った欄の id → サンプル図で色をつける寸法の印（hardware.js の binderSampleSvgs の hl）。リングの欄は、側面図で見せるリングも決める。 */
+function bdeHlOf(id) {
+  const m = /^bdeMount(\d+)([XYD])$/.exec(id); if (m) return 'm' + m[2].toLowerCase() + bdeVisibleIndex('bdeMount', Number(m[1]));
+  const r = /^bdeRing(\d+)(Inner|Outer|Wire|Embed)$/.exec(id); if (r) { bdeRingIdx = bdeVisibleIndex('bdeRing', Number(r[1])); return { Inner: 'ri', Outer: 'ro', Wire: 'rw', Embed: 're' }[r[2]]; }
+  return { bdePlateL: 'L', bdePlateW: 'W', bdePlateT: 'T', bdePlateR: 'R', bdeLeverW: 'lw', bdeLeverL: 'll', bdeLeverH: 'lh', bdeLeverRo: 'lr', bdeLeverRi: 'lr', bdeArmCount: 'ac', bdeArmPitch: 'ap' }[id] || '';
+}
+const sdLabels = () => ({ L: t('sdL'), W: t('sdW'), T: t('sdT'), R: t('sdR'), hole: t('sdHole'), dia: t('sdDia'), lw: t('sdLw'), ll: t('sdLl'), lh: t('sdLh'), lr: t('sdLr'), arms: t('sdArms'), inner: t('sdInner'), outer: t('sdOuter'), wire: t('sdWire'), embed: t('sdEmbed'), planTitle: t('sdPlan'), sideTitle: t('sdSide') });
+/** 直している途中の値で作った規格（保存はしない）。入力が足りないときは { err }。 */
+function bdeDraftSpec() {
+  const spec = binderSpec(bdeSpecId); if (!spec) return null;
+  const form = readBinderEditForm(); if (form.parent && !String(form.names.ja).trim()) form.names = { ja: '…', en: form.names.en };   /* 名前が空でも、図は描く */
+  let edit; try { edit = editFromForm(form); } catch (err) { return { err: err.message }; }
+  let id = bdeSpecId; if (edit.parent) id = '__draft'; else if (spec.parent) edit.parent = spec.parent;
+  return { spec: applyBinderEdits(BINDER_ORIGINALS, { v: 1, specs: { ...binderEdits.specs, [id]: edit } }).find(x => x.id === id) || null };
+}
+function bdeSampleUpdate() {
+  const d = bdeDraftSpec(); if (!d) return;
+  if (d.err) { $('bdeSampleNote').textContent = t('bdeSampleErr', { why: t('bde.' + d.err) }); return; }   /* 入れ方が足りない間は、直前の図のまま */
+  if (!d.spec) return;
+  const svgs = binderSampleSvgs(d.spec, { hl: bdeHl, lab: sdLabels(), ringIdx: bdeRingIdx }), rv = d.spec.rivets || [], dup = rv.some((a, i) => rv.some((b, k) => k > i && Math.abs(a.xMm - b.xMm) < 1e-6 && Math.abs(a.yMm - b.yMm) < 1e-6));
+  $('bdeSamplePlan').innerHTML = svgs.plan; $('bdeSampleSide').innerHTML = svgs.side; $('bdeSampleNote').textContent = t('bdeSampleHint') + (dup ? ' ' + t('bdeSampleDup') : '');
+}
 function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
   for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value }); }
@@ -6226,7 +6256,7 @@ function readBinderEditForm() {
      触っていなくて借りてもいないときは、今のアームの形を、そのまま残す（借りるのをやめた・直した跡がある・製品から新しい製品を作るとき）。 */
   const armsSame = $('bdeArmCount').value === bdeArmsInit.count && $('bdeArmPitch').value === bdeArmsInit.pitch;
   const keepHoles = armsSame && !armsFrom && (spec.armsFrom || binderEdits.specs[bdeSpecId]?.holes || (asNew && spec.parent)) ? JSON.parse(JSON.stringify(spec.holes)) : undefined;
-  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom };
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec) };
 }
 function refreshBinderSelects(id) {
   for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel); }
@@ -7514,6 +7544,9 @@ function initHardware() {
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { if ($('bdeArmsFrom').value) { $('bdeArmsFrom').value = ''; bdeApplyArmsFrom(); $('hint').textContent = t('bdeArmsUnlocked'); }   /* アームを借りているときは、借りるのをやめて（いまの値から）足す */
     const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
+  $('bdeLeverFill').onclick = () => { bdeSet('bdeLeverW', 7); bdeSet('bdeLeverL', ''); bdeSet('bdeLeverH', 6); bdeSet('bdeLeverRo', 5); bdeSet('bdeLeverRi', 1); bdeSampleUpdate(); $('hint').textContent = t('bdeLeverFilled'); };
+  for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, () => { if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
+  $('bdEditDialog').addEventListener('focusin', e => { bdeHl = bdeHlOf(e.target?.id || ''); if (bdeSpecId) bdeSampleUpdate(); });   /* 触った欄の寸法を、色つきにする */
   $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
 

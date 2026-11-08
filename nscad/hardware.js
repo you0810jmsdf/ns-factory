@@ -557,3 +557,77 @@ export function binderViewDrawing(spec, ringD, which) {
   }
   return out;
 }
+
+/** 金具を直す画面の「サンプル図」（模式図）：寸法の印つきの、平面図（真上から）と側面図（台座の端から）。spec は、直している途中の値で作った規格（applyBinderEdits のあとのもの）。
+ *  opts.hl＝いま触っている欄の寸法の印（L・W・T・R・mx0・my0・md0・lw・ll・lh・lr・ac・ap・ri・ro・rw・re）。その寸法線・部分を、色つきにする。
+ *  opts.lab＝図の中の言葉（無ければ日本語）。opts.ringIdx＝側面図で見せるリング（0 から）。戻り値 { plan, side }：どちらも SVG の文字列（幅・高さは付けず、入れ物の幅に広がる）。色・太さは CSS（.sd-*）。 */
+export function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) {
+  const f = n => String(Math.round(n * 100) / 100), T8 = (k, d) => lab[k] ?? d, esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const dia = spec.rings?.diameterOptionsMm || [], ringD = dia[Math.max(0, Math.min(ringIdx | 0, dia.length - 1))];
+  const v = binderViews(spec, ringD), base = binderBase(spec), L = v.L, W = v.W, D = v.D, I = v.I, wire = v.wire;
+  if (![L, W, D, I, wire].every(Number.isFinite)) return { plan: '', side: '' };
+  const cls = (c, ...keys) => c + (keys.includes(hl) ? ' sd-hl' : '');
+  /** 寸法線・文字の道具。fs＝文字の大きさ（mm・図の大きさに合わせる）。 */
+  const kit = fs => {
+    const tk = fs * 0.3, line = (x1, y1, x2, y2, c) => `<line class="${c}" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
+    const txt = (x, y, s, anchor = 'middle', c = 'sd-txt') => `<text class="${c}" x="${f(x)}" y="${f(y)}" text-anchor="${anchor}" font-size="${f(fs)}">${esc(s)}</text>`;
+    /** 横の寸法線。pos＝文字の場所：mid（線の上）・below（線の下）・right・left（線の外側）。 */
+    const dimH = (x1, x2, y, label, keys, pos = 'mid') => {
+      const lo = Math.min(x1, x2), hi = Math.max(x1, x2), t = pos === 'below' ? txt((lo + hi) / 2, y + 1.2 * fs, label) : pos === 'right' ? txt(hi + 0.6 * fs, y + 0.35 * fs, label, 'start') : pos === 'left' ? txt(lo - 0.6 * fs, y + 0.35 * fs, label, 'end') : txt((lo + hi) / 2, y - 0.4 * fs, label);
+      return `<g class="${cls('sd-dim', ...keys)}">${line(x1, y, x2, y, 'sd-l')}${line(x1, y - tk, x1, y + tk, 'sd-l')}${line(x2, y - tk, x2, y + tk, 'sd-l')}${t}</g>`;
+    };
+    /** 縦の寸法線。left＝文字を線の左に。 */
+    const dimV = (x, y1, y2, label, keys, left = false) => `<g class="${cls('sd-dim', ...keys)}">${line(x, y1, x, y2, 'sd-l')}${line(x - tk, y1, x + tk, y1, 'sd-l')}${line(x - tk, y2, x + tk, y2, 'sd-l')}${txt(left ? x - 0.6 * fs : x + 0.6 * fs, (y1 + y2) / 2 + 0.35 * fs, label, left ? 'end' : 'start')}</g>`;
+    return { line, txt, dimH, dimV };
+  };
+  const wrap = (vb, body, label) => `<svg xmlns="http://www.w3.org/2000/svg" class="sd-svg" viewBox="${vb.map(f).join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(label)}">${body}</svg>`;
+
+  /* ---------- 平面図（真上から） ---------- */
+  const parts = v.plan.parts, outl = v.plan.partOutlines, rivets = spec.rivets || [], xs = v.ringXs, R0 = base.cornerRMm || 0, R = Math.min(R0, W / 2, L / 2);
+  const hw = Math.max(W, D) / 2, minPX = Math.min(-L / 2, ...parts.map(p => p.box.minX)), maxPX = Math.max(L / 2, ...parts.map(p => p.box.maxX)), fs = Math.max(maxPX - minPX, 60) / 36, K = kit(fs), els = [];
+  els.push(`<rect class="sd-body" x="${f(-L / 2)}" y="${f(-W / 2)}" width="${f(L)}" height="${f(W)}" rx="${f(R)}"/>`);
+  if (R > 0) { const x0 = -L / 2, x1 = L / 2, y0 = -W / 2, y1 = W / 2, a = `${f(R)} ${f(R)} 0 0 1`; els.push(`<path class="${cls('sd-corner', 'R')}" d="M${f(x0)} ${f(y0 + R)}A${a} ${f(x0 + R)} ${f(y0)}M${f(x1 - R)} ${f(y0)}A${a} ${f(x1)} ${f(y0 + R)}M${f(x1)} ${f(y1 - R)}A${a} ${f(x1 - R)} ${f(y1)}M${f(x0 + R)} ${f(y1)}A${a} ${f(x0)} ${f(y1 - R)}"/>`); }
+  xs.forEach(hx => els.push(`<rect class="${cls('sd-ring', 'ac', 'rw', 'ro')}" x="${f(hx - wire / 2)}" y="${f(-D / 2)}" width="${f(wire)}" height="${f(D)}"/><circle class="sd-dot" cx="${f(hx)}" cy="0" r="${f(fs * 0.15)}"/>`));
+  /* 取り付け穴：真ん中から穴までの距離（x）を上に。同じ側に穴が重なるときは、段を上げる */
+  const side = { '-1': 0, '1': 0 }; let maxLevel = -1;
+  rivets.forEach((rv, i) => {
+    const sg = rv.xMm < 0 ? -1 : 1, lvl = side[sg]++, dy = -hw - fs * (1.7 + lvl * 1.9), keys = ['mx' + i, 'my' + i, 'md' + i]; maxLevel = Math.max(maxLevel, lvl);
+    els.push(`<circle class="${cls('sd-hole', ...keys)}" cx="${f(rv.xMm)}" cy="${f(rv.yMm)}" r="${f(rv.dMm / 2)}"/>`, K.line(rv.xMm, rv.yMm - rv.dMm / 2, rv.xMm, dy, 'sd-ext'));
+    els.push(K.dimH(0, rv.xMm, dy, `${T8('hole', '穴')} x ${f(rv.xMm)}${rv.yMm ? ` y ${f(rv.yMm)}` : ''}・${T8('dia', '径')} ${f(rv.dMm)}`, keys));
+  });
+  const topY = -hw - fs * (maxLevel >= 0 ? 1.7 + maxLevel * 1.9 + 2.4 : 2.6);
+  /* アームの間隔（下） */
+  const yP = hw + fs * 1.9; for (let i = 0; i + 1 < xs.length; i++) els.push(K.dimH(xs[i], xs[i + 1], yP, f(xs[i + 1] - xs[i]), ['ap']));
+  if (xs.length) els.push(K.txt(xs[0] - 0.6 * fs, yP + 0.35 * fs, `${T8('arms', 'アーム')} ${xs.length}`, 'end', cls('sd-txt', 'ac')));
+  /* 台座の長さ（下）・幅（左） */
+  const yL = hw + fs * 4.4, xW = minPX - fs * 1.6;
+  els.push(K.line(-L / 2, W / 2, -L / 2, yL, 'sd-ext'), K.line(L / 2, W / 2, L / 2, yL, 'sd-ext'), K.dimH(-L / 2, L / 2, yL, `${T8('L', '長さ')} ${f(L)}`, ['L']));
+  els.push(K.line(minPX, -W / 2, xW, -W / 2, 'sd-ext'), K.line(minPX, W / 2, xW, W / 2, 'sd-ext'), K.dimV(xW, -W / 2, W / 2, `${T8('W', '幅')} ${f(W)}`, ['W'], true));
+  if (R0 > 0) els.push(K.txt(-L / 2 - 0.4 * fs, -hw - 0.4 * fs, `${T8('R', '角R')} ${f(R0)}`, 'end', cls('sd-txt', 'R')));
+  /* レバー（開閉部品）：右のものに寸法 */
+  parts.forEach((q, i) => els.push(outl[i] ? `<polygon class="${cls('sd-lever', 'lr')}" points="${outl[i].map(p => `${f(p.x)},${f(p.y)}`).join(' ')}"/>` : q.shape === 'circle' ? `<circle class="sd-lever" cx="${f((q.box.minX + q.box.maxX) / 2)}" cy="${f((q.box.minY + q.box.maxY) / 2)}" r="${f(q.r)}"/>` : `<rect class="sd-lever" x="${f(q.box.minX)}" y="${f(q.box.minY)}" width="${f(q.box.maxX - q.box.minX)}" height="${f(q.box.maxY - q.box.minY)}"/>`));
+  const lv = parts.map((q, i) => ({ q, i })).filter(o => o.q.shape === 'rect').sort((a, b) => b.q.box.maxX - a.q.box.maxX)[0];
+  let bottomY = yL;
+  if (lv) {
+    const b = lv.q.box, ly = b.maxY + fs * 1.4; bottomY = Math.max(bottomY, ly);
+    els.push(K.dimH(b.minX, b.maxX, ly, `${T8('lw', 'レバー長さ')} ${f(b.maxX - b.minX)}`, ['lw'], 'right'), K.dimV(b.maxX + fs * 1.6, b.minY, b.maxY, `${T8('ll', 'レバー幅')} ${f(b.maxY - b.minY)}`, ['ll']));
+    if (lv.q.rOut || lv.q.rIn) els.push(K.txt(b.minX, b.minY - 0.4 * fs, `${T8('lr', '角R')} ${f(lv.q.rOut || 0)}/${f(lv.q.rIn || 0)}`, 'start', cls('sd-txt', 'lr')));
+  }
+  els.unshift(K.line(0, topY + 0.6 * fs, 0, W / 2 + 0.8 * fs, 'sd-center'));
+  const planVb = [minPX - 9 * fs, topY, maxPX - minPX + 18 * fs, bottomY + 1.8 * fs - topY];
+
+  /* ---------- 側面図（台座の端から） ---------- */
+  const opt = spec.rings?.options?.find(o => Math.round(ringSizeOf(null, o).inner * 10) / 10 === Math.round(I * 10) / 10), embed = opt?.embedDepthMm ?? spec.rings?.embedMm ?? 0;
+  const Ts = base.thicknessMm ?? v.T ?? 2, cy = -D / 2 + embed, lvS = v.side.parts[0]?.box, lvW = lvS ? lvS.maxX - lvS.minX : 0, ex = Math.max(W, D, lvW) / 2, fs2 = Math.max(ex * 2, 14) * 0.09, S = kit(fs2), e2 = [];
+  e2.push(`<rect class="${cls('sd-body', 'T')}" x="${f(-W / 2)}" y="0" width="${f(W)}" height="${f(Ts)}"/>`);
+  if (lvS) e2.push(`<rect class="${cls('sd-lever', 'lh', 'll')}" x="${f(lvS.minX)}" y="${f(lvS.minY)}" width="${f(lvW)}" height="${f(lvS.maxY - lvS.minY)}"/>`);
+  const arc = r => `M${f(-r)} ${f(cy)}a${f(r)} ${f(r)} 0 1 0 ${f(2 * r)} 0a${f(r)} ${f(r)} 0 1 0 ${f(-2 * r)} 0Z`;
+  e2.push(`<path class="${cls('sd-wire', 'rw')}" fill-rule="evenodd" d="${arc(D / 2)}${arc(I / 2)}"/>`, `<circle class="${cls('sd-body', 'ro')}" cx="0" cy="${f(cy)}" r="${f(D / 2)}"/>`, `<circle class="${cls('sd-body', 'ri')}" cx="0" cy="${f(cy)}" r="${f(I / 2)}"/>`);
+  const yo = cy - D / 2 - fs2 * 1.2;
+  e2.push(S.dimH(-I / 2, I / 2, cy, `${T8('inner', '内径')} ${f(I)}`, ['ri']), S.line(-D / 2, cy, -D / 2, yo, 'sd-ext'), S.line(D / 2, cy, D / 2, yo, 'sd-ext'), S.dimH(-D / 2, D / 2, yo, `${T8('outer', '外径')} ${f(D)}`, ['ro']), S.dimH(-D / 2, -I / 2, cy, `${T8('wire', '線径')} ${f(wire)}`, ['rw'], 'left'));
+  e2.push(S.line(-W / 2, 0, -W / 2 - fs2, 0, 'sd-ext'), S.dimV(-W / 2 - fs2, 0, embed, `${T8('embed', '食い込み')} ${f(embed)}`, ['re'], true));
+  e2.push(S.dimV(W / 2 + fs2, 0, Ts, `${T8('T', '板厚')} ${f(Ts)}`, ['T']), S.dimH(-W / 2, W / 2, Ts + fs2 * 1.8, `${T8('W', '幅')} ${f(W)}`, ['W']));
+  if (lvS) { const h = -lvS.minY; e2.push(S.dimV(Math.max(lvS.maxX, W / 2) + fs2, -h, 0, `${T8('lh', 'レバー高さ')} ${f(h)}`, ['lh']), S.dimH(lvS.minX, lvS.maxX, -h - fs2 * 0.9, `${T8('ll', 'レバー幅')} ${f(lvW)}`, ['ll'])); }
+  const sTop = yo - fs2 * 2.2, sideVb = [-ex - 9.4 * fs2, sTop, 2 * ex + 17.6 * fs2, Ts + fs2 * 1.8 + 1.8 * fs2 - sTop];
+  return { plan: wrap(planVb, els.join(''), T8('planTitle', '平面図')), side: wrap(sideVb, e2.join(''), T8('sideTitle', '側面図')) };
+}
