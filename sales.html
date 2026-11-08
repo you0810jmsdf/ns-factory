@@ -114,6 +114,19 @@ tr.row-canceled td { opacity: .45; }
 .item-name { display: block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .legend { font-size: .72rem; color: var(--text-sub); line-height: 1.9; margin-top: 10px; }
 .legend b { color: var(--text); font-weight: 600; }
+
+/* ── 収支推移 ───────────────────────────── */
+.pl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px; }
+.pl-grid .chart-wrap { margin-bottom: 0; min-width: 0; }
+.pl-ctitle { font-size: .85rem; color: var(--text-sub); font-weight: 600; margin-bottom: 8px; letter-spacing: .04em; }
+.pl-note {
+  background: rgba(160,120,90,.14); border-left: 3px solid var(--accent); border-radius: 8px;
+  padding: 10px 14px; font-size: .8rem; line-height: 1.7; color: #E5D3C2; margin-bottom: 14px;
+}
+#pl-table th, #pl-table td { padding: 9px 10px; font-size: .82rem; white-space: nowrap; }
+#pl-table tr.grp td { border-top: 2px solid var(--border); }
+#pl-table td.na { color: #5A5A5E; text-align: right; }
+@media (max-width: 700px) { .pl-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -129,6 +142,7 @@ tr.row-canceled td { opacity: .45; }
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-sales" onclick="setTab('sales')">売上額</button>
     <button class="tab-btn" id="tab-orders" onclick="setTab('orders')">取引マトリクス</button>
+    <button class="tab-btn" id="tab-pl" onclick="setTab('pl')">収支推移</button>
   </div>
 
   <div class="summary-cards" id="sales-cards">
@@ -230,6 +244,23 @@ tr.row-canceled td { opacity: .45; }
     </div>
 
     <p class="legend" id="orders-legend"></p>
+  </div>
+
+  <div id="pl-section" style="display:none">
+    <div id="pl-notes"></div>
+    <div class="pl-grid">
+      <div class="chart-wrap"><div class="pl-ctitle">売上（月別・円）</div><div class="chart-inner" style="height:240px"><canvas id="pl-c-sales" role="img" aria-label="売上の月別推移（年ごとの比較）"></canvas></div></div>
+      <div class="chart-wrap"><div class="pl-ctitle">材料費（月別・円）</div><div class="chart-inner" style="height:240px"><canvas id="pl-c-material" role="img" aria-label="材料費の月別推移（年ごとの比較）"></canvas></div></div>
+      <div class="chart-wrap"><div class="pl-ctitle">送料（月別・円）</div><div class="chart-inner" style="height:240px"><canvas id="pl-c-shipping" role="img" aria-label="送料の月別推移（年ごとの比較）"></canvas></div></div>
+      <div class="chart-wrap"><div class="pl-ctitle">手数料（月別・円）</div><div class="chart-inner" style="height:240px"><canvas id="pl-c-fee" role="img" aria-label="手数料の月別推移（年ごとの比較）"></canvas></div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-header" id="pl-table-header">月別の表</div>
+      <div class="matrix-scroll">
+        <table id="pl-table"><thead id="pl-head"></thead><tbody id="pl-body"></tbody></table>
+      </div>
+    </div>
+    <p class="legend" id="pl-legend"></p>
   </div>
 
   <p class="note" id="sales-note">
@@ -503,6 +534,7 @@ function setTab(name) {
   currentTab = name;
   document.getElementById("tab-sales").classList.toggle("active", name === "sales");
   document.getElementById("tab-orders").classList.toggle("active", name === "orders");
+  document.getElementById("tab-pl").classList.toggle("active", name === "pl");
 
   var salesOnly = ["sales-cards", "value-mode-bar", "chart-wrap", "table-wrap", "items-wrap", "sales-note"];
   salesOnly.forEach(function (id) {
@@ -520,14 +552,222 @@ function setTab(name) {
   document.getElementById("orders-section").style.display = isOrders ? "block" : "none";
   document.getElementById("error-msg").style.display = "none";
 
+  // 収支推移タブ: 期間・金額/件数の切替は使わない（月別×年別の固定表示）
+  var isPl = (name === "pl");
+  document.getElementById("pl-section").style.display = isPl ? "block" : "none";
+  document.getElementById("period-bar").style.display = isPl ? "none" : "";
+
   if (isOrders && !ordersData) loadOrders(false);
+  if (isPl && !plData) loadPl(false);
   // 売上タブへ戻したときは、取引側が書き換えた集計時点の表示を売上側に戻す
-  if (!isOrders && lastData) render(lastData);
+  if (name === "sales" && lastData) render(lastData);
 }
 
 function reloadCurrent(force) {
   if (currentTab === "orders") loadOrders(force);
+  else if (currentTab === "pl") loadPl(force);
   else load(force);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   収支推移（action=pl）
+   売上・材料費・送料・手数料の月別を、年ごとに並べて見る。
+   数字の源は MF 仕訳帳の月別合計（GASのスクリプトプロパティに保存済み）。
+   売上だけ、Gmail集計（action 省略・months=12）を参考の線として重ねる。
+   ══════════════════════════════════════════════════════════════ */
+
+var plData = null;
+var plSales = null;      // Gmail集計（参考）。取れなくても MF の表示は出す
+var plCharts = [];
+var PL_METRICS = [["sales", "売上"], ["material", "材料費"], ["shipping", "送料"], ["fee", "手数料"]];
+var PL_YEAR_COLORS = ["#7A8BA6", "#A0785A"];   // 古い年→新しい年（新しい年がサイトのアクセント色）
+var PL_GMAIL_COLOR = "#30D158";
+
+// 受け取り口つきの JSONP 呼び出し（打ち切り・失敗後に届いた返事で ReferenceError が出ないよう、空の受け口を10分残す）
+function jsonpGas(params, timeoutMs) {
+  return new Promise(function (resolve, reject) {
+    var key = adminKey();
+    if (!key) { reject(new Error("noauth")); return; }
+    var cb = "plcb" + Date.now() + Math.floor(Math.random() * 1e6);
+    var s = document.createElement("script");
+    var finished = false;
+    function cleanup(late) {
+      finished = true;
+      clearTimeout(t);
+      if (s.parentNode) s.parentNode.removeChild(s);
+      if (late) { window[cb] = function () {}; setTimeout(function () { delete window[cb]; }, 600000); }
+      else delete window[cb];
+    }
+    var t = setTimeout(function () { if (!finished) { cleanup(true); reject(new Error("timeout")); } }, timeoutMs);
+    window[cb] = function (d) { if (!finished) { cleanup(false); resolve(d); } };
+    s.onerror = function () { if (!finished) { cleanup(true); reject(new Error("network")); } };
+    s.src = GAS_URL + "?key=" + encodeURIComponent(key) + "&" + params + "&callback=" + cb;
+    document.body.appendChild(s);
+  });
+}
+
+function plBusy(on) {
+  document.getElementById("loading").style.display = on ? "block" : "none";
+  document.getElementById("btn-refresh").disabled = on;
+  document.getElementById("btn-reload").disabled = on;
+}
+
+function loadPl(force) {
+  if (!adminKey()) {
+    showError("認証キーが取得できません。ページを再読み込みしてログインし直してください。");
+    return;
+  }
+  document.getElementById("error-msg").style.display = "none";
+  plBusy(true);
+  var salesReq = jsonpGas("months=12" + (force ? "&refresh=1" : ""), 180000)
+    .then(function (d) { return (d && !d.error) ? d : null; }, function () { return null; });
+
+  jsonpGas("action=pl", 60000).then(function (pl) {
+    plBusy(false);
+    if (pl.error) {
+      showError(pl.error === "unauthorized" ? "パスワードが違います" : "エラー: " + pl.error);
+      return;
+    }
+    plData = pl;
+    renderPl();
+    // Gmail集計は遅れて届いてもよい。届いたら売上の線と表の行を足す
+    salesReq.then(function (s) { plSales = s; if (plData === pl && currentTab === "pl") renderPl(); });
+  }).catch(function (e) {
+    plBusy(false);
+    showError(e.message === "timeout" ? "タイムアウトしました。もう一度お試しください。" : "GASに接続できません。");
+  });
+}
+
+// 年（"2026"）ごとの Gmail 売上を12要素で返す。窓の外・当月以降は null
+function plGmailYear(year) {
+  if (!plSales || !plSales.channels) return null;
+  var d = new Date();
+  var nowYm = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2);
+  var arr = [];
+  for (var m = 1; m <= 12; m++) {
+    var ym = year + "-" + ("0" + m).slice(-2);
+    if (plSales.months.indexOf(ym) === -1 || ym >= nowYm) { arr.push(null); continue; }
+    var sum = 0;
+    plSales.channels.forEach(function (ch) { sum += ((ch.monthly[ym] || {}).amt) || 0; });
+    arr.push(sum);
+  }
+  return arr.some(function (v) { return v !== null; }) ? arr : null;
+}
+
+function plSum(arr, n) {
+  var s = 0, any = false;
+  for (var i = 0; i < (n || 12); i++) if (arr[i] !== null && arr[i] !== undefined) { s += arr[i]; any = true; }
+  return any ? s : null;
+}
+
+function renderPl() {
+  var data = plData;
+  var notesEl = document.getElementById("pl-notes");
+  notesEl.innerHTML = "";
+  plCharts.forEach(function (c) { c.destroy(); });
+  plCharts = [];
+
+  if (!data || data.empty || !data.years) {
+    showError("収支推移のデータがまだ保存されていません。");
+    document.getElementById("pl-section").style.display = "none";
+    return;
+  }
+  document.getElementById("pl-section").style.display = "block";
+
+  var years = Object.keys(data.years).sort();
+  var latest = years[years.length - 1];
+  var through = data.years[latest].through;          // 最新年がMFで確定している月数
+  var colorOf = {};
+  years.forEach(function (y, i) { colorOf[y] = PL_YEAR_COLORS[Math.max(0, PL_YEAR_COLORS.length - years.length + i)] || "#A0785A"; });
+
+  // 注記（年ごと・GAS側の文面をそのまま出す）
+  years.forEach(function (y) {
+    var n = data.years[y].note;
+    if (!n) return;
+    var div = document.createElement("div");
+    div.className = "pl-note";
+    div.textContent = n;
+    notesEl.appendChild(div);
+  });
+
+  var fetched = years.map(function (y) {
+    var e = data.years[y];
+    return y + "年分は" + e.through + "月まで（MF取得 " + e.fetched + "）";
+  }).join(" ／ ");
+  document.getElementById("meta").textContent =
+    "MF仕訳帳の月別合計: " + fetched + " ／ 保存 " + (data.savedAt || "—");
+  document.getElementById("meta").style.color = "";
+
+  var labels = [];
+  for (var m = 1; m <= 12; m++) labels.push(m + "月");
+  var gmailLatest = plGmailYear(latest);
+
+  // ── グラフ（指標ごとに1枚。年ごとに棒を並べる） ──
+  PL_METRICS.forEach(function (mt) {
+    var key = mt[0];
+    var datasets = years.map(function (y) {
+      return { type: "bar", label: y + "年（MF）", data: data.years[y][key],
+               backgroundColor: colorOf[y], borderRadius: 3, order: 2 };
+    });
+    if (key === "sales" && gmailLatest) {
+      datasets.push({ type: "line", label: latest + "年（Gmail集計・参考）", data: gmailLatest,
+                      borderColor: PL_GMAIL_COLOR, backgroundColor: PL_GMAIL_COLOR,
+                      borderDash: [5, 4], borderWidth: 2, pointRadius: 3, tension: 0,
+                      spanGaps: false, order: 1 });
+    }
+    var ctx = document.getElementById("pl-c-" + key).getContext("2d");
+    plCharts.push(new Chart(ctx, {
+      type: "bar",
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: "rgba(255,255,255,.06)" }, ticks: { color: "#AEAEB2" } },
+          y: { beginAtZero: true, grid: { color: "rgba(255,255,255,.06)" },
+               ticks: { color: "#AEAEB2", callback: function (v) { return "¥" + v.toLocaleString(); } } }
+        },
+        plugins: {
+          legend: { labels: { color: "#F5F5F7", boxWidth: 12, boxHeight: 12 } },
+          tooltip: { callbacks: { label: function (c) {
+            return c.dataset.label + ": " + (c.parsed.y === null ? "—" : yen(c.parsed.y));
+          } } }
+        }
+      }
+    }));
+  });
+
+  // ── 表（指標ごとに 年の行。売上だけGmail参考行を足す） ──
+  document.getElementById("pl-table-header").textContent =
+    "月別の表（円）　年計と、直近の年に合わせた 1〜" + through + "月計";
+  var head = document.getElementById("pl-head");
+  var h = "<tr><th>項目</th><th>年</th>";
+  for (var i = 1; i <= 12; i++) h += '<th class="num">' + i + "月</th>";
+  h += '<th class="num">年計</th><th class="num">1〜' + through + "月計</th></tr>";
+  head.innerHTML = h;
+
+  function cell(v) { return v === null || v === undefined ? '<td class="na">—</td>' : '<td class="num">' + yen(v) + "</td>"; }
+  function row(first, name, yearLabel, arr, extraClass) {
+    var tr = "<tr" + (extraClass ? ' class="' + extraClass + '"' : "") + ">"
+      + "<td>" + (first ? "<b>" + name + "</b>" : "") + '</td><td class="sub">' + yearLabel + "</td>";
+    for (var i = 0; i < 12; i++) tr += cell(arr[i]);
+    tr += cell(plSum(arr, 12)) + cell(plSum(arr, through)) + "</tr>";
+    return tr;
+  }
+  var body = "";
+  PL_METRICS.forEach(function (mt) {
+    var key = mt[0];
+    years.forEach(function (y, idx) {
+      body += row(idx === 0, mt[1], y + "年", data.years[y][key], idx === 0 ? "grp" : "");
+    });
+    if (key === "sales" && gmailLatest) body += row(false, "", latest + "年 Gmail集計（参考）", gmailLatest, "");
+  });
+  document.getElementById("pl-body").innerHTML = body;
+
+  document.getElementById("pl-legend").innerHTML =
+    "<b>売上</b>＝MFの売上高。<b>材料費</b>＝材料費・材料・仕入高の合計。<b>送料</b>＝荷造運賃。<b>手数料</b>＝支払手数料。"
+    + "未反映の月は「—」（0円ではありません）。<br>"
+    + (plSales ? "緑の破線と「Gmail集計（参考）」は、受注通知メールから解析できた金額で、MFの売上とは別の集計です。"
+               : "Gmail集計（参考）は取得中、または取得できませんでした。");
 }
 
 function setOrdersView(v) {
