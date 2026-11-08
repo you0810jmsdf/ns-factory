@@ -6181,7 +6181,7 @@ const bdeConfOptions = () => ['', ...BDE_CONF].map(c => `<option value="${c}">${
 const bdeConfSelect = id => `<select id="${id}">${bdeConfOptions()}</select>`;
 const bdeField = (id, label, step = '0.1') => `<label><span>${label}</span><input id="${id}" type="number" step="${step}"></label>`;
 const bdeSet = (id, v) => { const el = $(id); el.value = v == null ? '' : String(v); };
-let bdeRingCount = 0, bdeMountCount = 0, bdeSpecId = null;
+let bdeRingCount = 0, bdeMountCount = 0, bdeSpecId = null, bdeArmsInit = { count: '', pitch: '' };   /* bdeArmsInit＝アームの欄に最初に入れた値（変えていないかの判定。変えていなければ、元のアームの形・間隔を壊さない） */
 const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
 const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
 function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
@@ -6203,12 +6203,13 @@ function openBinderEdit() {
 /** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
 function bdeFillArms(spec) {
   const opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), uniform = (spec.holes?.pitchMm || []).every(q => Math.abs(q - spec.holes.pitchMm[0]) < 1e-9);
-  bdeSet('bdeArmCount', spec.holes?.count ?? spec.rings?.countPerSide); bdeSet('bdeArmPitch', spec.holes?.centerPitchMm ?? (uniform ? spec.holes?.pitchMm?.[0] : ''));
+  bdeSet('bdeArmCount', spec.holes?.count ?? spec.rings?.countPerSide); bdeSet('bdeArmPitch', spec.holes?.centerPitchMm ?? (uniform ? spec.holes?.pitchMm?.[0] : '')); bdeArmsInit = { count: $('bdeArmCount').value, pitch: $('bdeArmPitch').value };
   bdeRingCount = opts.length; $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); opts.forEach((o, i) => bdeWireRing(i, o));
 }
 /** 借りている間は、アームの欄を触れなくする。 */
 function bdeSetArmsLocked(locked) {
-  for (const id of ['bdeArmCount', 'bdeArmPitch', 'bdeAddRing']) $(id).disabled = locked;
+  for (const id of ['bdeArmCount', 'bdeArmPitch']) $(id).disabled = locked;   /* 「リング径を足す」は、借りている間も押せる（押すと、借りるのをやめて足す。事業主 2026-11-08「リング径を種類を足して保存したのに保存されていない」：灰色で押せず、理由も出なかった） */
+  $('bdeArmsLockNote').hidden = !locked;
   for (let i = 0; i < bdeRingCount; i++) for (const k of ['Inner', 'Outer', 'Wire', 'Embed', 'Conf', 'Del']) { const el = $('bdeRing' + i + k); if (el) el.disabled = locked; }
 }
 /** 「アームの規格を借りる」を変えたとき：借りる規格の値で埋めて触れなくする。「この規格のまま」ならこの規格の値に戻して触れるようにする。 */
@@ -6220,25 +6221,61 @@ function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
   for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value }); }
   for (let i = 0; i < bdeMountCount; i++) { if ($('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
-  const asNew = !!$('bdeAsNew').checked;
-  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, armsFrom: $('bdeArmsFrom')?.value || undefined };
+  const asNew = !!$('bdeAsNew').checked, armsFrom = $('bdeArmsFrom')?.value || undefined;
+  /* アームの欄（本数・間隔）：触っていなければ送らない（事業主 2026-11-08：台座の長さだけ直しても、A5 6穴の間隔 19/19/70/19/19 が「70 ずつ」の等間隔に書き換わっていた。欄の「70」は中央の間隔だけ）。
+     触っていなくて借りてもいないときは、今のアームの形を、そのまま残す（借りるのをやめた・直した跡がある・製品から新しい製品を作るとき）。 */
+  const armsSame = $('bdeArmCount').value === bdeArmsInit.count && $('bdeArmPitch').value === bdeArmsInit.pitch;
+  const keepHoles = armsSame && !armsFrom && (spec.armsFrom || binderEdits.specs[bdeSpecId]?.holes || (asNew && spec.parent)) ? JSON.parse(JSON.stringify(spec.holes)) : undefined;
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom };
 }
 function refreshBinderSelects(id) {
   for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel); }
   $('binderSpecSel').value = id; renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection();
 }
+/** 図面に置いてある金具（hw 付きの外形のグループ）のうち、規格 specId の金具を集める。寸法を直す前（古い規格）の状態で、手で直していないか（作り直した形と同じか）も調べておく。
+ *  事業主 2026-11-08「寸法は100.5mmにしているのに、図は70mmのまま」：置いた金具は置いた時点の形で固まり、「この設定で作り直す」を押さないと、直した寸法に変わらなかった。 */
+function placedBinderTargets(specId) {
+  const strip = ({ hw: _h, id: _i, layer: _l, groupId: _g, ...rest }) => rest, out = [];
+  for (const plate of doc.shapes.filter(s => s.hw?.id && hwIsBinder(s) && s.hw.params.spec === specId)) {
+    const g = groupIdOf(plate), members = g ? doc.shapes.filter(s => groupIdOf(s) === g) : [plate], old = plate.hw, pose = hwPoseOfOutline(plate), item = DATA_HARDWARE.items.find(i => i.id === old.id);
+    let same = false; try { same = !!item && sameShapes(hardwareDrafts(item, { ...old.params }, binderSpec(old.params.spec), pose.at, pose.angleDeg).map(strip), members.map(strip)); } catch { same = false; }
+    out.push({ gid: g, ids: members.map(m => m.id), item: old.id, params: { ...old.params }, pose, same });
+  }
+  return out;
+}
+/** 寸法を直して保存・戻したあと、置いてある金具を新しい寸法で作り直す（位置・向き・リング径はそのまま・元に戻すは1回）。手で直した金具は触らない。戻り値：案内の文（置いた金具が無ければ空）。 */
+function redrawPlacedBinders(targets) {
+  if (!targets.length) return '';
+  const todo = targets.filter(x => x.same); let n = 0;
+  if (todo.length) {
+    cancel();
+    commit(() => {
+      for (const x of todo) {
+        const item = DATA_HARDWARE.items.find(i => i.id === x.item), spec = binderSpec(x.params.spec); if (!item || !spec) continue;
+        let drafts; try { drafts = hardwareDrafts(item, { ...x.params }, spec, x.pose.at, x.pose.angleDeg); } catch { continue; }
+        const gone = new Set(x.ids), wasSelected = x.ids.some(id => selected.has(id)); doc.shapes = doc.shapes.filter(s => !gone.has(s.id));
+        const ids = addHardwareDrafts(drafts, x.gid || nextGroupId(doc.shapes)); selected = new Set([...[...selected].filter(id => !gone.has(id)), ...(wasSelected ? ids : [])]); n++;
+      }
+    });
+    hwEditKey = ''; refreshHwEdit(); renderLayers(); draw();
+  }
+  const kept = targets.length - todo.length;
+  return (n ? t('bdeHwRedrawn', { n }) : '') + (kept ? (n ? ' ' : '') + t('bdeHwKept', { n: kept }) : '');
+}
 function saveBinderEdit() {
   let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { $('hint').textContent = t('bde.' + err.message); return; }
   const spec = binderSpec(bdeSpecId); let id = bdeSpecId;
   if (edit.parent) id = newProductId(BINDER_SPECS, edit.parent); else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
+  const placed = edit.parent && id !== bdeSpecId ? [] : placedBinderTargets(id);   /* 古い寸法のうちに、置いてある金具が手直しされていないか調べる（新しい製品は、まだ置いた金具が無い） */
   binderEdits.specs[id] = edit; if (!persistBinderEdits()) return;
-  rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); bdeRefreshDrawing();
+  rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); const redone = redrawPlacedBinders(placed); bdeRefreshDrawing(); if (redone) $('hint').textContent += ' ' + redone;
 }
 /** 寸法を直したあと：いまの図面に折りの断面があれば、断面（リング・台座）と平面図・展開図を新しい寸法で作り直す（事業主 2026-11-04「台座の幅が反映されません」：FIX を押し直さないと変わらなかった）。 */
 function bdeRefreshDrawing() { if (!doc.foldDesign?.ring) return; const note = $('hint').textContent; liveFoldDesign(); foldFollowSoon(); $('hint').textContent = note + ' ' + t('bdeRedrawn'); }
 function resetBinderEdit() {
+  const placed = placedBinderTargets(bdeSpecId);
   delete binderEdits.specs[bdeSpecId]; if (!persistBinderEdits()) return;
-  rebuildBinderSpecs(); refreshBinderSelects(binderSpec(bdeSpecId) ? bdeSpecId : BINDER_SPECS[0].id); $('bdEditDialog').close(); $('hint').textContent = t('bdeResetDone'); bdeRefreshDrawing();
+  rebuildBinderSpecs(); refreshBinderSelects(binderSpec(bdeSpecId) ? bdeSpecId : BINDER_SPECS[0].id); $('bdEditDialog').close(); $('hint').textContent = t('bdeResetDone'); const redone = redrawPlacedBinders(placed); bdeRefreshDrawing(); if (redone) $('hint').textContent += ' ' + redone;
 }
 function exportBinderEditsCsv() {
   const files = editsToCsv(BINDER_SPECS, binderEdits); if (!files) { $('hint').textContent = t('bdeCsvNone'); return; }
@@ -7475,7 +7512,8 @@ function initHardware() {
   $('hdrHide').onclick = () => setHeaderHidden(true); $('hdrShow').onclick = () => setHeaderHidden(false);
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
   $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
-  $('bdeAddRing').onclick = () => { const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
+  $('bdeAddRing').onclick = () => { if ($('bdeArmsFrom').value) { $('bdeArmsFrom').value = ''; bdeApplyArmsFrom(); $('hint').textContent = t('bdeArmsUnlocked'); }   /* アームを借りているときは、借りるのをやめて（いまの値から）足す */
+    const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
   $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
 

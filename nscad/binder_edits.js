@@ -1,7 +1,7 @@
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
 // 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, rings?: { options: [...] }, rivets? } } }
 //   既にある規格・製品の id なら上書き、無い id は「新しい製品」（parent の写しから始める）。
-import { ringSizeOf } from './hardware.js';
+import { ringSizeOf, binderBase } from './hardware.js';
 
 export const BINDER_EDITS_KEY = 'leather-cad.binderEdits';
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -42,14 +42,24 @@ export function applyBinderEdits(specs, edits) {
       s.rings = { ...s.rings, options, diameterOptionsMm: options.map(o => round1(ringSizeOf(null, o).inner)) };
     }
     if (e.rivets) s.rivets = clone(e.rivets);
+    /* レバー（事業主 2026-11-08「レバーはバインダ金具の両端にあるべきもの」）：台座の両端に1つずつ、端にぴったり付ける（Mini6・M5 の実測と同じ：中心 ＝ 長さの半分 ＋ レバーの長さの半分）。台座の長さを直しても追従する。ボタンなど、ほかの開閉部品は残す。null ならレバーを外す */
+    if (e.lever !== undefined) {
+      const keep = (s.mechanism?.parts || []).filter(q => q.kind !== 'lever');
+      if (e.lever) {
+        const b = binderBase(s), lv = e.lever, w = lv.widthMm, l = lv.lengthMm ?? b.sectionWidthMm, at = Math.round((b.lengthMm / 2 + w / 2) * 100) / 100;
+        const mk = sign => ({ xMm: sign * at, yMm: 0, widthMm: w, lengthMm: l, heightMm: lv.heightMm, diameterMm: null, kind: 'lever', note: 'この PC で直した値（台座の両端）', cornerOuterRMm: lv.cornerOuterRMm || null, cornerInnerRMm: lv.cornerInnerRMm || null });
+        s.mechanism = { ...(s.mechanism || {}), parts: [mk(-1), mk(1), ...keep] };
+      } else s.mechanism = { ...(s.mechanism || {}), parts: keep };
+    }
     if (e.holes) { s.holes = { ...s.holes, ...clone(e.holes) }; s.rings = { ...s.rings, countPerSide: e.holes.count }; }   /* アームの本数・間隔（2026-11-04） */
     s.edited = true;
   }
   return out;
 }
 
-/** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / dup / mount）。
- *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }], arms?: { count, pitchMm } }
+/** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / dup / mount / lever）。
+ *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }], arms?: { count, pitchMm }, lever?: { widthMm, lengthMm?, heightMm, cornerOuterRMm?, cornerInnerRMm? }（レバー。台座の両端に1つずつ・無ければ触らない・全部空欄ならレバーなし） }
+ *  keepHoles（2026-11-08）：アームの欄を触っていないときに残す今の holes（本数・間隔の並び）。arms が無いときだけ使う。
  *  arms（事業主決定A 2026-11-04：金具＝土台（ブランドごと）＋アーム（規格ごと））：本数と間隔。空欄なら触らない。入れると holes（count・pitchMm・centerPitchMm・span1toLastMm）と rings.countPerSide を上書きする
  *  armsFrom（2026-11-04 改善案1）：アームの規格を別の規格から借りる（その規格の holes と rings をそのまま写す）。借りるときは rings・arms の欄は要らない（無視する） */
 export function editFromForm(form) {
@@ -60,6 +70,14 @@ export function editFromForm(form) {
   const out = { plate };
   if (form.parent) { out.parent = form.parent; const ja = String(form.names?.ja || '').trim(); if (!ja) throw new Error('name'); out.names = { ja, en: String(form.names?.en || '').trim() || ja }; }
   else if (form.names?.ja) out.names = { ja: String(form.names.ja).trim(), en: String(form.names.en || form.names.ja).trim() };
+  if (form.lever !== undefined) {   /* レバー：form.lever が無ければ触らない・全部空欄ならレバーなし（null）・長さと高さが正の数なら両端に付ける（lengthMm 空欄＝台座の幅・角R 空欄＝0） */
+    const lv = form.lever || {}, w = num(lv.widthMm), l = num(lv.lengthMm), h = num(lv.heightMm), ro = num(lv.cornerOuterRMm), ri = num(lv.cornerInnerRMm);
+    if (w == null && l == null && h == null && ro == null && ri == null) out.lever = null;
+    else {
+      if (!pos(w) || !pos(h) || (l != null && !pos(l)) || (ro != null && !(fin(ro) && ro >= 0)) || (ri != null && !(fin(ri) && ri >= 0))) throw new Error('lever');
+      out.lever = { widthMm: w, lengthMm: l, heightMm: h, cornerOuterRMm: ro ?? 0, cornerInnerRMm: ri ?? 0 };
+    }
+  }
   const armsFrom = typeof form.armsFrom === 'string' && /^[a-zA-Z0-9_-]+$/.test(form.armsFrom) ? form.armsFrom : '';
   if (armsFrom) {   /* アームは借りる：リングも本数・間隔も、借りた規格のもの */
     out.armsFrom = armsFrom;
@@ -84,6 +102,8 @@ export function editFromForm(form) {
   if (ac != null) {
     if (!(Number.isInteger(ac) && ac >= 1) || (ac > 1 && !pos(ap))) throw new Error('arms');
     const pitch = ac > 1 ? ap : 0; out.holes = { count: ac, pitchMm: Array.from({ length: ac - 1 }, () => pitch), centerPitchMm: pitch, span1toLastMm: round1(pitch * (ac - 1)) }; out.rings.countPerSide = ac;
+  } else if (form.keepHoles && Number.isInteger(form.keepHoles.count) && Array.isArray(form.keepHoles.pitchMm)) {   /* アームの欄を触っていないとき：今のアームの形（19/19/70/19/19 のような等間隔でない並びも）をそのまま残す。欄の値（中央の間隔）で作り直さない */
+    out.holes = clone(form.keepHoles); out.rings.countPerSide = form.keepHoles.count;
   }
   return out;
 }
