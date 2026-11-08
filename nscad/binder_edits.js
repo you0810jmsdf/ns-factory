@@ -1,5 +1,5 @@
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
-// 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, rings?: { options: [...] }, rivets? } } }
+// 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, refill?: { wMm, hMm }, rings?: { options: [...] }, rivets? } } }
 //   既にある規格・製品の id なら上書き、無い id は「新しい製品」（parent の写しから始める）。
 import { ringSizeOf, binderBase } from './hardware.js';
 import { cleanShopUrl } from './buy.js';
@@ -38,6 +38,8 @@ export function applyBinderEdits(specs, edits) {
       /* 実測の断面（sectionPoints）がある規格で幅を直したときは、断面の点を中心から横に同じ割合で伸縮して新しい幅に合わせる（形は保つ）。そうしないと平面図の台座だけ変わり、断面の台座は実測の幅のままになる（事業主 2026-11-04「台座の幅が反映されません」） */
       if (e.plate.widthMm != null && Array.isArray(s.base?.sectionPoints) && s.base.sectionPoints.length >= 2) { const xs = s.base.sectionPoints.map(q => q.x), lo = Math.min(...xs), hi = Math.max(...xs), w0 = hi - lo; if (w0 > 0 && Math.abs(w0 - e.plate.widthMm) > 1e-9) { const cx = (lo + hi) / 2, k = e.plate.widthMm / w0; s.base.sectionPoints = s.base.sectionPoints.map(q => ({ ...q, x: Math.round((cx + (q.x - cx) * k) * 1000) / 1000 })); } }
     }
+    /* リフィルの大きさ（事業主 2026-11-09「A5_standard は標準の A5 リフィルとして扱う」：新しい製品は親の写しから始まるので、A5 Slim（110×210）を親にすると、リフィルも 110×210 を引き継いでいた）。リング規格（穴・台座・リング径）とは別に、製品ごとに持てる */
+    if (e.refill) s.refill = { ...(s.refill || {}), wMm: e.refill.wMm, hMm: e.refill.hMm };
     if (e.rings?.options) {
       const options = e.rings.options.map(clone);
       s.rings = { ...s.rings, options, diameterOptionsMm: options.map(o => round1(ringSizeOf(null, o).inner)) };
@@ -58,8 +60,8 @@ export function applyBinderEdits(specs, edits) {
   return out;
 }
 
-/** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / ringUrl / dup / mount / lever）。
- *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }], arms?: { count, pitchMm }, lever?: { widthMm, lengthMm?, heightMm, cornerOuterRMm?, cornerInnerRMm? }（レバー。台座の両端に1つずつ・無ければ触らない・全部空欄ならレバーなし） }
+/** 画面の入力を保存用の上書きにする（検算つき）。だめなら Error（message はエラーの種類：plate / name / rings / ring / ringUrl / dup / mount / lever / refill）。
+ *  form = { parent?, names?: { ja, en }, plate: { lengthMm, widthMm, thicknessMm, cornerRMm, confidence }, rings: [{ innerDiameterMm, outerDiameterMm?, wireDiameterMm?, embedDepthMm?, confidence? }], rivets: [{ xMm, yMm, dMm }], arms?: { count, pitchMm }, refill?: { wMm, hMm }（リフィルの大きさ。無ければ触らない）, lever?: { widthMm, lengthMm?, heightMm, cornerOuterRMm?, cornerInnerRMm? }（レバー。台座の両端に1つずつ・無ければ触らない・全部空欄ならレバーなし） }
  *  keepHoles（2026-11-08）：アームの欄を触っていないときに残す今の holes（本数・間隔の並び）。arms が無いときだけ使う。
  *  arms（事業主決定A 2026-11-04：金具＝土台（ブランドごと）＋アーム（規格ごと））：本数と間隔。空欄なら触らない。入れると holes（count・pitchMm・centerPitchMm・span1toLastMm）と rings.countPerSide を上書きする
  *  armsFrom（2026-11-04 改善案1）：アームの規格を別の規格から借りる（その規格の holes と rings をそのまま写す）。借りるときは rings・arms の欄は要らない（無視する） */
@@ -78,6 +80,9 @@ export function editFromForm(form) {
       if (!pos(w) || !pos(h) || (l != null && !pos(l)) || (ro != null && !(fin(ro) && ro >= 0)) || (ri != null && !(fin(ri) && ri >= 0))) throw new Error('lever');
       out.lever = { widthMm: w, lengthMm: l, heightMm: h, cornerOuterRMm: ro ?? 0, cornerInnerRMm: ri ?? 0 };
     }
+  }
+  if (form.refill) {   /* リフィルの大きさ：form.refill が無ければ触らない。幅・高さが正の数でなければエラー（refill） */
+    const w = num(form.refill.wMm), h = num(form.refill.hMm); if (!pos(w) || !pos(h)) throw new Error('refill'); out.refill = { wMm: w, hMm: h };
   }
   const armsFrom = typeof form.armsFrom === 'string' && /^[a-zA-Z0-9_-]+$/.test(form.armsFrom) ? form.armsFrom : '';
   if (armsFrom) {   /* アームは借りる：リングも本数・間隔も、借りた規格のもの */
@@ -115,17 +120,17 @@ export function editFromForm(form) {
 export function editsToCsv(applied, edits) {
   const ids = Object.keys(edits?.specs || {}).filter(id => applied.some(s => s.id === id)); if (!ids.length) return null;
   const enc = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }, row = a => a.map(enc).join(',');
-  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base,ring_count,ring_pitch_mm,ring_span_mm,ring_center_pitch_mm'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring,ring_shop,ring_url'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind,width_mm,length_mm,height_mm,corner_outer_r_mm,corner_inner_r_mm'];
+  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base,ring_count,ring_pitch_mm,ring_span_mm,ring_center_pitch_mm,refill_w_mm,refill_h_mm'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring,ring_shop,ring_url'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind,width_mm,length_mm,height_mm,corner_outer_r_mm,corner_inner_r_mm'];
   const parents = new Set();
   for (const id of ids) {
     const s = applied.find(x => x.id === id), p = s.plate || {};
     if (s.parent && !ids.includes(s.parent)) parents.add(s.parent);
-    const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes || ed?.armsFrom ? s.holes.count : '', ed?.holes || ed?.armsFrom ? s.holes.pitchMm.join(';') : '', ed?.holes || ed?.armsFrom ? s.holes.span1toLastMm ?? '' : '', ed?.holes || ed?.armsFrom ? s.holes.centerPitchMm ?? '' : '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したか借りたときだけ出す */
+    const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes || ed?.armsFrom ? s.holes.count : '', ed?.holes || ed?.armsFrom ? s.holes.pitchMm.join(';') : '', ed?.holes || ed?.armsFrom ? s.holes.span1toLastMm ?? '' : '', ed?.holes || ed?.armsFrom ? s.holes.centerPitchMm ?? '' : '', ed?.refill ? s.refill?.wMm ?? '' : '', ed?.refill ? s.refill?.hMm ?? '' : '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したか借りたときだけ出す */
     for (const o of s.rings.options || []) { const size = ringSizeOf(s, o); rings.push(row([s.id, size.inner, size.outer, size.wire, size.wireSource, o.embedDepthMm ?? '', o.confidence || '', o.shopName || '', o.shopUrl || ''])); }
     for (const r of s.rivets || []) parts.push(row([s.id, 'mount', r.xMm, r.yMm, r.dMm, 'rivet', '', '', '', '', '']));
     for (const q of s.mechanism?.parts || []) parts.push(row([s.id, q.kind === 'button' ? 'button' : 'lever', q.xMm, q.yMm, q.diameterMm ?? '', '', q.widthMm ?? '', q.lengthMm ?? '', q.heightMm ?? '', q.cornerOuterRMm ?? '', q.cornerInnerRMm ?? '']));   /* 開閉部品（レバー等）：台座の幅に合わせて伸縮した長さを、取り込みにも渡す（2026-11-04） */
   }
-  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
+  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
   return { 'binder_specs.csv': specs.join('\n') + '\n', 'binder_rings.csv': rings.join('\n') + '\n', 'binder_parts.csv': parts.join('\n') + '\n' };
 }
 
