@@ -5373,7 +5373,7 @@ function placeLibrary(at) {
   let payload; try { payload = instantiateItem(it, libVars(), at, { scale: Number($('pasteScale').value) || 1 }); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel(); let ids = [];
   commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); if ((it.tags || []).includes('reference')) { const parts = ensureLayer(doc, 'parts'); for (const s of doc.shapes) if (ids.includes(s.id)) s.layer = parts; } selected = new Set(ids); });   /* 参考用（名刺・カード・札）は「部品」の層 */
-  renderLayers(); setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
+  renderLayers(); if (!keepTool) setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
 }
 /** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
 function uniqueLibraryId() { let id = 'user-' + Date.now().toString(36); while (userLibrary.some(x => x.id === id)) id += 'x'; return id; }
@@ -6430,7 +6430,7 @@ function placePhrase(at) {
   if (!layer) { $('hint').textContent = t('noLayer'); return; }
   const shapes = phraseShapes(lines, at, Number($('phraseSize').value) || 4, layer, undefined, $('phraseFont').value);   /* 書体は「書体」欄（ゴシック＝標準は書かない） */
   cancel(); commit(() => { const ids = [], groupId = shapes.length >= 2 ? nextGroupId(doc.shapes) : null; for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh, ...(groupId ? { groupId } : {}) }); ids.push(id); } selected = new Set(ids); lastPhrase = { ids, at: { ...at } }; });   /* 行は1つのグループ：クリックで全行を選んでまとめて動かせ、ダブルクリックで改行つきの編集（事業主 2026-11-05「まとめて動かすときにめんどくさい」「改行編集もしたい」） */
-  renderLayers(); recordPhraseHistory(lines.join('\n')); const placedIds = [...selected]; setMode('select'); selected = new Set(placedIds); draw(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「クリックするたびに定型句が貼り付けられる」）。置いた行は選んだまま＝文字高・フォントの即時反映はそのまま */
+  renderLayers(); recordPhraseHistory(lines.join('\n')); const placedIds = [...selected]; if (!keepTool) setMode('select'); selected = new Set(placedIds); draw(); $('hint').textContent = t('phrasePlaced', { n: shapes.length }) + ' ' + t('phrasePlacedTip');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「クリックするたびに定型句が貼り付けられる」）。置いた行は選んだまま＝文字高・フォントの即時反映はそのまま */
 }
 /** 置いた直後の定型句（事業主 2026-11-05「定型句を置いた直後にフォントを変更できる機能が欲しい」）：置いた行が選ばれたままの間は、カードの文字高・フォントを変えるとその行にすぐ反映する（行間も文字高に合わせて置き直す）。選び直したら、ふつうの「文字をまとめて変える」窓で */
 let lastPhrase = null;
@@ -9386,14 +9386,33 @@ function placeCircleBySize(p) {
   returnToSelectAfterPlace(before); $('hint').textContent = t('circlePlaced', { r: circleNum(r), d: circleNum(r * 2) });
 }
 /** 幅・高さ（円は半径・直径）を入れて1個置いたら、置いた図形を選んだまま、選択ツールへ戻る（事業主 2026-11-07「矩形を作図したら連続で同じ矩形が貼り付けられてうざい」：クリックのたびに同じ大きさを置き続けていた）。置けなかったとき（使える層が無い）は、ツールのまま。 */
-function returnToSelectAfterPlace(before) { if (doc.shapes.length > before) setMode('select'); }
+function returnToSelectAfterPlace(before) { if (doc.shapes.length > before && !keepTool) setMode('select'); }   /* Shift を押しながらなら、続けて置く（keepTool） */
 /** 「置く」道具は、1回置いたら選択ツールに戻る（事業主 2026-11-08「左クリックを押すたびにリングが描画される。2つも連続で描くことはありえないので選択モードにすぐ戻して。他の機能もほとんど同じ話でその都度直すのは疲れる」）。
  *  置く処理 place(at) を呼び、実際に置けたとき（図面が変わったとき）だけ戻す。置けなかったとき（数の入れ違いなど）は、そのまま＝直してもう一度クリックできる。Shift を押しながらのクリックは、続けて置く。
  *  置いたものは選んだまま・「置きました」の案内も残す。新しく「置く」道具を足すときは、クリックを受ける所でこれを通す（部品ライブラリ・定型句は、置く処理の中で戻している）。 */
 function placeOnce(place, at, keep = false) {
   const seq = commitSeq, from = mode; place(at);
   if (keep || mode !== from || commitSeq === seq) return;
-  const ids = new Set(selected), msg = $('hint').textContent; setMode('select'); selected = ids; $('hint').textContent = msg + ' ' + t('placeOnceBack'); draw();
+  backToSelect('placeOnceBack');
+}
+/** 選択ツールに戻る。選んでいるもの（置いた・描いたもの）はそのまま・今の案内文のあとに、戻ったことを足す。 */
+function backToSelect(noteKey, from = null) { const ids = new Set(selected), cur = $('hint').textContent, msg = from && cur === modeHint(from) ? '' : cur; setMode('select'); selected = ids; $('hint').textContent = (msg ? msg + ' ' : '') + t(noteKey); draw(); }   /* from＝戻る前の道具。案内が、その道具の使い方のままなら（描いたことを伝える文が無いとき）、使い方は消して、戻ったことだけを出す */
+/** 「描く」道具も、1回描いたら選択ツールに戻る（事業主 2026-11-09「描く道具も、1回描いたら選択に戻す。Shift で連続」）。
+ *  対象は、線・折れ線・矩形・円・円弧・ベジエ・ペン・文字。描き終わりは道具ごとに違う（ドラッグを離す・終点のクリック・ダブルクリック・Enter）ので、クリック（pointerdown・pointerup）・ダブルクリック・Enter の3か所を drawOnce で包み、
+ *  「その操作で図面が変わった」ときだけ戻す（描きかけの途中・描けなかったとき・取っ手での大きさ変更は戻さない）。Shift を押しながら描き終えたときは戻らない（直線・矩形で Shift は「水平・垂直に固定」でもあるので、固定して描いたときも続く）。
+ *  keepTool は、いま処理している操作で Shift が押されているか（部品ライブラリ・定型句・大きさ指定の円と矩形が、続けて置くかの判定にも使う）。新しく「描く」道具を足したら、DRAW_ONCE_MODES に足す。 */
+const DRAW_ONCE_MODES = ['line', 'polyline', 'rect', 'circle', 'arc', 'bezier', 'path', 'text'];
+let keepTool = false;
+function drawOnce(handler, kinds = null) {
+  return function (e) {
+    const seq = commitSeq, from = mode, kind = gesture?.kind, skip = !!pasteGhost || foldCutPicking;   /* 貼り付け待ち・断面の位置の指定は、道具の描き終わりではない */
+    keepTool = !!e?.shiftKey;
+    try { return handler.call(this, e); }
+    finally {
+      keepTool = false;
+      if (!(e?.shiftKey || skip || commitSeq === seq || mode !== from || !DRAW_ONCE_MODES.includes(from) || (kinds && !kinds.includes(kind)))) backToSelect('drawOnceBack', from);
+    }
+  };
 }
 /** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
 function rectBySizeAt(p) {
@@ -10154,7 +10173,7 @@ function touchPinchUp(e) {
   if (e.pointerType !== 'touch') return false; touchPts.delete(e.pointerId); if (!pinch) return false;
   pinch = null; gesture = null; if (canvas.hasPointerCapture?.(e.pointerId)) canvas.releasePointerCapture(e.pointerId); draw(); return true;   /* 2本指の操作は、指を離しても、クリックにしない */
 }
-canvas.addEventListener('pointerdown', e => {
+canvas.addEventListener('pointerdown', drawOnce(e => {
   hideVertexMenu();   /* 頂点メニューは、図面を押したら閉じる */
   if (touchPinchDown(e)) return;
   longPressStart(e); hideCtxMenu(); hideRoundHoleBar(); /* 窓が出ているときに、図をクリックしたら、聞いている途中の操作はやめる */ /* 右クリックのメニューは、ほかをクリックしたら閉じる */
@@ -10259,7 +10278,7 @@ canvas.addEventListener('pointerdown', e => {
   else if (stage) { gesture = { kind: 'stage' }; }
   else { gesture = { kind: 'draw', start: cursor }; }
   draw();
-});
+}));
 canvas.addEventListener('pointermove', e => {
   if (touchPinchMove(e)) return;
   longPressMove(e);
@@ -10560,7 +10579,7 @@ function gridDoubleClickPick(w) {
   const frame = doc.shapes.filter(s => best.g.frameIds.includes(s.id) && visible(s) && editable(s)), nearFrame = frame.length && frame.some(s => distTo(s, w) <= tol);
   return nearFrame ? { ids: frame.map(s => s.id), frame: true, n: best.g.pieceIds.length } : { ids: best.g.ids.filter(id => doc.shapes.some(s => s.id === id && editable(s))), frame: false, n: best.g.pieceIds.length };
 }
-canvas.addEventListener('dblclick', e => {
+canvas.addEventListener('dblclick', drawOnce(e => {
   cancelSpanClick();
   const p = local(e), w = world(p);
   if (mode === 'path') { finishPath(false); return; }
@@ -10589,8 +10608,8 @@ canvas.addEventListener('dblclick', e => {
       const ids = chain.shapeIds.filter(id => { const x = doc.shapes.find(y => y.id === id); return x && editable(x); }); selected = new Set(ids); nodeSel = null; const stops = contourStops(dups.reps, chainIds); chainStops = stops.length ? { ids: new Set(ids), stops } : null; const mine = ids.some(id => { const x = doc.shapes.find(y => y.id === id); return x?.foldSec || x?.foldFlat; }) ? [] : gaps.filter(g => ids.includes(g.a.id) || ids.includes(g.b.id));   /* 断面・平面図は格子の枠ではない：革の端で中心線と縁の端が厚みぶん離れているのを「隙間」と言わない（事業主 2026-11-04「閉じて作るを押すとおかしくなる」） */ gapAlert = mine.length ? { ids: new Set(ids), pts: mine.map(g => ({ x: g.x, y: g.y, d: g.d })), i: -1 } : null;   /* つながっていない所の丸印（事業主「ダブルクリックしたときにつながっていないところが〇で表示されるのではなかったか」：丸印は、ポインタが近いときだけだった）。選んでいる間は、全部の隙間に出し続ける */
   $('hint').textContent = t('chainSelectedLen', { n: ids.length, len: totalLengthOf(ids.map(id => doc.shapes.find(y => y.id === id))).toFixed(2) }) + (mine.length ? ' ' + t('chainGapNote', { n: mine.length, max: Math.max(...mine.map(g => g.d)).toFixed(2) }) : '') + (chainStops ? ' ' + t('chainBranchNote', { n: chainStops.stops.length }) : ''); draw(); }
   }
-});
-canvas.addEventListener('pointerup', e => {
+}));
+canvas.addEventListener('pointerup', drawOnce(e => {
   if (touchPinchUp(e)) return;
   longPressCancel();
   if (!gesture) return;
@@ -10682,7 +10701,7 @@ canvas.addEventListener('pointerup', e => {
     }
   }
   draw();
-});
+}, ['draw', 'stage']));
 canvas.addEventListener('pointercancel', e => { touchPinchUp(e); longPressCancel(); gesture = null; draw(); });
 canvas.addEventListener('wheel', e => {
   e.preventDefault();
@@ -10902,9 +10921,9 @@ window.addEventListener('keydown', e => {
   else if (e.key === 'Enter' && mode === 'offset' && offsetSelection) { e.preventDefault(); runOffset(); }
   else if (e.key === 'Enter' && mode === 'detour' && detourState?.obstId) { e.preventDefault(); runDetour(); }
   else if (e.key === 'Enter' && mode === 'line' && stage?.kind === 'cmd') { e.preventDefault(); stage = null; $('hint').textContent = t('hint.line'); draw(); }
-  else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); finishPolyline(); }
-  else if (e.key === 'Enter' && stage?.kind === 'bzpts') { e.preventDefault(); finishBezier(); }
-  else if (e.key === 'Enter' && stage?.kind === 'path') { e.preventDefault(); finishPath(false); }
+  else if (e.key === 'Enter' && stage?.kind === 'polyline') { e.preventDefault(); drawOnce(() => finishPolyline())(e); }
+  else if (e.key === 'Enter' && stage?.kind === 'bzpts') { e.preventDefault(); drawOnce(() => finishBezier())(e); }
+  else if (e.key === 'Enter' && stage?.kind === 'path') { e.preventDefault(); drawOnce(() => finishPath(false))(e); }
 });
 $('cmd').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); runCommand($('cmd').value); }
