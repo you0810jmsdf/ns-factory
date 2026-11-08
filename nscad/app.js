@@ -6238,16 +6238,20 @@ const sdLabels = () => ({ L: t('sdL'), W: t('sdW'), T: t('sdT'), R: t('sdR'), ho
 function bdeDraftSpec() {
   const spec = binderSpec(bdeSpecId); if (!spec) return null;
   const form = readBinderEditForm(); if (form.parent && !String(form.names.ja).trim()) form.names = { ja: '…', en: form.names.en };   /* 名前が空でも、図は描く */
-  let edit; try { edit = editFromForm(form); } catch (err) { return { err: err.message }; }
+  let edit, tmp = false; try { edit = editFromForm(form); } catch (err) {
+    if (err.message !== 'lever') return { err: err.message };   /* レバーだけ入れ方が足りないとき（長さだけ・高さだけ）は、図を止めない（事業主 2026-11-08「寸法いれてもサンプルが追従しない」）：空の方を仮の値で描く。保存はできない */
+    const lv = form.lever || {}; try { edit = editFromForm({ ...form, lever: { ...lv, widthMm: lv.widthMm === '' ? '7' : lv.widthMm, heightMm: lv.heightMm === '' ? '6' : lv.heightMm } }); tmp = true; } catch (err2) { return { err: err2.message }; }
+  }
   let id = bdeSpecId; if (edit.parent) id = '__draft'; else if (spec.parent) edit.parent = spec.parent;
-  return { spec: applyBinderEdits(BINDER_ORIGINALS, { v: 1, specs: { ...binderEdits.specs, [id]: edit } }).find(x => x.id === id) || null };
+  return { tmp, spec: applyBinderEdits(BINDER_ORIGINALS, { v: 1, specs: { ...binderEdits.specs, [id]: edit } }).find(x => x.id === id) || null };
 }
 function bdeSampleUpdate() {
-  const d = bdeDraftSpec(); if (!d) return;
-  if (d.err) { $('bdeSampleNote').textContent = t('bdeSampleErr', { why: t('bde.' + d.err) }); return; }   /* 入れ方が足りない間は、直前の図のまま */
-  if (!d.spec) return;
+  const d = bdeDraftSpec(), note = $('bdeSampleNote'), box = $('bdeSample'); if (!d) return;
+  if (d.err) { note.textContent = t('bdeSampleErr', { why: t('bde.' + d.err) }); note.classList.toggle('sd-warn', true); box.classList.toggle('sd-stale', true); return; }   /* 入れ方が足りない間は、直前の図のまま（薄く表示して、古い図だとわかるように） */
+  box.classList.toggle('sd-stale', false); if (!d.spec) return;
   const svgs = binderSampleSvgs(d.spec, { hl: bdeHl, lab: sdLabels(), ringIdx: bdeRingIdx }), rv = d.spec.rivets || [], dup = rivetsDuplicated(rv);
-  $('bdeSamplePlan').innerHTML = svgs.plan; $('bdeSampleSide').innerHTML = svgs.side; $('bdeSampleNote').textContent = t('bdeSampleHint') + (dup ? ' ' + t('bdeSampleDup') : '');
+  $('bdeSamplePlan').innerHTML = svgs.plan; $('bdeSampleSide').innerHTML = svgs.side;
+  note.textContent = (d.tmp ? t('bdeSampleLeverTmp') : t('bdeSampleHint')) + (dup ? ' ' + t('bdeSampleDup') : ''); note.classList.toggle('sd-warn', !!(d.tmp || dup));   /* 仮の値で描いているとき・穴が重なっているときは、目立つ色 */
 }
 function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
