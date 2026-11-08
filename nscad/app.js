@@ -5351,13 +5351,18 @@ function wireLibOrganizer() {
   $('libOrgAdd').onclick = addLibOrgGroup; $('libOrgNew').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); addLibOrgGroup(); } });
   $('libOrgReset').onclick = () => { if (!libOrgResetArmed) { libOrgResetArmed = true; renderLibOrganizer(); return; } setLibLayout(emptyLibraryLayout()); };   /* 2回押して、もとの並びに戻す（部品は消えない） */
 }
+/** 公開範囲の印（事業主 2026-11-08「ロゴと金具に『公開してよいもの』『合言葉つきのもの』の印をつける」・表示だけで、中身は隠さない）。
+ *  項目の access が 'passphrase' なら合言葉つき。書いていなければ公開（初めは全部公開・合言葉つきにするものは data/library.json・data/hardware.json の該当項目に "access": "passphrase" を足す）。 */
+const accessOf = it => (it && it.access === 'passphrase') ? 'passphrase' : 'public';
+const accessMark = it => accessOf(it) === 'passphrase' ? '🔒 ' : '';
+function showAccess(id, it) { const el = $(id); if (!el) return; el.hidden = !it; if (it) { el.textContent = t(accessOf(it) === 'passphrase' ? 'accPass' : 'accPublic'); el.dataset.access = accessOf(it); el.title = t('accTip'); } }
 function renderLibrary() {
   const sel = $('libItem'), keep = sel.value, q = ($('libSearch').value || '').toLowerCase(); sel.textContent = '';
   /* 見出し（分類）つきの一覧（事業主 2026-11-07「部品ライブラリはグルーピングして整理したい」）：登録した部品＝自作・同梱の部品はタグから自動で分ける。見出しには件数も出す */
   const shown = libraryItems().filter(it => !q || (it.name + ' ' + (it.name_en || '') + ' ' + (it.tags || []).join(' ')).toLowerCase().includes(q));
-  for (const g of libArranged(shown)) { const og = document.createElement('optgroup'); og.label = libGroupName(g) + '（' + g.items.length + '）'; for (const it of g.items) { const o = document.createElement('option'); o.value = it.id; o.textContent = libItemName(it); og.appendChild(o); } sel.appendChild(og); }
+  for (const g of libArranged(shown)) { const og = document.createElement('optgroup'); og.label = libGroupName(g) + '（' + g.items.length + '）'; for (const it of g.items) { const o = document.createElement('option'); o.value = it.id; o.textContent = accessMark(it) + libItemName(it); og.appendChild(o); } sel.appendChild(og); }
   if (libraryItems().some(i => i.id === keep)) sel.value = keep;
-  const it = libCurrent(), box = $('libVars'); box.textContent = ''; $('libDesc').textContent = it ? (it.desc || '') : '';
+  const it = libCurrent(), box = $('libVars'); box.textContent = ''; $('libDesc').textContent = it ? (it.desc || '') : ''; showAccess('libAccess', it && (it.tags || []).includes('logo') ? it : null);   /* ロゴ・刻印だけに印を出す */
   if (it) for (const [k, v] of Object.entries(it.vars || {})) { const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = String(varStep(it, k)); if (it.varLimits?.[k]) { input.min = String(it.varLimits[k][0]); input.max = String(it.varLimits[k][1]); } /* 範囲のある変数は入力欄にも範囲を付ける */ input.value = String(v); input.dataset.var = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
 }
 function libVars() { const out = {}; for (const el of ($('libVars').children || [])) { const input = el.querySelector ? el.querySelector('input') : null; if (input && input.dataset?.var) out[input.dataset.var] = Number(input.value); } return out; }
@@ -5516,11 +5521,11 @@ function fillBinderSpecOptions(sel, placeholder = false) {
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
-  for (const it of items) { const o = document.createElement('option'); o.value = it.id; o.textContent = document.documentElement.lang === 'en' ? it.name_en : it.name_ja; sel.appendChild(o); }
+  for (const it of items) { const o = document.createElement('option'); o.value = it.id; o.textContent = accessMark(it) + (document.documentElement.lang === 'en' ? it.name_en : it.name_ja); sel.appendChild(o); }
   sel.value = items.some(i => i.id === keep) ? keep : (items[0]?.id || '');
   const it = hwCurrent(), box = $('hwParams'); box.textContent = '';
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
-  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : '';
+  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it);
   const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs);
   renderBinder();
 }
