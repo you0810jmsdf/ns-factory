@@ -6224,6 +6224,8 @@ let bdeHl = '', bdeRingIdx = 0, bdeLeverInit = '';
 function bdeLeverValues() { return { widthMm: $('bdeLeverW').value, lengthMm: $('bdeLeverL').value, heightMm: $('bdeLeverH').value, cornerOuterRMm: $('bdeLeverRo').value, cornerInnerRMm: $('bdeLeverRi').value }; }
 /** レバーの欄：最初に入れた値から変えていなければ送らない（今のレバーをそのまま残す）。製品から新しい製品を作るときは、今のレバーを引き継ぐ。 */
 function bdeLeverForSave(asNew, spec) { const now = bdeLeverValues(); return JSON.stringify(now) !== bdeLeverInit || (asNew && spec.parent) ? now : binderEdits.specs[bdeSpecId]?.lever; }   /* 触っていなければ、前に保存したレバー（あれば）を引き継ぐ。保存は、前の内容を丸ごと置き換えるため */
+/** 同じ位置に取り付け穴が2つ以上あるか（事業主 2026-11-08「リングを配置すると必ず線の重複エラーが表示される」：穴の x が 2 つとも 100.5 で、同じ穴が重なっていた。左右に付けるなら、片方を −100.5）。 */
+const rivetsDuplicated = rv => (rv || []).some((a, i) => rv.some((b, k) => k > i && Math.abs(a.xMm - b.xMm) < 1e-6 && Math.abs(a.yMm - b.yMm) < 1e-6));
 const bdeVisibleIndex = (prefix, i) => { let n = 0; for (let k = 0; k < i; k++) if (!$(prefix + k + 'Row').hidden) n++; return n; };
 /** 触った欄の id → サンプル図で色をつける寸法の印（hardware.js の binderSampleSvgs の hl）。リングの欄は、側面図で見せるリングも決める。 */
 function bdeHlOf(id) {
@@ -6244,7 +6246,7 @@ function bdeSampleUpdate() {
   const d = bdeDraftSpec(); if (!d) return;
   if (d.err) { $('bdeSampleNote').textContent = t('bdeSampleErr', { why: t('bde.' + d.err) }); return; }   /* 入れ方が足りない間は、直前の図のまま */
   if (!d.spec) return;
-  const svgs = binderSampleSvgs(d.spec, { hl: bdeHl, lab: sdLabels(), ringIdx: bdeRingIdx }), rv = d.spec.rivets || [], dup = rv.some((a, i) => rv.some((b, k) => k > i && Math.abs(a.xMm - b.xMm) < 1e-6 && Math.abs(a.yMm - b.yMm) < 1e-6));
+  const svgs = binderSampleSvgs(d.spec, { hl: bdeHl, lab: sdLabels(), ringIdx: bdeRingIdx }), rv = d.spec.rivets || [], dup = rivetsDuplicated(rv);
   $('bdeSamplePlan').innerHTML = svgs.plan; $('bdeSampleSide').innerHTML = svgs.side; $('bdeSampleNote').textContent = t('bdeSampleHint') + (dup ? ' ' + t('bdeSampleDup') : '');
 }
 function readBinderEditForm() {
@@ -6294,6 +6296,7 @@ function redrawPlacedBinders(targets) {
 }
 function saveBinderEdit() {
   let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { $('hint').textContent = t('bde.' + err.message); return; }
+  if (rivetsDuplicated(edit.rivets)) { $('hint').textContent = t('bdeDupBlocked'); return; }   /* 同じ位置の穴は、図面に置くと重なった線の警告になる。保存せずに直し方を案内 */
   const spec = binderSpec(bdeSpecId); let id = bdeSpecId;
   if (edit.parent) id = newProductId(BINDER_SPECS, edit.parent); else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
   const placed = edit.parent && id !== bdeSpecId ? [] : placedBinderTargets(id);   /* 古い寸法のうちに、置いてある金具が手直しされていないか調べる（新しい製品は、まだ置いた金具が無い） */
