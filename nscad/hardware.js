@@ -577,7 +577,7 @@ export function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) 
       return `<g class="${cls('sd-dim', ...keys)}">${line(x1, y, x2, y, 'sd-l')}${line(x1, y - tk, x1, y + tk, 'sd-l')}${line(x2, y - tk, x2, y + tk, 'sd-l')}${t}</g>`;
     };
     /** 縦の寸法線。left＝文字を線の左に。 */
-    const dimV = (x, y1, y2, label, keys, left = false) => `<g class="${cls('sd-dim', ...keys)}">${line(x, y1, x, y2, 'sd-l')}${line(x - tk, y1, x + tk, y1, 'sd-l')}${line(x - tk, y2, x + tk, y2, 'sd-l')}${txt(left ? x - 0.6 * fs : x + 0.6 * fs, (y1 + y2) / 2 + 0.35 * fs, label, left ? 'end' : 'start')}</g>`;
+    const dimV = (x, y1, y2, label, keys, left = false, tip = '') => `<g class="${cls('sd-dim', ...keys)}">${tip ? `<title>${esc(tip)}</title>` : ''}${line(x, y1, x, y2, 'sd-l')}${line(x - tk, y1, x + tk, y1, 'sd-l')}${line(x - tk, y2, x + tk, y2, 'sd-l')}${txt(left ? x - 0.6 * fs : x + 0.6 * fs, (y1 + y2) / 2 + 0.35 * fs, label, left ? 'end' : 'start')}</g>`;
     return { line, txt, dimH, dimV };
   };
   const wrap = (vb, body, label) => `<svg xmlns="http://www.w3.org/2000/svg" class="sd-svg" viewBox="${vb.map(f).join(' ')}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(label)}">${body}</svg>`;
@@ -627,7 +627,9 @@ export function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) 
   e2.push(S.dimH(-I / 2, I / 2, cy, `${T8('inner', '内径')} ${f(I)}`, ['ri']), S.line(-D / 2, cy, -D / 2, yo, 'sd-ext'), S.line(D / 2, cy, D / 2, yo, 'sd-ext'), S.dimH(-D / 2, D / 2, yo, `${T8('outer', '外径')} ${f(D)}`, ['ro']), S.dimH(-D / 2, -I / 2, cy, `${T8('wire', '線径')} ${f(wire)}`, ['rw'], 'left'));
   e2.push(S.line(-W / 2, 0, -W / 2 - fs2, 0, 'sd-ext'), S.dimV(-W / 2 - fs2, 0, embed, `${T8('embed', '食い込み')} ${f(embed)}`, ['re'], true));
   e2.push(S.dimV(W / 2 + fs2, 0, Ts, `${T8('T', '板厚')} ${f(Ts)}`, ['T']), S.dimH(-W / 2, W / 2, Ts + fs2 * 1.8, `${T8('W', '幅')} ${f(W)}`, ['W']));
+  /* 全高：台座の下面からリングの頂部まで（事業主 2026-11-08「食い込みはリングの頂部までの距離（全体の高さ）を見ながら設定したい」）。食い込みの欄を触ると、食い込みの寸法といっしょに光る */
+  const ringTop = cy - D / 2, xH = ex + 6.2 * fs2; e2.push(S.line(0, ringTop, xH, ringTop, 'sd-ext'), S.line(W / 2, Ts, xH, Ts, 'sd-ext'), S.dimV(xH, ringTop, Ts, `${T8('height', '全高')} ${f(Ts - ringTop)}`, ['re', 'ht'], false, T8('heightTip', '台座の下面から、リングの頂部まで')));
   if (lvS) { const h = -lvS.minY; e2.push(S.dimV(Math.max(lvS.maxX, W / 2) + fs2, -h, 0, `${T8('lh', 'レバー高さ')} ${f(h)}`, ['lh']), S.dimH(lvS.minX, lvS.maxX, -h - fs2 * 0.9, `${T8('ll', 'レバー幅')} ${f(lvW)}`, ['ll'])); }
-  const sTop = yo - fs2 * 2.2, sideVb = [-ex - 9.4 * fs2, sTop, 2 * ex + 17.6 * fs2, Ts + fs2 * 1.8 + 1.8 * fs2 - sTop];
+  const sTop = yo - fs2 * 2.2, sideVb = [-ex - 9.4 * fs2, sTop, 2 * ex + 21.8 * fs2, Ts + fs2 * 1.8 + 1.8 * fs2 - sTop];
   return { plan: wrap(planVb, els.join(''), T8('planTitle', '平面図')), side: wrap(sideVb, e2.join(''), T8('sideTitle', '側面図')) };
 }

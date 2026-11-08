@@ -6233,7 +6233,7 @@ function bdeHlOf(id) {
   const r = /^bdeRing(\d+)(Inner|Outer|Wire|Embed)$/.exec(id); if (r) { bdeRingIdx = bdeVisibleIndex('bdeRing', Number(r[1])); return { Inner: 'ri', Outer: 'ro', Wire: 'rw', Embed: 're' }[r[2]]; }
   return { bdePlateL: 'L', bdePlateW: 'W', bdePlateT: 'T', bdePlateR: 'R', bdeLeverW: 'lw', bdeLeverL: 'll', bdeLeverH: 'lh', bdeLeverRo: 'lr', bdeLeverRi: 'lr', bdeArmCount: 'ac', bdeArmPitch: 'ap' }[id] || '';
 }
-const sdLabels = () => ({ L: t('sdL'), W: t('sdW'), T: t('sdT'), R: t('sdR'), hole: t('sdHole'), dia: t('sdDia'), lw: t('sdLw'), ll: t('sdLl'), lh: t('sdLh'), lr: t('sdLr'), arms: t('sdArms'), inner: t('sdInner'), outer: t('sdOuter'), wire: t('sdWire'), embed: t('sdEmbed'), planTitle: t('sdPlan'), sideTitle: t('sdSide') });
+const sdLabels = () => ({ L: t('sdL'), W: t('sdW'), T: t('sdT'), R: t('sdR'), hole: t('sdHole'), dia: t('sdDia'), lw: t('sdLw'), ll: t('sdLl'), lh: t('sdLh'), lr: t('sdLr'), arms: t('sdArms'), inner: t('sdInner'), outer: t('sdOuter'), wire: t('sdWire'), embed: t('sdEmbed'), height: t('sdHeight'), heightTip: t('sdHeightTip'), planTitle: t('sdPlan'), sideTitle: t('sdSide') });
 /** 直している途中の値で作った規格（保存はしない）。入力が足りないときは { err }。 */
 function bdeDraftSpec() {
   const spec = binderSpec(bdeSpecId); if (!spec) return null;
