@@ -6791,7 +6791,9 @@ function roundedRectPoints(x0, y0, w, h, r) {
 /** 平面図に置く金具（台座・リング・レバー・取付穴）の規格。製品（ロルバーン M など）が使う金具：ロルバーン M は、事業主が実測した「Mini6 通常リング」（レバー2つ・取付穴 ±38mm・径5）。それ以外の製品は、親の規格・親が無ければ自分（事業主 2026-10-24「バインダ金具のレバーが消えている」：親の汎用 Mini6 だと、レバーが1つ・もう一方はボタンの円になっていた）。 */
 const PLAN_HARDWARE = { 'rollbahn-m': 'mini6-standard' };
 const hasOwnMeasuredHardware = sp => sp?.plate?.confidence === 'measured' && (sp.mechanism?.parts || []).length > 0;   /* 自分の金具（台座・レバー）を実測で持つ規格（クラウゼ A6 内径20mm）は、親（A6 6穴・レバー無し）の絵にしない（事業主 2026-11-06「リング金具のレバーが見当たらない」「リングの外径の方がベース金具より大きいはず」） */
-function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_HARDWARE[specId] && binderSpec(PLAN_HARDWARE[specId])) || (hasOwnMeasuredHardware(sp) ? sp : null) || (sp?.parent && binderSpec(sp.parent)) || sp; }
+/** この PC で寸法を直した規格・製品（binderEdits）は、自分の穴・台座で描く（事業主 2026-11-08「ビス穴の位置が変わらない」：直した製品でも、親の「A5 6穴」の穴 ±79 のまま描いていた。直す画面に出ている値と図が食い違っていた）。 */
+const hasEditedHardware = sp => sp?.edited === true;
+function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_HARDWARE[specId] && binderSpec(PLAN_HARDWARE[specId])) || (hasOwnMeasuredHardware(sp) || hasEditedHardware(sp) ? sp : null) || (sp?.parent && binderSpec(sp.parent)) || sp; }
 /** 平面図に重ねる「リフィルと本体の差」（事業主 2026-10-24「平面図にリフィルと本体の差を寸法で表示させたい」「畳んだ状態と開いた状態では左右の差はかなり違うはず」）。
  *  上下＝（革の高さ−リフィルの高さ）÷2。開いた状態＝革を平らに置いたとき：リングの位置 s（取付穴の中心）を軸に、ページが左右に広がる（軸から リフィル幅−穴の縁 ずつ）ので、革の両端との差が左右の余り。
  *  畳んだ状態＝断面のリフィルの範囲と、革の端（表紙・裏表紙）・背の外側との水平の距離（背の丸みで革の長さが使われるぶん、開いた状態より小さくなる）。断面が無い・リフィルを垂直に置いたときは null。2つ折りのみ。 */
