@@ -602,12 +602,13 @@ export function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) 
   /* 台座の長さ（下）・幅（左） */
   const yL = hw + fs * 4.4, xW = minPX - fs * 1.6;
   els.push(K.line(-L / 2, W / 2, -L / 2, yL, 'sd-ext'), K.line(L / 2, W / 2, L / 2, yL, 'sd-ext'), K.dimH(-L / 2, L / 2, yL, `${T8('L', '長さ')} ${f(L)}`, ['L']));
+  let yT = yL; if (maxPX - minPX > L + 0.05) { yT = yL + fs * 1.9; els.push(K.line(minPX, W / 2, minPX, yT, 'sd-ext'), K.line(maxPX, W / 2, maxPX, yT, 'sd-ext'), K.dimH(minPX, maxPX, yT, `${T8('TL', '全長')} ${f(maxPX - minPX)}`, ['TL'])); }   /* レバーが台座の外にはみ出すとき：レバーを含む全長（事業主 2026-11-09） */
   els.push(K.line(minPX, -W / 2, xW, -W / 2, 'sd-ext'), K.line(minPX, W / 2, xW, W / 2, 'sd-ext'), K.dimV(xW, -W / 2, W / 2, `${T8('W', '幅')} ${f(W)}`, ['W'], true));
   if (R0 > 0) els.push(K.txt(-L / 2 - 0.4 * fs, -hw - 0.4 * fs, `${T8('R', '角R')} ${f(R0)}`, 'end', cls('sd-txt', 'R')));
   /* レバー（開閉部品）：右のものに寸法 */
   parts.forEach((q, i) => els.push(outl[i] ? `<polygon class="${cls('sd-lever', 'lr')}" points="${outl[i].map(p => `${f(p.x)},${f(p.y)}`).join(' ')}"/>` : q.shape === 'circle' ? `<circle class="sd-lever" cx="${f((q.box.minX + q.box.maxX) / 2)}" cy="${f((q.box.minY + q.box.maxY) / 2)}" r="${f(q.r)}"/>` : `<rect class="sd-lever" x="${f(q.box.minX)}" y="${f(q.box.minY)}" width="${f(q.box.maxX - q.box.minX)}" height="${f(q.box.maxY - q.box.minY)}"/>`));
   const lv = parts.map((q, i) => ({ q, i })).filter(o => o.q.shape === 'rect').sort((a, b) => b.q.box.maxX - a.q.box.maxX)[0];
-  let bottomY = yL;
+  let bottomY = yT;
   if (lv) {
     const b = lv.q.box, ly = b.maxY + fs * 1.4; bottomY = Math.max(bottomY, ly);
     els.push(K.dimH(b.minX, b.maxX, ly, `${T8('lw', 'レバー長さ')} ${f(b.maxX - b.minX)}`, ['lw'], 'right'), K.dimV(b.maxX + fs * 1.6, b.minY, b.maxY, `${T8('ll', 'レバー幅')} ${f(b.maxY - b.minY)}`, ['ll']));
