@@ -45,7 +45,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 15,
@@ -56,7 +58,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 17,
@@ -67,7 +71,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 19,
@@ -78,7 +84,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "innerDiameterMm": 20,
@@ -89,7 +97,9 @@
     "openGapMm": null,
     "confidence": "measured",
     "sourceNote": "事業主指示（2026-10-18）：線径 2.7（実測）・内径 20 を正として外径 25.4。10-13 の「外径 22（線径1）」は誤りだった。リングの食い込み6.25は Mini6 通常リング（実測）と同じ値の仮置き（2026-10-14）",
-    "wireSource": "measured"
+    "wireSource": "measured",
+    "shopName": null,
+    "shopUrl": null
    }
   ]
  },

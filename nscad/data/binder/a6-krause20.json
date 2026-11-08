@@ -40,7 +40,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 29,
@@ -51,7 +53,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 34,
@@ -62,7 +66,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    }
   ]
  },

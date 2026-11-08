@@ -43,7 +43,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -54,7 +56,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 39,
@@ -65,7 +69,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 44,
@@ -76,7 +82,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -208,7 +216,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -219,7 +229,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -230,7 +242,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 39,
@@ -241,7 +255,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 44,
@@ -252,7 +268,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -384,7 +402,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -395,7 +415,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -406,7 +428,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -534,7 +558,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -545,7 +571,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -556,7 +584,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -688,7 +718,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -699,7 +731,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -710,7 +744,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -844,7 +880,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 23,
@@ -855,7 +893,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -866,7 +906,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 27,
@@ -877,7 +919,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -888,7 +932,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -899,7 +945,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -1031,7 +1079,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -1042,7 +1092,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -1053,7 +1105,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 44,
@@ -1064,7 +1118,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -1195,7 +1251,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -1206,7 +1264,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -1217,7 +1277,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -1228,7 +1290,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -1359,7 +1423,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 34,
@@ -1370,7 +1436,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 44,
@@ -1381,7 +1449,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -1511,7 +1581,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -1522,7 +1594,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 29,
@@ -1533,7 +1607,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -1666,7 +1742,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 15,
@@ -1677,7 +1755,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 17,
@@ -1688,7 +1768,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 19,
@@ -1699,7 +1781,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 20,
@@ -1710,7 +1794,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "measured",
      "sourceNote": "事業主指示（2026-10-18）：線径 2.7（実測）・内径 20 を正として外径 25.4。10-13 の「外径 22（線径1）」は誤りだった。リングの食い込み6.25は Mini6 通常リング（実測）と同じ値の仮置き（2026-10-14）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -2059,7 +2145,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 17,
@@ -2070,7 +2158,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 19,
@@ -2081,7 +2171,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 23,
@@ -2092,7 +2184,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -2103,7 +2197,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 25,
@@ -2114,7 +2210,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "通常リングの実測（食い込み6.25）を、断面が共通のため流用（クラウゼ自体は未実測）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 30,
@@ -2125,7 +2223,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -2448,7 +2548,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 13,
@@ -2459,7 +2561,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 15,
@@ -2470,7 +2574,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 19,
@@ -2481,7 +2587,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 20,
@@ -2492,7 +2600,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 25,
@@ -2503,7 +2613,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "measured",
      "sourceNote": "通常リングの実測（2026-10-12・台座断面の作図）：リング下端が台座の頂上から6.25mm下。線径2（外径29）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 30,
@@ -2514,7 +2626,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -2864,7 +2978,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 17,
@@ -2875,7 +2991,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 19,
@@ -2886,7 +3004,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 23,
@@ -2897,7 +3017,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -2908,7 +3030,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 25,
@@ -2919,7 +3043,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）／線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 30,
@@ -2930,7 +3056,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": "estimated",
      "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）／線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
-     "wireSource": "measured"
+     "wireSource": "measured",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -3291,7 +3419,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 17,
@@ -3302,7 +3432,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 19,
@@ -3313,7 +3445,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 23,
@@ -3324,7 +3458,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -3335,7 +3471,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 25,
@@ -3346,7 +3484,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 30,
@@ -3357,7 +3497,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -3411,6 +3553,11 @@ export const BINDER_SPECS = [
      "cornerInnerRMm": null
     }
    ]
+  },
+  "drawings": {
+   "plan": "binder/rollbahn-l.plan.svg",
+   "side": "binder/rollbahn-l.side.svg",
+   "front": "binder/rollbahn-l.front.svg"
   },
   "solid": {
    "type": "binder",
@@ -3514,7 +3661,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 17,
@@ -3525,7 +3674,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 19,
@@ -3536,7 +3687,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 23,
@@ -3547,7 +3700,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "outerDiameterMm": 24,
@@ -3558,7 +3713,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": null,
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 25,
@@ -3569,7 +3726,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     },
     {
      "innerDiameterMm": 30,
@@ -3580,7 +3739,9 @@ export const BINDER_SPECS = [
      "openGapMm": null,
      "confidence": null,
      "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-     "wireSource": "assumed"
+     "wireSource": "assumed",
+     "shopName": null,
+     "shopUrl": null
     }
    ]
   },
@@ -3634,6 +3795,11 @@ export const BINDER_SPECS = [
      "cornerInnerRMm": null
     }
    ]
+  },
+  "drawings": {
+   "plan": "binder/rollbahn-m.plan.svg",
+   "side": "binder/rollbahn-m.side.svg",
+   "front": "binder/rollbahn-m.front.svg"
   },
   "solid": {
    "type": "binder",

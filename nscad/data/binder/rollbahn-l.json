@@ -56,7 +56,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 17,
@@ -67,7 +69,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 19,
@@ -78,7 +82,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 23,
@@ -89,7 +95,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "outerDiameterMm": 24,
@@ -100,7 +108,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": null,
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "innerDiameterMm": 25,
@@ -111,7 +121,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    },
    {
     "innerDiameterMm": 30,
@@ -122,7 +134,9 @@
     "openGapMm": null,
     "confidence": null,
     "sourceNote": "内径 30 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）",
-    "wireSource": "assumed"
+    "wireSource": "assumed",
+    "shopName": null,
+    "shopUrl": null
    }
   ]
  },
@@ -176,6 +190,11 @@
     "cornerInnerRMm": null
    }
   ]
+ },
+ "drawings": {
+  "plan": "binder/rollbahn-l.plan.svg",
+  "side": "binder/rollbahn-l.side.svg",
+  "front": "binder/rollbahn-l.front.svg"
  },
  "solid": {
   "type": "binder",

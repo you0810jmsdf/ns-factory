@@ -46,6 +46,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout } from './hardware.js';
+import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
@@ -5548,7 +5549,14 @@ function renderBinder() {
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
   const leather = Number($('partThickness').value) || 1.5;
   $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
-  syncFoldRingSelects();
+  syncFoldRingSelects(); renderRingBuy(spec, ringD);
+}
+/** 金具カードのリング径の下：選んだリングの購入先（店名・商品ページ）の「買う」リンク。購入先が無ければ出さない。楽天はアフィリエイトのリンク（案内つき）。 */
+function renderRingBuy(spec, ringD) {
+  const box = $('ringBuyBox'); if (!box) return;
+  const opt = spec?.rings?.options?.find(o => Math.round(ringSizeOf(null, o).inner * 10) / 10 === Math.round(Number(ringD) * 10) / 10), b = opt?.shopUrl ? buyLinkOf(opt.shopUrl) : { ok: false };
+  box.hidden = !b.ok; if (!b.ok) return;
+  const a = $('ringBuy'); a.href = b.href; a.textContent = t('ringBuyGo', { inner: Math.round(Number(ringD) * 10) / 10, shop: opt.shopName || b.host }); $('ringBuyNote').textContent = b.affiliate ? t('buyAffNote') : '';
 }
 function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: wireOf(spec, ringD) /* 線径はリングの諸元なので金具データの値だけを使う（画面では直さない・2026-10-12 事業主指摘） */, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, bossDia: base.supporterDiameterMm ?? 0 /* ビス穴金具部の直径・高さは金具のデータの値だけを使う（リングサポータ厚とは無関係・2026-10-13 事業主指示） */, bossT: base.supporterThicknessMm ?? SUPPORTER_T_MM, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: (() => { try { return base.sectionPoints ? binderSection(base) : null; } catch { return null; } })() /* 台座の断面のデータがあれば、断面図で実測の形とサポータの帯を描く */, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: SUPPORTER_T_MM /* リングサポータ厚は固定 2.4mm（つねに 2.3〜2.5mm・入力欄は廃止・2026-10-13 事業主指示） */, liningT: Number($('spLining').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0, spineShape: $('spShape').value === 'round' ? 'round' : 'square' }; }
 /** 閉じた手帳の3面図の入力値（背幅の入力に、束の厚み・表紙の長さ・規格のリフィル寸法・台座・リング位置を足す）。 */
@@ -6186,10 +6194,16 @@ const bdeConfOptions = () => ['', ...BDE_CONF].map(c => `<option value="${c}">${
 const bdeConfSelect = id => `<select id="${id}">${bdeConfOptions()}</select>`;
 const bdeField = (id, label, step = '0.1') => `<label><span>${label}</span><input id="${id}" type="number" step="${step}"></label>`;
 const bdeSet = (id, v) => { const el = $(id); el.value = v == null ? '' : String(v); };
+/** 購入先の入力欄（文字）と、「買う」リンクの更新（事業主 2026-11-08）。楽天の URL は、アフィリエイトのリンクに自動で直す。 */
+const bdeTextField = (id, label, cls) => `<label><span>${label}</span><input id="${id}" type="text" class="${cls}" maxlength="600" autocomplete="off"></label>`;
+function bdeUpdateBuy(i) {
+  const a = $('bdeRing' + i + 'Buy'), inp = $('bdeRing' + i + 'Url'); if (!a || !inp) return;
+  const b = inp.value.trim() ? buyLinkOf(inp.value) : { ok: false }; a.hidden = !b.ok; if (b.ok) { a.href = b.href; a.textContent = t(b.affiliate ? 'buyGoAff' : 'buyGo'); a.title = b.affiliate ? t('buyAffNote') : ''; }
+}
 let bdeRingCount = 0, bdeMountCount = 0, bdeSpecId = null, bdeArmsInit = { count: '', pitch: '' };   /* bdeArmsInit＝アームの欄に最初に入れた値（変えていないかの判定。変えていなければ、元のアームの形・間隔を壊さない） */
-const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
+const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label>${bdeTextField('bdeRing' + i + 'Shop', t('bdeShop'), 'bd-shop')}${bdeTextField('bdeRing' + i + 'Url', t('bdeUrl'), 'bd-url')}<a id="bdeRing${i}Buy" class="buy-go" target="_blank" rel="noopener sponsored" hidden></a><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
 const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
-function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
+function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
 function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
 function openBinderEdit() {
   const spec = binderSpec($('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id;
@@ -6251,6 +6265,7 @@ function bdeDraftSpec() {
   return { tmp, spec: applyBinderEdits(BINDER_ORIGINALS, { v: 1, specs: { ...binderEdits.specs, [id]: edit } }).find(x => x.id === id) || null };
 }
 function bdeSampleUpdate() {
+  for (let i = 0; i < bdeRingCount; i++) bdeUpdateBuy(i);   /* 購入先の「買う」リンクも、入力のたびに更新 */
   const d = bdeDraftSpec(), note = $('bdeSampleNote'), box = $('bdeSample'); if (!d) return;
   if (d.err) { note.textContent = t('bdeSampleErr', { why: t('bde.' + d.err) }); note.classList.toggle('sd-warn', true); box.classList.toggle('sd-stale', true); return; }   /* 入れ方が足りない間は、直前の図のまま（薄く表示して、古い図だとわかるように） */
   box.classList.toggle('sd-stale', false); if (!d.spec) return;
@@ -6260,7 +6275,7 @@ function bdeSampleUpdate() {
 }
 function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
-  for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value }); }
+  for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value, shopName: $('bdeRing' + i + 'Shop').value, shopUrl: $('bdeRing' + i + 'Url').value }); }
   for (let i = 0; i < bdeMountCount; i++) { if ($('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
   const asNew = !!$('bdeAsNew').checked, armsFrom = $('bdeArmsFrom')?.value || undefined;
   /* アームの欄（本数・間隔）：触っていなければ送らない（事業主 2026-11-08：台座の長さだけ直しても、A5 6穴の間隔 19/19/70/19/19 が「70 ずつ」の等間隔に書き換わっていた。欄の「70」は中央の間隔だけ）。
@@ -9372,6 +9387,14 @@ function placeCircleBySize(p) {
 }
 /** 幅・高さ（円は半径・直径）を入れて1個置いたら、置いた図形を選んだまま、選択ツールへ戻る（事業主 2026-11-07「矩形を作図したら連続で同じ矩形が貼り付けられてうざい」：クリックのたびに同じ大きさを置き続けていた）。置けなかったとき（使える層が無い）は、ツールのまま。 */
 function returnToSelectAfterPlace(before) { if (doc.shapes.length > before) setMode('select'); }
+/** 「置く」道具は、1回置いたら選択ツールに戻る（事業主 2026-11-08「左クリックを押すたびにリングが描画される。2つも連続で描くことはありえないので選択モードにすぐ戻して。他の機能もほとんど同じ話でその都度直すのは疲れる」）。
+ *  置く処理 place(at) を呼び、実際に置けたとき（図面が変わったとき）だけ戻す。置けなかったとき（数の入れ違いなど）は、そのまま＝直してもう一度クリックできる。Shift を押しながらのクリックは、続けて置く。
+ *  置いたものは選んだまま・「置きました」の案内も残す。新しく「置く」道具を足すときは、クリックを受ける所でこれを通す（部品ライブラリ・定型句は、置く処理の中で戻している）。 */
+function placeOnce(place, at, keep = false) {
+  const seq = commitSeq, from = mode; place(at);
+  if (keep || mode !== from || commitSeq === seq) return;
+  const ids = new Set(selected), msg = $('hint').textContent; setMode('select'); selected = ids; $('hint').textContent = msg + ' ' + t('placeOnceBack'); draw();
+}
 /** 幅・高さを指定した矩形。基準点 p を「左上の角」か「中心」にして、右下へ幅×高さぶん広げる。 */
 function rectBySizeAt(p) {
   const z = rectSizeNow(); if (!z) return null; const c = $('rectAnchor').value === 'center', r4 = v => +v.toFixed(4), x = c ? p.x - z.w / 2 : p.x, y = c ? p.y - z.h / 2 : p.y;
@@ -10157,7 +10180,7 @@ canvas.addEventListener('pointerdown', e => {
   if (mode === 'patchfill') { gridAtPoint(world(p)); return; }
   if (mode === 'trim') { trimClick(world(p), e.shiftKey, e.altKey); return; } /* Shift＝残す側・Alt＝菱目と菱目の間だけ */
   if (mode === 'koma') { komaClick(world(p)); return; }
-  if (mode === 'hardware') { placeHardware(cursor); return; }
+  if (mode === 'hardware') { placeOnce(placeHardware, cursor, e.shiftKey); return; }   /* 金具は1回置いたら選択に戻る（Shift＋クリックで続けて置ける） */
   if (mode === 'phrase') { placePhrase(cursor); return; }
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
