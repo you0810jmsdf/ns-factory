@@ -360,6 +360,13 @@ export function binderMechParts(spec) {
   }
   return out;
 }
+/** 金具の端から端まで（台座の長さ方向・mm）：台座と、開閉部品（レバー・ボタン）の両端。台座の中心を 0 として、lo・hi・total（＝hi−lo）・half（中心から遠い方の端までの距離）。
+ *  平面図の高さを「レバーの端から〇mm」で決めるのに使う（事業主 2026-11-09）：金具は平面図の高さの真ん中に置くので、高さ＝2×half＋両側の余り。台座の長さが分からない規格は null。 */
+export function binderOverallExtent(spec) {
+  const L = Number(binderBase(spec || {}).lengthMm); if (!(L > 0)) return null;
+  let lo = -L / 2, hi = L / 2; for (const p of binderMechParts(spec)) { lo = Math.min(lo, p.x - p.w / 2); hi = Math.max(hi, p.x + p.w / 2); }
+  const r2 = v => Math.round(v * 100) / 100; return { lo: r2(lo), hi: r2(hi), total: r2(hi - lo), half: r2(Math.max(-lo, hi)) };
+}
 export function binderViews(spec, ringD = null) {
   const base = binderBase(spec), L = base.lengthMm, W = base.sectionWidthMm, T = base.crownHeightMm, size = ringSizeOf(spec, ringD || spec.rings.diameterOptionsMm[0]), I = size.inner, wire = size.wire, D = size.outer, embed = spec.rings.embedMm ?? 0;
   let x = -spec.holes.span1toLastMm / 2; const ringXs = [x]; for (const pitch of spec.holes.pitchMm) { x += pitch; ringXs.push(x); }
