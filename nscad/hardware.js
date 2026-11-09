@@ -608,8 +608,15 @@ export function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) 
   if (xs.length) els.push(K.txt(xs[0] - 0.6 * fs, yP + 0.35 * fs, `${T8('arms', 'アーム')} ${xs.length}`, 'end', cls('sd-txt', 'ac')));
   /* 台座の長さ（下）・幅（左） */
   const yL = hw + fs * 4.4, xW = minPX - fs * 1.6;
-  els.push(K.line(-L / 2, W / 2, -L / 2, yL, 'sd-ext'), K.line(L / 2, W / 2, L / 2, yL, 'sd-ext'), K.dimH(-L / 2, L / 2, yL, `${T8('L', '長さ')} ${f(L)}`, ['L']));
-  let yT = yL; if (maxPX - minPX > L + 0.05) { yT = yL + fs * 1.9; els.push(K.line(minPX, W / 2, minPX, yT, 'sd-ext'), K.line(maxPX, W / 2, maxPX, yT, 'sd-ext'), K.dimH(minPX, maxPX, yT, `${T8('TL', '全長')} ${f(maxPX - minPX)}`, ['TL'])); }   /* レバーが台座の外にはみ出すとき：レバーを含む全長（事業主 2026-11-09） */
+  els.push(K.line(-L / 2, W / 2, -L / 2, yL, 'sd-ext'), K.line(L / 2, W / 2, L / 2, yL, 'sd-ext'), K.dimH(-L / 2, L / 2, yL, `${T8('L', '台座の長さ')} ${f(L)}`, ['L']));
+  let yT = yL;
+  if (maxPX - minPX > L + 0.05) {   /* レバーが台座の外にはみ出すとき：全長＝台座＋レバー（レバーの先から先まで）。足し算が見えるように、レバーの出ている分を台座の長さと同じ行の両側に、全長の線に式を書く（事業主 2026-11-09「台座とレバーを足したのを全長としていますか？サンプル図で明確に表記して」） */
+    const eL = Math.max(-L / 2 - minPX, 0), eR = Math.max(maxPX - L / 2, 0), lvTxt = Math.abs(eL - eR) < 0.05 ? `${f(eL)}×2` : `${f(eL)}＋${f(eR)}`;
+    yT = yL + fs * 1.9;
+    if (eL > 0.05) els.push(K.dimH(minPX, -L / 2, yL, f(eL), ['TL']));
+    if (eR > 0.05) els.push(K.dimH(L / 2, maxPX, yL, f(eR), ['TL']));
+    els.push(K.line(minPX, W / 2, minPX, yT, 'sd-ext'), K.line(maxPX, W / 2, maxPX, yT, 'sd-ext'), K.dimH(minPX, maxPX, yT, `${T8('TL', '全長（レバーの先から先まで）')} ${f(maxPX - minPX)} ${T8('TLeq', '＝ 台座 {p} ＋ レバー {w}').replace('{p}', f(L)).replace('{w}', lvTxt)}`, ['TL']));
+  }
   els.push(K.line(minPX, -W / 2, xW, -W / 2, 'sd-ext'), K.line(minPX, W / 2, xW, W / 2, 'sd-ext'), K.dimV(xW, -W / 2, W / 2, `${T8('W', '幅')} ${f(W)}`, ['W'], true));
   if (R0 > 0) els.push(K.txt(-L / 2 - 0.4 * fs, -hw - 0.4 * fs, `${T8('R', '角R')} ${f(R0)}`, 'end', cls('sd-txt', 'R')));
   /* レバー（開閉部品）：右のものに寸法 */

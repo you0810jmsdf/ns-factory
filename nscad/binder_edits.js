@@ -19,6 +19,13 @@ export function parseEdits(text) {
 }
 export function serializeEdits(edits) { return JSON.stringify(edits); }
 
+/** 2026-11-08 より前の不具合の跡（事業主 2026-11-09「リングアームの間隔がおかしい」）：アームの欄を触らずに保存しただけで、A5 の 19/19/70/19/19 が「中央の間隔 70 ずつ」の等間隔に書き換わって残っていた。
+ *  元の並び cur が等間隔でなく、保存された並び saved が「本数が同じで、間隔がぜんぶ元の中央の間隔」なら、その保存はこの不具合の跡。使わずに、元の並びのままにする（正しい並びは後方幕僚の規格図鑑どおり：A5・A5 Slim は 19/19/70/19/19）。 */
+export function isEqualizedByOldBug(cur, saved) {
+  const c = cur?.pitchMm, sv = saved?.pitchMm, mid = Number(cur?.centerPitchMm);
+  if (!Array.isArray(c) || !Array.isArray(sv) || c.length < 2 || sv.length !== c.length || cur.count !== saved.count || !(mid > 0)) return false;
+  return new Set(c.map(Number)).size > 1 && sv.every(x => Number(x) === mid);
+}
 /** 元の金具データ（配列）に、直した値を重ねた新しい配列を返す。元は変えない。直した規格・製品には edited: true が付く。 */
 export function applyBinderEdits(specs, edits) {
   const out = specs.map(clone);
@@ -54,7 +61,7 @@ export function applyBinderEdits(specs, edits) {
         s.mechanism = { ...(s.mechanism || {}), parts: [mk(-1), mk(1), ...keep] };
       } else s.mechanism = { ...(s.mechanism || {}), parts: keep };
     }
-    if (e.holes) { s.holes = { ...s.holes, ...clone(e.holes) }; s.rings = { ...s.rings, countPerSide: e.holes.count }; }   /* アームの本数・間隔（2026-11-04） */
+    if (e.holes && !isEqualizedByOldBug(s.holes, e.holes)) { s.holes = { ...s.holes, ...clone(e.holes) }; s.rings = { ...s.rings, countPerSide: e.holes.count }; }   /* アームの本数・間隔（2026-11-04）。古い不具合で 70 ずつに書き換わった保存は使わない */
     s.edited = true;
   }
   return out;
