@@ -2787,6 +2787,23 @@ function leverGapNoteText() {
   const ext = leverGapExtent(); if (!ext) return ''; const r = leverGapHeight();
   return r ? t('flowLeverGapNote', { full: +r.full.toFixed(2), g: +r.gap.toFixed(2), v: +r.v.toFixed(2) }) : t('flowLeverGapTotal', { total: +ext.total.toFixed(2) });
 }
+/** 金具の全長が平面図の高さより長いとき（＝金具が革から飛び出す）：案内を赤くして知らせる。高さは勝手に変えない（事業主 2026-11-09 改善提案②）。「レバーの端から」を入れている間は、高さ＝全長＋余りなので出ない。 */
+function leverGapOverText() {
+  const ext = leverGapExtent(); if (!ext || leverGapNow() !== null) return '';
+  const h = Number($('fdH')?.value), full = Math.round(2 * ext.half * 100) / 100;
+  return Number.isFinite(h) && h > 0 && full > h + 0.005 ? t('flowLeverGapOver', { full: +full.toFixed(2), h: +h.toFixed(2) }) : '';
+}
+/** 「レバーの端から」の下の案内（金具の全長・赤い知らせ）と「全長を直す」ボタンの出し入れ。高さが変わるたびに呼ぶ（onFlatNumber('fdH')・renderFoldFlow）。 */
+function syncLeverGapNote() {
+  const ln = $('flowLeverGapNote'), ov = leverGapOverText(), txt = ov || leverGapNoteText();
+  if (ln) { if (ln.textContent !== txt) ln.textContent = txt; ln.classList?.toggle('flow-h-warn', !!ov); }
+  const eb = $('flowLeverGapEdit'); if (eb) eb.hidden = !leverGapExtent();
+}
+/** 案内の横の「全長を直す」：いま平面図に使っている金具の「寸法を直す」を開き、全長の欄に移る（事業主 2026-11-09 改善提案①）。 */
+function openLeverGapEdit() {
+  const s = foldBookState(), sp = s.kind === 'book' && s.spec ? planHardwareSpec(s.spec) : null; if (!sp) return;
+  openBinderEdit(sp.id); const f = $('bdeTotalL'); if (f) { f.focus?.(); f.select?.(); }
+}
 function applyPlanHeight() { if (applyLeverGap()) return; const r = refillPlanHeight(); if (!r) return; planHeightTouched = false; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); }
 const FLAT_CORNER_KEY = 'leather-cad.flatCorner', FLAT_LAYOUT_KEY = 'leather-cad.flatLayout';
 /** 平面図の角の丸め・菱目の並べ方：前回の値をブラウザに覚え、変えたら平面図を作りなおす。 */
@@ -2842,7 +2859,7 @@ function renderFoldFlow() {
   setText('flowOpenDesign', t(bi ? 'foldFlowBiOpenDesign' : 'foldFlowOpenDesign')); setText('flowMake', t(bi ? 'foldFlowBiMake' : 'fdMake'));   /* 2つ折りにはボタン線が無いので、「（ボタン線から）」を付けない */
   renderFoldBook(bookDone);
   { const fh = $('flowH'), src = $('fdH'); if (fh && src && document.activeElement !== fh && fh.value !== src.value) fh.value = src.value; }   /* ②の高さの欄＝設計カードの欄 */
-  { const lg = $('flowLeverGap'), v = foldBookState().leverGap; if (lg && document.activeElement !== lg && lg.value !== v) lg.value = v; const ln = $('flowLeverGapNote'), txt = leverGapNoteText(); if (ln && ln.textContent !== txt) ln.textContent = txt; }   /* レバーの端から〇mm（図面ごと）と、金具の全長の案内 */
+  { const lg = $('flowLeverGap'), v = foldBookState().leverGap; if (lg && document.activeElement !== lg && lg.value !== v) lg.value = v; syncLeverGapNote(); }   /* レバーの端から〇mm（図面ごと）と、金具の全長の案内 */
   applyFlowFold();
 }
 /* ───────── 折りの小窓：必要なカードだけ開く（事業主 2026-10-24「①～③までを折りたたんで必要なカードだけ表示すればよくないか？」）。「いまここ」のカードを開き、ほかは見出し1行に畳む。
@@ -6218,8 +6235,8 @@ const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRin
 const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
 function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
 function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
-function openBinderEdit() {
-  const spec = binderSpec($('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id;
+function openBinderEdit(specId) {
+  const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id;   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
   const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
   bdeRingCount = opts.length; bdeMountCount = rivets.length;
   $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '');
@@ -6362,12 +6379,21 @@ function redrawPlacedBinders(targets) {
   const kept = targets.length - todo.length;
   return (n ? t('bdeHwRedrawn', { n }) : '') + (kept ? (n ? ' ' : '') + t('bdeHwKept', { n: kept }) : '');
 }
+/** 同じ親の下で、同じ名前の製品（新しい順）。事業主 2026-11-09「A5_standard がふたつある」＝「新しい製品として」を入れて、同じ名前で2回保存していた。 */
+function sameNameProducts(edit) {
+  const nm = String(edit.names?.ja ?? '').trim(), seq = x => Number(/-p(\d+)$/.exec(x.id)?.[1] ?? 0);
+  return nm && edit.parent ? BINDER_SPECS.filter(x => x.parent === edit.parent && String(x.names?.ja ?? '').trim() === nm).sort((a, b) => seq(b) - seq(a)) : [];
+}
 function saveBinderEdit() {
   let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { $('hint').textContent = t('bde.' + err.message); return; }
   if (rivetsDuplicated(edit.rivets)) { $('hint').textContent = t('bdeDupBlocked'); return; }   /* 同じ位置の穴は、図面に置くと重なった線の警告になる。保存せずに直し方を案内 */
-  const spec = binderSpec(bdeSpecId); let id = bdeSpecId;
-  if (edit.parent) id = newProductId(BINDER_SPECS, edit.parent); else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
-  const placed = edit.parent && id !== bdeSpecId ? [] : placedBinderTargets(id);   /* 古い寸法のうちに、置いてある金具が手直しされていないか調べる（新しい製品は、まだ置いた金具が無い） */
+  const spec = binderSpec(bdeSpecId); let id = bdeSpecId, overwrote = false;
+  if (edit.parent) {   /* 新しい製品として：同じ名前の製品がもうあれば、上書きしてよいかを聞く（同じ名前が2つ並ぶのを防ぐ。キャンセルなら保存せず窓に戻る） */
+    const same = sameNameProducts(edit);
+    if (same.length) { if (!window.confirm(t('bdeSameName', { name: edit.names.ja }) + (same.length > 1 ? ' ' + t('bdeSameNameMany', { n: same.length }) : ''))) { $('hint').textContent = t('bdeSameNameKept'); return; } id = same[0].id; overwrote = true; }
+    else id = newProductId(BINDER_SPECS, edit.parent);
+  } else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
+  const placed = edit.parent && id !== bdeSpecId && !overwrote ? [] : placedBinderTargets(id);   /* 古い寸法のうちに、置いてある金具が手直しされていないか調べる（新しい製品は、まだ置いた金具が無い） */
   binderEdits.specs[id] = edit; if (!persistBinderEdits()) return;
   rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); const redone = redrawPlacedBinders(placed); bdeRefreshDrawing(); if (redone) $('hint').textContent += ' ' + redone;
 }
@@ -6899,7 +6925,7 @@ function sameCoverLength() {
   syncFoldFields(); foldPend = { widthB: undefined, shiftX: d.shiftX ?? 0 }; liveFoldDesign(); foldPend = null; $('hint').textContent = t('fdSameCoverDone') + ' ' + $('hint').textContent;
 }
 /** 平面図・展開図の数字（高さ fdH・縁 fdEdge・余白 fdMargin・ピッチ fdPitch・ボタン穴の径 fdBtnD）を変えたとき：できている平面図・展開図を、数字が止まってから作りなおす（事業主 2026-10-24「平面図の高さを自由に変えて図面を追従させたい」）。空欄の途中は待つ。 */
-function onFlatNumber(id) { if (id === 'fdPitch') refreshFoldPitch(); if (String($(id).value ?? '').trim() === '') return; foldFollowSoon(); }   /* 数値が正しければ、断面を作る前でも変えた時点で描く（元に戻すは1回） */
+function onFlatNumber(id) { if (id === 'fdH') syncLeverGapNote(); if (id === 'fdPitch') refreshFoldPitch(); if (String($(id).value ?? '').trim() === '') return; foldFollowSoon(); }   /* 数値が正しければ、断面を作る前でも変えた時点で描く（元に戻すは1回） */
 /** 数字を変えて断面を作り直したあと、すでに平面図（②）・展開図（③）ができていれば、数字が止まってから1回だけ、同じ手順で作りなおす（事業主 2026-10-23「数字を変えたら平面図も自動で作り直す」）。
  *  断面と合わせて「元に戻す」は1回。平面図・展開図に手で足したもの（直した菱目など）は、②③を押し直したときと同じく、作りなおしで消える。 */
 let foldFollowTimer = null;
@@ -7506,7 +7532,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('fdBiWB').oninput = onBackWidthInput; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') { planHeightTouched = true; clearLeverGap(); } onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; clearLeverGap(); $('fdH').value = $('flowH').value; onFlatNumber('fdH'); }); $('flowLeverGap').addEventListener('input', onLeverGapInput);   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('fdBiWB').oninput = onBackWidthInput; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') { planHeightTouched = true; clearLeverGap(); } onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; clearLeverGap(); $('fdH').value = $('flowH').value; onFlatNumber('fdH'); }); $('flowLeverGap').addEventListener('input', onLeverGapInput); $('flowLeverGapEdit').addEventListener('click', openLeverGapEdit);   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
