@@ -1,5 +1,5 @@
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
-// 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, refill?: { wMm, hMm }, rings?: { options: [...] }, rivets? } } }
+// 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, refill?: { wMm, hMm }, rings?: { options: [...] }, rivets? } }, aliases?: { [消えた製品の id]: 残した製品の id } }
 //   既にある規格・製品の id なら上書き、無い id は「新しい製品」（parent の写しから始める）。
 import { ringSizeOf, binderBase } from './hardware.js';
 import { cleanShopUrl } from './buy.js';
@@ -15,6 +15,7 @@ export function parseEdits(text) {
   let j; try { j = JSON.parse(text); } catch { return null; }
   if (!j || j.v !== 1 || !j.specs || typeof j.specs !== 'object' || Array.isArray(j.specs)) return null;
   for (const [id, e] of Object.entries(j.specs)) if (!/^[a-zA-Z0-9_-]+$/.test(id) || !e || typeof e !== 'object') return null;
+  if (j.aliases !== undefined && (!j.aliases || typeof j.aliases !== 'object' || Array.isArray(j.aliases) || Object.entries(j.aliases).some(([a, b]) => !/^[a-zA-Z0-9_-]+$/.test(a) || typeof b !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(b)))) delete j.aliases;   /* 読み替えが壊れていても、本体は読む */
   return j;
 }
 export function serializeEdits(edits) { return JSON.stringify(edits); }
@@ -25,6 +26,32 @@ export function isEqualizedByOldBug(cur, saved) {
   const c = cur?.pitchMm, sv = saved?.pitchMm, mid = Number(cur?.centerPitchMm);
   if (!Array.isArray(c) || !Array.isArray(sv) || c.length < 2 || sv.length !== c.length || cur.count !== saved.count || !(mid > 0)) return false;
   return new Set(c.map(Number)).size > 1 && sv.every(x => Number(x) === mid);
+}
+/** 同じ親・同じ名前の製品を整理する（事業主 2026-11-09「既に15mmで修正しているのに反映されない」＝同じ名前「A5」の別の製品を直していた。改善提案「同じ名前の製品を、見つけて自動で整理する」）。
+ *  内容が同じもの：古い方（id の番号が小さい方）を残して1つにまとめる。消えた id は aliases に「残した id」を書く（昔の図面・置いた金具が、残した製品に読み替わる）。
+ *  内容が違うもの：後ろの名前に「（2）」「（3）」…を付ける（id・内容は変えない）。名前が重ならなければ何もしない（2回かけても同じ）。
+ *  返り値 { edits（新しいオブジェクト・元は変えない）, merged（まとめた数）, renamed（名前を変えた数） }。 */
+export function tidyDuplicateProducts(edits) {
+  const out = clone(edits || emptyEdits()), seq = id => Number(/-p(\d+)$/.exec(id)?.[1] ?? 0), sortKeys = v => Array.isArray(v) ? v.map(sortKeys) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, sortKeys(v[k])])) : v, sig = e => JSON.stringify(sortKeys(e));
+  const groups = new Map();
+  for (const [id, e] of Object.entries(out.specs || {})) { const ja = String(e?.names?.ja ?? '').trim(); if (!e?.parent || !ja) continue; const k = e.parent + '\n' + ja; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(id); }
+  let merged = 0, renamed = 0;
+  for (const ids of groups.values()) {
+    if (ids.length < 2) continue; ids.sort((a, b) => seq(a) - seq(b) || (a < b ? -1 : 1));
+    const keep = ids[0], keepSig = sig(out.specs[keep]), differ = [];
+    for (const id of ids.slice(1)) {
+      if (sig(out.specs[id]) !== keepSig) { differ.push(id); continue; }
+      delete out.specs[id]; out.aliases = out.aliases || {}; out.aliases[id] = keep; merged++;
+      for (const [a, b] of Object.entries(out.aliases)) if (b === id) out.aliases[a] = keep;   /* すでに読み替えが指していた先も、残した方へ */
+    }
+    const used = new Set(Object.values(out.specs).map(x => String(x?.names?.ja ?? '').trim())); let k = 2;
+    for (const id of differ) {
+      const e = out.specs[id], ja = String(e.names.ja).trim(), en = String(e.names.en || ja).trim(); let nm;
+      do { nm = `${ja}（${k}）`; k++; } while (used.has(nm)); used.add(nm);
+      e.names = { ...e.names, ja: nm, en: `${en} (${k - 1})` }; renamed++;
+    }
+  }
+  return { edits: out, merged, renamed };
 }
 /** 元の金具データ（配列）に、直した値を重ねた新しい配列を返す。元は変えない。直した規格・製品には edited: true が付く。 */
 export function applyBinderEdits(specs, edits) {

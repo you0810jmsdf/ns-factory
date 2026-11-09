@@ -47,7 +47,7 @@ import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout, binderOverallExtent } from './hardware.js';
 import { buyLinkOf } from './buy.js';
-import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId } from './binder_edits.js';
+import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
 const BINDER_ORIGINALS = JSON.parse(JSON.stringify(BINDER_SPECS));
 let binderEdits = emptyEdits();
@@ -2757,8 +2757,8 @@ function foldFlowStates(d = doc) {
 const FOLD_BOOK_NONE = { kind: '', spec: '', ring: '', dia: '', stack: '', refillR: '', leverGap: '' };   /* spec＝リフィルの規格・ring＝リング規格（空＝リフィルに合わせた初期値。事業主 2026-11-09「A5 Slim はリフィルの規格で、リング規格と全く関係ありません」） */   /* leverGap＝平面図の高さを「金具の端（レバーの先）から〇mm」で決める数（空＝リフィルの高さ＋余りで決める。事業主 2026-11-09） */   /* refillR＝平面図のリフィルの角の丸み（空＝規格の既定。事業主 2026-11-05「Rを指定したい」） */
 function foldBookState() {
   const b = doc.foldBook, d = doc.foldDesign, str = v => typeof v === 'string' ? v.slice(0, 40) : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
-  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), ring: str(b.ring), dia: str(b.dia), stack: str(b.stack), refillR: str(b.refillR), leverGap: str(b.leverGap) };
-  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), ring: '', dia: str(d.ring.ringD), stack: str(d.ring.stackT), refillR: '', leverGap: '' } : { kind: 'plain', spec: '', ring: '', dia: '', stack: '', refillR: '', leverGap: '' };
+  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: canonSpecId(str(b.spec)), ring: canonSpecId(str(b.ring)), dia: str(b.dia), stack: str(b.stack), refillR: str(b.refillR), leverGap: str(b.leverGap) };
+  if (d) return d.ring ? { kind: 'book', spec: canonSpecId(str(d.ring.specId)), ring: '', dia: str(d.ring.ringD), stack: str(d.ring.stackT), refillR: '', leverGap: '' } : { kind: 'plain', spec: '', ring: '', dia: '', stack: '', refillR: '', leverGap: '' };
   return FOLD_BOOK_NONE;
 }
 const foldBookComplete = s => s.kind === 'plain' || (s.kind === 'book' && s.spec !== '' && s.dia !== '' && Number(s.stack) > 0);
@@ -2773,7 +2773,7 @@ function ringStandardId(s = foldBookState()) {
   const dflt = RING_STANDARD_OF[s.spec]; return dflt && binderSpec(dflt) ? dflt : s.spec;
 }
 /** リフィルの大きさ・穴を持つ規格：ふつうは金具と同じ規格。⓪でリング規格を別に選んでいるときは、「リフィルの規格」で選んだ方。 */
-function refillSpecOf(ringId) { const s = foldBookState(); return s.kind === 'book' && s.spec && ringStandardId(s) === ringId ? binderSpec(s.spec) : binderSpec(ringId); }
+function refillSpecOf(ringId) { const s = foldBookState(); return s.kind === 'book' && s.spec && ringStandardId(s) === canonSpecId(ringId) ? binderSpec(s.spec) : binderSpec(ringId); }
 const specsSig = () => BINDER_SPECS.map(x => x.id + ':' + x.names.ja).join(',');   /* 規格の一覧が変わった（製品を足した・名前を直した）ことを知る印 */
 const confWord = c => t({ measured: 'confMeasured', spec: 'confSpec', estimated: 'confEstimated' }[c] || 'confNone');
 /** ⓪の「金具の元」の案内：どの規格のどの値で金具を描いているか（実測か推定か・全長・取付穴・レバーの有無）。レバーが無いときは warn。 */
@@ -5582,7 +5582,8 @@ function hwItems() { return DATA_HARDWARE.items.filter(i => i.category === $('hw
 const binderItem = () => { const id = $('binderSpecSel').value, sp = binderSpec(id); return DATA_HARDWARE.items.find(i => i.id === 'binder-' + (sp?.parent || id)) || null; };
 function hwCurrent() { return hwPlaceKind === 'binder' ? binderItem() : (DATA_HARDWARE.items.find(i => i.id === $('hwItem').value) || hwItems()[0] || null); }
 const hwAngleValue = () => Number($(hwPlaceKind === 'binder' ? 'binderAngle' : 'hwAngle').value) || 0;
-function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
+function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || (binderEdits.aliases?.[id] ? BINDER_SPECS.find(s => s.id === binderEdits.aliases[id]) : null) || null; }   /* 同じ内容の同名の製品をまとめたとき、消えた id は、残した製品に読み替える（昔の図面・置いた金具が壊れない） */
+function canonSpecId(id) { return binderSpec(id)?.id ?? id; }
 /** 規格の選択肢を入れる。製品（parent あり）は親の規格の下にまとめて出す（規格 → 製品の2段）。親の行は規格そのもの。 */
 function fillBinderSpecOptions(sel, placeholder = false, ringOnly = false, placeholderText = '') {   /* ringOnly＝リング規格の一覧（リフィルの名前でしかない規格は出さず、その製品は借りるリング規格の群に入れる） */
   if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = placeholderText || t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
@@ -6259,7 +6260,12 @@ function showBinderData(spec) {
   if (btn) btn.onclick = () => { const text = [...$('svgBody').querySelectorAll('tr')].map(r => r.children[0].textContent + '：' + r.children[1].textContent).join('\n'); const clipboard = globalThis.navigator?.clipboard; clipboard?.writeText?.(text)?.then?.(() => { btn.textContent = t('bdCopied'); }); }; /* copyBinderSection と同じ呼び方（Mac 検査の決まり） */
 }
 /** 「寸法を直す」：この PC のブラウザに保存し、すぐ金具データへ重ねる。公開データに入れるときは「CSV に書き出す」で渡す。 */
-function loadBinderEdits() { try { const e = parseEdits(localStorage.getItem(BINDER_EDITS_KEY) || ''); if (e) binderEdits = e; } catch { /* 保存が使えない環境でも動かす */ } rebuildBinderSpecs(); }
+let binderTidyNote = '';
+/** 起動時：この PC に保存した金具の直しを読み、同じ親・同じ名前の製品を整理する（内容が同じ＝1つにまとめる・違う＝名前に（2）を付ける）。整理したら、その旨を画面の下の帯に出す。 */
+function loadBinderEdits() {
+  try { const e = parseEdits(localStorage.getItem(BINDER_EDITS_KEY) || ''); if (e) { const r = tidyDuplicateProducts(e); binderEdits = r.edits; if (r.merged || r.renamed) { persistBinderEdits(); binderTidyNote = t('bdeTidied', { m: r.merged, r: r.renamed }); } } } catch { /* 保存が使えない環境でも動かす */ }
+  rebuildBinderSpecs(); if (binderTidyNote) $('hint').textContent = binderTidyNote;
+}
 function rebuildBinderSpecs() { BINDER_SPECS.splice(0, BINDER_SPECS.length, ...applyBinderEdits(BINDER_ORIGINALS, binderEdits)); }
 function persistBinderEdits() { try { localStorage.setItem(BINDER_EDITS_KEY, serializeEdits(binderEdits)); return true; } catch { $('hint').textContent = t('storageUnavailable'); return false; } }
 const BDE_CONF = ['measured', 'spec', 'estimated'];
@@ -6279,7 +6285,7 @@ const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeM
 function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
 function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
 function openBinderEdit(specId) {
-  const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id;   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
+  const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id; bdeClearError();   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
   const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
   bdeRingCount = opts.length; bdeMountCount = rivets.length;
   $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '') + (doc.foldDesign && foldBookState().kind === 'book' && ringStandardId() === spec.id ? ' ' + t('bdeUsedHere') : '');   /* ⓪の図面が使っている金具のときだけ「※この図面で使っている金具」 */
@@ -6429,17 +6435,24 @@ function sameNameProducts(edit) {
   const nm = String(edit.names?.ja ?? '').trim(), seq = x => Number(/-p(\d+)$/.exec(x.id)?.[1] ?? 0);
   return nm && edit.parent ? BINDER_SPECS.filter(x => x.parent === edit.parent && String(x.names?.ja ?? '').trim() === nm).sort((a, b) => seq(b) - seq(a)) : [];
 }
+/** 保存が止まったとき、理由を窓の中に赤い文字で出す（事業主 2026-11-09 改善提案「保存が止まったとき、窓の中に赤い文字で理由を出す」：理由は画面の下の細い帯にしか出ず、「反映されない」ように見えていた）。own＝理由の文が、もう「保存しませんでした」で始まっている。 */
+function bdeFail(reason, own = false) {
+  const text = own ? reason : t('bdeNotSaved') + ' ' + reason; $('hint').textContent = text; const el = $('bdeError');
+  if (el) { el.textContent = text; el.hidden = false; el.scrollIntoView?.({ block: 'nearest' }); }
+}
+function bdeClearError() { const el = $('bdeError'); if (el && !el.hidden) { el.hidden = true; el.textContent = ''; } }
 function saveBinderEdit() {
-  let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { $('hint').textContent = t('bde.' + err.message); return; }
-  if (rivetsDuplicated(edit.rivets)) { $('hint').textContent = t('bdeDupBlocked'); return; }   /* 同じ位置の穴は、図面に置くと重なった線の警告になる。保存せずに直し方を案内 */
+  let edit; try { edit = editFromForm(readBinderEditForm()); } catch (err) { bdeFail(t('bde.' + err.message)); return; }
+  if (rivetsDuplicated(edit.rivets)) { bdeFail(t('bdeDupBlocked'), true); return; }   /* 同じ位置の穴は、図面に置くと重なった線の警告になる。保存せずに直し方を案内 */
   const spec = binderSpec(bdeSpecId); let id = bdeSpecId, overwrote = false;
   if (edit.parent) {   /* 新しい製品として：同じ名前の製品がもうあれば、上書きしてよいかを聞く（同じ名前が2つ並ぶのを防ぐ。キャンセルなら保存せず窓に戻る） */
     const same = sameNameProducts(edit);
-    if (same.length) { if (!window.confirm(t('bdeSameName', { name: edit.names.ja }) + (same.length > 1 ? ' ' + t('bdeSameNameMany', { n: same.length }) : ''))) { $('hint').textContent = t('bdeSameNameKept'); return; } id = same[0].id; overwrote = true; }
+    if (same.length) { if (!window.confirm(t('bdeSameName', { name: edit.names.ja }) + (same.length > 1 ? ' ' + t('bdeSameNameMany', { n: same.length }) : ''))) { bdeFail(t('bdeSameNameKept'), true); return; } id = same[0].id; overwrote = true; }
     else id = newProductId(BINDER_SPECS, edit.parent);
   } else if (spec.parent) edit.parent = spec.parent;   /* この PC で作った製品を上書きするときも親を残す */
   const placed = edit.parent && id !== bdeSpecId && !overwrote ? [] : placedBinderTargets(id);   /* 古い寸法のうちに、置いてある金具が手直しされていないか調べる（新しい製品は、まだ置いた金具が無い） */
-  binderEdits.specs[id] = edit; if (!persistBinderEdits()) return;
+  binderEdits.specs[id] = edit; if (!persistBinderEdits()) { bdeFail(t('storageUnavailable'), true); return; }
+  bdeClearError();
   rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); const redone = redrawPlacedBinders(placed); bdeRefreshDrawing(); if (redone) $('hint').textContent += ' ' + redone;
 }
 /** 寸法を直したあと：いまの図面に折りの断面があれば、断面（リング・台座）と平面図・展開図を新しい寸法で作り直す（事業主 2026-11-04「台座の幅が反映されません」：FIX を押し直さないと変わらなかった）。 */
@@ -7697,7 +7710,7 @@ function initHardware() {
   $('bdeAddRing').onclick = () => { if ($('bdeArmsFrom').value) { $('bdeArmsFrom').value = ''; bdeApplyArmsFrom(); $('hint').textContent = t('bdeArmsUnlocked'); }   /* アームを借りているときは、借りるのをやめて（いまの値から）足す */
     const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
   $('bdeLeverFill').onclick = () => { bdeSet('bdeLeverW', 7); bdeSet('bdeLeverL', ''); bdeSet('bdeLeverH', 6); bdeSet('bdeLeverRo', 5); bdeSet('bdeLeverRi', 1); bdeSyncLength(); bdeSampleUpdate(); $('hint').textContent = t('bdeLeverFilled'); };
-  for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, e => { if (ev === 'input' || ev === 'change') { const id = e?.target?.id; if (id === 'bdePlateL') bdeSyncLength('plate'); else if (id === 'bdeTotalL') bdeSyncLength('total'); else if (id === 'bdeLeverW') bdeSyncLength(); else if (id === 'bdeRefillSel') bdeRefillFromSel(); else if (id === 'bdeRefillW' || id === 'bdeRefillH') bdeRefillSelSync(); } if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
+  for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, e => { if (ev === 'input' || ev === 'change') { bdeClearError(); const id = e?.target?.id; if (id === 'bdePlateL') bdeSyncLength('plate'); else if (id === 'bdeTotalL') bdeSyncLength('total'); else if (id === 'bdeLeverW') bdeSyncLength(); else if (id === 'bdeRefillSel') bdeRefillFromSel(); else if (id === 'bdeRefillW' || id === 'bdeRefillH') bdeRefillSelSync(); } if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
   $('bdEditDialog').addEventListener('focusin', e => { bdeHl = bdeHlOf(e.target?.id || ''); if (bdeSpecId) bdeSampleUpdate(); });   /* 触った欄の寸法を、色つきにする */
   $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
@@ -11103,7 +11116,7 @@ $('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id |
 if (typeof setTimeout === 'function') setTimeout(checkNewVersion, 10000);
 if (typeof setInterval === 'function') setInterval(checkNewVersion, VERSION_CHECK_MS);
 document.addEventListener?.('visibilitychange', () => { if (!document.hidden && Date.now() - lastVersionCheck > VERSION_CHECK_ON_RETURN_MS) checkNewVersion(); });
-applyLanguage(initialLang); syncLockMarks(); $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
+applyLanguage(initialLang); if (binderTidyNote) $('hint').textContent = binderTidyNote; syncLockMarks();   /* 同じ名前の製品を整理した知らせは、言語の設定（案内文を作り直す）のあと＝起動の最後に出す */ $('lockRegister').onclick = () => { $('lockDialog').close(); openRegistration(); }; $('lockClose').onclick = () => $('lockDialog').close(); registration.refresh?.()?.then?.(syncLockMarks);
 initCounting(); initPresence();
 tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { restoreSkipped = true; offerRestore([AUTOSAVE_SUB_KEY]); }   /* 別のタブが主なら、前回の続きは出さない（主のタブの保存を、副が消さない）。「このタブで続ける」か、主のタブが閉じたら出す */
 autosaveReady = true; startTabWatch();
