@@ -7008,8 +7008,10 @@ function planHardwareSpec(specId) { const sp = binderSpec(specId); return (PLAN_
 function refillLibraryItem(sp) { return sp ? libraryItems().find(i => i.id === 'notebook-' + sp.id) || libraryItems().find(i => i.id === 'refill-' + sp.id) || null : null; }
 /** 平面図のリフィルの角の丸み（事業主 2026-11-05「Rを指定したい」）：⓪の欄に数字があればそれ（部品の R の範囲に丸める）。空なら部品の既定。部品が R を持たなければ null */
 function refillCornerR(item) {
-  if (!item || !('R' in (item.vars || {}))) return null;
-  const raw = foldBookState().refillR, [lo, hi] = item.varLimits?.R || [0, 15]; if (raw === '' || !Number.isFinite(Number(raw))) return Number(item.vars.R) || 0;
+  const raw = foldBookState().refillR, typed = raw !== '' && Number.isFinite(Number(raw));
+  if (!item) return typed ? Math.min(15, Math.max(0, Number(raw))) : null;   /* 部品ライブラリに無い規格（作った製品など）は、図形（枠と穴の〇）で描く。⓪の欄に数字があれば、枠の角もその丸み（事業主 2026-11-09「リフィルの角Rが8mmなのに0mmで表示されている」「図形で描画されている」）。空なら四角のまま */
+  if (!('R' in (item.vars || {}))) return null;
+  const [lo, hi] = item.varLimits?.R || [0, 15]; if (!typed) return Number(item.vars.R) || 0;
   return Math.min(hi, Math.max(lo, Number(raw)));
 }
 function refillGaps(d, p, h) {
@@ -7109,7 +7111,8 @@ function projectFoldDesign(withStitch) {
         const parts = ensureLayer(doc, 'parts'), refillIds = placed.map(sh => add({ ...sh, layer: parts, color: 'blue' })); if ($('flowRefillPaper')?.checked) addRefillPaperFill(refillIds, parts);   /* リフィルは「部品」の層（事業主 2026-11-05「シミュレーションで作ったリフィルは部品レイヤーとして管理」：レイヤーの目で隠せる） */   /* 白い紙（穴は透明） */
       } else {   /* 部品が無い規格は、外形の枠と穴の〇だけ */
         const parts = ensureLayer(doc, 'parts'), edge = (a, b, c, e) => add({ type: 'line', layer: parts, lineStyle: 'dashed', color: 'blue', x1: a, y1: b, x2: c, y2: e });   /* 部品の無い規格のリフィル（枠と穴の〇）も、「部品」の層に入れる：表示メニューで「部品」を切ると隠れる（事業主 2026-11-06「リフィルは部品として扱うのでは・非表示にしても出てくる」：ガイドの層にあった） */
-        const frameIds = [edge(gx0, y0, gx1, y0), edge(gx1, y0, gx1, y1), edge(gx1, y1, gx0, y1), edge(gx0, y1, gx0, y0)];
+        const cr = gap.R > 0.005 ? Math.min(gap.R, (gx1 - gx0) / 2, (y1 - y0) / 2) : 0;   /* 枠の角の丸み（⓪の欄・無ければ四角） */
+        const frameIds = cr > 0 ? [add({ type: 'polyline', layer: parts, closed: true, lineStyle: 'dashed', color: 'blue', points: roundedRectPoints(gx0, y0, gx1 - gx0, y1 - y0, cr) })] : [edge(gx0, y0, gx1, y0), edge(gx1, y0, gx1, y1), edge(gx1, y1, gx0, y1), edge(gx0, y1, gx0, y0)];
         for (const hy of gap.holeYs) frameIds.push(add({ type: 'circle', layer: parts, cx: fx + gap.hole, cy: fy + h / 2 + hy, r: 2.5, color: 'blue' }));
         if ($('flowRefillPaper')?.checked) addRefillPaperFill(frameIds, parts);   /* 部品が無い規格（クラウゼ A6 内径20mm など）でも、枠と穴の〇から白い紙を塗る（事業主 2026-11-06「リフィルに色がつかない」：チェックを入れても塗られなかった） */
       }
