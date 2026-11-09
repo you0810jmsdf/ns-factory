@@ -2765,7 +2765,7 @@ const foldBookComplete = s => s.kind === 'plain' || (s.kind === 'book' && s.spec
 /* ───────── リフィルの規格とリング規格を分ける（事業主 2026-11-09「A5 Slim はリフィルの規格であってリング規格と全く関係ありません」「穴の位置も全然違います」「レバーのないリングはありません」）：
    金具（間隔・台座・取付穴・レバー・リング径）はリング規格から、リフィルの大きさは「リフィルの規格」から取る。リング規格を選ばないときは、リフィルに合わせた初期値（A5 Slim → A5 6穴）。
    後方幕僚の規格図鑑：A5 Slim は A5 用 6穴金具をそのまま流用できる。リフィルの名前でしかない規格は RING_STANDARD_OF に足す。 ───────── */
-const RING_STANDARD_OF = { a5slim: 'a5' };
+const RING_STANDARD_OF = { a5slim: 'a5-ring16' };   /* A5 Slim → 実測のある「A5 6穴 内径16mm」（事業主 2026-11-09）。無いときは自分自身 */
 const isRefillOnlySpec = id => Object.prototype.hasOwnProperty.call(RING_STANDARD_OF, id);
 function ringStandardId(s = foldBookState()) {
   if (s.kind !== 'book' || !s.spec) return '';
@@ -5587,7 +5587,7 @@ function fillBinderSpecOptions(sel, placeholder = false, ringOnly = false, place
   if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = placeholderText || t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
   const en = document.documentElement.lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, aliasOf = s => (s.names.aliases || []).filter(a => typeof a === 'string' && a), labelOf = s => aliasOf(s).length ? (en ? `${nameOf(s)} (${aliasOf(s).join(', ')})` : `${nameOf(s)}（${aliasOf(s).join('・')}）`) : nameOf(s);   /* 別名（ロルバーン M・Filofax Pocket など）を名前のあとに添える：一覧で探せるように */
   const opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = labelOf(s); into.appendChild(o); };
-  const groupOf = k => ringOnly && isRefillOnlySpec(k.parent) ? RING_STANDARD_OF[k.parent] : k.parent;
+  const rootOf = id => binderSpec(id)?.parent || id, groupOf = k => ringOnly && isRefillOnlySpec(k.parent) ? rootOf(RING_STANDARD_OF[k.parent]) : k.parent;   /* リフィルの名前でしかない規格から作った製品は、借りるリング規格の群（A5 6穴）に入れる */
   for (const s of BINDER_SPECS.filter(s => !s.parent && !(ringOnly && isRefillOnlySpec(s.id)))) { const kids = BINDER_SPECS.filter(k => k.parent && groupOf(k) === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
 }
 function renderHardware() {

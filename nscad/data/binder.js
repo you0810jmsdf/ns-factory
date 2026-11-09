@@ -171,6 +171,157 @@ export const BINDER_SPECS = [
   "sourceNote": null
  },
  {
+  "id": "a5-ring16",
+  "names": {
+   "ja": "A5 6穴 内径16mm",
+   "en": "A5 6-ring 16 mm",
+   "aliases": []
+  },
+  "holes": {
+   "count": 6,
+   "pitchMm": [
+    19,
+    19,
+    70,
+    19,
+    19
+   ],
+   "centerPitchMm": 70,
+   "span1toLastMm": 146
+  },
+  "refill": {
+   "wMm": 148,
+   "hMm": 210
+  },
+  "rings": {
+   "diameterOptionsMm": [
+    16
+   ],
+   "shape": "round",
+   "countPerSide": 6,
+   "firstOffsetMm": null,
+   "options": [
+    {
+     "innerDiameterMm": 16,
+     "outerDiameterMm": 19,
+     "wireDiameterMm": 1.5,
+     "wireSource": "measured",
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": "measured",
+     "sourceNote": "お客様手持ちのリングの実測：内径16・外径19（事業主 2026-11-09）・線径1.5は外径と内径の差から計算",
+     "shopName": null,
+     "shopUrl": null
+    }
+   ]
+  },
+  "plate": {
+   "lengthMm": 215,
+   "widthMm": 20,
+   "thicknessMm": 2,
+   "cornerRMm": 3,
+   "confidence": "measured"
+  },
+  "rivets": [
+   {
+    "xMm": -100.5,
+    "yMm": 0,
+    "dMm": 5
+   },
+   {
+    "xMm": 100.5,
+    "yMm": 0,
+    "dMm": 5
+   }
+  ],
+  "mechanism": {
+   "heightClosedMm": null,
+   "heightOpenMm": null,
+   "leverPos": "end",
+   "confidence": "estimated",
+   "parts": [
+    {
+     "xMm": -111,
+     "yMm": 0,
+     "widthMm": 7,
+     "lengthMm": 20,
+     "heightMm": 1.8,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "N's factory 実測（事業主 2026-11-09）：レバー幅7・高さ1.8（事業主が入力した値）。台座の両端にぴったり付ける（中心＝台座の長さ/2＋幅/2）。長さは台座の幅と同じ20・角Rは0",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    },
+    {
+     "xMm": 111,
+     "yMm": 0,
+     "widthMm": 7,
+     "lengthMm": 20,
+     "heightMm": 1.8,
+     "diameterMm": null,
+     "kind": "lever",
+     "note": "N's factory 実測（事業主 2026-11-09）：レバー幅7・高さ1.8（事業主が入力した値）。台座の両端にぴったり付ける（中心＝台座の長さ/2＋幅/2）。長さは台座の幅と同じ20・角Rは0",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    }
+   ]
+  },
+  "drawings": {
+   "plan": "binder/a5-ring16.plan.svg",
+   "side": "binder/a5-ring16.side.svg",
+   "front": "binder/a5-ring16.front.svg"
+  },
+  "solid": {
+   "type": "binder",
+   "params": {
+    "plateLengthMm": 170,
+    "plateWidthMm": 24,
+    "plateThicknessMm": 2
+   }
+  },
+  "sources": [],
+  "confidence": "spec",
+  "mounts": {
+   "pattern": {
+    "fromEndMm": null,
+    "pitchMm": null,
+    "count": null,
+    "diameterMm": null
+   },
+   "kind": null,
+   "overrides": [
+    {
+     "xMm": -100.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 5,
+     "kind": "rivet",
+     "note": "N's factory 実測（事業主 2026-11-09）：取付穴は台座の中心から±100.5・径5.0（保存した図から読み取り）",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    },
+    {
+     "xMm": 100.5,
+     "yMm": 0,
+     "widthMm": null,
+     "lengthMm": null,
+     "heightMm": null,
+     "diameterMm": 5,
+     "kind": "rivet",
+     "note": "N's factory 実測（事業主 2026-11-09）：取付穴は台座の中心から±100.5・径5.0（保存した図から読み取り）",
+     "cornerOuterRMm": null,
+     "cornerInnerRMm": null
+    }
+   ],
+   "confidence": "measured"
+  },
+  "sourceNote": "N's factory 実測（事業主 2026-11-09）：全長229（台座215＋レバー7×2）・台座の幅20・取付穴は中心から±100.5で径5.0（保存した図から読み取り）・リング内径16・外径19。板厚・角R・穴の並びは A5 6穴の値のまま。20mmリングは全長が違う（224）ので、別の実測が入るまでこの規格には入れない",
+  "parent": "a5"
+ },
+ {
   "id": "a5",
   "names": {
    "ja": "A5 6穴",
