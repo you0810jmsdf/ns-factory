@@ -7623,10 +7623,10 @@ function initPhrases() {
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
-  $('textEditInput').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter') { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });
-  $('textEditInput').addEventListener('blur', () => closeTextEdit(true));   /* 欄の外をクリック＝確定 */
+  $('textEditInput').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); textEditToBlock(); } else if (e.key === 'Enter') { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });
+  $('textEditInput').addEventListener('blur', () => { if (textEdit && !textEdit.block) closeTextEdit(true); });   /* 欄の外をクリック＝確定 */
   $('textEditArea').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });   /* 複数行：Enter は改行、Ctrl+Enter で確定 */
-  $('textEditArea').addEventListener('blur', () => closeTextEdit(true));
+  $('textEditArea').addEventListener('blur', () => { if (textEdit?.block) closeTextEdit(true); });
   $('textEditFont').addEventListener('pointerdown', e => e.preventDefault());   /* 押してもフォーカスを奪わない（blur で先に閉じてから窓を開かないように） */
   $('textEditFont').onclick = () => { const id = textEdit?.id; closeTextEdit(true); if (id) { selected = new Set([id]); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
@@ -9927,6 +9927,15 @@ function openTextEdit(s) {
   textEdit = { id: s.id }; box.hidden = false; area.hidden = true; inp.hidden = false; inp.value = s.text; inp.size = Math.min(60, Math.max(6, [...s.text].length + 2)); placeTextEdit();
   inp.focus?.(); inp.select?.(); $('hint').textContent = t('textEditOpened');
 }
+/** 1行の編集欄で Shift+Enter：カーソルの位置で改行して、複数行の編集欄（全行をまとめて書き換え）に切り替える（事業主 2026-11-09「改行できません」）。選んでいる文字は改行に置き換わる。確定すると、行ごとの文字に分け、同じグループにまとめる。 */
+function textEditToBlock() {
+  if (!textEdit || textEdit.block) return; const s = doc.shapes.find(x => x.id === textEdit.id); if (!s) return;
+  const inp = $('textEditInput'), area = $('textEditArea'), v = inp.value, at = Math.min(Math.max(inp.selectionStart ?? v.length, 0), v.length), end = Math.min(Math.max(inp.selectionEnd ?? at, at), v.length);
+  textEdit = { id: s.id, block: [s.id], pitch: s.sizeMm * 1.4 };   /* 行間は、複数行の既定（大きさの 1.4 倍）。ここから textEdit.block が付くので、1行側の blur では閉じない */
+  const text = v.slice(0, at) + '\n' + v.slice(end), lines = text.split('\n');
+  inp.hidden = true; area.hidden = false; area.value = text; area.rows = Math.min(12, lines.length + 1); area.cols = Math.min(60, Math.max(8, Math.max(...lines.map(l => [...l].length)) + 2));
+  placeTextEdit(); area.focus?.(); area.setSelectionRange?.(at + 1, at + 1); $('hint').textContent = t('textEditBlockTip');
+}
 /** save＝true なら欄の文字で置き換える（空にはしない・同じなら何もしない・元に戻すは1回）。false なら取り消し。 */
 function closeTextEdit(save) {
   if (!textEdit) return;
@@ -9940,6 +9949,7 @@ function closeTextEdit(save) {
       const made = [];
       lines.forEach((text, i) => { if (i < rows.length) { const x = doc.shapes.find(y => y.id === rows[i].id); if (x) { x.text = text; made.push(x.id); } } else { const id = freshId(doc.shapes, 's'), { id: _id, ...style } = base; doc.shapes.push({ ...style, id, text, x: first.x, y: +(first.y + pitch * i).toFixed(4) }); made.push(id); } });
       const drop = new Set(rows.slice(lines.length).map(x => x.id)); if (drop.size) doc.shapes = doc.shapes.filter(x => !drop.has(x.id));
+      if (made.length > 1) { const gid = groupIdOf(first) || nextGroupId(doc.shapes); for (const id of made) { const x = doc.shapes.find(y => y.id === id); if (x) x.groupId = gid; } }   /* 1行だった文字を改行したときも、全行を同じグループに（次からは、まとめて書き換えられる） */
       selected = new Set(made);
     });
     recordPhraseHistory(lines.join('\n')); $('hint').textContent = t('textEditedBlock', { n: lines.length }); draw(); return;
