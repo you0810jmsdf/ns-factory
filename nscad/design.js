@@ -990,8 +990,10 @@ function bifoldRefillEndItems(d, p, refill, n, label, labelOver, px) {
   const pt = bifoldPoint(d, p), xA = pt(0, 0).x, xw = pt(d.width, p.rc[0]).x;   /* xA＝表紙の端（取っ手 endA）・xw＝背の側の基準（取っ手 w） */
   const xs = refill.map(q => q.x), ys = refill.map(q => q.y), a = Math.min(...xs), b = Math.max(...xs), tip = Math.abs(b - xw) > Math.abs(a - xw) ? b : a, y = (Math.min(...ys) + Math.max(...ys)) / 2, len = Math.abs(xA - tip);
   if (![xA, xw, tip, y].every(Number.isFinite) || !(len > 1e-6)) return [];
-  const out = xA >= xw ? 1 : -1, inside = Math.abs(xA - xw) >= Math.abs(tip - xw), far = out > 0 ? Math.max(tip, xA) : Math.min(tip, xA);   /* out＝背から表紙の端へ向かう向き・inside＝リフィルの端が表紙の端の内側にある（収まっている） */
-  return [{ key: 'rEnd', value: n(inside ? len : -len), items: [{ type: 'line', a: { x: tip, y }, b: { x: xA, y }, arrows: 'both', dash: false }, { type: 'text', x: far + out * 5 * px, y, text: `${inside ? label : labelOver} ${n(len)} mm`, align: out > 0 ? 'left' : 'right' }] }];   /* 文字は、表紙の端・リフィルの端のうち背から遠い方の外側。飛び出しているときは value が負 */
+  const out = xA >= xw ? 1 : -1, inside = Math.abs(xA - xw) >= Math.abs(tip - xw);   /* out＝背から表紙の端へ向かう向き・inside＝リフィルの端が表紙の端の内側にある（収まっている） */
+  /* 文字の場所（事業主 2026-11-09「リフィル端部とマチの表記が重複して見えない」）：④全高（マチ）の縦の線は表紙の端の外 26px・その文字は同じ高さ（真ん中）にある。文字は、④全高の線と、リフィルの端・表紙の端のどれよりも外に出し、④全高の文字より下にずらして、点線でつなぐ */
+  const edge = out > 0 ? Math.max(tip, xA, xA + 26 * px) : Math.min(tip, xA, xA - 26 * px), tx = edge + out * 8 * px, ty = y + 22 * px;
+  return [{ key: 'rEnd', value: n(inside ? len : -len), items: [{ type: 'line', a: { x: tip, y }, b: { x: xA, y }, arrows: 'both', dash: false }, { type: 'line', a: { x: xA, y }, b: { x: tx - out * 3 * px, y: ty }, arrows: 'none', dash: true }, { type: 'text', x: tx, y: ty, text: `${inside ? label : labelOver} ${n(len)} mm`, align: out > 0 ? 'left' : 'right' }] }];   /* 飛び出しているときは value が負 */
 }
 /** 断面を直すときに常に見せる寸法（事業主指示 2026-10-20「断面の修正をする際に全体寸法、革の厚みがわかるとよい。動かすと寸法も追従させる」・画面だけの表示）。
  *  全幅（③と同じ線）・全高（大きい方の折りの外径）・厚み（表＋裏）を、数字（mm・小数2桁まで）つきの寸法線で返す。数字は d（doc.foldDesign）から毎回計算するので、設計が変われば追従する。
