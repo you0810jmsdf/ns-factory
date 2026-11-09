@@ -2888,6 +2888,8 @@ function renderFoldBook(done = foldBookComplete(foldBookState())) {
     syncRingStd(s);
     const dkey = lang + '|' + (sp ? sp.id : ''); if (dia.dataset.key !== dkey) { fillRingOptions(dia, sp, true); dia.dataset.key = dkey; } dia.disabled = !sp;
     if (spec.value !== s.spec) spec.value = s.spec; if (dia.value !== s.dia) dia.value = s.dia; if (document.activeElement !== stack && stack.value !== s.stack) stack.value = s.stack;
+    const sn = $('flowStackNote'), dN = Number(s.dia), sN = Number(s.stack);   /* 束の厚みの目安：内径の8割（上限は内径）。入れた値が上限を超えたら赤 */
+    if (sn) { const over = dN > 0 && sN > dN, txt = dN > 0 ? t(over ? 'foldFlowStackOver' : 'foldFlowStackNote', { s: s.stack, d: s.dia, n: autoStackOf(s.dia) }) : ''; if (sn.textContent !== txt) sn.textContent = txt; sn.classList?.toggle('flow-h-warn', over); }
   }
   { const rr = $('flowRefillR'), sp = s.kind === 'book' && s.spec ? binderSpec(s.spec) : null; if (rr) { const ph = sp ? String(refillLibraryItem(sp)?.vars?.R ?? 0) : ''; if (rr.placeholder !== ph) rr.placeholder = ph; if (document.activeElement !== rr && rr.value !== s.refillR) rr.value = s.refillR; } }   /* 角R：空のときは規格の既定を薄く見せる。手帳でなければ空 */
   { const note = $('flowHeightNote'), r = refillPlanHeight(); if (note) { const txt = r ? t('foldFlowHeightNote', { h: +r.h.toFixed(2), m: +r.m.toFixed(2), v: +r.v.toFixed(2) }) : ''; if (note.textContent !== txt) note.textContent = txt; const lg = leverGapHeight(); if (lg || (r && !planHeightTouched)) { const v = String(lg ? lg.v : r.v), fh = $('flowH'); if ($('fdH').value !== v) $('fdH').value = v; if (fh && document.activeElement !== fh && fh.value !== v) fh.value = v; } } }   /* 平面図の高さの計算を、常に見せる */
