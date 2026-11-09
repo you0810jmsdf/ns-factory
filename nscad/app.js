@@ -7623,10 +7623,10 @@ function initPhrases() {
   $('phraseFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { importPhrasesText(await f.text()); } catch { $('hint').textContent = t('phraseFileInvalid'); } });
   $('phraseSel').addEventListener('change', () => renderPhraseList($('phraseSel').value));
   $('phraseSave').onclick = savePhrase; $('phraseDelete').onclick = deletePhrase; $('phrasePlace').onclick = () => setMode('phrase');
-  $('textEditInput').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); textEditToBlock(); } else if (e.key === 'Enter') { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });
-  $('textEditInput').addEventListener('blur', () => { if (textEdit && !textEdit.block) closeTextEdit(true); });   /* 欄の外をクリック＝確定 */
-  $('textEditArea').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });   /* 複数行：Enter は改行、Ctrl+Enter で確定 */
-  $('textEditArea').addEventListener('blur', () => { if (textEdit?.block) closeTextEdit(true); });
+  $('textEditArea').addEventListener('keydown', e => { e.stopPropagation?.(); if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); closeTextEdit(true); } else if (e.key === 'Escape') { e.preventDefault(); closeTextEdit(false); } });   /* メモ帳：Enter は改行、Ctrl+Enter で決定、Esc で取り消し */
+  for (const ev of ['input', 'click', 'keyup', 'focus']) $('textEditArea').addEventListener(ev, updateTextEditStat);   /* 何行目・何文字目かを、いつも出す */
+  $('textEditOk').onclick = () => closeTextEdit(true); $('textEditCancel').onclick = () => closeTextEdit(false);
+  $('textEditBox').addEventListener('cancel', e => { e.preventDefault?.(); closeTextEdit(false); });   /* 窓の外の操作（Esc など）で閉じるとき＝取り消し */
   $('textEditFont').addEventListener('pointerdown', e => e.preventDefault());   /* 押してもフォーカスを奪わない（blur で先に閉じてから窓を開かないように） */
   $('textEditFont').onclick = () => { const id = textEdit?.id; closeTextEdit(true); if (id) { selected = new Set([id]); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
@@ -9900,7 +9900,6 @@ function draw() {
     return;
   }
   drawSheetBody(lo, hi);
-  placeTextEdit();   /* 書き換え中の入力欄を文字に追従させる（ズーム・パンのあと） */
 }
 // ---- 文字をその場で書き換える（ダブルクリック・事業主 2026-11-05「直接文字を図面上で修正したい」→ A） ----
 let textEdit = null;   /* { id }：図面の上で書き換え中の文字 */
@@ -9909,38 +9908,26 @@ function textBlockOf(s) {
   const g = groupIdOf(s); if (!g) return null; const rows = doc.shapes.filter(x => groupIdOf(x) === g); if (rows.length < 2 || rows.some(x => x.type !== 'text' || !editable(x))) return null;
   return rows.slice().sort((p, q) => p.y - q.y || p.x - q.x);
 }
-function placeTextEdit() {
-  if (!textEdit) return; const s = doc.shapes.find(x => x.id === textEdit.id); if (!s) { closeTextEdit(false); return; }
-  const box = $('textEditBox'), inp = textEdit.block ? $('textEditArea') : $('textEditInput'), p = screenOf(s.x, s.y), o = paneOff(), px = Math.max(10, s.sizeMm * scale);
-  box.style.left = `${(canvas.offsetLeft || 0) + o.x + p.x}px`; box.style.top = `${(canvas.offsetTop || 0) + o.y + p.y - px}px`;   /* 文字の左上（ベースラインの上 1 文字ぶん）に合わせる */
-  box.style.transformOrigin = `0 ${px}px`; box.style.transform = s.angleDeg ? `rotate(${s.angleDeg}deg)` : ''; inp.style.font = `${px}px ${textFontCss(s.font)}`;
-  if (textEdit.block) inp.style.lineHeight = `${Math.max(px, textEdit.pitch * scale)}px`;   /* 行間を図面の行間に合わせる */
+/** 文字を書き換える窓の下の「何行目・何文字目」の表示：メモ帳のように、いまカーソルがどこかが分かる。 */
+function updateTextEditStat() {
+  const area = $('textEditArea'), v = area.value, at = Math.min(Math.max(area.selectionStart ?? v.length, 0), v.length), before = v.slice(0, at).split('\n');
+  $('textEditStat').textContent = t('textEditStat', { line: before.length, col: [...before[before.length - 1]].length + 1, lines: v.split('\n').length, chars: [...v].length });
 }
+/** 文字を書き換える窓を開く（メモ帳のように、全文が折り返して見える。Enter＝改行・Ctrl+Enter＝決定・Esc＝取り消し。事業主 2026-11-09「文書のどこを改行しようとしているのかさっぱりわからない。通常のテキストメモ帳のように全体が見えるようにならないか？」）。
+ *  1つの文字も、定型句の複数行（同じグループの文字）も、同じ窓で書き換える。決定すると、改行した行ごとの文字に分け、同じグループにまとめる。 */
 function openTextEdit(s) {
-  const block = textBlockOf(s), box = $('textEditBox'), inp = $('textEditInput'), area = $('textEditArea');
-  if (block) {   /* 複数行：全行を改行つきで（事業主 2026-11-05「一行ずつ編集ではなく改行編集もしたい」） */
-    const first = block[0], pitch = block.length > 1 ? (block[block.length - 1].y - first.y) / (block.length - 1) : first.sizeMm * 1.4;
-    textEdit = { id: first.id, block: block.map(x => x.id), pitch: pitch > 0 ? pitch : first.sizeMm * 1.4 }; selected = new Set(block.map(x => x.id)); draw();
-    box.hidden = false; inp.hidden = true; area.hidden = false; area.value = block.map(x => x.text).join('\n'); area.rows = Math.min(12, block.length + 1); area.cols = Math.min(60, Math.max(8, Math.max(...block.map(x => [...x.text].length)) + 2)); placeTextEdit();
-    area.focus?.(); $('hint').textContent = t('textEditBlockTip'); return;
-  }
-  textEdit = { id: s.id }; box.hidden = false; area.hidden = true; inp.hidden = false; inp.value = s.text; inp.size = Math.min(60, Math.max(6, [...s.text].length + 2)); placeTextEdit();
-  inp.focus?.(); inp.select?.(); $('hint').textContent = t('textEditOpened');
-}
-/** 1行の編集欄で Shift+Enter：カーソルの位置で改行して、複数行の編集欄（全行をまとめて書き換え）に切り替える（事業主 2026-11-09「改行できません」）。選んでいる文字は改行に置き換わる。確定すると、行ごとの文字に分け、同じグループにまとめる。 */
-function textEditToBlock() {
-  if (!textEdit || textEdit.block) return; const s = doc.shapes.find(x => x.id === textEdit.id); if (!s) return;
-  const inp = $('textEditInput'), area = $('textEditArea'), v = inp.value, at = Math.min(Math.max(inp.selectionStart ?? v.length, 0), v.length), end = Math.min(Math.max(inp.selectionEnd ?? at, at), v.length);
-  textEdit = { id: s.id, block: [s.id], pitch: s.sizeMm * 1.4 };   /* 行間は、複数行の既定（大きさの 1.4 倍）。ここから textEdit.block が付くので、1行側の blur では閉じない */
-  const text = v.slice(0, at) + '\n' + v.slice(end), lines = text.split('\n');
-  inp.hidden = true; area.hidden = false; area.value = text; area.rows = Math.min(12, lines.length + 1); area.cols = Math.min(60, Math.max(8, Math.max(...lines.map(l => [...l].length)) + 2));
-  placeTextEdit(); area.focus?.(); area.setSelectionRange?.(at + 1, at + 1); $('hint').textContent = t('textEditBlockTip');
+  const grp = textBlockOf(s), rows = grp || [s], first = rows[0], box = $('textEditBox'), area = $('textEditArea');
+  const pitch = rows.length > 1 ? (rows[rows.length - 1].y - first.y) / (rows.length - 1) : first.sizeMm * 1.4;   /* 行間：複数行なら今の行間・1行なら大きさの 1.4 倍 */
+  textEdit = { id: first.id, block: rows.map(x => x.id), pitch: pitch > 0 ? pitch : first.sizeMm * 1.4 }; selected = new Set(textEdit.block); draw();
+  area.value = rows.map(x => x.text).join('\n'); area.style.fontFamily = textFontCss(first.font);
+  box.hidden = false; box.showModal?.(); area.focus?.(); area.setSelectionRange?.(area.value.length, area.value.length); updateTextEditStat();
+  $('hint').textContent = t('textEditOpened');
 }
 /** save＝true なら欄の文字で置き換える（空にはしない・同じなら何もしない・元に戻すは1回）。false なら取り消し。 */
 function closeTextEdit(save) {
   if (!textEdit) return;
   if (textEdit.block) {   /* 複数行：行の書き換え・追加（下に同じ行間）・削除を1回の保存で */
-    const ids = textEdit.block, pitch = textEdit.pitch, lines = $('textEditArea').value.split('\n').map(x => x.trim()).filter(Boolean); textEdit = null; $('textEditBox').hidden = true;
+    const ids = textEdit.block, pitch = textEdit.pitch, lines = $('textEditArea').value.split('\n').map(x => x.trim()).filter(Boolean); textEdit = null; $('textEditBox').close?.(); $('textEditBox').hidden = true;
     const rows = ids.map(i => doc.shapes.find(x => x.id === i)).filter(x => x && editable(x));
     if (!save || !rows.length) { draw(); return; } if (!lines.length) { $('hint').textContent = t('textEditEmpty'); draw(); return; }
     if (lines.length === rows.length && lines.every((l, i) => l === rows[i].text)) { draw(); return; }
@@ -9952,12 +9939,9 @@ function closeTextEdit(save) {
       if (made.length > 1) { const gid = groupIdOf(first) || nextGroupId(doc.shapes); for (const id of made) { const x = doc.shapes.find(y => y.id === id); if (x) x.groupId = gid; } }   /* 1行だった文字を改行したときも、全行を同じグループに（次からは、まとめて書き換えられる） */
       selected = new Set(made);
     });
-    recordPhraseHistory(lines.join('\n')); $('hint').textContent = t('textEditedBlock', { n: lines.length }); draw(); return;
+    if (lines.length > 1 || ids.length > 1) recordPhraseHistory(lines.join('\n')); $('hint').textContent = lines.length === 1 && ids.length === 1 ? t('textEdited', { text: lines[0] }) : t('textEditedBlock', { n: lines.length }); draw(); return;
   }
-  const id = textEdit.id, v = $('textEditInput').value; textEdit = null; $('textEditBox').hidden = true;
-  const s = doc.shapes.find(x => x.id === id);
-  if (save && s && editable(s)) { if (!v.trim()) $('hint').textContent = t('textEditEmpty'); else if (v !== s.text) { commit(() => { const x = doc.shapes.find(y => y.id === id); if (x) x.text = v; }); $('hint').textContent = t('textEdited', { text: v }); } }
-  draw();
+  textEdit = null;
 }
 /** 紙 1 枚ぶんの描画（目盛り・図形・穴・作図中の線・吸着の印など）。ctx はその紙の座標に変換済み。 */
 function drawSheetBody(lo, hi) {
