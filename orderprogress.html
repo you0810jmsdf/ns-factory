@@ -1078,11 +1078,21 @@ function daysSinceStatus(r) {
 // 管理者モードでのみ出す＝お客様のカードには一切付かない。
 function staleBadgeHtml(r) {
   if (!isAdmin() || !isStaleContact(r)) return '';
+  if (isManualCancel(r)) return `<span class="stale-badge admin-only">キャンセル確定</span>`;
   const days = daysSinceStatus(r);
   return `<span class="stale-badge admin-only">${days}日連絡なし</span>`;
 }
+// メモ（非公開）に【キャンセル確定】と書いた案件は、日数に関係なくキャンセルタブへ回す（2026-11-09 事業主指示）。
+// ステータスは書き換えない。ご連絡待ち／ご連絡先待ちのままの間だけ有効＝状態を進めれば自動で通常タブへ戻る。
+// メモは管理者にしか届かない（お客様の画面には出ない）。
+const MANUAL_CANCEL_MARK = '【キャンセル確定】';
+function isManualCancel(r) {
+  return CANCEL_WATCH_STATUSES.includes(r['ステータス'])
+      && String(r['メモ（非公開）'] || '').includes(MANUAL_CANCEL_MARK);
+}
 function isStaleContact(r) {
   if (!CANCEL_WATCH_STATUSES.includes(r['ステータス'])) return false;
+  if (isManualCancel(r)) return true;
   const days = daysSinceStatus(r);
   return days !== null && days >= STALE_DAYS;
 }
