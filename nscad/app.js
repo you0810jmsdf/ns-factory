@@ -2802,18 +2802,20 @@ function onRingStdChange() {
 }
 /** ⓪の「リング規格を直す」：いま金具の元にしているリング規格の「寸法を直す」を開く。 */
 function openRingStdEdit() { const id = ringStandardId(); if (id) openBinderEdit(id); }
+const STACK_RATIO = 0.8;   /* 紙の束の厚み＝リング内径の8割（自動で入れるときの初期値） */
+const autoStackOf = dia => Number(dia) > 0 ? String(Math.round(Number(dia) * STACK_RATIO * 10) / 10) : '';   /* 0.1 mm 単位（16 → 12.8・20 → 16） */
 /** 手帳か・規格・リング内径・束の厚みのどれかを変える。手帳でなくなるときは、規格などを空に戻す。そろったら、今ある欄に写す（断面があれば作り直す）。 */
 function setFoldBook(patch) {
   const prev = foldBookState(), next = { ...prev, ...patch }; if (next.kind !== 'book') { next.spec = ''; next.ring = ''; next.dia = ''; next.stack = ''; next.refillR = ''; next.leverGap = ''; }
-  /* 束の厚み：リング内径を選んだとき、自動（空欄か、自動で入れた値のまま）なら、内径と同じ値を入れる＝リングに通る最大（事業主 2026-11-09「内径がきまれば、最大の厚みは自動で決まる。自動化できるはず」）。
+  /* 束の厚み：リング内径を選んだとき、自動（空欄か、自動で入れた値のまま）なら、内径の8割を入れる（事業主 2026-11-09「内径がきまれば、最大の厚みは自動で決まる。自動化できるはず」「紙の束は、リングの内径8割をデフォルトにして」：紙の束はリングいっぱいには入らない。上限＝内径は、超えたときの警告のまま）。
      自分で書き換えたら自動をやめる（doc.foldBook.stackAuto を消す）。前から入っている値（stackAuto の無い図面）は触らない。 */
   let stackAuto = next.kind === 'book' && !('stack' in patch) && (doc.foldBook?.stackAuto === true || prev.stack === ''), filled = false;
-  if (stackAuto && 'dia' in patch && next.dia !== '' && Number(next.dia) > 0 && next.stack !== next.dia) { next.stack = next.dia; filled = true; }
+  const want = autoStackOf(next.dia); if (stackAuto && 'dia' in patch && next.dia !== '' && Number(next.dia) > 0 && next.stack !== want) { next.stack = want; filled = true; }
   doc.foldBook = stackAuto && next.stack !== '' ? { ...next, stackAuto: true } : next; if (tabs[activeTab]) tabs[activeTab].dirty = true;
   if (foldBookComplete(next)) applyFoldBook(true);
   if ('spec' in patch && next.kind === 'book' && next.spec) applyPlanHeight();   /* リフィルの規格を選んだ・替えたとき：平面図の高さの初めの数字を決める */
   renderFoldFlow();   /* ⓪が決まったら①が「いまここ」になる・欄の表示も更新 */
-  if (filled) $('hint').textContent = t('foldFlowStackAuto', { n: next.stack });   /* 自動で入れたことを知らせる（束の厚みは、あとから自由に直せる） */
+  if (filled) $('hint').textContent = t('foldFlowStackAuto', { d: next.dia, n: next.stack });   /* 自動で入れたことを知らせる（束の厚みは、あとから自由に直せる） */
 }
 /* ───────── 平面図の高さの初めの数字（事業主 2026-10-24「⓪で選んだリフィルの高さに余りを足して初期値にして。余りはどこで設定すればよい？」）：手帳（革）の高さ＝リフィルの高さ＋上下の余り×2。余り（片側）は⓪の欄で決める（初めは5mm・ブラウザに覚える）。
    決めるのは、規格を選んだとき・余りを変えたときだけ（①を押したときは、自分で直した高さを上書きしない） ───────── */
