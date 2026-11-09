@@ -7298,7 +7298,7 @@ function drawFoldHandles() {
   ctx.restore();
 }
 /** 断面を直しているとき（取っ手が出ている間）の、全幅・全高・厚みの寸法（数字つき・水色）。設計から毎回計算するので、取っ手のドラッグ・欄の入力に追従する。画面だけ（印刷・書き出しは foldHandleList が空になるので入らない）。事業主指示 2026-10-20 */
-const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing'), gap: t('fdSecGap') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
+const foldDimLabels = () => { const bi = doc.foldDesign?.mode === 'bifold', k = n => t(bi ? n + 'N' : n); return { w: k('fdSecW'), wb: k('fdSecWB'), h: k('fdSecH'), t: t('fdSecT'), to: k('fdSecTO'), ti: k('fdSecTI'), rr: k('fdSecRR'), ring: k('fdSecRing'), gap: t('fdSecGap'), edge: t('fdSecEdge'), edgeOver: t('fdSecEdgeOver') }; };   /* 2つ折りの寸法線の見出しは、①〜⑥の番号（設計カードの欄と同じ） */
 const sectionRefillPoints = () => doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills' && s.points && visible(s))?.points ?? null;   /* 断面のリフィルの束の外形（内張りとの隙間の寸法に使う） */
 const foldSectionDimList = () => foldHandleList().length || secDimsShown() ? (foldSectionDims(doc.foldDesign, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? []) : [];
 /** 断面図の寸法の文字の大きさ（画面 px）：ふつうの寸法と同じ決め方（2.5mm、縮小しても 12px）。事業主 2026-11-05「断面図のみやけに寸法線がでかい（数字）」：前は常に 15px だった */

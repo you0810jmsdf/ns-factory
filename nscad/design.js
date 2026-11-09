@@ -982,6 +982,17 @@ function bifoldRefillGapItems(d, p, refill, n, label, px) {
   if (top > yLo) one(yLo, top); if (bot < yHi) one(bot, yHi);
   return out.length ? [{ key: 'gap', value: n(Math.min(top - yLo, yHi - bot)), items: out }] : [];
 }
+/** 2つ折りの断面で、リフィルの先の端（背から遠い側）から表紙の端までの距離（水平）を、リフィルの真ん中の高さに1本の寸法線にして返す（事業主 2026-11-09「断面図のリフィルの端から冊子本体の端までの距離を表記するようにしたはずですが、いつのまにかなくなっている。すぐに追加して」）。
+ *  これまでは、小窓のボタン（addRefillCoverDim）で手で入れた寸法だった（図を作り直すと消え、設計が変わると古い位置に残った）。設計から毎回計算して、断面の他の寸法と同じように自動で出す。
+ *  数字は、表紙の端・リフィルの端のうち背から遠い方の外側に置く。リフィルの端が表紙の端より外へ出ているとき（飛び出し）は、見出しを「（飛び出し）」にして、value を負にする。束が無い・リフィルが縦向きのとき、距離が 0 のときは出さない。返り値は foldSectionDims のグループの配列（key:'rEnd'・画面だけの表示）。 */
+function bifoldRefillEndItems(d, p, refill, n, label, labelOver, px) {
+  if (!Array.isArray(refill) || refill.length < 3 || d.ring?.dir === 'v') return [];
+  const pt = bifoldPoint(d, p), xA = pt(0, 0).x, xw = pt(d.width, p.rc[0]).x;   /* xA＝表紙の端（取っ手 endA）・xw＝背の側の基準（取っ手 w） */
+  const xs = refill.map(q => q.x), ys = refill.map(q => q.y), a = Math.min(...xs), b = Math.max(...xs), tip = Math.abs(b - xw) > Math.abs(a - xw) ? b : a, y = (Math.min(...ys) + Math.max(...ys)) / 2, len = Math.abs(xA - tip);
+  if (![xA, xw, tip, y].every(Number.isFinite) || !(len > 1e-6)) return [];
+  const out = xA >= xw ? 1 : -1, inside = Math.abs(xA - xw) >= Math.abs(tip - xw), far = out > 0 ? Math.max(tip, xA) : Math.min(tip, xA);   /* out＝背から表紙の端へ向かう向き・inside＝リフィルの端が表紙の端の内側にある（収まっている） */
+  return [{ key: 'rEnd', value: n(inside ? len : -len), items: [{ type: 'line', a: { x: tip, y }, b: { x: xA, y }, arrows: 'both', dash: false }, { type: 'text', x: far + out * 5 * px, y, text: `${inside ? label : labelOver} ${n(len)} mm`, align: out > 0 ? 'left' : 'right' }] }];   /* 文字は、表紙の端・リフィルの端のうち背から遠い方の外側。飛び出しているときは value が負 */
+}
 /** 断面を直すときに常に見せる寸法（事業主指示 2026-10-20「断面の修正をする際に全体寸法、革の厚みがわかるとよい。動かすと寸法も追従させる」・画面だけの表示）。
  *  全幅（③と同じ線）・全高（大きい方の折りの外径）・厚み（表＋裏）を、数字（mm・小数2桁まで）つきの寸法線で返す。数字は d（doc.foldDesign）から毎回計算するので、設計が変われば追従する。
  *  opts：labels＝{ w, h, t, to, ti }（文字・省略時は空）、px＝画面の1ピクセルが図面の何mmか（既定1・文字のずらしに使う）。
@@ -1003,7 +1014,7 @@ export function foldSectionDims(d, { labels = {}, px = 1, refill = null } = {}) 
       ...(d.ring ? [{ key: 'ring', value: n(d.ring.pos ?? 0), items: bifoldDimensions(d, p, 'ring', '').map(it => it.type === 'text' ? { ...it, ...pt(pointOnFoldPath(foldSectionPath(p), d.ring.s ?? p.flats[0] + p.bends[0] / 2).u, -p.T / 2 - 16 - 14 * px), text: `${nm('ring')} ${n(d.ring.pos ?? 0)} mm` } : it) }] : []),   /* リングの文字は、断面の外（リングの真上・①全幅の文字の段よりさらに画面で14px外）に置く：リングの絵・厚みの文字・①の文字と重ならないように（事業主 2026-11-04「文字が重なる」） */
       { key: 't', value: n(p.T), items: ['to', 'ti'].flatMap(k => bifoldDimensions(d, p, k, '').filter(it => it.type !== 'text')).concat({ type: 'text', ...pt(p.flats[0] + (d.rinR + p.T) / 2, 2 * p.rc[0] + p.T / 2 + 16 + 16 * px), text: `${nm('t')} ${nm('to')} ${n(p.tO)} + ${nm('ti')} ${n(p.tI)} = ${n(p.T)} mm` }) },   /* 厚みの文字は断面の下・背の下の空いた所（中央そろえ）。背の脇だと、画面の端で押し戻されてリングの絵に重なった（事業主決定 2026-11-04）。②裏表紙の幅の文字（2r＋T/2＋16）と同じ高さから画面で16px下の段（mm だけだと拡大率で段が重なる）：画面の左端で両方が押し戻されると同じ段で重なり、⑤表を押しても②の小窓が開いた（事業主 2026-11-05「裏表とも同じ数字しか入れられない」） */
       ...gapItems,
-    ]);
+    ]).concat(bifoldRefillEndItems(d, p, refill, n, nm('edge'), nm('edgeOver'), px));   /* 左右反転でも、文字の向きは端の外側（swap の外で足す） */
   }
   const n = v => Math.round(v * 100) / 100, nm = k => labels[k] ?? '', { T } = p, rc1 = p.rc[0], rc2 = p.rc[1], ub = d.cL, o = d.origin, flipY = d.flipV !== false, lo = ub - d.dL, hi = ub + d.dR;
   const pt = (u, v) => { const y = o.y - v; return { x: o.x + u, y: flipY ? 2 * (o.y - rc1) - y : y }; }, line = (a, b, arrows = 'none', dash = false) => ({ type: 'line', a: pt(...a), b: pt(...b), arrows, dash });
