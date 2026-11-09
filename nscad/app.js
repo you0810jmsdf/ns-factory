@@ -7653,7 +7653,7 @@ function initPhrases() {
   $('textEditOk').onclick = () => closeTextEdit(true); $('textEditCancel').onclick = () => closeTextEdit(false);
   $('textEditBox').addEventListener('cancel', e => { e.preventDefault?.(); closeTextEdit(false); });   /* 窓の外の操作（Esc など）で閉じるとき＝取り消し */
   $('textEditFont').addEventListener('pointerdown', e => e.preventDefault());   /* 押してもフォーカスを奪わない（blur で先に閉じてから窓を開かないように） */
-  $('textEditFont').onclick = () => { const id = textEdit?.id; closeTextEdit(true); if (id) { selected = new Set([id]); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
+  $('textEditFont').onclick = () => { const id = textEdit?.id, isNew = !!textEdit?.isNew, made = closeTextEdit(true); const pick = isNew ? made : (id ? [id] : null); if (pick?.length) { selected = new Set(pick); nodeSel = null; openTextFontWin(); draw(); } }; $('phraseCopySpec').onclick = copySpecFromDesign;
   $('phraseSize').addEventListener('input', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseFont').addEventListener('change', () => { restylePlacedPhrase(); syncPhraseSizeNote(); }); $('phraseText').addEventListener('input', syncPhraseSizeNote); syncPhraseSizeNote();   /* 置いた直後の反映と、文字高の目安 */
 }
 /** 背幅シミュレーションの結果で、表紙の展開図（外形＝部品・折り線2本・背の中央に金具）を新しいタブに描く。ポケットは作らない（事業主決定A・2026-10-12）。 */
@@ -7805,7 +7805,27 @@ function nodeHit(s, p) {
   for (let i = 0; i < s.nodes.length; i++) if (distance(s.nodes[i], p) <= r) return { index: i, part: 'anchor' };
   return null;
 }
-function askText() { const raw = window.prompt(t('textPrompt'), ''); return raw && raw.trim() ? raw.trim() : null; }
+/** 文字ツールでクリックしたとき：空のメモ帳の窓を開く（事業主 2026-11-09 改善提案「文字を置いた直後に、メモ帳の窓を開く」：以前は1行だけの入力ボックスで、置くときは改行できなかった）。
+ *  決定（Ctrl+Enter）で、クリックした位置に置く（1行なら文字1つ・複数行なら行ごとの文字を同じグループに）。取り消し（Esc）なら何も置かず、文字ツールのまま。Shift を押しながらクリックしたときは、置いたあとも文字ツールのまま。 */
+function openTextNew(at) {
+  if (textEdit) return;   /* すでに窓が開いている */
+  const box = $('textEditBox'), area = $('textEditArea'), size = Number($('textSize').value) || 5;
+  textEdit = { id: null, isNew: true, at: { x: at.x, y: at.y }, keep: keepTool, block: null, pitch: size * PHRASE_LINE_GAP };
+  area.value = ''; area.style.fontFamily = textFontCss(newTextFont().font); $('textEditHead').textContent = t('textEditTitleNew');
+  box.hidden = false; box.showModal?.(); updateTextEditStat();
+  setTimeout(() => { if (textEdit?.isNew) area.focus?.(); }, 0);   /* 押した瞬間の処理が終わってから入力欄に合わせる（押した直後に、ブラウザが焦点を奪い返さないように） */
+  $('hint').textContent = t('textEditNewOpened');
+}
+/** 窓で書いた行を、位置 at に置く。置いた図形の id の一覧（置けなかったら null）。 */
+function placeNewText(lines, at) {
+  const size = Number($('textSize').value) || 5;
+  if (lines.length === 1) { const seq = commitSeq; addShape({ type: 'text', x: at.x, y: at.y, text: lines[0], sizeMm: size, angleDeg: 0, ...newTextFont() }); return commitSeq === seq ? null : [...selected]; }
+  const layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || doc.layers.find(l => l.visible && !l.locked)?.id;
+  if (!layer) { $('hint').textContent = t('noLayer'); return null; }
+  const shapes = phraseShapes(lines, at, size, layer, undefined, $('textFont')?.value), ids = [];   /* 行間は定型句と同じ（大きさ×1.4） */
+  cancel(); commit(() => { const groupId = nextGroupId(doc.shapes); for (const sh of shapes) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, ...sh, groupId }); ids.push(id); } selected = new Set(ids); });
+  renderLayers(); recordPhraseHistory(lines.join('\n')); $('hint').textContent = t('textPlacedBlock', { n: ids.length }); return ids;
+}
 /** トリムの対象を決める。クリックから 7px 以内でいちばん近い線（同じ近さなら後から描いた線）。無ければ 14px まで広げる。線の「あいだの空き」をクリックして、同じ近さの別の線が2本以上あるときは、決められない（reason='ambiguous'）。近くに線が無ければ reason='miss'。（事業主の不具合記録 2026-10-13） */
 function trimTarget(p) {
   const same = (x, y) => x.type === 'line' && y.type === 'line' && [[0, 1], [1, 0]].some(([i, j]) => [['x1', 'y1'], ['x2', 'y2']].every(([kx, ky], k) => Math.abs(x[kx] - y[k ? 'x' + (j + 1) : 'x' + (j + 1)]) < 1e-6 && false) || (Math.abs(x.x1 - y['x' + (i + 1)]) < 1e-6 && Math.abs(x.y1 - y['y' + (i + 1)]) < 1e-6 && Math.abs(x.x2 - y['x' + (j + 1)]) < 1e-6 && Math.abs(x.y2 - y['y' + (j + 1)]) < 1e-6));
@@ -8026,7 +8046,7 @@ function runCommand(raw) {
       if (stage.steps.length === 3) { const [r, s0, s1] = stage.steps; if (r > 0) addShape({ type: 'arc', cx: stage.center.x, cy: stage.center.y, r, startDeg: s0, endDeg: s1 }); lastPoint = stage.center; stage = null; } }
   } else if (mode === 'dimension' || mode === 'text') {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
-    if (mode === 'text') { const content = askText(); if (content) addShape({ type: 'text', x: point.x, y: point.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); }
+    if (mode === 'text') openTextNew(point);
     else if (stage?.kind !== 'dim') stage = { kind: 'dim', a: point, cmdLast: point }; else { addShape({ type: 'dimension', x1: stage.a.x, y1: stage.a.y, x2: point.x, y2: point.y, offset: Number($('dimOffset').value) || 8 }); stage = null; }
     lastPoint = point;
   } else { $('hint').textContent = t('cmdNotHere'); return; }
@@ -9944,18 +9964,26 @@ function openTextEdit(s) {
   const grp = textBlockOf(s), rows = grp || [s], first = rows[0], box = $('textEditBox'), area = $('textEditArea');
   const pitch = rows.length > 1 ? (rows[rows.length - 1].y - first.y) / (rows.length - 1) : first.sizeMm * 1.4;   /* 行間：複数行なら今の行間・1行なら大きさの 1.4 倍 */
   textEdit = { id: first.id, block: rows.map(x => x.id), pitch: pitch > 0 ? pitch : first.sizeMm * 1.4 }; selected = new Set(textEdit.block); draw();
-  area.value = rows.map(x => x.text).join('\n'); area.style.fontFamily = textFontCss(first.font);
+  area.value = rows.map(x => x.text).join('\n'); area.style.fontFamily = textFontCss(first.font); $('textEditHead').textContent = t('textEditTitle');
   box.hidden = false; box.showModal?.(); area.focus?.(); area.setSelectionRange?.(area.value.length, area.value.length); updateTextEditStat();
   $('hint').textContent = t('textEditOpened');
 }
 /** save＝true なら欄の文字で置き換える（空にはしない・同じなら何もしない・元に戻すは1回）。false なら取り消し。 */
 function closeTextEdit(save) {
-  if (!textEdit) return;
+  if (!textEdit) return null;
+  if (textEdit.isNew) {   /* 新しく置く文字：空の窓に書いた行を、クリックした位置に置く（取り消し・空なら何も置かない） */
+    const { at, keep } = textEdit, lines = $('textEditArea').value.split('\n').map(x => x.trim()).filter(Boolean); textEdit = null; $('textEditBox').close?.(); $('textEditBox').hidden = true;
+    if (!save || !lines.length) { $('hint').textContent = save ? t('textNewEmpty') : modeHint('text'); draw(); return null; }
+    $('hint').textContent = modeHint('text');   /* 「窓を開きました」の案内を、置く前に消す（置いたあとにも残らないように） */
+    const ids = placeNewText(lines, at); if (!ids) { draw(); return null; }
+    lastPoint = { ...at }; if (!keep) backToSelect('drawOnceBack', 'text'); else draw();
+    return ids;
+  }
   if (textEdit.block) {   /* 複数行：行の書き換え・追加（下に同じ行間）・削除を1回の保存で */
     const ids = textEdit.block, pitch = textEdit.pitch, lines = $('textEditArea').value.split('\n').map(x => x.trim()).filter(Boolean); textEdit = null; $('textEditBox').close?.(); $('textEditBox').hidden = true;
     const rows = ids.map(i => doc.shapes.find(x => x.id === i)).filter(x => x && editable(x));
-    if (!save || !rows.length) { draw(); return; } if (!lines.length) { $('hint').textContent = t('textEditEmpty'); draw(); return; }
-    if (lines.length === rows.length && lines.every((l, i) => l === rows[i].text)) { draw(); return; }
+    if (!save || !rows.length) { draw(); return null; } if (!lines.length) { $('hint').textContent = t('textEditEmpty'); draw(); return null; }
+    if (lines.length === rows.length && lines.every((l, i) => l === rows[i].text)) { draw(); return null; }
     const first = rows[0], base = rows[rows.length - 1];
     commit(() => {
       const made = [];
@@ -9964,9 +9992,9 @@ function closeTextEdit(save) {
       if (made.length > 1) { const gid = groupIdOf(first) || nextGroupId(doc.shapes); for (const id of made) { const x = doc.shapes.find(y => y.id === id); if (x) x.groupId = gid; } }   /* 1行だった文字を改行したときも、全行を同じグループに（次からは、まとめて書き換えられる） */
       selected = new Set(made);
     });
-    if (lines.length > 1 || ids.length > 1) recordPhraseHistory(lines.join('\n')); $('hint').textContent = lines.length === 1 && ids.length === 1 ? t('textEdited', { text: lines[0] }) : t('textEditedBlock', { n: lines.length }); draw(); return;
+    if (lines.length > 1 || ids.length > 1) recordPhraseHistory(lines.join('\n')); $('hint').textContent = lines.length === 1 && ids.length === 1 ? t('textEdited', { text: lines[0] }) : t('textEditedBlock', { n: lines.length }); draw(); return null;
   }
-  textEdit = null;
+  textEdit = null; return null;
 }
 /** 紙 1 枚ぶんの描画（目盛り・図形・穴・作図中の線・吸着の印など）。ctx はその紙の座標に変換済み。 */
 function drawSheetBody(lo, hi) {
@@ -10336,7 +10364,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'library') { placeLibrary(cursor); return; }
   if (mode === 'imgScale') { if (stage?.kind !== 'imgScale') { stage = { kind: 'imgScale', a: world(p) }; $('hint').textContent = t('imgScaleSecond'); } else imgScaleSecond(world(p)); draw(); return; }
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
-  if (mode === 'text') { const content = askText(); if (content) { addShape({ type: 'text', x: cursor.x, y: cursor.y, text: content, sizeMm: Number($('textSize').value) || 5, angleDeg: 0, ...newTextFont() }); lastPoint = cursor; } return; }
+  if (mode === 'text') { openTextNew(cursor); return; }   /* 窓（メモ帳）で書く。置くのは決定したとき */
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
   if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { if (stage?.kind === 'bzpts') bezierClick(cursor); else if (stage?.kind === 'bezier') gesture = { kind: 'stage' }; else gesture = { kind: 'draw', start: cursor }; draw(); return; }   /* 点をクリックする連続方式と、ドラッグで始める4点方式（離したときに分ける） */
