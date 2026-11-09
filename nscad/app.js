@@ -4725,7 +4725,7 @@ function clearFills() {
   reset(); commit(() => { doc.fills = []; }); $('hint').textContent = t('fillsCleared', { n }); draw();
 }
 /** 領域の塗りのうち、囲む図形のどれかが見えているもの。面積の大きい順（小さい領域が上）。kind：'leather' か 'metal' */
-const visibleFills = (d, vis, kind) => { const byId = new Map(d.shapes.map(s => [s.id, s])); return (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => { const l = fillEffectiveLayer(fl, byId); return !l || d.layers?.find(x => x.id === l)?.visible !== false; }).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0)); };
+const visibleFills = (d, vis, kind) => { const byId = new Map(d.shapes.map(s => [s.id, s])); return (pendingFillFollow && d === doc ? [] : (d.fills || [])).filter(fl => { const l = fillEffectiveLayer(fl, byId); return !l || d.layers?.find(x => x.id === l)?.visible !== false; }).filter(fl => (kind === 'metal' ? fl.metal : (fl.leather || fl.texture)) && fl.ids.some(id => { const sh = d.shapes.find(x => x.id === id); return sh && vis(sh); }) && (!exportFilter?.ids || fl.ids.filter(id => exportFilter.ids.has(id)).length * 2 >= fl.ids.length))   /* 選んだ図形だけ出力：境目の図形の半分以上を選んだ領域だけ */.sort((x, y) => (y.area || 0) - (x.area || 0)); };
 /** 革色の塗りの「項目」＝{ area：面積（重ねる順を決める）, draw：描く関数 }。線で囲まれた場所の塗り。 */
 /** 革色・質感の塗りの不透明度：質感は 1（不透明・2026-10-26 事業主 A「同じフラゴラなのに、下にラズベリーの塗りがあると色が違って見える」：0.92 だと、下の塗りが 8% 透けて、同じ革が場所で違う色になった）・色は 0.55（線や下の図が透ける）。白（リフィルの紙）も不透明にする（事業主 2026-10-25「リフィルも白にできない」：半透明のままだと、暗い背景の上で灰色に見えた）。 */
 const leatherAlpha = (tex, hex) => tex ? 1 : /^#?f{3}(f{3})?$/i.test(String(hex || '')) ? 1 : 0.55;
@@ -6490,7 +6490,7 @@ function persistPhrases() { try { localStorage.setItem(PHRASES_KEY, serializePhr
 function bookSpecText(data, pockets = [], leathers = {}) {
   const en = document.documentElement.lang === 'en', b = data?.book || {}, f = data?.fields || {}, sp = binderSpec(b.spec); if (!sp) return null;
   const nm = en ? sp.names.en : sp.names.ja, metal = f.flowHwMetal ? t('metal.' + f.flowHwMetal) : '', blank = en ? '____' : '＿＿', b1 = en ? '__' : '＿';   /* b1＝数字の空欄 */
-  const size = ringSizeOf(sp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
+  const ringSp = (b.kind === 'book' && binderSpec(ringStandardId(b))) || sp, size = ringSizeOf(ringSp, Number(b.dia)), outer = Number.isFinite(size.outer) ? Math.round(size.outer * 10) / 10 : blank, n1 = v => Math.round(Number(v) * 10) / 10;
   const gusset = Number.isFinite(Number(f.fdRR)) ? n1(2 * (Number(f.fdRR) + (Number(f.fdTO) || 0) + (Number(f.fdTI) || 0))) : blank;   /* マチ（背の厚み）＝断面の④全高＝2×（背の半径＋表と裏の革の厚み） */
   const leather = data?.colors?.leather, hexName = h => DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(h).toLowerCase())?.name || h;   /* 色の見本の名前（無ければ色コード） */
   const leatherName = leather?.kind === 'texture' && leather.id ? (textureById(leather.id)?.name || blank) : leather?.name || blank, leatherColor = leather?.kind === 'leather' && leather.hex ? hexName(leather.hex) : blank;
