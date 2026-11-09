@@ -6372,7 +6372,7 @@ function saveBinderEdit() {
   rebuildBinderSpecs(); refreshBinderSelects(id); $('bdEditDialog').close(); $('hint').textContent = t('bdeSaved'); const redone = redrawPlacedBinders(placed); bdeRefreshDrawing(); if (redone) $('hint').textContent += ' ' + redone;
 }
 /** 寸法を直したあと：いまの図面に折りの断面があれば、断面（リング・台座）と平面図・展開図を新しい寸法で作り直す（事業主 2026-11-04「台座の幅が反映されません」：FIX を押し直さないと変わらなかった）。 */
-function bdeRefreshDrawing() { if (leverGapNow() !== null) applyLeverGap(); if (!doc.foldDesign?.ring) return; const note = $('hint').textContent; liveFoldDesign(); foldFollowSoon(); $('hint').textContent = note + ' ' + t('bdeRedrawn'); }
+function bdeRefreshDrawing() { if (leverGapNow() !== null) applyLeverGap(); renderFoldFlow(); /* 金具の全長の案内も、新しい寸法に */ if (!doc.foldDesign?.ring) return; const note = $('hint').textContent; liveFoldDesign(); foldFollowSoon(); $('hint').textContent = note + ' ' + t('bdeRedrawn'); }
 function resetBinderEdit() {
   const placed = placedBinderTargets(bdeSpecId);
   delete binderEdits.specs[bdeSpecId]; if (!persistBinderEdits()) return;
