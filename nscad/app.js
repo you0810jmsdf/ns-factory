@@ -6293,6 +6293,19 @@ const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRin
 const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
 function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
 function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
+/** 取り付け穴の「穴間距離」欄（事業主 2026-11-10「穴間距離を入れれば自動的に中心からの距離を入れられるように」）：穴がちょうど2つのときだけ出す。
+ *  bdeSpanSync＝x・y の欄から、距離（y が同じ2穴の x の間隔）を欄へ映す／bdeSpanApply＝入れた距離の半分を、小さい方の穴の x に −、大きい方に ＋ で入れる（y・径は触らない）。 */
+const bdeVisibleMounts = () => { const out = []; for (let i = 0; i < bdeMountCount; i++) if (!$('bdeMount' + i + 'Row').hidden) out.push(i); return out; };
+function bdeSpanSync(skipField = false) {
+  const rows = bdeVisibleMounts(), row = $('bdeMountSpanRow'); row.hidden = rows.length !== 2; if (row.hidden || skipField) return;
+  const [a, b] = rows.map(i => ({ x: Number($('bdeMount' + i + 'X').value), y: Number($('bdeMount' + i + 'Y').value), ex: $('bdeMount' + i + 'X').value.trim() !== '', ey: $('bdeMount' + i + 'Y').value.trim() !== '' }));
+  $('bdeMountSpan').value = a.ex && b.ex && a.ey && b.ey && Number.isFinite(a.x + b.x + a.y + b.y) && Math.abs(a.y - b.y) < 1e-9 ? String(+Math.abs(b.x - a.x).toFixed(4)) : '';
+}
+function bdeSpanApply() {
+  const rows = bdeVisibleMounts(), raw = $('bdeMountSpan').value.trim(), d = Number(raw); if (rows.length !== 2 || raw === '' || !Number.isFinite(d) || !(d > 0)) return;
+  const [i, k] = rows, xi = Number($('bdeMount' + i + 'X').value), xk = Number($('bdeMount' + k + 'X').value), [lo, hi] = Number.isFinite(xi) && Number.isFinite(xk) && xk < xi ? [k, i] : [i, k], half = +(d / 2).toFixed(4);   /* 小さい方の穴（同じなら上の行）が −、もう一方が ＋ */
+  bdeSet('bdeMount' + lo + 'X', -half); bdeSet('bdeMount' + hi + 'X', half);
+}
 function openBinderEdit(specId) {
   const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id; bdeClearError();   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
   const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
@@ -6304,7 +6317,7 @@ function openBinderEdit(specId) {
   bdeSet('bdePlateL', base.lengthMm); bdeSet('bdePlateW', base.sectionWidthMm); bdeSet('bdePlateT', base.thicknessMm); bdeSet('bdePlateR', base.cornerRMm ?? 0); bdeSet('bdePlateConf', base.confidence ?? spec.plate?.confidence ?? '');
   bdeFillArms(spec);
   { const sel = $('bdeArmsFrom'); sel.textContent = ''; const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('bdeArmsFromNone'); sel.appendChild(o0); for (const x of BINDER_SPECS.filter(x => !x.parent)) { const o = document.createElement('option'); o.value = x.id; o.textContent = nameOf(x); sel.appendChild(o); } const from = spec.armsFrom && BINDER_SPECS.some(x => x.id === spec.armsFrom && !x.parent) ? spec.armsFrom : ''; sel.value = from; sel.onchange = () => bdeApplyArmsFrom(); bdeSetArmsLocked(!!from); }   /* アームの規格を借りる（2026-11-04 改善案1）。借りて保存した製品を開き直したときは、借り元を出して欄は触れないまま */
-  rivets.forEach((r, i) => bdeWireMount(i, r));
+  rivets.forEach((r, i) => bdeWireMount(i, r)); bdeSpanSync();
   { const lv = (spec.mechanism?.parts || []).find(q => q.kind === 'lever'); bdeSet('bdeLeverW', lv?.widthMm); bdeSet('bdeLeverL', lv && Math.abs(Number(lv.lengthMm) - Number(base.sectionWidthMm)) < 1e-9 ? '' : lv?.lengthMm); bdeSet('bdeLeverH', lv?.heightMm); bdeSet('bdeLeverRo', lv?.cornerOuterRMm || ''); bdeSet('bdeLeverRi', lv?.cornerInnerRMm || ''); bdeLeverInit = JSON.stringify(bdeLeverValues()); bdeLenAnchor = 'plate'; bdeSyncLength(); }   /* レバー：今のレバー（最初の1つ）の値。幅が台座の幅と同じなら空欄（台座の幅に追従） */
   { const ro = isRefillOnlySpec(spec.id), rs = ro ? binderSpec(RING_STANDARD_OF[spec.id]) : null;   /* リフィルの名前でしかない規格（A5 Slim）：金具（台座・取付穴・レバー・アーム・リング）は出さず、使うリング規格を案内する */
     $('bdeHwSection').hidden = ro; $('bdeSample').hidden = ro; $('bdeRefillOnlyNote').hidden = !ro; if (ro) $('bdeRefillOnlyNote').textContent = t('bdeRefillOnlyNote', { name: nameOf(spec), ring: rs ? nameOf(rs) : RING_STANDARD_OF[spec.id] }); }
@@ -7719,7 +7732,7 @@ function initHardware() {
   $('bdeAddRing').onclick = () => { if ($('bdeArmsFrom').value) { $('bdeArmsFrom').value = ''; bdeApplyArmsFrom(); $('hint').textContent = t('bdeArmsUnlocked'); }   /* アームを借りているときは、借りるのをやめて（いまの値から）足す */
     const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
   $('bdeLeverFill').onclick = () => { bdeSet('bdeLeverW', 7); bdeSet('bdeLeverL', ''); bdeSet('bdeLeverH', 6); bdeSet('bdeLeverRo', 5); bdeSet('bdeLeverRi', 1); bdeSyncLength(); bdeSampleUpdate(); $('hint').textContent = t('bdeLeverFilled'); };
-  for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, e => { if (ev === 'input' || ev === 'change') { bdeClearError(); const id = e?.target?.id; if (id === 'bdePlateL') bdeSyncLength('plate'); else if (id === 'bdeTotalL') bdeSyncLength('total'); else if (id === 'bdeLeverW') bdeSyncLength(); else if (id === 'bdeRefillSel') bdeRefillFromSel(); else if (id === 'bdeRefillW' || id === 'bdeRefillH') bdeRefillSelSync(); } if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
+  for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, e => { if (ev === 'input' || ev === 'change') { bdeClearError(); const id = e?.target?.id; if (id === 'bdeMountSpan') bdeSpanApply(); if (id === 'bdePlateL') bdeSyncLength('plate'); else if (id === 'bdeTotalL') bdeSyncLength('total'); else if (id === 'bdeLeverW') bdeSyncLength(); else if (id === 'bdeRefillSel') bdeRefillFromSel(); else if (id === 'bdeRefillW' || id === 'bdeRefillH') bdeRefillSelSync(); } if (bdeSpecId) bdeSpanSync(e?.target?.id === 'bdeMountSpan'); if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
   $('bdEditDialog').addEventListener('focusin', e => { bdeHl = bdeHlOf(e.target?.id || ''); if (bdeSpecId) bdeSampleUpdate(); });   /* 触った欄の寸法を、色つきにする */
   $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
