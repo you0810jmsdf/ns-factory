@@ -197,6 +197,7 @@ export const BINDER_SPECS = [
   },
   "rings": {
    "diameterOptionsMm": [
+    16,
     20,
     25,
     30,
@@ -208,15 +209,28 @@ export const BINDER_SPECS = [
    "firstOffsetMm": null,
    "options": [
     {
-     "outerDiameterMm": 24,
-     "innerDiameterMm": 20,
-     "wireDiameterMm": 2,
+     "innerDiameterMm": 16,
+     "outerDiameterMm": 19,
+     "wireDiameterMm": 1.5,
+     "wireSource": "measured",
      "baseSpanMm": null,
      "embedDepthMm": null,
      "openGapMm": null,
-     "confidence": null,
-     "sourceNote": null,
-     "wireSource": "assumed",
+     "confidence": "measured",
+     "sourceNote": "お客様手持ちのリングの実測：内径16・外径19（事業主 2026-11-09）・線径1.5は外径と内径の差から計算",
+     "shopName": null,
+     "shopUrl": null
+    },
+    {
+     "outerDiameterMm": 23,
+     "innerDiameterMm": 20,
+     "wireDiameterMm": 1.5,
+     "baseSpanMm": null,
+     "embedDepthMm": null,
+     "openGapMm": null,
+     "confidence": "measured",
+     "sourceNote": "手帳付属リング（A5 6穴）の実測：内径20・外径23（事業主 2026-11-09）・線径1.5は外径と内径の差から計算",
+     "wireSource": "measured",
      "shopName": null,
      "shopUrl": null
     },
