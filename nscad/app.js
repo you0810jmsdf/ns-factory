@@ -2754,17 +2754,56 @@ function foldFlowStates(d = doc) {
 /* ───────── ⓪ リングとリフィル（事業主 2026-10-23「２つ折りの断面図描画時にリフィルとリングが勝手に決まっている。どちらも断面図を決める前に情報として設定したい」「全てが手帳というわけではない。２つ折りか３つ折りを決定し…直前でリングとリフィルを決めて、断面図ボタンの流れがよい」）
    断面を作る前に、手帳（kind 'book'）か手帳ではない（'plain'）かを自分で決める。手帳なら、リフィルの規格 spec・リング内径 dia・束の厚み stack も（どれも最初は空で、勝手に決まらない）。
    図面に doc.foldBook として残す（図面ファイルと一緒に保存）。断面がすでにあって doc.foldBook が無いときは、断面の中身（doc.foldDesign.ring の有無）から読む。値は、金具カード・設計カードの今ある欄（binderSpecSel・ringD・fdStackT・fdRingOn）に写して使う。 ───────── */
-const FOLD_BOOK_NONE = { kind: '', spec: '', dia: '', stack: '', refillR: '', leverGap: '' };   /* leverGap＝平面図の高さを「金具の端（レバーの先）から〇mm」で決める数（空＝リフィルの高さ＋余りで決める。事業主 2026-11-09） */   /* refillR＝平面図のリフィルの角の丸み（空＝規格の既定。事業主 2026-11-05「Rを指定したい」） */
+const FOLD_BOOK_NONE = { kind: '', spec: '', ring: '', dia: '', stack: '', refillR: '', leverGap: '' };   /* spec＝リフィルの規格・ring＝リング規格（空＝リフィルに合わせた初期値。事業主 2026-11-09「A5 Slim はリフィルの規格で、リング規格と全く関係ありません」） */   /* leverGap＝平面図の高さを「金具の端（レバーの先）から〇mm」で決める数（空＝リフィルの高さ＋余りで決める。事業主 2026-11-09） */   /* refillR＝平面図のリフィルの角の丸み（空＝規格の既定。事業主 2026-11-05「Rを指定したい」） */
 function foldBookState() {
   const b = doc.foldBook, d = doc.foldDesign, str = v => typeof v === 'string' ? v.slice(0, 40) : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
-  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), dia: str(b.dia), stack: str(b.stack), refillR: str(b.refillR), leverGap: str(b.leverGap) };
-  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), dia: str(d.ring.ringD), stack: str(d.ring.stackT), refillR: '', leverGap: '' } : { kind: 'plain', spec: '', dia: '', stack: '', refillR: '', leverGap: '' };
+  if (b && typeof b === 'object') return { kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: str(b.spec), ring: str(b.ring), dia: str(b.dia), stack: str(b.stack), refillR: str(b.refillR), leverGap: str(b.leverGap) };
+  if (d) return d.ring ? { kind: 'book', spec: str(d.ring.specId), ring: '', dia: str(d.ring.ringD), stack: str(d.ring.stackT), refillR: '', leverGap: '' } : { kind: 'plain', spec: '', ring: '', dia: '', stack: '', refillR: '', leverGap: '' };
   return FOLD_BOOK_NONE;
 }
 const foldBookComplete = s => s.kind === 'plain' || (s.kind === 'book' && s.spec !== '' && s.dia !== '' && Number(s.stack) > 0);
+/* ───────── リフィルの規格とリング規格を分ける（事業主 2026-11-09「A5 Slim はリフィルの規格であってリング規格と全く関係ありません」「穴の位置も全然違います」「レバーのないリングはありません」）：
+   金具（間隔・台座・取付穴・レバー・リング径）はリング規格から、リフィルの大きさは「リフィルの規格」から取る。リング規格を選ばないときは、リフィルに合わせた初期値（A5 Slim → A5 6穴）。
+   後方幕僚の規格図鑑：A5 Slim は A5 用 6穴金具をそのまま流用できる。リフィルの名前でしかない規格は RING_STANDARD_OF に足す。 ───────── */
+const RING_STANDARD_OF = { a5slim: 'a5' };
+const isRefillOnlySpec = id => Object.prototype.hasOwnProperty.call(RING_STANDARD_OF, id);
+function ringStandardId(s = foldBookState()) {
+  if (s.kind !== 'book' || !s.spec) return '';
+  if (s.ring && binderSpec(s.ring) && !isRefillOnlySpec(s.ring)) return s.ring;
+  const dflt = RING_STANDARD_OF[s.spec]; return dflt && binderSpec(dflt) ? dflt : s.spec;
+}
+/** リフィルの大きさ・穴を持つ規格：ふつうは金具と同じ規格。⓪でリング規格を別に選んでいるときは、「リフィルの規格」で選んだ方。 */
+function refillSpecOf(ringId) { const s = foldBookState(); return s.kind === 'book' && s.spec && ringStandardId(s) === ringId ? binderSpec(s.spec) : binderSpec(ringId); }
+const specsSig = () => BINDER_SPECS.map(x => x.id + ':' + x.names.ja).join(',');   /* 規格の一覧が変わった（製品を足した・名前を直した）ことを知る印 */
+const confWord = c => t({ measured: 'confMeasured', spec: 'confSpec', estimated: 'confEstimated' }[c] || 'confNone');
+/** ⓪の「金具の元」の案内：どの規格のどの値で金具を描いているか（実測か推定か・全長・取付穴・レバーの有無）。レバーが無いときは warn。 */
+function ringStdNoteInfo(s) {
+  const id = ringStandardId(s), sp = id ? planHardwareSpec(id) : null; if (!sp) return null;
+  const en = document.documentElement.lang === 'en', ext = binderOverallExtent(sp), lv = (sp.mechanism?.parts || []).filter(q => q.kind === 'lever').length, rv = (sp.rivets || []).map(r => r.xMm);
+  const mount = !rv.length ? t('foldFlowRingNoMount') : rv.length === 2 && Math.abs(rv[0] + rv[1]) < 0.05 ? '±' + Math.abs(rv[1]) + ' mm' : rv.join('・') + ' mm';
+  return { warn: lv === 0, text: t(lv === 0 ? 'foldFlowRingNoLever' : 'foldFlowRingNote', { name: en ? sp.names.en : sp.names.ja, conf: confWord(sp.plate?.confidence), total: ext ? +ext.total.toFixed(2) : '-', n: lv, mount }) };
+}
+/** ⓪のリング規格の欄・金具の元の案内・「リング規格を直す」ボタンを、今の状態に合わせる。 */
+function syncRingStd(s) {
+  const sel = $('flowRingStd'); if (!sel) return;
+  const lang = document.documentElement.lang || 'ja', en = lang === 'en', dflt = RING_STANDARD_OF[s.spec] && binderSpec(RING_STANDARD_OF[s.spec]) ? RING_STANDARD_OF[s.spec] : s.spec, dsp = binderSpec(dflt);
+  const key = lang + '|' + (dsp ? dsp.id : '') + '|' + specsSig();
+  if (sel.dataset.key !== key) { sel.textContent = ''; fillBinderSpecOptions(sel, true, true, dsp ? t('foldFlowRingFollow', { name: en ? dsp.names.en : dsp.names.ja }) : t('foldFlowBookPick')); sel.dataset.key = key; }
+  const want = s.ring && binderSpec(s.ring) && !isRefillOnlySpec(s.ring) ? s.ring : ''; if (sel.value !== want) sel.value = want;
+  const info = ringStdNoteInfo(s), note = $('flowRingStdNote'), txt = info ? info.text : '';
+  if (note) { if (note.textContent !== txt) note.textContent = txt; note.classList?.toggle('flow-h-warn', !!info?.warn); }
+  const eb = $('flowRingStdEdit'); if (eb) eb.hidden = !info;
+}
+/** ⓪の「リング規格」を変えた：リング内径が新しい規格に無ければ、選び直してもらう。 */
+function onRingStdChange() {
+  const s = foldBookState(), ring = $('flowRingStd').value, sp = binderSpec(ring || RING_STANDARD_OF[s.spec] || s.spec), ok = sp && (sp.rings?.diameterOptionsMm || []).some(dd => String(dd) === s.dia);
+  setFoldBook({ ring, dia: ok ? s.dia : '' });
+}
+/** ⓪の「リング規格を直す」：いま金具の元にしているリング規格の「寸法を直す」を開く。 */
+function openRingStdEdit() { const id = ringStandardId(); if (id) openBinderEdit(id); }
 /** 手帳か・規格・リング内径・束の厚みのどれかを変える。手帳でなくなるときは、規格などを空に戻す。そろったら、今ある欄に写す（断面があれば作り直す）。 */
 function setFoldBook(patch) {
-  const next = { ...foldBookState(), ...patch }; if (next.kind !== 'book') { next.spec = ''; next.dia = ''; next.stack = ''; next.refillR = ''; next.leverGap = ''; }
+  const next = { ...foldBookState(), ...patch }; if (next.kind !== 'book') { next.spec = ''; next.ring = ''; next.dia = ''; next.stack = ''; next.refillR = ''; next.leverGap = ''; }
   doc.foldBook = next; if (tabs[activeTab]) tabs[activeTab].dirty = true;
   if (foldBookComplete(next)) applyFoldBook(true);
   if ('spec' in patch && next.kind === 'book' && next.spec) applyPlanHeight();   /* リフィルの規格を選んだ・替えたとき：平面図の高さの初めの数字を決める */
@@ -2778,7 +2817,7 @@ function refillPlanHeight() { const s = foldBookState(), sp = s.kind === 'book' 
 /* ───────── 平面図の高さを「レバーの端から〇mm」で決める（事業主 2026-11-09「本体高さはレバーの端から〇mmという指定ができれば楽かも」）：高さ＝金具の端から端まで（レバーの先から先まで）＋両側の余り×2。
    金具は高さの真ん中に置くので、中心から遠い方の端までの距離×2＋余り×2。入れている間は、金具・レバー・規格を変えても追従する。高さの欄を手で直す・⓪の余りを変えたら、この数は空に戻る（最後に入れた方が基準）。図面ごとに doc.foldBook.leverGap に残る ───────── */
 const leverGapNow = () => { const raw = String(foldBookState().leverGap ?? '').trim(), v = Number(raw); return raw !== '' && Number.isFinite(v) && v >= 0 ? v : null; };
-function leverGapExtent() { const s = foldBookState(); return s.kind === 'book' && s.spec ? binderOverallExtent(planHardwareSpec(s.spec)) : null; }
+function leverGapExtent() { const s = foldBookState(); return s.kind === 'book' && s.spec ? binderOverallExtent(planHardwareSpec(ringStandardId(s))) : null; }
 function leverGapHeight() { const g = leverGapNow(), ext = g === null ? null : leverGapExtent(); return ext ? { total: ext.total, full: Math.round(2 * ext.half * 100) / 100, gap: g, v: Math.round((2 * ext.half + 2 * g) * 100) / 100 } : null; }
 function applyLeverGap() { const r = leverGapHeight(); if (!r) return false; planHeightTouched = true; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); return true; }
 function clearLeverGap() { if (leverGapNow() === null && !String($('flowLeverGap')?.value ?? '').trim()) return; doc.foldBook = { ...foldBookState(), leverGap: '' }; if ($('flowLeverGap')) $('flowLeverGap').value = ''; if (tabs[activeTab]) tabs[activeTab].dirty = true; }
@@ -2801,7 +2840,7 @@ function syncLeverGapNote() {
 }
 /** 案内の横の「全長を直す」：いま平面図に使っている金具の「寸法を直す」を開き、全長の欄に移る（事業主 2026-11-09 改善提案①）。 */
 function openLeverGapEdit() {
-  const s = foldBookState(), sp = s.kind === 'book' && s.spec ? planHardwareSpec(s.spec) : null; if (!sp) return;
+  const s = foldBookState(), sp = s.kind === 'book' && s.spec ? planHardwareSpec(ringStandardId(s)) : null; if (!sp) return;
   openBinderEdit(sp.id); const f = $('bdeTotalL'); if (f) { f.focus?.(); f.select?.(); }
 }
 function applyPlanHeight() { if (applyLeverGap()) return; const r = refillPlanHeight(); if (!r) return; planHeightTouched = false; $('fdH').value = String(r.v); if ($('flowH')) $('flowH').value = String(r.v); onFlatNumber('fdH'); renderFoldBook(); }
@@ -2825,7 +2864,7 @@ function applyFoldBook(remake) {
   const s = foldBookState(); if (!foldBookComplete(s)) return false;
   $('fdRingOn').checked = s.kind === 'book';
   if (s.kind === 'book') {
-    $('binderSpecSel').value = s.spec; const sp = binderSpec(s.spec); if (sp) fillRingOptions($('ringD'), sp); $('ringD').value = s.dia; $('fdStackT').value = s.stack; syncFoldRingSelects();
+    const rid = ringStandardId(s); $('binderSpecSel').value = rid; const sp = binderSpec(rid); if (sp) fillRingOptions($('ringD'), sp); $('ringD').value = s.dia; $('fdStackT').value = s.stack; syncFoldRingSelects();
     if (remake && doc.foldDesign) onBinderChange(); else { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); }
   } else if (remake && doc.foldDesign) liveFoldDesign();
   return true;
@@ -2836,8 +2875,9 @@ function renderFoldBook(done = foldBookComplete(foldBookState())) {
   const s = foldBookState(), li = $('foldFlowBook'), tag = $('foldFlowBookState'), lang = document.documentElement.lang || 'ja';
   if (kind.value !== s.kind) kind.value = s.kind; $('flowBookRows').hidden = s.kind !== 'book';
   if (s.kind === 'book') {
-    const spec = $('flowRingSpec'), dia = $('flowRingDia'), stack = $('flowStackT'), sp = s.spec ? binderSpec(s.spec) : null;
-    if (spec.dataset.key !== lang) { spec.textContent = ''; fillBinderSpecOptions(spec, true); spec.dataset.key = lang; }
+    const spec = $('flowRingSpec'), dia = $('flowRingDia'), stack = $('flowStackT'), sp = s.spec ? binderSpec(ringStandardId(s)) : null, skey = lang + '|' + specsSig();
+    if (spec.dataset.key !== skey) { spec.textContent = ''; fillBinderSpecOptions(spec, true); spec.dataset.key = skey; }
+    syncRingStd(s);
     const dkey = lang + '|' + (sp ? sp.id : ''); if (dia.dataset.key !== dkey) { fillRingOptions(dia, sp, true); dia.dataset.key = dkey; } dia.disabled = !sp;
     if (spec.value !== s.spec) spec.value = s.spec; if (dia.value !== s.dia) dia.value = s.dia; if (document.activeElement !== stack && stack.value !== s.stack) stack.value = s.stack;
   }
@@ -2889,7 +2929,7 @@ function saveBookSpecs(list) { try { localStorage.setItem(BOOK_SPEC_KEY, JSON.st
 function bookSpecCapture() {
   const fields = {}; for (const id of BOOK_SPEC_FIELDS) { const el = $(id); if (el) fields[id] = String(el.value ?? ''); } const checks = {}; for (const id of BOOK_SPEC_CHECKS) { const el = $(id); if (el) checks[id] = !!el.checked; }
   const b = foldBookState(), colors = { leather: lastLeatherBrush ? { ...lastLeatherBrush } : null, metal: lastMetalBrush ? { ...lastMetalBrush } : null };
-  return { v: 1, book: { kind: b.kind, spec: b.spec, dia: b.dia, stack: b.stack, refillR: b.refillR, leverGap: b.leverGap }, fields, checks, colors };
+  return { v: 1, book: { kind: b.kind, spec: b.spec, ring: b.ring, dia: b.dia, stack: b.stack, refillR: b.refillR, leverGap: b.leverGap }, fields, checks, colors };
 }
 /** 保存したデータを欄に入れる。断面があれば作りなおす（⓪を入れたときと同じ道筋）。 */
 function bookSpecApply(data) {
@@ -2902,7 +2942,7 @@ function bookSpecApply(data) {
   try { localStorage.setItem(FLAT_METAL_KEY, String($('flowHwMetal').value)); localStorage.setItem(FLAT_PAPER_KEY, $('flowRefillPaper').checked ? '1' : '0'); localStorage.setItem(FLAT_DIMS_KEY, $('flowAutoDims').checked ? '1' : '0'); localStorage.setItem(FLAT_CORNER_KEY, String($('flowCorner').value)); localStorage.setItem(FLAT_LAYOUT_KEY, String($('flowStitchLayout').value)); } catch { /* 保存できなくても続ける */ }
   const col = data.colors || {}; if (col.leather && typeof col.leather === 'object') lastLeatherBrush = { ...col.leather }; if (col.metal && typeof col.metal === 'object') lastMetalBrush = { ...col.metal };
   const b = data.book || {}; refreshFoldWidth(); refreshFoldPitch();
-  setFoldBook({ kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: String(b.spec ?? ''), dia: String(b.dia ?? ''), stack: String(b.stack ?? ''), refillR: String(b.refillR ?? ''), leverGap: String(b.leverGap ?? '') });   /* そろっていれば、断面を作り直す（欄にも写す） */
+  setFoldBook({ kind: b.kind === 'book' || b.kind === 'plain' ? b.kind : '', spec: String(b.spec ?? ''), ring: String(b.ring ?? ''), dia: String(b.dia ?? ''), stack: String(b.stack ?? ''), refillR: String(b.refillR ?? ''), leverGap: String(b.leverGap ?? '') });   /* そろっていれば、断面を作り直す（欄にも写す） */
   if (doc.foldDesign) { liveFoldDesign(); foldFollowSoon(); } else if (foldBookComplete(foldBookState())) makeFoldDesign(false);   /* 断面がまだ無ければ、①を押したのと同じに作る（呼び出し1回で断面まで） */
   renderFoldFlow(); return true;
 }
@@ -3748,7 +3788,7 @@ function initDesign() {
   $('lamRun').onclick = () => { runLaminate(); renderLaminateNow(); }; $('lamSection').onclick = makeLamSection; $('lamRelay').onclick = relayRim; $('lamUnfold').onclick = unfoldButtons; $('lamGrow').onclick = growBends; $('lamTidy').onclick = tidyLaminate;
   $('flowFoldMode').onchange = () => { if (!lockGate('fold')) { renderFoldFlow(); return; } $('fdMode').value = $('flowFoldMode').value; $('fdMode').onchange(); if (foldIsBifold()) $('foldFlowMore').open = true; renderFoldFlow(); };   /* 小窓の「折り方」＝折り設計カードの「折り方」（同じ処理） */
   $('flowRefillR').oninput = () => { const raw = String($('flowRefillR').value).trim(); doc.foldBook = { ...foldBookState(), refillR: raw !== '' && Number.isFinite(Number(raw)) ? raw : '' }; if (tabs[activeTab]) tabs[activeTab].dirty = true; foldFollowSoon(); };   /* リフィルの角R：図面に残す・平面図だけ作りなおす（断面には関係ない） */
-  $('flowBook').onchange = () => setFoldBook({ kind: $('flowBook').value }); $('flowRingSpec').onchange = () => setFoldBook({ spec: $('flowRingSpec').value, dia: '' }); $('flowRingDia').onchange = () => setFoldBook({ dia: $('flowRingDia').value }); $('flowStackT').oninput = () => setFoldBook({ stack: $('flowStackT').value });   /* ⓪：リングとリフィルを、断面を作る前に決める */
+  $('flowBook').onchange = () => setFoldBook({ kind: $('flowBook').value }); $('flowRingSpec').onchange = () => setFoldBook({ spec: $('flowRingSpec').value, dia: '' }); $('flowRingStd').onchange = onRingStdChange; $('flowRingStdEdit').onclick = openRingStdEdit; $('flowRingDia').onchange = () => setFoldBook({ dia: $('flowRingDia').value }); $('flowStackT').oninput = () => setFoldBook({ stack: $('flowStackT').value });   /* ⓪：リングとリフィルを、断面を作る前に決める */
   $('fhbVal').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyFoldHandleBar(); } else if (e.key === 'Escape') { e.stopPropagation?.(); closeFoldHandleBar(); } }); $('fhbSame').onclick = () => applyFoldHandleBar(true); $('fhbClose').onclick = closeFoldHandleBar;   /* 断面の取っ手の数字の小窓 */
   $('flowMake').onclick = () => { const s = foldBookState(); if (!foldBookComplete(s)) { $('hint').textContent = t(s.kind === 'book' ? 'foldFlowBookIncomplete' : 'foldFlowBookFirst'); $('flowBook').focus?.(); return; } applyFoldBook(false); $('fdMake').click(); };   /* ⓪が決まるまで①は進めない（案内を出す）。決まっていれば、⓪の値を欄に写してから、今までの「断面を作る」を押す */
   for (const [from, to] of [['flowFix', 'fdFix'], ['flowStitch', 'fdStitch'], ['flowRelay', 'lamRelay'], ['flowGrow', 'lamGrow'], ['flowSection', 'lamSection'], ['flowUnfoldPlan', 'fdUnfold'], ['flowUnfold', 'lamUnfold'], ['flowTidy', 'lamTidy'], ['flowSameCover', 'fdSameCover']]) $(from).onclick = () => $(to).click();   /* 「三つ折りの手順」のボタンは、今あるボタンと同じ処理（押したことにする）。id・処理は変えない */
@@ -5543,11 +5583,12 @@ function hwCurrent() { return hwPlaceKind === 'binder' ? binderItem() : (DATA_HA
 const hwAngleValue = () => Number($(hwPlaceKind === 'binder' ? 'binderAngle' : 'hwAngle').value) || 0;
 function binderSpec(id) { return BINDER_SPECS.find(s => s.id === id) || null; }
 /** 規格の選択肢を入れる。製品（parent あり）は親の規格の下にまとめて出す（規格 → 製品の2段）。親の行は規格そのもの。 */
-function fillBinderSpecOptions(sel, placeholder = false) {
-  if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
+function fillBinderSpecOptions(sel, placeholder = false, ringOnly = false, placeholderText = '') {   /* ringOnly＝リング規格の一覧（リフィルの名前でしかない規格は出さず、その製品は借りるリング規格の群に入れる） */
+  if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = placeholderText || t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
   const en = document.documentElement.lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, aliasOf = s => (s.names.aliases || []).filter(a => typeof a === 'string' && a), labelOf = s => aliasOf(s).length ? (en ? `${nameOf(s)} (${aliasOf(s).join(', ')})` : `${nameOf(s)}（${aliasOf(s).join('・')}）`) : nameOf(s);   /* 別名（ロルバーン M・Filofax Pocket など）を名前のあとに添える：一覧で探せるように */
   const opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; o.textContent = labelOf(s); into.appendChild(o); };
-  for (const s of BINDER_SPECS.filter(s => !s.parent)) { const kids = BINDER_SPECS.filter(k => k.parent === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
+  const groupOf = k => ringOnly && isRefillOnlySpec(k.parent) ? RING_STANDARD_OF[k.parent] : k.parent;
+  for (const s of BINDER_SPECS.filter(s => !s.parent && !(ringOnly && isRefillOnlySpec(s.id)))) { const kids = BINDER_SPECS.filter(k => k.parent && groupOf(k) === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
 }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
@@ -5591,9 +5632,9 @@ function renderRingBuy(spec, ringD) {
 function spineParams() { const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), ringD = Number($('ringD').value) || 20; return { ringD: ringSizeOf(spec, ringD).inner, wireD: wireOf(spec, ringD) /* 線径はリングの諸元なので金具データの値だけを使う（画面では直さない・2026-10-12 事業主指摘） */, plateT: base.thicknessMm ?? 2, baseH: base.crownHeightMm ?? 2, bossDia: base.supporterDiameterMm ?? 0 /* ビス穴金具部の直径・高さは金具のデータの値だけを使う（リングサポータ厚とは無関係・2026-10-13 事業主指示） */, bossT: base.supporterThicknessMm ?? SUPPORTER_T_MM, holeDia: spec.mounts?.overrides?.[0]?.diameterMm ?? spec.mounts?.pattern?.diameterMm ?? 0, sectionPoints: (() => { try { return base.sectionPoints ? binderSection(base) : null; } catch { return null; } })() /* 台座の断面のデータがあれば、断面図で実測の形とサポータの帯を描く */, embedMm: spec.rings.options?.find(o => o.innerDiameterMm === ringD)?.embedDepthMm ?? 0, leatherT: Number($('spLeather').value) || 1.5, supporterT: SUPPORTER_T_MM /* リングサポータ厚は固定 2.4mm（つねに 2.3〜2.5mm・入力欄は廃止・2026-10-13 事業主指示） */, liningT: Number($('spLining').value) || 0, playMm: Number($('spPlay').value) || 0, foldR: Number($('spFoldR').value) || 0, spineShape: $('spShape').value === 'round' ? 'round' : 'square' }; }
 /** 閉じた手帳の3面図の入力値（背幅の入力に、束の厚み・表紙の長さ・規格のリフィル寸法・台座・リング位置を足す）。 */
 function topParams() {
-  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], p = spineParams(), base = binderBase(spec), cw = Number($('spCoverW').value), hp = spec?.holes?.pitchMm || [], span = spec?.holes?.span1toLastMm || 0, H = (spec?.refill?.hMm ?? 210) + 6;
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], rsp = refillSpecOf(spec?.id) || spec, p = spineParams(), base = binderBase(spec), cw = Number($('spCoverW').value), hp = spec?.holes?.pitchMm || [], span = spec?.holes?.span1toLastMm || 0, H = (rsp?.refill?.hMm ?? 210) + 6;
   let y = H / 2 - span / 2; const ringPos = hp.length ? [y, ...hp.map(d => (y += d))] : undefined;
-  return { ...p, stackT: $('spStack').value === '' ? 6 : Number($('spStack').value), refillW: spec?.refill?.wMm ?? 110, refillH: spec?.refill?.hMm ?? 210, plateW: base.sectionWidthMm ?? 24, plateL: base.lengthMm ?? 170, ringPos, coverW: cw > 0 ? cw : undefined };
+  return { ...p, stackT: $('spStack').value === '' ? 6 : Number($('spStack').value), refillW: rsp?.refill?.wMm ?? 110, refillH: rsp?.refill?.hMm ?? 210, plateW: base.sectionWidthMm ?? 24, plateL: base.lengthMm ?? 170, ringPos, coverW: cw > 0 ? cw : undefined };
 }
 function renderTopSection() {
   const p = topParams(), res = closedBinderViews(p); if (!res) { $('spTopInfo').textContent = t('invalidNumber'); $('spTopSvg').innerHTML = ''; return null; }
@@ -6248,6 +6289,8 @@ function openBinderEdit(specId) {
   { const sel = $('bdeArmsFrom'); sel.textContent = ''; const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('bdeArmsFromNone'); sel.appendChild(o0); for (const x of BINDER_SPECS.filter(x => !x.parent)) { const o = document.createElement('option'); o.value = x.id; o.textContent = nameOf(x); sel.appendChild(o); } const from = spec.armsFrom && BINDER_SPECS.some(x => x.id === spec.armsFrom && !x.parent) ? spec.armsFrom : ''; sel.value = from; sel.onchange = () => bdeApplyArmsFrom(); bdeSetArmsLocked(!!from); }   /* アームの規格を借りる（2026-11-04 改善案1）。借りて保存した製品を開き直したときは、借り元を出して欄は触れないまま */
   rivets.forEach((r, i) => bdeWireMount(i, r));
   { const lv = (spec.mechanism?.parts || []).find(q => q.kind === 'lever'); bdeSet('bdeLeverW', lv?.widthMm); bdeSet('bdeLeverL', lv && Math.abs(Number(lv.lengthMm) - Number(base.sectionWidthMm)) < 1e-9 ? '' : lv?.lengthMm); bdeSet('bdeLeverH', lv?.heightMm); bdeSet('bdeLeverRo', lv?.cornerOuterRMm || ''); bdeSet('bdeLeverRi', lv?.cornerInnerRMm || ''); bdeLeverInit = JSON.stringify(bdeLeverValues()); bdeLenAnchor = 'plate'; bdeSyncLength(); }   /* レバー：今のレバー（最初の1つ）の値。幅が台座の幅と同じなら空欄（台座の幅に追従） */
+  { const ro = isRefillOnlySpec(spec.id), rs = ro ? binderSpec(RING_STANDARD_OF[spec.id]) : null;   /* リフィルの名前でしかない規格（A5 Slim）：金具（台座・取付穴・レバー・アーム・リング）は出さず、使うリング規格を案内する */
+    $('bdeHwSection').hidden = ro; $('bdeSample').hidden = ro; $('bdeRefillOnlyNote').hidden = !ro; if (ro) $('bdeRefillOnlyNote').textContent = t('bdeRefillOnlyNote', { name: nameOf(spec), ring: rs ? nameOf(rs) : RING_STANDARD_OF[spec.id] }); }
   $('bdEditDialog').showModal(); bdeHl = ''; bdeRingIdx = 0; bdeSampleUpdate();
 }
 /** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
@@ -6823,7 +6866,7 @@ function foldRingInput() {
   if ($('fdRingOn')?.checked !== true) return null;
   const pos = Number($('fdRingPos').value), stackT = ($('fdStackT').value ?? '').trim() === '' ? 6 : Number($('fdStackT').value);
   if (!Number.isFinite(pos) || !Number.isFinite(stackT) || !(stackT > 0)) return { error: 'bad' };
-  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), tp = { ...spineParams(), stackT, refillW: spec?.refill?.wMm ?? 110, plateW: base.sectionWidthMm ?? 24 };
+  const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0], base = binderBase(spec), tp = { ...spineParams(), stackT, refillW: (refillSpecOf(spec?.id) || spec)?.refill?.wMm ?? 110, plateW: base.sectionWidthMm ?? 24 };
   const parts = foldRingParts(tp); if (!parts) return { error: 'bad' };
   return { spec, ringD: tp.ringD, pos, stackT, parts, dir: $('fdRefillDir')?.value === 'v' ? 'v' : 'h' };
 }
@@ -6970,13 +7013,13 @@ function refillCornerR(item) {
   return Math.min(hi, Math.max(lo, Number(raw)));
 }
 function refillGaps(d, p, h) {
-  const sp = d.mode === 'bifold' && d.ring ? binderSpec(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm; if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
+  const sp = d.mode === 'bifold' && d.ring ? refillSpecOf(d.ring.specId) : null, W = sp?.refill?.wMm, Hr = sp?.refill?.hMm;   /* sp＝リフィルの規格（大きさ・穴）。金具は d.ring.specId のリング規格 */ if (!(W > 0 && Hr > 0) || !Number.isFinite(d.ring.s)) return null;
   const item = refillLibraryItem(sp), pv = item?.vars || {}, num = (v, fb) => Number.isFinite(Number(v)) && v !== '' && v !== null && v !== undefined ? Number(v) : fb;   /* 部品ライブラリのリフィル（ロルバーンM・Mini6 など）。あれば、その部品そのものを置く（事業主 2026-10-24「リフィルの青印字と実際に部品を置いたときの差が大きい。そのままリングバインダと同様にリフィル部品を置くだけでよい」） */
   const Wp = item ? num(pv.W, W) : W, Hp = item ? num(pv.H, Hr) : Hr, Yp = item ? num(pv.Y, 0) : 0, E = item ? num(pv.E, 6) : 6, arcMid = p.flats[0] + p.bends[0] / 2, dir = d.ring.s < p.flats[0] - 1e-6 ? -1 : 1, holeT = ringHoleOffset(d.ring, { holeD: item ? num(pv.D, num(pv.Dw, 5)) : 5 }),   /* 穴の径（長穴は左右の幅 Dw） */   /* リフィルの向き：表紙側の平らな部分にリングがあるときだけ左（−）。背の丸み（弧）の上・裏表紙側は右（＋）。事業主 2026-10-25「平面図作るとリフィルが逆側に描画されてしまう」（リング位置 0 → −0.45 で、頂点をまたいだだけで左右が入れ替わっていた） */
      hole = d.ring.s + dir * holeT, x0 = dir > 0 ? hole - E : hole - (Wp - E), x1 = x0 + Wp, top = h / 2 - (Hp / 2 + Yp);   /* 部品の穴の並びの中心（H/2＋Y）を、平面図の高さの真ん中（リングの並びの中心）に合わせる */
    /* E＝穴の中心からリフィルの縁まで（foldRingParts の既定）。リフィルは1枚：穴の中心をリングの中心（リング軸 s）に合わせ、リングが背の頂点より先（裏表紙側）なら＋向き・手前なら−向きへ広げる */
   const holeYs = []; { const hs = sp.holes || {}; let v = -(hs.span1toLastMm ?? 0) / 2; holeYs.push(v); for (const pt of hs.pitchMm || []) { v += pt; holeYs.push(v); } }   /* リフィルの穴の並び（規格の穴の数・間隔・中心から）。ロルバーンのように、リフィルの穴の数が金具のリングの数と違う製品でも、並びの中心を合わせるだけ（事業主 2026-10-24「ロルバーンの穴はリングの穴と数は合いません。位置だけ中心に合わせてください」） */
-  const hwSpec = planHardwareSpec(sp.id);   /* 金具（台座・リング・レバー・取付穴）は、製品が使う金具の規格（ロルバーン M は、実測の Mini6 通常リング）のもの */
+  const hwSpec = planHardwareSpec(d.ring.specId);   /* 金具（台座・リング・レバー・取付穴）は、製品が使う金具の規格（ロルバーン M は、実測の Mini6 通常リング）のもの */
   let closed = null;
   if (d.ring.dir !== 'v') {
     const rf = doc.shapes.find(s => s.foldSec === 'fd' && s.role === 'refills')?.points, hs = foldHandles(d), hx = key => hs?.find(q => q.key === key)?.x, xw = hx('w'), xA = hx('endA'), xB = hx('endB');
@@ -7592,7 +7635,7 @@ function initPhrases() {
 function drawCoverFromSpine() {
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
   const r = renderSpineSim(); if (!r) return;
-  const p = spineParams(), tm = Number($('spMarginTB').value), em = Number($('spMarginEdge').value), rw = spec.refill?.wMm, rh = spec.refill?.hMm;
+  const p = spineParams(), tm = Number($('spMarginTB').value), em = Number($('spMarginEdge').value), rw = (refillSpecOf(spec.id) || spec).refill?.wMm, rh = (refillSpecOf(spec.id) || spec).refill?.hMm;
   if (!(tm >= 0) || !(em >= 0) || !(rw > 0) || !(rh > 0)) { $('hint').textContent = t('invalidNumber'); return; }
   const c = coverLayout({ refillW: rw, refillH: rh, spineW: r.spineW, marginTB: tm, marginEdge: em }), nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
   const it = DATA_HARDWARE.items.find(i => i.id === 'binder-' + (spec.parent || spec.id));
