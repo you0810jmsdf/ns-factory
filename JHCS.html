@@ -508,7 +508,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <summary><h2>教室概要</h2></summary>
     <div class="cards">
       <div class="card">
-        <div class="card-title">クラスA ― 木曜</div>
+        <div class="card-title">クラスA ― 木曜（製作）</div>
         <dl>
           <dt>開催日</dt><dd>第2・第4木曜日</dd>
           <dt>時間</dt><dd>10:00 〜 17:00（5時間）</dd>
@@ -520,7 +520,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <span class="badge badge-closed">募集締め切り</span>
       </div>
       <div class="card">
-        <div class="card-title">クラスB ― 日曜</div>
+        <div class="card-title">クラスB ― 日曜（設計）</div>
         <dl>
           <dt>開催日</dt><dd>第2・第4日曜日</dd>
           <dt>時間</dt><dd>10:00 〜 17:00（5時間）</dd>
@@ -1297,7 +1297,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     if (warn) msgs.push(esc(warn));
     if (withNames && unsetNames && unsetNames.length) {
       msgs.push('イニシャル未設定の名前があります（公開側では「（受講生）」と表示）: ' + esc(unsetNames.join('、')) +
-        '。シート「JHCS伏せ字」のイニシャル列に入れると、10分以内に公開側へ反映されます。');
+        '。シート「JHCS伏せ字」のイニシャル列（またはニックネーム列）に入れると、10分以内に公開側へ反映されます。');
     }
     const box = document.getElementById('att-msg');
     box.className = 'att-msg' + (msgs.length ? ' warn' : '');
