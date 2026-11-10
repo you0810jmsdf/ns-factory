@@ -141,6 +141,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .cad-tut-btn:hover { background: var(--tan-light); }
     /* 管理者表示で、実名の横に添える公開側の表示（表示専用・2026-11-11） */
     .pub-label { font-size: 11px; font-weight: 400; color: var(--gray); margin-left: 2px; white-space: nowrap; }
+    /* 管理者表示で、お知らせが受講生にどう見えるかを出す枠（表示専用・2026-11-11） */
+    .notice-public { margin: 0 0 14px; background: rgba(160,120,90,.06); border: 1px dashed rgba(160,120,90,.55); border-radius: 10px; padding: 12px 16px; }
+    .notice-public-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .notice-public-title { font-size: 13px; font-weight: 700; color: var(--tan); }
     .cad-tut-note { font-size: 11px; color: var(--gray); margin: 12px 0 0; line-height: 1.8; }
 
     /* Notice */
@@ -559,6 +563,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <button class="btn btn-export" id="btn-notice-archive" onclick="archiveNotice()">履歴として残す</button>
         <span id="notice-msg" class="form-msg"></span>
       </div>
+    </div>
+    <div class="notice-public" id="notice-public" style="display:none;">
+      <div class="notice-public-head">
+        <span class="notice-public-title">👁 受講生に見える表示（名前を伏せた公開側）</span>
+        <button class="btn btn-secondary" style="min-height:auto;padding:3px 10px;font-size:12px;" onclick="refreshPublicNoticePreview()">読み込み直す</button>
+      </div>
+      <div id="notice-public-body"></div>
+      <div class="notice-meta" style="margin:8px 0 0;">表示専用です。対応表（イニシャル・ニックネーム）を変えたあとは、反映まで最大10分かかります。</div>
     </div>
     <details class="notice-history" id="notice-history-wrap">
       <summary>過去のお知らせを見る</summary>
@@ -993,6 +1005,33 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </div>`).join('');
   }
 
+  // 管理者表示のとき、お知らせが受講生にどう見えるか（名前を伏せた公開側の表示）を読み取り専用で出す（2026-11-11）。
+  // ⛔ 表示専用。編集欄・保存には使わない（伏せ字で実名を上書きしないため）。元データは公開API（受講生が読むのと同じもの）。
+  async function refreshPublicNoticePreview() {
+    const box = document.getElementById('notice-public');
+    if (!box) return;
+    const url = getGasUrl();
+    if (!adminMode || !url) { box.style.display = 'none'; return; }
+    const body = document.getElementById('notice-public-body');
+    box.style.display = '';
+    body.innerHTML = '<div class="notice-empty">読み込み中…</div>';
+    try {
+      const data = await fetchJsonRead(`${url}?action=notice`);
+      if (!adminMode) { box.style.display = 'none'; return; }
+      const n = data.notice || null;
+      if (n && (n['タイトル'] || n['本文'])) {
+        body.innerHTML =
+          `<div class="notice-title">${esc(n['タイトル'] || 'お知らせ')}</div>` +
+          `<div class="notice-text">${esc(n['本文'] || '')}</div>` +
+          `<div class="notice-meta" style="margin:8px 0 0;">更新: ${fmtDateTime(n['更新日時'])}</div>`;
+      } else {
+        body.innerHTML = '<div class="notice-empty">掲載中のお知らせはありません。</div>';
+      }
+    } catch (e) {
+      body.innerHTML = `<div class="notice-empty">公開側の表示を読み込めませんでした。（${esc(e.message)}）</div>`;
+    }
+  }
+
   function setNoticeFields(title, text, updatedText) {
     document.getElementById('notice-title-input').value = title;
     document.getElementById('notice-text-input').value = text;
@@ -1116,6 +1155,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           data.syncError ? '予約システムのメールを読み取れませんでした: ' + data.syncError : '',
           data.unsetMaskNames || []);
         renderProgress(data.progressData);
+        refreshPublicNoticePreview();
         if (btn) btn.textContent = '🔑 管理者表示中（名前を表示）';
         return true;
       } catch (e) {
@@ -1272,6 +1312,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     if (!t) return;
     t.textContent = adminMode ? '🔑 管理者モード：ON' : '🔑 管理者モード：OFF';
     t.classList.toggle('on', adminMode);
+    const pv = document.getElementById('notice-public');
+    if (pv && !adminMode) pv.style.display = 'none';
     t.title = adminMode ? '押すと公開表示（実名なし）に戻します。このPCの記憶は残ります' : '押すと管理者表示にします（このPCに覚えさせてあれば入力は要りません）';
   }
 
