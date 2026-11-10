@@ -6,17 +6,32 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Pushes made with the built-in GITHUB_TOKEN do not trigger push workflows.
+  workflow_run:
+    workflows:
+      - お知らせ欄の掲載
+      - 作品集フォールバックデータ更新
+      - 作品集閲覧ランキング（週1回SNS配信）
+      - カワムラレザー価格・在庫巡回
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: pages-${{ github.event.pull_request.number || 'production' }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+          ref: ${{ github.event_name == 'workflow_run' && 'refs/heads/main' || github.ref }}
       - name: Stage and measure the public site
         shell: bash
         run: |
@@ -50,9 +65,6 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    concurrency:
-      group: github-pages
-      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
