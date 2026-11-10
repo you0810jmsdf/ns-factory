@@ -139,6 +139,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .cad-tut-text strong { color: var(--tan); }
     .cad-tut-btn { display: inline-block; padding: 9px 20px; border-radius: 20px; background: var(--tan); color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; }
     .cad-tut-btn:hover { background: var(--tan-light); }
+    /* 管理者表示で、実名の横に添える公開側の表示（表示専用・2026-11-11） */
+    .pub-label { font-size: 11px; font-weight: 400; color: var(--gray); margin-left: 2px; white-space: nowrap; }
     .cad-tut-note { font-size: 11px; color: var(--gray); margin: 12px 0 0; line-height: 1.8; }
 
     /* Notice */
@@ -1023,6 +1025,31 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   const ATT_WD = ['日', '月', '火', '水', '木', '金', '土'];
   const ATT_ADMIN_LABEL = '🔑 管理者として表示（名前を見る）';
 
+  // 管理者表示のとき、実名の名字の横に「〔公開：TK.〕」を添える（受講生にどう見えるかの確認用・2026-11-11）。
+  // ⛔ 表示専用。編集欄・保存する文章・データには混ぜない（伏せ字や注記で実名を上書きする事故を避けるため）。
+  // 置き換え表（maskLabels）は adminData が返す。GASの maskText_ と同じく、名字の字間に空白があっても拾う。
+  let maskLabels = [];
+  function pubLabelHtml(text) {
+    const s = text === undefined || text === null ? '' : String(text);
+    if (!s || !adminMode || !maskLabels.length) return esc(s);
+    const labelOf = {};
+    const parts = maskLabels.map(m => {
+      const name = String((m && m.name) || '').replace(/[ 　]/g, '');
+      if (!name) return null;
+      labelOf[name] = String(m.label || '');
+      return name.split('').map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[ 　]*');
+    }).filter(Boolean);
+    if (!parts.length) return esc(s);
+    const re = new RegExp(parts.join('|'), 'g');
+    let out = '', last = 0, m;
+    while ((m = re.exec(s)) !== null) {
+      out += esc(s.slice(last, m.index)) + esc(m[0]);
+      out += '<span class="pub-label">〔公開：' + esc(labelOf[m[0].replace(/[ 　]/g, '')] || '') + '〕</span>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(s.slice(last));
+  }
+
   // 読み取り専用の取得。GASが間欠的にHTMLを返したとき（＝処理に届いていない）だけ3回まで取り直す
   async function fetchJsonRead(url, options) {
     let lastErr = null;
@@ -1077,6 +1104,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         try { if (!storedAdminKey()) sessionStorage.setItem('nsf_admin_key', password); } catch (e) {}
         try { sessionStorage.removeItem('nsf_jhcs_public'); } catch (e) {}
         updateAdminToggle();
+        maskLabels = Array.isArray(data.maskLabels) ? data.maskLabels : [];
         cachedRecords = data.records || [];
         renderTable(cachedRecords);
         document.getElementById('last-updated').textContent =
@@ -1154,7 +1182,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         const tip = (titles[it] || '') + (none ? '（受講しない）' : d === PROG_DONE ? '（完了・日付不明）' : d ? '（完了 ' + d + '）' : '（未完了）');
         return `<td class="${hasAB(it) ? 'prog-ab' : ''}"><button class="prog-cell${d && !none ? ' done' : ''}${d === PROG_DONE ? ' nodate' : ''}${none ? ' none' : ''}" data-m="${mi}" data-i="${ii}" title="${escAttr(tip)}" onclick="editProgressCell(this)">${label}</button></td>`;
       }).join('');
-      return `<tr><td class="prog-name">${esc(name)}</td>${cells}<td class="prog-count">${n}/${items.length - skip}</td></tr>`;
+      return `<tr><td class="prog-name">${pubLabelHtml(name)}</td>${cells}<td class="prog-count">${n}/${items.length - skip}</td></tr>`;
     }).join('');
   }
 
@@ -1288,7 +1316,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         else if (s.status !== 'upcoming' && withNames) rec = `<button class="btn btn-primary" style="min-height:auto;font-size:12px;padding:3px 10px;white-space:nowrap;" onclick="prefillRecordFromAttendance(${i})">実績に登録</button>`;
         else if (s.status !== 'upcoming') rec = '<span class="att-rec-no">未登録</span>';
         const names = withNames
-          ? `<td class="att-names">${esc((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${esc((s.absentNames || []).join('、') || '―')}</td><td class="att-names att-unset-names">${esc((s.unsetNames || []).join('、') || '―')}</td>`
+          ? `<td class="att-names">${pubLabelHtml((s.presentNames || []).join('、') || '―')}</td><td class="att-names">${pubLabelHtml((s.absentNames || []).join('、') || '―')}</td><td class="att-names att-unset-names">${pubLabelHtml((s.unsetNames || []).join('、') || '―')}</td>`
           : '';
         return `<tr><td class="att-date">${attDateLabel(s.date)}</td><td>${cls}</td><td>${badge}</td><td>${expected}</td><td><span class="att-num">${Number(s.absent) || 0}名</span></td><td><span class="att-num${s.unsetCount ? ' att-unset' : ''}">${Number(s.unsetCount) || 0}名</span></td>${names}<td>${rec}</td></tr>`;
       }).join('');
@@ -1673,8 +1701,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <td>${classTag}</td>
           <td>${r['出席者数'] ? r['出席者数'] + '名' : '―'}</td>
           <td>${r['実施時間(h)'] ? r['実施時間(h)'] + 'h' : '―'}</td>
-          <td class="td-work">${esc(r['作業内容'] || '―')}</td>
-          <td><div style="max-width:180px;word-break:break-word;white-space:pre-wrap;color:var(--gray);font-size:12px;">${esc(memo)}</div></td>
+          <td class="td-work">${pubLabelHtml(r['作業内容'] || '―')}</td>
+          <td><div style="max-width:180px;word-break:break-word;white-space:pre-wrap;color:var(--gray);font-size:12px;">${pubLabelHtml(memo)}</div></td>
           <td style="font-size:11px;color:var(--gray);white-space:nowrap;">${fmtDate(r['登録日時'])}</td>
           <td style="white-space:nowrap;">
             <button class="btn btn-edit" style="min-height:auto;padding:4px 10px;font-size:12px;" onclick="openEditModal('${id}')">✏️</button>
