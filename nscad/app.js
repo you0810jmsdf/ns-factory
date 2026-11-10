@@ -2801,7 +2801,7 @@ function onRingStdChange() {
   setFoldBook({ ring, dia: ok ? s.dia : '' });
 }
 /** ⓪の「リング規格を直す」：いま金具の元にしているリング規格の「寸法を直す」を開く。 */
-function openRingStdEdit() { const id = ringStandardId(); if (id) openBinderEdit(id); }
+function openRingStdEdit() { const id = ringStandardId(); if (id) openBinderEdit(id, foldBookState().dia); }
 const STACK_RATIO = 0.8;   /* 紙の束の厚み＝リング内径の8割（自動で入れるときの初期値） */
 const autoStackOf = dia => Number(dia) > 0 ? String(Math.round(Number(dia) * STACK_RATIO * 10) / 10) : '';   /* 0.1 mm 単位（16 → 12.8・20 → 16） */
 /** 手帳か・規格・リング内径・束の厚みのどれかを変える。手帳でなくなるときは、規格などを空に戻す。そろったら、今ある欄に写す（断面があれば作り直す）。 */
@@ -6289,9 +6289,32 @@ function bdeUpdateBuy(i) {
   const b = inp.value.trim() ? buyLinkOf(inp.value) : { ok: false }; a.hidden = !b.ok; if (b.ok) { a.href = b.href; a.textContent = t(b.affiliate ? 'buyGoAff' : 'buyGo'); a.title = b.affiliate ? t('buyAffNote') : ''; }
 }
 let bdeRingCount = 0, bdeMountCount = 0, bdeSpecId = null, bdeArmsInit = { count: '', pitch: '' };   /* bdeArmsInit＝アームの欄に最初に入れた値（変えていないかの判定。変えていなければ、元のアームの形・間隔を壊さない） */
-const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label>${bdeTextField('bdeRing' + i + 'Shop', t('bdeShop'), 'bd-shop')}${bdeTextField('bdeRing' + i + 'Url', t('bdeUrl'), 'bd-url')}<a id="bdeRing${i}Buy" class="buy-go" target="_blank" rel="noopener sponsored" hidden></a><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
+const bdeRingRow = i => `<div class="row" id="bdeRing${i}Row">${bdeField('bdeRing' + i + 'Inner', t('bdeInner'))}${bdeField('bdeRing' + i + 'Outer', t('bdeOuter'))}${bdeField('bdeRing' + i + 'Wire', t('bdeWire'))}${bdeField('bdeRing' + i + 'Embed', t('bdeEmbed'))}<label><span>${t('bdeConf')}</span>${bdeConfSelect('bdeRing' + i + 'Conf')}</label>${bdeTextField('bdeRing' + i + 'Shop', t('bdeShop'), 'bd-shop')}${bdeTextField('bdeRing' + i + 'Url', t('bdeUrl'), 'bd-url')}<a id="bdeRing${i}Buy" class="buy-go" target="_blank" rel="noopener sponsored" hidden></a><button type="button" id="bdeRing${i}Copy">${t('bdeRingCopy')}</button><button type="button" id="bdeRing${i}Del">${t('bdeRemove')}</button></div>`;
 const bdeMountRow = i => `<div class="row" id="bdeMount${i}Row">${bdeField('bdeMount' + i + 'X', 'x')}${bdeField('bdeMount' + i + 'Y', 'y')}${bdeField('bdeMount' + i + 'D', t('bdeDia'))}<button type="button" id="bdeMount${i}Del">${t('bdeRemove')}</button></div>`;
-function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
+function bdeWireRing(i, o = {}) { bdeSet('bdeRing' + i + 'Inner', o.innerDiameterMm); bdeSet('bdeRing' + i + 'Outer', o.outerDiameterMm); bdeSet('bdeRing' + i + 'Wire', o.wireDiameterMm); bdeSet('bdeRing' + i + 'Embed', o.embedDepthMm); bdeSet('bdeRing' + i + 'Conf', o.confidence || ''); bdeSet('bdeRing' + i + 'Shop', o.shopName); bdeSet('bdeRing' + i + 'Url', o.shopUrl); bdeUpdateBuy(i); bdeRingOrig[i] = Object.keys(o).length ? bdeRingVals(i) : null; $('bdeRing' + i + 'Copy').onclick = () => bdeRingCopy(i); $('bdeRing' + i + 'Del').onclick = () => { bdeSet('bdeRing' + i + 'Inner', ''); bdeSet('bdeRing' + i + 'Outer', ''); $('bdeRing' + i + 'Row').hidden = true; }; }
+/** 「新しいリングとして追加」（事業主 2026-11-10「選択したリングだけ表示させて、数値修正後、新しいリングとして登録できるように」）：行の「いまの値」で新しい行を足し、元の行は開いたときの値に戻す。
+ *  リングは内径で区別する決まり（同じ内径は並べられない）なので、内径が同じなら足さずに理由を出す（外径だけ直すなら、そのまま保存すれば、いまのリングが直る）。 */
+let bdeRingOrig = [];   /* 行ごとの、開いたとき（足した行は、足したとき）の値。空の行は null */
+const BDE_RING_FIELDS = ['Inner', 'Outer', 'Wire', 'Embed', 'Conf', 'Shop', 'Url'];
+const bdeRingVals = i => Object.fromEntries(BDE_RING_FIELDS.map(f => [f, $('bdeRing' + i + f).value]));
+const bdeRingInnerKey = v => String(v ?? '').trim() === '' || !Number.isFinite(Number(v)) ? null : Math.round(Number(v) * 10) / 10;
+function bdeRingCopy(i) {
+  const cur = bdeRingVals(i), orig = bdeRingOrig[i], key = bdeRingInnerKey(cur.Inner), keys = [];
+  for (let j = 0; j < bdeRingCount; j++) if (j !== i && !$('bdeRing' + j + 'Row').hidden) keys.push(bdeRingInnerKey($('bdeRing' + j + 'Inner').value));
+  if (orig) keys.push(bdeRingInnerKey(orig.Inner));   /* 元の行は、開いたときの値に戻るので、その内径も数える */
+  if (key !== null && keys.includes(key)) { bdeFail(t('bdeRingCopySame', { inner: key }), true); return; }
+  bdeClearError(); const k = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(k));
+  bdeWireRing(k, { innerDiameterMm: cur.Inner, outerDiameterMm: cur.Outer, wireDiameterMm: cur.Wire, embedDepthMm: cur.Embed, confidence: cur.Conf, shopName: cur.Shop, shopUrl: cur.Url });
+  if (orig) { for (const f of BDE_RING_FIELDS) bdeSet('bdeRing' + i + f, orig[f]); bdeUpdateBuy(i); }
+  bdeRingIdx = bdeVisibleIndex('bdeRing', k); $('hint').textContent = t('bdeRingCopied', { inner: key ?? '' }); $('bdeRing' + k + 'Outer').focus?.();
+}
+/** 選んでいる内径のリングだけを出す（他の行は隠すだけ・保存では残る）。戻り値：サンプル図に出すリングの番号（選べなければ 0）。 */
+function bdeRingPick(spec, dia) {
+  const sh = $('bdeRingShowAll'), ds = spec.rings.diameterOptionsMm || [], idx = dia === undefined || dia === '' ? -1 : ds.findIndex(d => Math.abs(Number(d) - Number(dia)) < 1e-9);
+  sh.hidden = true; if (idx < 0) return 0;
+  if (ds.length > 1) { ds.forEach((_, j) => { if (j !== idx) $('bdeRing' + j + 'Row').style.display = 'none'; }); sh.hidden = false; }
+  return idx;
+}
 function bdeWireMount(i, r = {}) { bdeSet('bdeMount' + i + 'X', r.xMm); bdeSet('bdeMount' + i + 'Y', r.yMm); bdeSet('bdeMount' + i + 'D', r.dMm); $('bdeMount' + i + 'Del').onclick = () => { bdeSet('bdeMount' + i + 'X', ''); bdeSet('bdeMount' + i + 'Y', ''); bdeSet('bdeMount' + i + 'D', ''); $('bdeMount' + i + 'Row').hidden = true; }; }
 /** 取り付け穴の「穴間距離」欄（事業主 2026-11-10「穴間距離を入れれば自動的に中心からの距離を入れられるように」）：穴がちょうど2つのときだけ出す。
  *  bdeSpanSync＝x・y の欄から、距離（y が同じ2穴の x の間隔）を欄へ映す／bdeSpanApply＝入れた距離の半分を、小さい方の穴の x に −、大きい方に ＋ で入れる（y・径は触らない）。 */
@@ -6306,7 +6329,7 @@ function bdeSpanApply() {
   const [i, k] = rows, xi = Number($('bdeMount' + i + 'X').value), xk = Number($('bdeMount' + k + 'X').value), [lo, hi] = Number.isFinite(xi) && Number.isFinite(xk) && xk < xi ? [k, i] : [i, k], half = +(d / 2).toFixed(4);   /* 小さい方の穴（同じなら上の行）が −、もう一方が ＋ */
   bdeSet('bdeMount' + lo + 'X', -half); bdeSet('bdeMount' + hi + 'X', half);
 }
-function openBinderEdit(specId) {
+function openBinderEdit(specId, ringDia) {   /* ringDia＝選んでいるリングの内径。あれば、そのリングの行だけを出し、サンプル図もそのリングにする（事業主 2026-11-10「内径25を選んだのに、外径15mmと出る」） */
   const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id; bdeClearError();   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
   const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
   bdeRingCount = opts.length; bdeMountCount = rivets.length;
@@ -6321,13 +6344,13 @@ function openBinderEdit(specId) {
   { const lv = (spec.mechanism?.parts || []).find(q => q.kind === 'lever'); bdeSet('bdeLeverW', lv?.widthMm); bdeSet('bdeLeverL', lv && Math.abs(Number(lv.lengthMm) - Number(base.sectionWidthMm)) < 1e-9 ? '' : lv?.lengthMm); bdeSet('bdeLeverH', lv?.heightMm); bdeSet('bdeLeverRo', lv?.cornerOuterRMm || ''); bdeSet('bdeLeverRi', lv?.cornerInnerRMm || ''); bdeLeverInit = JSON.stringify(bdeLeverValues()); bdeLenAnchor = 'plate'; bdeSyncLength(); }   /* レバー：今のレバー（最初の1つ）の値。幅が台座の幅と同じなら空欄（台座の幅に追従） */
   { const ro = isRefillOnlySpec(spec.id), rs = ro ? binderSpec(RING_STANDARD_OF[spec.id]) : null;   /* リフィルの名前でしかない規格（A5 Slim）：金具（台座・取付穴・レバー・アーム・リング）は出さず、使うリング規格を案内する */
     $('bdeHwSection').hidden = ro; $('bdeSample').hidden = ro; $('bdeRefillOnlyNote').hidden = !ro; if (ro) $('bdeRefillOnlyNote').textContent = t('bdeRefillOnlyNote', { name: nameOf(spec), ring: rs ? nameOf(rs) : RING_STANDARD_OF[spec.id] }); }
-  $('bdEditDialog').showModal(); bdeHl = ''; bdeRingIdx = 0; bdeSampleUpdate();
+  $('bdEditDialog').showModal(); bdeHl = ''; bdeRingIdx = bdeRingPick(spec, typeof ringDia === 'string' || typeof ringDia === 'number' ? String(ringDia) : undefined); bdeSampleUpdate();
 }
 /** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
 function bdeFillArms(spec) {
   const opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), uniform = (spec.holes?.pitchMm || []).every(q => Math.abs(q - spec.holes.pitchMm[0]) < 1e-9);
   bdeSet('bdeArmCount', spec.holes?.count ?? spec.rings?.countPerSide); bdeSet('bdeArmPitch', spec.holes?.centerPitchMm ?? (uniform ? spec.holes?.pitchMm?.[0] : '')); bdeArmsInit = { count: $('bdeArmCount').value, pitch: $('bdeArmPitch').value };
-  bdeRingCount = opts.length; $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); opts.forEach((o, i) => bdeWireRing(i, o));
+  bdeRingCount = opts.length; bdeRingOrig = []; $('bdeRingShowAll').hidden = true; $('bdeRingRows').innerHTML = opts.map((o, i) => bdeRingRow(i)).join(''); opts.forEach((o, i) => bdeWireRing(i, o));
 }
 /** 借りている間は、アームの欄を触れなくする。 */
 function bdeSetArmsLocked(locked) {
@@ -7728,7 +7751,7 @@ function initHardware() {
   const setHeaderHidden = on => { document.body?.classList?.toggle('hdr-hidden', on); $('hdrShow').hidden = !on; $('hint').textContent = t(on ? 'hdrHidden' : 'hdrShown'); resize(); };
   $('hdrHide').onclick = () => setHeaderHidden(true); $('hdrShow').onclick = () => setHeaderHidden(false);
   $('hdrMore').onclick = () => { const h = document.querySelector?.('header'); if (!h) return; const open = h.classList.toggle('hdr-open'); $('hdrMore').setAttribute('aria-expanded', String(open)); };   /* スマホ：ヘッダーの残りの設定を出し入れ */
-  $('binderEditData').onclick = openBinderEdit; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
+  $('binderEditData').onclick = () => openBinderEdit(undefined, $('ringD')?.value); $('bdeRingShowAll').onclick = () => { for (let i = 0; i < bdeRingCount; i++) $('bdeRing' + i + 'Row').style.display = ''; $('bdeRingShowAll').hidden = true; }; $('bdEditSave').onclick = saveBinderEdit; $('bdEditReset').onclick = resetBinderEdit; $('bdEditCsv').onclick = exportBinderEditsCsv; $('bdEditClose').onclick = () => $('bdEditDialog').close();
   $('bdeAddRing').onclick = () => { if ($('bdeArmsFrom').value) { $('bdeArmsFrom').value = ''; bdeApplyArmsFrom(); $('hint').textContent = t('bdeArmsUnlocked'); }   /* アームを借りているときは、借りるのをやめて（いまの値から）足す */
     const i = bdeRingCount++; $('bdeRingRows').insertAdjacentHTML?.('beforeend', bdeRingRow(i)); bdeWireRing(i); };
   $('bdeLeverFill').onclick = () => { bdeSet('bdeLeverW', 7); bdeSet('bdeLeverL', ''); bdeSet('bdeLeverH', 6); bdeSet('bdeLeverRo', 5); bdeSet('bdeLeverRi', 1); bdeSyncLength(); bdeSampleUpdate(); $('hint').textContent = t('bdeLeverFilled'); };
