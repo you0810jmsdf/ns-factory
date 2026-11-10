@@ -1,0 +1,62 @@
+name: Publish GitHub Pages
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Stage and measure the public site
+        shell: bash
+        run: |
+          site="$RUNNER_TEMP/pages-site"
+          mkdir -p "$site"
+          rsync -a \
+            --exclude='/.git' \
+            --exclude='/.github' \
+            --exclude='/.gitignore' \
+            --exclude='/tools/*.js' \
+            --exclude='/tools/*.cjs' \
+            --exclude='/tools/logs/' \
+            --exclude='/tools/output/' \
+            --exclude='/password-note/test/' \
+            ./ "$site/"
+          for path in index.html works.html order_estimate/hearing-ai.html order_estimate/leather-order-estimate-v2.html nscad/index.html tools/index.html; do
+            test -s "$site/$path"
+          done
+          test -z "$(find "$site" -type l -print -quit)"
+          files=$(find "$site" -type f -printf . | wc -c)
+          bytes=$(du --apparent-size --bytes --summarize "$site" | cut -f1)
+          printf '### Pages artifact\n\n- Files: %s\n- Staged size: %s bytes\n' "$files" "$bytes" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/pages-site
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
