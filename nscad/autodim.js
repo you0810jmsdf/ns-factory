@@ -6,7 +6,84 @@
 // 菱目（菱の線）には寸法を入れない（事業主指摘 2026-10-19「菱目の寸法は不要」）。上下・左右で対称な辺は片側だけに入れる（事業主指摘 2026-10-19「上下左右対称な部分はどちらかに寸法を入れること」）。
 // 菱目の間隔は、指定した工具のピッチと違う所だけ、区間ごとに代表1本（事業主指示 2026-10-19「菱目のピッチが指定した工具と異なる部分があれば代表で入れること」）。
 // 同じ2点を測る寸法がすでにあれば入れない（何度押しても増えない）。作った寸法には autoDim（種類）の印を付ける（「自動で入れた寸法を全部消す」で消せる）。
-import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon, arcSweep, circlePoint, flattenShape } from './geometry.js';
+import { distance, bboxOf, arcLength, pointAtLength, resolvePath, pathSegments, diamondLoopSizes, outlinePolygon, arcSweep, circlePoint, flattenShape, dimension } from './geometry.js';
+
+/* 寸法が隣の図形・穴・ほかの寸法と重なるのを避ける（事業主の要望 2026-11-11「寸法をまとめて入れると隣の図形と被るので回避する仕組みを作って」）。
+   置いた寸法（寸法線・延長線・数字の枠）が、見えている図形・穴・もうある寸法に触れたら、寸法線を外側へ段階的にずらし（同じ側 → 反対側）、触れない位置を探す。触れない位置が無ければ、触れる数がいちばん少ない位置にする。 */
+const AD_AV_MULTS = [1, 1.5, 2, 3, 4, 6];   /* もとの距離の何倍まで試すか */
+const AD_AV_CLEAR = 0.4;     /* 線どうしがこの距離以内なら「触れている」（mm） */
+const AD_AV_PX = 3.2;        /* 数字の高さの目安（mm・画面の倍率で変わるので、広めに見積もる） */
+const AD_AV_BAD = { a: ['a', 'l'], e: ['l'], l: ['a', 'e', 'l'] };   /* 触れてはいけない組み合わせ：寸法線は他の寸法線・数字、延長線は数字、数字は寸法のどれにも（延長線が他の寸法線をまたぐのは、製図の普通のやり方なので許す。図形・穴にはどれも触れない） */
+const AD_AV_CELL = 10;       /* 障害物の索引の升目（mm） */
+const adPtSegDist = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, t = l2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0; return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)); };
+const adCross = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+/** 2本の線分の距離（交わっていれば 0）。 */
+function adSegSegDist(a, b, c, d) {
+  const d1 = adCross(a, b, c), d2 = adCross(a, b, d), d3 = adCross(c, d, a), d4 = adCross(c, d, b);
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return 0;
+  return Math.min(adPtSegDist(a, c, d), adPtSegDist(b, c, d), adPtSegDist(c, a, b), adPtSegDist(d, a, b));
+}
+/** 寸法1本が占める線分の集まり：寸法線・延長線（測る点のそばは除く）・数字の枠（回した四角）。dim は { x1,y1,x2,y2,offset,label? }。 */
+function adDimSegs(dim, offset = dim.offset) {
+  const p = { x: dim.x1, y: dim.y1 }, q = { x: dim.x2, y: dim.y2 }, g = dimension(p, q, offset), segs = [[g.a, g.b, 'a']];
+  for (const [s, e] of g.ext) { const l = distance(s, e) || 1, k = Math.min(0.6, l * 0.4) / l; segs.push([{ x: s.x + (e.x - s.x) * k, y: s.y + (e.y - s.y) * k }, e, 'e']); }   /* 3つ目＝種類：a 寸法線・e 延長線・l 数字の枠（触れてはいけない組み合わせは AD_AV_BAD） */   /* 延長線の根もと 0.6mm は、測っている図形に触れるので除く */
+  const label = typeof dim.label === 'string' && dim.label ? dim.label : g.value.toFixed(2), hw = label.length * AD_AV_PX * 0.6 / 2 + AD_AV_CLEAR, hh = AD_AV_PX / 2 + AD_AV_CLEAR;
+  const mid = { x: (g.a.x + g.b.x) / 2, y: (g.a.y + g.b.y) / 2 }, ox = g.a.x - p.x, oy = g.a.y - p.y, ol = Math.hypot(ox, oy) || 1, off = AD_AV_PX * 0.62 + 0.8;
+  const c = { x: mid.x + ox / ol * off, y: mid.y + oy / ol * off }, r = g.angleDeg * Math.PI / 180, cs = Math.cos(r), sn = Math.sin(r);
+  const at = (u, v) => ({ x: c.x + u * cs - v * sn, y: c.y + u * sn + v * cs }), box = [at(-hw, -hh), at(hw, -hh), at(hw, hh), at(-hw, hh)];
+  for (let i = 0; i < 4; i++) segs.push([box[i], box[(i + 1) % 4], 'l']);
+  return segs;
+}
+/** 障害物の索引（升目ごとの一覧）。obs は { a, b }（線分）または { pt, r }（穴）。 */
+function adObstacleIndex(obstacles) {
+  const cells = new Map(), key = (i, j) => i + ',' + j, cellsOf = (x0, y0, x1, y1) => { const out = []; for (let i = Math.floor(x0 / AD_AV_CELL); i <= Math.floor(x1 / AD_AV_CELL); i++) for (let j = Math.floor(y0 / AD_AV_CELL); j <= Math.floor(y1 / AD_AV_CELL); j++) out.push(key(i, j)); return out; };
+  const boxOf = o => o.pt ? [o.pt.x - o.r, o.pt.y - o.r, o.pt.x + o.r, o.pt.y + o.r] : [Math.min(o.a.x, o.b.x), Math.min(o.a.y, o.b.y), Math.max(o.a.x, o.b.x), Math.max(o.a.y, o.b.y)];
+  const add = o => { const [x0, y0, x1, y1] = boxOf(o); for (const k of cellsOf(x0, y0, x1, y1)) { let l = cells.get(k); if (!l) cells.set(k, l = []); l.push(o); } };
+  for (const o of obstacles) add(o);
+  const hits = (segs, own = []) => {   /* segs に触れる障害物の数。own＝測っている2点：この点を通る線（測っている図形の辺）は、延長線が沿うので数えない */
+    const seen = new Set();
+    for (const [a, b, kind] of segs) for (const k of cellsOf(Math.min(a.x, b.x) - AD_AV_CLEAR, Math.min(a.y, b.y) - AD_AV_CLEAR, Math.max(a.x, b.x) + AD_AV_CLEAR, Math.max(a.y, b.y) + AD_AV_CLEAR)) for (const o of cells.get(k) || []) {
+      if (seen.has(o) || (o.kind && !AD_AV_BAD[kind].includes(o.kind)) || own.some(p => (o.pt ? Math.hypot(o.pt.x - p.x, o.pt.y - p.y) <= o.r : adPtSegDist(p, o.a, o.b) <= 0.05))) continue;
+      if (o.pt ? adPtSegDist(o.pt, a, b) <= o.r + AD_AV_CLEAR : adSegSegDist(a, b, o.a, o.b) <= AD_AV_CLEAR) seen.add(o);
+    }
+    return seen.size;
+  };
+  return { add, hits };
+}
+/** 図面の見えている図形（寸法以外）と穴を、障害物の一覧にする。 */
+function adObstaclesOf(doc) {
+  const vis = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id)), out = [];
+  for (const s of doc.shapes || []) {
+    if (!s || s.type === 'dimension' || s.type === 'image' || (doc.layers && s.layer && !vis.has(s.layer))) continue;
+    let pts; try { pts = flattenShape(s, 0.2); } catch { continue; }
+    for (let i = 1; i < pts.length; i++) out.push({ a: pts[i - 1], b: pts[i] });
+  }
+  const tools = new Map((doc.tools || []).map(t => [t.id, t]));
+  for (const h of doc.holes || []) { const t = tools.get(h.toolId), r = Math.max(0.3, Math.min(2, Math.max(t?.holeW || 0, t?.holeH || 0) / 2 || 1)); out.push({ pt: { x: h.x, y: h.y }, r }); }
+  return out;
+}
+/** 寸法の一覧 plan（autoDimensionPlan の結果）の位置を、重ならないようにずらす。plan を直接直し、{ moved, clash }（動かした本数・どうしても触れる本数）を返す。半径（offset が 0）は動かさない。 */
+export function adAvoidOverlaps(doc, plan) {
+  const index = adObstacleIndex(adObstaclesOf(doc)), vis = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id));
+  for (const d of doc.shapes || []) if (d?.type === 'dimension' && (!doc.layers || vis.has(d.layer))) for (const [a, b, kind] of adDimSegs(d)) index.add({ a, b, kind });   /* もうある寸法も障害物 */
+  let moved = 0, clash = 0;
+  for (const d of plan) {
+    if (!(Math.abs(d.offset) > 0.01)) { for (const [a, b, kind] of adDimSegs(d)) index.add({ a, b, kind }); continue; }
+    const base = d.offset, tries = [...AD_AV_MULTS.map(m => base * m), ...AD_AV_MULTS.map(m => -base * m)];
+    const own = [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }]; let best = base, bestHits = index.hits(adDimSegs(d, base), own);
+    for (let i = 1; bestHits > 0 && i < tries.length; i++) { const h = index.hits(adDimSegs(d, tries[i]), own); if (h < bestHits) { best = tries[i]; bestHits = h; } }
+    if (best !== base) { d.offset = adRound(best); moved++; }
+    if (bestHits > 0) clash++;
+    for (const [a, b, kind] of adDimSegs(d)) index.add({ a, b, kind });
+  }
+  return { moved, clash };
+}
+/** 寸法の一覧のうち、図形・穴・ほかの寸法に触れている本数（試験・確認用。同じ一覧どうしも見る）。 */
+export function adCountClashes(doc, plan) {
+  const index = adObstacleIndex(adObstaclesOf(doc)); let n = 0;
+  for (const d of plan) { if (index.hits(adDimSegs(d), [{ x: d.x1, y: d.y1 }, { x: d.x2, y: d.y2 }]) > 0) n++; for (const [a, b, kind] of adDimSegs(d)) index.add({ a, b, kind }); }
+  return n;
+}
 
 const AD_RADIUS_TOL = 0.1;   /* 半径が「同じ」とみなす差（mm）：同じ半径の角は、型紙ごとに1本にまとめて「R5 ×4」（ベジェ・折れ線は円へのあてはめなので、少しの誤差を許す） */
 const AD_SAME_CORNER = 0.2;  /* 中心・半径がこの差以内の曲線は「同じ角」とみなす（1つの角が 74°＋16° のように2本の曲線に分かれていても、角は1つ・mm） */
@@ -225,7 +302,7 @@ export function adRadiusDimension(f, m, len = 8) {
 /** 作る寸法線の一覧 [{ type:'dimension', x1, y1, x2, y2, offset, autoDim:'size'|'edge'|'circle'|'hole' }, …] を返す（配列に info＝{ clusters, biggest:{ w, h, why } } を付ける：全体が入らなかった理由の案内用）。
  *  doc：図面（既存の寸法・穴・経路・工具を見る）。cand：対象の図形（画面側で「見えている・ガイドの層や点線・目印・金具でない」に絞ったもの。選んでいればその図形だけ）。
  *  gap：線から寸法線までの距離（mm・欄の数字がそのまま距離）。toolPitch：菱の線（工具を持たない菱目）に使う、指定した工具のピッチ（mm・無ければ菱の線の間隔は見ない）。 */
-export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, radii = false, radiusSide = 'in', gap = 8, toolPitch = null, pitchLabel = null, radiusLabel = null } = {}) {
+export function autoDimensionPlan(doc, cand, { size = true, edges = true, circles = true, holes = false, radii = false, radiusSide = 'in', gap = 8, toolPitch = null, pitchLabel = null, radiusLabel = null, avoid = true } = {}) {
   const visLayer = new Set((doc.layers || []).filter(l => l && l.visible !== false).map(l => l.id)), existing = (doc.shapes || []).filter(s => s.type === 'dimension' && (!doc.layers || visLayer.has(s.layer))), out = [];   /* 「もうある寸法」は見えている層のものだけ（隠した層の手描きの寸法で全体を止めない） */
   const labelOf = typeof pitchLabel === 'function' ? pitchLabel : (p, n) => `${p.toFixed(2)}mm ×${n}`;
   const has = (p, q) => existing.some(d => adSamePair(d, p, q)) || out.some(d => adSamePair(d, p, q));
@@ -272,8 +349,10 @@ export function autoDimensionPlan(doc, cand, { size = true, edges = true, circle
     adPitchDims(runs, add, gap, labelOf);
   }
   const result = adDedupeMirror(out, pieces);   /* 上下・左右で対称な辺・円・穴の間隔は片側だけ */
+  const av = avoid ? adAvoidOverlaps(doc, result) : { moved: 0, clash: 0 };   /* 隣の図形・穴・ほかの寸法と重なる寸法は、外側へずらす */
   const big = [...pieces].filter(c => !c.circle).sort((a, b) => b.w * b.h - a.w * a.h)[0] || null;
   result.info = { clusters: pieces.length, pieces: pieces.filter(c => c.piece).length, biggest: big ? { w: adRound(big.w), h: adRound(big.h), why: big.why } : null };
+  result.avoid = av;   /* 避けるためにずらした本数（moved）と、どうしても触れたままの本数（clash） */
   return result;
 }
 /** 一覧の種類ごとの本数 { size, edge, circle, hole }。 */

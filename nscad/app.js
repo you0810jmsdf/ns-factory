@@ -1589,9 +1589,9 @@ function deleteSelectedHoles() {
   commit(() => { doc.holes = doc.holes.filter(h => !ids.has(h.id)); for (const id of ids) selected.delete(id); manualNext = null; });
   $('hint').textContent = t('holesDeleted', { n: ids.size });
 }
-function affectedHoles(all=false) {
+function affectedHoles(all=false, includeLocked=false) {   /* includeLocked＝ロック・非表示の層の穴も数に入れる（「変えられなかった数」を出すため。変える対象には入れない） */
   const paths=new Set(doc.paths.filter(p=>p.shapeIds.some(id=>selected.has(id))).map(p=>p.id));
-  return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId)||(selected.size&&rangeHoleSet().has(h.id)))&&holeEditable(h));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
+  return doc.holes.filter(h=>(all||selected.has(h.id)||paths.has(h.pathId)||(selected.size&&rangeHoleSet().has(h.id)))&&(includeLocked||holeEditable(h)));   /* 選択の判定を先に（全穴に holeEditable を実行しない） */
 }
 /** 穴を点に置換する：点の直径どおりの丸だけにする（画面も書き出しも）。点線の直線（ガイド層）は作らず、すでに自動でできていた直線は消す（2026-10-30 事業主「菱目を点に変換したら点線になった」：syncMarkLines が点の穴ごとに直線を作り、画面は点線の連なりになっていた）。目印ツールで打った点は、今までどおり直線と一体。 */
 function convertHoleToDot(h) {
@@ -1632,7 +1632,11 @@ function rangeHoleSet() {
   return rangeHoleCache.ids;
 }
 const isSelHole = h => selected.has(h.id) || rangeHoleSet().has(h.id);
-function markHoles(mark,all=false) { commit(()=>{ const targets = new Set(affectedHoles(all)); targets.forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } }); }); }
+function markHoles(mark,all=false) {
+  let n = 0, skip = 0;   /* n＝変えた数・skip＝ロック・非表示の層にあって変えられなかった数（事業主の報告 2026-11-11「菱目を全部一括変換できない」：変わらない穴が黙って飛ばされ、理由が分からなかった） */
+  commit(()=>{ const wanted = affectedHoles(all, true), targets = new Set(wanted.filter(holeEditable)); skip = wanted.length - targets.size; n = targets.size; targets.forEach(h=>{ if (mark === 'dot') convertHoleToDot(h); else { h.mark = mark; delete h.noLine; } }); });
+  $('hint').textContent = t(skip ? 'holeMarkedSkip' : 'holeMarked', { n, skip });
+}
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
 const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
@@ -5837,9 +5841,10 @@ function nestApplyCopies() {
   for (const h of doc.holes) { if (!holeEditable(h)) continue; let best = -1; polys.forEach((pl, i) => { if (nestInside({ x: h.x, y: h.y }, pl) && (best < 0 || areas[i] < areas[best])) best = i; }); if (best >= 0) holeOwner.set(h.id, best); }
   const payloads = new Map();
   for (const i of new Set(res.sheets.flatMap(sh => sh.items.map(it => it.id)))) { const ids = new Set(pieces[i]?.ids || []); if (!ids.size) continue; const holeIds = new Set([...holeOwner].filter(([, k]) => k === i).map(([id]) => id)); payloads.set(i, extractSelection(doc, ids, { holeIds, asIs: asIsWithin(ids) })); }
+  const baseName = String(tabs[activeTab]?.name || '').replace(/^（再配置）/, '');   /* 元のタブ名（事業主指示 2026-11-11：新しいタブの名前は、元のタブ名の頭に「（再配置）」を付ける。再配置したタブを並べ直したときは、「（再配置）」を重ねない） */
   cancel(); const first = tabs.length; let removed = 0, n = 0;
   res.sheets.forEach((sh, k) => {
-    newTab(t('nestTab', { size: sizeName, orient, k: k + 1, n: res.sheets.length }));
+    newTab(t(res.sheets.length > 1 ? 'nestTabMulti' : 'nestTab', { name: baseName, k: k + 1, n: res.sheets.length }));
     const nd = doc;
     for (const it of sh.items) {
       const src = payloads.get(it.id); if (!src) continue;
