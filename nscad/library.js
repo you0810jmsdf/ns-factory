@@ -127,12 +127,13 @@ export function checkLibraryItem(item) {
 
 /* ---- 部品ライブラリの分類（見出し）。事業主 2026-11-07「部品ライブラリはグルーピングして整理したい」→「見出し付き一覧」 ---- */
 /** 見出しの並び。登録した部品（user）が先頭、あとは使う順。 */
-export const LIBRARY_GROUPS = ['user', 'refill', 'rollbahn', 'binder', 'small', 'logo', 'reference', 'other'];
-/** 部品の見出し。登録した部品（isUser）は 'user'。同梱の部品は、タグから決める（先に当たったものが優先）：logo → reference → rollbahn → refill → binder → pocket・pen・dring（small）→ other。 */
+export const LIBRARY_GROUPS = ['user', 'refill', 'rollbahn', 'binder', 'small', 'logo', 'paper', 'reference', 'other'];
+/** 部品の見出し。登録した部品（isUser）は 'user'。同梱の部品は、タグから決める（先に当たったものが優先）：logo → paper（用紙規格・穴のない用紙の枠。リフィル型紙とは別の見出し） → reference → rollbahn → refill → binder → pocket・pen・dring（small）→ other。 */
 export function libraryGroupOf(item, isUser = false) {
   if (isUser) return 'user';
   const tags = new Set(Array.isArray(item?.tags) ? item.tags : []);
   if (tags.has('logo')) return 'logo';
+  if (tags.has('paper')) return 'paper';
   if (tags.has('reference')) return 'reference';
   if (tags.has('rollbahn')) return 'rollbahn';
   if (tags.has('refill')) return 'refill';
