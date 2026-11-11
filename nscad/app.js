@@ -10491,7 +10491,7 @@ function gallerySync() {
   const g = galleryTarget(), v = galleryVals(), year = new Date().getFullYear();
   $('gStats').textContent = g.stats ? t('gStats', { shapes: g.stats.shapes, holes: g.stats.holes, w: g.stats.w, h: g.stats.h }) : '';
   $('gCopyright').textContent = v.author.trim() ? t('gCopyright', { c: galleryCopyright(v.author, year) }) : t('gCopyrightNone');
-  const hits = galleryPiiScan([...galleryDocTexts(galleryPayloadDoc(doc)), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }]);
+  const hits = galleryPiiScan([...galleryDocTexts(galleryPayloadDoc(doc)), { where: 'name', text: tabs[activeTab]?.name }, { where: 'title', text: v.title }, { where: 'desc', text: v.description }], { ownUrl: v.url });
   const list = $('gPiiList'); list.textContent = ''; for (const h of hits) { const li = document.createElement('li'); li.textContent = t('gPiiItem', { kind: t('gPiiKind.' + h.kind), where: t('gPiiWhere.' + h.where), text: h.text }); list.appendChild(li); }
   $('gPiiHead').textContent = hits.length ? t('gPiiFound', { n: hits.length }) : t('gPiiNone'); $('gPiiHead').className = hits.length ? 'ng' : 'ok';
   const check = galleryCheck({ ...v, stats: g.stats });

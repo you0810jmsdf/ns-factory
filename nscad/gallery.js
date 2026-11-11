@@ -36,14 +36,24 @@ const PII_PATTERNS = [
   ['phone', /(?<![\d.])0\d{1,4}[-ー−‐ ]\d{1,4}[-ー−‐ ]\d{3,4}(?![\d.])|(?<![\d.])0[5789]0\d{8}(?!\d)/g],
   ['address', /(?:北海道|東京都|京都府|大阪府|[一-龥]{2,3}県)[一-龥ぁ-んァ-ヶー0-9０-９]{1,10}[市区町村郡]/g],
 ];
-/** texts：[{ where: 'text'|'memo'|'name'|'title'|'desc', text }]。返すのは [{ kind, where, text }]（同じ場所・同じ文字は1件）。 */
-export function galleryPiiScan(texts) {
+/** 作者が「作者のページ」欄に自分で書いたURL（公開前提）と、同じ場所のリンクか。ownUrl 自身、またはその下（ownUrl の末尾に / を足した続き）だけ。例：ownUrl が .../ns-factory/ なら .../ns-factory/JHCS.html も同じ場所。 */
+function isOwnPageLink(link, ownUrl) {
+  const own = String(ownUrl ?? '').normalize('NFKC').trim();
+  if (!galleryUrlOk(own)) return false;
+  const l = link.replace(/[。、，．,.)）」』】]+$/u, '');   /* 文の終わりの句読点・閉じ括弧はリンクに含めない */
+  const base = own.replace(/\/+$/, '');
+  return l === base || l.startsWith(base + '/') || l.startsWith(base + '?') || l.startsWith(base + '#');
+}
+/** texts：[{ where: 'text'|'memo'|'name'|'title'|'desc', text }]。返すのは [{ kind, where, text }]（同じ場所・同じ文字は1件）。
+ *  opts.ownUrl：作者のページ（自分で公開するリンク）。同じ場所のリンクは疑いにしない（他の場所のリンク・メール・電話などは今までどおり）。 */
+export function galleryPiiScan(texts, opts = {}) {
   const out = [], seen = new Set();
   for (const { where, text } of texts) {
     const src = String(text ?? '').normalize('NFKC');
     if (!src) continue;
     for (const [kind, re] of PII_PATTERNS) {
       for (const m of src.matchAll(re)) {
+        if (kind === 'url' && isOwnPageLink(m[0], opts.ownUrl)) continue;
         const key = `${kind}|${where}|${m[0]}`;
         if (seen.has(key)) continue;
         seen.add(key); out.push({ kind, where, text: m[0].slice(0, 40) });
