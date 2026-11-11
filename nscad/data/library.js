@@ -2450,6 +2450,7 @@ export const DATA_LIBRARY = {
           "type": "polyline",
           "closed": true,
           "layer": "guide",
+          "noOutput": true,
           "points": [
             {
               "x": 0,
@@ -2490,6 +2491,7 @@ export const DATA_LIBRARY = {
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "R",
           "y1": 0,
           "x2": "W-R",
@@ -2498,6 +2500,7 @@ export const DATA_LIBRARY = {
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "W",
           "y1": "R",
           "x2": "W",
@@ -2506,6 +2509,7 @@ export const DATA_LIBRARY = {
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "W-R",
           "y1": "H",
           "x2": "R",
@@ -2514,6 +2518,7 @@ export const DATA_LIBRARY = {
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": 0,
           "y1": "H-R",
           "x2": 0,
@@ -2522,6 +2527,7 @@ export const DATA_LIBRARY = {
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "W-R",
           "cy": "R",
           "r": "R",
@@ -2531,6 +2537,7 @@ export const DATA_LIBRARY = {
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "W-R",
           "cy": "H-R",
           "r": "R",
@@ -2540,6 +2547,7 @@ export const DATA_LIBRARY = {
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "R",
           "cy": "H-R",
           "r": "R",
@@ -2549,6 +2557,7 @@ export const DATA_LIBRARY = {
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "R",
           "cy": "R",
           "r": "R",
@@ -2576,6 +2585,7 @@ export const DATA_LIBRARY = {
           "type": "polyline",
           "closed": true,
           "layer": "guide",
+          "noOutput": true,
           "points": [
             {
               "x": 0,

@@ -2449,6 +2449,7 @@
           "type": "polyline",
           "closed": true,
           "layer": "guide",
+          "noOutput": true,
           "points": [
             {
               "x": 0,
@@ -2489,6 +2490,7 @@
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "R",
           "y1": 0,
           "x2": "W-R",
@@ -2497,6 +2499,7 @@
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "W",
           "y1": "R",
           "x2": "W",
@@ -2505,6 +2508,7 @@
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": "W-R",
           "y1": "H",
           "x2": "R",
@@ -2513,6 +2517,7 @@
         {
           "type": "line",
           "layer": "guide",
+          "noOutput": true,
           "x1": 0,
           "y1": "H-R",
           "x2": 0,
@@ -2521,6 +2526,7 @@
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "W-R",
           "cy": "R",
           "r": "R",
@@ -2530,6 +2536,7 @@
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "W-R",
           "cy": "H-R",
           "r": "R",
@@ -2539,6 +2546,7 @@
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "R",
           "cy": "H-R",
           "r": "R",
@@ -2548,6 +2556,7 @@
         {
           "type": "arc",
           "layer": "guide",
+          "noOutput": true,
           "cx": "R",
           "cy": "R",
           "r": "R",
@@ -2575,6 +2584,7 @@
           "type": "polyline",
           "closed": true,
           "layer": "guide",
+          "noOutput": true,
           "points": [
             {
               "x": 0,
