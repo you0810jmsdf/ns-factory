@@ -461,7 +461,7 @@ function syncOutSelWarn() {
 function outputSummary() {
   const { shapes, holes } = exportTargets($('outHoles').checked), b = bboxOfDoc({ ...doc, shapes, holes }), total = doc.shapes.filter(s => !s.holeLink).length;
   if (!b) return { empty: true };
-  const paperKey = $('paper').value, pageMm = PAGES[paperKey] || PAGES.a4, pages = printLayout(b, pageMm, 10, null).pages.length;
+  const pl = printPlan(doc, shapes, holes), pages = pl ? pl.pages.length : 1;   /* 枚数は、実際の印刷と同じ計算（印刷補正・寸法の数字を含み、空のページは出さない） */
   return { shapes: shapes.length, holes: holes.length, w: b.maxX - b.minX, h: b.maxY - b.minY, pages, paper: $('paper').selectedOptions?.[0]?.textContent || 'A4', hidden: Math.max(0, total - shapes.length) };
 }
 function syncOutSummary() {
@@ -4146,9 +4146,9 @@ function printPages(target, { dots = true } = {}) {
   if (!regGuard('print', 'pages')) return null;
   const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
-  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => (!target.outSelOnly && holeIsOwn(h, ownHolePathIds(target))) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id))) || target.outHoleIds?.has(h.id)) : [], b = bboxOfDoc({ ...target, shapes, holes });   /* 図形を選んでの印刷は、独立した穴も選んだ範囲だけ（書き出しと同じ・outSelOnly／outHoleIds） */
-  if (!b) { $('hint').textContent = t('nothingToPrint'); return null; }
-  const calib = $('outCalib').checked ? calibration : null, layout = printLayout(b, pageMm, overlapMm, calib);
+  const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => (!target.outSelOnly && holeIsOwn(h, ownHolePathIds(target))) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id))) || target.outHoleIds?.has(h.id)) : [], plan = printPlan(target, shapes, holes);   /* 図形を選んでの印刷は、独立した穴も選んだ範囲だけ（書き出しと同じ・outSelOnly／outHoleIds） */
+  if (!plan) { $('hint').textContent = t('nothingToPrint'); return null; }
+  const calib = plan.calib, layout = { cols: plan.cols, rows: plan.rows, pages: plan.pages };   /* 範囲・ページは printPlan（印刷ガイド・出力の枚数・「1ページに収める」と同じ計算：寸法の数字・印刷補正を含み、空のページは出さない） */
   const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot })}</div>`).join('');
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
@@ -5946,14 +5946,31 @@ function restoreSupportLines() {
   $('hint').textContent = t('unlinkDone', { n: fix.size, m: holes.size });
 }
 function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
+/** 寸法の数字の箱（印刷・書き出しの SVG と同じ位置：寸法線の中心から 1.2mm 上に基準線・字の高さ 2.5mm の約0.72倍・幅は1文字 1.5mm）。bboxOf は寸法線の端までで、数字は入らないので、印刷の範囲には別に足す（上・右の外側の寸法で、数字が約1mm切れていた：事業主の指摘 2026-11-11）。 */
+function dimTextBox(s) {
+  if (s?.type !== 'dimension') return null;
+  const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset), label = typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2), W = [...label].length * 1.5, H = 1.9, a = d.angleDeg * Math.PI / 180, rx = Math.cos(a), ry = Math.sin(a), ux = Math.sin(a), uy = -Math.cos(a);
+  const pts = [[-W / 2, 0], [W / 2, 0], [-W / 2, H], [W / 2, H]].map(([x, h]) => ({ x: d.textPos.x + rx * x + ux * h, y: d.textPos.y + ry * x + uy * h }));
+  return { minX: Math.min(...pts.map(p => p.x)), maxX: Math.max(...pts.map(p => p.x)), minY: Math.min(...pts.map(p => p.y)), maxY: Math.max(...pts.map(p => p.y)) };
+}
+/** 印刷の範囲とページの割り付け。実際の印刷（printPages）・印刷ガイド・出力の枚数・「1ページに収める」が、同じ計算を使う。
+ *  範囲＝図形・穴の範囲＋寸法の数字の箱。印刷補正（fx・fy）を掛ける。ページ＝printLayout（線の端の余裕 2mm・重ね 10mm）のうち、前のページで全部印刷される（新しい面に内容が無い）ページは出さない（空の2ページ目が出ていた）。
+ *  1ページに収まる条件は、幅 W×fx＋2 ≤ ページの幅（始まり側にだけ 2mm の余裕を取る）。base＝図面（target）。 */
+function printPlan(base, shapes, holes) {
+  const b0 = bboxOfDoc({ ...base, shapes, holes }); if (!b0) return null; const b = { ...b0 };
+  for (const s of shapes) { const r = dimTextBox(s); if (r) { b.minX = Math.min(b.minX, r.minX); b.maxX = Math.max(b.maxX, r.maxX); b.minY = Math.min(b.minY, r.minY); b.maxY = Math.max(b.maxY, r.maxY); } }
+  const calib = $('outCalib')?.checked ? calibration : null, fx = calib?.fx ?? 1, fy = calib?.fy ?? 1, pageMm = PAGES[$('paper').value] || PAGES.a4, overlap = 10;
+  const layout = printLayout(b, pageMm, overlap, calib), x0 = b.minX * fx - 2, y0 = b.minY * fy - 2, stepX = pageMm.w - overlap, stepY = pageMm.h - overlap, mx = b.maxX * fx, my = b.maxY * fy;
+  const pages = layout.pages.filter(p => (p.col === 0 || mx > x0 + (p.col - 1) * stepX + pageMm.w) && (p.row === 0 || my > y0 + (p.row - 1) * stepY + pageMm.h));
+  return { b, calib, fx, fy, pageMm, cols: layout.cols, rows: layout.rows, pages: pages.length ? pages : layout.pages.slice(0, 1), w: b.maxX - b.minX, h: b.maxY - b.minY, ox: Math.max(0, (b.maxX - b.minX) * fx + 2 - pageMm.w), oy: Math.max(0, (b.maxY - b.minY) * fy + 2 - pageMm.h) };
+}
 /** 印刷ガイド（事業主の要望 2026-11-11「印刷ガイド機能があったらいい」）：いま印刷・書き出しされるものの範囲に、印刷1ページぶんの範囲を重ねて出す。1ページに収まれば緑、分かれるなら赤とページ数。画面だけ（印刷・書き出しには出ない）。
  *  ページの区切りは、印刷と同じ printLayout（線の端の余裕2mm込み）で決める。チェックが無い・出すものが無いときは null。 */
 function printGuideInfo() {
   if (!$('printGuide')?.checked) return null;
-  const { shapes, holes } = exportTargets($('outHoles').checked), b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return null;
-  const pageMm = PAGES[$('paper').value] || PAGES.a4, layout = printLayout(b, pageMm, 10, null); if (!layout.pages.length) return null;   /* 範囲が数でないとき（壊れた座標）は何も出さない */
-  const w = b.maxX - b.minX, h = b.maxY - b.minY, ox = Math.max(0, w + 4 - pageMm.w), oy = Math.max(0, h + 4 - pageMm.h);   /* ox・oy＝1ページに収めるのに、あと何 mm 小さくするか（線の端の余裕 2mm×2 を足して数える） */
-  return { pages: layout.pages, n: layout.pages.length, ok: layout.pages.length === 1, w, h, pw: pageMm.w, ph: pageMm.h, ox, oy };
+  const { shapes, holes } = exportTargets($('outHoles').checked), pl = printPlan(doc, shapes, holes); if (!pl || !pl.pages.length) return null;   /* 出すものが無い・範囲が数でない（壊れた座標）ときは何も出さない */
+  const pages = pl.pages.map(p => ({ ...p, x: p.x / pl.fx, y: p.y / pl.fy, w: p.w / pl.fx, h: p.h / pl.fy }));   /* 印刷補正（fx・fy）で割って、図面の座標に戻す */
+  return { pages, n: pages.length, ok: pages.length === 1, w: pl.w, h: pl.h, pw: pl.pageMm.w, ph: pl.pageMm.h, ox: pl.ox, oy: pl.oy };   /* ox・oy＝1ページに収めるのに、あと何 mm 小さくするか（印刷した大きさで） */
 }
 /** 寸法を近づけて、印刷を1ページに収める（事業主の要望 2026-11-11「寸法線も含めてなんとか1枚に収めたい」→「近づける＋内側も」）。
  *  ① 寸法線の離れ（offset の大きさ）を、収まる最大の値まで縮める（向き・測る点・型紙は変えない。下限 1.5mm）。
@@ -5962,7 +5979,7 @@ function printGuideInfo() {
 function fitDimsToOnePage() {
   const { shapes, holes } = exportTargets($('outHoles').checked), pageMm = PAGES[$('paper').value] || PAGES.a4;
   const dims = shapes.filter(s => s.type === 'dimension' && Math.abs(s.offset) > 0.01 && editable(s)), ids = new Set(dims.map(d => d.id));
-  const measure = f => { const mapped = shapes.map(s => ids.has(s.id) ? { ...s, offset: f(s) } : s), b = bboxOfDoc({ ...doc, shapes: mapped, holes }); if (!b) return null; const L = printLayout(b, pageMm, 10, null); return { ok: L.pages.length === 1, ox: Math.max(0, b.maxX - b.minX + 4 - pageMm.w), oy: Math.max(0, b.maxY - b.minY + 4 - pageMm.h) }; };
+  const measure = f => { const mapped = shapes.map(s => ids.has(s.id) ? { ...s, offset: f(s) } : s), pl = printPlan(doc, mapped, holes); return pl ? { ok: pl.pages.length === 1, ox: pl.ox, oy: pl.oy } : null; };
   const now = measure(s => s.offset); if (!now) { $('hint').textContent = t('nothingToPrint'); return false; }
   if (now.ok) { $('hint').textContent = t('printFitAlready'); return true; }
   if (!dims.length) { $('hint').textContent = t('printFitNoDims', { ox: now.ox.toFixed(1), oy: now.oy.toFixed(1) }); return false; }
