@@ -28,12 +28,14 @@ const ZIPPER_TAPE_THICK = 0.6;   /* 横から見たテープの厚み */
 export function zipperOk(z) {
   return !!z && typeof z === 'object' && !Array.isArray(z) && typeof z.size === 'string' && Object.hasOwn(ZIPPER_SIZES, z.size) && ZIPPER_VIEWS.includes(z.view) && Number.isFinite(z.open) && z.open >= 0 && z.open <= 100
     && ZIPPER_METALS.includes(z.metal) && zipHexOk(z.tape)
-    && (z.rev === undefined || typeof z.rev === 'boolean') && (z.mir === undefined || typeof z.mir === 'boolean') && Object.keys(z).every(k => ['size', 'view', 'open', 'metal', 'tape', 'rev', 'mir'].includes(k));
+    && (z.rev === undefined || typeof z.rev === 'boolean') && (z.mir === undefined || typeof z.mir === 'boolean') && zipCutOk(z.cut0) && zipCutOk(z.cut1) && Object.keys(z).every(k => ['size', 'view', 'open', 'metal', 'tape', 'rev', 'mir', 'cut0', 'cut1'].includes(k));
 }
 /** 欠けた値・壊れた値を、標準（3号・上から・閉じた状態・ゴールド・テープは黒に近い灰色）で埋める。rev・mir は true のときだけ書く。 */
 export function normalizeZipper(z = {}) {
   const open = Number(z?.open), o = { size: Object.hasOwn(ZIPPER_SIZES, String(z?.size)) ? String(z.size) : '3', view: ZIPPER_VIEWS.includes(z?.view) ? z.view : 'top', open: Number.isFinite(open) ? Math.min(100, Math.max(0, Math.round(open))) : 0, metal: ZIPPER_METALS.includes(z?.metal) ? z.metal : 'gold', tape: zipHexOk(String(z?.tape ?? '').toLowerCase()) ? String(z.tape).toLowerCase() : ZIPPER_TAPE_DEFAULT };
-  if (z?.rev === true) o.rev = true; if (z?.mir === true) o.mir = true; return o;
+  if (z?.rev === true) o.rev = true; if (z?.mir === true) o.mir = true;
+  for (const k of ['cut0', 'cut1']) { const v = Math.round(Number(z?.[k]) * 10) / 10; if (Number.isFinite(v) && v > 0) o[k] = Math.min(ZIPPER_CUT_MAX, v); }   /* 端を短くする長さ（mm）：0 は書かない */
+  return o;
 }
 
 const zipDist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -79,6 +81,17 @@ function zipRuler(pts, closed) {
 }
 
 /** 線の長さ（mm）。 */
+/** 端を短くする長さ（mm）の上限と検査。cut0＝線の始点側・cut1＝線の終点側（向きを反対にしても、場所は変わらない）。 */
+export const ZIPPER_CUT_MAX = 5000;
+const zipCutOk = v => v === undefined || (Number.isFinite(v) && v > 0 && v <= ZIPPER_CUT_MAX);
+/** 線の両端から、決めた長さだけ内側に入った所までを取り出す（事業主 2026-11-11「それぞれの端部から距離指定で短くしたい」）。線そのものは変えない。輪は短くしない。残りが 1mm 未満になるときは、短くしない。 */
+function zipTrim(c, z) {
+  const a = z.cut0 || 0, b = z.cut1 || 0; if (c.closed || c.pts.length < 2 || !(a > 0 || b > 0)) return c;
+  const R = zipRuler(c.pts, false); if (R.L - a - b < 1) return c;
+  return { pts: R.stations(a, R.L - b).map(s => R.at(s).p), closed: false };
+}
+/** ファスナーの長さ（mm）：線の長さから、両端を短くした分を引いた長さ（下止めから上止めまで）。 */
+export function zipperNetLength(points, zipper) { const c = zipTrim(zipCleanPoints(points, false), normalizeZipper(zipper)); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
 export function zipperLength(points, closed = false) { const c = zipCleanPoints(points, closed); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
 
 /**
@@ -90,13 +103,13 @@ export function zipperLength(points, closed = false) { const c = zipCleanPoints(
  * 開け具合 open（0〜100）：0＝閉じている（スライダーは上止め側）。100＝全部開いている（下止め側）。スライダーより上止め側の歯は、左右に離れる。
  */
 export function zipperArt(points, zipper, { closed = false } = {}) {
-  const z = normalizeZipper(zipper), c = zipCleanPoints(z.rev ? [...(points || [])].reverse() : points, closed);
+  const z = normalizeZipper(zipper), c0 = zipTrim(zipCleanPoints(points, closed), z), c = z.rev ? { pts: [...c0.pts].reverse(), closed: c0.closed } : c0;
   if (c.pts.length < 2) return { length: 0, closed: false, items: [] };
   const R = zipRuler(c.pts, c.closed), L = R.L, spec = ZIPPER_SIZES[z.size], eW = spec.elementW, items = [];
   if (!(L > 0.5)) return { length: L, closed: c.closed, items: [] };
   const add = (kind, pts, closedItem = true, solid = false) => { items.push({ kind, points: pts, closed: closedItem, solid }); };
   const band = (s0, s1, v0, v1) => { const st = R.stations(s0, s1); return [...st.map(s => R.side(s, v0)), ...st.reverse().map(s => R.side(s, v1))]; };
-  const sgn = z.mir ? 1 : -1, isTop = z.view === 'top';
+  const sgn = (z.mir ? 1 : -1) * (z.rev ? -1 : 1), isTop = z.view === 'top';   /* 向きを反対（rev）にしても、引き手は線の同じ側に残す（事業主 2026-11-11「向きを反対にするとタブが外から内に移動してしまう」：線を逆にたどると横向きも逆になるので、打ち消す） */
   const ext = c.closed ? 0 : spec.tapeW / 2;   /* テープが止めの外へはみ出す長さ */
   const bs = c.closed ? 0 : Math.min(eW * 0.9, L * 0.15), ts = c.closed ? 0 : Math.min(eW * 0.7, L * 0.12);   /* 下止め・上止めの長さ */
   const Ls = Math.min(eW * 2.1, Math.max(1, (L - bs - ts) * 0.8)), h = Ls / 2, pullL = eW * 3.6;

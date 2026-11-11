@@ -46,7 +46,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout, binderOverallExtent } from './hardware.js';
-import { zipperArt, zipperRuns, zipperLength, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM } from './zipper.js';
+import { zipperArt, zipperRuns, zipperLength, zipperNetLength, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -9906,7 +9906,7 @@ function zipperScope() {
   for (const r of zipperRunsOf(doc.shapes.filter(s => editable(s)))) if (r.ids.some(id => ids.has(id))) r.ids.forEach(id => ids.add(id));
   return doc.shapes.filter(s => ids.has(s.id));
 }
-const zipperTotalMm = list => zipperRunsOf(list).reduce((a, r) => a + zipperLength(r.points), 0);
+const zipperTotalMm = list => zipperRunsOf(list).reduce((a, r) => a + zipperNetLength(r.points, r.zipper), 0);   /* 両端を短くした分は引く */
 /** 右クリック「ファスナーにする」：選んだ線に印を付けて、小窓を開く。もうファスナーになっている線は、そのまま小窓で直せる。 */
 function makeZipper() {
   const list = zipperTargets(); if (!list.length) { $('hint').textContent = t('zipperNone'); return 0; }
@@ -9943,6 +9943,7 @@ function refreshZipperBar(force = false) {
   const key = list.map(s => s.id + JSON.stringify(s.zipper) + arcLength(s).toFixed(2)).join(','); if (!force && key === zipperBarKey) return; zipperBarKey = key;
   const z = normalizeZipper(list[0].zipper); $('zipperSize').value = z.size; $('zipperView').value = z.view; $('zipperMetal').value = z.metal; $('zipperTape').value = z.tape; $('zipperMir').hidden = z.view !== 'side';
   if (globalThis.document?.activeElement !== $('zipperOpen')) $('zipperOpen').value = String(z.open);
+  for (const k of ['Cut0', 'Cut1']) if (globalThis.document?.activeElement !== $('zipper' + k)) $('zipper' + k).value = String(z[k.toLowerCase()] || 0);
   const scope = zipperScope(), mm = zipperTotalMm(scope);
   $('zipperLen').textContent = t('zipperLen', { mm: mm.toFixed(1), cm: (mm / 10).toFixed(1) });
 }
@@ -9951,10 +9952,11 @@ function applyZipperStd(cm) {
   const want = Number(cm) * 10; if (!(want > 0)) return 0; const scope = zipperScope(); if (!scope.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
   const now = zipperTotalMm(scope), s = scope.length === 1 && scope[0].type === 'line' ? scope[0] : null, cur = s ? distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }) : 0;
   if (!s || cur < 1e-9) { const diff = want - now; $('hint').textContent = t(diff >= 0 ? 'zipperStdLonger' : 'zipperStdShorter', { cm: Number(cm), now: now.toFixed(1), diff: Math.abs(diff).toFixed(1) }); return 0; }
-  if (Math.abs(cur - want) < 0.005) { $('hint').textContent = t('zipperStdSame', { cm: Number(cm) }); return 0; }
-  const r4 = v => +v.toFixed(4), x2 = r4(s.x1 + (s.x2 - s.x1) * want / cur), y2 = r4(s.y1 + (s.y2 - s.y1) * want / cur);
+  const zc = s ? normalizeZipper(s.zipper) : null, cut = zc ? (zc.cut0 || 0) + (zc.cut1 || 0) : 0, line = want + cut;   /* 端を短くしているときは、その分だけ線を長くする（ファスナーの長さが、選んだ長さになる） */
+  if (Math.abs(cur - line) < 0.005) { $('hint').textContent = t('zipperStdSame', { cm: Number(cm) }); return 0; }
+  const r4 = v => +v.toFixed(4), x2 = r4(s.x1 + (s.x2 - s.x1) * line / cur), y2 = r4(s.y1 + (s.y2 - s.y1) * line / cur);
   commit(() => { const sh = doc.shapes.find(x => x.id === s.id); if (sh) { sh.x2 = x2; sh.y2 = y2; } });
-  zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperStdDone', { cm: Number(cm), mm: want.toFixed(0), was: cur.toFixed(1) }); return 1;
+  zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperStdDone', { cm: Number(cm), mm: want.toFixed(0), was: now.toFixed(1) }); return 1;
 }
 function wireZipperBar() {
   { const sel = $('zipperStd'); if (sel?.appendChild) for (const cm of ZIPPER_STD_CM) { const o = document.createElement('option'); o.value = String(cm); o.textContent = cm + ' cm'; sel.appendChild(o); } }
@@ -9968,6 +9970,11 @@ function wireZipperBar() {
   $('zipperTape').addEventListener('change', applyTape);
   $('zipperOpen').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(applyOpen, 300); });   /* 欄の入力では重い処理を走らせない：止まってから1回 */
   $('zipperOpen').addEventListener('change', applyOpen);
+  for (const k of ['cut0', 'cut1']) {   /* 両端を短くする長さ（mm）：入力が止まってから1回だけ反映 */
+    const el = $('zipper' + k[0].toUpperCase() + k.slice(1)); let tm = null;
+    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value; if (raw === '' || raw === null) return; const v = Number(raw); if (!(v >= 0 && v <= 5000)) { $('hint').textContent = t('zipperCutInvalid'); return; } const scope = zipperScope(); if (v > 0 && scope.length && zipperRunsOf(scope).some(r => zipperLength(r.points) - v - (normalizeZipper(r.zipper)[k === 'cut0' ? 'cut1' : 'cut0'] || 0) < 1)) { $('hint').textContent = t('zipperCutTooLong'); return; } if (setZipper({ [k]: v })) $('hint').textContent = t('zipperCutDone', { mm: zipperTotalMm(zipperScope()).toFixed(1) }); };
+    el.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(apply, 300); }); el.addEventListener('change', apply);
+  }
   $('zipperRev').onclick = () => setZipper(z => ({ rev: !z.rev })); $('zipperMir').onclick = () => setZipper(z => ({ mir: !z.mir }));
   $('zipperOff').onclick = () => { countUse('zipper_off'); removeZipper(); }; $('zipperClose').onclick = closeZipperBar;
 }
