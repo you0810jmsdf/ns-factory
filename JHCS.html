@@ -570,10 +570,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <div class="notice-public" id="notice-public" style="display:none;">
       <div class="notice-public-head">
         <span class="notice-public-title">👁 受講生に見える表示（名前を伏せた公開側）</span>
-        <button class="btn btn-secondary" style="min-height:auto;padding:3px 10px;font-size:12px;" onclick="refreshPublicNoticePreview()">読み込み直す</button>
+        <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+          <button class="btn btn-secondary" id="btn-mask-refresh" style="min-height:auto;padding:3px 10px;font-size:12px;" onclick="refreshMaskNow()">対応表を今すぐ反映</button>
+          <button class="btn btn-secondary" style="min-height:auto;padding:3px 10px;font-size:12px;" onclick="refreshPublicNoticePreview()">読み込み直す</button>
+        </span>
       </div>
       <div id="notice-public-body"></div>
-      <div class="notice-meta" style="margin:8px 0 0;">表示専用です。対応表（イニシャル・ニックネーム）を変えたあとは、反映まで最大10分かかります。</div>
+      <div class="notice-meta" style="margin:8px 0 0;">表示専用です。対応表（イニシャル・ニックネーム）を変えたあとは、反映まで最大10分かかります。待たずに反映するには「対応表を今すぐ反映」を押してください。</div>
     </div>
     <details class="notice-history" id="notice-history-wrap">
       <summary>過去のお知らせを見る</summary>
@@ -1052,6 +1055,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       });
     } catch (e) {
       body.innerHTML = `<div class="notice-empty">公開側の表示を読み込めませんでした。（${esc(e.message)}）</div>`;
+    }
+  }
+
+  // 対応表（イニシャル・ニックネーム）の変更を今すぐ反映する（2026-11-11）。GAS側の10分キャッシュを捨ててから、管理者表示を取り直す。
+  // ⛔ お知らせを編集中は押させない（取り直しで編集内容が消えるため）。
+  async function refreshMaskNow() {
+    if (!adminMode) return;
+    const btn = document.getElementById('btn-mask-refresh');
+    const saveBtn = document.getElementById('btn-notice-save');
+    if (saveBtn && saveBtn.style.display !== 'none') {
+      alert('お知らせを編集中です。保存か「キャンセル」をしてから押してください（編集内容が消えるため）。');
+      return;
+    }
+    const url = getGasUrl();
+    const password = getNoticePassword();
+    if (!url || !password) return;
+    const label = '対応表を今すぐ反映'; // 成功表示（3秒）の最中に押されても、元の文字へ戻せるよう固定する
+    btn.disabled = true; btn.textContent = '反映中…';
+    try {
+      // キャッシュを捨てるだけの操作なので、HTMLが返ったとき（GASに届いていない）の再送は安全
+      const data = await fetchJsonRead(url, { method: 'POST', body: JSON.stringify({ action: 'refreshMask', password }) });
+      if (!data.ok) throw new Error(data.error === 'Invalid admin password' ? '管理者パスワードが違います' : (data.error || '不明なエラー'));
+      await enterAdminView(true);
+      btn.textContent = '反映しました（' + (Number(data.count) || 0) + '件）';
+      setTimeout(() => { btn.textContent = label; }, 3000);
+    } catch (e) {
+      alert('対応表を反映できませんでした: ' + e.message);
+      btn.textContent = label;
+    } finally {
+      btn.disabled = false;
     }
   }
 
