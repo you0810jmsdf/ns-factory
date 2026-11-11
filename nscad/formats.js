@@ -175,13 +175,19 @@ export function printPagesPlan(b0, shapes, pageMm, overlapMm = 10, calibration =
   return { b, fx, fy, pageMm, cols: layout.cols, rows: layout.rows, pages: pages.length ? pages : layout.pages.slice(0, 1), w, h, ox: Math.max(0, w * fx + 2 - pageMm.w), oy: Math.max(0, h * fy + 2 - pageMm.h) };
 }
 /** 1 ページ分の印刷用 SVG（viewBox をページ位置に合わせ、重なり部分に合わせ目の十字とページ番号を付ける）。 */
-export function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0, printLines = false, mainMm = MAIN_LINE_MM, strokeMm = 0.1 } = {}) {
+export function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0, printLines = false, mainMm = MAIN_LINE_MM, strokeMm = 0.1, ruler = false } = {}) {
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const content = docToSvg(doc, { includeHoles, marginMm: 0, fontFamily, holeDot, lineColors: 'paper', printLines, mainMm, strokeMm }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
   const cross = (x, y) => `<path d="M${f(x - 4)} ${f(y)}L${f(x + 4)} ${f(y)}M${f(x)} ${f(y - 4)}L${f(x)} ${f(y + 4)}" stroke="#888" stroke-width="0.15" fill="none"/>`;
   const marks = [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]].map(([x, y]) => cross(x, y)).join('');
   const text = `<text x="${f(page.x + 2)}" y="${f(page.y + pageMm.h - 2)}" font-size="3" font-family="${esc(fontFamily)}" fill="#888">${esc(label)}</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(pageMm.w * fx)}mm" height="${f(pageMm.h * fy)}mm" viewBox="${f(page.x * fx)} ${f(page.y * fy)} ${f(pageMm.w * fx)} ${f(pageMm.h * fy)}"><g transform="scale(${f(fx)} ${f(fy)})">${content}${marks}${text}</g></svg>`;
+  let rulerSvg = '';
+  if (ruler) {   /* 100mm の目盛り（縮み印刷に気づくため）：図面などに触れない空きに置く（呼ぶ側が、最初のページだけ ruler を true にする） */
+    const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible && !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [], noteMm = [...RULER_NOTE].reduce((a, c) => a + (c.charCodeAt(0) < 128 ? 0.6 : 1.0), 0) * 2.2;
+    const slot = rulerSlot({ shapes: layerShapes, holes, doc, page, pageMm, fx, fy, noteMm, crosses: [[overlapMm, overlapMm], [pageMm.w - overlapMm, overlapMm], [overlapMm, pageMm.h - overlapMm], [pageMm.w - overlapMm, pageMm.h - overlapMm]] });
+    if (slot) { const parts = rulerParts(slot), ox = page.x * fx, oy = page.y * fy, txt = t => `<text x="${f(ox + t.x)}" y="${f(oy + t.y)}" font-size="${t.size}" font-family="${esc(fontFamily)}" fill="#000" transform="rotate(${t.angleDeg} ${f(ox + t.x)} ${f(oy + t.y)})">${esc(t.kind === 'label' ? t.text : RULER_NOTE)}</text>`;
+      rulerSvg = `<g id="ruler100" stroke="#000" stroke-width="${f(strokeMm)}" fill="none">${parts.lines.map(([x1, y1, x2, y2]) => `<path d="M${f(ox + x1)} ${f(oy + y1)}L${f(ox + x2)} ${f(oy + y2)}"/>`).join('')}</g>${parts.texts.map(txt).join('')}`; } }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(pageMm.w * fx)}mm" height="${f(pageMm.h * fy)}mm" viewBox="${f(page.x * fx)} ${f(page.y * fy)} ${f(pageMm.w * fx)} ${f(pageMm.h * fy)}"><g transform="scale(${f(fx)} ${f(fy)})">${content}${marks}${text}</g>${rulerSvg}</svg>`;
 }
 /** L 字の校正スケール（100mm×100mm・10mm ごとの目盛・文字）を図形配列で返す。レイヤーは guide。 */
 export function calibrationScale(origin = { x: 0, y: 0 }, layer = 'guide', lengthMm = 100) {
@@ -256,9 +262,53 @@ export function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, orig
 }
 // ---- PDF（直接生成・ASCII のみ・xref はバイトオフセット）----
 const PT = 72 / 25.4, PAPER = { a4: [595.276, 841.89], a3: [841.89, 1190.551] };
+/* ===== 100mm の目盛り（印刷の縮み確認）：事業主 2026-11-11「受講生が縮小印刷に気づけるよう、型紙PDFに100mmの目盛りを入れる」（案A）。
+   PDF の「印刷のとき拡大・縮小しない」の指定は、Edge では読まれず、「ページに合わせる」が初期値で縮んで印刷される。縮んだら、目盛りが100mmにならないので、気づける。 ===== */
+export const RULER_NOTE = 'この線が100mmになるように、実際のサイズ（100%）で印刷してください';
+export const RULER_NOTE_EN = 'Print at 100% (actual size): this line must measure 100 mm';
+/** 目盛りを置く場所を決める。ページ（印刷した大きさの mm・左上が原点）の中で、図面の線・穴・文字・寸法・位置合わせの十字に触れない空きを探す（横向き→縦向きの順・右下から）。
+ *  items＝{ shapes, holes, doc }（図面の座標）、page＝{x, y}（印刷した大きさでのページの原点）、pageMm＝{w, h}、fx・fy＝印刷補正、noteMm＝一文の長さ（mm）、crosses＝[[x, y]]（ページの座標）。
+ *  戻り値 { orient: 'h'|'v', x, y, u（線の方向の長さ）, v（直角の方向の長さ）} か、空きが無ければ null。 */
+export function rulerSlot({ shapes, holes = [], doc, page, pageMm, fx = 1, fy = 1, noteMm = 80, crosses = [] }) {
+  const gw = Math.ceil(pageMm.w) + 2, gh = Math.ceil(pageMm.h) + 2, occ = new Uint8Array(gw * gh);
+  const P = p => ({ x: p.x * fx - page.x, y: p.y * fy - page.y });
+  const mark = (x, y, r = 1) => { const cx = Math.floor(x), cy = Math.floor(y); for (let j = cy - r; j <= cy + r; j++) for (let i = cx - r; i <= cx + r; i++) if (i >= 0 && j >= 0 && i < gw && j < gh) occ[j * gw + i] = 1; };
+  const rect = (x0, y0, x1, y1, pad = 1) => { for (let j = Math.floor(y0 - pad); j <= Math.floor(y1 + pad); j++) for (let i = Math.floor(x0 - pad); i <= Math.floor(x1 + pad); i++) if (i >= 0 && j >= 0 && i < gw && j < gh) occ[j * gw + i] = 1; };
+  const seg = (a, b) => { const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 0.5)); for (let k = 0; k <= n; k++) mark(a.x + (b.x - a.x) * k / n, a.y + (b.y - a.y) * k / n); };
+  const quad = pts => { const q = pts.map(P); rect(Math.min(...q.map(p => p.x)), Math.min(...q.map(p => p.y)), Math.max(...q.map(p => p.x)), Math.max(...q.map(p => p.y)), 1); };
+  for (const s of shapes) {
+    if (s.type === 'text') { const w = [...String(s.text)].reduce((a, c) => a + (c.charCodeAt(0) < 128 ? 0.6 : 1.0), 0) * s.sizeMm, a = (s.angleDeg || 0) * Math.PI / 180, c = Math.cos(a), sn = Math.sin(a); quad([[0, -s.sizeMm], [w, -s.sizeMm], [w, s.sizeMm * 0.3], [0, s.sizeMm * 0.3]].map(([x, y]) => ({ x: s.x + x * c - y * sn, y: s.y + x * sn + y * c }))); continue; }
+    if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); seg(P(d.a), P(d.b)); for (const [p, q] of d.ext) seg(P(p), P(q)); const t = dimTextBox(s); if (t) quad([{ x: t.minX, y: t.minY }, { x: t.maxX, y: t.minY }, { x: t.maxX, y: t.maxY }, { x: t.minX, y: t.maxY }]); continue; }
+    if (s.type === 'image' || s.noOutput) continue;
+    let pts; try { pts = flattenShape(s, 0.3); } catch { continue; }
+    for (let i = 1; i < pts.length; i++) seg(P(pts[i - 1]), P(pts[i]));
+  }
+  /* 型紙の輪郭（実線で一周つながるもの）の内側も、ふさぐ（型紙の中に目盛りを置くと、切り抜く範囲に入ってしまう）。輪郭の外にできたすき間（型紙と型紙のあいだ）は、空きのまま */
+  const fillPoly = pts => { const ys = pts.map(p => p.y), j0 = Math.max(0, Math.floor(Math.min(...ys))), j1 = Math.min(gh - 1, Math.ceil(Math.max(...ys))); for (let j = j0; j <= j1; j++) { const yc = j + 0.5, xs = []; for (let k = 0; k < pts.length; k++) { const p = pts[k], q = pts[(k + 1) % pts.length]; if ((p.y <= yc && q.y > yc) || (q.y <= yc && p.y > yc)) xs.push(p.x + (yc - p.y) / (q.y - p.y) * (q.x - p.x)); } xs.sort((u, v) => u - v); for (let m = 0; m + 1 < xs.length; m += 2) for (let i = Math.max(0, Math.floor(xs[m])); i <= Math.min(gw - 1, Math.floor(xs[m + 1])); i++) occ[j * gw + i] = 1; } };
+  const solid = shapes.filter(isMainLine), covered = new Set();
+  for (const sh of solid) { if (covered.has(sh.id)) continue; let poly = null; try { poly = outlinePolygon(solid, sh.id); } catch { poly = null; } if (!poly) continue; for (const id of poly.ids) covered.add(id); fillPoly(poly.points.map(P)); }
+  for (const h of holes) { const p = P(h); mark(p.x, p.y, 1); }
+  for (const [x, y] of crosses) rect(x - 5, y - 5, x + 5, y + 5, 0);
+  const S = new Int32Array((gw + 1) * (gh + 1)); for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) S[(j + 1) * (gw + 1) + i + 1] = occ[j * gw + i] + S[j * (gw + 1) + i + 1] + S[(j + 1) * (gw + 1) + i] - S[j * (gw + 1) + i];
+  const free = (x, y, w, h) => { const x0 = Math.max(0, Math.floor(x)), y0 = Math.max(0, Math.floor(y)), x1 = Math.min(gw, Math.ceil(x + w)), y1 = Math.min(gh, Math.ceil(y + h)); return S[y1 * (gw + 1) + x1] - S[y0 * (gw + 1) + x1] - S[y1 * (gw + 1) + x0] + S[y0 * (gw + 1) + x0] === 0; };
+  const U = Math.max(116, Math.ceil(noteMm) + 6), V = 10;
+  for (const orient of ['h', 'v']) {
+    const w = orient === 'h' ? U : V, h = orient === 'h' ? V : U;
+    for (let y = Math.floor(pageMm.h - h - 1); y >= 1; y--) for (let x = Math.floor(pageMm.w - w - 1); x >= 1; x--) if (free(x, y, w, h)) return { orient, x, y, u: U, v: V };
+  }
+  return null;
+}
+/** 目盛りの絵（ページの座標・mm）。lines＝[x1,y1,x2,y2]、texts＝[{x,y,text,size,angleDeg,kind}]（kind: 'label'＝「100mm」・'note'＝一文）。 */
+export function rulerParts(slot) {
+  const { orient, x: X0, y: Y0, v: V } = slot, map = (u, v) => orient === 'h' ? { x: X0 + u, y: Y0 + v } : { x: X0 + (V - v), y: Y0 + u }, ang = orient === 'h' ? 0 : 90;
+  const L = (u1, v1, u2, v2) => { const a = map(u1, v1), b = map(u2, v2); return [a.x, a.y, b.x, b.y]; };
+  const lines = [L(2, 3, 102, 3), L(2, 1.5, 2, 4.5), L(102, 1.5, 102, 4.5)]; for (let u = 12; u < 102; u += 10) lines.push(L(u, 2.2, u, 3.8));
+  const lab = map(104.5, 4.2), note = map(2, 8.8);
+  return { lines, texts: [{ ...lab, text: '100mm', size: 2.5, angleDeg: ang, kind: 'label' }, { ...note, text: '', size: 2.2, angleDeg: ang, kind: 'note' }] };
+}
 /** 文書から PDF（Uint8Array）を返す。用紙 A4/A3（landscape 可）、余白 10mm、STEP 5 の分割と印刷補正を反映。文字は ASCII のみ（それ以外は、textImages＝図形 id → 白黒画像（1ビット）が渡されていれば画像として置き、無ければ警告に数えて省略）。 */
 /** holeDot：0 より大きいと、穴も菱の線も真ん中の●（直径 holeDot mm・塗り）にする（印刷の「縫い穴を点で印刷する」と同じ）。 */
-export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0, textImages = null, printLines = false, mainMm = MAIN_LINE_MM } = {}) {
+export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0, textImages = null, printLines = false, mainMm = MAIN_LINE_MM, ruler = false } = {}) {
   const [pw, ph] = landscape ? [...PAPER[paper] || PAPER.a4].reverse() : (PAPER[paper] || PAPER.a4), fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
   const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
@@ -266,6 +316,7 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
   const layout = printPagesPlan(b, shapes, pageMm, overlapMm, calibration);   /* 印刷と同じページ割り（寸法の数字・印刷補正を含み、空のページは出さない）。ページの x・y は印刷した大きさ（補正を掛けた mm） */
   let skipped = 0;
   const n = v => (Math.round(v * 1000) / 1000).toString();
+  let rulerPlaced = false;   /* 100mm の目盛りを置けたか */
   const images = new Map(); let pageImgs = new Set();   /* 画像の部品（図形 id ごとに1つ・どのページでも使い回す）と、いまのページで使う画像 */
   const pageContent = page => {
     const X = x => n((x * fx - page.x + marginMm) * PT), Y = y => n(ph - (y * fy - page.y + marginMm) * PT), Xp = x => n((x - page.x + marginMm) * PT), Yp = y => n(ph - (y - page.y + marginMm) * PT);   /* X・Y＝図面の座標 → 用紙の位置。Xp・Yp＝ページの座標（印刷した大きさ）→ 用紙の位置（合わせ目の十字用） */
@@ -292,6 +343,13 @@ endstream`) }); }
       return `${colorOn}${dashOn}${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S${dashOff}${colorOff}`;
     };
     for (const s of shapes) ops.push(pathOps(s));
+    if (ruler && page === layout.pages[0]) {   /* 100mm の目盛り（縮み印刷に気づくため）：最初のページの、図面などに触れない空きに置く */
+      const note = textImages?.get?.('__ruler_note'), noteMm = note ? note.wMm : RULER_NOTE_EN.length * 2.2 * 0.52, crosses = [[overlapMm, overlapMm], [pageMm.w - overlapMm, overlapMm], [overlapMm, pageMm.h - overlapMm], [pageMm.w - overlapMm, pageMm.h - overlapMm]];
+      const slot = rulerSlot({ shapes, holes, doc, page, pageMm, fx, fy, noteMm, crosses }); rulerPlaced = !!slot;
+      if (slot) { const parts = rulerParts(slot); ops.push('q 0 0 0 RG 0 0 0 rg ' + n(strokeMm * PT) + ' w'); for (const [x1, y1, x2, y2] of parts.lines) ops.push(`${Xp(x1)} ${Yp(y1)} m ${Xp(x2)} ${Yp(y2)} l S`);
+        const tm = (t, text) => { const a = t.angleDeg === 90 ? '0 -1 1 0' : '1 0 0 1'; return `BT /F1 ${n(t.size * PT)} Tf ${a} ${Xp(t.x)} ${Yp(t.y)} Tm (${text.replace(/[\\()]/g, c => '\\' + c)}) Tj ET`; };
+        for (const t of parts.texts) { if (t.kind === 'label') ops.push(tm(t, t.text)); else if (note) { const sc = { ...note, wMm: note.wMm / fx, hMm: note.hMm / fy, offX: note.offX / fx, offY: note.offY / fy }; ops.push(imageOp({ id: '__ruler_note', x: (t.x + page.x) / fx, y: (t.y + page.y) / fy, angleDeg: t.angleDeg }, sc)); } else ops.push(tm({ ...t, size: 2.2 }, RULER_NOTE_EN)); }
+        ops.push('Q'); } }
     ops.push('1 0 0 RG'); if (holeDot > 0) ops.push('1 0 0 rg');
     for (const h of holes) { const a = holeAppearance(h, doc); if (!a) continue; if (holeDot > 0) { ops.push(dot(h.x, h.y, holeDot / 2)); continue; } if (a.kind === 'dot' || a.kind === 'circle') { const r = a.width / 2, pts = Array.from({ length: 17 }, (_, i) => ({ x: h.x + r * Math.cos(i / 8 * Math.PI), y: h.y + r * Math.sin(i / 8 * Math.PI) })); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')} S`); } else { const local = a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]; const pts = local.map(p => { const q = rotate(p, h.angleDeg); return { x: q.x + h.x, y: q.y + h.y }; }); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${a.kind === 'slit' ? '' : ' h'} S`); } }
     ops.push('0 0 0 RG'); if (holeDot > 0) ops.push('0 0 0 rg');
@@ -311,7 +369,7 @@ endstream`) }); }
   const xref = out.length;
   out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('')}trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   const bytes = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) bytes[i] = out.charCodeAt(i) & 0xff;
-  return Object.assign(bytes, { pages: layout.pages.length, skippedText: skipped });
+  return Object.assign(bytes, { pages: layout.pages.length, skippedText: skipped, rulerPlaced });
 }
 /** DXF R12 文字列から LINE/CIRCLE/ARC/POLYLINE/TEXT を読み戻す（往復テストと取り込みの土台）。Y は下向きに戻す。 */
 export function dxfToShapes(text) {
