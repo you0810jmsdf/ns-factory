@@ -151,6 +151,25 @@ export function printLayout(b, pageMm = { w: 190, h: 277 }, overlapMm = 10, cali
   if (![fx, fy].every(v => Number.isFinite(v) && v > 0)) throw new RangeError('calibration');
   return pagesFor({ minX: b.minX * fx - 2, minY: b.minY * fy - 2, maxX: b.maxX * fx + 2, maxY: b.maxY * fy + 2 }, pageMm, overlapMm);
 }
+/** 寸法の数字の箱（SVG・PDF の出力と同じ位置：寸法線の中心から 1.2mm 上に基準線・字の高さ 2.5mm の約0.72倍・幅は1文字 1.5mm）。bboxOf は寸法線の端までで数字は入らないので、印刷の範囲には別に足す。
+ *  事業主 2026-11-11「左の寸法線、ガイド外に…」：上・右の外側の寸法で、数字が約1mm切れていた。 */
+export function dimTextBox(s) {
+  if (s?.type !== 'dimension') return null;
+  const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset), label = typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2), W = [...label].length * 1.5, H = 1.9, a = d.angleDeg * Math.PI / 180, rx = Math.cos(a), ry = Math.sin(a), ux = Math.sin(a), uy = -Math.cos(a);
+  const pts = [[-W / 2, 0], [W / 2, 0], [-W / 2, H], [W / 2, H]].map(([x, h]) => ({ x: d.textPos.x + rx * x + ux * h, y: d.textPos.y + ry * x + uy * h }));
+  return { minX: Math.min(...pts.map(p => p.x)), maxX: Math.max(...pts.map(p => p.x)), minY: Math.min(...pts.map(p => p.y)), maxY: Math.max(...pts.map(p => p.y)) };
+}
+/** 印刷（printPages）・PDF 書き出し（docToPdf）・印刷ガイド・枚数表示が、同じ計算でページを決める。b0＝図形・穴の範囲（bboxOfDoc）、shapes＝出す図形（寸法の数字の箱を範囲に足す）。
+ *  印刷補正（fx・fy）を掛け、線の端の余裕は始まり側にだけ 2mm 取る。前のページで全部印刷される（新しい面に内容が無い）ページは出さない（空の2ページ目）。ページの x・y は、印刷した大きさ（補正を掛けた mm）。
+ *  収まる条件：幅×fx＋2 ≦ pageMm.w かつ 高さ×fy＋2 ≦ pageMm.h。ox・oy＝あと何 mm 小さくすれば収まるか。 */
+export function printPagesPlan(b0, shapes, pageMm, overlapMm = 10, calibration = null) {
+  if (!b0) return null; const b = { ...b0 };
+  for (const s of shapes || []) { const r = dimTextBox(s); if (r) { b.minX = Math.min(b.minX, r.minX); b.maxX = Math.max(b.maxX, r.maxX); b.minY = Math.min(b.minY, r.minY); b.maxY = Math.max(b.maxY, r.maxY); } }
+  const fx = calibration?.fx ?? 1, fy = calibration?.fy ?? 1, layout = printLayout(b, pageMm, overlapMm, calibration), x0 = b.minX * fx - 2, y0 = b.minY * fy - 2, stepX = pageMm.w - overlapMm, stepY = pageMm.h - overlapMm, mx = b.maxX * fx, my = b.maxY * fy;
+  const pages = layout.pages.filter(p => (p.col === 0 || mx > x0 + (p.col - 1) * stepX + pageMm.w) && (p.row === 0 || my > y0 + (p.row - 1) * stepY + pageMm.h));
+  const w = b.maxX - b.minX, h = b.maxY - b.minY;
+  return { b, fx, fy, pageMm, cols: layout.cols, rows: layout.rows, pages: pages.length ? pages : layout.pages.slice(0, 1), w, h, ox: Math.max(0, w * fx + 2 - pageMm.w), oy: Math.max(0, h * fy + 2 - pageMm.h) };
+}
 /** 1 ページ分の印刷用 SVG（viewBox をページ位置に合わせ、重なり部分に合わせ目の十字とページ番号を付ける）。 */
 export function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0 } = {}) {
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
@@ -240,11 +259,11 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
   const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
-  const bbox ={ minX: b.minX - 2, minY: b.minY - 2, maxX: b.maxX + 2, maxY: b.maxY + 2 }, layout = pagesFor(bbox, pageMm, overlapMm);
+  const layout = printPagesPlan(b, shapes, pageMm, overlapMm, calibration);   /* 印刷と同じページ割り（寸法の数字・印刷補正を含み、空のページは出さない）。ページの x・y は印刷した大きさ（補正を掛けた mm） */
   let skipped = 0;
   const n = v => (Math.round(v * 1000) / 1000).toString();
   const pageContent = page => {
-    const X = x => n(((x - page.x) * fx + marginMm) * PT), Y = y => n(ph - ((y - page.y) * fy + marginMm) * PT);
+    const X = x => n((x * fx - page.x + marginMm) * PT), Y = y => n(ph - (y * fy - page.y + marginMm) * PT), Xp = x => n((x - page.x + marginMm) * PT), Yp = y => n(ph - (y - page.y + marginMm) * PT);   /* X・Y＝図面の座標 → 用紙の位置。Xp・Yp＝ページの座標（印刷した大きさ）→ 用紙の位置（合わせ目の十字用） */
     const ops = [`${n(strokeMm * PT)} w 1 J 1 j`];
     const K = 0.5523, dot = (cx, cy, r) => { const k = r * K; return `${X(cx + r)} ${Y(cy)} m ${X(cx + r)} ${Y(cy + k)} ${X(cx + k)} ${Y(cy + r)} ${X(cx)} ${Y(cy + r)} c ${X(cx - k)} ${Y(cy + r)} ${X(cx - r)} ${Y(cy + k)} ${X(cx - r)} ${Y(cy)} c ${X(cx - r)} ${Y(cy - k)} ${X(cx - k)} ${Y(cy - r)} ${X(cx)} ${Y(cy - r)} c ${X(cx + k)} ${Y(cy - r)} ${X(cx + r)} ${Y(cy - k)} ${X(cx + r)} ${Y(cy)} c f`; };   /* 塗った●（4本の曲線。X・Y に印刷補正が入るので、補正が縦横で違えば●も同じに伸びる） */
     const pathOps = s => {
@@ -263,7 +282,7 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
     for (const h of holes) { const a = holeAppearance(h, doc); if (!a) continue; if (holeDot > 0) { ops.push(dot(h.x, h.y, holeDot / 2)); continue; } if (a.kind === 'dot' || a.kind === 'circle') { const r = a.width / 2, pts = Array.from({ length: 17 }, (_, i) => ({ x: h.x + r * Math.cos(i / 8 * Math.PI), y: h.y + r * Math.sin(i / 8 * Math.PI) })); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')} S`); } else { const local = a.kind === 'slit' ? [{ x: -a.width / 2, y: 0 }, { x: a.width / 2, y: 0 }] : [{ x: -a.width / 2, y: 0 }, { x: 0, y: -a.height / 2 }, { x: a.width / 2, y: 0 }, { x: 0, y: a.height / 2 }]; const pts = local.map(p => { const q = rotate(p, h.angleDeg); return { x: q.x + h.x, y: q.y + h.y }; }); ops.push(`${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${a.kind === 'slit' ? '' : ' h'} S`); } }
     ops.push('0 0 0 RG'); if (holeDot > 0) ops.push('0 0 0 rg');
     // 合わせ目の十字
-    for (const [x, y] of [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]]) ops.push(`${X(x - 4)} ${Y(y)} m ${X(x + 4)} ${Y(y)} l ${X(x)} ${Y(y - 4)} m ${X(x)} ${Y(y + 4)} l S`);
+    for (const [x, y] of [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]]) ops.push(`${Xp(x - 4)} ${Yp(y)} m ${Xp(x + 4)} ${Yp(y)} l ${Xp(x)} ${Yp(y - 4)} m ${Xp(x)} ${Yp(y + 4)} l S`);   /* 十字は、ページの座標（印刷した大きさ）で描く */
     return ops.filter(Boolean).join('\n');
   };
   const objects = [];

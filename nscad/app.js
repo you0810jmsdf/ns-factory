@@ -8,7 +8,7 @@ import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundC
 import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
-import { docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
+import { printPagesPlan, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
@@ -4017,7 +4017,7 @@ function exportSvg() {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(zipperOutDoc(vectorOutDoc()), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
+  const paper = $('paper').value, bytes = docToPdf(zipperOutDoc(vectorOutDoc()), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5 });   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -5946,23 +5946,11 @@ function restoreSupportLines() {
   $('hint').textContent = t('unlinkDone', { n: fix.size, m: holes.size });
 }
 function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
-/** 寸法の数字の箱（印刷・書き出しの SVG と同じ位置：寸法線の中心から 1.2mm 上に基準線・字の高さ 2.5mm の約0.72倍・幅は1文字 1.5mm）。bboxOf は寸法線の端までで、数字は入らないので、印刷の範囲には別に足す（上・右の外側の寸法で、数字が約1mm切れていた：事業主の指摘 2026-11-11）。 */
-function dimTextBox(s) {
-  if (s?.type !== 'dimension') return null;
-  const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset), label = typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2), W = [...label].length * 1.5, H = 1.9, a = d.angleDeg * Math.PI / 180, rx = Math.cos(a), ry = Math.sin(a), ux = Math.sin(a), uy = -Math.cos(a);
-  const pts = [[-W / 2, 0], [W / 2, 0], [-W / 2, H], [W / 2, H]].map(([x, h]) => ({ x: d.textPos.x + rx * x + ux * h, y: d.textPos.y + ry * x + uy * h }));
-  return { minX: Math.min(...pts.map(p => p.x)), maxX: Math.max(...pts.map(p => p.x)), minY: Math.min(...pts.map(p => p.y)), maxY: Math.max(...pts.map(p => p.y)) };
-}
-/** 印刷の範囲とページの割り付け。実際の印刷（printPages）・印刷ガイド・出力の枚数・「1ページに収める」が、同じ計算を使う。
- *  範囲＝図形・穴の範囲＋寸法の数字の箱。印刷補正（fx・fy）を掛ける。ページ＝printLayout（線の端の余裕 2mm・重ね 10mm）のうち、前のページで全部印刷される（新しい面に内容が無い）ページは出さない（空の2ページ目が出ていた）。
- *  1ページに収まる条件は、幅 W×fx＋2 ≤ ページの幅（始まり側にだけ 2mm の余裕を取る）。base＝図面（target）。 */
+/** 印刷の範囲とページの割り付け（実際の印刷 printPages・PDF 書き出し・印刷ガイド・出力の枚数・「1ページに収める」で同じ計算）。計算の本体は formats.js の printPagesPlan（寸法の数字の箱・印刷補正・空のページを出さない）。base＝図面（target）。 */
 function printPlan(base, shapes, holes) {
-  const b0 = bboxOfDoc({ ...base, shapes, holes }); if (!b0) return null; const b = { ...b0 };
-  for (const s of shapes) { const r = dimTextBox(s); if (r) { b.minX = Math.min(b.minX, r.minX); b.maxX = Math.max(b.maxX, r.maxX); b.minY = Math.min(b.minY, r.minY); b.maxY = Math.max(b.maxY, r.maxY); } }
-  const calib = $('outCalib')?.checked ? calibration : null, fx = calib?.fx ?? 1, fy = calib?.fy ?? 1, pageMm = PAGES[$('paper').value] || PAGES.a4, overlap = 10;
-  const layout = printLayout(b, pageMm, overlap, calib), x0 = b.minX * fx - 2, y0 = b.minY * fy - 2, stepX = pageMm.w - overlap, stepY = pageMm.h - overlap, mx = b.maxX * fx, my = b.maxY * fy;
-  const pages = layout.pages.filter(p => (p.col === 0 || mx > x0 + (p.col - 1) * stepX + pageMm.w) && (p.row === 0 || my > y0 + (p.row - 1) * stepY + pageMm.h));
-  return { b, calib, fx, fy, pageMm, cols: layout.cols, rows: layout.rows, pages: pages.length ? pages : layout.pages.slice(0, 1), w: b.maxX - b.minX, h: b.maxY - b.minY, ox: Math.max(0, (b.maxX - b.minX) * fx + 2 - pageMm.w), oy: Math.max(0, (b.maxY - b.minY) * fy + 2 - pageMm.h) };
+  const b0 = bboxOfDoc({ ...base, shapes, holes }); if (!b0) return null;
+  const calib = $('outCalib')?.checked ? calibration : null, pageMm = PAGES[$('paper').value] || PAGES.a4, r = printPagesPlan(b0, shapes, pageMm, 10, calib);
+  return { ...r, calib, pageMm };
 }
 /** 印刷ガイド（事業主の要望 2026-11-11「印刷ガイド機能があったらいい」）：いま印刷・書き出しされるものの範囲に、印刷1ページぶんの範囲を重ねて出す。1ページに収まれば緑、分かれるなら赤とページ数。画面だけ（印刷・書き出しには出ない）。
  *  ページの区切りは、印刷と同じ printLayout（線の端の余裕2mm込み）で決める。チェックが無い・出すものが無いときは null。 */
