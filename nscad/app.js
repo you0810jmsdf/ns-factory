@@ -4172,7 +4172,8 @@ function applyMeasured() {
   saveCalibration({ fx: measuredCalibration.fx * fx, fy: measuredCalibration.fy * fy }); $('outCalib').checked = true; $('hint').textContent = t('calibSaved');
 }
 function initOutput() {
-  $('exportSvg').onclick = exportSvg; $('exportDxf').onclick = exportDxf; $('exportPdf').onclick = exportPdf; $('exportPng').onclick = exportPng; $('print').onclick = () => printPages(); for (const id of ['printGuide', 'paper', 'outHoles']) $(id)?.addEventListener('change', () => draw());   /* 印刷ガイドの出し入れ・用紙・縫い穴のチェックで、ガイドを描き直す */
+  $('exportSvg').onclick = exportSvg; $('exportDxf').onclick = exportDxf; $('exportPdf').onclick = exportPdf; $('exportPng').onclick = exportPng; $('print').onclick = () => printPages(); if ($('printFitDims')) $('printFitDims').onclick = () => { fitDimsToOnePage(); draw(); };
+  for (const id of ['printGuide', 'paper', 'outHoles']) $(id)?.addEventListener('change', () => draw());   /* 印刷ガイドの出し入れ・用紙・縫い穴のチェックで、ガイドを描き直す */
   canvas.addEventListener('dragover', e => { e.preventDefault(); });
   canvas.addEventListener('drop', e => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file) openFile(file); });
   $('placeScale').onclick = placeScale; $('applyMeasured').onclick = applyMeasured; $('resetCalib').onclick = () => { measuredCalibration = {fx:1,fy:1}; saveCalibration({ fx: 1, fy: 1 }); $('measX').value = $('measY').value = '100'; };
@@ -5951,13 +5952,33 @@ function printGuideInfo() {
   if (!$('printGuide')?.checked) return null;
   const { shapes, holes } = exportTargets($('outHoles').checked), b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return null;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, layout = printLayout(b, pageMm, 10, null); if (!layout.pages.length) return null;   /* 範囲が数でないとき（壊れた座標）は何も出さない */
-  return { pages: layout.pages, n: layout.pages.length, ok: layout.pages.length === 1, w: b.maxX - b.minX, h: b.maxY - b.minY, pw: pageMm.w, ph: pageMm.h };
+  const w = b.maxX - b.minX, h = b.maxY - b.minY, ox = Math.max(0, w + 4 - pageMm.w), oy = Math.max(0, h + 4 - pageMm.h);   /* ox・oy＝1ページに収めるのに、あと何 mm 小さくするか（線の端の余裕 2mm×2 を足して数える） */
+  return { pages: layout.pages, n: layout.pages.length, ok: layout.pages.length === 1, w, h, pw: pageMm.w, ph: pageMm.h, ox, oy };
+}
+/** 寸法を近づけて、印刷を1ページに収める（事業主の要望 2026-11-11「寸法線も含めてなんとか1枚に収めたい」→「近づける＋内側も」）。
+ *  ① 寸法線の離れ（offset の大きさ）を、収まる最大の値まで縮める（向き・測る点・型紙は変えない。下限 1.5mm）。
+ *  ② それでも収まらないとき、型紙の外にはみ出す寸法だけ、型紙の内側へ入れる（向きを反対にして、離れは最大4mm）。
+ *  どちらでも収まらなければ、何も変えず、残りのはみ出しを知らせる。変えるときは、元に戻す1回。 */
+function fitDimsToOnePage() {
+  const { shapes, holes } = exportTargets($('outHoles').checked), pageMm = PAGES[$('paper').value] || PAGES.a4;
+  const dims = shapes.filter(s => s.type === 'dimension' && Math.abs(s.offset) > 0.01 && editable(s)), ids = new Set(dims.map(d => d.id));
+  const measure = f => { const mapped = shapes.map(s => ids.has(s.id) ? { ...s, offset: f(s) } : s), b = bboxOfDoc({ ...doc, shapes: mapped, holes }); if (!b) return null; const L = printLayout(b, pageMm, 10, null); return { ok: L.pages.length === 1, ox: Math.max(0, b.maxX - b.minX + 4 - pageMm.w), oy: Math.max(0, b.maxY - b.minY + 4 - pageMm.h) }; };
+  const now = measure(s => s.offset); if (!now) { $('hint').textContent = t('nothingToPrint'); return false; }
+  if (now.ok) { $('hint').textContent = t('printFitAlready'); return true; }
+  if (!dims.length) { $('hint').textContent = t('printFitNoDims', { ox: now.ox.toFixed(1), oy: now.oy.toFixed(1) }); return false; }
+  const sg = o => (o < 0 ? -1 : 1), apply = (f, msgKey, vars) => { let n = 0; commit(() => { for (const d of doc.shapes) if (ids.has(d.id)) { const o = Math.round(f(d) * 100) / 100; if (o !== d.offset) { d.offset = o; n++; } } }); $('hint').textContent = t(msgKey, { ...vars, n }); return true; };
+  const maxAbs = Math.max(...dims.map(d => Math.abs(d.offset)));
+  for (let k = Math.floor(maxAbs * 2) / 2; k >= 1.5 - 1e-9; k -= 0.5) { const f = s => (Math.abs(s.offset) > k ? sg(s.offset) * k : s.offset); const r = measure(f); if (r?.ok) return apply(f, 'printFitNear', { k }); }
+  const P = bboxOfDoc({ ...doc, shapes: shapes.filter(s => s.type !== 'dimension'), holes }), out = s => { const b = bboxOf(s); return !!P && (b.minX < P.minX - 0.01 || b.maxX > P.maxX + 0.01 || b.minY < P.minY - 0.01 || b.maxY > P.maxY + 0.01); };
+  const fIn = s => (out(s) ? -sg(s.offset) * Math.min(Math.abs(s.offset), 4) : s.offset), r2 = measure(fIn);
+  if (r2?.ok) return apply(fIn, 'printFitInside', {});
+  const best = r2 || now; $('hint').textContent = t('printFitNo', { ox: best.ox.toFixed(1), oy: best.oy.toFixed(1) }); return false;
 }
 function drawPrintGuide() {
   const g = printGuideInfo(); if (!g || exporting) return;
   const col = g.ok ? '#5fd38a' : '#ff6b6b'; ctx.save(); ctx.setLineDash([8 / scale, 5 / scale]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = col; ctx.fillStyle = col + '14';
   for (const p of g.pages) { ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeRect(p.x, p.y, p.w, p.h); }
-  ctx.setLineDash([]); ctx.fillStyle = col; ctx.font = `${13 / scale}px sans-serif`; ctx.fillText(t(g.ok ? 'printGuideOk' : 'printGuideNg', { n: g.n, w: g.w.toFixed(1), h: g.h.toFixed(1), pw: g.pw, ph: g.ph }), g.pages[0].x, g.pages[0].y - 5 / scale); ctx.restore();
+  ctx.setLineDash([]); ctx.fillStyle = col; ctx.font = `${13 / scale}px sans-serif`; ctx.fillText(t(g.ok ? 'printGuideOk' : 'printGuideNg', { n: g.n, w: g.w.toFixed(1), h: g.h.toFixed(1), pw: g.pw, ph: g.ph, ox: g.ox.toFixed(1), oy: g.oy.toFixed(1) }), g.pages[0].x, g.pages[0].y - 5 / scale); ctx.restore();
 }
 /** 用紙の枠・印刷できる範囲・置く位置の薄い点線（draw から）。窓が開いていて、結果があるときだけ。 */
 function drawNestPreview() {
