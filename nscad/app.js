@@ -6584,12 +6584,14 @@ async function copySpecFromDesign() {
   if (!ok) { try { const clipboard = globalThis.navigator?.clipboard; if (clipboard?.writeText) { await clipboard.writeText(text); ok = true; } } catch { /* 手動コピー */ } }
   $('hint').textContent = t(ok ? 'phraseSpecCopied' : 'phraseSpecCopyFail');
 }
+const JHCS_PATTERN_NOTICE = "【サンプル】この行を消して、ご自分の文に書き換えてお使いください\nジョイフル本田カルチャースクール　テキスト\n課題：パスケース（Ver.2026.9.8）\n公式サイト：https://you0810jmsdf.github.io/ns-factory/JHCS.html\n@2026 N's factory　個人の利用のみ可／複製再配布禁止";
 function builtinPhrases() {
   const en = document.documentElement.lang === 'en', out = [];
   for (const p of ((DATA_BOOK_SPECS && DATA_BOOK_SPECS.presets) || [])) {
     const text = bookSpecText(p.data); if (!text) continue;
     out.push({ name: (en ? 'Spec: ' : '仕様：') + p.name, text, size: 3, builtin: true });
   }
+  out.push({ name: en ? 'Sample: JHCS pattern notice' : 'サンプル：JHCS型紙の注意書き', text: JHCS_PATTERN_NOTICE, size: 4, builtin: true });   /* ジョイフル本田カルチャースクールの型紙に載せる注意書き（事業主指示 2026-11-11：公開中の型紙の文章をそのまま。サンプルとして公開するので、1行目に「【サンプル】」を付ける＝消せば、だれでもフォーマットとして使える。「課題」の行は、型紙ごとに書き換える） */
   return out;
 }
 function allPhrases() { const names = new Set(phrases.map(p => p.name)); return [...phrases, ...builtinPhrases().filter(p => !names.has(p.name))]; }
