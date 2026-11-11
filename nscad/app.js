@@ -9853,7 +9853,7 @@ function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
 function distTo(s, p) {
-  const g = distToShape(s, p); if (s?.type === 'text') { const e = textDrawMm(s); return e > s.sizeMm ? Math.min(g, distToShape({ ...s, sizeMm: e }, p)) : g; }   /* 縮小で大きく描いた文字の範囲でも選べる */
+  const g = distToShape(s, p); if (s?.type === 'text') { const e = textDrawMm(s); if (e > s.sizeMm) { const q = textDrawPos(s); return Math.min(g, distToShape({ ...s, x: q.x, y: q.y, sizeMm: e }, p)); } return g; }   /* 縮小で大きく描いた文字の範囲でも選べる */
   if (s?.type !== 'dimension') return g;
   const L = dimLabelPlace(s), a = L.angleDeg * Math.PI / 180, dx = p.x - L.x, dy = p.y - L.y, lx = dx * Math.cos(a) + dy * Math.sin(a), ly = -dx * Math.sin(a) + dy * Math.cos(a);
   const hw = L.label.length * L.px * 0.6 / 2, hh = L.px / 2, ex = Math.max(Math.abs(lx) - hw, 0), ey = Math.max(Math.abs(ly) - hh, 0);
@@ -10011,6 +10011,20 @@ function wireZipperBar() {
 const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 /** 画面に描く文字（文字図形）の大きさ（mm）。縮小しても読めるよう、画面での大きさが下限（字の大きさ 4mm なら 12px・大きい字はその比で。9〜30px）を下回らないようにする（事業主 2026-11-11「拡大縮小でテキストの大きさが変わらないでほしい」：寸法の数字と同じ決め方）。拡大して下限を上回るときは、図面と同じ縮尺。印刷・書き出し（exporting）は、字の大きさ（sizeMm）のまま。 */
 const textDrawMm = s => (exporting || !(scale > 0)) ? s.sizeMm : Math.max(s.sizeMm, Math.min(30, Math.max(9, 3 * s.sizeMm)) / scale);
+/** 縮小して文字を大きく描くとき、一度に置いた複数行（同じ x・字の大きさ・書体・層で、行の間隔が字の高さの3.2倍以内に続く文字）は、かたまりとして拡大する：先頭の行を基準に、行の間隔も同じ倍率で広げる（行どうしが重ならない。事業主 2026-11-11「テキスト文字が崩れている」）。
+ *  textBlocks＝文字図形の id → { ay（先頭の行の y）, k（倍率）}。draw のたびに作り直す（寸法の数字・書き出しは対象外）。 */
+let textBlocks = new Map();
+function buildTextBlocks() {
+  textBlocks = new Map(); if (exporting || !(scale > 0)) return;
+  const groups = new Map(); for (const s of doc.shapes) { if (s.type !== 'text' || s.angleDeg || !visible(s)) continue; const key = `${Math.round(s.x * 100)}|${s.sizeMm}|${s.font || ''}|${s.layer}`; let g = groups.get(key); if (!g) groups.set(key, g = []); g.push(s); }
+  for (const list of groups.values()) {
+    if (list.length < 2) continue; list.sort((a, b) => a.y - b.y); let run = [list[0]];
+    const flush = () => { if (run.length < 2) return; const k = textDrawMm(run[0]) / run[0].sizeMm; if (k > 1.0001) for (const r of run) textBlocks.set(r.id, { ay: run[0].y, k }); };
+    for (let i = 1; i < list.length; i++) { if (list[i].y - list[i - 1].y <= list[i].sizeMm * 3.2) run.push(list[i]); else { flush(); run = [list[i]]; } }
+    flush();
+  }
+}
+const textDrawPos = s => { const b = textBlocks.get(s.id); return b ? { x: s.x, y: b.ay + (s.y - b.ay) * b.k } : { x: s.x, y: s.y }; };   /* 画面に描く文字の位置（かたまりの行は、行の間隔を広げた位置） */
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
   ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
@@ -10025,7 +10039,7 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
     }
     ctx.strokeStyle = color; ctx.stroke(); return;
   }
-  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${textDrawMm(s)}px ${textFontCss(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
+  if (s.type === 'text') { const q = textDrawPos(s); ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${textDrawMm(s)}px ${textFontCss(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
   if (s.type === 'image') {
     const img = imageElement(s.imageId); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.globalAlpha = s.opacity;
     if (img && typeof ctx.drawImage === 'function') ctx.drawImage(img, 0, 0, s.wMm, s.hMm); else { ctx.fillStyle = '#333'; ctx.fillRect(0, 0, s.wMm, s.hMm); }
@@ -10186,6 +10200,7 @@ function syncBackBadge() {
 }
 function draw() {
   if (!exporting) syncBackBadge();
+  buildTextBlocks();   /* 画面の文字を、かたまりで拡大する位置（縮小のとき） */
   syncViewLayers();   /* 表示メニューのレイヤー一覧（層が変わったときだけ作り直す） */
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 

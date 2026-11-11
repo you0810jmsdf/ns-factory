@@ -305,7 +305,7 @@ endstream`) }); }
   const pagesId = objects.length + 1; objects.push(null);
   const pageIds = layout.pages.map(page => { pageImgs = new Set(); const content = pageContent(page); const xo = pageImgs.size ? ` /XObject << ${[...pageImgs].map(i => `/${images.get(i).name} ${images.get(i).id} 0 R`).join(' ')} >>` : ''; const cId = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`); return add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${n(pw)} ${n(ph)}] /Resources << /Font << /F1 ${fontId} 0 R >>${xo} >> /Contents ${cId} 0 R >>`); });
   objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => id + ' 0 R').join(' ')}] /Count ${pageIds.length} >>`;
-  const catalogId = add(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+  const catalogId = add(`<< /Type /Catalog /Pages ${pagesId} 0 R /ViewerPreferences << /PrintScaling /None >> >>`);   /* 印刷のとき、拡大・縮小しない（実際のサイズ）：閲覧ソフトの「ページに合わせる」で、297mm が約287mmに縮み、約10mm短く印刷されていた（事業主の報告 2026-11-11） */
   let out = '%PDF-1.4\n%\xe2\xe3\xcf\xd3\n'; const offsets = [];
   objects.forEach((body, i) => { offsets.push(out.length); out += `${i + 1} 0 obj\n${body}\nendobj\n`; });
   const xref = out.length;
