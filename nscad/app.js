@@ -419,7 +419,7 @@ function drawQuad(dpr) {
 const layerVisible = s => doc.layers.find(l => l.id === s.layer)?.visible;
 const layerEditable = s => { const l = doc.layers.find(l => l.id === s.layer); return l?.visible && !l.locked && !hwHidden(s) && (exporting || viewShows(s)); };
 /** 実線・点線（ガイド）ごとの表示のオンオフ。レイヤーとは別で、画面だけの切り替え（印刷・書き出しには効かない）。点線＝線種が点線、またはガイドの層の線。文字・寸法・折り線・下絵は対象外。 */
-const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false, pitchOff: true };   /* hardware：「金具」の層の表示と連動（金属の色を付けた図形も一緒に隠す）。レイヤーの表示は「表示」メニューのレイヤー一覧（renderViewLayers）からも切り替えられる */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
+const viewShow = { solid: true, dashed: true, colors: true, hardware: true, secDims: true, stitch: false, pitchOff: true, zipper: true };   /* hardware：「金具」の層の表示と連動（金属の色を付けた図形も一緒に隠す）。レイヤーの表示は「表示」メニューのレイヤー一覧（renderViewLayers）からも切り替えられる */   /* hardware：金具（「金具」の層の図形・金属の色を付けた図形）を見せるか。画面と書き出し・印刷の両方に効く（保存はしない） */   /* colors：色（革色・質感・金属の色・糸の色）の塗りを見せるか（事業主の希望 2026-10-18「レーザーカットで不要な要素は非表示に」。画面と色つきの書き出し（PNG・SVG）に効く。保存はしない＝開き直すと色が出る） */
 /** 菱目の見せ方：'auto'（今までどおり：画面は塗り・書き出しは線）・'fill'（塗り）・'line'（線）。目打ちの穴のデータは変えない。 */
 const DIAMOND_KEY = 'leather-cad.diamondStyle';
 /** 保存した「菱目の見せ方」を選択欄に戻す（開き直しても残る）。壊れた値は無視。 */
@@ -2058,7 +2058,8 @@ function initLayers() {
   $('showColors').checked = viewShow.colors; $('showColors').addEventListener('change', e => { viewShow.colors = e.target.checked; draw(); });
   $('showSecDims').checked = viewShow.secDims; $('showSecDims').addEventListener('change', e => { viewShow.secDims = e.target.checked; syncViewShow(true); });   /* 断面の寸法をいつも出す */
   $('showStitch').checked = viewShow.stitch; $('showStitch').addEventListener('change', e => { viewShow.stitch = e.target.checked; draw(); });
-  $('showPitchOff').checked = viewShow.pitchOff; $('showPitchOff').addEventListener('change', e => { viewShow.pitchOff = e.target.checked; draw(); });   /* ピッチのずれを表示（画面だけ） */   /* 縫い目を見る */
+  $('showPitchOff').checked = viewShow.pitchOff; $('showPitchOff').addEventListener('change', e => { viewShow.pitchOff = e.target.checked; draw(); });
+  $('showZipper').checked = viewShow.zipper; $('showZipper').addEventListener('change', e => { viewShow.zipper = e.target.checked; countUse('show_zipper'); draw(); $('hint').textContent = t(viewShow.zipper ? 'showZipperOn' : 'showZipperOff'); });   /* ファスナーの絵を表示（画面だけ。書き出しは、出力のカードの「ファスナーの絵を出す」） */   /* ピッチのずれを表示（画面だけ） */   /* 縫い目を見る */
   restoreStitchThick(); for (const [key, id] of [[STITCH_THICK_KEY, 'stitchThick'], [STITCH_THICK_ROUND_KEY, 'stitchThickRound']]) $(id).addEventListener('change', () => { try { localStorage.setItem(key, $(id).value); } catch { /* 保存できなくても続ける */ } draw(); });   /* 糸の太さ（菱目）と、丸目・スリットの太さ */
   $('stitchFace').addEventListener('change', () => draw());   /* 縫い目の面（表・裏） */
   $('backBadge')?.addEventListener('click', () => { $('stitchFace').value = 'front'; draw(); });   /* 「裏面表示中」の印を押すと、表に戻す */
@@ -10131,19 +10132,56 @@ function wireZipperBar() {
 }
 const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 /** 画面に描く文字（文字図形）の大きさ（mm）。縮小しても読めるよう、画面での大きさが下限（字の大きさ 4mm なら 12px・大きい字はその比で。9〜30px）を下回らないようにする（事業主 2026-11-11「拡大縮小でテキストの大きさが変わらないでほしい」：寸法の数字と同じ決め方）。拡大して下限を上回るときは、図面と同じ縮尺。印刷・書き出し（exporting）は、字の大きさ（sizeMm）のまま。 */
-const textDrawMm = s => (exporting || !(scale > 0)) ? s.sizeMm : Math.max(s.sizeMm, Math.min(30, Math.max(9, 3 * s.sizeMm)) / scale);
+const textDrawMm = s => { if (exporting || !(scale > 0)) return s.sizeMm; const mm = Math.max(s.sizeMm, Math.min(30, Math.max(9, 3 * s.sizeMm)) / scale), cap = textCaps.get(s.id); return cap === undefined ? mm : Math.max(s.sizeMm, Math.min(mm, s.sizeMm * cap)); };
+/** 文字を大きく描く倍率の上限（事業主 2026-11-12「定型句などのテキストがA4ガイドからはみ出る」「文字がA4ガイドを入れてどの比率で印字されるか見たいので、その他の文字も含めて実寸で表示させてください」）。
+ *  枠（用紙のガイドなどの「閉じた四角」＝辺が縦横にそろった、4点の閉じた折れ線）に重なる文字は、実寸（図面と同じ縮尺＝印刷と同じ比率）で描く。実寸で枠からはみ出す文字も、実寸で見せる（はみ出しが分かる）。枠に重ならない文字・枠の無い図面の文字は、今までどおり（縮小しても読める大きさ）。
+ *  textCaps＝文字図形の id → 倍率の上限（いまは 1＝実寸だけ）。draw のたびに buildTextBlocks で作り直す（寸法の数字・書き出しは対象外）。 */
+let textCaps = new Map();
+/** 文字（複数行のかたまりは、その全部）の実寸の外形。回転した文字は、回した後の外形。 */
+function textRealBox(list) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const s of list) {
+    const w = textWidthMm(s), a = (s.angleDeg || 0) * Math.PI / 180, c = Math.cos(a), n = Math.sin(a);
+    for (const [u, v] of [[0, -s.sizeMm], [w, -s.sizeMm], [w, s.sizeMm * 0.25], [0, s.sizeMm * 0.25]]) { const x = s.x + u * c - v * n, y = s.y + u * n + v * c; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+  }
+  return { minX, minY, maxX, maxY };
+}
+/** 図面の中の「閉じた四角」（辺が縦横にそろった、4点の閉じた折れ線）の外形の一覧。 */
+function textFrames() {
+  const out = [];
+  for (const s of doc.shapes) {
+    if (s.type !== 'polyline' || !s.closed || !visible(s)) continue; const ps = s.points || [], n = ps.length >= 2 && distance(ps[0], ps[ps.length - 1]) < 1e-6 ? ps.length - 1 : ps.length; if (n !== 4) continue;
+    const xs = ps.slice(0, 4).map(p => p.x), ys = ps.slice(0, 4).map(p => p.y), f = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
+    if (f.maxX - f.minX < 1 || f.maxY - f.minY < 1 || !ps.slice(0, 4).every(p => (Math.abs(p.x - f.minX) < 0.01 || Math.abs(p.x - f.maxX) < 0.01) && (Math.abs(p.y - f.minY) < 0.01 || Math.abs(p.y - f.maxY) < 0.01))) continue;
+    out.push(f);
+  }
+  return out;
+}
 /** 縮小して文字を大きく描くとき、一度に置いた複数行（同じ x・字の大きさ・書体・層で、行の間隔が字の高さの3.2倍以内に続く文字）は、かたまりとして拡大する：先頭の行を基準に、行の間隔も同じ倍率で広げる（行どうしが重ならない。事業主 2026-11-11「テキスト文字が崩れている」）。
  *  textBlocks＝文字図形の id → { ay（先頭の行の y）, k（倍率）}。draw のたびに作り直す（寸法の数字・書き出しは対象外）。 */
 let textBlocks = new Map();
 function buildTextBlocks() {
-  textBlocks = new Map(); if (exporting || !(scale > 0)) return;
-  const groups = new Map(); for (const s of doc.shapes) { if (s.type !== 'text' || s.angleDeg || !visible(s)) continue; const key = `${Math.round(s.x * 100)}|${s.sizeMm}|${s.font || ''}|${s.layer}`; let g = groups.get(key); if (!g) groups.set(key, g = []); g.push(s); }
+  textBlocks = new Map(); textCaps = new Map(); if (exporting || !(scale > 0)) return;
+  const texts = doc.shapes.filter(s => s.type === 'text' && visible(s)); if (!texts.length) return;
+  const groups = new Map(); for (const s of texts) { if (s.angleDeg) continue; const key = `${Math.round(s.x * 100)}|${s.sizeMm}|${s.font || ''}|${s.layer}`; let g = groups.get(key); if (!g) groups.set(key, g = []); g.push(s); }
+  const runs = [];   /* かたまり（2行以上） */
   for (const list of groups.values()) {
     if (list.length < 2) continue; list.sort((a, b) => a.y - b.y); let run = [list[0]];
-    const flush = () => { if (run.length < 2) return; const k = textDrawMm(run[0]) / run[0].sizeMm; if (k > 1.0001) for (const r of run) textBlocks.set(r.id, { ay: run[0].y, k }); };
+    const flush = () => { if (run.length >= 2) runs.push(run); };
     for (let i = 1; i < list.length; i++) { if (list[i].y - list[i - 1].y <= list[i].sizeMm * 3.2) run.push(list[i]); else { flush(); run = [list[i]]; } }
     flush();
   }
+  /* 枠（用紙のガイドなど）に重なる文字は実寸：かたまりは全体で1つ、ほかの文字は1つずつ調べる。大きく描かない文字（拡大表示のとき）は、調べない */
+  const frames = textFrames();
+  if (frames.length) {
+    const inRun = new Set(runs.flat().map(s => s.id));
+    for (const u of [...runs, ...texts.filter(s => !inRun.has(s.id)).map(s => [s])]) {
+      if (textDrawMm(u[0]) <= u[0].sizeMm * 1.0001) continue;
+      const b = textRealBox(u);
+      if (frames.some(f => b.maxX >= f.minX && b.minX <= f.maxX && b.maxY >= f.minY && b.minY <= f.maxY)) for (const s of u) textCaps.set(s.id, 1);
+    }
+  }
+  for (const run of runs) { const k = textDrawMm(run[0]) / run[0].sizeMm; if (k > 1.0001) for (const r of run) textBlocks.set(r.id, { ay: run[0].y, k }); }
 }
 const textDrawPos = s => { const b = textBlocks.get(s.id); return b ? { x: s.x, y: b.ay + (s.y - b.ay) * b.k } : { x: s.x, y: s.y }; };   /* 画面に描く文字の位置（かたまりの行は、行の間隔を広げた位置） */
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
@@ -10244,7 +10282,7 @@ function lineEndHit(p) {
 }
 /** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
 function pickShapeAt(p) {
-  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s) || s.holeLink) continue; const d = distTo(s, p); if (d <= tol) cands.push({ s, d }); else if (isZipperShape(s) && d - zipperHalfWidth(s.zipper) <= tol) cands.push({ s, d: tol }); }   /* ファスナーにした線は、絵（テープ・歯・引き手）のどこを押しても選べる。ただし、絵の上に別の線が通っているときは、その線が先（近さは許容いっぱい＝一番あと） */ /* 見えない補助の線（holeLink）はクリックで選ばない */
+  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s) || s.holeLink) continue; const d = distTo(s, p); if (d <= tol) cands.push({ s, d }); else if (viewShow.zipper && isZipperShape(s) && d - zipperHalfWidth(s.zipper) <= tol) cands.push({ s, d: tol }); }   /* ファスナーにした線は、絵（テープ・歯・引き手）のどこを押しても選べる。ただし、絵の上に別の線が通っているときは、その線が先（近さは許容いっぱい＝一番あと） */ /* 見えない補助の線（holeLink）はクリックで選ばない */
   if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)), near = cands.filter(c => c.d <= min + 1.5 / scale);
   const lenOf = x => { const n = arcLength(x); return Number.isFinite(n) ? n : Infinity; }; /* ほぼ同じ近さ（つながった端など）なら、短い図形を優先：短い線は端が長い線に重なるので、上のものを選ぶと端をクリックしても選べない。同じ長さなら上に描かれたもの */
   let best = near[0], bl = lenOf(best.s); for (const c of near.slice(1)) { const l = lenOf(c.s); if (l <= bl + 1e-6) { best = c; bl = Math.min(l, bl); } } return best.s;
@@ -10436,8 +10474,8 @@ function drawSheetBody(lo, hi) {
     const layerStrokes = strokeList.filter(s => rankOfStroke(s) === r);
     if (diamondMode() === 'fill') for (const s of layerStrokes) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
     if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of layerStrokes) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
-    for (const s of layerStrokes) if (!s.occlude && !(isZipperShape(s) && gesture?.id !== s.id)) strokeOne(s);   /* ファスナーにした線は、線の代わりに絵を描く（形を直している間だけ、元の線も見せる） */
-    drawZipperRuns(layerStrokes, previewMoved, s => hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8');
+    for (const s of layerStrokes) if (!s.occlude && !(viewShow.zipper && isZipperShape(s) && gesture?.id !== s.id)) strokeOne(s);   /* ファスナーにした線は、線の代わりに絵を描く（形を直している間だけ、元の線も見せる） */
+    if (viewShow.zipper) drawZipperRuns(layerStrokes, previewMoved, s => hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8');   /* 「表示」→「ファスナーの絵を表示」を外すと、画面では元の線だけ（事業主 2026-11-12「ファスナ非表示にできないですか？」） */
     for (const lp of occluderLoops(layerStrokes)) drawOccluder(lp);   /* 分解した棒：一周の印のある線から塗る */
     for (const s of layerStrokes) if (s.occlude) { drawOccluder(s); strokeOne(s); }
     for (const h of doc.holes) if (holeRanks.get(h) === r) drawHoleOne(h);   /* この層の線に打った穴 */
