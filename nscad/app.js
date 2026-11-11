@@ -9853,7 +9853,8 @@ function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
 function distTo(s, p) {
-  const g = distToShape(s, p); if (s?.type !== 'dimension') return g;
+  const g = distToShape(s, p); if (s?.type === 'text') { const e = textDrawMm(s); return e > s.sizeMm ? Math.min(g, distToShape({ ...s, sizeMm: e }, p)) : g; }   /* 縮小で大きく描いた文字の範囲でも選べる */
+  if (s?.type !== 'dimension') return g;
   const L = dimLabelPlace(s), a = L.angleDeg * Math.PI / 180, dx = p.x - L.x, dy = p.y - L.y, lx = dx * Math.cos(a) + dy * Math.sin(a), ly = -dx * Math.sin(a) + dy * Math.cos(a);
   const hw = L.label.length * L.px * 0.6 / 2, hh = L.px / 2, ex = Math.max(Math.abs(lx) - hw, 0), ey = Math.max(Math.abs(ly) - hh, 0);
   return Math.min(g, Math.hypot(ex, ey));
@@ -10008,6 +10009,8 @@ function wireZipperBar() {
   $('zipperOff').onclick = () => { countUse('zipper_off'); removeZipper(); }; $('zipperClose').onclick = closeZipperBar;
 }
 const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
+/** 画面に描く文字（文字図形）の大きさ（mm）。縮小しても読めるよう、画面での大きさが下限（字の大きさ 4mm なら 12px・大きい字はその比で。9〜30px）を下回らないようにする（事業主 2026-11-11「拡大縮小でテキストの大きさが変わらないでほしい」：寸法の数字と同じ決め方）。拡大して下限を上回るときは、図面と同じ縮尺。印刷・書き出し（exporting）は、字の大きさ（sizeMm）のまま。 */
+const textDrawMm = s => (exporting || !(scale > 0)) ? s.sizeMm : Math.max(s.sizeMm, Math.min(30, Math.max(9, 3 * s.sizeMm)) / scale);
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
   ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
@@ -10022,7 +10025,7 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
     }
     ctx.strokeStyle = color; ctx.stroke(); return;
   }
-  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${s.sizeMm}px ${textFontCss(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
+  if (s.type === 'text') { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.font = `${textDrawMm(s)}px ${textFontCss(s.font)}`; ctx.fillStyle = color; ctx.textBaseline = 'alphabetic'; ctx.fillText(s.text, 0, 0); ctx.restore(); return; }
   if (s.type === 'image') {
     const img = imageElement(s.imageId); ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.angleDeg * Math.PI / 180); ctx.globalAlpha = s.opacity;
     if (img && typeof ctx.drawImage === 'function') ctx.drawImage(img, 0, 0, s.wMm, s.hMm); else { ctx.fillStyle = '#333'; ctx.fillRect(0, 0, s.wMm, s.hMm); }
