@@ -145,6 +145,9 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .notice-public { margin: 0 0 14px; background: rgba(160,120,90,.06); border: 1px dashed rgba(160,120,90,.55); border-radius: 10px; padding: 12px 16px; }
     .notice-public-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
     .notice-public-title { font-size: 13px; font-weight: 700; color: var(--tan); }
+    /* 管理者表示で、過去のお知らせが受講生にどう見えるかを出す枠（表示専用・2026-11-11） */
+    .notice-history-pub { margin-top: 8px; padding: 8px 10px; background: rgba(160,120,90,.06); border: 1px dashed rgba(160,120,90,.55); border-radius: 8px; font-size: 12px; }
+    .notice-history-pub .pub-cap { font-weight: 700; color: var(--tan); margin-bottom: 4px; }
     .cad-tut-note { font-size: 11px; color: var(--gray); margin: 12px 0 0; line-height: 1.8; }
 
     /* Notice */
@@ -1002,6 +1005,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         </div>
         <div class="notice-meta">掲載: ${fmtDateTime(item['更新日時'])} / 終了: ${fmtDateTime(item['掲載終了日時'])}</div>
         <div class="notice-history-text">${esc(item['本文'] || '')}</div>
+        ${adminMode ? `<div class="notice-history-pub" data-id="${escAttr(item['ID'])}" style="display:none;"></div>` : ''}
       </div>`).join('');
   }
 
@@ -1027,6 +1031,25 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       } else {
         body.innerHTML = '<div class="notice-empty">掲載中のお知らせはありません。</div>';
       }
+      // 過去のお知らせ（履歴）にも、受講生に見える表示を並べる。実名のままの履歴と同じ項目は「同じ表示」とだけ出す
+      (data.history || []).forEach(h => {
+        const slot = document.querySelector('.notice-history-pub[data-id="' + String(h['ID'] || '').replace(/["\\]/g, '') + '"]');
+        if (!slot) return;
+        const item = slot.parentElement;
+        const realTitle = (item.querySelector('.notice-history-title') || {}).textContent || '';
+        const realText = (item.querySelector('.notice-history-text') || {}).textContent || '';
+        const pubTitle = h['タイトル'] || 'お知らせ';
+        const pubText = h['本文'] || '';
+        slot.style.display = '';
+        if (pubTitle === realTitle && pubText === realText) {
+          slot.innerHTML = '<div class="pub-cap">👁 受講生に見える表示：実名のままの表示と同じです</div>';
+        } else {
+          slot.innerHTML =
+            '<div class="pub-cap">👁 受講生に見える表示</div>' +
+            `<div class="notice-history-title">${esc(pubTitle)}</div>` +
+            `<div class="notice-history-text">${esc(pubText)}</div>`;
+        }
+      });
     } catch (e) {
       body.innerHTML = `<div class="notice-empty">公開側の表示を読み込めませんでした。（${esc(e.message)}）</div>`;
     }
