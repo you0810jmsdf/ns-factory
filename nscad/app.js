@@ -4036,7 +4036,7 @@ function pdfTextImages(shapes) {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, pdfDoc = zipperOutDoc(vectorOutDoc()), bytes = docToPdf(pdfDoc, { textImages: pdfTextImages(pdfDoc.shapes), paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5, printLines: true });   /* 実線は黒・外形の線は太く（白黒プリンタで、青の細線が点線に見えた） */   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
+  const paper = $('paper').value, pdfDoc = zipperOutDoc(vectorOutDoc()), bytes = docToPdf(pdfDoc, { textImages: pdfTextImages(pdfDoc.shapes), paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5, printLines: true, mainMm: printLineWidths().mainMm, strokeMm: printLineWidths().thinMm });   /* 実線は黒・外形の線は太く（白黒プリンタで、青の細線が点線に見えた） */   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -4168,7 +4168,7 @@ function printPages(target, { dots = true } = {}) {
   const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => (!target.outSelOnly && holeIsOwn(h, ownHolePathIds(target))) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id))) || target.outHoleIds?.has(h.id)) : [], plan = printPlan(target, shapes, holes);   /* 図形を選んでの印刷は、独立した穴も選んだ範囲だけ（書き出しと同じ・outSelOnly／outHoleIds） */
   if (!plan) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = plan.calib, layout = { cols: plan.cols, rows: plan.rows, pages: plan.pages };   /* 範囲・ページは printPlan（印刷ガイド・出力の枚数・「1ページに収める」と同じ計算：寸法の数字・印刷補正を含み、空のページは出さない） */
-  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot, printLines: true })}</div>`).join('');
+  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot, printLines: true, mainMm: printLineWidths().mainMm, strokeMm: printLineWidths().thinMm })}</div>`).join('');
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
@@ -4192,6 +4192,7 @@ function applyMeasured() {
 }
 function initOutput() {
   $('exportSvg').onclick = exportSvg; $('exportDxf').onclick = exportDxf; $('exportPdf').onclick = exportPdf; $('exportPng').onclick = exportPng; $('print').onclick = () => printPages(); if ($('printFitDims')) $('printFitDims').onclick = () => { fitDimsToOnePage(); draw(); };
+  restorePrintLines();   /* 印刷・PDF の線の太さの欄（覚えた値を戻す） */
   for (const id of ['printGuide', 'paper', 'outHoles']) $(id)?.addEventListener('change', () => draw());   /* 印刷ガイドの出し入れ・用紙・縫い穴のチェックで、ガイドを描き直す */
   canvas.addEventListener('dragover', e => { e.preventDefault(); });
   canvas.addEventListener('drop', e => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file) openFile(file); });
@@ -5973,6 +5974,16 @@ function printPlan(base, shapes, holes) {
 }
 /** 印刷ガイド（事業主の要望 2026-11-11「印刷ガイド機能があったらいい」）：いま印刷・書き出しされるものの範囲に、印刷1ページぶんの範囲を重ねて出す。1ページに収まれば緑、分かれるなら赤とページ数。画面だけ（印刷・書き出しには出ない）。
  *  ページの区切りは、印刷と同じ printLayout（線の端の余裕2mm込み）で決める。チェックが無い・出すものが無いときは null。 */
+/** 印刷・PDF の線の太さ（事業主の要望 2026-11-11「印刷時の線の太さは自分で調整できるように。今の設定を既定で」）：外形線（既定 0.35mm）と細線（既定 0.1mm）。出力のカードの欄で決め、この PC のブラウザに覚える。数でない・範囲外（0.05〜2mm）の値は、既定に戻す。 */
+const PRINT_LINE_KEY = 'leather-cad.printLineMm', PRINT_LINE_DEFAULT = { mainMm: 0.35, thinMm: 0.1 };
+function printLineWidths() {
+  const ok = v => Number.isFinite(v) && v >= 0.05 && v <= 2, main = Number($('printMainMm')?.value), thin = Number($('printThinMm')?.value);
+  return { mainMm: ok(main) ? main : PRINT_LINE_DEFAULT.mainMm, thinMm: ok(thin) ? thin : PRINT_LINE_DEFAULT.thinMm };
+}
+function restorePrintLines() {
+  try { const c = JSON.parse(localStorage.getItem(PRINT_LINE_KEY)); if (c && Number.isFinite(c.mainMm) && Number.isFinite(c.thinMm)) { if ($('printMainMm')) $('printMainMm').value = String(c.mainMm); if ($('printThinMm')) $('printThinMm').value = String(c.thinMm); } } catch { /* 読めなければ既定のまま */ }
+  for (const id of ['printMainMm', 'printThinMm']) $(id)?.addEventListener('change', () => { const w = printLineWidths(); if ($('printMainMm')) $('printMainMm').value = String(w.mainMm); if ($('printThinMm')) $('printThinMm').value = String(w.thinMm); try { localStorage.setItem(PRINT_LINE_KEY, JSON.stringify(w)); } catch { /* 保存できなくても、この画面では効く */ } });
+}
 function printGuideInfo() {
   if (!$('printGuide')?.checked) return null;
   const { shapes, holes } = exportTargets($('outHoles').checked), pl = printPlan(doc, shapes, holes); if (!pl || !pl.pages.length) return null;   /* 出すものが無い・範囲が数でない（壊れた座標）ときは何も出さない */

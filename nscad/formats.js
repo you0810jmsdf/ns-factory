@@ -93,7 +93,7 @@ export function beamRefOf(boxes, preferId = 'pattern') {
   const pref = boxes.find(x => x.id === preferId && beamShrinkOf(x.box)); if (pref) return pref.id;
   let best = null; for (const x of boxes) { const S = beamShrinkOf(x.box); if (S && (!best || S.r > best.S.r)) best = { id: x.id, S }; } return best ? best.id : null;   /* 縮みがいちばん小さい（＝いちばん大きい）層 */
 }
-export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, holeDotStroke = false, lineColors = 'color', printLines = false } = {}) {
+export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, holeDotStroke = false, lineColors = 'color', printLines = false, mainMm = MAIN_LINE_MM } = {}) {
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
   const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -112,7 +112,7 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
       const texId = fill ? (s.texture || part?.texture || null) : null, tex = texId && textures ? textures[texId] : null; /* 革の質感：図形自身の指定が優先、無ければ部品の指定 */
       if (tex?.href) usedTex.add(texId);
       const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color || s.leather) : null; /* 部品の色が無ければ、型紙（図形自身）に付けた革色 */
-      const isDia = s.type === 'polyline' && diamondLoopSizes([s]).length > 0, lineHex = printLines && !isDia ? null : svgLineHex(s, lineColors, isDia), strokeAttr = (lineHex ? ` stroke="${lineHex}"` : '') + (printLines && isMainLine(s) ? ` stroke-width="${f(MAIN_LINE_MM)}"` : '');   /* printLines＝印刷・PDF：実線は黒（白黒プリンタで色のついた細線が網点＝点線に見えるのを防ぐ）・外形の線は太く */
+      const isDia = s.type === 'polyline' && diamondLoopSizes([s]).length > 0, lineHex = printLines && !isDia ? null : svgLineHex(s, lineColors, isDia), strokeAttr = (lineHex ? ` stroke="${lineHex}"` : '') + (printLines && isMainLine(s) ? ` stroke-width="${f(mainMm)}"` : '');   /* printLines＝印刷・PDF：実線は黒（白黒プリンタで色のついた細線が網点＝点線に見えるのを防ぐ）・外形の線は太く */
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
       return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';
     }).join('');
@@ -175,9 +175,9 @@ export function printPagesPlan(b0, shapes, pageMm, overlapMm = 10, calibration =
   return { b, fx, fy, pageMm, cols: layout.cols, rows: layout.rows, pages: pages.length ? pages : layout.pages.slice(0, 1), w, h, ox: Math.max(0, w * fx + 2 - pageMm.w), oy: Math.max(0, h * fy + 2 - pageMm.h) };
 }
 /** 1 ページ分の印刷用 SVG（viewBox をページ位置に合わせ、重なり部分に合わせ目の十字とページ番号を付ける）。 */
-export function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0, printLines = false } = {}) {
+export function pageSvg(doc, page, { pageMm = { w: 190, h: 277 }, overlapMm = 10, calibration = null, label = '', includeHoles = true, fontFamily = 'sans-serif', holeDot = 0, printLines = false, mainMm = MAIN_LINE_MM, strokeMm = 0.1 } = {}) {
   const fx = calibration?.fx || 1, fy = calibration?.fy || 1;
-  const content = docToSvg(doc, { includeHoles, marginMm: 0, fontFamily, holeDot, lineColors: 'paper', printLines }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const content = docToSvg(doc, { includeHoles, marginMm: 0, fontFamily, holeDot, lineColors: 'paper', printLines, mainMm, strokeMm }).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
   const cross = (x, y) => `<path d="M${f(x - 4)} ${f(y)}L${f(x + 4)} ${f(y)}M${f(x)} ${f(y - 4)}L${f(x)} ${f(y + 4)}" stroke="#888" stroke-width="0.15" fill="none"/>`;
   const marks = [[page.x + overlapMm, page.y + overlapMm], [page.x + pageMm.w - overlapMm, page.y + overlapMm], [page.x + overlapMm, page.y + pageMm.h - overlapMm], [page.x + pageMm.w - overlapMm, page.y + pageMm.h - overlapMm]].map(([x, y]) => cross(x, y)).join('');
   const text = `<text x="${f(page.x + 2)}" y="${f(page.y + pageMm.h - 2)}" font-size="3" font-family="${esc(fontFamily)}" fill="#888">${esc(label)}</text>`;
@@ -258,7 +258,7 @@ export function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, orig
 const PT = 72 / 25.4, PAPER = { a4: [595.276, 841.89], a3: [841.89, 1190.551] };
 /** 文書から PDF（Uint8Array）を返す。用紙 A4/A3（landscape 可）、余白 10mm、STEP 5 の分割と印刷補正を反映。文字は ASCII のみ（それ以外は、textImages＝図形 id → 白黒画像（1ビット）が渡されていれば画像として置き、無ければ警告に数えて省略）。 */
 /** holeDot：0 より大きいと、穴も菱の線も真ん中の●（直径 holeDot mm・塗り）にする（印刷の「縫い穴を点で印刷する」と同じ）。 */
-export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0, textImages = null, printLines = false } = {}) {
+export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0, textImages = null, printLines = false, mainMm = MAIN_LINE_MM } = {}) {
   const [pw, ph] = landscape ? [...PAPER[paper] || PAPER.a4].reverse() : (PAPER[paper] || PAPER.a4), fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
   const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
@@ -287,7 +287,7 @@ endstream`) }); }
       if (s.type === 'fold' || s.type === 'image') return '';
       const pts = flattenShape(s, 0.02); if (pts.length < 2) return '';
       const rgb = !printLines && exportHex(s.color) ? hexToRgb01(exportHex(s.color)) : null;   /* printLines：実線は黒 */
-      const colorOn = (rgb ? `${rgb.join(' ')} RG ` : '') + (printLines && isMainLine(s) ? `${n(MAIN_LINE_MM * PT)} w ` : ''), colorOff = (rgb ? ' 0 0 0 RG' : '') + (printLines && isMainLine(s) ? ` ${n(strokeMm * PT)} w` : '');
+      const colorOn = (rgb ? `${rgb.join(' ')} RG ` : '') + (printLines && isMainLine(s) ? `${n(mainMm * PT)} w ` : ''), colorOff = (rgb ? ' 0 0 0 RG' : '') + (printLines && isMainLine(s) ? ` ${n(strokeMm * PT)} w` : '');
       const dashOn = s.lineStyle === 'dashed' ? `[${n(3 * PT)} ${n(2 * PT)}] 0 d ` : '', dashOff = s.lineStyle === 'dashed' ? ' [] 0 d' : '';
       return `${colorOn}${dashOn}${X(pts[0].x)} ${Y(pts[0].y)} m ${pts.slice(1).map(p => `${X(p.x)} ${Y(p.y)} l`).join(' ')}${s.closed || s.type === 'circle' ? ' h' : ''} S${dashOff}${colorOff}`;
     };
