@@ -5853,6 +5853,8 @@ function nestApplyCopies() {
       mergePayload(nd, { ...orig, shapes: orig.shapes.map(fn), holes: orig.holes.map(fn), fills: fills.length ? fills : undefined, tools: src.tools, layers: src.layers }, { at: { x: 0, y: 0 }, scale: 1, freshId }); n++;
     }
     if (merge) removed += unifyPackLines(nd).removed || 0;
+    const W = res.sheetW, H = res.sheetH;   /* 用紙の枠（点線）：用紙に収まっているかを目で確かめるため、ガイドの層に入れる（事業主の要望 2026-11-11。ガイドの層は印刷・書き出しに出ない）。置いたあとに足すので、線の統合の対象にならない */
+    nd.shapes.push({ id: freshId(nd.shapes, 's'), layer: 'guide', type: 'polyline', closed: true, lineStyle: 'dashed', color: 'blue', points: [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }] });
     rebuildSnaps(); tabs[activeTab].dirty = true;
   });
   nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit();
