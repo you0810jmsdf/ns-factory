@@ -111,11 +111,11 @@
     "baseSpanMm": null,
     "embedDepthMm": null,
     "openGapMm": null,
-    "confidence": "estimated",
-    "sourceNote": "内径 25 はクラウゼ Mini6 の実物に合わせて追加（線径は仮・2026-10-12）／線径 2.0 は事業主決定（2026-11-05・計測はあとで。実測したら「寸法を直す」の線径と確かさで直す）",
+    "confidence": "measured",
+    "sourceNote": "内径25・外径29・線径2.0 を事業主が実測（2026-11-10・AliExpress A7 gold 25mm の入荷品）",
     "wireSource": "measured",
-    "shopName": null,
-    "shopUrl": null
+    "shopName": "Global Stationery Supplies Store",
+    "shopUrl": "https://www.aliexpress.com/store/5042216"
    },
    {
     "innerDiameterMm": 30,
