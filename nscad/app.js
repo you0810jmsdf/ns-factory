@@ -46,7 +46,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout, binderOverallExtent } from './hardware.js';
-import { zipperArt, zipperRuns, zipperLength, zipperNetLength, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM } from './zipper.js';
+import { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -4010,7 +4010,7 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(vectorOutDoc(), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(vectorOutDoc(), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm(), holeDotStroke: true });   /* SVG の点は、線だけの丸（塗りの丸は、Beam Studio が画像として読む） */   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
+  const svg = preset === 'beam' ? beamStudioSvg(zipperOutDoc(vectorOutDoc()), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(zipperOutDoc(vectorOutDoc()), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm(), holeDotStroke: true });   /* SVG の点は、線だけの丸（塗りの丸は、Beam Studio が画像として読む） */   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
   const beamN = (svg.match(/data-beamfix=/g) || []).length;   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
   exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + savedTo(saved); });
 }
@@ -4123,7 +4123,7 @@ async function openFile(file) {
 }
 function exportDxf() {
   const preset = $('exportPreset').value;
-  const dxf = preset === 'leathercraft' ? leathercraftDxf(vectorOutDoc(), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(vectorOutDoc(), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
+  const dxf = preset === 'leathercraft' ? leathercraftDxf(zipperOutDoc(vectorOutDoc()), { includeHoles: $('outHoles').checked, originAtCorner: true }) : docToDxfR12(zipperOutDoc(vectorOutDoc()), { includeHoles: $('outHoles').checked, dotAsPoint: $('dotAsPoint').checked });
   if (!dxfToShapes(dxf).length) { $('hint').textContent = t('nothingToExport', { tab: tabs[activeTab]?.name ?? '' }); return; }   /* 図形の無い DXF は保存しない（他のソフトで「取り込める図形がありません」と止まる・2026-10-18）。別の図面タブを書き出していたと分かるよう、タブ名を案内に入れる */
   if (!regGuard('dxf', 'dl')) return;
   exportFile(preset === 'leathercraft' ? 'leather-pattern-lc.dxf' : 'leather-pattern.dxf', dxf, 'application/dxf', saved => { $('hint').textContent = t('exported', { name: preset === 'leathercraft' ? 'DXF (Leathercraft CAD)' : 'DXF' }) + outScopeNote() + dedupeNote() + savedTo(saved); });
@@ -5211,7 +5211,7 @@ function initColors() {
     if (v > 0 ? doc.textureMm !== v : doc.textureMm !== undefined) commit(() => { if (v > 0) doc.textureMm = v; else delete doc.textureMm; });
   });
   $('savePattern').onclick = savePattern; $('loadPattern').onclick = loadPattern; $('exportPng3d').onclick = exportPng3d;
-  $('exportSvgFill').onclick = () => { if (!regGuard('svg', 'color')) return; exportFile('leather-pattern-color.svg', docToSvg(outputDoc(), { includeHoles: true, fill: true }), 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: 'SVG (color)' }) + savedTo(saved); }); };
+  $('exportSvgFill').onclick = () => { if (!regGuard('svg', 'color')) return; exportFile('leather-pattern-color.svg', docToSvg(zipperOutDoc(outputDoc()), { includeHoles: true, fill: true }), 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: 'SVG (color)' }) + savedTo(saved); }); };
 }
 
 // ---- 下絵（スキャン画像）とトレース ----
@@ -8686,7 +8686,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { stretchArmed = false; komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { stretchArmed = false; if (zipperPicking) setZipperPicking(false); komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -9888,8 +9888,9 @@ function drawZipperRuns(list, move, colorOf, pxOf = null) {
   ctx.restore();
 }
 /** 印刷・PDF 用：ファスナーの線を、絵の線（普通の線の集まり）に置き換えた図面。図面のデータは変えない。 */
+const zipperOutOn = () => $('outZipper')?.checked !== false;   /* 出力のカード「ファスナーの絵を出す」（事業主 2026-11-11「ファスナ自体を印刷できるようにオプションを付けて」→ 出す／出さないを選ぶ）。入＝印刷・PDF・PNG・SVG・DXF の全部に絵・切＝全部が元の線だけ */
 function zipperOutDoc(d) {
-  if (!d.shapes.some(isZipperShape)) return d;
+  if (!zipperOutOn() || !d.shapes.some(isZipperShape)) return d;
   const byId = new Map(d.shapes.map(s => [s.id, s])), made = new Map(), drop = new Set();
   for (const r of zipperRunsOf(d.shapes)) {
     const first = byId.get(r.ids[0]), items = zipperArt(r.points, r.zipper).items; if (!items.length) continue;
@@ -9933,9 +9934,27 @@ function removeZipper() {
   const ids = new Set(list.map(s => s.id)); commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) delete s.zipper; });
   closeZipperBar(); $('hint').textContent = t('zipperRemoved', { n: ids.size }); return ids.size;
 }
+/** 小窓を開いている間、ファスナーの始まりの端（閉じ始め・下止め）に「始」の印を出す（事業主 2026-11-11「始まりの端を指定できるようにして」：どちらが始まりか、見て分かるように）。 */
+function drawZipperStartMark() {
+  const bar = $('zipperBar'); if (exporting || !bar || bar.hidden) return; const scope = zipperScope(); if (!scope.length) return;
+  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 2 / scale; ctx.strokeStyle = '#4fd0ff'; ctx.fillStyle = '#4fd0ff'; ctx.font = `bold ${13 / scale}px sans-serif`;
+  for (const r of zipperRunsOf(scope)) { const e = zipperEnds(r.points, r.zipper); if (!e) continue; ctx.beginPath(); ctx.arc(e.start.x, e.start.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(t('zipperStartMark'), e.start.x + 9 / scale, e.start.y - 9 / scale); }
+  ctx.restore();
+}
+/** 「始まりの端をえらぶ」：押したあと、図面でクリックした所に近いほうの端を、始まりの端（閉じ始め）にする。短くした場所は動かない（欄の数字が入れ替わる）。 */
+let zipperPicking = false;
+function setZipperPicking(on) { zipperPicking = !!on; $('zipperPick')?.classList?.toggle?.('active', zipperPicking); if (on) $('hint').textContent = t('zipperPickHint'); }
+function zipperPickStartAt(w) {
+  setZipperPicking(false); const scope = zipperScope(); if (!scope.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
+  let best = null; for (const r of zipperRunsOf(scope)) { const a = r.points[0], b = r.points[r.points.length - 1]; if (distance(a, b) < 0.05) continue; for (const [pt, rev] of [[a, false], [b, true]]) { const d = distance(pt, w); if (!best || d < best.d) best = { r, rev, d }; } }
+  if (!best) { $('hint').textContent = t('zipperPickRing'); return 0; }
+  if (!!normalizeZipper(best.r.zipper).rev === best.rev) { $('hint').textContent = t('zipperPickSame'); return 0; }
+  const ids = new Set(best.r.ids); commit(() => { for (const s of doc.shapes) if (ids.has(s.id) && s.zipper) s.zipper = normalizeZipper({ ...s.zipper, rev: best.rev }); });
+  zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperPickDone'); return 1;
+}
 let zipperBarKey = '';
 function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); }
-function closeZipperBar() { const b = $('zipperBar'); if (b) b.hidden = true; zipperLive = null; }
+function closeZipperBar() { const b = $('zipperBar'); if (b) b.hidden = true; zipperLive = null; if (zipperPicking) setZipperPicking(false); }
 /** 小窓の中身を、選んだファスナーに合わせる（描くたびに呼ぶので、選択・設定・長さが変わったときだけ）。選んだファスナーが無くなったら閉じる。 */
 function refreshZipperBar(force = false) {
   const bar = $('zipperBar'); if (!bar || bar.hidden) return;
@@ -9943,7 +9962,7 @@ function refreshZipperBar(force = false) {
   const key = list.map(s => s.id + JSON.stringify(s.zipper) + arcLength(s).toFixed(2)).join(','); if (!force && key === zipperBarKey) return; zipperBarKey = key;
   const z = normalizeZipper(list[0].zipper); $('zipperSize').value = z.size; $('zipperView').value = z.view; $('zipperMetal').value = z.metal; $('zipperTape').value = z.tape; $('zipperMir').hidden = z.view !== 'side';
   if (globalThis.document?.activeElement !== $('zipperOpen')) $('zipperOpen').value = String(z.open);
-  for (const k of ['Cut0', 'Cut1']) if (globalThis.document?.activeElement !== $('zipper' + k)) $('zipper' + k).value = String(z[k.toLowerCase()] || 0);
+  for (const k of ['Cut0', 'Cut1']) if (globalThis.document?.activeElement !== $('zipper' + k)) $('zipper' + k).value = String(z[zipperCutKey(z, k === 'Cut0')] || 0);
   const scope = zipperScope(), mm = zipperTotalMm(scope);
   $('zipperLen').textContent = t('zipperLen', { mm: mm.toFixed(1), cm: (mm / 10).toFixed(1) });
 }
@@ -9958,6 +9977,8 @@ function applyZipperStd(cm) {
   commit(() => { const sh = doc.shapes.find(x => x.id === s.id); if (sh) { sh.x2 = x2; sh.y2 = y2; } });
   zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperStdDone', { cm: Number(cm), mm: want.toFixed(0), was: now.toFixed(1) }); return 1;
 }
+/** 欄「始まりの端を短く」（start=true）・「終わりの端を短く」が、線の始点側（cut0）・終点側（cut1）のどちらを指すか。向きを反対（rev）にしていれば逆。 */
+const zipperCutKey = (z, start) => (start !== !!z.rev) ? 'cut0' : 'cut1';
 function wireZipperBar() {
   { const sel = $('zipperStd'); if (sel?.appendChild) for (const cm of ZIPPER_STD_CM) { const o = document.createElement('option'); o.value = String(cm); o.textContent = cm + ' cm'; sel.appendChild(o); } }
   $('zipperStd').addEventListener('change', () => { const v = $('zipperStd').value; $('zipperStd').value = ''; if (v) { countUse('zipper_std'); applyZipperStd(v); } });
@@ -9970,9 +9991,10 @@ function wireZipperBar() {
   $('zipperTape').addEventListener('change', applyTape);
   $('zipperOpen').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(applyOpen, 300); });   /* 欄の入力では重い処理を走らせない：止まってから1回 */
   $('zipperOpen').addEventListener('change', applyOpen);
-  for (const k of ['cut0', 'cut1']) {   /* 両端を短くする長さ（mm）：入力が止まってから1回だけ反映 */
-    const el = $('zipper' + k[0].toUpperCase() + k.slice(1)); let tm = null;
-    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value; if (raw === '' || raw === null) return; const v = Number(raw); if (!(v >= 0 && v <= 5000)) { $('hint').textContent = t('zipperCutInvalid'); return; } const scope = zipperScope(); if (v > 0 && scope.length && zipperRunsOf(scope).some(r => zipperLength(r.points) - v - (normalizeZipper(r.zipper)[k === 'cut0' ? 'cut1' : 'cut0'] || 0) < 1)) { $('hint').textContent = t('zipperCutTooLong'); return; } if (setZipper({ [k]: v })) $('hint').textContent = t('zipperCutDone', { mm: zipperTotalMm(zipperScope()).toFixed(1) }); };
+  $('zipperPick').onclick = () => { countUse('zipper_pick'); setZipperPicking(!zipperPicking); };
+  for (const k of ['cut0', 'cut1']) {   /* 両端を短くする長さ（mm）：入力が止まってから1回だけ反映。欄は「始まりの端」「終わりの端」＝向きに合わせて、線の始点側（cut0）か終点側（cut1）に入る */
+    const el = $('zipper' + k[0].toUpperCase() + k.slice(1)), isStart = k === 'cut0'; let tm = null;
+    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value; if (raw === '' || raw === null) return; const v = Number(raw); if (!(v >= 0 && v <= 5000)) { $('hint').textContent = t('zipperCutInvalid'); return; } const scope = zipperScope(); if (v > 0 && scope.length && zipperRunsOf(scope).some(r => { const z = normalizeZipper(r.zipper); return zipperLength(r.points) - v - (z[zipperCutKey(z, !isStart)] || 0) < 1; })) { $('hint').textContent = t('zipperCutTooLong'); return; } if (setZipper(z => ({ [zipperCutKey(z, isStart)]: v }))) $('hint').textContent = t('zipperCutDone', { mm: zipperTotalMm(zipperScope()).toFixed(1) }); };
     el.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(apply, 300); }); el.addEventListener('change', apply);
   }
   $('zipperRev').onclick = () => setZipper(z => ({ rev: !z.rev })); $('zipperMir').onclick = () => setZipper(z => ({ mir: !z.mir }));
@@ -10174,8 +10196,8 @@ function draw() {
       if (r !== exRanks[0]) for (const it of exItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = 1; paintItem(it); ctx.restore(); }
       const layerList = list.filter(sh => exRank(sh) === r);
       if (diamondMode() === 'fill') for (const sh of layerList) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
-      for (const s of layerList) if (!(color && s.occlude) && !isZipperShape(s)) outStroke(s);
-      drawZipperRuns(layerList, s => s, sh => looks.get(sh.id).color, sh => looks.get(sh.id).px);   /* ファスナーにした線は、PNG にも絵で出す */
+      const zipOut = zipperOutOn(); for (const s of layerList) if (!(color && s.occlude) && !(zipOut && isZipperShape(s))) outStroke(s);
+      if (zipOut) drawZipperRuns(layerList, s => s, sh => looks.get(sh.id).color, sh => looks.get(sh.id).px);   /* ファスナーにした線は、PNG にも絵で出す */
       if (color) { for (const lp of occluderLoops(layerList)) drawOccluder(lp, $('pngTransparent').checked ? null : '#fff'); }   /* 分解した棒：一周の印のある線から塗る */
       if (color) for (const s of layerList) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     }
@@ -10383,7 +10405,7 @@ function drawSheetBody(lo, hi) {
     ctx.stroke(); ctx.restore();
   }
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawSelectedTextFrames(); drawRotateHandle(); drawSymView(); drawLayerHover();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawSelectedTextFrames(); drawZipperStartMark(); drawRotateHandle(); drawSymView(); drawLayerHover();
   updateUI();
 }
 function resize() {
@@ -10583,6 +10605,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (e.button !== 0 && e.button !== 1 && e.button !== 2) return;
   if (isMac && e.ctrlKey && e.button === 0) return;
   e.preventDefault(); canvas.focus(); globalThis.getSelection?.()?.removeAllRanges?.(); const p = local(e); canvas.setPointerCapture(e.pointerId);   /* ページ内の文字の選択が残ったままだと、Ctrl+C を「文字のコピー」とみなして図形をコピーしない（onClipCopy）。図を押したら、文字の選択は解除する（事業主 2026-10-26「選択した図形のコピーペーストができない」・左の欄の文字が選ばれたままだった） */
+  if (zipperPicking && e.button === 0) { zipperPickStartAt(world(p)); return; }   /* ファスナーの「始まりの端をえらぶ」の途中：押した所に近い端を、始まりにする */
   if (quadOn()) { const role = quadRoleAt(p); if (role === 'solid') { if (e.button === 0) gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } if (role !== quadRole()) switchSheet(role); } /* 4分割：押した区画の紙に切り替える。右上は立体を回す */
   if (e.button === 1 || e.button === 2 || space) { gesture = { kind: 'pan', screen: p, origin: { ...origin } }; return; } // 右ドラッグ／中ボタン／Space で画面をつかんで動かす
   if (threeViewOn()) { const b = threeViewMiniBox(), w = world(p); if (w.x >= b.x && w.x <= b.x + b.w && w.y >= b.y && w.y <= b.y + b.h) { gesture = { kind: 'spin', screen: p, yaw: miniCam.yaw, pitch: miniCam.pitch }; return; } } /* 右上の小さな立体画面の中：ドラッグで回す */

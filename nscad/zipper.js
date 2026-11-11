@@ -92,6 +92,11 @@ function zipTrim(c, z) {
 }
 /** ファスナーの長さ（mm）：線の長さから、両端を短くした分を引いた長さ（下止めから上止めまで）。 */
 export function zipperNetLength(points, zipper) { const c = zipTrim(zipCleanPoints(points, false), normalizeZipper(zipper)); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
+/** ファスナーの始まりの端（下止め・閉じ始め）と終わりの端（上止め）の位置。両端を短くした分・向き（rev）を見込む。輪は null。 */
+export function zipperEnds(points, zipper) {
+  const z = normalizeZipper(zipper), c = zipTrim(zipCleanPoints(points, false), z); if (c.closed || c.pts.length < 2) return null;
+  const a = c.pts[0], b = c.pts[c.pts.length - 1]; return z.rev ? { start: { ...b }, end: { ...a } } : { start: { ...a }, end: { ...b } };
+}
 export function zipperLength(points, closed = false) { const c = zipCleanPoints(points, closed); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
 
 /**
