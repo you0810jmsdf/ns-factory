@@ -1,3 +1,4 @@
+import { zipperOk } from './zipper.js';
 // 座標・長さは mm、Y 下向き。角度は度、時計回りが正。
 const EPS = 1e-9;
 /** 2 点 {x,y} を受け取り、距離を返す。 */
@@ -340,6 +341,7 @@ export function validateDoc(d) {
     if (!layers.has(s.layer)) return false;
     if (s.color != null && !SHAPE_COLORS.includes(s.color)) return false;
     if (s.lineStyle != null && !LINE_STYLES.includes(s.lineStyle)) return false;
+    if (s.zipper !== undefined && !zipperOk(s.zipper)) return false;   /* ファスナーの印（号数・見え方・開け具合） */
     if (s.type === 'line' || s.type === 'fold') return nums(s, ['x1', 'y1', 'x2', 'y2']);
     if (s.type === 'circle' || s.type === 'arc') return nums(s, ['cx', 'cy', 'r']) && s.r > 0 && (s.type === 'circle' || nums(s, ['startDeg', 'endDeg']));
     if (s.type === 'bezier') return nums(s, ['x1', 'y1', 'c1x', 'c1y', 'c2x', 'c2y', 'x2', 'y2']);

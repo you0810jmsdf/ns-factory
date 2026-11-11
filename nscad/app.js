@@ -46,6 +46,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout, binderOverallExtent } from './hardware.js';
+import { zipperArt, zipperRuns, zipperLength, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -3840,6 +3841,7 @@ function initDesign() {
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
+  $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();   /* 右クリック → ファスナーにする（選んだ線をファスナーの絵で表示・事業主指示 2026-11-11） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); }; $('ctx-lines-to-holes').onclick = () => { countUse('ctx_lines_to_holes'); hideCtxMenu(); moveLinesToHoles(); }; $('ctx-unlink-lines').onclick = () => { countUse('ctx_unlink_lines'); hideCtxMenu(); restoreSupportLines(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
   $('ctx-offset').onclick = () => { countUse('ctx_offset'); hideCtxMenu(); openOffsetSelBar(false); }; $('ctx-offset-solid').onclick = () => { countUse('ctx_offset_solid'); hideCtxMenu(); openOffsetSelBar(true); };   /* 右クリックで選んだら、すぐ実行せず、距離を入れる小窓を出す（事業主 2026-10-26「右クリック直後のオフセットコマンド選択後に数値を入れる」）。実線は、元の図形と同じ層・同じ色 */
@@ -4015,7 +4017,7 @@ function exportSvg() {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(vectorOutDoc(), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
+  const paper = $('paper').value, bytes = docToPdf(zipperOutDoc(vectorOutDoc()), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm() });
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -4140,7 +4142,7 @@ function drawPrintOverlay() {
 function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 5mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target, { dots = true } = {}) {
-  const own = target === undefined; if (own) target = outputDoc();   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
+  const own = target === undefined; if (own) target = zipperOutDoc(outputDoc());   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
   if (!regGuard('print', 'pages')) return null;
   const holeDot = dots ? printDotMm() : 0;
   const pageMm = PAGES[$('paper').value] || PAGES.a4, overlapMm = 10;
@@ -8429,7 +8431,7 @@ function updateUI() {
   markSelectedLayers();   /* 選んだ図形が入っている層の行に目印 */
   $('status').textContent = t('status', { x: cursor.x.toFixed(2), y: cursor.y.toFixed(2), zoom: (scale / 4 * 100).toFixed(0) }) + (Math.abs(scale - actualScale()) < 0.005 ? t('actualMark') : '');
   const th = threadEstimate(doc); $('threadInfo').textContent = th.paths ? t('threadInfo', { m: (th.mm / 1000).toFixed(2), n: th.paths }) : t('threadNone');
-  refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar(); refreshOffsetSelBar();
+  refreshInfo(); refreshHoleShapeCard(); refreshTextFontCard(); refreshZipperBar(); refreshHwEdit(); refreshMoveCard(); refreshScaleCard(); refreshVertexCard(); refreshAlignCard(); refreshArrayCard(); refreshCalcCard(); refreshRectEdit(); refreshRotateBar(); refreshOffsetSelBar();
 }
 /** 全く同じ位置（中心が 0.05mm 以内）・同じ菱目打ちの穴の重複を除く（先にあるほうを残す・事業主指示 2026-10-15）。除いた数を返す。近いだけの穴・別の目打ちの穴は残す。 */
 function dedupeHoles() {
@@ -9811,7 +9813,127 @@ function distTo(s, p) {
   const hw = L.label.length * L.px * 0.6 / 2, hh = L.px / 2, ex = Math.max(Math.abs(lx) - hw, 0), ey = Math.max(Math.abs(ly) - hh, 0);
   return Math.min(g, Math.hypot(ex, ey));
 }
-const SELECT_HALO = 'rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
+// ---- ファスナー（事業主 2026-11-11「選択したラインがファスナであることを明示したい。横から見たファスナと上からみたファスナをデザインし、線をファスナに置き換えることができる機能を付けて」）----
+// 決定：線は残して図形に zipper の印を付け、画面・PNG・印刷・PDF では絵で表示する（曲線にも沿う・元の線に戻せる）。上から／横からは小窓で線ごとに選ぶ。歯・テープ・スライダー・引き手・止めまで描く。
+// SVG・DXF の書き出しは、元の線のまま（レーザーで歯の絵を切らないため）。絵の形は zipper.js。
+const ZIPPERABLE = ['line', 'arc', 'circle', 'polyline', 'bezier', 'path'];
+const isZipperShape = s => !!s?.zipper && ZIPPERABLE.includes(s.type);
+let zipperLast = { size: '3', view: 'top', metal: 'gold', tape: ZIPPER_TAPE_DEFAULT };   /* 次に作るファスナーの初めの値（最後に選んだ太さ・見え方・金具の色・テープの色） */
+/** いま選んでいる線のうち、ファスナーにできるもの（直線・円弧・円・曲線。金具の部品は除く）。 */
+function zipperTargets() { return doc.shapes.filter(s => selected.has(s.id) && editable(s) && ZIPPERABLE.includes(s.type) && !s.hw && !s.holeLink); }
+/** ファスナーの線を、つながったものどうしで1本にまとめる（同じ層・同じ設定だけ）。move＝ドラッグ中の位置。 */
+function zipperRunsOf(list, move = s => s) {
+  const zs = list.filter(isZipperShape); if (!zs.length) return [];
+  return zipperRuns(zs.map(s => ({ id: s.id, key: s.layer + '|' + JSON.stringify(normalizeZipper(s.zipper)), zipper: s.zipper, points: flattenShape(move(s), 0.05) })));
+}
+/** ファスナーの絵を描く。colorOf＝線の色・pxOf＝線の太さ（書き出し）。
+ *  色つき（画面・色つきの PNG）：テープはテープの色、金具（歯・止め・スライダー・引き手）はゴールドかシルバーで塗り、ふちは金具の濃い色（事業主 2026-11-11「ファスナの色は、ゴールドとシルバー。テープの色は、自由に選定できるようにして」）。選んだ線は、ふちを選択の色に。
+ *  白黒の書き出し：歯・止めは塗り、ほかは線だけ。 */
+function drawZipperRuns(list, move, colorOf, pxOf = null) {
+  const runs = zipperRunsOf(list, move); if (!runs.length) return;
+  const byId = new Map(list.map(s => [s.id, s])), poly = it => { it.points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); if (it.closed) ctx.closePath(); };
+  ctx.save(); ctx.setLineDash([]); ctx.lineJoin = 'round';
+  for (const run of runs) {
+    const first = byId.get(run.ids[0]), color = colorOf(run.ids.map(id => byId.get(id)).find(s => selected.has(s.id)) || first), art = zipperArt(run.points, run.zipper);
+    ctx.lineWidth = pxOf ? Math.max(0.1, pxOf(first) / scale) : 1.2 / scale; ctx.strokeStyle = color; ctx.fillStyle = color;
+    if (exporting && !exportColor) {   /* 白黒の書き出し */
+      ctx.beginPath(); for (const it of art.items) if (it.solid) poly(it); ctx.fill();
+      ctx.beginPath(); for (const it of art.items) if (!it.solid) poly(it); ctx.stroke(); continue;
+    }
+    const z = normalizeZipper(run.zipper), m = ZIPPER_METAL_COLORS[z.metal] || ZIPPER_METAL_COLORS.gold, picked = !exporting && run.ids.some(id => selected.has(id)), edge = picked ? color : m.dark;
+    const paint = (kinds, fill, stroke) => { ctx.beginPath(); for (const it of art.items) if (kinds.includes(it.kind)) poly(it); if (fill) { ctx.fillStyle = fill; ctx.fill('evenodd'); } if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); } };
+    paint(['tape'], z.tape, picked ? color : null);   /* テープ（輪のときは、内と外の間だけを塗る） */
+    paint(['tooth', 'stop'], m.hex, null);
+    for (const it of art.items) if (it.kind === 'slider' || it.kind === 'bridge' || it.kind === 'pull') { ctx.beginPath(); poly(it); if (it.closed) { ctx.fillStyle = it.kind === 'bridge' ? m.dark : it.kind === 'pull' ? m.light : m.hex; ctx.fill(); } ctx.strokeStyle = edge; ctx.stroke(); }   /* 重なりの順：スライダー → 付け根 → 引き手 */
+    paint(['hole'], z.tape, edge);
+  }
+  ctx.restore();
+}
+/** 印刷・PDF 用：ファスナーの線を、絵の線（普通の線の集まり）に置き換えた図面。図面のデータは変えない。 */
+function zipperOutDoc(d) {
+  if (!d.shapes.some(isZipperShape)) return d;
+  const byId = new Map(d.shapes.map(s => [s.id, s])), made = new Map(), drop = new Set();
+  for (const r of zipperRunsOf(d.shapes)) {
+    const first = byId.get(r.ids[0]), items = zipperArt(r.points, r.zipper).items; if (!items.length) continue;
+    made.set(first.id, items.map((it, i) => ({ id: i < r.ids.length ? r.ids[i] : `${first.id}~z${i}`, layer: first.layer, ...(first.color ? { color: first.color } : {}), type: 'polyline', closed: it.closed, points: it.points })));   /* 元の線の id は絵の線が引き継ぐ（その線に打った穴が、出力から落ちないように） */
+    r.ids.slice(1).forEach(id => drop.add(id));
+  }
+  return { ...d, shapes: d.shapes.flatMap(s => made.get(s.id) || (drop.has(s.id) ? [] : [s])) };
+}
+/** 選んでいるファスナーの線。 */
+function zipperSelected() { return doc.shapes.filter(s => selected.has(s.id) && isZipperShape(s) && editable(s)); }
+/** 設定を変える相手：選んでいるファスナーと、それにつながって1本になっている線。 */
+function zipperScope() {
+  const sel = zipperSelected(); if (!sel.length) return []; const ids = new Set(sel.map(s => s.id));
+  for (const r of zipperRunsOf(doc.shapes.filter(s => editable(s)))) if (r.ids.some(id => ids.has(id))) r.ids.forEach(id => ids.add(id));
+  return doc.shapes.filter(s => ids.has(s.id));
+}
+const zipperTotalMm = list => zipperRunsOf(list).reduce((a, r) => a + zipperLength(r.points), 0);
+/** 右クリック「ファスナーにする」：選んだ線に印を付けて、小窓を開く。もうファスナーになっている線は、そのまま小窓で直せる。 */
+function makeZipper() {
+  const list = zipperTargets(); if (!list.length) { $('hint').textContent = t('zipperNone'); return 0; }
+  const fresh = list.filter(s => !s.zipper), base = list.find(s => s.zipper)?.zipper;
+  if (fresh.length) { const ids = new Set(fresh.map(s => s.id)); commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) s.zipper = normalizeZipper(base ? { ...base } : { ...zipperLast, open: 0 }); }); }
+  zipperLive = null; openZipperBar();
+  $('hint').textContent = fresh.length ? t('zipperDone', { n: fresh.length, mm: zipperTotalMm(zipperScope()).toFixed(1) }) : t('zipperOpened');
+  return fresh.length;
+}
+/** 小窓の欄を変えたとき：選んだファスナー（つながった線も）の設定を変える。patch＝変える項目（関数なら、いまの設定から作る）。小窓を開いている間の続けての変更は、元に戻す1回分にまとめる。 */
+let zipperLive = null;
+function setZipper(patch) {
+  const list = zipperScope(); if (!list.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
+  const next = s => normalizeZipper({ ...s.zipper, ...(typeof patch === 'function' ? patch(normalizeZipper(s.zipper)) : patch) });
+  const plan = new Map(list.filter(s => JSON.stringify(normalizeZipper(s.zipper)) !== JSON.stringify(next(s))).map(s => [s.id, next(s)])); if (!plan.size) return 0;
+  const key = list.map(s => s.id).join(','), join = !!zipperLive && zipperLive.key === key && zipperLive.seq === commitSeq && zipperLive.len === undo.length, n = undo.length;
+  commit(() => { for (const s of doc.shapes) if (plan.has(s.id)) s.zipper = plan.get(s.id); });
+  if (join && undo.length === n + 1) undo.splice(n, 1);
+  zipperLive = { key, seq: commitSeq, len: undo.length }; refreshZipperBar(true); return plan.size;
+}
+/** 「元の線に戻す」：印を外す（線はそのまま残る）。 */
+function removeZipper() {
+  const list = zipperScope(); if (!list.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
+  const ids = new Set(list.map(s => s.id)); commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) delete s.zipper; });
+  closeZipperBar(); $('hint').textContent = t('zipperRemoved', { n: ids.size }); return ids.size;
+}
+let zipperBarKey = '';
+function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); }
+function closeZipperBar() { const b = $('zipperBar'); if (b) b.hidden = true; zipperLive = null; }
+/** 小窓の中身を、選んだファスナーに合わせる（描くたびに呼ぶので、選択・設定・長さが変わったときだけ）。選んだファスナーが無くなったら閉じる。 */
+function refreshZipperBar(force = false) {
+  const bar = $('zipperBar'); if (!bar || bar.hidden) return;
+  const list = zipperSelected(); if (!list.length) { closeZipperBar(); return; }
+  const key = list.map(s => s.id + JSON.stringify(s.zipper) + arcLength(s).toFixed(2)).join(','); if (!force && key === zipperBarKey) return; zipperBarKey = key;
+  const z = normalizeZipper(list[0].zipper); $('zipperSize').value = z.size; $('zipperView').value = z.view; $('zipperMetal').value = z.metal; $('zipperTape').value = z.tape; $('zipperMir').hidden = z.view !== 'side';
+  if (globalThis.document?.activeElement !== $('zipperOpen')) $('zipperOpen').value = String(z.open);
+  const scope = zipperScope(), mm = zipperTotalMm(scope);
+  $('zipperLen').textContent = t('zipperLen', { mm: mm.toFixed(1), cm: (mm / 10).toFixed(1) });
+}
+/** 小窓の「市販の長さ」：直線1本のファスナーなら、線の長さをその長さに直す（始点は動かさない・向きは変えない）。曲線・つながった線は、差（あと何 mm）を案内するだけ。 */
+function applyZipperStd(cm) {
+  const want = Number(cm) * 10; if (!(want > 0)) return 0; const scope = zipperScope(); if (!scope.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
+  const now = zipperTotalMm(scope), s = scope.length === 1 && scope[0].type === 'line' ? scope[0] : null, cur = s ? distance({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }) : 0;
+  if (!s || cur < 1e-9) { const diff = want - now; $('hint').textContent = t(diff >= 0 ? 'zipperStdLonger' : 'zipperStdShorter', { cm: Number(cm), now: now.toFixed(1), diff: Math.abs(diff).toFixed(1) }); return 0; }
+  if (Math.abs(cur - want) < 0.005) { $('hint').textContent = t('zipperStdSame', { cm: Number(cm) }); return 0; }
+  const r4 = v => +v.toFixed(4), x2 = r4(s.x1 + (s.x2 - s.x1) * want / cur), y2 = r4(s.y1 + (s.y2 - s.y1) * want / cur);
+  commit(() => { const sh = doc.shapes.find(x => x.id === s.id); if (sh) { sh.x2 = x2; sh.y2 = y2; } });
+  zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperStdDone', { cm: Number(cm), mm: want.toFixed(0), was: cur.toFixed(1) }); return 1;
+}
+function wireZipperBar() {
+  { const sel = $('zipperStd'); if (sel?.appendChild) for (const cm of ZIPPER_STD_CM) { const o = document.createElement('option'); o.value = String(cm); o.textContent = cm + ' cm'; sel.appendChild(o); } }
+  $('zipperStd').addEventListener('change', () => { const v = $('zipperStd').value; $('zipperStd').value = ''; if (v) { countUse('zipper_std'); applyZipperStd(v); } });
+  let timer = null; const applyOpen = () => { clearTimeout(timer); timer = null; const v = $('zipperOpen').value; if (v === '' || v === null) return; const o = Number(v); if (!(o >= 0 && o <= 100)) { $('hint').textContent = t('zipperOpenInvalid'); return; } setZipper({ open: o }); };
+  $('zipperSize').addEventListener('change', () => { zipperLast = { ...zipperLast, size: $('zipperSize').value }; setZipper({ size: $('zipperSize').value }); });
+  $('zipperView').addEventListener('change', () => { zipperLast = { ...zipperLast, view: $('zipperView').value }; setZipper({ view: $('zipperView').value }); });
+  $('zipperMetal').addEventListener('change', () => { zipperLast = { ...zipperLast, metal: $('zipperMetal').value }; setZipper({ metal: $('zipperMetal').value }); });
+  let tapeTimer = null; const applyTape = () => { clearTimeout(tapeTimer); tapeTimer = null; const c = String($('zipperTape').value || '').toLowerCase(); if (!isHex6(c)) return; zipperLast = { ...zipperLast, tape: c }; setZipper({ tape: c }); };
+  $('zipperTape').addEventListener('input', () => { clearTimeout(tapeTimer); tapeTimer = setTimeout(applyTape, 300); });   /* 色を選んでいる間は、止まってから1回だけ反映 */
+  $('zipperTape').addEventListener('change', applyTape);
+  $('zipperOpen').addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(applyOpen, 300); });   /* 欄の入力では重い処理を走らせない：止まってから1回 */
+  $('zipperOpen').addEventListener('change', applyOpen);
+  $('zipperRev').onclick = () => setZipper(z => ({ rev: !z.rev })); $('zipperMir').onclick = () => setZipper(z => ({ mir: !z.mir }));
+  $('zipperOff').onclick = () => { countUse('zipper_off'); removeZipper(); }; $('zipperClose').onclick = closeZipperBar;
+}
+const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
   ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
@@ -9910,7 +10032,7 @@ function lineEndHit(p) {
 }
 /** クリック位置にある図形を選ぶ。許容（画面7px）に入る図形のうち、一番近いものを優先する（ほぼ同じ近さ＝1.5px以内なら、上に描かれたものを優先）。近い線が、すぐ上に重なった別の線・曲線に取られないように。 */
 function pickShapeAt(p) {
-  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s) || s.holeLink) continue; const d = distTo(s, p); if (d <= tol) cands.push({ s, d }); } /* 見えない補助の線（holeLink）はクリックで選ばない */
+  const tol = 7 / scale, cands = []; for (const s of doc.shapes) { if (!editable(s) || s.holeLink) continue; const d = distTo(s, p); if (d <= tol) cands.push({ s, d }); else if (isZipperShape(s) && d - zipperHalfWidth(s.zipper) <= tol) cands.push({ s, d: tol }); }   /* ファスナーにした線は、絵（テープ・歯・引き手）のどこを押しても選べる。ただし、絵の上に別の線が通っているときは、その線が先（近さは許容いっぱい＝一番あと） */ /* 見えない補助の線（holeLink）はクリックで選ばない */
   if (!cands.length) return undefined; const min = Math.min(...cands.map(c => c.d)), near = cands.filter(c => c.d <= min + 1.5 / scale);
   const lenOf = x => { const n = arcLength(x); return Number.isFinite(n) ? n : Infinity; }; /* ほぼ同じ近さ（つながった端など）なら、短い図形を優先：短い線は端が長い線に重なるので、上のものを選ぶと端をクリックしても選べない。同じ長さなら上に描かれたもの */
   let best = near[0], bl = lenOf(best.s); for (const c of near.slice(1)) { const l = lenOf(c.s); if (l <= bl + 1e-6) { best = c; bl = Math.min(l, bl); } } return best.s;
@@ -10007,7 +10129,8 @@ function draw() {
       if (r !== exRanks[0]) for (const it of exItems) if ((it.li || 0) === r) { ctx.save(); ctx.globalAlpha = 1; paintItem(it); ctx.restore(); }
       const layerList = list.filter(sh => exRank(sh) === r);
       if (diamondMode() === 'fill') for (const sh of layerList) { if (sh.type !== 'polyline' || !diamondLoopSizes([sh]).length) continue; ctx.save(); ctx.fillStyle = looks.get(sh.id).color; path(sh); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も塗る */
-      for (const s of layerList) if (!(color && s.occlude)) outStroke(s);
+      for (const s of layerList) if (!(color && s.occlude) && !isZipperShape(s)) outStroke(s);
+      drawZipperRuns(layerList, s => s, sh => looks.get(sh.id).color, sh => looks.get(sh.id).px);   /* ファスナーにした線は、PNG にも絵で出す */
       if (color) { for (const lp of occluderLoops(layerList)) drawOccluder(lp, $('pngTransparent').checked ? null : '#fff'); }   /* 分解した棒：一周の印のある線から塗る */
       if (color) for (const s of layerList) if (s.occlude) { drawOccluder(s, $('pngTransparent').checked ? null : '#fff'); outStroke(s); }   /* リングアームの棒：本体の上に重ねる */
     }
@@ -10100,7 +10223,8 @@ function drawSheetBody(lo, hi) {
     const layerStrokes = strokeList.filter(s => rankOfStroke(s) === r);
     if (diamondMode() === 'fill') for (const s of layerStrokes) { if (s.type !== 'polyline' || !diamondLoopSizes([s]).length) continue; ctx.save(); ctx.fillStyle = selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8'; path(previewMoved(s)); ctx.fill(); ctx.restore(); }   /* 菱目の見せ方＝塗り：菱の線（図形）も、穴と同じように塗る */
     if (selected.size && !exporting) { ctx.save(); ctx.lineWidth = 6 / scale; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; for (const s of layerStrokes) if (selected.has(s.id) && s.type !== 'text' && s.type !== 'dimension') strokeShape(previewMoved(s), SELECT_HALO, false); ctx.restore(); }   /* 選んだ線の下に、太い水色のふちを敷く：選んだ色（金）が黄色い点線のガイドなどと見分けにくくても、Shift で何本選んだかが見える（事業主 2026-10-23「２本選択できているか見た目でわからない」） */
-    for (const s of layerStrokes) if (!s.occlude) strokeOne(s);
+    for (const s of layerStrokes) if (!s.occlude && !(isZipperShape(s) && gesture?.id !== s.id)) strokeOne(s);   /* ファスナーにした線は、線の代わりに絵を描く（形を直している間だけ、元の線も見せる） */
+    drawZipperRuns(layerStrokes, previewMoved, s => hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) ? '#c9a96e' : shapeLineColor(s) || '#d8d8d8');
     for (const lp of occluderLoops(layerStrokes)) drawOccluder(lp);   /* 分解した棒：一周の印のある線から塗る */
     for (const s of layerStrokes) if (s.occlude) { drawOccluder(s); strokeOne(s); }
     for (const h of doc.holes) if (holeRanks.get(h) === r) drawHoleOne(h);   /* この層の線に打った穴 */
@@ -10715,7 +10839,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib', 'ctx-zipper']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
@@ -10766,7 +10890,7 @@ function fillCtxSel() {
 }
 /** 右クリックメニューの中身を、いまの選択に合わせて作り直す（出すかどうかは別）。右クリックの表示（showCtxMenu）と、パネルの一覧（renderSideMenu）が、同じ項目を使うための共通の準備。 */
 function prepareCtxMenu() {
-  fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = $('ctx-center-y').hidden = $('ctx-center-x').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-guides').hidden = !guideLineIds().size; $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
+  fillCtxSel(); fillCtxLayers(); fillCtxCards(); $('ctx-lib').hidden = selected.size < 1; $('ctx-zipper').hidden = !zipperTargets().length; $('ctx-move').hidden = !hasMoveTarget(); $('ctx-center').hidden = $('ctx-center-y').hidden = $('ctx-center-x').hidden = !selectedShapeIds().size; { const lp = latticePieceIds().size, rh = latticeRoundHoleIds().size, dh = latticeRoundHoleIds('diamond').size; $('ctx-lattice').hidden = !lp; $('ctx-round').hidden = !rh; $('ctx-diamond').hidden = !dh; $('ctx-lattice-round').hidden = !(lp && rh); } $('ctx-offset').hidden = $('ctx-offset-solid').hidden = !selectedShapeIds().size; $('ctx-mirror').hidden = !doc.shapes.some(s => selected.has(s.id) && editable(s)); $('ctxChamferSub').hidden = true; $('ctx-unpaint').hidden = !selectionHasPaint(); $('ctx-guides').hidden = !guideLineIds().size; $('ctx-outline').hidden = !selectedShapeIds().size; $('ctx-dedupe').hidden = !selectedShapeIds().size; $('ctx-textfont').hidden = !pickedTexts().length; $('ctx-holeshape').hidden = !(selected.size && doc.holes.length);   /* 穴のある図面で、何か選んでいるとき（範囲に穴があるかは、窓の中で数える＝右クリックを重くしない） */
   distributeCtxCards(); updateCtxTree();
 }
 function showCtxMenu(e) {
