@@ -24,18 +24,70 @@ export const ZIPPER_TAPE_DEFAULT = '#333333';   /* テープの色の初めの�
 const zipHexOk = c => typeof c === 'string' && /^#[0-9a-f]{6}$/.test(c);
 const ZIPPER_TAPE_THICK = 0.6;   /* 横から見たテープの厚み */
 
+/* ── テープ幅の点検（事業主 2026-11-12「必要なファスナの幅を検討するための機能が欲しい。いつもテープの幅が足りずに失敗を繰り返す」
+ *    「幅と貼り付けの幅を線で指定して、サイズ変更に連動させれば足りなくなったときに警告が出るように」「テープ幅は2.5cm,3.0cm,4.0cm」「縫い線から2mmは余裕が欲しい」「革の厚みは２枚分」）。
+ *  印に持つ値：gap＝幅（ファスナーが渡る、革の端から端まで mm）・gapRef＝幅を取る線の id・att＝貼り付けの幅（片側。革の端からテープの端まで mm）・attRef＝その線の id・
+ *  lt＝革1枚の厚み（mm。式では2枚分）・tw＝使うテープの幅（mm）。線（…Ref）があれば、その線の長さが優先（線を直すと点検も変わる）。数字は、線が無くなったときの控え。 ── */
+export const ZIPPER_TAPE_WIDTHS = [25, 30, 40];   /* 手持ちのテープの幅（mm）：2.5・3.0・4.0 cm */
+export const ZIPPER_SEW_MARGIN = 2;   /* 縫い線の外に残したいテープ（mm） */
+export const ZIPPER_GAP_MAX = 1000, ZIPPER_ATT_MAX = 200, ZIPPER_LT_MAX = 20;
+const zipNumOk = (v, max, zeroOk) => v === undefined || (Number.isFinite(v) && (zeroOk ? v >= 0 : v > 0) && v <= max);
+const zipRefOk = v => v === undefined || (typeof v === 'string' && v.length > 0 && v.length <= 64);
+const zipTapeFieldsOk = z => zipNumOk(z.gap, ZIPPER_GAP_MAX) && zipNumOk(z.att, ZIPPER_ATT_MAX) && zipNumOk(z.lt, ZIPPER_LT_MAX) && zipRefOk(z.gapRef) && zipRefOk(z.attRef) && (z.tw === undefined || ZIPPER_TAPE_WIDTHS.includes(z.tw));
+
 /** 図面に保存してよい印か（検査用）。 */
 export function zipperOk(z) {
   return !!z && typeof z === 'object' && !Array.isArray(z) && typeof z.size === 'string' && Object.hasOwn(ZIPPER_SIZES, z.size) && ZIPPER_VIEWS.includes(z.view) && Number.isFinite(z.open) && z.open >= 0 && z.open <= 100
     && ZIPPER_METALS.includes(z.metal) && zipHexOk(z.tape)
-    && (z.rev === undefined || typeof z.rev === 'boolean') && (z.mir === undefined || typeof z.mir === 'boolean') && zipCutOk(z.cut0) && zipCutOk(z.cut1) && Object.keys(z).every(k => ['size', 'view', 'open', 'metal', 'tape', 'rev', 'mir', 'cut0', 'cut1'].includes(k));
+    && (z.rev === undefined || typeof z.rev === 'boolean') && (z.mir === undefined || typeof z.mir === 'boolean') && zipCutOk(z.cut0) && zipCutOk(z.cut1) && zipTapeFieldsOk(z)
+    && Object.keys(z).every(k => ['size', 'view', 'open', 'metal', 'tape', 'rev', 'mir', 'cut0', 'cut1', 'gap', 'gapRef', 'att', 'attRef', 'lt', 'tw'].includes(k));
 }
 /** 欠けた値・壊れた値を、標準（3号・上から・閉じた状態・ゴールド・テープは黒に近い灰色）で埋める。rev・mir は true のときだけ書く。 */
 export function normalizeZipper(z = {}) {
   const open = Number(z?.open), o = { size: Object.hasOwn(ZIPPER_SIZES, String(z?.size)) ? String(z.size) : '3', view: ZIPPER_VIEWS.includes(z?.view) ? z.view : 'top', open: Number.isFinite(open) ? Math.min(100, Math.max(0, Math.round(open))) : 0, metal: ZIPPER_METALS.includes(z?.metal) ? z.metal : 'gold', tape: zipHexOk(String(z?.tape ?? '').toLowerCase()) ? String(z.tape).toLowerCase() : ZIPPER_TAPE_DEFAULT };
   if (z?.rev === true) o.rev = true; if (z?.mir === true) o.mir = true;
   for (const k of ['cut0', 'cut1']) { const v = Math.round(Number(z?.[k]) * 10) / 10; if (Number.isFinite(v) && v > 0) o[k] = Math.min(ZIPPER_CUT_MAX, v); }   /* 端を短くする長さ（mm）：0 は書かない */
+  /* テープ幅の点検の値：0・壊れた値は書かない（未設定と同じ） */
+  for (const [k, max] of [['gap', ZIPPER_GAP_MAX], ['att', ZIPPER_ATT_MAX], ['lt', ZIPPER_LT_MAX]]) { const raw = z?.[k], v = raw === undefined || raw === null || raw === '' ? NaN : Math.round(Number(raw) * 100) / 100; if (Number.isFinite(v) && v > 0) o[k] = Math.min(max, v); }
+  for (const k of ['gapRef', 'attRef']) if (typeof z?.[k] === 'string' && z[k].length > 0 && z[k].length <= 64) o[k] = z[k];
+  if (ZIPPER_TAPE_WIDTHS.includes(Number(z?.tw))) o.tw = Number(z.tw);
   return o;
+}
+
+/** 線（革の端）から、そばの縫い穴の列までの距離（mm）＝縫い代。points＝線の点の列・holes＝[{x,y}]。range mm 以内で、同じ距離（±0.3mm）に並ぶ穴がいちばん多い列を取り、その中央値を 0.1mm に丸めて返す。3個に満たなければ null。 */
+export function zipperSeamAuto(points, holes, range = 12) {
+  const pts = (points || []).filter(p => Number.isFinite(p?.x) && Number.isFinite(p?.y)); if (pts.length < 2 || !holes?.length) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity; for (const p of pts) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; }
+  const ds = [];
+  for (const h of holes) {
+    if (!Number.isFinite(h?.x) || !Number.isFinite(h?.y) || h.x < minX - range || h.x > maxX + range || h.y < minY - range || h.y > maxY + range) continue;
+    let best = Infinity;
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const a = pts[i], b = pts[i + 1], dx = b.x - a.x, dy = b.y - a.y, len2 = dx * dx + dy * dy, u = len2 > 0 ? Math.min(1, Math.max(0, ((h.x - a.x) * dx + (h.y - a.y) * dy) / len2)) : 0, d = Math.hypot(h.x - (a.x + dx * u), h.y - (a.y + dy * u));
+      if (d < best) best = d;
+    }
+    if (best <= range) ds.push(best);
+  }
+  if (ds.length < 3) return null; ds.sort((a, b) => a - b);
+  let top = null, lo = 0, hi = 0;   /* ds[i] を下の端にした幅 0.6mm の窓に入る数（並んだ穴の列） */
+  for (let i = 0; i < ds.length; i++) { if (i > 0 && ds[i] - ds[i - 1] < 1e-9) continue; lo = i; while (hi < ds.length && ds[hi] <= ds[i] + 0.6) hi++; const n = hi - lo; if (!top || n > top.n) top = { n, lo, hi }; }
+  if (!top || top.n < 3) return null;
+  const row = ds.slice(top.lo, top.hi), med = row[Math.floor(row.length / 2)];
+  return Math.round(med * 10) / 10;
+}
+
+/**
+ * テープ幅の点検。gap＝幅・att＝貼り付けの幅（片側。無ければ、縫い代 seam＋余裕 2mm）・lt＝革1枚の厚み（2枚分を足す）・tw＝使うテープの幅・seam＝縫い代（革の端から縫い線まで。無ければ null）。
+ * 必要な幅 need＝gap＋att×2＋lt×2。返り値 null＝まだ点検できない（幅が無い、または貼り付けの幅も縫い穴も無い）。
+ * { need, att, attAuto（貼り付けの幅を縫い穴から決めた）, lt, tw, ok（テープが足りる）, short（足りない mm）, best（足りるいちばん細いテープ・無ければ null）, sewRest（縫い線の外に残るテープ・縫い穴が無ければ null）, sewOk }
+ */
+export function zipperTapeCheck({ gap, att, lt, tw, seam } = {}) {
+  const r2 = v => Math.round(v * 100) / 100, g = Number(gap), s = seam === null || seam === undefined || !Number.isFinite(Number(seam)) ? null : Number(seam);
+  if (!(g > 0)) return null;
+  const attAuto = !(Number(att) > 0), a = attAuto ? (s === null ? null : s + ZIPPER_SEW_MARGIN) : Number(att); if (a === null) return null;
+  const t = Number(lt) > 0 ? Number(lt) : 0, need = r2(g + a * 2 + t * 2), best = ZIPPER_TAPE_WIDTHS.find(w => w + 1e-9 >= need) ?? null, w = ZIPPER_TAPE_WIDTHS.includes(Number(tw)) ? Number(tw) : null;
+  const sewRest = s === null ? null : r2(a - s);
+  return { need, att: r2(a), attAuto, lt: t, tw: w, ok: w !== null && w + 1e-9 >= need, short: w === null ? 0 : Math.max(0, r2(need - w)), best, sewRest, sewOk: sewRest === null || sewRest + 1e-9 >= ZIPPER_SEW_MARGIN };
 }
 
 const zipDist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
