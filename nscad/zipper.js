@@ -144,10 +144,11 @@ function zipTrim(c, z) {
 }
 /** ファスナーの長さ（mm）：線の長さから、両端を短くした分を引いた長さ（下止めから上止めまで）。 */
 export function zipperNetLength(points, zipper) { const c = zipTrim(zipCleanPoints(points, false), normalizeZipper(zipper)); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
-/** ファスナーの始まりの端（下止め・閉じ始め）と終わりの端（上止め）の位置。両端を短くした分・向き（rev）を見込む。輪は null。 */
+/** ファスナーの始まりの端（閉じた状態＝開け具合 0 で、引き手がある端。上止め側）と終わりの端（下止め側）の位置。両端を短くした分・向き（rev）を見込む。輪は null。
+ *  事業主 2026-11-12「開け具合０ですべて閉じた状態なので始点は閉じた状態でのファスナ引手がある位置になる」：それまでは、始まり＝下止め（閉じ始め）で、引き手と「始」の印が反対の端にあった。絵（rev の意味）は変えず、端の呼び名だけを入れ替えた。 */
 export function zipperEnds(points, zipper) {
   const z = normalizeZipper(zipper), c = zipTrim(zipCleanPoints(points, false), z); if (c.closed || c.pts.length < 2) return null;
-  const a = c.pts[0], b = c.pts[c.pts.length - 1]; return z.rev ? { start: { ...b }, end: { ...a } } : { start: { ...a }, end: { ...b } };
+  const a = c.pts[0], b = c.pts[c.pts.length - 1]; return z.rev ? { start: { ...a }, end: { ...b } } : { start: { ...b }, end: { ...a } };
 }
 export function zipperLength(points, closed = false) { const c = zipCleanPoints(points, closed); return c.pts.length < 2 ? 0 : zipRuler(c.pts, c.closed).L; }
 

@@ -9955,19 +9955,19 @@ function removeZipper() {
   const ids = new Set(list.map(s => s.id)); commit(() => { for (const s of doc.shapes) if (ids.has(s.id)) delete s.zipper; });
   closeZipperBar(); $('hint').textContent = t('zipperRemoved', { n: ids.size }); return ids.size;
 }
-/** 小窓を開いている間、ファスナーの始まりの端（閉じ始め・下止め）に「始」の印を出す（事業主 2026-11-11「始まりの端を指定できるようにして」：どちらが始まりか、見て分かるように）。 */
+/** 小窓を開いている間、ファスナーの始まりの端（閉じた状態＝開け具合 0 で、引き手がある端）に「始」の印を出す（事業主 2026-11-11「始まりの端を指定できるようにして」：どちらが始まりか、見て分かるように。2026-11-12「始点は閉じた状態でのファスナ引手がある位置になる」：印を、下止めの端から引き手の端へ移した）。 */
 function drawZipperStartMark() {
   const bar = $('zipperBar'); if (exporting || !bar || bar.hidden) return; const scope = zipperScope(); if (!scope.length) return;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 2 / scale; ctx.strokeStyle = '#4fd0ff'; ctx.fillStyle = '#4fd0ff'; ctx.font = `bold ${13 / scale}px sans-serif`;
   for (const r of zipperRunsOf(scope)) { const e = zipperEnds(r.points, r.zipper); if (!e) continue; ctx.beginPath(); ctx.arc(e.start.x, e.start.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.fillText(t('zipperStartMark'), e.start.x + 9 / scale, e.start.y - 9 / scale); }
   ctx.restore();
 }
-/** 「始まりの端をえらぶ」：押したあと、図面でクリックした所に近いほうの端を、始まりの端（閉じ始め）にする。短くした場所は動かない（欄の数字が入れ替わる）。 */
+/** 「始まりの端をえらぶ」：押したあと、図面でクリックした所に近いほうの端を、始まりの端（閉じたときに引き手がある端）にする。短くした場所は動かない（欄の数字が入れ替わる）。 */
 let zipperPicking = false;
 function setZipperPicking(on) { zipperPicking = !!on; $('zipperPick')?.classList?.toggle?.('active', zipperPicking); if (on) $('hint').textContent = t('zipperPickHint'); }
 function zipperPickStartAt(w) {
   setZipperPicking(false); const scope = zipperScope(); if (!scope.length) { $('hint').textContent = t('zipperNoneSel'); return 0; }
-  let best = null; for (const r of zipperRunsOf(scope)) { const a = r.points[0], b = r.points[r.points.length - 1]; if (distance(a, b) < 0.05) continue; for (const [pt, rev] of [[a, false], [b, true]]) { const d = distance(pt, w); if (!best || d < best.d) best = { r, rev, d }; } }
+  let best = null; for (const r of zipperRunsOf(scope)) { const a = r.points[0], b = r.points[r.points.length - 1]; if (distance(a, b) < 0.05) continue; for (const [pt, rev] of [[a, true], [b, false]]) { const d = distance(pt, w);   /* 引き手は、rev でなければ線の終点側・rev なら始点側 */ if (!best || d < best.d) best = { r, rev, d }; } }
   if (!best) { $('hint').textContent = t('zipperPickRing'); return 0; }
   if (!!normalizeZipper(best.r.zipper).rev === best.rev) { $('hint').textContent = t('zipperPickSame'); return 0; }
   const ids = new Set(best.r.ids); commit(() => { for (const s of doc.shapes) if (ids.has(s.id) && s.zipper) s.zipper = normalizeZipper({ ...s.zipper, rev: best.rev }); });
@@ -10031,8 +10031,19 @@ let zipperRefPicking = null;
 function setZipperRefPicking(which) {
   zipperRefPicking = which || null; if (zipperRefPicking && zipperPicking) setZipperPicking(false);
   $('zipperGapPick')?.classList?.toggle?.('active', zipperRefPicking === 'gap'); $('zipperAttPick')?.classList?.toggle?.('active', zipperRefPicking === 'att');
-  if (zipperRefPicking) $('hint').textContent = t('zipperRefHint', { what: t(zipperRefPicking === 'gap' ? 'zipperRefGap' : 'zipperRefAtt') });
+  const msg = zipperRefPicking ? t('zipperRefHint', { what: t(zipperRefPicking === 'gap' ? 'zipperRefGap' : 'zipperRefAtt') }) : '';
+  if (zipperRefPicking) $('hint').textContent = msg;
+  /* 線を選ぶ間は、小窓を1行（案内と「やめる」）にたたむ（事業主 2026-11-12「ファスナ窓で図面が隠れて寸法がわからない」）。選び終える・やめると、元に戻る */
+  $('zipperBar')?.classList?.toggle?.('picking', !!zipperRefPicking); const row = $('zipperPickRow'); if (row) { row.hidden = !zipperRefPicking; $('zipperPickMsg').textContent = msg; }
 }
+/* ファスナーの小窓は、つかんで動かせる（ボタン・欄の上を除く。ダブルクリックで元の位置＝上の中央）。位置はブラウザに覚える。幅は、動かし始めたときのまま（端へ寄せても、折り返しが変わらない）。 */
+const ZIPPER_POS_KEY = 'leather-cad.zipperBarPos';
+function placeZipperBar(left, top) {
+  const bar = $('zipperBar'), st = bar.style, r = bar.getBoundingClientRect(), o = bar.offsetParent?.getBoundingClientRect?.() ?? { left: 0, top: 0 };
+  if (!st.width && r.width && !zipperRefPicking) st.width = Math.round(r.width) + 'px';
+  const p = clampWinPos(left, top, r.width || 320); st.left = (p.left - o.left) + 'px'; st.top = (p.top - o.top) + 'px'; st.transform = 'none'; return p;
+}
+function unplaceZipperBar() { const st = $('zipperBar').style; st.left = st.top = st.transform = st.width = ''; saveWinPos(ZIPPER_POS_KEY, null); }
 function zipperPickRefAt(w) {
   const which = zipperRefPicking, what = t(which === 'gap' ? 'zipperRefGap' : 'zipperRefAtt'), scope = zipperScope();
   if (!scope.length) { setZipperRefPicking(null); $('hint').textContent = t('zipperNoneSel'); return 0; }
@@ -10058,7 +10069,7 @@ function drawZipperTapeWarn() {
   if (began) ctx.restore();
 }
 let zipperBarKey = '';
-function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); }
+function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); const zp = readWinPos(ZIPPER_POS_KEY); if (zp) placeZipperBar(zp.left, zp.top); }
 function closeZipperBar() { const b = $('zipperBar'); if (b) b.hidden = true; zipperLive = null; if (zipperPicking) setZipperPicking(false); if (zipperRefPicking) setZipperRefPicking(null); }
 /** 小窓の中身を、選んだファスナーに合わせる（描くたびに呼ぶので、選択・設定・長さが変わったときだけ）。選んだファスナーが無くなったら閉じる。 */
 function refreshZipperBar(force = false) {
@@ -10084,8 +10095,8 @@ function applyZipperStd(cm) {
   commit(() => { const sh = doc.shapes.find(x => x.id === s.id); if (sh) { sh.x2 = x2; sh.y2 = y2; } });
   zipperLive = null; refreshZipperBar(true); $('hint').textContent = t('zipperStdDone', { cm: Number(cm), mm: want.toFixed(0), was: now.toFixed(1) }); return 1;
 }
-/** 欄「始まりの端を短く」（start=true）・「終わりの端を短く」が、線の始点側（cut0）・終点側（cut1）のどちらを指すか。向きを反対（rev）にしていれば逆。 */
-const zipperCutKey = (z, start) => (start !== !!z.rev) ? 'cut0' : 'cut1';
+/** 欄「始まりの端を短く」（start=true）・「終わりの端を短く」が、線の始点側（cut0）・終点側（cut1）のどちらを指すか。始まりの端（引き手の端）は、ふつうは線の終点側。向きを反対（rev）にしていれば始点側。 */
+const zipperCutKey = (z, start) => (start === !!z.rev) ? 'cut0' : 'cut1';
 function wireZipperBar() {
   { const sel = $('zipperStd'); if (sel?.appendChild) for (const cm of ZIPPER_STD_CM) { const o = document.createElement('option'); o.value = String(cm); o.textContent = cm + ' cm'; sel.appendChild(o); } }
   $('zipperStd').addEventListener('change', () => { const v = $('zipperStd').value; $('zipperStd').value = ''; if (v) { countUse('zipper_std'); applyZipperStd(v); } });
@@ -10115,6 +10126,8 @@ function wireZipperBar() {
   }
   $('zipperRev').onclick = () => setZipper(z => ({ rev: !z.rev })); $('zipperMir').onclick = () => setZipper(z => ({ mir: !z.mir }));
   $('zipperOff').onclick = () => { countUse('zipper_off'); removeZipper(); }; $('zipperClose').onclick = closeZipperBar;
+  $('zipperPickCancel').onclick = () => setZipperRefPicking(null);
+  makeDraggable($('zipperBar'), { box: () => $('zipperBar'), move: placeZipperBar, done: p => saveWinPos(ZIPPER_POS_KEY, p), reset: unplaceZipperBar });
 }
 const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 /** 画面に描く文字（文字図形）の大きさ（mm）。縮小しても読めるよう、画面での大きさが下限（字の大きさ 4mm なら 12px・大きい字はその比で。9〜30px）を下回らないようにする（事業主 2026-11-11「拡大縮小でテキストの大きさが変わらないでほしい」：寸法の数字と同じ決め方）。拡大して下限を上回るときは、図面と同じ縮尺。印刷・書き出し（exporting）は、字の大きさ（sizeMm）のまま。 */
