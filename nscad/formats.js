@@ -252,9 +252,9 @@ export function docToDxfR12(doc, { includeHoles = true, dotAsPoint = false, orig
 }
 // ---- PDF（直接生成・ASCII のみ・xref はバイトオフセット）----
 const PT = 72 / 25.4, PAPER = { a4: [595.276, 841.89], a3: [841.89, 1190.551] };
-/** 文書から PDF（Uint8Array）を返す。用紙 A4/A3（landscape 可）、余白 10mm、STEP 5 の分割と印刷補正を反映。文字は ASCII のみ（それ以外は警告に数えて省略）。 */
+/** 文書から PDF（Uint8Array）を返す。用紙 A4/A3（landscape 可）、余白 10mm、STEP 5 の分割と印刷補正を反映。文字は ASCII のみ（それ以外は、textImages＝図形 id → 白黒画像（1ビット）が渡されていれば画像として置き、無ければ警告に数えて省略）。 */
 /** holeDot：0 より大きいと、穴も菱の線も真ん中の●（直径 holeDot mm・塗り）にする（印刷の「縫い穴を点で印刷する」と同じ）。 */
-export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0 } = {}) {
+export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, overlapMm = 10, includeHoles = true, calibration = null, strokeMm = 0.1, holeDot = 0, textImages = null } = {}) {
   const [pw, ph] = landscape ? [...PAPER[paper] || PAPER.a4].reverse() : (PAPER[paper] || PAPER.a4), fx = calibration?.fx || 1, fy = calibration?.fy || 1;
   const pageMm = { w: pw / PT - 2 * marginMm, h: ph / PT - 2 * marginMm };
   const layerShapes = doc.shapes.filter(s => doc.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
@@ -262,13 +262,23 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
   const layout = printPagesPlan(b, shapes, pageMm, overlapMm, calibration);   /* 印刷と同じページ割り（寸法の数字・印刷補正を含み、空のページは出さない）。ページの x・y は印刷した大きさ（補正を掛けた mm） */
   let skipped = 0;
   const n = v => (Math.round(v * 1000) / 1000).toString();
+  const images = new Map(); let pageImgs = new Set();   /* 画像の部品（図形 id ごとに1つ・どのページでも使い回す）と、いまのページで使う画像 */
   const pageContent = page => {
     const X = x => n((x * fx - page.x + marginMm) * PT), Y = y => n(ph - (y * fy - page.y + marginMm) * PT), Xp = x => n((x - page.x + marginMm) * PT), Yp = y => n(ph - (y - page.y + marginMm) * PT);   /* X・Y＝図面の座標 → 用紙の位置。Xp・Yp＝ページの座標（印刷した大きさ）→ 用紙の位置（合わせ目の十字用） */
     const ops = [`${n(strokeMm * PT)} w 1 J 1 j`];
     const K = 0.5523, dot = (cx, cy, r) => { const k = r * K; return `${X(cx + r)} ${Y(cy)} m ${X(cx + r)} ${Y(cy + k)} ${X(cx + k)} ${Y(cy + r)} ${X(cx)} ${Y(cy + r)} c ${X(cx - k)} ${Y(cy + r)} ${X(cx - r)} ${Y(cy + k)} ${X(cx - r)} ${Y(cy)} c ${X(cx - r)} ${Y(cy - k)} ${X(cx - k)} ${Y(cy - r)} ${X(cx)} ${Y(cy - r)} c ${X(cx + k)} ${Y(cy - r)} ${X(cx + r)} ${Y(cy - k)} ${X(cx + r)} ${Y(cy)} c f`; };   /* 塗った●（4本の曲線。X・Y に印刷補正が入るので、補正が縦横で違えば●も同じに伸びる） */
+    const imageOp = (s, im) => {   /* 日本語など ASCII 以外の文字：白黒画像（ImageMask・1ビット）。基準点（左・基準線）から、画像の左下までのずれ（offX・offY mm）を、文字の向きに回して置く */
+      if (!images.has(s.id)) { let data = ''; for (let i = 0; i < im.bits.length; i += 8192) data += String.fromCharCode(...im.bits.subarray(i, i + 8192)); images.set(s.id, { name: 'Im' + (images.size + 1), id: add(`<< /Type /XObject /Subtype /Image /Width ${im.wPx} /Height ${im.hPx} /ImageMask true /BitsPerComponent 1 /Decode [0 1] /Length ${data.length} >>
+stream
+${data}
+endstream`) }); }
+      const e = images.get(s.id); pageImgs.add(s.id);
+      const th = -(s.angleDeg || 0) * Math.PI / 180, c = Math.cos(th), sn = Math.sin(th), Wt = im.wMm * fx * PT, Ht = im.hMm * fy * PT, ox = im.offX * fx * PT, oy = im.offY * fy * PT, ax = Number(X(s.x)), ay = Number(Y(s.y));
+      return `q 0 0 0 rg ${n(c * Wt)} ${n(sn * Wt)} ${n(-sn * Ht)} ${n(c * Ht)} ${n(ax + c * ox - sn * oy)} ${n(ay + sn * ox + c * oy)} cm /${e.name} Do Q`;
+    };
     const pathOps = s => {
       if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) { const rgb = exportHex(s.color) ? hexToRgb01(exportHex(s.color)) : null; const d = dot(dl[0].x, dl[0].y, holeDot / 2); return rgb ? `${rgb.join(' ')} rg ${d} 0 0 0 rg` : d; } }   /* 菱の線は真ん中の● */
-      if (s.type === 'text') { if (/[^\x20-\x7e]/.test(s.text)) { skipped++; return ''; } return `BT /F1 ${n(s.sizeMm * PT)} Tf 1 0 0 1 ${X(s.x)} ${Y(s.y)} Tm (${s.text.replace(/[\\()]/g, c => '\\' + c)}) Tj ET`; }
+      if (s.type === 'text') { if (/[^\x20-\x7e]/.test(s.text)) { const im = textImages?.get?.(s.id); if (!im) { skipped++; return ''; } return imageOp(s, im); } return `BT /F1 ${n(s.sizeMm * PT)} Tf 1 0 0 1 ${X(s.x)} ${Y(s.y)} Tm (${s.text.replace(/[\\()]/g, c => '\\' + c)}) Tj ET`; }
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `${X(d.a.x)} ${Y(d.a.y)} m ${X(d.b.x)} ${Y(d.b.y)} l ${d.ext.map(([p, q]) => `${X(p.x)} ${Y(p.y)} m ${X(q.x)} ${Y(q.y)} l`).join(' ')} S BT /F1 ${n(2.5 * PT)} Tf 1 0 0 1 ${X(d.textPos.x)} ${Y(d.textPos.y)} Tm (${dimTextAscii(s, d).replace(/[\\()]/g, c => '\\' + c)}) Tj ET`; }
       if (s.type === 'fold' || s.type === 'image') return '';
       const pts = flattenShape(s, 0.02); if (pts.length < 2) return '';
@@ -289,7 +299,7 @@ export function docToPdf(doc, { paper = 'a4', landscape = false, marginMm = 10, 
   const add = body => { objects.push(body); return objects.length; };
   const fontId = add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
   const pagesId = objects.length + 1; objects.push(null);
-  const pageIds = layout.pages.map(page => { const content = pageContent(page); const cId = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`); return add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${n(pw)} ${n(ph)}] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${cId} 0 R >>`); });
+  const pageIds = layout.pages.map(page => { pageImgs = new Set(); const content = pageContent(page); const xo = pageImgs.size ? ` /XObject << ${[...pageImgs].map(i => `/${images.get(i).name} ${images.get(i).id} 0 R`).join(' ')} >>` : ''; const cId = add(`<< /Length ${content.length} >>\nstream\n${content}\nendstream`); return add(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${n(pw)} ${n(ph)}] /Resources << /Font << /F1 ${fontId} 0 R >>${xo} >> /Contents ${cId} 0 R >>`); });
   objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageIds.map(id => id + ' 0 R').join(' ')}] /Count ${pageIds.length} >>`;
   const catalogId = add(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
   let out = '%PDF-1.4\n%\xe2\xe3\xcf\xd3\n'; const offsets = [];

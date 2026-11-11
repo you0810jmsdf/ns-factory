@@ -4014,10 +4014,29 @@ function exportSvg() {
   const beamN = (svg.match(/data-beamfix=/g) || []).length;   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
   exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + savedTo(saved); });
 }
+/** PDF 書き出しで、日本語など ASCII 以外の文字を出すための画像（事業主 2026-11-11 案A「文字を画像（白黒・高解像度）として埋め込む」）。
+ *  図形ごとに、画面の書体と同じ字体を、600dpi の白黒（1ビット）画像にする。{ wPx, hPx, bits, wMm, hMm, offX, offY }＝画像の大きさと、基準点（文字の左・基準線）から画像の左下までのずれ（mm・上向きが正）。
+ *  描画の機能が無い環境（試験など）では、何も作らない（今までどおり、その文字は省略して数える）。 */
+function pdfTextImages(shapes) {
+  const out = new Map(), K = 600 / 25.4; if (typeof document === 'undefined' || typeof document.createElement !== 'function') return out;
+  for (const s of shapes) {
+    if (s.type !== 'text' || !/[^\x20-\x7e]/.test(s.text)) continue;
+    const cv = document.createElement('canvas'), g = cv.getContext?.('2d'); if (!g || typeof g.measureText !== 'function') continue;
+    const px = s.sizeMm * K, family = s.font ? textFontStack(s.font) : "system-ui, 'Yu Gothic UI', 'Meiryo UI', 'Hiragino Kaku Gothic ProN', sans-serif", label = String(s.text).replace(/[\r\n]+/g, ' ');
+    g.font = `${px}px ${family}`; const m = g.measureText(label);
+    const asc = Math.ceil((m.actualBoundingBoxAscent || px * 0.9) + 3), desc = Math.ceil((m.actualBoundingBoxDescent || px * 0.25) + 3), left = Math.ceil((m.actualBoundingBoxLeft || 0) + 3), w = Math.ceil(m.width + left + 6), h = asc + desc;
+    if (!(w > 0 && h > 0) || w * h > 3e7) continue;
+    cv.width = w; cv.height = h; g.font = `${px}px ${family}`; g.fillStyle = '#000'; g.textBaseline = 'alphabetic'; g.fillText(label, left, asc);
+    const px4 = g.getImageData(0, 0, w, h).data, rowBytes = Math.ceil(w / 8), bits = new Uint8Array(rowBytes * h).fill(0xff);   /* ImageMask：0＝塗る */
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (px4[(y * w + x) * 4 + 3] > 127) bits[y * rowBytes + (x >> 3)] &= ~(0x80 >> (x & 7));
+    out.set(s.id, { wPx: w, hPx: h, bits, wMm: w / K, hMm: h / K, offX: -left / K, offY: -desc / K });
+  }
+  return out;
+}
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, bytes = docToPdf(zipperOutDoc(vectorOutDoc()), { paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5 });   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
+  const paper = $('paper').value, pdfDoc = zipperOutDoc(vectorOutDoc()), bytes = docToPdf(pdfDoc, { textImages: pdfTextImages(pdfDoc.shapes), paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5 });   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -9829,7 +9848,7 @@ const segmentBoundsCache = new WeakMap();
 const SHAPE_DRAW_COLOR = { blue: '#4da6ff', green: '#4ecb6b', red: '#ff5a5a', white: '#ffffff', yellow: '#f0d050' };
 /** 寸法の数字の置き場所（画面での中心 x,y・向き・文字の大きさ px・文字）。描くときとクリックの判定で同じ式を使う。数字は寸法線から離れて描かれるので、判定にも数字の枠を含める（事業主指摘 2026-10-16）。 */
 function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset)) {
-  const px = Math.max(2.5, 12 / scale, exporting ? exportExtentMm / 70 : 0), ox = d.a.x - s.x1, oy = d.a.y - s.y1, ol = Math.hypot(ox, oy), nx = ol > 1e-9 ? ox / ol : d.textPos.x - (d.a.x + d.b.x) / 2, ny = ol > 1e-9 ? oy / ol : d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1, gap = px * 0.62 + 2 / scale;
+  const px = Math.max(2.5, 12 / scale, exporting ? exportExtentMm / 70 : 0), nx = d.textPos.x - (d.a.x + d.b.x) / 2, ny = d.textPos.y - (d.a.y + d.b.y) / 2, nl = Math.hypot(nx, ny) || 1,   /* 数字を置く側は、印刷・SVG・PDF・DXF と同じ側（寸法線の中心から textPos へ）。以前は、寸法線を離した側（外側）で、左・下の寸法の数字が、画面では線の外・印刷では線の内側になり、印刷ガイドの外に数字が出て見えた（事業主 2026-11-11「まだ寸法はみ出ている」） */ gap = px * 0.62 + 2 / scale;
   return { x: (d.a.x + d.b.x) / 2 + nx / nl * gap, y: (d.a.y + d.b.y) / 2 + ny / nl * gap, angleDeg: d.angleDeg, px, label: typeof s.label === 'string' && s.label ? s.label : d.value.toFixed(2) };   /* label があれば数字の代わりにその文字（菱目の間隔「菱目 ○○mm ×n」） */
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
