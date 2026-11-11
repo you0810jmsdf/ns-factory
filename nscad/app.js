@@ -4170,7 +4170,7 @@ function applyMeasured() {
   saveCalibration({ fx: measuredCalibration.fx * fx, fy: measuredCalibration.fy * fy }); $('outCalib').checked = true; $('hint').textContent = t('calibSaved');
 }
 function initOutput() {
-  $('exportSvg').onclick = exportSvg; $('exportDxf').onclick = exportDxf; $('exportPdf').onclick = exportPdf; $('exportPng').onclick = exportPng; $('print').onclick = () => printPages();
+  $('exportSvg').onclick = exportSvg; $('exportDxf').onclick = exportDxf; $('exportPdf').onclick = exportPdf; $('exportPng').onclick = exportPng; $('print').onclick = () => printPages(); for (const id of ['printGuide', 'paper', 'outHoles']) $(id)?.addEventListener('change', () => draw());   /* 印刷ガイドの出し入れ・用紙・縫い穴のチェックで、ガイドを描き直す */
   canvas.addEventListener('dragover', e => { e.preventDefault(); });
   canvas.addEventListener('drop', e => { e.preventDefault(); const file = e.dataTransfer?.files?.[0]; if (file) openFile(file); });
   $('placeScale').onclick = placeScale; $('applyMeasured').onclick = applyMeasured; $('resetCalib').onclick = () => { measuredCalibration = {fx:1,fy:1}; saveCalibration({ fx: 1, fy: 1 }); $('measX').value = $('measY').value = '100'; };
@@ -5943,6 +5943,20 @@ function restoreSupportLines() {
   $('hint').textContent = t('unlinkDone', { n: fix.size, m: holes.size });
 }
 function openNestWin() { $('nestCard').hidden = false; setCardWin('nestCard', true); nestPreview = null; $('nestApply').disabled = true; $('nestResult').textContent = ''; $('hint').textContent = t('nestOpened'); draw(); }
+/** 印刷ガイド（事業主の要望 2026-11-11「印刷ガイド機能があったらいい」）：いま印刷・書き出しされるものの範囲に、印刷1ページぶんの範囲を重ねて出す。1ページに収まれば緑、分かれるなら赤とページ数。画面だけ（印刷・書き出しには出ない）。
+ *  ページの区切りは、印刷と同じ printLayout（線の端の余裕2mm込み）で決める。チェックが無い・出すものが無いときは null。 */
+function printGuideInfo() {
+  if (!$('printGuide')?.checked) return null;
+  const { shapes, holes } = exportTargets($('outHoles').checked), b = bboxOfDoc({ ...doc, shapes, holes }); if (!b) return null;
+  const pageMm = PAGES[$('paper').value] || PAGES.a4, layout = printLayout(b, pageMm, 10, null); if (!layout.pages.length) return null;   /* 範囲が数でないとき（壊れた座標）は何も出さない */
+  return { pages: layout.pages, n: layout.pages.length, ok: layout.pages.length === 1, w: b.maxX - b.minX, h: b.maxY - b.minY, pw: pageMm.w, ph: pageMm.h };
+}
+function drawPrintGuide() {
+  const g = printGuideInfo(); if (!g || exporting) return;
+  const col = g.ok ? '#5fd38a' : '#ff6b6b'; ctx.save(); ctx.setLineDash([8 / scale, 5 / scale]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = col; ctx.fillStyle = col + '14';
+  for (const p of g.pages) { ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeRect(p.x, p.y, p.w, p.h); }
+  ctx.setLineDash([]); ctx.fillStyle = col; ctx.font = `${13 / scale}px sans-serif`; ctx.fillText(t(g.ok ? 'printGuideOk' : 'printGuideNg', { n: g.n, w: g.w.toFixed(1), h: g.h.toFixed(1), pw: g.pw, ph: g.ph }), g.pages[0].x, g.pages[0].y - 5 / scale); ctx.restore();
+}
 /** 用紙の枠・印刷できる範囲・置く位置の薄い点線（draw から）。窓が開いていて、結果があるときだけ。 */
 function drawNestPreview() {
   if (!nestPreview || exporting || $('nestCard').hidden) return;
@@ -10136,7 +10150,7 @@ function drawSheetBody(lo, hi) {
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
   if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
-  drawNestPreview();
+  drawNestPreview(); drawPrintGuide();
   { const mv = movePreviewDelta(); if (mv) {   /* 移動カードの数字の予定位置：選んでいる図形・穴を、ずらした位置に薄い点線で（動かさない） */
     ctx.save(); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5 / scale;
     for (const s of doc.shapes) if (selected.has(s.id) && visible(s) && !['image', 'text'].includes(s.type)) strokeShape(translate(s, mv.dx, mv.dy), '#c9a96e', true);
