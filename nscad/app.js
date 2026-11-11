@@ -4036,7 +4036,7 @@ function pdfTextImages(shapes) {
 function exportPdf() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('pdf', 'dl')) return;
-  const paper = $('paper').value, pdfDoc = zipperOutDoc(vectorOutDoc()), bytes = docToPdf(pdfDoc, { textImages: pdfTextImages(pdfDoc.shapes), paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5 });   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
+  const paper = $('paper').value, pdfDoc = zipperOutDoc(vectorOutDoc()), bytes = docToPdf(pdfDoc, { textImages: pdfTextImages(pdfDoc.shapes), paper: paper.startsWith('a3') ? 'a3' : 'a4', landscape: paper.endsWith('l'), includeHoles: $('outHoles').checked, calibration: $('outCalib').checked ? calibration : null, holeDot: printDotMm(), marginMm: 5, printLines: true });   /* 実線は黒・外形の線は太く（白黒プリンタで、青の細線が点線に見えた） */   /* 余白は印刷と同じ 5mm（印刷範囲 200×287） */
   exportFile('leather-pattern.pdf', bytes, 'application/pdf', saved => { $('hint').textContent = t('pdfExported', { n: bytes.pages, s: bytes.skippedText }) + outScopeNote() + dedupeNote() + savedTo(saved); });
 }
 /** 図面を PNG に描いてダウンロード。dpi 指定・白背景／透明。画素数が 5,000 万を超えるときは dpi を落とす。 */
@@ -4168,7 +4168,7 @@ function printPages(target, { dots = true } = {}) {
   const layerShapes = target.shapes.filter(s => target.layers.find(l => l.id === s.layer)?.visible), shapes = layerShapes.filter(s => !s.holeLink), holes = $('outHoles').checked ? target.holes.filter(h => (!target.outSelOnly && holeIsOwn(h, ownHolePathIds(target))) || target.paths.some(p => p.id === h.pathId && p.shapeIds.every(id => layerShapes.some(s => s.id === id))) || target.outHoleIds?.has(h.id)) : [], plan = printPlan(target, shapes, holes);   /* 図形を選んでの印刷は、独立した穴も選んだ範囲だけ（書き出しと同じ・outSelOnly／outHoleIds） */
   if (!plan) { $('hint').textContent = t('nothingToPrint'); return null; }
   const calib = plan.calib, layout = { cols: plan.cols, rows: plan.rows, pages: plan.pages };   /* 範囲・ページは printPlan（印刷ガイド・出力の枚数・「1ページに収める」と同じ計算：寸法の数字・印刷補正を含み、空のページは出さない） */
-  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot })}</div>`).join('');
+  const html = layout.pages.map((p, i) => `<div class="page">${pageSvg(target, p, { pageMm, overlapMm, calibration: calib, label: `${i + 1}/${layout.pages.length}  ${p.col + 1}-${p.row + 1}`, includeHoles: $('outHoles').checked, holeDot, printLines: true })}</div>`).join('');
   $('printArea').innerHTML = html; $('printArea').dataset.pages = String(layout.pages.length);
   document.documentElement.style.setProperty('--page-w', pageMm.w + 'mm'); document.documentElement.style.setProperty('--page-h', pageMm.h + 'mm');
   setPageStyle($('paper').value);
