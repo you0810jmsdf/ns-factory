@@ -440,7 +440,7 @@ const hwHidden = s => !viewShow.hardware && isHardwareShape(s);
 /** 書き出し・印刷に使う図面：「金具を表示」が切なら、金具の図形を除いた複製（SVG・DXF・PDF・印刷）。 */
 /** 出力（印刷・SVG・PDF・DXF）の対象：図形を選んでいれば、選んだ図形（とその縫い穴）だけ。選んでいなければ図面の全部（事業主の決定 2026-10-19「選んでいれば自動」。チェック方式は廃止）。 */
 const outputSelIds = () => selectedShapeIds();
-const outputDoc = () => { let shapes = doc.shapes.filter(s => !hwHidden(s)); const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(isSelHole).map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
+const outputDoc = () => { let shapes = doc.shapes.filter(s => !hwHidden(s) && !s.noOutput);   /* noOutput＝出力しない図形（用紙の枠：画面で収まりを見るためのもので、印刷・書き出しの範囲に入れない。事業主 2026-11-11「A4に収めたのに、出力すると2枚になる」） */ const ids = outputSelIds(); if (ids.size) shapes = shapes.filter(s => ids.has(s.id)); const picked = ids.size ? new Set(doc.holes.filter(isSelHole).map(h => h.id)) : null;   /* 穴を選んでいれば、選んだ穴だけ。穴を選んでいなければ、選んだ図形（部品）の範囲の穴（2026-10-30 事業主「丸目が SVG 出力できていない」：穴が見えない補助の線に付いている図面は、外形を選んで出力すると穴が1つも出なかった） */ return shapes === doc.shapes ? doc : { ...doc, shapes, ...(ids.size ? { outSelOnly: true } : {}), ...(picked && picked.size ? { outHoleIds: picked } : {}) }; };   /* outSelOnly＝図形を選んでの出力：.lcc の独立した穴も、選んだ穴と選んだ図形に付いた穴だけ（2026-10-26 事業主「選択範囲だけSVG化できなくなっている」：独立した穴が、選んでいない場所の分まで全部出ていた） */   /* 縫い穴は、残った図形に付いているもの＋選んだ菱目（outHoleIds）が docToSvg/docToPdf 側（holesOnShapes）で選ばれる（囲み選択で菱目も選ばれるが、乗っている補助の線が囲みに入らないことがある） */
 /** 出力のあとの案内に足す一言：「選んだ図形 N 個だけ」か「図面の全部」か（何が出たか分かるように・事業主の決定 2026-10-19）。 */
 /** 書き出し用（SVG・PDF・DXF）：重なった線を1本にした図面（出力カードのチェックが入っているとき）。図面のデータは変えない。縫い穴の経路が付いた図形は、そのまま（穴が付いたまま出る）。除いた長さは lastDedupe（書き出し後の案内に使う）。
  *  事業主 2026-10-26「重複した線が多数みつかり、レーザー加工で何度も往復する羽目に。…起動のたびに重複する線を削除する機能」 */
@@ -3899,7 +3899,7 @@ function initInfo() {
 }
 
 // ---- 出力（SVG・DXF・印刷・校正）----
-const PAGES = { a4: { w: 190, h: 277 }, a4l: { w: 277, h: 190 }, a3: { w: 277, h: 400 }, a3l: { w: 400, h: 277 } };
+const PAGES = { a4: { w: 200, h: 287 }, a4l: { w: 287, h: 200 }, a3: { w: 287, h: 410 }, a3l: { w: 410, h: 287 } };   /* 印刷できる範囲＝用紙から、四辺 5mm ずつ引いた大きさ（事業主指示 2026-11-11「余白はぎりぎりにして」：以前は10mm。@page の margin と同じ値。「並べる」の印刷余白の初期値は、これに線の端の余裕 2mm を足した 7mm） */
 let calibration = { fx: 1, fy: 1 }, measuredCalibration = { fx: 1, fy: 1 };
 /** 「縫い穴を点で印刷する」（出力カード・事業主の希望 2026-10-19）：印刷と PDF で、穴と菱の線を真ん中の●にする。入っていて直径が正の数ならその直径（mm）、それ以外は 0（今までどおりの形）。画面・保存データ・SVG・DXF・PNG は変えない。設定はブラウザに残す。 */
 const PRINT_DOTS_KEY = 'leather-cad.printDots'; let printDotLast = 1;
@@ -4137,7 +4137,7 @@ function drawPrintOverlay() {
   ctx.restore();
 }
 /** 用紙キー（a4/a4l/a3/a3l）から @page を書く。CSS のセレクタ内 @page は無効なので style 要素を差し替える。 */
-function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 10mm; } }`; return size; }
+function setPageStyle(paper) { const size = (/a3/.test(paper) ? 'A3' : 'A4') + ' ' + (/l$/.test(paper) ? 'landscape' : 'portrait'); let st = $('pageSize'); if (!st) { st = document.createElement('style'); st.id = 'pageSize'; document.head?.appendChild(st); } st.textContent = `@media print { @page { size: ${size}; margin: 5mm; } }`; return size; }
 /** 印刷用の SVG ページ列を作って #printArea に入れ、印刷ダイアログを開く。 */
 function printPages(target, { dots = true } = {}) {
   const own = target === undefined; if (own) target = outputDoc();   /* target を省略＝いまの図面（「選んだ図形だけを出力」に従う）。工具のテスト片・校正スケールは target を渡すので対象外 */   /* dots=false：工具のテスト片など、「縫い穴を点で印刷する」を無視して形のまま印刷する */
@@ -5860,7 +5860,7 @@ function nestApplyCopies() {
     }
     if (merge) removed += unifyPackLines(nd).removed || 0;
     const W = res.sheetW, H = res.sheetH;   /* 用紙の枠（点線）：用紙に収まっているかを目で確かめるため、ガイドの層に入れる（事業主の要望 2026-11-11。ガイドの層は印刷・書き出しに出ない）。置いたあとに足すので、線の統合の対象にならない */
-    nd.shapes.push({ id: freshId(nd.shapes, 's'), layer: 'guide', type: 'polyline', closed: true, lineStyle: 'dashed', color: 'blue', points: [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }] });
+    nd.shapes.push({ id: freshId(nd.shapes, 's'), layer: 'guide', type: 'polyline', closed: true, lineStyle: 'dashed', color: 'blue', noOutput: true, points: [{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }] });
     rebuildSnaps(); tabs[activeTab].dirty = true;
   });
   nestPreview = null; $('nestApply').disabled = true; switchTab(first); renderTabs(); fit();

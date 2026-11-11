@@ -2620,6 +2620,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2665,6 +2666,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2710,6 +2712,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2755,6 +2758,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2800,6 +2804,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2845,6 +2850,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2890,6 +2896,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
@@ -2935,6 +2942,7 @@ export const DATA_LIBRARY = {
           "closed": true,
           "layer": "guide",
           "lineStyle": "dashed",
+          "noOutput": true,
           "color": "blue",
           "points": [
             {
