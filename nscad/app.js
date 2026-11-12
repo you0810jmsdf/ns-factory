@@ -24,9 +24,12 @@ import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
 import { DATA_LEATHER_COLORS } from './data/leather-colors.js';
 import { DATA_TEXTURES } from './data/textures.js';
 import { TUTORIALS_BASICS } from './tutorials/basics.js';
+import { TUTORIALS_VIEW } from './tutorials/view.js';
 import { TUTORIALS_UNDO } from './tutorials/undo.js';
+import { TUTORIALS_SAVE } from './tutorials/save.js';
 import { TUTORIALS_SHAPES } from './tutorials/shapes.js';
 import { TUTORIALS_TEXTDIM } from './tutorials/textdim.js';
+import { TUTORIALS_TEXTFONT } from './tutorials/textfont.js';
 import { TUTORIALS_MEASURE } from './tutorials/measure.js';
 import { TUTORIALS_NUMERIC } from './tutorials/numeric.js';
 import { TUTORIALS_TRIM } from './tutorials/trim.js';
@@ -51,6 +54,8 @@ import { TUTORIALS_RPATCH } from './tutorials/rpatch.js';
 import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
 import { TUTORIALS_HARDWARE } from './tutorials/hardware.js';
 import { TUTORIALS_PAINT } from './tutorials/paint.js';
+import { TUTORIALS_STITCHVIEW } from './tutorials/stitchview.js';
+import { TUTORIALS_VIEW3D } from './tutorials/view3d.js';
 import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { createPlayer } from './tutorial.js';
@@ -4648,7 +4653,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_UNDO, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_LAYOUT, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_VIEW, TUTORIALS_UNDO, TUTORIALS_SAVE, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_TEXTFONT, TUTORIALS_MEASURE, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_LAYOUT, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_STITCHVIEW, TUTORIALS_VIEW3D, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
@@ -4657,7 +4662,7 @@ function tutHost({ instant = false } = {}) {
   return {
     t, sleep: ms => instant ? Promise.resolve() : new Promise(r => setTimeout(r, ms)),
     click: (sel, mm) => { keyTarget = null; if (mm) { const p = screenOf(mm[0], mm[1]); fire('pointerdown', p); fire('pointerup', p); return; } const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (el) { if (el.tagName === 'SUMMARY' && el.parentElement) el.parentElement.open = true; else if (typeof el.click === 'function') el.click(); } },
-    setValue: (sel, v) => { const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else { el.value = String(v); if (el.tagName === 'INPUT') keyTarget = el; } (el.listeners?.change || (() => el.dispatchEvent?.(new Event('change'))))(); },
+    setValue: (sel, v) => { const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else { el.value = String(v); if (el.tagName === 'INPUT') keyTarget = el; } (el.listeners?.change || (() => el.dispatchEvent?.(new Event('change'))))({ target: el, currentTarget: el }); },
     moveTo() {}, drag: (x1, y1, x2, y2) => { keyTarget = null; const a = screenOf(x1, y1), b = screenOf(x2, y2); fire('pointerdown', a); fire('pointermove', b); fire('pointerup', b); },
     key: k => { if (keyTarget) { const el = keyTarget; keyTarget = null; if (el.listeners?.keydown) el.listeners.keydown({ key: k, target: el, preventDefault() {} }); else el.dispatchEvent?.(new KeyboardEvent('keydown', { key: k, bubbles: true })); return; } const ev = { key: k, target: {}, preventDefault() {}, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }; (window.listeners?.keydown || (e => window.dispatchEvent?.(new KeyboardEvent('keydown', e))))(ev); },
     setMode: m => setMode(m), caption: text => { $('tutCaption').textContent = text; $('tutBar').hidden = false; },

@@ -1,0 +1,35 @@
+{
+  "id": "view3d",
+  "page": "sim3d",
+  "title": "tut.view3d.title",
+  "steps": [
+    {
+      "say": "tut.view3d.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        30,
+        30,
+        100,
+        80
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.view3d.2",
+      "click": "#view3d",
+      "wait": 1500
+    },
+    {
+      "say": "tut.view3d.3",
+      "wait": 1500
+    },
+    {
+      "say": "tut.view3d.4",
+      "click": "#view3d",
+      "wait": 800
+    }
+  ]
+}

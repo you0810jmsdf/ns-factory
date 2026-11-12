@@ -1,0 +1,34 @@
+{
+  "id": "view",
+  "page": "drawing",
+  "title": "tut.view.title",
+  "steps": [
+    {
+      "say": "tut.view.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        30,
+        30,
+        90,
+        70
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.view.2",
+      "click": "#fit",
+      "wait": 1000
+    },
+    {
+      "say": "tut.view.3",
+      "wait": 1200
+    },
+    {
+      "say": "tut.view.4",
+      "wait": 1000
+    }
+  ]
+}

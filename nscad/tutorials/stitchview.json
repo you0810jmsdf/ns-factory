@@ -1,0 +1,54 @@
+{
+  "id": "stitchview",
+  "page": "colors",
+  "title": "tut.stitchview.title",
+  "steps": [
+    {
+      "say": "tut.stitchview.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        45,
+        110,
+        45
+      ]
+    },
+    {
+      "mode": "stitch"
+    },
+    {
+      "mouse": [
+        25,
+        45
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        105,
+        45
+      ],
+      "press": true,
+      "wait": 600
+    },
+    {
+      "say": "tut.stitchview.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "value": {
+        "#showStitch": true
+      },
+      "wait": 1500
+    },
+    {
+      "say": "tut.stitchview.3",
+      "value": {
+        "#showStitch": false
+      },
+      "wait": 900
+    }
+  ]
+}
