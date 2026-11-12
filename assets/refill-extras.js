@@ -221,6 +221,45 @@
     }, true);
     window.addEventListener('beforeprint', () => sendEvent('print'));
     window.addEventListener('afterprint', () => setTimeout(showNudge, 1500));
+    features();
+  }
+
+  // ── 機能の利用（2026-11-13・事業主「N's CADと同様に分析タブを作って」決定A＝既存カウンター＋管理画面タブ） ──
+  // ボタン・選択欄・チェック欄・スライダーなど、id（無ければ name）のある部品を使ったら、
+  // 1回の表示につき1機能1度だけ event/f/<部品のid>/<ツール名> としてカウンターへ送る。title は「[機能] 画面の文字｜ツール名」。
+  // ⛔ 入力した値（日付・文字・数値）は送らない。送るのは部品の id と、画面に出ている見出しの文字だけ。事業主の端末は isInternal() で除外。
+  const featSeen = new Set();
+  const FEAT_SKIP = /^(btnPdf|nsfNudge|nsfBackup)/;
+  function featLabel(el) {
+    let t = '';
+    if (el.tagName === 'BUTTON' || el.tagName === 'A') t = el.textContent;
+    if (!t && el.id) { const l = document.querySelector('label[for="' + el.id + '"]'); if (l) t = l.textContent; }
+    if (!t) { const row = el.closest('.ctrl-row, label'); const l = row && (row.tagName === 'LABEL' ? row : row.querySelector('label')); if (l) t = l.textContent; }
+    if (!t) t = el.getAttribute('title') || el.getAttribute('aria-label') || '';
+    return t.replace(/\s+/g, ' ').trim().slice(0, 30);
+  }
+  function sendFeature(el) {
+    const raw = el.id || el.getAttribute('name') || '';
+    const kind = raw.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 32);
+    if (!kind || FEAT_SKIP.test(kind) || featSeen.has(kind)) return;
+    featSeen.add(kind);
+    if (isInternal()) return;
+    try {
+      const tool = toolSlug();
+      const url = COUNTER_URL + '?action=track&page=' + encodeURIComponent('event/f/' + kind + '/' + tool)
+        + '&title=' + encodeURIComponent('[機能] ' + (featLabel(el) || kind) + '｜' + tool) + '&vid=' + encodeURIComponent(visitorId());
+      fetch(url, { cache: 'no-store', keepalive: true }).catch(() => {});
+    } catch (e) {}
+  }
+  function features() {
+    document.addEventListener('click', e => {
+      const el = e.target && e.target.closest && e.target.closest('button, [role="button"], a[id], [onclick]');
+      if (el) sendFeature(el);
+    }, true);
+    document.addEventListener('change', e => {
+      const el = e.target;
+      if (el && /^(SELECT|INPUT|TEXTAREA)$/.test(el.tagName)) sendFeature(el);
+    }, true);
   }
 
   // 5. スマホ幅の使いやすさ（メニューの重ね表示・フリック・端のつまみ）は別ファイル。畳んだあとに読み込む（2026-10-31）

@@ -892,6 +892,7 @@ tr.row-out-stock td{
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="stats" data-admin-cat="analytics" role="tab" aria-selected="false">作品ページアクセスログ</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="toolstats" data-admin-cat="analytics" role="tab" aria-selected="false">🧰 ツール利用状況</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ncad-live" data-admin-cat="analytics" role="tab" aria-selected="false">📡 N's CAD 利用モニタ</button>
+      <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="refill-usage" data-admin-cat="analytics" role="tab" aria-selected="false">🧾 リフィル機能の利用</button>
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="ncad-gallery" data-admin-cat="analytics" role="tab" aria-selected="false">🖼 型紙ギャラリー承認</button>
       <!-- 📣 発信・接客 -->
       <button class="admin-tab-btn admin-tab-hidden" type="button" data-admin-tab="threads-sns" data-admin-cat="promo" role="tab" aria-selected="false">📣 Threads投稿管理</button>
@@ -2043,6 +2044,8 @@ tr.row-out-stock td{
     </div><!-- /toolstatsPanel -->
     <!-- 📡 N's CAD 利用モニタ（2026-10-28）：表示と読み取りは ncad-live.js。中継は leather-cad-presence（Cloudflare Worker）の /monitor -->
     <div class="panel ncad-live-section admin-section-hidden" id="ncadLivePanel"><div id="ncadLiveMount"></div></div><!-- /ncadLivePanel -->
+    <!-- 🧾 リフィル機能の利用（2026-11-13）：表示と集計は refill-usage.js。記録は assets/refill-extras.js → アクセスカウンター（event/f/…） -->
+    <div class="panel refill-usage-section admin-section-hidden" id="refillUsagePanel"><div id="refillUsageMount"></div></div><!-- /refillUsagePanel -->
 
     <!-- 🖼 N's CAD 型紙ギャラリーの承認（2026-11-02）：表示と操作は ncad-gallery.js。保存先は leather-cad-gallery（Cloudflare Worker + D1）。承認待ち→承認→公開の一覧。却下・公開を止めると図面と絵が消える -->
     <div class="panel ncad-gallery-section admin-section-hidden" id="ncadGalleryPanel"><div id="ncadGalleryMount"></div></div><!-- /ncadGalleryPanel -->
@@ -2398,6 +2401,7 @@ tr.row-out-stock td{
 <script src="./labor-curve-model.js?v=20260905"></script>
 <script src="./labor-curve-editor.js?v=20261027.1"></script>
 <script src="./ncad-live.js?v=20261031.7"></script>
+<script src="./refill-usage.js?v=20261113.1"></script>
 <script src="./ncad-gallery.js?v=20261102.1"></script>
 <script>
 // 管理者パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
@@ -7144,7 +7148,7 @@ const ADMIN_TAB_TO_CAT = {
   'calendar': 'keiei', 'sales': 'keiei', 'customers': 'keiei', 'favorites': 'keiei', 'waitlist': 'keiei', 'receipt-checklist': 'keiei', 'merge': 'keiei', 'staff-monitor': 'keiei', 'automations': 'keiei', 'api-costs': 'keiei', 'backup-monitor': 'keiei', 'youtube-stats': 'keiei', 'sns-trend': 'keiei', 'side-analytics': 'keiei', 'sns-queue': 'keiei', 'jhcs-dl': 'keiei', 'structure-map': 'keiei',
   'ring': 'stock', 'leather': 'stock', 'thread': 'stock', 'kanagu': 'stock',
   'dashboard': 'price', 'settings': 'price', 'size': 'price', 'brand': 'price',
-  'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics', 'ncad-live': 'analytics', 'ncad-gallery': 'analytics',
+  'analytics': 'analytics', 'stats': 'analytics', 'toolstats': 'analytics', 'ncad-live': 'analytics', 'refill-usage': 'analytics', 'ncad-gallery': 'analytics',
   'threads-sns': 'promo', 'hearing': 'promo', 'chatlog': 'promo',
 };
 // カテゴリごとに最後に開いたタブを覚えておき、カテゴリ再選択時に復元する
@@ -7157,6 +7161,7 @@ function setAdminTab(tab) {
   const isStats = tab === 'stats';
   const isToolstats = tab === 'toolstats';
   const isNcadLive = tab === 'ncad-live';
+  const isRefillUsage = tab === 'refill-usage';
   const isNcadGallery = tab === 'ncad-gallery';
   const isMerge = tab === 'merge';
   const isThreadsSns = tab === 'threads-sns';
@@ -7183,7 +7188,7 @@ function setAdminTab(tab) {
   const isFavorites = tab === 'favorites';
   const isStructureMap = tab === 'structure-map';
   const isKanagu = tab === 'kanagu';
-  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isNcadLive && !isNcadGallery && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isBackupMonitor && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isKanagu && !isMerge;
+  const isRing = !isCalendar && !isThread && !isAnalytics && !isStats && !isToolstats && !isNcadLive && !isRefillUsage && !isNcadGallery && !isThreadsSns && !isCustomers && !isBrand && !isSize && !isSettings && !isHearing && !isLeather && !isSales && !isReceiptChecklist && !isDashboard && !isStaffMonitor && !isChatlog && !isJhcsDl && !isWaitlist && !isFavorites && !isAutomations && !isApiCosts && !isBackupMonitor && !isYoutubeStats && !isSnsTrend && !isSideAnalytics && !isStructureMap && !isKanagu && !isMerge;
   document.querySelectorAll('.calendar-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isCalendar);
   });
@@ -7222,6 +7227,9 @@ function setAdminTab(tab) {
   });
   document.querySelectorAll('.ncad-live-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isNcadLive);
+  });
+  document.querySelectorAll('.refill-usage-section').forEach(el => {
+    el.classList.toggle('admin-section-hidden', !isRefillUsage);
   });
   document.querySelectorAll('.ncad-gallery-section').forEach(el => {
     el.classList.toggle('admin-section-hidden', !isNcadGallery);
@@ -7419,6 +7427,8 @@ function setAdminTab(tab) {
       ? 'ショールームのAI接客ログを一覧表示します。幕僚キャラ接客／みんなのチャットの2系統を切り替え、期間・担当・本文で絞り込み、CSV出力できます（月次使用量レポートの集計元）。'
       : isNcadLive
       ? "N's CAD を使っている人が、いまどの機能を使っているかをリアルタイムで見ます（5秒ごとに更新）。この端末は、開くと自動で『作家の端末』として除外します。"
+      : isRefillUsage
+      ? 'リフィル印刷ツール（19本）とリフィルメーカーで、どの機能が使われているかを、機能別・ツール別・日別に見ます。この端末は、開くと自動で『作家の端末』として除外します。'
       : isNcadGallery
       ? "N's CAD の利用者が「ギャラリーに登録」で送った型紙の承認です。承認待ちの中身（絵・題・作者・利用条件・作者のページ・説明）を見て、承認すると公開の一覧に出ます。却下・公開を止めると、保存先から図面と絵が消えます。"
       : isJhcsDl
@@ -7432,7 +7442,8 @@ function setAdminTab(tab) {
   if (isStats && !statsLoaded) statsLoad();
   if (isToolstats && !toolstatsLoaded) toolstatsLoad();
   if (window.NCADGallery && isNcadGallery) window.NCADGallery.start();   /* 型紙ギャラリーの承認（ncad-gallery.js）：開いたときだけ読む */
-  if (window.NCADLive) { if (isNcadLive) window.NCADLive.start(); else window.NCADLive.stop(); }   /* 利用モニタ（ncad-live.js）：開いている間だけ5秒ごとに読む */
+  if (window.NCADLive) { if (isNcadLive) window.NCADLive.start(); else window.NCADLive.stop(); }
+  if (window.RefillUsage && isRefillUsage) window.RefillUsage.start();   /* リフィル機能の利用（refill-usage.js）：開いたときに読む */   /* 利用モニタ（ncad-live.js）：開いている間だけ5秒ごとに読む */
   if (isMerge && !mergeLoaded) mergeLoad();
   if (isHearing && !hearingKbLoaded) loadHearingKb();
   if (isReceiptChecklist) loadReceiptChecklist();
