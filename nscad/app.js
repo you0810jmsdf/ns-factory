@@ -2423,6 +2423,22 @@ function holeShapeTool(src, shape, { w, h, d }, pending) {
   const f = v => +(+v).toFixed(2), tool = { id: freshId([...doc.tools, ...pending], 'tool'), name: `${t(kind)} ${f(src.pitch)}mm ${round ? 'φ' + f(d) : f(w) + '×' + f(h)}`, kind, pitch: src.pitch, teeth: src.teeth, holeW, holeH, holeD, angleDeg, mark: 'tool' };
   pending.push(tool); return tool;
 }
+/** 菱目の向き（事業主 2026-11-12「順目と逆目をボタンで切り替えたい」「進行方向に対する角度も指定されたもの以外は認めない」）：線の進行方向に対して、順目（／）か逆目（＼）のどちらかだけを認める。すでにどちらかの向きなら残し、それ以外（丸目だった穴・ずれた穴）は、スイッチ（順目⇔逆目）の向きにする。force＝全部を、スイッチの向きにそろえる。 */
+function holeSlantAngle(hl, tool, route, force = false) {
+  if (!route) return hl.angleDeg; const tan = pointAtLength(route, hl.s).angleDeg, m180 = a => ((a % 180) + 180) % 180, rel = m180(hl.angleDeg - tan), want = [m180(tool.angleDeg), m180(-tool.angleDeg)];
+  if (!force && want.some(w => Math.abs(rel - w) < 1 || Math.abs(rel - w) > 179)) return hl.angleDeg;
+  return (((tan + slantOf(tool)) % 360) + 360) % 360;
+}
+/** 窓の「向きをそろえる」：範囲の菱目ぜんぶの向きを、スイッチの向き（順目か逆目）にそろえる。位置・大きさは変えない。元に戻すは1回。 */
+function runHoleSlantAlign() {
+  const list = shapeRangeHoles().diamond; if (!list.length) { $('hint').textContent = t('holeShapeNone'); return 0; }
+  const routes = new Map(), plan = [], routeOf = pathId => { if (!routes.has(pathId)) { const q = doc.paths.find(x => x.id === pathId); routes.set(pathId, q ? resolvePath(doc, q) : null); } return routes.get(pathId); };
+  for (const hl of list) { const tool = doc.tools.find(x => x.id === hl.toolId); if (!tool) continue; const angle = holeSlantAngle(hl, tool, routeOf(hl.pathId), true); if (Math.abs((((angle - hl.angleDeg + 540) % 360) + 360) % 360 - 180) > 1e-6) plan.push({ id: hl.id, angle }); }
+  const dir = $('reverseSlant').checked ? t('slantRev') : t('slantFwd'); if (!plan.length) { $('hint').textContent = t('holeSlantSame', { dir }); return 0; }
+  commit(() => { const byId = new Map(doc.holes.map(x => [x.id, x])); for (const q of plan) { const hl = byId.get(q.id); if (hl) hl.angleDeg = q.angle; } });
+  $('hint').textContent = t('holeSlantDone', { n: plan.length, dir }); draw(); return plan.length;
+}
+const holeShapeKindDefaults = () => { const diamond = $('holeShapeKind').value !== 'round'; $('holeShapeOnlyDiamond').checked = true; $('holeShapeOnlyRound').checked = diamond ? false : $('holeShapeScope').value !== 'all'; };   /* 菱目にする（大きさを変える）ときは、丸目を巻き込まない。丸目も菱目にしたいときは「丸目」にも印を入れる（事業主 2026-11-12「パッチの中の丸目まで菱目に変わってしまっている」） */
 /** 選んだ範囲の菱目・丸目を、shape（'diamond'＝幅 w×高さ h／'round'＝直径 d）にする。onlyDiamond／onlyRound＝変える相手（両方 true でぜんぶ）。戻り値は変えた数。元に戻すは1回。
  *  丸目→菱目のとき、丸には向きが無いので線の向きに対して順目にする（もとが菱目だった丸目は、残してある向きのまま戻る）。 */
 function applyHoleShape({ shape, w, h, d, onlyDiamond = true, onlyRound = true, scope }) {
@@ -2434,7 +2450,7 @@ function applyHoleShape({ shape, w, h, d, onlyDiamond = true, onlyRound = true, 
     const src = doc.tools.find(x => x.id === hl.toolId); if (!src) continue;
     if (!made.has(src.id)) made.set(src.id, holeShapeTool(src, shape, { w, h, d }, pending));
     const tool = made.get(src.id); let angle = hl.angleDeg;
-    if (shape === 'diamond' && holeAppearance(hl, doc)?.kind === 'circle') { const route = routeOf(hl.pathId); if (route) { const tan = pointAtLength(route, hl.s).angleDeg, rel = m180(hl.angleDeg - tan); if (rel < 1 || rel > 179) angle = (((tan + slantOf(tool)) % 360) + 360) % 360; } }
+    if (shape === 'diamond') angle = holeSlantAngle(hl, tool, routeOf(hl.pathId));   /* 菱目の向きは、順目か逆目だけ */
     const mark = hl.mark === 'diamond' || hl.mark === 'circle' ? 'tool' : hl.mark;   /* 目印で形を固定していた穴は、工具の形に従わせる（そうしないと変わらない） */
     if (tool.id !== hl.toolId || angle !== hl.angleDeg || mark !== hl.mark) plan.push({ id: hl.id, tool, angle, mark });
   }
@@ -2459,7 +2475,7 @@ function applyHoleToolExisting({ toolId, scope } = {}) {
   const routeOf = pathId => { if (!routes.has(pathId)) { const p = doc.paths.find(q => q.id === pathId); routes.set(pathId, p ? resolvePath(doc, p) : null); } return routes.get(pathId); };
   for (const hl of list) {
     let angle = hl.angleDeg;
-    if (tool.kind === 'diamond' && holeAppearance(hl, doc)?.kind === 'circle') { const route = routeOf(hl.pathId); if (route) { const tan = pointAtLength(route, hl.s).angleDeg, rel = m180(hl.angleDeg - tan); if (rel < 1 || rel > 179) angle = (((tan + slantOf(tool)) % 360) + 360) % 360; } }
+    if (tool.kind === 'diamond') angle = holeSlantAngle(hl, tool, routeOf(hl.pathId));   /* 菱目の向きは、順目か逆目だけ */
     const mark = hl.mark === 'diamond' || hl.mark === 'circle' ? 'tool' : hl.mark;   /* 目印で形を固定していた穴は、工具の形に従わせる */
     if (tool.id !== hl.toolId || angle !== hl.angleDeg || mark !== hl.mark) plan.push({ id: hl.id, angle, mark });
   }
@@ -2493,12 +2509,12 @@ function refreshHoleShapeCard(force = false, fill = false) {
   const key = [...selected].join(',') + '|' + doc.holes.length + '|' + doc.tools.length + '|' + doc.shapes.length + '|' + holeShapeScope();
   if (!force && key === holeShapeKey) return; holeShapeKey = key;
   const range = shapeRangeHoles(), n = range.diamond.length + range.round.length;
-  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n; $('holeShapeErase').disabled = !n; $('holeToolExistingApply').disabled = !n; fillHoleToolExisting();
+  $('holeShapeNow').textContent = n ? holeShapeNowText(range) : t('holeShapeNone'); $('holeShapeApply').disabled = !n; $('holeShapeSlantApply').disabled = !range.diamond.length; $('holeShapeErase').disabled = !n; $('holeToolExistingApply').disabled = !n; fillHoleToolExisting();
   if (!fill) return;
   const ad = range.diamond[0] && holeAppearance(range.diamond[0], doc), ar = range.round[0] && holeAppearance(range.round[0], doc), f = v => String(+(+v).toFixed(2));
   $('holeShapeKind').value = !range.diamond.length && range.round.length ? 'round' : 'diamond';
   $('holeShapeW').value = ad ? f(ad.width) : '2'; $('holeShapeH').value = ad ? f(ad.height) : '0.8'; $('holeShapeD').value = ar ? f(ar.width) : '1';
-  $('holeShapeOnlyDiamond').checked = true; $('holeShapeOnlyRound').checked = $('holeShapeScope').value !== 'all'; syncHoleShapeRows();   /* 図面全体のときは、丸目を巻き込まない（菱目の大きさだけ変えたい使い方が多い・丸目も変えたいときは「丸目」にも印を入れる） */
+  holeShapeKindDefaults(); syncHoleShapeRows();   /* 図面全体のときは、丸目を巻き込まない（菱目の大きさだけ変えたい使い方が多い・丸目も変えたいときは「丸目」にも印を入れる） */
 }
 /** 窓の「登録済みの工具」の一覧を、図面の工具（doc.tools）で作り直す。選んでいた工具は残す。 */
 function fillHoleToolExisting() {
@@ -2509,7 +2525,7 @@ function fillHoleToolExisting() {
 function runHoleToolExisting() { applyHoleToolExisting({ toolId: $('holeToolExisting').value, scope: undefined }); refreshHoleShapeCard(true); }
 function syncHoleShapeRows() { const round = $('holeShapeKind').value === 'round'; $('holeShapeDiamondRow').hidden = round; $('holeShapeRoundRow').hidden = !round; }
 /** 「菱目・丸目をまとめて変える」の窓を開く（右クリックメニューから）。選んだままで図面を触れる窓。 */
-function openHoleShapeWin() { $('holeShapeCard').hidden = false; setCardWin('holeShapeCard', true); refreshHoleShapeCard(true, true); $('hint').textContent = t('holeShapeOpened'); }
+function openHoleShapeWin() { $('holeShapeRevSlant').checked = $('reverseSlant').checked; $('holeShapeCard').hidden = false; setCardWin('holeShapeCard', true); refreshHoleShapeCard(true, true); $('hint').textContent = t('holeShapeOpened'); }
 function runHoleShapeErase() {
   const onlyDiamond = $('holeShapeOnlyDiamond').checked, onlyRound = $('holeShapeOnlyRound').checked; if (!onlyDiamond && !onlyRound) { $('hint').textContent = t('holeShapeNoKind'); return; }
   eraseRangeHoles({ onlyDiamond, onlyRound }); refreshHoleShapeCard(true);
@@ -4043,7 +4059,7 @@ function initDesign() {
   $('ctx-textfont').onclick = () => { countUse('ctx_textfont'); hideCtxMenu(); openTextFontWin(); }; wireTextFontLive();   /* 右クリック → 文字のフォントと大きさ（選んだ文字を、まとめて・事業主指示 2026-10-26） */
   $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
-  $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
+  $('holeShapeKind').addEventListener('change', () => { holeShapeKindDefaults(); syncHoleShapeRows(); }); $('holeShapeRevSlant').addEventListener('change', () => slantPick($('holeShapeRevSlant').checked)); $('reverseSlant').addEventListener('change', () => { $('holeShapeRevSlant').checked = $('reverseSlant').checked; }); $('holeShapeSlantApply').onclick = () => { runHoleSlantAlign(); refreshHoleShapeCard(true); }; $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rsplit').onclick = () => { countUse('ctx_rsplit'); hideCtxMenu(); setMode('rsplit'); }; $('ctx-rcolor').onclick = () => { countUse('ctx_rcolor'); hideCtxMenu(); setMode('rcolor'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
