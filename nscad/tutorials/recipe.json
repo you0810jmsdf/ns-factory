@@ -1,0 +1,27 @@
+{
+  "id": "recipe",
+  "page": "recipe",
+  "title": "tut.recipe.title",
+  "steps": [
+    {
+      "say": "tut.recipe.1",
+      "value": {
+        "#recipeKind": "cardcase"
+      },
+      "wait": 900
+    },
+    {
+      "say": "tut.recipe.2",
+      "click": "#recipeGenerate",
+      "wait": 1800
+    },
+    {
+      "say": "tut.recipe.3",
+      "wait": 1200
+    },
+    {
+      "say": "tut.recipe.4",
+      "wait": 800
+    }
+  ]
+}
