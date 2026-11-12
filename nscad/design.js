@@ -1485,3 +1485,52 @@ export function seamStitchPlan(lines, outline, { offset = 2, pitch = 3.95, tolPc
   });
   return out;
 }
+
+/* ───────── ランダム配色（事業主 2026-11-12「色のランダム配置機能（革の種類と色を選択し、類似色が隣り合わないように組み合わせる）」）─────────
+ *  ピース（閉じた領域）を、使う色から選んで塗り分ける。隣り合うピースの色の距離（Lab の ΔE）をしきい値以上にし、そのうえで、使う色の枚数をそろえる。 */
+const rcLin = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+/** 色（#RRGGBB）を Lab にする（D65）。 */
+export function hexToLab(hex) {
+  const h = String(hex || '').replace('#', ''), v = h.length === 3 ? h.split('').map(c => c + c).join('') : h; if (!/^[0-9a-fA-F]{6}$/.test(v)) return [0, 0, 0];
+  const r = rcLin(parseInt(v.slice(0, 2), 16)), g = rcLin(parseInt(v.slice(2, 4), 16)), b = rcLin(parseInt(v.slice(4, 6), 16));
+  const x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047, y = 0.2126 * r + 0.7152 * g + 0.0722 * b, z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883, f = t => t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  return [116 * f(y) - 16, 500 * (f(x) - f(y)), 200 * (f(y) - f(z))];
+}
+/** 2色の距離（Lab の ΔE76）。同じ色は 0。 */
+export function colorDistance(hexA, hexB) { const a = hexToLab(hexA), b = hexToLab(hexB); return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]); }
+/** 隣り合うピースの組。regions は { points } の配列。境目の長さ（mm）が minLen 以上の組だけ返す（角で触れるだけの組は入れない）。tol＝境目とみなす距離（mm・ラスタの粗さ以上）。 */
+export function adjacentPieces(regions, { tol = 2.5, minLen = 3, step = 0.5 } = {}) {
+  const polys = regions.map(r => ({ type: 'polyline', closed: true, points: r.points })), out = [];
+  const samples = ps => { const pts = []; for (let i = 0; i < ps.length; i++) { const a = ps[i], b = ps[(i + 1) % ps.length], L = Math.hypot(b.x - a.x, b.y - a.y), n = Math.max(1, Math.ceil(L / step)); for (let k = 0; k < n; k++) pts.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n }); } return pts; };
+  const smp = regions.map(r => samples(r.points)), bb = regions.map(r => { const xs = r.points.map(q => q.x), ys = r.points.map(q => q.y); return { x0: Math.min(...xs) - tol, x1: Math.max(...xs) + tol, y0: Math.min(...ys) - tol, y1: Math.max(...ys) + tol }; });   /* 離れたピースは、先に除く（細かい多角形でも重くしない） */
+  for (let i = 0; i < regions.length; i++) for (let j = i + 1; j < regions.length; j++) {
+    if (bb[i].x1 < bb[j].x0 || bb[j].x1 < bb[i].x0 || bb[i].y1 < bb[j].y0 || bb[j].y1 < bb[i].y0) continue;
+    let cnt = 0; for (const p of smp[i]) if (p.x >= bb[j].x0 && p.x <= bb[j].x1 && p.y >= bb[j].y0 && p.y <= bb[j].y1 && distToShape(polys[j], p) <= tol) cnt++;
+    const len = cnt * step; if (len >= minLen) out.push({ a: i, b: j, len: +len.toFixed(2) });
+  }
+  return out;
+}
+/** ピース n 個を、palette（{ hex, name }）の色で塗り分ける。candidates 個の候補を作り、点数（隣の色が近すぎる不足分×10＋使う枚数のばらつき）が小さい順に top 個返す。
+ *  戻り値：[{ colors（ピースごとの palette の番号）, viol（近すぎる不足分の合計）, minD（隣り合う色の最小の距離・隣が無ければ null）, bad（近すぎる隣 [{ a, b, d }]）, counts（色ごとの枚数）, bal, cost }]。同じ種・同じ設定なら同じ結果。 */
+export function assignColors(n, edges, palette, { minDE = 20, seed = 1, candidates = 100, iters = 2500, top = 1 } = {}) {
+  const k = palette.length; if (!(n > 0) || !(k > 0)) return [];
+  const D = palette.map(p => palette.map(q => colorDistance(p.hex, q.hex))), adj = Array.from({ length: n }, () => []); for (const e of edges) { adj[e.a].push(e.b); adj[e.b].push(e.a); }
+  const target = n / k, edgePen = (ci, cj) => ci === cj ? minDE + 50 : Math.max(0, minDE - D[ci][cj]);
+  const evalAll = cols => { let viol = 0, minD = null; const bad = [], counts = new Array(k).fill(0); for (const c of cols) counts[c]++; for (const e of edges) { const d = cols[e.a] === cols[e.b] ? 0 : D[cols[e.a]][cols[e.b]]; if (minD === null || d < minD) minD = d; const pen = edgePen(cols[e.a], cols[e.b]); if (pen > 0) { viol += pen; bad.push({ a: e.a, b: e.b, d: +d.toFixed(1) }); } } const bal = counts.reduce((s, c) => s + (c - target) ** 2, 0); return { viol, minD, bad, counts, bal, cost: viol * 10 + bal }; };
+  const out = [];
+  for (let j = 0; j < Math.max(1, Math.min(500, Math.floor(candidates) || 1)); j++) {
+    const rnd = seededRandom(Math.max(1, Math.floor(seed)) * 1000 + j), order = Array.from({ length: k }, (_, i) => i); for (let i = k - 1; i > 0; i--) { const q = Math.floor(rnd() * (i + 1)); [order[i], order[q]] = [order[q], order[i]]; }
+    const cols = Array.from({ length: n }, (_, i) => order[i % k]); for (let i = n - 1; i > 0; i--) { const q = Math.floor(rnd() * (i + 1)); [cols[i], cols[q]] = [cols[q], cols[i]]; }
+    let cur = evalAll(cols); const T0 = 6;
+    for (let it = 0; it < iters && cur.cost > 0; it++) {
+      const T = T0 * (1 - it / iters) + 0.01, i = Math.floor(rnd() * n); let move, undo;
+      if (rnd() < 0.5) { const c = Math.floor(rnd() * k); if (c === cols[i]) continue; undo = [[i, cols[i]]]; cols[i] = c; }
+      else { const q = Math.floor(rnd() * n); if (q === i || cols[q] === cols[i]) continue; undo = [[i, cols[i]], [q, cols[q]]]; [cols[i], cols[q]] = [cols[q], cols[i]]; }
+      const nx = evalAll(cols); if (nx.cost <= cur.cost || rnd() < Math.exp((cur.cost - nx.cost) / T)) cur = nx; else for (const [idx, c] of undo.reverse()) cols[idx] = c;
+    }
+    out.push({ colors: cols.slice(), ...evalAll(cols) });
+  }
+  out.sort((x, y) => x.cost - y.cost);
+  const sig = r => r.colors.join(','), seen = new Set(), list = []; for (const r of out) { const s = sig(r); if (seen.has(s)) continue; seen.add(s); list.push(r); if (list.length >= Math.max(1, Math.min(8, Math.floor(top) || 1))) break; }
+  return list;
+}
