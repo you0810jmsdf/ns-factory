@@ -15,8 +15,8 @@ export const TUTORIALS_OUTPUT = {
     },
     {
       "say": "tut.output.3",
-      "click": "#exportSvg",
-      "wait": 800
+      "wait": 800,
+      "show": "#exportSvg"
     },
     {
       "say": "tut.output.4",

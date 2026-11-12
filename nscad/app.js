@@ -46,6 +46,13 @@ import { TUTORIALS_TRANSFORM } from './tutorials/transform.js';
 import { TUTORIALS_ATTACH } from './tutorials/attach.js';
 import { TUTORIALS_LINES } from './tutorials/lines.js';
 import { TUTORIALS_HOLES } from './tutorials/holes.js';
+import { TUTORIALS_ROUND } from './tutorials/round.js';
+import { TUTORIALS_AUTODIM } from './tutorials/autodim.js';
+import { TUTORIALS_RPATCH } from './tutorials/rpatch.js';
+import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
+import { TUTORIALS_LINESTYLE } from './tutorials/linestyle.js';
+import { TUTORIALS_MIRROR } from './tutorials/mirror.js';
+import { TUTORIALS_TIDY } from './tutorials/tidy.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord, UST_SUB_KEY } from './undostore.js';
@@ -4631,7 +4638,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_LINES, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
@@ -4654,7 +4661,11 @@ async function playTutorial(id, { instant = false } = {}) {
   if (tutPlayer?.running) tutPlayer.stop();
   $('helpDialog').close?.(); tutReturn = activeTab; newTab(t('tutorialTab')); if (!$('tutSelf').checked) canvas.style.pointerEvents = 'none'; // 専用タブで再生（作業中の図面は触らない）
   tutPlayer = createPlayer(script, tutHost({ instant })); tutPlayer.setSpeed(Number($('tutSpeed').value) || 1); tutPlayer.setSelfMode(!!$('tutSelf').checked);
-  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); } canvas.style.pointerEvents = '';
+  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); const askKeep = tutKeepAsk(); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); askKeep(); } canvas.style.pointerEvents = '';
+}
+function tutKeepAsk() {   /* 台本が入れた丸めの半径・面取りの寸法など（leather-cad.ask.*＝次に窓を開いたときの初めの値）を、再生のあとで元に戻す。利用者のいつもの値を、チュートリアルで書き換えない */
+  const keep = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k?.startsWith('leather-cad.ask.')) keep[k] = localStorage.getItem(k); } } catch { return () => {}; }
+  return () => { try { for (let i = localStorage.length - 1; i >= 0; i--) { const k = localStorage.key(i); if (k?.startsWith('leather-cad.ask.') && !(k in keep)) localStorage.removeItem(k); } for (const [k, v] of Object.entries(keep)) localStorage.setItem(k, v); } catch { /* 保存できない環境では何もしない */ } };
 }
 let tutReturn = -1;
 function tutLeave() { canvas.style.pointerEvents = ''; if (tutReturn >= 0 && tabs.length > 1 && tabs[activeTab]?.name === t('tutorialTab')) { tabs.splice(activeTab, 1); activeTab = -1; switchTab(Math.min(tutReturn, tabs.length - 1)); } tutReturn = -1; }

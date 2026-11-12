@@ -1,10 +1,31 @@
 {
-  "id": "output", "page": "output", "title": "tut.output.title",
+  "id": "output",
+  "page": "output",
+  "title": "tut.output.title",
   "steps": [
-    { "say": "tut.output.1", "click": "#outputCard > summary" },
-    { "say": "tut.output.2", "click": "#placeScale", "wait": 1000 },
-    { "say": "tut.output.3", "click": "#exportSvg", "wait": 800 },
-    { "say": "tut.output.4", "value": { "#paper": "a4" } },
-    { "say": "tut.output.5", "wait": 1500 }
+    {
+      "say": "tut.output.1",
+      "click": "#outputCard > summary"
+    },
+    {
+      "say": "tut.output.2",
+      "click": "#placeScale",
+      "wait": 1000
+    },
+    {
+      "say": "tut.output.3",
+      "wait": 800,
+      "show": "#exportSvg"
+    },
+    {
+      "say": "tut.output.4",
+      "value": {
+        "#paper": "a4"
+      }
+    },
+    {
+      "say": "tut.output.5",
+      "wait": 1500
+    }
   ]
 }

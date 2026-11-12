@@ -1,0 +1,67 @@
+{
+  "id": "mirror",
+  "page": "trim-mirror",
+  "title": "tut.mirror.title",
+  "steps": [
+    {
+      "say": "tut.mirror.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        80,
+        15,
+        80,
+        95
+      ]
+    },
+    {
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        35,
+        30,
+        65,
+        59.5
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.mirror.2",
+      "click": "[data-tool=\"mirror\"]",
+      "mode": "mirror"
+    },
+    {
+      "mouse": [
+        80,
+        39.5
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.mirror.3",
+      "wait": 600
+    },
+    {
+      "say": "tut.mirror.4",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        20,
+        10,
+        130,
+        99.5
+      ]
+    },
+    {
+      "click": "#symCheck",
+      "wait": 1200
+    }
+  ]
+}

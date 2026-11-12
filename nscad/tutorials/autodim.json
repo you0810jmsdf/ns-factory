@@ -1,0 +1,58 @@
+{
+  "id": "autodim",
+  "page": "text-dimension",
+  "title": "tut.autodim.title",
+  "steps": [
+    {
+      "say": "tut.autodim.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        26,
+        92.5,
+        74
+      ]
+    },
+    {
+      "click": "[data-tool=\"fillet\"]",
+      "mode": "fillet",
+      "value": {
+        "#filletR": "8"
+      }
+    },
+    {
+      "mouse": [
+        59,
+        26
+      ],
+      "press": true,
+      "wait": 600
+    },
+    {
+      "say": "tut.autodim.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "mouse": [
+        122.5,
+        98
+      ],
+      "press": true
+    },
+    {
+      "say": "tut.autodim.3",
+      "click": "#adRun",
+      "wait": 1200
+    },
+    {
+      "say": "tut.autodim.4",
+      "wait": 800
+    },
+    {
+      "say": "tut.autodim.5",
+      "wait": 600
+    }
+  ]
+}
