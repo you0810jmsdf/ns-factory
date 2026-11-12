@@ -1,0 +1,76 @@
+{
+  "id": "nest",
+  "page": "nest",
+  "title": "tut.nest.title",
+  "steps": [
+    {
+      "say": "tut.nest.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        20,
+        20,
+        60,
+        50
+      ]
+    },
+    {
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        75,
+        20,
+        100,
+        60
+      ]
+    },
+    {
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        20,
+        70,
+        110,
+        95
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.nest.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        10,
+        10,
+        125,
+        100
+      ]
+    },
+    {
+      "click": "#ctx-nest",
+      "wait": 500
+    },
+    {
+      "say": "tut.nest.3",
+      "click": "#nestRun",
+      "wait": 1500
+    },
+    {
+      "say": "tut.nest.4",
+      "show": "#nestApply",
+      "wait": 1200
+    },
+    {
+      "click": "#nestWinClose",
+      "wait": 200
+    }
+  ]
+}

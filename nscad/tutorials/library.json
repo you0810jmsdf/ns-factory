@@ -1,0 +1,30 @@
+{
+  "id": "library",
+  "page": "library",
+  "title": "tut.library.title",
+  "steps": [
+    {
+      "say": "tut.library.1",
+      "value": {
+        "#libItem": "refill-m5"
+      },
+      "wait": 900
+    },
+    {
+      "say": "tut.library.2",
+      "click": "#libPlace"
+    },
+    {
+      "mouse": [
+        30,
+        5
+      ],
+      "press": true,
+      "wait": 1200
+    },
+    {
+      "say": "tut.library.3",
+      "wait": 1000
+    }
+  ]
+}

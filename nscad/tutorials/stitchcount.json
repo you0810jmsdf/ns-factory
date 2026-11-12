@@ -1,0 +1,117 @@
+{
+  "id": "stitchcount",
+  "page": "stitching",
+  "title": "tut.stitchcount.title",
+  "steps": [
+    {
+      "say": "tut.stitchcount.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        25,
+        110,
+        25
+      ]
+    },
+    {
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        55,
+        110,
+        55
+      ]
+    },
+    {
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        85,
+        110,
+        85
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.stitchcount.2",
+      "mode": "stitch",
+      "value": {
+        "#placement": "fixed"
+      }
+    },
+    {
+      "mouse": [
+        20,
+        25
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        110,
+        25
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.stitchcount.3",
+      "value": {
+        "#placement": "variable"
+      }
+    },
+    {
+      "mouse": [
+        20,
+        55
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        110,
+        55
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.stitchcount.4",
+      "value": {
+        "#placement": "count",
+        "#stitchCount": "10"
+      }
+    },
+    {
+      "mouse": [
+        20,
+        85
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        110,
+        85
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.stitchcount.5",
+      "value": {
+        "#placement": "fixed"
+      },
+      "wait": 600
+    }
+  ]
+}

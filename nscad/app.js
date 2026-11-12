@@ -38,6 +38,7 @@ import { TUTORIALS_AUTODIM } from './tutorials/autodim.js';
 import { TUTORIALS_DIVIDE } from './tutorials/divide.js';
 import { TUTORIALS_MARK } from './tutorials/mark.js';
 import { TUTORIALS_STITCH } from './tutorials/stitch.js';
+import { TUTORIALS_STITCHCOUNT } from './tutorials/stitchcount.js';
 import { TUTORIALS_STITCHLOOP } from './tutorials/stitchloop.js';
 import { TUTORIALS_HOLES } from './tutorials/holes.js';
 import { TUTORIALS_HOLESHAPE } from './tutorials/holeshape.js';
@@ -53,10 +54,12 @@ import { TUTORIALS_LAYERS } from './tutorials/layers.js';
 import { TUTORIALS_RPATCH } from './tutorials/rpatch.js';
 import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
 import { TUTORIALS_HARDWARE } from './tutorials/hardware.js';
+import { TUTORIALS_LIBRARY } from './tutorials/library.js';
 import { TUTORIALS_PAINT } from './tutorials/paint.js';
 import { TUTORIALS_STITCHVIEW } from './tutorials/stitchview.js';
 import { TUTORIALS_VIEW3D } from './tutorials/view3d.js';
 import { TUTORIALS_PEN } from './tutorials/pen.js';
+import { TUTORIALS_NEST } from './tutorials/nest.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
@@ -4653,7 +4656,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_VIEW, TUTORIALS_UNDO, TUTORIALS_SAVE, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_TEXTFONT, TUTORIALS_MEASURE, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_LAYOUT, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_STITCHVIEW, TUTORIALS_VIEW3D, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_VIEW, TUTORIALS_UNDO, TUTORIALS_SAVE, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_TEXTFONT, TUTORIALS_MEASURE, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHCOUNT, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_LAYOUT, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_LIBRARY, TUTORIALS_PAINT, TUTORIALS_STITCHVIEW, TUTORIALS_VIEW3D, TUTORIALS_PEN, TUTORIALS_NEST, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
