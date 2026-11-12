@@ -1,6 +1,6 @@
 // 画面内チュートリアル：台本（tutorials/*.json）の検証・乾式実行・再生エンジン（擬似カーソル・ハイライト・字幕）。
 // 台本の 1 手順：{say:'i18nキー', click:'#id'|null, mouse:[x,y]（mm）, drag:[x1,y1,x2,y2], key:'Enter', wait:ms, mode:'line', value:{'#id':'値'}}
-export const STEP_KEYS = ['say', 'click', 'show', 'mouse', 'drag', 'key', 'wait', 'mode', 'value', 'press', 'shift', 'dbl'];   /* show＝光らせるだけで押さない（ファイルの保存・印刷など、押すと外へ出るボタン用） */
+export const STEP_KEYS = ['say', 'click', 'show', 'mouse', 'drag', 'key', 'wait', 'mode', 'value', 'press', 'shift', 'dbl', 'card'];   /* card＝右の列のカード（id）を開いて見せる */   /* show＝光らせるだけで押さない（ファイルの保存・印刷など、押すと外へ出るボタン用） */
 /** 台本を検証して問題の配列を返す（空＝OK）。existsSelector(sel)・hasKey(key) は環境依存の検査関数。 */
 export function validateScript(script, { existsSelector = () => true, hasKey = () => true } = {}) {
   const out = [];
@@ -12,6 +12,7 @@ export function validateScript(script, { existsSelector = () => true, hasKey = (
     for (const k of Object.keys(s)) if (!STEP_KEYS.includes(k)) out.push(`#${i}: unknown key ${k}`);
     if (s.say !== undefined && !hasKey(s.say)) out.push(`#${i}: missing caption ${s.say}`);
     if (s.click && !existsSelector(s.click)) out.push(`#${i}: missing selector ${s.click}`);
+    if (s.card && !existsSelector('#' + s.card)) out.push(`#${i}: missing card ${s.card}`);
     if (s.show && !existsSelector(s.show)) out.push(`#${i}: missing selector ${s.show}`);
     if (s.value) for (const sel of Object.keys(s.value)) if (!existsSelector(sel)) out.push(`#${i}: missing selector ${sel}`);
     if (s.mouse && (!Array.isArray(s.mouse) || s.mouse.length !== 2 || !s.mouse.every(Number.isFinite))) out.push(`#${i}: mouse`);
@@ -33,6 +34,7 @@ export function createPlayer(script, host) {
   async function runStep(s) {
     if (s.say !== undefined) host.caption(host.t(s.say));
     if (s.mode) host.setMode(s.mode);
+    if (s.card) host.card?.(s.card);
     if (s.show) host.highlight(s.show);
     if (s.click) { host.highlight(s.click); if (!selfMode) { await sleep(400); host.click(s.click); } }
     if (s.value) for (const [sel, v] of Object.entries(s.value)) { host.highlight(sel); if (!selfMode) host.setValue(sel, v); }

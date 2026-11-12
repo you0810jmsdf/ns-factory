@@ -68,6 +68,9 @@ import { TUTORIALS_PAINT } from './tutorials/paint.js';
 import { TUTORIALS_STITCHVIEW } from './tutorials/stitchview.js';
 import { TUTORIALS_VIEW3D } from './tutorials/view3d.js';
 import { TUTORIALS_RECIPE } from './tutorials/recipe.js';
+import { TUTORIALS_VOICE } from './tutorials/voice.js';
+import { TUTORIALS_UNDERLAY } from './tutorials/underlay.js';
+import { TUTORIALS_AI } from './tutorials/ai.js';
 import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_NEST } from './tutorials/nest.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
@@ -4668,7 +4671,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SELECT, TUTORIALS_VIEW, TUTORIALS_UNDO, TUTORIALS_KEYS, TUTORIALS_SAVE, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_TEXTFONT, TUTORIALS_PHRASE, TUTORIALS_MEASURE, TUTORIALS_LINELEN, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_MARKSHAPE, TUTORIALS_STITCH, TUTORIALS_STITCHCOUNT, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_VERTEX, TUTORIALS_LAYOUT, TUTORIALS_CENTER, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_GAPS, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_BINDER, TUTORIALS_LIBRARY, TUTORIALS_PAINT, TUTORIALS_STITCHVIEW, TUTORIALS_VIEW3D, TUTORIALS_RECIPE, TUTORIALS_PEN, TUTORIALS_NEST, TUTORIALS_OUTPUT, TUTORIALS_EXPORT, TUTORIALS_SUPPORT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SELECT, TUTORIALS_VIEW, TUTORIALS_UNDO, TUTORIALS_KEYS, TUTORIALS_SAVE, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_TEXTFONT, TUTORIALS_PHRASE, TUTORIALS_MEASURE, TUTORIALS_LINELEN, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_MARKSHAPE, TUTORIALS_STITCH, TUTORIALS_STITCHCOUNT, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_VERTEX, TUTORIALS_LAYOUT, TUTORIALS_CENTER, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_GAPS, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_BINDER, TUTORIALS_LIBRARY, TUTORIALS_PAINT, TUTORIALS_STITCHVIEW, TUTORIALS_VIEW3D, TUTORIALS_RECIPE, TUTORIALS_VOICE, TUTORIALS_UNDERLAY, TUTORIALS_AI, TUTORIALS_PEN, TUTORIALS_NEST, TUTORIALS_OUTPUT, TUTORIALS_EXPORT, TUTORIALS_SUPPORT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
@@ -4680,6 +4683,7 @@ function tutHost({ instant = false } = {}) {
     setValue: (sel, v) => { const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else { el.value = String(v); if (el.tagName === 'INPUT') keyTarget = el; } (el.listeners?.change || (() => el.dispatchEvent?.(new Event('change'))))({ target: el, currentTarget: el }); },
     moveTo() {}, drag: (x1, y1, x2, y2) => { keyTarget = null; const a = screenOf(x1, y1), b = screenOf(x2, y2); fire('pointerdown', a); fire('pointermove', b); fire('pointerup', b); },
     key: k => { if (keyTarget) { const el = keyTarget; keyTarget = null; if (el.listeners?.keydown) el.listeners.keydown({ key: k, target: el, preventDefault() {} }); else el.dispatchEvent?.(new KeyboardEvent('keydown', { key: k, bubbles: true })); return; } const ev = { key: k, target: {}, preventDefault() {}, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }; (window.listeners?.keydown || (e => window.dispatchEvent?.(new KeyboardEvent('keydown', e))))(ev); },
+    card: id => { const c = $(id); if (!c) return; for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c; revealCard(c); c.scrollIntoView?.({ block: 'start' }); },   /* 右クリックからカードを開くのと同じ（右の列を開いて、そのカードだけ開く） */
     setMode: m => setMode(m), caption: text => { $('tutCaption').textContent = text; $('tutBar').hidden = false; },
     highlight: sel => { document.querySelectorAll?.('.tut-hl').forEach(el => el.classList.remove('tut-hl')); if (sel) { const el = document.querySelector?.(sel); el?.classList?.add('tut-hl'); el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }); } },   /* 左の列の下の方（「選択中」のボタン）も、見える位置まで送ってから光らせる */
     cursor: (x, y) => { const c = $('tutCursor'); if (x === null || x === undefined) { c.hidden = true; return; } const p = screenOf(x, y); c.hidden = false; c.style.left = p.x + 'px'; c.style.top = p.y + 'px'; },
@@ -4692,7 +4696,7 @@ async function playTutorial(id, { instant = false } = {}) {
   if (tutPlayer?.running) tutPlayer.stop();
   $('helpDialog').close?.(); if (!tutDropDemoTabs()) tutReturn = activeTab; tutTabBase = tabs.length; newTab(t('tutorialTab'));   /* 続けて別のチュートリアルを流すときは、前のチュートリアルのタブ（と、その中で作ったタブ）を片付けてから、新しく作る */ if (!$('tutSelf').checked) canvas.style.pointerEvents = 'none'; // 専用タブで再生（作業中の図面は触らない）
   tutPlayer = createPlayer(script, tutHost({ instant })); tutPlayer.setSpeed(Number($('tutSpeed').value) || 1); tutPlayer.setSelfMode(!!$('tutSelf').checked);
-  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); const askKeep = tutKeepAsk(), fieldKeep = tutKeepFields(script); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); askKeep(); fieldKeep(); for (let i = Math.max(0, tutTabBase); i < tabs.length; i++) if (tabs[i]) tabs[i].tutDemo = true; }   /* 再生中にできたタブ（チュートリアルのタブ・自動設計などで作ったタブ）に印。終了のとき、印のあるタブだけ片付ける（終わったあとに自分で作ったタブは残す） */ canvas.style.pointerEvents = '';
+  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); const askKeep = tutKeepAsk(), fieldKeep = tutKeepFields(script), sideWasOpen = sidePanelOpen(); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); askKeep(); fieldKeep(); if (!sideWasOpen && sidePanelOpen()) closeSidePanel(); for (let i = Math.max(0, tutTabBase); i < tabs.length; i++) if (tabs[i]) tabs[i].tutDemo = true; }   /* 再生中にできたタブ（チュートリアルのタブ・自動設計などで作ったタブ）に印。終了のとき、印のあるタブだけ片付ける（終わったあとに自分で作ったタブは残す） */ canvas.style.pointerEvents = '';
 }
 /** 台本が値を入れる欄（value の欄）の、再生前の値を覚えて、再生のあとで戻す（目印の距離・配置方法・定型句の下書きなど、利用者のいつもの値をチュートリアルで書き換えない）。値が変わった欄だけ、change を出して元の値を行き渡らせる */
 function tutKeepFields(script) {

@@ -1,0 +1,29 @@
+{
+  "id": "underlay",
+  "page": "underlay",
+  "title": "tut.underlay.title",
+  "steps": [
+    {
+      "say": "tut.underlay.1",
+      "card": "imgCard",
+      "show": "#imgImport",
+      "wait": 1500
+    },
+    {
+      "say": "tut.underlay.2",
+      "show": "#imgImport",
+      "wait": 1000
+    },
+    {
+      "say": "tut.underlay.3",
+      "show": "#imgScale2pt",
+      "wait": 1600
+    },
+    {
+      "say": "tut.underlay.4",
+      "click": "#imgCard details > summary",
+      "show": "#tracePreview",
+      "wait": 1600
+    }
+  ]
+}
