@@ -2526,7 +2526,7 @@ function refreshLaminateParts() {
 }
 /** 検証カードの「部品の一覧」：作った部品が、名前（書き換えられる）・図形の数・厚みつきで、すぐ見える。「選ぶ」でその部品の図形を選択・「消す」で部品だけ消す（図形は残る）。 */
 /** 三つ折りの展開（ply＝'outer'｜'inner'）の外形と円の id。点線・寸法・文字・菱目は入れない。 */
-function foldUnfoldPartIds(ply) { return doc.shapes.filter(s => s.foldFlat === 'fdu' && s.ply === ply && (s.type === 'polyline' || s.type === 'circle')).map(s => s.id); }
+function foldUnfoldPartIds(ply) { return doc.shapes.filter(s => s.foldFlat === 'fdu' && s.ply === ply && (s.type === 'polyline' || s.type === 'circle') && s.lineStyle !== 'dashed').map(s => s.id); }   /* 点線の閉じた折れ線（一周の縫い線）は、部品の外形ではない */
 /** 「三つ折りの展開の表・裏を、部品にする」：表と裏を、1回で「表」「裏」の部品にする（もう一度押すと置き換える）。厚みは設計の値。 */
 function makeFoldUnfoldParts() {
   const box = $('lamResult'); box.textContent = ''; const o = foldUnfoldPartIds('outer'), i = foldUnfoldPartIds('inner');
@@ -3998,6 +3998,27 @@ function exportFile(name, data, mime, onDone) {
   })();
 }
 const savedTo = n => n ? ' ' + t('exportSavedTo', { name: n }) : '';
+/** ファイルへ書く。作られた直後のファイルを OneDrive などが同期で触ると、書き込みが断られることがある（InvalidStateError「…the state had changed since it was read from disk」・事業主 2026-11-12：保存に失敗して、空のファイルだけが残った）。少し待って、3回までやり直す。
+ *  やり直しても意味がない失敗（取りやめ・許可なし・ファイルが無い）は、すぐに返す。途中で失敗した書きかけは捨てる（abort）。 */
+const FILE_WRITE_TRIES = 3;
+async function writeFileRetry(handle, text) {
+  let last = null;
+  for (let i = 0; i < FILE_WRITE_TRIES; i++) {
+    try { const w = await handle.createWritable(); try { await w.write(text); await w.close(); } catch (e) { try { await w.abort?.(); } catch { /* 捨てられなくても、元の失敗を返す */ } throw e; } return; }
+    catch (err) { last = err; if (['AbortError', 'NotAllowedError', 'SecurityError', 'NotFoundError'].includes(err?.name)) break; if (i < FILE_WRITE_TRIES - 1) await new Promise(r => setTimeout(r, 120 * (i + 1))); }
+  }
+  throw last;
+}
+/** 保存先を選んだのに書けなかったとき：空のまま残ったファイル（選んだ時点で作られた、0バイトのもの）を消す。中身のあるファイル（上書きしようとした、前からあるファイル）は消さない。消せたら true。 */
+async function removeEmptyFile(handle) {
+  try { const f = await handle.getFile?.(); if (!f || f.size !== 0 || typeof handle.remove !== 'function') return false; await handle.remove(); return true; } catch { return false; }
+}
+/** 保存先に書けなかったときの後始末：空のファイルを消し、図面をダウンロードへ退避して、「保存されていない」ことを日本語で知らせる（図面を失わないため）。 */
+async function saveFailedFallback(handle, fileName, text, err) {
+  if (handle) await removeEmptyFile(handle);
+  let saved = false; try { saved = download(fileName, text, 'application/json', false) !== false; } catch { saved = false; }
+  $('hint').textContent = t(saved ? 'saveFailedKept' : 'saveFailedNoCopy', { name: fileName, message: err?.name ? err.name + (err.message ? '：' + err.message : '') : String(err?.message || err) });
+}
 function download(name, text, type, gate = true) {
   if (gate && !regGuard(regFeatureOf(name), 'dl')) { setTimeout(() => { $('hint').textContent = t('regNeed'); }, 0); return false; }   /* 呼び出し側の「書き出しました」の案内を、登録が必要の案内に直す。gate=false は、不具合記録（登録なしで出せる）か、呼び出し側が入口の確認をすませたとき */
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -7296,10 +7317,19 @@ function unfoldFoldDesign() {
   const h = Number($('fdH').value); if (!(h > 0)) { $('hint').textContent = t('foldFixHeight'); return; }
   const btnD = Number($('fdBtnD').value); if (d.mode !== 'bifold' && !(btnD > 0 && btnD < h)) { $('hint').textContent = t('foldFixBtnD'); return; }
   const p = foldDesignPlan(d); if (!p.ok) { $('hint').textContent = t(foldErrKey(p.error, d.mode)); return; }
-  const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value);
-  const bad = !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null; if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
+  const edge = Number($('fdEdge').value), pitch = Number($('fdPitch').value), margin = Number($('fdMargin').value), layout = stitchLayoutNow(), cornerReq = planCorner(h, p.length);   /* 角の丸め・菱目の並べ方は、平面図と同じ欄（事業主 2026-11-12） */
+  const bad = layout !== 'none' && !(edge > 0 && edge * 2 < h) ? 'edge' : !(pitch > 0) ? 'pitch' : layout === 'rows' && !(margin >= 0 && margin * 2 < p.length) ? 'margin' : null; if (bad) { $('hint').textContent = t('foldStitchErr_' + bad); return; }
+  const rect0 = (x, y, w) => [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h }, { x, y: y + h }];
+  let rimR = 0;   /* 一周の縫い線の角の半径（表・裏で同じにする：端の穴の並びを同じ形にするため） */
+  if (layout === 'loop') { const r0 = rimLine(rect0(0, 0, p.length), edge, Math.max(cornerReq - edge, 0)); if (!r0) { $('hint').textContent = t('foldStitchLoopFail'); return; } rimR = r0.radius; }
+  const planMargin = layout === 'loop' ? edge + rimR : layout === 'rows' ? margin : (margin >= 0 && margin * 2 < p.length ? margin : 0);   /* 一周：直線の列は、角の丸みが終わった所から始める */
+  if (!(planMargin >= 0 && planMargin * 2 < p.length)) { $('hint').textContent = t('foldStitchErr_margin'); return; }
   const [f1, f2] = p.flats, [b1, b2] = p.bends, buttons = d.mode === 'bifold' ? [] : [p.cEff[0], f1 + b1 + p.a[0], f1 + b1 + f2 + b2 + p.a[1]];
-  const plies = foldUnfoldPlan(p, { pitch, margin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
+  const plies = foldUnfoldPlan(p, { pitch, margin: planMargin, buttons }); if (!plies || plies.some(u => !u)) { $('hint').textContent = t('foldUnfoldFail'); return; }
+  const minLen = Math.min(...plies.map(u => u.length)), corner = Math.min(cornerReq, Math.max(0, minLen / 2 - 0.01));
+  if (layout === 'loop' && plies.some(u => { const r = rimLine(rect0(0, 0, u.length), edge, rimR); return !r || Math.abs(r.radius - rimR) > 1e-6; })) { $('hint').textContent = t('foldStitchLoopFail'); return; }
+  /* 一周：左右の端（上の列の端の穴 → 角 → 縦 → 角 → 下の列の端の穴）に打つ穴の個数。表で決めて、裏も同じ個数にする（縫い合わせるので、表裏の穴が1対1で合うように） */
+  const endArc = Math.PI * rimR + Math.max(0, h - 2 * edge - 2 * rimR), endM = layout === 'loop' ? [2 * (plies[0].holes[0] - (edge + rimR)) + endArc, 2 * ((plies[0].length - edge - rimR) - plies[0].holes[plies[0].holes.length - 1]) + endArc].map(L => Math.max(0, Math.round(L / pitch) - 1)) : [0, 0];
   const tool = stitchToolCurrent(), fx = d.origin.x + (d.flatOff?.x ?? 0), f2s = v => v.toFixed(2); let fy0 = d.origin.y + p.T / 2 + 2 + 40 + h + 60 + (d.flatOff?.y ?? 0);
   { /* 置き場所に別の図形（財布の部品など）が重なるときは、その下の空いた所へずらす。重ならないときは今までの位置（事業主指摘 2026-10-18） */
     const blockLen = Math.max(...plies.map(u => u.length)), near = doc.shapes.filter(sh => sh.foldFlat !== 'fdu' && !sh.holeLink).map(bboxOf).filter(bx => bx.maxX >= fx - 10 && bx.minX <= fx + blockLen + 10 && bx.maxY > fy0 - 10);
@@ -7312,7 +7342,7 @@ function unfoldFoldDesign() {
     plies.forEach((u, i) => {
       const fy = fy0 + i * (h + 80), side = { right: t('foldSideR'), left: t('foldSideL') }, name = t(u.key === 'outer' ? 'unfoldOuter' : 'unfoldInner'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, foldFlat: 'fdu', ply: u.key }); return id; };
       add({ type: 'text', layer: guide, x: fx, y: fy - 5, text: t('unfoldTitle', { name, len: f2s(u.length) }), sizeMm: 4, angleDeg: 0 });
-      add({ type: 'polyline', layer, closed: true, points: [{ x: fx, y: fy }, { x: fx + u.length, y: fy }, { x: fx + u.length, y: fy + h }, { x: fx, y: fy + h }] });
+      add({ type: 'polyline', layer, closed: true, points: roundedRectPoints(fx, fy, u.length, h, corner) });
       for (const x of u.xs) add({ type: 'line', layer: guide, lineStyle: 'dashed', x1: fx + x, y1: fy, x2: fx + x, y2: fy + h });
       for (const x of (d.mode === 'bifold' ? [] : [u.buttons[0], u.buttons[2]])) add({ type: 'circle', layer, cx: fx + x, cy: fy + h / 2, r: btnD / 2 });
       if (d.mode === 'bifold' && d.ring) {
@@ -7320,14 +7350,25 @@ function unfoldFoldDesign() {
         const map = x => x <= f ? x : x <= f + b ? f + (x - f) * nb / b : x + nb - b;
         for (const rv of planHardwareSpec(d.ring.specId)?.rivets || []) add({ type: 'circle', layer, cx: fx + map(d.ring.s + rv.yMm), cy: fy + h / 2 + rv.xMm, r: rv.dMm / 2 });
       }
-      for (const y of [fy + edge, fy + h - edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（この革の長さに沿った位置） */
+      if (layout === 'loop') {   /* 一周：縁から edge 内側の角丸の縫い線の上に、上下の列（今の割り当て）と、左右の端・角の穴（表も裏も同じ個数・等間隔） */
+        const rim = rimLine(rect0(fx, fy, u.length), edge, rimR), lineId = add({ type: 'polyline', layer: guide, closed: true, points: rim.points, lineStyle: 'dashed', color: 'yellow' });
+        const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: true, segments: [], mark: 'tool', foldFlat: 'fdu', ply: u.key }; doc.paths.push(saved);
+        const route = resolvePath(doc, saved), loop = loopSampler(rim.points), T = loop.total, top = u.holes.map(x => loop.nearest({ x: fx + x, y: fy + edge }).s), bot = u.holes.map(x => loop.nearest({ x: fx + x, y: fy + h - edge }).s), ss = [...top, ...bot];
+        [[0, endM[0], x => x < fx + u.length / 2], [u.holes.length - 1, endM[1], x => x > fx + u.length / 2]].forEach(([k, m, onThisEnd]) => {   /* 端：上の列の端の穴から、角・縦・角を回って、下の列の端の穴まで、m 個を等間隔に */
+          if (!m) return; const a = top[k], fwd = ((bot[k] - a) % T + T) % T, useFwd = onThisEnd(loop.at(a + fwd / 2).x), L = useFwd ? fwd : T - fwd;
+          for (let j = 1; j <= m; j++) ss.push((((a + (useFwd ? 1 : -1) * j * L / (m + 1)) % T) + T) % T);
+        });
+        placeHoles(saved, route, ss.sort((x, y) => x - y).map(s => pointAtLength(route, s)), tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.foldFlat = 'fdu';
+      }
+      if (layout === 'rows') for (const y of [fy + edge, fy + h - edge]) {   /* 菱目打ちライン：縫い線の点線＋その上の菱目の穴（この革の長さに沿った位置） */
         const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: fx + u.rowFrom, y1: y, x2: fx + u.rowTo, y2: y }), len = u.rowTo - u.rowFrom;
         const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [{ from: 0, to: len, toolId: tool.id, pitch: u.flatStep, mode: 'manual' }], mark: 'tool', foldFlat: 'fdu', ply: u.key }; doc.paths.push(saved);
         for (const x of u.holes) doc.holes.push({ id: freshId(doc.holes, 'h'), pathId: saved.id, s: x - u.rowFrom, x: fx + x, y, angleDeg: slantOf(tool), toolId: tool.id, mark: 'tool', foldFlat: 'fdu' });
       }
       const yd = fy + h - edge, dim = (a, b) => add({ type: 'dimension', layer: guide, x1: fx + a, y1: yd, x2: fx + b, y2: yd, offset: -4, fresh: true });   /* 菱目間の寸法（数字つき）：下の列の下に */
-      dim(u.holes[0], u.holes[1]);
+      if (layout !== 'none') dim(u.holes[0], u.holes[1]);
       u.bends.forEach((b, k) => {
+        if (layout === 'none') return;   /* 菱目を打たないときは、菱目間の寸法・数字は入れない */
         if (b.firstIndex >= 0) dim(u.holes[b.firstIndex], u.holes[b.firstIndex + 1]);
         add({ type: 'text', layer: guide, x: fx, y: fy + h + 12 + k * 5, text: t('unfoldBendNote', { side: side[b.side], pitch: f2s(b.pitch), flat: f2s(b.flat), n: b.count }), sizeMm: 3, angleDeg: 0 });
       });
@@ -7335,7 +7376,8 @@ function unfoldFoldDesign() {
   });
   commit(() => { for (const p of doc.parts) if (p.autoPly) p.shapeIds = foldUnfoldPartIds(p.autoPly); });   /* 「表・裏を部品にする」で作った部品は、新しい展開の図形で作り直す */
   const [o, ii] = plies;
-  $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }); rebuildSnaps(); draw();
+  const loopNote = layout === 'loop' ? ' ' + t('foldUnfoldLoopNote', { n: 2 * o.holes.length + endM[0] + endM[1], r: f2s(corner) }) : layout === 'none' ? ' ' + t('foldUnfoldNoStitchNote') : '';   /* 一周：1枚あたりの穴の数（表も裏も同じ）・角の丸み */
+  $('hint').textContent = t('foldUnfoldDone', { lo: f2s(o.length), li: f2s(ii.length), flat: f2s(o.flatStep), po: o.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / '), pi: ii.bends.map(b => ({ right: t(d.mode === 'bifold' ? 'foldSideSpine' : 'foldSideR'), left: t('foldSideL') }[b.side] + ' ' + f2s(b.pitch))).join(' / ') }) + loopNote; rebuildSnaps(); draw();
 }
 function fixFoldDesign() { projectFoldDesign(false); }
 /** 設計カードに、曲げ部の菱目ピッチ（外側の面・内側の面・差）を数字で出す。基準の平らな間隔は「菱目のピッチ」の欄（指定する前提）。数値・厚み・ピッチのどれを変えても、その場で更新する。 */
@@ -11408,13 +11450,13 @@ async function save(asNew = false) {
     const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
     clean(); $('hint').textContent = t('savedDownload', { name: fileName }); return;
   }
-  const write = async handle => { const w = await handle.createWritable(); await w.write(text); await w.close(); };
+  const write = handle => writeFileRetry(handle, text);
   let handle = asNew ? null : tab?.fileHandle, overwrote = false;
   if (handle) { try { await write(handle); overwrote = true; } catch (err) { handle = null; if (tab) tab.fileHandle = null; why = t('saveWhyWrite', { message: err?.name ? err.name + (err.message ? '：' + err.message : '') : String(err?.message || err) }); /* 消された・動かされた・許可が切れた：選び直す */ } }
   if (!handle) {
     try {
-      handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });
-      await write(handle);
+      handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });   /* ここで、選んだ名前の空のファイルが作られる */
+      try { await write(handle); } catch (err) { await saveFailedFallback(handle, handle.name || fileName, text, err); return; }   /* 書けなかった：空のファイルを消し、ダウンロードへ退避して知らせる（保存済みの印は付けない） */
     } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); return; }
   }
   if (tab) { tab.fileHandle = handle; const base = (handle.name || '').replace(/\.json$/i, '').trim().slice(0, 60); if (base) tab.name = base; scheduleAutosave(); /* 行き先を保管に入れる */ saveFilesRecord({ savedAt: lastAutosaveAt, handles: tabs.map(tb => tb.fileHandle || null) }).catch(() => {}); /* 自動保存の保管を待たず、いまのうちにも覚える（すぐ閉じても残るように） */ }
@@ -11438,7 +11480,7 @@ async function saveSelectedAs() {
   if (typeof globalThis.showSaveFilePicker !== 'function') { download(fileName, text, 'application/json', false); $('hint').textContent = t('savedSelected', { n: d.shapes.length, name: fileName }); return; }
   try {
     const handle = await globalThis.showSaveFilePicker({ suggestedName: fileName, types: [{ description: "N's CAD", accept: { 'application/json': ['.json'] } }] });
-    const w = await handle.createWritable(); await w.write(text); await w.close();
+    try { await writeFileRetry(handle, text); } catch (err) { await saveFailedFallback(handle, handle.name || fileName, text, err); return; }
     $('hint').textContent = t('savedSelected', { n: d.shapes.length, name: handle.name || fileName });
   } catch (err) { $('hint').textContent = err?.name === 'AbortError' ? t('saveCanceled') : t('saveFailed', { message: err?.message || String(err) }); }
 }
