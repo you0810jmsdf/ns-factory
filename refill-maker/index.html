@@ -1228,9 +1228,30 @@ function makeSheetHTML(sideKey, sheetIndex, items) {
 
 // === MODULE: Render ===
 function rerender() { render(); }
+// システム手帳の6判型のカレンダー様式（週間バーチカル・マンスリー）は、日付・祝日・期間指定のある印刷ツールで作る（2026-11-12 事業主決定A）。
+// ロルバーン・自分で入力したサイズは、このページで今までどおり作る。
+const MOVED_TO_PRINT_TOOL = { sizes: ['a5', 'a5slim', 'a6', 'bible', 'mini6', 'micro5'], kinds: { weekly: ['vertical', '週間バーチカル'], monthly: ['monthly', '月間ブロック'] } };
+function movedToPrintTool() {
+  return MOVED_TO_PRINT_TOOL.sizes.includes(paper.preset) && MOVED_TO_PRINT_TOOL.kinds[fmt] ? MOVED_TO_PRINT_TOOL.kinds[fmt] : null;
+}
+function renderMovedNotice(kind) {
+  const label = PRESETS[paper.preset].label.replace(/（.*$/, '');
+  const url = `../${paper.preset}-${kind[0]}/`;
+  $('preview').dataset.orient = 'portrait';
+  $('preview').innerHTML = `<div style="max-width:520px;margin:24px auto;padding:22px 24px;background:#fff;border:1px solid #E0D2C2;border-radius:10px;color:#4a3a2c;line-height:1.8;font-size:14px;">
+    <div style="font-size:12px;color:#8a7362;letter-spacing:.06em;">${label} の${kind[1]}</div>
+    <div style="font-size:18px;font-weight:700;margin:4px 0 10px;">この判型のカレンダーは、印刷ツールで作れます</div>
+    <div>システム手帳の${label}の${kind[1]}は、専用の印刷ツールに移りました。日付入り・日付なし、祝日・振替休日、期間の指定、綴じた後の見開きの確認が使えます。</div>
+    <a href="${url}" style="display:inline-block;margin:14px 0 8px;padding:10px 18px;background:#7A5540;color:#fff;border-radius:8px;font-weight:700;text-decoration:none;">${label} ${kind[1]}の印刷ツールを開く ›</a>
+    <div style="font-size:12px;color:#8a7362;">ロルバーン（L・M）と「自分で入力」したサイズは、このページで今までどおり作れます。</div>
+  </div>`;
+  saveSettings();
+}
 function render() {
   if (!(paper.w > 0 && paper.h > 0)) return;
   document.body.dataset.fmt = fmt;
+  const moved = movedToPrintTool();
+  if (moved) { renderMovedNotice(moved); return; }
   LAY = computeLayout(); applyLayoutVars();
   const { items, label } = buildItems();
   const sheetCount = Math.ceil(items.length / LAY.perSheet);
@@ -1260,6 +1281,7 @@ function setUndated(u) { setUndatedQuiet(u); rerender(); }
 // === MODULE: PDF Generation ===
 async function generatePDF(ev) {
   const btn = ev && ev.target ? ev.target : $('btnPdf');
+  if (movedToPrintTool()) { alert('この判型のカレンダーは、印刷ツールで作れます。画面の「印刷ツールを開く」から移ってください。'); return; }
   const sheets = document.querySelectorAll('#preview .a4-sheet');
   if (!sheets.length) { alert('生成する内容がありません。先にプレビューを表示してください。'); return; }
   if (typeof html2canvas === 'undefined' || !window.jspdf) { alert('ライブラリ読み込み中です。数秒待って再度お試しください。'); return; }
@@ -1316,6 +1338,8 @@ function resetSettings() {
 
 // === MODULE: UpdateHistory ===
 const HISTORY_ENTRIES = [
+  { date: '2026-11-12', type: 'improve', title: 'システム手帳の週間バーチカル・マンスリーは印刷ツールへ',
+    detail: 'A5・A5スリム・A6・バイブル・ミニ6・マイクロ5で「週間バーチカル」「マンスリー」を選ぶと、専用の印刷ツール（日付入り・祝日・期間指定・綴じた後の確認つき）への案内を出すようにしました。ロルバーンと「自分で入力」したサイズは、このページで今までどおり作れます。方眼・ドット・罫線、お薬手帳、自作様式はどの判型でもこのページで作れます。' },
   { date: '2026-11-05', type: 'feat', title: '自作様式（部品を置いて自分の様式を作る）を追加',
     detail: '書式「自作様式」を追加しました。紙面の上の編集画面に、見出し・見出し帯・文字・記入欄・チェック欄・貼付枠・罫線メモ・表・枠・区切り線の部品を置き、ドラッグで動かし、右下の青い■で大きさを変えて、自分の様式を作れます。ほかの部品や紙面の中央に端がそろうと、赤いガイド線が出ます。文字・文字の大きさ・太さ・位置・大きさは、部品を選んで数値でも直せます。「見本を読み込む」で、予防接種の記録（1ページに2回分）やワクチン接種の一覧表から始められます。取り消し・やり直し、自動保存、ファイルへの書き出し・読み込みに対応しています。用紙のサイズ・穴の位置・面付け・PDF生成は、ほかの書式と同じです。実物での印刷確認は未了です。' },
   { date: '2026-10-31', type: 'improve', title: 'スマホで、フリックでメニューと紙面を切り替え',

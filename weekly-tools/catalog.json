@@ -39,15 +39,14 @@
       "id": "weekly",
       "name": "週間ブロック印刷ツール",
       "pages": [
-        "(a5|a5slim|a6|bible|mini6|micro5)-weekly/index\\.html",
-        "bible-vertical/index\\.html"
+        "(a5|a5slim|a6|bible|mini6|micro5)-(weekly|vertical)/index\\.html"
       ],
       "url": "https://you0810jmsdf.github.io/ns-factory/tools/",
       "logo": "assets/weekly-tools/logo/weekly.jpg",
       "shot": "assets/weekly-tools/shot/weekly.jpg",
       "tagline": "システム手帳の週間リフィルを、A4に面付けして印刷",
       "points": [
-        "6判型に対応。バイブルはバーチカルも",
+        "6判型に対応。週間バーチカルも選べる",
         "左右見開き・上下見開き（リングが上）を選べる"
       ],
       "only": "綴じた後の見開きを、印刷前にめくって確かめられる",
