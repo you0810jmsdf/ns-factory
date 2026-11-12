@@ -1003,7 +1003,7 @@ let rpLast = null;   /* 直前にクリックした点（「別の案」で、�
 const rpNum = (id, def, min, max) => { const v = Number($(id)?.value); return Number.isFinite(v) && v >= min && v <= max ? v : def; };
 function rpSettings() {
   const tool = stitchToolCurrent();
-  return { how: $('rpHow')?.value === 'existing' ? 'existing' : 'random', count: Math.floor(rpNum('rpCount', 6, 1, 40)), minSide: rpNum('rpMin', 25, 5, 500), seed: Math.floor(rpNum('rpSeed', 1, 1, 999999)), offset: rpNum('rpOff', 2, 0.5, 20), tol: rpNum('rpTol', 10, 1, 50), rimD: rpNum('rpRim', 2, 0.5, 20), rim: $('rpRimOn') ? $('rpRimOn').checked !== false : true, pitch: tool?.pitch > 0 ? tool.pitch : 3.95, tool };
+  return { how: $('rpHow')?.value === 'existing' ? 'existing' : 'random', count: Math.floor(rpNum('rpCount', 6, 1, 40)), minSide: rpNum('rpMin', 25, 5, 500), angOut: rpNum('rpAngOut', 45, 0, 80), angCut: rpNum('rpAngCut', 30, 0, 80), share: rpNum('rpShare', 70, 30, 100) / 100, tries: Math.floor(rpNum('rpTry', 200, 1, 300)), seed: Math.floor(rpNum('rpSeed', 1, 1, 999999)), offset: rpNum('rpOff', 2, 0.5, 20), tol: rpNum('rpTol', 10, 1, 50), rimD: rpNum('rpRim', 2, 0.5, 20), rim: $('rpRimOn') ? $('rpRimOn').checked !== false : true, pitch: tool?.pitch > 0 ? tool.pitch : 3.95, tool };
 }
 /** 縫い合わせの穴は丸目、外周の列だけ菱目（既存のパッチワークと同じ規則・事業主 2026-10-21／2026-11-12「パッチワークは丸目が基本です」）。ピッチ・刃数は使用中の工具のまま。同じ種類で同じピッチの登録工具があればそれ、無ければ使用中の工具から作る（登録は呼び出し側）。 */
 function rpKindTool(cur, kind) {
@@ -1020,13 +1020,32 @@ function rpExistingLines(outline) {
   const poly = { type: 'polyline', closed: true, points: outline }, inside = q => insidePolygon(q, outline) || distToShape(poly, q) <= 0.4;
   return doc.shapes.filter(s => visible(s) && editable(s) && !s.rpatch && rpIsCut(s) && inside({ x: s.x1, y: s.y1 }) && inside({ x: s.x2, y: s.y2 })).map(s => ({ a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } }));
 }
-function rpatchAt(p) {
+/** 「案を比べる」：同じ外形に、上位4案を小さい図と数字（面積のばらつき・三角/四角/五角以上の数）で並べ、選んだ案を図面に採用する（事業主 2026-11-12「数パターンを提案する機能」・形のバランス）。 */
+function rpCutOpts(S) { return { count: S.count, minSide: S.minSide, seed: S.seed, minAngle: S.angOut, minAngleCut: S.angCut, candidates: S.tries, shareMax: S.share }; }
+function rpCompareOpen() {
+  const S = rpSettings(), win = $('rpCompareWin'), list = $('rpCompareList'); if (!win || !list) return;
+  if (!rpLast) { $('hint').textContent = t('rpCompareNone'); return; }
+  const region = rpRegionAt(rpLast); if (!region) { $('hint').textContent = t('rpNoRegion'); return; }
+  const outline = region.points.map(q => ({ x: q.x, y: q.y })), r = randomCutLines(outline, { ...rpCutOpts(S), top: 4 });
+  if (r.error === 'notConvex') { $('hint').textContent = t('rpNotConvex'); return; } if (r.error || !r.top.length) { $('hint').textContent = t('rpNoCut', { min: S.minSide }); return; }
+  const xs = outline.map(q => q.x), ys = outline.map(q => q.y), x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, h = Math.max(...ys) - y0, big = Math.max(w, h, 1), sw = (big / 150).toFixed(3), pad = big * 0.03;
+  list.textContent = '';
+  r.top.forEach((c, i) => {
+    const b = document.createElement('button'); b.type = 'button';
+    const poly = outline.map(q => `${q.x.toFixed(2)},${q.y.toFixed(2)}`).join(' '), cuts = c.lines.map(l => `<line x1="${l.a.x.toFixed(2)}" y1="${l.a.y.toFixed(2)}" x2="${l.b.x.toFixed(2)}" y2="${l.b.y.toFixed(2)}" stroke="#4aa3ff" stroke-width="${(sw * 2).toFixed(3)}"/>`).join('');
+    b.innerHTML = `<svg viewBox="${(x0 - pad).toFixed(2)} ${(y0 - pad).toFixed(2)} ${(w + 2 * pad).toFixed(2)} ${(h + 2 * pad).toFixed(2)}" width="150" height="${Math.max(40, Math.round(150 * (h + 2 * pad) / (w + 2 * pad)))}"><polygon points="${poly}" fill="none" stroke="#d8d8d8" stroke-width="${sw}"/>${cuts}</svg>`;
+    const d1 = document.createElement('div'); d1.textContent = t('rpPlanTitle', { n: i + 1 }); const d2 = document.createElement('div'); d2.textContent = t('rpAreaShort', { min: (c.areaMin / 100).toFixed(1), max: (c.areaMax / 100).toFixed(1), cv: (c.cv * 100).toFixed(0) }); const d3 = document.createElement('div'); d3.textContent = t('rpShapeInfo', { tri: c.shapes.tri, quad: c.shapes.quad, other: c.shapes.other });
+    b.appendChild(d1); b.appendChild(d2); b.appendChild(d3); b.onclick = () => { win.hidden = true; rpatchAt(rpLast, c); }; list.appendChild(b);
+  });
+  win.hidden = false; $('hint').textContent = t('rpCompareHint');
+}
+function rpatchAt(p, forced = null) {   /* forced＝「案を比べる」で選んだ案（切り方をそのまま使う） */
   const S = rpSettings(); if (!S.tool) { $('hint').textContent = t('invalidTool'); return 0; }
   const region = rpRegionAt(p); if (!region) { $('hint').textContent = t('rpNoRegion'); return 0; }
   const outline = region.points.map(q => ({ x: q.x, y: q.y })), tag = 'rp' + region.shapeIds.slice().sort().join('+').slice(0, 56);
   rpLast = { x: p.x, y: p.y }; let lines, cutInfo = null;
   if (S.how === 'random') {
-    cutInfo = randomCutLines(outline, { count: S.count, minSide: S.minSide, seed: S.seed });
+    cutInfo = forced || randomCutLines(outline, rpCutOpts(S));
     if (cutInfo.error === 'notConvex') { $('hint').textContent = t('rpNotConvex'); return 0; }
     if (cutInfo.error || !cutInfo.lines.length) { $('hint').textContent = t('rpNoCut', { min: S.minSide }); return 0; }
     lines = cutInfo.lines;
@@ -1061,7 +1080,7 @@ function rpatchAt(p) {
     selected = new Set(newCutIds);
   });
   const total = nHoles + nRim, bad = plan.conflicts.length;
-  $('hint').textContent = (S.how === 'random' ? t('rpDoneRandom', { made: cutInfo.made, req: cutInfo.requested, seed: S.seed }) : t('rpDoneExisting', { n: lines.length })) + ' ' + t('rpDoneCommon', { cross: plan.junctions, holes: nHoles, rim: nRim, merged: plan.merged }) + (bad ? ' ' + t('rpDoneBad', { n: bad, tol: S.tol }) : ' ' + t('rpDoneOk', { tol: S.tol })) + (cutInfo && cutInfo.made < cutInfo.requested ? ' ' + t('rpFewer', { made: cutInfo.made, req: cutInfo.requested, min: S.minSide }) : '');
+  $('hint').textContent = (S.how === 'random' ? t('rpDoneRandom', { made: cutInfo.made, req: cutInfo.requested, seed: S.seed }) : t('rpDoneExisting', { n: lines.length })) + ' ' + t('rpDoneCommon', { cross: plan.junctions, holes: nHoles, rim: nRim, merged: plan.merged }) + (bad ? ' ' + t('rpDoneBad', { n: bad, tol: S.tol }) : ' ' + t('rpDoneOk', { tol: S.tol })) + (cutInfo && cutInfo.areaMax > 0 ? ' ' + t('rpAreaInfo', { min: (cutInfo.areaMin / 100).toFixed(1), max: (cutInfo.areaMax / 100).toFixed(1), cv: (cutInfo.cv * 100).toFixed(0), n: cutInfo.candidates }) + ' ' + t('rpShapeInfo', { tri: cutInfo.shapes.tri, quad: cutInfo.shapes.quad, other: cutInfo.shapes.other }) : '') + (cutInfo && cutInfo.made < cutInfo.requested ? ' ' + t('rpFewer', { made: cutInfo.made, req: cutInfo.requested, min: S.minSide }) : '');
   rebuildSnaps(); draw(); return total;
 }
 /* 「2点を選ぶ」（事業主 2026-11-12）：始点→終点の2クリックで、2点を分割数で等分する点（2＝中間点）に、2点を結ぶ線に垂直な短い印の線を引く。印の線種・長さ・色は欄で決め、最後に使ったものを覚える（次からの初めの値）。 */
@@ -1071,7 +1090,7 @@ function divideMarkSpec() { const len = Number($('divMkLen')?.value), color = $(
 function saveDivideMark() { try { localStorage.setItem(DIVIDE_MARK_KEY, JSON.stringify(divideMarkSpec())); } catch { /* 覚えられなくても続ける */ } }
 function loadDivideMark() { let v = null; try { v = JSON.parse(localStorage.getItem(DIVIDE_MARK_KEY) || 'null'); } catch { v = null; } if (!v || typeof v !== 'object') return; if (v.style === 'dashed' || v.style === '') $('divMkStyle').value = v.style; if (Number(v.len) > 0) $('divMkLen').value = String(Math.min(Number(v.len), 1000)); if (['blue', 'green', 'red', 'white', 'yellow'].includes(v.color)) $('divMkColor').value = v.color; }
 function syncDivideBar() { const two = divideHow() === 'two'; for (const el of document.querySelectorAll?.('#divideBar [data-div-two]') || []) el.hidden = !two; for (const id of ['divMkStyleRow', 'divMkLenRow', 'divMkColorRow']) if ($(id)) $(id).hidden = !two; for (const id of ['divLenRow', 'divMarkRow']) if ($(id)) $(id).hidden = two; }
-function syncRpatchBar() { const random = $('rpHow')?.value !== 'existing'; for (const id of ['rpCountRow', 'rpMinRow', 'rpSeedRow']) if ($(id)) $(id).hidden = !random; if ($('rpNext')) $('rpNext').hidden = !random; }
+function syncRpatchBar() { const random = $('rpHow')?.value !== 'existing'; for (const id of ['rpCountRow', 'rpMinRow', 'rpSeedRow', 'rpAngOutRow', 'rpAngCutRow', 'rpTryRow', 'rpShareRow']) if ($(id)) $(id).hidden = !random; if ($('rpCompare')) $('rpCompare').hidden = !random; if ($('rpNext')) $('rpNext').hidden = !random; }
 function divideTwoClick(pt) {
   if (stage?.kind !== 'divide2') { stage = { kind: 'divide2', a: pt }; $('hint').textContent = t('divideTwoSecond'); draw(); return; }
   const a = stage.a, b = pt, d = distance(a, b); if (d < 0.01) { $('hint').textContent = t('divideTwoSame'); return; }
@@ -3939,6 +3958,7 @@ function initDesign() {
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
+  $('rpCompare').onclick = rpCompareOpen; $('rpCompareClose').onclick = () => { $('rpCompareWin').hidden = true; };
   $('rpHow').addEventListener('change', () => { syncRpatchBar(); $('hint').textContent = modeHint('rpatch'); }); $('rpNext').onclick = () => { $('rpSeed').value = String(Math.floor(rpNum('rpSeed', 1, 1, 999999)) + 1); if (rpLast) rpatchAt(rpLast); else $('hint').textContent = modeHint('rpatch'); };   /* 「別の案」：種を1つ進めて、同じ外形に作りなおす */
   loadDivideMark(); for (const id of ['divMkStyle', 'divMkLen', 'divMkColor']) $(id).addEventListener('change', saveDivideMark); $('divHow').addEventListener('change', () => { cancel(); syncDivideBar(); $('hint').textContent = t(divideHow() === 'two' ? 'divideTwoFirst' : 'divideLineFirst'); });   /* 分割線の「2点を選ぶ」の欄：印の線種・長さ・色は、最後に使ったものを覚える */
   $('ctx-zipper-edit').onclick = () => { countUse('ctx_zipper_edit'); hideCtxMenu(); if (zipperSelected().length) openZipperBar(); };   /* 右クリックの一番上「ファスナーの設定…」：選んだファスナーの小窓を開く（事業主 2026-11-12） */   /* 右クリック → ファスナーにする（選んだ線をファスナーの絵で表示・事業主指示 2026-11-11） */
@@ -8881,7 +8901,7 @@ function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
-  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode === 'rpatch') syncRpatchBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
+  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
   setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */

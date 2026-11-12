@@ -1327,11 +1327,35 @@ export function convexMinWidth(ps) {
  * 切り口の端は、外形か、前に切った線の上なので、交わりは T字になる。ピースが細くなりすぎる切り方（最小の幅 minSide 未満）・ふちとの角が小さすぎる切り方（minAngle 度未満）・前の切り口の端や頂点に近すぎる切り方（endSep mm 未満）は、やりなおす。
  * 返り値：{ lines:[{a,b}], pieces:[点の並び], requested, made }。凸でない外形は { error: 'notConvex' }。
  */
-export function randomCutLines(outline, { count = 6, minSide = 20, seed = 1, minAngle = 30, endSep = 8, tries = 500 } = {}) {
+/** 外形をランダムに切るカット線。candidates（候補の数）が2以上のときは、種から決まる候補をまとめて作り、本数がいちばん多い案のうち、点数（ピースの面積のばらつき＝標準偏差÷平均 ＋ 形の偏りの減点）が小さいものを選ぶ（事業主 2026-11-12「面積を極力統一したり、カット線と外周線の交わる角度を制限したい」「四角形と三角形の偏りも考慮」）。
+ *  minAngle＝カット線と外周線の最小の角度（°）、minAngleCut＝カット線どうしの最小の角度（°）。shareMax＝同じ形（三角形・四角形・五角形以上）が全ピースに占める割合の上限（0〜1・既定 1＝減点しない）。超えた分の2倍を、点数に足す。top＝返す上位の案の数。
+ *  戻り値：{ lines, pieces, requested, made, areaMin, areaMax, cv, shapes: { tri, quad, other }, maxShare, score, candidates, top: [同じ形の案…（本数・点数の順）] }（外形が不適なときは error）。 */
+export function randomCutLines(outline, opts = {}) {
+  const n = Math.max(1, Math.min(300, Math.floor(opts.candidates) || 1)), seed = Math.max(1, Math.floor(opts.seed) || 1), top = Math.max(1, Math.min(8, Math.floor(opts.top) || 1)), limit = Number.isFinite(opts.shareMax) ? Math.min(1, Math.max(0, opts.shareMax)) : 1;
+  const corners = q => { let c = 0; for (let i = 0; i < q.length; i++) { const a = q[(i + q.length - 1) % q.length], b = q[i], d = q[(i + 1) % q.length], cr = (b.x - a.x) * (d.y - b.y) - (b.y - a.y) * (d.x - b.x); if (Math.abs(cr) > 1e-6 * Math.max(1, Math.hypot(b.x - a.x, b.y - a.y) * Math.hypot(d.x - b.x, d.y - b.y))) c++; } return c; };   /* まっすぐ並ぶだけの頂点は数えない */
+  const stat = r => {
+    const A = (r.pieces || []).map(q => Math.abs(rpArea(q))); if (!A.length) return { areaMin: 0, areaMax: 0, cv: 0, shapes: { tri: 0, quad: 0, other: 0 }, maxShare: 0, score: 0 };
+    const mean = A.reduce((x, y) => x + y, 0) / A.length, sd = Math.sqrt(A.reduce((x, y) => x + (y - mean) ** 2, 0) / A.length), cv = mean > 0 ? sd / mean : 0;
+    const shapes = { tri: 0, quad: 0, other: 0 }; for (const q of r.pieces) { const c = corners(q); if (c <= 3) shapes.tri++; else if (c === 4) shapes.quad++; else shapes.other++; }
+    const maxShare = Math.max(shapes.tri, shapes.quad, shapes.other) / r.pieces.length;
+    return { areaMin: Math.min(...A), areaMax: Math.max(...A), cv, shapes, maxShare, score: cv + 2 * Math.max(0, maxShare - limit) };
+  };
+  if (n === 1) { const r = randomCutLinesOnce(outline, opts), o = { ...r, ...stat(r), candidates: 1 }; return { ...o, top: r.error ? [] : [o] }; }
+  const all = [];
+  for (let j = 0; j < n; j++) {   // 候補の種＝種×1000＋番号（種を変えると、別の候補の組になる）
+    const r = randomCutLinesOnce(outline, { ...opts, seed: seed * 1000 + j }); if (r.error) return { ...r, ...stat(r), candidates: n, top: [] };
+    all.push({ ...r, ...stat(r), candidates: n, usedSeed: seed * 1000 + j });
+  }
+  all.sort((x, y) => y.made - x.made || x.score - y.score);
+  const sig = r => r.lines.map(l => [l.a.x, l.a.y, l.b.x, l.b.y].map(v => v.toFixed(2)).join()).join('|'), seen = new Set(), list = [];
+  for (const r of all) { const k = sig(r); if (seen.has(k)) continue; seen.add(k); list.push(r); if (list.length >= top) break; }
+  return { ...all[0], top: list };
+}
+function randomCutLinesOnce(outline, { count = 6, minSide = 20, seed = 1, minAngle = 30, minAngleCut = minAngle, endSep = 8, tries = 500 } = {}) {
   if (!Array.isArray(outline) || outline.length < 3) return { error: 'badOutline', lines: [], pieces: [], requested: count, made: 0 };
   let base = outline.map(p => ({ x: p.x, y: p.y })); if (!isConvexPolygon(base)) return { error: 'notConvex', lines: [], pieces: [], requested: count, made: 0 };
   if (rpArea(base) < 0) base.reverse();
-  const rnd = seededRandom(seed), lines = [], ends = []; let pieces = [base];
+  const basePoly = { type: 'polyline', closed: true, points: base }, rnd = seededRandom(seed), lines = [], ends = []; let pieces = [base];
   const want = Math.max(0, Math.min(60, Math.floor(count) || 0));
   for (let k = 0; k < want; k++) {
     let done = false;
@@ -1345,7 +1369,8 @@ export function randomCutLines(outline, { count = 6, minSide = 20, seed = 1, min
       const P1 = lerp(e1, u1), P2 = lerp(e2, u2), cl = Math.hypot(P2.x - P1.x, P2.y - P1.y); if (cl < 1.5 * minSide) continue;
       if ([P1, P2].some(P => ps.some(v => Math.hypot(v.x - P.x, v.y - P.y) < endSep) || ends.some(v => Math.hypot(v.x - P.x, v.y - P.y) < endSep))) continue;
       const cu = { x: (P2.x - P1.x) / cl, y: (P2.y - P1.y) / cl }, ang = i => { const e = { x: (ps[(i + 1) % m].x - ps[i].x) / lens[i], y: (ps[(i + 1) % m].y - ps[i].y) / lens[i] }; return Math.acos(Math.min(1, Math.abs(cu.x * e.x + cu.y * e.y))) * 180 / Math.PI; };
-      if (ang(e1) < minAngle || ang(e2) < minAngle) continue;
+      const onBase = i => distToShape(basePoly, { x: (ps[i].x + ps[(i + 1) % m].x) / 2, y: (ps[i].y + ps[(i + 1) % m].y) / 2 }) < 1e-6;   /* その辺が外周線か（そうでなければ、すでに切ったカット線） */
+      if (ang(e1) < (onBase(e1) ? minAngle : minAngleCut) || ang(e2) < (onBase(e2) ? minAngle : minAngleCut)) continue;
       const A = [P1, ...ps.slice(e1 + 1, e2 + 1), P2], B = [P2, ...ps.slice(e2 + 1), ...ps.slice(0, e1 + 1), P1];
       if (Math.abs(rpArea(A)) < minSide * minSide || Math.abs(rpArea(B)) < minSide * minSide || convexMinWidth(A) < minSide || convexMinWidth(B) < minSide) continue;
       pieces = [...pieces.slice(0, pi), A, B, ...pieces.slice(pi + 1)]; lines.push({ a: P1, b: P2 }); ends.push(P1, P2); done = true;
