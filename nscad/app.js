@@ -2912,7 +2912,9 @@ function renderFoldBook(done = foldBookComplete(foldBookState())) {
   if (kind.value !== s.kind) kind.value = s.kind; $('flowBookRows').hidden = s.kind !== 'book';
   { const book = s.kind === 'book';   /* 手帳ではないとき（財布など）は、手帳専用の項目を隠す：レバーの端から（＋金具の全長の案内）・リフィルを白い紙として塗る・金具の色（事業主 2026-11-12） */
     for (const id of ['flowLeverGapRow', 'flowLeverGapNote']) if ($(id)) $(id).hidden = !book;
-    for (const id of ['flowRefillPaperRow', 'flowHwMetalRow']) if ($(id)) $(id).hidden = !(book && foldIsBifold()); }   /* この2つは、2つ折りのときだけ出る欄 */
+    for (const id of ['flowRefillPaperRow', 'flowHwMetalRow']) if ($(id)) $(id).hidden = !(book && foldIsBifold());   /* この2つは、2つ折りのときだけ出る欄 */
+    if ($('flowGrow')) $('flowGrow').hidden = !book;   /* 「曲げを伸ばす（リングが入るように）」は、リング付きの手帳だけ */
+    if (!foldIsBifold() && $('foldFlowText3')) { const tx = t(book ? 'foldFlowText3' : 'foldFlowText3Plain'); if ($('foldFlowText3').textContent !== tx) $('foldFlowText3').textContent = tx; } }   /* ③の説明：手帳ではないときは、リングの文を外す */
   if (s.kind === 'book') {
     const spec = $('flowRingSpec'), dia = $('flowRingDia'), stack = $('flowStackT'), sp = s.spec ? binderSpec(ringStandardId(s)) : null, skey = lang + '|' + specsSig();
     if (spec.dataset.key !== skey) { spec.textContent = ''; fillBinderSpecOptions(spec, true); spec.dataset.key = skey; }
