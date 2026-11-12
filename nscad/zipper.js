@@ -28,12 +28,16 @@ const ZIPPER_TAPE_THICK = 0.6;   /* 横から見たテープの厚み */
  *    「幅と貼り付けの幅を線で指定して、サイズ変更に連動させれば足りなくなったときに警告が出るように」「テープ幅は2.5cm,3.0cm,4.0cm」「縫い線から2mmは余裕が欲しい」「革の厚みは２枚分」）。
  *  印に持つ値：gap＝幅（ファスナーが渡る、革の端から端まで mm）・gapRef＝幅を取る線の id・att＝貼り付けの幅（片側。革の端からテープの端まで mm）・attRef＝その線の id・
  *  lt＝革1枚の厚み（mm。式では2枚分）・tw＝使うテープの幅（mm）。線（…Ref）があれば、その線の長さが優先（線を直すと点検も変わる）。数字は、線が無くなったときの控え。 ── */
-export const ZIPPER_TAPE_WIDTHS = [25, 30, 40];   /* 手持ちのテープの幅（mm）：2.5・3.0・4.0 cm */
+/* テープの幅の候補（号数の目安・mm）。事業主 2026-11-12「テープ幅は勝手に３つ選出したけど、市場の規格として適切かどうか」「号数表示が適切ならその表記も」→ 決定A：号数つき4つ＋実測の入力。
+ *  調べた値（販売店の「おおよそ」の表・閉じた状態の全幅）：YKK 金属 3号 約26・5号 約30・8号 約37・10号 約41／ビスロン 8号 約35／エクセラ 3号 25・5号 30。種類・メーカーで数 mm 違うので、足りない側に倒れないよう、小さめの値を目安にする。合わないときは、実測の mm を入れる（tw は、候補の値でなくてもよい）。 */
+export const ZIPPER_TAPE_PRESETS = [{ no: '3', w: 25 }, { no: '5', w: 30 }, { no: '8', w: 35 }, { no: '10', w: 40 }];
+export const ZIPPER_TAPE_WIDTHS = ZIPPER_TAPE_PRESETS.map(p => p.w);
+export const ZIPPER_TW_MAX = 100;   /* テープの幅（実測）の上限 mm */
 export const ZIPPER_SEW_MARGIN = 2;   /* 縫い線の外に残したいテープ（mm） */
 export const ZIPPER_GAP_MAX = 1000, ZIPPER_ATT_MAX = 200, ZIPPER_LT_MAX = 20;
 const zipNumOk = (v, max, zeroOk) => v === undefined || (Number.isFinite(v) && (zeroOk ? v >= 0 : v > 0) && v <= max);
 const zipRefOk = v => v === undefined || (typeof v === 'string' && v.length > 0 && v.length <= 64);
-const zipTapeFieldsOk = z => zipNumOk(z.gap, ZIPPER_GAP_MAX) && zipNumOk(z.att, ZIPPER_ATT_MAX) && zipNumOk(z.lt, ZIPPER_LT_MAX) && zipRefOk(z.gapRef) && zipRefOk(z.attRef) && (z.tw === undefined || ZIPPER_TAPE_WIDTHS.includes(z.tw));
+const zipTapeFieldsOk = z => zipNumOk(z.gap, ZIPPER_GAP_MAX) && zipNumOk(z.att, ZIPPER_ATT_MAX) && zipNumOk(z.lt, ZIPPER_LT_MAX) && zipRefOk(z.gapRef) && zipRefOk(z.attRef) && zipNumOk(z.tw, ZIPPER_TW_MAX);
 
 /** 図面に保存してよい印か（検査用）。 */
 export function zipperOk(z) {
@@ -50,7 +54,7 @@ export function normalizeZipper(z = {}) {
   /* テープ幅の点検の値：0・壊れた値は書かない（未設定と同じ） */
   for (const [k, max] of [['gap', ZIPPER_GAP_MAX], ['att', ZIPPER_ATT_MAX], ['lt', ZIPPER_LT_MAX]]) { const raw = z?.[k], v = raw === undefined || raw === null || raw === '' ? NaN : Math.round(Number(raw) * 100) / 100; if (Number.isFinite(v) && v > 0) o[k] = Math.min(max, v); }
   for (const k of ['gapRef', 'attRef']) if (typeof z?.[k] === 'string' && z[k].length > 0 && z[k].length <= 64) o[k] = z[k];
-  if (ZIPPER_TAPE_WIDTHS.includes(Number(z?.tw))) o.tw = Number(z.tw);
+  { const raw = z?.tw, v = raw === undefined || raw === null || raw === '' ? NaN : Math.round(Number(raw) * 10) / 10; if (Number.isFinite(v) && v > 0) o.tw = Math.min(ZIPPER_TW_MAX, v); }   /* 使うテープの幅（候補の値か、実測の mm） */
   return o;
 }
 
@@ -85,7 +89,7 @@ export function zipperTapeCheck({ gap, att, lt, tw, seam } = {}) {
   const r2 = v => Math.round(v * 100) / 100, g = Number(gap), s = seam === null || seam === undefined || !Number.isFinite(Number(seam)) ? null : Number(seam);
   if (!(g > 0)) return null;
   const attAuto = !(Number(att) > 0), a = attAuto ? (s === null ? null : s + ZIPPER_SEW_MARGIN) : Number(att); if (a === null) return null;
-  const t = Number(lt) > 0 ? Number(lt) : 0, need = r2(g + a * 2 + t * 2), best = ZIPPER_TAPE_WIDTHS.find(w => w + 1e-9 >= need) ?? null, w = ZIPPER_TAPE_WIDTHS.includes(Number(tw)) ? Number(tw) : null;
+  const t = Number(lt) > 0 ? Number(lt) : 0, need = r2(g + a * 2 + t * 2), best = ZIPPER_TAPE_WIDTHS.find(w => w + 1e-9 >= need) ?? null, w = Number(tw) > 0 ? Number(tw) : null;
   const sewRest = s === null ? null : r2(a - s);
   return { need, att: r2(a), attAuto, lt: t, tw: w, ok: w !== null && w + 1e-9 >= need, short: w === null ? 0 : Math.max(0, r2(need - w)), best, sewRest, sewOk: sewRest === null || sewRest + 1e-9 >= ZIPPER_SEW_MARGIN };
 }

@@ -46,7 +46,7 @@ import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
 import { coverLayout, binderOverallExtent } from './hardware.js';
-import { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM, zipperTapeCheck, zipperSeamAuto, ZIPPER_SEW_MARGIN, ZIPPER_GAP_MAX, ZIPPER_ATT_MAX, ZIPPER_LT_MAX } from './zipper.js';
+import { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM, zipperTapeCheck, zipperSeamAuto, ZIPPER_SEW_MARGIN, ZIPPER_GAP_MAX, ZIPPER_ATT_MAX, ZIPPER_LT_MAX, ZIPPER_TAPE_PRESETS, ZIPPER_TW_MAX } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
 /** 元の金具データ（公開版の値）。事業主がこの PC で直した値（binder_edits）は起動時に重ねる（loadBinderEdits）。 */
@@ -10000,13 +10000,15 @@ function zipperTapeOf(run) {
 /** 知らせることがあるか：選んだテープでは足りない／どのテープでも足りない／縫い線の外に 2mm 無い。 */
 const zipperTapeBad = c => !!c && ((c.tw !== null && !c.ok) || (c.tw === null && c.best === null) || !c.sewOk);
 const zipNum = v => String(+Number(v).toFixed(2)), zipCm = w => (w / 10).toFixed(1);
+/** テープの幅の呼び方：候補の値なら「3.0 cm（5号）」、実測の値なら「27 mm」。 */
+const zipTwLabel = w => { const p = ZIPPER_TAPE_PRESETS.find(x => x.w === w); return p ? t('zipperTwNo', { cm: zipCm(w), no: p.no }) : t('zipperTwPlain', { mm: zipNum(w) }); };
 /** 小窓の点検の一文：必要な幅の内訳と、足りる・足りない。 */
 function zipperTapeText(st) {
   if (!st || !(st.gap > 0)) return t('zipperTapeNoGap'); const c = st.check; if (!c) return t('zipperTapeNeedAtt');
   const parts = [t('zipperTapeNeed', { need: zipNum(c.need), gap: zipNum(st.gap), att: zipNum(c.att), lt: zipNum(c.lt) }) + (c.attAuto ? t('zipperTapeAttAuto', { seam: zipNum(st.seam) }) : '')];
-  if (c.tw === null) parts.push(c.best !== null ? t('zipperTapePickTw', { cm: zipCm(c.best) }) : t('zipperTapeNoFit'));
-  else if (c.ok) parts.push(t('zipperTapeOk', { cm: zipCm(c.tw), rest: zipNum(c.tw - c.need) }));
-  else parts.push(t('zipperTapeShort', { cm: zipCm(c.tw), short: zipNum(c.short) }) + ' ' + (c.best !== null ? t('zipperTapeBest', { cm: zipCm(c.best) }) : t('zipperTapeNoWider')));
+  if (c.tw === null) parts.push(c.best !== null ? t('zipperTapePickTw', { tw: zipTwLabel(c.best) }) : t('zipperTapeNoFit'));
+  else if (c.ok) parts.push(t('zipperTapeOk', { tw: zipTwLabel(c.tw), rest: zipNum(c.tw - c.need) }));
+  else parts.push(t('zipperTapeShort', { tw: zipTwLabel(c.tw), short: zipNum(c.short) }) + ' ' + (c.best !== null ? t('zipperTapeBest', { tw: zipTwLabel(c.best) }) : t('zipperTapeNoWider')));
   if (!c.sewOk) parts.push(t('zipperTapeSew', { rest: zipNum(c.sewRest) }));
   return parts.join('　');
 }
@@ -10017,7 +10019,11 @@ function refreshZipperTape(st) {
   if (act !== $('zipperAtt')) $('zipperAtt').value = st?.att > 0 ? zipNum(st.att) : '';
   $('zipperAtt').placeholder = st && st.seam !== null && !(st.att > 0) ? zipNum(st.seam + ZIPPER_SEW_MARGIN) : '';   /* 空欄のときに使う値（縫い代＋2mm）を、うすく見せる */
   if (act !== $('zipperLt')) $('zipperLt').value = st?.z.lt ? zipNum(st.z.lt) : '';
-  $('zipperTw').value = st?.z.tw ? String(st.z.tw) : '';
+  /* テープ：候補（号数の目安）の一覧は、言葉を切り替えても合うよう、そのつど書き直す。実測の値のときは「実測」を選んだ形にし、mm の欄に値を出す */
+  const twSel = $('zipperTw'), tw = st?.z.tw || 0, preset = ZIPPER_TAPE_PRESETS.some(p => p.w === tw);
+  if (twSel.appendChild) { if (!twSel.zipOpts) twSel.zipOpts = [...ZIPPER_TAPE_PRESETS.map(p => String(p.w)), 'custom'].map(v => { const o = document.createElement('option'); o.value = v; twSel.appendChild(o); return o; }); twSel.zipOpts.forEach((o, i) => { const p = ZIPPER_TAPE_PRESETS[i]; o.textContent = p ? t('zipperTwOpt', { no: p.no, cm: zipCm(p.w) }) : t('zipperTwCustom'); }); }
+  twSel.value = !tw ? '' : preset ? String(tw) : 'custom';
+  if (act !== $('zipperTwMm')) $('zipperTwMm').value = tw ? zipNum(tw) : '';
   $('zipperGapPick').classList?.toggle?.('linked', !!st?.gapLinked); $('zipperAttPick').classList?.toggle?.('linked', !!st?.attLinked);
   const out = $('zipperTapeOut'); out.textContent = zipperTapeText(st); out.className = !st?.check ? '' : zipperTapeBad(st.check) ? 'ng' : st.check.tw !== null ? 'ok' : '';
 }
@@ -10053,7 +10059,7 @@ function zipperPickRefAt(w) {
   const len = zipperRefLen(s.id); if (len === null || len > (which === 'gap' ? ZIPPER_GAP_MAX : ZIPPER_ATT_MAX)) { $('hint').textContent = t('zipperRefBad'); return 0; }
   setZipperRefPicking(null); zipperLive = null;
   const r = zipperTapeSet({ [which]: len, [which + 'Ref']: s.id });
-  $('hint').textContent = t('zipperRefDone', { what, mm: zipNum(len) }) + (r.autoTw ? ' ' + t('zipperTapeAutoTw', { cm: zipCm(r.autoTw) }) : ''); return 1;
+  $('hint').textContent = t('zipperRefDone', { what, mm: zipNum(len) }) + (r.autoTw ? ' ' + t('zipperTapeAutoTw', { tw: zipTwLabel(r.autoTw) }) : ''); return 1;
 }
 /** テープ幅の点検で知らせることがあるファスナーに、橙の輪と一言を出す（小窓を閉じていても出す。書き出しには出さない）。 */
 function drawZipperTapeWarn() {
@@ -10114,10 +10120,13 @@ function wireZipperBar() {
   /* テープ幅の点検：幅・貼り付けの幅・革の厚み（入力が止まってから1回だけ反映。空欄・0＝未設定。数字を入れ直すと、線との結び付きは外れる）・使うテープ・「線から取る」 */
   for (const [k, max, refK] of [['gap', ZIPPER_GAP_MAX, 'gapRef'], ['att', ZIPPER_ATT_MAX, 'attRef'], ['lt', ZIPPER_LT_MAX, null]]) {
     const el = $('zipper' + k[0].toUpperCase() + k.slice(1)); let tm = null;
-    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value, v = raw === '' || raw === null ? 0 : Number(raw); if (!(v >= 0 && v <= max)) { $('hint').textContent = t('zipperTapeInvalid', { gap: ZIPPER_GAP_MAX, att: ZIPPER_ATT_MAX, lt: ZIPPER_LT_MAX }); return; } const r = zipperTapeSet({ [k]: v > 0 ? v : undefined, ...(refK ? { [refK]: undefined } : {}) }); if (r.autoTw) $('hint').textContent = t('zipperTapeAutoTw', { cm: zipCm(r.autoTw) }); };
+    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value, v = raw === '' || raw === null ? 0 : Number(raw); if (!(v >= 0 && v <= max)) { $('hint').textContent = t('zipperTapeInvalid', { gap: ZIPPER_GAP_MAX, att: ZIPPER_ATT_MAX, lt: ZIPPER_LT_MAX }); return; } const r = zipperTapeSet({ [k]: v > 0 ? v : undefined, ...(refK ? { [refK]: undefined } : {}) }); if (r.autoTw) $('hint').textContent = t('zipperTapeAutoTw', { tw: zipTwLabel(r.autoTw) }); };
     el.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(apply, 300); }); el.addEventListener('change', apply);
   }
-  $('zipperTw').addEventListener('change', () => { countUse('zipper_tape_tw'); setZipper({ tw: Number($('zipperTw').value) || undefined }); });
+  $('zipperTw').addEventListener('change', () => { countUse('zipper_tape_tw'); const v = $('zipperTw').value; if (v === 'custom') { $('zipperTwMm').focus?.(); $('hint').textContent = t('zipperTwCustomHint'); return; } setZipper({ tw: Number(v) || undefined }); });
+  { const el = $('zipperTwMm'); let tm = null;   /* 実測のテープ幅（mm）：入力が止まってから1回だけ反映。空欄・0＝未選択 */
+    const apply = () => { clearTimeout(tm); tm = null; const raw = el.value, v = raw === '' || raw === null ? 0 : Number(raw); if (!(v >= 0 && v <= ZIPPER_TW_MAX)) { $('hint').textContent = t('zipperTwInvalid', { max: ZIPPER_TW_MAX }); return; } setZipper({ tw: v > 0 ? v : undefined }); };
+    el.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(apply, 300); }); el.addEventListener('change', apply); }
   $('zipperGapPick').onclick = () => { countUse('zipper_tape_pick'); setZipperRefPicking(zipperRefPicking === 'gap' ? null : 'gap'); };
   $('zipperAttPick').onclick = () => { countUse('zipper_tape_pick'); setZipperRefPicking(zipperRefPicking === 'att' ? null : 'att'); };
   for (const k of ['cut0', 'cut1']) {   /* 両端を短くする長さ（mm）：入力が止まってから1回だけ反映。欄は「始まりの端」「終わりの端」＝向きに合わせて、線の始点側（cut0）か終点側（cut1）に入る */
