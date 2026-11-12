@@ -1,0 +1,70 @@
+{
+  "id": "dimedit",
+  "page": "text-dimension",
+  "title": "tut.dimedit.title",
+  "steps": [
+    {
+      "say": "tut.dimedit.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        60,
+        100,
+        60
+      ]
+    },
+    {
+      "click": "[data-tool=\"dimension\"]",
+      "mode": "dimension"
+    },
+    {
+      "mouse": [
+        20,
+        60
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        100,
+        60
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        60,
+        50
+      ],
+      "press": true,
+      "wait": 500
+    },
+    {
+      "say": "tut.dimedit.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        60,
+        50,
+        60,
+        38
+      ],
+      "wait": 1000
+    },
+    {
+      "say": "tut.dimedit.3",
+      "card": "infoCard",
+      "show": "#info-offset",
+      "wait": 1500
+    },
+    {
+      "say": "tut.dimedit.4",
+      "wait": 900
+    }
+  ]
+}
