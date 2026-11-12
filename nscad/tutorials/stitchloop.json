@@ -1,0 +1,85 @@
+{
+  "id": "stitchloop",
+  "page": "stitch-seam",
+  "title": "tut.stitchloop.title",
+  "steps": [
+    {
+      "say": "tut.stitchloop.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        25,
+        105.5,
+        85
+      ]
+    },
+    {
+      "click": "[data-tool=\"offset\"]",
+      "mode": "offset"
+    },
+    {
+      "mouse": [
+        65,
+        25
+      ],
+      "press": true
+    },
+    {
+      "value": {
+        "#offsetDist": "5"
+      }
+    },
+    {
+      "mouse": [
+        65,
+        55
+      ],
+      "press": true,
+      "wait": 800
+    },
+    {
+      "say": "tut.stitchloop.2",
+      "mode": "stitch",
+      "wait": 600
+    },
+    {
+      "say": "tut.stitchloop.3",
+      "mouse": [
+        30,
+        30
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        100,
+        80
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.stitchloop.4",
+      "mouse": [
+        30,
+        30
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        100,
+        80
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.stitchloop.5",
+      "wait": 700
+    }
+  ]
+}
