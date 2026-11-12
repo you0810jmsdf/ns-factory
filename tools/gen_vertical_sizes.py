@@ -72,6 +72,7 @@ def gen(slug):
         ("nsf_bible_vertical_g1", f"nsf_{slug}_vertical_g1"),
         (f"`{slug}-weekly-${{opts.undated", f"`{slug}-vertical-${{opts.undated"),  # PDFの名前
         ("`bible-weekly-${opts.undated", f"`{slug}-vertical-${{opts.undated"),
+        ("`bible-vertical-${opts.undated", f"`{slug}-vertical-${{opts.undated"),
     ]:
         head = head.replace(a, b)
     out = head + tail
@@ -79,8 +80,19 @@ def gen(slug):
     entry = (f"  {{ date: '2026-11-12', type: 'feat', title: '{name} 週間バーチカルを新規作成',\n"
              f"    detail: 'バイブル週間バーチカルを土台に、{name}（{dims}）版を作りました。面付け・穴位置・用紙の選択は {name} 週間ブロックと同じです。"
              f"実物での組み立て・穴位置の確認は未了です。' }},\n")
-    out = out.replace("const HISTORY_ENTRIES = [\n", "const HISTORY_ENTRIES = [\n" + entry, 1)
-    out = out.replace("const HISTORY_ENTRIES = [\r\n", "const HISTORY_ENTRIES = [\r\n" + entry.replace("\n", "\r\n"), 1)
+    # 履歴は古い順に並び、画面で逆順に出す。最初の閉じ括弧（"\n]" か "\n];"）の手前＝末尾に足す
+    # バイブル版だけの履歴（PDF名の直し）は他の判型に載せない
+    out = re.sub(r"  \{ date: '2026-11-12', type: 'fix', title: 'PDFのファイル名を「bible-vertical」に',.*?\},\r?\n", "", out, flags=re.S)
+    hi = out.index("const HISTORY_ENTRIES = [")
+    pos = out.index("\n]", hi) + 1            # "]" の位置（直前の行は改行で終わっている）
+    if out[pos - 2] == "\r":
+        entry = entry.replace("\n", "\r\n")
+    head = out[:pos]
+    body = head.rstrip("\r\n")
+    nlpart = head[len(body):]
+    if not body.endswith(","):               # 直前の項目にカンマが無ければ足す
+        body += ","
+    out = body + nlpart + entry + out[pos:]
     os.makedirs(os.path.join(ROOT, f"{slug}-vertical"), exist_ok=True)
     with io.open(os.path.join(ROOT, f"{slug}-vertical", "index.html"), "w", encoding="utf-8", newline="") as f:
         f.write(out)

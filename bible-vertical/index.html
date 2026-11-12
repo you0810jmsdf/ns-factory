@@ -798,7 +798,7 @@ async function generatePDF(ev) {
       const off = window.nsfPrintOffsetFor ? window.nsfPrintOffsetFor(sheets[i]) : { x: 0, y: 0 }; // 表裏別の印刷ズレ補正
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG', off.x, off.y, PW, PH);
     }
-    const fname = `bible-weekly-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
+    const fname = `bible-vertical-${opts.undated ? 'undated-' : ''}${new Date().toISOString().slice(0,10)}.pdf`;
     const url = URL.createObjectURL(pdf.output('blob'));
     const a = document.createElement('a'); a.href = url; a.download = fname; a.target = '_blank';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -885,6 +885,8 @@ const HISTORY_ENTRIES = [
     detail: 'バイブル（95×170mm）の週間バーチカルを作成しました。見開き1週間で、左ページに月〜木、右ページに金〜日とMEMO列。各ページは「時刻列＋4列」で、時間軸の開始時・終了時を選べます（既定は6〜24時。0〜24時の全24時間にもできます）。30分の点線・3時間ごとの太線は切り替え可能。日付なしモード（曜日は週開始の並び）、祝日表示、月略称、ロゴ・テキスト・画像の透かしも使えます。穴は6穴（バイブル週間と同じ位置）。実物での組み立て・穴位置の確認は未了です。' },
   { date: '2026-10-29', type: 'feat', title: '操作パネルをシンプルに・印刷の補正を強化・設定の保存・ホーム画面に追加',
     detail: '①いつも使う設定（日付・用紙・印刷）だけを前に出し、表示・透かし・フォント・チェックリストなどは「くわしい設定」に畳みました（開閉は覚えます）。②「印刷がずれるとき」に、位置の補正に加えて印刷の倍率（縦横）、逆順印刷、プリンターごとの設定の保存を追加しました（プリンター設定は全ツール共通）。③「設定を保存」「設定を読み込む」で、補正値などの設定をファイルに書き出して別の端末・ブラウザで使えます。④ブラウザのメニューの「ホーム画面に追加」で、アプリのように開けます（一度開いたツールは電波がなくても開けます）。' },
+  { date: '2026-11-12', type: 'fix', title: 'PDFのファイル名を「bible-vertical」に',
+    detail: '保存されるPDFの名前が週間ブロックと同じ「bible-weekly-日付.pdf」になっていたので、「bible-vertical-日付.pdf」に直しました。中身は変わりません。' },
 ]
 function openHistory() {
   const typeLabel = { feat: '機能追加', fix: '不具合修正', improve: '改善' };
