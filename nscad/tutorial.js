@@ -1,6 +1,6 @@
 // 画面内チュートリアル：台本（tutorials/*.json）の検証・乾式実行・再生エンジン（擬似カーソル・ハイライト・字幕）。
 // 台本の 1 手順：{say:'i18nキー', click:'#id'|null, mouse:[x,y]（mm）, drag:[x1,y1,x2,y2], key:'Enter', wait:ms, mode:'line', value:{'#id':'値'}}
-export const STEP_KEYS = ['say', 'click', 'show', 'mouse', 'drag', 'key', 'wait', 'mode', 'value', 'press', 'shift', 'dbl', 'card'];   /* card＝右の列のカード（id）を開いて見せる */   /* show＝光らせるだけで押さない（ファイルの保存・印刷など、押すと外へ出るボタン用） */
+export const STEP_KEYS = ['say', 'click', 'show', 'mouse', 'drag', 'key', 'wait', 'mode', 'value', 'press', 'shift', 'dbl', 'card', 'ctx'];   /* card＝右の列のカード（id）を開いて見せる */   /* show＝光らせるだけで押さない（ファイルの保存・印刷など、押すと外へ出るボタン用） */
 /** 台本を検証して問題の配列を返す（空＝OK）。existsSelector(sel)・hasKey(key) は環境依存の検査関数。 */
 export function validateScript(script, { existsSelector = () => true, hasKey = () => true } = {}) {
   const out = [];
@@ -38,7 +38,7 @@ export function createPlayer(script, host) {
     if (s.show) host.highlight(s.show);
     if (s.click) { host.highlight(s.click); if (!selfMode) { await sleep(400); host.click(s.click); } }
     if (s.value) for (const [sel, v] of Object.entries(s.value)) { host.highlight(sel); if (!selfMode) host.setValue(sel, v); }
-    if (s.mouse) { host.cursor(s.mouse[0], s.mouse[1]); await sleep(600); if (s.press && !selfMode) host.click(null, s.mouse, { shift: !!s.shift, dbl: !!s.dbl }); }   /* shift＝Shift を押しながら・dbl＝ダブルクリック */
+    if (s.mouse) { host.cursor(s.mouse[0], s.mouse[1]); await sleep(600); if (s.press && !selfMode) host.click(null, s.mouse, { shift: !!s.shift, dbl: !!s.dbl }); if (s.ctx && !selfMode) host.context?.(s.mouse); }   /* ctx＝その位置で右クリック（メニューを開く） */   /* shift＝Shift を押しながら・dbl＝ダブルクリック */
     if (s.drag) { host.cursor(s.drag[0], s.drag[1]); await sleep(300); if (!selfMode) host.drag(...s.drag); host.cursor(s.drag[2], s.drag[3]); await sleep(300); }
     if (s.key && !selfMode) host.key(s.key);
     await sleep(s.wait ?? (s.say !== undefined ? Math.max(1200, host.t(s.say).length * 60) : 300));

@@ -1,0 +1,50 @@
+{
+  "id": "ctxmenu",
+  "page": "drawing",
+  "title": "tut.ctxmenu.title",
+  "steps": [
+    {
+      "say": "tut.ctxmenu.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        25,
+        50,
+        105,
+        50
+      ]
+    },
+    {
+      "mouse": [
+        65,
+        50
+      ],
+      "ctx": true,
+      "wait": 1200
+    },
+    {
+      "say": "tut.ctxmenu.2",
+      "wait": 1500
+    },
+    {
+      "say": "tut.ctxmenu.3",
+      "click": "#ctxCatBtn-stitch",
+      "wait": 1500
+    },
+    {
+      "click": "#ctxCatBtn-draw",
+      "wait": 1500
+    },
+    {
+      "say": "tut.ctxmenu.4",
+      "mouse": [
+        110,
+        100
+      ],
+      "press": true,
+      "wait": 600
+    }
+  ]
+}
