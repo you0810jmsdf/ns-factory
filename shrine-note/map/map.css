@@ -366,3 +366,26 @@ body.day::before { content: ""; position: fixed; left: 0; right: 0; top: 0; heig
 .fb-status { min-height: 1.6em; font-size: 14px; margin: 10px 0; color: var(--ink-soft); }
 .fb-status.ok { color: #9ccf8f; }
 .fb-status.ng { color: #e8765a; }
+
+/* 古事記と日本書紀（二つの書を比べる） */
+.kiki-body { padding: 0 14px 28px; line-height: 1.75; font-size: 14px; }
+.kiki-in { max-width: 760px; margin: 0 auto; }
+.kiki-in h3 { font: 600 16px var(--serif); color: var(--gold); margin: 22px 0 8px; }
+.kiki-in a { color: var(--gold); }
+.kiki-tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.kiki-t { width: 100%; border-collapse: collapse; font-size: 13px; }
+.kiki-t th, .kiki-t td { border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; text-align: left; }
+.kiki-t thead th { font: 600 14px var(--serif); color: var(--ink); }
+.kiki-t tbody th { color: var(--muted); font-weight: 600; white-space: nowrap; width: 5.5em; }
+.kiki-tabs { flex-wrap: wrap; }
+.kiki-tabs .fbk { flex: 1 1 auto; padding: 0 12px; font-size: 13px; min-height: 40px; }
+.kiki-tabs .fbk b { margin-left: 4px; }
+.kiki-list li button small { display: block; line-height: 1.5; }
+@media (max-width: 600px) {
+  .kiki-t thead { display: none; }
+  .kiki-t, .kiki-t tbody, .kiki-t tr, .kiki-t th, .kiki-t td { display: block; width: auto; }
+  .kiki-t tr { border: 1px solid var(--line); border-radius: 8px; margin: 10px 0; padding: 4px 10px 8px; background: rgba(24,36,27,0.5); }
+  .kiki-t tbody th { border: 0; padding: 6px 0 2px; color: var(--gold); white-space: normal; }
+  .kiki-t td { border: 0; padding: 4px 0; }
+  .kiki-t td::before { content: attr(data-l); display: block; font: 600 12px var(--serif); color: var(--ink); }
+}

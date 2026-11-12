@@ -1426,6 +1426,7 @@ function deityHTML(d0, fromShrine) {
       <dt>${TX('日本書紀', 'Nihon Shoki')}</dt><dd>${esc(d.nihonshoki_name || none)}${d.nihonshoki_where ? TX('（', ' (') + esc(d.nihonshoki_where) + TX('）', ')') : ''}</dd>
       ${linkTo(rel.parents, TX('親', 'Parents'))}${linkTo(rel.spouses, TX('配偶', 'Spouse'))}${linkTo(rel.children, TX('子', 'Children'))}
     </dl>
+    <p class="meta"><a href="#" data-kiki="1">${TX('古事記と日本書紀は、どう違う？ ›', 'How do the Kojiki and the Nihon Shoki differ? ›')}</a></p>
     ${geneSVG(d0)}
     <h3>${TX('神話の場面', 'Myth scenes')}</h3>
     ${(d.scenes || []).map((sc) => `<div class="scene"><b>${esc(sc.title)}</b>${sc.where ? `<span class="meta">${TX('（', ' (')}${esc(sc.where)}${TX('）', ')')}</span>` : ''}<p>${esc(sc.text)}${refs(sc.src)}${sc.disputed ? ` <span class="badge guess">${TX('諸説あり', 'Disputed')}</span>` : ''}</p></div>`).join('')}
@@ -1641,8 +1642,9 @@ document.addEventListener('auxclick', trackFood);
 
 // クリックの委譲（神様・神社・戻る・出典）
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki],[data-visit],[data-unvisit],[data-ppick],[data-pshare],[data-pdel]');
+  const t = e.target.closest('[data-deity],[data-shrine],[data-back],[data-route],[data-emaki],[data-visit],[data-unvisit],[data-ppick],[data-pshare],[data-pdel],[data-kiki]');
   if (!t) return;
+  if (t.dataset.kiki) { e.preventDefault(); track.section(LG(), 'kiki'); openKiki(true); return; }
   if (t.dataset.deity) { e.preventDefault(); if (!selected) { current = { shrine: null }; sheetEl.hidden = false; sheetEl.classList.add('show'); } showDeity(t.dataset.deity); }
   else if (t.dataset.shrine) { selectShrine(t.dataset.shrine); }
   else if (t.dataset.back) { backToShrine(); }
@@ -1656,7 +1658,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('g[data-deity]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
-  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('feedback').hidden) openFeedback(false); else if (!$('finder').hidden) openFinder(false); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
+  if (e.key === 'Escape') { if (!emakiEl.hidden) closeEmaki(); else if (!$('feedback').hidden) openFeedback(false); else if (!$('finder').hidden) openFinder(false); else if (!$('kiki').hidden) openKiki(false); else if (!$('book').hidden) openBook(false); else if (!$('tree').hidden) openTree(false); else if (selected) goHome(); }
 });
 
 
@@ -1969,6 +1971,93 @@ function openDeityFromTree(id) {
   }
   showDeity(id);
 }
+
+// ---------- 古事記と日本書紀（二つの書を比べる）----------
+// 事実は原文（古事記の序・続日本紀・日本書紀）で確かめたものだけ。神様の比べは deities.json の記録から自動で数える
+const KIKI_SRC = ['kjs', 'k', 'k3', 'shoku8', 'ns1', 'ns30'];
+const kikiHas = (s) => !!(s && String(s).trim() && !/^[（(—\-]/.test(String(s).trim()));
+function kikiGroups() {
+  const g = { diff: [], same: [], konly: [], nonly: [], none: [] };
+  deityData.deities.forEach((d) => {
+    const k = kikiHas(d.kojiki_name), n = kikiHas(d.nihonshoki_name);
+    g[k && n ? (d.kojiki_name.trim() === d.nihonshoki_name.trim() ? 'same' : 'diff') : k ? 'konly' : n ? 'nonly' : 'none'].push(d);
+  });
+  return g;
+}
+const KIKI_TABS = [
+  ['diff', '両方に出る・表記が違う', 'In both, written differently'],
+  ['same', '両方に出る・同じ表記', 'In both, written the same'],
+  ['konly', '古事記だけ', 'Kojiki only'],
+  ['nonly', '日本書紀だけ', 'Nihon Shoki only'],
+  ['none', 'どちらにも見えない・確認中', 'In neither / being checked'],
+];
+let kikiTab = 'diff';
+function kikiListHTML(list) {
+  return `<ul class="finder-list kiki-list">${list.map((d0) => {
+    const d = locDeity(d0);
+    const kn = d.kojiki_name || TX('記載なし', 'not recorded'), nn = d.nihonshoki_name || TX('記載なし', 'not recorded');
+    return `<li><button type="button" data-deity="${esc(d0.id)}"><b>${esc(EN ? dName(d0) : d0.name)}</b><small>${TX('古事記：', 'Kojiki: ')}${esc(kn)}</small><small>${TX('日本書紀：', 'Nihon Shoki: ')}${esc(nn)}</small></button></li>`;
+  }).join('')}</ul>`;
+}
+function renderKiki() {
+  const g = kikiGroups();
+  const total = deityData.deities.length;
+  const dl = (id, label) => (deities[id] ? `<a href="#" data-deity="${esc(id)}">${esc(label)}</a>` : esc(label));
+  const row = (h, kj, ns) => `<tr><th scope="row">${h}</th><td data-l="${TX('古事記', 'Kojiki')}">${kj}</td><td data-l="${TX('日本書紀', 'Nihon Shoki')}">${ns}</td></tr>`;
+  const tabs = KIKI_TABS.map(([k, ja, en]) => `<button type="button" class="fbk${k === kikiTab ? ' on' : ''}" data-kikitab="${k}" role="tab" aria-selected="${k === kikiTab}">${TX(ja, en)} <b>${g[k].length}</b></button>`).join('');
+  $('kikiBody').innerHTML = `
+  <div class="kiki-in">
+    <p>${TX('古事記と日本書紀は、どちらも8世紀のはじめにまとめられ、神々の時代から天皇の時代までを記す書です（あわせて「記紀」と呼ばれます）。この特集の神様のページは、二つの書の名前と場面を並べて書いています。ここでは二つの書の違いを、原文で確かめられることだけで並べます。',
+      'The Kojiki and the Nihon Shoki were both compiled at the beginning of the 8th century, and both record events from the age of the gods to the reigns of the emperors (together they are called "Kiki"). The deity pages of this feature set the names and scenes of the two books side by side. Here the differences between the two books are set out using only what can be confirmed in the original texts.')}</p>
+
+    <h3>${TX('二つの書を並べる', 'The two books side by side')}</h3>
+    <div class="kiki-tw"><table class="kiki-t">
+      <thead><tr><th></th><th>${TX('古事記', 'Kojiki')}</th><th>${TX('日本書紀', 'Nihon Shoki')}</th></tr></thead>
+      <tbody>
+      ${row(TX('できた年', 'Completed'),
+        TX('和銅5年（712）正月28日、太安万侶が献上した（序の日付）', 'Presented by Ō no Yasumaro on the 28th day of the 1st month of Wadō 5 (712), the date of the preface') + refs(['kjs']),
+        TX('養老4年（720）5月、舎人親王が勅を受けて修め、奏上した', 'Compiled by Prince Toneri by imperial order and presented in the 5th month of Yōrō 4 (720)') + refs(['shoku8']))}
+      ${row(TX('作られ方', 'How it was made'),
+        TX('天皇の命で稗田阿礼（28歳）が誦み習った「帝皇日継」と「先代旧辞」を、和銅4年（711）9月18日の詔により太安万侶が書き記した（序）', 'Hieda no Are (aged 28) had been ordered by the emperor to learn by heart the "imperial succession" and the "old words of earlier ages"; by an edict of the 18th day of the 9th month of Wadō 4 (711), Ō no Yasumaro wrote them down (preface)') + refs(['kjs']),
+        TX('続日本紀は「紀30巻・系図1巻」を奏上したと記す。続日本紀はこの書を「日本紀」と書いている', 'The Shoku Nihongi records that "30 volumes of annals and 1 volume of genealogy" were presented. It calls the book "Nihongi"') + refs(['shoku8']))}
+      ${row(TX('巻と範囲', 'Volumes and span'),
+        TX('3巻。上巻は天之御中主神から鵜草葺不合尊まで、中巻は神倭伊波礼毘古命（神武天皇）から品陀（応神天皇）の世まで、下巻は大雀（仁徳天皇）から小治田（推古天皇）の世まで（序）。下巻の本文も推古天皇の条で終わる', '3 volumes. Part 1 runs from Ame-no-Minakanushi-no-Kami to Ugayafukiaezu-no-Mikoto, Part 2 from Kamuyamato-Iwarebiko-no-Mikoto (Emperor Jinmu) to the reign of Homuda (Emperor Ōjin), and Part 3 from Ōsazaki (Emperor Nintoku) to the reign at Owarida (Empress Suiko) (preface). The text of Part 3 also ends with Empress Suiko') + refs(['kjs', 'k3']),
+        TX('30巻。巻第一・巻第二が神代（神々の時代）。最後の巻第三十は持統天皇', '30 volumes. Books 1 and 2 are the Age of the Gods. The last, Book 30, is Empress Jitō') + refs(['ns1', 'ns30', 'shoku8']))}
+      ${row(TX('書き方', 'How it is written'),
+        TX('序に、一つの句の中で音（字の音で読ませる）と訓（字の意味で読ませる）を交えて用い、あるいは一つの事を訓だけで記した、とある', 'The preface says that within one phrase it mixes "on" (characters used for their sound) and "kun" (characters used for their meaning), or writes one matter entirely in "kun"') + refs(['kjs']),
+        TX('天皇ごとの巻で、出来事を年・月と干支の日付で記す（例：巻第三十「九月戊戌朔丙午」）', 'Each reign has its own volume, and events are dated by year, month and a sexagenary-cycle day (e.g. Book 30, "九月戊戌朔丙午")') + refs(['ns30']))}
+      ${row(TX('別の伝え', 'Other versions'),
+        TX('「一書曰」の形の並記は無い（上・中・下巻の本文を検索して0件）。別の名は「亦名（またのな）」で添える', 'There are no parallel versions in the "一書曰" form (0 hits searching Parts 1–3). Other names are added as "亦名" (also called)') + refs(['k']),
+        TX('本文のあとに「一書曰（あるふみにいわく）」として別の伝えを並べる。巻第一だけで40か所あまり（中文維基文庫の本文で数えた）', 'After the main text, other versions are set out as "一書曰" ("a certain book says"). There are more than 40 in Book 1 alone (counted in the Chinese Wikisource text)') + refs(['ns1']))}
+      </tbody>
+    </table></div>
+
+    <h3>${TX('書き出しを比べる', 'How each book begins')}</h3>
+    <div class="scene"><b>${TX('古事記', 'Kojiki')}</b><p>${TX('天と地が初めて現れたとき、高天原に成った神の名は', 'When heaven and earth first appeared, the name of the deity who came into being in Takamagahara was ')}${dl('amenominakanushi', EN ? dName(deities.amenominakanushi || { id: 'amenominakanushi', name: '天之御中主神' }) : '天之御中主神')}${TX('。国之常立神は、そのあとに成った神として出る。', '. Kuni-no-Tokotachi-no-Kami appears as a deity who came into being after that.')}<br><span class="meta">「天地初發之時，於高天原成神名，天之御中主神」</span>${refs(['k'])}</p></div>
+    <div class="scene"><b>${TX('日本書紀（本文）', 'Nihon Shoki (main text)')}</b><p>${TX('天と地が分かれる前の混沌から天と地が分かれ、その中に生まれた最初の神を', 'Out of the chaos before heaven and earth were divided, heaven and earth separated, and the first deity born between them is ')}${dl('kunitokotachi', EN ? dName(deities.kunitokotachi || { id: 'kunitokotachi', name: '国常立尊' }) : '国常立尊')}${TX('とする。', '.')}<br><span class="meta">「天地之中生一物，狀如葦牙，便化爲神，號國常立尊」</span>${refs(['ns1'])}</p></div>
+
+    <h3>${TX('「尊」と「命」', '"尊" and "命" (both read "mikoto")')}</h3>
+    <p>${TX('日本書紀は巻第一の注で、いちばん尊い神を「尊」、それ以外を「命」と書き、どちらも「みこと」と読む、と説明しています。同じ神でも、古事記と日本書紀で字が違うのはこのためです（例：', 'In a note in Book 1, the Nihon Shoki explains that the most exalted deities are written 尊 and the others 命, and that both are read "mikoto". This is one reason why the same deity is written with different characters in the two books (e.g. ')}${dl('izanagi', TX('伊邪那岐命／伊弉諾尊', '伊邪那岐命 in the Kojiki / 伊弉諾尊 in the Nihon Shoki'))}${TX('）。', ').')}<br><span class="meta">「至貴曰尊，自餘曰命，並訓美擧等也」</span>${refs(['ns1'])}</p>
+
+    <h3>${TX('この特集の神様で比べる', 'Comparing the deities of this feature')}</h3>
+    <p class="meta">${TX(`神様${total}柱の記録を、二つの書に名前が出るかで分けました。「出る・出ない」は、この特集が取得した本文の範囲での確認です（日本書紀は取得していない巻があり、要確認を含みます）。タップすると神様のページへ移ります。`, `The records of ${total} deities are grouped by whether their names appear in each book. "Appears" means confirmed within the texts this feature has obtained (some volumes of the Nihon Shoki have not been obtained, so some entries are still to be confirmed). Tap a deity to open its page.`)}</p>
+    <div class="fb-kinds kiki-tabs" role="tablist">${tabs}</div>
+    <div id="kikiList">${kikiListHTML(g[kikiTab])}</div>
+    ${sourceList(KIKI_SRC)}
+  </div>`;
+}
+function openKiki(show) {
+  if (show) { renderKiki(); $('kikiBody').scrollTop = 0; }
+  $('kiki').hidden = !show;
+}
+$('btnKiki').addEventListener('click', () => { track.section(LG(), 'kiki'); openKiki(true); });
+$('btnKikiClose').addEventListener('click', () => openKiki(false));
+$('kiki').addEventListener('click', (e) => {
+  const tb = e.target.closest('[data-kikitab]');
+  if (tb) { kikiTab = tb.dataset.kikitab; const y = $('kikiBody').scrollTop; renderKiki(); $('kikiBody').scrollTop = y; return; }
+  if (e.target.closest('[data-deity]')) openKiki(false);   // 神様のページは下の画面に開く（全体のクリック処理が開く）
+});
+if (EN) { $('btnKiki').textContent = 'Kojiki & Nihon Shoki'; $('kikiTitle').innerHTML = 'Kojiki &amp; Nihon Shoki <small>Reading the two books side by side</small>'; $('btnKikiClose').textContent = 'Close'; }
 
 // ---------- BGM（初期は入。ブラウザの決まりで、音は最初のタップから） ----------
 const BGM_KEY = 'shrine-note-bgm', BGM_TRACK_KEY = 'shrine-note-bgm-track3', BGM_VOL = 0.35;   // 曲の一覧を変えたので、保存の名前も新しくした（古い番号を読まない）

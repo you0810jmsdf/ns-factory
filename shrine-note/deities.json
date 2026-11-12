@@ -649,6 +649,38 @@
       "url": "https://zh.wikisource.org/wiki/日本書紀/卷第二十七",
       "accessed": "2026-11-09",
       "label": "中文維基文庫"
+    },
+    {
+      "id": "kjs",
+      "label": "記序",
+      "title": "古事記 序（太安万侶・和銅5年／712）",
+      "publisher": "中文維基文庫（注釈つきの本文）",
+      "url": "https://zh.wikisource.org/wiki/古事記/序",
+      "accessed": "2026-11-12"
+    },
+    {
+      "id": "k3",
+      "label": "記下",
+      "title": "古事記 下巻（推古天皇の条で終わる）",
+      "publisher": "中文維基文庫（校訂本文）",
+      "url": "https://zh.wikisource.org/wiki/古事記/下卷",
+      "accessed": "2026-11-12"
+    },
+    {
+      "id": "ns30",
+      "label": "紀30",
+      "title": "日本書紀 巻第三十 持統天皇",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/日本書紀/卷第三十",
+      "accessed": "2026-11-12"
+    },
+    {
+      "id": "shoku8",
+      "label": "続紀8",
+      "title": "続日本紀 巻第八 養老4年（720）5月癸酉条",
+      "publisher": "中文維基文庫",
+      "url": "https://zh.wikisource.org/wiki/續日本紀/卷第八",
+      "accessed": "2026-11-12"
     }
   ],
   "deities": [
