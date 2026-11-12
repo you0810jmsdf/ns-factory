@@ -1,0 +1,53 @@
+{
+  "id": "center",
+  "page": "numeric",
+  "title": "tut.center.title",
+  "steps": [
+    {
+      "say": "tut.center.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        20,
+        20,
+        100,
+        80
+      ]
+    },
+    {
+      "click": "[data-tool=\"circle\"]",
+      "mode": "circle"
+    },
+    {
+      "drag": [
+        112,
+        30,
+        117,
+        30
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.center.2",
+      "click": "#ctx-center"
+    },
+    {
+      "mouse": [
+        20,
+        50
+      ],
+      "press": true,
+      "wait": 1000
+    },
+    {
+      "say": "tut.center.3",
+      "wait": 600
+    },
+    {
+      "say": "tut.center.4",
+      "wait": 900
+    }
+  ]
+}
