@@ -1,0 +1,50 @@
+{
+  "id": "rsplit",
+  "page": "rsplit",
+  "title": "tut.rsplit.title",
+  "steps": [
+    {
+      "say": "tut.rsplit.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        18,
+        18,
+        130,
+        98
+      ]
+    },
+    {
+      "mode": "rpatch",
+      "value": {
+        "#rpHow": "random",
+        "#rpCount": "4"
+      }
+    },
+    {
+      "mouse": [
+        70,
+        60
+      ],
+      "press": true,
+      "wait": 1200
+    },
+    {
+      "say": "tut.rsplit.2",
+      "mode": "rsplit",
+      "wait": 900
+    },
+    {
+      "say": "tut.rsplit.3",
+      "wait": 1800
+    },
+    {
+      "say": "tut.rsplit.4",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "wait": 800
+    }
+  ]
+}
