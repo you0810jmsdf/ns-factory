@@ -1,0 +1,45 @@
+{
+  "id": "hardware",
+  "page": "hardware",
+  "title": "tut.hardware.title",
+  "steps": [
+    {
+      "say": "tut.hardware.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        25,
+        105.5,
+        85
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.hardware.2",
+      "value": {
+        "#hwCategory": "fastener",
+        "#hwItem": "snap-12"
+      },
+      "wait": 600
+    },
+    {
+      "say": "tut.hardware.3",
+      "click": "#hwPlace"
+    },
+    {
+      "mouse": [
+        65,
+        39.5
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.hardware.4",
+      "wait": 800
+    }
+  ]
+}

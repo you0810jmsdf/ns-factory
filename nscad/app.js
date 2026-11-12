@@ -53,6 +53,8 @@ import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
 import { TUTORIALS_LINESTYLE } from './tutorials/linestyle.js';
 import { TUTORIALS_MIRROR } from './tutorials/mirror.js';
 import { TUTORIALS_TIDY } from './tutorials/tidy.js';
+import { TUTORIALS_HARDWARE } from './tutorials/hardware.js';
+import { TUTORIALS_PAINT } from './tutorials/paint.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord, UST_SUB_KEY } from './undostore.js';
@@ -4638,7 +4640,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
