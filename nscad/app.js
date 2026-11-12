@@ -996,6 +996,28 @@ function markByDistance(click) {
  *  目印の位置（交点から mm）を入れていれば、できた各線の上のその位置に、点の目印（目印ツールと同じもの）も打つ。線も目印も、元に戻すは1回。 */
 function divisionCount() { const n = Math.floor(Number($('divN')?.value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 36) : 2; }
 const divisionNumber = id => { const raw = String($(id)?.value ?? '').trim(), v = Number(raw); return raw !== '' && Number.isFinite(v) && v > 0 ? v : 0; };
+/* 「2点を選ぶ」（事業主 2026-11-12）：始点→終点の2クリックで、2点を分割数で等分する点（2＝中間点）に、2点を結ぶ線に垂直な短い印の線を引く。印の線種・長さ・色は欄で決め、最後に使ったものを覚える（次からの初めの値）。 */
+const DIVIDE_MARK_KEY = 'leather-cad.divideMark';
+const divideHow = () => $('divHow')?.value === 'two' ? 'two' : 'line';
+function divideMarkSpec() { const len = Number($('divMkLen')?.value), color = $('divMkColor')?.value; return { style: $('divMkStyle')?.value === 'dashed' ? 'dashed' : '', len: Number.isFinite(len) && len > 0 ? Math.min(len, 1000) : 5, color: ['blue', 'green', 'red', 'white', 'yellow'].includes(color) ? color : 'blue' }; }
+function saveDivideMark() { try { localStorage.setItem(DIVIDE_MARK_KEY, JSON.stringify(divideMarkSpec())); } catch { /* 覚えられなくても続ける */ } }
+function loadDivideMark() { let v = null; try { v = JSON.parse(localStorage.getItem(DIVIDE_MARK_KEY) || 'null'); } catch { v = null; } if (!v || typeof v !== 'object') return; if (v.style === 'dashed' || v.style === '') $('divMkStyle').value = v.style; if (Number(v.len) > 0) $('divMkLen').value = String(Math.min(Number(v.len), 1000)); if (['blue', 'green', 'red', 'white', 'yellow'].includes(v.color)) $('divMkColor').value = v.color; }
+function syncDivideBar() { const two = divideHow() === 'two'; for (const el of document.querySelectorAll?.('#divideBar [data-div-two]') || []) el.hidden = !two; for (const id of ['divMkStyleRow', 'divMkLenRow', 'divMkColorRow']) if ($(id)) $(id).hidden = !two; for (const id of ['divLenRow', 'divMarkRow']) if ($(id)) $(id).hidden = two; }
+function divideTwoClick(pt) {
+  if (stage?.kind !== 'divide2') { stage = { kind: 'divide2', a: pt }; $('hint').textContent = t('divideTwoSecond'); draw(); return; }
+  const a = stage.a, b = pt, d = distance(a, b); if (d < 0.01) { $('hint').textContent = t('divideTwoSame'); return; }
+  const spec = divideMarkSpec(), n = divisionCount(), ux = (b.x - a.x) / d, uy = (b.y - a.y) / d, h = spec.len / 2, layer = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || activeLayer, made = [];
+  cancel(); saveDivideMark();
+  commit(() => { for (let k = 1; k < n; k++) { const f = k / n, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f, id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer, type: 'line', ...(spec.style ? { lineStyle: spec.style } : {}), color: spec.color, x1: +(cx + uy * h).toFixed(4), y1: +(cy - ux * h).toFixed(4), x2: +(cx - uy * h).toFixed(4), y2: +(cy + ux * h).toFixed(4) }); made.push(id); } selected = new Set(made); });
+  $('hint').textContent = t('divideTwoDone', { n: made.length, parts: n, len: +spec.len.toFixed(2) }); rebuildSnaps(); draw();
+}
+/** 「2点を選ぶ」の途中の見え方：始点の丸・始点→カーソルの線・印を打つ位置の見本。 */
+function drawDivideTwoPreview(a, b) {
+  const d = distance(a, b); ctx.save(); ctx.setLineDash([4 / scale, 3 / scale]); ctx.strokeStyle = '#9ad0ff'; ctx.lineWidth = 1 / scale; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#c9a96e'; ctx.beginPath(); ctx.arc(a.x, a.y, 4 / scale, 0, Math.PI * 2); ctx.fill();
+  if (d > 0.01) { const spec = divideMarkSpec(), n = divisionCount(), ux = (b.x - a.x) / d, uy = (b.y - a.y) / d, h = spec.len / 2; ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2 / scale; ctx.beginPath(); for (let k = 1; k < n; k++) { const f = k / n, cx = a.x + (b.x - a.x) * f, cy = a.y + (b.y - a.y) * f; ctx.moveTo(cx + uy * h, cy - ux * h); ctx.lineTo(cx - uy * h, cy + ux * h); } ctx.stroke(); }
+  ctx.restore();
+}
 function divideAt(p) {
   const reach = 60 / scale, cand = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.markOf && !['text', 'dimension', 'image'].includes(s.type) && distTo(s, p) <= reach * 3).slice(0, 40);
   const nearLine = px => cand.filter(s => s.type !== 'circle' && distTo(s, p) <= px / scale).sort((u, v) => distTo(u, p) - distTo(v, p))[0];
@@ -2888,6 +2910,9 @@ function renderFoldBook(done = foldBookComplete(foldBookState())) {
   const kind = $('flowBook'); if (!kind) return;
   const s = foldBookState(), li = $('foldFlowBook'), tag = $('foldFlowBookState'), lang = document.documentElement.lang || 'ja';
   if (kind.value !== s.kind) kind.value = s.kind; $('flowBookRows').hidden = s.kind !== 'book';
+  { const book = s.kind === 'book';   /* 手帳ではないとき（財布など）は、手帳専用の項目を隠す：レバーの端から（＋金具の全長の案内）・リフィルを白い紙として塗る・金具の色（事業主 2026-11-12） */
+    for (const id of ['flowLeverGapRow', 'flowLeverGapNote']) if ($(id)) $(id).hidden = !book;
+    for (const id of ['flowRefillPaperRow', 'flowHwMetalRow']) if ($(id)) $(id).hidden = !(book && foldIsBifold()); }   /* この2つは、2つ折りのときだけ出る欄 */
   if (s.kind === 'book') {
     const spec = $('flowRingSpec'), dia = $('flowRingDia'), stack = $('flowStackT'), sp = s.spec ? binderSpec(ringStandardId(s)) : null, skey = lang + '|' + specsSig();
     if (spec.dataset.key !== skey) { spec.textContent = ''; fillBinderSpecOptions(spec, true); spec.dataset.key = skey; }
@@ -3843,6 +3868,7 @@ function initDesign() {
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
+  loadDivideMark(); for (const id of ['divMkStyle', 'divMkLen', 'divMkColor']) $(id).addEventListener('change', saveDivideMark); $('divHow').addEventListener('change', () => { cancel(); syncDivideBar(); $('hint').textContent = t(divideHow() === 'two' ? 'divideTwoFirst' : 'divideLineFirst'); });   /* 分割線の「2点を選ぶ」の欄：印の線種・長さ・色は、最後に使ったものを覚える */
   $('ctx-zipper-edit').onclick = () => { countUse('ctx_zipper_edit'); hideCtxMenu(); if (zipperSelected().length) openZipperBar(); };   /* 右クリックの一番上「ファスナーの設定…」：選んだファスナーの小窓を開く（事業主 2026-11-12） */   /* 右クリック → ファスナーにする（選んだ線をファスナーの絵で表示・事業主指示 2026-11-11） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); }; $('ctx-lines-to-holes').onclick = () => { countUse('ctx_lines_to_holes'); hideCtxMenu(); moveLinesToHoles(); }; $('ctx-unlink-lines').onclick = () => { countUse('ctx_unlink_lines'); hideCtxMenu(); restoreSupportLines(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
   $('ctx-patch').onclick = () => { hideCtxMenu(); setMode('patchfill'); };   /* 右クリック → 柄（パッチワーク）（左のツール列から移した・工房専用の機能のため・事業主指示 2026-10-20。キー Shift+P・有料版のロック🔒は今までどおり＝setMode の中の lockGate） */
@@ -7506,8 +7532,8 @@ function drawFoldSectionDims() { const list = foldSectionDimList(), keepIn = fdL
 const secDimsShown = () => !exporting && viewShow.secDims && !!doc.foldDesign && doc.shapes.some(s => s.foldSec === 'fd' && visible(s));
 const FD_DIM_EDIT = { w: 'endA', wB: 'endB', h: 'h', rr: 'rr', ring: 'ring', gap: 'gap', rEnd: 'rEnd' };   /* ③背の半径・リングの位置も、文字のクリックで小窓（事業主決定 2026-11-04） */
 function foldDimTargets() {
-  const d = doc.foldDesign; if (mode !== 'select' || d?.mode !== 'bifold' || !secDimsShown()) return [];
-  const groups = foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? [], out = [], font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
+  const d = doc.foldDesign; if (mode !== 'select' || !d || !secDimsShown()) return [];
+  const bi = d.mode === 'bifold', groups = (foldSectionDims(d, { px: 1 / scale, labels: foldDimLabels(), refill: sectionRefillPoints() }) ?? []).filter(g => bi || g.key === 't'), out = [],   /* 三つ折りは、厚み（表・裏）の数字だけ、クリックで直せる（全幅・全高は、欄から・事業主 2026-11-12） */ font = fdFontPx() / scale, pull = fdLinesInView(groups.flatMap(g => g.items));
   const measure = text => { ctx.save(); ctx.font = `${font}px sans-serif`; const w = ctx.measureText?.(text)?.width ?? text.length * font * 0.62; ctx.restore(); return w; };
   const box = it => { const w = measure(it.text), { tx, ty } = fdKeepIn(it, w, fdFontPx(), pull), x0 = it.align === 'right' ? tx - w : it.align === 'left' ? tx : tx - w / 2; return { x0, x1: x0 + w, y0: ty - font * 0.7, y1: ty + font * 0.7 }; };   /* 描画と同じく、画面の端で押し戻した位置で判定する */
   const parts = items => ({ lines: items.filter(i => i.type === 'line' && !i.dash), boxes: items.filter(i => i.type === 'text').map(box) });
@@ -7617,8 +7643,8 @@ const sectionRefillEndNow = d => foldSectionDims(d, { labels: {}, refill: sectio
 const FHB = { w: ['fhbW', d => d.width], endA: ['fhbEndA', d => d.width], endB: ['fhbEndB', d => d.widthB ?? d.width], rr: ['fhbRR', d => d.rinR], ring: ['fhbRing', d => d.ring?.pos ?? 0], h: ['fhbH', d => { const p = foldDesignPlan(d); return p.ok ? 2 * (d.rinR + p.T) : 0; }], gap: ['fhbGap', d => sectionGapNow(d) ?? 0], rEnd: ['fhbREnd', d => sectionRefillEndNow(d) ?? 0], to: ['fhbTO', d => d.tOuter], ti: ['fhbTI', d => d.tInner] };
 let fhbKey = null;
 function openFoldHandleBar(h) {
-  const d = doc.foldDesign, spec = FHB[h?.key]; if (!d || !spec || d.mode !== 'bifold' || !$('foldHandleBar')) return; fhbKey = h.key;
-  $('fhbLabel').textContent = t(spec[0]); $('fhbVal').value = String(+Number(spec[1](d)).toFixed(2)); $('fhbSame').hidden = h.key !== 'endB'; $('foldHandleBar').hidden = false; $('fhbVal').focus?.(); $('fhbVal').select?.();
+  const d = doc.foldDesign, spec = FHB[h?.key]; if (!d || !spec || (d.mode !== 'bifold' && !['to', 'ti'].includes(h.key)) || !$('foldHandleBar')) return; fhbKey = h.key;
+  $('fhbLabel').textContent = t(spec[0] + (d.mode === 'bifold' ? '' : 'Tri'));   /* 三つ折りの欄の番号は、⑧表・⑨裏 */ $('fhbVal').value = String(+Number(spec[1](d)).toFixed(2)); $('fhbSame').hidden = h.key !== 'endB'; $('foldHandleBar').hidden = false; $('fhbVal').focus?.(); $('fhbVal').select?.();
   $('hint').textContent = t('fhbOpened');
 }
 function closeFoldHandleBar() { fhbKey = null; if ($('foldHandleBar')) $('foldHandleBar').hidden = true; }
@@ -7681,7 +7707,10 @@ function rectBoxOf(sh) {
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 }
 const selectedRect = () => mode === 'select' && !exporting && selected.size === 1 ? (sh => sh && rectBoxOf(sh) ? sh : null)(doc.shapes.find(x => selected.has(x.id) && editable(x))) : null;
-const rectHandlePoints = b => [[-1, -1, b.x0, b.y0], [1, -1, b.x1, b.y0], [1, 1, b.x1, b.y1], [-1, 1, b.x0, b.y1]].map(([ix, iy, x, y]) => ({ ix, iy, x, y }));
+/* 取っ手：四隅（幅と高さが同時に変わる）と、4辺の真ん中のすぐ外側（その1辺だけが動く・反対側の辺は動かない・事業主 2026-11-12「矩形の1辺だけ移動させたいときは？」→ 案A）。
+ *  辺の取っ手は、辺の上ではなく、外側へ 12px ずらして置く：辺の真ん中をつかんで、矩形ぜんたいを（磁石で）動かす、これまでの動きを変えないため。辺の取っ手は ix か iy が 0（rectResized は、0 の向きを動かさない） */
+const RECT_EDGE_OFFSET_PX = 12;
+const rectHandlePoints = b => { const mx = (b.x0 + b.x1) / 2, my = (b.y0 + b.y1) / 2, o = RECT_EDGE_OFFSET_PX / (scale || 1); return [[-1, -1, b.x0, b.y0], [1, -1, b.x1, b.y0], [1, 1, b.x1, b.y1], [-1, 1, b.x0, b.y1], [0, -1, mx, b.y0 - o], [1, 0, b.x1 + o, my], [0, 1, mx, b.y1 + o], [-1, 0, b.x0 - o, my]].map(([ix, iy, x, y]) => ({ ix, iy, x, y })); };
 function rectHandleHit(w) {
   const sh = selectedRect(); if (!sh) return null; let best = null, bd = 9 / scale; for (const h of rectHandlePoints(rectBoxOf(sh))) { const dd = distance(h, w); if (dd <= bd) { best = h; bd = dd; } }
   return best ? { shape: sh, h: best } : null;
@@ -7778,7 +7807,7 @@ function toggleFdDiagramBig(open) {
 function initFoldSection() {
   const card = $('foldDesignCard'), fieldOf = e => e.target?.id || e.target?.closest?.('label')?.querySelector?.('input,select')?.id;
   $('fdDiagram').onclick = () => toggleFdDiagramBig(true); document.addEventListener?.('keydown', e => { if (e.key === 'Escape') toggleFdDiagramBig(false); });
-  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('fdBiWB').oninput = onBackWidthInput; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') { planHeightTouched = true; clearLeverGap(); } onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; clearLeverGap(); $('fdH').value = $('flowH').value; onFlatNumber('fdH'); }); $('flowLeverGap').addEventListener('input', onLeverGapInput); $('flowLeverGapEdit').addEventListener('click', openLeverGapEdit);   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = refreshFoldPitch; refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
+  card.addEventListener('focusin', e => highlightFoldDiagram(e.target?.id)); card.addEventListener('focusout', e => { if (!card.contains?.(e.relatedTarget)) setFdDimKey(null); }); card.addEventListener('mouseleave', () => { if (!card.contains?.(document.activeElement)) setFdDimKey(null); }); card.addEventListener('mouseover', e => highlightFoldDiagram(fieldOf(e))); $('foldSecMake').onclick = makeFoldSection; $('foldCutY').addEventListener('change', () => { const raw = $('foldCutY').value.trim(), n = Number(raw); if (raw !== '' && !Number.isFinite(n)) return; setFoldCutY(raw === '' ? undefined : n); }); $('foldCutPick').onclick = () => { setMode('select'); foldCutPicking = true; $('hint').textContent = t('foldCutPickHint'); }; $('foldCutClear').onclick = () => { foldCutPicking = false; setFoldCutY(undefined); syncFoldCutField(); $('hint').textContent = t('foldCutCleared'); draw(); }; $('foldSecApply').onclick = applyFoldSection; $('foldSecClear').onclick = clearFoldSections; $('foldRadApply').onclick = applyFoldRadii; $('fdMode').onchange = () => { syncFoldModeUI(); refreshFoldPitch(); if (foldBookComplete(foldBookState())) makeFoldDesign(false); };   /* 折り方を替えても、⓪（手帳か・リング・リフィル）が決まるまでは断面を自動で作らない（勝手に決まらないように・事業主 2026-10-23）。断面がすでにあるときは今までどおり作り直す */ $('fdBiW').oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdSameCover').onclick = sameCoverLength; $('fdBiWB').oninput = onBackWidthInput; $('refillCoverDim').onclick = addRefillCoverDim; syncFoldModeUI(); $('fdMake').onclick = () => makeFoldDesign(false); $('fdFix').onclick = fixFoldDesign; $('fdStitch').onclick = () => projectFoldDesign(true); $('fdUnfold').onclick = unfoldFoldDesign; for (const id of ['fdRingPos', 'fdStackT']) $(id).oninput = liveFoldDesign; for (const id of ['fdTO', 'fdTI']) $(id).oninput = () => { refreshFoldPitch(); liveFoldDesign(); }; $('fdRingOn').onchange = liveFoldDesign; $('fdFlip').onchange = liveFoldDesign; for (const id of ['fdH', 'fdEdge', 'fdMargin', 'fdPitch', 'fdBtnD']) $(id).addEventListener('input', () => { if (id === 'fdH') { planHeightTouched = true; clearLeverGap(); } onFlatNumber(id); }); $('flowH').addEventListener('input', () => { planHeightTouched = true; clearLeverGap(); $('fdH').value = $('flowH').value; onFlatNumber('fdH'); }); $('flowLeverGap').addEventListener('input', onLeverGapInput); $('flowLeverGapEdit').addEventListener('click', openLeverGapEdit);   /* 折りの小窓の②の「平面図の高さ」は、設計カードの欄と同じ数字 */ try { const sv = localStorage.getItem('leather-cad.foldSide'); if (sv === 'left' || sv === 'right') setFoldSide(sv, false); } catch { /* 読めなくても、右のまま */ } $('fdSide').onchange = () => { setFoldSide($('fdSide').value); if (doc.foldDesign) liveFoldDesign(); }; $('flowSide').onchange = () => { setFoldSide($('flowSide').value); if (doc.foldDesign) liveFoldDesign(); };   /* 断面がすでにあるときだけ作り直す（向きを選んだだけで、⓪を決める前に断面ができないように） */ $('fdRefillDir').onchange = liveFoldDesign; $('fdRingSpec').onchange = () => { $('binderSpecSel').value = $('fdRingSpec').value; onBinderChange(); }; $('fdRingDia').onchange = () => { $('ringD').value = $('fdRingDia').value; onBinderChange(); }; syncFoldRingSelects(); for (const id of ['fdDL', 'fdDR', 'fdCL', 'fdCR', 'fdRL', 'fdRR']) $(id).oninput = () => { if (id === 'fdDL' || id === 'fdDR') refreshFoldWidth(); refreshFoldPitch(); liveFoldDesign(); }; $('fdW').oninput = setFoldWidth; $('fdNudgeL').onclick = () => nudgeFoldButton(-1); $('fdNudgeR').onclick = () => nudgeFoldButton(1); refreshFoldWidth(); $('fdPitch').oninput = refreshFoldPitch; $('foldSecT').oninput = () => { refreshFoldPitch(); if (doc.foldDesign) { liveFoldDesign(); const o = foldPlyThickness('fdTO'), i = foldPlyThickness('fdTI'), v = foldSecThickness(); if ((($('fdTO').value ?? '').trim() !== '' && Math.abs(o - v) > 1e-9) || (($('fdTI').value ?? '').trim() !== '' && Math.abs(i - v) > 1e-9)) $('hint').textContent = t('foldSecTOverride'); } };   /* 「革1枚の厚み」は、入れた場で断面に反映する（これまでは、断面を作り直すまで変わらなかった・事業主 2026-11-12）。表・裏の欄に別の数字が入っているときは、そちらが優先されるので知らせる */ refreshFoldPitch(); $('foldBaseMake').onclick = makeFoldBaselines; }
 // ---- 計算メモ（2026-10-16 事業主指示）：式を画面で計算し、「式＝結果＋コメント」を図面（doc.calcMemos）に残す。図面タブごと・図面（.json）と一緒に保存・元に戻せる ----
 let calcAns, calcKey = null; /* calcAns＝直前の答え（式の ans）。calcKey＝一覧を描き直すかの目印 */
 const calcMsg = r => r.error ? t({ empty: 'calcErrEmpty', syntax: 'calcErrSyntax', div: 'calcErrDiv' }[r.error]) : '＝ ' + fmtCalc(r.value);
@@ -8780,7 +8809,7 @@ function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
-  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
+  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
   setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
@@ -9703,7 +9732,7 @@ function anchor() {
   if (gesture?.kind === 'lineEnd') return gesture.fixed; /* Shift で、動かさない側の端から水平・垂直に固定 */
   if (stage?.points) return stage.points.at(-1);
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
-  if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw') return stage.a;
+  if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw' || stage?.kind === 'divide2') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
   if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
   if (stage?.kind === 'cmd' && mode === 'line') return stage.start; /* クリックで続けて引く直線：直前の点を基準に、Shift で水平・垂直へ固定する */
@@ -10597,6 +10626,7 @@ function drawSheetBody(lo, hi) {
   if (stage?.kind === 'path') { const pv = pathPreview(); if (pv) { strokeShape(pv, '#c9a96e'); drawNodes({ ...pv, nodes: stage.nodes }); } }
   if (gesture?.kind === 'pen') { strokeShape({ type: 'line', x1: 2 * gesture.start.x - cursor.x, y1: 2 * gesture.start.y - cursor.y, x2: cursor.x, y2: cursor.y }, '#888'); }
   if (mode === 'ruler') { if (stage?.kind === 'ruler') drawRuler({ a: stage.a, b: cursor }); else if (ruler) drawRuler(ruler); }
+  if (mode === 'divide' && stage?.kind === 'divide2') drawDivideTwoPreview(stage.a, cursor);
   if (stage?.kind === 'markBase' || stage?.kind === 'markDiv') { /* 基準の点＝金色の丸、打てる場所の候補（線に沿って両側に○mm）＝小さな丸 */
     ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 1.5 / scale;
     ctx.beginPath(); ctx.arc(stage.at.x, stage.at.y, 6 / scale, 0, Math.PI * 2); ctx.stroke();
@@ -10856,7 +10886,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p), e.shiftKey); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
-  if (mode === 'divide') { divideAt(world(p)); return; }
+  if (mode === 'divide') { if (divideHow() === 'two') divideTwoClick(cursor); else divideAt(world(p)); return; }   /* 「2点を選ぶ」は、磁石で吸い付いた点（cursor）を使う */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
   if (mode === 'patchfill') { gridAtPoint(world(p)); return; }
