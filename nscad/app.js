@@ -11116,7 +11116,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
     const rg = rotateHandleHit(cursor); if (rg) { gesture = { kind: 'rotate', c: rg.c, a0: angleOf(rg.c, cursor), angle: 0, cursor }; $('hint').textContent = t('rotDrag', { a: 0 }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
-    const rh = handleOk && !e.altKey ? rectHandleHit(cursor) : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ） */
+    const rh0 = !e.altKey ? rectHandleHit(cursor) : null, rh = rh0 && (handleOk || rh0.h.ix === 0 || rh0.h.iy === 0) ? rh0 : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ）。辺の取っ手は辺の外側に置くので、寸法線・補助線が近くにあっても優先する（事業主 2026-11-12「中央のハンドルを引っ張っても、図形が動くだけ」）。四隅は、従来どおり、ほかの線を正確にクリックしたときはその線を選ぶ */
     if (rh) {
       if (rectHasHoles(rh.shape)) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
       const b = rectBoxOf(rh.shape); gesture = { kind: 'rectR', id: rh.shape.id, h: rh.h, box0: b, box: b }; $('hint').textContent = t('rectDrag', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); draw(); return;
