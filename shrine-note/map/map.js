@@ -2247,3 +2247,4 @@ window.__shrineMap = { stamps, getQual: () => qual, setSkyMinutes: (m) => { $('s
 const q = new URLSearchParams(location.search).get('s');
 if (q) setTimeout(() => selectShrine(q), 600);
 if (new URLSearchParams(location.search).get('book') === '1') openBook(true);
+if (new URLSearchParams(location.search).get('kiki') === '1') { track.section(LG(), 'kiki'); openKiki(true); }   // 古事記と日本書紀の画面を直接開くリンク（?kiki=1）
