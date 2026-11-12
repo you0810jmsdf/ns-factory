@@ -388,3 +388,32 @@ export function dxfToShapes(text) {
   }
   return shapes;
 }
+
+/* ───────── ピースを分けて保存（事業主 2026-11-12「各パッチをバラバラにして保存（SVG・レーザー加工用）できる機能が欲しい」）─────────
+ *  ピース1枚の SVG：切る線＝黒、縫い穴＝赤（菱目と同じ色分け）、番号＝青（彫る線）。レーザーは色で加工を変えるため。座標は図面のまま（ピースの位置は動かさない）。 */
+export function patchPieceSvg({ points, holes = [], strokes = [], title = '' }, doc, { strokeMm = 0.1, marginMm = 2 } = {}) {
+  const xs = [...points.map(p => p.x), ...holes.map(h => h.x), ...strokes.flat().map(p => p.x)], ys = [...points.map(p => p.y), ...holes.map(h => h.y), ...strokes.flat().map(p => p.y)];
+  const x0 = Math.min(...xs) - marginMm, y0 = Math.min(...ys) - marginMm, w = Math.max(...xs) - Math.min(...xs) + 2 * marginMm, h = Math.max(...ys) - Math.min(...ys) + 2 * marginMm, d = pts => 'M' + pts.map(p => `${f(p.x)} ${f(p.y)}`).join('L');
+  const cut = `<g id="cut" data-name="Cut" fill="none" stroke="#000000" stroke-width="${f(strokeMm)}" stroke-linejoin="round"><path d="${d(points)}Z"/></g>`;
+  const holeG = holes.length ? `<g id="holes" data-name="Stitch_Holes" stroke-width="${f(strokeMm)}">${holes.map(q => holeToSvg(q, doc, '#e00000')).join('')}</g>` : '';
+  const eng = strokes.length ? `<g id="engrave" data-name="Number" fill="none" stroke="#0000ff" stroke-width="${f(strokeMm)}" stroke-linecap="round" stroke-linejoin="round">${strokes.map(l => `<path d="${d(l)}"/>`).join('')}</g>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}mm" height="${f(h)}mm" viewBox="${f(x0)} ${f(y0)} ${f(w)} ${f(h)}">${title ? `<title>${esc(title)}</title>` : ''}${cut}${holeG}${eng}</svg>`;
+}
+/** 複数のファイルを1つの ZIP（圧縮なし）にする。files＝[{ name, data（文字列か Uint8Array） }]。名前は UTF-8（日本語可）。戻り値は Uint8Array。 */
+const zipUtf8 = s => { const out = []; for (const ch of String(s)) { const c = ch.codePointAt(0); if (c < 0x80) out.push(c); else if (c < 0x800) out.push(0xC0 | c >> 6, 0x80 | c & 63); else if (c < 0x10000) out.push(0xE0 | c >> 12, 0x80 | c >> 6 & 63, 0x80 | c & 63); else out.push(0xF0 | c >> 18, 0x80 | c >> 12 & 63, 0x80 | c >> 6 & 63, 0x80 | c & 63); } return Uint8Array.from(out); };
+const ZIP_CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+export function crc32(bytes) { let c = 0xFFFFFFFF; for (let i = 0; i < bytes.length; i++) c = ZIP_CRC[(c ^ bytes[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+export function zipStore(files, date = new Date()) {
+  const y = Math.max(1980, date.getFullYear()), dosDate = ((y - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(), dosTime = (date.getHours() << 11) | (date.getMinutes() << 5) | (date.getSeconds() >> 1);
+  const parts = [], central = []; let offset = 0;
+  const u16 = v => [v & 255, v >> 8 & 255], u32 = v => [v & 255, v >> 8 & 255, v >> 16 & 255, v >>> 24 & 255];
+  for (const file of files) {
+    const name = zipUtf8(file.name), data = typeof file.data === 'string' ? zipUtf8(file.data) : file.data, crc = crc32(data);
+    const local = Uint8Array.from([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(dosTime), ...u16(dosDate), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0)]);
+    parts.push(local, name, data);
+    central.push(Uint8Array.from([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(dosTime), ...u16(dosDate), ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(name.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(offset)]), name);
+    offset += local.length + name.length + data.length;
+  }
+  const cdSize = central.reduce((a, c) => a + c.length, 0), end = Uint8Array.from([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length), ...u32(cdSize), ...u32(offset), ...u16(0)]), all = [...parts, ...central, end], out = new Uint8Array(all.reduce((a, c) => a + c.length, 0));
+  let p = 0; for (const c of all) { out.set(c, p); p += c.length; } return out;
+}

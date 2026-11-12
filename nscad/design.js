@@ -1534,3 +1534,76 @@ export function assignColors(n, edges, palette, { minDE = 20, seed = 1, candidat
   const sig = r => r.colors.join(','), seen = new Set(), list = []; for (const r of out) { const s = sig(r); if (seen.has(s)) continue; seen.add(s); list.push(r); if (list.length >= Math.max(1, Math.min(8, Math.floor(top) || 1))) break; }
   return list;
 }
+
+/* ───────── ピースを分けて保存（事業主 2026-11-12「各パッチをバラバラにして保存（SVG・レーザー加工用）できる機能が欲しい」）─────────
+ *  外形を、青い直線（カット線）で厳密に分割して、ピースの多角形を作る。交わる線は、交点で区切って、1本ずつがピースの中を通るようにする。 */
+const rsSegPt = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy, t = L2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2)) : 0, q = { x: a.x + dx * t, y: a.y + dy * t }; return { d: Math.hypot(p.x - q.x, p.y - q.y), t }; };
+/** 多角形 pts（{x,y} の配列・点は書き換えない）を、端が縁の上にある線分 a-b で2つに分ける。分けられなければ null。 */
+export function splitPolygonBySegment(pts, a, b, tol = 0.05) {
+  const P = pts.map(q => ({ x: q.x, y: q.y })), place = p => {
+    for (let i = 0; i < P.length; i++) if (Math.hypot(P[i].x - p.x, P[i].y - p.y) <= tol) return P[i];   /* すでにある頂点 */
+    let best = null; for (let i = 0; i < P.length; i++) { const r = rsSegPt(p, P[i], P[(i + 1) % P.length]); if (r.d <= tol && (!best || r.d < best.d)) best = { d: r.d, i }; }
+    if (!best) return null; const m = { x: p.x, y: p.y }; P.splice(best.i + 1, 0, m); return m;
+  };
+  const A = place(a), B = place(b); if (!A || !B || A === B) return null;
+  const ia = P.indexOf(A), ib = P.indexOf(B), n = P.length, walk = (from, to) => { const out = []; for (let i = from; ; i = (i + 1) % n) { out.push({ x: P[i].x, y: P[i].y }); if (i === to) break; } return out; };
+  const p1 = walk(ia, ib), p2 = walk(ib, ia); if (p1.length < 3 || p2.length < 3 || Math.abs(areaOf(p1)) < 0.01 || Math.abs(areaOf(p2)) < 0.01) return null;
+  return [p1, p2];
+}
+/** 外形（outline・多角形）を、カット線（lines＝[{a,b}]）で分けて、ピースの多角形の配列を返す。{ pieces, unused（どのピースも分けなかった線の数） }。
+ *  線は、線全体とピースの縁との交点から、ピースの中を通る部分（弦）だけで切る。線が線に当たる（T字）ときは、先に当たられるほうを切ってから、当たるほうを切る。 */
+export function splitOutlineByLines(outline, lines, { tol = 0.05 } = {}) {
+  let pieces = [outline.map(q => ({ x: q.x, y: q.y }))]; const used = lines.map(() => false), segHit = (p1, p2, p3, p4) => {
+    const d1x = p2.x - p1.x, d1y = p2.y - p1.y, d2x = p4.x - p3.x, d2y = p4.y - p3.y, den = d1x * d2y - d1y * d2x; if (Math.abs(den) < 1e-9) return null;
+    return { t: ((p3.x - p1.x) * d2y - (p3.y - p1.y) * d2x) / den, u: ((p3.x - p1.x) * d1y - (p3.y - p1.y) * d1x) / den };
+  };
+  const chordOf = (l, ps) => {   // ピース ps の中を通る、線 l の部分（弦）。無ければ null
+    const L = Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y); if (L < 1e-6) return null; const ts = [];
+    for (let i = 0; i < ps.length; i++) { const p3 = ps[i], p4 = ps[(i + 1) % ps.length], e = Math.hypot(p4.x - p3.x, p4.y - p3.y); if (e < 1e-9) continue; const r = segHit(l.a, l.b, p3, p4); if (r && r.t > -tol / L && r.t < 1 + tol / L && r.u > -tol / e && r.u < 1 + tol / e) ts.push(Math.max(0, Math.min(1, r.t))); }
+    ts.sort((x, y) => x - y); const u = []; for (const t of ts) if (!u.length || (t - u.at(-1)) * L > tol) u.push(t);
+    for (let k = 0; k + 1 < u.length; k++) { const mid = { x: l.a.x + (l.b.x - l.a.x) * (u[k] + u[k + 1]) / 2, y: l.a.y + (l.b.y - l.a.y) * (u[k] + u[k + 1]) / 2 }; if (insidePolygon(mid, ps)) return { a: { x: l.a.x + (l.b.x - l.a.x) * u[k], y: l.a.y + (l.b.y - l.a.y) * u[k] }, b: { x: l.a.x + (l.b.x - l.a.x) * u[k + 1], y: l.a.y + (l.b.y - l.a.y) * u[k + 1] } }; }
+    return null;
+  };
+  let progress = true;
+  while (progress) {
+    progress = false;
+    for (let li = 0; li < lines.length; li++) for (let pi = 0; pi < pieces.length; pi++) {
+      const ch = chordOf(lines[li], pieces[pi]); if (!ch) continue;
+      const two = splitPolygonBySegment(pieces[pi], ch.a, ch.b, tol); if (!two) continue;
+      pieces.splice(pi, 1, ...two); used[li] = true; progress = true; pi--;
+    }
+  }
+  return { pieces, unused: used.filter(u => !u).length };
+}
+/** ピースの番号を置く点：中にあって、縁からいちばん遠い点（格子で探す）。r＝縁までの距離（mm）。 */
+export function labelPoint(poly, grid = 24) {
+  const xs = poly.map(q => q.x), ys = poly.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), shape = { type: 'polyline', closed: true, points: poly };
+  let best = null; for (let i = 0; i <= grid; i++) for (let j = 0; j <= grid; j++) { const p = { x: x0 + (x1 - x0) * i / grid, y: y0 + (y1 - y0) * j / grid }; if (!insidePolygon(p, poly)) continue; const r = distToShape(shape, p); if (!best || r > best.r) best = { x: p.x, y: p.y, r }; }
+  if (best) { for (let k = 0; k < 12; k++) { const step = Math.max(x1 - x0, y1 - y0) / grid / (k + 2); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const p = { x: best.x + dx * step, y: best.y + dy * step }; if (!insidePolygon(p, poly)) continue; const r = distToShape(shape, p); if (r > best.r) best = { x: p.x, y: p.y, r }; } } }   /* 格子の目より細かく、少し寄せる */
+  return best || { x: (x0 + x1) / 2, y: (y0 + y1) / 2, r: 0 };
+}
+/** 番号を彫る線の文字（0〜9・線だけの字）。text を、中心 (cx, cy)・高さ h（mm）で、線の配列（[{x,y}…] の列）にする。文字は図形（線）なので、レーザーのソフトでも崩れない。 */
+const RS_DIGITS = {
+  0: [[[0.05, 0], [0.55, 0], [0.6, 0.05], [0.6, 0.95], [0.55, 1], [0.05, 1], [0, 0.95], [0, 0.05], [0.05, 0]]],
+  1: [[[0.1, 0.2], [0.3, 0], [0.3, 1]]],
+  2: [[[0, 0.1], [0.1, 0], [0.5, 0], [0.6, 0.1], [0.6, 0.4], [0, 1], [0.6, 1]]],
+  3: [[[0, 0], [0.6, 0], [0.3, 0.45], [0.5, 0.45], [0.6, 0.55], [0.6, 0.9], [0.5, 1], [0.1, 1], [0, 0.9]]],
+  4: [[[0.45, 1], [0.45, 0], [0, 0.65], [0.6, 0.65]]],
+  5: [[[0.6, 0], [0, 0], [0, 0.45], [0.5, 0.45], [0.6, 0.55], [0.6, 0.9], [0.5, 1], [0.1, 1], [0, 0.9]]],
+  6: [[[0.55, 0], [0.1, 0], [0, 0.1], [0, 0.9], [0.1, 1], [0.5, 1], [0.6, 0.9], [0.6, 0.6], [0.5, 0.5], [0, 0.5]]],
+  7: [[[0, 0], [0.6, 0], [0.2, 1]]],
+  8: [[[0.1, 0], [0.5, 0], [0.6, 0.1], [0.6, 0.4], [0.5, 0.5], [0.1, 0.5], [0, 0.4], [0, 0.1], [0.1, 0]], [[0.1, 0.5], [0.5, 0.5], [0.6, 0.6], [0.6, 0.9], [0.5, 1], [0.1, 1], [0, 0.9], [0, 0.6], [0.1, 0.5]]],
+  9: [[[0.6, 0.5], [0.1, 0.5], [0, 0.4], [0, 0.1], [0.1, 0], [0.5, 0], [0.6, 0.1], [0.6, 0.9], [0.5, 1], [0.05, 1]]],
+};
+export function digitStrokes(text, cx, cy, h) {
+  const s = String(text).replace(/[^0-9]/g, ''), w = 0.6 * h, gap = 0.25 * h, total = s.length * w + Math.max(0, s.length - 1) * gap, out = [];
+  [...s].forEach((ch, i) => { const ox = cx - total / 2 + i * (w + gap), oy = cy - h / 2; for (const line of RS_DIGITS[ch]) out.push(line.map(([x, y]) => ({ x: +(ox + x * h).toFixed(3), y: +(oy + y * h).toFixed(3) }))); });
+  return out;
+}
+/** ピースを、読む順（上から、同じ高さなら左から）に並べて、番号（1〜）・面積・番号の置き場所を付けて返す。 */
+export function numberPieces(pieces) {
+  const info = pieces.map(points => { const c = labelPoint(points), area = Math.abs(areaOf(points)); return { points, area, label: c, cy: points.reduce((a, q) => a + q.y, 0) / points.length, cx: points.reduce((a, q) => a + q.x, 0) / points.length }; });
+  const band = Math.max(5, Math.sqrt(info.reduce((a, p) => a + p.area, 0) / Math.max(1, info.length)) / 2);   /* 同じ段とみなす高さ（ピース1枚の大きさの半分ほど） */
+  info.sort((p, q) => { const bp = Math.round(p.cy / band), bq = Math.round(q.cy / band); return bp - bq || p.cx - q.cx; });
+  return info.map((p, i) => ({ ...p, no: i + 1 }));
+}

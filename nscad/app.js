@@ -8,7 +8,7 @@ import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundC
 import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
-import { RULER_NOTE, printPagesPlan, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
+import { RULER_NOTE, printPagesPlan, patchPieceSvg, zipStore, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
@@ -60,7 +60,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
-import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -1146,6 +1146,28 @@ function rcCompareOpen() {
     b.appendChild(d1); b.appendChild(d2); b.onclick = () => { win.hidden = true; rcApplyAt(rcLast, c); }; list.appendChild(b);
   });
   win.hidden = false; $('hint').textContent = t('rpCompareHint');
+}
+/* ───────── ピースを分けて保存（事業主 2026-11-12「各パッチをバラバラにして保存（SVG・レーザー加工用）できる機能が欲しい」→ ピースごとに別ファイル（ZIP）・穴も入れる・番号を彫る）─────────
+ *  外形（閉じた図形）の中をクリック：外形を、その中の青い直線（カット線）で厳密に分けて、ピース1枚ずつの SVG にし、1つの ZIP にまとめて保存する。切る線＝黒・縫い穴＝赤・番号＝青（色で加工を分ける）。
+ *  塗りがあれば、色の名前をファイル名に付ける。計算は design.js の splitOutlineByLines・numberPieces・digitStrokes、SVG と ZIP は formats.js の patchPieceSvg・zipStore。 */
+function rsplitAt(pt) {
+  if (!regGuard('svg', 'dl')) return 0;
+  const region = rpRegionAt(pt); if (!region) { $('hint').textContent = t('rpNoRegion'); return 0; }
+  const poly = region.points, line = { type: 'polyline', closed: true, points: poly }, inside = q => insidePolygon(q, poly) || distToShape(line, q) <= 0.4;
+  const cuts = doc.shapes.filter(s => visible(s) && rpIsCut(s) && inside({ x: s.x1, y: s.y1 }) && inside({ x: s.x2, y: s.y2 })).map(s => ({ a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } }));
+  const res = splitOutlineByLines(poly, cuts), nums = numberPieces(res.pieces);
+  const margin = rpNum('rsMargin', 2, 0, 20), numH = rpNum('rsNumH', 6, 2, 30), engrave = $('rsNum') ? $('rsNum').checked !== false : true, holesAll = ($('rsHoles') ? $('rsHoles').checked !== false : true) ? exportTargets(true).holes : [];
+  const pad = Math.max(2, String(nums.length).length), files = []; let skipped = 0, nHoles = 0;
+  for (const pc of nums) {
+    const holes = holesAll.filter(h => insidePolygon(h, pc.points)); nHoles += holes.length;
+    const d = String(pc.no).length, h = Math.min(numH, 1.4 * pc.label.r, 1.6 * pc.label.r / (0.6 * d + 0.25 * (d - 1))); let strokes = [];
+    if (engrave) { if (h >= 2) strokes = digitStrokes(String(pc.no), pc.label.x, pc.label.y, h); else skipped++; }   /* 小さすぎて番号が入らないピースは、番号なし */
+    const fill = (doc.fills || []).find(fl => fl.leather && fl.points && insidePolygon(pc.label, fl.points)), cname = fill ? (DATA_LEATHER_COLORS.leatherColors.find(c => String(c.hex).toLowerCase() === String(fill.leather).toLowerCase())?.name || '') : '';
+    const svg = patchPieceSvg({ points: pc.points, holes, strokes, title: t('rsPieceTitle', { n: pc.no }) + (cname ? ' ' + cname : '') }, doc, { marginMm: margin });
+    files.push({ name: `piece-${String(pc.no).padStart(pad, '0')}${cname ? '_' + cname.replace(/[^\p{L}\p{N}_-]/gu, '') : ''}.svg`, data: svg });
+  }
+  exportFile('leather-pieces.zip', zipStore(files), 'application/zip', saved => { $('hint').textContent = t('rsDone', { n: nums.length, holes: nHoles }) + (engrave && skipped ? ' ' + t('rsSkipped', { n: skipped }) : '') + (res.unused ? ' ' + t('rsUnused', { n: res.unused }) : '') + savedTo(saved); });
+  return nums.length;
 }
 function divideTwoClick(pt) {
   if (stage?.kind !== 'divide2') { stage = { kind: 'divide2', a: pt }; $('hint').textContent = t('divideTwoSecond'); draw(); return; }
@@ -4011,7 +4033,7 @@ function initDesign() {
   $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
-  $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rcolor').onclick = () => { countUse('ctx_rcolor'); hideCtxMenu(); setMode('rcolor'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
+  $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rsplit').onclick = () => { countUse('ctx_rsplit'); hideCtxMenu(); setMode('rsplit'); }; $('ctx-rcolor').onclick = () => { countUse('ctx_rcolor'); hideCtxMenu(); setMode('rcolor'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
   $('rpCompare').onclick = rpCompareOpen; $('rpCompareClose').onclick = () => { $('rpCompareWin').hidden = true; };
@@ -8958,7 +8980,7 @@ function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
-  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); $('rcolorBar').hidden = mode !== 'rcolor'; if (mode !== 'rcolor') { $('rcCompareWin').hidden = true; $('rcResultWin').hidden = true; } if (mode === 'rcolor') syncRcolorBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
+  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); $('rcolorBar').hidden = mode !== 'rcolor'; if (mode !== 'rcolor') { $('rcCompareWin').hidden = true; $('rcResultWin').hidden = true; } if (mode === 'rcolor') syncRcolorBar(); $('rsplitBar').hidden = mode !== 'rsplit'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
   setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
@@ -11036,7 +11058,8 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p), e.shiftKey); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
   if (mode === 'rpatch') { rpatchAt(world(p)); return; }
-  if (mode === 'rcolor') { rcApplyAt(world(p)); return; }   /* ランダム配色：外形の中をクリック */   /* ランダムパッチワーク：外形の中をクリック */
+  if (mode === 'rcolor') { rcApplyAt(world(p)); return; }
+  if (mode === 'rsplit') { rsplitAt(world(p)); return; }   /* ピースを分けて保存：外形の中をクリック */   /* ランダム配色：外形の中をクリック */   /* ランダムパッチワーク：外形の中をクリック */
   if (mode === 'divide') { if (divideHow() === 'two') divideTwoClick(cursor); else divideAt(world(p)); return; }   /* 「2点を選ぶ」は、磁石で吸い付いた点（cursor）を使う */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
@@ -11325,7 +11348,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-rpatch', 'ctx-rcolor', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib', 'ctx-zipper']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-rpatch', 'ctx-rcolor', 'ctx-rsplit', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib', 'ctx-zipper']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {
