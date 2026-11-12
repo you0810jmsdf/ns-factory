@@ -40,6 +40,10 @@ export const TUTORIALS_TRANSFORM = {
       "wait": 800
     },
     {
+      "click": "#mirrorY",
+      "wait": 800
+    },
+    {
       "say": "tut.transform.5",
       "click": "#scaleOpen",
       "value": {
