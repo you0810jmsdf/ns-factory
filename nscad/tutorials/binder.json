@@ -1,0 +1,30 @@
+{
+  "id": "binder",
+  "page": "hardware",
+  "title": "tut.binder.title",
+  "steps": [
+    {
+      "say": "tut.binder.1",
+      "value": {
+        "#binderSpecSel": "mini6"
+      },
+      "wait": 900
+    },
+    {
+      "say": "tut.binder.2",
+      "click": "#binderPlace"
+    },
+    {
+      "mouse": [
+        30,
+        15
+      ],
+      "press": true,
+      "wait": 1200
+    },
+    {
+      "say": "tut.binder.3",
+      "wait": 1000
+    }
+  ]
+}
