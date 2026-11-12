@@ -1,0 +1,48 @@
+{
+  "id": "numeric",
+  "page": "numeric",
+  "title": "tut.numeric.title",
+  "steps": [
+    {
+      "say": "tut.numeric.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "say": "tut.numeric.2",
+      "value": {
+        "#cmd": "20,20"
+      }
+    },
+    {
+      "key": "Enter",
+      "wait": 600
+    },
+    {
+      "say": "tut.numeric.3",
+      "value": {
+        "#cmd": "@60,0"
+      }
+    },
+    {
+      "key": "Enter",
+      "wait": 600
+    },
+    {
+      "say": "tut.numeric.4",
+      "value": {
+        "#cmd": "40<90"
+      }
+    },
+    {
+      "key": "Enter",
+      "wait": 800
+    },
+    {
+      "say": "tut.numeric.5",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "wait": 600
+    }
+  ]
+}

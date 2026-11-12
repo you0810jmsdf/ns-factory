@@ -1,0 +1,58 @@
+{
+  "id": "koma",
+  "page": "design",
+  "title": "tut.koma.title",
+  "steps": [
+    {
+      "say": "tut.koma.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        40,
+        110,
+        40
+      ]
+    },
+    {
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        20,
+        75,
+        100,
+        75
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.koma.2",
+      "click": "#ctx-koma",
+      "wait": 500
+    },
+    {
+      "say": "tut.koma.3",
+      "mouse": [
+        65,
+        40
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        60,
+        75
+      ],
+      "press": true,
+      "wait": 1200
+    },
+    {
+      "say": "tut.koma.4",
+      "wait": 800
+    }
+  ]
+}

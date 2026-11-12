@@ -1,0 +1,71 @@
+{
+  "id": "layout",
+  "page": "numeric",
+  "title": "tut.layout.title",
+  "steps": [
+    {
+      "say": "tut.layout.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        20,
+        20,
+        45,
+        38
+      ],
+      "wait": 300
+    },
+    {
+      "say": "tut.layout.2",
+      "click": "#ctx-move",
+      "value": {
+        "#moveDx": "10",
+        "#moveDy": "5"
+      }
+    },
+    {
+      "click": "#moveApply",
+      "wait": 700
+    },
+    {
+      "click": "#moveWinClose",
+      "wait": 200
+    },
+    {
+      "say": "tut.layout.3",
+      "value": {
+        "#arrayNx": "3",
+        "#arrayNy": "2",
+        "#arrayDx": "32",
+        "#arrayDy": "26"
+      }
+    },
+    {
+      "click": "#arrayApply",
+      "wait": 900
+    },
+    {
+      "say": "tut.layout.4",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        10,
+        10,
+        125,
+        90
+      ]
+    },
+    {
+      "click": "#alignTop",
+      "wait": 800
+    },
+    {
+      "say": "tut.layout.5",
+      "wait": 800
+    }
+  ]
+}

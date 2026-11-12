@@ -23,6 +23,36 @@ import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js'
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
 import { DATA_LEATHER_COLORS } from './data/leather-colors.js';
 import { DATA_TEXTURES } from './data/textures.js';
+import { TUTORIALS_BASICS } from './tutorials/basics.js';
+import { TUTORIALS_UNDO } from './tutorials/undo.js';
+import { TUTORIALS_SHAPES } from './tutorials/shapes.js';
+import { TUTORIALS_TEXTDIM } from './tutorials/textdim.js';
+import { TUTORIALS_MEASURE } from './tutorials/measure.js';
+import { TUTORIALS_NUMERIC } from './tutorials/numeric.js';
+import { TUTORIALS_TRIM } from './tutorials/trim.js';
+import { TUTORIALS_ROUND } from './tutorials/round.js';
+import { TUTORIALS_AUTODIM } from './tutorials/autodim.js';
+import { TUTORIALS_DIVIDE } from './tutorials/divide.js';
+import { TUTORIALS_MARK } from './tutorials/mark.js';
+import { TUTORIALS_STITCH } from './tutorials/stitch.js';
+import { TUTORIALS_STITCHLOOP } from './tutorials/stitchloop.js';
+import { TUTORIALS_HOLES } from './tutorials/holes.js';
+import { TUTORIALS_HOLESHAPE } from './tutorials/holeshape.js';
+import { TUTORIALS_KOMA } from './tutorials/koma.js';
+import { TUTORIALS_TRANSFORM } from './tutorials/transform.js';
+import { TUTORIALS_LAYOUT } from './tutorials/layout.js';
+import { TUTORIALS_ATTACH } from './tutorials/attach.js';
+import { TUTORIALS_MIRROR } from './tutorials/mirror.js';
+import { TUTORIALS_LINES } from './tutorials/lines.js';
+import { TUTORIALS_TIDY } from './tutorials/tidy.js';
+import { TUTORIALS_LINESTYLE } from './tutorials/linestyle.js';
+import { TUTORIALS_LAYERS } from './tutorials/layers.js';
+import { TUTORIALS_RPATCH } from './tutorials/rpatch.js';
+import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
+import { TUTORIALS_HARDWARE } from './tutorials/hardware.js';
+import { TUTORIALS_PAINT } from './tutorials/paint.js';
+import { TUTORIALS_PEN } from './tutorials/pen.js';
+import { TUTORIALS_OUTPUT } from './tutorials/output.js';
 import { createPlayer } from './tutorial.js';
 import { parseVoice, labelOf, voiceIsDraw } from './voice.js';
 import { lccToDoc, styleSummary } from './lcc.js';
@@ -33,30 +63,6 @@ import { DATA_STYLE } from './data/style.js';
 import { DATA_RELEASE_NOTES } from './data/release-notes.js';
 import { DATA_BOOK_SPECS } from './data/book-specs.js';
 import { DATA_RELEASE_HISTORY } from './data/release-history.js';
-import { TUTORIALS_BASICS } from './tutorials/basics.js';
-import { TUTORIALS_STITCH } from './tutorials/stitch.js';
-import { TUTORIALS_PEN } from './tutorials/pen.js';
-import { TUTORIALS_OUTPUT } from './tutorials/output.js';
-import { TUTORIALS_SHAPES } from './tutorials/shapes.js';
-import { TUTORIALS_TEXTDIM } from './tutorials/textdim.js';
-import { TUTORIALS_MEASURE } from './tutorials/measure.js';
-import { TUTORIALS_TRIM } from './tutorials/trim.js';
-import { TUTORIALS_MARK } from './tutorials/mark.js';
-import { TUTORIALS_TRANSFORM } from './tutorials/transform.js';
-import { TUTORIALS_ATTACH } from './tutorials/attach.js';
-import { TUTORIALS_LINES } from './tutorials/lines.js';
-import { TUTORIALS_HOLES } from './tutorials/holes.js';
-import { TUTORIALS_ROUND } from './tutorials/round.js';
-import { TUTORIALS_AUTODIM } from './tutorials/autodim.js';
-import { TUTORIALS_RPATCH } from './tutorials/rpatch.js';
-import { TUTORIALS_ZIPPER } from './tutorials/zipper.js';
-import { TUTORIALS_LINESTYLE } from './tutorials/linestyle.js';
-import { TUTORIALS_MIRROR } from './tutorials/mirror.js';
-import { TUTORIALS_TIDY } from './tutorials/tidy.js';
-import { TUTORIALS_HARDWARE } from './tutorials/hardware.js';
-import { TUTORIALS_PAINT } from './tutorials/paint.js';
-import { TUTORIALS_LAYERS } from './tutorials/layers.js';
-import { TUTORIALS_STITCHLOOP } from './tutorials/stitchloop.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord, UST_SUB_KEY } from './undostore.js';
@@ -4642,17 +4648,18 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_UNDO, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_NUMERIC, TUTORIALS_TRIM, TUTORIALS_ROUND, TUTORIALS_AUTODIM, TUTORIALS_DIVIDE, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_STITCHLOOP, TUTORIALS_HOLES, TUTORIALS_HOLESHAPE, TUTORIALS_KOMA, TUTORIALS_TRANSFORM, TUTORIALS_LAYOUT, TUTORIALS_ATTACH, TUTORIALS_MIRROR, TUTORIALS_LINES, TUTORIALS_TIDY, TUTORIALS_LINESTYLE, TUTORIALS_LAYERS, TUTORIALS_RPATCH, TUTORIALS_ZIPPER, TUTORIALS_HARDWARE, TUTORIALS_PAINT, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
+  let keyTarget = null;   /* 直前に値を入れた欄（画面の下の数値入力など）。続く key（Enter）は、その欄へ送る（欄の keydown で実行する欄があるため） */
   const fire = (name, p, extra = {}) => canvas.listeners?.[name] ? canvas.listeners[name]({ clientX: p.x, clientY: p.y, button: 0, pointerId: 1, preventDefault() {}, ...extra }) : canvas.dispatchEvent?.(new PointerEvent(name, { clientX: p.x + canvas.getBoundingClientRect().left, clientY: p.y + canvas.getBoundingClientRect().top, button: 0, pointerId: 1, bubbles: true, isPrimary: true }));
   return {
     t, sleep: ms => instant ? Promise.resolve() : new Promise(r => setTimeout(r, ms)),
-    click: (sel, mm) => { if (mm) { const p = screenOf(mm[0], mm[1]); fire('pointerdown', p); fire('pointerup', p); return; } const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (el) { if (el.tagName === 'SUMMARY' && el.parentElement) el.parentElement.open = true; else if (typeof el.click === 'function') el.click(); } },
-    setValue: (sel, v) => { const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else el.value = String(v); (el.listeners?.change || (() => el.dispatchEvent?.(new Event('change'))))(); },
-    moveTo() {}, drag: (x1, y1, x2, y2) => { const a = screenOf(x1, y1), b = screenOf(x2, y2); fire('pointerdown', a); fire('pointermove', b); fire('pointerup', b); },
-    key: k => { const ev = { key: k, target: {}, preventDefault() {}, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }; (window.listeners?.keydown || (e => window.dispatchEvent?.(new KeyboardEvent('keydown', e))))(ev); },
+    click: (sel, mm) => { keyTarget = null; if (mm) { const p = screenOf(mm[0], mm[1]); fire('pointerdown', p); fire('pointerup', p); return; } const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (el) { if (el.tagName === 'SUMMARY' && el.parentElement) el.parentElement.open = true; else if (typeof el.click === 'function') el.click(); } },
+    setValue: (sel, v) => { const el = document.querySelector?.(sel) || (sel.startsWith('#') ? $(sel.slice(1)) : null); if (!el) return; if (el.type === 'checkbox') el.checked = !!v; else { el.value = String(v); if (el.tagName === 'INPUT') keyTarget = el; } (el.listeners?.change || (() => el.dispatchEvent?.(new Event('change'))))(); },
+    moveTo() {}, drag: (x1, y1, x2, y2) => { keyTarget = null; const a = screenOf(x1, y1), b = screenOf(x2, y2); fire('pointerdown', a); fire('pointermove', b); fire('pointerup', b); },
+    key: k => { if (keyTarget) { const el = keyTarget; keyTarget = null; if (el.listeners?.keydown) el.listeners.keydown({ key: k, target: el, preventDefault() {} }); else el.dispatchEvent?.(new KeyboardEvent('keydown', { key: k, bubbles: true })); return; } const ev = { key: k, target: {}, preventDefault() {}, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }; (window.listeners?.keydown || (e => window.dispatchEvent?.(new KeyboardEvent('keydown', e))))(ev); },
     setMode: m => setMode(m), caption: text => { $('tutCaption').textContent = text; $('tutBar').hidden = false; },
     highlight: sel => { document.querySelectorAll?.('.tut-hl').forEach(el => el.classList.remove('tut-hl')); if (sel) { const el = document.querySelector?.(sel); el?.classList?.add('tut-hl'); el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }); } },   /* 左の列の下の方（「選択中」のボタン）も、見える位置まで送ってから光らせる */
     cursor: (x, y) => { const c = $('tutCursor'); if (x === null || x === undefined) { c.hidden = true; return; } const p = screenOf(x, y); c.hidden = false; c.style.left = p.x + 'px'; c.style.top = p.y + 'px'; },
@@ -11640,7 +11647,7 @@ document.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click'
 document.addEventListener('wheel', blurNumberOnWheel, { passive: true, capture: true });   /* 登録は1つだけ（以前は同じ処理が2か所に重なっていた） */
 $('lineSelAng').addEventListener('change', applyLineAngle); $('lineSelAng').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyLineAngle(); } });
 $('lineSelLen').addEventListener('change', applyLineLength); $('lineSelLen').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyLineLength(); } });
-$('delete').onclick = removeSelected; $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
+$('delete').onclick = () => removeSelected();   /* 左の「削除」：クリックの出来事（event）を onlyIds に渡さない（渡すと ids.has が無くて止まり、何も消えなかった・2026-11-12 チュートリアル作成中に発見） */ $('deleteKeepHoles').onclick = removeSelectedKeepHoles; $('info-holeToolLoad').onclick = loadHoleToolToEditor; $('info-holeToolApply').onclick = () => applyHoleToolEdit(false); $('info-holeAll').onclick = () => applyHoleToolEdit(true); $('info-lineApply').onclick = () => applyDiamondLineEdit('selected'); $('info-lineAll').onclick = () => applyDiamondLineEdit('all');
 $('copy').onclick = copySelected;
 /** グループ化・解除：選んだ図形（すでにグループなら全体）を1つのグループにする／解除する。 */
 /** グループ化（G）。選んだ図形といっしょに、図形の範囲（つながった図形ごとの四角・1mm の余裕）の中の菱目を、持ち主の線が遠くてもグループに入れる（事業主 2026-11-07「菱目といっしょにグループ化できない」→「穴を入れる」）。別のグループの穴は入れない。選んでいた穴は、範囲の外でも入れる。 */
