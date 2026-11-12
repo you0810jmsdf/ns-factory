@@ -1442,9 +1442,18 @@ export function seamStitchPlan(lines, outline, { offset = 2, pitch = 3.95, tolPc
       if (k + 1 >= R.length) continue;
       const q = R[k + 1], dP = q.t1 - r.t1, dM = q.t2 - r.t2, avg = (dP + dM) / 2, tm = (r.t1 + r.t2 + q.t1 + q.t2) / 4, mid = { x: +(s.a.x + s.u.x * tm).toFixed(3), y: +(s.a.y + s.u.y * tm).toFixed(3) };   /* 区間の真ん中（切り口の線の上） */
       if (dP < 0.3 || dM < 0.3) { out.conflicts.push({ line: i, from: k, to: k + 1, ...mid, kind: 'tooClose', lenPlus: +dP.toFixed(3), lenMinus: +dM.toFixed(3), n: 1, fix: { delta: +(pitch - avg).toFixed(3) } }); continue; }
-      let n = Math.max(1, Math.round(avg / pitch)); const dev = m => Math.abs(avg / m - pitch); if (n > 1 && dev(n - 1) < dev(n)) n--; if (dev(n + 1) < dev(n)) n++;
+      /* 事業主 2026-11-12「交点から最初の丸目のみがルール対象外。それ以外は正方形」：両側で同じ位置（縫い線に垂直な行）に、pitch（＝縫い線の間隔）ぴったりで並べる。交点の角の穴から最初の穴までの間だけ、自由（両端に同じだけ余りを配る。ひし形の交点で片側が遠いときは、その側だけ等分して穴を足す）。 */
+      const lo = Math.max(r.t1, r.t2), hi = Math.min(q.t1, q.t2), span = hi - lo, m = Math.round(span / pitch) - 1;
+      if (m >= 1) {
+        const e = (span - (m - 1) * pitch) / 2, cs = []; for (let j = 0; j < m; j++) cs.push(lo + e + j * pitch);
+        for (const c of cs) { at(1, c, 'mid'); at(-1, c, 'mid'); }
+        for (const [sd, t0, t1b] of [[1, r.t1, q.t1], [-1, r.t2, q.t2]]) for (const [from, to] of [[t0, cs[0]], [cs.at(-1), t1b]]) { const g = to - from, kk = Math.round(g / pitch); for (let j = 1; j < kk; j++) at(sd, from + g * j / kk, 'mid'); }
+        continue;
+      }
+      /* 短い区間（正方形の行が1つも入らない）：これまでどおり等分。許容（±%）を超えるときは、合わない区間として出す */
+      let n = Math.max(1, Math.round(avg / pitch)); const dev = mm => Math.abs(avg / mm - pitch); if (n > 1 && dev(n - 1) < dev(n)) n--; if (dev(n + 1) < dev(n)) n++;
       const pP = dP / n, pM = dM / n, bad = Math.abs(pP - pitch) > tol * pitch + 1e-9 || Math.abs(pM - pitch) > tol * pitch + 1e-9;
-      for (let m = 1; m < n; m++) { at(1, r.t1 + dP * m / n, 'mid'); at(-1, r.t2 + dM * m / n, 'mid'); }
+      for (let mm = 1; mm < n; mm++) { at(1, r.t1 + dP * mm / n, 'mid'); at(-1, r.t2 + dM * mm / n, 'mid'); }
       if (bad) out.conflicts.push({ line: i, from: k, to: k + 1, ...mid, kind: 'pitch', lenPlus: +dP.toFixed(3), lenMinus: +dM.toFixed(3), n, pitchPlus: +pP.toFixed(3), pitchMinus: +pM.toFixed(3), fix: { delta: +(n * pitch - avg).toFixed(3) } });
     }
     for (const sd of [1, -1]) { const h = side[sd].holes.sort((x, y) => x.t - y.t); if (!h.length) continue; out.sides.push({ line: i, side: sd, a: { x: h[0].x, y: h[0].y }, b: { x: h.at(-1).x, y: h.at(-1).y }, holes: h }); }
