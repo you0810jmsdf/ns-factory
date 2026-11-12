@@ -53,6 +53,10 @@ img { max-width: 100%; display: block; }
 }
 .hero-veil { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(12,10,8,.94) 0%, rgba(12,10,8,.74) 46%, rgba(12,10,8,.36) 100%); }
 .hero-inner { position: relative; max-width: 1080px; margin: 0 auto; padding: 72px 24px 64px; }
+/* 2026-11-13 ツールのロゴ（N's RING GUIDE・正本は 広報部\ロゴ\ツール\ringguide.jpg）。PCは右上・スマホは見出しの上 */
+.hero-logo { position: absolute; top: 64px; right: 24px; width: 184px; height: auto; border-radius: 14px; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+@media (min-width: 781px) { .hero-inner.has-logo { padding-right: 240px; } }
+@media (max-width: 780px) { .hero-logo { position: static; display: block; width: 104px; border-radius: 10px; margin-bottom: 16px; } }
 .hero-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .18em; color: var(--tan-light); margin-bottom: 14px; }
 .hero h1 { font-size: clamp(28px, 5.2vw, 46px); line-height: 1.22; letter-spacing: -.02em; margin-bottom: 16px; }
 .hero h1 small { display: block; font-size: clamp(13px, 2vw, 16px); font-weight: 600; color: rgba(255,255,255,.68); letter-spacing: .04em; margin-top: 10px; }
@@ -280,7 +284,8 @@ footer.ft a { color: var(--tan-light); }
 <section class="hero">
   <div class="hero-photo"></div>
   <div class="hero-veil"></div>
-  <div class="hero-inner">
+  <div class="hero-inner has-logo">
+    <img class="hero-logo" src="../assets/ring-guide-logo.jpg" alt="N's RING GUIDE のロゴ（革に刻印したマーク）" width="360" height="360">
     <div class="hero-eyebrow">RING &amp; HOLE STANDARDS</div>
     <h1>システム手帳 リング規格図鑑
       <small>穴の位置が合うかどうか。それだけが、リフィルの互換を決めています。</small>
