@@ -1,0 +1,45 @@
+{
+  "weekId": "2026-11-12",
+  "post": false,
+  "generatedAt": "2026-11-12T19:21:22+09:00",
+  "settings": {
+    "periodDays": 7,
+    "topN": 3
+  },
+  "period": {
+    "from": "2026-11-05",
+    "to": "2026-11-11"
+  },
+  "items": [
+    {
+      "rank": 1,
+      "id": "nscad",
+      "name": "N's CAD",
+      "uu": 25
+    },
+    {
+      "rank": 2,
+      "id": "monthly",
+      "name": "月間ブロック印刷ツール",
+      "uu": 14
+    },
+    {
+      "rank": 3,
+      "id": "weekly",
+      "name": "週間ブロック印刷ツール",
+      "uu": 11
+    }
+  ],
+  "image": "https://you0810jmsdf.github.io/ns-factory/weekly-tools/img/2026-11-12.jpg",
+  "postTime": "20:00",
+  "platforms": {
+    "threads": true,
+    "instagram": true,
+    "facebook": true
+  },
+  "text": {
+    "threads": "ツール人気ランキング（過去7日間・11/5〜11/11）\n\nN's factory の無料ツールで、この1週間に使ってくださった方が多かったトップ3です。\n\n1位　N's CAD\n革の型紙をブラウザで描く無料のCADです。手帳金具の規格を内蔵していて、背幅や断面まで自動で出します。\nhttps://you0810jmsdf.github.io/ns-factory/nscad/\n\n2位　月間ブロック印刷ツール\nシステム手帳の月間リフィルを、6つの判型でA4に面付けして印刷できます。日付なし版もあります。\nhttps://you0810jmsdf.github.io/ns-factory/tools/\n\n3位　週間ブロック印刷ツール\nシステム手帳の週間リフィルを印刷できます。綴じた後の見開きを、印刷前に画面でめくって確かめられます。\nhttps://you0810jmsdf.github.io/ns-factory/tools/\n\n気になるものがあれば、ぜひ使ってみてください。",
+    "facebook": "ツール人気ランキング（過去7日間・11/5〜11/11）\n\nN's factory の無料ツールで、この1週間に使ってくださった方が多かったトップ3です。\n\n1位　N's CAD\n革の型紙をブラウザで描く無料のCADです。手帳金具の規格を内蔵していて、背幅や断面まで自動で出します。\nhttps://you0810jmsdf.github.io/ns-factory/nscad/\n\n2位　月間ブロック印刷ツール\nシステム手帳の月間リフィルを、6つの判型でA4に面付けして印刷できます。日付なし版もあります。\nhttps://you0810jmsdf.github.io/ns-factory/tools/\n\n3位　週間ブロック印刷ツール\nシステム手帳の週間リフィルを印刷できます。綴じた後の見開きを、印刷前に画面でめくって確かめられます。\nhttps://you0810jmsdf.github.io/ns-factory/tools/\n\n気になるものがあれば、ぜひ使ってみてください。",
+    "instagram": "ツール人気ランキング（過去7日間・11/5〜11/11）\n\nN's factory の無料ツールで、この1週間に使ってくださった方が多かったトップ3です。\n\n1位　N's CAD\n革の型紙をブラウザで描く無料のCADです。手帳金具の規格を内蔵していて、背幅や断面まで自動で出します。\n\n2位　月間ブロック印刷ツール\nシステム手帳の月間リフィルを、6つの判型でA4に面付けして印刷できます。日付なし版もあります。\n\n3位　週間ブロック印刷ツール\nシステム手帳の週間リフィルを印刷できます。綴じた後の見開きを、印刷前に画面でめくって確かめられます。\n\n気になるものがあれば、ぜひ使ってみてください。\n\n各ツールは、プロフィールのリンクからご覧いただけます。"
+  }
+}
