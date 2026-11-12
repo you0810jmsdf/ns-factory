@@ -1028,7 +1028,7 @@ function rpRegionAt(p) {
 }
 function rpExistingLines(outline) {
   const poly = { type: 'polyline', closed: true, points: outline }, inside = q => insidePolygon(q, outline) || distToShape(poly, q) <= 0.4;
-  return doc.shapes.filter(s => visible(s) && editable(s) && !s.rpatch && rpIsCut(s) && inside({ x: s.x1, y: s.y1 }) && inside({ x: s.x2, y: s.y2 })).map(s => ({ a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } }));
+  return doc.shapes.filter(s => visible(s) && editable(s) && rpIsCut(s) && inside({ x: s.x1, y: s.y1 }) && inside({ x: s.x2, y: s.y2 })).map(s => ({ a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } }));
 }
 /** 「案を比べる」：同じ外形に、上位4案を小さい図と数字（面積のばらつき・三角/四角/五角以上の数）で並べ、選んだ案を図面に採用する（事業主 2026-11-12「数パターンを提案する機能」・形のバランス）。 */
 function rpCutOpts(S) { return { count: S.count, minSide: S.minSide, seed: S.seed, minAngle: S.angOut, minAngleCut: S.angCut, candidates: S.tries, shareMax: S.share }; }
@@ -1049,8 +1049,8 @@ function rpCompareOpen() {
   });
   win.hidden = false; $('hint').textContent = t('rpCompareHint');
 }
-function rpatchAt(p, forced = null) {   /* forced＝「案を比べる」で選んだ案（切り方をそのまま使う） */
-  const S = rpSettings(); if (!S.tool) { $('hint').textContent = t('invalidTool'); return 0; }
+function rpatchAt(p, forced = null, rebuild = false) {   /* forced＝「案を比べる」で選んだ案（切り方をそのまま使う）／rebuild＝「穴を作りなおす」（いまの青線に合わせて、縫い線・穴・赤い丸だけを作りなおす・青線は消さない） */
+  const S = rpSettings(); if (rebuild) S.how = 'existing'; if (!S.tool) { $('hint').textContent = t('invalidTool'); return 0; }
   const region = rpRegionAt(p); if (!region) { $('hint').textContent = t('rpNoRegion'); return 0; }
   const outline = region.points.map(q => ({ x: q.x, y: q.y })), tag = 'rp' + region.shapeIds.slice().sort().join('+').slice(0, 56);
   rpLast = { x: p.x, y: p.y }; let lines, cutInfo = null;
@@ -1065,7 +1065,7 @@ function rpatchAt(p, forced = null) {   /* forced＝「案を比べる」で選�
   const r4 = v => +v.toFixed(4); let nHoles = 0, nRim = 0, newCutIds = [];
   cancel();
   commit(() => {
-    const mine = new Set(doc.shapes.filter(s => s.rpatch === tag).map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.rpatch === tag || q.shapeIds.some(id => mine.has(id))).map(q => q.id));
+    const mine = new Set(doc.shapes.filter(s => s.rpatch === tag && (S.how === 'random' || !rpIsCut(s))).map(s => s.id)),   /* 「今ある青線を使う」と作りなおしは、青線を消さない */ minePaths = new Set(doc.paths.filter(q => q.rpatch === tag || q.shapeIds.some(id => mine.has(id))).map(q => q.id));
     for (const pt of doc.parts) pt.shapeIds = pt.shapeIds.filter(id => !mine.has(id)); doc.shapes = doc.shapes.filter(s => !mine.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(h => h.rpatch !== tag && !minePaths.has(h.pathId));
     const patLayer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, rpatch: tag }); return id; };
     if (S.how === 'random') for (const l of lines) newCutIds.push(add({ type: 'line', layer: patLayer, color: 'blue', x1: r4(l.a.x), y1: r4(l.a.y), x2: r4(l.b.x), y2: r4(l.b.y) }));
@@ -1091,6 +1091,7 @@ function rpatchAt(p, forced = null) {   /* forced＝「案を比べる」で選�
   });
   const total = nHoles + nRim, bad = plan.conflicts.length;
   $('hint').textContent = (S.how === 'random' ? t('rpDoneRandom', { made: cutInfo.made, req: cutInfo.requested, seed: S.seed }) : t('rpDoneExisting', { n: lines.length })) + ' ' + t('rpDoneCommon', { cross: plan.junctions, holes: nHoles, rim: nRim, merged: plan.merged }) + (bad ? ' ' + t('rpDoneBad', { n: bad, tol: S.tol }) : ' ' + t('rpDoneOk', { tol: S.tol })) + (cutInfo && cutInfo.areaMax > 0 ? ' ' + t('rpAreaInfo', { min: (cutInfo.areaMin / 100).toFixed(1), max: (cutInfo.areaMax / 100).toFixed(1), cv: (cutInfo.cv * 100).toFixed(0), n: cutInfo.candidates }) + ' ' + t('rpShapeInfo', { tri: cutInfo.shapes.tri, quad: cutInfo.shapes.quad, other: cutInfo.shapes.other }) : '') + (cutInfo && cutInfo.made < cutInfo.requested ? ' ' + t('rpFewer', { made: cutInfo.made, req: cutInfo.requested, min: S.minSide }) : '');
+  if (rebuild && (doc.fills || []).some(f => f.rcolor === 'rc' + tag.slice(2))) $('hint').textContent += ' ' + t('rpRecolorNote');   /* 色の塗りは、ピースの形が変わるので追従しない：かけ直す */
   rebuildSnaps(); draw(); return total;
 }
 /* 「2点を選ぶ」（事業主 2026-11-12）：始点→終点の2クリックで、2点を分割数で等分する点（2＝中間点）に、2点を結ぶ線に垂直な短い印の線を引く。印の線種・長さ・色は欄で決め、最後に使ったものを覚える（次からの初めの値）。 */
@@ -4046,7 +4047,7 @@ function initDesign() {
   $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rsplit').onclick = () => { countUse('ctx_rsplit'); hideCtxMenu(); setMode('rsplit'); }; $('ctx-rcolor').onclick = () => { countUse('ctx_rcolor'); hideCtxMenu(); setMode('rcolor'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
-  $('rpCompare').onclick = rpCompareOpen; $('rpCompareClose').onclick = () => { $('rpCompareWin').hidden = true; };
+  $('rpRebuild').onclick = () => { if (rpLast) rpatchAt(rpLast, null, true); else $('hint').textContent = t('rpCompareNone'); }; $('rpCompare').onclick = rpCompareOpen; $('rpCompareClose').onclick = () => { $('rpCompareWin').hidden = true; };
   $('rcNext').onclick = () => { $('rcSeed').value = String(Math.floor(rpNum('rcSeed', 1, 1, 999999)) + 1); if (rcLast) rcApplyAt(rcLast); else $('hint').textContent = modeHint('rcolor'); }; $('rcCompare').onclick = rcCompareOpen; $('rcCompareClose').onclick = () => { $('rcCompareWin').hidden = true; }; $('rcResultClose').onclick = () => { $('rcResultWin').hidden = true; };
   $('rpHow').addEventListener('change', () => { syncRpatchBar(); $('hint').textContent = modeHint('rpatch'); }); $('rpNext').onclick = () => { $('rpSeed').value = String(Math.floor(rpNum('rpSeed', 1, 1, 999999)) + 1); if (rpLast) rpatchAt(rpLast); else $('hint').textContent = modeHint('rpatch'); };   /* 「別の案」：種を1つ進めて、同じ外形に作りなおす */
   loadMarkSpec(); for (const id of ['mkShape', 'mkDia', 'mkLen', 'mkStyle', 'mkColor']) $(id).addEventListener('change', () => { syncMarkFields(); saveMarkSpec(); });
