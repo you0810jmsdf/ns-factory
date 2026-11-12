@@ -6,22 +6,29 @@ export const TUTORIALS_SAVE = {
   "steps": [
     {
       "say": "tut.save.1",
-      "show": "#save",
-      "wait": 1500
+      "click": "#save",
+      "wait": 900
     },
     {
       "say": "tut.save.2",
-      "show": "#open",
+      "show": "#saveNative",
       "wait": 1500
     },
     {
       "say": "tut.save.3",
-      "show": "#new",
+      "show": "#saveAs",
       "wait": 1500
     },
     {
       "say": "tut.save.4",
-      "wait": 1000
+      "show": "#saveGallery",
+      "wait": 1500
+    },
+    {
+      "say": "tut.save.5",
+      "click": "#save",
+      "show": "#open",
+      "wait": 1800
     }
   ]
 };
