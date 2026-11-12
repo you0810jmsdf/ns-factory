@@ -60,7 +60,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
-import { foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { randomCutLines, seamStitchPlan, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -996,6 +996,67 @@ function markByDistance(click) {
  *  目印の位置（交点から mm）を入れていれば、できた各線の上のその位置に、点の目印（目印ツールと同じもの）も打つ。線も目印も、元に戻すは1回。 */
 function divisionCount() { const n = Math.floor(Number($('divN')?.value)); return Number.isFinite(n) && n >= 2 ? Math.min(n, 36) : 2; }
 const divisionNumber = id => { const raw = String($(id)?.value ?? '').trim(), v = Number(raw); return raw !== '' && Number.isFinite(v) && v > 0 ? v : 0; };
+/* ───────── ランダムパッチワーク（事業主 2026-11-12「パッチワーク機能の応用。ランダムに型紙をフリーカットした場合に、丸目3.95mm のピッチで、交点付近の4つの点が正方形になるように目打ち…」「青線からそれぞれ2mmオフセットしたラインが丸目のライン」「最初からカットラインも含めて、ランダムパッチワークのデザインも」）。
+ *  外形（閉じた図形）の中をクリック：作り方「ランダムに切る」は、外形を T字に切るカット線（青）を作り、「今ある青線を使う」は、いまある青い直線をカット線にする。どちらも、カット線の両側 2mm に縫い線（点線）を引き、交点の4つの穴・ピッチ可変の穴・外周の菱目への統合で目打ちする。計算は design.js の randomCutLines・seamStitchPlan。
+ *  作った図形・経路・穴には rpatch の印（外形ごと）を付け、同じ外形でもう一度クリックすると、置き換わる（元に戻すは1回）。 */
+let rpLast = null;   /* 直前にクリックした点（「別の案」で、同じ外形に作りなおす） */
+const rpNum = (id, def, min, max) => { const v = Number($(id)?.value); return Number.isFinite(v) && v >= min && v <= max ? v : def; };
+function rpSettings() {
+  const tool = stitchToolCurrent();
+  return { how: $('rpHow')?.value === 'existing' ? 'existing' : 'random', count: Math.floor(rpNum('rpCount', 6, 1, 40)), minSide: rpNum('rpMin', 25, 5, 500), seed: Math.floor(rpNum('rpSeed', 1, 1, 999999)), offset: rpNum('rpOff', 2, 0.5, 20), tol: rpNum('rpTol', 10, 1, 50), rimD: rpNum('rpRim', 2, 0.5, 20), rim: $('rpRimOn') ? $('rpRimOn').checked !== false : true, pitch: tool?.pitch > 0 ? tool.pitch : 3.95, tool };
+}
+const rpIsCut = s => s.type === 'line' && s.color === 'blue';
+function rpRegionAt(p) {
+  const base = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.rpatch && !rpIsCut(s) && !['text', 'dimension', 'image'].includes(s.type));   /* 青い直線（カット線）は、外形を分けてしまうので、外形を探すときは除く */
+  return regionAt(base, p, 0.05);
+}
+function rpExistingLines(outline) {
+  const poly = { type: 'polyline', closed: true, points: outline }, inside = q => insidePolygon(q, outline) || distToShape(poly, q) <= 0.4;
+  return doc.shapes.filter(s => visible(s) && editable(s) && !s.rpatch && rpIsCut(s) && inside({ x: s.x1, y: s.y1 }) && inside({ x: s.x2, y: s.y2 })).map(s => ({ a: { x: s.x1, y: s.y1 }, b: { x: s.x2, y: s.y2 } }));
+}
+function rpatchAt(p) {
+  const S = rpSettings(); if (!S.tool) { $('hint').textContent = t('invalidTool'); return 0; }
+  const region = rpRegionAt(p); if (!region) { $('hint').textContent = t('rpNoRegion'); return 0; }
+  const outline = region.points.map(q => ({ x: q.x, y: q.y })), tag = 'rp' + region.shapeIds.slice().sort().join('+').slice(0, 56);
+  rpLast = { x: p.x, y: p.y }; let lines, cutInfo = null;
+  if (S.how === 'random') {
+    cutInfo = randomCutLines(outline, { count: S.count, minSide: S.minSide, seed: S.seed });
+    if (cutInfo.error === 'notConvex') { $('hint').textContent = t('rpNotConvex'); return 0; }
+    if (cutInfo.error || !cutInfo.lines.length) { $('hint').textContent = t('rpNoCut', { min: S.minSide }); return 0; }
+    lines = cutInfo.lines;
+  } else { lines = rpExistingLines(outline); if (!lines.length) { $('hint').textContent = t('rpNoLines'); return 0; } }
+  const outPoly = { type: 'polyline', closed: true, points: outline }, existingHoles = doc.holes.filter(h => h.rpatch !== tag && distToShape(outPoly, h) <= S.rimD + 1.5).map(h => ({ x: h.x, y: h.y }));
+  const plan = seamStitchPlan(lines, outline, { offset: S.offset, pitch: S.pitch, tolPct: S.tol, rimD: S.rimD, existingHoles });
+  const r4 = v => +v.toFixed(4); let nHoles = 0, nRim = 0, newCutIds = [];
+  cancel();
+  commit(() => {
+    const mine = new Set(doc.shapes.filter(s => s.rpatch === tag).map(s => s.id)), minePaths = new Set(doc.paths.filter(q => q.rpatch === tag || q.shapeIds.some(id => mine.has(id))).map(q => q.id));
+    for (const pt of doc.parts) pt.shapeIds = pt.shapeIds.filter(id => !mine.has(id)); doc.shapes = doc.shapes.filter(s => !mine.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(h => h.rpatch !== tag && !minePaths.has(h.pathId));
+    const patLayer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, rpatch: tag }); return id; };
+    if (S.how === 'random') for (const l of lines) newCutIds.push(add({ type: 'line', layer: patLayer, color: 'blue', x1: r4(l.a.x), y1: r4(l.a.y), x2: r4(l.b.x), y2: r4(l.b.y) }));
+    const seen = [];
+    for (const sd of plan.sides) {   // 縫い線（両側 2mm）：点線＋穴。交点の穴は2つの縫い線で重なるので、1つだけ置く。外周の菱目に統合する端は、外周の側で置く
+      const pts = sd.holes.filter(h => h.kind !== 'rim' && !seen.some(q => Math.hypot(q.x - h.x, q.y - h.y) < 0.3)); for (const h of pts) seen.push({ x: h.x, y: h.y });
+      const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: r4(sd.a.x), y1: r4(sd.a.y), x2: r4(sd.b.x), y2: r4(sd.b.y) });
+      const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [], mark: 'tool', rpatch: tag }; doc.paths.push(saved);
+      if (!pts.length) continue; const route = resolvePath(doc, saved); placeHoles(saved, route, pts.map(h => pointAtLength(route, Math.hypot(h.x - sd.a.x, h.y - sd.a.y))), S.tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nHoles += pts.length;
+    }
+    const rimPts = rimLine(outline, S.rimD, 0)?.points;   // 外周の縫い線＋外周の菱目（切り口が届く点は、そこに菱目を置く＝統合）。すでに外周の近くに穴があるときは、作らない
+    if (S.rim && rimPts && (S.how === 'random' || !existingHoles.length)) {
+      const lineId = add({ type: 'polyline', layer: guide, closed: true, points: rimPts.map(q => ({ x: r4(q.x), y: r4(q.y) })), lineStyle: 'dashed', color: 'yellow' }), saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: true, segments: [], mark: 'tool', rpatch: tag }; doc.paths.push(saved);
+      const route = resolvePath(doc, saved), loop = loopSampler(rimPts), anchors = plan.rimAnchors.map(a => loop.nearest(a).s), all = [...new Set([...anchors, ...rimHolePositions(loop.total, S.pitch, () => true, { anchors })].map(v => +v.toFixed(4)))].sort((x, y) => x - y);
+      placeHoles(saved, route, all.map(s => pointAtLength(route, s)), S.tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nRim = all.length;
+    }
+    for (const c of plan.conflicts) {   // 合わない区間：赤い丸と、直す量（あと何 mm 伸ばす＋／縮める−と、ぴったり割り切れるか）
+      add({ type: 'circle', layer: guide, color: 'red', cx: r4(c.x), cy: r4(c.y), r: 2.5 });
+      add({ type: 'text', layer: guide, color: 'red', x: r4(c.x + 3.5), y: r4(c.y - 3.5), text: (c.fix.delta > 0 ? '+' : '') + c.fix.delta.toFixed(1), sizeMm: 3, angleDeg: 0 });
+    }
+    selected = new Set(newCutIds);
+  });
+  const total = nHoles + nRim, bad = plan.conflicts.length;
+  $('hint').textContent = (S.how === 'random' ? t('rpDoneRandom', { made: cutInfo.made, req: cutInfo.requested, seed: S.seed }) : t('rpDoneExisting', { n: lines.length })) + ' ' + t('rpDoneCommon', { cross: plan.junctions, holes: nHoles, rim: nRim, merged: plan.merged }) + (bad ? ' ' + t('rpDoneBad', { n: bad, tol: S.tol }) : ' ' + t('rpDoneOk', { tol: S.tol })) + (cutInfo && cutInfo.made < cutInfo.requested ? ' ' + t('rpFewer', { made: cutInfo.made, req: cutInfo.requested, min: S.minSide }) : '');
+  rebuildSnaps(); draw(); return total;
+}
 /* 「2点を選ぶ」（事業主 2026-11-12）：始点→終点の2クリックで、2点を分割数で等分する点（2＝中間点）に、2点を結ぶ線に垂直な短い印の線を引く。印の線種・長さ・色は欄で決め、最後に使ったものを覚える（次からの初めの値）。 */
 const DIVIDE_MARK_KEY = 'leather-cad.divideMark';
 const divideHow = () => $('divHow')?.value === 'two' ? 'two' : 'line';
@@ -1003,6 +1064,7 @@ function divideMarkSpec() { const len = Number($('divMkLen')?.value), color = $(
 function saveDivideMark() { try { localStorage.setItem(DIVIDE_MARK_KEY, JSON.stringify(divideMarkSpec())); } catch { /* 覚えられなくても続ける */ } }
 function loadDivideMark() { let v = null; try { v = JSON.parse(localStorage.getItem(DIVIDE_MARK_KEY) || 'null'); } catch { v = null; } if (!v || typeof v !== 'object') return; if (v.style === 'dashed' || v.style === '') $('divMkStyle').value = v.style; if (Number(v.len) > 0) $('divMkLen').value = String(Math.min(Number(v.len), 1000)); if (['blue', 'green', 'red', 'white', 'yellow'].includes(v.color)) $('divMkColor').value = v.color; }
 function syncDivideBar() { const two = divideHow() === 'two'; for (const el of document.querySelectorAll?.('#divideBar [data-div-two]') || []) el.hidden = !two; for (const id of ['divMkStyleRow', 'divMkLenRow', 'divMkColorRow']) if ($(id)) $(id).hidden = !two; for (const id of ['divLenRow', 'divMarkRow']) if ($(id)) $(id).hidden = two; }
+function syncRpatchBar() { const random = $('rpHow')?.value !== 'existing'; for (const id of ['rpCountRow', 'rpMinRow', 'rpSeedRow']) if ($(id)) $(id).hidden = !random; if ($('rpNext')) $('rpNext').hidden = !random; }
 function divideTwoClick(pt) {
   if (stage?.kind !== 'divide2') { stage = { kind: 'divide2', a: pt }; $('hint').textContent = t('divideTwoSecond'); draw(); return; }
   const a = stage.a, b = pt, d = distance(a, b); if (d < 0.01) { $('hint').textContent = t('divideTwoSame'); return; }
@@ -3867,9 +3929,10 @@ function initDesign() {
   $('ctx-nest').onclick = () => { countUse('ctx_nest'); hideCtxMenu(); openNestWin(); };   /* 右クリック → 用紙に並べる（A4・余白を少なく・事業主指示 2026-10-29） */
   $('ctx-holeshape').onclick = () => { countUse('ctx_holeshape'); hideCtxMenu(); openHoleShapeWin(); };   /* 右クリック → 菱目・丸目をまとめて変える（選んだ範囲の穴の形と大きさ・事業主指示 2026-10-26） */
   $('holeShapeKind').addEventListener('change', syncHoleShapeRows); $('holeShapeApply').onclick = runHoleShapeApply; $('holeShapeErase').onclick = runHoleShapeErase; $('holeToolExistingApply').onclick = runHoleToolExisting; $('holeShapeScope').addEventListener('change', () => refreshHoleShapeCard(true));
-  $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
+  $('ctx-mark').onclick = () => { countUse('ctx_mark'); hideCtxMenu(); setMode('mark'); }; $('ctx-divide').onclick = () => { countUse('ctx_divide'); hideCtxMenu(); setMode('divide'); }; $('ctx-rpatch').onclick = () => { countUse('ctx_rpatch'); hideCtxMenu(); setMode('rpatch'); };   /* 右クリック → 目印・分割線（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+M・W は今までどおり） */
   $('ctx-stitch').onclick = () => { countUse('ctx_stitch'); hideCtxMenu(); setMode('stitch'); };   /* 右クリック → 目打ち（左のツール列から移した・機能の整理・事業主指示 2026-10-26。キー Shift+S は今までどおり。駒合わせ・柄と同じ） */
   $('ctx-zipper').onclick = () => { countUse('ctx_zipper'); hideCtxMenu(); makeZipper(); }; wireZipperBar();
+  $('rpHow').addEventListener('change', () => { syncRpatchBar(); $('hint').textContent = modeHint('rpatch'); }); $('rpNext').onclick = () => { $('rpSeed').value = String(Math.floor(rpNum('rpSeed', 1, 1, 999999)) + 1); if (rpLast) rpatchAt(rpLast); else $('hint').textContent = modeHint('rpatch'); };   /* 「別の案」：種を1つ進めて、同じ外形に作りなおす */
   loadDivideMark(); for (const id of ['divMkStyle', 'divMkLen', 'divMkColor']) $(id).addEventListener('change', saveDivideMark); $('divHow').addEventListener('change', () => { cancel(); syncDivideBar(); $('hint').textContent = t(divideHow() === 'two' ? 'divideTwoFirst' : 'divideLineFirst'); });   /* 分割線の「2点を選ぶ」の欄：印の線種・長さ・色は、最後に使ったものを覚える */
   $('ctx-zipper-edit').onclick = () => { countUse('ctx_zipper_edit'); hideCtxMenu(); if (zipperSelected().length) openZipperBar(); };   /* 右クリックの一番上「ファスナーの設定…」：選んだファスナーの小窓を開く（事業主 2026-11-12） */   /* 右クリック → ファスナーにする（選んだ線をファスナーの絵で表示・事業主指示 2026-11-11） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); }; $('ctx-lines-to-holes').onclick = () => { countUse('ctx_lines_to_holes'); hideCtxMenu(); moveLinesToHoles(); }; $('ctx-unlink-lines').onclick = () => { countUse('ctx_unlink_lines'); hideCtxMenu(); restoreSupportLines(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
@@ -8811,7 +8874,7 @@ function syncToolCards() {
   $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
-  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
+  $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode === 'rpatch') syncRpatchBar(); /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
   $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
   setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
@@ -10888,6 +10951,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'offset' && offsetSelection && $('offsetSide').value === 'cursor' && !pickShapeAt(world(p)) && distTo({ type: 'polyline', points: offsetSelection.points, closed: offsetSelection.closed }, world(p)) <= (Number($('offsetDist').value) || 0) * 4 + 40 / scale) { offsetCursor = world(p); runOffset(); return; } /* 向き「カーソルの側」：何もない所のクリックで、その側へ実行 */
   if (mode === 'offset' || mode === 'chamfer' || mode === 'fillet') { offsetAlt = !!e.altKey; if (mode === 'offset') offsetCursor = world(p); editAt(world(p)); return; }
   if (mode === 'stitch') { if (e.altKey) stampAt(world(p), true, 'tool', false); else rangeStitchClick(world(p), e.shiftKey); return; } /* Alt＝1穴だけ／ふつうのクリック＝始点→終点の2回で範囲を決めて打つ */ /* Alt＝1つだけ・Shift＝交点から交点までの区間だけ */
+  if (mode === 'rpatch') { rpatchAt(world(p)); return; }   /* ランダムパッチワーク：外形の中をクリック */
   if (mode === 'divide') { if (divideHow() === 'two') divideTwoClick(cursor); else divideAt(world(p)); return; }   /* 「2点を選ぶ」は、磁石で吸い付いた点（cursor）を使う */
   if (mode === 'mark') { if (markDivisions()) markByDivision(world(p)); else if (markDistance() > 0) markByDistance(world(p)); else stampAt(markSnapPoint(world(p)), true, 'dot'); return; }
   if (mode === 'detour') { detourClick(world(p)); return; }
@@ -11176,7 +11240,7 @@ function fillCtxCards() {
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
  *  メニューは、カテゴリの一覧（HTML の ctxTree）。カテゴリを押すと、その中の項目が横に開く（スマホ幅は下に開く）。項目のボタン・id・処理・キーは、いままでどおり（起動時に、入れ物の中へ移すだけ）。
  *  カード（右列の窓）の項目は、fillCtxCards が ctxCards に作ってから、分類ごとに、カテゴリの入れ物（ctxCards-カテゴリ）へ配る。項目が1つも見えないカテゴリは出さない。 */
-const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib', 'ctx-zipper']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
+const CTX_CATS = [['sel', ['ctxSel', 'ctx-move', 'ctx-center', 'ctx-center-y', 'ctx-center-x', 'ctx-dedupe', 'ctx-unpaint', 'ctx-guides', 'ctx-textfont', 'ctx-holeshape']], ['layer', ['ctxLayersTitle', 'ctxLayers']], ['stitch', ['ctx-stitch', 'ctx-mark', 'ctx-rpatch', 'ctx-koma', 'ctx-holes-back', 'ctx-lines-to-holes', 'ctx-unlink-lines', 'ctx-lattice', 'ctx-round', 'ctx-diamond', 'ctx-lattice-round']], ['patch', ['ctx-patch', 'ctx-outline']], ['sim', []], ['parts', ['ctx-lib', 'ctx-zipper']], ['draw', ['ctx-chamfer', 'ctxChamferSub', 'ctx-offsettool', 'ctx-offset', 'ctx-offset-solid', 'ctx-mirror', 'ctx-trim', 'ctx-divide']], ['out', ['ctx-nest']]];   /* 編集の道具（面取り・オフセット・線対称・トリム）は作図オプションへ、外周の線だけ選ぶはパッチワークへ（事業主 2026-10-26） */
 const CTX_CARD_CAT = { infoCard: 'sel', hwEditCard: 'parts', layerCard: 'layer' },   /* 分類「レイヤー」＝選んだ図形の移動先（層の一覧）＋レイヤーの窓（事業主 2026-10-28「図形選択→右クリック→レイヤー→移動→移動先レイヤー選択」） */ CTX_SIDE_CAT = { shape: 'draw', stitch: 'stitch', color: 'sim', fold: 'sim', parts: 'parts', out: 'out' };   /* 「色」「2つ折り」「3つ折り」は、1つのカテゴリ「シミュレーション」（事業主 2026-10-26「シミュレーションの中に「色」「２つ折り」「３つ折り」を入れる」） */
 const ctxCatOfCard = c => CTX_CARD_CAT[c?.id] || CTX_SIDE_CAT[sideGroupOf(c)] || 'draw';
 function initCtxTree() {

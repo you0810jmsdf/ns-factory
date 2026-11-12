@@ -1300,3 +1300,154 @@ export function foldSectionMark(path, s, t, origin, extra = 1.5) {
   const q = pointOnFoldPath(path, s), nu = -Math.sin(q.heading), nv = Math.cos(q.heading), k = t / 2 + extra, a = foldDoc(origin, q.u + k * nu, q.v + k * nv), b = foldDoc(origin, q.u - k * nu, q.v - k * nv);
   return { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
 }
+/* ───────── ランダムパッチワーク（事業主 2026-11-12「パッチワーク機能の応用。ランダムに型紙をフリーカットした場合に、保有工具のピッチ（丸目3.95mm）で、交点付近の4つの点が正方形になるように目打ちし、固定ピッチで難しい場合は、ピッチを可変にするか、フリーカットの線を動かす案がほしい。外周の菱目に近くなるものは菱目に統合させたい」
+ *  「青線からそれぞれ2mmオフセットしたラインが丸目のライン」「最初からカットラインも含めて、ランダムパッチワークのデザインもお願いしたい」）
+ *  決定（A）：①交点の4つの穴は、2mm オフセットの縫い線どうしの交点（直角なら正方形・斜めならひし形）②交点と交点の間は、ピッチを少し変えて等分（許容を超えたら、線を動かす案の元になる記録を残す）③外周の菱目の近くは、外周の菱目に統合する。
+ *  純粋関数のみ（DOM 禁止）。単位 mm。 ───────── */
+/** 乱数（mulberry32）。同じ種なら、同じ並び。 */
+export function seededRandom(seed) {
+  let a = (Math.floor(Number(seed)) || 1) >>> 0;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const rpArea = ps => { let s = 0; for (let i = 0; i < ps.length; i++) { const a = ps[i], b = ps[(i + 1) % ps.length]; s += a.x * b.y - b.x * a.y; } return s / 2; };
+/** 多角形が凸（へこみがない）か。 */
+export function isConvexPolygon(ps) {
+  if (!Array.isArray(ps) || ps.length < 3) return false; let sign = 0;
+  for (let i = 0; i < ps.length; i++) { const a = ps[i], b = ps[(i + 1) % ps.length], c = ps[(i + 2) % ps.length], cr = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x); if (Math.abs(cr) > 1e-7) { const s = Math.sign(cr); if (sign && s !== sign) return false; sign = s; } }
+  return sign !== 0;
+}
+/** 凸の多角形の、いちばん細い所の幅（辺の向きごとの、頂点までの最大の距離のうち、最小のもの）。 */
+export function convexMinWidth(ps) {
+  let best = Infinity;
+  for (let i = 0; i < ps.length; i++) { const a = ps[i], b = ps[(i + 1) % ps.length], L = Math.hypot(b.x - a.x, b.y - a.y); if (L < 1e-9) continue; let h = 0; for (const p of ps) h = Math.max(h, Math.abs((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) / L); best = Math.min(best, h); }
+  return best;
+}
+/**
+ * 凸の外形 outline を、ランダムに切る（T字に分けていく）。1回ごとに、いまのピースを1つ選び（面積が大きいほど選ばれやすい）、そのふちの2点を結ぶ線で2つに切る。
+ * 切り口の端は、外形か、前に切った線の上なので、交わりは T字になる。ピースが細くなりすぎる切り方（最小の幅 minSide 未満）・ふちとの角が小さすぎる切り方（minAngle 度未満）・前の切り口の端や頂点に近すぎる切り方（endSep mm 未満）は、やりなおす。
+ * 返り値：{ lines:[{a,b}], pieces:[点の並び], requested, made }。凸でない外形は { error: 'notConvex' }。
+ */
+export function randomCutLines(outline, { count = 6, minSide = 20, seed = 1, minAngle = 30, endSep = 8, tries = 500 } = {}) {
+  if (!Array.isArray(outline) || outline.length < 3) return { error: 'badOutline', lines: [], pieces: [], requested: count, made: 0 };
+  let base = outline.map(p => ({ x: p.x, y: p.y })); if (!isConvexPolygon(base)) return { error: 'notConvex', lines: [], pieces: [], requested: count, made: 0 };
+  if (rpArea(base) < 0) base.reverse();
+  const rnd = seededRandom(seed), lines = [], ends = []; let pieces = [base];
+  const want = Math.max(0, Math.min(60, Math.floor(count) || 0));
+  for (let k = 0; k < want; k++) {
+    let done = false;
+    for (let attempt = 0; attempt < tries && !done; attempt++) {
+      const areas = pieces.map(p => Math.abs(rpArea(p))), total = areas.reduce((x, y) => x + y, 0); if (!(total > 0)) break;
+      let r = rnd() * total, pi = 0; while (pi < pieces.length - 1 && r > areas[pi]) { r -= areas[pi]; pi++; }
+      const ps = pieces[pi], m = ps.length, lens = ps.map((p, i) => Math.hypot(ps[(i + 1) % m].x - p.x, ps[(i + 1) % m].y - p.y)), sumLen = lens.reduce((x, y) => x + y, 0);
+      const pick = () => { let q = rnd() * sumLen, i = 0; while (i < m - 1 && q > lens[i]) { q -= lens[i]; i++; } return i; };
+      let e1 = pick(), e2 = pick(); if (e1 === e2) continue; if (e1 > e2) [e1, e2] = [e2, e1];
+      const u1 = 0.08 + 0.84 * rnd(), u2 = 0.08 + 0.84 * rnd(), lerp = (i, u) => ({ x: ps[i].x + (ps[(i + 1) % m].x - ps[i].x) * u, y: ps[i].y + (ps[(i + 1) % m].y - ps[i].y) * u });
+      const P1 = lerp(e1, u1), P2 = lerp(e2, u2), cl = Math.hypot(P2.x - P1.x, P2.y - P1.y); if (cl < 1.5 * minSide) continue;
+      if ([P1, P2].some(P => ps.some(v => Math.hypot(v.x - P.x, v.y - P.y) < endSep) || ends.some(v => Math.hypot(v.x - P.x, v.y - P.y) < endSep))) continue;
+      const cu = { x: (P2.x - P1.x) / cl, y: (P2.y - P1.y) / cl }, ang = i => { const e = { x: (ps[(i + 1) % m].x - ps[i].x) / lens[i], y: (ps[(i + 1) % m].y - ps[i].y) / lens[i] }; return Math.acos(Math.min(1, Math.abs(cu.x * e.x + cu.y * e.y))) * 180 / Math.PI; };
+      if (ang(e1) < minAngle || ang(e2) < minAngle) continue;
+      const A = [P1, ...ps.slice(e1 + 1, e2 + 1), P2], B = [P2, ...ps.slice(e2 + 1), ...ps.slice(0, e1 + 1), P1];
+      if (Math.abs(rpArea(A)) < minSide * minSide || Math.abs(rpArea(B)) < minSide * minSide || convexMinWidth(A) < minSide || convexMinWidth(B) < minSide) continue;
+      pieces = [...pieces.slice(0, pi), A, B, ...pieces.slice(pi + 1)]; lines.push({ a: P1, b: P2 }); ends.push(P1, P2); done = true;
+    }
+    if (!done) break;
+  }
+  return { lines, pieces, requested: want, made: lines.length };
+}
+
+/** 2本の線分（長さ L・単位ベクトル u）の交点。端は joinTol まで外れていてもよい。平行なら null。返り値：{ x, y, ti, tj }（それぞれの線に沿った位置）。 */
+function rpIntersect(s1, s2, joinTol) {
+  const d = s1.u.x * s2.u.y - s1.u.y * s2.u.x; if (Math.abs(d) < 1e-9) return null;
+  const wx = s2.a.x - s1.a.x, wy = s2.a.y - s1.a.y, ti = (wx * s2.u.y - wy * s2.u.x) / d, tj = (wx * s1.u.y - wy * s1.u.x) / d;
+  if (ti < -joinTol || ti > s1.L + joinTol || tj < -joinTol || tj > s2.L + joinTol) return null;
+  const t = Math.max(0, Math.min(s1.L, ti)); return { x: s1.a.x + s1.u.x * t, y: s1.a.y + s1.u.y * t, ti, tj };
+}
+/**
+ * 切り口の線（lines＝[{a,b}] の直線）の両側 offset mm に、縫い線（丸目のライン）を引き、穴の位置を決める。
+ *  ・交点（交わり・T字・端どうし）では、そこに集まる線の縫い線どうしの交点に穴を置く（2本が直角なら、4つの穴が正方形になる）。通り抜ける線の反対側には、向かい合う穴を置く（縫い合わせで、穴が1対1に合う）。
+ *  ・交点と交点の間は、穴の数を決めて等分する（間隔が pitch に近くなる数）。両側の間隔が pitch±tolPct％ に収まらない区間は、conflicts に残す（fix.delta＝その区間をあと何 mm 伸ばす（＋）／縮める（−）と、きっちり pitch で割り切れるか）。
+ *  ・外形（outline）に届く端は、外周の縫い線（外形から rimD 内側）まで引く。そこの穴は外周の菱目に統合する（rimAnchors に渡す。seam の側には置かない）。existingHoles に、すでに近く（mergeDist 以内）に穴があれば、そこへ統合する（新しく置かない）。
+ * 返り値：{ sides:[{ line, side, a, b, holes:[{ t, x, y, kind }] }], rimAnchors:[{ x, y, line, side }], conflicts:[…], junctions, merged }。kind＝corner（交点の穴）・pair（向かい合う穴）・mid（途中の穴）・free（自由な端）。
+ */
+export function seamStitchPlan(lines, outline, { offset = 2, pitch = 3.95, tolPct = 10, rimD = 2, mergeDist = null, joinTol = 0.3, existingHoles = [] } = {}) {
+  const out = { sides: [], rimAnchors: [], conflicts: [], junctions: 0, merged: 0 };
+  if (!Array.isArray(lines) || !lines.length || !(offset > 0) || !(pitch > 0)) return out;
+  const merge = Number.isFinite(mergeDist) && mergeDist > 0 ? mergeDist : pitch, d = offset, tol = Math.max(0, tolPct) / 100;
+  const segs = lines.map(l => { const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, L = Math.hypot(dx, dy); return L > 1e-6 ? { a: { x: l.a.x, y: l.a.y }, b: { x: l.b.x, y: l.b.y }, L, u: { x: dx / L, y: dy / L }, n: { x: -dy / L, y: dx / L } } : null; });
+  const outPoly = Array.isArray(outline) && outline.length >= 3 ? { type: 'polyline', closed: true, points: outline } : null;
+  const onOutline = p => outPoly ? distToShape(outPoly, p) <= joinTol + 0.05 : false;
+  let rimPts = null; if (outPoly) { const r = rimLine(outline, rimD, 0); rimPts = r ? r.points : (offsetPolyline(outline, -rimD, true, { join: 'round', tolerance: 0.003 }) || null); }
+  const rows = segs.map(() => []);   // 行：{ t1（＋側の位置）, t2（−側の位置）, kind }
+  const endDone = segs.map(() => ({ A: false, B: false }));
+  // ① 交点：集まる線を、点ごとにまとめる
+  const pts = [];
+  for (let i = 0; i < segs.length; i++) for (let j = i + 1; j < segs.length; j++) { if (!segs[i] || !segs[j]) continue; const X = rpIntersect(segs[i], segs[j], joinTol); if (X && !pts.some(q => Math.hypot(q.x - X.x, q.y - X.y) <= joinTol)) pts.push({ x: X.x, y: X.y }); }
+  for (const P of pts) {
+    if (onOutline(P)) continue;
+    const rays = [];
+    segs.forEach((s, i) => {
+      if (!s) return; const t = (P.x - s.a.x) * s.u.x + (P.y - s.a.y) * s.u.y, dist = Math.abs((P.x - s.a.x) * s.n.x + (P.y - s.a.y) * s.n.y); if (dist > joinTol || t < -joinTol || t > s.L + joinTol) return;
+      if (t < joinTol) endDone[i].A = true; if (t > s.L - joinTol) endDone[i].B = true;
+      if (t < s.L - joinTol) rays.push({ i, sgn: 1, dir: s.u, ang: Math.atan2(s.u.y, s.u.x) });
+      if (t > joinTol) rays.push({ i, sgn: -1, dir: { x: -s.u.x, y: -s.u.y }, ang: Math.atan2(-s.u.y, -s.u.x) });
+    });
+    if (rays.length < 2) continue; rays.sort((x, y) => x.ang - y.ang); out.junctions++;
+    const E = new Map();   // 線 → { 1: [t…], -1: [t…] }
+    const put = (i, side, t) => { if (!E.has(i)) E.set(i, { 1: [], '-1': [] }); E.get(i)[side].push(t); };
+    for (let k = 0; k < rays.length; k++) {
+      const a = rays[k], b = rays[(k + 1) % rays.length]; let gap = b.ang - a.ang; if (gap <= 0) gap += 2 * Math.PI; if (gap < 0.03 || gap > Math.PI - 0.03) continue;
+      const na = { x: -a.dir.y, y: a.dir.x }, nb = { x: b.dir.y, y: -b.dir.x }, det = na.x * nb.y - na.y * nb.x; if (Math.abs(det) < 1e-6) continue;
+      const X = { x: P.x + d * (nb.y - na.y) / det, y: P.y + d * (na.x - nb.x) / det };
+      for (const [r, side] of [[a, a.sgn > 0 ? 1 : -1], [b, b.sgn > 0 ? -1 : 1]]) { const s = segs[r.i]; put(r.i, side, (X.x - s.a.x) * s.u.x + (X.y - s.a.y) * s.u.y); }
+    }
+    for (const [i, e] of E) {
+      const p = e[1].sort((x, y) => x - y), m = e['-1'].sort((x, y) => x - y);
+      if (!p.length) e[1] = m.slice(); else if (!m.length) e['-1'] = p.slice();
+      const A1 = e[1], A2 = e['-1']; while (A1.length < A2.length) A1.push(A1.at(-1)); while (A2.length < A1.length) A2.push(A2.at(-1));
+      for (let k = 0; k < A1.length; k++) rows[i].push({ t1: A1[k], t2: A2[k], kind: 'corner' });
+    }
+  }
+  // ② 端：外形に届く端は外周の縫い線まで・自由な端はそのまま
+  const rimPoly = rimPts && rimPts.length >= 3 ? rimPts : null;
+  const toRim = (s, side, tEnd) => {
+    if (!rimPoly) return tEnd;
+    const o = { x: s.a.x + s.n.x * side * d, y: s.a.y + s.n.y * side * d }; let best = null;
+    for (let q = 0; q < rimPoly.length; q++) {
+      const p1 = rimPoly[q], p2 = rimPoly[(q + 1) % rimPoly.length], ex = p2.x - p1.x, ey = p2.y - p1.y, den = s.u.x * ey - s.u.y * ex; if (Math.abs(den) < 1e-9) continue;
+      const wx = p1.x - o.x, wy = p1.y - o.y, t = (wx * ey - wy * ex) / den, v = (wx * s.u.y - wy * s.u.x) / den; if (v < -1e-6 || v > 1 + 1e-6) continue;
+      if (!best || Math.abs(t - tEnd) < Math.abs(best - tEnd)) best = t;
+    }
+    return best === null || Math.abs(best - tEnd) > 4 * rimD + 12 ? tEnd : best;
+  };
+  segs.forEach((s, i) => {
+    if (!s) return;
+    for (const [end, tEnd, P] of [['A', 0, s.a], ['B', s.L, s.b]]) {
+      if (endDone[i][end]) continue;
+      if (onOutline(P)) rows[i].push({ t1: toRim(s, 1, tEnd), t2: toRim(s, -1, tEnd), kind: 'rim', end });
+      else rows[i].push({ t1: tEnd, t2: tEnd, kind: 'free', end });
+    }
+  });
+  // ③ 行を並べて、区間ごとに穴を決める
+  const mergedHoles = Array.isArray(existingHoles) ? existingHoles : [];
+  segs.forEach((s, i) => {
+    if (!s || !rows[i].length) return;
+    let R = rows[i].sort((x, y) => (x.t1 + x.t2) - (y.t1 + y.t2)); const R2 = [];
+    for (const r of R) { const last = R2.at(-1); if (last && Math.abs(r.t1 - last.t1) < 0.3 && Math.abs(r.t2 - last.t2) < 0.3) { if (r.kind === 'rim') last.kind = 'rim'; continue; } R2.push({ ...r }); }
+    R = R2; const side = { 1: { line: i, side: 1, holes: [] }, '-1': { line: i, side: -1, holes: [] } };
+    const at = (sd, t, kind) => { const x = s.a.x + s.u.x * t + s.n.x * sd * d, y = s.a.y + s.n.y * sd * d + s.u.y * t; side[sd].holes.push({ t, x, y, kind }); };
+    for (let k = 0; k < R.length; k++) {
+      const r = R[k];
+      if (r.kind === 'rim') { for (const sd of [1, -1]) { const t = sd === 1 ? r.t1 : r.t2, x = s.a.x + s.u.x * t + s.n.x * sd * d, y = s.a.y + s.u.y * t + s.n.y * sd * d, near = mergedHoles.some(h => Math.hypot(h.x - x, h.y - y) <= merge); if (near) out.merged++; else out.rimAnchors.push({ x, y, line: i, side: sd }); side[sd].holes.push({ t, x, y, kind: 'rim' }); } }
+      else { at(1, r.t1, r.kind); at(-1, r.t2, r.kind); }
+      if (k + 1 >= R.length) continue;
+      const q = R[k + 1], dP = q.t1 - r.t1, dM = q.t2 - r.t2, avg = (dP + dM) / 2, tm = (r.t1 + r.t2 + q.t1 + q.t2) / 4, mid = { x: +(s.a.x + s.u.x * tm).toFixed(3), y: +(s.a.y + s.u.y * tm).toFixed(3) };   /* 区間の真ん中（切り口の線の上） */
+      if (dP < 0.3 || dM < 0.3) { out.conflicts.push({ line: i, from: k, to: k + 1, ...mid, kind: 'tooClose', lenPlus: +dP.toFixed(3), lenMinus: +dM.toFixed(3), n: 1, fix: { delta: +(pitch - avg).toFixed(3) } }); continue; }
+      let n = Math.max(1, Math.round(avg / pitch)); const dev = m => Math.abs(avg / m - pitch); if (n > 1 && dev(n - 1) < dev(n)) n--; if (dev(n + 1) < dev(n)) n++;
+      const pP = dP / n, pM = dM / n, bad = Math.abs(pP - pitch) > tol * pitch + 1e-9 || Math.abs(pM - pitch) > tol * pitch + 1e-9;
+      for (let m = 1; m < n; m++) { at(1, r.t1 + dP * m / n, 'mid'); at(-1, r.t2 + dM * m / n, 'mid'); }
+      if (bad) out.conflicts.push({ line: i, from: k, to: k + 1, ...mid, kind: 'pitch', lenPlus: +dP.toFixed(3), lenMinus: +dM.toFixed(3), n, pitchPlus: +pP.toFixed(3), pitchMinus: +pM.toFixed(3), fix: { delta: +(n * pitch - avg).toFixed(3) } });
+    }
+    for (const sd of [1, -1]) { const h = side[sd].holes.sort((x, y) => x.t - y.t); if (!h.length) continue; out.sides.push({ line: i, side: sd, a: { x: h[0].x, y: h[0].y }, b: { x: h.at(-1).x, y: h.at(-1).y }, holes: h }); }
+  });
+  return out;
+}
