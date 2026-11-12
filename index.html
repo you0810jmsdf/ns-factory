@@ -2631,9 +2631,26 @@ function toggleAccordion(btn) {
           seen[key] = true;
           ul.insertBefore(li, ul.firstChild);
         });
+        sortByDate(ul);
       });
     })
     .catch(function () { /* HTML 側のリストがそのまま残る */ });
+
+  // 足し込んだあと、先頭の「YYYY年M月」で新しい順に並べ直す。
+  // （JSON にしか無い項目が先頭に入るため、そのままだと 9月→8月→11月… と
+  //   並び、最新のお知らせが埋もれて「更新が止まっている」ように見えた）
+  // 同じ月どうしは元の順を保つ（安定ソート）。日付が読めない行は末尾へ。
+  function dateKey(li) {
+    var m = norm(li.textContent).match(/^(\d{4})年(?:\s*(\d{1,2})月)?/);
+    if (!m) return -1;
+    return parseInt(m[1], 10) * 100 + (m[2] ? parseInt(m[2], 10) : 0);
+  }
+  function sortByDate(ul) {
+    var lis = [].slice.call(ul.children).filter(function (n) { return n.tagName === 'LI'; });
+    var rows = lis.map(function (li, i) { return { li: li, k: dateKey(li), i: i }; });
+    rows.sort(function (a, b) { return (b.k - a.k) || (a.i - b.i); });
+    rows.forEach(function (r) { ul.appendChild(r.li); });
+  }
 })();/* 部外秘ゲート：パスワードはサーバー側（admin_guard GAS）で照合する。window.nsfAdminVerify は assets/admin-remember.js にある。
    通過時に入力値を sessionStorage に保持し、GASリンクの key= は開く直前に付与する */
 function nsfStoredKey() {
