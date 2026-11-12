@@ -37,6 +37,15 @@ import { TUTORIALS_BASICS } from './tutorials/basics.js';
 import { TUTORIALS_STITCH } from './tutorials/stitch.js';
 import { TUTORIALS_PEN } from './tutorials/pen.js';
 import { TUTORIALS_OUTPUT } from './tutorials/output.js';
+import { TUTORIALS_SHAPES } from './tutorials/shapes.js';
+import { TUTORIALS_TEXTDIM } from './tutorials/textdim.js';
+import { TUTORIALS_MEASURE } from './tutorials/measure.js';
+import { TUTORIALS_TRIM } from './tutorials/trim.js';
+import { TUTORIALS_MARK } from './tutorials/mark.js';
+import { TUTORIALS_TRANSFORM } from './tutorials/transform.js';
+import { TUTORIALS_ATTACH } from './tutorials/attach.js';
+import { TUTORIALS_LINES } from './tutorials/lines.js';
+import { TUTORIALS_HOLES } from './tutorials/holes.js';
 import { DATA_STITCH_COLORS } from './data/stitch-colors.js';
 import { putImage, getImage, deleteImage, shrinkDataUrl } from './imgstore.js';
 import { encodeStacks, decodeStacks, saveUndoRecord, loadUndoRecord, clearUndoRecord, saveFilesRecord, loadFilesRecord, UST_SUB_KEY } from './undostore.js';
@@ -4622,7 +4631,7 @@ function init3d() {
 }
 
 // ---- 画面内チュートリアル（やってみせる）----
-const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_STITCH, TUTORIALS_PEN, TUTORIALS_OUTPUT];
+const TUTORIALS = [TUTORIALS_BASICS, TUTORIALS_SHAPES, TUTORIALS_TEXTDIM, TUTORIALS_MEASURE, TUTORIALS_TRIM, TUTORIALS_MARK, TUTORIALS_STITCH, TUTORIALS_HOLES, TUTORIALS_TRANSFORM, TUTORIALS_ATTACH, TUTORIALS_LINES, TUTORIALS_PEN, TUTORIALS_OUTPUT];   /* 並び＝選ぶ一覧の順：左のツール列「作図」の上から → 縫い穴 → 「選択中」 → ペン・出力（2026-11-12 左の列の基本機能のチュートリアルを追加） */
 let tutPlayer = null;
 const screenOf = (x, y) => ({ x: origin.x + x * scale, y: origin.y + y * scale });
 function tutHost({ instant = false } = {}) {
@@ -4634,17 +4643,18 @@ function tutHost({ instant = false } = {}) {
     moveTo() {}, drag: (x1, y1, x2, y2) => { const a = screenOf(x1, y1), b = screenOf(x2, y2); fire('pointerdown', a); fire('pointermove', b); fire('pointerup', b); },
     key: k => { const ev = { key: k, target: {}, preventDefault() {}, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }; (window.listeners?.keydown || (e => window.dispatchEvent?.(new KeyboardEvent('keydown', e))))(ev); },
     setMode: m => setMode(m), caption: text => { $('tutCaption').textContent = text; $('tutBar').hidden = false; },
-    highlight: sel => { document.querySelectorAll?.('.tut-hl').forEach(el => el.classList.remove('tut-hl')); if (sel) { const el = document.querySelector?.(sel); el?.classList?.add('tut-hl'); } },
+    highlight: sel => { document.querySelectorAll?.('.tut-hl').forEach(el => el.classList.remove('tut-hl')); if (sel) { const el = document.querySelector?.(sel); el?.classList?.add('tut-hl'); el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }); } },   /* 左の列の下の方（「選択中」のボタン）も、見える位置まで送ってから光らせる */
     cursor: (x, y) => { const c = $('tutCursor'); if (x === null || x === undefined) { c.hidden = true; return; } const p = screenOf(x, y); c.hidden = false; c.style.left = p.x + 'px'; c.style.top = p.y + 'px'; },
   };
 }
-globalThis.__playTutorial = (id) => playTutorial(id, { instant: false }); // 録画台本（record_tutorials.mjs）用
+globalThis.__tutState = () => ({ mode, sel: selected.size, holes: doc.holes.length, shapes: doc.shapes.map(s => ({ type: s.type, layer: s.layer, line: s.lineType || s.style || undefined })) }); // 台本の試し再生の結果を見る（図形の種類と数だけ）
+globalThis.__playTutorial = (id, o = {}) => playTutorial(id, { instant: !!o.instant }); // 録画台本（record_tutorials.mjs）用。id の代わりに台本そのもの（tutorials/*.json の中身）も渡せる（台本を作るときの試し再生）
 async function playTutorial(id, { instant = false } = {}) {
-  const script = TUTORIALS.find(s => s.id === id); if (!script) return;
+  const script = (id && typeof id === 'object' && Array.isArray(id.steps)) ? id : TUTORIALS.find(s => s.id === id); if (!script) return;
   if (tutPlayer?.running) tutPlayer.stop();
   $('helpDialog').close?.(); tutReturn = activeTab; newTab(t('tutorialTab')); if (!$('tutSelf').checked) canvas.style.pointerEvents = 'none'; // 専用タブで再生（作業中の図面は触らない）
   tutPlayer = createPlayer(script, tutHost({ instant })); tutPlayer.setSpeed(Number($('tutSpeed').value) || 1); tutPlayer.setSelfMode(!!$('tutSelf').checked);
-  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); await tutPlayer.play(); canvas.style.pointerEvents = '';
+  $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); } canvas.style.pointerEvents = '';
 }
 let tutReturn = -1;
 function tutLeave() { canvas.style.pointerEvents = ''; if (tutReturn >= 0 && tabs.length > 1 && tabs[activeTab]?.name === t('tutorialTab')) { tabs.splice(activeTab, 1); activeTab = -1; switchTab(Math.min(tutReturn, tabs.length - 1)); } tutReturn = -1; }
@@ -4652,6 +4662,7 @@ function initTutorialSelect() { const sel = $('tutSel'), keep = sel.value; sel.t
 function initTutorials() {
   $('tutSelf').checked = false; initTutorialSelect();
   $('tutPlay').onclick = () => playTutorial($('tutSel').value || TUTORIALS[0].id);
+  $('tutOpen').onclick = () => { initTutorialSelect(); $('tutTitle').textContent = t('tutOpen'); $('tutCaption').textContent = t('tutPick'); $('tutBar').hidden = false; };   /* 「その他」→「チュートリアル（やってみせる）」：再生はせず、一覧から選べる帯だけ出す（2026-11-12） */
   $('tutPause').onclick = () => { if (tutPlayer) $('tutPause').textContent = tutPlayer.pause() ? t('tutResume') : t('tutPause'); };
   $('tutStop').onclick = () => { tutPlayer?.stop(); $('tutBar').hidden = true; $('tutCursor').hidden = true; tutLeave(); };
   $('tutSpeed').addEventListener('change', () => tutPlayer?.setSpeed(Number($('tutSpeed').value) || 1));
@@ -10015,9 +10026,10 @@ function arcThreePoint() { return $('arcMethod').value === 'three'; }
 function arcHalf() { return $('arcMethod').value === 'half'; } /* 2点の半円：始点・終点の2回クリック（2点が直径）。膨らむ側は「円弧の向き」 */
 /** ツールの案内文。円弧は、選んだ描き方（3点／中心と半径）に合わせる。 */
 /** 左のツールを選んだとき、Shift・Alt を押しながらする操作を、作図面の左上に一覧で出す。キーを押している間は、その行が光る。 */
+let tutRunning = false;   /* チュートリアル（やってみせる）の再生中：モードの操作ヒント（左上の小窓）は図に重なるので出さない（字幕で説明する・2026-11-12） */
 let modHelpOn = true; try { if (localStorage.getItem('leather-cad.modHelp') === 'off') modHelpOn = false; } catch { /* 保存できない環境でも続ける */ }
 function refreshModHelp() {
-  const el = $('modHelp'); if (!el) return; if (!modHelpOn) { el.hidden = true; return; } const key = 'modHelp.' + mode, txt = t(key);
+  const el = $('modHelp'); if (!el) return; if (!modHelpOn || tutRunning) { el.hidden = true; return; } const key = 'modHelp.' + mode, txt = t(key);
   if (txt === key) { el.hidden = true; return; }
   el.hidden = false; el.innerHTML = txt.split('\n').map(line => { const m = /^(.*?)[：:] *(.*)$/.exec(line) || [line, line, ''], kind = /Shift/.test(m[1]) && /Alt/.test(m[1]) ? 'sa' : /Shift/.test(m[1]) ? 's' : /Alt/.test(m[1]) ? 'a' : 'n'; return `<div data-k="${kind}"><b>${m[1]}</b>：${m[2]}</div>`; }).join('');
 }

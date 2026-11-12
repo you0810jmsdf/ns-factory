@@ -139,7 +139,7 @@ export const HELP_EN = {
     {
       "id": "tutorials",
       "title": "Video tutorials (Show me)",
-      "body": "Press “Show me” in Help and the app performs the steps on screen (fake cursor, highlighted buttons, captions). Change the speed, pause, or switch to “Do it myself” to get only prompts. Scripts live in tutorials/*.json; four are included: drawing, stitching, pen, output.\nMP4 files are produced by the Playwright recording script (C:\\dev\\leather-cad-tools\\record_tutorials.mjs) and embedded in the manual when present in docs/videos/."
+      "body": "Press Other → Tutorials (show me) at the top: a bar appears at the bottom. Pick what you want to watch and press Play; the app operates the screen for you (pointer, highlighted buttons, captions). It draws in its own Tutorial tab, so your drawing is not changed; Stop returns to your tab. You can change the speed or pause, and Do it myself only highlights where to press. The Show me button on each help page plays the matching one.\nList (in left-toolbar order): First drawing / Rectangles, arcs and Béziers / Adding text and dimensions / Measuring and dashed lines / Trim / Marks / Placing stitching holes / Fixing holes / Copy, rotate, flip and scale / Attach to lines and group / Merge, split and unroll lines / Pen / Output and calibration.\nScripts live in tutorials/*.json. Video files (MP4) are recorded from the Playwright script (C:devleather-cad-tools\record_tutorials.mjs) and embedded in the manual when placed in docs/videos/."
     },
     {
       "id": "voice",

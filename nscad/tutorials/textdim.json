@@ -1,0 +1,77 @@
+{
+  "id": "textdim",
+  "page": "text-dimension",
+  "title": "tut.textdim.title",
+  "steps": [
+    {
+      "say": "tut.textdim.1",
+      "click": "[data-tool=\"text\"]",
+      "mode": "text"
+    },
+    {
+      "mouse": [
+        25,
+        30
+      ],
+      "press": true,
+      "wait": 500
+    },
+    {
+      "say": "tut.textdim.2",
+      "value": {
+        "#textEditArea": "N's factory"
+      }
+    },
+    {
+      "click": "#textEditOk",
+      "wait": 600
+    },
+    {
+      "say": "tut.textdim.3",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        25,
+        58,
+        100,
+        58
+      ]
+    },
+    {
+      "say": "tut.textdim.4",
+      "click": "[data-tool=\"dimension\"]",
+      "mode": "dimension"
+    },
+    {
+      "mouse": [
+        25,
+        58
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        100,
+        58
+      ],
+      "press": true
+    },
+    {
+      "say": "tut.textdim.5",
+      "mouse": [
+        62.5,
+        50
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.textdim.6",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "wait": 600
+    }
+  ]
+}

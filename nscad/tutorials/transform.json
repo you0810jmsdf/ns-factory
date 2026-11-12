@@ -1,0 +1,58 @@
+{
+  "id": "transform",
+  "page": "numeric",
+  "title": "tut.transform.title",
+  "steps": [
+    {
+      "say": "tut.transform.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        26,
+        62.5,
+        50
+      ],
+      "wait": 500
+    },
+    {
+      "say": "tut.transform.2",
+      "click": "#copy",
+      "wait": 800
+    },
+    {
+      "say": "tut.transform.3",
+      "click": "#rotate",
+      "value": {
+        "#rotateA": "30"
+      }
+    },
+    {
+      "click": "#rotateRun",
+      "wait": 800
+    },
+    {
+      "say": "tut.transform.4",
+      "click": "#mirrorX",
+      "wait": 800
+    },
+    {
+      "say": "tut.transform.5",
+      "click": "#scaleOpen",
+      "value": {
+        "#scaleX": "120",
+        "#scaleY": "120"
+      }
+    },
+    {
+      "click": "#scaleApply",
+      "wait": 800
+    },
+    {
+      "click": "#scaleWinClose",
+      "wait": 300
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "id": "attach",
+  "page": "layers-info",
+  "title": "tut.attach.title",
+  "steps": [
+    {
+      "say": "tut.attach.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        26,
+        100,
+        74
+      ]
+    },
+    {
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        115,
+        34,
+        130,
+        46
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.attach.2",
+      "click": "#attachLeft"
+    },
+    {
+      "mouse": [
+        62.5,
+        26
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        100,
+        50
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.attach.3",
+      "wait": 400
+    },
+    {
+      "say": "tut.attach.4",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        17.5,
+        18,
+        137.5,
+        86
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.attach.5",
+      "click": "#group",
+      "wait": 900
+    }
+  ]
+}

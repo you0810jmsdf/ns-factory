@@ -1,0 +1,62 @@
+{
+  "id": "measure",
+  "page": "text-dimension",
+  "title": "tut.measure.title",
+  "steps": [
+    {
+      "say": "tut.measure.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        26,
+        85,
+        66
+      ],
+      "wait": 400
+    },
+    {
+      "say": "tut.measure.2",
+      "click": "[data-tool=\"ruler\"]",
+      "mode": "ruler"
+    },
+    {
+      "mouse": [
+        25,
+        26
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        85,
+        66
+      ],
+      "press": true,
+      "wait": 1800
+    },
+    {
+      "say": "tut.measure.3",
+      "click": "#drawDashed"
+    },
+    {
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        25,
+        78,
+        85,
+        78
+      ]
+    },
+    {
+      "say": "tut.measure.4",
+      "click": "#drawDashed",
+      "wait": 800
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "id": "mark",
+  "page": "drawing",
+  "title": "tut.mark.title",
+  "steps": [
+    {
+      "say": "tut.mark.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        10,
+        50,
+        55,
+        50
+      ]
+    },
+    {
+      "say": "tut.mark.2",
+      "click": "[data-tool=\"mark\"]",
+      "mode": "mark"
+    },
+    {
+      "say": "tut.mark.3",
+      "value": {
+        "#markDist": "35"
+      }
+    },
+    {
+      "mouse": [
+        11.5,
+        50
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.mark.4",
+      "value": {
+        "#markDist": "0",
+        "#markDiv": "3"
+      }
+    },
+    {
+      "mouse": [
+        11.5,
+        50
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        53.5,
+        50
+      ],
+      "press": true,
+      "wait": 900
+    },
+    {
+      "say": "tut.mark.5",
+      "value": {
+        "#markDiv": "1"
+      },
+      "wait": 600
+    }
+  ]
+}

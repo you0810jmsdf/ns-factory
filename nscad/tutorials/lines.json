@@ -1,0 +1,95 @@
+{
+  "id": "lines",
+  "page": "drawing",
+  "title": "tut.lines.title",
+  "steps": [
+    {
+      "say": "tut.lines.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        25,
+        34,
+        62.5,
+        34
+      ]
+    },
+    {
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        62.5,
+        34,
+        107.5,
+        34
+      ]
+    },
+    {
+      "say": "tut.lines.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        17.5,
+        22,
+        115,
+        46
+      ]
+    },
+    {
+      "click": "#mergeLines",
+      "wait": 900
+    },
+    {
+      "say": "tut.lines.3",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        66.5,
+        18,
+        66.5,
+        58
+      ]
+    },
+    {
+      "click": "[data-tool=\"select\"]",
+      "mode": "select"
+    },
+    {
+      "drag": [
+        17.5,
+        14,
+        115,
+        62
+      ]
+    },
+    {
+      "click": "#splitLines",
+      "wait": 900
+    },
+    {
+      "say": "tut.lines.4",
+      "click": "[data-tool=\"circle\"]",
+      "mode": "circle"
+    },
+    {
+      "drag": [
+        40,
+        82,
+        51.5,
+        82
+      ]
+    },
+    {
+      "click": "#unroll",
+      "wait": 1000
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "shapes",
+  "page": "drawing",
+  "title": "tut.shapes.title",
+  "steps": [
+    {
+      "say": "tut.shapes.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        26,
+        70,
+        58
+      ],
+      "wait": 600
+    },
+    {
+      "say": "tut.shapes.2",
+      "value": {
+        "#rectEditW": "55"
+      },
+      "wait": 800
+    },
+    {
+      "say": "tut.shapes.3",
+      "click": "[data-tool=\"arc\"]",
+      "mode": "arc",
+      "value": {
+        "#arcMethod": "three"
+      }
+    },
+    {
+      "mouse": [
+        85,
+        58
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        107.5,
+        30
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        130,
+        58
+      ],
+      "press": true,
+      "wait": 600
+    },
+    {
+      "say": "tut.shapes.4",
+      "click": "[data-tool=\"bezier\"]",
+      "mode": "bezier"
+    },
+    {
+      "drag": [
+        25,
+        86,
+        100,
+        86
+      ]
+    },
+    {
+      "mouse": [
+        44,
+        66
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        81.5,
+        106
+      ],
+      "press": true,
+      "wait": 800
+    },
+    {
+      "say": "tut.shapes.5",
+      "wait": 600
+    }
+  ]
+}

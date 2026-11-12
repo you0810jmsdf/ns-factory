@@ -1,0 +1,63 @@
+{
+  "id": "holes",
+  "page": "stitching",
+  "title": "tut.holes.title",
+  "steps": [
+    {
+      "say": "tut.holes.1",
+      "click": "[data-tool=\"line\"]",
+      "mode": "line"
+    },
+    {
+      "drag": [
+        25,
+        42,
+        115,
+        42
+      ]
+    },
+    {
+      "mode": "stitch"
+    },
+    {
+      "mouse": [
+        32.5,
+        42
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        107.5,
+        42
+      ],
+      "press": true,
+      "wait": 700
+    },
+    {
+      "say": "tut.holes.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "mouse": [
+        70,
+        42
+      ],
+      "press": true
+    },
+    {
+      "say": "tut.holes.3",
+      "click": "#flipHoleSlant",
+      "wait": 900
+    },
+    {
+      "say": "tut.holes.4",
+      "click": "#checkHoles",
+      "wait": 900
+    },
+    {
+      "say": "tut.holes.5",
+      "click": "#delHoles",
+      "wait": 900
+    }
+  ]
+}
