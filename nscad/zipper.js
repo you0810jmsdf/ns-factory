@@ -19,7 +19,9 @@ export const ZIPPER_METAL_COLORS = {
 /** 市販のファスナーの長さの候補（cm）。 */
 export const ZIPPER_STD_CM = [10, 12, 15, 18, 20, 25, 30, 35, 40, 50, 60];
 /** クリックで選べる幅の半分（mm）：上からはテープの幅の半分、横からはスライダーと引き手の高さ。 */
-export function zipperHalfWidth(z) { const n = normalizeZipper(z), sp = ZIPPER_SIZES[n.size]; return n.view === 'top' ? sp.tapeW / 2 : sp.thick / 2 + 0.8 + sp.elementW * 0.4 + 0.5; }
+/** 絵に使う寸法：テープ幅の点検でテープを選んでいれば（tw）、テープの幅はその値で描く（歯の幅＋4mm より細くはしない）。選んでいなければ、号数の代表値（事業主 2026-11-12「改善提案実施」：点検で選んだ幅と、絵の幅を合わせる）。 */
+const zipSpec = z => { const sp = ZIPPER_SIZES[z.size]; return z.tw > 0 ? { ...sp, tapeW: Math.max(z.tw, sp.elementW + 4) } : sp; };
+export function zipperHalfWidth(z) { const n = normalizeZipper(z), sp = zipSpec(n); return n.view === 'top' ? sp.tapeW / 2 : sp.thick / 2 + 0.8 + sp.elementW * 0.4 + 0.5; }
 export const ZIPPER_TAPE_DEFAULT = '#333333';   /* テープの色の初めの値（黒に近い灰色）。色は自由に選べる */
 const zipHexOk = c => typeof c === 'string' && /^#[0-9a-f]{6}$/.test(c);
 const ZIPPER_TAPE_THICK = 0.6;   /* 横から見たテープの厚み */
@@ -167,12 +169,12 @@ export function zipperLength(points, closed = false) { const c = zipCleanPoints(
 export function zipperArt(points, zipper, { closed = false } = {}) {
   const z = normalizeZipper(zipper), c0 = zipTrim(zipCleanPoints(points, closed), z), c = z.rev ? { pts: [...c0.pts].reverse(), closed: c0.closed } : c0;
   if (c.pts.length < 2) return { length: 0, closed: false, items: [] };
-  const R = zipRuler(c.pts, c.closed), L = R.L, spec = ZIPPER_SIZES[z.size], eW = spec.elementW, items = [];
+  const R = zipRuler(c.pts, c.closed), L = R.L, spec = zipSpec(z), eW = spec.elementW, items = [];
   if (!(L > 0.5)) return { length: L, closed: c.closed, items: [] };
   const add = (kind, pts, closedItem = true, solid = false) => { items.push({ kind, points: pts, closed: closedItem, solid }); };
   const band = (s0, s1, v0, v1) => { const st = R.stations(s0, s1); return [...st.map(s => R.side(s, v0)), ...st.reverse().map(s => R.side(s, v1))]; };
   const sgn = (z.mir ? 1 : -1) * (z.rev ? -1 : 1), isTop = z.view === 'top';   /* 向きを反対（rev）にしても、引き手は線の同じ側に残す（事業主 2026-11-11「向きを反対にするとタブが外から内に移動してしまう」：線を逆にたどると横向きも逆になるので、打ち消す） */
-  const ext = c.closed ? 0 : spec.tapeW / 2;   /* テープが止めの外へはみ出す長さ */
+  const ext = c.closed ? 0 : ZIPPER_SIZES[z.size].tapeW / 2;   /* テープが止めの外へはみ出す長さ（号数の代表値で決める。点検で選んだテープの幅には左右されない） */
   const bs = c.closed ? 0 : Math.min(eW * 0.9, L * 0.15), ts = c.closed ? 0 : Math.min(eW * 0.7, L * 0.12);   /* 下止め・上止めの長さ */
   const Ls = Math.min(eW * 2.1, Math.max(1, (L - bs - ts) * 0.8)), h = Ls / 2, pullL = eW * 3.6;
   const a = bs, b = L - ts, room = Math.max(0, b - a - Ls), sc = a + h + room * (1 - z.open / 100);   /* スライダーの中心 */

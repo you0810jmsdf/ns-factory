@@ -10076,7 +10076,7 @@ function drawZipperTapeWarn() {
   if (began) ctx.restore();
 }
 let zipperBarKey = '';
-function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); const zp = readWinPos(ZIPPER_POS_KEY); if (zp) placeZipperBar(zp.left, zp.top); }
+function openZipperBar() { $('zipperBar').hidden = false; refreshZipperBar(true); const zp = readWinPos(ZIPPER_POS_KEY); if (zp) placeZipperBar(zp.left, zp.top); draw(); }   /* 開いた直後に描き直す：「始」の印が、マウスを動かす前から出る */
 function closeZipperBar() { const b = $('zipperBar'); if (b) b.hidden = true; zipperLive = null; if (zipperPicking) setZipperPicking(false); if (zipperRefPicking) setZipperRefPicking(null); }
 /** 小窓の中身を、選んだファスナーに合わせる（描くたびに呼ぶので、選択・設定・長さが変わったときだけ）。選んだファスナーが無くなったら閉じる。 */
 function refreshZipperBar(force = false) {
