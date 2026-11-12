@@ -1,0 +1,58 @@
+{
+  "id": "laser",
+  "page": "interop",
+  "title": "tut.laser.title",
+  "steps": [
+    {
+      "say": "tut.laser.1",
+      "click": "[data-tool=\"rect\"]",
+      "mode": "rect"
+    },
+    {
+      "drag": [
+        25,
+        25,
+        105,
+        85
+      ]
+    },
+    {
+      "mode": "stitch"
+    },
+    {
+      "mouse": [
+        25,
+        25
+      ],
+      "press": true
+    },
+    {
+      "mouse": [
+        105,
+        85
+      ],
+      "press": true,
+      "wait": 600
+    },
+    {
+      "say": "tut.laser.2",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "card": "outputCard",
+      "value": {
+        "#exportPreset": "beam"
+      },
+      "wait": 1200
+    },
+    {
+      "say": "tut.laser.3",
+      "show": "#kerf",
+      "wait": 1800
+    },
+    {
+      "say": "tut.laser.4",
+      "show": "#exportSvg",
+      "wait": 1500
+    }
+  ]
+}
