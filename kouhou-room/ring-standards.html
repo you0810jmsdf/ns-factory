@@ -263,6 +263,13 @@ footer.ft b { color: #fff; font-size: 13px; }
 footer.ft p { font-size: 11.5px; line-height: 1.8; }
 footer.ft a { color: var(--tan-light); }
 
+/* 2026-11-13 スマホ幅で上部メニューが画面の外へはみ出し（375pxで98px）、題名が1文字ずつ縦に潰れていたので、題名＋リンクを2段に折り返す */
+@media (max-width: 640px) {
+  .nav { height: auto; flex-wrap: wrap; row-gap: 2px; column-gap: 4px; padding: 8px 12px; }
+  .nav-title { white-space: nowrap; flex: 1 0 100%; }
+  .nav-spacer { display: none; }
+  .nav-link { padding: 4px 8px; font-size: 12px; }
+}
 @media (max-width: 560px) {
   .hero-inner { padding: 54px 20px 46px; }
   .wrap { padding: 0 18px; }
