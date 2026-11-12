@@ -1005,6 +1005,12 @@ function rpSettings() {
   const tool = stitchToolCurrent();
   return { how: $('rpHow')?.value === 'existing' ? 'existing' : 'random', count: Math.floor(rpNum('rpCount', 6, 1, 40)), minSide: rpNum('rpMin', 25, 5, 500), seed: Math.floor(rpNum('rpSeed', 1, 1, 999999)), offset: rpNum('rpOff', 2, 0.5, 20), tol: rpNum('rpTol', 10, 1, 50), rimD: rpNum('rpRim', 2, 0.5, 20), rim: $('rpRimOn') ? $('rpRimOn').checked !== false : true, pitch: tool?.pitch > 0 ? tool.pitch : 3.95, tool };
 }
+/** 縫い合わせの穴は丸目、外周の列だけ菱目（既存のパッチワークと同じ規則・事業主 2026-10-21／2026-11-12「パッチワークは丸目が基本です」）。ピッチ・刃数は使用中の工具のまま。同じ種類で同じピッチの登録工具があればそれ、無ければ使用中の工具から作る（登録は呼び出し側）。 */
+function rpKindTool(cur, kind) {
+  if (cur.kind === kind) return cur;
+  const same = doc.tools.filter(x => x.kind === kind), near = same.find(x => x.pitch === cur.pitch && x.teeth === cur.teeth) || same.find(x => x.pitch === cur.pitch);
+  return near || { ...cur, id: `patch-${kind}-${cur.pitch}-${cur.teeth}`, name: `patch-${kind}-${cur.pitch}`, kind, holeW: kind === 'round' ? 1 : 2, holeH: kind === 'round' ? 1 : 0.8, angleDeg: kind === 'round' ? 0 : 45 };
+}
 const rpIsCut = s => s.type === 'line' && s.color === 'blue';
 function rpRegionAt(p) {
   const base = doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink && !s.rpatch && !rpIsCut(s) && !['text', 'dimension', 'image'].includes(s.type));   /* 青い直線（カット線）は、外形を分けてしまうので、外形を探すときは除く */
@@ -1026,7 +1032,7 @@ function rpatchAt(p) {
     lines = cutInfo.lines;
   } else { lines = rpExistingLines(outline); if (!lines.length) { $('hint').textContent = t('rpNoLines'); return 0; } }
   const outPoly = { type: 'polyline', closed: true, points: outline }, existingHoles = doc.holes.filter(h => h.rpatch !== tag && distToShape(outPoly, h) <= S.rimD + 1.5).map(h => ({ x: h.x, y: h.y }));
-  const plan = seamStitchPlan(lines, outline, { offset: S.offset, pitch: S.pitch, tolPct: S.tol, rimD: S.rimD, existingHoles });
+  const plan = seamStitchPlan(lines, outline, { offset: S.offset, pitch: 2 * S.offset, tolPct: S.tol, rimD: S.rimD, existingHoles });   /* 縫い合わせの穴のピッチ＝両側の縫い線の間隔（2×距離）。交点から離れた所で、近くの4つの穴が正方形になる（事業主 2026-11-12）。工具のピッチ 3.95mm とは 1.3% の違い。外周の菱目は、工具のピッチのまま */
   const r4 = v => +v.toFixed(4); let nHoles = 0, nRim = 0, newCutIds = [];
   cancel();
   commit(() => {
@@ -1034,18 +1040,19 @@ function rpatchAt(p) {
     for (const pt of doc.parts) pt.shapeIds = pt.shapeIds.filter(id => !mine.has(id)); doc.shapes = doc.shapes.filter(s => !mine.has(s.id)); doc.paths = doc.paths.filter(q => !minePaths.has(q.id)); doc.holes = doc.holes.filter(h => h.rpatch !== tag && !minePaths.has(h.pathId));
     const patLayer = ensureLayer(doc, 'pattern'), guide = ensureLayer(doc, 'guide'), add = sh => { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...sh, id, rpatch: tag }); return id; };
     if (S.how === 'random') for (const l of lines) newCutIds.push(add({ type: 'line', layer: patLayer, color: 'blue', x1: r4(l.a.x), y1: r4(l.a.y), x2: r4(l.b.x), y2: r4(l.b.y) }));
-    const seen = [];
+    const seen = [], seamTool = rpKindTool(S.tool, 'round'), rimTool = rpKindTool(S.tool, 'diamond');
+    for (const tl of [seamTool, rimTool]) if (!doc.tools.some(x => x.id === tl.id)) doc.tools.push({ ...tl });   /* 穴が指す工具が無いと困るので、新しく作った工具は登録する */
     for (const sd of plan.sides) {   // 縫い線（両側 2mm）：点線＋穴。交点の穴は2つの縫い線で重なるので、1つだけ置く。外周の菱目に統合する端は、外周の側で置く
       const pts = sd.holes.filter(h => h.kind !== 'rim' && !seen.some(q => Math.hypot(q.x - h.x, q.y - h.y) < 0.3)); for (const h of pts) seen.push({ x: h.x, y: h.y });
       const lineId = add({ type: 'line', layer: guide, lineStyle: 'dashed', color: 'yellow', x1: r4(sd.a.x), y1: r4(sd.a.y), x2: r4(sd.b.x), y2: r4(sd.b.y) });
       const saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: false, segments: [], mark: 'tool', rpatch: tag }; doc.paths.push(saved);
-      if (!pts.length) continue; const route = resolvePath(doc, saved); placeHoles(saved, route, pts.map(h => pointAtLength(route, Math.hypot(h.x - sd.a.x, h.y - sd.a.y))), S.tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nHoles += pts.length;
+      if (!pts.length) continue; const route = resolvePath(doc, saved); placeHoles(saved, route, pts.map(h => pointAtLength(route, Math.hypot(h.x - sd.a.x, h.y - sd.a.y))), seamTool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nHoles += pts.length;
     }
     const rimPts = rimLine(outline, S.rimD, 0)?.points;   // 外周の縫い線＋外周の菱目（切り口が届く点は、そこに菱目を置く＝統合）。すでに外周の近くに穴があるときは、作らない
     if (S.rim && rimPts && (S.how === 'random' || !existingHoles.length)) {
       const lineId = add({ type: 'polyline', layer: guide, closed: true, points: rimPts.map(q => ({ x: r4(q.x), y: r4(q.y) })), lineStyle: 'dashed', color: 'yellow' }), saved = { id: freshId(doc.paths, 'p'), shapeIds: [lineId], reversed: false, closed: true, segments: [], mark: 'tool', rpatch: tag }; doc.paths.push(saved);
       const route = resolvePath(doc, saved), loop = loopSampler(rimPts), anchors = plan.rimAnchors.map(a => loop.nearest(a).s), all = [...new Set([...anchors, ...rimHolePositions(loop.total, S.pitch, () => true, { anchors })].map(v => +v.toFixed(4)))].sort((x, y) => x - y);
-      placeHoles(saved, route, all.map(s => pointAtLength(route, s)), S.tool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nRim = all.length;
+      placeHoles(saved, route, all.map(s => pointAtLength(route, s)), rimTool); for (const q of doc.holes.filter(x => x.pathId === saved.id)) q.rpatch = tag; nRim = all.length;
     }
     for (const c of plan.conflicts) {   // 合わない区間：赤い丸と、直す量（あと何 mm 伸ばす＋／縮める−と、ぴったり割り切れるか）
       add({ type: 'circle', layer: guide, color: 'red', cx: r4(c.x), cy: r4(c.y), r: 2.5 });
