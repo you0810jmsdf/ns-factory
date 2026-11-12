@@ -599,13 +599,15 @@ function spanBetweenIntersections(route, ids, p) {
   return { a: sorted[k], b: sorted[k + 1] };
 }
 function stampAt(p,single=false,markKind='tool',span=false) {
-  const hit=doc.shapes.filter(s=>editable(s)&&stitchable(s)).reverse().find(s=>distTo(s,p)<=8/scale),tool=doc.tools.find(t=>t.id===$('stitchTool').value);
-  if(!hit||!tool)return;
+  const hit=doc.shapes.filter(s=>editable(s)&&stitchable(s)).reverse().find(s=>distTo(s,p)<=8/scale),baseTool=doc.tools.find(t=>t.id===$('stitchTool').value);
+  if(!hit||!baseTool)return;
+  const spec=markKind==='dot'?markSpec():null,pendingTools=[],tool=spec?.shape==='round'?holeShapeTool(baseTool,'round',{d:spec.dia},pendingTools):baseTool,holeMark=spec?.shape==='round'?'tool':markKind;   /* 目印の形：丸目なら、直径を決めた丸目の工具で打つ */
   try {
     const state=routeForHit(hit);if(!state?.route)return;
     const {saved,fresh}=state;
     if(!saved.shapeIds.every(id=>editable(doc.shapes.find(s=>s.id===id))))return;
     const isMark=markKind!=='tool',reverse=isMark?!!saved.reversed:$('reversePath').checked, route={...state.route,reversed:reverse},len=arcLength(route),opts=stitchOptions(),manual=$('placement').value==='manual'||single;
+  if(spec?.shape==='line'){const s0=projectOnPath(route,p).s,P=pointAtLength(route,s0),A=pointAtLength(route,Math.max(0,s0-0.05)),B=pointAtLength(route,Math.min(len,s0+0.05)),dl=Math.hypot(B.x-A.x,B.y-A.y);if(dl<1e-9)return;const ux=(B.x-A.x)/dl,uy=(B.y-A.y)/dl,hl=spec.len/2,layer=doc.layers.find(l=>l.id==='guide'&&l.visible&&!l.locked)?.id||activeLayer,id=freshId(doc.shapes,'s');saveMarkSpec();commit(()=>{doc.shapes.push({id,layer,type:'line',...(spec.style?{lineStyle:spec.style}:{}),color:spec.color,x1:+(P.x+uy*hl).toFixed(4),y1:+(P.y-ux*hl).toFixed(4),x2:+(P.x-uy*hl).toFixed(4),y2:+(P.y+ux*hl).toFixed(4)});selected=new Set([id]);});$('hint').textContent=t('mkLineDone',{len:+spec.len.toFixed(2)});rebuildSnaps();draw();return;}   /* 線の目印：線に垂直な短い線（目印ツールのまま打つ） */
     const sp=span&&!isMark?spanBetweenIntersections(route,saved.shapeIds,p):null; /* Shift+クリック：交点から交点までの区間だけに打つ */
     const from=isMark?0:Math.max(opts.from,opts.offsetStart+(sp?sp.a:0)),to=isMark?len:Math.min(opts.to,(sp?sp.b:len)-opts.offsetEnd); /* 目印は始端の空き・区間設定に縛られず、線上のどこにでも打てる */
     if(from>to || len<1e-9){$('hint').textContent=t('invalidRange');return;}
@@ -625,6 +627,7 @@ function stampAt(p,single=false,markKind='tool',span=false) {
     }
     commit(()=>{
       if(fresh)doc.paths.push(saved);
+      for(const tl of pendingTools)if(!doc.tools.some(x=>x.id===tl.id))doc.tools.push(tl);
       if(saved.reversed!==reverse){saved.reversed=reverse;doc.holes.filter(h=>h.pathId===saved.id).forEach(h=>{const s=len-h.s;h.s=saved.closed&&Math.abs(s-len)<1e-7?0:s;});saved.segments=saved.segments.map(s=>({...s,from:len-s.to,to:len-s.from}));}
       if(!manual)doc.holes=doc.holes.filter(h=>h.pathId!==saved.id||h.s<from-1e-7||h.s>to+1e-7);
       if(!manual){saved.segments=saved.segments.flatMap(s=>s.to<from||s.from>to?[s]:[...(s.from<from?[{...s,to:from}]:[]),...(s.to>to?[{...s,from:to}]:[])]);}
@@ -633,7 +636,7 @@ function stampAt(p,single=false,markKind='tool',span=false) {
         const position=saved.closed && Math.abs(p.s-len)<1e-7?0:p.s;
         if(doc.holes.some(h=>h.pathId===saved.id&&Math.abs(h.s-position)<1e-5))continue;
         const angle=isMark?p.angleDeg:($('followTangent').checked?p.angleDeg:0)+slantOf(tool),id=freshId(doc.holes,'h');
-        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:markKind});added.push(id);
+        doc.holes.push({...p,s:position,id,pathId:saved.id,toolId:tool.id,angleDeg:angle,mark:holeMark});added.push(id);
       }
       saved.segments.push({from:manual?(points[0]?.s??from):from,to:manual?(points.at(-1)?.s??from):to,toolId:tool.id,pitch:tool.pitch,mode:manual?'manual':$('placement').value});
       selected=new Set(added);
@@ -958,6 +961,13 @@ function drawStitchPreview() {
 }
 function drawCountStage() { if (!countStage) return; const p = countStage.list[0].p; ctx.save(); ctx.strokeStyle = '#c9a96e'; ctx.lineWidth = 2 / scale; ctx.beginPath(); ctx.arc(p.x, p.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
 /** 目印の「基準の点から線に沿って○mm」。0 や空欄なら使わない（＝クリックした場所に打つ従来の動き）。 */
+/* 目印の形（事業主 2026-11-12「目印機能で、始点から直線にそって35mmの位置に任意の長さもしくは丸目の点を打つことができない」「目印ツールなのに分割線ツールが立ち上がるのはおかしい」→ 目印ツールの中に専用の欄を持つ）：
+ *  点＝従来の目印（穴の点の直径）／丸目＝直径を決めた丸い穴／線＝線に垂直な短い線（長さ・線種・色）。距離指定・分割指定・クリックの、どの打ち方にも効く。最後に使った設定を覚える。 */
+const MARK_SPEC_KEY = 'leather-cad.markSpec', MARK_COLORS = ['blue', 'green', 'red', 'white', 'yellow'];
+function markSpec() { const dia = Number($('mkDia')?.value), len = Number($('mkLen')?.value), shape = $('mkShape')?.value, color = $('mkColor')?.value; return { shape: shape === 'round' || shape === 'line' ? shape : 'dot', dia: Number.isFinite(dia) && dia > 0 ? Math.min(dia, 20) : 1, len: Number.isFinite(len) && len > 0 ? Math.min(len, 1000) : 5, style: $('mkStyle')?.value === 'dashed' ? 'dashed' : '', color: MARK_COLORS.includes(color) ? color : 'blue' }; }
+function saveMarkSpec() { try { localStorage.setItem(MARK_SPEC_KEY, JSON.stringify(markSpec())); } catch { /* 覚えられなくても続ける */ } }
+function loadMarkSpec() { let v = null; try { v = JSON.parse(localStorage.getItem(MARK_SPEC_KEY) || 'null'); } catch { v = null; } if (!v || typeof v !== 'object') return; if (['dot', 'round', 'line'].includes(v.shape)) $('mkShape').value = v.shape; if (Number(v.dia) > 0) $('mkDia').value = String(Math.min(Number(v.dia), 20)); if (Number(v.len) > 0) $('mkLen').value = String(Math.min(Number(v.len), 1000)); if (v.style === 'dashed' || v.style === '') $('mkStyle').value = v.style; if (MARK_COLORS.includes(v.color)) $('mkColor').value = v.color; }
+function syncMarkFields() { const on = mode === 'mark', sh = markSpec().shape; if ($('l-mkShape')) $('l-mkShape').hidden = !on; if ($('l-mkDia')) $('l-mkDia').hidden = !on || sh !== 'round'; for (const id of ['l-mkLen', 'l-mkStyle', 'l-mkColor']) if ($(id)) $(id).hidden = !on || sh !== 'line'; }
 function markDistance() { const d = Number($('markDist').value); return Number.isFinite(d) && d > 0 ? d : 0; }
 /** 目印ツールの基準の点：クリックした位置に一番近い、線の端・角・ガイドの点（吸着距離内）か、交点（スナップがオンで画面9px内）へ合わせる。どれも無ければクリックした位置のまま（線へはあとで射影する）。 */
 function markSnapPoint(click) {
@@ -4039,6 +4049,7 @@ function initDesign() {
   $('rpCompare').onclick = rpCompareOpen; $('rpCompareClose').onclick = () => { $('rpCompareWin').hidden = true; };
   $('rcNext').onclick = () => { $('rcSeed').value = String(Math.floor(rpNum('rcSeed', 1, 1, 999999)) + 1); if (rcLast) rcApplyAt(rcLast); else $('hint').textContent = modeHint('rcolor'); }; $('rcCompare').onclick = rcCompareOpen; $('rcCompareClose').onclick = () => { $('rcCompareWin').hidden = true; }; $('rcResultClose').onclick = () => { $('rcResultWin').hidden = true; };
   $('rpHow').addEventListener('change', () => { syncRpatchBar(); $('hint').textContent = modeHint('rpatch'); }); $('rpNext').onclick = () => { $('rpSeed').value = String(Math.floor(rpNum('rpSeed', 1, 1, 999999)) + 1); if (rpLast) rpatchAt(rpLast); else $('hint').textContent = modeHint('rpatch'); };   /* 「別の案」：種を1つ進めて、同じ外形に作りなおす */
+  loadMarkSpec(); for (const id of ['mkShape', 'mkDia', 'mkLen', 'mkStyle', 'mkColor']) $(id).addEventListener('change', () => { syncMarkFields(); saveMarkSpec(); });
   loadDivideMark(); for (const id of ['divMkStyle', 'divMkLen', 'divMkColor']) $(id).addEventListener('change', saveDivideMark); $('divHow').addEventListener('change', () => { cancel(); syncDivideBar(); $('hint').textContent = t(divideHow() === 'two' ? 'divideTwoFirst' : 'divideLineFirst'); });   /* 分割線の「2点を選ぶ」の欄：印の線種・長さ・色は、最後に使ったものを覚える */
   $('ctx-zipper-edit').onclick = () => { countUse('ctx_zipper_edit'); hideCtxMenu(); if (zipperSelected().length) openZipperBar(); };   /* 右クリックの一番上「ファスナーの設定…」：選んだファスナーの小窓を開く（事業主 2026-11-12） */   /* 右クリック → ファスナーにする（選んだ線をファスナーの絵で表示・事業主指示 2026-11-11） */
   $('ctx-koma').onclick = () => { hideCtxMenu(); setMode('koma'); }; $('ctx-holes-back').onclick = () => { countUse('ctx_holes_back'); hideCtxMenu(); returnHolesToPath(); }; $('ctx-lines-to-holes').onclick = () => { countUse('ctx_lines_to_holes'); hideCtxMenu(); moveLinesToHoles(); }; $('ctx-unlink-lines').onclick = () => { countUse('ctx_unlink_lines'); hideCtxMenu(); restoreSupportLines(); };   /* 右クリック → 外れた穴を線の上へ戻す（橙の輪の穴・事業主 2026-11-07） */   /* 右クリック → 駒合わせ（左のツール列から移した・難しくてあまり使われないため・事業主指示 2026-10-20。キー K は今までどおり） */
@@ -8981,7 +8992,7 @@ function syncToolCards() {
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); $('rcolorBar').hidden = mode !== 'rcolor'; if (mode !== 'rcolor') { $('rcCompareWin').hidden = true; $('rcResultWin').hidden = true; } if (mode === 'rcolor') syncRcolorBar(); $('rsplitBar').hidden = mode !== 'rsplit'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
-  $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
+  $('l-markDiv').hidden = mode !== 'mark'; $('l-markDist').hidden = mode !== 'mark'; syncMarkFields(); /* 距離で打つ欄は目印ツールのときだけ（目打ちカードの先頭） */
   $('arcBar').hidden = mode !== 'arc'; $('textBar').hidden = mode !== 'text'; $('dimBar').hidden = mode !== 'dimension'; /* 円弧（描き方・向き・半径）・文字の大きさ・寸法のずらしの欄も、そのツールのときだけ上の窓に（事業主指示 2026-10-21） */
   setCardWin('stitchCard', mode === 'stitch' || mode === 'mark'); setPatchWin(mode === 'patchfill'); document.body?.classList?.toggle('patch-focus', mode === 'patchfill');   /* 柄の窓が出ている間は、画面右の列を畳む（事業主指示 2026-10-21「パッチワークの窓が出ているときに画面右のメニューは不要。載せたいなら右クリックメニューに」） */   /* 目打ち・目印（目打ちカード）・柄は、右列でなく窓 */
   if ($('autoDimCard')) $('autoDimCard').open = mode === 'dimension';   /* 寸法ツール→「寸法線を自動で入れる」カード（事業主の希望 2026-10-19「寸法メニューを押すと、右の関連する寸法自動入力カードを出してほしい」） */
