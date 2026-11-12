@@ -3496,6 +3496,392 @@
         "A deity of matchmaking, revered as a shrine that binds not only ties between people but all kinds of wishes (explanation of the official Kumano Nachi Taisha site)"
       ],
       "note_full": "The chief deity of Kumano Nachi Taisha (Fourth Hall, 西御前, reading unconfirmed). The official Kumano Nachi Taisha site annotates the name as 'Kumano-Fusumi-no-Ōkami (Izanami-no-Mikoto)' and explains that 'fusumi' has the sense of 'musu' (generation and development) and was also called 'musubi' (binding). The official site records that the old name Kumano-Musumi-no-Kami is found in the 新抄格勅符抄 (reading unconfirmed) (806, Daidō 1). The Japan Tourism Agency's explanatory-text database likewise identifies the deity with the Izanami-no-Mikoto of the Kojiki and Nihon Shoki, and records that the three deities Ketsumiko-no-Ōkami, 御子速玉 (reading unconfirmed) and Kumano-Fusumi are collectively called 'the Three Kumano Deities' (熊野三所, reading unconfirmed) and are enshrined at all of the Kumano Sanzan. However, the name 'Kumano-Fusumi' does not appear in the Kojiki or Nihon Shoki, so the identification is not a statement of the Kojiki and Nihon Shoki (to be confirmed). Whether she can be treated as the same deity as the 'Kumano-Musumi-no-Ōkami' of Kumano Hongū Taisha has not been confirmed in this entry."
+    },
+    "kanayamahime": {
+      "name": "Kanayamahime-no-Mikoto",
+      "note": "One of Aekuni Jinja's three deities (official)",
+      "aliases": [
+        "Kanayamabime-no-Kami (written 金山毗賣神; Kojiki)"
+      ],
+      "kojiki_name": "Kanayamabime-no-Kami (金山毗賣神) (paired with Kanayamabiko-no-Kami (金山毗古神))",
+      "kojiki_where": "Part 1, the section known as 'Birth of the Gods' (the birth of Hinokagutsuchi-no-Kami and the death of Izanami-no-Mikoto)",
+      "nihonshoki_name": "(The Nihon Shoki has only Kanayamahiko, and no name corresponding to Kanayamahime-no-Mikoto was found; checked by search / to be confirmed)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 5, variant account (Kanayamahiko only)",
+      "scenes": [
+        {
+          "title": "Born amid the suffering of Izanami-no-Mikoto",
+          "where": "Kojiki, Part 1, the section known as 'Birth of the Gods'",
+          "text": "It records that from the vomit of Izanami-no-Mikoto, who fell ill and lay sick after giving birth to the fire deity, Kanayamabime-no-Kami was born following Kanayamabiko-no-Kami."
+        },
+        {
+          "title": "Jointly enshrined at Aekuni Jinja (shrine tradition)",
+          "where": "The official account of the origins of Aekuni Jinja (not an account in the Kojiki or Nihon Shoki)",
+          "text": "The official site relates that, because the hall of Kanayamahime-no-Mikoto shook violently and the characters 興阿倍久爾神同殿 appeared on the trunk of the sacred tree, she was jointly enshrined (gōshi) in the main hall of Aekuni Jinja in 977."
+        }
+      ],
+      "virtues": [
+        "A deity who protects industries such as mining, metallurgy and the machinery industry (as described on the official site of Aekuni Jinja)"
+      ],
+      "note_full": "The official site of Aekuni Jinja describes Kanayamahime-no-Mikoto as 'Kanayamahime-no-Mikoto of Mt. Nangū (南宮山)', and counts her, together with Ōbiko-no-Mikoto (大彦命) and Sukunahikona-no-Kami, as the three deities who make up 敢國津大神 (reading unconfirmed). Whether the official site explains her as the same deity as Kanayamabime-no-Kami of the Kojiki and Nihon Shoki (paired with Kanayamabiko-no-Kami) is unconfirmed. Her relationship with Kanayamahiko-no-Ōkami (existing ID kanayamahiko), enshrined at Nangū Taisha in Gifu Prefecture, is unknown, as there is no official account of it."
+    },
+    "nigihayahi": {
+      "name": "Nigihayahi-no-Mikoto",
+      "note": "Father of Umashimaji-no-Mikoto in the Kojiki",
+      "aliases": [
+        "Nigihayahi-no-Mikoto (written 邇藝速日命; Kojiki)",
+        "Kushitama-Nigihayahi-no-Mikoto (櫛玉饒速日命; Nihon Shoki)"
+      ],
+      "kojiki_name": "Nigihayahi-no-Mikoto (written 邇藝速日命)",
+      "kojiki_where": "Part 2, Emperor Jinmu, the section known as 'Submission of Nigihayahi-no-Mikoto'",
+      "nihonshoki_name": "Nigihayahi-no-Mikoto (Kushitama-Nigihayahi-no-Mikoto, 櫛玉饒速日命)",
+      "nihonshoki_where": "Book 3 (Emperor Jinmu), the year Tsuchinoe-Uma (戊午), the section known as 'Nagasunehiko and Nigihayahi-no-Mikoto'",
+      "scenes": [
+        {
+          "title": "The submission of Nigihayahi-no-Mikoto",
+          "where": "Kojiki, Part 2, the section known as 'Submission of Nigihayahi-no-Mikoto'",
+          "text": "Nigihayahi-no-Mikoto, who had heard that the child of the heavenly deities (Emperor Jinmu) had descended from heaven and came down after him, presented the heavenly tokens (天津瑞) and served him. He married 登美夜毘賣 (reading unconfirmed), the younger sister of 登美毘古 (reading unconfirmed), and Umashimaji-no-Mikoto was born."
+        },
+        {
+          "title": "Nagasunehiko and Nigihayahi-no-Mikoto",
+          "where": "Nihon Shoki, Book 3 (Emperor Jinmu), the year Tsuchinoe-Uma (戊午), the section known as 'Nagasunehiko and Nigihayahi-no-Mikoto'",
+          "text": "Kushitama-Nigihayahi-no-Mikoto, who had descended in the Heavenly Rock Boat (天磐船) and whom Nagasunehiko served as his lord, showed a feathered arrow (羽羽矢) and a quiver (歩靱), the proofs of a child of the heavenly deities, and he and Emperor Jinmu confirmed each other's proofs. Nigihayahi-no-Mikoto, who knew that he ought to follow the Heavenly Grandson, killed the obstinate Nagasunehiko, led his people in submission, and was praised and favoured by the Emperor."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The Kojiki states that Umashimaji-no-Mikoto was born to him and 登美夜毘賣 (reading unconfirmed) (no deity ID has been created for 登美夜毘賣 this time). The official site of Mononobe Jinja records that, as the father deity, he descended in the Heavenly Rock Boat (天磐舟) to 哮峯 (reading unconfirmed) in Yamato, bearing the ten sacred treasures (十種神宝); this is not in the texts of the Kojiki and Nihon Shoki and may derive from another source (such as the Kujiki (旧事本紀)) (not checked this time; to be confirmed)."
+    },
+    "ooyatsuhime": {
+      "name": "Ōyatsuhime-no-Mikoto",
+      "note": "Younger sister deity of Itakeru-no-Mikoto",
+      "aliases": [
+        "Ōyatsuhime-no-Mikoto (written 大屋津姬命, the spelling in the Nihon Shoki text)",
+        "Ōyatsuhime-no-Mikoto (written 大屋津比売命, the spelling on the official site of Itakiso Jinja)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text of Parts 1 and 2 / to be confirmed)",
+      "kojiki_where": "—",
+      "nihonshoki_name": "Ōyatsuhime-no-Mikoto (written 大屋津姬命)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 8, variant account (the variant account in which Susanoo-no-Mikoto makes trees from his body hair; the number of the variant account is to be confirmed)",
+      "scenes": [
+        {
+          "title": "The three sibling deities distribute tree seeds and cross to Kii Province",
+          "where": "Nihon Shoki, Book 1 (Age of the Gods, first part), section 8, variant account",
+          "text": "It is told that after Susanoo-no-Mikoto made trees such as cedar and cypress from his body hair, three deities, his child Itakeru-no-Mikoto and the younger sisters Ōyatsuhime-no-Mikoto and Tsumatsuhime-no-Mikoto, distributed and sowed the seeds of the trees in various places and later crossed over to Kii Province."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The official site of Itakiso Jinja explains that Ōyatsuhime-no-Mikoto (written 大屋津比売命) (and Tsumatsuhime-no-Mikoto, written 都麻津比売命) are enshrined in the side halls on both sides of the main hall as the younger sister deities of Itakeru-no-Mikoto. The relationship that makes Susanoo-no-Mikoto her father is based on a variant account in the Nihon Shoki (it cannot be confirmed in the Kojiki)."
+    },
+    "tsumatsuhime": {
+      "name": "Tsumatsuhime-no-Mikoto",
+      "note": "Younger sister deity of Itakeru-no-Mikoto",
+      "aliases": [
+        "採津姬命 (reading unconfirmed; the spelling in the Nihon Shoki text)",
+        "Tsumatsuhime-no-Mikoto (written 都麻津姫命 or 都麻津比売命, alternative spellings on the official site of Itakiso Jinja)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text of Parts 1 and 2 / to be confirmed)",
+      "kojiki_where": "—",
+      "nihonshoki_name": "Tsumatsuhime-no-Mikoto (抓津姫命) (the retrieved text writes it as 採津姬命; the difference in characters is to be confirmed)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 8, variant account (the variant account in which Susanoo-no-Mikoto makes trees from his body hair; the number of the variant account is to be confirmed)",
+      "scenes": [
+        {
+          "title": "The three sibling deities distribute tree seeds and cross to Kii Province",
+          "where": "Nihon Shoki, Book 1 (Age of the Gods, first part), section 8, variant account",
+          "text": "The youngest of the three deities, of whom it is told that, together with Itakeru-no-Mikoto and Ōyatsuhime-no-Mikoto, Tsumatsuhime-no-Mikoto also distributed and sowed the seeds of the trees and crossed over to Kii Province."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The official site of Itakiso Jinja writes 'Tsumatsuhime-no-Mikoto (抓津姫命) (都麻津姫命)' and explains that she is enshrined in a side hall of the main hall as a younger sister deity of Itakeru-no-Mikoto. Whether the difference from the spelling 採津姬命 in the text is due to a difference of edition or of transcription is unconfirmed (to be confirmed)."
+    },
+    "kagamitsukuri": {
+      "name": "Kagamitsukuri-no-Kami",
+      "note": "Main deity of Nakayama Jinja",
+      "aliases": [],
+      "kojiki_name": "(No deity named Kagamitsukuri-no-Kami (鏡作神) appears in the Kojiki; not found in the retrieved text / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(No deity named Kagamitsukuri-no-Kami (鏡作神) appears in the Nihon Shoki; not found in the retrieved text / to be confirmed)",
+      "nihonshoki_where": "",
+      "scenes": [],
+      "virtues": [
+        "Protection of cattle and horses, metal forging and metalworking (listed by the Okayama Prefectural Association of Shinto Shrines as the divine virtues of Nakayama Jinja)"
+      ],
+      "note_full": "The name of the main deity of Nakayama Jinja. The Okayama tourism website 岡山観光WEB (a tourism site) explains it as 'a name honouring the divine work of Ishikoridome-no-Kami (石凝姥神), the ancestral deity of the mirror-makers' guild (鏡作部)', but the page of the Association of Shinto Shrines does not contain this explanation and no deity of the same name appears in the Kojiki or Nihon Shoki, so the identification with Ishikoridome-no-Mikoto (existing ID ishikoridome) is not asserted and is left as to be confirmed. In the Kojiki there is a scene in which Ishikoridome-no-Mikoto (written 伊斯許理度売命), who corresponds to Ishikoridome, makes a mirror, and in the Nihon Shoki Ame-no-Nukado and Ishikoridome appear as ancestors of the mirror makers."
+    },
+    "amenonukado": {
+      "name": "Ame-no-Nukado-no-Kami",
+      "note": "Co-enshrined deity of Nakayama Jinja",
+      "aliases": [
+        "Ame-no-Nukado-no-Mikoto (written 天糠戸命, the spelling in the Kogo Shūi)",
+        "Ame-no-Nukado (written 天糠戶, the spelling in the Nihon Shoki text)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text of Parts 1, 2 and 3 / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "Ame-no-Nukado (天糠戶) (distant ancestor of the mirror-makers' guild)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 7, variant account 2 (the number of the variant account is counted from the order in the text; to be confirmed)",
+      "scenes": [
+        {
+          "title": "Making a mirror for the Sun Deity, who had shut herself in the Heavenly Rock Cave",
+          "where": "Nihon Shoki, Book 1 (Age of the Gods, first part), section 7, variant account 2",
+          "text": "It is told that when the Sun Deity shut herself in the Heavenly Rock Cave, the deities had Ame-no-Nukado, the distant ancestor of the mirror-makers' guild (鏡作部), make a mirror, had Futodama (太玉), the distant ancestor of the Inbe (忌部), make offerings (nusa), and had 豊玉 (reading unconfirmed), the distant ancestor of the jewel-makers' guild (玉作部), make jewels."
+        }
+      ],
+      "virtues": [],
+      "note_full": "One of the co-enshrined deities (aidono) of Nakayama Jinja (Okayama Prefectural Association of Shinto Shrines). In a note, the Kogo Shūi makes Ishikoridome-no-Kami (石凝姥神) 'the child of Ame-no-Nukado-no-Mikoto', but the Nihon Shoki, section 7, variant account 3, gives the distant ancestor of the mirror makers as '己凝戸辺 (reading unconfirmed), the child of 天拔戸 (reading unconfirmed)', and the relationship with Ame-no-Nukado cannot be confirmed in the Nihon Shoki (the parent-child relationship has not been entered in relations here)."
+    },
+    "kotonomachihime": {
+      "name": "Kotonomachihime-no-Mikoto",
+      "note": "Main deity of Kotonomama Hachimangū",
+      "aliases": [
+        "Kotonomachihime-no-Mikoto (written 己等乃麻知媛命, the spelling in the encyclopedia)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text of Parts 1, 2 and 3 / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; not found in the retrieved text / to be confirmed)",
+      "nihonshoki_where": "",
+      "scenes": [],
+      "virtues": [
+        "Revered as a deity of 'kotoyosashi' who grants protection to the people of the world through words (official site of Kotonomama Hachimangū)",
+        "The official site explains that by the Heian period she was known even in the capital as 'the deity who grants wishes just as they are asked'"
+      ],
+      "note_full": "The principal deity of Kotonomama Hachimangū. The official site explains that she is the daughter deity of 玉主命 (reading unconfirmed), a deity of the Inbe, the consort deity of Kokotomusubi-no-Mikoto (興台産命), ancestor of the Nakatomi, and the mother deity of Ame-no-Koyane-no-Mikoto. The Nihon Shoki, section 7, variant account 3, has 'Ame-no-Koyane-no-Mikoto, the child of Kokotomusubi (興台産霊), distant ancestor of the Nakatomi-no-Muraji', and the point that Kokotomusubi is the parent of Ame-no-Koyane-no-Mikoto overlaps with the official explanation; however, the name Kotonomachihime-no-Mikoto, her being the daughter of 玉主命, and her being the mother of Ame-no-Koyane-no-Mikoto cannot be confirmed in the Kojiki or Nihon Shoki (they are recorded here as the official explanation)."
+    },
+    "kunitokotachi": {
+      "name": "Kuni-no-Tokotachi-no-Mikoto",
+      "note": "Main deity of Tamaki Jinja's central hall",
+      "aliases": [
+        "Kuni-no-Tokotachi-no-Kami (written 国之常立神; Kojiki)",
+        "Kuni-no-Tokotachi-no-Mikoto (written 國常立尊; Nihon Shoki, main text)",
+        "國底立尊 (reading unconfirmed; another name in a variant account of the Nihon Shoki)"
+      ],
+      "kojiki_name": "Kuni-no-Tokotachi-no-Kami (国之常立神)",
+      "kojiki_where": "Part 1, the section known as 'Beginning of Heaven and Earth' (comes into being after the five Separate Heavenly Deities (別天神); the first of the Seven Generations of the Age of the Gods (神世七代))",
+      "nihonshoki_name": "Kuni-no-Tokotachi-no-Mikoto (written 國常立尊)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 1, main text",
+      "scenes": [
+        {
+          "title": "Comes into being at the beginning of heaven and earth and hides himself",
+          "where": "Kojiki, Part 1, the section known as 'Beginning of Heaven and Earth'",
+          "text": "After deities came into being in Takamagahara at the beginning of heaven and earth, Kuni-no-Tokotachi-no-Kami comes into being together with 豊雲野神 (reading unconfirmed). The Kojiki counts this as the start of the Seven Generations of the Age of the Gods."
+        },
+        {
+          "title": "Something like a reed shoot arises between heaven and earth",
+          "where": "Nihon Shoki, Book 1 (Age of the Gods, first part), section 1, main text",
+          "text": "The main text of the Nihon Shoki tells that a single thing like a reed shoot arose between heaven and earth, became a deity and was named Kuni-no-Tokotachi-no-Mikoto, and says that Kuni-no-Sazuchi-no-Mikoto and 豊斟渟尊 (reading unconfirmed) then came into being."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The official site of Tamaki Jinja enshrines Kuni-no-Tokotachi-no-Mikoto as the principal deity of the central hall of the main shrine, and explains him as the deity who appeared at the very beginning of the creation of heaven and earth in the myths of the Nihon Shoki. In the Kojiki the deity's name is Kuni-no-Tokotachi-no-Kami (国之常立神). Variant accounts in the Nihon Shoki also give another name, 國底立尊 (reading unconfirmed), and other accounts of how he came into being."
+    },
+    "amenoshitaharu": {
+      "name": "Ame-no-Shitaharu-no-Mikoto",
+      "note": "Child of Yagokoro-omoikane-no-Mikoto (Ono Jinja, official)",
+      "aliases": [
+        "Ame-no-Shitaharu-no-Mikoto (written 天下春命, the spelling in Wikipedia and in the text of the official site of Ono Jinja)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text of Parts 1, 2 and 3 / to be confirmed)",
+      "kojiki_where": "—",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; not found in the retrieved text / to be confirmed)",
+      "nihonshoki_where": "—",
+      "scenes": [],
+      "virtues": [
+        "Deity of land clearing; ancestral deity of the development of Musashi Province (explanation on the official site of Ono Jinja)"
+      ],
+      "note_full": "The official site of Ono Jinja explains that he is a child deity of Yagokoro-omoikane-no-Mikoto and is said to be 2 of the 32 deities who served as guards when Nigihayahi-no-Mikoto descended from heaven. This relationship is not in the texts of the Kojiki and Nihon Shoki and is the official explanation only (its source is guessed to be in the tradition of the Sendai Kuji Hongi (先代旧事本紀), but this is unconfirmed). It has therefore not been entered in relations."
+    },
+    "seoritsuhime": {
+      "name": "Seoritsuhime-no-Mikoto",
+      "note": "Water deity of the Ōharae no Kotoba",
+      "aliases": [
+        "Seoritsuhime-no-Ōkami (written 瀬織津比咩大神, the spelling on the amulets and goshuin of Ono Jinja (official))",
+        "Seoritsuhime-no-Mikoto (written 瀬織津比咩命; Wikipedia)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; not found in the retrieved text / to be confirmed)",
+      "kojiki_where": "—",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; not found in the retrieved text / to be confirmed)",
+      "nihonshoki_where": "—",
+      "scenes": [],
+      "virtues": [
+        "A water deity, a deity who washes sins away to the sea (explained by the official site of Ono Jinja as what the Ōharae no Kotoba says)"
+      ],
+      "note_full": "The official site of Ono Jinja explains that she is a water deity dwelling in rivers, who appears in the Ōharae no Kotoba (大祓詞) recited in Shinto rites, and a deity who washes all sins away into the sea. The Ōharae no Kotoba is a text separate from the Kojiki and Nihon Shoki, and she is not a deity of the Kojiki and Nihon Shoki."
+    },
+    "iwanagahime": {
+      "name": "Iwanagahime-no-Mikoto",
+      "note": "Enshrined at Kifune Jinja (official)",
+      "aliases": [
+        "Iwanagahime (石長比売; Kojiki)",
+        "Iwanagahime (磐長姫; Nihon Shoki)"
+      ],
+      "kojiki_name": "Iwanagahime (石長比売)",
+      "kojiki_where": "Part 1, the section known as 'Konohanasakuya-hime'",
+      "nihonshoki_name": "Iwanagahime (磐長姫)",
+      "nihonshoki_where": "Book 2 (Age of the Gods, second part), section 9, variant account (the section on the Heavenly Grandson and Konohanasakuya-hime (木花開耶姫))",
+      "scenes": [
+        {
+          "title": "The elder sister sent back by the Heavenly Grandson",
+          "where": "Kojiki, Part 1, the section known as 'Konohanasakuya-hime'",
+          "text": "The daughter of Ōyamatsumi-no-Kami and the elder sister of Konohanasakuya-hime-no-Mikoto. She was offered to Ninigi-no-Mikoto together with her younger sister, but was sent back because her appearance was considered ugly."
+        },
+        {
+          "title": "The elder sister who resented the Heavenly Grandson",
+          "where": "Nihon Shoki, Book 2 (Age of the Gods, second part), section 9, variant account",
+          "text": "It is recorded that the elder sister Iwanagahime, rejected by the Imperial Grandson, was deeply ashamed and cursed that his descendants would be short-lived."
+        }
+      ],
+      "virtues": [],
+      "note_full": "Kifune Jinja enshrines her as the deity of its 結社 (reading unconfirmed) (official). The Kojiki and the Nihon Shoki write her name differently in the scene where the sisters are sent back."
+    },
+    "watatsumi3": {
+      "name": "The Three Watatsumi Deities",
+      "note": "Three deities born in the purification",
+      "aliases": [
+        "Sokotsuwatatsumi-no-Kami, Nakatsuwatatsumi-no-Kami and Uwatsuwatatsumi-no-Kami (底津綿津見神・中津綿津見神・上津綿津見神; Kojiki)",
+        "Sokotsuwatatsumi-no-Mikoto, Nakatsuwatatsumi-no-Mikoto and Uwatsuwatatsumi-no-Mikoto (底津少童命・中津少童命・表津少童命; Nihon Shoki)"
+      ],
+      "kojiki_name": "Sokotsuwatatsumi-no-Kami, Nakatsuwatatsumi-no-Kami and Uwatsuwatatsumi-no-Kami (底津綿津見神・中津綿津見神・上津綿津見神)",
+      "kojiki_where": "Part 1, the section known as 'Land of Yomi / Purification'",
+      "nihonshoki_name": "Sokotsuwatatsumi-no-Mikoto (底津少童命), 表中津少童命 (reading unconfirmed) (also written 中津少童命, Nakatsuwatatsumi-no-Mikoto) and Uwatsuwatatsumi-no-Mikoto (表津少童命)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), section 5, variant account (the numbers of the section and the variant account are to be confirmed)",
+      "scenes": [
+        {
+          "title": "Born in Izanagi's purification",
+          "where": "Kojiki, Part 1, the section known as 'Purification'",
+          "text": "When Izanagi-no-Mikoto rinsed himself at the bottom, in the middle and at the top of the water, the Watatsumi deities of the bottom, middle and top (Sokotsu, Nakatsu and Uwatsu) came into being, followed by the male deities Sokotsutsunoo-no-Mikoto, Nakatsutsunoo-no-Mikoto and Uwatsutsunoo-no-Mikoto (底筒・中筒・上筒の男命). It records that the three Watatsumi deities are the ancestral deities of the Azumi-no-Muraji (阿曇連)."
+        },
+        {
+          "title": "Deities worshipped by the Azumi-no-Muraji",
+          "where": "Nihon Shoki, Book 1 (Age of the Gods, first part), section 5, variant account",
+          "text": "It is written that the three deities born from rinsing at the bottom, in the middle and at the surface of the sea are the Watatsumi deities (少童命), and that, listed together with the Great Deities of Sumiyoshi (住吉大神), they are the deities worshipped by the Azumi-no-Muraji (阿曇連) and others."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The existing ID 'watatsumi' (Watatsumi-no-Kami, 海神) is Ōwatatsumi-no-Kami (大綿津見神, the sea deity born in the Birth of the Gods), a separate entry from the three deities born in the purification. Sokotsutsunoo-no-Mikoto, Nakatsutsunoo-no-Mikoto and Uwatsutsunoo-no-Mikoto, born in the same purification, are the existing sumiyoshi3 (The Three Sumiyoshi Deities). The official site of Shikaumi Jinja explains that the three deities are deities who protect the bottom, the middle and the surface of the sea."
+    },
+    "takaratamatare": {
+      "name": "Kōra-Tamatare-no-Mikoto",
+      "note": "Central enshrined deity of Kōra Taisha",
+      "aliases": [],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; checked by searching / to be confirmed)",
+      "nihonshoki_where": "",
+      "scenes": [],
+      "virtues": [
+        "The official site of Kōra Taisha records that the deity has been devoutly worshipped as one who protects all aspects of life, beginning with warding off misfortune, long life and traffic safety."
+      ],
+      "note_full": "The central enshrined deity of Kōra Taisha. A search for '玉垂' in the obtained texts of the Kojiki (Parts 1, 2 and 3), the Nihon Shoki and the Kogo Shūi found no matches. Accounts of the deity's origin, such as the theory that identifies the deity with Takeuchi-no-Sukune, are not written here, because they have not been confirmed on the relevant official page."
+    },
+    "amenomihashira": {
+      "name": "Ame-no-Mihashira-no-Ōkami",
+      "note": "Tatsuta wind deity, identified with Shinatsuhiko",
+      "aliases": [
+        "Shinatsuhiko-no-Kami (志那都比古神; given as another name by Tatsuta Taisha's official site)"
+      ],
+      "kojiki_name": "Shinatsuhiko-no-Kami (志那都比古神; given as another name by Tatsuta Taisha's official site. In the Kojiki this deity appears as a wind deity in the Birth of the Gods in Part 1, and does not appear under the name 'Ame-no-Mihashira' (天御柱))",
+      "kojiki_where": "Part 1, the section known as 'Generation of the Gods (Birth of the Gods)'",
+      "nihonshoki_name": "Shinatsuhiko-no-Mikoto (級長津彦命; appears as a wind deity in a variant account in Book 1, but the correspondence with this shrine's deity is to be confirmed)",
+      "nihonshoki_where": "Book 1 (Age of the Gods, first part), a variant account of section 5 (the numbers of the variant account and the section are to be confirmed)",
+      "scenes": [
+        {
+          "title": "The wind deity is born",
+          "where": "Kojiki, Part 1, the section known as 'Generation of the Gods (Birth of the Gods)'",
+          "text": "Continuing from Izanagi-no-Mikoto and Izanami-no-Mikoto giving birth to the land and many deities, Shinatsuhiko-no-Kami was born as the 'wind deity'. The official site of Tatsuta Taisha treats this deity as another name of Ame-no-Mihashira-no-Ōkami."
+        },
+        {
+          "title": "Worshipping the wind deity at 立野 (reading unconfirmed) in Tatsuta",
+          "where": "Nihon Shoki, Book 29, 4th year of Emperor Tenmu",
+          "text": "In the 4th month, in summer, of the 4th year of Emperor Tenmu, 美濃王 (reading unconfirmed) and others were sent to worship the wind deity at 立野 (reading unconfirmed) in Tatsuta. Together with the rite for the 大忌神 (reading unconfirmed) at Hirose, it continued as a state rite praying for the harmony of wind and water."
+        }
+      ],
+      "virtues": [],
+      "note_full": "The official site explains the name 'Mihashira' (御柱) as meaning 'the central pillar of heaven, earth and all things'. 'Ame-no-Mihashira' (天之御柱) in the Kojiki is the pillar around which the two deities walk in the Birth of the Land, and is not a deity name; its relation to this shrine's deity name has not been checked. The identification with Shinatsuhiko-no-Kami is a tradition of the shrine, and it is to be confirmed, including its correspondence with Shinatsuhiko-no-Mikoto (級長津彦命, a wind deity) in a variant account of the Nihon Shoki."
+    },
+    "kunimihashira": {
+      "name": "Kuni-no-Mihashira-no-Ōkami",
+      "note": "Yin deity of the Tatsuta wind deities",
+      "aliases": [
+        "志那都比売神 (reading unconfirmed; given as another name by Tatsuta Taisha's official site)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; checked by searching / to be confirmed)",
+      "nihonshoki_where": "",
+      "scenes": [],
+      "virtues": [],
+      "note_full": "The official site of Tatsuta Taisha says that the two deities Ame-no-Mihashira-no-Ōkami (yang) and Kuni-no-Mihashira-no-Ōkami (yin) together are called the Tatsuta wind deities (龍田風神) or Tatsuta-no-Ōkami (龍田の大神). The other name, 志那都比売神 (reading unconfirmed), also cannot be confirmed by searching the original texts of the Kojiki and the Nihon Shoki at hand. The connection with the Kojiki and the Nihon Shoki is limited to what can be confirmed on the side of Ame-no-Mihashira-no-Ōkami (Shinatsuhiko-no-Kami)."
+    },
+    "wakaukanome": {
+      "name": "Wakaukanome-no-Mikoto",
+      "note": "Hirose deity, said to be one with Ukanomitama",
+      "aliases": [
+        "大忌神 (reading unconfirmed; Hirose Taisha, official)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "大忌神 (reading unconfirmed) (Hirose Taisha's official site gives it as another name of Wakaukanome-no-Mikoto. In the Nihon Shoki the deity appears under the name 大忌神)",
+      "nihonshoki_where": "Book 29, 4th year of Emperor Tenmu",
+      "scenes": [
+        {
+          "title": "Worshipping the 大忌神 (reading unconfirmed) at the river bend at Hirose",
+          "where": "Nihon Shoki, Book 29, 4th year of Emperor Tenmu",
+          "text": "In the 4th month, in summer, of the 4th year of Emperor Tenmu, 間人連大蓋 (reading unconfirmed) and others were sent to worship the 大忌神 (reading unconfirmed) at the river bend at Hirose. The official site of Hirose Taisha relates that this was the beginning of the 大忌祭 (reading unconfirmed)."
+        }
+      ],
+      "virtues": [
+        "Protection of clothing, food and housing (Hirose Taisha's official site says that old books record that the deity 'protects clothing, food and housing without missing a single day of human life')",
+        "Praying for well-ordered wind and rain and a rich harvest (the official site records that the deity is worshipped as a deity of water and the deity presiding over agriculture)"
+      ],
+      "note_full": "The official site of Hirose Taisha records that the deity is said to be the same as Toyoukebime-no-Ōkami (豊宇気比売大神), Ukanomitama-no-Kami (宇加之御魂神), 屋船豊受姫神 (reading unconfirmed) and Ōmonoimi-no-Kami (大物忌神). The relation with the existing ID Toyouke-no-Ōmikami (toyouke) is to be confirmed, because it is a tradition of the shrine and support in the Kojiki and the Nihon Shoki has not been checked."
+    },
+    "kushitama": {
+      "name": "Kushitama-no-Mikoto",
+      "note": "Co-enshrined deity of Hirose Taisha",
+      "aliases": [],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(A name containing '櫛玉' appears in Book 3 as Kushitama-Nigihayahi-no-Mikoto (櫛玉饒速日命), but whether it is the same deity is to be confirmed)",
+      "nihonshoki_where": "Book 3, the chronicle of Emperor Jinmu before his accession",
+      "scenes": [],
+      "virtues": [],
+      "note_full": "A co-enshrined deity (aidono-shin) of Hirose Taisha. No explanation of the deity's origin has been confirmed on the official pages."
+    },
+    "honoikazuchi": {
+      "name": "Honoikazuchi-no-Mikoto",
+      "note": "Co-enshrined deity of Hirose Taisha",
+      "aliases": [],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "",
+      "nihonshoki_name": "(Does not appear in the Nihon Shoki; checked by searching / to be confirmed)",
+      "nihonshoki_where": "",
+      "scenes": [],
+      "virtues": [],
+      "note_full": "A co-enshrined deity (aidono-shin) of Hirose Taisha. No explanation of the deity's origin has been confirmed on the official pages."
+    },
+    "tenji": {
+      "name": "Emperor Tenji",
+      "note": "Historical emperor, enshrined at Ōmi Jingū",
+      "aliases": [
+        "天命開別天皇 (reading unconfirmed; Nihon Shoki)",
+        "天命開別大神 (reading unconfirmed; the divine title at Ōmi Jingū)",
+        "Prince Naka-no-Ōe (中大兄皇子)"
+      ],
+      "kojiki_name": "(Does not appear in the Kojiki; checked by searching / to be confirmed)",
+      "kojiki_where": "The Kojiki ends with the account of Empress Suiko (to be confirmed)",
+      "nihonshoki_name": "天命開別天皇 (reading unconfirmed)",
+      "nihonshoki_where": "Book 27, the chronicle of Emperor Tenji",
+      "scenes": [
+        {
+          "title": "Moving the capital to Ōmi",
+          "where": "Nihon Shoki, Book 27, 3rd month of the 6th year of Tenji",
+          "text": "Emperor Tenji moved the capital to Ōmi. The Nihon Shoki also records that the people did not want the move and that many remonstrated against it."
+        },
+        {
+          "title": "Setting up the water clock",
+          "where": "Nihon Shoki, Book 27, 4th month of the 10th year of Tenji",
+          "text": "A water clock (漏刻) was placed on a new platform, and bells and drums began to be struck to announce the time. Ōmi Jingū takes this as the basis for regarding him as the ancestral deity of time."
+        }
+      ],
+      "virtues": [],
+      "note_full": "A historical emperor, not a deity of the myths of the Kojiki and the Nihon Shoki. His divine title as the enshrined deity of Ōmi Jingū is 天命開別大神 (reading unconfirmed). '天命開別天皇' in the main text of the Nihon Shoki is Emperor Tenji's Japanese-style posthumous name."
     }
   },
   "shrines": {
@@ -6087,6 +6473,591 @@
       "hours": "The official \"Prayer\" page gives the reception for prayers as daily from 9:30 to 16:00, with a prayer fee from ¥5,000 (not available during the main festival, 20–22 July, or on 29–31 December; individual reservations are not accepted at the main shrine, and visitors apply at the shrine office during these hours). Information on the distribution of amulets (ofuda and omamori) is on the official \"Prayer rites and amulets\" page, and the former official site says there is an amulet office at the shrine office. The hours when the grounds can be entered, when the main hall is opened and when the amulet office is open are not confirmed on the official site (the external site Hotokami gives the amulet office as 7:00–17:00 and the main hall as open 7:00–17:00 in summer and 7:00–16:30 in winter, but this has no support from the official site). The shrine's policy on photography and entering the grounds is also not confirmed on the official site, so please follow the signs on site.",
       "parking": "The number of spaces and the fees of the parking lot are not confirmed on the official site. The external site Hotokami says \"about 40 cars can park below the shrine office\", but this has no support from the official site.",
       "goshuin": "Information on goshuin is not confirmed on either the current official site or the former official site. The external site Hotokami says goshuin for three shrines are given: Kamikawa Jinja, Asahikawa Tenmangū and 雨紛神社 (reading unconfirmed), a shrine served concurrently. The reception place, hours and offering fee are not confirmed on the official site."
+    },
+    "oarai": {
+      "name": "Ōarai Isosaki Jinja",
+      "place": "Ōarai Town, Ibaraki",
+      "summary": "An ancient shrine enshrining Ōnamuchi-no-Mikoto (大己貴命) and Sukunahikona-no-Kami (少彦名命), where deities are said to have descended on the shore at Ōarai (the 神磯 (reading unconfirmed)). The Nihon Montoku Tennō Jitsuroku records the report of the descent in 856 (Saikō 3); in the Engishiki the shrine was a major myōjin shrine (myōjin taisha), and it was later ranked as a national shrine of the middle rank (kokuhei chūsha).",
+      "deity_note": "The official enshrined deities are two: Ōnamuchi-no-Mikoto (大己貴命) and Sukunahikona-no-Kami (少彦名命). The official site calls Ōnamuchi-no-Mikoto \"Daikoku-sama\" and explains him as the deity known from the myth of the White Hare of Inaba. Ōnamuchi-no-Mikoto corresponds to Ōkuninushi-no-Kami (大国主神), also called Ōnamuji-no-Kami (大穴牟遅神), in the Kojiki, and Sukunahikona-no-Kami corresponds to Sukunabikona-no-Kami (少名毘古那神) in the Kojiki and to 少彦名命 in the Nihon Shoki (the myth in which the two deities work together to build the land). The Nihon Montoku Tennō Jitsuroku records the names given by the descended deities as \"大奈母知\" and \"少比古奈\", and a note in the same work identifies them as Ōkuninushi and Sukunahikona (whether the note is an interlinear note (warichū) in the original text is to be confirmed).",
+      "history": [
+        "Book 8 of the Nihon Montoku Tennō Jitsuroku records that in December 856 (Saikō 3), Hitachi Province reported that \"a deity has newly descended at Ōarai Isosaki in Kashima District (鹿嶋郡)\". It says that at night a light over the sea stretched up to the sky, that the next day two strange stones appeared at the water's edge, and that a deity possessed a person and said: \"We are 大奈母知 and 少比古奈. Long ago we finished making this land and departed to the eastern sea, but we have returned again to save the people.\" The official site treats this as the origin of the shrine's founding and records the date of the descent as 29 December.",
+        "Book 9 of the Nihon Montoku Tennō Jitsuroku records that in August 857 (Ten'an 1) the deities of Ōarai Isosaki and Sakatsura Isosaki in Hitachi Province were made official shrines (kansha), and that in September of the same year the two deities were given the title \"Yakushi Bosatsu Myōjin\" (薬師菩薩名神). This corresponds to the official site's statement that the shrine was granted the divine title \"Ōarai Isosaki Yakushi Bosatsu Myōjin\" (大洗磯前薬師菩薩明神).",
+        "The Engishiki register of shrines lists \"大洗礒前薬師菩薩明神社\" under Kashima District, Hitachi Province, as a major myōjin shrine (myōjin taisha) (the other entry in the same district is Kashima Jingū, written 鹿嶋神宮). The official site records that the shrine was classed as a \"taisha\" (major shrine) in the Engishiki register of shrines and was granted the rank of national shrine of the middle rank (kokuhei chūsha) in the Meiji period.",
+        "The official site records that, after the shrine buildings were lost in the wars of the Sengoku period, Tokugawa Mitsukuni, the second lord of the Mito Domain, began building in 1690 (Genroku 3), and that what was completed in 1730 (Kyōhō 15) is the present main hall, haiden and Zuishin-mon. The main hall and haiden were designated Tangible Cultural Properties of Ibaraki Prefecture on 28 September 1970 (Shōwa 45) (Ibaraki Prefectural Board of Education)."
+      ],
+      "highlights": [
+        "The torii of the 神磯 (reading unconfirmed). The official site records that a torii stands on a rocky reef on the shore where the deities are said to have descended, and that it has become a symbol of Ōarai Town. On New Year's Day the chief priest and the other priests go down to the shore and hold the 初日の出奉拝式 (reading unconfirmed), a ceremony of worshipping the first sunrise of the year.",
+        "The Zuishin-mon (随神門). It is on Ōarai Town's list of designated cultural properties (designated 1 May 1987 (Shōwa 62)). The official site records that it has openwork carving carved from a single piece of wood, including rabbits and other motifs closely connected with the enshrined deities.",
+        "The 二社参り (reading unconfirmed; \"visiting the two shrines\"). The official site records that this shrine and Sakatsura Isosaki Jinja in Hitachinaka City are regarded as sibling shrines, and that a goshuin for visiting both shrines (二社参り (reading unconfirmed)) is distributed from 1 September."
+      ],
+      "address": "6890 磯浜町 (reading unconfirmed), Ōarai Town, Higashiibaraki District, Ibaraki 311-1301 (tel. 029-267-2637)",
+      "access": "About 40 minutes' walk (about 3 km) from Ōarai Station on the Kashima Rinkai Railway Ōarai Kashima Line. There are buses from Ōarai Station, Mito Station and 那珂湊 (reading unconfirmed) Station; get off at \"Ōarai Isosaki Jinja-shita\" (大洗磯前神社下), right by the shrine (about 15 minutes from Ōarai Station; about 30 minutes from Mito Station by Ibaraki Kōtsū bus). By car, about 15 minutes from Mito-Ōarai IC.",
+      "hours": "The gates are open 5:30–18:00 from May to August and 6:00–17:00 from September to April. Prayers are accepted 9:00–15:30 (no reservation needed; on the 1st and 15th of each month, because of the monthly festival (tsukinamisai), reception for the period of about 9:30–10:30 starts from about 10:50). The amulet office is open 8:30–16:30. All of these are clearly stated on the official pages.",
+      "parking": "According to the official site, it can be used from sunrise until 7 p.m. (no parking at night). The number of spaces and fees are not confirmed on the official site.",
+      "goshuin": "Goshuin are accepted 8:30–16:30. A priest writes directly into your goshuin book, and depending on the rites you may have to wait, or reception may be closed. The shrine's goshuin books are \"神磯\" (reading unconfirmed) at ¥2,000 and \"Sunrise over the 神磯\" (reading unconfirmed) at ¥2,500 (prices with the goshuin stamped in). They are not distributed by post. There is also a goshuin for visiting both this shrine and Sakatsura Isosaki Jinja (二社参り (reading unconfirmed))."
+    },
+    "okuni": {
+      "name": "Okuni Jinja",
+      "place": "Mori Town, Shizuoka",
+      "summary": "A former national shrine of the lower rank (kokuhei shōsha) enshrining Ōnamuchi-no-Mikoto (大己貴命) (Ōkuninushi-no-Mikoto), revered as the ichinomiya of Tōtōmi Province. Shrine tradition records that the deity was enshrined in the 16th year of Emperor Kinmei (555), and an entry for 840 (Jōwa 7) in the Shoku Nihon Kōki is regarded as its first appearance in history. It is a shikinaisha, listed as a small shrine (shōsha) in the Engishiki.",
+      "deity_note": "The official enshrined deity is one: Ōnamuchi-no-Mikoto (大己貴命) (also called Ōkuninushi-no-Mikoto (大國主命) and Daikoku-sama (大国様)). The official site says that many divine names of Ōnamuchi-no-Mikoto are handed down in the Kojiki and Nihon Shoki, and lists Kunitsukuri-no-Ōkami (国作之大神), Ōnamuji-no-Kami (大穴牟遅神), Ōmononushi-no-Kami (大物主神), Utsushikunitama-no-Kami (宇都志国玉神), Ōkunitama-no-Kami (大国玉神), Ashiharashikoo-no-Mikoto (葦原醜男命), Yachihoko-no-Mikoto (八千矛命) and others. The other names of Ōkuninushi-no-Kami in Part 1 of the Kojiki are Ōnamuji-no-Kami (大穴牟遅神), Ashiharashikoo-no-Kami (葦原色許男神), Yachihoko-no-Kami (八千矛神) and Utsushikunitama-no-Kami (宇都志国玉神), while a variant account of section 8 of the Nihon Shoki lists Ōmononushi-no-Kami (大物主神), Kunitsukuri-Ōnamuchi-no-Mikoto (国作大己貴命), Ashiharashikoo (葦原醜男), Yachihoko-no-Kami (八千戈神), Ōkunitama-no-Kami (大国玉神) and Utsushikunitama-no-Kami (顕国玉神). The official site's list of other names overlaps with both.",
+      "history": [
+        "The official site states that the founding of worship is said to go back to the Age of the Gods and is not known in detail, and then records that, according to the shrine record of 1680 (Enpō 8), the divine spirit was enshrined on 本宮峯 (本宮山) (reading unconfirmed) on 18 February in the 16th year of Emperor Kinmei (555), and that later an imperial envoy was sent and shrine buildings were built at the present site at the foot of the mountain, about 6 km away.",
+        "The entry for June 840 (Jōwa 7) in the Shoku Nihon Kōki records that the unranked \"小國天神\" of 周智郡 (reading unconfirmed) District and the unranked \"矢奈比賣天神\" of Iwata District, both in Tōtōmi Province, were together granted Junior Fifth Rank, Lower Grade. The official site treats this as the first record of Okuni Jinja in history.",
+        "The Engishiki register of shrines lists \"小国神社\" as a small shrine (shōsha) under 周智郡 (reading unconfirmed) District, Tōtōmi Province (shikinaisha). The official site also records that it was ranked as a shikinaisha in the Engishiki.",
+        "The official site records that in the fighting of 1572 (Genki 3), after the Tokugawa family moved the divine spirit to another place, all the shrine buildings were burned down, and that in 1575 (Tenshō 3) the victorious Tokugawa Ieyasu built the main hall, rebuilt the haiden and the two-story gate (rōmon), and presented a vermilion-seal grant (shuin) of 590 koku of shrine land. The main hall and other buildings were lost in a fire in 1882 (Meiji 15) and were rebuilt in 1886 (Meiji 19), as they stand today."
+      ],
+      "highlights": [
+        "The Bugaku of Mori, Tōtōmi (遠江森町の舞楽; the ancient-style twelve-part bugaku of Okuni Jinja) was designated a national Important Intangible Folk Cultural Property on 14 January 1982 (Shōwa 57). The preservation bodies include the Okuni Jinja Ancient Bugaku Preservation Society (小国神社古式舞楽保存会). The official site records that it is performed on the Saturday and Sunday closest to 18 April.",
+        "The official site records that the shrine preserves and hands down rites such as the 田遊祭 (田遊神事) (reading unconfirmed), a nationally selected Intangible Folk Cultural Property which began in the Kamakura period, and the 疫神齋 (reading unconfirmed), an ancient rite for warding off epidemics.",
+        "The sights of the sacred precinct listed by the official site are the 800-year-old sacred tree for good relationships (enmusubi), the \"Hyō-no-ki\", and the sacred pond for the fulfilment of heartfelt wishes, the \"事待池\" (reading unconfirmed). It also records that about 1,000 maple trees line the 宮川 (reading unconfirmed) river, and that the autumn colours are usually at their best from late November to early December."
+      ],
+      "address": "3956-1 Ichinomiya, Mori Town, 周智郡 (reading unconfirmed) District, Shizuoka 437-0226 (tel. 0538-89-7302)",
+      "access": "By car, about 7 minutes from \"Enshū Morimachi Smart IC\" on the Shin-Tōmei Expressway (the nearest IC), about 15 minutes from \"Mori-Kakegawa IC\", and about 20 minutes from \"Fukuroi IC\" on the Tōmei Expressway. By rail, the 秋葉 (reading unconfirmed) Bus \"Okuni Jinja Kaiun Line\" runs directly from JR Fukuroi Station or from Enshū-Mori Station on the Tenryū Hamanako Railroad. The official site gives a 50-minute walk from \"Ichinomiya Station\", and says that a free shuttle bus runs on the 1st and 15th of each month (only the 15th in January), so visitors should enquire in advance.",
+      "hours": "Prayers are accepted daily 9:00–16:00 (no advance reservations; from ¥5,000; takes 20–30 minutes; at the prayer reception office to the left of the haiden). The grounds are open, and visitors may worship freely. The hours of the amulet office and shrine office are not confirmed on the official site.",
+      "parking": "Free car parks for about 700 cars (official, as of December 2024). Car Park 5 is under construction, and after the work it will be used only in the busy periods of New Year, Shichi-Go-San and the autumn leaves. Large buses use Car Park 2.",
+      "goshuin": "The site map of the official site has an item \"Goshuin and Goshuin Books\", but no page showing the reception hours or the offering has been confirmed. Since 1 November 2024 (Reiwa 6), the shrine has distributed the \"Enshū–Mikawa One Shrine and Three Mountains Momiji-meguri (maple tour) Goshuin Book\" (offering ¥1,200; goshuin charged separately)."
+    },
+    "masumida": {
+      "name": "Masumida Jinja",
+      "place": "Ichinomiya City, Aichi",
+      "summary": "The ichinomiya of Owari Province, and the shrine from which the city name \"Ichinomiya\" derives. The official explanation says that it enshrines Hikohoakari-no-Mikoto (here written 天火明命), the ancestor who opened up Owari, and shrine tradition records that it was enshrined in the 33rd year of Emperor Jinmu.",
+      "deity_note": "The explanatory text on the top page of the official site records the enshrined deity as \"天火明命\" (Hikohoakari-no-Mikoto), the ancestor who opened up Owari (a page explaining the deity in detail has not been confirmed). Part 1 of the Kojiki names \"天火明命\" and Hikohononinigi-no-Mikoto (日子番能邇邇藝命) as the children of Ame-no-Oshihomimi-no-Mikoto (天忍穂耳命) and Yorozuhata-toyoakitsushihime-no-Mikoto (萬幡豊秋津師比賣命), the daughter of Takagi-no-Kami (高木神). The Nihon Shoki records, in variant account 6 of section 9, Ame-no-Kagoyama (天香山), the child of 天火明命, and in variant account 8, Amaterukuniteru-Hoakari-no-Mikoto (天照国照火明命), each as a distant ancestor of the Owari-no-Muraji (尾張連) and others. The description \"the ancestor who opened up Owari\" is the shrine's tradition, not wording from the main texts of the Kojiki and Nihon Shoki. The deity of the auxiliary shrine (sessha) 服織神社 (reading unconfirmed) is Yorozuhata-toyoakitsushihime-no-Mikoto (萬幡豊秋津師比賣命) (official), who has the same name as the mother of 天火明命 in the Kojiki, but whether the official site explains them as mother and child is unconfirmed.",
+      "history": [
+        "The official site records that, according to shrine tradition, the shrine was enshrined in the 33rd year of Emperor Jinmu.",
+        "The Engishiki register of shrines lists \"真墨田神社\" as a major myōjin shrine (myōjin taisha) under 中嶋郡 (reading unconfirmed) District, Owari Province (the present shrine name is written \"真清田\", with different characters). The official site records that in the Heian period the shrine was recognized by the state as a national (kokuhei) major myōjin shrine and was given the divine rank of Senior Fourth Rank, Upper Grade.",
+        "The official site records that in the Kamakura period Emperor Juntoku dedicated many bugaku masks, which are still preserved as Important Cultural Properties. In the Agency for Cultural Affairs database, twelve \"wooden bugaku masks\" (木造舞楽面; Kamakura to Nanbokuchō period) owned by Masumida Jinja were designated Important Cultural Properties on 29 August 1904 (Meiji 37).",
+        "The official site records that the shrine buildings were burned in the war damage of 1945 (Shōwa 20), and that the main hall and other buildings were rebuilt in 1957 (Shōwa 32). The main hall and the connecting hall (watadono) were registered as national Registered Tangible Cultural Properties (buildings) on 3 August 2006 (Heisei 18) (Cultural Heritage Online)."
+      ],
+      "highlights": [
+        "Tōka-sai (桃花祭). The shrine's annual festival, held on 3 April since 1910 (Meiji 43); it is also called the \"Uma Matsuri\" (horse festival) because decorated horses called \"馬の塔\" (reading unconfirmed) parade out. The official site records that it derives from an old custom of purifying the body of impurities with peach branches.",
+        "The auxiliary shrine (sessha) 服織神社 (reading unconfirmed). The official site records that it enshrines Yorozuhata-toyoakitsushihime-no-Mikoto (萬幡豊秋津師比賣命), and that the 御衣奉献祭 (reading unconfirmed), a rite of offering garments, is held during the Ichinomiya Tanabata Matsuri."
+      ],
+      "address": "1-2-1 Masumida, Ichinomiya City, Aichi 491-0043 (official access page; the telephone number is not confirmed on the official site)",
+      "access": "8 minutes' walk from JR Owari-Ichinomiya Station and Meitetsu Ichinomiya Station. Just north of the \"Honmachi 1-chōme\" and \"Honmachi-dōri\" bus stops. By car, about 20 minutes from \"Owari-Ichinomiya\" IC on the Meishin Expressway, about 10 minutes from the \"Ichinomiya-Higashi\" exit of the Nagoya Expressway Ichinomiya Line, about 10 minutes from \"Ichinomiya-Nishi\" IC and about 15 minutes from \"Ichinomiya-Kisogawa\" IC on the Tōkai-Hokuriku Expressway.",
+      "hours": "The official FAQ records that the shrine is open every day, from 9 a.m. to 5 p.m. Prayers are accepted from 9 a.m. to 4 p.m., with no advance reservation needed (except for group prayers). They are accepted at the amulet office.",
+      "parking": "There is a dedicated car park, entered from the west side of the shrine (official FAQ). The number of spaces and fees are not confirmed on the official site.",
+      "goshuin": "The reception hours and offering for goshuin are not confirmed on the official site (the amulets page only lists a goshuin book at an offering of ¥1,500)."
+    },
+    "aekuni": {
+      "name": "Aekuni Jinja",
+      "place": "Iga City, Mie",
+      "summary": "The ichinomiya of Iga Province. It enshrines Ōbiko-no-Mikoto as the main deity, together with Sukunahikona-no-Kami and Kanayamahime-no-Mikoto, and the three deities together are called \"Aekunitsu-no-Ōkami\" (敢國津大神). A raise in its divine rank appears under 867 (Jōgan 9) in the Nihon Sandai Jitsuroku, and in 1871 (Meiji 4) it was ranked as a national shrine of the middle rank (kokuhei chūsha).",
+      "deity_note": "The official enshrined deities are three: Ōbiko-no-Mikoto, Sukunahikona-no-Kami and Kanayamahime-no-Mikoto (the main deity is Ōbiko-no-Mikoto). The official site records that with the three deities the shrine became \"Aekuni Jinja, Aekunitsu-no-Ōkami\", and \"敢國津神\" appears to be not a separate deity but a collective name for the three deities. Ōbiko-no-Mikoto is written 大毘古命 in the Kojiki and 大彦命 in the Nihon Shoki. The Kojiki lists him first among the children of Emperor Kōgen and records that he was sent along the 高志道 (Koshi road) in the reign of Emperor Sujin; the Nihon Shoki makes him one of the Four Road Generals (Shidō Shōgun) sent to Hokuriku in the 10th year of Emperor Sujin, and in the entry for the 7th year of Emperor Kōgen makes him the founding ancestor of seven clans: the 阿倍臣, 膳臣, 阿閇臣, 狹狹城山君, 筑紫国造, 越国造 and 伊賀臣 (readings unconfirmed). The official site's statement that he lived in Iga and took the name of the 阿拝 (敢) clan (reading unconfirmed) is not in the main texts of the Kojiki and Nihon Shoki but is the shrine's tradition. Sukunahikona-no-Kami appears in the Kojiki and Nihon Shoki. The name Kanayamahime-no-Mikoto corresponds to Kanayamabime-no-Kami (金山毗賣神) in the Kojiki (paired with Kanayamabiko-no-Kami (金山毗古神)), but whether the official site explains them as the same deity is unconfirmed.",
+      "history": [
+        "The official site records that, according to the shrine's tradition, it was founded in 658, in the mid-7th century, and that at its founding it enshrined two deities, Ōbiko-no-Mikoto and Sukunahikona-no-Kami.",
+        "The official site records that the shrine building of Kanayamahime-no-Mikoto shook violently and the characters \"興阿倍久爾神同殿\" appeared as insect-eaten marks on the trunk of the sacred tree in front of the building, and that she was therefore enshrined together in the main hall in 977, 319 years after the founding.",
+        "The entry for 5 October 867 (Jōgan 9) in the Nihon Sandai Jitsuroku records that Aekunitsu-no-Kami (敢国津神) of Iga Province, of Junior Fifth Rank, Lower Grade, was granted Junior Fifth Rank, Upper Grade. The official site records that \"around the Jōgan era it was granted the fifth divine rank\".",
+        "The Engishiki register of shrines lists \"敢国…神社\" as a major shrine (taisha) under 阿拝郡 (reading unconfirmed) District, Iga Province (one character of the deity name cannot be read in the transcribed data). The official site records that in May 1871 (Meiji 4) it was ranked as a national shrine of the middle rank (kokuhei chūsha)."
+      ],
+      "highlights": [
+        "The framed tablets of the Thirty-Six Immortal Poets. Said to date from the end of the Momoyama period, they depict the Thirty-Six Immortal Poets in groups of three on twelve framed tablets. The poem cards (shikishi) are attributed to the hand of 近衛信基 (reading unconfirmed), later known as 信尹 (reading unconfirmed). The official site records them as a Prefectural Tangible Cultural Property.",
+        "Shishi kagura (lion kagura). The official site records that it is designated a Mie Prefecture Intangible Cultural Property, is said to have originated in the Kamakura period, and is also said to be the prototype of the shishi kagura performed in the towns of Iga and to have influenced the 伊勢大神楽 (reading unconfirmed).",
+        "The hot-water cauldron (湯釜). The official site records that, in the recovery of Iga after it was devastated in the Tenshō Iga War, aiming first to restore shrines and temples, it was made and dedicated by 小天狗清蔵 (reading unconfirmed) in 1598 (Keichō 3)."
+      ],
+      "address": "877 Ichinomiya, Iga City, Mie 518-0003 (tel. 0595-23-3061)",
+      "access": "The official site records that there is a highway bus from Nagoya Bus Center to Uenoshi Station (Ninjashi Station). By car, leave the Meihan National Highway at \"Iga-Ichinomiya IC\" (No. 12), turn right, pass under the Meihan National Highway through the tunnel and turn left (Route 676). The official site does not describe how to get there from the nearest station or the walking time.",
+      "hours": "The shrine office is open 8:30–16:00. Prayers are accepted 9:00–15:00 (last reception 14:30); the official site asks visitors to reserve in advance by telephone, as same-day applications may not be served immediately. The hours when the grounds can be visited are not confirmed on the official site.",
+      "parking": "The official site records that there is a car park in the grounds (to the right from Iga-Ichinomiya IC). The number of spaces and fees are not confirmed on the official site.",
+      "goshuin": "Accepted 8:30–16:00 throughout the year. During shrine festivals and the like, only pre-written goshuin (kakioki) may be available. The official announcements give information on monthly limited goshuin (September and October 2026). The amulets on offer also include embroidered goshuin and cut-paper (kirie) goshuin."
+    },
+    "izumodaijingu": {
+      "name": "Izumo Daijingū",
+      "place": "Kameoka City, Kyoto",
+      "summary": "The ichinomiya of Tanba Province, in Kameoka City, Kyoto Prefecture. Its main deities are Ōkuninushi-no-Ōkami and his consort Mihotsu-hime-no-Mikoto, and it is also called \"Moto-Izumo\" (元出雲), as being earlier than Izumo Taisha in Shimane. The present main hall is a national Important Cultural Property.",
+      "deity_note": "The official site gives Ōkuninushi-no-Ōkami and his consort Mihotsu-hime-no-Mikoto together as the main deities, and says there is also a theory that 天津彦根命 and 天夷鳥命 (readings unconfirmed) are enshrined as well. Ōkuninushi-no-Ōkami is the deity of the making of the land and the transfer of the land in the Kojiki and Nihon Shoki. For Mihotsu-hime-no-Mikoto, the Nihon Shoki, Book 2 (Age of the Gods, second part), section 9, variant account 2, has a passage in which Takamimusubi-no-Kami (高皇産霊尊) says \"今以吾女三穗津姫配汝爲妻\" (\"Now I give you my daughter Mihotsu-hime as your wife\") (the one addressed is recorded in the Nihon Shoki as Ōmononushi-no-Kami). A search of the main text of Parts 1, 2 and 3 of the Kojiki (the edited text on Chinese Wikisource) found no occurrence of the name Mihotsu-hime (checked 3 Nov 2026).",
+      "history": [
+        "According to shrine tradition, the shrine buildings were first built on 21 October 709 (Wadō 2), in the reign of Empress Genmei. The official history records that before then the sacred mountain, 御蔭山 (reading unconfirmed), was worshipped directly.",
+        "The official history cites the Nihon Kiryaku, the Nihon Sandai Jitsuroku and other sources, and records that in 818 (Kōnin 9) the shrine was included among the myōjin (source: the Nihon Kiryaku) and that in 1292 (Shōō 5) it rose to Senior First Rank (source: the 西園寺相国実兼公日記 (reading unconfirmed)). In the Engishiki it was a major myōjin shrine (myōjin taisha), and under the Meiji system a national shrine of the middle rank (kokuhei chūsha).",
+        "The official grounds map records that there are historical documents saying the present main hall was repaired by Ashikaga Takauji in the Gentoku era at the end of the Kamakura period, or in 1345 (Jōwa 1), and the official history gives the present shrine building as built at the end of the Kamakura period. The Agency for Cultural Affairs' database of nationally designated cultural properties dates the main hall to the early Muromachi period, 1346 (Jōwa 2). It became a (former) National Treasure in 1906 (Meiji 39) (the official site's wording) and is now an Important Cultural Property; in the Agency for Cultural Affairs database the date of designation is 14 April 1906 (Meiji 39)."
+      ],
+      "highlights": [
+        "The main hall is in the three-bay nagare-zukuri style with the entrance on the eave side (sangensha nagare-zukuri, hirairi), common in medieval shrine architecture, and has a cypress-bark roof. Important Cultural Property. The haiden was built at government expense in 1878 (Meiji 11).",
+        "The official site explains that the \"真名井の水\" (reading unconfirmed) flows day and night, and that worshippers come constantly to draw the sacred water. It also records that sacred water always springs from the sacred mountain.",
+        "The sacred mountain, 御蔭山 (reading unconfirmed), has been forbidden ground since ancient times and still is today. The area within the iwakura (sacred rocks) is also regarded as sacred and forbidden ground."
+      ],
+      "address": "No lot number, Izumo, Chitose-chō, Kameoka City, Kyoto 621-0002 (tel. 0771-24-7799)",
+      "access": "From Kameoka Station (or 千代川 (reading unconfirmed) Station) on the JR Sagano Line, take a Keihan Kyoto Kōtsū bus and get off at \"Izumo Daijingū-mae\". About 10 minutes by taxi from Kameoka Station. By car, from 千代川 (reading unconfirmed) IC on the Kyoto Jūkan Expressway via National Route 9 (all of the above according to the official access guide). Bus times are to be confirmed in the Kameoka City Furusato Bus timetable (revised 15 March 2025 (Reiwa 7)) to which the official site refers.",
+      "hours": "The amulet office (shrine office) is open daily 9:00–17:00 (reception 9:00–16:30), according to the official amulets page (checked 29 Oct 2026). Prayers are said to be offered daily, but the reception hours are not confirmed on the official site. The hours when the grounds can be visited are also not confirmed on the official site.",
+      "parking": "The official access guide gives only directions by car; the number of spaces, fees and hours of the car park are not confirmed on the official site.",
+      "goshuin": "Given at the shrine office. The official site says they are given as proof of worship, and that paper goshuin are also available for those without a goshuin book. The offering is not confirmed on the official site."
+    },
+    "mononobe": {
+      "name": "Mononobe Jinja",
+      "place": "Ōda City, Shimane",
+      "summary": "The ichinomiya of Iwami Province, in Ōda City, Shimane Prefecture. It enshrines Umashimaji-no-Mikoto, the ancestral deity of the Mononobe clan, and its main hall, said to be one of the largest kasuga-zukuri buildings in the country, is a Shimane Prefecture designated cultural property.",
+      "deity_note": "The main deity is Umashimaji-no-Mikoto (宇摩志麻遅命; the official site's alternative spelling is 可美真手命). Part 2 of the Kojiki makes Umashimaji-no-Mikoto (宇摩志麻遲命), the child of Nigihayahi-no-Mikoto (邇藝速日命), the ancestor of the Mononobe-no-Muraji and others, and Book 3 of the Nihon Shoki records his father Nigihayahi-no-Mikoto (饒速日命) as the distant ancestor of the Mononobe clan, and the child as 可美眞手命. The official site says that Nigihayahi-no-Mikoto, Futsunomitama-no-Ōkami (韴霊神), Ame-no-Minakanushi-no-Kami (天御中主大神) and Amaterasu-Ōmikami (天照大神) are enshrined with him in the same hall (aidono), and the eight chinkon deities (鎮魂八神) and the Kotoamatsukami (別天神) in the guest seats. The tradition that after following Emperor Jinmu's eastern expedition he pacified Iwami and descended on 鶴降山 (reading unconfirmed) is shrine tradition passed down by the official site and has not been confirmed in the main texts of the Kojiki and Nihon Shoki. The accounts of the ten sacred treasures (十種神宝) and 哮峯 (reading unconfirmed) in the official history are also not in the main texts of the Kojiki and Nihon Shoki (to be confirmed).",
+      "history": [
+        "The official history tells that Umashimaji-no-Mikoto, the child of Nigihayahi-no-Mikoto, followed Emperor Jinmu on his eastern expedition and, at the enthronement, prayed for the repose of the spirit and long life (鎮魂宝寿) (the origin of the Chinkon-sai), and that later he pacified Iwami Province, rode a crane down to 鶴降山 (reading unconfirmed), and built his dwelling at the foot of 八百山 (reading unconfirmed).",
+        "The official site records that at first the sacred mountain 八百山 (reading unconfirmed) was revered, and that later, by imperial command, the shrine buildings were founded in the 8th year of Emperor Keitai (513). They are said to have burned down three times, through fires of war such as the struggles over the Iwami Ginzan silver mine.",
+        "Rebuilt in 1753 (Hōreki 3), repaired in 1818 (Bunsei 1), and renovated in 1856 (Ansei 3) on the scale of the Hōreki period, it remains so today.",
+        "The main hall (built 1856 (Ansei 3)) was designated a Shimane Prefecture cultural property (building) on 27 October 1970 (Shōwa 45)."
+      ],
+      "highlights": [
+        "The official site introduces the main hall as second in size in the prefecture only to Izumo Taisha, and the largest kasuga-zukuri building in Japan. In memory of the three fires, a carving of a turtle has been placed below the chigi (crossed roof finials) with a prayer for fire prevention.",
+        "The official site introduces the wooden myōjin torii in front of the haiden as the largest wooden torii in Shimane Prefecture.",
+        "The \"勝石\" (reading unconfirmed; \"victory stone\") is a rock on which Umashimaji-no-Mikoto is said to have sat when he descended to the land of Iwami. It is said that touching it brings luck in winning.",
+        "The round burial mound \"御神陵\" (reading unconfirmed), at the foot of the sacred mountain 八百山 (reading unconfirmed) behind the shrine buildings, is said to be where Umashimaji-no-Mikoto rests."
+      ],
+      "address": "1545 川合, 川合町 (reading unconfirmed), Ōda City, Shimane 694-0011 (tel. 0854-82-0644)",
+      "access": "About 20 minutes by car from Ōda-Chūō IC on the San'in Expressway. From Ōdashi Station on the JR San'in Main Line, about 20 minutes by bus or about 10 minutes by taxi (all of the above according to the official access guide).",
+      "hours": "Prayers are accepted at the shrine office (inside the haiden) from 9:30 a.m. to 16:30; reservation required; prayer fee from ¥5,000 (official). The hours of the amulet office changed to 9:00–16:30 from 31 July 2026 (Reiwa 8) (official announcement). However, the official goshuin book page still shows the old hours (shrine office 8:30–18:00, amulet office 8:30–17:00), so the official site is inconsistent. The hours when the grounds can be visited are not confirmed on the official site (checked 29 Oct 2026).",
+      "parking": "The official site says there are two car parks in the grounds, for a total of 100 cars. No mention of fees could be confirmed on the official site.",
+      "goshuin": "Accepted at the shrine office and amulet office. There is no fixed offering; visitors give what they wish. The official site says that on festival days a limited goshuin is distributed in which the shrine crest \"Hioi-tsuru\" becomes a gold seal. The reception hours are to be confirmed, given the inconsistency described under hours above."
+    },
+    "nitta": {
+      "name": "Nitta Jinja",
+      "place": "Satsumasendai City, Kagoshima",
+      "summary": "The ichinomiya of Satsuma Province, standing on 神亀山 (reading unconfirmed) in Satsumasendai City, Kagoshima Prefecture; a former national shrine of the middle rank (kokuhei chūsha). It mainly enshrines Ninigi-no-Mikoto (邇邇藝命, 瓊瓊杵尊), and the summit behind the grounds corresponds to the 可愛山陵 (reading unconfirmed), regarded as his tomb.",
+      "deity_note": "The official site gives the one principal deity as Ninigi-no-Mikoto, under the name 天津日高彦火瓊瓊杵尊, and the two associated deities as Amaterasu-Ōmikami (天照皇大御神) and Ame-no-Oshihomimi-no-Mikoto, under the name 正哉吾勝々速日天忍穂耳尊, and shows the genealogy \"Amaterasu-Ōmikami – Ame-no-Oshihomimi-no-Mikoto – Ninigi-no-Mikoto – Hikohohodemi-no-Mikoto – Ugayafukiaezu-no-Mikoto – Emperor Jinmu\". All three deities appear in the Kojiki and Nihon Shoki (see the existing deity IDs). Hikohohodemi-no-Mikoto is only named in the genealogy and is not among the official enshrined deities (principal or associated), so he is not included in deity_ids. The Nihon Shoki records that when Ninigi-no-Mikoto died he was buried at \"the 可愛山陵 (reading unconfirmed) of Hyūga in Tsukushi\". Identifying this 可愛山陵 (reading unconfirmed) with the tomb on 神亀山 (reading unconfirmed) in Sendai (川内) is the explanation of the official site and Kagoshima Prefecture; the main text of the Nihon Shoki does not specify its location any further.",
+      "history": [
+        "The official site tells that the tomb built when Ninigi-no-Mikoto died in the land of Sendai (川内) is the present 可愛山陵 (reading unconfirmed), and that the worship of him there was the beginning of Nitta Jinja. It also tells that originally there were no shrine buildings, and the mountain itself was the shrine.",
+        "The official site explains that the name of Nitta Jinja first appears in old documents in the Heian period, when it was called \"新田宮\" (reading unconfirmed), and that it was deeply revered by the imperial court as the guardian deity of Satsuma Province.",
+        "The official site records that in a fire in 1173 (Jōan 3) the shrine buildings halfway up the mountain burned down, and that after consulting the imperial court and the shogunate the shrine was rebuilt on the present summit. After the Shimazu clan was enfeoffed in Satsuma Province, successive domain lords revered it deeply, and in the Keichō era (about 400 years ago) Shimazu Yoshihisa built what became the basis of the present shrine buildings.",
+        "The official site records that it became a national shrine of the middle rank (kokuhei chūsha) in 1885 (Meiji 18), and that since Emperor Shōwa visited as Crown Prince in 1920 (Taishō 9), members of the imperial family have visited nine times."
+      ],
+      "highlights": [
+        "The shrine treasures, the bronze mirrors (a mirror with a flower-and-bird design (花鳥文様鏡), a mirror with autumn grasses, butterflies and birds (秋草蝶鳥鏡), and a mirror with oak trees and falconry (柏樹鷹狩鏡)), and the Nitta Jinja Documents are national Important Cultural Properties. The official site advises that the general public can view the treasure hall only at the 御宝物虫干祭 (reading unconfirmed), the festival of airing the treasures, on 7 August each year.",
+        "At the 御神鏡清祭 (reading unconfirmed) on 28 July each year, more than 70 bronze mirrors are brought from the treasure hall and offered before the deity, and a special rite is held in which kindergarten children polish and purify the mirrors one by one (official).",
+        "Of the 奴振り (reading unconfirmed) dedicated at the 御田植祭 (reading unconfirmed), the rice-planting festival (held on the Sunday before the day of nyūbai, the start of the rainy season), the 宮内奴振り踊り (reading unconfirmed) and others are designated Intangible Folk Cultural Properties of Kagoshima Prefecture (official).",
+        "The sacred great camphor tree is a Natural Monument of Satsumasendai City (city-designated). The official site introduces the grounds as a forest of ancient green that was also celebrated in a poem by Yosano Hiroshi."
+      ],
+      "address": "1935-2 宮内町 (reading unconfirmed), Satsumasendai City, Kagoshima 895-0065 (the location of the shrine office, as written on the official site).",
+      "access": "Official guidance: about 25 minutes' walk from Kami-Sendai Station on the Hisatsu Orange Railway, or about 10 minutes by taxi from Sendai Station on the JR Kyushu Shinkansen.",
+      "hours": "Reception for prayers (go-kigansai), goshuin and amulets is 9:00–12:00 and 13:00–16:00 (last reception for prayers 15:45). Checked on the official site on 29 Oct 2026. Closing days, arrangements over the year end and New Year, and the hours when worship itself is possible are not confirmed on the official site.",
+      "parking": "Car park in the grounds for about 200 cars (official). Fees are not confirmed on the official site.",
+      "goshuin": "Goshuin are given during the reception hours above. The official site advises that goshuin and calligraphy (go-kigō) are also accepted in ordinary books. There is an official announcement that a limited-edition, double-page-size goshuin book (showing shrine maidens dancing kagura and flowers of the four seasons, with the flower-and-bird mirror on the back) will be distributed from Saturday 17 October 2026 (Reiwa 8). The offering and whether pre-written goshuin are available are not confirmed on the official site."
+    },
+    "itakiso": {
+      "name": "Itakiso Jinja",
+      "place": "Wakayama City, Wakayama",
+      "summary": "Enshrined at Itakiso (伊太祈曽), Wakayama City, it is the Ichinomiya of Kii Province. It enshrines Itakeru-no-Mikoto, a deity of trees whom the Nihon Shoki describes as 'the great deity dwelling in Kii Province', and the official site explains that he is the same deity as Ōyabiko-no-Kami (大屋毘古神) of the Kojiki.",
+      "deity_note": "The official site explains Itakeru-no-Mikoto (the reading is given as 'Itakeru-no-Mikoto') as the deity who, in a variant account of the Nihon Shoki, descended to Silla together with his father Susanoo-no-Mikoto (written 素戔嗚尊), brought tree seeds back to Japan and made the mountains green, and who was therefore called 'the deity of merit' (有功神) and regarded as 'the great deity dwelling in Kii Province'. The name 'Itakeru' does not appear in the Kojiki, but the official site regards Ōyabiko-no-Kami (大屋毘古神) of the Kojiki as the same deity (in the scene where Ōkuninushi-no-Ōkami (大国主神) is rescued from the eighty deities (八十神) and helped to escape, he is sent to 'the dwelling of Ōyabiko-no-Kami in the land of Ki (木国)'). This identification is the official view; the Kojiki and Nihon Shoki themselves do not state it explicitly. In the side halls (wakiden) on both sides of the main hall, his younger sister deities Ōyatsuhime-no-Mikoto (written 大屋津比売命; 大屋津姫命 in the Nihon Shoki) and Tsumatsuhime-no-Mikoto (written 都麻津比売命; 抓津姫命 in the Nihon Shoki) are enshrined (in addition to the existing ID for Itakeru-no-Mikoto, these two deities were newly added).",
+      "history": [
+        "The official site explains, partly by conjecture, that before settling at its present site the shrine seems to have been worshipped on the grounds of Hinokuma Jingū and Kunikakasu Jingū (日前宮), and that because Hinokuma Jingū and Kunikakasu Jingū is said to have been enshrined in the 16th year of Emperor Suinin, the shrine seems to have moved around that time to the 亥の森 (reading unconfirmed), about 500 m south-east of its present site.",
+        "The official site gives, as the first appearance of a specific year for Itakiso Jinja, an entry for 702 (Taihō 2), in the reign of Emperor Monmu, in the Shoku Nihongi, and explains that construction of the shrine buildings began that year by government order (the original text of the Shoku Nihongi has not been checked this time).",
+        "The official site explains that, because the 寛永記 (reading unconfirmed) states 'on the first Day of the Boar in the tenth month of Wadō 6, [the deity] moved to this place', the accepted view is that the enshrinement at the present site took place in 713 (Wadō 6), about ten years after construction began.",
+        "The official site records that the shrine is a shikinaisha listed in the Engishiki register of shrines (marked 'myōjin dai', 明神大) and the Ichinomiya of Kii Province, that it was raised to Kokuhei Chūsha in 1885 (Meiji 18) and to Kanpei Chūsha in 1918 (Taishō 7), and that it is now a Beppyō Jinja. The shrine buildings were badly damaged by a typhoon in 1934 (Shōwa 9), and the restoration work was completed in March 1937 (Shōwa 12)."
+      ],
+      "highlights": [
+        "There is a 'passing through the fork of the tree to ward off misfortune' (厄難除け木の俣くぐり), associated with the divine virtues of Ōyabiko-no-Kami (another name of Itakeru-no-Mikoto), and it is said that passing through it wards off misfortune (official).",
+        "The water that springs from a well in the hills within the grounds has long been called 'the water of life', and it is said that sick people who drink it regain their strength; worshippers still come to draw it (official). The well in front of the 御井社 (reading unconfirmed) is also regarded as 'the water of life'.",
+        "There is the auxiliary shrine (sessha) 氣生神社 (reading unconfirmed), which enshrines the aramitama (rough spirit) of Itakeru-no-Mikoto, and on the first Day of the Dragon of every month the Hatsutatsu prayer (初辰祈願) is held there (official).",
+        "At the 'Tree Festival' (木祭り) on the first Sunday of April every year, a chainsaw carving demonstration is dedicated (official guide to annual events)."
+      ],
+      "address": "558 Itakiso (伊太祈曽), Wakayama City 640-0361 (official notation; the shrine name is written 伊太祁曽, while the place name and the station name are written with a different character, 伊太祈曽).",
+      "access": "Official guidance: about a 5-minute walk from Itakiso Station on the Wakayama Electric Railway Kishigawa Line (leave the station and turn right at the end of the road, then turn left at the next end of the road just after, and the torii gate comes into view). From Wakayama Station, take the Kishigawa Line. For cars, Wakayama-Minami IC (ETC only) on the Hanwa Expressway is given.",
+      "hours": "Prayer requests are accepted every day from 9:00 until a little after 16:00 (at some times they cannot be accommodated because of festivals and events; people who telephone in advance are given priority). Tel. 073-478-0006. Checked on the official site on 29 Oct 2026. The reception hours of the amulet office and for goshuin, and the hours for worship itself, have not been confirmed on the official site.",
+      "parking": "The car park in the grounds (on the right at the back after passing through the torii) holds about 30 cars and about 5 large tour buses, and there is also space for about 5 cars on the east side of the first torii (official). It may not be possible to park during festivals, and tour buses are asked to contact the shrine in advance. Fees have not been confirmed on the official site.",
+      "goshuin": "Goshuin are given only by writing in ink and stamping the seal in a goshuin book (paper goshuin with the seal stamped on a sheet of hanshi paper, and pre-written ones, were discontinued at the end of June 2024 (Reiwa 6)). For people who have forgotten their goshuin book and others, a 'certificate of worship' (参拝証) with a design that changes every month is distributed (official). The offering (hatsuho) and reception hours have not been confirmed on the official site."
+    },
+    "nakayama_mimasaka": {
+      "name": "Nakayama Jinja",
+      "place": "Tsuyama City, Okayama",
+      "summary": "Enshrined at Ichinomiya, Tsuyama City, Okayama Prefecture, it is the Ichinomiya of Mimasaka Province; in the Engishiki it is the only Myōjin Taisha in Mimasaka Province, and its former shrine rank was Kokuhei Chūsha. It enshrines Kagamitsukuri-no-Kami as its principal deity, and its main hall of the late Muromachi period (in the Nakayama-zukuri style) is a national Important Cultural Property.",
+      "deity_note": "According to the Okayama Prefecture Shrine Agency, the deities were fixed in the notification of establishment as a religious corporation in 1946 (Shōwa 21) as 'principal deity Kagamitsukuri-no-Kami; in the aidono (shared sanctuary), Ame-no-Nukado-no-Kami and Ishikoridome-no-Kami (石凝姥神)' (when the shrine was ranked as a Kokuhei Chūsha in 1871 (Meiji 4), its deity had been fixed as Kanayamahiko-no-Mikoto (金山彦命)). Ishikoridome-no-Kami, the ancestor of mirror-making, corresponds to Ishikoridome-no-Mikoto (伊斯許理度売命) of the Kojiki and Ishikoridome (石凝姥) of the Nihon Shoki, and Ame-no-Nukado appears in a variant account of section 7 of the Nihon Shoki as the distant ancestor of the Kagamitsukuri-be (mirror-makers' guild) (he does not appear in the Kojiki). The divine name 'Kagamitsukuri-no-Kami' of the principal deity does not appear in the Kojiki or Nihon Shoki, and Okayama Kankō WEB (a tourism site) explains it as 'a name honouring the divine work of Ishikoridome-no-Kami, the ancestral deity of the Kagamitsukuri-be' (to be confirmed).",
+      "history": [
+        "The Okayama Prefecture Shrine Agency records that, according to tradition, shrine buildings were founded on this site in 707 (Keiun 4), in the reign of Emperor Monmu, and Kagamitsukuri-no-Kami was enshrined.",
+        "The Shrine Agency records that the shrine was ranked as an official shrine (kansha) in the Jōgan era, and that in the Engishiki it is both the only Myōjin Taisha in Mimasaka Province and the Ichinomiya of Mimasaka Province. It also records that in the Kamakura period, at times of national emergency such as the Mongol invasions, it is said to have been ordered, as one of the Ichinomiya of seven provinces in the country, to pray for the peace of the nation.",
+        "The Shrine Agency records that fires in 1511 (Eishō 8) and 1533 (Tenbun 2) destroyed the main hall and 120 auxiliary shrines (sessha and massha), as well as treasures and old documents, and that Amago Haruhisa of Izumo restored the shrine buildings in 1559 (Eiroku 2). This main hall (late Muromachi period, Eiroku 2; irimoya-zukuri with the entrance on the gable end (tsumairi); cypress-bark roof) was designated a national Important Cultural Property in 1914 (Taishō 3) (confirmed in the Agency for Cultural Affairs database).",
+        "In 1871 (Meiji 4) the shrine was ranked as a Kokuhei Chūsha, and its deity was fixed as Kanayamahiko-no-Mikoto (金山彦命). According to the Shrine Agency, a later petition to change the deity's name to 'Kagamitsukuri-no-Kami' was not accepted, and at the time of the notification of establishment as a religious corporation in 1946 (Shōwa 21) the deities were changed to principal deity Kagamitsukuri-no-Kami, with Ame-no-Nukado-no-Kami and Ishikoridome-no-Kami (石凝姥神) in the aidono."
+      ],
+      "highlights": [
+        "The main hall is a building in irimoya-zukuri with the entrance on the gable end and a cypress-bark roof, called 'Nakayama-zukuri', and is a national Important Cultural Property (late Muromachi period, Eiroku 2 = 1559). The Agency for Cultural Affairs database describes it as three bays wide and three bays deep, with a one-bay kōhai (step canopy) and a mukō-karahafu (cusped gable on the front).",
+        "At the rice-planting festival (御田植祭) on 29 April every year, the 'hoe-swinging rite' (鍬振り神事) is held, in which 12 parishioners in white robes swing wooden hoes, treating the stone paving of the grounds as a rice field (Shrine Agency).",
+        "The zelkova (keyaki) of the 祝木神社 (reading unconfirmed) at the entrance to the approach is about 800 years old and is a Natural Monument designated by Tsuyama City. At its base is enshrined the 祝木神 (reading unconfirmed), said to be the deity who ceded the land to the deity of Nakayama (Shrine Agency gallery).",
+        "The 猿神社 (reading unconfirmed) is said to enshrine the spirit of 'the monkey of Nakayama' that appears in the Konjaku Monogatari, and a custom remains of making a wish and taking home a small red stuffed monkey, then offering two of them when the wish is granted (Shrine Agency gallery)."
+      ],
+      "address": "695 Ichinomiya (一宮), Tsuyama City, Okayama 708-0815 (notation of the Okayama Prefecture Shrine Agency).",
+      "access": "Shrine Agency guidance: 5 km north of JR Tsuyama Station. Okayama Kankō WEB (a tourism site) gives about 20 minutes by bus bound for 西田辺 (reading unconfirmed) from JR Tsuyama Station, getting off at 'Ichinomiya Hoikusho-mae' (一宮保育所前) with the shrine right there, and about 15 minutes by car from Innoshō IC on the Chūgoku Expressway.",
+      "hours": "The hours for worship, the amulet office and prayer reception have not been confirmed, because no official site was found and the Shrine Agency's page does not list them. The contact listed by the Shrine Agency is tel. 0868-27-0051.",
+      "parking": "The Shrine Agency records 'Available, 500 spaces'. Okayama Kankō WEB (a tourism site) gives 500 spaces on its Nakayama Jinja page, but 60 ordinary cars and 20 large vehicles on its page for the 猿神社 (reading unconfirmed), so the figures differ from page to page.",
+      "goshuin": "Whether goshuin are available, the hours and the offering have not been confirmed, because no official site was found and the Shrine Agency's page does not list them."
+    },
+    "aoshima": {
+      "name": "Aoshima Jinja",
+      "place": "Miyazaki City, Miyazaki",
+      "summary": "Enshrined almost in the centre of Aoshima (a small island surrounded by the 'Devil's Washboard', 鬼の洗濯板) in Miyazaki City, it enshrines Hikohohodemi-no-Mikoto, known as Yamasachihiko of the tale of Umisachi and Yamasachi, his consort Toyotama-hime, and 塩筒大神 (reading unconfirmed). They are worshipped as deities of matchmaking (en-musubi), safe childbirth and safe voyages.",
+      "deity_note": "The official site explains that the shrine enshrines three deities, Hikohohodemi-no-Mikoto, Toyotama-hime and 塩筒大神 (reading unconfirmed), as the site of the dwelling to which Hikohohodemi-no-Mikoto returned from the 海積宮 (reading unconfirmed) (the palace of the sea deity). Hikohohodemi-no-Mikoto is Yamasachihiko of the tale of Umisachi and Yamasachi (Hoori-no-Mikoto (火遠理命) in the Kojiki, Hikohohodemi-no-Mikoto (彦火火出見尊) in the Nihon Shoki), and Toyotama-hime is his consort and the daughter of the sea deity; both appear in the Kojiki and Nihon Shoki. In the official site's explanation of the myth, 塩筒大神 is described as the deity who builds a boat for Yamasachihiko and tells him to go into the sea to look for the fish-hook. In the Nihon Shoki, Book 2, section 10, the main text and other accounts call the old man in the same role Shiotsuchi-no-Oji (鹽土老翁), and only the fourth variant account writes it as 鹽筒老翁 (the Kojiki has Shiotsuchi-no-Kami (塩椎神)). Treating 塩筒大神 as this deity (existing ID shiotsuchi) is an arrangement based on the correspondence of the written forms in the Nihon Shoki, and the official site does not state explicitly that they are the same (to be confirmed). The official site also lists, as shrines within the grounds, the 海積神社 (reading unconfirmed) (Toyotamahiko-no-Mikoto (豊玉彦命) and Sukunahikona-no-Kami (少彦名命)) and the 石神社 (reading unconfirmed) (Hikoho-no-Ninigi-no-Mikoto (彦火瓊瓊杵命), Konohanasakuya-hime-no-Mikoto (木花咲屋姫命) and Iwanagahime-no-Mikoto).",
+      "history": [
+        "The official site explains that the three deities are enshrined as the site of the dwelling to which Hikohohodemi-no-Mikoto returned from the 海積宮 (reading unconfirmed), and records that the date when they were first enshrined is not clear.",
+        "The official site explains that the 日向土産 (reading unconfirmed), a record of a provincial governor's tour of inspection in the Heian period, states 'Aoshima Daimyōjin was revered in the reign of Emperor Saga' (about 1,200 years ago). The original text of the 日向土産 has not been checked.",
+        "The official site records that from the Bunki era (Muromachi period, about 500 years ago) onward the Itō family, lords of the domain, revered the shrine deeply and devoted their efforts to rebuilding the shrine buildings and preserving the grounds.",
+        "The plant community of the island was designated a Natural Monument on 3 March 1921 (Taishō 10) and became a Special Natural Monument on 29 March 1952 (Shōwa 27). The raised sea bed and wave-erosion marks (the Devil's Washboard) were designated a national Natural Monument on 1 May 1934 (Shōwa 9). The explanatory text of the designation gives the location as 'the coast around Aoshima and from 戸崎鼻 (reading unconfirmed) on the opposite shore southward to 巾着島 (reading unconfirmed)', so it covers not only the area around the island but the coast from 戸崎鼻 on the opposite shore south to 巾着島. All of these can be confirmed in the Agency for Cultural Affairs database and on the official site; the designations are for the island and the surrounding coast, not for the shrine buildings themselves."
+      ],
+      "highlights": [
+        "The subtropical plant community of Aoshima (a grove of birō palms) is a national Special Natural Monument, and the 'Devil's Washboard' (raised sea bed and wave-erosion marks) on the coast from around the island to 戸崎鼻 (reading unconfirmed) and 巾着島 (reading unconfirmed) on the opposite shore is a national Natural Monument (Agency for Cultural Affairs database, official).",
+        "The official site explains that the 'naked pilgrimage' (裸まいり) on Coming-of-Age Day in winter originates from an old event in which, when Hikohohodemi-no-Mikoto suddenly returned from the palace of the sea deity (海神宮), the villagers welcomed him naked, with no time to put on clothes. According to an official announcement (dated 2 Nov 2026), the naked pilgrimage of Reiwa 9 is to be held on Sunday 24 January 2027, applications are scheduled to open at 9:00 on 16 November, and the number of participants is planned at 350.",
+        "The official site records that the sea procession (kaijō togyo) of the summer festival (17th and 18th of the sixth month of the old calendar), in which the portable shrine (mikoshi) is placed on a fishing boat and carried around the island, began in 1948 (Shōwa 23).",
+        "The official site states that 'divine hina' (神ひな, husband-and-wife hina dolls) amulets are given according to old custom, and records that divine hina are also mentioned in records of the An'ei era."
+      ],
+      "address": "2-13-1 Aoshima, Miyazaki City, Miyazaki 889-2162 (official notation). Tel. 0985-65-1262.",
+      "access": "Official guidance: about a 10-minute walk from Aoshima Station on the JR Nichinan Line (about 800 m from Aoshima Station to the shrine on the island; beyond the Aoshima approach the road is pedestrian-priority and cars cannot pass). By car, about 13 km and about 15 minutes from Miyazaki IC along National Route 220 towards Nichinan, and about 15 minutes from Miyazaki Airport.",
+      "hours": "Worship is possible from 6:00 until sunset (the gate opens at 6:00 and closes at sunset). Prayers are 8:00–17:00. The office for amulets and goshuin is open, except at New Year, from 8:00 in summer and from 8:30 in winter until 17:00 (official; when the summer and winter hours switch has not been confirmed on the official site). At New Year the gate is open from 0:00 on New Year's Eve until about 18:00 on 1 January. Checked on the official site on 29 Oct 2026.",
+      "parking": "The number of parking spaces and the fees have not been confirmed on the official site.",
+      "goshuin": "Amulets and goshuin are given, except at New Year, from 8:00 in summer and 8:30 in winter until 17:00 (official announcement dated 11 Jul 2024). A goshuin book at ¥3,000 appears in the official list of amulets. The offering for goshuin, and whether they are pre-written or written directly, have not been confirmed on the official site."
+    },
+    "kototomo": {
+      "name": "Kotonomama Hachimangū",
+      "place": "Kakegawa City, Shizuoka",
+      "summary": "Enshrined at 八坂 (reading unconfirmed), Kakegawa City, Shizuoka Prefecture, it is an old shrine listed in the Engishiki register of shrines as 'Kotonomachi Jinja' (己等乃麻知神社), and it claims to be the Ichinomiya of Tōtōmi Province. Its name also appears in The Pillow Book as a deity that grants wishes 'just as spoken' (koto no mama). Its principal deity is Kotonomachihime-no-Mikoto, and as Hachiman-Ōkami it enshrines Emperor Ōjin, Empress Jingū and Tamayori-hime-no-Mikoto.",
+      "deity_note": "The official site explains that the principal deity is Kotonomachihime-no-Mikoto, and that as Hachiman-Ōkami three deities are enshrined: Homudawake-no-Mikoto (誉田別命; Emperor Ōjin), Okinagatarashihime-no-Mikoto (息長帯比売命; Empress Jingū) and Tamayori-hime-no-Mikoto. Emperor Ōjin and Empress Jingū appear in the Kojiki and Nihon Shoki. The official site explains Tamayori-hime-no-Mikoto as 'the mother deity of the first emperor (Emperor Jinmu), the daughter of the sea deity and the younger sister of Toyotama-hime', and she overlaps with Tamayoribime (玉依毘売) of the Kojiki and Nihon Shoki (existing ID tamayori). The name of the principal deity, Kotonomachihime-no-Mikoto, does not appear in the Kojiki or Nihon Shoki; the official site explains her as the daughter of 玉主命 (reading unconfirmed), the consort of 興台産命 (reading unconfirmed) and the mother of Ame-no-Koyane-no-Mikoto (relationships that cannot be confirmed in the Kojiki and Nihon Shoki are not entered in the deity data). According to the official site, when the shrine was renamed 'Kotonomama Hachimangū' in 1947 (Shōwa 22), the only deity recognised by the Association of Shinto Shrines (Jinja Honchō) was Hachiman-Ōkami; in the Heisei era an application was made to make Kotonomachihime-no-Mikoto the principal deity, and in 1999 (Heisei 11) a certificate of approval was issued by the prefectural governor.",
+      "history": [
+        "The official site records that the date of founding is unknown but that there is a record placing it in the time of Emperor Seimu, and its chronology gives about 131–190, citing the account in the 掛川誌稿 (reading unconfirmed).",
+        "The official site records that, according to tradition, in 807 (Daidō 2) Sakanoue no Tamuramaro, by imperial command, restored the shrine and moved it from 本宮山 (reading unconfirmed) to its present site (the satomiya, 里宮), and that since Minamoto no Yoriyoshi invited (kanjō) the deity of Iwashimizu Hachimangū in Kyoto in 1062 (Kōhei 5), it has been called 'Hachimangū'. Kakegawa City's chronology also lists the move in 807.",
+        "The official chronology records that divine ranks were conferred, Junior Fifth Rank, Lower Grade in 850 (Kashō 3) and Senior Fifth Rank, Upper Grade in 860 (Jōgan 2) (Montoku Jitsuroku, Nihon Sandai Jitsuroku), and that 'Kotonomachi Jinja' (己等乃麻知神社) is listed in the Engishiki register of shrines of 927 (Enchō 5) as one of the four shrines of 佐野郡 (reading unconfirmed) District in Tōtōmi Province. The original sources have not been checked.",
+        "The official chronology records that there is a ridgepole tablet (munafuda) showing that Tokugawa Ieyasu built the main hall in 1608 (Keichō 13) as chief patron (ōdanna), that in 1872 (Meiji 5) the shrine was ranked as a prefectural shrine (kensha) and called 'Kensha Hachiman Jinja', and that in 1947 (Shōwa 22) it was renamed 'Kotonomama Hachimangū'."
+      ],
+      "highlights": [
+        "The official site introduces, in its chronology and its history, that Sei Shōnagon's The Pillow Book (section 225, 'Shrines') says 'the Myōjin of Kotonomama is most reliable'. The official site explains that in the Heian period 'the deity of Kotonomama' was known even in the capital.",
+        "'The great cedar of Kotonomama Hachimangū' and 'the camphor tree of Kotonomama Hachimangū' are Natural Monuments designated by Kakegawa City (Kakegawa City's public materials). In the same materials, Kotonomama Hachimangū as a building is classified as an undesignated cultural property.",
+        "The official announcement states that the annual grand festival (reitaisai) in 2026 (Reiwa 8) is held from Friday 18 to Sunday 20 September."
+      ],
+      "address": "642 八坂 (reading unconfirmed), Kakegawa City, Shizuoka 436-0004 (official notation). Tel./fax 0537-27-1690.",
+      "access": "Official guidance: about 8 km from JR Kakegawa Station (about 15 minutes by taxi, or about 20 minutes by bus, getting off at 'Hachimangū-mae' on the Kakegawa Bus Service 東山 (reading unconfirmed) Line, with about one bus every 2 hours). By car, 8.3 km / 15 minutes from Kakegawa IC on the Tōmei Expressway, 12 km / 17 minutes from Shimada-Kanaya IC on the Shin-Tōmei Expressway, and 13 km / 17 minutes from Mt. Fuji Shizuoka Airport. A 15-minute walk from the roadside station (michi-no-eki) Kakegawa.",
+      "hours": "Amulets (shinsatsu) and goshuin are available 9:00–17:00 (official top page, checked 29 Oct 2026). The official site asks those who wish to have prayers (gokitō) said to contact the shrine in advance by telephone (0537-27-1690). The hours when worship itself is possible and the closing days have not been confirmed on the official site.",
+      "parking": "The official access page says 'parking for about 50 cars'. Fees have not been confirmed on the official site.",
+      "goshuin": "Goshuin are available 9:00–17:00 (official top page). The offering, and whether they are pre-written or written directly, have not been confirmed on the official site."
+    },
+    "sakatsura": {
+      "name": "Sakatsura Isosaki Jinja",
+      "place": "Hitachinaka City, Ibaraki",
+      "summary": "Enshrined at 磯崎町 (reading unconfirmed), Hitachinaka City, it enshrines Sukunahikona-no-Kami as its principal deity and Ōnamochi-no-Mikoto (大名持命) as an associated deity. The official site gives its founding as 856 (Saikō 3) and explains it as a brother shrine forming a pair with Ōarai Isosaki Jinja.",
+      "deity_note": "The official site explains the principal deity, Sukunahikona-no-Kami (少彦名命), as a small deity who slipped through the fingers of Takamimusubi-no-Kami (高皇産霊神), one of the three deities of creation, and explains the associated deity Ōnamochi-no-Mikoto as another name of Ōkuninushi-no-Ōkami (大国主命). In the Kojiki, Sukunahikona-no-Kami (written 少名毗古那神) has his name revealed as a child of Kamimusubi-no-Kami (神産巣日神), makes and firms up the land alongside Ōnamuji-no-Kami (大穴牟遅神; later Ōkuninushi-no-Ōkami), and later crosses over to Tokoyo-no-Kuni (常世国). In the Nihon Shoki, a variant account in Book 1 tells how Ōnamuchi-no-Mikoto (大己貴命) and Sukunahikona-no-Kami joined forces to govern the realm. The official site states that because the two deities appear together in the Kojiki, the Nihon Shoki and the Fudoki, many shrines enshrine them in this combination. The official site further cites the poem of Empress Jingū in Book 9 of the Nihon Shoki and other passages as grounds for Sukunahikona-no-Kami being a deity of sake, but the match of the phrase '少御神' could not be confirmed this time in the classical texts at hand (to be confirmed). The divine virtues such as healing illness, sake brewing, hot springs and safety at sea are those explained by the official site.",
+      "history": [
+        "The official site explains that, according to the Montoku Jitsuroku, on the 29th day of the 12th month of Saikō 3, Ōnamochi-no-Mikoto and Sukunahikona-no-Kami descended on the coast of Ōarai in Kashima District, Hitachi Province, and delivered an oracle, and that on this occasion this shrine was founded at its present site and, at about the same time, Ōarai Isosaki Jinja was founded in Ōarai Town.",
+        "The official site records that in the 8th month of Ten'an 1, the year after its founding, the shrine was ranked as an official shrine (kansha), and in the 10th month it was granted the divine title 'Sakatsura Isosaki Yakushi Bosatsu Myōjin' (酒列磯前薬師菩薩明神). This has not been confirmed in sources other than the official site.",
+        "The official site records that under the Engi system it was ranked as a Myōjin Taisha, and that in April 1885 (Meiji 18) it was ranked as a Kokuhei Chūsha together with Ōarai Isosaki Jinja. This has not been checked this time in public sources such as the Shrine Agency or the Agency for Cultural Affairs.",
+        "The official site explains that among the wooden tablets (mokkan) excavated in 1963 (Shōwa 38) during the excavation of the Heijō Palace site in Nara, there is one inscribed in ink 'young wakame seaweed produced at 酒烈埼 (reading unconfirmed), Naka District, Hitachi Province' (常陸国那珂郡酒烈埼所生若海菜), showing that about 1,300 years ago wakame from this area was delivered to the Heijō Palace. The tablet itself has not been checked this time."
+      ],
+      "highlights": [
+        "The carving 'Squirrels and Grapes' on the main hall is said to be the work of Hidari Jingorō, who made the 'Sleeping Cat' of Nikkō Tōshōgū (official guide to the grounds).",
+        "The shrine distributes the 'Two-Shrine Pilgrimage Goshuin' (二社参り御朱印), which form a single design when the goshuin from worshipping at both this shrine and its brother shrine Ōarai Isosaki Jinja are put together (official announcement)."
+      ],
+      "address": "4607-2 磯崎町 (reading unconfirmed), Hitachinaka City, Ibaraki 311-1202 (official notation for the shrine office and the shrine's location).",
+      "access": "Official: by train, change at JR Katsuta Station to the Hitachinaka Seaside Railway Minato Line, and walk about 10 minutes from 磯崎 (reading unconfirmed) Station (the Minato Line runs about 1–2 trains an hour). By car, about 10 minutes and about 4 km from Hitachinaka IC or Hitachi-Kaihin-Kōen IC on the Kita-Kantō Expressway.",
+      "hours": "Official: there is no gate closing and worship is possible all day. The amulet office is open 8:00–16:00 (every day of the year), and prayer requests of all kinds are accepted 9:00–15:00 (same-day visitors are also accepted at any time). The prayer fee is from ¥10,000 per wish. The date of the official posting is unknown, so check again on the official site before visiting.",
+      "parking": "Official: about 60 ordinary cars (free, beside the grounds) and up to 15 large tour buses (free, contact in advance). It is crowded during the first three days of the New Year, Setsubun, the hydrangea season, Shichi-Go-San and when the camellias are at their best.",
+      "goshuin": "Official (announcement dated 28 October 2026 (Reiwa 8)): distributed at the amulet office. The regular goshuin is available all year for an offering of ¥300; all goshuin are pre-written only, and they are not written directly into goshuin books. Monthly and seasonal limited goshuin are ¥500, and the odd-month and even-month limited goshuin, the Day-of-the-Tiger limited goshuin and the Two-Shrine Pilgrimage Goshuin are ¥1,000 each. Goshuin are not sent by post."
+    },
+    "tamaki": {
+      "name": "Tamaki Jinja",
+      "place": "Totsukawa Village, Nara",
+      "summary": "It is enshrined near the summit of Mt. Tamaki (玉置山; 1,076 m above sea level) at the southern end of the Ōmine mountain range, in Totsukawa Village, Nara Prefecture. As a sacred site of the Ōmine Okugake-michi, it is included in the World Heritage site 'Sacred Sites and Pilgrimage Routes in the Kii Mountain Range', and its main shrine enshrines Kuni-no-Tokotachi-no-Mikoto and four other deities.",
+      "deity_note": "The official site explains that five deities are enshrined in the main shrine (main hall): in the central hall, Kuni-no-Tokotachi-no-Mikoto (explained by the official site as the deity who appeared at the very beginning of heaven and earth in the Nihon Shoki); in the aidono, Izanagi-no-Mikoto and Izanami-no-Mikoto; in the right hall, Amaterasu-Ōmikami, the child deity of these two; and in the left hall, Kamu-Yamato-Iwarebiko-no-Mikoto (神日本磐余彦命; Emperor Jinmu), the fifth-generation descendant of Amaterasu-Ōmikami and the first emperor. Kuni-no-Tokotachi-no-Mikoto is written Kuni-no-Tokotachi-no-Kami (国之常立神) in the Kojiki and 國常立尊 in the Nihon Shoki. The other four deities refer to existing deity IDs. Ukanomitama-no-Kami (倉稲魂神), Hayatama-no-O-no-Kami (速玉男神), Kagutsuchi-no-Kami (迦具土神), Takakuraji-no-Kami (高倉下神), Ōnamuchi-no-Mikoto (大己貴命) and others are also enshrined in the auxiliary shrines (sessha and massha), but only the five deities of the main shrine are entered here in deity_ids.",
+      "history": [
+        "The official site relates that the founding of Tamaki Jinja began when Hayatama-no-Kami (早玉神) was enshrined in the reign of the tenth emperor, Emperor Sujin (37 BC), to protect the capital from fire and to drive away evil. It also records that the area is said, according to tradition, to be a place on the route of Emperor Jinmu's eastern expedition.",
+        "The official site records that from ancient times it was one of the training places of Kumano and Ōmine Shugendō running from Kumano to Yoshino, and that in the Heian period it became a place of Shinto-Buddhist syncretism and was called 'Tamaki Sansho Gongen' (玉置三所権現) or the inner sanctuary (oku-no-in) of the Kumano Sanzan. In the Edo period the bettō-ji temple 高牟婁院 (reading unconfirmed) was established there, and with the separation of Shinto and Buddhism in 1868 (Keiō 4) it ended the Shinto-Buddhist syncretism and, by way of 'Tamaki Sansho Ōkami' (玉置三所大神), became Tamaki Jinja.",
+        "The shrine office and kitchen were built as the main hall and priests' quarters (kuri) of 高牟婁院 (reading unconfirmed), the bettō-ji of the period of Shinto-Buddhist syncretism, and their ridgepole tablets show that they were built in 1804 (Bunka 1). They were designated national Important Cultural Properties in 1988 (Shōwa 63) (the official site and the Agency for Cultural Affairs database agree).",
+        "The official site records that in 2004 (Heisei 16) the area was inscribed as a World Heritage site as 'Sacred Sites and Pilgrimage Routes in the Kii Mountain Range', and that Tamaki Jinja, enshrined on the sacred peak of Mt. Tamaki, is included as an important sacred site of the Ōmine Okugake-michi. Mt. Tamaki is the tenth nabiki (靡, sacred station) of the Ōmine Okugake-michi."
+      ],
+      "highlights": [
+        "The main shrine (main hall) is built of zelkova wood in irimoya-zukuri with the entrance on the long side (hirairi), with a nokikarahafu (cusped eave gable) and a chidorihafu (triangular dormer gable) on the front. The official site explains that it is thought to preserve the style of the time it was rebuilt in 1794 (Kansei 6), and that main halls in irimoya-zukuri are rare in Nara Prefecture.",
+        "The official site records that the grounds are a forest of giant cedars, including the Jindai-sugi (神代杉) said to be 3,000 years old, and that the forest is a Nara Prefecture Natural Monument (designated 5 February 1959 (Shōwa 34)).",
+        "The shrine office is a national Important Cultural Property. Inside are painted sliding doors (fusuma) with bird-and-flower paintings by a painter of the Bakumatsu period (end of the Edo period), but the official site states that viewing is suspended because of repair work (the official announcements also include a 'tour of the conservation and repair site', so the repairs appear to be continuing; whether viewing is currently possible is to be confirmed).",
+        "The bronze temple bell of Tamaki Jinja (inscribed with the date 1163 (Ōhō 3)) was designated a national Important Cultural Property in 1959 (Shōwa 34). The official site states that it has been dismantled and stored for restoration and is now on display at the Totsukawa Village Local History Museum (十津川村郷土資料館)."
+      ],
+      "address": "1 玉置川 (reading unconfirmed), Totsukawa Village, Yoshino District, Nara 647-1582 (location of the shrine office; official notation).",
+      "access": "Official guidance: by car, about 3 hours from the Osaka direction (Mihara JCT), about 2.5 hours from the Wakayama direction (Nanki-Tanabe IC), and so on. By public transport, take the Nara Kōtsū Yagi–Shingū bus to the Totsukawa Onsen bus stop; from there to Tamaki Jinja, take a taxi on weekdays (the taxi company 三光 (reading unconfirmed); about ¥4,000 one way, according to the official site), and on Saturdays, Sundays and public holidays the World Heritage reservation bus (Mt. Tamaki course; reservations required; not running from December to March). The timetable and fares given for this bus are those from April 2015 (Heisei 27), and current operation has not been confirmed on the official site. Road closures along the national route occur frequently, so check the official road information before setting out. The official site asks visitors with pets to refrain from entering the grounds from 1 January 2022 (Reiwa 4) (assistance dogs are allowed).",
+      "hours": "The normal hours of worship and the reception hours of the shrine office have not been confirmed on the official site. The official site states that on 23 October (Yoimiya festival) and 24 October (annual festival) 2026 (Reiwa 8), formal worship is not possible all day, and prayer requests are accepted 13:00–15:30. Reception for the special prayer ceremony of the annual festival is 8:30–11:00 on 24 October. Checked on the official site on 29 Oct 2026.",
+      "parking": "The official road information shows that there is a 'Mt. Tamaki car park' (玉置山駐車場), but the number of spaces and the fees have not been confirmed on the official site. Expecting the car park to be full on the day of the annual festival (24 October), the official site urges visitors to share cars and to use the free shuttle bus and the village bus.",
+      "goshuin": "That goshuin are given can be confirmed from an official announcement of 2020 (Reiwa 2) ('Goshuin are being accepted as usual'). The current reception hours, the offering, and whether pre-written ones are available have not been confirmed on the official site."
+    },
+    "matsuo": {
+      "name": "Matsunoo Taisha",
+      "place": "Nishikyō Ward, Kyoto",
+      "summary": "An old shrine enshrined at the foot of 松尾山 (reading unconfirmed) in Nishikyō Ward, Kyoto City, revered as their clan deity by the Hata clan, a clan of immigrant origin. Its deities are Ōyamakui-no-Kami and Ichikishimahime-no-Mikoto (市杵島姫命; Nakatsushimahime-no-Mikoto, 中津島姫命). It is a Myōjin Taisha in the Engishiki and one of the Twenty-Two Shrines, a former Kanpei Taisha, and its main hall is a national Important Cultural Property.",
+      "deity_note": "The official site gives two deities: Ōyamakui-no-Kami and Ichikishimahime-no-Mikoto. Citing the Kojiki, the official site explains Ōyamakui-no-Kami as a child of Ōtoshi-no-Kami, who is a child of Susanoo-no-Mikoto (須佐之男神), and introduces the passage 'the deity who dwells on Mt. Hie (日枝山) in the land of Chikatsu-Ōmi, and also dwells at Matsunoo in Kadono, and who uses the whistling arrow' (confirmed in the genealogy of Ōtoshi-no-Kami in Part 1 of the Kojiki; refers to the existing ooyamakui). The official site gives Ichikishimahime-no-Mikoto as 'another name of Nakatsushimahime-no-Mikoto', and explains that in the Kojiki she is one of the Three Munakata Goddesses born in the oath (ukei) between Amaterasu-Ōmikami (天照大神) and Susanoo-no-Mikoto. The Kojiki says that Ichikishimahime-no-Mikoto (市寸嶋比売命) dwells in 'the Nakatsu-miya of Munakata (胸形)', which agrees with the official explanation. However, of the three goddesses the official site enshrines only Ichikishimahime-no-Mikoto, while the existing munakata3 (The Three Munakata Goddesses) contains the myths of all three, so it is used here as a reference.",
+      "history": [
+        "The official site relates that the shrine began when Ōyamakui-no-Kami, the mountain spirit of 松尾山 (reading unconfirmed), was enshrined at an iwakura (磐座, rock seat) in the upper part of the 大杉谷 (reading unconfirmed) valley and revered as a guardian deity of daily life. It also relates that around the fifth century a large group of the Hata clan came to settle in this area at the invitation of the imperial court, and their chief revered the deity of 松尾山 as the general clan deity of the whole clan.",
+        "The official site records that in 701 (Taihō 1), in the reign of Emperor Monmu, Hata no Imiki Tori (秦忌寸都理), by imperial command, built a sanctuary at the present site at the foot of the mountain and moved the divine spirit of the iwakura on the mountain there.",
+        "The official site records that when Emperor Kanmu moved the capital to Nagaoka-kyō in 784 (Enryaku 3), he dispatched an imperial messenger to report it, and that later, when the capital was moved to Heian-kyō, the shrine was made, together with the Kamo shrines, a shrine guarding the imperial capital. In the Engishiki (presented in 927), both deities were ranked as Myōjin Taisha, and later, in the system of the Twenty-Two Shrines, the shrine was listed in fourth place.",
+        "The official site records that in 1871 (Meiji 4) it was ranked as a Kanpei Taisha, fourth in order among all the shrines in the country, and that after the war, in 1950 (Shōwa 25), it was renamed 'Matsunoo Taisha' to avoid confusion with shrines of the same name."
+      ],
+      "highlights": [
+        "The main hall is a national Important Cultural Property (three bays wide, four bays deep, ryōnagare-zukuri, cypress-bark roof). The Agency for Cultural Affairs database dates it to the late Muromachi period, 1542 (Tenbun 11), with designation on 28 August 1907 (Meiji 40). The official site explains that it was built in Ōei 4 (Muromachi period) and underwent major repairs in Tenbun 11, and records that from the shape of its roof it is called 'Matsunoo-zukuri'.",
+        "The Hall of Sacred Statues (神像館) houses three sacred statues (Important Cultural Properties) that the official site calls the oldest and finest in Japan, and eighteen sacred statues in a special exhibition are also on show. The Agency for Cultural Affairs database lists 'Wooden seated statues of male deities (2)' and 'Wooden seated statue of a female deity (1)' (Heian period) as Important Cultural Properties. Admission is shared with the garden: adults ¥500, students ¥400, children ¥300.",
+        "The garden 松風苑 (reading unconfirmed) consists of three gardens: the Garden of High Antiquity, the Garden of the Winding Stream and the Hōrai Garden. In front of the 'Sacred Turtle Waterfall' (霊亀の滝) is the sacred spring 'Turtle Well' (亀の井), which sake brewers also use as source water. The official site explains that since the end of the Muromachi period the shrine has been revered as 'the foremost deity of sake brewing in Japan'.",
+        "The iwakura on the mountain is the place where the deities were worshipped before rites were held in the shrine buildings. The official site announces that, because fallen trees and landslides caused by Typhoon No. 21 in September 2018 (Heisei 30) have made it impossible to repair the climbing path, the group climbing pilgrimage to the iwakura has been abolished."
+      ],
+      "address": "3 Arashiyama 宮町 (reading unconfirmed), Nishikyō Ward, Kyoto 616-0024 (official notation). Tel. 075-871-5016.",
+      "access": "Official guidance: get off at Matsuo-taisha Station on the Hankyū Arashiyama Line, or at the 'Matsuo-taisha-mae' stop of the city bus or Kyoto Bus. Either way it is about 40 minutes from JR Kyoto Station.",
+      "hours": "Prayers are accepted at any time every day; the official pages give two statements, 'from 9:00 until about 16:30' (first shrine visit for babies) and 'from 9:00 until about 16:00' (other prayers) (no reservation system). Viewing hours for the garden and the Hall of Sacred Statues are 9:00–16:00 on weekdays and Saturdays, and 9:00–16:30 on Sundays and public holidays. The hours for worship itself and the reception hours of the amulet office have not been confirmed on the official site. Checked on the official site on 29 Oct 2026.",
+      "parking": "The access page of the official site has a link to information on the 'tour bus car park'. The number of spaces and the fees of a car park for ordinary private cars have not been confirmed on the official site.",
+      "goshuin": "Information on goshuin (reception hours, offering and types) has not been confirmed on the official site."
+    },
+    "ono_tama": {
+      "name": "Ono Jinja",
+      "place": "Tama City, Tokyo",
+      "summary": "The shrine stands in Ichinomiya, Tama City, Tokyo, and its official site calls it \"Musashi no Kuni Ichinomiya\" (the first shrine of Musashi Province). The Tokyo Association of Shinto Shrines describes it as one of the eight entries (hachiza) of Tama District listed in the Engishiki register of shrines, and records that it enshrines Ame-no-Shitaharu-no-Mikoto, Seoritsuhime-no-Mikoto and 稲倉魂大神 (reading unconfirmed). It is a different shrine from the Ono Jinja of the same name in Fuchū City.",
+      "deity_note": "The deity page of the official site (an image) says \"three deities\", and the main deities that can be read as text are two: Ame-no-Shitaharu-no-Mikoto and Seoritsuhime-no-Mikoto. The Tokyo Association of Shinto Shrines lists three deities: Ame-no-Shitaharu-no-Mikoto, Seoritsuhime-no-Mikoto and 稲倉魂大神 (reading unconfirmed) (Wikipedia gives eight deities, but this is in the encyclopedia only). The official site explains Ame-no-Shitaharu-no-Mikoto as a child deity of Yagokoro-omoikane-no-Mikoto (written 八意思兼神), a deity of land clearing said to be two of the 32 guardian deities who accompanied Nigihayahi-no-Mikoto when he descended from heaven, and the ancestral deity of the development of Musashi Province. The official site explains Seoritsuhime-no-Mikoto as a deity of river water who appears in the Ōharae no Kotoba (the Great Purification prayer). The names of these two deities are not found in the texts of the Kojiki, Nihon Shoki and Kogo Shūi that have been obtained, and they are not deities of the Kojiki and Nihon Shoki (to be confirmed). 稲倉魂大神 (reading unconfirmed) is the form used by the Association of Shinto Shrines; it was taken to be the same deity as Ukanomitama-no-Kami (宇迦之御魂神) of the Kojiki (existing ID ukanomitama) and referenced accordingly (the identification is to be confirmed). The relationship with Yagokoro-omoikane-no-Mikoto, said to be the father (Omoikane-no-Kami (思金神) in the Kojiki and Nihon Shoki), is not in the Kojiki or Nihon Shoki and rests only on the official explanation.",
+      "history": [
+        "The Tokyo Association of Shinto Shrines says that, according to tradition, the shrine was founded in the second month of the 18th year of Emperor Annei, when the kuni no miyatsuko (provincial chieftain) 兄武日命 (reading unconfirmed) enshrined his ancestral deity.",
+        "The Tokyo Association of Shinto Shrines records that it is one of the eight entries (hachiza) of Tama District listed in the Engishiki register of shrines. The encyclopedia (Wikipedia) says that there is also a candidate shrine (ronsha) for the same listed shrine (shikinaisha) \"Ono Jinja, 多磨郡 (Tama District), Musashi Province\" in Fuchū City, and that there are various theories about the relationship between the two shrines (to be confirmed).",
+        "The Tokyo Association of Shinto Shrines records that the shrine received a vermilion-seal grant (goshuin) of 15 koku from successive shogun houses, and that it was formerly called \"Ichinomiya Daimyōjin\".",
+        "The encyclopedia (Wikipedia) says that the entry \"多磨郡□野社\" in a Daijōkan directive (daijōkanpu) of 772 (Hōki 3) is the oldest record of the name Ono-sha, and that the place name \"Ichinomiya\" (一宮) appears in an entry of the Azuma Kagami for 1181 (Jishō 5). This has not been confirmed on the official site or by the Association of Shinto Shrines (to be confirmed)."
+      ],
+      "highlights": [
+        "The official site announces that the goshuin of the eight shrines it also serves (kenmusha; three in Tama City and five in Hino City) are all given out at Ono Jinja (the 九社めぐり (reading unconfirmed), a tour of nine shrines).",
+        "The shrine gives out goshuin with pictures drawn by the priest (negi). The one for Seoritsuhime-no-Mikoto (written 瀬織津比咩大神) is available all year, and in 2026 (Reiwa 8) there are limited goshuin for the zodiac year, \"白午\" and \"黒午\" (readings unconfirmed) (the official site announces that the zodiac goshuin are given out only within the year).",
+        "The official site shows that the following auxiliary shrines (massha) are enshrined in the grounds: the Inner and Outer Shrines of Ise Jingū, Kashima Jinja, Mishima Jinja, 巌嶋神社 (reading unconfirmed), 安津神社 (reading unconfirmed), Koyasu Jinja, 方便神社 (reading unconfirmed), 日代神社 (reading unconfirmed), Atago Jinja, Yasaka Jinja, Inari Jinja, Akiba Jinja and 堰宮神社 (reading unconfirmed)."
+      ],
+      "address": "1-18-8 Ichinomiya, Tama City, Tokyo 206-0002 (as written on the official site); tel. 042-338-1151.",
+      "access": "Official guidance: a 6-minute walk from the West Exit of Seiseki-Sakuragaoka Station on the Keiō Line. By car, about 10 minutes from Kunitachi-Fuchū IC on the Chūō Expressway.",
+      "hours": "The official page on warding off misfortune (yakuyoke) and prayers gives both \"9:30 a.m. to 4 p.m.\" and \"(reception hours: 9:00–16:30)\", and the access page gives the shrine office counter hours as 9:30–16:30. Because the wording does not match even within the official site, the exact reception hours have not been confirmed on the official site. The official site announces that prayers basically require advance reservation, but that depending on the situation they may be accepted without one. The offering (hatsuho) is ¥10,000 or more for individuals and ¥25,000 or more for companies and groups (official). Checked on the official site on 29 Oct 2026.",
+      "parking": "Whether there is a car park, and its number of spaces and fees, could not be confirmed on the official site.",
+      "goshuin": "The official site announces that handwritten goshuin (Seoritsuhime-no-Mikoto, written 瀬織津比咩大神), limited zodiac goshuin for 2026 (Reiwa 8), goshuin of the shrines it also serves, and goshuin books are given out. Separate statements of the offering and reception hours have not been confirmed."
+    },
+    "ogamiyama": {
+      "name": "Ōgamiyama Jinja",
+      "place": "Yonago City, Tottori",
+      "summary": "A shrine made up of the \"main shrine\" (Honsha, the winter shrine) at 尾高 (reading unconfirmed), Yonago City, Tottori, and the \"Okumiya\" (the summer shrine) halfway up Mt. Daisen. It is a shrine listed in the Engishiki register of shrines (shikinaisha), and its former shrine rank was Kokuhei Shōsha. The main deity is Ōnamuchi-no-Mikoto (大己貴命), and the buildings of the Okumiya are a national Important Cultural Property.",
+      "deity_note": "The official site gives the main deity as Ōnamuchi-no-Mikoto (大己貴命) and writes \"four deities\", but the names of the four do not appear on the pages of the official site that were obtained. According to the Tottori Prefectural Association of Shinto Shrines, the main shrine enshrines Ōnamuchi-no-Kami (大己貴神), Ōyamatsumi-no-Kami, Susanoo-no-Mikoto (written 須佐之男神) and Sukunahikona-no-Kami (written 少名毘古那神), and the Okumiya enshrines Ōnamuchi-no-Kami. All are deities of the Kojiki and Nihon Shoki; Ōnamuchi corresponds to Ōkuninushi-no-Kami of the Kojiki (also called Ōnamuji-no-Kami, 大穴牟遅神), and the existing ID ookuninushi is referenced. Citing the 『神祗志料』 (reading unconfirmed), the official site relates that Ōnamuchi-no-Mikoto was at Ōgamiyama in Hōki Province together with Sukunahikona-no-Mikoto (written 少名彦名命) and others.",
+      "history": [
+        "The official site records that the name Daisen first appears in the literature in the Izumo no Kuni Fudoki of the early 8th century (\"大神岳 (reading unconfirmed) of Hōki Province\"), that the Shoku Nihon Kōki (written 続日本後記) records the granting of Junior Fifth Rank, Lower Grade to the \"Daisen deity\" (大山神) in 837 (Jōwa 4), and that \"Ōgamiyama Jinja, 会見郡 (reading unconfirmed), Hōki Province\" appears in the register of shrines of the Engishiki (927).",
+        "The official site records that because the place of worship halfway up Mt. Daisen was inconvenient for service owing to the winter snow, a winter shrine building was built 8 km down to the west, and the summer rites were held on Mt. Daisen. In the period of Shinto-Buddhist syncretism, Jizō Bosatsu was enshrined as the original Buddha (honjibutsu) of Ōnamuchi-no-Kami, and it was called \"Daisen Gongen\" and \"大智明権現 (reading unconfirmed)\". In the Heian and Kamakura periods it held great power, said to number \"three cloisters, 180 sub-temples and 3,000 warrior monks\".",
+        "The official site records that after the winter shrine moved from place to place, it is said to have settled at its present site at 尾高 (reading unconfirmed), Yonago City, in 1653 (Jōō 2). The summer shrine on Mt. Daisen burned down in 1796 (Kansei 8) and was rebuilt in 1805 (Bunka 2) (the present building).",
+        "The official site records that in 1871 (Meiji 4) the winter shrine was renamed \"Ōgamiyama Jinja\" and ranked as a Kokuhei Shōsha, and that in 1875 (Meiji 8) the summer shrine (智明権現社 (reading unconfirmed)) was renamed \"Ōgamiyama Jinja Okumiya\" and abandoned its Buddhist style, and the main shrine and the Okumiya together became one shrine."
+      ],
+      "highlights": [
+        "The honden, heiden and haiden of the Okumiya form a composite shrine building of the late Edo period (1805, Bunka 2), designated a national Important Cultural Property on 19 December 1988 (Shōwa 63). The auxiliary shrine (massha) 下山神社 (reading unconfirmed) was designated on the same day. The official site explains it as one of the largest gongen-zukuri buildings in Japan, with long corridors about 50 metres across both wings.",
+        "The approach climbing to the Okumiya is a stone-paved path of about 700 m laid with natural stones, and the official site records that it is said to be the longest in Japan. Visitors can enter the heiden to worship (offering ¥500 per person; this may not be possible while the heiden is in use for rites or prayers).",
+        "At the 古式祭 (reading unconfirmed) held every year on 14–15 July (the 神水汲取神事 (reading unconfirmed), or Mohitori Shinji), participants climb to the summit of Mt. Daisen from night until before dawn and gather sacred water and medicinal herbs. The official site announces that there is an amulet for safe childbirth that seals in the cords of the straw sandals (waraji) worn by the priests on this occasion.",
+        "The official site introduces the main shrine as one of the best places for hydrangeas in Yonago City. For people who cannot climb to the Okumiya, there is a \"大山奥宮下山神社遙拝所\" (reading unconfirmed) (a place for worship from afar) beside the honden of the main shrine."
+      ],
+      "address": "Main shrine: 1025 尾高 (reading unconfirmed), Yonago City, Tottori 689-3514 (tel. 0859-27-2345). Okumiya: Daisen, Daisen Town, 西伯郡 (reading unconfirmed), Tottori 689-3318 (tel./fax 0859-52-2507). The official site records that administrative matters are handled at the main shrine.",
+      "access": "Official guidance: the main shrine is about 5 minutes by car from Yonago IC on the Yonago Expressway, 10 minutes by car from JR Yonago Station and 5 minutes by car from JR Hōki-Daisen Station. The Okumiya is about 40 minutes by car from JR Yonago Station, about 15 minutes on foot along the approach from the Daisen-ji inn district, and 20–30 minutes on foot from the public car park. Between the main shrine and the Okumiya it is 20 minutes by car or 20 minutes on foot, and in winter the time needed changes because of snow.",
+      "hours": "The official site announces that reception at the main shrine is from 9 a.m. to 4 p.m., and reception at the Okumiya is from 9 a.m. to 4 p.m. (this may vary with the weather). Prayers are accepted at both the main shrine and the Okumiya, and reservation by telephone is recommended (especially in the busy periods of the year-end and New Year and Shichi-Go-San). Whether there are closing days has not been confirmed on the official site. Checked on the official site on 29 Oct 2026.",
+      "parking": "The official site announces that both the main shrine and the Okumiya have their own car parks (the one for the Okumiya is partway along the approach to Daisen-ji). The number of spaces and fees have not been confirmed on the official site.",
+      "goshuin": "Goshuin are given separately at the main shrine and at the Okumiya (at the main shrine, at the amulet office). The offering is ¥500 at each. The official site announces that both seals cannot be stamped at one of the two shrines."
+    },
+    "iwashimizu": {
+      "name": "Iwashimizu Hachimangū",
+      "place": "Yawata City, Kyoto",
+      "summary": "A shrine guarding the southwest of the capital, which according to tradition began when the great deity Hachiman of Usa was welcomed to Otokoyama in 859 (Jōgan 1), in the Heian period. It has been revered by the imperial family as a deity of national protection and of warding off misfortune, and the present ten buildings of the main shrine are designated National Treasures.",
+      "deity_note": "The official site records that Empress Jingū is enshrined in the east seat (東御前), Emperor Ōjin in the central seat (中御前), and Himegami (the Princess Deity) (written 比咩大神) in the west seat (西御前). Emperor Ōjin (Homudawake-no-Mikoto in the Kojiki) and Empress Jingū (Okinagatarashihime-no-Mikoto) appear in Part 2 of the Kojiki. For Himegami (written 比咩大神), the official page shows no correspondence with a deity of the Kojiki and Nihon Shoki, and no deity of the same name has been confirmed in the Kojiki and Nihon Shoki (assigning the existing ID himegami is to be confirmed).",
+      "history": [
+        "The official site says that the shrine originated in 859 (Jōgan 1), when Gyōkyō, a monk of Daian-ji in Nanto (Nara), prayed at Usa Hachimangū and received an oracle that the deity would move to the peak of Otokoyama near the capital and protect the nation, and in the same year the divine spirit was installed on the peak of Otokoyama.",
+        "The official site records that the rebellions of Taira no Masakado and Fujiwara no Sumitomo in 939 (Tengyō 2) were swiftly put down through the divine power of the great deity Hachiman at the request of the court, and that from this time the imperial family's reverence for it as a shrine of national protection deepened. Imperial visits by emperors and retired emperors numbered more than 240, and it is said that, together with the Ise Jingū, it was called one of the \"two ancestral shrines\" (二所宗廟).",
+        "At the beginning of the Meiji period it was ranked as a Kanpei Taisha and its name was changed to \"Otokoyama Hachimangū\", and in 1918 (Taishō 7) it was renamed \"Iwashimizu Hachimangū\" again (according to the official site).",
+        "On 9 February 2016 (Heisei 28), the ten buildings of the main shrine and three ridgepole tablets (munafuda) as appended items were designated National Treasures. The official site records that the present shrine buildings were rebuilt by Tokugawa Iemitsu, the third Tokugawa shogun."
+      ],
+      "highlights": [
+        "The ten buildings of the main shrine are National Treasures. The official site says that the honden is the oldest and largest of the surviving honden in hachiman-zukuri style, and also describes the shrine as \"one of the three great Hachimangū of Japan\"."
+      ],
+      "address": "30 Yawata 高坊 (reading unconfirmed), Yawata City, Kyoto 614-8588 (tel. 075-981-3001)",
+      "access": "Get off at Keihan \"Iwashimizu-hachimangū Station\", and take the Sandō Cable from \"Hachimangū-guchi Station\" to \"八幡宮山上駅\" (reading unconfirmed). 5 minutes on foot from the upper station (official; the cable car fare is not stated on the relevant official page).",
+      "hours": "According to an official notice (dated 14 October 2022, Reiwa 4), the 南総門 (reading unconfirmed) (south main gate) is open 6:00–18:00, and the amulet and talisman office (including goshuin) and prayer reception are open 9:00–16:00, with changes during the year-end and New Year. As the notice is old, the latest hours are to be confirmed with the shrine.",
+      "parking": "According to the official site, there are about 60 spaces for ordinary cars, with a maximum of ¥500 for all-day use (9:00–16:00). Fees change during the New Year period (1 January–3 February) and the cherry blossom season, and there are days when it cannot be used because of traffic restrictions during the first three days of the New Year or because of festivals and events.",
+      "goshuin": "Received at the \"amulet and talisman office\" on the hilltop. The goshuin of the main shrine and of the auxiliary shrines (sessha; Takeuchi-sha, Iwashimizu-sha and 高良神社 (reading unconfirmed)) are ¥500 each (official goshuin guide). Reception hours follow the hours of the office given above."
+    },
+    "kifune": {
+      "name": "Kifune Jinja",
+      "place": "Sakyō Ward, Kyoto",
+      "summary": "A shrine of the water deity north of Kyoto, where the Hongū, the 結社 (reading unconfirmed) and the Okumiya stand in a row along the 貴船川 (reading unconfirmed). The official site records that it is the head shrine of water deities throughout Japan.",
+      "deity_note": "The official site gives the deity of the Hongū and the Okumiya as Takaokami-no-Kami and that of the 結社 (reading unconfirmed) as Iwanagahime-no-Mikoto, and relates that, according to one theory, 闇龗神 (reading unconfirmed) and Tamayori-hime-no-Mikoto are also enshrined. Takaokami appears in a variant account in Book 1 of the Nihon Shoki, in the scene where the fire deity is cut down. The written form \"高龗\" is not found in the Kojiki; instead there is \"闇淤加美神\" (reading unconfirmed), who came into being when Kagutsuchi-no-Kami (迦具土神) was cut down, and Okami-no-Kami (淤加美神), who appears in a genealogy (whether they are the same deity is not asserted; to be confirmed). Iwanagahime is written 石長比売 in the Kojiki and 磐長姫 in the Nihon Shoki. For Tamayori-hime-no-Mikoto, the official site's statement that she is the mother of Emperor Jinmu overlaps with Tamayoribime-no-Mikoto (玉依毗売命) of the Kojiki (the mother of Jinmu), but whether the Tamayori-hime of Kifune is the same cannot be confirmed beyond the official statement.",
+      "history": [
+        "The date of founding is unknown. There is a shrine tradition that the shrine buildings were already being rebuilt in the sixth year of Hakuhō under Emperor Tenmu (about 1,300 years ago).",
+        "Shrine tradition relates that the shrine originated when Tamayori-hime-no-Mikoto travelled up the Yodo River, the Kamo River and the 貴船川 (reading unconfirmed) in a yellow boat and built a small shrine at 吹井 (reading unconfirmed), where clear water springs (the official site says this was about 1,600 years ago, and that she was the mother of Emperor Jinmu).",
+        "The official visitors' guide says that the Okumiya is regarded as the site of the founding, and that because the shrine buildings were washed away by a flood, the Hongū was moved to its present site in 1055 (Tengi 3). On the same page the headings and text do not match up, so the reading remains uncertain (to be confirmed).",
+        "As for shrine rank, according to encyclopedias it is a shrine listed in the Engishiki register of shrines (shikinaisha), entered as \"貴布禰神社 名神大\" (a myōjin taisha), and its former shrine rank was Kanpei Chūsha. The official site does not record its shrine rank, so this is confirmed by encyclopedias only (to be confirmed)."
+      ],
+      "highlights": [
+        "The official site guides visitors on the \"三社詣\" (reading unconfirmed), a visit to the three shrines: the Hongū, the 結社 (reading unconfirmed) and the Okumiya.",
+        "The official site introduces the well-known \"水占みくじ\" (reading unconfirmed), a fortune slip on which characters appear in the sacred water of the Hongū."
+      ],
+      "address": "180 Kurama 貴船町 (reading unconfirmed), Sakyō Ward, Kyoto 601-1112",
+      "access": "From 貴船口駅 (reading unconfirmed) on the Eizan Electric Railway, take Kyoto Bus route 33, get off at \"貴船\" (reading unconfirmed) and walk about 5 minutes. On foot from 貴船口駅 (reading unconfirmed) it takes about 30 minutes (2 km). By car, about 18 km north of Kyoto Station, about 40 minutes.",
+      "hours": "Visiting hours of the Hongū (including the 水占みくじ (reading unconfirmed)) are 6:00–20:00 from 1 May to 30 November. The hours from December to April have not been confirmed on the official site. The amulet office is open 9:00–17:00 (may change depending on the season). Open every day of the year; admission is free.",
+      "parking": "¥1,000 for 2 hours (no extension). Spaces are limited, with 8 at the Hongū and 10 at the Okumiya, and public transport is recommended. On Saturdays, Sundays and public holidays from 1 July to 31 August, and on 14 August, parking is only for people who have made a meal reservation at a restaurant in 貴船 (reading unconfirmed).",
+      "goshuin": "It is indicated that goshuin are handled at the amulet office, but details such as reception hours and the offering have not been confirmed on the official site. The official site states that goshuin are given only to people who have visited in person, and are not given as a set with a goshuin book."
+    },
+    "yasaka": {
+      "name": "Yasaka Jinja",
+      "place": "Higashiyama Ward, Kyoto",
+      "summary": "Called \"Gion-san\", it is the head shrine of about 2,300 shrines of the Yasaka and Gion faith throughout Japan. It is the shrine that holds the Gion Matsuri, and its main deity is Susanoo-no-Mikoto (written 素戔嗚尊).",
+      "deity_note": "The official site records that Susanoo-no-Mikoto (written 素戔嗚尊), Inada-hime-no-Mikoto (written 櫛稲田姫命) and the eight child deities (八柱御子神) are enshrined in the honden. Susanoo-no-Mikoto (written 須佐之男命 in the Kojiki) and Kushinadahime (櫛名田比売) appear in the Kojiki and the Nihon Shoki. The names of the individual eight child deities have not been confirmed on the official page (to be confirmed). The name \"Gozu Tennō\" for Susanoo-no-Mikoto is a name from the Shinto-Buddhist syncretism of the medieval period onward and is not in the Kojiki or Nihon Shoki.",
+      "history": [
+        "The official site records that the shrine began in 656 (the 2nd year of Empress Saimei), when 伊利之 (reading unconfirmed), who had come to Japan from 高麗 (Koma), enshrined at this place Susanoo-no-Mikoto, who had been at 牛頭山 (reading unconfirmed) in Silla.",
+        "The 『祇園本縁雑実記』 (reading unconfirmed) relates that the origin of the Gion Matsuri was when, during an epidemic across the land in 869 (Jōgan 11), mikoshi were sent to Shinsen-en and rites were held.",
+        "The name \"感神院\" (reading unconfirmed) appears in a Daijōkan directive (daijōkanpu) of 1070 (Enkyū 2). In 1868 (Meiji 1) the name was changed from \"Gion 感神院 (reading unconfirmed) (Gion-sha)\" to \"Yasaka Jinja\".",
+        "In 995 (Chōtoku 1) it was counted as one of the Twenty-One Shrines (later the Twenty-Two Shrines), and it was raised to Kanpei Chūsha in Meiji 4 and to Kanpei Taisha in 1915 (Taishō 4). The official text and chronology disagree on the Meiji year, giving 1871 and 1872 (to be confirmed)."
+      ],
+      "highlights": [
+        "The official site states that the honden is a National Treasure and that many of the auxiliary shrines (sessha and massha) are Important Cultural Properties (29 buildings)."
+      ],
+      "address": "625 祇園町北側 (reading unconfirmed), Higashiyama Ward, Kyoto 605-0073",
+      "access": "About 5 minutes on foot from Keihan \"Gion-Shijō\" Station, and about 8 minutes on foot from Hankyū \"Kyoto-Kawaramachi\" Station. From JR Kyoto Station, take city bus route 100 or 206 to \"Gion\"; the shrine is right by the stop.",
+      "hours": "Worship is possible 24 hours a day. The shrine office reception is open 9:00–17:00.",
+      "parking": "The official site states that there is no car park in the grounds and that nearby car parks should be used. The number of spaces and hours of nearby car parks have not been confirmed on the official site.",
+      "goshuin": "From 9:00 to 16:00 goshuin are written directly into goshuin books; after 16:00 they are given on sheets only. Main shrine seal (handwritten) ¥500; main shrine seal ¥300. The hours of the amulet office alone have not been confirmed on the official site (shrine office reception 9:00–17:00)."
+    },
+    "hikosan": {
+      "name": "Hikosan Jingū",
+      "place": "Soeda Town, Fukuoka",
+      "summary": "A jingū standing on Mt. Hikosan on the border of Fukuoka and Ōita prefectures, which enshrines as its main deity Ame-no-Oshihomimi-no-Mikoto, a child of Amaterasu-Ōmikami (written 天照大神). In the past it flourished as a mountain of Shugendō, and in 1975 (Shōwa 50) it was renamed a \"Jingū\".",
+      "deity_note": "The main deity is Ame-no-Oshihomimi-no-Mikoto (full name 正勝吾勝勝速日天之忍穂耳命), who appears in the Kojiki as the heir of Amaterasu-Ōmikami; after the pacification of Ashihara-no-Nakatsukuni he is ordered to descend from heaven, but yields this to his child Ninigi-no-Mikoto. The associated deities Izanagi-no-Mikoto (written 伊耶那岐命) and Izanami-no-Mikoto (written 伊耶那美命) are the married deities who gave birth to the land and the gods. The official site explains that because the main deity is a child of Amaterasu-Ōmikami, the mountain was called \"Hikosan\" (日子山) (shrine tradition). Enshrining the three deities together is not something written in the Kojiki and Nihon Shoki but the form of worship on the shrine's side.",
+      "history": [
+        "The official site relates that the main shrine (the upper shrine, 上宮) was founded when Emperor Jinmu, during his eastern expedition, sent 天村雲命 (reading unconfirmed) to enshrine the deity, and says that the shrine buildings are also said to have been founded in the 41st year of Emperor Sujin.",
+        "By an imperial edict of Emperor Saga, the two characters \"日子\" were changed to \"彦\". Later, in 1729 (Kyōhō 14), the character \"英\" was granted by a decree (inzen) of the Retired Emperor Reigen, and the name became \"英彦山\" (Hikosan) (according to the official site).",
+        "Under the order separating Shinto and Buddhism it became \"Hikosan Jinja\", and on 24 June 1975 (Shōwa 50), with the permission of the Emperor, it was renamed \"Hikosan Jingū\". The official site says it was the third jingū in Japan after the war.",
+        "Its former shrine rank was Kanpei Chūsha (Kokuhei Shōsha in 1871 (Meiji 4), raised to Kanpei Chūsha in 1897 (Meiji 30)), and it is now a beppyō jinja of the Association of Shinto Shrines. This is confirmed by encyclopedias only; the official pages do not record its shrine rank (to be confirmed)."
+      ],
+      "highlights": [
+        "The 奉幣殿 (reading unconfirmed) was the great lecture hall of 霊仙寺 (reading unconfirmed) in the days of Shugendō, and is a building in Momoyama architectural style rebuilt in 1616 (Genna 2) by Hosokawa Tadaoki, lord of the Kokura Domain. It is designated a national Important Cultural Property (official).",
+        "The present building of the main shrine (the upper shrine, 上宮) was built and dedicated in 1842 (Tenpō 13) by 鍋島斉正 (reading unconfirmed), lord of the Hizen Domain (official)."
+      ],
+      "address": "1 Ōaza Hikosan, Soeda Town (添田町), Tagawa District, Fukuoka 824-0721",
+      "access": "By car, enter \"Hikosan Slope Car\" or \"1487 Ōaza Hikosan, Soeda Town (添田町), Tagawa District, Fukuoka\" into the car navigation system. By train and bus, use JR Kyushu (Hita-Hikosan Line) and the Soeda Town (添田町) town bus (the official site guides with links to each company's site; times and fares are not in the official text, so check the latest with each company).",
+      "hours": "The upper shrine (上宮) is open from 9:00 to 16:00 (official notice dated 29 October 2026, \"Upper shrine opening schedule for November\"; in November the opening days are the 1st, 3rd, 7th, 8th, 14th, 15th, 21st, 22nd, 28th and 29th, and it is not open on the 23rd because of the Niiname-sai). The reception hours of the amulet office and for general prayers have not been confirmed on the official site.",
+      "parking": "The official site advises using the 別所 (reading unconfirmed) car park (free). The number of spaces has not been confirmed on the official site.",
+      "goshuin": "Goshuin of the upper shrine are accepted in goshuin books only, and no pre-written sheets are available (notice for November 2026). Hours for giving goshuin elsewhere than the upper shrine have not been confirmed on the official site."
+    },
+    "shikaumi": {
+      "name": "Shikaumi Jinja",
+      "place": "Higashi Ward, Fukuoka",
+      "summary": "A shrine on Shikanoshima, an island in Hakata Bay, that enshrines the Three Watatsumi Deities. It is praised as \"the head shrine of the sea deities\", and in old times it was deeply revered as the guardian of people crossing the sea.",
+      "deity_note": "In the Kojiki, the Three Watatsumi Deities are the three deities born when Izanagi-no-Mikoto (written 伊邪那岐命) purified himself, washing in the bottom, middle and upper waters, and they are said to be the ancestral deities of the Azumi-no-Muraji and others. Sokotsutsunoo-no-Mikoto, Nakatsutsunoo-no-Mikoto and Uwatsutsunoo-no-Mikoto (底筒之男命, 中箇之男命, 上箇之男命), born at the same purification, are the \"three great deities of Suminoe\" (住吉の三前大神) (the existing Three Sumiyoshi Deities). The official site relates that the Azumi clan has served the shrine for generations. That Empress Jingū, Tamayori-hime-no-Mikoto and Emperor Ōjin are enshrined together (aidono) in the honden is stated by Wikipedia and has not been confirmed in the text of the official pages.",
+      "history": [
+        "The official site relates that although the founding is not clear, in old times there were three shrines, the 表津宮, 仲津宮 and 沖津宮 (readings unconfirmed), at 勝馬 (reading unconfirmed) in the north of Shikanoshima, and that the 表津宮 (reading unconfirmed) was moved to its present site between the 2nd and 4th centuries.",
+        "In 806 (Daidō 1), under Emperor Heizei, eight households of sacred fief (kanbe) were donated to the Azumi deity (according to the official site).",
+        "In 859 (Jōgan 1), under Emperor Seiwa, the divine rank of Junior Fifth Rank, Upper Grade was granted (according to the official site).",
+        "The Engishiki register of shrines lists under 那珂郡 (reading unconfirmed), Chikuzen Province, \"志加海神社三座 並名神大\" (Shikaumi Jinja, three entries, all myōjin taisha), so it is a Myōjin Taisha. Its former shrine rank was Kanpei Shōsha, and it is now a beppyō jinja of the Association of Shinto Shrines. This is confirmed by encyclopedias only; the official pages do not record its shrine rank (to be confirmed)."
+      ],
+      "highlights": [
+        "The shrine relates, together with a picture scroll of Empress Jingū's expedition (神功皇后出兵絵巻), the story that at the time of the expedition to the Three Kingdoms of Korea, Empress Jingū summoned 阿曇磯良 (reading unconfirmed) of Shikanoshima, received the tide jewels 干珠満珠 (reading unconfirmed) from the dragon god, and subdued the land (official).",
+        "According to tradition, the leaves that sprouted from the shii tree the Empress stuck in the ground as a rudder handle are called \"事無き柴\" (reading unconfirmed), and it is said that if you carry them in your bosom when you go out, you will return safely (official).",
+        "In the grounds there are a prefecture-designated hōkyōin-tō pagoda and Man'yōshū poem monument No. 1 (official)."
+      ],
+      "address": "877 Shikanoshima, Higashi Ward, Fukuoka 811-0323",
+      "access": "The official site guides that it is 30 minutes from Hakata Port Bayside Place on the service bound for Shikanoshima, or about 75 minutes from Chūō Yūbinkyoku-mae (Central Post Office) on the route 21 bus bound for Shikanoshima Elementary School. The latest services are to be confirmed.",
+      "hours": "Reception for purification (oharai) and prayers is from 9 a.m. to 5 p.m. at the shrine office (official). The visiting hours on the official top page are shown as an image and could not be checked as text; only a note that the gate opens from midnight on New Year's Day was confirmed.",
+      "parking": "The official site advises \"Please use the car park next to Shikaumi Jinja\". The number of spaces has not been confirmed on the official site (a tourism site gives 20–30 cars and 5 large vehicles, but this is unverified).",
+      "goshuin": "Giving of goshuin has not been confirmed in the text of the official pages."
+    },
+    "kora": {
+      "name": "Kōra Taisha",
+      "place": "Kurume City, Fukuoka",
+      "summary": "The ichinomiya of Chikugo Province, a former Kokuhei Taisha, and a Myōjin Taisha listed in the Engishiki (shikinaisha). On the summit of Mt. Kōra it enshrines three deities, Hachiman-Ōkami, Kōra-Tamatare-no-Mikoto and Sumiyoshi-Ōkami, and its shrine buildings, built in the early Edo period, are among the largest in Kyushu and are designated national Important Cultural Properties.",
+      "deity_note": "The official site records that, from the right as one faces the main shrine, Hachiman-Ōkami, Kōra-Tamatare-no-Mikoto and Sumiyoshi-Ōkami are enshrined. Identifying Hachiman-Ōkami with Emperor Ōjin (Hondawake-no-Mikoto (品陀和気命) in the Kojiki) is common, but the relevant official page does not state Emperor Ōjin explicitly, so this is to be confirmed. Identifying Sumiyoshi-Ōkami with the Three Sumiyoshi Deities of the Kojiki and Nihon Shoki (in the Kojiki, Sokotsutsunoo-no-Mikoto (底筒之男命), Nakatsutsunoo-no-Mikoto (中筒之男命) and Uwatsutsunoo-no-Mikoto (上筒之男命)) is also to be confirmed, because the official site does not give other names for the three deities. For Kōra-Tamatare-no-Mikoto, the word \"Tamatare\" (玉垂) does not appear in the obtained texts of the Kojiki, Nihon Shoki and Kogo Shūi, so this deity cannot be confirmed as one that appears in the Kojiki and Nihon Shoki.",
+      "history": [
+        "The official site records that the enshrinement is said to have taken place in the 55th year of Emperor Nintoku (367) or the 78th year (390), and that shrine buildings are said to have been built for worship in the first year of Emperor Richū (400).",
+        "The official chronology records that in 927 (Enchō 5) the Kōra-Tamatare-no-Mikoto Jinja (高良玉垂命神社) and the 豊比咩神社 (reading unconfirmed) were ranked as Myōjin Taisha.",
+        "The official chronology records that in 1915 (Taishō 4) the shrine was raised to the rank of Kokuhei Taisha.",
+        "The present shrine buildings were donated by 有馬頼利 (reading unconfirmed), the third lord of the Kurume domain; the main shrine was completed in 1660 (Manji 3), and the heiden and haiden in 1661 (Kanbun 1). The chronology records that in 1972 (Shōwa 47) the shrine buildings and the great stone torii were designated national Important Cultural Properties."
+      ],
+      "highlights": [
+        "The gongen-zukuri shrine buildings of the early Edo period measure about 17 m wide at the front, 13 m high and 32 m deep, and the official site records that they are among the largest shrine architecture in Kyushu. The shrine buildings and the great stone torii are national Important Cultural Properties.",
+        "The 146 documents of the \"Kōra Taisha Documents\" (高良大社文書) held by the shrine were designated national Important Cultural Properties as of 27 June 2023 (Reiwa 5)."
+      ],
+      "address": "1 御井町 (reading unconfirmed), Kurume City, Fukuoka 839-0851 (tel. 0942-43-4893)",
+      "access": "The official site guides that the shrine is reached by about 3 km of mountain road from Kurume IC on the Kyushu Expressway. By public transport, take Nishitetsu Bus route 1 or 8 (bound for 信愛女学院 (reading unconfirmed), via 御井町 (reading unconfirmed)) from Nishitetsu Kurume Station, get off at \"御井町\" (reading unconfirmed), then walk about 20 minutes or take a taxi for about 10 minutes. From Kurume Daigaku-mae Station on the JR Kyūdai Line it is about 15 minutes by taxi or about 50 minutes on foot.",
+      "hours": "According to the official site, worship hours are 6:00–17:00, prayer reception is 9:00–15:00, and the amulet office (神符守札授与所) is open 9:00–15:30. According to the official guide for fiscal 2024 (Reiwa 6), the treasure hall is open 10:00–15:00 (opening days are limited, and on festival days it opens after the ceremony ends). Hours change over the year-end and New Year period.",
+      "parking": "According to the official site, car parks 1 to 6 are provided free of charge. The number of spaces could not be confirmed on the official site. A car park at the foot of the mountain is opened only during the hatsumōde (New Year visit) period.",
+      "goshuin": "On the pages of the official site that could be obtained, no information on goshuin or their reception hours was found. The official site records that ofuda, omamori, ema and similar items are given at the amulet office (9:00–15:30). How goshuin are handled is to be confirmed with the shrine."
+    },
+    "tatsuta": {
+      "name": "Tatsuta Taisha",
+      "place": "Sangō Town, Nara",
+      "summary": "A shrine enshrining the \"wind deities\", which the official site relates was founded in the reign of Emperor Sujin following the words of a great deity who appeared in the emperor's dream. It is widely known as the shrine corresponding to the \"Tatsuta wind deity\" (龍田風神) seen in the Nihon Shoki entry for the fourth year of Emperor Tenmu, and it was worshipped as a pair with Hirose Taisha.",
+      "deity_note": "The official site records that Ame-no-Mihashira-no-Ōkami (also called Shinatsuhiko-no-Kami (志那都比古神)) and Kuni-no-Mihashira-no-Ōkami (also called Shinatsuhime-no-Kami (志那都比売神)) are enshrined in the main shrine, and that the two deities together are called the Tatsuta wind deity (龍田風神) or the Great Deity of Tatsuta. Shinatsuhiko-no-Kami appears as a \"wind deity\" in the Birth of the Gods in Part 1 of the Kojiki (the official site treats this deity as another name of Ame-no-Mihashira-no-Ōkami). The names of Kuni-no-Mihashira-no-Ōkami and of its other name, Shinatsuhime-no-Kami, cannot be found by searching the original texts of the Kojiki and Nihon Shoki at hand. Among the auxiliary shrines (sessha) are those of Tatsutahiko-no-Mikoto and Tatsutahime-no-Mikoto (the official site notes that these follow the Engishiki register of shrines).",
+      "history": [
+        "The official site relates that about 2,100 years ago, in the reign of Emperor Sujin, when the country was in turmoil from failed harvests and epidemics, a great deity appeared in the emperor's dream and gave an oracle to establish a shrine at 龍田の立野の小野 (reading unconfirmed; \"the small field of 立野 in Tatsuta\") and worship there; when a shrine was built accordingly, there was a good harvest and the epidemics went away. The official site records that this is regarded as the founding.",
+        "The Nihon Shoki, Book 29, fourth year of Emperor Tenmu (summer, fourth month), has an entry saying that 小紫美濃王 (reading unconfirmed) and others were sent to worship the wind deity at 立野 (reading unconfirmed) in Tatsuta, and beside it is an entry from the same year about having the 大忌神 (reading unconfirmed) worshipped at the 河曲 (reading unconfirmed) of Hirose (these are regarded as the origins of the Tatsuta wind deity festival and the Hirose 大忌祭 (reading unconfirmed)). It could not be confirmed that the official text explicitly links this entry to the deities of this shrine.",
+        "Shrine rank: according to the encyclopedia (Wikipedia), it is a shikinaisha (two Myōjin Taisha seats), one of the Middle Seven of the Twenty-Two Shrines, a former Kanpei Taisha, and at present a Beppyō Jinja of the Association of Shinto Shrines. No description of the shrine rank could be confirmed in the relevant part of the official pages; this is confirmed in the encyclopedia only."
+      ],
+      "highlights": [
+        "The official site lists as annual events the 瀧祭 (reading unconfirmed) and the Annual Grand Festival in April, the 風鎮大祭 (reading unconfirmed) in July, and the Autumn Grand Festival and the 渡御祭 (reading unconfirmed) in October. It explains that the shrine crest is a double-layered maple (楓), whose character, made of the \"tree\" (木) radical and the character for \"wind\" (風), represents the wind deity."
+      ],
+      "address": "1-29-1 立野南 (reading unconfirmed), Sangō Town, Ikoma District, Nara 636-0822 (tel. 0745-73-1138)",
+      "access": "The official site records that it is a 5-minute walk from Sangō Station on the JR Yamatoji Line.",
+      "hours": "According to the official site, the amulet office is open 9:00–17:00 (prayer reception until 16:00). It notes that on some days prayers cannot be held because of festivals and other events, and recommends confirming by telephone in advance. Telephone enquiries are accepted 9:00–17:00.",
+      "parking": "No mention of parking could be confirmed on the official pages (Top, FAQ and Grounds Guide).",
+      "goshuin": "No mention of the giving of goshuin could be confirmed on the official pages (the reception hours of the amulet office are as above)."
+    },
+    "hirose": {
+      "name": "Hirose Taisha",
+      "place": "Kawai Town, Nara",
+      "summary": "An ancient shrine located where the rivers of the Yamato Basin gather, enshrining a water deity and deity of food offerings (Wakaukanome-no-Mikoto). The official site records that, because Emperor Tenmu worshipped it as a pair with the wind deity of Tatsuta, the belief in the \"two-shrine visit\" (二社参り), which harmonizes wind and water, still remains today, and the shrine is also known for the Sunakake Matsuri (砂かけ祭) on 11 February every year.",
+      "deity_note": "The official site records the main deity as Wakaukanome-no-Mikoto and the deities of the shared hall (aidono) as Kushitama-no-Mikoto and Honoikazuchi-no-Mikoto, and says that Wakaukanome-no-Mikoto is also called \"大忌神\" (reading unconfirmed). Searching the original texts of the Kojiki and Nihon Shoki, the names Wakaukanome-no-Mikoto and Honoikazuchi-no-Mikoto cannot be confirmed (the Nihon Shoki has an entry of the fourth year of Emperor Tenmu about worshipping the \"大忌神\" at the 河曲 (reading unconfirmed) of Hirose). The official site records that Wakaukanome-no-Mikoto is said to be the same deity as 豊宇気比売大神 (reading unconfirmed), Ukanomitama-no-Kami (宇加之御魂神), 屋船豊受姫神 (reading unconfirmed) and Ōmonoimi-no-Kami (the correspondence with the existing ID Toyouke-no-Ōmikami (toyouke) rests on the shrine's tradition and is to be confirmed from the side of the Kojiki and Nihon Shoki). Whether Kushitama-no-Mikoto is the same as the name \"Kushitama-Nigihayahi-no-Mikoto\" (櫛玉饒速日命) seen in Book 3 of the Nihon Shoki has not been confirmed.",
+      "history": [
+        "The official site (the shrine's origin account) relates that in the ninth year of Emperor Sujin (89 BC) an oracle came to the village head of Kawai in Hirose, a marsh turned into dry land overnight and many tachibana trees grew there, so shrine buildings were built on this land and worship began. The shrine's tachibana crest also comes from this shrine tradition.",
+        "The Nihon Shoki, Book 29, fourth month of the fourth year of Emperor Tenmu, has an entry about having the 大忌神 (reading unconfirmed) worshipped at the 河曲 (reading unconfirmed) of Hirose (the official site gives the date as 10 April and relates that this was the beginning of the 大忌祭 (reading unconfirmed)). In the same month of the same year there is also an entry about worshipping the wind deity of Tatsuta.",
+        "The official site records its shrine rank as a shikinaisha (Myōjin Taisha) and one of the Middle Seven of the Twenty-Two Shrines, and records that it received Junior Fifth Rank in 823 (Kōnin 13) and Senior First Rank in 1081 (Eihō 1), became a Kanpei Taisha in 1872 (Meiji 4), and is now a Beppyō Jinja of the Association of Shinto Shrines.",
+        "The official site records that the treasures and old documents held by the shrine were all destroyed by fire in warfare in 1506 (Eishō 3)."
+      ],
+      "highlights": [
+        "The Sunakake Matsuri (砂かけ祭; official name \"Otaue Matsuri\" (お田植祭)) is held on 11 February every year. There is a ritual in the hall (殿上の儀) from 10:30 and a ritual in the courtyard (庭上の儀) from 14:00, and the official site explains that sand, likened to rain, is thrown back and forth to pray for a good harvest and protection from misfortune.",
+        "The official site guides that the grounds are characterized by a long approach, and asks visitors to use the car park on the east side of the first torii and walk to worship."
+      ],
+      "address": "99 川合 (reading unconfirmed), Kawai Town, Kitakatsuragi District, Nara 636-0051 (tel. 0745-56-2065)",
+      "access": "The official site records that it is 5 minutes from Hōryūji IC on the Nishi-Meihan Expressway, 3 km southeast of the South Exit of Hōryūji Station on the JR Yamatoji Line (30 minutes on foot, 5 minutes by taxi), and 2.5 km northeast of 池部 Station (reading unconfirmed) on the Kintetsu Tawaramoto Line (25 minutes on foot).",
+      "hours": "According to the official site, reception for prayers, goshuin and amulets is 8:00–17:00 (prayers are accepted all year round, one group at a time, taking about 15 minutes). During the New Year period, prayers are accepted only at the shrine itself.",
+      "parking": "The official site says \"Worshippers' car park: 200 m ahead\" (those having a traffic-safety prayer can drive in as far as the second torii). The number of spaces and fees could not be confirmed on the official pages.",
+      "goshuin": "The official site records that goshuin are accepted 8:00–17:00, the same as prayers. The offering amount and whether pre-written sheets are available could not be confirmed on the official site."
+    },
+    "futamiokitama": {
+      "name": "Futami Okitama Jinja",
+      "place": "Ise City, Mie",
+      "summary": "Located on the seashore of Futami (二見町), Ise City, it enshrines Okitama-no-Ōkami (also called Sarutahiko-no-Ōkami) as its main deity. The official site explains that the shrine originated when a place for worship from afar (yōhaisho) was set up in front of Meoto Iwa (the 立石 (reading unconfirmed)) and worship was offered there.",
+      "deity_note": "The official site records the main deity as Okitama-no-Ōkami (also called Sarutahiko-no-Ōkami) and the co-enshrined deity as Ukanomitama-no-Ōkami (宇迦御魂大神). In the Kojiki, Sarutahiko is the earthly deity (kunitsukami) Sarutahiko-no-Kami (猿田毗古神), who appears as a guide at the Descent of the Heavenly Grandson; he also appears in the Nihon Shoki (Book 2, Age of the Gods, second part, section 9, variant account). Ukanomitama-no-Ōkami corresponds to Ukanomitama-no-Kami of the Kojiki. The divine name \"Okitama-no-Ōkami\" itself is not found among the headings of the Kojiki and Nihon Shoki (confirmed by search / to be confirmed).",
+      "history": [
+        "The official site relates that when 倭姫命 (reading unconfirmed), carrying Amaterasu-Ōmikami (written 天照皇大御神), stopped her boat at 二見浦 (reading unconfirmed), Okitama-no-Ōkami appeared near the Okitama sacred rock (興玉神石) in the sea and protected the deity's journey; the official site places the origin of the shrine in the hanging of a great shimenawa rope on the 立石 (reading unconfirmed) (Meoto Iwa) and the setting up of a place for worship from afar, where worship was offered.",
+        "The official site records that in 1876 (Meiji 9), as a result of the separation of Shinto and Buddhism, it was enshrined as a shrine in front of the 立石 (reading unconfirmed).",
+        "The official site records that in 1910 (Meiji 43) the Okitama-sha (興玉社) and the 元三宮神社 (reading unconfirmed) were merged and the shrine's name was changed to \"Futami Okitama Jinja\".",
+        "The encyclopedia (Wikipedia) records that its former shrine rank was a village shrine (sonsha), and that it is now a Beppyō Jinja of the Association of Shinto Shrines (added to the list in 1968 (Shōwa 43)). Within the range checked on the official site, no mention of the shrine rank is found."
+      ],
+      "highlights": [
+        "The official site introduces the rock cave in the grounds as the place said to be the \"Heavenly Rock Cave\" (天の岩屋) where the great sun deity hid.",
+        "The official site introduces the sunrise seen between the Meoto Iwa rocks as a long-famous \"world-class scenic spot\", and records that once a year there is a day when \"Diamond Fuji\" lines up between the Meoto Iwa rocks."
+      ],
+      "address": "575 江 (reading unconfirmed), Futami (二見町), Ise City, Mie 519-0602 (official; tel. 0596-43-2020)",
+      "access": "Not confirmed on the official site (the official \"Access\" page has not been read). The encyclopedia records that it is about a 15-minute walk from 二見浦 Station (reading unconfirmed) on the JR Sangū Line.",
+      "hours": "Official guide to the hours for amulets: the amulet office in front of the haiden is open 7:00–16:45 (16:00 from November to the end of February), and the Ryūgū-sha (龍宮社) amulet office and the rock cave (岩屋) amulet office 9:00–16:30. Prayer reception is 9:00–16:00 (until 15:30 from November to February). However, the official FAQ gives 16:15 for the amulet office in front of the haiden from November to the end of February, and 7:00–16:00 for the rock cave and Ryūgū-sha amulet offices from November to the end of February, so the figures differ between official pages; check the latest information on the official site before visiting.",
+      "parking": "Not confirmed on the official site.",
+      "goshuin": "Official guide: main shrine goshuin ¥500, Ryūgū-sha goshuin ¥500, and a revival goshuin (復刻朱印) ¥500 only on the 23rd of each month (\"Futami Day\", ふたみの日). It is stated that during the お木曳 (reading unconfirmed) period only a commemorative goshuin is given. Goshuin books are ¥2,000 each in sunrise (red) and full moon (blue) designs. Reception follows the hours of the amulet offices (no separate hours for goshuin are given on the official site)."
+    },
+    "omijingu": {
+      "name": "Ōmi Jingū",
+      "place": "Ōtsu City, Shiga",
+      "summary": "A former Kanpei Taisha on the western shore of Lake Biwa, located on the site of Ōmi Ōtsu Palace (近江大津宮), the old capital of Emperor Tenji. It was founded in 1940 (Shōwa 15), and the official site records that it is one of the 16 imperial-envoy shrines (chokusaisha) in the country.",
+      "deity_note": "The enshrined deity is Emperor Tenji (天命開別大神, reading unconfirmed). In the Nihon Shoki, Book 27 is the book of Emperor Tenji (天命開別天皇), and it records under the third month of Tenji 6 \"遷都于近江\" (the capital was moved to Ōmi). The Kojiki ends with the entries up to Empress Suiko, so Emperor Tenji does not appear in it (confirmed by search / to be confirmed). Ōmi Jingū itself was founded in the Shōwa era, and it differs from other shrines in that it enshrines a historical emperor rather than a deity of the myths of the Kojiki and Nihon Shoki.",
+      "history": [
+        "The official site records that in 667, the sixth year of Tenji's regency (shōsei), the capital was moved from Asuka to Ōmi Ōtsu Palace. Book 27 of the Nihon Shoki also has an entry on the move of the capital in the third month of Tenji 6.",
+        "The official site records that from the middle of the Meiji era a movement among the people of the prefecture to found the shrine grew, and that with the imperial permission of Emperor Shōwa the deity was enshrined on 7 November 1940 (Shōwa 15).",
+        "The official site records that on 15 December 1945 (Shōwa 20), the very day of the Shinto Directive, Emperor Shōwa designated Ōmi Jingū as an imperial-envoy shrine (chokusaisha).",
+        "The official site records that the shrine buildings are in a style called Ōmi-zukuri (Shōwa-zukuri), and that they have been national Registered Cultural Properties since 1998 (Heisei 10)."
+      ],
+      "highlights": [
+        "The official site guides that, after the story of Emperor Tenji setting up a water clock (漏刻) in Tenji 10 and beginning time signals, there is a Clock Museum and Treasure Hall (時計館宝物館) in the grounds, and a Water Clock Festival (漏刻祭) is held on 10 June, \"Time Day\" (時の記念日). Book 27 of the Nihon Shoki also has an entry on the setting up of the water clock.",
+        "The official site says that because the opening poem of the Ogura Hyakunin Isshu is a poem by Emperor Tenji, competitive karuta tournaments are frequently held there, and guides that a yabusame ritual is held on the first Sunday of June."
+      ],
+      "address": "1-1 神宮町 (reading unconfirmed), Ōtsu City, Shiga 520-0015 (official; tel. 077-522-3725)",
+      "access": "Official: get off at Ōmi-jingū-mae Station on the Keihan 石坂線 (reading unconfirmed) and walk about 9 minutes. From the Kyoto direction, get off at Ōtsukyō Station on the JR Kosei Line and change at Keihan Ōtsukyō Station. There are no taxis at Ōmi-jingū-mae Station.",
+      "hours": "Official: worship hours 6:00–18:00, prayers 9:30–16:00, amulets, goshuin and similar items 9:00–16:30, Clock Museum and Treasure Hall 9:30–16:30 (last admission 16:00).",
+      "parking": "Official: about 200 spaces (about 500 at New Year, including temporary car parks). ¥1,000 from the night of 31 December to 5 January (¥2,000 for tour buses); free at other times.",
+      "goshuin": "Official: the amulet office (amulets, goshuin and similar items) is open 9:00–16:30. The official news has articles on the giving of paper-cut (kirie) goshuin, goshuin limited to the autumn-leaves season, and goshuin books, but their contents and offering amounts were not read this time."
+    },
+    "mihojinja": {
+      "name": "Miho Jinja",
+      "place": "Shimizu Ward, Shizuoka",
+      "summary": "Located at Miho no Matsubara on the Miho Peninsula, Shimizu Ward, Shizuoka City. It enshrines two deities, Ōnamuchi-no-Mikoto (大己貴命; Ōkuninushi-no-Mikoto) and Mihotsu-hime-no-Mikoto, and is known for the \"Hagoromo no Matsu\" (羽衣の松), the sacred tree of the hagoromo (feather robe) legend.",
+      "deity_note": "The official site gives the enshrined deities as Ōnamuchi-no-Mikoto (大己貴命; also called Ōkuninushi-no-Mikoto and Mihotsuhiko-no-Mikoto (三穂津彦命)) and Mihotsu-hime-no-Mikoto, and cites an entry in Book 2 of the Nihon Shoki as the basis for the founding. A variant account of section 9 of that book says that Takamimusubi-no-Mikoto (高皇産霊尊) gave his daughter Mihotsu-hime to Ōmononushi-no-Kami as his wife, which matches the official quotation. However, the partner in the Nihon Shoki is Ōmononushi-no-Kami, while the official site explains that Ōnamuchi-no-Mikoto = Ōkuninushi-no-Mikoto = Mihotsuhiko-no-Mikoto, so the identification with Ōmononushi-no-Kami is not an explanation based on the text of the Kojiki and Nihon Shoki but the official site's interpretation (to be confirmed). Mihotsu-hime does not appear in the Kojiki (confirmed by search / to be confirmed).",
+      "history": [
+        "The official site suggests that the founding may go back to the Age of the Gods, and records that various writings say that in the tenth year of Emperor Keikō, Yamato Takeru-no-Mikoto, by imperial command, presented official offerings (kanpei) and dedicated sacred rice fields.",
+        "The official site records that the Ruijū Kokushi says the shrine was granted Junior First Rank in the Hōki era, and that it is clearly listed as a shikinaisha in the register of shrines of the Engi era (comparison with the original sources has not been done).",
+        "The official site records that in the Keichō era Tokugawa Ieyasu donated and newly built more than ten shrine buildings, but they were destroyed by fire after a lightning strike in 1668 (Kanbun 8), and the present shrine buildings were built as a temporary shrine. The main shrine is designated a municipal Tangible Cultural Property as a representative building of the mid-Edo period.",
+        "The official site records that Miho no Matsubara, including the grounds of this shrine, was registered in June 2013 (Heisei 25) as a component of the Fujisan World Cultural Heritage site."
+      ],
+      "highlights": [
+        "The setting of the hagoromo (feather robe) legend, known for the sacred tree \"Hagoromo no Matsu\" (羽衣の松) (official).",
+        "The official site presents the \"Kanae-uma\" (叶え馬, wish-granting horse) in the sacred horse stable (神馬舎) in the grounds as an object of worship, and records that the amulets \"Umaku Iku Mamori\" (うまくいく守) and \"Kodomo Mamori\" (こども守) also derive from it."
+      ],
+      "address": "1073 Miho, Shimizu Ward, Shizuoka City, Shizuoka 424-0901 (official; tel. 054-334-0828)",
+      "access": "Official: from JR Shimizu Station or Shizutetsu Shin-Shimizu Station, take a bus bound for Miho for about 30 minutes, get off at \"Miho Matsubara Iriguchi\" and walk about 10 minutes. By car, about 20 minutes from Shimizu IC on the Tōmei Expressway.",
+      "hours": "Official: the amulet office and shrine office are open 9:00–16:00. On ordinary days prayers require an advance reservation, and the reception hours are 9:30–15:30 (they may not be available because of festivals, events and the like).",
+      "parking": "Official: 8 spaces in the shrine's own car park (to the right of the torii on the \"Kami no Michi\" (神の道) side). 173 spaces for ordinary cars behind \"Mihoshirube\" (みほしるべ), the Shizuoka City Miho no Matsubara Cultural Creation Center. Tour buses use the city's dedicated tour-bus car park (18 large, 4 small and medium).",
+      "goshuin": "Official: given at the amulet office 9:00–16:00 (regular, Miho no Matsubara special, enshrined-deity, and the winter-only sunrise goshuin). Not available by post. The offering amount could not be confirmed on the official site."
     }
   }
 }

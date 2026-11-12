@@ -579,3 +579,12 @@
 
 **事業主への確認事項**：基準①の判断に公式SNSを使った社は無いため、掲載基準ページの文言の更新は不要と考える。枚聞神社を「X のプロフィールの自己申告で可」とするかの判断待ち。
 **提案のみ（未反映）**：英訳は新しい6社が未了（英語表示では日本語のまま出る）。目標150社まであと4社。
+
+## 英訳の追い付き（2026-11-12・事業主指示「神社noteの英訳を早く進めて」）→ 神社146社・神様160柱すべて英訳済み
+
+第T回〜第Y回で増えた**神社27社・神様19柱**の英訳を `i18n/en.json` に追加した（既存の訳は変更なし・追記のみ）。束を6つ（神社4・神様2）に分けて並行で訳し、件数検査（history／highlights／aliases／scenes／virtues の数が日本語と一致・キーの順・辞書の英語名と一致）を通してから取り込んだ。
+- 新しい神様の英語名：Kanayamahime-no-Mikoto／Nigihayahi-no-Mikoto／Ōyatsuhime-no-Mikoto／Tsumatsuhime-no-Mikoto／Kagamitsukuri-no-Kami／Ame-no-Nukado-no-Kami／Kotonomachihime-no-Mikoto／Kuni-no-Tokotachi-no-Mikoto／Ame-no-Shitaharu-no-Mikoto／Seoritsuhime-no-Mikoto／Iwanagahime-no-Mikoto／The Three Watatsumi Deities／Kōra-Tamatare-no-Mikoto／Ame-no-Mihashira-no-Ōkami／Kuni-no-Mihashira-no-Ōkami／Wakaukanome-no-Mikoto／Kushitama-no-Mikoto／Honoikazuchi-no-Mikoto／Emperor Tenji
+- 新しい神社の英語名は読み（reading）から：例 事任八幡宮＝Kotonomama Hachimangū、松尾大社＝Matsunoo Taisha（駅名は阪急の表記 Matsuo-taisha）
+- 読みが記録に無い地名・祭り・建物などは、これまでどおり漢字を残して `(reading unconfirmed)`。読みの確認（自治体の公式でふりがなを確かめる作業）は今回の分は未実施
+- 要確認（原文側）：廣瀬大社の「明治4年（1872）」は西暦が1871年の可能性（原文のまま訳した）／天ノ下春命の「32柱のうちの2柱とされる」は原文が途中で切れている可能性
+- 未了：英語表示の画面確認（ローカルでの表示検査は今回できていない）
