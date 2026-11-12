@@ -1,0 +1,177 @@
+{
+  "_説明": "ツール人気ランキング（週1回SNS配信）で紹介するツールの台帳。ここに無いページは数えない。pages はアクセスカウンターのページ名（先頭の / なし・末尾 / は index.html）に全体一致する正規表現。logo・shot は assets/weekly-tools/ の画像（無いと生成が止まる）。points は2つまで画像に載る。only は「★」の行（ほかにあまり無い機能）。caption は投稿文に載る1〜2文。2026-11-12 作成。",
+  "tools": [
+    {
+      "id": "nscad",
+      "name": "N's CAD",
+      "pages": [
+        "nscad/.*"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/nscad/",
+      "logo": "assets/weekly-tools/logo/nscad.jpg",
+      "shot": "assets/weekly-tools/shot/nscad.jpg",
+      "tagline": "革の型紙をブラウザで描く、無料のCAD",
+      "points": [
+        "手帳金具の規格を内蔵。背幅や断面を自動で出す",
+        "SVG・DXF・PDF・PNGで書き出せる"
+      ],
+      "only": "三面図から立体を起こし、実在の革280色の質感を貼れる",
+      "caption": "革の型紙をブラウザで描く無料のCADです。手帳金具の規格を内蔵していて、背幅や断面まで自動で出します。"
+    },
+    {
+      "id": "monthly",
+      "name": "月間ブロック印刷ツール",
+      "pages": [
+        "(a5|a5slim|a6|bible|mini6|micro5)-monthly/index\\.html"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/tools/",
+      "logo": "assets/weekly-tools/logo/monthly.jpg",
+      "shot": "assets/weekly-tools/shot/monthly.jpg",
+      "tagline": "システム手帳の月間リフィルを、A4に面付けして印刷",
+      "points": [
+        "A5〜Micro5の6判型に対応",
+        "期間を決めて、日付あり・日付なしを選べる"
+      ],
+      "only": "日付なし版は日付欄に薄い透かし。好きな月から使える",
+      "caption": "システム手帳の月間リフィルを、6つの判型でA4に面付けして印刷できます。日付なし版もあります。"
+    },
+    {
+      "id": "weekly",
+      "name": "週間ブロック印刷ツール",
+      "pages": [
+        "(a5|a5slim|a6|bible|mini6|micro5)-weekly/index\\.html",
+        "bible-vertical/index\\.html"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/tools/",
+      "logo": "assets/weekly-tools/logo/weekly.jpg",
+      "shot": "assets/weekly-tools/shot/weekly.jpg",
+      "tagline": "システム手帳の週間リフィルを、A4に面付けして印刷",
+      "points": [
+        "6判型に対応。バイブルはバーチカルも",
+        "左右見開き・上下見開き（リングが上）を選べる"
+      ],
+      "only": "綴じた後の見開きを、印刷前にめくって確かめられる",
+      "caption": "システム手帳の週間リフィルを印刷できます。綴じた後の見開きを、印刷前に画面でめくって確かめられます。"
+    },
+    {
+      "id": "daily",
+      "name": "日次リフィル印刷ツール",
+      "pages": [
+        "(a5|a5slim|a6|bible|mini6|micro5)-daily/index\\.html"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/tools/",
+      "logo": "assets/weekly-tools/logo/daily.jpg",
+      "shot": "assets/weekly-tools/shot/daily.jpg",
+      "tagline": "1日1ページのリフィルを、A4に面付けして印刷",
+      "points": [
+        "時間軸つきの1日1ページ。6判型に対応",
+        "穴あけパンチガイドとカット線つき"
+      ],
+      "only": "祝日・振替休日を自動で入れ、期間を決めて一度に刷れる",
+      "caption": "1日1ページのリフィルを印刷できます。祝日・振替休日は自動で入り、期間を決めて一度に刷れます。"
+    },
+    {
+      "id": "refillmaker",
+      "name": "リフィルメーカー",
+      "pages": [
+        "refill-maker/.*"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/refill-maker/",
+      "logo": "assets/weekly-tools/logo/refillmaker.jpg",
+      "shot": "assets/weekly-tools/shot/refillmaker.jpg",
+      "tagline": "好きな判型のリフィルを、自分で作る",
+      "points": [
+        "ロルバーンなど8規格と自由なサイズ",
+        "週間・月間・方眼・ドット・罫線"
+      ],
+      "only": "お薬手帳のリフィルまで作れる",
+      "caption": "ロルバーンやシステム手帳など、好きな判型のリフィルを作れます。お薬手帳の様式もあります。"
+    },
+    {
+      "id": "notebook",
+      "name": "N's notebook",
+      "pages": [
+        "password-note/.*",
+        "password-note\\.html"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/password-note.html",
+      "logo": "assets/weekly-tools/logo/notebook.jpg",
+      "shot": "assets/weekly-tools/shot/notebook.jpg",
+      "tagline": "合言葉で守る、パスワード管理ノート",
+      "points": [
+        "ブラウザ内で暗号化。サーバーへ送らない",
+        "家族への引き継ぎを考えた一覧印刷つき"
+      ],
+      "only": "手帳リフィル（A6・A5スリム）にカードとして印刷できる",
+      "caption": "合言葉で守るパスワード管理ノートです。ブラウザの中で暗号化し、手帳リフィルにカードとして印刷できます。"
+    },
+    {
+      "id": "pccheck",
+      "name": "常駐点検",
+      "pages": [
+        "digital-room/pc-check/.*"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/digital-room/pc-check/",
+      "logo": "assets/weekly-tools/logo/pccheck.jpg",
+      "shot": "assets/weekly-tools/shot/pccheck.jpg",
+      "tagline": "PCが重い原因を、日本語で調べる",
+      "points": [
+        "ボタン1つ・約10秒で診断。緑・黄・赤で表示",
+        "AIを使わず、外部へ通信しない"
+      ],
+      "only": "AIに相談する文を、パスワードを伏せてコピーできる",
+      "caption": "Windowsが重い原因を、ボタン1つ・約10秒で日本語で答えます。外部へは通信しません。"
+    },
+    {
+      "id": "pcbuild",
+      "name": "自作PCガイド",
+      "pages": [
+        "digital-room/pc-build-guide\\.html"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/digital-room/pc-build-guide.html",
+      "logo": "assets/weekly-tools/logo/pcbuild.jpg",
+      "shot": "assets/weekly-tools/shot/pcbuild.jpg",
+      "tagline": "初めての自作PCを、手描きの図で1手順ずつ",
+      "points": [
+        "A4・16ページのPDFで手元に置ける",
+        "つまずきやすい3点を最初にまとめて注意"
+      ],
+      "only": "書いてあることに、確信度（高・中・低）を付けている",
+      "caption": "初めての自作PCを、手描きの図で1手順ずつ案内します。A4・16ページのPDFもあります。"
+    },
+    {
+      "id": "videomaker",
+      "name": "SNS動画メーカー",
+      "pages": [
+        "digital-room/sns-video-maker/.*"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/digital-room/sns-video-maker/",
+      "logo": "assets/weekly-tools/logo/videomaker.jpg",
+      "shot": "assets/weekly-tools/shot/videomaker.jpg",
+      "tagline": "作品写真から、SNS用の縦型動画をつくる",
+      "points": [
+        "4ステップで、ナレーション付きのMP4まで",
+        "写真は外部へアップロードしない"
+      ],
+      "only": "読み方の辞書で、読み上げの間違いを直せる",
+      "caption": "作品写真から、ナレーション付きのSNS用縦型動画を作れます。写真は外部へアップロードしません。"
+    },
+    {
+      "id": "shrinemap",
+      "name": "神社巡りマップ",
+      "pages": [
+        "shrine-note/map/.*"
+      ],
+      "url": "https://you0810jmsdf.github.io/ns-factory/shrine-note/map/",
+      "logo": "assets/weekly-tools/logo/shrinemap.jpg",
+      "shot": "assets/weekly-tools/shot/shrinemap.jpg",
+      "tagline": "3Dの日本列島で、光る神社をたどる",
+      "points": [
+        "140社・153柱を掲載。古事記の神々の系譜図つき",
+        "御朱印スタンプ帳（記録は端末の中だけ）"
+      ],
+      "only": "時刻から太陽と月の位置を計算し、昼と夜まで再現",
+      "caption": "3Dの日本列島で、光る神社をたどれます。古事記の神々の系譜図や、御朱印スタンプ帳もあります。"
+    }
+  ]
+}

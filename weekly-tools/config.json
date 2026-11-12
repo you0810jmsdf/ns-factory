@@ -1,0 +1,20 @@
+{
+  "_説明": "ツール人気ランキングの週1回SNS配信の設定（2026-11-12 事業主決定：過去7日の人数・毎週水曜20時）。集計は scripts/build_weekly_tools.py、投稿は SNS投稿GAS（sns-gas-nsfactory/WeeklyTools.gs）。紹介するツールは catalog.json。",
+  "_periodDays": "集計する日数。今日は途中なので除き、昨日までの N 日を数える",
+  "periodDays": 7,
+  "_topN": "画像と投稿文に載せる件数（1〜3）",
+  "topN": 3,
+  "_postTime": "集計した日（水曜）の何時に投稿するか。予約キューは15分おきなので実際は指定時刻から15分以内に出る。曜日は .github/workflows/weekly-tools.yml の cron で決まる",
+  "postTime": "20:00",
+  "platforms": { "threads": true, "instagram": true, "facebook": true },
+  "toolsUrl": "https://you0810jmsdf.github.io/ns-factory/links.html",
+  "text": {
+    "title": "ツール人気ランキング",
+    "metricLine": "使ってくださった方の多い順",
+    "intro": "N's factory の無料ツールで、この1週間に使ってくださった方が多かったトップ{n}です。",
+    "outro": "気になるものがあれば、ぜひ使ってみてください。",
+    "linkLine": "ツールの一覧はこちら",
+    "instagramLinkLine": "各ツールは、プロフィールのリンクからご覧いただけます。",
+    "footer": "どれも無料でお使いいただけます"
+  }
+}

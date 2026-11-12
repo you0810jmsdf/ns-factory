@@ -1,0 +1,76 @@
+name: ツール人気ランキング（週1回SNS配信）
+
+# 毎週水曜の朝にツール人気ランキング（過去7日の人数）を集計し、TOP3の合成画像と投稿文を
+# weekly-tools/ に置く。投稿は SNS投稿GAS（sns-gas-nsfactory/WeeklyTools.gs）が
+# 毎日12時台に weekly-tools/latest.json を見て、新しい週の分があれば予約キューへ入れる。
+# 集計の条件は weekly-tools/config.json、紹介するツールは weekly-tools/catalog.json で変える（2026-11-12 新設）。
+#
+# ⚠ 手動実行は既定で「試し」（post=false）。GAS は post=true の分しか投稿しない。
+#    手動で本番投稿させたいときだけ post を true にして実行する。
+
+on:
+  schedule:
+    # 水曜 09:00 JST（= 水曜 00:00 UTC）
+    - cron: "0 0 * * 3"
+  workflow_dispatch:
+    inputs:
+      post:
+        description: "SNSへ投稿させる（true で本番。既定は試し）"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-tools
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Pillow and Japanese fonts
+        run: |
+          pip install pillow
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-noto-cjk
+
+      - name: Build ranking image and texts
+        env:
+          POST_FLAG: ${{ github.event_name == 'schedule' || inputs.post == true }}
+        run: |
+          if [ "$POST_FLAG" = "true" ]; then
+            python scripts/build_weekly_tools.py --post
+          else
+            python scripts/build_weekly_tools.py
+          fi
+
+      - name: Commit
+        run: |
+          if git diff --quiet -- weekly-tools/ && [ -z "$(git ls-files --others --exclude-standard weekly-tools/)" ]; then
+            echo "変更なし。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weekly-tools/
+          git commit -m "auto: ツール人気ランキング（週次SNS配信）を更新"
+          # 他の push と重なると拒否されるので、取り込み直して最大3回まで送り直す（works-data.yml と同じ）
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push が拒否されました。取り込み直して再試行します（$i/3）"
+            git pull --rebase origin "$GITHUB_REF_NAME" || exit 1
+            sleep 5
+          done
+          echo "3回試しても push できませんでした。"
+          exit 1
