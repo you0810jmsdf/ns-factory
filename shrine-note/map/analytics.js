@@ -5,7 +5,7 @@ export const GA_ID = 'G-ND1T7H067Y';
 const HOST = 'you0810jmsdf.github.io', OPTOUT_KEY = 'nsf_ga_optout';
 const BASE = 'https://' + HOST + '/ns-factory/shrine-note/map/';
 const ID_RE = /^[a-z0-9]{1,40}$/, LANG_RE = /^(en|ja)$/, NAME_RE = /^shrine_[a-z0-9_]{1,30}$/, KIND_RE = /^[A-Za-z0-9_.-]{1,24}$/;
-const SECTIONS = new Set(['home', 'tree', 'find', 'book', 'route']);
+const SECTIONS = new Set(['home', 'tree', 'find', 'book', 'route', 'kiki']);
 
 /** env（既定は window）から計測器を作る。送れない環境（手元・計測しない設定）では何もしない。 */
 export function createTracker(env = globalThis) {
