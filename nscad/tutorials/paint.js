@@ -32,6 +32,33 @@ export const TUTORIALS_PAINT = {
       "say": "tut.paint.4",
       "click": "#unpaintSel",
       "wait": 900
+    },
+    {
+      "say": "tut.paint.5",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "mouse": [
+        119.5,
+        99.5
+      ],
+      "press": true
+    },
+    {
+      "click": "#colorCard .swatch[title=\"ブラウン\"]"
+    },
+    {
+      "mouse": [
+        65,
+        55
+      ],
+      "press": true,
+      "wait": 1000
+    },
+    {
+      "say": "tut.paint.6",
+      "click": "[data-tool=\"select\"]",
+      "mode": "select",
+      "wait": 600
     }
   ]
 };

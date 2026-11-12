@@ -1,0 +1,31 @@
+{
+  "id": "phrase",
+  "page": "text-dimension",
+  "title": "tut.phrase.title",
+  "steps": [
+    {
+      "say": "tut.phrase.1",
+      "value": {
+        "#phraseText": "作品名：ミニ6 手帳カバー\nサイズ：W100×H135mm"
+      },
+      "wait": 1200
+    },
+    {
+      "say": "tut.phrase.2",
+      "click": "#phrasePlace"
+    },
+    {
+      "mouse": [
+        25,
+        30
+      ],
+      "press": true,
+      "wait": 1000
+    },
+    {
+      "say": "tut.phrase.3",
+      "show": "#phraseSave",
+      "wait": 1200
+    }
+  ]
+}
