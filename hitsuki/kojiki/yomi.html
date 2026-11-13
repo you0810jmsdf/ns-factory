@@ -28,6 +28,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .pg-lead { color: var(--ink-soft); margin: 0 0 24px; line-height: 1.9; }
     .pg-card { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(24, 36, 27, 0.55); padding: 20px; margin-bottom: 20px; }
     .pg-card h2 { font-size: 1.1rem; margin: 0 0 14px; }
+    .pg-card h3 { font-size: 1rem; margin: 18px 0 6px; }
     .pg-card p { line-height: 1.95; margin: 0 0 12px; }
     .pg-card p:last-child { margin-bottom: 0; }
     .pts { border-color: var(--line-strong); background: rgba(216, 183, 102, 0.07); }
@@ -37,6 +38,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .kind { display: inline-block; font-size: .72rem; line-height: 1; padding: 4px 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--gold); margin-right: 6px; vertical-align: 2px; white-space: nowrap; }
     .kind.k-cmp { color: #9fc3d8; border-color: rgba(159,195,216,.45); }
     .kind.k-int { color: #d9a7c7; border-color: rgba(217,167,199,.45); }
+    .kind.k-var { color: #b9d3a0; border-color: rgba(185,211,160,.45); }
     .q { margin: 0 0 14px; }
     .q:last-child { margin-bottom: 0; }
     .q blockquote { margin: 0; padding: 6px 0 6px 12px; border-left: 2px solid var(--gold); font-size: 1.05rem; line-height: 1.8; letter-spacing: .04em; }
@@ -52,6 +54,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .ns:last-child { margin-bottom: 0; }
     .ns .where { color: var(--muted); font-size: .85rem; }
     .ns blockquote { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid rgba(159,195,216,.6); color: var(--ink-soft); font-size: .95rem; }
+    .var { margin: 0 0 12px; padding-left: 12px; border-left: 2px solid rgba(185,211,160,.5); }
+    .var:last-child { margin-bottom: 0; }
+    .var b { color: #b9d3a0; font-size: .9rem; }
+    .xlink { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .xlink a { border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--gold); text-decoration: none; }
     .pg-note { color: var(--muted); font-size: .85rem; line-height: 1.8; margin: 0; }
     .pg-src { margin: 8px 0 0; padding-left: 1.2em; line-height: 1.9; font-size: .9rem; word-break: break-all; }
     .pager { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 20px; }
@@ -59,7 +66,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .pager a small { display: block; color: var(--muted); font-size: .78rem; }
     .pager a.next { text-align: right; }
     .pager a:hover { border-color: var(--line-strong); }
-    .toc { list-style: none; margin: 0; padding: 0; counter-reset: none; }
+    .toc { list-style: none; margin: 0; padding: 0; }
     .toc li { border-bottom: 1px solid rgba(245, 239, 225, 0.08); }
     .toc li:last-child { border-bottom: 0; }
     .toc a { display: grid; grid-template-columns: 2.6em 1fr; gap: 2px 10px; padding: 14px 4px; color: var(--ink); text-decoration: none; }
@@ -68,6 +75,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
+    .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
   </style>
 </head>
@@ -79,6 +88,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </a>
     <nav class="site-nav" aria-label="ページ内ナビゲーション">
       <a href="./">話の一覧</a>
+      <a href="../shoki/">日本書紀アーカイブ</a>
       <a href="../kiki.html">古事記と日本書紀</a>
       <a href="../index.html" class="nav-back">← 教育幕僚室へ戻る</a>
     </nav>
@@ -88,6 +98,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <p class="eyebrow">古事記 上巻・第4話（全17話）</p>
     <h1>黄泉の国</h1>
     <p class="pg-lead">伊耶那岐命は黄泉国へ去った妻の伊耶那美命を連れ戻しに行くが、「見ないで」という願いを破って変わり果てた姿を見てしまい、追われて逃げ帰る。黄泉比良坂を石でふさいで別れの言葉を交わしたあと、伊耶那岐命は穢れを清める禊に向かい、脱ぎ捨てた持ち物から十二の神が生まれる。</p>
+    <div class="xlink"><a href="../shoki/dan05.html">日本書紀で読む：三貴子の誕生と神生み・黄泉（第五段） ›</a></div>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
       <h2 id="pts-title">覚えておくポイント</h2>
@@ -120,7 +131,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
-      <h2 id="who-title">登場する神と、祀る神社</h2>
+      <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=izanagi">伊邪那岐命</a></b><small>いざなぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=oyama">雄山神社</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=izanami">伊邪那美命</a></b><small>いざなみのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=hakusan">白山比咩神社</a>、<a href="../../shrine-note/map/?s=izanagijingu">伊弉諾神宮</a>、<a href="../../shrine-note/map/?s=tagataisha">多賀大社</a>、<a href="../../shrine-note/map/?s=naminoue">波上宮</a>、<a href="../../shrine-note/map/?s=isasumi">伊佐須美神社</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=mitsumine">三峯神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=hikosan">英彦山神宮</a></span></li>
@@ -143,7 +154,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b>邊津那藝佐毗古神</b><small>へつなぎさびこのかみ</small><span class="sh">右手の手纏から成った三神の二柱目。</span></li>
         <li><b>邊津甲斐弁羅神</b><small>へつかいべらのかみ</small><span class="sh">右手の手纏から成った三神の三柱目。</span></li>
       </ul>
-      <p class="pg-note">神の名前を押すと、神社巡りノートの神様のページ（古事記・日本書紀での名前と場面）が開きます。</p>
+      <p class="pg-note">名前を押すと、神社巡りノートの神様のページ（古事記・日本書紀での名前と場面）が開きます。</p>
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
@@ -153,13 +164,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <div class="ns"><span class="where">巻第一 第五段 一書第九</span><p>一書第九では、伊弉諾尊が大きな桃の木の下に隠れ、その実を雷たちに投げつけて退かせ、これが桃で鬼を避ける由来だと説明する。八雷のいる場所も、背・尻や山雷・野雷が見えるなど古事記と異なる。</p><blockquote lang="zh-Hant">此用桃避鬼之緣也</blockquote></div>
     </section>
 
-    <nav class="pager" aria-label="前後の話"><a class="prev" href="kamiumi.html"><small>← 前の話（第3話）</small>神生みと火の神</a><a class="next" href="misogi.html"><small>次の話（第5話）→</small>禊祓と三貴子</a></nav>
+    <nav class="pager" aria-label="前後のページ"><a class="prev" href="kamiumi.html"><small>← 前の話（上巻・第3話）</small>神生みと火の神</a><a class="next" href="misogi.html"><small>次の話（上巻・第5話）→</small>禊祓と三貴子</a></nav>
 
     <section class="pg-card" aria-labelledby="src-title">
       <h2 id="src-title">出典</h2>
       <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
       <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一 神代上</a>／<a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">巻第二 神代下</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/</li>
+        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/</li>
       </ul>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
