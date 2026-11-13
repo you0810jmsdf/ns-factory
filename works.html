@@ -1240,6 +1240,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
           <a id="primary-order-link" class="modal-cta" href="#" target="_blank" rel="noopener"></a>
           <a id="secondary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener"></a>
           <a id="tertiary-order-link" class="modal-cta secondary" href="#" target="_blank" rel="noopener" hidden></a>
+          <!-- 商品ページがある分類（PRODUCT_PAGES）の作品でだけ表示される（2026-11-13・フォトフレーム） -->
+          <a id="product-page-link" class="modal-cta secondary" href="#" hidden data-i18n="modal.productPage">📄 商品ページを見る（仕様・ご注文方法）</a>
           <!-- 型紙SVG（svg1/svg2）が登録済みの作品でだけ表示される。判定は openWork 時に非同期で行う。 -->
           <button id="texture-sim-cta" class="modal-cta secondary" type="button" hidden data-i18n="modal.textureSim">🎨 革の色を変えて試す</button>
           <!-- 作品集→オーダー相談ページ（主入口）へ。作品IDを渡し、相談側が作品の仕様を見せて同じ商品の質問から始める（2026-11-07） -->
@@ -1358,6 +1360,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'modal.shareCopied': '✓ Copied (ready to paste on SNS)',
     'modal.textureSim': '🎨 Try different leather colors',
     'modal.consultWork': '🧵 Consult based on this piece',
+    'modal.productPage': '📄 View the product page (specs & how to order)',
     'badge.customerVoice': '💬 Customer voice',
     'modal.customerVoiceTitle': 'Customer voice',
     'modal.prev': 'Prev',
@@ -2465,6 +2468,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       else enterVideoMode();
     });
 
+    // 商品ページがある分類 → そのページ（2026-11-13）。分類名は商品マスターの値（workCats で「／」分割後）。
+    // 商品ページを足したら、ここに1行足す。
+    const PRODUCT_PAGES = { 'フォトフレーム': 'products/memorial-photo-frame.html' };
+
     function updateModal() {
       if (!activeWork) return;
       if (videoMode) exitVideoMode(); // 写真送り・作品切替時は写真表示へ戻す
@@ -2485,6 +2492,16 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         consultLink.href = 'order_estimate/hearing-ai.html?work=' + encodeURIComponent(activeWork.id || '');
         consultLink.textContent = T('modal.consultWork', '🧵 この作品をもとに相談する');
         consultLink.onclick = () => { try { logProductAction(activeWork, '相談ページへ'); } catch (e) {} };
+      }
+      const productLink = document.getElementById('product-page-link');
+      if (productLink) {
+        const productPage = workCats(activeWork).map((c) => PRODUCT_PAGES[c]).find(Boolean);
+        productLink.hidden = !productPage;
+        if (productPage) {
+          productLink.href = productPage;
+          productLink.textContent = T('modal.productPage', '📄 商品ページを見る（仕様・ご注文方法）');
+          productLink.onclick = () => { try { logProductAction(activeWork, '商品ページへ'); } catch (e) {} };
+        }
       }
       configureOrderLinks(activeWork);
       configureCardBuy(activeWork);
