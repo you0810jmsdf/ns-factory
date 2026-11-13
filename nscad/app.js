@@ -1035,7 +1035,9 @@ function markTargetS(s, d, closed, len) { const v = s + d; if (closed) return ((
 /** 目印ツールの距離指定。1 回目のクリック＝基準の点（線の端・角は磁石で正確に）、2 回目のクリック＝進む向き。開いた線の端が基準なら向きは線の内側に決まるので 1 回で打つ。距離は線に沿って測る（つながった線は結合点をまたぐ）。 */
 function markByDistance(click) {
   const d = markDistance(), reach = magnetRadiusMm(), second = stage?.kind === 'markBase'; let base = second ? click : markSnapPoint(click); /* 2回目は進む向きを決めるクリックなので吸着しない */
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, base) <= 8 / scale);
+  /* 測る線：目印に付いた短い線（点の目印の点線＝markOf・穴の線＝holeLink）は除き、いちばん近い線。ガイド層の線（線の目印など）は 2px 分だけ後回し：本体の線と重なっていれば本体の線を取る。
+     （事業主 2026-11-13「目印がうまく打てない。丸目で起点を最初につけた目印にしたとき」：基準のクリックが、先に打った目印の短い点線に取られ、2回目に本体の線を押すと「別の線」として基準からやり直していた） */
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s) && !s.markOf && !s.holeLink).map(s => ({ s, d: distTo(s, base) })).filter(x => x.d <= 8 / scale).sort((a, b) => (a.d + (a.s.layer === 'guide' ? 2 / scale : 0)) - (b.d + (b.s.layer === 'guide' ? 2 / scale : 0)))[0]?.s;
   if (!hit) { $('hint').textContent = t('markNoLine'); return; }
   const state = routeForHit(hit); if (!state?.route) return;
   const closed = !!state.saved.closed, route = { ...state.route, reversed: !!state.saved.reversed }, len = arcLength(route);
@@ -1892,7 +1894,7 @@ function markHoles(mark,all=false) {
   $('hint').textContent = t(skip ? 'holeMarkedSkip' : 'holeMarked', { n, skip });
 }
 // ツール id → ヘルプのページ id（文脈ヘルプ：ツールボタンを右クリック／長押しで開く）
-const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
+const TOOL_HELP = { patchfill: 'design', ruler: 'text-dimension', rect: 'drawing', cushion: 'drawing', divide: 'drawing', mark: 'stitching', select: 'drawing', line: 'drawing', circle: 'drawing', arc: 'drawing', bezier: 'drawing', polyline: 'drawing', path: 'pen', text: 'text-dimension', dimension: 'text-dimension', fillet: 'drawing', chamfer: 'drawing', offset: 'drawing', detour: 'drawing', trim: 'trim-mirror', mirror: 'trim-mirror', stitch: 'stitching', fold: 'design', koma: 'design', hardware: 'hardware', library: 'library', imgScale: 'underlay' };
 function helpData() { return document.documentElement.lang === 'en' ? HELP_EN : HELP_JA; }
 function renderHelpSelect() {
   const sel = $('helpPage'), q = ($('helpSearch').value || '').toLowerCase(), keep = sel.value; sel.textContent = '';
@@ -8625,7 +8627,7 @@ function runCommand(raw) {
     if (!point) { $('hint').textContent = t('needPoint'); return; }
     if (stage?.kind !== 'polyline') stage = { kind: 'polyline', points: [point], cmdLast: point }; else { stage.points.push(point); stage.cmdLast = point; }
     lastPoint = point;
-  } else if (mode === 'rect') {
+  } else if (mode === 'rect' || mode === 'cushion') {
     if (!stage || stage.kind !== 'cmd') { if (!point) { $('hint').textContent = t('needPoint'); return; } stage = { kind: 'cmd', start: point, cmdLast: point }; $('hint').textContent = t('rectSecond'); }
     else { if (!point) { $('hint').textContent = t('needPoint'); return; } const rect = rectShape(stage.start, point); if (!rect) { $('hint').textContent = t('rectFlat'); return; } addShape(rect); lastPoint = point; stage = null; $('hint').textContent = t('hint.rect'); }
   } else if (mode === 'circle') {
@@ -8788,7 +8790,7 @@ function magnetPointsOf(shapes) {
 }
 /** 磁石が効く距離(mm)。作図オプションの「吸着距離(px)」を画面倍率で換算。0 以下・不正値は 0＝磁石なし。 */
 function magnetRadiusMm() { const px = Number($('snapDist').value); return Number.isFinite(px) && px > 0 ? px / scale : 0; }
-const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror', 'mark', 'rect', 'text', 'koma', 'hardware', 'library', 'imgScale']; /* 点を置くツール全部で、円の中心・ガイドの点を出して吸着（線や図形を選ぶだけのツールは対象外） */
+const MAGNET_DRAW_MODES = ['ruler', 'line', 'circle', 'arc', 'bezier', 'polyline', 'path', 'dimension', 'fold', 'mirror', 'mark', 'rect', 'cushion', 'text', 'koma', 'hardware', 'library', 'imgScale']; /* 点を置くツール全部で、円の中心・ガイドの点を出して吸着（線や図形を選ぶだけのツールは対象外） */
 /** 作図ツール中だけ自動で仮表示する中心点。 */
 /** ポインタの近く（画面で 40px 以内）にあるガイドの点。作図ツールのときだけ、磁石が有効（吸着距離が 1px 以上）のときだけ。 */
 function guideMarkPoints() {
@@ -9191,7 +9193,7 @@ function keepPatchWinInView() { keepCardWinInView('patchCard'); }
 /** 左のツールに合わせて右のカードを出し入れする：目打ち・目印＝目打ちカード。ほかのツールでは閉じる。柄は右列でなく窓（setPatchWin）。 */
 function syncToolCards() {
   if ($('foldHandleBar') && !$('foldHandleBar').hidden && !foldHandleList().length && !secDimsShown()) closeFoldHandleBar();   /* 取っ手が出ていないときは、数字の小窓も閉じる */
-  $('rectBar').hidden = mode !== 'rect'; /* 幅・高さの欄は矩形ツールのときだけ */
+  $('rectBar').hidden = mode !== 'rect' && mode !== 'cushion'; $('cushNewRow').hidden = mode !== 'cushion'; /* 幅・高さの欄は矩形ツール（とクッション形）のときだけ。膨らみ・角の丸めの欄はクッション形のときだけ */
   syncLineBar();
   $('circleBar').hidden = mode !== 'circle'; /* 半径・直径の欄は円ツールのときだけ */
   $('filletBar').hidden = mode !== 'fillet'; $('chamferBar').hidden = mode !== 'chamfer'; $('divideBar').hidden = mode !== 'divide'; if (mode === 'divide') syncDivideBar(); $('rpatchBar').hidden = mode !== 'rpatch'; if (mode !== 'rpatch' && $('rpCompareWin')) $('rpCompareWin').hidden = true; if (mode === 'rpatch') syncRpatchBar(); $('rcolorBar').hidden = mode !== 'rcolor'; if (mode !== 'rcolor') { $('rcCompareWin').hidden = true; $('rcResultWin').hidden = true; } if (mode === 'rcolor') syncRcolorBar(); $('rsplitBar').hidden = mode !== 'rsplit'; /* 丸めの半径・面取りの寸法の欄は、そのツールのときだけ（事業主指示 2026-10-21） */
@@ -9315,7 +9317,7 @@ function removeSelected(onlyIds = null, alsoFn = null) {
 }
 /** 「点線で描く」（事業主 2026-10-25「直接点線が引きたい」→ 案A）：オンの間、作図の道具（直線・矩形・円・円弧・ベジェ・ペン）で描く図形は、点線になる。描いたあとに線種を変える手間をなくす。画面だけの状態で、図面には保存しない（もう一度押すか、ページを開き直すと実線）。 */
 let drawDashed = false;
-const DASH_DRAW_MODES = ['line', 'rect', 'circle', 'arc', 'bezier', 'path', 'polyline'];
+const DASH_DRAW_MODES = ['line', 'rect', 'cushion', 'circle', 'arc', 'bezier', 'path', 'polyline'];
 /** 「表示」の「点線」が切れているとき、点線を描いても見えず「線が引けない」ように見える（2026-10-30 事業主「点線が引けない」「点線が見えない」：保存された表示設定が dashed:false で、描いた点線が23本とも隠れていた）。点線を描く場面（「点線で描く」を入れたとき・点線ができたとき）で、切れていたらオンにする。画面の再描画・選択の整理はしない（呼び元が続けて描く）。オンにしたら true。 */
 function showDashedView() {
   if (viewShow.dashed) return false;
@@ -9334,6 +9336,14 @@ function addShape(shape) {
   if ((rest.type === 'text' || rest.type === 'dimension') && doc.layers.some(l => l.id === 'guide' && l.visible && !l.locked)) target = 'guide'; /* 基本方針：文字・寸法線はガイド、実線は型紙 */
   const dashed = (target === 'guide' || (drawDashed && DASH_DRAW_MODES.includes(mode))) && ['line', 'circle', 'arc', 'bezier', 'polyline', 'path'].includes(rest.type) && !rest.lineStyle ? { lineStyle: 'dashed' } : {}; /* ガイドの層に描く線は、自動で点線。「点線で描く」がオンの間は、作図の道具で描く線も点線 */
   const turnedOn = (dashed.lineStyle === 'dashed' || rest.lineStyle === 'dashed') && showDashedView();   /* 点線を描いたのに「点線を表示」が切れていると見えない */
+  if (mode === 'cushion' && rest.type === 'polyline' && rectBoxOf(rest)) {   /* クッション形ツール：描いた矩形を、上の欄の膨らみ・角の丸めのクッション形にして置く（元に戻すは1回） */
+    const b = rectBoxOf(rest), num = k => { const v = Number($(k)?.value || 0); return Number.isFinite(v) ? v : 0; }, res = cushionShapes({ ...b, by: num('cushNewBy'), bx: num('cushNewBx'), r: Math.max(0, num('cushNewR')) });
+    if (res && (res.bx || res.by || res.r)) {
+      const g = freshId(doc.shapes.filter(x => x.cush).map(x => ({ id: x.cush.g })), 'c'), q = { ...b, bx: res.bx, by: res.by, r: res.r };
+      commit(() => { const made = []; for (const [i, sh] of res.shapes.entries()) made.push({ id: freshId([...doc.shapes, ...made], 's'), layer: target, ...dashed, ...sh, cush: { g, i, ...q } }); doc.shapes.push(...made); selected = new Set(made.map(x => x.id)); });
+      if (turnedOn) $('hint').textContent = t('dashedViewAutoOn'); return;
+    }
+  }
   commit(() => { doc.shapes.push({ id, layer: target, ...dashed, ...rest }); selected = new Set([id]); });
   if (turnedOn) $('hint').textContent = t('dashedViewAutoOn');
 }
@@ -10108,7 +10118,7 @@ function snapped(p, shift, anchor) {
   if (!snap && onLines) { const ln = lineSnapAligned(p); if (ln) { result = ln.point; snap = ln.point; snapAlign = ln.align; } }   /* 直線：カーソルに近い線の上の点（垂線の足には引かない＝思った所に置ける）。Shift の水平・垂直固定は、このあとに効く */
   const al = !snap && (MAGNET_DRAW_MODES.includes(mode) || gesture?.kind === 'lineEnd') ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
   if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
-  if (shift && anchor && mode === 'rect') { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
+  if (shift && anchor && (mode === 'rect' || mode === 'cushion')) { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
 }
@@ -10119,7 +10129,7 @@ function anchor() {
   if (stage?.kind === 'path') return stage.nodes.at(-1) || null;
   if (stage?.kind === 'ruler' || stage?.kind === 'dim' || stage?.kind === 'mirror' || stage?.kind === 'foldDraw' || stage?.kind === 'divide2') return stage.a;
   if (stage?.kind === 'arc') return stage.center;
-  if (stage?.kind === 'cmd' && mode === 'rect') return stage.start;
+  if (stage?.kind === 'cmd' && (mode === 'rect' || mode === 'cushion')) return stage.start;
   if (stage?.kind === 'cmd' && mode === 'line') return stage.start; /* クリックで続けて引く直線：直前の点を基準に、Shift で水平・垂直へ固定する */
   if (stage?.kind === 'bezier') return stage.c1 ? stage.end : stage.start;
   if (stage?.kind === 'bzpts') return stage.points.at(-1);
@@ -10151,7 +10161,7 @@ function backToSelect(noteKey, from = null) { const ids = new Set(selected), cur
  *  対象は、線・折れ線・矩形・円・円弧・ベジエ・ペン・文字。描き終わりは道具ごとに違う（ドラッグを離す・終点のクリック・ダブルクリック・Enter）ので、クリック（pointerdown・pointerup）・ダブルクリック・Enter の3か所を drawOnce で包み、
  *  「その操作で図面が変わった」ときだけ戻す（描きかけの途中・描けなかったとき・取っ手での大きさ変更は戻さない）。Shift を押しながら描き終えたときは戻らない（直線・矩形で Shift は「水平・垂直に固定」でもあるので、固定して描いたときも続く）。
  *  keepTool は、いま処理している操作で Shift が押されているか（部品ライブラリ・定型句・大きさ指定の円と矩形が、続けて置くかの判定にも使う）。新しく「描く」道具を足したら、DRAW_ONCE_MODES に足す。 */
-const DRAW_ONCE_MODES = ['line', 'polyline', 'rect', 'circle', 'arc', 'bezier', 'path', 'text'];
+const DRAW_ONCE_MODES = ['line', 'polyline', 'rect', 'cushion', 'circle', 'arc', 'bezier', 'path', 'text'];
 let keepTool = false;
 function drawOnce(handler, kinds = null) {
   return function (e) {
@@ -10192,7 +10202,7 @@ function lineEndFor(a, p) {
   const d = len ? distance(a, p) : 0; return len && d > 1e-9 ? { x: r4(a.x + (p.x - a.x) * len / d), y: r4(a.y + (p.y - a.y) * len / d) } : p;
 }
 function shapeFromDrag(a, b) {
-  if (mode === 'rect') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+  if (mode === 'rect' || mode === 'cushion') return rectShape(a, b) || { type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y };
   if (mode === 'circle') return { type: 'circle', cx: a.x, cy: a.y, r: distance(a, b) };
   { const e = mode === 'line' ? lineEndFor(a, b) : b; return { type: 'line', x1: a.x, y1: a.y, x2: e.x, y2: e.y }; }
 }
@@ -10942,7 +10952,7 @@ function drawSheetBody(lo, hi) {
   ctx.setLineDash([5 / scale, 4 / scale]);
   if (gesture?.kind === 'draw') strokeShape(shapeFromDrag(gesture.start, cursor), '#c9a96e');
   if (mode === 'circle' && !gesture && circleSizeNow()) strokeShape({ type: 'circle', cx: cursor.x, cy: cursor.y, r: circleSizeNow() }, '#c9a96e', true); /* 置く前の仮の円 */
-  if (mode === 'rect' && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
+  if ((mode === 'rect' || mode === 'cushion') && !gesture && rectSizeNow()) { const ghost = rectBySizeAt(cursor); if (ghost) strokeShape(ghost, '#c9a96e', true); } /* 置く前の仮の矩形 */
   drawNestPreview(); drawPrintGuide();
   { const mv = movePreviewDelta(); if (mv) {   /* 移動カードの数字の予定位置：選んでいる図形・穴を、ずらした位置に薄い点線で（動かさない） */
     ctx.save(); ctx.globalAlpha = 0.45; ctx.lineWidth = 1.5 / scale;
@@ -10975,7 +10985,7 @@ function drawSheetBody(lo, hi) {
   else if (mode === 'dimension' && stage?.kind === 'radius') { strokeShape({ type: 'polyline', points: stage.f.pts, closed: false }, '#4fd0ff'); if (radiusHover) strokeShape(radiusHover.dim, radiusHover.outside ? '#ff9f43' : '#4fd0ff'); }   /* 角を選んだあと：選んだ角の曲線と、できる R（内側＝水色・外側＝だいだい色） */
   else if (mode === 'dimension' && !stage && radiusCorner) strokeShape({ type: 'polyline', points: radiusCorner.pts, closed: false }, '#4fd0ff');   /* 1回目の前：選ばれる角の曲線を強調 */
   if (stage?.kind === 'mirror') strokeShape({ type: 'line', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
-  if (stage?.kind === 'cmd' && stage.start && mode === 'rect') strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
+  if (stage?.kind === 'cmd' && stage.start && (mode === 'rect' || mode === 'cushion')) strokeShape(shapeFromDrag(stage.start, cursor), '#c9a96e');
   else if (stage?.kind === 'cmd' && stage.start) { const e = mode === 'line' ? lineEndFor(stage.start, cursor) : cursor; strokeShape({ type: 'line', x1: stage.start.x, y1: stage.start.y, x2: e.x, y2: e.y }, '#c9a96e'); }
   if (stage?.kind === 'cmd' && mode === 'circle' && stage.center && distance(stage.center, cursor) > 1e-8) strokeShape(shapeFromDrag(stage.center, cursor), '#c9a96e'); /* 中心クリック後は中心固定で半径が伸縮 */
   if (stage?.kind === 'foldDraw') strokeShape({ type: 'fold', x1: stage.a.x, y1: stage.a.y, x2: cursor.x, y2: cursor.y }, '#c9a96e');
@@ -11239,7 +11249,7 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'fold') { if (stage?.kind !== 'foldDraw') stage = { kind: 'foldDraw', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) { const mid = { x: (a.x + cursor.x) / 2, y: (a.y + cursor.y) / 2 }, host = doc.shapes.find(s => (s.type === 'polyline' || s.type === 'path') && s.closed && partOf(s) && (b => b.minX <= mid.x && b.maxX >= mid.x && b.minY <= mid.y && b.maxY >= mid.y)(bboxOf(s))); addShape({ type: 'fold', x1: a.x, y1: a.y, x2: cursor.x, y2: cursor.y, angleDeg: Number($('foldAngle').value) || 0, partId: host ? partOf(host).id : null, inner: $('foldInner').checked }); } } lastPoint = cursor; draw(); return; }
   if (mode === 'text') { openTextNew(cursor); return; }   /* 窓（メモ帳）で書く。置くのは決定したとき */
   if (mode === 'circle' && circleSizeNow()) { placeCircleBySize(cursor); return; } /* 半径・直径が入っている：クリックした位置を中心に、その大きさの円を置く */
-  if (mode === 'rect' && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
+  if ((mode === 'rect' || mode === 'cushion') && rectSizeNow()) { placeRectBySize(cursor); return; } /* 幅・高さが入っている：クリックした位置に、その大きさの矩形を置く */
   if (mode === 'bezier') { if (stage?.kind === 'bzpts') bezierClick(cursor); else if (stage?.kind === 'bezier') gesture = { kind: 'stage' }; else gesture = { kind: 'draw', start: cursor }; draw(); return; }   /* 点をクリックする連続方式と、ドラッグで始める4点方式（離したときに分ける） */
   if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
   if (mode === 'dimension') { dimToolClick(cursor, world(p)); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る（1回目が丸めた角の上なら、その角の R の寸法） */
@@ -11713,18 +11723,18 @@ canvas.addEventListener('pointerup', drawOnce(e => {
     stage = distance(g.start, cursor) > 1e-8 ? { kind: 'arc', center: g.start, r: fixedR, startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI } : { kind: 'arcR', center: g.start, r: fixedR };
     $('hint').textContent = t($('arcDir').value === 'ccw' ? 'arcRadiusHintCcw' : 'arcRadiusHint');
   } else if (g.kind === 'draw' && distance(g.start, cursor) > 1e-8) {
-    if (mode === 'rect') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
+    if (mode === 'rect' || mode === 'cushion') { const rect = rectShape(g.start, cursor); if (rect) { addShape(rect); lastPoint = cursor; } else $('hint').textContent = t('rectFlat'); }
     else if (mode === 'line' || mode === 'circle') addShape(shapeFromDrag(g.start, cursor));
     else if (mode === 'arc') stage = { kind: 'arc', center: g.start, r: distance(g.start, cursor), startDeg: Math.atan2(cursor.y - g.start.y, cursor.x - g.start.x) * 180 / Math.PI };
     else if (mode === 'bezier') { if (distance(g.start, cursor) > 6 / scale) { stage = { kind: 'bezier', start: g.start, end: cursor }; $('hint').textContent = t('bezierCtrlNext'); } else bezierClick(cursor); }   /* 6px 以上ドラッグ＝4点方式（次に制御点を2回）、それ未満＝点を打つ */
     else if (mode === 'polyline') stage = { kind: 'polyline', points: [g.start, cursor] };
   } else if (g.kind === 'draw' && mode === 'bezier') {
     bezierClick(cursor);
-  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline', 'rect'].includes(mode)) {
+  } else if (g.kind === 'draw' && ['line', 'circle', 'arc', 'polyline', 'rect', 'cushion'].includes(mode)) {
     runCommand(`${cursor.x},${cursor.y}`);
   } else if (g.kind === 'stage') {
     if (stage.kind === 'cmd') {
-      if (mode === 'rect') runCommand(`${cursor.x},${cursor.y}`);
+      if (mode === 'rect' || mode === 'cushion') runCommand(`${cursor.x},${cursor.y}`);
       else if (mode === 'line') { if (distance(stage.start, cursor) >= 6 / scale) { const e = lineEndFor(stage.start, cursor); runCommand(`${e.x},${e.y}`); stage = null; lastPoint = cursor; $('hint').textContent = t('hint.line'); } /* 終点のクリックで1本できて終わり（ペンのような連続線にしない・事業主要望 2026-10-21）。始点から画面上で6px未満＝ダブルクリックの手ぶれ。短い線を作らない */ }
       else if (mode === 'circle' || (mode === 'arc' && !stage.steps.length)) runCommand(String(distance(stage.center, cursor)));
       else if (mode === 'arc') runCommand(String(Math.atan2(cursor.y - stage.center.y, cursor.x - stage.center.x) * 180 / Math.PI));
