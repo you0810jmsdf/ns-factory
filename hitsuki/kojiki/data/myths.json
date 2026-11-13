@@ -1,0 +1,4002 @@
+{
+ "updated": "2026-11-13",
+ "policy": "古事記 上巻（中文維基文庫の校訂本文・段落番号 K1〜K156 はこのデータの便宜上の番号）に書いてあることだけを書く。原文と日本書紀の引用は一字一句そのまま。解釈（kind=解説）は公的な機関の解説（國學院大學 神名データベース等）で確かめ src に出典URLを付ける。読みは deities.json・原文の訓注・神名データベースで確かめたものだけ。現代語訳・注釈書の文章は使わない。",
+ "myths": [
+  {
+   "no": 1,
+   "id": "tenchi",
+   "title": "天地のはじまり",
+   "span": [
+    "K1",
+    "K2"
+   ],
+   "lead": "天と地が初めて開けたとき、高天原に天之御中主神が現れ、続いて神々が次々に成った。最初の五柱は「別天神」、その後の国之常立神から伊耶那岐神・伊耶那美神までは「神世七代」とまとめられている。",
+   "points": [
+    {
+     "text": "古事記で最初に現れる神は、高天原に成った天之御中主神である。続いて高御産巣日神・神産巣日神が成り、三柱とも独神として姿を隠した。",
+     "kind": "本文",
+     "refs": [
+      "K1"
+     ],
+     "src": []
+    },
+    {
+     "text": "天之御中主神から宇摩志阿斯訶備比古遅神・天之常立神までの五柱は「別天神」とされ、後に続く神世七代とは分けて書かれている。",
+     "kind": "本文",
+     "refs": [
+      "K1"
+     ],
+     "src": []
+    },
+    {
+     "text": "国之常立神から伊耶那岐神・伊耶那美神までが「神世七代」である。独神二柱は一柱で一代、男女十柱は二柱で一代と数え、その最後に国生みの主役となる伊耶那岐神・伊耶那美神が現れる。",
+     "kind": "本文",
+     "refs": [
+      "K2"
+     ],
+     "src": []
+    },
+    {
+     "text": "日本書紀の本文（第一段）は、天地が鶏の卵のように混ざり合った状態から分かれたと説明し、最初の神を国常立尊とする。天之御中主神にあたる天御中主尊は、一書第四に「又曰」として高天原に生まれた神として挙がるだけである。",
+     "kind": "比較",
+     "refs": [
+      "N1-1",
+      "N1-5"
+     ],
+     "src": []
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、天之御中主神・高御産巣日神・神産巣日神の三柱は古事記の序文の言葉から「造化三神」と呼ばれる。天之御中主神はこの冒頭にしか出てこず、何をした神かが描かれないため、どのような神かは明らかにしにくいとされる。",
+     "kind": "解説",
+     "refs": [
+      "K1"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/"
+     ]
+    },
+    {
+     "text": "同データベースによれば、古事記の神世七代は、伊耶那岐神・伊耶那美神の誕生を到達点とし、そこへ至る過程を神々の出現によって段階的に表したものとみる解釈が多い。その過程が何を表すか（国土の形成、男女神の身体の完成など）については説が分かれる。",
+     "kind": "解説",
+     "refs": [
+      "K2"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "天と地が初めて開けたとき、高天原に最初に成った神の名は天之御中主神である。次に高御産巣日神、次に神産巣日神が成った。この三柱はみな、相手を持たない「独神」として成り、姿を隠した。なお原文の小注は、「高天原」の「天」の字を「アマ」と読むよう指示している。",
+     "refs": [
+      "K1"
+     ]
+    },
+    {
+     "text": "次に、国がまだ若く、水に浮いた脂のようで、くらげのように漂っていたとき（原文はこの部分を音で「久羅下那州多陀用弊流」と書く）、葦の芽のように萌え伸びる物から成った神が宇摩志阿斯訶備比古遅神である。次に天之常立神が成った。この二柱も独神として成り、姿を隠した。ここまでの五柱の神を「別天神」という。",
+     "refs": [
+      "K1"
+     ]
+    },
+    {
+     "text": "続いて国之常立神、次に豊雲野神が成り、この二柱もまた独神として姿を隠した。その後は男女一組の神が続いて成る。宇比地迩神と妹の須比智迩神、角杙神と妹の活杙神、意富斗能地神と妹の大斗乃弁神、於母陀流神と妹の阿夜訶志古泥神、そして伊耶那岐神と妹の伊耶那美神である。",
+     "refs": [
+      "K2"
+     ]
+    },
+    {
+     "text": "国之常立神から伊耶那美神までをあわせて「神世七代」という。小注によると、独神の二柱はそれぞれ一柱で一代と数え、続く男女の十柱は二柱で一代と数える。こうして最後の七代目に伊耶那岐神・伊耶那美神が現れ、次の国生みの話へとつながっていく。",
+     "refs": [
+      "K2"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K1",
+     "text": "天地初發之時，於高天原成神名，天之御中主神。",
+     "note": "天と地が初めて開けたとき、高天原に成った神の名は天之御中主神である。"
+    },
+    {
+     "ref": "K1",
+     "text": "如葦牙因萌騰之物而成神名",
+     "note": "葦の芽のように萌え伸びる物から成った神の名は（宇摩志阿斯訶備比古遅神）。"
+    },
+    {
+     "ref": "K1",
+     "text": "上件五柱神者，別天神。",
+     "note": "ここまでの五柱の神は「別天神」である。"
+    },
+    {
+     "ref": "K2",
+     "text": "上件自國之常立神以下、伊耶那美神以前，并稱神世七代",
+     "note": "国之常立神から伊耶那美神までを、あわせて「神世七代」という。"
+    }
+   ],
+   "deities": [
+    "amenominakanushi",
+    "takamimusubi",
+    "amenotokotachi",
+    "kunitokotachi",
+    "izanagi",
+    "izanami"
+   ],
+   "figures": [
+    {
+     "name": "高天原",
+     "reading": "",
+     "role": "天地が開けたとき、最初の神々が成った場所。小注は「天」を「アマ」と読むよう指示するが、語全体の読みは原文からは確かめられない。",
+     "src": []
+    },
+    {
+     "name": "神産巢日神",
+     "reading": "かむむすひのかみ",
+     "role": "天之御中主神・高御産巣日神に続いて三番目に成った独神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/"
+     ]
+    },
+    {
+     "name": "宇摩志阿斯訶備比古遅神",
+     "reading": "うましあしかびひこじのかみ",
+     "role": "国が漂っていたとき、葦の芽のように萌え伸びる物から成った別天神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/"
+     ]
+    },
+    {
+     "name": "豊雲野神",
+     "reading": "とよくもののかみ",
+     "role": "国之常立神に続いて成った独神で、神世七代の第二代。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/"
+     ]
+    },
+    {
+     "name": "宇比地迩神",
+     "reading": "うひじにのかみ",
+     "role": "神世七代で最初に現れる男女一組の神の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/"
+     ]
+    },
+    {
+     "name": "須比智迩神",
+     "reading": "すひちにのかみ",
+     "role": "宇比地迩神と一組で現れる女神（原文で「妹」とされる）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/"
+     ]
+    },
+    {
+     "name": "角杙神",
+     "reading": "つのぐいのかみ",
+     "role": "神世七代の男女一組の神の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/"
+     ]
+    },
+    {
+     "name": "活杙神",
+     "reading": "いくぐいのかみ",
+     "role": "角杙神と一組で現れる女神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/"
+     ]
+    },
+    {
+     "name": "意富斗能地神",
+     "reading": "おおとのじのかみ",
+     "role": "神世七代の男女一組の神の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/"
+     ]
+    },
+    {
+     "name": "大斗乃弁神",
+     "reading": "おおとのべのかみ",
+     "role": "意富斗能地神と一組で現れる女神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/"
+     ]
+    },
+    {
+     "name": "於母陀流神",
+     "reading": "おもだるのかみ",
+     "role": "神世七代の男女一組の神の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/"
+     ]
+    },
+    {
+     "name": "阿夜訶志古泥神",
+     "reading": "あやかしこねのかみ",
+     "role": "於母陀流神と一組で現れる女神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "書紀の本文は、天地が分かれる前の様子を鶏の卵のような混沌として描き、天地の間に葦の芽のような物が生じて神となったとする。最初の神は国常立尊で、次に国狭槌尊・豊斟渟尊が現れ、天之御中主神にあたる神は本文に出てこない。",
+     "where": "巻第一 第一段 本文",
+     "ref": "N1-1",
+     "quote": "天地之中生一物，狀如葦牙，便化爲神，號國常立尊"
+    },
+    {
+     "text": "古事記の最初の三柱にあたる天御中主尊・高皇産霊尊・神皇産霊尊は、書紀では一書第四に「又曰」として、高天原に生まれた神として挙げられるだけである。",
+     "where": "巻第一 第一段 一書第四",
+     "ref": "N1-5",
+     "quote": "高天原所生神名，曰天御中主尊"
+    },
+    {
+     "text": "書紀の本文でも国常立尊から伊弉諾尊・伊弉冉尊までを「神世七代」と呼ぶが、その中身は、独りで成った男神三柱（第一段）と男女四組の八神（第二段）である。古事記の角杙神・活杙神にあたる角樴尊・活樴尊は、本文ではなく第三段の一書第一に見える。",
+     "where": "巻第一 第三段 本文（第三段 一書第一も参照）",
+     "ref": "N1-11",
+     "quote": "自國常立尊，迄伊弉諾尊、伊弉𠕋尊，是謂神世七代者矣"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/suhichininokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tsunoguinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ikuguinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/otonobenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/omodarunokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ayakashikonenokami/"
+   ]
+  },
+  {
+   "no": 2,
+   "id": "kuniumi",
+   "title": "国生み",
+   "span": [
+    "K3",
+    "K19"
+   ],
+   "lead": "天つ神の命を受けた伊耶那岐命と伊耶那美命は、天沼矛で淤能碁呂嶋を作り、そこで結婚して国土となる島々を生んだ。最初の結婚は女神が先に声をかけたためにうまくいかず、天つ神の占いに従ってやり直してから、大八嶋国をはじめとする島々が生まれた。",
+   "points": [
+    {
+     "text": "天つ神が伊耶那岐命・伊耶那美命に国を整えて固めるよう命じて天沼矛を授け、二柱が天浮橋から矛で海をかき回すと、矛の先から落ちた塩が積もって淤能碁呂嶋ができた。",
+     "kind": "本文",
+     "refs": [
+      "K3"
+     ],
+     "src": []
+    },
+    {
+     "text": "最初は伊耶那美命が先に声をかけたため、生まれた水蛭子は葦船で流され、淡嶋も子に数えられなかった。天つ神の太占で「女が先に言ったため」と分かり、伊耶那岐命が先に言うようにやり直した。",
+     "kind": "本文",
+     "refs": [
+      "K3",
+      "K4"
+     ],
+     "src": []
+    },
+    {
+     "text": "やり直した後、淡道之穂之狭別嶋から大倭豊秋津嶋まで八つの島が生まれ、これを先に生んだことから「大八嶋国」という名が生まれた。続いて吉備児嶋など六つの島も生まれた。",
+     "kind": "本文",
+     "refs": [
+      "K5",
+      "K12",
+      "K13",
+      "K14",
+      "K19"
+     ],
+     "src": []
+    },
+    {
+     "text": "日本書紀の本文（第四段）では天つ神の命令がなく、二神が自分たちで「下に国がないはずはない」と言って矛で探る。女神が先に唱えると男神がその場でとがめてやり直し、天つ神への相談や占いはない。最初に生む島も大日本豊秋津洲で、淡路洲は「胞」とされる。",
+     "kind": "比較",
+     "refs": [
+      "N1-13",
+      "N1-14"
+     ],
+     "src": []
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、「淤能碁呂」は「おのずから凝り固まる」意と解され、二柱が結婚して生んだ島ではなく、自然にできた島であることを示す名だといわれる。",
+     "kind": "解説",
+     "refs": [
+      "K3"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/"
+     ]
+    },
+    {
+     "text": "同データベースによれば、「水蛭子」の名は、字のとおり蛭のような子とみる説と、「日子」（太陽の子）の当て字とみる説が対立している。また「三歳になっても脚が立たない」という記述は日本書紀の第五段にしかないため、それを古事記の水蛭子に当てはめることには疑問も出されている。",
+     "kind": "解説",
+     "refs": [
+      "K3"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "天つ神たちは伊耶那岐命と伊耶那美命の二柱に、この漂っている国を整えて固めるよう命じ、天沼矛を授けた。二柱は天浮橋に立って矛を下ろし、海水をかき鳴らして引き上げた。すると矛の先から滴り落ちた塩が積もって島となった。これが淤能碁呂嶋である。",
+     "refs": [
+      "K3"
+     ]
+    },
+    {
+     "text": "二柱はその島に降り、天之御柱と八尋殿を見立てた。伊耶那岐命が体のつくりを尋ねると、伊耶那美命は「成り合わないところが一か所ある」と答え、伊耶那岐命は自分には「成り余ったところが一か所ある」と言った。伊耶那岐命はそれを合わせて国土を生もうと提案し、伊耶那美命も同意した。二柱は天之御柱を、伊耶那美命は右から、伊耶那岐命は左から回って出会うことにした。",
+     "refs": [
+      "K3"
+     ]
+    },
+    {
+     "text": "出会ったとき、伊耶那美命が先に「あなにやし、えをとこを」と言い、後から伊耶那岐命が「あなにやし、えをとめを」と言った（原文は音で書かれている）。伊耶那岐命は「女が先に言ったのはよくない」と告げたが、そのまま交わって生まれた子は水蛭子であった。この子は葦船に入れて流され、次に生まれた淡嶋も子の数には入れなかった。",
+     "refs": [
+      "K3"
+     ]
+    },
+    {
+     "text": "二柱は相談して天つ神のもとに参上し、指示を求めた。天つ神は太占で占い、女が先に言ったのでよくなかったのだから、また降りて言い直すようにと告げた。二柱は再び降りて前と同じように天之御柱を回り、今度は伊耶那岐命が先に、伊耶那美命が後に呼びかけた。",
+     "refs": [
+      "K4"
+     ]
+    },
+    {
+     "text": "こうして二柱が交わって生んだのは、淡道之穂之狭別嶋、伊予之二名嶋、隠伎之三子嶋、筑紫嶋、伊伎嶋、津嶋、佐度嶋、大倭豊秋津嶋の八つの島である。伊予之二名嶋と筑紫嶋はどちらも体が一つで顔が四つあり、顔ごとに愛比売・飯依比古・大宜都比売・建依別、白日別・豊日別・建日向日豊久士比泥別・建日別という名がある。この八つの島を先に生んだので、「大八嶋国」という。",
+     "refs": [
+      "K5",
+      "K6",
+      "K7",
+      "K8",
+      "K9",
+      "K10",
+      "K11",
+      "K12",
+      "K13"
+     ]
+    },
+    {
+     "text": "その後、帰るときに、さらに吉備児嶋・小豆嶋・大嶋・女嶋・知訶嶋・両児嶋を生んだ。これらの島にもそれぞれ、建日方別・大野手比売・大多麻流別・天一根・天之忍男・天両屋という別の名がある。小注は、吉備児嶋から天両屋までをあわせて六島と数えている。",
+     "refs": [
+      "K14",
+      "K15",
+      "K16",
+      "K17",
+      "K18",
+      "K19"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K3",
+     "text": "修理固成是多陀用幣流之國",
+     "note": "この漂っている国を、整えて固めよ（天つ神の命令）。"
+    },
+    {
+     "ref": "K3",
+     "text": "自其矛末垂落塩之累積成嶋，是淤能碁吕嶋",
+     "note": "矛の先から滴り落ちた塩が積もって島になった。これが淤能碁呂嶋である。"
+    },
+    {
+     "ref": "K3",
+     "text": "女人先言不良",
+     "note": "女が先に言ったのはよくない（伊耶那岐命の言葉）。"
+    },
+    {
+     "ref": "K13",
+     "text": "故因此八嶋先所生，謂大八嶋國。",
+     "note": "この八つの島を先に生んだので、大八嶋国という。"
+    }
+   ],
+   "deities": [
+    "izanagi",
+    "izanami"
+   ],
+   "figures": [
+    {
+     "name": "天沼矛",
+     "reading": "",
+     "role": "天つ神が二柱に授けた矛。これで海をかき回して淤能碁呂嶋ができた。",
+     "src": []
+    },
+    {
+     "name": "天浮橋",
+     "reading": "",
+     "role": "二柱が立って矛を下ろした場所。",
+     "src": []
+    },
+    {
+     "name": "淤能碁吕嶋",
+     "reading": "おのごろしま",
+     "role": "矛の先から滴った塩が積もってできた島。二柱が降りて結婚した場所。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/"
+     ]
+    },
+    {
+     "name": "天之御柱",
+     "reading": "",
+     "role": "淤能碁呂嶋に見立てた柱。二柱はこれを回って出会い、結婚した。",
+     "src": []
+    },
+    {
+     "name": "八尋殿",
+     "reading": "",
+     "role": "淤能碁呂嶋に天之御柱とともに見立てた御殿。",
+     "src": []
+    },
+    {
+     "name": "水蛭子",
+     "reading": "ひるこ",
+     "role": "最初の結婚で生まれた子。葦船に入れて流された。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/"
+     ]
+    },
+    {
+     "name": "淡嶋",
+     "reading": "あわしま",
+     "role": "水蛭子の次に生まれた島。子の数には入れられなかった。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/awashima/"
+     ]
+    },
+    {
+     "name": "淡道之穗之狹別嶋",
+     "reading": "あわじのほのさわけのしま",
+     "role": "やり直しの後、最初に生まれた島。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/"
+     ]
+    },
+    {
+     "name": "伊豫之二名嶋",
+     "reading": "いよのふたなのしま",
+     "role": "体が一つで顔が四つある島。顔ごとに国の名がある。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/"
+     ]
+    },
+    {
+     "name": "筑紫嶋",
+     "reading": "つくしのしま",
+     "role": "伊予之二名嶋と同じく、体が一つで顔が四つある島。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/"
+     ]
+    },
+    {
+     "name": "佐度嶋",
+     "reading": "さどのしま",
+     "role": "大八嶋国の一つとして生まれた島。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/"
+     ]
+    },
+    {
+     "name": "大倭豊秋津嶋",
+     "reading": "おおやまととよあきづしま",
+     "role": "大八嶋国の八番目に生まれた島。別名は天御虚空豊秋津根別。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/"
+     ]
+    },
+    {
+     "name": "大宜都比賣",
+     "reading": "おおげつひめ",
+     "role": "伊予之二名嶋の四つの顔の一つ、粟国の名。神生みで生まれる大宜都比売神とは同名の別の神と考えられている（神名データベース）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/"
+     ]
+    },
+    {
+     "name": "大八嶋國",
+     "reading": "",
+     "role": "最初に生まれた八つの島をまとめた呼び名。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "書紀の本文では天つ神の命令がなく、伊弉諾尊・伊弉冉尊が天浮橋の上で自分たちで相談し、天之瓊矛で探って磤馭慮島を得る。柱を回って女神が先に唱えると、男神がその場でとがめてやり直し、天つ神への相談や太占は出てこない。",
+     "where": "巻第一 第四段 本文",
+     "ref": "N1-13",
+     "quote": "底下豈無國歟"
+    },
+    {
+     "text": "書紀の本文では淡路洲を「胞」とし、最初に大日本豊秋津洲を生む。蛭児と淡洲は本文の国生みには出てこず、対馬・壱岐などの島は潮の泡が凝ってできたとされる。",
+     "where": "巻第一 第四段 本文",
+     "ref": "N1-14",
+     "quote": "先以淡路洲爲胞"
+    },
+    {
+     "text": "一書第一は、天神の命令、蛭児を葦船で流すこと、淡洲を子に数えないこと、太占によるやり直しなど、古事記に近い。ただし最初に柱を回るとき女神が左・男神が右で、やり直しでは向きも入れ替える。古事記では最初から女神が右・男神が左で、やり直しでも同じように回る。",
+     "where": "巻第一 第四段 一書第一",
+     "ref": "N1-15",
+     "quote": "妹自左巡，吾當右巡"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hiruko/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/awashima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/awajinohonosawakenoshima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/iyonofutananoshima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tsukushinoshima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sadonoshima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oyamatotoyoakizushima/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/"
+   ]
+  },
+  {
+   "no": 3,
+   "id": "kamiumi",
+   "title": "神生みと火の神",
+   "span": [
+    "K20",
+    "K75"
+   ],
+   "lead": "国を生み終えた伊耶那岐命と伊耶那美命は、海・風・木・山・野などの神々を次々に生んだが、伊耶那美命は火の神を生んだために焼かれて亡くなった。悲しんだ伊耶那岐命が火の神迦具土神を斬ると、その血と体からさらに多くの神々が成った。",
+   "points": [
+    {
+     "text": "伊耶那美命は火の神の火之夜芸速男神（別名 火之迦具土神）を生んだため陰部を焼かれて病に伏し、ついに神避った。病の間にも、嘔吐物・糞・尿から金山毗古神・波迩夜須毗売神・弥都波能売神・和久産巣日神などが成った。",
+     "kind": "本文",
+     "refs": [
+      "K51",
+      "K52",
+      "K53",
+      "K57",
+      "K58",
+      "K59"
+     ],
+     "src": []
+    },
+    {
+     "text": "嘆いた伊耶那岐命は十拳剣で子の迦具土神の首を斬った。剣についた血からは建御雷之男神を含む八柱、迦具土神の体からは正鹿山津見神など八柱の山津見神が成った。その剣の名は天之尾羽張（伊都之尾羽張）である。",
+     "kind": "本文",
+     "refs": [
+      "K63",
+      "K66",
+      "K67",
+      "K74",
+      "K75"
+     ],
+     "src": []
+    },
+    {
+     "text": "神生みでは、海の神（大綿津見神）、水戸の神（速秋津日子神・速秋津比売神）、風の神（志那都比古神）、木の神（久々能智神）、山の神（大山津見神）、野の神（鹿屋野比売神）が、原文で役割を名指しされて生まれる。さらに水戸の二神は河と海を、山と野の二神は山と野を分け持って、次の神々を生む。",
+     "kind": "本文",
+     "refs": [
+      "K28",
+      "K29",
+      "K37",
+      "K38",
+      "K39",
+      "K40",
+      "K41"
+     ],
+     "src": []
+    },
+    {
+     "text": "伊耶那岐命の涙からは泣沢女神が成り、伊耶那美神は出雲国と伯伎国の境の比婆之山に葬られた。小注は、伊耶那美神が神避る前に二柱が共に生んだものを、島十四・神三十五と数え、淤能碁呂嶋は生んだ島ではないと記す。",
+     "kind": "本文",
+     "refs": [
+      "K59",
+      "K60"
+     ],
+     "src": []
+    },
+    {
+     "text": "日本書紀の本文（第五段）には火の神の誕生も伊弉冉尊の死もなく、二神は山川草木の神々の後に日神・月神・蛭児・素戔嗚尊を生む。火の神（軻遇突智）と伊弉冉尊の死は一書の側に伝えられ、一書第六が古事記に近い筋を語る。",
+     "kind": "比較",
+     "refs": [
+      "N1-25",
+      "N1-26",
+      "N1-32"
+     ],
+     "src": []
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、建御雷之男神は火の神を斬った剣の根元の血から成った神で、その剣の神である伊都之尾羽張の子と位置づけられる。別名の建布都神・豊布都神の「フツ」は刀剣に関する語とされ、刀剣の神としての性格が強いと指摘されている。この神は後の国譲りの場面で使者となる。",
+     "kind": "解説",
+     "refs": [
+      "K66",
+      "K75"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "国を生み終えた二柱は、続いて神々を生んだ。最初に大事忍男神が生まれ、次に石土毗古神・石巣比売神・大戸日別神・天之吹男神・大屋毗古神・風木津別之忍男神が生まれた。さらに海の神として大綿津見神、水戸の神として速秋津日子神と妹の速秋津比売神が生まれた。",
+     "refs": [
+      "K20",
+      "K21",
+      "K22",
+      "K23",
+      "K24",
+      "K25",
+      "K26",
+      "K27",
+      "K28",
+      "K29"
+     ]
+    },
+    {
+     "text": "速秋津日子神と速秋津比売神は、河と海とを分け持って、さらに神々を生んだ。それが沫那芸神・沫那美神・頬那芸神・頬那美神・天之水分神・国之水分神・天之久比奢母智神・国之久比奢母智神の八柱である。小注はこれを「并八神」とまとめている。",
+     "refs": [
+      "K29",
+      "K30",
+      "K31",
+      "K32",
+      "K33",
+      "K34",
+      "K35",
+      "K36"
+     ]
+    },
+    {
+     "text": "二柱は次に、風の神の志那都比古神、木の神の久々能智神、山の神の大山津見神、野の神の鹿屋野比売神（別名 野椎神）を生んだ。大山津見神と野椎神は山と野とを分け持って、天之狭土神・国之狭土神・天之狭霧神・国之狭霧神・天之闇戸神・国之闇戸神・大戸惑子神・大戸惑女神の八柱を生んだ。続いて二柱は鳥之石楠船神（別名 天鳥船神）と大宜都比売神を生んだ。",
+     "refs": [
+      "K37",
+      "K38",
+      "K39",
+      "K40",
+      "K41",
+      "K48",
+      "K49",
+      "K50"
+     ]
+    },
+    {
+     "text": "次に生んだのが火之夜芸速男神で、別名を火之炫毗古神、また火之迦具土神という。この子を生んだために、伊耶那美命は陰部を焼かれて病に伏した。そのとき嘔吐物から金山毗古神・金山毗売神、糞から波迩夜須毗古神・波迩夜須毗売神、尿から弥都波能売神と和久産巣日神が成り、和久産巣日神の子を豊宇気毗売神という。こうして伊耶那美神は火の神を生んだことによって、ついに神避った（亡くなった）。",
+     "refs": [
+      "K51",
+      "K52",
+      "K53",
+      "K54",
+      "K55",
+      "K56",
+      "K57",
+      "K58",
+      "K59"
+     ]
+    },
+    {
+     "text": "伊耶那岐命は「いとしい妻を、子一人と引き換えにしてしまった」と嘆き、伊耶那美命の枕元や足元に腹ばいになって泣いた。その涙から成った神が、香山の畝尾の木本にいる泣沢女神である。亡くなった伊耶那美神は、出雲国と伯伎国の境にある比婆之山に葬られた。",
+     "refs": [
+      "K60"
+     ]
+    },
+    {
+     "text": "伊耶那岐命は腰に帯びていた十拳剣を抜き、子の迦具土神の首を斬った。剣の先についた血が湯津石村に飛び散って石拆神・根拆神・石筒之男神が成り、剣の根元についた血からは甕速日神・樋速日神・建御雷之男神（別名 建布都神・豊布都神）が成った。剣の柄に集まって指の間から漏れ出た血からは、闇淤加美神と闇御津羽神が成った。小注は、これらを剣によって生まれた八柱の神とまとめている。",
+     "refs": [
+      "K63",
+      "K64",
+      "K65",
+      "K66"
+     ]
+    },
+    {
+     "text": "殺された迦具土神の体からも神々が成った。頭に正鹿山津見神、胸に淤縢山津見神、腹に奥山津見神、陰部に闇山津見神、左手に志芸山津見神、右手に羽山津見神、左足に原山津見神、右足に戸山津見神の八柱である。迦具土神を斬った剣の名は天之尾羽張、別名を伊都之尾羽張という。",
+     "refs": [
+      "K67",
+      "K68",
+      "K69",
+      "K70",
+      "K71",
+      "K72",
+      "K73",
+      "K74",
+      "K75"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K59",
+     "text": "伊耶那美神者，因生火神，遂神避坐也",
+     "note": "伊耶那美神は、火の神を生んだことによって、ついに亡くなった。"
+    },
+    {
+     "ref": "K60",
+     "text": "愛我那迩妹命乎！謂易子之一木乎！",
+     "note": "いとしい私の妻よ。子ども一人と引き換えにしてしまったのか（伊耶那岐命の嘆き）。"
+    },
+    {
+     "ref": "K63",
+     "text": "拔所御佩之十拳釼，斬其子迦具土神之頸",
+     "note": "腰に帯びていた十拳剣を抜いて、子の迦具土神の首を斬った。"
+    },
+    {
+     "ref": "K75",
+     "text": "故所斬之刀名謂天之尾羽張",
+     "note": "迦具土神を斬った刀の名を天之尾羽張という。"
+    }
+   ],
+   "deities": [
+    "izanagi",
+    "izanami",
+    "iwatsuchibiko",
+    "watatsumi",
+    "amenomikumari",
+    "amenomihashira",
+    "ooyamatsumi",
+    "amenotorifune",
+    "ookegetsuhime",
+    "homusubi",
+    "kanayamahiko",
+    "kanayamahime",
+    "haniyamahime",
+    "wakumusubi",
+    "toyouke",
+    "takemikazuchi"
+   ],
+   "figures": [
+    {
+     "name": "大事忍男神",
+     "reading": "おおことおしおのかみ",
+     "role": "国生みの後、神生みで最初に生まれた神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okotooshionokami/"
+     ]
+    },
+    {
+     "name": "速秋津日子神",
+     "reading": "はやあきつひこのかみ",
+     "role": "水戸の神。妹の速秋津比売神と河と海を分け持って八柱の神を生む。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhikonokami/"
+     ]
+    },
+    {
+     "name": "速秋津比賣神",
+     "reading": "はやあきつひめのかみ",
+     "role": "水戸の神。速秋津日子神と一組で神々を生む。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhimenokami/"
+     ]
+    },
+    {
+     "name": "久々能智神",
+     "reading": "くくのちのかみ",
+     "role": "木の神として生まれた神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kukunochinokami/"
+     ]
+    },
+    {
+     "name": "鹿屋野比賣神",
+     "reading": "かやのひめのかみ",
+     "role": "野の神。別名は野椎神で、大山津見神と山と野を分け持って八柱の神を生む。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kayanohimenokami/"
+     ]
+    },
+    {
+     "name": "弥都波能賣神",
+     "reading": "みつはのめのかみ",
+     "role": "病に伏した伊耶那美命の尿から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/mitsuhanomenokami/"
+     ]
+    },
+    {
+     "name": "泣澤女神",
+     "reading": "なきさわめのかみ",
+     "role": "伊耶那美命の死を嘆く伊耶那岐命の涙から成った神。香山の畝尾の木本にいる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/nakisawamenokami/"
+     ]
+    },
+    {
+     "name": "石拆神",
+     "reading": "いわさくのかみ",
+     "role": "剣の先の血が湯津石村に飛び散って成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/iwasakunokami/"
+     ]
+    },
+    {
+     "name": "甕速日神",
+     "reading": "みかはやひのかみ",
+     "role": "剣の根元の血から成った三柱の第一。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/mikahayahinokami/"
+     ]
+    },
+    {
+     "name": "闇淤加美神",
+     "reading": "くらおかみのかみ",
+     "role": "剣の柄に集まり指の間から漏れた血から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kuraokaminokami/"
+     ]
+    },
+    {
+     "name": "正鹿山津見神",
+     "reading": "まさかやまつみのかみ",
+     "role": "殺された迦具土神の頭から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/masakayamatsuminokami/"
+     ]
+    },
+    {
+     "name": "十拳釼",
+     "reading": "",
+     "role": "伊耶那岐命が腰に帯びていた剣。これで迦具土神の首を斬った。",
+     "src": []
+    },
+    {
+     "name": "天之尾羽張",
+     "reading": "あめのおはばり",
+     "role": "迦具土神を斬った剣の名。別名は伊都之尾羽張。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/"
+     ]
+    },
+    {
+     "name": "比婆之山",
+     "reading": "",
+     "role": "出雲国と伯伎国の境にある山。伊耶那美神が葬られた。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "書紀の本文では、二神は海・川・山・木の祖・草の祖を生んだ後、「天下の主」を生もうと相談して日神（大日孁貴）・月神・蛭児・素戔嗚尊を生む。火の神の誕生と伊弉冉尊の死は本文には書かれていない。",
+     "where": "巻第一 第五段 本文",
+     "ref": "N1-25",
+     "quote": "何不生天下之主者歟"
+    },
+    {
+     "text": "一書第六は古事記に近く、軻遇突智の誕生で伊弉冉尊が亡くなり、伊弉諾尊が子一人と妻を引き換えにしたと嘆き、涙から啼沢女命が成る。ただし軻遇突智は三つに斬られ、剣から垂れた血から甕速日神・熯速日神・武甕槌神などが成るなど、細部は異なる。",
+     "where": "巻第一 第五段 一書第六",
+     "ref": "N1-32",
+     "quote": "唯以一兒替我愛之妹者乎"
+    },
+    {
+     "text": "伊弉冉尊を葬った場所について、一書第五は紀伊国熊野の有馬村とし、古事記の「出雲国と伯伎国の境の比婆之山」とは異なる。",
+     "where": "巻第一 第五段 一書第五",
+     "ref": "N1-31",
+     "quote": "故葬於紀伊國熊野之有馬村焉"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hinokagutsuchinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okotooshionokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhikonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhimenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kukunochinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kayanohimenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/mitsuhanomenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/nakisawamenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/iwasakunokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/mikahayahinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kuraokaminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/masakayamatsuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/"
+   ]
+  },
+  {
+   "no": 4,
+   "id": "yomi",
+   "title": "黄泉の国",
+   "span": [
+    "K76",
+    "K90"
+   ],
+   "lead": "伊耶那岐命は黄泉国へ去った妻の伊耶那美命を連れ戻しに行くが、「見ないで」という願いを破って変わり果てた姿を見てしまい、追われて逃げ帰る。黄泉比良坂を石でふさいで別れの言葉を交わしたあと、伊耶那岐命は穢れを清める禊に向かい、脱ぎ捨てた持ち物から十二の神が生まれる。",
+   "points": [
+    {
+     "text": "伊耶那岐命は「黄泉神と話し合う間は見ないで」という伊耶那美命の頼みを破って火をともして見たため、恥をかかされた伊耶那美命に追われることになった。",
+     "kind": "本文",
+     "refs": [
+      "K76",
+      "K77"
+     ]
+    },
+    {
+     "text": "黄泉比良坂を千引石でふさいだあと、伊耶那美命は「一日に千人殺す」と言い、伊耶那岐命は「一日に千五百の産屋を建てる」と返した。古事記はこれを、一日に必ず千人が死に千五百人が生まれることの由来として語る。",
+     "kind": "本文",
+     "refs": [
+      "K77"
+     ]
+    },
+    {
+     "text": "伊耶那岐命は坂のふもとの桃の実三つで追っ手を退け、その桃に意富加牟豆美命の名を与えて、葦原中国の人々が苦しむときにも助けるよう命じた。",
+     "kind": "本文",
+     "refs": [
+      "K77"
+     ]
+    },
+    {
+     "text": "日本書紀第五段の一書第九でも、伊弉諾尊は桃の実を投げて雷たちを退け、それが桃で鬼を避ける由来だと説明される。一方、一書第六には桃は出てこず、大樹に放尿して大きな川を生じさせたという別の伝えが載る。",
+     "kind": "比較",
+     "refs": [
+      "N1-35",
+      "N1-32"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、坂をふさいだ石（道反之大神）については、黄泉比良坂を現世と死者の世界の境と見て、悪いものの侵入をせき止める道祖神・塞の神のような境界の神の性格を読み取る説がある。",
+     "kind": "解説",
+     "refs": [
+      "K77"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/"
+     ]
+    },
+    {
+     "text": "同データベースによれば、髪飾りや櫛を投げ、生じた食べ物で追っ手を足止めする逃げ方は世界に広く見られる「呪的逃走」の型に当てはまるとされる。ただ最後の桃は桃そのものの力で追っ手を退けており、桃が鬼をはらうという中国由来の考え方の影響が指摘されている。",
+     "kind": "解説",
+     "refs": [
+      "K77"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "伊耶那岐命は妻の伊耶那美命に会いたいと思い、黄泉国まで追っていった。御殿の戸口で迎えた伊耶那美命に、伊耶那岐命は「二人で作ってきた国はまだ作り終えていないから、帰ってきてほしい」と呼びかけた。伊耶那美命は「もっと早く来てくれればよかったのに。わたしはもう黄泉戸喫をしてしまった」と答えた。それでも「あなたが来てくれたのはおそれ多いので帰りたい。しばらく黄泉神と話し合ってくるから、その間わたしを見ないでほしい」と頼み、御殿の奥へ戻った。あまりに長く待たされたので、伊耶那岐命は左のみずらに挿していた櫛の太い歯を一本折り取って火をともし、中に入って見た。すると伊耶那美命の体には蛆がたかり、頭・胸・腹・陰部・左右の手・左右の足に、合わせて八柱の雷神が生じていた。",
+     "refs": [
+      "K76"
+     ]
+    },
+    {
+     "text": "伊耶那岐命は恐れて逃げ出した。伊耶那美命は「わたしに恥をかかせた」と言い、予母都志許売に追わせた。伊耶那岐命が黒い髪飾りを投げ捨てると蒲子が生え、追っ手がそれを拾って食べている間に逃げ、右のみずらの櫛を折って投げると筍が生え、それを抜いて食べている間にまた逃げた。次に伊耶那美命は八柱の雷神に千五百の黄泉の軍勢を付けて追わせ、伊耶那岐命は十拳剣を後ろ手に振りながら逃げ続けた。",
+     "refs": [
+      "K77"
+     ]
+    },
+    {
+     "text": "黄泉比良坂のふもとまで来たとき、伊耶那岐命はそこにあった桃の実を三つ取って待ち受け、打ちかかると、追っ手はみな逃げ帰った。伊耶那岐命は桃の実に「わたしを助けたように、葦原中国に生きる人々が苦しい目にあって悩むときにも助けよ」と告げ、意富加牟豆美命という名を与えた。最後に伊耶那美命自身が追ってきた。伊耶那岐命は千引石で黄泉比良坂をふさぎ、二神は石をはさんで向かい合い、別れの言葉を交わした。伊耶那美命が「あなたがこうするなら、あなたの国の人々を一日に千人絞め殺そう」と言うと、伊耶那岐命は「それならわたしは一日に千五百の産屋を建てよう」と答えた。このために一日に必ず千人が死に、千五百人が生まれるのだ、と古事記は記す。",
+     "refs": [
+      "K77"
+     ]
+    },
+    {
+     "text": "このことから伊耶那美命は黄泉津大神と呼ばれ、伊耶那岐命に追いついたことから道敷大神ともいう。坂をふさいだ石は道反大神、また塞坐黄泉戸大神と呼ばれる。黄泉比良坂は、今の出雲国の伊賦夜坂のことだという。",
+     "refs": [
+      "K77"
+     ]
+    },
+    {
+     "text": "伊耶那岐大神は「わたしはひどく汚れた国に行っていた。だから身を清める禊をしよう」と言い、竺紫の日向の橘の小門の阿波岐原に行って禊祓をした。そこで投げ捨てた杖・帯・裳・衣・褌・冠と左右の手纏から、衝立船戸神から辺津甲斐弁羅神まで十二柱の神が生まれた。古事記はこれらを、身に着けていた物を脱いだことで生まれた神だと説明している。",
+     "refs": [
+      "K77",
+      "K78",
+      "K79",
+      "K80",
+      "K81",
+      "K82",
+      "K83",
+      "K84",
+      "K85",
+      "K86",
+      "K87",
+      "K88",
+      "K89",
+      "K90"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K76",
+     "text": "愛我那迩妹命，吾与汝所作之國，未作竟，故可還。",
+     "note": "いとしい妻よ、あなたとわたしで作ってきた国はまだ作り終えていない。だから帰ってきてほしい。"
+    },
+    {
+     "ref": "K76",
+     "text": "且与黃泉神相論，莫視我。",
+     "note": "しばらく黄泉神と話し合ってくるので、その間わたしを見ないでください。"
+    },
+    {
+     "ref": "K77",
+     "text": "吾一日立千五百産屋。",
+     "note": "（それなら）わたしは一日に千五百の産屋を建てよう。"
+    },
+    {
+     "ref": "K77",
+     "text": "是以一日必千人死，一日必千五百人生也。",
+     "note": "こういうわけで、一日に必ず千人が死に、一日に必ず千五百人が生まれるのである。"
+    }
+   ],
+   "deities": [
+    "izanagi",
+    "izanami",
+    "ooikazuchi",
+    "kunado"
+   ],
+   "figures": [
+    {
+     "name": "黃泉神",
+     "reading": "よもつかみ",
+     "role": "伊耶那美命が、帰ってよいかを相談しに行くと言った黄泉国の神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/"
+     ]
+    },
+    {
+     "name": "八雷神",
+     "reading": "やくさのいかづちのかみ",
+     "role": "伊耶那美命の体の八か所に生じていた雷神たち。千五百の黄泉の軍勢を付けられて伊耶那岐命を追った。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/"
+     ]
+    },
+    {
+     "name": "豫母都志許賣",
+     "reading": "よもつしこめ",
+     "role": "伊耶那美命が最初に差し向けた追っ手。投げられた髪飾りや櫛から生えたものを食べている間に伊耶那岐命に逃げられた。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/"
+     ]
+    },
+    {
+     "name": "意富加牟豆美命",
+     "reading": "おおかむずみのみこと",
+     "role": "黄泉比良坂のふもとで追っ手を退けた桃の実に、伊耶那岐命が与えた名。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/"
+     ]
+    },
+    {
+     "name": "道反大神",
+     "reading": "ちがえしのおおかみ",
+     "role": "黄泉比良坂をふさいだ千引石につけられた名。塞坐黄泉戸大神ともいう。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/"
+     ]
+    },
+    {
+     "name": "道之長乳齒神",
+     "reading": "みちのながちはのかみ",
+     "role": "禊の前に投げ捨てた帯から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/"
+     ]
+    },
+    {
+     "name": "時置師神",
+     "reading": "",
+     "role": "投げ捨てた裳から成った神（この校訂本文の表記。神名データベースは別の伝本の表記「時量師神」を見出しとし、読みにも諸説があるとするため、読みは付けない）。",
+     "src": []
+    },
+    {
+     "name": "和豆良比能宇斯能神",
+     "reading": "わずらいのうしのかみ",
+     "role": "投げ捨てた衣から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/"
+     ]
+    },
+    {
+     "name": "道俣神",
+     "reading": "ちまたのかみ",
+     "role": "投げ捨てた褌から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/"
+     ]
+    },
+    {
+     "name": "飽咋之宇斯能神",
+     "reading": "あきぐいのうしのかみ",
+     "role": "投げ捨てた冠から成った神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/"
+     ]
+    },
+    {
+     "name": "奧疎神",
+     "reading": "おきざかるのかみ",
+     "role": "投げ捨てた左手の手纏から成った三神の一柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/"
+     ]
+    },
+    {
+     "name": "奧津那藝佐毗古神",
+     "reading": "おきつなぎさびこのかみ",
+     "role": "左手の手纏から成った三神の二柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/"
+     ]
+    },
+    {
+     "name": "奧津甲斐弁羅神",
+     "reading": "おきつかいべらのかみ",
+     "role": "左手の手纏から成った三神の三柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/"
+     ]
+    },
+    {
+     "name": "邊疎神",
+     "reading": "へざかるのかみ",
+     "role": "投げ捨てた右手の手纏から成った三神の一柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/"
+     ]
+    },
+    {
+     "name": "邊津那藝佐毗古神",
+     "reading": "へつなぎさびこのかみ",
+     "role": "右手の手纏から成った三神の二柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/"
+     ]
+    },
+    {
+     "name": "邊津甲斐弁羅神",
+     "reading": "へつかいべらのかみ",
+     "role": "右手の手纏から成った三神の三柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "古事記で伊耶那美命が「黄泉戸喫をしてしまった」と言う場面で、一書第六の伊弉冉尊は「わたしはもう泉の竈で煮たものを食べてしまった」と言う。追っ手も泉津醜女八人とされる。",
+     "where": "巻第一 第五段 一書第六",
+     "ref": "N1-32",
+     "quote": "吾已飡泉之竈矣"
+    },
+    {
+     "text": "古事記は黄泉比良坂を出雲国の伊賦夜坂だとするが、一書第六は、泉津平坂は別にどこかにある場所ではなく、死に臨んで息が絶えるときのことを言うのだろうか、と記す。",
+     "where": "巻第一 第五段 一書第六",
+     "ref": "N1-32",
+     "quote": "但臨死氣絕之際，是之謂歟"
+    },
+    {
+     "text": "一書第九では、伊弉諾尊が大きな桃の木の下に隠れ、その実を雷たちに投げつけて退かせ、これが桃で鬼を避ける由来だと説明する。八雷のいる場所も、背・尻や山雷・野雷が見えるなど古事記と異なる。",
+     "where": "巻第一 第五段 一書第九",
+     "ref": "N1-35",
+     "quote": "此用桃避鬼之緣也"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yomotsukami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yomotsuokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yakusanoikazuchinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oikazuchi/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yomotsushikome/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okamuzuminomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/chigaeshinookami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/fusagarimasuyomotsutonookami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tsukitatsufunatonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/michinonagachihanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tokihakarashinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/wazurainoushinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/chimatanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/akiguinoushinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okizakarunokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okitsunagisabikonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okitsukaiberanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hezakarunokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hetsunagisabikonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hetsukaiberanokami/"
+   ]
+  },
+  {
+   "no": 5,
+   "id": "misogi",
+   "title": "禊祓と三貴子",
+   "span": [
+    "K91",
+    "K104"
+   ],
+   "lead": "伊耶那岐命が川の中ほどの瀬で身をすすぐと、穢れから生じた神、その禍を直す神、海の神々が次々に生まれ、最後に左目・右目・鼻から天照大御神・月読命・須佐之男命の三貴子が生まれた。伊耶那岐命は三神にそれぞれ高天原・夜の食国・海原を任せたが、須佐之男命は従わずに泣きわめき、追い払われた。",
+   "points": [
+    {
+     "text": "伊耶那岐命が禊で左目を洗うと天照大御神、右目で月読命、鼻で建速須佐之男命が生まれ、伊耶那岐命は「最後に三柱の貴い子を得た」と大いに喜んだ。これが「三貴子」である。",
+     "kind": "本文",
+     "refs": [
+      "K103",
+      "K104"
+     ]
+    },
+    {
+     "text": "伊耶那岐命は天照大御神に首飾りの玉（御倉板挙之神）を授けて高天原を、月読命には夜の食国を、建速須佐之男命には海原を治めるよう任せた。",
+     "kind": "本文",
+     "refs": [
+      "K104"
+     ]
+    },
+    {
+     "text": "須佐之男命は海原を治めず「母の国である根の堅洲国へ行きたい」と泣きわめいて山を枯らし川や海を干上がらせたため、怒った伊耶那岐命にこの国から追い払われた。",
+     "kind": "本文",
+     "refs": [
+      "K104"
+     ]
+    },
+    {
+     "text": "禊ではまず黄泉国の穢れから八十禍津日神・大禍津日神が生まれ、続いてその禍を直す神直毘神・大直毘神・伊豆能売が生まれた。水の底・中・上からは綿津見神と筒之男命が三柱ずつ生まれた。",
+     "kind": "本文",
+     "refs": [
+      "K92",
+      "K93",
+      "K94",
+      "K95",
+      "K96",
+      "K97",
+      "K98",
+      "K99",
+      "K100",
+      "K101",
+      "K102",
+      "K103"
+     ]
+    },
+    {
+     "text": "日本書紀第五段の本文では、日神（大日孁貴）・月神・素戔嗚尊は伊弉諾尊と伊弉冉尊の二神が一緒に生んだ子とされ、禊で目と鼻を洗って三神が生まれる話は一書第六に見える。",
+     "kind": "比較",
+     "refs": [
+      "N1-25",
+      "N1-26",
+      "N1-32"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、禍津日神と直毘神は対になる名で、禍津日神を禍いを起こす神とみる説と、悪事をとがめ正させる神とみる説などに分かれ、議論が続いている。",
+     "kind": "解説",
+     "refs": [
+      "K92",
+      "K93"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "伊耶那岐命は「上の瀬は流れが速く、下の瀬は流れが弱い」と言って、中ほどの瀬に潜って身をすすいだ。そのときまず八十禍津日神と大禍津日神が生まれた。この二神は、穢れの多い国に行ったときの汚れから生まれた神だと記されている。続いて、その禍を直そうとして神直毘神・大直毘神・伊豆能売の三神が生まれた。",
+     "refs": [
+      "K91",
+      "K92",
+      "K93",
+      "K94",
+      "K95",
+      "K96"
+     ]
+    },
+    {
+     "text": "水の底ですすぐと底津綿津見神と底筒之男命が、中ほどですすぐと中津綿津見神と中筒之男命が、水の上ですすぐと上津綿津見神と上筒之男命が生まれた。三柱の綿津見神は阿曇連らが祖先の神として祭る神で、阿曇連らは綿津見神の子の宇都志日金拆命の子孫だという。三柱の筒之男命は、墨江の三前の大神であると記される。",
+     "refs": [
+      "K97",
+      "K98",
+      "K99",
+      "K100",
+      "K101",
+      "K102",
+      "K103"
+     ]
+    },
+    {
+     "text": "次に左目を洗うと天照大御神が、右目を洗うと月読命が、鼻を洗うと建速須佐之男命が生まれた。八十禍津日神から速須佐之男命までの十四柱は、身をすすいだことで生まれた神だとされる。伊耶那岐命は大いに喜び、「子を次々に生んできて、最後に三柱の貴い子を得た」と言った。そして首にかけていた玉の緒をゆらして天照大御神に授け、「あなたは高天原を治めなさい」と任せた。この首飾りの玉を御倉板挙之神という。続いて月読命には夜の食国を、建速須佐之男命には海原を治めるよう任せた。",
+     "refs": [
+      "K103",
+      "K104"
+     ]
+    },
+    {
+     "text": "ところが速須佐之男命だけは任された国を治めず、長いあごひげが胸元に届くまで泣きわめき続けた。その泣き方は、青々とした山を枯れ山にし、川や海の水をすっかり泣き干すほどだった。そのため悪い神々の声が蠅のように満ちあふれ、あらゆる災いが起こった。",
+     "refs": [
+      "K104"
+     ]
+    },
+    {
+     "text": "伊耶那岐命がわけを問うと、須佐之男命は「亡き母の国である根の堅洲国へ行きたいので泣いている」と答えた。伊耶那岐命は激しく怒り、「それならお前はこの国に住んではならない」と言って追い払った。伊耶那岐大神は淡海の多賀に鎮座している、と古事記は記す。",
+     "refs": [
+      "K104"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K91",
+     "text": "上瀨者瀨速，下瀨者瀨弱。",
+     "note": "上の瀬は流れが速すぎ、下の瀬は流れが弱すぎる（だから中の瀬で身をすすぐ）。"
+    },
+    {
+     "ref": "K104",
+     "text": "吾者生々子而於生終得三貴子。",
+     "note": "わたしは子を次々に生んできて、生み終わりに三柱の貴い子を得た。"
+    },
+    {
+     "ref": "K104",
+     "text": "汝命者，所知高天原矣。",
+     "note": "あなたは高天原を治めなさい（天照大御神への言葉）。"
+    },
+    {
+     "ref": "K104",
+     "text": "僕者欲罷妣國根之堅洲國，故哭。",
+     "note": "わたしは亡き母の国、根の堅洲国へ行きたいので泣いているのです。"
+    }
+   ],
+   "deities": [
+    "izanagi",
+    "amaterasu",
+    "tsukuyomi",
+    "susanoo",
+    "watatsumi3",
+    "sumiyoshi3"
+   ],
+   "figures": [
+    {
+     "name": "八十禍津日神",
+     "reading": "やそまがつひのかみ",
+     "role": "中の瀬ですすいだとき、穢れの多い国に行ったときの汚れから生まれた二神の一柱。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/"
+     ]
+    },
+    {
+     "name": "大禍津日神",
+     "reading": "おおまがつひのかみ",
+     "role": "八十禍津日神とともに、汚れから生まれた神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/omagatsuhinokami/"
+     ]
+    },
+    {
+     "name": "神直毗神",
+     "reading": "かむなおびのかみ",
+     "role": "禍を直そうとして生まれた三神の一柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamunaobinokami/"
+     ]
+    },
+    {
+     "name": "大直毗神",
+     "reading": "おおなおびのかみ",
+     "role": "禍を直そうとして生まれた三神の二柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/onaobinokami/"
+     ]
+    },
+    {
+     "name": "伊豆能賣",
+     "reading": "いずのめ",
+     "role": "禍を直そうとして生まれた三神の三柱目。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/izunome/"
+     ]
+    },
+    {
+     "name": "宇都志日金拆命",
+     "reading": "うつしひかなさくのみこと",
+     "role": "綿津見神の子で、阿曇連らはその子孫だと記される。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/utsushihikanasakunomikoto/"
+     ]
+    },
+    {
+     "name": "御倉板擧之神",
+     "reading": "みくらたなのかみ",
+     "role": "伊耶那岐命が天照大御神に授けた首飾りの玉の名（訓注に「板擧」をタナと読むとある）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/mikuratananokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第五段の本文では、伊弉諾尊・伊弉冉尊が「天下の主となる者を生もう」と相談して一緒に日神を生み、大日孁貴と名づけたとされ、禊から生まれたとはしていない。",
+     "where": "巻第一 第五段 本文",
+     "ref": "N1-25",
+     "quote": "於是共生日神，號大日孁貴"
+    },
+    {
+     "text": "禊から三神が生まれる一書第六でも、任された場所は古事記と異なり、月読尊は青海原の潮の八百重を、素戔嗚尊は天下を治めるよう命じられる。",
+     "where": "巻第一 第五段 一書第六",
+     "ref": "N1-32",
+     "quote": "月讀尊者，可以治滄海原潮之八百重也"
+    },
+    {
+     "text": "一書第六では、中の瀬ですすいで生まれる禍の神は八十枉津日神の一柱だけで、それを直す神は神直日神・大直日神の二柱であり、伊豆能売にあたる神は出てこない。",
+     "where": "巻第一 第五段 一書第六",
+     "ref": "N1-32",
+     "quote": "因以生神號曰八十枉津日神"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izanakinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tsukuyominomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/omagatsuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamunaobinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/onaobinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/izunome/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sokotsuwatatsuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/nakatsuwatatsuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/uetsuwatatsuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/watatsuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sokotsutsunoonomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/nakatsutsunoonomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/uwatsutsunoonomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/utsushihikanasakunomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/mikuratananokami/"
+   ]
+  },
+  {
+   "no": 6,
+   "id": "ukei",
+   "title": "天の安の河の誓約",
+   "span": [
+    "K105",
+    "K107"
+   ],
+   "lead": "追放された須佐之男命が別れを告げに高天原へ上ってくると、天照大御神は国を奪いに来たと疑い、武装して迎えた。二神は天の安の河をはさんで誓約（うけい）をしてそれぞれ子を生み、須佐之男命は自分の心が清いことが示されたと勝ちを名のって、高天原で乱暴をはたらいた。",
+   "points": [
+    {
+     "text": "天照大御神は須佐之男命が国を奪いに来たと疑って武装して迎え、須佐之男命が心の清さを示すため、二神は天安河をはさんで誓約をし、それぞれ相手の持ち物から子を生んだ。",
+     "kind": "本文",
+     "refs": [
+      "K105",
+      "K106"
+     ]
+    },
+    {
+     "text": "天照大御神が須佐之男命の十拳剣から三柱の女神を、須佐之男命が天照大御神の珠から天之忍穂耳命ら五柱の男神を生み、天照大御神は持ち物の持ち主によって、男神を自分の子、女神を須佐之男命の子と定めた。",
+     "kind": "本文",
+     "refs": [
+      "K106"
+     ]
+    },
+    {
+     "text": "古事記では、誓約の前に「どちらが生まれたら清い心か」という取り決めは書かれていない。須佐之男命は生まれた子が女の子だったことを理由に、自分から「わたしの勝ち」と宣言した。",
+     "kind": "本文",
+     "refs": [
+      "K105",
+      "K107"
+     ]
+    },
+    {
+     "text": "勝ちに勢いづいた須佐之男命は田を荒らし御殿を汚し、さらに忌服屋に斑馬を落とし入れて天衣織女を死なせた。この直後から「天の岩屋戸」の話が始まる。",
+     "kind": "本文",
+     "refs": [
+      "K107"
+     ]
+    },
+    {
+     "text": "日本書紀第六段の本文では、誓約の前に須佐之男命が「女が生まれたら濁った心、男が生まれたら清い心」と条件を示しており、古事記とは勝ち負けの決め方が異なる。",
+     "kind": "比較",
+     "refs": [
+      "N1-38"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、三柱の女神の名と、どの宮にどの女神がいるかは古事記と日本書紀の諸伝で食い違っており、宗像大社の社伝は日本書紀の本文に沿った並びで祭っているという。",
+     "kind": "解説",
+     "refs": [
+      "K106"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ichikishimahimenomikoto/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/takitsuhimenomikoto/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "須佐之男命は「それなら天照大御神に申し上げてから去ろう」と言って天に上った。そのとき山や川がことごとく揺れ動き、国土がみな震えた。天照大御神はこれを聞いて驚き、「須佐之男命が上ってくるのはよい心からではない。わたしの国を奪おうとしているのだ」と言った。",
+     "refs": [
+      "K105"
+     ]
+    },
+    {
+     "text": "天照大御神は髪をほどいてみずらに結い直し、左右のみずら、髪飾り、左右の手に八尺の勾玉をたくさん連ねた珠を巻きつけた。背には千本の矢が入る靫を負い、脇にも五百本入りの靫を付け、腕に竹の鞆をつけて弓を振り立てた。そして堅い地面を股まで踏み込んで沫雪のように蹴散らし、勇ましく雄たけびを上げて「なぜ上ってきたのか」と問いただした。",
+     "refs": [
+      "K105"
+     ]
+    },
+    {
+     "text": "須佐之男命は「わたしに悪い心はない。泣いているわけを問われて母の国へ行きたいと申し上げたところ追い払われたので、お別れを申し上げに来ただけだ」と答えた。天照大御神は「それなら、お前の心が清く明るいことはどうしたらわかるのか」と問うた。須佐之男命は「それぞれ誓約をして子を生もう」と答えた。",
+     "refs": [
+      "K105"
+     ]
+    },
+    {
+     "text": "二神は天安河をはさんで誓約をした。天照大御神はまず須佐之男命の十拳剣を受け取って三つに折り、天の真名井ですすいでかみ砕き、吹き出した息の霧から多紀理毘売命（またの名は奥津島比売命）、市寸島比売命（またの名は狭依毘売命）、多岐都比売命の三柱が生まれた。須佐之男命は天照大御神の左のみずらに巻いた珠を受け取って同じようにし、正勝吾勝勝速日天之忍穂耳命が生まれた。さらに右のみずら・髪飾り・左手・右手の珠から、天之菩卑能命・天津日子根命・活津日子根命・熊野久須毘命が生まれた。",
+     "refs": [
+      "K106"
+     ]
+    },
+    {
+     "text": "天照大御神は「後に生まれた五柱の男の子は、わたしの持ち物をもとに成ったのでわたしの子だ。先に生まれた三柱の女の子は、お前の持ち物から成ったのでお前の子だ」と分けて定めた。三柱の女神は胸形の奥津宮・中津宮・辺津宮にいて、胸形君らが祭る三前の大神だという。また、天菩比命の子の建比良鳥命は出雲国造などの祖、天津日子根命は凡川内国造などの祖だと記される。",
+     "refs": [
+      "K106"
+     ]
+    },
+    {
+     "text": "須佐之男命は「わたしの心が清く明るいので、わたしの生んだ子はたおやかな女の子だった。だからわたしの勝ちだ」と言った。そして勝ちに勢いづいて、天照大御神の田の畔を壊して溝を埋め、大嘗を召し上がる御殿に糞をまき散らした。それでも天照大御神はとがめず、「糞のようなものは酔って吐いたのだろう。畔を壊し溝を埋めたのは土地を惜しんでのことだろう」と言い直した。",
+     "refs": [
+      "K107"
+     ]
+    },
+    {
+     "text": "しかし須佐之男命の乱暴はやまず、いっそうひどくなった。天照大御神が忌服屋で神に供える衣を織らせていたとき、須佐之男命はその屋根に穴をあけ、逆剥ぎにした天の斑馬を落とし入れた。機を織っていた天衣織女は驚いて梭で陰部を突き、死んでしまった。",
+     "refs": [
+      "K107"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K105",
+     "text": "我那勢命之上來由者，必不善心，欲奪我國耳。",
+     "note": "須佐之男命が上ってくるのは、きっとよい心からではない。わたしの国を奪おうとしているだけだ。"
+    },
+    {
+     "ref": "K105",
+     "text": "然者汝心之清明，何以知？",
+     "note": "それなら、お前の心が清く明るいことは、どうやって知ればよいのか。"
+    },
+    {
+     "ref": "K106",
+     "text": "是後所生五柱男子者，物實因我物所成，故自吾子也。",
+     "note": "後に生まれた五柱の男の子は、わたしの持ち物をもとに成ったので、わたしの子である。"
+    },
+    {
+     "ref": "K107",
+     "text": "我心清明，故我所生子，得手弱女。因此言者，自我勝。",
+     "note": "わたしの心が清く明るいから、生んだ子はたおやかな女の子だった。だから当然わたしの勝ちだ。"
+    }
+   ],
+   "deities": [
+    "amaterasu",
+    "susanoo",
+    "munakata3",
+    "oshihomimi"
+   ],
+   "figures": [
+    {
+     "name": "天之菩卑能命",
+     "reading": "あめのほひのみこと",
+     "role": "天照大御神の右のみずらの珠から生まれた二柱目の男神。子の建比良鳥命は出雲国造などの祖とされる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/"
+     ]
+    },
+    {
+     "name": "天津日子根命",
+     "reading": "あまつひこねのみこと",
+     "role": "髪飾りの珠から生まれた三柱目の男神。凡川内国造など多くの氏族の祖とされる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhikonenomikoto/"
+     ]
+    },
+    {
+     "name": "活津日子根命",
+     "reading": "いくつひこねのみこと",
+     "role": "左手の珠から生まれた四柱目の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ikutsuhikonenomikoto/"
+     ]
+    },
+    {
+     "name": "熊野久須毗命",
+     "reading": "くまのくすびのみこと",
+     "role": "右手の珠から生まれた五柱目の男神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kumanokusubinomikoto/"
+     ]
+    },
+    {
+     "name": "建比良鳥命",
+     "reading": "たけひらとりのみこと",
+     "role": "天菩比命の子。出雲国造・无邪志国造など七つの氏族の祖と記される。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/takehiratorinomikoto/"
+     ]
+    },
+    {
+     "name": "十拳釼",
+     "reading": "",
+     "role": "須佐之男命が身に帯びていた剣。天照大御神がこれを三つに折ってかみ砕き、三柱の女神が生まれた。",
+     "src": []
+    },
+    {
+     "name": "八尺勾璁之五百津之美須麻流之珠",
+     "reading": "",
+     "role": "天照大御神がみずら・髪飾り・両手に巻いた珠。須佐之男命がこれから五柱の男神を生んだ。",
+     "src": []
+    },
+    {
+     "name": "天衣織女",
+     "reading": "",
+     "role": "忌服屋で神の衣を織っていた女性。落とし入れられた斑馬に驚いて梭で陰部を突き、死んだ。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第六段の本文では、誓約の前に素戔鳴尊が「生まれたのが女なら濁った心、男なら清い心と見なしてよい」と条件を示す。古事記では事前の取り決めがなく、女の子が生まれたことを理由に須佐之男命が勝ちを名のる。",
+     "where": "巻第一 第六段 本文",
+     "ref": "N1-38",
+     "quote": "如吾所生是女者，則可以爲有濁心"
+    },
+    {
+     "text": "一書第一では持ち物の交換がなく、日神は自分の帯びた十握剣・九握剣・八握剣をかんで三女神を生み、素戔鳴尊は自分の首にかけた珠から五柱の男神を生む。",
+     "where": "巻第一 第六段 一書第一",
+     "ref": "N1-39",
+     "quote": "先食所帶十握劒生兒，號瀛津嶋姬"
+    },
+    {
+     "text": "古事記で機を織っていて死ぬのは天衣織女だが、第七段の本文では、神の衣を織っていた天照大神自身が驚いて梭で身を傷つけ、それがもとで天石窟にこもる。",
+     "where": "巻第一 第七段 本文",
+     "ref": "N1-42",
+     "quote": "是時天照大神驚動。以梭傷身。"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takiribimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ichikishimahimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takitsuhimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/masakatsuakatsukachihayahiamenooshihomiminomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhikonenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ikutsuhikonenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kumanokusubinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takehiratorinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenohatorime-amenohataorime/"
+   ]
+  },
+  {
+   "no": 7,
+   "id": "iwayado",
+   "title": "天の岩屋戸",
+   "span": [
+    "K108",
+    "K108"
+   ],
+   "lead": "天照大御神が天石屋戸にこもると、高天原も葦原中国も暗くなり、さまざまな災いが起こった。八百万の神々は相談して祭りの道具をそろえ、天宇受売命の舞と神々の笑いで天照大御神を誘い出し、世界に光を取り戻した。",
+   "points": [
+    {
+     "text": "天照大御神が天石屋戸を閉じてこもると、高天原も葦原中国も真っ暗になって夜が続き、あらゆる災いが起こった。",
+     "kind": "本文",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "八百万の神々は天の安の河原に集まり、思金神に計画を立てさせ、伊斯許理度売命に鏡、玉祖命に勾玉の玉飾りを作らせて、榊の枝に掛けて祈った。",
+     "kind": "本文",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "天宇受売命が戸の前で神懸かりして舞うと八百万の神々が笑い、不思議に思って戸を開けた天照大御神に鏡を見せ、天手力男神が手を取って引き出したことで、世界に光が戻った。",
+     "kind": "本文",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "日本書紀 第七段の本文でも、思兼神の計画、天児屋命・太玉命の祈り、天鈿女命の舞、手力雄神による引き出しという流れは共通するが、天照大神に鏡を差し出して見せる場面はなく、天照大神が自ら戸を細く開けてのぞいたところを手力雄神が引き出している。",
+     "kind": "比較",
+     "refs": [
+      "N1-42"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによると、天宇受売命が胸や陰部をあらわにした所作については、笑いによって自然のよみがえりを図るものとする説や、鎮魂の祭儀に関わるとする説などがあり、いずれも日の神の復活の祭儀としての意味が重く見られている。",
+     "kind": "解説",
+     "refs": [
+      "K108"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/"
+     ]
+    },
+    {
+     "text": "同データベースでは、思金神の名は日本書紀の表記「思兼神」から多くの思慮を兼ね備えた神と解されることが多く、記紀を通じて天照大御神の相談役として登場する神と考えられていると紹介されている。",
+     "kind": "解説",
+     "refs": [
+      "K108"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "前の話で語られた須佐之男命の乱暴を見た天照大御神は、恐れて天石屋戸を閉じ、その中にこもった。すると高天原はすっかり暗くなり、葦原中国も闇に包まれて、夜ばかりが続いた。多くの神々の声が蠅の群れのようにあたりに満ち、あらゆる災いが起こった。",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "そこで八百万の神々は天の安の河原に集まり、高御産巣日神の子である思金神に方策を考えさせた。神々は常世の長鳴鳥を集めて鳴かせ、天の安の河の上流から堅い石を、天の金山から鉄を取り、鍛人の天津麻羅を探し出した。伊斯許理度売命には鏡を、玉祖命には八尺の勾玉を連ねた玉飾りを作らせた。",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "さらに天児屋命と布刀玉命を呼び、天香山の雄鹿の肩の骨を抜き取り、天香山の波波迦の木を使って占いをさせた。天香山の榊を根ごと掘り取り、上の枝に玉飾り、中の枝に八尺鏡、下の枝に白と青の布を掛けた。布刀玉命がこれを御幣として捧げ持ち、天児屋命が祝詞を唱え、天手力男神は戸のわきに隠れて立った。",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "天宇受売命は天香山の日影のかずらをたすきに掛け、真拆のかずらを髪飾りにし、笹の葉を束ねて手に持った。そして天石屋戸の前に桶（汙氣）を伏せて踏み鳴らし、神懸かりして胸をあらわにし、裳の紐を陰部まで押し下げた。すると高天原がどよめくほどに、八百万の神々がいっせいに笑った。",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "天照大御神は不思議に思い、戸を細く開けて「わたしがこもって世界は暗いはずなのに、なぜ天宇受売は楽しげに舞い、神々は笑っているのか」と尋ねた。天宇受売命は「あなたよりも尊い神がいらっしゃるので、喜び笑っているのです」と答えた。そのあいだに天児屋命と布刀玉命が鏡を差し出して見せると、天照大御神はますます不思議に思って少しずつ戸から出てきた。",
+     "refs": [
+      "K108"
+     ]
+    },
+    {
+     "text": "そのとき隠れて立っていた天手力男神が天照大御神の手を取って引き出し、布刀玉命がすぐに後ろに尻久米縄を張り渡して「ここから内へは戻れません」と申し上げた。こうして天照大御神が出てくると、高天原も葦原中国も、おのずから明るく照らされるようになった。",
+     "refs": [
+      "K108"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K108",
+     "text": "閇天石屋戶而，刺許母理〔此三字以音〕坐也",
+     "note": "天石屋戸を閉じて、中にこもってしまわれた。"
+    },
+    {
+     "ref": "K108",
+     "text": "高天原動而八百萬神共咲",
+     "note": "高天原がどよめくほどに、八百万の神々がいっせいに笑った。"
+    },
+    {
+     "ref": "K108",
+     "text": "益汝命而貴神坐，故歡喜咲樂",
+     "note": "（天宇受売命の答え）あなた様よりも尊い神がいらっしゃるので、喜んで笑い楽しんでいるのです。"
+    },
+    {
+     "ref": "K108",
+     "text": "高天原及葦原中國，自得照明",
+     "note": "高天原も葦原中国も、おのずと明るく照らされるようになった。"
+    }
+   ],
+   "deities": [
+    "amaterasu",
+    "takamimusubi",
+    "omoikane",
+    "ishikoridome",
+    "tamaoya",
+    "amenokoyane",
+    "futotama",
+    "tajikarao",
+    "amenouzume"
+   ],
+   "figures": [
+    {
+     "name": "天津麻羅",
+     "reading": "あまつまら",
+     "role": "鏡作りのために探し出された鍛人（かじ職人）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amatsumara/"
+     ]
+    },
+    {
+     "name": "常世長鳴鳥",
+     "reading": "",
+     "role": "天照大御神を呼び出すために集められ、鳴かされた鳥。",
+     "src": []
+    },
+    {
+     "name": "八尺勾𤥼之五百津之御須麻流之珠",
+     "reading": "",
+     "role": "玉祖命が作った勾玉を連ねた玉飾りで、榊の上の枝に掛けられた。",
+     "src": []
+    },
+    {
+     "name": "八尺鏡",
+     "reading": "",
+     "role": "伊斯許理度売命が作った鏡で、榊の中の枝に掛けられ、天照大御神に差し出された（原文の訓注は「八尺」を「八阿多」と読むとする）。",
+     "src": []
+    },
+    {
+     "name": "天香山之五百津真賢木",
+     "reading": "",
+     "role": "天香山から根ごと掘り取られ、玉・鏡・布を掛けて祭りに使われた榊。",
+     "src": []
+    },
+    {
+     "name": "尻久米繩",
+     "reading": "",
+     "role": "天照大御神が石屋に戻れないよう、布刀玉命がその後ろに張り渡した縄。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "日本書紀の本文では、天鈿女命は茅を巻いた矛を手に持ち、天石窟の戸の前で巧みに俳優（わざおぎ）をしたとあり、古事記の笹の葉を手に神懸かりする姿とは描き方が異なる。",
+     "where": "巻第一 第七段 本文",
+     "ref": "N1-42",
+     "quote": "手持茅纒之矟"
+    },
+    {
+     "text": "日本書紀の本文では、天照大神は天鈿女命の様子を聞いて自分の手で戸を細く開けてのぞき、そこを手力雄神が引き出しており、古事記のように鏡を差し出して見せる場面はない。",
+     "where": "巻第一 第七段 本文",
+     "ref": "N1-42",
+     "quote": "乃以御手細開磐戶窺之"
+    },
+    {
+     "text": "一書第二では、鏡を石窟に差し入れたとき戸に触れて小さな傷がつき、その傷は今も残っていると記し、この鏡が伊勢に祀られる大神であると述べている。古事記にはこの記述はない。",
+     "where": "巻第一 第七段 一書第二",
+     "ref": "N1-44",
+     "quote": "觸戶小瑕"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amatsumara/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/"
+   ]
+  },
+  {
+   "no": 8,
+   "id": "orochi",
+   "title": "須佐之男命の追放と八俣遠呂智",
+   "span": [
+    "K109",
+    "K115"
+   ],
+   "lead": "高天原を追われた須佐之男命は、出雲の肥の河の上流で、娘を八俣遠呂智に食べられそうになって泣く老夫婦に出会い、酒で大蛇を酔わせて退治した。大蛇の尾から出た草那藝之大刀を天照大御神に献上し、須賀に宮を建てて櫛名田比売と暮らし、その子孫から大国主神が生まれた。",
+   "points": [
+    {
+     "text": "須佐之男命は、八つの頭と八つの尾を持つ八俣遠呂智に強い酒を飲ませ、酔って寝たところを十拳剣で切り殺して、櫛名田比売を救った。",
+     "kind": "本文",
+     "refs": [
+      "K110",
+      "K111"
+     ]
+    },
+    {
+     "text": "大蛇の中ほどの尾を切ると剣の刃が欠け、尾の中から大刀が見つかった。須佐之男命はこれを天照大御神に献上し、これが草那藝之大刀である。",
+     "kind": "本文",
+     "refs": [
+      "K111"
+     ]
+    },
+    {
+     "text": "須佐之男命は八百万の神々に償いを負わされ、髪（鬢）と爪を切られて高天原から追放された。また、殺された大気都比売神の体から蚕・稲・粟・小豆・麦・大豆が生じ、神産巣日御祖命がこれを種とした。",
+     "kind": "本文",
+     "refs": [
+      "K109"
+     ]
+    },
+    {
+     "text": "須佐之男命は須賀に宮を建てて歌を作り、足名椎を宮の長とした。須佐之男命と櫛名田比売の子孫から、五つの名を持つ大国主神が生まれる。",
+     "kind": "本文",
+     "refs": [
+      "K112",
+      "K114",
+      "K115"
+     ]
+    },
+    {
+     "text": "日本書紀 第八段の本文では、素戔鳴尊と奇稲田姫の間に生まれた子が大己貴神とされ、何代も後の子孫として大国主神を置く古事記の系譜とは異なる。",
+     "kind": "比較",
+     "refs": [
+      "N1-46"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによると、八俣遠呂智の話は、怪物を倒して犠牲の娘を救う「ペルセウス・アンドロメダ型」の説話に分類されるほか、肥の河（今の斐伊川）の洪水の表象とみる説や、尾から出た剣を出雲の製鉄・鍛冶と結びつける説などがある。",
+     "kind": "解説",
+     "refs": [
+      "K110",
+      "K111"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "八百万の神々は相談して、須佐之男命に多くの償いの品（千位置戸）を負わせ、髪（鬢）と手足の爪を切って、高天原から追い払った。また大気都比売神に食べ物が求められると、大気都比売神は鼻や口や尻からさまざまなおいしい物を取り出し、料理して差し出した。そのようすをのぞき見た須佐之男命は、汚して差し出していると思い、大気都比売神を殺してしまった。",
+     "refs": [
+      "K109"
+     ]
+    },
+    {
+     "text": "殺された大気都比売神の体からは、頭に蚕、二つの目に稲の種、二つの耳に粟、鼻に小豆、陰部に麦、尻に大豆が生じた。神産巣日御祖命は、これらを取らせて種とした。",
+     "refs": [
+      "K109"
+     ]
+    },
+    {
+     "text": "追放された須佐之男命は、出雲国の肥の河の上流にある鳥髪という所に降りた。川を箸が流れてきたので、上流に人がいると思って上っていくと、年老いた夫婦が娘を間に置いて泣いていた。夫は国つ神で大山津見神の子の足名椎、妻は手名椎、娘は櫛名田比売と名乗った。夫婦にはもともと八人の娘がいたが、高志の八俣遠呂智が毎年来て食べてしまい、今年もその時期が来たので泣いているのだという。",
+     "refs": [
+      "K110"
+     ]
+    },
+    {
+     "text": "八俣遠呂智の姿は、目は赤かがち（小注によれば今の酸醤）のように赤く、一つの体に八つの頭と八つの尾があった。体には蘿や檜・榅が生え、長さは八つの谷と八つの峰にわたるほどで、腹はいつも血でただれていた。",
+     "refs": [
+      "K110"
+     ]
+    },
+    {
+     "text": "須佐之男命は、自分は天照大御神の弟（原文「伊呂勢」）で、いま天から降りてきたところだと名乗り、娘をもらい受けることになった。須佐之男命は櫛名田比売を湯津爪櫛に変えて自分の髪に挿し、夫婦に何度も醸した強い酒を造らせ、垣根をめぐらせて八つの門を作り、門ごとに台（佐受岐）と酒船を置いて待たせた。やって来た八俣遠呂智は、八つの頭をそれぞれの酒船に入れて酒を飲み、酔ってその場に寝てしまった。",
+     "refs": [
+      "K111"
+     ]
+    },
+    {
+     "text": "須佐之男命は腰の十拳剣を抜いて大蛇を切り刻み、肥の河は血となって流れた。中ほどの尾を切ったとき剣の刃が欠けたので、不思議に思って剣先で尾を裂いてみると、都牟羽の大刀が入っていた。須佐之男命はこれを並外れた物と思い、天照大御神に献上した。これが草那藝之大刀である。",
+     "refs": [
+      "K111"
+     ]
+    },
+    {
+     "text": "その後、須佐之男命は宮を建てる土地を出雲国に探し、須賀に着くと「ここに来て、わたしの心はすがすがしい」と言って宮を建てた。そのとき雲が立ちのぼったので、歌を作った（歌は原文に一字一音の万葉仮名で記されている）。足名椎はこの宮の長に任じられ、稲田宮主須賀之八耳神という名を与えられた。須佐之男命と櫛名田比売の子の八嶋士奴美神から代を重ね、天之冬衣神と刺国若比売の子として大国主神が生まれた。大国主神には大穴牟遅神・葦原色許男神・八千矛神・宇都志国玉神という別名もあり、あわせて五つの名がある。",
+     "refs": [
+      "K112",
+      "K113",
+      "K114",
+      "K115"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K109",
+     "text": "於頭生蠶，於二目生稻種",
+     "note": "（殺された大気都比売神の）頭には蚕が、二つの目には稲の種が生じた。"
+    },
+    {
+     "ref": "K111",
+     "text": "其八俣遠吕智，信如言來，乃每船垂入己頭，飮其酒",
+     "note": "八俣遠呂智は言われたとおり本当にやって来て、酒船ごとに自分の頭を入れて酒を飲んだ。"
+    },
+    {
+     "ref": "K111",
+     "text": "是者草那藝之大刀也",
+     "note": "これが草那藝之大刀である。"
+    },
+    {
+     "ref": "K112",
+     "text": "吾來此地，我御心須賀須賀斯",
+     "note": "わたしはこの地に来て、心がすがすがしい。（須賀という地名の由来として語られる）"
+    }
+   ],
+   "deities": [
+    "susanoo",
+    "ookegetsuhime",
+    "amaterasu",
+    "ooyamatsumi",
+    "inadahime",
+    "ootoshi",
+    "ukanomitama",
+    "amenofuyuginu",
+    "sashikuniwakahime",
+    "ookuninushi",
+    "utsushikunitama"
+   ],
+   "figures": [
+    {
+     "name": "八俣遠吕智",
+     "reading": "やまたのおろち",
+     "role": "毎年やって来て足名椎・手名椎の娘を食べた、八つの頭と八つの尾を持つ大蛇で、須佐之男命に退治される。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/"
+     ]
+    },
+    {
+     "name": "足名椎",
+     "reading": "あしなずち",
+     "role": "大山津見神の子である国つ神で櫛名田比売の父。のちに須賀の宮の長とされ、稲田宮主須賀之八耳神の名を与えられる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/"
+     ]
+    },
+    {
+     "name": "手名椎",
+     "reading": "てなずち",
+     "role": "足名椎の妻で櫛名田比売の母。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/"
+     ]
+    },
+    {
+     "name": "神産巢日御祖命",
+     "reading": "",
+     "role": "殺された大気都比売神の体に生じたものを取らせて種とした神（神名データベースでは神産巣日神〈かむむすひのかみ〉の別名とする）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/"
+     ]
+    },
+    {
+     "name": "草那藝之大刀",
+     "reading": "くさなぎのたち",
+     "role": "八俣遠呂智の尾から出てきた大刀で、須佐之男命が天照大御神に献上した。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/"
+     ]
+    },
+    {
+     "name": "十拳釼",
+     "reading": "",
+     "role": "須佐之男命が八俣遠呂智を切った剣で、尾の中の大刀に当たって刃が欠けた。",
+     "src": []
+    },
+    {
+     "name": "八嶋士奴美神",
+     "reading": "やしまじぬみのかみ",
+     "role": "須佐之男命と櫛名田比売の子で、大国主神へとつながる系譜の最初の神。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/"
+     ]
+    },
+    {
+     "name": "神大市比賣",
+     "reading": "かむおおいちひめ",
+     "role": "大山津見神の娘で、須佐之男命との間に大年神と宇迦之御魂神を生んだ。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "日本書紀の本文では、素戔鳴尊と奇稲田姫の子として大己貴神が直接生まれたとされ、古事記のように八嶋士奴美神から何代も重ねて大国主神に至る系譜にはなっていない。",
+     "where": "巻第一 第八段 本文",
+     "ref": "N1-46",
+     "quote": "乃相與遘合而生兒大己貴神"
+    },
+    {
+     "text": "日本書紀の本文に付された小注の一書では、草薙剣のもとの名を天叢雲剣とし、大蛇の上に常に雲気があったためかと説明し、日本武皇子のときに草薙剣と改名したと伝える。古事記のこの段にはこの説明はない。",
+     "where": "巻第一 第八段 本文（小注の一書）",
+     "ref": "N1-46",
+     "quote": "本名天叢雲劒"
+    },
+    {
+     "text": "一書第二では、素戔鳴尊が降りた所を安芸国の可愛の川上とし、大蛇に呑まれようとしているのはこれから生まれる子であるなど、舞台と筋立てが古事記と異なる。",
+     "where": "巻第一 第八段 一書第二",
+     "ref": "N1-48",
+     "quote": "下到於安藝國可愛之川上也"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yamatanoorochi/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/ashinazuchi/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tenazuchi/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/inadanomiyanushisuganoyatsumiminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yashimajinuminokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamuoichihime/"
+   ]
+  },
+  {
+   "no": 9,
+   "id": "inaba",
+   "title": "稲羽の素兎",
+   "span": [
+    "K116",
+    "K116"
+   ],
+   "lead": "八上比売に求婚しに稲羽へ向かう八十神に従者として連れられた大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟を正しい方法で治してやった。菟は、八上比売を得るのは大穴牟遅神だと告げ、八上比売はそのとおり八十神を退けて大穴牟遅神に嫁ぐと答えた。",
+   "points": [
+    {
+     "text": "大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟に、水門の水で体を洗い蒲黄を敷いた上を転がるよう教え、菟の体は元どおりに治った。",
+     "kind": "本文",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "菟は和迩をだまして一族の数比べを持ちかけ、その背を踏んで淤岐嶋から気多の前まで渡ったが、渡り終える直前にだましたことを口にしたため、和迩に捕まって毛皮を剥がれた。",
+     "kind": "本文",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "八十神は傷ついた菟に「海水を浴びて風に当たれ」とまちがった治し方を教え、菟の傷をさらに悪くした。",
+     "kind": "本文",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "治った菟は大穴牟遅神が八上比売を得ると告げ、八上比売はそのとおり八十神を退けて大穴牟遅神に嫁ぐと答えた。古事記はこの話を、八十神がみな国を大国主神に譲ったことの理由として語り始めている。",
+     "kind": "本文",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "日本書紀の神代巻（巻第一・巻第二）には、稲羽の素菟・八十神・八上比売の話に対応する記事を確認できなかった。日本書紀では同じ神を主に「大己貴」の名で記している。",
+     "kind": "比較",
+     "refs": [
+      "N1-52"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによると、「素菟」の「素」は白色の意とする説と裸の意とする説があり、また陸の動物が水の動物をだまして水を渡る話は外国にも広く見られることから、もとは大国主神と関係のない独立した動物の話だったとする見方もある。",
+     "kind": "解説",
+     "refs": [
+      "K116"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "大国主神には八十神と呼ばれる大勢の兄弟がいたが、みな国を大国主神に譲ることになる。そのわけは次のとおりである。八十神はそれぞれ稲羽の八上比売と結婚したいと思い、そろって稲羽へ出かけたが、そのとき大穴牟遅神（大国主神）に袋を背負わせ、従者として連れて行った。",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "一行が気多の前（岬）に着くと、裸の菟が倒れ伏していた。八十神は菟に「海の塩水を浴び、風に当たって高い山の尾根に伏せていればよい」と教えた。菟がそのとおりにすると、塩が乾くにつれて体の皮が風に吹かれて裂け、痛みに苦しんで泣き伏していた。",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "最後にやって来た大穴牟遅神がわけを尋ねると、菟は次のように語った。淤岐嶋にいた菟は、こちらへ渡りたかったが手立てがなかったので、海の和迩をだまして「どちらの一族が多いか比べよう。仲間をみな連れてきて、島から気多の前まで並んで伏せよ。わたしがその上を踏んで数えながら渡ろう」と持ちかけた。和迩が並んだので、その上を踏んで数えながら渡ってきたが、陸に下りようとするときに「おまえたちはだまされたのだ」と言ってしまい、いちばん端の和迩に捕まって衣服（毛皮）をすっかり剥がれた。そのうえ八十神の教えに従ったため、全身が傷ついたのだという。",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "そこで大穴牟遅神は「すぐにこの水門へ行き、その水で体を洗い、水門の蒲黄を取って敷き散らし、その上を転がれば、元の肌のようにきっと治る」と教えた。菟がそのとおりにすると、体は元どおりになった。これが稲羽の素菟で、今は菟神と呼ばれている。",
+     "refs": [
+      "K116"
+     ]
+    },
+    {
+     "text": "菟は大穴牟遅神に「八十神は決して八上比売を得られません。袋を背負っていても、あなたが八上比売を得るでしょう」と告げた。はたして八上比売は八十神に「わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます」と答えた。",
+     "refs": [
+      "K116"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K116",
+     "text": "以水洗汝身，即取其水門之蒲黃",
+     "note": "（大穴牟遅神の教え）水であなたの体を洗い、すぐにその水門の蒲黄を取って（敷きなさい）。"
+    },
+    {
+     "ref": "K116",
+     "text": "此稻羽之素菟者也，於今者謂菟神也",
+     "note": "これが稲羽の素菟であり、今では菟神と呼ばれている。"
+    },
+    {
+     "ref": "K116",
+     "text": "雖負帒，汝命獲之",
+     "note": "（菟の言葉）袋を背負っていても、あなた様が（八上比売を）得るでしょう。"
+    },
+    {
+     "ref": "K116",
+     "text": "吾者不聞汝等之言，將嫁大穴牟遲神",
+     "note": "（八上比売の答え）わたしはあなたたちの言うことは聞きません。大穴牟遅神に嫁ぎます。"
+    }
+   ],
+   "deities": [
+    "ookuninushi"
+   ],
+   "figures": [
+    {
+     "name": "菟神",
+     "reading": "うさぎがみ",
+     "role": "和迩をだまして毛皮を剥がれ、大穴牟遅神に治してもらった菟。原文は「稻羽之素菟」とも呼び、今は菟神と呼ばれるとする。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/"
+     ]
+    },
+    {
+     "name": "八十神",
+     "reading": "",
+     "role": "大国主神の大勢の兄弟たちで、八上比売に求婚しに稲羽へ向かい、菟にまちがった治し方を教えた。",
+     "src": []
+    },
+    {
+     "name": "八上比賣",
+     "reading": "やかみひめ",
+     "role": "稲羽にいた女神で、八十神の求婚を退け、大穴牟遅神に嫁ぐと答えた。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/"
+     ]
+    },
+    {
+     "name": "和迩",
+     "reading": "わに",
+     "role": "菟にだまされて海に並び伏し、最後に菟を捕まえて毛皮を剥いだ海の生き物。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/"
+     ]
+    },
+    {
+     "name": "蒲黃",
+     "reading": "かまのはな",
+     "role": "大穴牟遅神が菟に、敷き散らしてその上を転がるよう教えたもので、これで菟の体が元に戻った。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "日本書紀の巻第一・巻第二では、稲羽の素菟・八十神・八上比売の話に対応する記事を確認できなかった。同じ神は第八段一書第六で大国主神の別名として「国作大己貴命」などと挙げられ、少彦名命と力を合わせて国を造る話が語られている。",
+     "where": "巻第一 第八段 一書第六",
+     "ref": "N1-52",
+     "quote": "亦號國作大己貴命"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/"
+   ]
+  },
+  {
+   "no": 10,
+   "id": "nenokuni",
+   "title": "八十神の迫害と根の堅州国",
+   "span": [
+    "K117",
+    "K118"
+   ],
+   "lead": "八上比賣に選ばれた大穴牟遲神は兄弟の八十神に二度殺されて生き返り、須佐之男命のいる根堅州國へ逃れる。そこで須勢理毗賣の助けを得て須佐之男命の試練を切り抜け、「大國主神となれ」と言われて地上に戻り、国作りを始める。",
+   "points": [
+    {
+     "text": "根堅州國から逃げる大穴牟遲神に、須佐之男命は黄泉比良坂から「生大刀・生弓矢で兄弟を追い払い、大國主神・宇都志國主神となって須世理毗賣を正妻とし、宇迦能山のふもとに宮を建てて住め」と呼びかけた。大穴牟遲神はその大刀と弓で八十神を追い払い、初めて国を作った。",
+     "kind": "本文",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "須佐之男命は大穴牟遲神に、蛇の室・むかでと蜂の室・火を放った野・頭のむかで取りという試練を次々に与えた。須勢理毗賣の比礼や木の実と赤土、鼠の助けによって、大穴牟遲神はすべてを切り抜けた。",
+     "kind": "本文",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "八十神は焼いた大石と、割れ目にくさびを打った大木で、大穴牟遲神を二度殺した。一度目は神産巢日之命が遣わした𧏛貝比賣と蛤貝比賣が、二度目は御祖命が、大穴牟遲神を生き返らせた。",
+     "kind": "本文",
+     "refs": [
+      "K117"
+     ]
+    },
+    {
+     "text": "大穴牟遲神は須佐之男命のもとから須勢理毗賣を背負い、生大刀・生弓矢・天詔琴を持ち出して逃げた。琴が木に触れて大地が鳴りどよめいたため大神は目を覚ましたが、髪が垂木に結ばれていたので追いつけなかった。",
+     "kind": "本文",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "日本書紀 巻第一 第八段の本文では大己貴神は素戔嗚尊と奇稻田姫の子とされるが、古事記では大國主神は須佐之男命の六世の子孫（K115）で、この話では須佐之男命の娘婿となる。八十神による迫害や根の国での試練に当たる記事は、日本書紀の巻第一・巻第二には確認できなかった。",
+     "kind": "比較",
+     "refs": [
+      "K118",
+      "N1-46",
+      "N1-48"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによると、二度の死と復活や根の堅州国での試練は、成年式と結びつけたり、大國主神となるための試練・成長の物語とみたりする説がある。また、大穴牟遲神から大國主神へと名が変わっていくことを、王者となる成長物語ととらえる見方も紹介されている。",
+     "kind": "解説",
+     "refs": [
+      "K117",
+      "K118"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "八十神は怒り、大穴牟遲神を殺そうと相談した。伯岐國の手間の山のふもとで「赤い猪を山から追い下ろすから、下で待って捕まえよ。捕まえなければおまえを殺す」と言い、猪に似た大石を火で焼いて転がし落とした。大穴牟遲神はそれを受け止めて石に焼け付き、死んでしまった。親である御祖命は泣き悲しんで天に上り、神産巢日之命に願った。すると𧏛貝比賣と蛤貝比賣が遣わされ、蛤貝比賣が母の乳汁を塗ると、大穴牟遲神はりっぱな若者（麗壯夫）となって生き返り、また出歩くようになった。",
+     "refs": [
+      "K117"
+     ]
+    },
+    {
+     "text": "八十神はこれを見て、また大穴牟遲神をだまして山に連れ込んだ。大木を切り倒してくさびを打ち込み、その割れ目に入らせてから、くさびを打ち外して挟み殺した。御祖命は泣きながら探し、見つけると木を裂いて取り出して生き返らせ、「ここにいては、ついに八十神に滅ぼされる」と言って、木國の大屋毗古神のもとへ急いで逃がした。八十神が追ってきて矢をつがえ、引き渡しを求めると、大穴牟遲神は木の股からくぐり抜けて逃がされ、「須佐能男命のいる根堅州國へ行け。きっとその大神が良いようにはかってくれる」と告げられた。",
+     "refs": [
+      "K117"
+     ]
+    },
+    {
+     "text": "言われたとおり須佐之男命の所へ行くと、その娘の須勢理毗賣が出てきて、目を見交わして夫婦となった。須勢理毗賣は父に「とても立派な神が来ました」と告げ、大神は出て見て「これは葦原色許男というものだ」と言った。大神は彼を呼び入れて蛇の室に寝かせたが、須勢理毗賣が蛇の比礼（布）を渡し、「蛇がかみつこうとしたら、これを三度振って打ち払いなさい」と教えたので、蛇は静まり、無事に眠って出てこられた。次の夜はむかでと蜂の室に入れられたが、同じように比礼を渡されて無事に出てきた。",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "次に大神は鳴鏑（音の鳴る矢）を広い野に射込み、その矢を取ってこさせた。大穴牟遲神が野に入ると、大神は周りから火をつけて野を焼いた。逃げ道が分からずにいると鼠が来て「内は富良富良、外は須夫須夫」と言ったので、そこを踏むと穴に落ちて隠れることができ、その間に火は焼け過ぎていった。鼠は鳴鏑をくわえて持ってきたが、矢の羽は鼠の子どもたちが食べてしまっていた。須勢理毗賣は葬式の道具を持って泣きながら来て、大神も死んだと思って野に出て立ったが、大穴牟遲神はその矢を差し出した。",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "大神は大穴牟遲神を家に連れ帰り、広い大室に呼び入れて頭のしらみを取らせた。見ると頭にはむかでがたくさんいた。妻が渡した牟久の木の実と赤土を、木の実をかみ砕き赤土を口に含んで吐き出すと、大神はむかでをかみ砕いて吐き出していると思い、心にいとしく思って眠った。そこで大穴牟遲神は大神の髪を室の垂木ごとに結びつけ、五百人で引くほどの大石で戸をふさぎ、須勢理毗賣を背負い、大神の生大刀・生弓矢・天詔琴を持って逃げ出した。そのとき琴が木に触れて大地が鳴りどよめき、大神は驚いて室を引き倒したが、垂木に結ばれた髪をほどくあいだに、二人は遠くまで逃げた。",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "大神は黄泉比良坂まで追ってきて、はるかに見やって大穴牟遲神に呼びかけた。「おまえが持っている生大刀・生弓矢で、おまえの腹違いの兄弟たちを坂のすそに追い伏せ、川の瀬に追い払え。そしておまえが大國主神となり、宇都志國主神となって、わが娘の須世理毗賣を正妻とし、宇迦能山のふもとに太い宮柱を立て、高天原に届くほど高く千木をそびえさせて住め。こやつめ」。大穴牟遲神はその大刀と弓で八十神を追い払い、坂ごと・川の瀬ごとに追い伏せて、初めて国を作った。",
+     "refs": [
+      "K118"
+     ]
+    },
+    {
+     "text": "八上比賣は前に約束したとおり大穴牟遲神と結ばれ、連れて来られたが、正妻の須世理毗賣を畏れて、生んだ子を木の股に差し挟んで帰ってしまった。そのためその子を木俣神と名づけ、またの名を御井神という。このあと八千矛神（大穴牟遲神の別の名）が高志國の沼河比賣に求婚しようと出かけ、その家で歌をうたう場面へと続いていく。",
+     "refs": [
+      "K118"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K117",
+     "text": "可參向須佐能男命所坐之根堅州國，必其大神議也",
+     "note": "須佐能男命のいる根堅州國へ行きなさい。きっとその大神が良いようにはかってくださる、という言葉。"
+    },
+    {
+     "ref": "K118",
+     "text": "内者富良富良，外（者）須夫須夫。",
+     "note": "燃える野で鼠が大穴牟遲神に教えた言葉。「富良富良」「須夫須夫」は字の音で読むと原文の注にある。"
+    },
+    {
+     "ref": "K118",
+     "text": "意礼為大國主神，亦為宇都志國主神",
+     "note": "須佐之男命の呼びかけ。「おまえが大國主神となり、また宇都志國主神となれ」。"
+    },
+    {
+     "ref": "K118",
+     "text": "每坂御尾追伏，每河瀨追撥而始作國也",
+     "note": "坂のすそごとに追い伏せ、川の瀬ごとに追い払って、初めて国を作った。"
+    }
+   ],
+   "deities": [
+    "ookuninushi",
+    "susanoo",
+    "sashikuniwakahime"
+   ],
+   "figures": [
+    {
+     "name": "八十神",
+     "reading": "",
+     "role": "大穴牟遲神の兄弟たち。八上比賣に選ばれなかったことを怒り、大穴牟遲神を二度殺し、さらに木國まで追いかける。",
+     "src": []
+    },
+    {
+     "name": "神産巢日之命",
+     "reading": "かむむすひのかみ",
+     "role": "御祖命の願いを受けて𧏛貝比賣と蛤貝比賣を遣わし、大穴牟遲神を生き返らせる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/"
+     ]
+    },
+    {
+     "name": "𧏛貝比賣",
+     "reading": "きさかいひめ",
+     "role": "神産巢日之命に遣わされ、蛤貝比賣とともに焼け死んだ大穴牟遲神を生き返らせる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/"
+     ]
+    },
+    {
+     "name": "蛤貝比賣",
+     "reading": "うむかいひめ",
+     "role": "母の乳汁を塗って大穴牟遲神をりっぱな若者としてよみがえらせる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/"
+     ]
+    },
+    {
+     "name": "大屋毗古神",
+     "reading": "おおやびこのかみ",
+     "role": "木國で大穴牟遲神をかくまい、八十神に追われると木の股から逃がす。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/"
+     ]
+    },
+    {
+     "name": "須勢理毗賣（須世理毗賣）",
+     "reading": "すせりびめ",
+     "role": "須佐之男命の娘。大穴牟遲神と結ばれ、比礼や木の実と赤土を渡して試練を助け、その正妻となる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/"
+     ]
+    },
+    {
+     "name": "鼠",
+     "reading": "",
+     "role": "火に囲まれた大穴牟遲神に隠れる穴を教え、鳴鏑をくわえて持ってくる。",
+     "src": []
+    },
+    {
+     "name": "生大刀・生弓矢",
+     "reading": "",
+     "role": "大穴牟遲神が須佐之男命のもとから持ち出した大刀と弓矢。これで八十神を追い払う。",
+     "src": []
+    },
+    {
+     "name": "天詔琴（天沼琴）",
+     "reading": "",
+     "role": "大穴牟遲神が持ち出した琴。木に触れて大地を鳴りどよめかせ、須佐之男命を目覚めさせる。",
+     "src": []
+    },
+    {
+     "name": "八上比賣",
+     "reading": "やかみひめ",
+     "role": "大穴牟遲神と結ばれるが、正妻の須世理毗賣を畏れ、生んだ子を木の股に挟んで帰る。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/"
+     ]
+    },
+    {
+     "name": "木俣神（御井神）",
+     "reading": "きまたのかみ（みいのかみ）",
+     "role": "八上比賣が生み、木の股に挟んで残していった子。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "本文では、素戔嗚尊と奇稻田姫が交わって大己貴神が生まれ、その後に素戔嗚尊は根國へ行ったとする。古事記のように大國主神が須佐之男命の子孫で、根の国で娘婿になるという筋ではない。",
+     "where": "巻第一 第八段 本文",
+     "ref": "N1-46",
+     "quote": "乃相與遘合而生兒大己貴神"
+    },
+    {
+     "text": "一書第二では、奇稻田媛から生まれた子の六世の孫を大己貴命とする。須佐之男命から数えて何代も後の子孫とする点は、古事記の系譜（K115）に近い。",
+     "where": "巻第一 第八段 一書第二",
+     "ref": "N1-48",
+     "quote": "所生兒之六世孫。是曰大己貴命"
+    },
+    {
+     "text": "一書第六は大國主神の別名として葦原醜男・八千戈神・顯國玉神などを挙げるが、八十神の迫害や根の国での試練に当たる記事は、巻第一・巻第二の本文・一書には確認できなかった。",
+     "where": "巻第一 第八段 一書第六",
+     "ref": "N1-52",
+     "quote": "亦曰葦原醜男。亦曰八千戈神"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/"
+   ]
+  },
+  {
+   "no": 11,
+   "id": "kunitsukuri",
+   "title": "八千矛神の歌と大国主神の国作り",
+   "span": [
+    "K119",
+    "K135"
+   ],
+   "lead": "八千矛神（大國主神）は高志國の沼河比賣に歌で求婚し、嫉妬する正妻の須勢理毗賣とも歌を交わして和解する。その後、大國主神は神産巢日神の子の少名毗古那神とともに国を作り固め、少名毗古那神が去ったあとは海を照らして来た神を御諸山にまつって国作りを進める。",
+   "points": [
+    {
+     "text": "天之羅摩船に乗って海から来た少名毗古那神は、神産巢日神の子であることが久延毗古によって明かされ、神産巢日神の言いつけで大穴牟遲（大國主神）と並んで国を作り固めた。のちに少名毗古那神は常世國へ渡っていった。",
+     "kind": "本文",
+     "refs": [
+      "K131"
+     ]
+    },
+    {
+     "text": "少名毗古那神が去ったあと、海を照らして寄ってきた神が「私をまつれば共に国を作る」と言い、倭の青垣の東の山の上にまつるよう求めた。古事記はこれを「御諸山の上に坐す神」と記し、ここでは名前を書いていない。",
+     "kind": "本文",
+     "refs": [
+      "K131"
+     ]
+    },
+    {
+     "text": "八千矛神は高志國の沼河比賣に歌で求婚し、沼河比賣も戸の内から歌を返して、次の夜に結ばれた。正妻の須勢理毗賣命が嫉妬すると、八千矛神は倭へ発とうとして歌い、后は酒杯を捧げて歌い返し、二柱は今に至るまで鎮まった。これらの歌を古事記は「神語」と呼ぶ。",
+     "kind": "本文",
+     "refs": [
+      "K119",
+      "K121",
+      "K122",
+      "K123",
+      "K126",
+      "K127"
+     ]
+    },
+    {
+     "text": "大國主神の子として、多紀理毗賣命が生んだ阿遲鉏高日子根神（今の迦毛大御神）と高比賣命、神屋楯比賣命が生んだ事代主神が記される。続く大年神の系譜には、人々が拝む竈の神や、日枝山・松尾に鎮まる大山咋神が出てくる。",
+     "kind": "本文",
+     "refs": [
+      "K128",
+      "K132"
+     ]
+    },
+    {
+     "text": "日本書紀 第八段 一書第六では、少彥名命は白蘞の皮の舟に乗り鷦鷯の羽を着て来たとされ、親は高皇產靈尊である。海を照らして来た神は大己貴神の「幸魂奇魂」と名のり、三諸山に住む大三輪の神とされる。古事記では親は神産巢日神で、御諸山の神は大國主神とは別の神として書かれる。",
+     "kind": "比較",
+     "refs": [
+      "K131",
+      "N1-52"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによると、古事記はこの段で大國主神と呼んでいながら、少名毗古那神と国を作り固める一文だけは「大穴牟遲」の名を使っている。これは、もとは大穴牟遲と少名毗古那を組にした神話があり、それを大國主神の名のもとにまとめたためと考えられている。",
+     "kind": "解説",
+     "refs": [
+      "K131"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "八千矛神は高志國の沼河比賣の家に着くと、歌をうたった。歌では、遠い高志の国に賢く美しい乙女がいると聞いて妻問いに通ってきたこと、乙女の寝ている家の板戸の前に立ち続けるうちに、ぬえやきじ、庭の鶏が鳴きだしたことがうたわれる。沼河比賣は戸を開けないまま、内から歌を返し、夜になれば出てまいりましょうと答えた。その夜は会わず、次の日の夜に二人は結ばれた。",
+     "refs": [
+      "K119",
+      "K120",
+      "K121",
+      "K122"
+     ]
+    },
+    {
+     "text": "正妻（適后）の須勢理毗賣命はひどく嫉妬した。夫の神は出雲から倭國へ上ろうと旅支度をし、片手を馬の鞍にかけ、片足をあぶみに踏み入れて歌った。歌では、黒い衣や青い衣を着てみては似合わないと脱ぎ捨て、染めた衣を着てこれはよいと言い、自分が群れ鳥のように去ってしまえば、泣かないと言ってもあなたは泣くだろう、と妻に呼びかける。",
+     "refs": [
+      "K123",
+      "K124"
+     ]
+    },
+    {
+     "text": "后は大きな酒杯を手に取り、夫に寄り添って捧げながら歌った。歌では、あなたは男なので行く先々の島や磯ごとに妻を持てるが、女の私にはあなたのほかに夫はいないとうたい、柔らかな夜具の下で共に休み、お酒を召し上がれと誘う。こう歌って二柱は「宇伎由比」して「宇那賀氣理」（どちらも字の音で書かれた語）、今に至るまで鎮まっている。これらの歌を「神語」という。",
+     "refs": [
+      "K125",
+      "K126",
+      "K127"
+     ]
+    },
+    {
+     "text": "大國主神は胸形の奧津宮にいる多紀理毗賣命をめとり、阿遲鉏高日子根神と、その妹の高比賣命（またの名は下光比賣命）が生まれた。阿遲鉏高日子根神は、今は迦毛大御神と呼ばれている神である。また神屋楯比賣命をめとって事代主神が生まれた。さらに子孫の系譜が続き、八嶋士奴美神から遠津山岬帶神までを「十七世の神」とまとめている。",
+     "refs": [
+      "K128",
+      "K129",
+      "K130"
+     ]
+    },
+    {
+     "text": "大國主神が出雲の御大の御前にいたとき、波頭を伝って天之羅摩船に乗り、鵝の皮を丸ごと剥いで着物にした神がやってきた。名を尋ねても答えず、従う神々も知らなかったが、多迩具久が「久延毗古なら知っているはず」と言った。久延毗古は「これは神産巢日神の御子、少名毗古那神です」と答え、神産巢日神も「本当に私の子で、子どもの中でも私の手の股から抜け出た子だ。おまえ葦原色許男命と兄弟になって国を作り固めよ」と告げた。こうして大穴牟遲と少名毗古那の二柱は並んで国を作り固めたが、のちに少名毗古那神は常世國へ渡っていった。少名毗古那神の名を明かした久延毗古は今の山田之曾富騰で、足で歩くことはできないが天下のことをすべて知っている神だと書かれている。",
+     "refs": [
+      "K131"
+     ]
+    },
+    {
+     "text": "大國主神は嘆き、「私ひとりでどうしてこの国を作れようか。どの神となら一緒に作れるだろう」と言った。そのとき海を照らしながら寄ってくる神があり、「私をよくまつるなら一緒に国を作り上げよう。そうでなければ国はできあがりにくい」と言った。大國主神がまつり方を尋ねると、その神は「倭の青垣の東の山の上に、私をいつきまつれ」と答えた。これが御諸山の上に鎮まる神である。",
+     "refs": [
+      "K131"
+     ]
+    },
+    {
+     "text": "続いて大年神の子孫の系譜が記される。大年神は伊怒比賣をめとって大國御魂神・韓神・曾富理神・白日神・聖神を、香用比賣をめとって大香山戶臣神・年御神を、天知迦流美豆比賣をめとって奧津日子神・奧津比賣命（またの名は大戶比賣神）などを生んだ。奧津比賣命（大戶比賣神）は「人々が拝む竈の神」と記され、大山咋神（またの名は山末之大主神）は近淡海國の日枝山や葛野の松尾に鎮まり、鳴鏑を用いる神だと書かれる。大年神の子は合わせて十六神で、さらに羽山戶神が大氣都比賣神をめとって若山咋神・若年神など八神が生まれた。",
+     "refs": [
+      "K132",
+      "K133",
+      "K134",
+      "K135"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K131",
+     "text": "自波穗乘天之羅摩船而内剥鵝皮剥為衣服",
+     "note": "波頭から天之羅摩船に乗り、鵝の皮を丸ごと剥いで着物にして、少名毗古那神がやってきた。"
+    },
+    {
+     "ref": "K131",
+     "text": "大穴牟遲与少名毗古那二柱神相並，作堅此國",
+     "note": "大穴牟遲と少名毗古那の二柱の神が並んで、この国を作り固めた。"
+    },
+    {
+     "ref": "K131",
+     "text": "吾者，伊都岐奉于倭之青垣東山上。",
+     "note": "海を照らして来た神の言葉。「私を倭の青垣の東の山の上にいつきまつれ」。"
+    },
+    {
+     "ref": "K127",
+     "text": "此謂之神語也。",
+     "note": "八千矛神・沼河比賣・須勢理毗賣命の歌のやりとりを、「神語」というと結んでいる。"
+    }
+   ],
+   "deities": [
+    "ookuninushi",
+    "sukunahikona",
+    "omonushi",
+    "munakata3",
+    "ajisuki",
+    "shitateruhime",
+    "kotoshironushi",
+    "ootoshi",
+    "mitoshi",
+    "ooyamakui",
+    "ookegetsuhime"
+   ],
+   "figures": [
+    {
+     "name": "沼河比賣（沼河日賣）",
+     "reading": "ぬなかわひめ",
+     "role": "高志國の女神。八千矛神の求婚の歌に戸の内から歌で答え、次の夜に結ばれる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/nunakawahime/"
+     ]
+    },
+    {
+     "name": "須勢理毗賣命",
+     "reading": "すせりびめ",
+     "role": "大國主神の正妻（適后）。沼河比賣への求婚に嫉妬するが、酒杯を捧げて歌い、夫と和解する。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/"
+     ]
+    },
+    {
+     "name": "天之羅摩船",
+     "reading": "",
+     "role": "少名毗古那神が波頭を伝って乗ってきた船。",
+     "src": []
+    },
+    {
+     "name": "多迩具久",
+     "reading": "たにぐく",
+     "role": "誰も名を知らない少名毗古那神について、「久延毗古なら知っている」と申し出る。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kuebiko/"
+     ]
+    },
+    {
+     "name": "久延毗古（山田之曾富騰）",
+     "reading": "くえびこ（やまだのそほど）",
+     "role": "少名毗古那神の正体を明かす。足で歩けないが天下のことをすべて知る神とされる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kuebiko/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yamadanosohodo/"
+     ]
+    },
+    {
+     "name": "神産巢日神（神産巢日御祖命）",
+     "reading": "かむむすひのかみ",
+     "role": "少名毗古那神を自分の子と認め、大國主神と兄弟になって国を作り固めるよう命じる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/"
+     ]
+    },
+    {
+     "name": "神屋楯比賣命",
+     "reading": "かむやたてひめのみこと",
+     "role": "大國主神の妻で、事代主神の母。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamuyatatehimenomikoto/"
+     ]
+    },
+    {
+     "name": "大國御魂神",
+     "reading": "おおくにみたまのかみ",
+     "role": "大年神が伊怒比賣をめとって生んだ子の一柱。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okunimitamanokami/"
+     ]
+    },
+    {
+     "name": "奧津比賣命（大戶比賣神）",
+     "reading": "おくつひめのみこと",
+     "role": "大年神の子。人々が拝む竈の神と記される。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/okutsuhimenomikoto/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kamanokami/"
+     ]
+    },
+    {
+     "name": "羽山戶神",
+     "reading": "はやまとのかみ",
+     "role": "大年神の子。大氣都比賣神をめとり、若山咋神など八神の父となる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hayamatonokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "少彥名命は白蘞の皮を舟とし、鷦鷯の羽を衣として潮に乗って来たとされ、その親は高皇產靈尊である。古事記では天之羅摩船と鵝の皮で、親は神産巢日神である。",
+     "where": "巻第一 第八段 一書第六",
+     "ref": "N1-52",
+     "quote": "以白蘞皮爲舟。以鷦鷯羽爲衣"
+    },
+    {
+     "text": "海を照らして来た神は、自分は大己貴神の「幸魂奇魂」だと名のり、三諸山に住む大三輪の神とされる。古事記ではこの神は名のらず、大國主神とは別の「御諸山の上に坐す神」として書かれる。",
+     "where": "巻第一 第八段 一書第六",
+     "ref": "N1-52",
+     "quote": "吾是汝之幸魂奇魂也"
+    },
+    {
+     "text": "少彥名命は熊野の御碕から常世郷へ行ったとも、淡嶋で粟の茎にのぼり、はじかれて常世郷へ渡ったともいう。古事記は常世國へ渡ったとだけ記す。八千矛神と沼河比賣・須勢理毗賣の歌に当たる記事は確認できなかった。",
+     "where": "巻第一 第八段 一書第六",
+     "ref": "N1-52",
+     "quote": "至淡嶋而緣粟莖者。則彈渡而至常世郷矣"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/mimoronoyamanoueniimasukami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/nunakawahime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kuebiko/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yamadanosohodo/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamuyatatehimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okunimitamanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/okutsuhimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hayamatonokami/"
+   ]
+  },
+  {
+   "no": 12,
+   "id": "amewakahiko",
+   "title": "天若日子",
+   "span": [
+    "K136",
+    "K141"
+   ],
+   "lead": "葦原中国を従わせるために高天原から送られた天若日子は、大国主神の娘と結婚して八年も報告せず、問いただしに来た雉を射たため、高木神が投げ返したその矢で死んだ。その葬儀に来た阿遅志貴高日子根神は死者と間違えられて怒り、喪屋を切り倒した。",
+   "points": [
+    {
+     "text": "葦原中国を従わせる使いとして、まず天菩比神が送られたが大国主神にこびて三年報告せず、次に送られた天若日子も下照比売と結婚して国を自分のものにしようとし、八年報告しなかった。",
+     "kind": "本文",
+     "refs": [
+      "K136",
+      "K137"
+     ]
+    },
+    {
+     "text": "天若日子は、わけを問いに来た雉の鳴女を、天佐具売の勧めで射殺した。その矢を高木神が「邪心があるなら当たれ」と言って投げ返すと、矢は寝ていた天若日子の胸に当たって死んだ。古事記はこれを「還矢」と「雉の頓使」のはじまりとする。",
+     "kind": "本文",
+     "refs": [
+      "K138"
+     ]
+    },
+    {
+     "text": "葬儀に来た阿遅志貴高日子根神は、天若日子に姿がそっくりで死者と間違えられたため怒り、十掬剣で喪屋を切り倒してけとばした。それが美濃国藍見河の上流の喪山だと古事記は説明する。",
+     "kind": "本文",
+     "refs": [
+      "K139"
+     ]
+    },
+    {
+     "text": "飛び去る阿遅志貴高日子根神の名を明らかにするため、妹の高比売命が歌をよみ、古事記はこの歌を「夷振」と呼んでいる。",
+     "kind": "本文",
+     "refs": [
+      "K139",
+      "K140",
+      "K141"
+     ]
+    },
+    {
+     "text": "日本書紀 第九段 本文では、天稚彦の父の天国玉が疾風を送って遺体を天に運び、天で喪屋を作って弔う。古事記では父と妻子が地上に降りてきて、その場所に喪屋を作る。",
+     "kind": "比較",
+     "refs": [
+      "K139",
+      "N2-1"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、天若日子の話は国譲りの本筋からそれた内容であるため、もとは国譲りとは別に伝えられた話だったと考えられている。また名の読みも、アメワカヒコ・アメノワカヒコなどの説に分かれる。",
+     "kind": "解説",
+     "refs": [
+      "K137",
+      "K138"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amewakahiko/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "天照大御神は、豊葦原の水穂国は自分の子の天忍穂耳命が治める国だと定め、天から降らせようとした。ところが天忍穂耳命は天浮橋から下を見て、「伊多久佐夜藝弖有那理」（ひどく騒がしいようだ）と言って引き返し、天照大御神に申し上げた。そこで高御産巣日神と天照大御神は、天安河の河原に八百万の神を集め、思金神に考えさせた。地上には荒々しい国つ神が多いので、どの神を遣わして従わせるかを相談し、天菩比神を送ることに決めた。しかし天菩比神は大国主神にこびて従い、三年たっても報告しなかった。",
+     "refs": [
+      "K136"
+     ]
+    },
+    {
+     "text": "次に思金神の勧めで、天津国玉神の子の天若日子に天之麻迦古弓と天之波波矢を授けて送り出した。天若日子は地上に降りると、大国主神の娘の下照比売と結婚し、自分がその国を手に入れようとたくらんで、八年たっても報告しなかった。天照大御神と高御産巣日神がわけを問う使いを相談すると、神々は鳴女という名の雉を送ることを勧めた。",
+     "refs": [
+      "K137"
+     ]
+    },
+    {
+     "text": "鳴女は天若日子の家の門の湯津楓の木にとまり、天つ神の言葉をそのまま伝えた。これを聞いた天佐具売が「この鳥は鳴き声がとても悪いので、射殺すべきだ」と勧め、天若日子は天つ神から授かった弓矢で雉を射殺した。矢は雉の胸を突き抜けて天まで上り、天安河の河原にいる天照大御神と高木神（高御産巣日神の別名）のもとに届いた。高木神は、血のついたその矢が天若日子に授けた矢だと見て取り、「命令を守って悪い神を射たのなら当たるな。邪心があるなら当たれ」と言って矢を投げ返した。矢は朝の寝床に寝ていた天若日子の胸に当たり、天若日子は死んだ。古事記は、これが「還矢」のはじまりであり、雉が戻らなかったことから「雉の頓使」ということわざができたと記す。",
+     "refs": [
+      "K138"
+     ]
+    },
+    {
+     "text": "夫を失った下照比売の泣き声は風とともに天まで届いた。天にいた天若日子の父の天津国玉神と、天若日子の妻子はそれを聞いて降りてきて、その場所に喪屋を作った。河鴈・鷺・翠鳥・雀・雉に葬儀の役目を割り当て、八日八夜のあいだ遊びを行って弔った。",
+     "refs": [
+      "K139"
+     ]
+    },
+    {
+     "text": "そこへ阿遅志貴高日子根神が弔いに来た。その姿が天若日子にそっくりだったので、天若日子の父と妻は「わが子は死んでいなかった」「わが君は死んでいなかった」と言って、手足に取りすがって泣いた。阿遅志貴高日子根神は「親しい友だから弔いに来たのに、なぜ私をけがれた死人と比べるのか」とひどく怒り、腰の十掬剣で喪屋を切り倒し、足でけとばした。古事記は、これが美濃国の藍見河の上流にある喪山であり、その剣の名は大量、またの名を神度剣という、と記す。",
+     "refs": [
+      "K139"
+     ]
+    },
+    {
+     "text": "阿遅志貴高日子根神が怒って飛び去るとき、同じ母から生まれた妹の高比売命は、兄の名を明らかにしようとして歌をよんだ。歌の終わりには「阿治志貴多迦比古泥能迦微曾也」と、兄の名がよみこまれている。古事記は、この歌を「夷振」であると記す。",
+     "refs": [
+      "K139",
+      "K140",
+      "K141"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K137",
+     "text": "即娶大國主神之女下照比賣，亦慮獲其國，至于八年不復奏",
+     "note": "すぐに大国主神の娘の下照比売と結婚し、その国を手に入れようとたくらんで、八年たっても報告しなかった。"
+    },
+    {
+     "ref": "K138",
+     "text": "或有邪心者，天若日子於此矢麻賀礼",
+     "note": "もし天若日子に邪心があるなら、この矢に当たって死ね（高木神が矢を投げ返すときの言葉）。"
+    },
+    {
+     "ref": "K138",
+     "text": "故於今諺曰「雉之頓使」本，是也",
+     "note": "今のことわざで「雉の頓使（行ったきり戻らない使い）」というのは、これがもとである。"
+    },
+    {
+     "ref": "K139",
+     "text": "我者愛友故弔來耳，何吾比穢死人",
+     "note": "私は親しい友だから弔いに来ただけだ。どうして私をけがれた死人と比べるのか（阿遅志貴高日子根神の怒りの言葉）。"
+    }
+   ],
+   "deities": [
+    "amaterasu",
+    "oshihomimi",
+    "takamimusubi",
+    "omoikane",
+    "ookuninushi",
+    "amenowakahiko",
+    "shitateruhime",
+    "ajisuki"
+   ],
+   "figures": [
+    {
+     "name": "天菩比神",
+     "reading": "",
+     "role": "最初の使いとして地上に送られたが、大国主神にこびて三年報告しなかった。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/"
+     ]
+    },
+    {
+     "name": "天津國玉神",
+     "reading": "あまつくにたまのかみ",
+     "role": "天若日子の父。息子の死を知って天から降り、喪屋を作って弔った。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amatsukunitamanokami/"
+     ]
+    },
+    {
+     "name": "鳴女",
+     "reading": "なきめ",
+     "role": "天若日子に報告しない理由を問うため遣わされた雉。天若日子に射殺された。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/nakime/"
+     ]
+    },
+    {
+     "name": "天佐具賣",
+     "reading": "あめのさぐめ",
+     "role": "鳴女の鳴き声が悪いと言い、天若日子に射殺すよう勧めた。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenosagume/"
+     ]
+    },
+    {
+     "name": "天之麻迦古弓・天之波波矢",
+     "reading": "",
+     "role": "天若日子が使いに出るとき授けられた弓矢。この矢が雉を射抜いて天に届き、投げ返されて天若日子を殺した。",
+     "src": []
+    },
+    {
+     "name": "喪屋",
+     "reading": "",
+     "role": "天若日子の葬儀のために作られた建物。阿遅志貴高日子根神に切り倒され、美濃国の喪山になったとされる。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第九段 本文では、天穂日命が報告しないので、その子の大背飯三熊之大人も送られたが、これも父に従って報告しなかった。古事記にはこの神は出てこない。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "故仍遣其子大背飯三熊之大人"
+    },
+    {
+     "text": "第九段 本文では、天稚彦の父の天国玉が疾風で遺体を天に運び、そこで喪屋を作って弔う。古事記では父と妻子が地上に降りて喪屋を作る。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "乃遣疾風擧尸致天。便造喪屋而殯之"
+    },
+    {
+     "text": "第九段 一書第六では、はじめに送った雄の雉は粟や豆の畑を見て降りたまま戻らず、これが「雉頓」のいわれだとする。古事記では、天若日子に射殺された鳴女が戻らなかったことが「雉の頓使」のもとになっている。",
+     "where": "巻第二 第九段 一書第六",
+     "ref": "N2-8",
+     "quote": "因見粟田豆田。則留而不返。此世所謂雉頓之縁也"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amewakahiko/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amatsukunitamanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/nakime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenosagume/"
+   ]
+  },
+  {
+   "no": 13,
+   "id": "kuniyuzuri",
+   "title": "国譲り",
+   "span": [
+    "K142",
+    "K143"
+   ],
+   "lead": "高天原から遣わされた建御雷神は、出雲の伊耶佐の浜で大国主神に国を譲るよう迫り、子の事代主神は承知し、力比べを挑んだ建御名方神は科野の州羽海まで追われて降参した。大国主神は自分の住まいを立派に造ることを条件に葦原中国を差し出し、建御雷神は平定を報告した。",
+   "points": [
+    {
+     "text": "国譲りの使いとして、伊都之尾羽張神の子の建御雷神が、天鳥船神を付き添いにして遣わされた。二柱は出雲の伊耶佐の小浜で十掬剣を波頭にさかさまに立て、その先に座って大国主神に国を譲るよう問いただした。",
+     "kind": "本文",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "大国主神は答えを子に任せ、事代主神は「この国は天つ神の御子にさしあげましょう」と承知したうえで、船を踏み傾け、天の逆手を打って青柴垣の中に隠れた。",
+     "kind": "本文",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "建御名方神は力比べを挑んだが、建御雷神の手が氷柱や剣の刃に変わってかなわず、科野国の州羽の海まで追いつめられ、「この地から出ない」と誓って国を差し出すことを認めた。",
+     "kind": "本文",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "大国主神は、天つ神の御子の宮と同じように太い柱と高い氷木のある住まいを造ることを条件に葦原中国を差し出し、自分は隠れてお仕えすると言った。こうして建御雷神は平定を報告した。",
+     "kind": "本文",
+     "refs": [
+      "K143"
+     ]
+    },
+    {
+     "text": "日本書紀 第九段 本文では、遣わされるのは経津主神と武甕槌神の二柱で、建御名方神に当たる神は出てこない。大己貴神（大国主神）は国を平定したときの広矛を二神に授けて隠れる。",
+     "kind": "比較",
+     "refs": [
+      "K142",
+      "N2-1"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、多芸志の小浜の場面は、誰が天之御舎を造り、誰が誰にごちそうを献上したのかが文章からはっきりしないため、天つ神側が大国主神をもてなしたとする説、大国主神が天つ神に献上したとする説など、解釈が分かれている。",
+     "kind": "解説",
+     "refs": [
+      "K143"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "天若日子の失敗のあと、天照大御神がまた誰を遣わすかを問うと、思金神と神々は、天安河の上流の天石屋にいる伊都之尾羽張神か、その子の建御雷之男神を推した。伊都之尾羽張神は天安河の水をせき止めて道をふさいでいるので、ほかの神は行けず、天迦久神が使いに出された。伊都之尾羽張神は引き受けたうえで、息子の建御雷神を差し出した。こうして建御雷神に天鳥船神が付き添って遣わされた。",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "二柱の神は出雲国の伊耶佐の小浜に降り、十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。そして大国主神に「天照大御神と高木神の命令で問う。あなたが治めている葦原中国は、われらの御子が治める国として任された。あなたの考えはどうか」とたずねた。大国主神は、自分では答えられない、子の八重言代主神が答えるべきだが、鳥や魚をとりに御大の岬に出かけてまだ戻っていない、と答えた。",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "天鳥船神が事代主神を呼び寄せて問うと、事代主神は父に「恐れ多いことです。この国は天つ神の御子にさしあげましょう」と言った。そして乗ってきた船を踏み傾け、天の逆手を打って船を青柴垣に変え、その中に隠れた。",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "ほかに答えるべき子はいるかと問われ、大国主神は建御名方神の名を挙げた。そこへ建御名方神が千人で引くほどの大石を指先にさし上げてやって来て、力比べを挑み、建御雷神の手をつかんだ。すると建御雷神の手は氷柱に変わり、さらに剣の刃に変わったので、建御名方神はおそれて退いた。今度は建御雷神が建御名方神の手を若い葦のようにつかんでにぎりつぶし、投げ飛ばすと、建御名方神は逃げ出した。建御雷神は科野国の州羽の海まで追いつめ、殺そうとしたとき、建御名方神は「殺さないでください。この地から外へは出ず、父や事代主神の言葉にも背きません。葦原中国は天つ神の御子の命令どおりさしあげます」と願った。",
+     "refs": [
+      "K142"
+     ]
+    },
+    {
+     "text": "建御雷神が戻って改めて問うと、大国主神は、二人の子が言ったとおりで自分も背かず、葦原中国はさしあげると答えた。ただし自分の住む所を、天つ神の御子が住まう宮殿と同じように、地の底の岩に太い柱をしっかり立て、高天原に届くほど氷木を高くそびえさせて造ってくれるなら、自分は遠い隅に隠れてお仕えする、と述べた。また、自分の大勢の子どもの神々は、八重事代主神が先頭に立って仕えるなら、背く神はいないだろう、とも言った。",
+     "refs": [
+      "K143"
+     ]
+    },
+    {
+     "text": "出雲国の多芸志の小浜に天之御舎が造られ、水戸神の孫の櫛八玉神が料理役となって、天のごちそうを献上した。櫛八玉神は鵜になって海の底にもぐって土をくわえ出し、たくさんの平たい器を作り、海藻の茎で火をおこす道具を作って火をきり出した。そして、この火は高天原では神産巣日御祖命の新しい宮にすすが長く垂れるまで燃え上がり、地の下では底の岩まで焼き固め、漁師が釣り上げた大きな鱸を料理して献上する、という祝いの言葉が述べられた。その後、建御雷神は高天原に帰り、葦原中国を平定したことを報告した。",
+     "refs": [
+      "K143"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K142",
+     "text": "拔十掬釼，逆刺立于浪穗，趺坐其釼前",
+     "note": "十掬剣を抜いて波頭にさかさまに突き立て、その剣の先にあぐらをかいて座った。"
+    },
+    {
+     "ref": "K142",
+     "text": "恐之，此國者立奉天神之御子",
+     "note": "恐れ多いことです。この国は天つ神の御子にさしあげましょう（事代主神の言葉）。"
+    },
+    {
+     "ref": "K142",
+     "text": "即取成立冰，亦取成釼刄",
+     "note": "（建御名方神が手をつかむと）建御雷神の手はたちまち氷柱になり、また剣の刃になった。"
+    },
+    {
+     "ref": "K143",
+     "text": "僕者於百不足八十坰手隱而侍",
+     "note": "私は遠く入り組んだ隅に隠れてお仕えしましょう（大国主神の言葉）。"
+    }
+   ],
+   "deities": [
+    "amaterasu",
+    "omoikane",
+    "takamimusubi",
+    "takemikazuchi",
+    "amenotorifune",
+    "ookuninushi",
+    "kotoshironushi",
+    "takeminakata"
+   ],
+   "figures": [
+    {
+     "name": "伊都之尾羽張神（天尾羽張神）",
+     "reading": "",
+     "role": "天安河の上流の天石屋にいる建御雷神の父。使いを頼まれ、自分の代わりに子の建御雷神を差し出した。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/"
+     ]
+    },
+    {
+     "name": "天迦久神",
+     "reading": "あめのかくのかみ",
+     "role": "道をふさいでいる伊都之尾羽張神のもとへ、意向を聞きに遣わされた。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/"
+     ]
+    },
+    {
+     "name": "櫛八玉神",
+     "reading": "くしやたまのかみ",
+     "role": "水戸神の孫。多芸志の小浜で料理役となり、鵜になって海底の土で器を作り、火をきり出してごちそうを献上した。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/"
+     ]
+    },
+    {
+     "name": "十掬釼",
+     "reading": "",
+     "role": "建御雷神が波頭にさかさまに突き立て、その先に座った剣。",
+     "src": []
+    },
+    {
+     "name": "青柴垣",
+     "reading": "",
+     "role": "事代主神が天の逆手を打って船を変えた垣。事代主神はその中に隠れた。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第九段 本文では、まず経津主神が選ばれ、武甕槌神が名乗り出て加わり、二柱で遣わされる。古事記では建御雷神に天鳥船神が付き添い、経津主神は出てこない。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "故以即配經津主神、令平葦原中國"
+    },
+    {
+     "text": "第九段 本文では、建御名方神との力比べはなく、大己貴神は事代主神の言葉を受けて、国を平定したときに使った広矛を二神に授けて隠れる。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "乃以平國時所杖之廣矛。授二神曰"
+    },
+    {
+     "text": "第九段 一書第二では、高皇産霊尊が、目に見える世の事は皇孫が治め、大己貴神は神事を治めるよう命じ、天日隅宮を造ると約束する。",
+     "where": "巻第二 第九段 一書第二",
+     "ref": "N2-4",
+     "quote": "汝所治顯露之事。宜是吾孫治之。汝則可以治神事"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/itsunoohabari/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenokakunokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kushiyatamanokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/"
+   ]
+  },
+  {
+   "no": 14,
+   "id": "tenson",
+   "title": "天孫降臨",
+   "span": [
+    "K144",
+    "K147"
+   ],
+   "lead": "葦原中国が平定されると、天忍穂耳命に代わってその子の邇邇芸命が、猿田毘古神の先導と五伴緒の神々に伴われ、勾玉・鏡・剣を授かって筑紫の日向の高千穂に降った。その後、天宇受売命は猿田毘古神を送り届けてその名を負い、猿女君のはじまりとなった。",
+   "points": [
+    {
+     "text": "天照大御神と高木神は、はじめ天忍穂耳命に降りるよう命じたが、支度のあいだに子の邇邇芸命が生まれたので、天忍穂耳命の申し出により邇邇芸命が代わりに降ることになった。",
+     "kind": "本文",
+     "refs": [
+      "K144"
+     ]
+    },
+    {
+     "text": "天の八衢で高天原と葦原中国を照らしていた神に、天宇受売神が問いただすと、国つ神の猿田毘古神と名のり、天孫の先導をするために迎えに来たと答えた。",
+     "kind": "本文",
+     "refs": [
+      "K144"
+     ]
+    },
+    {
+     "text": "邇邇芸命は五伴緒（天児屋命・布刀玉命・天宇受売命・伊斯許理度売命・玉祖命）を伴い、八尺の勾玉・鏡・草那芸剣を授かった。天照大御神は、鏡を自分の魂として、自分を拝むように祭れと命じた。",
+     "kind": "本文",
+     "refs": [
+      "K144",
+      "K145"
+     ]
+    },
+    {
+     "text": "邇邇芸命は雲を押し分け天浮橋を経て、筑紫の日向の高千穂の久士布流多気に降った。天忍日命と天津久米命が武装して先導し、邇邇芸命はこの地を「朝日がまっすぐ差し、夕日が照る」良い土地だとほめて宮を建てた。",
+     "kind": "本文",
+     "refs": [
+      "K146"
+     ]
+    },
+    {
+     "text": "天宇受売命は猿田毘古神を送り届けてその名を負い、猿女君のはじまりとなった。また、天孫に仕えると答えなかった海鼠の口を小刀で裂いたため、今も海鼠の口は裂けていると古事記は記す。",
+     "kind": "本文",
+     "refs": [
+      "K147"
+     ]
+    },
+    {
+     "text": "日本書紀 第九段 本文では、高皇産霊尊が皇孫を真床追衾で覆って降らせ、勾玉・鏡・剣を授ける話も猿田彦も出てこない。三種の宝物、五部の神、猿田彦の出迎えは一書第一に見える。",
+     "kind": "比較",
+     "refs": [
+      "K145",
+      "N2-1",
+      "N2-3"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "平定の報告を受けた天照大御神と高木神は、太子の天忍穂耳命に、地上に降りて治めるよう命じた。天忍穂耳命は「降りる支度をしているあいだに子が生まれました。この子を降らせるべきです」と答えた。この子は、天忍穂耳命と高木神の娘の万幡豊秋津師比売命との間に生まれた二柱のうちの弟で、兄は天火明命である。こうして日子番能邇邇芸命に、豊葦原の水穂国を治めるよう命令が下された。",
+     "refs": [
+      "K144"
+     ]
+    },
+    {
+     "text": "邇邇芸命が天から降りようとしたとき、天の八衢（道の分かれる所）に、上は高天原を、下は葦原中国を照らす神がいた。天照大御神と高木神は天宇受売神に「あなたはか弱い女性だが、向き合う神ににらみ勝つ神だから、行って問いなさい」と命じた。その神は「私は国つ神で、名は猿田毘古神です。天つ神の御子が降りると聞いたので、先導としてお仕えしようと迎えに来ました」と答えた。",
+     "refs": [
+      "K144"
+     ]
+    },
+    {
+     "text": "邇邇芸命には、天児屋命・布刀玉命・天宇受売命・伊斯許理度売命・玉祖命の五伴緒が分けて付けられた。さらに八尺の勾玉、鏡、草那芸剣、そして常世思金神・手力男神・天石門別神が添えられた。天照大御神は「この鏡は私の魂として、私を拝むように祭りなさい。思金神は祭りの事を取り持って行いなさい」と命じた。この二柱の神は「佐久久斯侣，伊須受能宫」に拝み祭られたと記される。登由宇気神は外宮の度相にいる神、天石戸別神は御門の神、手力男神は佐那那県にいる神とされ、五伴緒はそれぞれ中臣連・忌部首・猿女君・作鏡連・玉祖連の祖とされる。",
+     "refs": [
+      "K144",
+      "K145"
+     ]
+    },
+    {
+     "text": "邇邇芸命は天の石位を離れ、幾重にも重なる雲を押し分け、天浮橋を経て、筑紫の日向の高千穂の久士布流多気に降った。天忍日命と天津久米命の二人は、石の靫を背負い、頭椎の大刀を帯び、弓矢を持って先頭に立ってお仕えした。二人はそれぞれ大伴連と久米直の祖とされる。邇邇芸命は、この地は韓国に向かい、笠紗の御前にまっすぐ通じ、朝日がまっすぐ差し、夕日が照る国なので、とても良い土地だと言い、地の底の岩に太い柱を立て、高天原に届くほど高く氷椽をそびえさせた宮に住んだ。",
+     "refs": [
+      "K146"
+     ]
+    },
+    {
+     "text": "邇邇芸命は天宇受売命に、先導してくれた猿田毘古大神を、その正体を明らかにしたあなたが送り届け、その神の名を負って仕えよ、と命じた。猿女君らが猿田毘古の男神の名を負い、その女たちを猿女君と呼ぶのはこのためだという。猿田毘古神は阿耶訶にいたとき、漁をしていて比良夫貝に手をはさまれ、海に沈んでおぼれた。底に沈んだときの名を底度久御魂、海水が粒立ったときの名を都夫多都御魂、泡がはじけたときの名を阿和佐久御魂という。",
+     "refs": [
+      "K147"
+     ]
+    },
+    {
+     "text": "猿田毘古神を送って戻った天宇受売命は、大小の魚をすべて集めて「天つ神の御子にお仕えするか」と問うた。魚たちはみな「お仕えします」と答えたが、海鼠だけは答えなかった。天宇受売命は「この口は答えない口か」と言って小刀で海鼠の口を裂いたので、今も海鼠の口は裂けている。このため、代々、「嶋の速贄」が献上されるときには猿女君らにも分け与えられるという。",
+     "refs": [
+      "K147"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K144",
+     "text": "僕者國神，名猿田毗古神也",
+     "note": "私は国つ神で、名は猿田毘古神です（天の八衢で問われたときの答え）。"
+    },
+    {
+     "ref": "K145",
+     "text": "此之鏡者，專為我御魂而如拜吾前",
+     "note": "この鏡はひたすら私の魂として、私を拝むのと同じように（祭りなさい）。"
+    },
+    {
+     "ref": "K146",
+     "text": "朝日之直刺國，夕日之日照國也",
+     "note": "朝日がまっすぐ差す国、夕日が照り輝く国である（邇邇芸命が降った地をほめる言葉）。"
+    },
+    {
+     "ref": "K147",
+     "text": "此口乎，不答之口",
+     "note": "この口は、答えない口か（天宇受売命が海鼠に言った言葉）。"
+    }
+   ],
+   "deities": [
+    "amaterasu",
+    "takamimusubi",
+    "oshihomimi",
+    "ninigi",
+    "amenohoakari",
+    "amenouzume",
+    "sarutahiko",
+    "amenokoyane",
+    "futotama",
+    "ishikoridome",
+    "tamaoya",
+    "omoikane",
+    "tajikarao",
+    "toyouke"
+   ],
+   "figures": [
+    {
+     "name": "萬幡豊秋津師比賣命",
+     "reading": "よろずはたとよあきつしひめのみこと",
+     "role": "高木神の娘で、天忍穂耳命との間に天火明命と邇邇芸命を生んだ。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/yorozuhatatoyoakitsushihimenomikoto/"
+     ]
+    },
+    {
+     "name": "天石門別神",
+     "reading": "あめのいわとわけのかみ",
+     "role": "邇邇芸命に添えられた神。またの名を櫛石窓神・豊石窓神といい、御門の神とされる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenoiwatowakenokami/"
+     ]
+    },
+    {
+     "name": "天忍日命",
+     "reading": "あめのおしひのみこと",
+     "role": "天津久米命とともに武装して邇邇芸命の先頭に立った。大伴連らの祖。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amenooshihinomikoto/"
+     ]
+    },
+    {
+     "name": "天津久米命",
+     "reading": "あまつくめのみこと",
+     "role": "天忍日命とともに武装して邇邇芸命の先頭に立った。久米直らの祖。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/amatsukumenomikoto/"
+     ]
+    },
+    {
+     "name": "八尺勾𤥼・鏡・草那藝釼",
+     "reading": "",
+     "role": "降臨のとき邇邇芸命に授けられた玉・鏡・剣。鏡は天照大御神の魂として祭るよう命じられた。",
+     "src": []
+    },
+    {
+     "name": "底度久御魂",
+     "reading": "そこどくみたま",
+     "role": "猿田毘古神が阿耶訶で海に沈み、底に着いたときの名。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/sokodokumitama/"
+     ]
+    },
+    {
+     "name": "都夫多都御魂",
+     "reading": "つぶたつみたま",
+     "role": "猿田毘古神がおぼれ、海水が粒立ったときの名。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/tsubutatsumitama/"
+     ]
+    },
+    {
+     "name": "阿和佐久御魂",
+     "reading": "あわさくみたま",
+     "role": "猿田毘古神がおぼれ、泡がはじけたときの名。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/awasakumitama/"
+     ]
+    },
+    {
+     "name": "猿女君",
+     "reading": "さるめのきみ",
+     "role": "天宇受売命の子孫の一族。猿田毘古神の名を負ったことがその名の由来とされる。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/sarutabikonokami/"
+     ]
+    },
+    {
+     "name": "海鼠",
+     "reading": "こ",
+     "role": "天孫に仕えるかという問いにただ一つ答えず、天宇受売命に口を裂かれた。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/sokodokumitama/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第九段 本文では、高皇産霊尊が皇孫の天津火瓊瓊杵尊を真床追衾で覆って降らせる。天忍穂耳尊から子へ交代する話や、玉・鏡・剣を授ける話、猿田彦は出てこない。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "以眞床追衾、覆於皇孫天津火瓊瓊杵尊使降之"
+    },
+    {
+     "text": "第九段 一書第一では、天照大神が八坂瓊曲玉・八咫鏡・草薙剣の「三種の宝物」と五部の神を皇孫に授け、猿田彦大神が天の八達之衢で出迎える。猿田彦は伊勢の狭長田の五十鈴川上に行くと述べる。",
+     "where": "巻第二 第九段 一書第一",
+     "ref": "N2-3",
+     "quote": "八坂瓊曲玉及八咫鏡、草薙劒三種寶物"
+    },
+    {
+     "text": "第九段 一書第四では、大伴連の遠祖の天忍日命が来目部の遠祖の天槵津大来目を率いて先導する。古事記では天忍日命と天津久米命の二人が並んで先導する。",
+     "where": "巻第二 第九段 一書第四",
+     "ref": "N2-6",
+     "quote": "大伴連遠祖天忍日命。帥來目部遠祖天槵津大來目"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/yorozuhatatoyoakitsushihimenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenoiwatowakenokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amenooshihinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amatsukumenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sokodokumitama/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tsubutatsumitama/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/awasakumitama/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sarutabikonokami/"
+   ]
+  },
+  {
+   "no": 15,
+   "id": "konohana",
+   "title": "木花之佐久夜毘売と石長比売",
+   "span": [
+    "K148",
+    "K148"
+   ],
+   "lead": "天から降りた邇邇藝命は、笠紗の御前で大山津見神の娘・木花之佐久夜毘売を妻に迎えたが、いっしょに差し出された姉の石長比売は醜いとして送り返し、そのために天皇たちの命は長くないのだと古事記は語る。一夜で身ごもったことを疑われた佐久夜毘売は、火をつけた産殿の中で火照命・火須勢理命・火遠理命の三柱を生んだ。",
+   "points": [
+    {
+     "text": "邇邇藝命が姉の石長比売を醜いとして送り返し、妹の木花之佐久夜毘売だけを妻にしたため、大山津見神の言葉どおり天神の御子の命は木の花のようにはかないものになった。古事記は、今も天皇たちの命が長くないのはこのためだと語る。",
+     "kind": "本文",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "一夜で身ごもったことを邇邇藝命に疑われた木花之佐久夜毘売は、「天神の御子なら無事に生まれる」と言って、戸のない殿に入り火をつけて出産し、火照命・火須勢理命・火遠理命の三柱を生んだ。",
+     "kind": "本文",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "火の中で生まれた三柱のうち、長男の火照命は隼人の阿多君の祖と小注に記され、末の火遠理命（またの名 天津日高日子穂穂手見命）がこの後の海幸山幸の話の主人公になる。",
+     "kind": "本文",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "日本書紀 第九段の一書第二では、命が短くなるのは父の誓いではなく、恥じた磐長姫自身の呪いの言葉によるとされ、その中の「一云」では天皇に限らず世の人みなの命のはかなさの由来として語られる。",
+     "kind": "比較",
+     "refs": [
+      "N2-4"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、石を退けて短い命を得るこの話は、東南アジアなどに分布する「バナナ型」と呼ばれる神話の型に属するとされ、もとは人間一般の死の起源を語る話が邇邇藝命の神話と結びついたものと考えられている。",
+     "kind": "解説",
+     "refs": [
+      "K148"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/"
+     ]
+    },
+    {
+     "text": "同じデータベースでは、邇邇藝命が山の神の娘と、その子の火遠理命が海の神の娘と結婚することで、天神の子孫が山と海の両方の力を取り込み、地上を治める資格を得るという意味があるとする見方が紹介されている。",
+     "kind": "解説",
+     "refs": [
+      "K148"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "天津日高日子番能邇邇藝能命は、笠紗の御前で美しい女性に出会った。誰の娘かとたずねると、大山津見神の娘で、名は神阿多都比売（かむあたつひめ）、またの名を木花之佐久夜毘売だと答えた。姉妹はいるかと問うと、姉の石長比売がいると答えた。邇邇藝命が妻にしたいと言うと、佐久夜毘売は「自分からはお答えできません。父の大山津見神がお答えします」と言った。",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "そこで父の大山津見神に使いを送ると、大山津見神はたいへん喜び、姉の石長比売もいっしょに、たくさんの品を台にのせて持たせて差し出した。ところが姉はとても醜かったので、邇邇藝命は見て恐れ、送り返してしまった。そして妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "大山津見神は、石長比売を返されたことを深く恥じて、次のように申し送った。娘を二人並べて差し上げたのは、石長比売をおそばに置けば、天神の御子の命は雪が降っても風が吹いても石のようにいつまでも動かず、木花之佐久夜毘売をおそばに置けば、木の花が咲くように栄える、と誓いを立てて差し上げたからだ。石長比売を返して佐久夜毘売だけを留めたので、天神の御子の命は木の花のようにはかなくなるだろう、と。古事記は、このため今に至るまで天皇たちの命は長くないのだと記している。",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "のちに佐久夜毘売がやって来て、「身ごもって、もうすぐお産です。天神の御子なので、私ひとりで勝手に生むわけにはいきません」と申し出た。すると邇邇藝命は「一夜で身ごもったというのか。それは私の子ではない。きっと国つ神の子だろう」と言った。佐久夜毘売は「私の身ごもった子が国つ神の子なら、無事には生まれないでしょう。天神の御子なら、無事に生まれるでしょう」と答えた。",
+     "refs": [
+      "K148"
+     ]
+    },
+    {
+     "text": "佐久夜毘売は戸口のない大きな殿（無戸八尋殿）を造ってその中に入り、土で塗りふさいだ。そしてお産の時に殿に火をつけて子を生んだ。火が盛んに燃えている時に生まれた子は火照命（小注に、隼人の阿多君の祖とある）、次に火須勢理命、次に火遠理命で、火遠理命のまたの名は天津日高日子穂穂手見命という。",
+     "refs": [
+      "K148"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K148",
+     "text": "唯留其弟木花之佐久夜毗賣以一宿為婚",
+     "note": "（姉を送り返し）妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。"
+    },
+    {
+     "ref": "K148",
+     "text": "雖雪零風吹，恒如石而常堅不動坐",
+     "note": "（石長比売をおそばに置けば、天神の御子の命は）雪が降り風が吹いても、いつも石のように固く動かずにいらっしゃるだろう。"
+    },
+    {
+     "ref": "K148",
+     "text": "故是以至于今，天皇命等之御命不長也。",
+     "note": "そのため今に至るまで、天皇たちの御命は長くないのである。"
+    },
+    {
+     "ref": "K148",
+     "text": "若天神之御子者，幸。",
+     "note": "（身ごもった子が）天神の御子であるなら、無事に生まれるでしょう。"
+    }
+   ],
+   "deities": [
+    "ninigi",
+    "konohanasakuya",
+    "iwanagahime",
+    "ooyamatsumi",
+    "hikohohodemi"
+   ],
+   "figures": [
+    {
+     "name": "火照命",
+     "reading": "ほでりのみこと",
+     "role": "火の燃える産殿で最初に名を挙げられる子で、小注に隼人の阿多君の祖とある。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/"
+     ]
+    },
+    {
+     "name": "火須勢理命",
+     "reading": "ほすせりのみこと",
+     "role": "火の燃える産殿で火照命の次に生まれた子。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/"
+     ]
+    },
+    {
+     "name": "無戸八尋殿",
+     "reading": "",
+     "role": "佐久夜毘売が出産のために造った戸口のない大きな殿で、土で塗りふさぎ、火をつけてその中で子を生んだ。",
+     "src": []
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "第九段の一書第二でも、姉の磐長姫が醜いとして退けられる話があるが、命が短くなるのは磐長姫が恥じて呪ったためとされ、その「一云」では世の人一般（「顯見蒼生」）の命のはかなさの由来とされている。古事記では父の大山津見神の誓いによるもので、天皇たちの命の話になっている。",
+     "where": "巻第二 第九段 一書第二",
+     "ref": "N2-4",
+     "quote": "故磐長姫大慙而詛之曰"
+    },
+    {
+     "text": "第九段の本文には磐長姫は登場せず、妻の名は鹿葦津姫で、小注に亦の名として神吾田津姫・木花之開耶姫が挙げられる。一夜で身ごもったことを疑われ、無戸室に火を放って出産する点は古事記と共通する。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-1",
+     "quote": "名曰鹿葦津姫"
+    },
+    {
+     "text": "第九段の本文では、生まれた子は火闌降命・彦火火出見尊・火明命の三子で、最初に生まれた火闌降命が小注で隼人等の始祖とされる。古事記では隼人の阿多君の祖は火照命で、三柱目は火遠理命である。",
+     "where": "巻第二 第九段 本文",
+     "ref": "N2-2",
+     "quote": "始起烟末生出之兒。號火闌降命"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/kamuatatsuhime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/"
+   ]
+  },
+  {
+   "no": 16,
+   "id": "umisachi",
+   "title": "海幸山幸",
+   "span": [
+    "K149",
+    "K151"
+   ],
+   "lead": "弟の火遠理命（山佐知毘古）は兄の火照命（海佐知毘古）から借りた釣針を海でなくし、塩椎神の助けで綿津見神の宮へ行って豊玉毘売と結婚し、三年を過ごした。海神の助けで釣針を取り戻した火遠理命は、授かった塩盈珠・塩乾珠で兄を従わせ、兄は昼も夜も守る者として仕えると誓った。",
+   "points": [
+    {
+     "text": "火遠理命（山佐知毘古）は兄・火照命（海佐知毘古）と道具を取り替えたが釣針を海でなくし、兄は剣から作った千の釣針も受け取らず元の釣針を求めたため、火遠理命は塩椎神の小船で綿津見神の宮へ向かった。",
+     "kind": "本文",
+     "refs": [
+      "K149",
+      "K150"
+     ]
+    },
+    {
+     "text": "火遠理命は海神の宮で豊玉毘売と結婚して三年住み、わけを聞いた海神が海の魚を集めて、のどの痛む赤海鯽魚から釣針を見つけ出した。",
+     "kind": "本文",
+     "refs": [
+      "K150",
+      "K151"
+     ]
+    },
+    {
+     "text": "海神は釣針とともに塩盈珠・塩乾珠を授け、地上に戻った火遠理命はそれで兄を溺れさせては救い、降参した火照命は昼夜の守護人として仕えると誓った。",
+     "kind": "本文",
+     "refs": [
+      "K151"
+     ]
+    },
+    {
+     "text": "火遠理命を一日で地上に送った一尋和迩は、首に紐小刀をつけてもらったことから佐比持神と呼ばれるようになった、と由来が語られる。",
+     "kind": "本文",
+     "refs": [
+      "K151"
+     ]
+    },
+    {
+     "text": "日本書紀 第十段の本文では、兄は火闌降命という名で、鹽土老翁は船ではなく目のない籠（無目篭）に火火出見尊を入れて海に沈め、降参した兄は「俳優之民」になると誓う。",
+     "kind": "比較",
+     "refs": [
+      "N2-11"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、兄が弟に従う結末は、編纂当時に隼人が宮廷を守り、隼人舞などで奉仕していたことの由来を語る話とされ、なくした釣針を探しに異界へ行く筋は、インドネシアなどに分布する「失われた釣針型」の説話と似ていると指摘されている。",
+     "kind": "解説",
+     "refs": [
+      "K151"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "火照命は海佐知毘古として海の魚をとり、火遠理命は山佐知毘古として山の獣をとっていた。火遠理命は兄に「おたがいの佐知（獲物をとる道具）を取り替えて使おう」と三度頼み、ようやく取り替えてもらった。しかし海で釣りをしても一匹も釣れず、そのうえ釣針を海でなくしてしまった。兄が釣針を返すよう求めると、弟は腰の十拳剣をくだいて五百の釣針を作り、さらに千の釣針を作って償おうとしたが、兄は受け取らず「やはり元の釣針がほしい」と言った。",
+     "refs": [
+      "K149"
+     ]
+    },
+    {
+     "text": "火遠理命が海辺で泣いていると、塩椎神が来てわけをたずねた。事情を聞いた塩椎神は、すきまなく編んだ小船（无間勝間之小船）を造って火遠理命を乗せ、「私がこの船を押し流すから、しばらく行くとよい道がある。その道を行けば、魚の鱗のように造られた宮、綿津見神の宮に着く。門のそばの井戸の上に湯津香木があるから、その木の上に座っていれば、海神の娘が取り計らってくれる」と教えた。",
+     "refs": [
+      "K150"
+     ]
+    },
+    {
+     "text": "教えのとおり木の上に座っていると、豊玉毘売の侍女が玉の器で水をくもうとして、井戸に光があるのに気づき、見上げると美しい男がいた。火遠理命は水を求めたが、飲まずに首飾りの玉を口に含んで器に吐き入れた。玉は器にくっついて離れなかったので、侍女はそのまま豊玉毘売に差し出した。豊玉毘売は出て見て心ひかれ、父に知らせると、海神は「この方は天津日高の御子、虚空津日高だ」と言って宮に迎え、手厚くもてなして娘と結婚させた。火遠理命はその国に三年住んだ。",
+     "refs": [
+      "K150"
+     ]
+    },
+    {
+     "text": "ある夜、火遠理命は初めのいきさつを思い出して大きなため息をついた。豊玉毘売から聞いた海神がわけをたずねると、火遠理命は兄の釣針をなくして責められたいきさつを話した。海神が海の大小の魚をすべて呼び集めて問うと、魚たちは「赤海鯽魚がのどに何かが刺さって物が食べられないと嘆いている」と言った。赤海鯽魚ののどを探ると、釣針があった。",
+     "refs": [
+      "K150",
+      "K151"
+     ]
+    },
+    {
+     "text": "海神は釣針を洗って火遠理命に渡し、兄に返すときは「淤煩鉤・須須鉤・貧鉤・宇流鉤」と唱えて後ろ手で渡すよう教えた。また、兄が高い所に田を作ったら低い所に、低い所に作ったら高い所に田を作れ、私は水をつかさどるので三年のうちに兄は貧しくなる、と言った。そして、兄が恨んで攻めてきたら塩盈珠を出して溺れさせ、許しを請うたら塩乾珠を出して助けよと教えて、二つの珠を授けた。",
+     "refs": [
+      "K151"
+     ]
+    },
+    {
+     "text": "海神が和迩たちを集めて、誰が何日で送れるかとたずねると、一尋和迩が「一日で送って帰ってきます」と申し出た。火遠理命はその首に乗って一日のうちに送り届けられ、和迩が帰るときに紐小刀をその首につけてやったので、この一尋和迩は今も佐比持神と呼ばれている。教えのとおりにすると兄はしだいに貧しくなり、荒々しい心で攻めてきたが、火遠理命は塩盈珠で溺れさせ、許しを請えば塩乾珠で救った。苦しんだ兄は頭を下げ、これからは昼も夜も守る者としてお仕えすると誓い、今に至るまで、その溺れた時のさまざまなしぐさを絶えず演じて仕えている、と記される。",
+     "refs": [
+      "K151"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K149",
+     "text": "猶欲得其正本鉤。",
+     "note": "（償いの釣針をいくら作っても）やはり元の釣針がほしい、と兄は言った。"
+    },
+    {
+     "ref": "K150",
+     "text": "如魚鱗所造之宫室，其綿津見神之宫者也。",
+     "note": "魚の鱗のように造られた宮、それが綿津見神の宮である（塩椎神の教え）。"
+    },
+    {
+     "ref": "K151",
+     "text": "出塩盈珠而溺；若其愁請者，出塩乾珠而活。",
+     "note": "（兄が攻めてきたら）塩盈珠を出して溺れさせ、許しを請うたら塩乾珠を出して生かせ（海神の教え）。"
+    },
+    {
+     "ref": "K151",
+     "text": "為汝命之晝夜守護人而仕奉",
+     "note": "あなたさまの昼も夜も守る者としてお仕えします（降参した兄の誓い）。"
+    }
+   ],
+   "deities": [
+    "hikohohodemi",
+    "shiotsuchi",
+    "watatsumi",
+    "toyotama"
+   ],
+   "figures": [
+    {
+     "name": "火照命（海佐知毗古）",
+     "reading": "ほでりのみこと（うみさちびこ）",
+     "role": "海の魚をとる兄で、貸した釣針を返せと弟を責め、最後には弟に降参して仕えると誓う。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/umisachibiko/"
+     ]
+    },
+    {
+     "name": "无間勝間之小船",
+     "reading": "",
+     "role": "塩椎神が造って火遠理命を乗せ、綿津見神の宮へ向かわせた小船。",
+     "src": []
+    },
+    {
+     "name": "湯津香木",
+     "reading": "ゆつかつら",
+     "role": "綿津見神の宮の門のそばの井戸の上にある木で、火遠理命はこの上に座って豊玉毘売の侍女に見つけられた（訓注に「香木」を加都良と読むとある）。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/"
+     ]
+    },
+    {
+     "name": "赤海鯽魚",
+     "reading": "",
+     "role": "のどに火遠理命の釣針が刺さっていた魚。",
+     "src": []
+    },
+    {
+     "name": "塩盈珠・塩乾珠",
+     "reading": "",
+     "role": "海神が火遠理命に授けた二つの珠で、塩盈珠で兄を溺れさせ、塩乾珠で救った。",
+     "src": []
+    },
+    {
+     "name": "一尋和迩（佐比持神）",
+     "reading": "ひとひろわに（さひもちのかみ）",
+     "role": "火遠理命を首に乗せて一日で地上へ送り、紐小刀をつけてもらって佐比持神と呼ばれるようになった。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/",
+      "https://kojiki.kokugakuin.ac.jp/shinmei/sahimochinokami/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "書紀の本文では、鹽土老翁は船ではなく目のない籠（無目篭）を作り、火火出見尊をその中に入れて海に沈める。古事記では塩椎神が无間勝間之小船を造って乗せ、押し流す。",
+     "where": "巻第二 第十段 本文",
+     "ref": "N2-11",
+     "quote": "乃作無目篭"
+    },
+    {
+     "text": "書紀の本文では、釣針を持っていたのは「赤女」（小注に鯛の名とある）で、口の病のため集まりに来なかったとされる。古事記では赤海鯽魚が、のどに物が刺さって食べられないと嘆いている。",
+     "where": "巻第二 第十段 本文",
+     "ref": "N2-11",
+     "quote": "比有口疾而不來"
+    },
+    {
+     "text": "書紀の本文では、降参した兄の火闌降命は「あなたの俳優の民になる」と誓い、吾田君小橋らの祖とされる。古事記では兄は火照命で、昼夜の守護人として仕えると誓う。",
+     "where": "巻第二 第十段 本文",
+     "ref": "N2-11",
+     "quote": "吾將爲汝俳優之民"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/umisachibiko/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/sahimochinokami/"
+   ]
+  },
+  {
+   "no": 17,
+   "id": "ugaya",
+   "title": "鵜葺草葺不合命の誕生",
+   "span": [
+    "K152",
+    "K156"
+   ],
+   "lead": "海神の娘・豊玉毘売は地上に来て、鵜の羽で屋根を葺きかけた産殿で御子を生んだが、「見ないで」という願いを破られて八尋和迩の姿を見られ、海坂を塞いで海の国へ帰った。生まれた鵜葺草葺不合命はのちに叔母の玉依毘売命を妻とし、若御毛沼命（神倭伊波礼毗古命）を含む四柱の子をもうけた。",
+   "points": [
+    {
+     "text": "豊玉毘売は「見ないで」と頼んだが、火遠理命がのぞくと八尋和迩の姿で這いうねっていたため逃げ出し、恥じた豊玉毘売は御子を残して海坂を塞ぎ、海の国へ帰った。",
+     "kind": "本文",
+     "refs": [
+      "K152"
+     ]
+    },
+    {
+     "text": "海辺に鵜の羽で屋根を葺いた産殿が葺き終わらないうちに生まれたので、御子は天津日高日子波限建鵜葺草葺不合命と名づけられた。",
+     "kind": "本文",
+     "refs": [
+      "K152"
+     ]
+    },
+    {
+     "text": "鵜葺草葺不合命は叔母の玉依毘売命を妻として五瀬命・稲氷命・御毛沼命・若御毛沼命の四柱をもうけ、末の若御毛沼命のまたの名を神倭伊波礼毗古命という。",
+     "kind": "本文",
+     "refs": [
+      "K156"
+     ]
+    },
+    {
+     "text": "別れた後も豊玉毘売は恋しさから妹の玉依毘売に託して歌を贈り、火遠理命も妻を一生忘れないと歌で答えた。火遠理命は高千穂宮に五百八十年いたと記される。",
+     "kind": "本文",
+     "refs": [
+      "K152",
+      "K153",
+      "K155",
+      "K156"
+     ]
+    },
+    {
+     "text": "日本書紀 第十段の本文では、豊玉姫はお産の時に龍の姿になり、子を草で包んで海辺に置いて去る。一書第一では八尋大熊鰐、一書第三では八尋大鰐の姿とされる。",
+     "kind": "比較",
+     "refs": [
+      "N2-11",
+      "N2-12",
+      "N2-14"
+     ]
+    },
+    {
+     "text": "國學院大學の神名データベースによれば、「見るな」の約束を破られた妻が元の世界へ去るこの話は、世界に広く見られる「メルシナ型」と呼ばれる異類の妻の話の一つとみる説が有力で、海坂を塞ぐ場面は海と陸が行き来できなくなった由来を語り、上巻の最後で神話の世界を閉じる役割を持つとする見方もある。",
+     "kind": "解説",
+     "refs": [
+      "K152"
+     ],
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/"
+     ]
+    }
+   ],
+   "story": [
+    {
+     "text": "海神の娘・豊玉毘売命が自ら地上にやって来て、「身ごもって、もうすぐお産です。天神の御子を海原で生むべきではないと思って、参りました」と言った。そこで海辺の波打ち際に、鵜の羽を屋根の葺草にして産殿を造った。ところが屋根をまだ葺き終わらないうちに、お腹の急な痛みをこらえきれず、豊玉毘売は産殿に入った。",
+     "refs": [
+      "K152"
+     ]
+    },
+    {
+     "text": "いよいよ生む時、豊玉毘売は夫に「よその国の者は、お産の時には本国の姿になって生みます。ですから私も今、本来の姿で生みます。どうか私を見ないでください」と言った。火遠理命はその言葉を不思議に思い、生もうとしているところをこっそりのぞいた。すると豊玉毘売は八尋和迩になって這いうねっていたので、驚き恐れて逃げ出した。",
+     "refs": [
+      "K152"
+     ]
+    },
+    {
+     "text": "豊玉毘売は、のぞき見られたことを知って恥ずかしく思い、御子を生み置いて「私はいつも海の道を通って行き来したいと思っていました。けれども私の姿をのぞき見られたのは、とても恥ずかしいことです」と言い、海坂を塞いで海へ帰ってしまった。こうして生まれた御子を、天津日高日子波限建鵜葺草葺不合命と名づけた。訓注には「波限」を那藝佐（なぎさ）、「葺草」を加夜（かや）と読むとある。",
+     "refs": [
+      "K152"
+     ]
+    },
+    {
+     "text": "その後、豊玉毘売はのぞき見た心を恨みながらも、恋しい気持ちをおさえられず、御子を育てる縁で妹の玉依毘売に託して歌を贈った。その歌は、赤い玉の輝きにふれながら、白い玉のようなあなたの姿が尊く思われる、とうたうものであった。夫は答えの歌で、沖の鳥の鴨が寄りつく島で共に寝た妻のことは、生きているかぎり忘れない、とうたった。",
+     "refs": [
+      "K152",
+      "K153",
+      "K154",
+      "K155"
+     ]
+    },
+    {
+     "text": "日子穂穂手見命（火遠理命）は高千穂宮に五百八十年いて、御陵は高千穂の山の西にある。天津日高日子波限建鵜葺草葺不合命は叔母の玉依毘売命を妻とし、五瀬命、稲氷命、御毛沼命、若御毛沼命の四柱を生んだ。若御毛沼命はまたの名を豊御毛沼命、神倭伊波礼毗古命という。御毛沼命は波頭を踏んで常世国に渡り、稲氷命は母の国（原文「妣國」）として海原に入った。",
+     "refs": [
+      "K156"
+     ]
+    }
+   ],
+   "quotes": [
+    {
+     "ref": "K152",
+     "text": "天神之御子不可生海原",
+     "note": "天神の御子を海原で生むべきではない（豊玉毘売が地上に来たわけ）。"
+    },
+    {
+     "ref": "K152",
+     "text": "化八尋和迩而匍匐委虵",
+     "note": "（のぞいてみると豊玉毘売は）八尋もある和迩の姿になって、這いうねっていた。"
+    },
+    {
+     "ref": "K152",
+     "text": "即塞海坂而返入。",
+     "note": "そこで海の境（海坂）を塞いで、海へ帰ってしまった。"
+    },
+    {
+     "ref": "K156",
+     "text": "亦名神倭伊波礼毗古命",
+     "note": "（若御毛沼命の）またの名を神倭伊波礼毗古命という。"
+    }
+   ],
+   "deities": [
+    "toyotama",
+    "hikohohodemi",
+    "ugayafukiaezu",
+    "tamayori",
+    "mikenu",
+    "jinmu",
+    "watatsumi"
+   ],
+   "figures": [
+    {
+     "name": "五瀬命",
+     "reading": "いつせのみこと",
+     "role": "鵜葺草葺不合命と玉依毘売命の間に最初に生まれた子。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/"
+     ]
+    },
+    {
+     "name": "稲氷命",
+     "reading": "いなひのみこと",
+     "role": "鵜葺草葺不合命の第二子で、母の国として海原に入った。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/inahinomikoto/"
+     ]
+    },
+    {
+     "name": "産殿",
+     "reading": "",
+     "role": "海辺の波打ち際に鵜の羽を葺草にして造られたが、屋根を葺き終わる前に豊玉毘売がここで出産した。",
+     "src": []
+    },
+    {
+     "name": "八尋和迩",
+     "reading": "やひろわに",
+     "role": "お産の時に豊玉毘売がなっていた本来の姿で、これを見られたことが別れのきっかけになった。",
+     "src": [
+      "https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/"
+     ]
+    }
+   ],
+   "nihonshoki": [
+    {
+     "text": "書紀の本文では、豊玉姫はお産の時に龍の姿になったとされる。古事記では八尋和迩の姿である。",
+     "where": "巻第二 第十段 本文",
+     "ref": "N2-11",
+     "quote": "豐玉姫方產化爲龍"
+    },
+    {
+     "text": "書紀の本文では、豊玉姫は子を草で包んで海辺に捨て、海の道を閉ざして去る。古事記では御子を生み置いて海坂を塞いで帰り、のちに妹の玉依毘売を養育のために送る。",
+     "where": "巻第二 第十段 本文",
+     "ref": "N2-11",
+     "quote": "乃以草裹兒棄之海邊閉海途而徑去矣"
+    },
+    {
+     "text": "書紀の第十一段本文でも、波瀲武鸕鷀草葺不合尊は叔母の玉依姫を妃として五瀨命・稻飯命・三毛入野命・神日本磐余尊の四男を生むが、さらに西洲之宮で亡くなり日向の吾平山上陵に葬られたと記す。古事記の該当部分には鵜葺草葺不合命の死や御陵の記事はない。",
+     "where": "巻第二 第十一段 本文",
+     "ref": "N2-16",
+     "quote": "崩於西洲之宮。因葬日向吾平山上陵"
+    }
+   ],
+   "sources": [
+    "https://kojiki.kokugakuin.ac.jp/shinmei/toyotamabime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/",
+    "https://kojiki.kokugakuin.ac.jp/shinmei/inahinomikoto/"
+   ]
+  }
+ ]
+}

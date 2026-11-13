@@ -96,7 +96,7 @@ def head(title, desc, canon):
 <body>
   <header class="site-header">
     <a class="brand" href="./" aria-label="古事記アーカイブ トップへ">
-      <span class="brand-mark" aria-hidden="true">古事記</span>
+      <span class="brand-mark" aria-hidden="true">古記</span>
       <span>古事記アーカイブ</span>
     </a>
     <nav class="site-nav" aria-label="ページ内ナビゲーション">
