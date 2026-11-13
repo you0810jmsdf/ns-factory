@@ -24,6 +24,8 @@ for s in SHO:
     for k in s.get('kojiki_pages', []):
         K2S.setdefault(k, []).append(s)
 KBY = {m['id']: m for m in KOJ}
+# 英語版のデータ（あれば日本語ページに English のリンクを出す）
+HAS_EN = os.path.exists(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json')) and os.path.exists(os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'))
 
 GA = '''<!-- Google tag (gtag.js) -->
 <script>
@@ -101,9 +103,18 @@ BOOK = {
 }
 KIND = {'本文': ('', '本文'), '一書': ('k-var', '一書（別の伝え）'), '比較': ('k-cmp', '比較'), '解説': ('k-int', '解説')}
 
+def en_url(canon):  # 日本語ページの英語版のURL（kojiki/xxx.html → kojiki/en/xxx.html）
+    for bk in ('kojiki/', 'shoki/'):
+        if bk in canon: return canon.replace(bk, bk + 'en/')
+    return None
+
 def head(book, title, desc, canon):
     b = BOOK[book]
     nav = ''.join(f'\n      <a href="{h}">{e(t)}</a>' for h, t in b['nav'])
+    en = en_url(canon) if HAS_EN else None
+    rel = canon.split(book + '/', 1)[1]
+    if en: nav += f'\n      <a href="en/{rel}" lang="en" hreflang="en">English</a>'
+    alt = f'\n  <link rel="alternate" hreflang="ja" href="{canon}">\n  <link rel="alternate" hreflang="en" href="{en}">' if en else ''
     return f'''<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -113,7 +124,7 @@ def head(book, title, desc, canon):
   <title>{e(title)}</title>
 {GA}
   <meta name="description" content="{e(desc)}">
-  <link rel="canonical" href="{canon}">
+  <link rel="canonical" href="{canon}">{alt}
   <meta property="og:title" content="{e(title)}">
   <meta property="og:description" content="{e(desc)}">
   <meta property="og:type" content="article">
@@ -385,10 +396,11 @@ def shoki_index():
     out.append(FOOT)
     return '\n'.join(out)
 
-for i, m in enumerate(KOJ):
+if __name__ == '__main__':
+  for i, m in enumerate(KOJ):
     open(os.path.join(HIT, 'kojiki', m['id'] + '.html'), 'w', encoding='utf-8').write(kojiki_page(i))
-open(os.path.join(HIT, 'kojiki', 'index.html'), 'w', encoding='utf-8').write(kojiki_index())
-for i, s in enumerate(SHO):
+  open(os.path.join(HIT, 'kojiki', 'index.html'), 'w', encoding='utf-8').write(kojiki_index())
+  for i, s in enumerate(SHO):
     open(os.path.join(HIT, 'shoki', s['id'] + '.html'), 'w', encoding='utf-8').write(shoki_page(i))
-open(os.path.join(HIT, 'shoki', 'index.html'), 'w', encoding='utf-8').write(shoki_index())
-print(f'古事記 {len(KOJ)}ページ・日本書紀 {len(SHO)}ページ＋一覧2')
+  open(os.path.join(HIT, 'shoki', 'index.html'), 'w', encoding='utf-8').write(shoki_index())
+  print(f'古事記 {len(KOJ)}ページ・日本書紀 {len(SHO)}ページ＋一覧2')
