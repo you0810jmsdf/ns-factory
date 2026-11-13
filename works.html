@@ -1679,6 +1679,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       ['17', 'メガネケース'], ['18', 'スマホケース'], ['19', 'トラッカーズウォレット'], ['20', 'ミニウォレット'],
       ['21', 'ストラップ'], ['22', 'リメイク'], ['23', 'マネークリップ'], ['24', 'サコッシュ'], ['25', '時計ベルト'],
       ['26', 'オリジナルウォレット'], ['27', 'ベルト'], ['28', 'トートバッグ'], ['29', 'アコーディオンウォレット'], ['30', '三つ折りウォレット'],
+      ['31', 'フォトフレーム'],
     ].map(([n, label, cat]) => ({ img: `assets/works-category/${n}.jpg`, label, cat: cat || label }));
 
     function buildEntrance() {
@@ -2497,6 +2498,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       if (productLink) {
         const productPage = workCats(activeWork).map((c) => PRODUCT_PAGES[c]).find(Boolean);
         productLink.hidden = !productPage;
+        // 商品ページがある分類は、相談ページ（手帳・財布・キーケース向けの質問）に合わないので相談ボタンを出さない（2026-11-13）
+        if (consultLink) consultLink.hidden = !!productPage;
         if (productPage) {
           productLink.href = productPage;
           productLink.textContent = T('modal.productPage', '📄 商品ページを見る（仕様・ご注文方法）');
