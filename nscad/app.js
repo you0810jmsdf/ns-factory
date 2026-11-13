@@ -7300,6 +7300,10 @@ function splitSelectedAtIntersections() {
 }
 function closeSelectedGaps() {
   const ids = selectedShapeIds(); if (!ids.size) { $('hint').textContent = t('closeGapsNoSel'); return 0; }
+  return closeGapsOf(ids);
+}
+/** ids（図形 id の集合）が関わる切れ目を閉じる。「隙間を閉じる」（選んだ図形）と「図面の点検」の「直す」（図面全体の切れ目）で共通。 */
+function closeGapsOf(ids) {
   const editableIds = new Set(doc.shapes.filter(s => editable(s)).map(s => s.id)), r = closeGaps(doc.shapes.filter(s => visible(s) && stitchable(s) && !s.holeLink), ids, 2, 0.01, editableIds);
   if (!r.closed && !r.skipped) { $('hint').textContent = t('closeGapsNone', { max: 2 }); return 0; }
   if (r.closed) commit(() => { const m = new Map(r.changes.map(c => [c.id, c.next])); doc.shapes = doc.shapes.map(s => m.get(s.id) || s); });
@@ -11946,6 +11950,45 @@ async function checkNewVersion() {
   $('updateInfo').textContent = t('updateInfo', { ver: v.jst }); const news = releasesSince(mine, v.releases); fillReleaseList($('updateNotes'), news, null); $('updateNotes').hidden = !news.length;   /* 新しい版で変わったこと */
   $('updateBar').hidden = false; $('updateBar').dataset.id = v.id; return true;
 }
+// ---- 図面の点検（1ボタン・事業主 2026-11-13「A 点検を1ボタンに」）----
+/* 別々の場所にあった点検（切れ目・重なり・歯抜け・ずれた穴・レシピの検図）を、図面全体について1回で数える。数え方・直し方は、それぞれの元の処理をそのまま使う（ここでは新しい判定を作らない）。 */
+const CK_KINDS = ['gap', 'dup', 'holeGap', 'off', 'pitch', 'open', 'zero', 'seam', 'collision'], CK_FROM_CHECK = { open: 'open', degenerate: 'zero', holes: 'seam', collision: 'collision' };
+/** 図面全体の点検。[{ kind, n（件数）, ids（関わる図形の id）, pts（場所の点）}]（CK_KINDS の順・0件の種類も返す）。 */
+function drawingCheck() {
+  const rows = new Map(CK_KINDS.map(k => [k, { kind: k, n: 0, ids: [], pts: [] }])), R = k => rows.get(k), safe = (fn, d) => { try { return fn(); } catch { return d; } };
+  const shapeIdsOf = id => doc.shapes.some(s => s.id === id) ? [id] : (doc.paths.find(p => p.id === id)?.shapeIds || doc.parts.find(p => p.id === id)?.shapeIds || []);
+  for (const g of gaps || []) { const r = R('gap'); r.n++; r.ids.push(g.a.id, g.b.id); r.pts.push({ x: g.x, y: g.y }); }
+  for (const g of dupGroups || []) { const r = R('dup'); r.n++; r.ids.push(...g.ids); }
+  const hg = safe(() => findHoleGaps(true), null); if (hg) { R('holeGap').n = hg.gapCount; R('holeGap').pts = hg.add.map(h => ({ x: h.x, y: h.y })); }
+  for (const m of safe(() => findPitchOffs(), [])) { if (m.kind === 'off') { R('off').n++; R('off').pts.push({ x: m.x, y: m.y }); } else if (m.kind === 'gap') { R('pitch').n++; R('pitch').pts.push({ x: m.x1, y: m.y1 }, { x: m.x2, y: m.y2 }); } }
+  for (const p of safe(() => check(doc, { paper: null }), [])) { const k = CK_FROM_CHECK[p.type]; if (!k) continue; const r = R(k); r.n++; r.ids.push(...p.ids.flatMap(shapeIdsOf)); }
+  return [...rows.values()];
+}
+/** 図面全体の切れ目を閉じる（「隙間を閉じる」と同じ処理を、切れ目に関わる図形の全部に）。 */
+function closeAllGaps() { return closeGapsOf(new Set((gaps || []).flatMap(g => [g.a.id, g.b.id]))); }
+const CK_FIX = { gap: () => closeAllGaps(), dup: () => mergeOverlaps(), holeGap: () => fixAllGaps(), off: () => fixPitchOffs() };
+function renderDrawingCheck() {
+  let kinds = 0, total = 0;
+  for (const r of drawingCheck()) {
+    $('ck_' + r.kind).hidden = !r.n; if (CK_FIX[r.kind]) $('ckFix_' + r.kind).hidden = !r.n;
+    if (r.n) { kinds++; total += r.n; $('ckInfo_' + r.kind).textContent = t('ck.' + r.kind, { n: r.n }); }
+  }
+  $('ckSummary').textContent = kinds ? t('ckSummary', { k: kinds, n: total }) : t('ckAllOk');
+}
+function openDrawingCheck() { renderDrawingCheck(); $('checkDialog').open = true; }
+/** 「見る」：その種類の場所が画面に入るように寄る。図形が関わる種類は、その図形を選ぶ（選べる図形だけ）。 */
+function gotoDrawingCheck(kind) {
+  const r = drawingCheck().find(x => x.kind === kind); if (!r || !r.n) return;
+  const idSet = new Set(r.ids), shapes = doc.shapes.filter(s => idSet.has(s.id)), pts = [...r.pts];
+  if (!pts.length) { const b = shapes.length ? bboxOfDoc({ shapes, holes: [] }) : null; if (b) pts.push({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.maxY }); }
+  if (!pts.length) return;
+  const pick = shapes.filter(s => editable(s)).map(s => s.id); if (pick.length) { cancel(); selected = new Set(pick); }
+  const minX = Math.min(...pts.map(p => p.x)), maxX = Math.max(...pts.map(p => p.x)), minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y));
+  scale = Math.max(0.5, Math.min(40, Math.min((width - 120) / Math.max(10, maxX - minX), (height - 120) / Math.max(10, maxY - minY)))); origin = { x: width / 2 - (minX + maxX) / 2 * scale, y: height / 2 - (minY + maxY) / 2 * scale };
+  draw();
+}
+$('drawCheck').onclick = openDrawingCheck; $('drawCheckMenu').onclick = openDrawingCheck; $('ckClose').onclick = () => { $('checkDialog').open = false; }; $('ckAgain').onclick = renderDrawingCheck;
+for (const k of CK_KINDS) { $('ckGo_' + k).onclick = () => gotoDrawingCheck(k); if (CK_FIX[k]) $('ckFix_' + k).onclick = () => { CK_FIX[k](); renderDrawingCheck(); }; }
 $('releaseBtn').onclick = openReleaseNotes; $('releaseClose').onclick = () => $('releaseDialog').close?.(); $('updateHistory').onclick = openReleaseNotes; $('releaseSearch').addEventListener('input', renderReleaseDialog); $('releaseMore').onclick = () => { releaseOldOpen = !releaseOldOpen; renderReleaseDialog(); };
 $('updateNow').onclick = () => { try { flushAutosave(); } catch { /* 自動保存できなくても更新はできる */ } location.reload(); };
 $('updateLater').onclick = () => { updateDismissed = $('updateBar').dataset.id || ''; $('updateBar').hidden = true; };
