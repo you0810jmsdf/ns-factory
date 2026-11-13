@@ -2375,8 +2375,26 @@ function unrollSelection() {
     for (const p of same.filter(p => !p.corner)) { const k = p.angleDeg.toFixed(3); counts.set(k, (counts.get(k) || 0) + 1); }
     const best = [...counts.entries()].sort((a, c) => c[1] - a[1])[0]; if (best) for (const p of same.filter(p => p.corner)) p.angleDeg = Number(best[0]);
   }
+  /* 始点・終点の指定（事業主 2026-11-13「始点としたい位置がまるで違う」「終点も選べない？」→ 始点の穴を選んでから X・時計回り）：
+   *  線といっしょに、その線の穴を Shift＋クリックで選んでおく。1つ＝その穴から（一周する線は一周）、2つ＝1つ目（始点）から2つ目（終点）まで。一周する線は、画面で見て時計回りに進む（描いた向きによらない）。
+   *  穴を選んでいなければ、今までどおり線の始まりから。つながっていない線を複数選んだときは使わない。 */
+  let outLen = len, rangeNote = '';
+  { const chains = chainShapes(list); if (chains.length === 1 && placed.length) {
+    const ch = chains[0], clen = arcLength(ch), order = [...selected], picks = placed.filter(p => selected.has(p.h.id)).sort((a, c) => order.indexOf(a.h.id) - order.indexOf(c.h.id));
+    if (ch.closed) { const pts = Array.from({ length: 64 }, (_, i) => pointAtLength(ch, clen * i / 64)); let area = 0; for (let i = 0; i < pts.length; i++) { const a = pts[i], c = pts[(i + 1) % pts.length]; area += a.x * c.y - c.x * a.y; }
+      if (area < 0) for (const p of placed) { p.s = ((clen - p.s) % clen + clen) % clen; p.angleDeg = (p.angleDeg + 180) % 360; } }   /* 図面は y が下向き：面積が負＝画面で反時計回り。逆にたどって時計回りにそろえる（穴の向きは線に対して半回転） */
+    if (picks.length) {
+      const s0 = picks[0].s, wrap = v => ch.closed ? ((v % clen) + clen) % clen : v;
+      let span = ch.closed ? clen : clen - s0;
+      if (picks.length >= 2) { span = wrap(picks[1].s - s0); if (!ch.closed && span < 0) span = 0; if (ch.closed && span < 1e-6) span = clen; }
+      if (!ch.closed && picks.length >= 2 && picks[1].s < s0) { for (const p of placed) { p.s = clen - p.s; p.angleDeg = (p.angleDeg + 180) % 360; } span = picks[0].s - picks[1].s; }   /* 開いた線で、終点が手前なら逆向きに */
+      const start = picks[0].s; for (const p of placed) p.s = wrap(p.s - start);
+      for (let i = placed.length - 1; i >= 0; i--) if (placed[i].s < -1e-6 || placed[i].s > span + 1e-6) placed.splice(i, 1);   /* 範囲の外の穴は写さない */
+      outLen = span; rangeNote = ' ' + t(picks.length >= 2 ? 'unrollRange2' : 'unrollRange1', { len: span.toFixed(2) });
+    }
+  } }
   cancel(); commit(() => {
-    const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: list[0].layer, type: 'line', x1, y1: y, x2: +(x1 + len).toFixed(4), y2: y }); selected = new Set([id]); nodeSel = null;
+    const id = freshId(doc.shapes, 's'); doc.shapes.push({ id, layer: list[0].layer, type: 'line', x1, y1: y, x2: +(x1 + outLen).toFixed(4), y2: y }); selected = new Set([id]); nodeSel = null;
     if (!placed.length) return;
     placed.sort((a, c) => a.s - c.s); const pid = freshId(doc.paths, 'p'), segments = [], { id: _i, shapeIds: _s, segments: _g, reversed: _r, closed: _c, ...keep } = placed[0].path;
     for (const p of placed) { const last = segments.at(-1); if (last && last.toolId === p.h.toolId) last.to = p.s; else segments.push({ from: p.s, to: p.s, toolId: p.h.toolId, pitch: doc.tools.find(t => t.id === p.h.toolId)?.pitch ?? 0, mode: 'manual' }); }
@@ -2388,7 +2406,7 @@ function unrollSelection() {
     for (const [p, color] of ends) for (const [cx, cy, role] of [[+(x1 + p.s).toFixed(4), y, color === 'green' ? 'start' : 'end'], [p.h.x, p.h.y, color === 'green' ? 'srcStart' : 'srcEnd']]) marks.push({ id: freshId([...doc.shapes, ...marks], 's'), layer: 'guide', type: 'circle', cx, cy, r: 1.6, color, solid: true, unrollEnd: role });
     doc.shapes.splice(at, 0, ...marks);   /* 直線の手前に入れる（直線が最後の図形のまま） */
   });
-  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: len.toFixed(2), m: placed.length }) + (placed.length ? ' ' + t('unrollEnds') : '');
+  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: outLen.toFixed(2), m: placed.length }) + rangeNote + (placed.length ? ' ' + t('unrollEnds') : '');
 }
 /** 2 個以上の図形を選んでいるとき、その図形の一覧（編集できるものだけ）。1 個以下なら空。 */
 function infoShapes() { const list = doc.shapes.filter(s => selected.has(s.id) && editable(s)); return list.length >= 2 ? list : []; }
