@@ -2246,5 +2246,8 @@ window.__shrineMap = { stamps, getQual: () => qual, setSkyMinutes: (m) => { $('s
 // ?s=katori のように開くと、その神社へ直接飛ぶ
 const q = new URLSearchParams(location.search).get('s');
 if (q) setTimeout(() => selectShrine(q), 600);
+// ?d=amaterasu のように開くと、その神様のページを直接開く（古事記アーカイブからのリンク）
+const dq = new URLSearchParams(location.search).get('d');
+if (dq && deities[dq] && !q) setTimeout(() => openDeityFromTree(dq), 600);
 if (new URLSearchParams(location.search).get('book') === '1') openBook(true);
 if (new URLSearchParams(location.search).get('kiki') === '1') { track.section(LG(), 'kiki'); openKiki(true); }   // 古事記と日本書紀の画面を直接開くリンク（?kiki=1）
