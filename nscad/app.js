@@ -6610,6 +6610,40 @@ function syncScaleInput(id) {
     $(otherPercent).value = String(value.percent); $(otherSize).value = other.size.toFixed(2); scaleBadInputs.delete(otherPercent); scaleBadInputs.delete(otherSize);
   }
 }
+/** ピッチに合わせて拡大縮小（事業主 2026-11-13「ピッチが１か所だけ短いがこれが他のピッチと同じになるように全体の拡大調整できる機能ない？」→ 型紙全体を拡大縮小。
+ *  「菱目打ちに合わせて図面を変える、これまでと逆の発想」：可変ピッチだと菱目打ちが使えず、固定ピッチだとどこかで帳尻合わせが要った）。
+ *  選んだ図形の中の、一周する縫い線（穴のある閉じた経路）の長さ L が、目打ちのピッチ p でちょうど割り切れる倍率 k＝n×p÷L（n＝L÷p を四捨五入）で、
+ *  その縫い線と、それを囲む革の外形、選んだ図形を、まとめて中心から縦横同じ倍率で拡大縮小する。縫い線の穴は、元の始めの穴の位置から、全周 p の等間隔に打ち直す（n 個）。元に戻すは1回。 */
+function pitchFitTarget() {
+  const holePaths = new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.pathId));
+  const cand = doc.paths.filter(pp => (pp.shapeIds.some(id => selected.has(id)) || holePaths.has(pp.id)) && doc.holes.some(h => h.pathId === pp.id)).map(pp => ({ saved: pp, route: resolvePath(doc, pp) })).filter(x => x.route?.closed);
+  return cand.length === 1 ? cand[0] : cand.length ? { many: cand.length } : null;
+}
+function pitchFit() {
+  const tg = pitchFitTarget(); if (!tg) { $('hint').textContent = t('pitchFitNone'); return; } if (tg.many) { $('hint').textContent = t('pitchFitMany', { n: tg.many }); return; }
+  const hs = doc.holes.filter(h => h.pathId === tg.saved.id).sort((a, b) => a.s - b.s), h0 = hs[0], tool = doc.tools.find(x => x.id === h0.toolId) || stitchToolCurrent();
+  const pitch = tg.saved.segments?.[0]?.pitch > 0 && tg.saved.segments.every(sg => sg.pitch === tg.saved.segments[0].pitch) ? tg.saved.segments[0].pitch : tool?.pitch;
+  if (!(pitch > 0)) { $('hint').textContent = t('pitchFitNone'); return; }
+  const L = arcLength(tg.route), n = Math.max(3, Math.round(L / pitch)), k = n * pitch / L;
+  /* 拡大縮小する図形：縫い線・それを囲む革の外形（いちばん小さい囲み）・選んでいる図形。外形の中にある別の図形（参考の型など）は、選んでいなければ動かさない */
+  const ids = new Set([...tg.saved.shapeIds, ...doc.shapes.filter(sh => selected.has(sh.id)).map(sh => sh.id)]);
+  const own = new Set(tg.saved.shapeIds), regions = closedRegions(doc.shapes.filter(sh => visible(sh) && stitchable(sh) && !sh.holeLink && !own.has(sh.id)), 0.01), samples = [0.1, 0.35, 0.6, 0.85].map(f => pointAtLength(tg.route, L * f));
+  const outer = regions.filter(r => samples.every(q => insidePolygon(q, r.points))).sort((x, y) => x.area - y.area)[0]; if (outer) for (const id of outer.shapeIds) ids.add(id);
+  const list = doc.shapes.filter(sh => ids.has(sh.id) && editable(sh)), b = bboxOfDoc({ shapes: list, holes: [] }), o = { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
+  if (Math.abs(k - 1) < 1e-9) { $('hint').textContent = t('pitchFitAlready', { n, p: circleNum(pitch) }); return; }
+  const off = ((h0.angleDeg - pointAtLength(tg.route, h0.s).angleDeg) % 360 + 360) % 360, s0 = h0.s * k, keep = { toolId: h0.toolId, mark: h0.mark || 'tool', ...(h0.depth ? { depth: h0.depth } : {}) };
+  const before = selected; selected = new Set(list.map(sh => sh.id));
+  commit(() => {
+    for (const sh of list) { const m = scaleGeometry(sh, k, k, o); for (const key of Object.keys(sh)) delete sh[key]; Object.assign(sh, m); }
+    for (const h of doc.holes) if (doc.paths.some(pp => pp.id === h.pathId && pp.shapeIds.every(id => ids.has(id)))) { h.x = o.x + (h.x - o.x) * k; h.y = o.y + (h.y - o.y) * k; if (Number.isFinite(h.s)) h.s *= k; }   /* 一緒に動く線の穴は、同じ倍率で動かす */
+    const route = resolvePath(doc, tg.saved), L2 = arcLength(route);
+    doc.holes = doc.holes.filter(h => h.pathId !== tg.saved.id);
+    for (let i = 0; i < n; i++) { const sv = (s0 + L2 * i / n) % L2, q = pointAtLength(route, sv); doc.holes.push({ id: freshId(doc.holes, 'h'), pathId: tg.saved.id, s: sv, x: q.x, y: q.y, angleDeg: (q.angleDeg + off) % 360, ...keep }); }
+    tg.saved.segments = [{ from: 0, to: L2, toolId: keep.toolId, pitch, mode: 'variable' }];
+  });
+  selected = before.size ? before : selected;
+  $('hint').textContent = t('pitchFitDone', { n, p: circleNum(pitch), pct: (k * 100).toFixed(2), d: ((k - 1) * L >= 0 ? '+' : '') + ((k - 1) * L).toFixed(2), L: (L * k).toFixed(2) });
+}
 function applyScale() {
   const b = selectionBox(), px = Number($('scaleX').value), py = Number($('scaleY').value), angleText = String($('scaleAngle')?.value ?? '').trim(), angle = angleText === '' ? 0 : Number(angleText);   /* 角度（°）：空欄は 0（事業主の希望 2026-10-20「拡大縮小回転」＝拡大縮小のあと、同じ基準点のまわりに回す） */
   if (!b) return; if (scaleBadInputs.size || !(px > 0) || !(py > 0) || !Number.isFinite(px) || !Number.isFinite(py) || !Number.isFinite(angle) || $('scaleX').value === '' || $('scaleY').value === '') { $('hint').textContent = t('scaleInvalid'); return; }
@@ -6623,7 +6657,7 @@ function applyScale() {
   $('scaleX').value = $('scaleY').value = '100'; $('scaleAngle').value = '0';
   $('hint').textContent = !angle ? t(curved ? 'scaleToPoly' : 'scaled', { x: px, y: py }) : scales ? t('scaledRotated', { x: px, y: py, a: angle }) : t('rotDone', { a: angle }); refreshScaleCard(true);
 }
-$('scaleApply').onclick = applyScale; $('dupMerge').onclick = mergeOverlaps;
+$('scaleApply').onclick = applyScale; $('pitchFit').onclick = pitchFit; $('pitchFitSel').onclick = pitchFit; $('dupMerge').onclick = mergeOverlaps;
 for (const id of ['scaleX', 'scaleY', 'scaleW', 'scaleH']) $(id).addEventListener('input', () => syncScaleInput(id));
 /** 金具の編集カード：金具（外形に hw を持つ図形のグループ）を全体まで選んでいるときだけ出す。規格・リング径・角度を変えて「作り直す」と、位置はそのままで金具を作り直す。 */
 let hwEditKey = '', hwEditArmed = 0;
@@ -11648,7 +11682,7 @@ const ctxLiveCount = el => { let n = 0; for (const x of el?.children ? [...el.ch
 function updateCtxTree() { closeCtxCats(); for (const [cat] of CTX_CATS) { const box = $('ctxCat-' + cat), fly = $('ctxFly-' + cat); if (box && fly) box.hidden = !ctxLiveCount(fly); } }
 /** 左メニュー「選択中」の操作を、右クリックメニューの先頭にカテゴリ別に並べる（事業主 2026-10-26「左の選択中のメニューは右クリックにカテゴリにわけて登録して。ごちゃごちゃして見にくい」）。
  *  実行は左の同じボタンの処理（クリックを渡す）なので、キー操作・無効の条件は変わらない。出すのは、いま押せるものだけ。左の並びは class inCtx で隠す（ボタンは残す）。 */
-const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
+const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'pitchFitSel', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
 function initCtxSel() { for (const id of CTX_SEL_GROUPS.flatMap(g => g[1])) $(id)?.classList?.add('inCtx'); document.querySelector?.('[data-i18n="selection"]')?.classList?.add('inCtx'); }
 function fillCtxSel() {
   const box = $('ctxSel'); box.textContent = ''; if (!selected.size) return;   /* 何も選んでいなければ、選択中の項目は出さない（右メニューの項目だけで開いたとき） */
