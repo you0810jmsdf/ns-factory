@@ -2382,8 +2382,13 @@ function unrollSelection() {
     for (const p of placed) { const last = segments.at(-1); if (last && last.toolId === p.h.toolId) last.to = p.s; else segments.push({ from: p.s, to: p.s, toolId: p.h.toolId, pitch: doc.tools.find(t => t.id === p.h.toolId)?.pitch ?? 0, mode: 'manual' }); }
     doc.paths.push({ ...keep, id: pid, shapeIds: [id], reversed: false, closed: false, segments });
     for (const p of placed) doc.holes.push({ ...p.h, id: freshId(doc.holes, 'h'), pathId: pid, x: +(x1 + p.s).toFixed(4), y, s: p.s, angleDeg: p.angleDeg });
+    /* 端の菱目に色の印（事業主 2026-11-13「投影した菱目を１直線に並べる機能も欲しい。その際に端の菱目は色を付けてわかりやすくして」→ 始点は緑・終点は赤）：ガイド層の小さな丸。型紙として使うので、図面の上に描く */
+    ensureLayer(doc, 'guide'); const ends = placed.length > 1 ? [[placed[0], 'green'], [placed.at(-1), 'red']] : [[placed[0], 'green']];
+    const at = doc.shapes.findIndex(s => s.id === id), marks = [];   /* 塗りつぶした丸。直線の側と、元の線の同じ穴の両方（どこからどこまでを並べたか分かるように・事業主 2026-11-13「どこからどこまでの菱目なのかまるでわからない」「中塗りでもよい」） */
+    for (const [p, color] of ends) for (const [cx, cy, role] of [[+(x1 + p.s).toFixed(4), y, color === 'green' ? 'start' : 'end'], [p.h.x, p.h.y, color === 'green' ? 'srcStart' : 'srcEnd']]) marks.push({ id: freshId([...doc.shapes, ...marks], 's'), layer: 'guide', type: 'circle', cx, cy, r: 1.6, color, solid: true, unrollEnd: role });
+    doc.shapes.splice(at, 0, ...marks);   /* 直線の手前に入れる（直線が最後の図形のまま） */
   });
-  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: len.toFixed(2), m: placed.length });
+  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: len.toFixed(2), m: placed.length }) + (placed.length ? ' ' + t('unrollEnds') : '');
 }
 /** 2 個以上の図形を選んでいるとき、その図形の一覧（編集できるものだけ）。1 個以下なら空。 */
 function infoShapes() { const list = doc.shapes.filter(s => selected.has(s.id) && editable(s)); return list.length >= 2 ? list : []; }
@@ -3572,9 +3577,6 @@ function makeKomaLines() {
   $('hint').textContent = t('komaLinesMade', { n: results.length, d: margin }) + (unsure ? ' ' + t('komaSideUnsure') : '') + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
 /** 駒合わせの小窓（縁からの距離・優先・縫い線を作る）は、駒合わせのツールの間だけ出す。 */
-/** 駒合わせの並べ図（事業主 2026-11-13「投影した菱目を１直線に並べる機能も欲しい。その際に端の菱目は色を付けてわかりやすくして」→ 両側を上下2段・始点は緑、終点は赤）：
- *  A（1回目にクリックした線）と B（2回目）の穴を、それぞれ線に沿ってまっすぐに延ばし、同じ縮尺（mm）で上下に並べる。対応する穴どうしを細い線で結ぶ（縦にそろえば、ずれがない）。
- *  位置は、対応の順に、となりの穴までの線に沿った距離を足していく（一周する線も、継ぎ目をまたいで続ける）。小窓（駒合わせ）の中に、駒合わせの直後から次の駒合わせまで出す。 */
 /** 駒合わせのあと、図面に打った A・B の穴を数える（事業主 2026-11-13「まずは対となる菱目の数が合っている事が確実であること」）：{ na, nb, ok }。A と B が同じ経路（同じ線を2回押した）なら、合っていない扱い。 */
 function komaCounts() {
   const src = komaRowsSrc; if (!src || src.pl !== pairLines || !src.aPath || !src.bPath) return null;
@@ -3582,64 +3584,6 @@ function komaCounts() {
   return { na, nb, ok: src.aPath !== src.bPath && na === nb && na === pairLines.length };
 }
 function komaCountNote() { const c = komaCounts(); if (!c) return; $('hint').textContent += ' ' + t(c.ok ? 'komaCountOk' : 'komaCountNg', { na: c.na, nb: c.nb }); }
-function komaRowsData() {
-  const src = komaRowsSrc; if (!src || src.pl !== pairLines || !pairLines.length) return null; if (src.rows) return src.rows;
-  const side = (route, pts) => { const len = arcLength(route), ss = pts.map(q => projectOnPath(route, q).s), pos = [0]; for (let i = 1; i < ss.length; i++) { let d = ss[i] - ss[i - 1]; if (route.closed) d = ((d + len / 2) % len + len) % len - len / 2; pos.push(pos[i - 1] + Math.abs(d)); } return { len, pos }; };
-  const aPts = pairLines.map(pr => src.srcIsA ? pr[0] : pr[1]), bPts = pairLines.map(pr => src.srcIsA ? pr[1] : pr[0]);
-  src.rows = { a: side(src.aRoute, aPts), b: side(src.bRoute, bPts) }; return src.rows;
-}
-function drawKomaRows() {
-  const box = $('komaRowsBox'), cv = $('komaRows'); if (!box || !cv) return; const rows = mode === 'koma' ? komaRowsData() : null; box.hidden = !rows; if (!rows) return;
-  const g = cv.getContext?.('2d'); if (!g) return; const Wd = cv.width, Ht = cv.height, L = 34, R = 10, span = Math.max(rows.a.pos.at(-1), rows.b.pos.at(-1), 1e-6), k = (Wd - L - R) / span, ya = 24, yb = Ht - 18, n = rows.a.pos.length;
-  g.clearRect(0, 0, Wd, Ht); g.font = '11px sans-serif'; g.textBaseline = 'middle'; g.fillStyle = '#c9c9c9'; g.fillText('A', 8, ya); g.fillText('B', 8, yb);
-  const cnt = komaCounts(); g.fillStyle = cnt && !cnt.ok ? '#f85149' : '#c9c9c9';   /* 数が合わなければ赤 */
-  g.fillText(t(cnt && !cnt.ok ? 'komaRowsInfoNg' : 'komaRowsInfo', { n, na: cnt ? cnt.na : n, nb: cnt ? cnt.nb : n, a: circleNum(Math.round(rows.a.pos.at(-1) * 10) / 10), b: circleNum(Math.round(rows.b.pos.at(-1) * 10) / 10) }), L, 8);
-  g.strokeStyle = '#555'; g.lineWidth = 1; for (const y of [ya, yb]) { g.beginPath(); g.moveTo(L, y); g.lineTo(Wd - R, y); g.stroke(); }
-  g.strokeStyle = '#ff9f4399'; g.beginPath(); for (let i = 0; i < n; i++) { g.moveTo(L + rows.a.pos[i] * k, ya + 4); g.lineTo(L + rows.b.pos[i] * k, yb - 4); } g.stroke();   /* 対応する穴どうし */
-  const dot = (x, y, col, big) => { const z = big ? 4.5 : 2.5; g.fillStyle = col; g.beginPath(); g.moveTo(x, y - z); g.lineTo(x + z * 0.7, y); g.lineTo(x, y + z); g.lineTo(x - z * 0.7, y); g.closePath(); g.fill(); };
-  for (const [row, y] of [[rows.a, ya], [rows.b, yb]]) row.pos.forEach((v, i) => { if (i && i < n - 1) dot(L + v * k, y, '#e8e8e8', false); });
-  for (const [row, y] of [[rows.a, ya], [rows.b, yb]]) { dot(L + row.pos[0] * k, y, '#3fb950', true); if (n > 1) dot(L + row.pos[n - 1] * k, y, '#f85149', true); }   /* 始点＝緑・終点＝赤 */
-}
-/** 選んだ線の並べ図（事業主 2026-11-13「選んだ線上の菱目を直線に並べる機能は？」→ 選ぶだけで出す）：選択ツールで、穴のある線（1本か2本）を選ぶと、画面の下に出す。
- *  1本：その線の穴を、線に沿ってまっすぐ1段に並べる（穴の数・長さ・間隔）。2本：上下2段（上＝図面で先の線）にして、点検と同じ対応で対の穴どうしを結ぶ（対にならない穴は赤い丸）。
- *  どちらも始点の菱目は緑、終点は赤。2本のときの下の段は、上の段の始点・終点と対になる穴を緑・赤にする。図面は変えない。 */
-let selRowsCache = null;
-function selRowsData() {
-  if (mode !== 'select' || exporting || !selected.size) return null;
-  const holePaths = new Set(doc.holes.filter(h => selected.has(h.id)).map(h => h.pathId));   /* 線の上の穴を選んだときも、その線とみなす（Shift＋クリックで線の近くを押すと、穴が選ばれる） */
-  const ps = doc.paths.filter(pp => (pp.shapeIds.some(id => selected.has(id)) || holePaths.has(pp.id)) && doc.holes.some(h => h.pathId === pp.id)); if (!ps.length || ps.length > 2) return null;
-  const mine = doc.holes.filter(h => ps.some(pp => pp.id === h.pathId)); if (mine.some(h => !Number.isFinite(h.s))) return null;   /* 線に沿った位置（s）の無い穴があれば、並べられないので出さない */
-  const key = JSON.stringify(ps.map(pp => [pp.id, pp.shapeIds])) + '|' + mine.map(h => `${h.pathId}:${h.s.toFixed(4)}`).join(',');
-  if (selRowsCache?.key === key) return selRowsCache.data;
-  const sides = ps.map(pp => ({ saved: pp, route: resolvePath(doc, pp) })); if (sides.some(sd => !sd.route)) return null;
-  const lenOf = sd => arcLength(sd.route), wrapOf = (sd, v) => { const L = lenOf(sd); return sd.route.closed ? ((v % L) + L) % L : v; };
-  let data;
-  if (sides.length === 1) { const sd = sides[0], hs = doc.holes.filter(h => h.pathId === sd.saved.id).sort((x, y) => x.s - y.s), s0 = hs[0].s; data = { rows: [{ len: lenOf(sd), holes: hs.map(h => ({ pos: wrapOf(sd, h.s - s0), h })) }], pairs: [], ends: [[hs[0], hs.at(-1)]] }; }
-  else {
-    const [A, B] = sides, r = komaPairing(A, B), hsA = r.hb, hsB = r.ho; if (!hsA.length || !hsB.length) return null;
-    const p0 = r.pairs[0], sA = p0 ? p0[0].s : hsA[0].s, sB = p0 ? p0[1].s : hsB[0].s;
-    let dir = 1; if (r.pairs.length > 1) { const LB = lenOf(B); let d = r.pairs[1][1].s - p0[1].s; if (B.route.closed) d = ((d + LB / 2) % LB + LB) % LB - LB / 2; dir = d < 0 ? -1 : 1; }
-    const rowA = hsA.map(h => ({ pos: wrapOf(A, h.s - sA), h })), rowB = hsB.map(h => ({ pos: wrapOf(B, dir * (h.s - sB)), h }));
-    const minMax = row => { const srt = row.slice().sort((x, y) => x.pos - y.pos); return [srt[0].h, srt.at(-1).h]; }, [a0, a1] = minMax(rowA), partner = h => r.pairs.find(pr => pr[0] === h)?.[1];
-    data = { rows: [{ len: lenOf(A), holes: rowA }, { len: lenOf(B), holes: rowB }], pairs: r.pairs, miss: new Set([...r.missB, ...r.missO]), ends: [[a0, a1], [partner(a0) || minMax(rowB)[0], partner(a1) || minMax(rowB)[1]]], counts: { na: hsA.length, nb: hsB.length, n: r.pairs.length } };
-  }
-  selRowsCache = { key, data }; return data;
-}
-function drawSelRows() {
-  const box = $('selRowsBox'), cv = $('selRows'); if (!box || !cv) return; const data = selRowsData(); box.hidden = !data; if (!data) return;
-  const g = cv.getContext?.('2d'); if (!g) return; const Wd = cv.width, Ht = cv.height, L = 34, R = 10, two = data.rows.length === 2;
-  const span = Math.max(...data.rows.map(r => Math.max(...r.holes.map(x => x.pos))), 1e-6), k = (Wd - L - R) / span, ys = two ? [26, Ht - 16] : [Ht / 2 + 8];
-  g.clearRect(0, 0, Wd, Ht); g.font = '11px sans-serif'; g.textBaseline = 'middle';
-  const gapsOf = r => { const ps = r.holes.map(x => x.pos).sort((p, q) => p - q), gs = ps.slice(1).map((v, i) => v - ps[i]).filter(v => v > 1e-6); return gs.length ? [Math.min(...gs), Math.max(...gs)] : [0, 0]; }, f1 = v => circleNum(Math.round(v * 100) / 100);
-  let info; if (two) { const c = data.counts, ok = c.na === c.nb && c.n === c.na; g.fillStyle = ok ? '#c9c9c9' : '#f85149'; info = t(ok ? 'selRowsTwoOk' : 'selRowsTwoNg', { na: c.na, nb: c.nb, n: c.n }); }
-  else { const r = data.rows[0], [a, b] = gapsOf(r); g.fillStyle = '#c9c9c9'; info = t('selRowsOne', { n: r.holes.length, len: circleNum(Math.round(r.len * 10) / 10), a: f1(a), b: f1(b) }); }
-  g.fillText(info, L, 9); g.fillStyle = '#c9c9c9'; if (two) { g.fillText('A', 8, ys[0]); g.fillText('B', 8, ys[1]); }
-  g.strokeStyle = '#555'; g.lineWidth = 1; for (const y of ys) { g.beginPath(); g.moveTo(L, y); g.lineTo(Wd - R, y); g.stroke(); }
-  const posOf = (ri, h) => data.rows[ri].holes.find(x => x.h === h)?.pos;
-  if (two) { g.strokeStyle = '#ff9f4399'; g.beginPath(); for (const [a, b] of data.pairs) { const pa = posOf(0, a), pb = posOf(1, b); if (pa === undefined || pb === undefined) continue; g.moveTo(L + pa * k, ys[0] + 4); g.lineTo(L + pb * k, ys[1] - 4); } g.stroke(); }
-  const dot = (x, y, col, big) => { const z = big ? 4.5 : 2.5; g.fillStyle = col; g.beginPath(); g.moveTo(x, y - z); g.lineTo(x + z * 0.7, y); g.lineTo(x, y + z); g.lineTo(x - z * 0.7, y); g.closePath(); g.fill(); };
-  data.rows.forEach((r, ri) => { const [e0, e1] = data.ends[ri]; for (const x of r.holes) { const X = L + x.pos * k, y = ys[ri]; if (x.h === e0) dot(X, y, '#3fb950', true); else if (x.h === e1) dot(X, y, '#f85149', true); else dot(X, y, '#e8e8e8', false); if (data.miss?.has(x.h)) { g.strokeStyle = '#f85149'; g.beginPath(); g.arc(X, y, 6, 0, Math.PI * 2); g.stroke(); } } });
-}
 function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; if (mode !== 'koma') { komaSeamPicking = false; komaChecking = false; } { const cb = $('komaCheck'); if (cb) { cb.textContent = t(komaChecking ? 'komaCheckPicking' : 'komaCheck'); cb.setAttribute('aria-pressed', String(komaChecking)); } } const pick = $('komaSeamPick'), clr = $('komaSeamClear'); if (pick) { pick.textContent = t(komaSeamPicking ? 'komaSeamPicking' : komaSeam ? 'komaSeamPickAgain' : 'komaSeamPick'); pick.classList?.toggle?.('active', !!komaSeamPicking); } if (clr) clr.hidden = !komaSeam; }
 function renderSeams() { $('seamCount').textContent = String(doc.seams.length); }
 function seamStyleValue() { const v = $('seamStyle').value; return ['butt', 'overlap', 'felled'].includes(v) ? v : 'butt'; }
@@ -10764,7 +10708,7 @@ function strokeShape(s, color = '#d8d8d8', dashed = false) {
     ctx.save(); ctx.translate(L.x, L.y); ctx.rotate(L.angleDeg * Math.PI / 180); ctx.font = `${px}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
     ctx.lineWidth = 3.5 / scale; ctx.strokeStyle = '#080808'; ctx.strokeText(label, 0, 0); ctx.fillStyle = color; ctx.fillText(label, 0, 0); ctx.restore(); return;
   }
-  path(s); ctx.strokeStyle = color; ctx.stroke();
+  path(s); ctx.strokeStyle = color; ctx.stroke(); if (s.solid && s.type === 'circle') { ctx.fillStyle = color; ctx.fill(); }   /* 塗りつぶした丸（直線に展開の始点・終点の印） */
 }
 /** 端のハンドル（直線の両端・折れ線／矩形の全部の角・円弧の両端）。{ x, y, end（直線・円弧：1か2）, index（折れ線の角の番号） } の配列。 */
 function shapeHandles(s) {
@@ -11118,7 +11062,6 @@ function drawSheetBody(lo, hi) {
   { const seamPt = pairLines.length && komaSeamAt?.pl === pairLines ? komaSeamAt : (mode === 'koma' && komaSeam ? komaSeam : null); if (seamPt) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); ctx.arc(seamPt.x, seamPt.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.font = `${12 / scale}px sans-serif`; ctx.fillText(t('komaSeamMark'), seamPt.x + 9 / scale, seamPt.y - 9 / scale); ctx.restore(); } }   /* 継ぎ目（帯の始点が当たる位置）の印 */
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
   if (komaCheckAt?.pl === pairLines && komaCheckAt.miss.length) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#f85149'; ctx.lineWidth = 2 / scale; for (const q of komaCheckAt.miss) { ctx.beginPath(); ctx.arc(q.x, q.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); } ctx.restore(); }   /* 点検：対にならない穴に赤い丸 */
-  drawKomaRows(); drawSelRows();
   /* 縫い合わせ（隣り合う辺の組）の橙の点線（向かい合う穴の列を結ぶ印）は描かない（事業主 2026-10-21「菱目ラインをつなぐ点線の意味がわからない。不要です」）。縫い合わせのデータ（doc.seams）は、最適化などのためにそのまま持つ */
   if (stage?.kind === 'bezier') {
     const s = bezierShape(cursor); strokeShape(s, '#c9a96e');

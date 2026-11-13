@@ -135,7 +135,7 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
       const fillValue = tex?.href ? `url(#tex-${safeId(texId)})` : fill ? safeColor(tex ? tex.avg : part?.color || s.leather) : null; /* 部品の色が無ければ、型紙（図形自身）に付けた革色 */
       const isDia = s.type === 'polyline' && diamondLoopSizes([s]).length > 0, lineHex = printLines && !isDia ? null : svgLineHex(s, lineColors, isDia), strokeAttr = (lineHex ? ` stroke="${lineHex}"` : '') + (printLines && isMainLine(s) ? ` stroke-width="${f(mainMm)}"` : '');   /* printLines＝印刷・PDF：実線は黒（白黒プリンタで色のついた細線が網点＝点線に見えるのを防ぐ）・外形の線は太く */
       const dash = dashArrayMm(s.lineStyle, strokeMm), dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
-      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';
+      return d ? `<path id="${safeId(s.id)}" d="${d}"${strokeAttr}${dashAttr}${fill && (s.closed || s.type === 'circle') ? ` fill="${fillValue}"` : ''}${diamondFill && isDia && !(fill && s.closed) ? ` fill="${lineHex || '#000'}"` : ''}${s.solid && s.type === 'circle' && !fill ? ` fill="${lineHex || '#000'}"` : ''}/>` : '';   /* solid＝塗りつぶした丸（直線に展開の端の印） */
     }).join('');
     const g = `<g id="${safeId('layer-' + l.id)}" data-name="${esc(l.name)}">${body}</g>`;
     return beamFix && l.id !== beamRef ? beamFixWrap(g, layerBox(l.id)) : g;   /* 外周（基準）の層は触らない */
