@@ -1,18 +1,25 @@
 """古事記アーカイブ・日本書紀アーカイブの検査。原文を中文維基文庫から取り直し、引用が一字一句含まれるかを確かめる。
 使い方: python3 hitsuki/tools/verify_archives.py
-段落番号：古事記 上巻 K1〜／中巻 C1〜、日本書紀 巻第n N{n}-1〜（下の clean() で整えた本文の、空行で区切った段落の通し番号）。
+段落番号：古事記 上巻 K1〜／中巻 C1〜／下巻 G1〜、日本書紀 巻第n N{n}-1〜（下の clean() で整えた本文の、空行で区切った段落の通し番号）。
 見るもの：引用（quotes・nihonshoki・kojiki）が指定の段落に含まれるか／段落番号が範囲（span）の中か／
 神様IDが shrine-note/deities.json にあるか／ポイントが4〜6個で「解説」に出典URLがあるか／古事記⇔日本書紀の対応先があるか。"""
-import json, os, re, sys, urllib.parse, urllib.request
+import json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HIT = os.path.normpath(os.path.join(HERE, '..'))
 ROOT = os.path.normpath(os.path.join(HIT, '..'))
 
 def fetch(title):
+    # 中文維基文庫に負担をかけないよう、1件ずつ間をあけ、429（混雑）のときは待ってやり直す
     url = 'https://zh.wikisource.org/w/index.php?' + urllib.parse.urlencode({'title': title, 'action': 'raw'})
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (kiki-archive verifier)'})
-    return urllib.request.urlopen(req, timeout=60).read().decode('utf-8')
+    for wait in (0, 5, 15, 30, 60, 90):
+        time.sleep(wait or 1)
+        try:
+            return urllib.request.urlopen(req, timeout=60).read().decode('utf-8')
+        except urllib.error.HTTPError as err:
+            if err.code != 429: raise
+    raise SystemExit(f'{title}: 中文維基文庫が混雑していて取得できませんでした。時間をおいてやり直してください。')
 
 def clean(t):
     t = re.sub(r'<ref[^>]*>.*?</ref>', '', t, flags=re.S); t = re.sub(r'<ref[^>]*/>', '', t)
@@ -29,10 +36,13 @@ def paras(raw, pre, start=None, end=None):
     ps = [s for s in ps if s and not s.startswith(('==', '|', '{{', '}}'))]
     return {f'{pre}{i}': p for i, p in enumerate(ps, 1)}
 
-VOL = ['卷第一', '卷第二', '卷第三', '卷第四', '卷第五', '卷第六', '卷第七', '卷第八', '卷第九', '卷第十']
+_K = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+      '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十']
+VOL = ['卷第' + (k.replace('二十', '廿') if 21 <= i <= 29 else k) for i, k in enumerate(_K, 1)]
 T = {}
 T.update(paras(fetch('古事記/上卷'), 'K', '== 上卷 ==', '== 註釋 =='))
 T.update(paras(fetch('古事記/中卷'), 'C', None, '== 註釋 =='))
+T.update(paras(fetch('古事記/下卷'), 'G', None, '== 註釋 =='))
 for n, v in enumerate(VOL, 1):
     T.update(paras(fetch('日本書紀/' + v), f'N{n}-'))
 D = {d['id'] for d in json.load(open(os.path.join(ROOT, 'shrine-note', 'deities.json'), encoding='utf-8'))['deities']}
@@ -43,7 +53,7 @@ strip = lambda s: re.sub(r'〔[^〕]*〕', '', s)
 has = lambda par, q: q in par or strip(q) in strip(par) or q in strip(par)
 
 def key(r):  # 段落番号を (書, 番号) に
-    m = re.match(r'^(K|C|N\d+-)(\d+)$', r or '')
+    m = re.match(r'^(K|C|G|N\d+-)(\d+)$', r or '')
     return (m.group(1), int(m.group(2))) if m else (None, None)
 
 def inspan(r, span):
