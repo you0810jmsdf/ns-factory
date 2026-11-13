@@ -197,8 +197,14 @@ def src_list(urls, base):
     return ''.join(li)
 
 WS = lambda t, label: f'<li><a href="https://zh.wikisource.org/wiki/{t}" target="_blank" rel="noopener">{label}</a>　中文維基文庫</li>'
-SHOKI_VOL = {1: '卷第一', 2: '卷第二', 3: '卷第三', 4: '卷第四', 5: '卷第五', 6: '卷第六', 7: '卷第七', 8: '卷第八', 9: '卷第九', 10: '卷第十'}
-KANJI = {1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '七', 8: '八', 9: '九', 10: '十'}
+_K = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+      '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十']
+KANJI = {i + 1: k for i, k in enumerate(_K)}
+# 中文維基文庫の巻名（二十一〜二十九は「廿」）
+SHOKI_VOL = {n: '卷第' + (k.replace('二十', '廿') if 21 <= n <= 29 else k) for n, k in KANJI.items()}
+KOJ_WS = {'上巻': '古事記/上卷', '中巻': '古事記/中卷', '下巻': '古事記/下卷'}
+KAN_SUB = {'上巻': '神々の時代', '中巻': '神武天皇から応神天皇まで', '下巻': '仁徳天皇から推古天皇まで'}
+def vol_of(s): return int(s['span'][0][1:].split('-')[0])
 
 def shoki_vols(refs):
     vs = sorted({int(r[1:].split('-')[0]) for r in refs if r.startswith('N') and '-' in r})
@@ -225,7 +231,7 @@ def kojiki_page(i):
     out.append('      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>\n    </section>\n')
     out.append(quotes_html(m)); out.append(''); out.append(who_html(m))
     out.append(cmp_html(m.get('nihonshoki'), '日本書紀では'))
-    base = [WS('古事記/上卷' if kan == '上巻' else '古事記/中卷', f'古事記 {kan} 校訂本文')] + shoki_vols([n.get('ref', '') for n in m.get('nihonshoki', [])])
+    base = [WS(KOJ_WS[kan], f'古事記 {kan} 校訂本文')] + shoki_vols([n.get('ref', '') for n in m.get('nihonshoki', [])])
     out.append(f'''
     {pager_html(KOJ, i, klabel, '話')}
 
@@ -243,28 +249,27 @@ def kojiki_page(i):
     return '\n'.join(out)
 
 def kojiki_index():
-    kans = [k for k in ['上巻', '中巻'] if any(m['kan'] == k for m in KOJ)]
+    kans = [k for k in ['上巻', '中巻', '下巻'] if any(m['kan'] == k for m in KOJ)]
     n = len(KOJ)
-    title = "古事記アーカイブ｜上巻・中巻を一話ずつ｜教育幕僚室｜N's factory"
-    desc = f'古事記の上巻（神々の時代）と中巻（神武天皇〜応神天皇）を{n}話に分け、話ごとに「覚えておくポイント」「どんな話か」「原文」「登場する神と祀る神社」「日本書紀との違い」をまとめた研究ノート。'
+    title = "古事記アーカイブ｜上巻・中巻・下巻を一話ずつ｜教育幕僚室｜N's factory"
+    desc = f'古事記の上巻（神々の時代）・中巻（神武天皇〜応神天皇）・下巻（仁徳天皇〜推古天皇）を{n}話に分け、話ごとに「覚えておくポイント」「どんな話か」「原文」「登場する神と祀る神社」「日本書紀との違い」をまとめた研究ノート。'
     out = [head('kojiki', title, desc, SITE + 'kojiki/')]
     jump = ''.join(f'<a href="#kan-{k}">{k}</a>' for k in kans) + '<a href="#review">ポイントの復習</a><a href="../shoki/">日本書紀アーカイブ ›</a>'
     out.append(f'''  <main class="pg-main">
     <p class="eyebrow">Kojiki Archive</p>
     <h1>古事記アーカイブ</h1>
-    <p class="pg-lead">古事記の上巻（神々の時代）と中巻（神武天皇から応神天皇まで）を、{n}の話に分けて一話ずつまとめました。どの話にも、まず「覚えておくポイント」があります。そのあとで、話の流れ・原文・登場する神・日本書紀との違いを読めます。</p>
+    <p class="pg-lead">古事記の上・中・下の三巻（神々の時代から推古天皇まで）を、{n}の話に分けて一話ずつまとめました。どの話にも、まず「覚えておくポイント」があります。そのあとで、話の流れ・原文・登場する神・日本書紀との違いを読めます。</p>
     <div class="jump">{jump}</div>
 
     <section class="pg-card" aria-labelledby="how-title">
       <h2 id="how-title">このアーカイブの決まり</h2>
       <p>書いてあることは、古事記の原文で確かめたことだけです。後の時代の解釈を書くときは「解説」の印を付け、公的な機関の解説で確かめた出典を添えています。同じ場面を日本書紀で読みたいときは、各話の上にある「日本書紀で読む」から移れます。</p>
       <div class="legend">{badge("本文", "kojiki")}古事記に書いてあること {badge("比較", "kojiki")}日本書紀との違い {badge("解説", "kojiki")}出典つきの解釈</div>
-      <p class="pg-note">下巻（仁徳天皇から推古天皇まで）は、これから増やします。</p>
     </section>
 ''')
     for k in kans:
         ms = [m for m in KOJ if m['kan'] == k]
-        sub = '神々の時代' if k == '上巻' else '神武天皇から応神天皇まで'
+        sub = KAN_SUB[k]
         out.append(f'    <section class="pg-card" id="kan-{k}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{k}（{sub}・全{len(ms)}話）</h2>\n      <ol class="toc">')
         out += [f'        <li><a href="{m["id"]}.html"><span class="no">{m["no"]}</span><b>{e(m["title"])}</b><span class="lead">{e(m["points"][0]["text"])}</span></a></li>' for m in ms]
         out.append('      </ol>\n    </section>\n')
@@ -310,8 +315,10 @@ def shoki_page(i):
         out.append('    </section>')
     out.append(''); out.append(quotes_html(s)); out.append(''); out.append(who_html(s))
     out.append(cmp_html(s.get('kojiki'), '古事記では'))
-    kv = sorted({('上巻' if k.get('ref', '').startswith('K') else '中巻') for k in s.get('kojiki', []) if k.get('ref')})
-    base = shoki_vols(s['span']) + [WS('古事記/上卷' if v == '上巻' else '古事記/中卷', f'古事記 {v} 校訂本文') for v in kv]
+    if not s.get('kojiki') and vol_of(s) >= 23:
+        out.append('\n    <section class="pg-card"><h2>古事記では</h2><p>古事記は推古天皇の時代で終わります。この巻の時代は、日本書紀にしか書かれていません。</p></section>')
+    kv = sorted({{'K': '上巻', 'C': '中巻', 'G': '下巻'}[k['ref'][0]] for k in s.get('kojiki', []) if k.get('ref')})
+    base = shoki_vols(s['span']) + [WS(KOJ_WS[v], f'古事記 {v} 校訂本文') for v in kv]
     out.append(f'''
     {pager_html(SHO, i, slabel, 'ページ')}
 
@@ -329,8 +336,8 @@ def shoki_page(i):
     return '\n'.join(out)
 
 def shoki_index():
-    title = "日本書紀アーカイブ｜神代から応神天皇まで｜教育幕僚室｜N's factory"
-    desc = f'日本書紀の巻第一〜巻第十（神代と、神武天皇から応神天皇まで）を{len(SHO)}ページに分け、「覚えておくポイント」「本文の話」「一書（別の伝え）」「原文」「古事記との違い」をまとめた研究ノート。'
+    title = "日本書紀アーカイブ｜神代から持統天皇まで全三十巻｜教育幕僚室｜N's factory"
+    desc = f'日本書紀の全三十巻（神代と、神武天皇から持統天皇まで）を{len(SHO)}ページに分け、「覚えておくポイント」「本文の話」「一書（別の伝え）」「原文」「古事記との違い」をまとめた研究ノート。'
     out = [head('shoki', title, desc, SITE + 'shoki/')]
     kans = []
     for s in SHO:
@@ -338,8 +345,8 @@ def shoki_index():
     out.append(f'''  <main class="pg-main">
     <p class="eyebrow">Nihon Shoki Archive</p>
     <h1>日本書紀アーカイブ</h1>
-    <p class="pg-lead">日本書紀の巻第一〜巻第十を、{len(SHO)}ページに分けてまとめました。神代（巻第一・第二）は「段」ごとに、本文と一書（別の伝え）を並べています。巻第三からは、神武天皇から応神天皇までを天皇ごとに読めます。古事記アーカイブの上巻・中巻と、同じ場面どうしでつながっています。</p>
-    <div class="jump"><a href="#review">ポイントの復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
+    <p class="pg-lead">日本書紀の全三十巻を、{len(SHO)}ページに分けてまとめました。神代（巻第一・第二）は「段」ごとに、本文と一書（別の伝え）を並べています。巻第三からは、神武天皇から持統天皇までを天皇ごとに読めます。推古天皇までは古事記アーカイブと同じ場面どうしでつながり、舒明天皇から後は日本書紀だけが記す時代です。</p>
+    <div class="jump"><a href="#era-1">神代</a><a href="#era-2">神武〜応神</a><a href="#era-3">仁徳〜推古</a><a href="#era-4">舒明〜持統</a><a href="#review">ポイントの復習</a><a href="../kojiki/">古事記アーカイブ ›</a></div>
 
     <section class="pg-card" aria-labelledby="how-title">
       <h2 id="how-title">このアーカイブの決まり</h2>
@@ -348,9 +355,15 @@ def shoki_index():
     </section>
 
     <section class="pg-card" aria-labelledby="toc-title">
-      <h2 id="toc-title">ページの一覧（巻第一〜巻第十・全{len(SHO)}ページ）</h2>''')
+      <h2 id="toc-title">ページの一覧（全三十巻・全{len(SHO)}ページ）</h2>''')
+    ERA = [(1, 2, '神代（巻第一・第二）'), (3, 10, '神武天皇〜応神天皇（巻第三〜第十）'), (11, 22, '仁徳天皇〜推古天皇（巻第十一〜第二十二）'), (23, 30, '舒明天皇〜持統天皇（巻第二十三〜第三十）')]
+    shown = set()
     for k in kans:
         ss = [(j, s) for j, s in enumerate(SHO) if s['kan'] == k]
+        v = vol_of(ss[0][1])
+        for n, (a, b, name) in enumerate(ERA, 1):
+            if a <= v <= b and n not in shown:
+                shown.add(n); out.append(f'      <h2 id="era-{n}" style="margin-top:26px;">{e(name)}</h2>')
         out.append(f'      <h3>{e(k)}</h3>\n      <ol class="toc">')
         out += [f'        <li><a href="{s["id"]}.html"><span class="no">{j + 1}</span><b>{e(s["title"])}</b><span class="lead">{e(s["points"][0]["text"])}</span></a></li>' for j, s in ss]
         out.append('      </ol>')
