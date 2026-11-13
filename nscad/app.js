@@ -114,7 +114,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
-import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark, cushionShapes } from './design.js';
+import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, projectToPolygon, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark, cushionShapes } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -156,7 +156,7 @@ let countStage = null; /* 個数指定の目打ち：始点の交点をクリッ
 let stitchPreview = null; /* 目打ち：始点をクリックしたあと、マウスの位置を終点にしたときに打つ穴の位置（打つ前の薄い表示）。{ points, tool, wrap } */
 let stitchRouteIds = null; /* 目打ち：いまの経路（つながった線）の図形の id。打つ前に、薄く光らせる */
 let attachState = null; /* 線に着ける：1本目に着けたあと、2本目を待つ状態 { key（選んだ図形の id）, line（1本目の線）, undoLen（1本目のあとの履歴の数）, moved（1本目で動いたか） } */
-let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [];
+let manualNext = null, activeLayer = 'pattern', nodeSel = null, lastPoint = { x: 0, y: 0 }, pairLines = [], komaRowsSrc = null;   /* komaRowsSrc：駒合わせの並べ図の元（pairLines と同じ対応・A と B の経路） */
 const isMac = /Mac|iPhone|iPad/.test(globalThis.navigator?.platform || '');
 /** 実線・点線の表示チェックを今の状態に合わせる。選択中の図形のうち、隠れたものは選択から外す。 */
 /** 「実線／点線を隠しています」の印（事業主 2026-11-05 改善提案）：表示メニューで隠している間、上の帯に出す。押すと両方とも表示に戻す。折り線・リフィル・オフセット・縫い線が「消えた」と思われる場面が続いたため */
@@ -3385,12 +3385,45 @@ function placeHoles(saved, route, points, tool, depth = null) {   /* depth 'half
 }
 let komaSeam = null, komaSeamPicking = false, komaSeamAt = null, lastKoma = null;   /* 継ぎ目（帯の始点）の指定：{ key（曲線側の縫い線の図形 id）, s（その縫い線の上の弧長）, x, y }／指定中か／画面の印／直前の曲面の駒合わせ（作り直し用）*/
 function komaClick(p) {
-  const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, p) <= 7 / scale); if (!hit) return;
+  /* 押した所にいちばん近い線（目印に付いた短い点線・穴の線は除く）。以前は最後に描いた線を先に取ったので、近くの目印の点線などに取られることがあった（事業主 2026-11-13 の目印の不具合と同じ取り違え） */
+  const hit = doc.shapes.filter(s => editable(s) && stitchable(s) && !s.markOf && !s.holeLink).map(s => ({ s, d: distTo(s, p) })).filter(x => x.d <= 7 / scale).sort((x, y) => x.d - y.d)[0]?.s; if (!hit) return;
+  if (komaChecking) { komaCheckClick(hit); return; }
   const state = routeForHit(hit); if (!state?.route) return;
   if (komaSeamPicking) { komaSeamPickAt(state, p); return; }
   if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
   komaFinish(stage.a, state, hit);
+}
+/** 対になっているかの点検（事業主 2026-11-13「基準となる線上の菱目をもう一つの線上に投影して、数が合っている（対となっている）ことを確認したい」→ 穴を動かさない点検）：
+ *  小窓の「対になっているか点検」→ 基準の線 → 相手の線の順にクリック。基準の線の穴を1つずつ相手の線へ写し（投影）、写した所の近く（相手の穴の間隔の 45%・0.5〜3mm）に相手の穴があるかを調べる。図面は変えない。
+ *  写し方：2本が近い（縁と縫い線など・距離の中央値が 8mm 未満）なら、いちばん近い点へ（垂直に）。離れていて片方が輪郭の内側の縫い線・片方がまっすぐなら、駒合わせ（曲面）と同じ対応表。それ以外は、長さの割合。
+ *  結果：対になった穴は対応の線と並べ図、対にならない穴は赤い丸。案内に、基準・相手の穴の数と、対になった数。 */
+let komaChecking = false, komaCheckAt = null;   /* 点検中か／直前の点検の結果（{ pl: pairLines, miss: 対にならない穴の位置 }） */
+function komaCheckClick(hit) {
+  const state = routeForHit(hit); if (!state?.route) return;
+  if (stage?.kind !== 'komaCheck') { stage = { kind: 'komaCheck', a: state }; selected = new Set([hit.id]); $('hint').textContent = t('komaCheckSecond'); draw(); return; }
+  if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
+  const base = stage.a; stage = null; komaChecking = false; syncKomaBar(); komaCheckRun(base, state);
+}
+function komaCheckRun(base, other) {
+  const holesOf = st => (st.saved.id ? doc.holes.filter(h => h.pathId === st.saved.id) : []).slice().sort((x, y) => x.s - y.s), hb = holesOf(base), ho = holesOf(other);
+  if (!hb.length || !ho.length) { $('hint').textContent = t('komaCheckNoHoles', { na: hb.length, nb: ho.length }); draw(); return; }
+  const lenB = arcLength(base.route), lenO = arcLength(other.route), at = sv => pointAtLength(other.route, Math.max(0, Math.min(lenO, sv)));
+  const dists = hb.map(h => distance(h, at(projectOnPath(other.route, h).s))).sort((x, y) => x - y), close = dists[Math.floor(dists.length / 2)] < 8;
+  let proj = h => at(h.s * lenO / Math.max(1e-9, lenB)), how = 'length';
+  if (close) { proj = h => at(projectOnPath(other.route, h).s); how = 'nearest'; }
+  else { const ia = komaOutlineOf(base), io = komaOutlineOf(other); if (!!ia?.curved !== !!io?.curved) { const curvedIsBase = !!ia?.curved, curved = curvedIsBase ? base : other, flat = curvedIsBase ? other : base, info = curvedIsBase ? ia : io, map0 = outlineMap(curved.route, info.outline);
+    if (map0) { const lenFlat = arcLength(flat.route), seamOn = !!komaSeam && komaSeam.key === curved.saved.shapeIds.join(), map = seamOn ? withSeam(map0, komaSeam.s, lenFlat, !!curved.route.closed) : (komaEdgeAligned(map0, curved, flat, info.outline, lenFlat) || map0);
+      proj = h => at(curvedIsBase ? map.toOther(h.s, lenFlat) : map.toInset(h.s, lenFlat)); how = 'outline'; } } }
+  const gaps = ho.slice(1).map((h, i) => h.s - ho[i].s).filter(g => g > 1e-6).sort((x, y) => x - y), tol = Math.max(0.5, Math.min(3, (gaps.length ? gaps[Math.floor(gaps.length / 2)] : 4) * 0.45));
+  const used = new Set(), pairs = [], missB = [];
+  for (const h of hb) { const q = proj(h); let best = null, bd = tol; for (const o of ho) { if (used.has(o.id)) continue; const d = distance(q, o); if (d <= bd) { bd = d; best = o; } } if (best) { used.add(best.id); pairs.push([{ x: h.x, y: h.y }, { x: best.x, y: best.y }]); } else missB.push({ x: h.x, y: h.y }); }
+  const missO = ho.filter(o => !used.has(o.id)).map(o => ({ x: o.x, y: o.y }));
+  pairLines = pairs; komaRowsSrc = { pl: pairLines, aRoute: base.route, bRoute: other.route, srcIsA: true, aPath: base.saved.id, bPath: other.saved.id }; komaCheckAt = { pl: pairLines, miss: [...missB, ...missO] };
+  selected = new Set([...base.saved.shapeIds, ...other.saved.shapeIds]);
+  const ok = !missB.length && !missO.length && hb.length === ho.length;
+  $('hint').textContent = t(ok ? 'komaCheckOk' : 'komaCheckNg', { na: hb.length, nb: ho.length, n: pairs.length, ma: missB.length, mb: missO.length, tol: circleNum(Math.round(tol * 10) / 10) }) + ' ' + t('komaCheckHow_' + how);
+  draw();
 }
 /** 駒合わせの2回目のクリック以降（A の状態・B の状態・B のクリックした図形）。継ぎ目を指定したあとの作り直しからも呼ぶ。 */
 function komaFinish(aState, state, hit) {
@@ -3406,8 +3439,9 @@ function komaFinish(aState, state, hit) {
     placeHoles(a.saved, a.route, result.holesA, tool); placeHoles(b.saved, b.route, result.holesB, tool, 'half');   /* B（2回目にクリックした線＝コバ側）の穴は半分の深さ。A（面側）は貫通 */
     selected = new Set([hit.id, ...a.saved.shapeIds]);
   });
-  pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]);
+  pairLines = result.pairs.map(pr => [result.holesA[pr.a], result.holesB[pr.b]]); komaRowsSrc = { pl: pairLines, aRoute: aState.route, bRoute: state.route, srcIsA: true, aPath: aState.saved.id, bPath: state.saved.id };
   $('hint').textContent = (result.warn ? t('komaWarn', { n: result.holesA.length, pct: Math.max(...result.segments.map(s => s.diffPct)).toFixed(1) }) : t('komaDone', { n: result.holesA.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) })) + (both ? ' ' + t('komaBoth') : '') + ' ' + t('komaHalfNote');
+  komaCountNote();   /* 対になる穴の数が A と B で同じか、図面に打った穴を数えて確かめる */
   draw();
 }
 /** 継ぎ目（帯の始点）の位置を、曲線側の縫い線の上のクリックで指定する。直前の駒合わせ（曲面）の曲線側ならすぐ作り直し、そうでなければ次の駒合わせに使う。 */
@@ -3438,10 +3472,20 @@ function komaOutlineOf(side) {
 /** 駒合わせ（曲面）：曲線側（円柱の上面・小判型・側面の U 字など＝輪郭の内側の縫い線）と、まっすぐな側（帯）。帯の穴は等間隔のまま、曲線側は帯の各穴を輪郭に沿って写す（直線部は同じ間隔・曲線部は狭く）。
  *  どちらにも目打ちが無ければ、「優先」の側（両方を均す＝まっすぐな側）を工具のピッチで等間隔にしてから写す。片方にだけあれば、それを残して写す。両方にあれば作り直す。
  *  curvedIsA＝1回目にクリックした線（A）が曲線側か。B（2回目）の穴は半分の深さ。帯の長さが輪郭の対応部分と 3% より違えば案内する。できなければ false（従来の方式に任せる）。 */
+/** 駒合わせ（曲面）で、まっすぐな側（帯）が輪郭そのもの（縁＝コバ）のとき：帯の始点・向きを、縁の線の始点・向きに合わせた対応表（事業主 2026-11-13「駒合わせ縫いの菱目が全然合っていない」・不具合記録 ncad-bug-20261113-1712）。
+ *  これまでは、帯の始点を曲線側の縫い線の始点の投影に当てていた。帯が別の革なら継ぎ目はどこでもよいが、縁そのものだと、縁の始点（左上など）と縫い線の始点（右の辺の真ん中など）がずれ、対応が扇のように交差した。
+ *  どちらも閉じていて、帯の線が輪郭の上（0.05mm 以内）にあるときだけ。それ以外は null（今までどおり）。 */
+function komaEdgeAligned(map0, curved, flat, outline, lenFlat) {
+  if (!curved.route.closed || !flat.route.closed || !(lenFlat > 1e-6)) return null;
+  if (![0, 0.13, 0.31, 0.5, 0.69, 0.87].every(f => projectToPolygon(pointAtLength(flat.route, lenFlat * f), outline).d < 0.05)) return null;   /* 帯が縁そのものでなければ使わない */
+  /* 縁の穴と縫い線の穴は、縁に垂直な向きで向かい合う：縁の上の点から縫い線のいちばん近い点へ（逆も同じ）。区間ごとの長さの割合だと、角で垂直からずれた（点検で 105 組中 18 組が対にならなかった） */
+  const wrap = v => ((v % lenFlat) + lenFlat) % lenFlat;
+  return { ...map0, seam: projectOnPath(curved.route, pointAtLength(flat.route, 0)).s, toInset: sv => projectOnPath(curved.route, pointAtLength(flat.route, wrap(sv))).s, toOther: sI => projectOnPath(flat.route, pointAtLength(curved.route, sI)).s };
+}
 function komaByOutline(a, b, ha, hb, info, curvedIsA) {
   const curved = curvedIsA ? a : b, flat = curvedIsA ? b : a, map0 = outlineMap(curved.route, info.outline); if (!map0) return false;
   const lenFlat = arcLength(flat.route), lenCurved = arcLength(curved.route), tool = stitchToolCurrent(); if (!tool || !(lenFlat > 1e-6)) return false;
-  const seamOn = !!komaSeam && komaSeam.key === curved.saved.shapeIds.join(), map = seamOn ? withSeam(map0, komaSeam.s, lenFlat, !!curved.route.closed) : map0;   /* 継ぎ目を指定してあれば、帯の始点をそこに当てる（指定が無ければ、縫い線の始点） */
+  const seamOn = !!komaSeam && komaSeam.key === curved.saved.shapeIds.join(), map = seamOn ? withSeam(map0, komaSeam.s, lenFlat, !!curved.route.closed) : (komaEdgeAligned(map0, curved, flat, info.outline, lenFlat) || map0);   /* 継ぎ目を指定してあれば、帯の始点をそこに当てる（指定が無ければ、縫い線の始点） */
   const hc = curvedIsA ? ha : hb, hf = curvedIsA ? hb : ha, both = !!hc.length && !!hf.length, srcKey = $('komaPrefer').value;
   let srcSide, srcS, srcAngles = null;   /* 写す元（距離の一覧）と写し先 */
   if (!!hc.length !== !!hf.length) { const list = (hc.length ? hc : hf).slice().sort((x, y) => x.s - y.s); srcSide = hc.length ? 'curved' : 'flat'; srcS = list.map(h => h.s); srcAngles = list; }
@@ -3469,11 +3513,12 @@ function komaByOutline(a, b, ha, hb, info, curvedIsA) {
     for (const [saved, route] of [[srcSaved, srcRoute], [dstSaved, dstRoute]]) saved.segments = [{ from: 0, to: arcLength(route), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }];
     selected = new Set([...a.saved.shapeIds, ...b.saved.shapeIds]);
   });
-  pairLines = madeSrc.map((h, i) => [{ x: h.x, y: h.y }, { x: madeDst[i].x, y: madeDst[i].y }]);
+  pairLines = madeSrc.map((h, i) => [{ x: h.x, y: h.y }, { x: madeDst[i].x, y: madeDst[i].y }]); komaRowsSrc = { pl: pairLines, aRoute: a.route, bRoute: b.route, srcIsA: dstIsB, aPath: a.saved.id, bPath: b.saved.id };
   { const q = pointAtLength(curved.route, map.toInset(0, lenFlat)); komaSeamAt = { x: q.x, y: q.y, pl: pairLines }; lastKoma = { aId: a.saved.shapeIds[0], bId: b.saved.shapeIds[0], key: curved.saved.shapeIds.join() }; }   /* 帯の始点が当たる位置の印と、作り直し用の覚え */
   const gapsOf = list => { const ss = list.map(h => h.s).sort((x, y) => x - y); const g = ss.slice(1).map((v, i) => v - ss[i]); return g.length ? { min: Math.min(...g), max: Math.max(...g) } : { min: 0, max: 0 }; };
   const gf = gapsOf(srcSide === 'flat' ? madeSrc : madeDst), gc = gapsOf(srcSide === 'flat' ? madeDst : madeSrc), n = madeDst.length, pct = Math.abs(lenFlat - map.lenPart) / Math.max(1e-6, map.lenPart) * 100;
   $('hint').textContent = t('komaOutlineDone', { n, flat: curvedIsA ? 'B' : 'A', curved: curvedIsA ? 'A' : 'B', pf: gf.max.toFixed(2), cmin: gc.min.toFixed(2), cmax: gc.max.toFixed(2) }) + (both ? ' ' + t('komaBoth') : '') + (pct > 3 ? ' ' + t('komaLenWarn', { flat: curvedIsA ? 'B' : 'A', lf: lenFlat.toFixed(1), lo: map.lenPart.toFixed(1), pct: pct.toFixed(1) }) : '') + ' ' + t(seamOn ? 'komaSeamNoteSet' : 'komaSeamNote') + ' ' + t('komaHalfNote');
+  komaCountNote();   /* 対になる穴の数が A と B で同じか、図面に打った穴を数えて確かめる */
   draw(); return true;
 }
 /** 駒合わせで、片方（src）の目打ちはそのまま残して、もう片方（dst）に同じ数を写す。位置は長さの割合（曲がり角の数が同じなら角ごと）、向きは線に対する傾きのまま。 */
@@ -3490,9 +3535,10 @@ function komaCopy(src, dst, from, to) {
     const tool = doc.tools.find(x => x.id === holes[0].toolId); dst.saved.segments = [{ from: 0, to: arcLength(dst.route), toolId: holes[0].toolId, pitch: tool?.pitch ?? 0, mode: 'variable' }];
     selected = new Set([...dst.saved.shapeIds]);
   });
-  pairLines = holes.map((h, i) => [{ x: h.x, y: h.y }, { x: made[i].x, y: made[i].y }]);
+  pairLines = holes.map((h, i) => [{ x: h.x, y: h.y }, { x: made[i].x, y: made[i].y }]); komaRowsSrc = { pl: pairLines, aRoute: from === 'A' ? src.route : dst.route, bRoute: from === 'A' ? dst.route : src.route, srcIsA: from === 'A', aPath: from === 'A' ? src.saved.id : dst.saved.id, bPath: from === 'A' ? dst.saved.id : src.saved.id };
   const gap = list => list.length > 1 ? (Math.max(...list.map(h => h.s)) - Math.min(...list.map(h => h.s))) / (list.length - 1) : 0; /* 穴の間隔の平均 */
   $('hint').textContent = t('komaCopied', { from, to, n: holes.length, pa: gap(holes).toFixed(2), pb: gap(made).toFixed(2) }) + ' ' + t('komaHalfNote');
+  komaCountNote();   /* 対になる穴の数が A と B で同じか、図面に打った穴を数えて確かめる */
   draw();
 }
 /** 駒合わせの縫い線：選んだ辺（直線・つながった線・閉じた図形）から「縁からの距離」だけ革の内側へ、点線（ガイド層・黄）の縫い線を作る。
@@ -3520,7 +3566,35 @@ function makeKomaLines() {
   $('hint').textContent = t('komaLinesMade', { n: results.length, d: margin }) + (unsure ? ' ' + t('komaSideUnsure') : '') + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
 /** 駒合わせの小窓（縁からの距離・優先・縫い線を作る）は、駒合わせのツールの間だけ出す。 */
-function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; if (mode !== 'koma') komaSeamPicking = false; const pick = $('komaSeamPick'), clr = $('komaSeamClear'); if (pick) { pick.textContent = t(komaSeamPicking ? 'komaSeamPicking' : komaSeam ? 'komaSeamPickAgain' : 'komaSeamPick'); pick.classList?.toggle?.('active', !!komaSeamPicking); } if (clr) clr.hidden = !komaSeam; }
+/** 駒合わせの並べ図（事業主 2026-11-13「投影した菱目を１直線に並べる機能も欲しい。その際に端の菱目は色を付けてわかりやすくして」→ 両側を上下2段・始点は緑、終点は赤）：
+ *  A（1回目にクリックした線）と B（2回目）の穴を、それぞれ線に沿ってまっすぐに延ばし、同じ縮尺（mm）で上下に並べる。対応する穴どうしを細い線で結ぶ（縦にそろえば、ずれがない）。
+ *  位置は、対応の順に、となりの穴までの線に沿った距離を足していく（一周する線も、継ぎ目をまたいで続ける）。小窓（駒合わせ）の中に、駒合わせの直後から次の駒合わせまで出す。 */
+/** 駒合わせのあと、図面に打った A・B の穴を数える（事業主 2026-11-13「まずは対となる菱目の数が合っている事が確実であること」）：{ na, nb, ok }。A と B が同じ経路（同じ線を2回押した）なら、合っていない扱い。 */
+function komaCounts() {
+  const src = komaRowsSrc; if (!src || src.pl !== pairLines || !src.aPath || !src.bPath) return null;
+  const na = doc.holes.filter(h => h.pathId === src.aPath).length, nb = doc.holes.filter(h => h.pathId === src.bPath).length;
+  return { na, nb, ok: src.aPath !== src.bPath && na === nb && na === pairLines.length };
+}
+function komaCountNote() { const c = komaCounts(); if (!c) return; $('hint').textContent += ' ' + t(c.ok ? 'komaCountOk' : 'komaCountNg', { na: c.na, nb: c.nb }); }
+function komaRowsData() {
+  const src = komaRowsSrc; if (!src || src.pl !== pairLines || !pairLines.length) return null; if (src.rows) return src.rows;
+  const side = (route, pts) => { const len = arcLength(route), ss = pts.map(q => projectOnPath(route, q).s), pos = [0]; for (let i = 1; i < ss.length; i++) { let d = ss[i] - ss[i - 1]; if (route.closed) d = ((d + len / 2) % len + len) % len - len / 2; pos.push(pos[i - 1] + Math.abs(d)); } return { len, pos }; };
+  const aPts = pairLines.map(pr => src.srcIsA ? pr[0] : pr[1]), bPts = pairLines.map(pr => src.srcIsA ? pr[1] : pr[0]);
+  src.rows = { a: side(src.aRoute, aPts), b: side(src.bRoute, bPts) }; return src.rows;
+}
+function drawKomaRows() {
+  const box = $('komaRowsBox'), cv = $('komaRows'); if (!box || !cv) return; const rows = mode === 'koma' ? komaRowsData() : null; box.hidden = !rows; if (!rows) return;
+  const g = cv.getContext?.('2d'); if (!g) return; const Wd = cv.width, Ht = cv.height, L = 34, R = 10, span = Math.max(rows.a.pos.at(-1), rows.b.pos.at(-1), 1e-6), k = (Wd - L - R) / span, ya = 24, yb = Ht - 18, n = rows.a.pos.length;
+  g.clearRect(0, 0, Wd, Ht); g.font = '11px sans-serif'; g.textBaseline = 'middle'; g.fillStyle = '#c9c9c9'; g.fillText('A', 8, ya); g.fillText('B', 8, yb);
+  const cnt = komaCounts(); g.fillStyle = cnt && !cnt.ok ? '#f85149' : '#c9c9c9';   /* 数が合わなければ赤 */
+  g.fillText(t(cnt && !cnt.ok ? 'komaRowsInfoNg' : 'komaRowsInfo', { n, na: cnt ? cnt.na : n, nb: cnt ? cnt.nb : n, a: circleNum(Math.round(rows.a.pos.at(-1) * 10) / 10), b: circleNum(Math.round(rows.b.pos.at(-1) * 10) / 10) }), L, 8);
+  g.strokeStyle = '#555'; g.lineWidth = 1; for (const y of [ya, yb]) { g.beginPath(); g.moveTo(L, y); g.lineTo(Wd - R, y); g.stroke(); }
+  g.strokeStyle = '#ff9f4399'; g.beginPath(); for (let i = 0; i < n; i++) { g.moveTo(L + rows.a.pos[i] * k, ya + 4); g.lineTo(L + rows.b.pos[i] * k, yb - 4); } g.stroke();   /* 対応する穴どうし */
+  const dot = (x, y, col, big) => { const z = big ? 4.5 : 2.5; g.fillStyle = col; g.beginPath(); g.moveTo(x, y - z); g.lineTo(x + z * 0.7, y); g.lineTo(x, y + z); g.lineTo(x - z * 0.7, y); g.closePath(); g.fill(); };
+  for (const [row, y] of [[rows.a, ya], [rows.b, yb]]) row.pos.forEach((v, i) => { if (i && i < n - 1) dot(L + v * k, y, '#e8e8e8', false); });
+  for (const [row, y] of [[rows.a, ya], [rows.b, yb]]) { dot(L + row.pos[0] * k, y, '#3fb950', true); if (n > 1) dot(L + row.pos[n - 1] * k, y, '#f85149', true); }   /* 始点＝緑・終点＝赤 */
+}
+function syncKomaBar() { const bar = $('komaBar'); if (bar) bar.hidden = mode !== 'koma'; if (mode !== 'koma') { komaSeamPicking = false; komaChecking = false; } { const cb = $('komaCheck'); if (cb) { cb.textContent = t(komaChecking ? 'komaCheckPicking' : 'komaCheck'); cb.setAttribute('aria-pressed', String(komaChecking)); } } const pick = $('komaSeamPick'), clr = $('komaSeamClear'); if (pick) { pick.textContent = t(komaSeamPicking ? 'komaSeamPicking' : komaSeam ? 'komaSeamPickAgain' : 'komaSeamPick'); pick.classList?.toggle?.('active', !!komaSeamPicking); } if (clr) clr.hidden = !komaSeam; }
 function renderSeams() { $('seamCount').textContent = String(doc.seams.length); }
 function seamStyleValue() { const v = $('seamStyle').value; return ['butt', 'overlap', 'felled'].includes(v) ? v : 'butt'; }
 function optimizePatch() {
@@ -4163,7 +4237,7 @@ function initDesign() {
     head.addEventListener('pointermove', e => { if (drag) placeCardWin(card, e.clientX - drag.dx, e.clientY - drag.dy, drag.w); });
     const endDrag = () => { drag = null; }; head.addEventListener('pointerup', endDrag); head.addEventListener('pointercancel', endDrag);
   }
-  $('komaMakeLine').onclick = makeKomaLines; $('komaSeamPick').onclick = () => { komaSeamPicking = !komaSeamPicking; syncKomaBar(); $('hint').textContent = komaSeamPicking ? t('komaSeamPickHint') : t('hint.koma'); draw(); }; $('komaSeamClear').onclick = komaSeamClearAll; $('komaClose').onclick = () => setMode('select'); $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
+  $('komaMakeLine').onclick = makeKomaLines; $('komaCheck').onclick = () => { komaChecking = !komaChecking; if (stage?.kind === 'komaCheck' || stage?.kind === 'koma') stage = null; syncKomaBar(); $('hint').textContent = komaChecking ? t('komaCheckHint') : modeHint('koma'); draw(); }; $('komaSeamPick').onclick = () => { komaSeamPicking = !komaSeamPicking; syncKomaBar(); $('hint').textContent = komaSeamPicking ? t('komaSeamPickHint') : t('hint.koma'); draw(); }; $('komaSeamClear').onclick = komaSeamClearAll; $('komaClose').onclick = () => setMode('select'); $('optimizePatch').onclick = optimizePatch; $('suggestSizes').onclick = suggestSizes; $('makeGrid').onclick = makeGrid; $('gapCloseMake').onclick = closeGapsAndMakeGrid; $('checkRimBoundary').onclick = rimBoundaryCheck;
   $('clearSeams').onclick = () => { commit(() => { doc.seams = []; }); pairLines = []; renderSeams(); };
   $('clearPairs').onclick = () => { pairLines = []; draw(); };
   renderSeams();
@@ -8964,6 +9038,8 @@ function dedupeHoles() {
 }
 /** 点の目印は、ガイド層の「点線の直線」と一体で持つ：目印を打つと直線が1本でき（hole.lineId ↔ 直線の markOf）、画面の記号・クリックはその直線に置き換わる。
  *  直線が実体：動かす・長さを変える・トリム・オフセットは普通の点線と同じで、そのあと穴の位置・向き・長さが直線に合う。直線を消すと目印も消え、トリムなどで直線がちぎれたら、残りは普通の点線になる（目印は外れる）。 */
+/** クッション形の元の形（cush）を、もうクッション形として扱えない線から外す（線・円弧でなくなった＝拡大縮小で折れ線になった、回した、一部を作り変えた）。外した線は、ふつうの線（事業主 2026-11-13 指摘への対応）。 */
+function dropStaleCush() { for (const s of doc.shapes) if (s.cush && (!['line', 'arc'].includes(s.type) || !cushGroupOf(s))) delete s.cush; }
 function syncMarkLines() {
   const del = new Set(); let add = [];
   for (const h of doc.holes) {
@@ -9161,7 +9237,7 @@ function commit(fn) {
   const before = JSON.stringify(doc), holesBefore = doc.holes.length, dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
   fn(); pruneFoldSections(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
   const staleFills = followFillsAfter(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
-  const dupHoles = dedupeHoles(); syncMarkLines(); syncDimensions(dimBefore); if (dupHoles) { const gained = doc.holes.length - holesBefore; setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + (gained >= 0 ? t('holeDedupeAdded', { n: dupHoles, m: gained }) : t('holeDedupe', { n: dupHoles })); }, 0); }   /* 重なった穴は1つにまとめる。まとめた数と、この操作で増えた穴の数を伝える（事業主 2026-11-07「同じ経路を重複して打っている？」：重複は残らない・増えた数が分かるように） */
+  const dupHoles = dedupeHoles(); syncMarkLines(); dropStaleCush(); syncDimensions(dimBefore); if (dupHoles) { const gained = doc.holes.length - holesBefore; setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + (gained >= 0 ? t('holeDedupeAdded', { n: dupHoles, m: gained }) : t('holeDedupe', { n: dupHoles })); }, 0); }   /* 重なった穴は1つにまとめる。まとめた数と、この操作で増えた穴の数を伝える（事業主 2026-11-07「同じ経路を重複して打っている？」：重複は残らない・増えた数が分かるように） */
   if (before !== JSON.stringify(doc)) { commitSeq++; undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
   scheduleAutosave();
   draw();
@@ -10995,6 +11071,8 @@ function drawSheetBody(lo, hi) {
   if ($('threeView').checked) drawThreeViewGuides();
   { const seamPt = pairLines.length && komaSeamAt?.pl === pairLines ? komaSeamAt : (mode === 'koma' && komaSeam ? komaSeam : null); if (seamPt) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); ctx.arc(seamPt.x, seamPt.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.font = `${12 / scale}px sans-serif`; ctx.fillText(t('komaSeamMark'), seamPt.x + 9 / scale, seamPt.y - 9 / scale); ctx.restore(); } }   /* 継ぎ目（帯の始点が当たる位置）の印 */
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
+  if (komaCheckAt?.pl === pairLines && komaCheckAt.miss.length) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#f85149'; ctx.lineWidth = 2 / scale; for (const q of komaCheckAt.miss) { ctx.beginPath(); ctx.arc(q.x, q.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); } ctx.restore(); }   /* 点検：対にならない穴に赤い丸 */
+  drawKomaRows();
   /* 縫い合わせ（隣り合う辺の組）の橙の点線（向かい合う穴の列を結ぶ印）は描かない（事業主 2026-10-21「菱目ラインをつなぐ点線の意味がわからない。不要です」）。縫い合わせのデータ（doc.seams）は、最適化などのためにそのまま持つ */
   if (stage?.kind === 'bezier') {
     const s = bezierShape(cursor); strokeShape(s, '#c9a96e');
