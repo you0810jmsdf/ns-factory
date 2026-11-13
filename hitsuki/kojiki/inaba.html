@@ -28,6 +28,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .pg-lead { color: var(--ink-soft); margin: 0 0 24px; line-height: 1.9; }
     .pg-card { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(24, 36, 27, 0.55); padding: 20px; margin-bottom: 20px; }
     .pg-card h2 { font-size: 1.1rem; margin: 0 0 14px; }
+    .pg-card h3 { font-size: 1rem; margin: 18px 0 6px; }
     .pg-card p { line-height: 1.95; margin: 0 0 12px; }
     .pg-card p:last-child { margin-bottom: 0; }
     .pts { border-color: var(--line-strong); background: rgba(216, 183, 102, 0.07); }
@@ -37,6 +38,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .kind { display: inline-block; font-size: .72rem; line-height: 1; padding: 4px 7px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--gold); margin-right: 6px; vertical-align: 2px; white-space: nowrap; }
     .kind.k-cmp { color: #9fc3d8; border-color: rgba(159,195,216,.45); }
     .kind.k-int { color: #d9a7c7; border-color: rgba(217,167,199,.45); }
+    .kind.k-var { color: #b9d3a0; border-color: rgba(185,211,160,.45); }
     .q { margin: 0 0 14px; }
     .q:last-child { margin-bottom: 0; }
     .q blockquote { margin: 0; padding: 6px 0 6px 12px; border-left: 2px solid var(--gold); font-size: 1.05rem; line-height: 1.8; letter-spacing: .04em; }
@@ -52,6 +54,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .ns:last-child { margin-bottom: 0; }
     .ns .where { color: var(--muted); font-size: .85rem; }
     .ns blockquote { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid rgba(159,195,216,.6); color: var(--ink-soft); font-size: .95rem; }
+    .var { margin: 0 0 12px; padding-left: 12px; border-left: 2px solid rgba(185,211,160,.5); }
+    .var:last-child { margin-bottom: 0; }
+    .var b { color: #b9d3a0; font-size: .9rem; }
+    .xlink { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .xlink a { border: 1px solid var(--line-strong); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--gold); text-decoration: none; }
     .pg-note { color: var(--muted); font-size: .85rem; line-height: 1.8; margin: 0; }
     .pg-src { margin: 8px 0 0; padding-left: 1.2em; line-height: 1.9; font-size: .9rem; word-break: break-all; }
     .pager { display: flex; justify-content: space-between; gap: 12px; margin: 8px 0 20px; }
@@ -59,7 +66,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .pager a small { display: block; color: var(--muted); font-size: .78rem; }
     .pager a.next { text-align: right; }
     .pager a:hover { border-color: var(--line-strong); }
-    .toc { list-style: none; margin: 0; padding: 0; counter-reset: none; }
+    .toc { list-style: none; margin: 0; padding: 0; }
     .toc li { border-bottom: 1px solid rgba(245, 239, 225, 0.08); }
     .toc li:last-child { border-bottom: 0; }
     .toc a { display: grid; grid-template-columns: 2.6em 1fr; gap: 2px 10px; padding: 14px 4px; color: var(--ink); text-decoration: none; }
@@ -68,6 +75,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
+    .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+    .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
   </style>
 </head>
@@ -79,6 +88,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </a>
     <nav class="site-nav" aria-label="ページ内ナビゲーション">
       <a href="./">話の一覧</a>
+      <a href="../shoki/">日本書紀アーカイブ</a>
       <a href="../kiki.html">古事記と日本書紀</a>
       <a href="../index.html" class="nav-back">← 教育幕僚室へ戻る</a>
     </nav>
@@ -88,6 +98,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     <p class="eyebrow">古事記 上巻・第9話（全17話）</p>
     <h1>稲羽の素兎</h1>
     <p class="pg-lead">八上比売に求婚しに稲羽へ向かう八十神に従者として連れられた大穴牟遅神（大国主神）は、皮を剥がれて苦しむ菟を正しい方法で治してやった。菟は、八上比売を得るのは大穴牟遅神だと告げ、八上比売はそのとおり八十神を退けて大穴牟遅神に嫁ぐと答えた。</p>
+    
 
     <section class="pg-card pts" aria-labelledby="pts-title">
       <h2 id="pts-title">覚えておくポイント</h2>
@@ -120,7 +131,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
-      <h2 id="who-title">登場する神と、祀る神社</h2>
+      <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=ookuninushi">大国主大神</a></b><small>おおくにぬしのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=izumo">出雲大社</a>、<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=hokkaido">北海道神宮</a>、<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=keta">氣多大社</a>、<a href="../../shrine-note/map/?s=futarasan">日光二荒山神社</a>、<a href="../../shrine-note/map/?s=hiyoshi">日吉大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=toga">砥鹿神社</a>、<a href="../../shrine-note/map/?s=takebe">建部大社</a>、<a href="../../shrine-note/map/?s=kanda">神田神社（神田明神）</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=ooyamato">大和神社</a>、<a href="../../shrine-note/map/?s=taiheizanmiyoshi">太平山三吉神社</a>、<a href="../../shrine-note/map/?s=tsuno">都農神社</a>、<a href="../../shrine-note/map/?s=takase">高瀬神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=okunitamajinja">大國魂神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=oarai">大洗磯前神社</a>、<a href="../../shrine-note/map/?s=okuni">小國神社</a>、<a href="../../shrine-note/map/?s=izumodaijingu">出雲大神宮</a>、<a href="../../shrine-note/map/?s=sakatsura">酒列磯前神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=mihojinja">御穂神社</a></span></li>
         <li><b>菟神</b><small>うさぎがみ</small><span class="sh">和迩をだまして毛皮を剥がれ、大穴牟遅神に治してもらった菟。原文は「稻羽之素菟」とも呼び、今は菟神と呼ばれるとする。</span></li>
@@ -129,7 +140,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b>和迩</b><small>わに</small><span class="sh">菟にだまされて海に並び伏し、最後に菟を捕まえて毛皮を剥いだ海の生き物。</span></li>
         <li><b>蒲黃</b><small>かまのはな</small><span class="sh">大穴牟遅神が菟に、敷き散らしてその上を転がるよう教えたもので、これで菟の体が元に戻った。</span></li>
       </ul>
-      <p class="pg-note">神の名前を押すと、神社巡りノートの神様のページ（古事記・日本書紀での名前と場面）が開きます。</p>
+      <p class="pg-note">名前を押すと、神社巡りノートの神様のページ（古事記・日本書紀での名前と場面）が開きます。</p>
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
@@ -137,13 +148,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       <div class="ns"><span class="where">巻第一 第八段 一書第六</span><p>日本書紀の巻第一・巻第二では、稲羽の素菟・八十神・八上比売の話に対応する記事を確認できなかった。同じ神は第八段一書第六で大国主神の別名として「国作大己貴命」などと挙げられ、少彦名命と力を合わせて国を造る話が語られている。</p><blockquote lang="zh-Hant">亦號國作大己貴命</blockquote></div>
     </section>
 
-    <nav class="pager" aria-label="前後の話"><a class="prev" href="orochi.html"><small>← 前の話（第8話）</small>須佐之男命の追放と八俣遠呂智</a><a class="next" href="nenokuni.html"><small>次の話（第10話）→</small>八十神の迫害と根の堅州国</a></nav>
+    <nav class="pager" aria-label="前後のページ"><a class="prev" href="orochi.html"><small>← 前の話（上巻・第8話）</small>須佐之男命の追放と八俣遠呂智</a><a class="next" href="nenokuni.html"><small>次の話（上巻・第10話）→</small>八十神の迫害と根の堅州国</a></nav>
 
     <section class="pg-card" aria-labelledby="src-title">
       <h2 id="src-title">出典</h2>
       <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
       <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一 神代上</a>／<a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">巻第二 神代下</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li>
+        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li>
       </ul>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
