@@ -85,5 +85,18 @@ def check(label, m, own_quotes_key, other_key):
 
 for m in KOJ: check(f'古事記 {m.get("kan", "上巻")} 第{m["no"]}話 {m["title"]}', m, 'quotes', 'nihonshoki')
 for s in SHO: check(f'日本書紀 {s["kan"]} {s["title"]}', s, 'quotes', 'kojiki')
+# 英語版（*.en.json）：各ページの英訳があり、配列の数が日本語と同じか
+for path, items, cmpk in [(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json'), KOJ, 'nihonshoki'), (os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'), SHO, 'kojiki')]:
+    if not os.path.exists(path): continue
+    EN = json.load(open(path, encoding='utf-8'))['pages']
+    for m in items:
+        o = EN.get(m['id']); probs = []
+        if not o: probs.append('英訳なし')
+        else:
+            for k, jk in [('points', 'points'), ('story', 'story'), ('quotes', 'quotes'), ('figures', 'figures'), ('compare', cmpk), ('variants', 'variants')]:
+                if len(o.get(k) or []) != len(m.get(jk) or []): probs.append(f'英訳 {k} の数')
+            if not o.get('title') or not o.get('lead'): probs.append('英訳の題・リード')
+        if probs:
+            bad += len(probs); print(f'英語版 {m["id"]}: ' + ' / '.join(probs))
 print(f'問題 {bad} 件')
 sys.exit(1 if bad else 0)
