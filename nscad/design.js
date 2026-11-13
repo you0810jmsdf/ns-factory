@@ -1607,3 +1607,60 @@ export function numberPieces(pieces) {
   info.sort((p, q) => { const bp = Math.round(p.cy / band), bq = Math.round(q.cy / band); return bp - bq || p.cx - q.cx; });
   return info.map((p, i) => ({ ...p, no: i + 1 }));
 }
+/** 矩形の4つの頂点を通り、辺が膨らむ（へこむ）形：ブラウン管の画面のような形（事業主 2026-11-13「矩形の４点を通る形状を作図する機能（辺の中心を内外にドラッグ…）」）。
+ *  p = { x0, y0, x1, y1（矩形の左上と右下）, bx（左右の辺の膨らみ mm・外へ＋／内へ−）, by（上下の辺の膨らみ）, r（角の丸めの半径・0 で角はとがったまま頂点を通る） }。
+ *  向かい合う辺は同じだけ膨らむ。膨らんだ辺は円弧（両端が矩形の頂点・真ん中が辺の中央から膨らみの分だけ外）、角は円弧どうしに接する半径 r の円弧でつなぐ。
+ *  戻り値 { shapes: 上・右・下・左の辺と、その間の角（時計回り・線か円弧）, bx, by, r（実際に使った値：膨らみは辺の半分の 0.95 倍まで、半径は入る大きさまで） }。 */
+export function cushionShapes(p) {
+  const x0 = Math.min(p.x0, p.x1), x1 = Math.max(p.x0, p.x1), y0 = Math.min(p.y0, p.y1), y1 = Math.max(p.y0, p.y1), w = x1 - x0, h = y1 - y0;
+  if (!(w > 1e-6 && h > 1e-6)) return null;
+  const clampB = (b, half) => Math.max(-half * 0.95, Math.min(half * 0.95, Number.isFinite(b) ? b : 0));
+  const by = clampB(p.by, w / 2), bx = clampB(p.bx, h / 2);
+  const C = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+  const sides = [[C[0], C[1], { x: 0, y: -1 }, by], [C[1], C[2], { x: 1, y: 0 }, bx], [C[2], C[3], { x: 0, y: 1 }, by], [C[3], C[0], { x: -1, y: 0 }, bx]].map(([a, b, u, s]) => {
+    const half = distance(a, b) / 2, mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, apex = { x: mid.x + u.x * s, y: mid.y + u.y * s };
+    if (Math.abs(s) < 1e-6) return { a, b, u, apex, line: true };
+    const R = (half * half + s * s) / (2 * Math.abs(s)), sg = Math.sign(s), O = { x: apex.x - sg * R * u.x, y: apex.y - sg * R * u.y };
+    return { a, b, u, apex, R, O, sg };
+  });
+  /** 辺を内側へ d だけずらした線（円弧は同心円）と、点 q をその辺へ戻した点。 */
+  const offsetOf = (sd, d) => sd.line ? { line: true, p: { x: sd.a.x - sd.u.x * d, y: sd.a.y - sd.u.y * d }, v: { x: sd.b.x - sd.a.x, y: sd.b.y - sd.a.y } } : { O: sd.O, R: sd.R - sd.sg * d };
+  const foot = (sd, q) => { if (sd.line) { const v = { x: sd.b.x - sd.a.x, y: sd.b.y - sd.a.y }, t = ((q.x - sd.a.x) * v.x + (q.y - sd.a.y) * v.y) / (v.x * v.x + v.y * v.y); return { x: sd.a.x + v.x * t, y: sd.a.y + v.y * t }; } const d = distance(q, sd.O); return { x: sd.O.x + (q.x - sd.O.x) / d * sd.R, y: sd.O.y + (q.y - sd.O.y) / d * sd.R }; };
+  const meet = (A, B) => {   /* ずらした2本の交点の候補 */
+    if (A.line && B.line) { const den = A.v.x * B.v.y - A.v.y * B.v.x; if (Math.abs(den) < 1e-12) return []; const t = ((B.p.x - A.p.x) * B.v.y - (B.p.y - A.p.y) * B.v.x) / den; return [{ x: A.p.x + A.v.x * t, y: A.p.y + A.v.y * t }]; }
+    if (A.line || B.line) { const L = A.line ? A : B, K = A.line ? B : A; if (!(K.R > 0)) return []; const v = L.v, n = Math.hypot(v.x, v.y), e = { x: v.x / n, y: v.y / n }, t0 = (K.O.x - L.p.x) * e.x + (K.O.y - L.p.y) * e.y, f = { x: L.p.x + e.x * t0, y: L.p.y + e.y * t0 }, dd = distance(f, K.O); if (dd > K.R) return []; const q = Math.sqrt(K.R * K.R - dd * dd); return [{ x: f.x + e.x * q, y: f.y + e.y * q }, { x: f.x - e.x * q, y: f.y - e.y * q }]; }
+    if (!(A.R > 0 && B.R > 0)) return []; const d = distance(A.O, B.O); if (d < 1e-12 || d > A.R + B.R || d < Math.abs(A.R - B.R)) return [];
+    const a = (A.R * A.R - B.R * B.R + d * d) / (2 * d), hh = Math.sqrt(Math.max(0, A.R * A.R - a * a)), m = { x: A.O.x + (B.O.x - A.O.x) * a / d, y: A.O.y + (B.O.y - A.O.y) * a / d }, n = { x: -(B.O.y - A.O.y) / d, y: (B.O.x - A.O.x) / d };
+    return [{ x: m.x + n.x * hh, y: m.y + n.y * hh }, { x: m.x - n.x * hh, y: m.y - n.y * hh }];
+  };
+  /** 辺の上の点の位置（始点 0 → 終点 1）。円弧は、始点からの角度の割合。 */
+  const along = (sd, q) => { if (sd.line) { const v = { x: sd.b.x - sd.a.x, y: sd.b.y - sd.a.y }; return ((q.x - sd.a.x) * v.x + (q.y - sd.a.y) * v.y) / (v.x * v.x + v.y * v.y); } const ang = z => Math.atan2(z.y - sd.O.y, z.x - sd.O.x), full = angDiff(ang(sd.a), ang(sd.b)); return angDiff(ang(sd.a), ang(q)) / full; };
+  const angDiff = (from, to) => { let d = to - from; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+  const corners = r => {   /* 角 k（辺 k−1 の終わりと辺 k の始まり）の丸め：中心と、2つの接点。入らなければ null */
+    const out = [];
+    for (let k = 0; k < 4; k++) {
+      const A = sides[(k + 3) % 4], B = sides[k], P = C[k];
+      if (r <= 1e-9) { out.push({ c: null, tin: P, tout: P }); continue; }
+      const cand = meet(offsetOf(A, r), offsetOf(B, r)).sort((m, n) => distance(m, P) - distance(n, P))[0]; if (!cand) return null;
+      out.push({ c: cand, tin: foot(A, cand), tout: foot(B, cand) });
+    }
+    for (let k = 0; k < 4; k++) { const sd = sides[k], s0 = along(sd, out[k].tout), s1 = along(sd, out[(k + 1) % 4].tin); if (!(s0 >= -1e-9 && s1 <= 1 + 1e-9 && s1 - s0 > 0.02)) return null; }   /* 辺は、少なくとも 2% は残す（丸めで辺が消えると、長さ0の円弧ができる） */
+    return out;
+  };
+  let r = Math.max(0, Number.isFinite(p.r) ? p.r : 0), cs = corners(r);
+  if (!cs) { let lo = 0, hi = r; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (corners(mid)) lo = mid; else hi = mid; } r = Math.floor(lo * 1000) / 1000; cs = corners(r); }
+  const deg = (O, q) => Math.atan2(q.y - O.y, q.x - O.x) * 180 / Math.PI, nrm = a => ((a % 360) + 360) % 360;
+  /** 中心 O・半径 R で、点 from から to まで、点 via を通る（via が無ければ短いほうの）円弧。 */
+  const arcThrough = (O, R, from, to, via) => {
+    const a0 = nrm(deg(O, from)), a1 = nrm(deg(O, to)), fwd = nrm(a1 - a0);
+    const ok = via ? nrm(deg(O, via) - a0) <= fwd : fwd <= 180;
+    return ok ? { type: 'arc', cx: O.x, cy: O.y, r: R, startDeg: a0, endDeg: a0 + fwd } : { type: 'arc', cx: O.x, cy: O.y, r: R, startDeg: a1, endDeg: a1 + nrm(a0 - a1) };
+  };
+  const shapes = [];
+  for (let k = 0; k < 4; k++) {
+    const sd = sides[k], from = cs[k].tout, to = cs[(k + 1) % 4].tin;
+    shapes.push(sd.line ? { type: 'line', x1: from.x, y1: from.y, x2: to.x, y2: to.y } : arcThrough(sd.O, sd.R, from, to, sd.apex));
+    const nx = cs[(k + 1) % 4]; if (nx.c) shapes.push(arcThrough(nx.c, r, nx.tin, nx.tout, null));
+  }
+  return { shapes, bx, by, r };
+}

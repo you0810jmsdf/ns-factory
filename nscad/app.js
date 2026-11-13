@@ -114,7 +114,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
-import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark } from './design.js';
+import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark, cushionShapes } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -8018,8 +8018,8 @@ const selectedRect = () => mode === 'select' && !exporting && selected.size === 
 const RECT_EDGE_OFFSET_PX = 12;
 const rectHandlePoints = b => { const mx = (b.x0 + b.x1) / 2, my = (b.y0 + b.y1) / 2, o = RECT_EDGE_OFFSET_PX / (scale || 1); return [[-1, -1, b.x0, b.y0], [1, -1, b.x1, b.y0], [1, 1, b.x1, b.y1], [-1, 1, b.x0, b.y1], [0, -1, mx, b.y0 - o], [1, 0, b.x1 + o, my], [0, 1, mx, b.y1 + o], [-1, 0, b.x0 - o, my]].map(([ix, iy, x, y]) => ({ ix, iy, x, y })); };
 function rectHandleHit(w) {
-  const sh = selectedRect(); if (!sh) return null; let best = null, bd = 9 / scale; for (const h of rectHandlePoints(rectBoxOf(sh))) { const dd = distance(h, w); if (dd <= bd) { best = h; bd = dd; } }
-  return best ? { shape: sh, h: best } : null;
+  const tg = rectLike(); if (!tg) return null; let best = null, bd = 9 / scale; for (const h of rectHandlePoints(tg.box)) { const dd = distance(h, w); if (dd <= bd) { best = h; bd = dd; } }   /* 膨らんだ矩形も、元の矩形の四隅と辺で大きさを変える */
+  return best ? { shape: tg.shape, h: best, box: tg.box, cush: tg.cush } : null;
 }
 function rectResized(g, c, shift) {
   const b = g.box0, fx = g.h.ix === 1 ? b.x0 : g.h.ix === -1 ? b.x1 : null, fy = g.h.iy === 1 ? b.y0 : g.h.iy === -1 ? b.y1 : null;
@@ -8030,7 +8030,7 @@ function rectResized(g, c, shift) {
 }
 let rectHot = null;
 function drawRectHandles() {
-  const g = gesture?.kind === 'rectR' ? gesture : null, sh = g ? doc.shapes.find(x => x.id === g.id) : selectedRect(); if (!sh) return; const k = 1 / scale, b = g ? g.box : rectBoxOf(sh);
+  const g = gesture?.kind === 'rectR' ? gesture : null, tg = g ? null : rectLike(), sh = g ? doc.shapes.find(x => x.id === g.id) : tg?.shape; if (!sh) return; const k = 1 / scale, b = g ? g.box : tg.box;
   ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
   if (g) { ctx.strokeStyle = '#f0b429'; ctx.setLineDash([4 * k, 3 * k]); ctx.strokeRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0); ctx.setLineDash([]); }
   rectHandlePoints(b).forEach((h, i) => { const z = (g || i === rectHot ? 6 : 4.5) * k; ctx.fillStyle = g || i === rectHot ? '#f0b429' : 'rgba(240,180,41,.6)'; ctx.strokeStyle = '#000'; ctx.fillRect(h.x - z, h.y - z, 2 * z, 2 * z); ctx.strokeRect(h.x - z, h.y - z, 2 * z, 2 * z); });
@@ -8077,24 +8077,103 @@ const rectHasHoles = sh => doc.paths.some(pt => pt.shapeIds.includes(sh.id) && d
  *  欄の数字は常に実際の寸法：取っ手で変えても追従し、入れかけの数字は描き直しでは消えない。Esc で入れた数字を取り消す。入れた数字は、窓を出した矩形（rectEditId）にしか使わない。 */
 let rectEditKey = '', rectEditId = null;
 function refreshRectEdit() {
-  const sh = selectedRect(); $('rectEditBar').hidden = !sh; if (!sh) { rectEditKey = ''; rectEditId = null; return; }
-  const b = rectBoxOf(sh), w = b.x1 - b.x0, h = b.y1 - b.y0, key = JSON.stringify([sh.id, w, h]); if (key === rectEditKey) return;
-  rectEditKey = key; rectEditId = sh.id; $('rectEditW').value = circleNum(w); $('rectEditH').value = circleNum(h);
+  const tg = rectLike(); $('rectEditBar').hidden = !tg; if (!tg) { rectEditKey = ''; rectEditId = null; return; }
+  const b = tg.box, w = b.x1 - b.x0, h = b.y1 - b.y0, p = tg.cush ? tg.cush.p : { bx: 0, by: 0, r: 0 }, key = JSON.stringify([tg.shape.id, w, h, p.bx, p.by, p.r]); if (key === rectEditKey) return;
+  rectEditKey = key; rectEditId = tg.shape.id; $('rectEditW').value = circleNum(w); $('rectEditH').value = circleNum(h); $('cushBy').value = circleNum(p.by); $('cushBx').value = circleNum(p.bx); $('cushR').value = circleNum(p.r);
 }
 function applyRectEdit() {
-  const sh = selectedRect(); if (!sh || sh.id !== rectEditId) return;
-  const b = rectBoxOf(sh), w = Number($('rectEditW').value), h = Number($('rectEditH').value), back = () => { rectEditKey = ''; refreshRectEdit(); };   /* 断ったら、欄を実際の寸法に戻す */
+  const tg = rectLike(); if (!tg || tg.shape.id !== rectEditId) return;
+  const b = tg.box, w = Number($('rectEditW').value), h = Number($('rectEditH').value), back = () => { rectEditKey = ''; refreshRectEdit(); };   /* 断ったら、欄を実際の寸法に戻す */
   if (!(Number.isFinite(w) && Number.isFinite(h) && w >= 0.05 && h >= 0.05)) { $('hint').textContent = t('rectEditInvalid'); back(); return; }
-  if (Math.abs(w - (b.x1 - b.x0)) < 1e-9 && Math.abs(h - (b.y1 - b.y0)) < 1e-9) return;
-  if (rectHasHoles(sh)) { $('hint').textContent = t('rectHoles'); back(); return; }
+  const by = Number($('cushBy').value || 0), bx = Number($('cushBx').value || 0), r = Number($('cushR').value || 0);
+  if (![by, bx, r].every(Number.isFinite) || r < 0) { $('hint').textContent = t('cushInvalid'); back(); return; }
+  const p0 = tg.cush ? tg.cush.p : { bx: 0, by: 0, r: 0 }, same = (u, v) => Math.abs(u - v) < 1e-9, shapeSame = same(bx, p0.bx) && same(by, p0.by) && same(r, p0.r);
+  if (same(w, b.x1 - b.x0) && same(h, b.y1 - b.y0) && shapeSame) return;
+  if (cushHasHoles(tg)) { $('hint').textContent = t('rectHoles'); back(); return; }
   const r4 = v => +v.toFixed(4), center = $('rectEditAnchor').value === 'center', x0 = center ? (b.x0 + b.x1) / 2 - w / 2 : b.x0, y0 = center ? (b.y0 + b.y1) / 2 - h / 2 : b.y0;
-  commit(() => { sh.points = rectShape({ x: r4(x0), y: r4(y0) }, { x: r4(x0 + w), y: r4(y0 + h) }).points; });
-  $('hint').textContent = t('rectResized', { w: circleNum(w), h: circleNum(h) });
+  if (!tg.cush && shapeSame) { const sh = tg.shape; commit(() => { sh.points = rectShape({ x: r4(x0), y: r4(y0) }, { x: r4(x0 + w), y: r4(y0 + h) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(w), h: circleNum(h) }); return; }
+  const q = cushApply(tg, { x0, y0, x1: x0 + w, y1: y0 + h, bx, by, r }); if (!q) { back(); return; }   /* 膨らみ・丸めが入ると、膨らんだ矩形（辺と角の円弧）に置きかわる。全部 0 に戻すと、ふつうの矩形に戻る */
+  $('hint').textContent = q.bx || q.by || q.r ? cushDoneHint(q, r) : t('rectResized', { w: circleNum(w), h: circleNum(h) });
 }
-for (const id of ['rectEditW', 'rectEditH']) {
+for (const id of ['rectEditW', 'rectEditH', 'cushBy', 'cushBx', 'cushR']) {
   $(id).addEventListener('change', applyRectEdit);
   $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyRectEdit(); } else if (e.key === 'Escape') { rectEditKey = ''; refreshRectEdit(); } });   /* Esc＝入れかけを取り消す（このあと欄を出ても、変更は起きない） */
 }
+/** 膨らんだ矩形（ブラウン管の画面のような形・事業主 2026-11-13「矩形の４点を通る形状を作図する機能（辺の中心を内外にドラッグで動かすことで全体がバランスよく変化する）」→ 向かい合う辺がそろう・角丸の半径も入れられる・円弧）。
+ *  cushionShapes（design.js）が作る辺と角の線（線か円弧）に、元の形 cush = { g（形の番号）, i（何本目）, x0, y0, x1, y1, bx, by, r } を持たせる。
+ *  ふつうの矩形か膨らんだ矩形を選ぶと、辺の真ん中のすぐ内側に水色の丸い取っ手が出る。引くと、その辺と向かい合う辺が同じだけ膨らむ（内へ引くとへこむ）。矩形の大きさの小窓で、膨らみと角の丸めを数字でも決められる。
+ *  平行に動かした形も、線の位置から元の形を求めなおす。回したり、一部の線を作り変えたりした形は、ふつうの線として扱う（取っ手は出ない）。 */
+const cushKey = s => s.type === 'line' ? { x: s.x1, y: s.y1 } : { x: s.cx, y: s.cy };
+function cushSame(a, b) {
+  if (!a || !b || a.type !== b.type) return false; const n = (u, v) => Math.abs(u - v) < 1e-3;
+  if (a.type === 'line') return n(a.x1, b.x1) && n(a.y1, b.y1) && n(a.x2, b.x2) && n(a.y2, b.y2);
+  if (a.type !== 'arc') return false; const d = x => ((x % 360) + 360) % 360, ang = (u, v) => { const z = Math.abs(d(u) - d(v)); return Math.min(z, 360 - z) < 1e-2; };
+  return n(a.cx, b.cx) && n(a.cy, b.cy) && n(a.r, b.r) && ang(a.startDeg, b.startDeg) && Math.abs((a.endDeg - a.startDeg) - (b.endDeg - b.startDeg)) < 1e-2;
+}
+/** 線 s を含む膨らんだ矩形：{ g, p（今の位置の元の形）, members（辺と角の線・cush.i の順） }。崩れていれば null。 */
+function cushGroupOf(s) {
+  const c = s?.cush; if (!c || !Number.isInteger(c.i)) return null; const gen0 = cushionShapes(c); if (!gen0 || !gen0.shapes[c.i]) return null;
+  const k0 = cushKey(gen0.shapes[c.i]), k1 = cushKey(s), dx = k1.x - k0.x, dy = k1.y - k0.y, p = { x0: c.x0 + dx, x1: c.x1 + dx, y0: c.y0 + dy, y1: c.y1 + dy, bx: c.bx, by: c.by, r: c.r }, gen = cushionShapes(p);
+  const members = []; for (const x of doc.shapes) if (x.cush?.g === c.g && Number.isInteger(x.cush.i) && cushSame(x, gen.shapes[x.cush.i])) { if (members[x.cush.i]) return null; members[x.cush.i] = x; }
+  if (members.length !== gen.shapes.length || [...members].some(x => !x)) return null;
+  return { g: c.g, p, members };
+}
+/** 選んでいる膨らんだ矩形（選んだ線がすべて、ひとつの膨らんだ矩形の線のとき）。 */
+function selectedCushion() {
+  if (mode !== 'select' || exporting || !selected.size) return null; const sel = doc.shapes.filter(x => selected.has(x.id)); if (!sel.length || sel.some(x => !editable(x) || !x.cush)) return null;
+  const grp = cushGroupOf(sel[0]); if (!grp) return null; const ids = new Set(grp.members.map(x => x.id)); return sel.every(x => ids.has(x.id)) ? grp : null;
+}
+const cushBox = p => ({ x0: Math.min(p.x0, p.x1), x1: Math.max(p.x0, p.x1), y0: Math.min(p.y0, p.y1), y1: Math.max(p.y0, p.y1) });
+/** 矩形の取っ手・小窓の相手：ふつうの矩形 { shape, box, cush: null } か、膨らんだ矩形 { shape: 最初の線, box, cush: 形 }。 */
+function rectLike() {
+  const sh = selectedRect(); if (sh) return { shape: sh, box: rectBoxOf(sh), cush: null };
+  const grp = selectedCushion(); return grp ? { shape: grp.members[0], box: cushBox(grp.p), cush: grp } : null;
+}
+const cushHasHoles = tg => (tg.cush ? tg.cush.members : [tg.shape]).some(rectHasHoles);
+/** 膨らみの取っ手：辺の真ん中（膨らんだ頂点）のすぐ内側。side 0 上・1 右・2 下・3 左、u は外向き。 */
+const CUSH_SIDES = [{ u: { x: 0, y: -1 }, key: 'by' }, { u: { x: 1, y: 0 }, key: 'bx' }, { u: { x: 0, y: 1 }, key: 'by' }, { u: { x: -1, y: 0 }, key: 'bx' }];
+function cushHandlePoints(b, bx, by) {
+  const mx = (b.x0 + b.x1) / 2, my = (b.y0 + b.y1) / 2, o = RECT_EDGE_OFFSET_PX / (scale || 1), mids = [{ x: mx, y: b.y0 }, { x: b.x1, y: my }, { x: mx, y: b.y1 }, { x: b.x0, y: my }];
+  return CUSH_SIDES.map((sd, k) => { const v = sd.key === 'bx' ? bx : by; return { side: k, x: mids[k].x + sd.u.x * (v - o), y: mids[k].y + sd.u.y * (v - o) }; });
+}
+function cushHandleHit(w) {
+  const tg = rectLike(); if (!tg) return null; const p = tg.cush ? tg.cush.p : { bx: 0, by: 0 }; let best = null, bd = 9 / scale;
+  for (const h of cushHandlePoints(tg.box, p.bx, p.by)) { const d = distance(h, w); if (d <= bd) { best = h; bd = d; } }
+  return best ? { target: tg, h: best } : null;
+}
+let cushHot = null;
+/** ドラッグ中の形：つかんだ点から外向きに動いた分だけ、その辺（と向かい合う辺）の膨らみを足す（0.1mm 単位）。 */
+function cushDragged(g, c) {
+  const sd = CUSH_SIDES[g.side], d = (c.x - g.start.x) * sd.u.x + (c.y - g.start.y) * sd.u.y, v = Math.round((g.p0[sd.key] + d) * 10) / 10;
+  const res = cushionShapes({ ...g.p0, [sd.key]: Math.abs(v) < 0.05 ? 0 : v }); return res ? { ...g.p0, bx: res.bx, by: res.by, r: res.r } : g.p0;
+}
+function cushStroke(shapes) { ctx.beginPath(); for (const s of shapes) { const q = flattenShape(s, 0.05); ctx.moveTo(q[0].x, q[0].y); for (const z of q.slice(1)) ctx.lineTo(z.x, z.y); } ctx.stroke(); }
+function drawCushHandles() {
+  const g = gesture?.kind === 'cushB' || (gesture?.kind === 'rectR' && gesture.cush) ? gesture : null, k = 1 / scale;
+  if (g) { const res = cushionShapes(g.kind === 'cushB' ? g.p : { ...g.cush.p, ...g.box }); if (res) { ctx.save(); ctx.strokeStyle = '#4fc3f7'; ctx.lineWidth = 1.5 * k; ctx.setLineDash([4 * k, 3 * k]); cushStroke(res.shapes); ctx.restore(); } if (g.kind === 'rectR') return; }
+  const tg = g ? null : rectLike(); if (!g && !tg) return;
+  const p = g ? g.p : tg.cush ? tg.cush.p : { bx: 0, by: 0 }, b = g ? cushBox(g.p) : tg.box;
+  ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 * k;
+  cushHandlePoints(b, p.bx, p.by).forEach(h => { const on = g ? g.side === h.side : cushHot === h.side, z = (on ? 6 : 4.5) * k; ctx.fillStyle = on ? '#4fc3f7' : 'rgba(79,195,247,.6)'; ctx.strokeStyle = '#000'; ctx.beginPath(); ctx.arc(h.x, h.y, z, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
+  ctx.restore();
+}
+/** 矩形（ふつう・膨らんだ）を、形 p の膨らんだ矩形に置きかえる（元に戻すは1回）。膨らみも丸めも 0 なら、ふつうの矩形（4点の閉じた折れ線）に戻す。戻り値：使った形（cushionShapes の値）か null。 */
+function cushApply(tg, p) {
+  const old = tg.cush ? tg.cush.members : [tg.shape], res = cushionShapes(p); if (!res) return null;
+  const r4 = v => +v.toFixed(4), q = { x0: r4(Math.min(p.x0, p.x1)), y0: r4(Math.min(p.y0, p.y1)), x1: r4(Math.max(p.x0, p.x1)), y1: r4(Math.max(p.y0, p.y1)), bx: r4(res.bx), by: r4(res.by), r: r4(res.r) };
+  const oldIds = new Set(old.map(x => x.id)), first = old[0], style = roundStyle(first), layer = first.layer, plain = !q.bx && !q.by && !q.r;
+  const g = tg.cush ? tg.cush.g : freshId(doc.shapes.filter(x => x.cush).map(x => ({ id: x.cush.g })), 'c');
+  commit(() => {
+    const rest = doc.shapes.filter(x => !oldIds.has(x.id)), made = [];
+    if (plain) made.push({ id: freshId(rest, 's'), layer, ...style, type: 'polyline', closed: true, points: rectShape({ x: q.x0, y: q.y0 }, { x: q.x1, y: q.y1 }).points });
+    else for (const [i, s] of cushionShapes(q).shapes.entries()) made.push({ id: freshId([...rest, ...made], 's'), layer, ...style, ...s, cush: { g, i, ...q } });
+    const at = doc.shapes.findIndex(x => oldIds.has(x.id)); rest.splice(Math.max(0, Math.min(at, rest.length)), 0, ...made); doc.shapes = rest;
+    const newIds = made.map(x => x.id); for (const part of doc.parts || []) if (part.shapeIds.some(id => oldIds.has(id))) part.shapeIds = [...part.shapeIds.filter(id => !oldIds.has(id)), ...newIds];
+    selected = new Set(newIds);
+  });
+  return { ...res, ...q };
+}
+const cushDoneHint = (q, wantR) => t('cushDone', { by: circleNum(q.by), bx: circleNum(q.bx), r: circleNum(q.r) }) + (wantR !== undefined && q.r < wantR - 1e-6 ? ' ' + t('cushRClamped', { r: circleNum(q.r) }) : '');
 function setFdDimKey(key) { if (fdDimKey === key) return; fdDimKey = key; const items = fdDimItems(key); if (items) revealFdDims(items); draw(); }
 function highlightFoldDiagram(id) {
   const key = FD_DIAGRAM[id]; if (!key) return false; setFdDimKey(key);
@@ -9933,7 +10012,7 @@ function livePreviewOf(sh) {
   if ((gesture.kind === 'node' || gesture.kind === 'bzctrl') && gesture.id === sh.id) return gesture.preview || sh;
   if (gesture.kind === 'lineEnd' && gesture.id === sh.id) return handleMoved(sh, gesture.h, cursor);
   if (gesture.kind === 'move') return previewMoved(sh);
-  if (gesture.kind === 'rectR' && gesture.id === sh.id && gesture.box) { const b = gesture.box; return { ...sh, points: rectShape({ x: b.x0, y: b.y0 }, { x: b.x1, y: b.y1 }).points }; }
+  if (gesture.kind === 'rectR' && gesture.id === sh.id && gesture.box && !gesture.cush) { const b = gesture.box; return { ...sh, points: rectShape({ x: b.x0, y: b.y0 }, { x: b.x1, y: b.y1 }).points }; }
   if (gesture.kind === 'circleR' && gesture.id === sh.id) return { ...sh, r: gesture.r };
   if (gesture.kind === 'rotate' && gesture.angle && rotateTargets().some(x => x.id === sh.id)) return rotate(sh, gesture.angle, gesture.c);
   return sh;
@@ -10929,7 +11008,7 @@ function drawSheetBody(lo, hi) {
     ctx.stroke(); ctx.restore();
   }
   if (snap && mode !== 'select') { ctx.strokeStyle = '#c9a96e'; ctx.strokeRect(snap.x - 4 / scale, snap.y - 4 / scale, 8 / scale, 8 / scale); }
-  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawTextHandle(); drawSelectedTextFrames(); drawZipperStartMark(); drawZipperTapeWarn(); drawRotateHandle(); drawSymView(); drawLayerHover();
+  drawFoldCutMark(); drawFoldSectionDims(); drawFoldDims(); drawFoldHandles(); drawCircleHandles(); drawRectHandles(); drawCushHandles(); drawTextHandle(); drawSelectedTextFrames(); drawZipperStartMark(); drawZipperTapeWarn(); drawRotateHandle(); drawSymView(); drawLayerHover();
   updateUI();
 }
 function resize() {
@@ -11192,10 +11271,12 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
     const rg = rotateHandleHit(cursor); if (rg) { gesture = { kind: 'rotate', c: rg.c, a0: angleOf(rg.c, cursor), angle: 0, cursor }; $('hint').textContent = t('rotDrag', { a: 0 }); draw(); return; }
     const ch = handleOk ? circleHandleHit(cursor) : null;
     if (ch) { gesture = { kind: 'circleR', id: ch.shape.id, cx: ch.shape.cx, cy: ch.shape.cy, r: ch.shape.r }; $('hint').textContent = t('circleDrag', { r: circleNum(ch.shape.r), d: circleNum(ch.shape.r * 2) }); draw(); return; }
+    const cbh = e.button === 0 && !e.altKey ? cushHandleHit(cursor) : null;   /* 膨らみの取っ手（辺の真ん中のすぐ内側の水色の丸）：その辺と向かい合う辺を、同じだけ膨らませる */
+    if (cbh) { if (cushHasHoles(cbh.target)) { $('hint').textContent = t('rectHoles'); draw(); return; } const tb = cbh.target.box, p0 = cbh.target.cush ? { ...cbh.target.cush.p } : { ...tb, bx: 0, by: 0, r: 0 }; gesture = { kind: 'cushB', side: cbh.h.side, start: cursor, p0, p: p0, target: cbh.target }; $('hint').textContent = t('cushDrag', { by: circleNum(p0.by), bx: circleNum(p0.bx) }); draw(); return; }
     const rh0 = !e.altKey ? rectHandleHit(cursor) : null, rh = rh0 && (handleOk || rh0.h.ix === 0 || rh0.h.iy === 0) ? rh0 : null;   /* Alt を押しながら＝角だけを動かす（従来の頂点ドラッグ）。辺の取っ手は辺の外側に置くので、寸法線・補助線が近くにあっても優先する（事業主 2026-11-12「中央のハンドルを引っ張っても、図形が動くだけ」）。四隅は、従来どおり、ほかの線を正確にクリックしたときはその線を選ぶ */
     if (rh) {
-      if (rectHasHoles(rh.shape)) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
-      const b = rectBoxOf(rh.shape); gesture = { kind: 'rectR', id: rh.shape.id, h: rh.h, box0: b, box: b }; $('hint').textContent = t('rectDrag', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); draw(); return;
+      if (cushHasHoles(rh)) { $('hint').textContent = t('rectHoles'); draw(); return; }   /* 縫い穴が付いている矩形は、穴を壊さないよう動かさない（線の端と同じ） */
+      const b = rh.box; gesture = { kind: 'rectR', id: rh.shape.id, h: rh.h, box0: b, box: b, cush: rh.cush }; $('hint').textContent = t('rectDrag', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); draw(); return;
     }
     const bh = handleOk ? bezierCtrlHit(cursor) : null;   /* 制御点型のベジエ：制御点をつかんで角度を変える */
     if (bh) { gesture = { kind: 'bzctrl', id: bh.shape.id, part: bh.part, screen: p, preview: null }; draw(); return; }
@@ -11241,9 +11322,11 @@ canvas.addEventListener('pointermove', e => {
   if (gesture?.kind === 'rotate') { const c = world(p); cursor = c; gesture.cursor = c; gesture.angle = rotateAngleNow(gesture, c, e.shiftKey); $('hint').textContent = t('rotDrag', { a: gesture.angle }); draw(); return; }
   if (gesture?.kind === 'circleR') { const c = snapped(world(p), e.shiftKey, { x: gesture.cx, y: gesture.cy }); cursor = c; gesture.r = Math.max(0.05, Math.round(distance({ x: gesture.cx, y: gesture.cy }, c) * 1000) / 1000); $('hint').textContent = t('circleDrag', { r: circleNum(gesture.r), d: circleNum(gesture.r * 2) }); draw(); return; }
   if (gesture?.kind === 'textR') { const c = world(p), sh = doc.shapes.find(x => x.id === gesture.id); cursor = c; if (sh) { gesture.size = textSizeFrom(gesture, sh, c); $('hint').textContent = t('textDrag', { size: circleNum(gesture.size) }); } draw(); return; }
+  if (gesture?.kind === 'cushB') { const c = world(p); cursor = c; gesture.p = cushDragged(gesture, c); $('hint').textContent = t('cushDrag', { by: circleNum(gesture.p.by), bx: circleNum(gesture.p.bx) }); draw(); return; }
   if (gesture?.kind === 'rectR') { const c = snapped(world(p), false, null); cursor = c; gesture.box = rectResized(gesture, c, e.shiftKey); $('hint').textContent = t('rectDrag', { w: circleNum(gesture.box.x1 - gesture.box.x0), h: circleNum(gesture.box.y1 - gesture.box.y0) }); draw(); return; }
   if (!gesture && (mode === 'select' || mode === 'text')) { const hot = !!textHandleHit(world(p)); if (hot !== textHot) { textHot = hot; canvas.style.cursor = hot ? 'nesw-resize' : ''; draw(); } }
-  if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(rectBoxOf(hh.shape)).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
+  if (!gesture && mode === 'select') { const hot = cushHandleHit(world(p))?.h.side ?? null; if (hot !== cushHot) { cushHot = hot; canvas.style.cursor = hot !== null ? (hot % 2 ? 'ew-resize' : 'ns-resize') : ''; draw(); } }
+  if (!gesture && mode === 'select') { const rhot = (() => { const hh = rectHandleHit(world(p)); return hh ? rectHandlePoints(hh.box).findIndex(q => q.ix === hh.h.ix && q.iy === hh.h.iy) : null; })(); if (rhot !== rectHot) { rectHot = rhot; canvas.style.cursor = rhot !== null ? 'nwse-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = circleHandleHit(world(p))?.k ?? null; if (hot !== circleHot) { circleHot = hot; canvas.style.cursor = hot !== null ? 'nesw-resize' : ''; draw(); } }
   if (!gesture && mode === 'select') { const hot = foldHandleAt(p)?.key ?? null, dimHot = hot ? null : foldDimKeyAt(p); if (hot !== fdHandleHot || dimHot !== fdDimHot) { fdHandleHot = hot; fdDimHot = dimHot; canvas.style.cursor = hot ? 'ew-resize' : dimHot ? 'pointer' : ''; if (hot) $('hint').textContent = t('fdHandleTip'); draw(); } }   /* 取っ手に触れたら、動かし方（刻み）と「動かさずにクリックで数字」の案内 */
   if (quadOn()) quadHover = quadRoleAt(p);
@@ -11575,6 +11658,8 @@ canvas.addEventListener('pointerup', drawOnce(e => {
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
   if (g.kind === 'foldHandle') { endFoldHandleDrag(g); draw(); return; }
+  if (g.kind === 'cushB') { const a = g.p, z = g.p0; if (Math.abs(a.bx - z.bx) + Math.abs(a.by - z.by) > 1e-9) { const q = cushApply(g.target, a); if (q) $('hint').textContent = q.bx || q.by || q.r ? cushDoneHint(q) : t('rectResized', { w: circleNum(q.x1 - q.x0), h: circleNum(q.y1 - q.y0) }); } snap = null; draw(); return; }
+  if (g.kind === 'rectR' && g.cush) { const b0 = g.box0, b = g.box; if ((Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const q = cushApply({ shape: g.cush.members[0], cush: g.cush }, { ...g.cush.p, ...b }); if (q) $('hint').textContent = t('rectResized', { w: circleNum(q.x1 - q.x0), h: circleNum(q.y1 - q.y0) }); } snap = null; draw(); return; }
   if (g.kind === 'rectR') { const sh = doc.shapes.find(x => x.id === g.id), b0 = g.box0, b = g.box; if (sh && (Math.abs(b.x0 - b0.x0) + Math.abs(b.x1 - b0.x1) + Math.abs(b.y0 - b0.y0) + Math.abs(b.y1 - b0.y1)) > 1e-9) { const r4 = v => +v.toFixed(4); commit(() => { sh.points = rectShape({ x: r4(b.x0), y: r4(b.y0) }, { x: r4(b.x1), y: r4(b.y1) }).points; }); $('hint').textContent = t('rectResized', { w: circleNum(b.x1 - b.x0), h: circleNum(b.y1 - b.y0) }); } snap = null; draw(); return; }
   if (g.kind === 'rotate') { const a = g.angle; cancel(); if (Math.abs(a) > 1e-6) { transformSelected(s => rotate(s, a, g.c), { rotates: true }); $('hint').textContent = t('rotDone', { a }); } draw(); return; }
   if (g.kind === 'textR') { const sh = doc.shapes.find(x => x.id === g.id); if (sh && Math.abs(g.size - sh.sizeMm) > 1e-9) { commit(() => { sh.sizeMm = g.size; }); $('hint').textContent = t('textResized', { size: circleNum(g.size) }); } draw(); return; }
