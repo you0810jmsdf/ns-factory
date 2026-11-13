@@ -6,15 +6,15 @@ Input:  hitsuki/kojiki/data/myths.json + myths.en.json, hitsuki/shoki/data/episo
         shrine-note/i18n/en.json for deity and shrine names.
 Output: hitsuki/kojiki/en/<id>.html, hitsuki/shoki/en/<id>.html and an index.html in each.
 Original-text quotations are shown as they are (classical Chinese); only explanations are translated."""
-import json, os, sys
+import json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_archives as B
 
 e = B.e
 HIT, ROOT, SITE = B.HIT, B.ROOT, B.SITE
 KOJ, SHO = B.KOJ, B.SHO
-KEN = json.load(open(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json'), encoding='utf-8'))
-SEN = json.load(open(os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'), encoding='utf-8'))
+KEN = json.load(open(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json'), encoding='utf-8'))['pages']
+SEN = json.load(open(os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'), encoding='utf-8'))['pages']
 SN = json.load(open(os.path.join(ROOT, 'shrine-note', 'i18n', 'en.json'), encoding='utf-8'))
 MAP = '../../../shrine-note/map/'
 KAN_EN = {'上巻': 'Part 1', '中巻': 'Part 2', '下巻': 'Part 3'}
@@ -25,6 +25,7 @@ BOOK = {
     'shoki': {'name': 'Nihon Shoki Archive', 'mark': '書紀', 'nav': [('./', 'All pages'), ('../../kojiki/en/', 'Kojiki Archive')]},
 }
 EXTRA_CSS = '''
+    sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
     .langnote { color: var(--muted); font-size: .85rem; margin: 0 0 18px; }
 '''
@@ -311,12 +312,30 @@ def shoki_index():
     out.append(FOOT)
     return '\n'.join(out)
 
+RU = re.compile(r'\s*\(reading unconfirmed\)')
+RU2 = re.compile(r'\(reading unconfirmed[;,]\s*')
+RU3 = re.compile(r'[;,]\s*reading unconfirmed\)')  # 「(十市縣主, reading unconfirmed)」の形
+RU_NOTE = '<p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>'
+
+def finish(html):
+    """「(reading unconfirmed)」を、本文では小さな * に、title・meta では削って読みやすくする（意味は変えない）"""
+    headpart, body = html.split('<body>', 1)
+    headpart = RU3.sub(')', RU2.sub('(', RU.sub('', headpart)))
+    mark = '<sup class="ru" title="reading unconfirmed">*</sup>'
+    body = RU3.sub(')' + mark, RU2.sub(mark + ' (', RU.sub(mark, body)))
+    body = body.replace('<section class="pg-card" aria-labelledby="src-title">\n      <h2 id="src-title">Sources</h2>', '<section class="pg-card" aria-labelledby="src-title">\n      <h2 id="src-title">Sources</h2>\n      ' + RU_NOTE, 1)
+    body = body.replace('<h2 id="how-title">How this archive is written</h2>', '<h2 id="how-title">How this archive is written</h2>\n      ' + RU_NOTE, 1)
+    return headpart + '<body>' + body
+
+def write(path, html):
+    open(path, 'w', encoding='utf-8').write(finish(html))
+
 if __name__ == '__main__':
     for d in ('kojiki', 'shoki'): os.makedirs(os.path.join(HIT, d, 'en'), exist_ok=True)
     for i, m in enumerate(KOJ):
-        open(os.path.join(HIT, 'kojiki', 'en', m['id'] + '.html'), 'w', encoding='utf-8').write(kojiki_page(i))
-    open(os.path.join(HIT, 'kojiki', 'en', 'index.html'), 'w', encoding='utf-8').write(kojiki_index())
+        write(os.path.join(HIT, 'kojiki', 'en', m['id'] + '.html'), kojiki_page(i))
+    write(os.path.join(HIT, 'kojiki', 'en', 'index.html'), kojiki_index())
     for i, s in enumerate(SHO):
-        open(os.path.join(HIT, 'shoki', 'en', s['id'] + '.html'), 'w', encoding='utf-8').write(shoki_page(i))
-    open(os.path.join(HIT, 'shoki', 'en', 'index.html'), 'w', encoding='utf-8').write(shoki_index())
+        write(os.path.join(HIT, 'shoki', 'en', s['id'] + '.html'), shoki_page(i))
+    write(os.path.join(HIT, 'shoki', 'en', 'index.html'), shoki_index())
     print(f'English: Kojiki {len(KOJ)} pages, Nihon Shoki {len(SHO)} pages + 2 indexes')
