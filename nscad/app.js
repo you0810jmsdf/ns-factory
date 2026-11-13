@@ -8,7 +8,7 @@ import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundC
 import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
-import { RULER_NOTE, printPagesPlan, patchPieceSvg, zipStore, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale } from './formats.js';
+import { RULER_NOTE, printPagesPlan, patchPieceSvg, zipStore, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale, textOutlineD, fontFamilyNames } from './formats.js';
 import { svgToShapes, dxfToShapesFull } from './importers.js';
 import { beamStudioSvg, leathercraftDxf, importLeathercraft, recoverArcs, attachHoles } from './interop.js';
 import { buildPanels, applyFolds, project, collisions, viewMatrix, orthoViews, viewsToSvg, defaultCamera, v3, unfold, triangulate } from './sim3d.js';
@@ -4312,9 +4312,13 @@ function exportSvg() {
   const { shapes, holes } = exportTargets($('outHoles').checked); if (exportIsEmpty(shapes, holes)) return;
   if (!regGuard('svg', 'dl')) return;
   const preset = $('exportPreset').value;
-  const svg = preset === 'beam' ? beamStudioSvg(zipperOutDoc(vectorOutDoc()), { kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(zipperOutDoc(vectorOutDoc()), { includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm(), holeDotStroke: true });   /* SVG の点は、線だけの丸（塗りの丸は、Beam Studio が画像として読む） */   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
-  const beamN = (svg.match(/data-beamfix=/g) || []).length;   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
-  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', svg, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + savedTo(saved); });
+  const outDoc = zipperOutDoc(vectorOutDoc()), hasText = outDoc.shapes.some(s => s.type === 'text' && String(s.text ?? '').trim());
+  if (hasText) localFontsOnce();   /* PC の書体の一覧は、押した直後に頼む（保存の窓より先。あとからだと、ブラウザが断る） */
+  let beamN = 0, notOutlined = 0;
+  const build = textPaths => { const svg = preset === 'beam' ? beamStudioSvg(outDoc, { textPaths, kerfMm: Number($('kerf').value) || 0, includeHoles: $('outHoles').checked, beamFix: !!$('outBeamFix')?.checked }) : docToSvg(outDoc, { textPaths, includeHoles: $('outHoles').checked, lineColors: $('outMono')?.checked ? 'mono' : $('outWhiteBlack')?.checked ? 'color-white-black' : 'color', fill: $('outFill').checked && viewShow.colors, textures: $('outFill').checked && viewShow.colors ? svgTextures() : null, textureMm: textureMm(), metalColor: metalHex, diamondFill: diamondMode() === 'fill', beamFix: !!$('outBeamFix')?.checked, holeDot: printDotMm(), holeDotStroke: true });   /* SVG の点は、線だけの丸（塗りの丸は、Beam Studio が画像として読む） */   /* 「縫い穴を点で出力する」は SVG にも効く（事業主 2026-10-30「印刷とPDFしか対応していないのでは？SVGも」：Beam Studio で読み込むと菱目のままだった） */
+  beamN = (svg.match(/data-beamfix=/g) || []).length; return svg; };   /* Beam Studio 補正をかけた層の数（標準の SVG も、方式「Beam Studio」も） */
+  const data = hasText ? textOutlines(outDoc).then(r => { notOutlined = r.failed; return build(r.paths); }) : build(null);   /* 文字は、書体の輪郭の線にして出す（事業主 2026-11-13「SVG出力すると別のフォントになる（BeamboxⅡ）」）。文字が無ければ今までどおり */
+  exportFile(preset === 'beam' ? 'leather-pattern-beam.svg' : 'leather-pattern.svg', data, 'image/svg+xml', saved => { $('hint').textContent = t('exported', { name: preset === 'beam' ? 'SVG (Beam Studio)' : 'SVG' }) + outScopeNote() + dedupeNote() + (beamN ? ' ' + t('outBeamFixNote', { n: beamN }) : '') + (notOutlined ? ' ' + t('outTextNotOutlined', { n: notOutlined }) : '') + savedTo(saved); });
 }
 /** PDF 書き出しで、日本語など ASCII 以外の文字を出すための画像（事業主 2026-11-11 案A「文字を画像（白黒・高解像度）として埋め込む」）。
  *  図形ごとに、画面の書体と同じ字体を、600dpi の白黒（1ビット）画像にする。{ wPx, hPx, bits, wMm, hMm, offX, offY }＝画像の大きさと、基準点（文字の左・基準線）から画像の左下までのずれ（mm・上向きが正）。
@@ -7103,6 +7107,34 @@ function wireTextFontLive() {
 /** 文字ツールで新しく置く文字の書体（文字ツールの「書体」欄）。ゴシック（標準）は書かない。 */
 /** 書体の CSS。同梱フォント（TEXT_FONT_FILES）は、初めて使うときに assets/fonts/ から読み、読めたら描き直す。FontFace が無い環境（テスト・ファイルで開いた版）では何もせず、後ろの候補で描く。 */
 const textFontLoading = new Set();
+/** SVG の書き出しで、文字を書体の輪郭の線にする（事業主 2026-11-13「テキストをSVG出力すると別のフォントになる（BeamboxⅡ読み込み時）」→「文字を線に変換して出す」）。
+ *  書体の読み取りは fontkit（assets/fontkit.js・書き出しのときだけ読み込む）。同梱の書体（assets/fonts）はファイルから、PC の書体（游ゴシックなど）はブラウザのローカルフォント（queryLocalFonts・Chrome／Edge。初回は許可を聞かれる）から読む。
+ *  返り値 { paths: 文字の id → 輪郭の線, failed: 線にできなかった文字の数 }。読めない（ファイルで開いた版・許可しない・非対応のブラウザ）文字は、今までどおり <text> で出る。 */
+let fontkitMod = null, localFontsP = null; const outlineFontCache = new Map();
+function localFontsOnce() { if (!localFontsP) localFontsP = (typeof globalThis.queryLocalFonts === 'function' ? (() => { try { return Promise.resolve(globalThis.queryLocalFonts()); } catch (e) { return Promise.reject(e); } })() : Promise.resolve([])).then(list => { if (!list?.length) localFontsP = null; return list || []; }, () => { localFontsP = null; return []; }); return localFontsP; }   /* 断られた・空のときは覚えない（あとで許可すれば、次の書き出しで読める） */
+async function outlineFont(name) {
+  if (outlineFontCache.has(name)) return outlineFontCache.get(name);
+  const job = (async () => {
+    const own = Object.values(TEXT_FONT_FILES).find(x => x.family === name);
+    if (own) { const fetchFn = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null; if (!fetchFn) return null; const r = await fetchFn(`assets/fonts/${own.file}`); if (!r.ok) return null; return fontkitMod.create(new Uint8Array(await r.arrayBuffer())); }
+    const all = (await localFontsOnce()).filter(x => x.family === name); if (!all.length) return null;
+    const pick = all.find(x => /^(regular|normal|medium|book|r)$/i.test(x.style || '')) || all[0], data = new Uint8Array(await (await pick.blob()).arrayBuffer());
+    return fontkitMod.create(data, pick.postscriptName);   /* .ttc（游ゴシックなど）は、その書体だけを取り出す */
+  })().catch(() => null);
+  outlineFontCache.set(name, job); job.then(f => { if (!f) outlineFontCache.delete(name); }); return job;   /* 読めなかった書体は覚えない */
+}
+async function textOutlines(d) {
+  const texts = d.shapes.filter(s => s.type === 'text' && String(s.text ?? '').trim()), paths = new Map(); let failed = 0;
+  try { fontkitMod ||= await import('./assets/fontkit.js'); } catch { return { paths, failed: texts.length }; }
+  for (const s of texts) {
+    try {
+      const fonts = [], chars = [...String(s.text)].filter(ch => ch.trim());
+      for (const name of fontFamilyNames(textFontStack(s.font))) { const f = await outlineFont(name); if (!f) continue; fonts.push(f); if (chars.every(ch => fonts.some(x => x.hasGlyphForCodePoint?.(ch.codePointAt(0))))) break; }   /* 前の書体から順に、全部の字がそろうまで読む（大きい書体を無駄に読まない） */
+      const dd = fonts.length ? textOutlineD(s, fonts) : ''; if (dd) paths.set(s.id, dd); else failed++;
+    } catch { failed++; }
+  }
+  return { paths, failed };
+}
 function textFontCss(key) {
   const f = TEXT_FONT_FILES[key];
   if (f && !textFontLoading.has(key) && typeof FontFace === 'function' && document.fonts) {
@@ -10214,7 +10246,7 @@ function dimLabelPlace(s, d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2
 }
 /** 図形までの距離。寸法は、寸法線までと、数字の枠（少し広め）までの近いほう。 */
 function distTo(s, p) {
-  const g = distToShape(s, p); if (s?.type === 'text') { const e = textDrawMm(s); if (e > s.sizeMm) { const q = textDrawPos(s); return Math.min(g, distToShape({ ...s, x: q.x, y: q.y, sizeMm: e }, p)); } return g; }   /* 縮小で大きく描いた文字の範囲でも選べる */
+  const g = distToShape(s, p);
   if (s?.type !== 'dimension') return g;
   const L = dimLabelPlace(s), a = L.angleDeg * Math.PI / 180, dx = p.x - L.x, dy = p.y - L.y, lx = dx * Math.cos(a) + dy * Math.sin(a), ly = -dx * Math.sin(a) + dy * Math.cos(a);
   const hw = L.label.length * L.px * 0.6 / 2, hh = L.px / 2, ex = Math.max(Math.abs(lx) - hw, 0), ey = Math.max(Math.abs(ly) - hh, 0);
@@ -10488,58 +10520,10 @@ function wireZipperBar() {
 }
 const SELECT_HALO ='rgba(90,170,255,.45)';   /* 選んだ線のふちの色（水色・半透明） */
 /** 画面に描く文字（文字図形）の大きさ（mm）。縮小しても読めるよう、画面での大きさが下限（字の大きさ 4mm なら 12px・大きい字はその比で。9〜30px）を下回らないようにする（事業主 2026-11-11「拡大縮小でテキストの大きさが変わらないでほしい」：寸法の数字と同じ決め方）。拡大して下限を上回るときは、図面と同じ縮尺。印刷・書き出し（exporting）は、字の大きさ（sizeMm）のまま。 */
-const textDrawMm = s => { if (exporting || !(scale > 0)) return s.sizeMm; const mm = Math.max(s.sizeMm, Math.min(30, Math.max(9, 3 * s.sizeMm)) / scale), cap = textCaps.get(s.id); return cap === undefined ? mm : Math.max(s.sizeMm, Math.min(mm, s.sizeMm * cap)); };
-/** 文字を大きく描く倍率の上限（事業主 2026-11-12「定型句などのテキストがA4ガイドからはみ出る」「文字がA4ガイドを入れてどの比率で印字されるか見たいので、その他の文字も含めて実寸で表示させてください」）。
- *  枠（用紙のガイドなどの「閉じた四角」＝辺が縦横にそろった、4点の閉じた折れ線）に重なる文字は、実寸（図面と同じ縮尺＝印刷と同じ比率）で描く。実寸で枠からはみ出す文字も、実寸で見せる（はみ出しが分かる）。枠に重ならない文字・枠の無い図面の文字は、今までどおり（縮小しても読める大きさ）。
- *  textCaps＝文字図形の id → 倍率の上限（いまは 1＝実寸だけ）。draw のたびに buildTextBlocks で作り直す（寸法の数字・書き出しは対象外）。 */
-let textCaps = new Map();
-/** 文字（複数行のかたまりは、その全部）の実寸の外形。回転した文字は、回した後の外形。 */
-function textRealBox(list) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const s of list) {
-    const w = textWidthMm(s), a = (s.angleDeg || 0) * Math.PI / 180, c = Math.cos(a), n = Math.sin(a);
-    for (const [u, v] of [[0, -s.sizeMm], [w, -s.sizeMm], [w, s.sizeMm * 0.25], [0, s.sizeMm * 0.25]]) { const x = s.x + u * c - v * n, y = s.y + u * n + v * c; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
-  }
-  return { minX, minY, maxX, maxY };
-}
-/** 図面の中の「閉じた四角」（辺が縦横にそろった、4点の閉じた折れ線）の外形の一覧。 */
-function textFrames() {
-  const out = [];
-  for (const s of doc.shapes) {
-    if (s.type !== 'polyline' || !s.closed || !visible(s)) continue; const ps = s.points || [], n = ps.length >= 2 && distance(ps[0], ps[ps.length - 1]) < 1e-6 ? ps.length - 1 : ps.length; if (n !== 4) continue;
-    const xs = ps.slice(0, 4).map(p => p.x), ys = ps.slice(0, 4).map(p => p.y), f = { minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys) };
-    if (f.maxX - f.minX < 1 || f.maxY - f.minY < 1 || !ps.slice(0, 4).every(p => (Math.abs(p.x - f.minX) < 0.01 || Math.abs(p.x - f.maxX) < 0.01) && (Math.abs(p.y - f.minY) < 0.01 || Math.abs(p.y - f.maxY) < 0.01))) continue;
-    out.push(f);
-  }
-  return out;
-}
-/** 縮小して文字を大きく描くとき、一度に置いた複数行（同じ x・字の大きさ・書体・層で、行の間隔が字の高さの3.2倍以内に続く文字）は、かたまりとして拡大する：先頭の行を基準に、行の間隔も同じ倍率で広げる（行どうしが重ならない。事業主 2026-11-11「テキスト文字が崩れている」）。
- *  textBlocks＝文字図形の id → { ay（先頭の行の y）, k（倍率）}。draw のたびに作り直す（寸法の数字・書き出しは対象外）。 */
-let textBlocks = new Map();
-function buildTextBlocks() {
-  textBlocks = new Map(); textCaps = new Map(); if (exporting || !(scale > 0)) return;
-  const texts = doc.shapes.filter(s => s.type === 'text' && visible(s)); if (!texts.length) return;
-  const groups = new Map(); for (const s of texts) { if (s.angleDeg) continue; const key = `${Math.round(s.x * 100)}|${s.sizeMm}|${s.font || ''}|${s.layer}`; let g = groups.get(key); if (!g) groups.set(key, g = []); g.push(s); }
-  const runs = [];   /* かたまり（2行以上） */
-  for (const list of groups.values()) {
-    if (list.length < 2) continue; list.sort((a, b) => a.y - b.y); let run = [list[0]];
-    const flush = () => { if (run.length >= 2) runs.push(run); };
-    for (let i = 1; i < list.length; i++) { if (list[i].y - list[i - 1].y <= list[i].sizeMm * 3.2) run.push(list[i]); else { flush(); run = [list[i]]; } }
-    flush();
-  }
-  /* 枠（用紙のガイドなど）に重なる文字は実寸：かたまりは全体で1つ、ほかの文字は1つずつ調べる。大きく描かない文字（拡大表示のとき）は、調べない */
-  const frames = textFrames();
-  if (frames.length) {
-    const inRun = new Set(runs.flat().map(s => s.id));
-    for (const u of [...runs, ...texts.filter(s => !inRun.has(s.id)).map(s => [s])]) {
-      if (textDrawMm(u[0]) <= u[0].sizeMm * 1.0001) continue;
-      const b = textRealBox(u);
-      if (frames.some(f => b.maxX >= f.minX && b.minX <= f.maxX && b.maxY >= f.minY && b.minY <= f.maxY)) for (const s of u) textCaps.set(s.id, 1);
-    }
-  }
-  for (const run of runs) { const k = textDrawMm(run[0]) / run[0].sizeMm; if (k > 1.0001) for (const r of run) textBlocks.set(r.id, { ay: run[0].y, k }); }
-}
-const textDrawPos = s => { const b = textBlocks.get(s.id); return b ? { x: s.x, y: b.ay + (s.y - b.ay) * b.k } : { x: s.x, y: s.y }; };   /* 画面に描く文字の位置（かたまりの行は、行の間隔を広げた位置） */
+/** 画面の文字は、拡大縮小に関係なく、いつも実寸（図面と同じ縮尺＝印刷・書き出しと同じ比率）で描く（事業主 2026-11-13「画面を拡大縮小でテキストの大きさの比率が変わる（本体からはみ出る）」→「常に実寸で描く」）。
+ *  それまでの「縮小しても読める大きさに大きく描く」（2026-11-11）と「枠に重なる文字だけ実寸」（2026-11-12）は、やめた。 */
+const textDrawMm = s => s.sizeMm;
+const textDrawPos = s => ({ x: s.x, y: s.y });
 function strokeShape(s, color = '#d8d8d8', dashed = false) {
   if (!s) return;
   ctx.setLineDash(dashed ? [4 / scale, 3 / scale] : []);
@@ -10715,7 +10699,6 @@ function syncBackBadge() {
 }
 function draw() {
   if (!exporting) syncBackBadge();
-  buildTextBlocks();   /* 画面の文字を、かたまりで拡大する位置（縮小のとき） */
   syncViewLayers();   /* 表示メニューのレイヤー一覧（層が変わったときだけ作り直す） */
   ensureFillRingsRepaired();   /* 開いた図面の、取り残された塗りの穴の輪を、いまの図形に合わせ直す（最初の1回だけ） */
 

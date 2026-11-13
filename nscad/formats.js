@@ -93,7 +93,27 @@ export function beamRefOf(boxes, preferId = 'pattern') {
   const pref = boxes.find(x => x.id === preferId && beamShrinkOf(x.box)); if (pref) return pref.id;
   let best = null; for (const x of boxes) { const S = beamShrinkOf(x.box); if (S && (!best || S.r > best.S.r)) best = { id: x.id, S }; } return best ? best.id : null;   /* 縮みがいちばん小さい（＝いちばん大きい）層 */
 }
-export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, holeDotStroke = false, lineColors = 'color', printLines = false, mainMm = MAIN_LINE_MM } = {}) {
+/** 文字を書体の輪郭の線（SVG の path の d）にする（事業主 2026-11-13「テキストをSVG出力すると別のフォントになる（BeamboxⅡ読み込み時）」→「文字を線に変換して出す」）。
+ *  fonts＝書体の候補（fontkit の font・前ほど優先）。1字ずつ、その字を持つ最初の書体で描く（画面のブラウザと同じ考え）。どの書体にも無い字は、最初の書体で描く。
+ *  座標は図面の mm（Y 下向き）。基準線の左端が (s.x, s.y)・字の大きさ s.sizeMm＝1em・s.angleDeg だけ (s.x, s.y) を中心に回す（画面・SVG の <text> と同じ）。空の文字・書体なしは ''。 */
+export function textOutlineD(s, fonts) {
+  const list = (fonts || []).filter(Boolean), text = String(s?.text ?? '').replace(/[\r\n]+/g, ' '); if (!list.length || !text.trim()) return '';
+  const a = (s.angleDeg || 0) * Math.PI / 180, c = Math.cos(a), n = Math.sin(a), P = (lx, ly) => `${f(s.x + lx * c - ly * n)} ${f(s.y + lx * n + ly * c)}`;
+  const runs = []; for (const ch of text) { const cp = ch.codePointAt(0), font = list.find(x => x.hasGlyphForCodePoint?.(cp)) || list[0], last = runs[runs.length - 1]; if (last && last.font === font) last.t += ch; else runs.push({ font, t: ch }); }   /* 同じ書体で続く字は、まとめて並べる（字詰め・合字が効く） */
+  const CMD = { moveTo: 'M', lineTo: 'L', quadraticCurveTo: 'Q', bezierCurveTo: 'C', closePath: 'Z' }, out = []; let pen = 0;
+  for (const { font, t } of runs) {
+    const k = s.sizeMm / (font.unitsPerEm || 1000), run = font.layout(t);
+    run.glyphs.forEach((g, i) => {
+      const p = run.positions?.[i] || {}, ox = pen + (p.xOffset || 0) * k, oy = -(p.yOffset || 0) * k;
+      for (const cm of g.path?.commands || []) { const q = cm.args || [], pts = []; for (let j = 0; j + 1 < q.length; j += 2) pts.push(P(ox + q[j] * k, oy - q[j + 1] * k)); if (CMD[cm.command]) out.push(CMD[cm.command] + pts.join(' ')); }   /* 書体の座標は Y 上向き → 図面は Y 下向き */
+      pen += (p.xAdvance || 0) * k;
+    });
+  }
+  return out.join('');
+}
+/** 書体の候補の並び（CSS の font-family）から、書体の名前だけを取り出す（serif などの一般名・system-ui は除く）。 */
+export function fontFamilyNames(stack) { return String(stack || '').split(',').map(x => x.trim().replace(/^['"]|['"]$/g, '')).filter(x => x && !/^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-[a-z-]+)$/i.test(x)); }
+export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm = 0.1, fill = false, marginMm = 1, layerIds = null, calibration = null, fontFamily = 'sans-serif', textures = null, textureMm = 30, metalColor = null, diamondFill = false, holeDot = 0, holeDotStroke = false, lineColors = 'color', printLines = false, mainMm = MAIN_LINE_MM, textPaths = null } = {}) {   /* textPaths：文字図形の id → 輪郭の線（path の d）。ある文字は <text> の代わりに <path> で出す */
   const layerShapes = doc.shapes.filter(s => (layerIds ? layerIds.includes(s.layer) : doc.layers.find(l => l.id === s.layer)?.visible)), shapes = layerShapes.filter(s => !s.holeLink); /* 穴をつなぐ補助の線（holeLink）は描かない。穴の判定には使う */
   const holes = includeHoles ? holesOnShapes(doc, layerShapes) : [];
   const b = bboxOfDoc({ ...doc, shapes, holes }) || { minX: 0, minY: 0, maxX: 10, maxY: 10 };
@@ -105,6 +125,7 @@ export function docToSvg(doc, { beamFix = false, includeHoles = true, strokeMm =
   const beamRef = beamFix ? beamRefOf([...doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => ({ id: l.id, box: layerBox(l.id) })), ...(holesBox ? [{ id: 'holes', box: holesBox }] : [])]) : null;   /* Beam 補正の基準＝型紙の層（外周）。無ければいちばん大きな層 */
   const groups = doc.layers.filter(l => shapes.some(s => s.layer === l.id)).map(l => {
     const body = shapes.filter(s => s.layer === l.id).map(s => {
+      if (s.type === 'text' && textPaths?.get?.(s.id)) return `<path d="${textPaths.get(s.id)}" data-text="${esc(s.text)}" fill="${svgTextHex(s, lineColors)}" stroke="none"/>`;   /* 線にした文字（textOutlineD）は、書体の名前に頼らない輪郭の線（事業主 2026-11-13「SVG出力すると別のフォントになる（BeamboxⅡ）」） */
       if (s.type === 'text') return `<text x="${f(s.x)}" y="${f(s.y)}" font-size="${f(s.sizeMm)}" font-family="${esc(s.font ? textFontStack(s.font) : fontFamily)}" fill="${svgTextHex(s, lineColors)}" stroke="none" transform="rotate(${f(s.angleDeg)} ${f(s.x)} ${f(s.y)})">${esc(s.text)}</text>`;   /* 書体を決めた文字（font）は、その書体。決めていない文字は、出力の既定（fontFamily） */
       if (s.type === 'dimension') { const d = dimension({ x: s.x1, y: s.y1 }, { x: s.x2, y: s.y2 }, s.offset); return `<path d="M${f(d.a.x)} ${f(d.a.y)}L${f(d.b.x)} ${f(d.b.y)}${d.ext.map(([p, q]) => `M${f(p.x)} ${f(p.y)}L${f(q.x)} ${f(q.y)}`).join('')}"/><text x="${f(d.textPos.x)}" y="${f(d.textPos.y)}" font-size="2.5" font-family="${esc(fontFamily)}" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${f(d.angleDeg)} ${f(d.textPos.x)} ${f(d.textPos.y)})">${esc(dimText(s, d))}</text>`; }
       if (holeDot > 0 && s.type === 'polyline') { const dl = diamondLoopSizes([s]); if (dl.length) return `<circle id="${safeId(s.id)}" cx="${f(dl[0].x)}" cy="${f(dl[0].y)}" r="${f(holeDot / 2)}" ${holeDotStroke ? `fill="none" stroke="${svgLineHex(s, lineColors, true) || '#000'}"` : `fill="${svgLineHex(s, lineColors, true) || '#000'}" stroke="none"`}/>`; }   /* 菱の線（取り込んだ図面の菱形）も真ん中の● */
