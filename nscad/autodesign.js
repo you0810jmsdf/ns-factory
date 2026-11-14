@@ -1,7 +1,7 @@
 // 設計の自動化：レシピ（要件）→ 部品の寸法 → 用紙への配置 → 縫い穴・折り線 → 検図。純粋関数のみ。
 import { foldAllowance, routeBreaks } from './design.js';
 import { spineWidth } from './hardware.js';
-import { newDoc, defaultTools, chainShapes, resolvePath, arcLength, bboxOf, distance, cornerHoles, equalDivide, pointAtLength } from './geometry.js';
+import { newDoc, defaultTools, chainShapes, resolvePath, arcLength, bboxOf, distance, cornerHoles, equalDivide, pointAtLength, rotate, translate } from './geometry.js';
 import { buildPanels, collisions } from './sim3d.js';
 
 export const CARD = { w: 85.6, h: 53.98, t: 0.76 };
@@ -10,6 +10,7 @@ export const PAPERS = { a4: { w: 190, h: 277 }, a3: { w: 277, h: 400 } };
 /** レシピの既定値。 */
 export function defaultRecipe(kind = 'passcase') {
   const r = { kind, cards: 2, refill: 'mini6', ringD: 15, baseThick: 2, thickness: 1.5, stitchStyle: 'edge', stitchLine: 3, allowance: 6, pitch: 4, play: 3, k: 0.5, penHolder: true, penD: 12, paper: 'a4', binding: kind === 'notebook' ? 'ring' : 'sew' };
+  if (kind === 'cup') Object.assign(r, { cupTopD: 80, cupBottomD: 70, cupHeight: 100, thickness: 2, stitchLine: 3, endMargin: 2, pitch: 4, binding: 'butt' });   /* 事業主 2026-11-14 推奨どおり：ペン立て（上の外径 80・底の外径 70・高さ 100・革厚 2）・側面の両端は突き合わせ・底は側面の内側に入れて駒合わせ縫い */
   if (kind === 'ring') Object.assign(r, { innerD: 16, ringSize: 0, ringWidth: 20, ringLayers: 2, thickness: 2.3, endMargin: 2, sideInset: 1, pitch: 3, holeKind: 'round', binding: 'butt' });   /* 2026-11-12 のメルカリの指輪（内径16mm・幅2cm・2枚重ね・丸目 3mm）と同じ形になる値 */
   return r;
 }
@@ -19,6 +20,29 @@ export const fingerInnerD = size => 13 + (size - 1) / 3;
 export const fingerSizeOf = d => Math.round((d - 13) * 3 + 1);
 /** 指輪で使う内径：号数が入っていれば号数から、なければ内径の欄から。 */
 export const fingerDiameter = r => (r.ringSize > 0 ? fingerInnerD(r.ringSize) : r.innerD);
+/** カップの側面の展開（部品の中の座標・左上が 0,0）。上・底の外径から革厚の中心の直径（外径−厚み）を出し、
+ *  円錐台なら扇形（扇の要から底までの半径 Rb＝斜辺×底の直径÷直径の差・開き角＝180×底の直径÷Rb 度）、上と底が同じなら長方形。
+ *  rows：bottom＝底の縫い線（底の端から stitchLine・駒合わせ）／seamA・seamB＝両端の縫い線（端から endMargin・突き合わせ・底の列と1ピッチあける）。 */
+export function cupSideShape(r) {
+  const t = r.thickness, sl = r.stitchLine, e = r.endMargin, pitch = r.pitch, Dt = r.cupTopD - t, Db = r.cupBottomD - t, diff = Dt - Db, slant = Math.hypot(r.cupHeight, diff / 2);
+  let outline, rows, theta = 0, Rb = Infinity, Rt = Infinity;
+  if (Math.abs(diff) < 0.01) {   /* 筒：横＝底の円周・縦＝高さ（上が y=0・底が y=h） */
+    const W = Math.PI * Db, h = slant;
+    outline = [{ type: 'polyline', closed: true, points: rect(0, 0, W, h) }];
+    rows = { bottom: { type: 'polyline', closed: false, points: [{ x: 0, y: h - sl }, { x: W, y: h - sl }] }, seamA: { type: 'polyline', closed: false, points: [{ x: e, y: h - sl - pitch }, { x: e, y: sl }] }, seamB: { type: 'polyline', closed: false, points: [{ x: W - e, y: h - sl - pitch }, { x: W - e, y: sl }] } };
+  } else {   /* 扇形：要を (0,0) に、下向きに開く */
+    Rb = slant * Db / Math.abs(diff); Rt = slant * Dt / Math.abs(diff); theta = 180 * Db / Rb;
+    const a0 = 90 - theta / 2, a1 = 90 + theta / 2, rIn = Math.min(Rb, Rt), rOut = Math.max(Rb, Rt), dir = Rt > Rb ? 1 : -1, rad = a => a * Math.PI / 180;
+    const P = (rho, a, n = 0, side = 1) => ({ x: rho * Math.cos(rad(a)) - side * n * Math.sin(rad(a)), y: rho * Math.sin(rad(a)) + side * n * Math.cos(rad(a)) });
+    const arc = rr => ({ type: 'arc', cx: 0, cy: 0, r: rr, startDeg: (a0 + 360) % 360, endDeg: (a0 + 360) % 360 + theta });
+    outline = [arc(rIn), { type: 'line', x1: P(rIn, a1).x, y1: P(rIn, a1).y, x2: P(rOut, a1).x, y2: P(rOut, a1).y }, arc(rOut), { type: 'line', x1: P(rOut, a0).x, y1: P(rOut, a0).y, x2: P(rIn, a0).x, y2: P(rIn, a0).y }];
+    const r1 = Rb + dir * (sl + pitch), r2 = Rt - dir * sl;
+    rows = { bottom: arc(Rb + dir * sl), seamA: { type: 'polyline', closed: false, points: [P(r1, a0, e, 1), P(r2, a0, e, 1)] }, seamB: { type: 'polyline', closed: false, points: [P(r1, a1, e, -1), P(r2, a1, e, -1)] } };
+  }
+  const boxes = outline.map(bboxOf), minX = Math.min(...boxes.map(b => b.minX)), minY = Math.min(...boxes.map(b => b.minY)), maxX = Math.max(...boxes.map(b => b.maxX)), maxY = Math.max(...boxes.map(b => b.maxY));
+  const move = s => translate(s, -minX, -minY);
+  return { outline: outline.map(move), rows: Object.fromEntries(Object.entries(rows).map(([k, s]) => [k, move(s)])), w: maxX - minX, h: maxY - minY, slant, theta, Rb, Rt, bottomLen: arcLength(rows.bottom) };
+}
 /** 縫い代（裁断線から縫い線まで）：外縫いは縫い線の位置、返し縫いは縫い代。 */
 export function edgeMargin(recipe) { return recipe.stitchStyle === 'turned' ? recipe.allowance : recipe.stitchLine; }
 /** レシピから部品一覧 [{id,name,w,h,thickness,role,stitchEdges:['left','bottom','right'],folds:[{x,angleDeg}]}] を返す。寸法はルール固定（README に式）。 */
@@ -52,6 +76,19 @@ export function planParts(recipe) {
     if (r.ringLayers >= 2) parts.push(band('ringOuter', 'part.ringOuter', '外側の帯', Math.PI * (D + 2 * t)));
     return { recipe: r, parts, inner: { d: D, size: fingerSizeOf(D), w: W } };
   }
+  if (r.kind === 'cup') {
+    /* カップ（事業主 2026-11-14「カップ作図機能」・縫って作る筒・すり鉢）：側面（扇形）の両端を突き合わせて縫い、底の円を側面の内側に入れて駒合わせで縫う。
+       底の直径＝底の外径−2×革厚。駒合わせの穴の数は、側面の底の列と底の円の列で同じにする（底の円の方が周が短いので、底の穴の間隔は狭くなる）。 */
+    const D = r.cupBottomD, rd = D / 2 - r.thickness;
+    if (!(r.cupTopD > r.thickness && D > r.thickness && r.cupHeight > 0 && rd - r.stitchLine > 1)) return null;
+    const side = cupSideShape(r), n = Math.max(3, Math.round(side.bottomLen / r.pitch)), r2 = v => Math.round(v * 100) / 100;
+    if (side.theta >= 350 || !(side.w > 0 && side.h > 0)) return null;
+    side.rows.bottom.holes = { mode: 'centered', n };   /* 突き合わせの継ぎ目が、穴と穴のちょうど間に来る */
+    const disc = { outline: [{ type: 'circle', cx: rd, cy: rd, r: rd }], rows: { disc: { type: 'circle', cx: rd, cy: rd, r: rd - r.stitchLine, holes: { mode: 'closed', n } } }, w: 2 * rd, h: 2 * rd };
+    parts.push({ id: 'cupSide', name: '側面', nameKey: 'part.cupSide', w: r2(side.w), h: r2(side.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: side });
+    parts.push({ id: 'cupBottom', name: '底', nameKey: 'part.cupBottom', w: r2(disc.w), h: r2(disc.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: disc });
+    return { recipe: r, parts, seams: [{ a: 'cupSide:bottom', b: 'cupBottom:disc', style: 'butt' }, { a: 'cupSide:seamA', b: 'cupSide:seamB', style: 'butt' }], inner: { bottomD: r2(2 * rd), holes: n, slant: r2(side.slant), angleDeg: r2(side.theta), Rb: r2(side.Rb), Rt: r2(side.Rt) } };
+  }
   if (r.kind === 'coincase') {
     const w = 80 + 2 * m, h = 70 + 2 * m;
     parts.push({ id: 'front', name: '前面', nameKey: 'part.front', w, h, thickness: r.thickness, role: 'body', stitchEdges: ['left', 'bottom', 'right'], folds: [] }, { id: 'back', name: '背面', nameKey: 'part.back', w, h: h + 30, thickness: r.thickness, role: 'body', stitchEdges: ['left', 'bottom', 'right'], folds: [{ x: null, y: h, angleDeg: 180, inner: true }] });
@@ -81,7 +118,25 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
   const r = plan.recipe, m = edgeMargin(r), layout = layoutParts(plan.parts, { paper }), doc = newDoc(); doc.tools = tools;
   const kindOf = r.holeKind === 'round' ? 'round' : 'diamond', tool = tools.find(t => Math.abs(t.pitch - r.pitch) < 1e-9 && t.kind === kindOf) || tools.find(t => t.kind === kindOf) || tools[0];
   let sn = 1, pn = 1, hn = 1;
+  const rowPaths = new Map();
   for (const p of layout.placed) {
+    if (p.local) {   /* 長方形でない部品（カップの扇形・底の円）：部品の中の座標で作った形を、回して用紙に置く */
+      const place = s => { let q = s; if (p.rot) q = translate(rotate(q, 90), p.local.h, 0);   /* 丸める前の高さで戻す（丸めた値だと 0.002mm ほど用紙の外に出る） */ return translate(q, p.x, p.y); }, w = p.rot ? p.h : p.w, h = p.rot ? p.w : p.h;
+      const outline = p.local.outline.map(s => ({ id: 's' + sn++, layer: 'pattern', ...place(s) })); doc.shapes.push(...outline);
+      const label = nameOf ? nameOf(p) : p.name;
+      doc.parts.push({ id: p.id, name: label, thickness: p.thickness, shapeIds: outline.map(s => s.id), color: null, order: 0, role: p.role });
+      doc.shapes.push({ id: 's' + sn++, layer: 'guide', type: 'text', x: p.x + w / 2 - 10, y: p.y + h / 2, text: `${label} ${Math.round(p.w * 10) / 10}×${Math.round(p.h * 10) / 10}`, sizeMm: 3, angleDeg: 0 });
+      for (const [key, raw] of Object.entries(p.local.rows || {})) {
+        const { holes: spec, ...geo } = raw, line = { id: 's' + sn++, layer: 'guide', ...place(geo) }; doc.shapes.push(line);
+        const closed = line.type === 'circle', path = { id: 'p' + pn++, shapeIds: [line.id], reversed: false, closed, segments: [], mark: 'tool' }; doc.paths.push(path);
+        const route = resolvePath(doc, path), len = arcLength(route);
+        const at = spec?.mode === 'centered' ? Array.from({ length: spec.n }, (_, i) => (i + 0.5) * len / spec.n) : spec?.mode === 'closed' ? Array.from({ length: spec.n }, (_, i) => i * len / spec.n) : equalDivide(len, r.pitch, 0);
+        for (const s of at) { const q = pointAtLength(route, s); doc.holes.push({ id: 'h' + hn++, pathId: path.id, s, x: q.x, y: q.y, angleDeg: q.angleDeg + tool.angleDeg, toolId: tool.id, mark: 'tool' }); }
+        path.segments = [{ from: 0, to: len, toolId: tool.id, pitch: spec ? len / spec.n : r.pitch, mode: 'variable' }];
+        rowPaths.set(p.id + ':' + key, { pathId: path.id, len });
+      }
+      continue;
+    }
     const w = p.rot ? p.h : p.w, h = p.rot ? p.w : p.h, outline = { id: 's' + sn++, layer: 'pattern', type: 'polyline', closed: true, points: rect(p.x, p.y, w, h) };
     doc.shapes.push(outline);
     const label = nameOf ? nameOf(p) : p.name;
@@ -123,6 +178,10 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
   if (r.kind === 'ring' && plan.inner?.d > 0) {   /* 内径の円（ガイド）：帯の右に置く。指の太さ・号数を目で確かめる用 */
     const rad = plan.inner.d / 2, right = Math.max(...layout.placed.map(q => q.x + (q.rot ? q.h : q.w)));
     doc.shapes.push({ id: 's' + sn++, layer: 'guide', type: 'circle', cx: right + 6 + rad, cy: rad, r: rad });
+  }
+  for (const seam of plan.seams || []) {   /* 縫い合わせ（駒合わせ・突き合わせ）：検図で、両側の穴の数がそろっているかを見る */
+    const a = rowPaths.get(seam.a), b = rowPaths.get(seam.b); if (!a || !b) continue;
+    doc.seams.push({ id: 'seam' + (doc.seams.length + 1), a: { pathId: a.pathId, from: 0, to: a.len }, b: { pathId: b.pathId, from: 0, to: b.len }, style: seam.style, reversed: false });
   }
   doc.recipe = { ...r }; doc.layoutInfo = { pages: layout.pages, overflow: layout.overflow, paper };
   return { doc, plan, layout };

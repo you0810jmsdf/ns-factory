@@ -5707,10 +5707,11 @@ function initImages() {
 function recipeFromForm() {
   const kind = $('recipeKind').value || 'passcase', r = defaultRecipe(kind), sp = Number(DATA_STYLE?.pitch?.[0]?.value); if (sp >= 3 && sp <= 5) r.pitch = Math.round(sp * 100) / 100;
   const ring = kind === 'ring' ? { ringSize: Math.round(Number($('recipeRingSize').value)) || 0, innerD: Number($('recipeInnerD').value) || r.innerD, ringWidth: Number($('recipeRingWidth').value) || r.ringWidth, ringLayers: $('recipeRingLayers').value === '1' ? 1 : 2 } : {};   /* 指輪：号数が入っていれば号数から内径を決める（空なら内径の欄） */
-  return { ...r, ...ring, kind, cards: Number($('recipeCards').value) || r.cards, refill: $('recipeRefill').value || r.refill, ringD: Number($('recipeRingD').value) || r.ringD, spineOverride: Number($('recipeSpine').value) || 0, thickness: Number($('recipeThickness').value) || r.thickness, stitchStyle: $('recipeStyle').value === 'turned' ? 'turned' : 'edge', pitch: Number($('recipePitch').value) || r.pitch, paper: $('recipePaper').value === 'a3' ? 'a3' : 'a4', penHolder: !!$('recipePen').checked, binding: kind === 'notebook' ? 'ring' : kind === 'ring' ? 'butt' : 'sew' };
+  const cup = kind === 'cup' ? { cupTopD: Number($('recipeCupTopD').value) || r.cupTopD, cupBottomD: Number($('recipeCupBottomD').value) || r.cupBottomD, cupHeight: Number($('recipeCupHeight').value) || r.cupHeight } : {};   /* カップ：上・底の外径と高さ */
+  return { ...r, ...ring, ...cup, kind, cards: Number($('recipeCards').value) || r.cards, refill: $('recipeRefill').value || r.refill, ringD: Number($('recipeRingD').value) || r.ringD, spineOverride: Number($('recipeSpine').value) || 0, thickness: Number($('recipeThickness').value) || r.thickness, stitchStyle: $('recipeStyle').value === 'turned' ? 'turned' : 'edge', pitch: Number($('recipePitch').value) || r.pitch, paper: $('recipePaper').value === 'a3' ? 'a3' : 'a4', penHolder: !!$('recipePen').checked, binding: kind === 'notebook' ? 'ring' : kind === 'ring' || kind === 'cup' ? 'butt' : 'sew' };
 }
 /** 寸法・諸元から型紙をすべて作る「自動作図シリーズ」の種類（事業主 2026-11-14：作家本人以外は有料・まずは🔒だけで、課金は後で）。 */
-const RECIPE_PRO_KINDS = new Set(['ring']);
+const RECIPE_PRO_KINDS = new Set(['ring', 'cup']);
 function generateRecipe() {
   if (RECIPE_PRO_KINDS.has($('recipeKind').value) && !lockGate('recipePro')) return;
   const recipe = recipeFromForm(), built = buildDoc(recipe, { tools: loadTools(), nameOf: p => p.nameKey ? t(p.nameKey) : p.name });
@@ -5739,9 +5740,10 @@ function initRecipe() {
   $('recipeGenerate').onclick = generateRecipe; $('recipeCheck').onclick = runCheck; $('checkList').addEventListener('change', gotoCheck);
   $('recipePrint').onclick = () => { $('outputCard').open = true; revealCard($('outputCard')); printPages(); };
   $('recipeKind').addEventListener('change', () => {
-    const kind = $('recipeKind').value, nb = kind === 'notebook', ring = kind === 'ring'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || ring || kind === 'coincase';
+    const kind = $('recipeKind').value, nb = kind === 'notebook', ring = kind === 'ring'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || ring || kind === 'coincase' || kind === 'cup';
+    for (const id of ['l-recipeCupTopD', 'l-recipeCupBottomD', 'l-recipeCupHeight']) $(id).hidden = kind !== 'cup';
     for (const id of ['l-recipeRingSize', 'l-recipeInnerD', 'l-recipeRingWidth', 'l-recipeRingLayers']) $(id).hidden = !ring;
-    const was = $('recipeKind').dataset.prev === 'ring'; if (ring !== was) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪へ／指輪から切り替えたときだけ、ピッチ（丸目 3mm）と革厚（内側の帯 2.3mm）を、その種類の初期値にする */
+    const own = k => k === 'ring' || k === 'cup', prev = $('recipeKind').dataset.prev || 'passcase'; if (prev !== kind && (own(kind) || own(prev))) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪・カップへ／から切り替えたときだけ、ピッチと革厚を、その種類の初期値にする（指輪＝丸目 3mm・2.3mm／カップ＝4mm・2mm） */
     $('recipeKind').dataset.prev = kind;
   });
 }
