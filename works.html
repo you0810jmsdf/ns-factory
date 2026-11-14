@@ -1348,7 +1348,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     'badge.noRestock': 'No restock',
     'badge.orderMaking': 'Custom order in progress',
     'avail.orderMaking': 'Custom order in progress',
-    'avail.soldout': 'SOLDOUT (no longer for sale)',
+    'avail.soldout': 'SOLDOUT (available as a custom order)',
     'avail.noRestock': 'No restock planned',
     'cta.reorder': 'Request a re-make (create a quote)',
     'cta.buyQuote': 'Get a quote to buy this piece (rough simulation)',
@@ -1584,7 +1584,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       const planner = isSystemPlannerWork(work);
       const unavailable = !!(work.soldout || work.noRestock);
       const hasPrice = Number(work.price) > 0;
-      const noticeLabel = work.orderMaking ? T('avail.orderMaking', 'オーダー製作中') : work.soldout ? T('avail.soldout', 'SOLDOUT（販売終了）') : T('avail.noRestock', '再販予定なし');
+      const noticeLabel = work.orderMaking ? T('avail.orderMaking', 'オーダー製作中') : work.soldout ? T('avail.soldout', 'SOLDOUT（オーダーメイドで承ります）') : T('avail.noRestock', '再販予定なし');
 
       if (availabilityNotice) {
         if (unavailable) {
