@@ -20,6 +20,12 @@ export const fingerInnerD = size => 13 + (size - 1) / 3;
 export const fingerSizeOf = d => Math.round((d - 13) * 3 + 1);
 /** 指輪で使う内径：号数が入っていれば号数から、なければ内径の欄から。 */
 export const fingerDiameter = r => (r.ringSize > 0 ? fingerInnerD(r.ringSize) : r.innerD);
+/** 丸穴（丸キリ）の道具：同じピッチの丸穴が道具一覧に無ければ足す（呼び出し元の一覧は変えない）。 */
+function roundToolFor(doc, pitch) {
+  let t = doc.tools.find(x => x.kind === 'round' && Math.abs(x.pitch - pitch) < 1e-9);
+  if (!t) { t = { id: `round-${pitch}-2`, name: `round-${pitch}-2`, kind: 'round', pitch, teeth: 2, holeW: 1, holeH: 1, holeD: 1, angleDeg: 0, mark: 'tool' }; doc.tools = [...doc.tools, t]; }
+  return t;
+}
 /** カップの側面の展開（部品の中の座標・左上が 0,0）。上・底の外径から革厚の中心の直径（外径−厚み）を出し、
  *  円錐台なら扇形（扇の要から底までの半径 Rb＝斜辺×底の直径÷直径の差・開き角＝180×底の直径÷Rb 度）、上と底が同じなら長方形。
  *  rows：bottom＝底の縫い線（底の端から stitchLine・駒合わせ）／seamA・seamB＝両端の縫い線（端から endMargin・突き合わせ・底の列と1ピッチあける）。 */
@@ -84,6 +90,7 @@ export function planParts(recipe) {
     const side = cupSideShape(r), n = Math.max(3, Math.round(side.bottomLen / r.pitch)), r2 = v => Math.round(v * 100) / 100;
     if (side.theta >= 350 || !(side.w > 0 && side.h > 0)) return null;
     side.rows.bottom.holes = { mode: 'centered', n };   /* 突き合わせの継ぎ目が、穴と穴のちょうど間に来る */
+    side.rows.seamA.holes = side.rows.seamB.holes = { tool: 'round' };   /* 側面の両端は突き合わせてクロスステッチ＝丸キリの丸穴（事業主 2026-11-14）。左右の列は同じ長さなので穴の数・高さがそろう */
     const disc = { outline: [{ type: 'circle', cx: rd, cy: rd, r: rd }], rows: { disc: { type: 'circle', cx: rd, cy: rd, r: rd - r.stitchLine, holes: { mode: 'closed', n } } }, w: 2 * rd, h: 2 * rd };
     parts.push({ id: 'cupSide', name: '側面', nameKey: 'part.cupSide', w: r2(side.w), h: r2(side.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: side });
     parts.push({ id: 'cupBottom', name: '底', nameKey: 'part.cupBottom', w: r2(disc.w), h: r2(disc.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: disc });
@@ -131,8 +138,9 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
         const closed = line.type === 'circle', path = { id: 'p' + pn++, shapeIds: [line.id], reversed: false, closed, segments: [], mark: 'tool' }; doc.paths.push(path);
         const route = resolvePath(doc, path), len = arcLength(route);
         const at = spec?.mode === 'centered' ? Array.from({ length: spec.n }, (_, i) => (i + 0.5) * len / spec.n) : spec?.mode === 'closed' ? Array.from({ length: spec.n }, (_, i) => i * len / spec.n) : equalDivide(len, r.pitch, 0);
-        for (const s of at) { const q = pointAtLength(route, s); doc.holes.push({ id: 'h' + hn++, pathId: path.id, s, x: q.x, y: q.y, angleDeg: q.angleDeg + tool.angleDeg, toolId: tool.id, mark: 'tool' }); }
-        path.segments = [{ from: 0, to: len, toolId: tool.id, pitch: spec ? len / spec.n : r.pitch, mode: 'variable' }];
+        const rowTool = spec?.tool === 'round' ? roundToolFor(doc, r.pitch) : tool;
+        for (const s of at) { const q = pointAtLength(route, s); doc.holes.push({ id: 'h' + hn++, pathId: path.id, s, x: q.x, y: q.y, angleDeg: q.angleDeg + rowTool.angleDeg, toolId: rowTool.id, mark: 'tool' }); }
+        path.segments = [{ from: 0, to: len, toolId: rowTool.id, pitch: spec?.n ? len / spec.n : r.pitch, mode: 'variable' }];
         rowPaths.set(p.id + ':' + key, { pathId: path.id, len });
       }
       continue;

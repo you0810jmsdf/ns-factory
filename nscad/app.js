@@ -5742,6 +5742,7 @@ function initRecipe() {
   $('recipeKind').addEventListener('change', () => {
     const kind = $('recipeKind').value, nb = kind === 'notebook', ring = kind === 'ring'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || ring || kind === 'coincase' || kind === 'cup';
     for (const id of ['l-recipeCupTopD', 'l-recipeCupBottomD', 'l-recipeCupHeight']) $(id).hidden = kind !== 'cup';
+    $('l-recipeStyle').hidden = kind === 'cup';   /* カップは外縫い・返し縫いではない（底＝駒合わせ・側面の両端＝突き合わせてクロスステッチ）ので、縫い方の欄を出さない（事業主 2026-11-14） */
     for (const id of ['l-recipeRingSize', 'l-recipeInnerD', 'l-recipeRingWidth', 'l-recipeRingLayers']) $(id).hidden = !ring;
     const own = k => k === 'ring' || k === 'cup', prev = $('recipeKind').dataset.prev || 'passcase'; if (prev !== kind && (own(kind) || own(prev))) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪・カップへ／から切り替えたときだけ、ピッチと革厚を、その種類の初期値にする（指輪＝丸目 3mm・2.3mm／カップ＝4mm・2mm） */
     $('recipeKind').dataset.prev = kind;
