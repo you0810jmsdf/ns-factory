@@ -4290,7 +4290,7 @@ function regGuard(feature, kind = '') {
 }
 /** 有料版の機能のロック（パッチワーク・三つ折り・三面図）。インターネットの公開版（登録サーバーが使えるとき）だけロックがかかり、確認済みのオーナーのメールで利用登録した端末では外れる。
  *  手元で開いたファイル（file://）や開発中（http://localhost）は、ロックしない。 */
-const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView', voiceDesign: 'lockVoiceDesign' };
+const LOCK_NAMES = { patchwork: 'lockPatchwork', fold: 'lockFold', threeview: 'lockThreeView', voiceDesign: 'lockVoiceDesign', recipePro: 'lockRecipePro' };
 function featureLocked() { return registration.enabled() && !regIsOwner(registration.state()); }
 /** ロックされた機能を使おうとしたとき：使ってよければ true。ロック中なら、🔒の案内を出して false。 */
 function lockGate(feature) {
@@ -5702,9 +5702,13 @@ function initImages() {
 // ---- レシピ → 自動設計 ----
 function recipeFromForm() {
   const kind = $('recipeKind').value || 'passcase', r = defaultRecipe(kind), sp = Number(DATA_STYLE?.pitch?.[0]?.value); if (sp >= 3 && sp <= 5) r.pitch = Math.round(sp * 100) / 100;
-  return { ...r, kind, cards: Number($('recipeCards').value) || r.cards, refill: $('recipeRefill').value || r.refill, ringD: Number($('recipeRingD').value) || r.ringD, spineOverride: Number($('recipeSpine').value) || 0, thickness: Number($('recipeThickness').value) || r.thickness, stitchStyle: $('recipeStyle').value === 'turned' ? 'turned' : 'edge', pitch: Number($('recipePitch').value) || r.pitch, paper: $('recipePaper').value === 'a3' ? 'a3' : 'a4', penHolder: !!$('recipePen').checked, binding: kind === 'notebook' ? 'ring' : 'sew' };
+  const ring = kind === 'ring' ? { ringSize: Math.round(Number($('recipeRingSize').value)) || 0, innerD: Number($('recipeInnerD').value) || r.innerD, ringWidth: Number($('recipeRingWidth').value) || r.ringWidth, ringLayers: $('recipeRingLayers').value === '1' ? 1 : 2 } : {};   /* 指輪：号数が入っていれば号数から内径を決める（空なら内径の欄） */
+  return { ...r, ...ring, kind, cards: Number($('recipeCards').value) || r.cards, refill: $('recipeRefill').value || r.refill, ringD: Number($('recipeRingD').value) || r.ringD, spineOverride: Number($('recipeSpine').value) || 0, thickness: Number($('recipeThickness').value) || r.thickness, stitchStyle: $('recipeStyle').value === 'turned' ? 'turned' : 'edge', pitch: Number($('recipePitch').value) || r.pitch, paper: $('recipePaper').value === 'a3' ? 'a3' : 'a4', penHolder: !!$('recipePen').checked, binding: kind === 'notebook' ? 'ring' : kind === 'ring' ? 'butt' : 'sew' };
 }
+/** 寸法・諸元から型紙をすべて作る「自動作図シリーズ」の種類（事業主 2026-11-14：作家本人以外は有料・まずは🔒だけで、課金は後で）。 */
+const RECIPE_PRO_KINDS = new Set(['ring']);
 function generateRecipe() {
+  if (RECIPE_PRO_KINDS.has($('recipeKind').value) && !lockGate('recipePro')) return;
   const recipe = recipeFromForm(), built = buildDoc(recipe, { tools: loadTools(), nameOf: p => p.nameKey ? t(p.nameKey) : p.name });
   if (!built) { $('hint').textContent = t('recipeUnknown'); return; }
   newTab(t('recipeTab', { kind: t('kind.' + recipe.kind) }));
@@ -5730,7 +5734,12 @@ function gotoCheck() {
 function initRecipe() {
   $('recipeGenerate').onclick = generateRecipe; $('recipeCheck').onclick = runCheck; $('checkList').addEventListener('change', gotoCheck);
   $('recipePrint').onclick = () => { $('outputCard').open = true; revealCard($('outputCard')); printPages(); };
-  $('recipeKind').addEventListener('change', () => { const nb = $('recipeKind').value === 'notebook'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || $('recipeKind').value === 'coincase'; });
+  $('recipeKind').addEventListener('change', () => {
+    const kind = $('recipeKind').value, nb = kind === 'notebook', ring = kind === 'ring'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || ring || kind === 'coincase';
+    for (const id of ['l-recipeRingSize', 'l-recipeInnerD', 'l-recipeRingWidth', 'l-recipeRingLayers']) $(id).hidden = !ring;
+    const was = $('recipeKind').dataset.prev === 'ring'; if (ring !== was) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪へ／指輪から切り替えたときだけ、ピッチ（丸目 3mm）と革厚（内側の帯 2.3mm）を、その種類の初期値にする */
+    $('recipeKind').dataset.prev = kind;
+  });
 }
 
 // ---- AI パネル（提案は「適用」を押すまで図面を変えない）----

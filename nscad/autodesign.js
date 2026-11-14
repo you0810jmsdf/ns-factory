@@ -9,8 +9,16 @@ export const REFILLS = { m5: { w: 62, h: 105 }, mini6: { w: 80, h: 126 }, a6: { 
 export const PAPERS = { a4: { w: 190, h: 277 }, a3: { w: 277, h: 400 } };
 /** レシピの既定値。 */
 export function defaultRecipe(kind = 'passcase') {
-  return { kind, cards: 2, refill: 'mini6', ringD: 15, baseThick: 2, thickness: 1.5, stitchStyle: 'edge', stitchLine: 3, allowance: 6, pitch: 4, play: 3, k: 0.5, penHolder: true, penD: 12, paper: 'a4', binding: kind === 'notebook' ? 'ring' : 'sew' };
+  const r = { kind, cards: 2, refill: 'mini6', ringD: 15, baseThick: 2, thickness: 1.5, stitchStyle: 'edge', stitchLine: 3, allowance: 6, pitch: 4, play: 3, k: 0.5, penHolder: true, penD: 12, paper: 'a4', binding: kind === 'notebook' ? 'ring' : 'sew' };
+  if (kind === 'ring') Object.assign(r, { innerD: 16, ringSize: 0, ringWidth: 20, ringLayers: 2, thickness: 2.3, endMargin: 2, sideInset: 1, pitch: 3, holeKind: 'round', binding: 'butt' });   /* 2026-11-12 のメルカリの指輪（内径16mm・幅2cm・2枚重ね・丸目 3mm）と同じ形になる値 */
+  return r;
 }
+/** 指輪の号数 → 内径 (mm)。日本の号数：1号 13.0mm から、1号ごとに 1/3mm ずつ太くなる（10号＝16.0mm・内周 約50.3mm）。 */
+export const fingerInnerD = size => 13 + (size - 1) / 3;
+/** 内径 (mm) → いちばん近い号数（表示用）。 */
+export const fingerSizeOf = d => Math.round((d - 13) * 3 + 1);
+/** 指輪で使う内径：号数が入っていれば号数から、なければ内径の欄から。 */
+export const fingerDiameter = r => (r.ringSize > 0 ? fingerInnerD(r.ringSize) : r.innerD);
 /** 縫い代（裁断線から縫い線まで）：外縫いは縫い線の位置、返し縫いは縫い代。 */
 export function edgeMargin(recipe) { return recipe.stitchStyle === 'turned' ? recipe.allowance : recipe.stitchLine; }
 /** レシピから部品一覧 [{id,name,w,h,thickness,role,stitchEdges:['left','bottom','right'],folds:[{x,angleDeg}]}] を返す。寸法はルール固定（README に式）。 */
@@ -33,6 +41,16 @@ export function planParts(recipe) {
     if (r.binding === 'ring') parts.push({ id: 'ringpad', name: 'リング台座（当て革）', nameKey: 'part.ringpad', w: spine + 8, h: H - 20, thickness: r.thickness, role: 'pad', stitchEdges: [], folds: [] });
     if (r.penHolder) parts.push({ id: 'pen', name: 'ペンホルダー', nameKey: 'part.pen', w: Math.round((r.penD * 3.5 + 12) * 10) / 10, h: 15, thickness: r.thickness, role: 'pen', stitchEdges: [], folds: [{ x: Math.round((r.penD * 3.5 + 12) * 5) / 10, angleDeg: 180, inner: true }] });
     return { recipe: r, parts, inner: { w: panel, h: H, spine, fa } };
+  }
+  if (r.kind === 'ring') {
+    /* 指輪（事業主 2026-11-14「指輪作図機能」・案A：作家本人以外は🔒）：帯を輪にして、両端を突き合わせて縫う。
+       内側の帯の長さ＝内径の円周（π×D）。2枚重ねのとき、外側の帯は内側の帯の厚みの外を回るので π×(D＋2×厚み)。
+       両端から endMargin の所に、幅の端から sideInset 内側まで、丸目の穴を1列ずつ（突き合わせて、端どうしを縫い合わせる）。 */
+    const D = fingerDiameter(r), W = r.ringWidth, t = r.thickness, rows = [{ y: r.endMargin }, { y: null }];
+    const band = (id, nameKey, name, h) => ({ id, name, nameKey, w: W, h: Math.round(h * 100) / 100, thickness: t, role: 'body', stitchEdges: [], folds: [], holeRows: rows.map(q => ({ y: q.y === null ? Math.round(h * 100) / 100 - r.endMargin : q.y })) });
+    parts.push(band('ringInner', 'part.ringInner', r.ringLayers >= 2 ? '内側の帯' : '帯', Math.PI * D));
+    if (r.ringLayers >= 2) parts.push(band('ringOuter', 'part.ringOuter', '外側の帯', Math.PI * (D + 2 * t)));
+    return { recipe: r, parts, inner: { d: D, size: fingerSizeOf(D), w: W } };
   }
   if (r.kind === 'coincase') {
     const w = 80 + 2 * m, h = 70 + 2 * m;
@@ -61,7 +79,7 @@ const rect = (x, y, w, h) => [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h },
 export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = defaultTools(), nameOf = null } = {}) {
   const plan = planParts(recipe); if (!plan) return null;
   const r = plan.recipe, m = edgeMargin(r), layout = layoutParts(plan.parts, { paper }), doc = newDoc(); doc.tools = tools;
-  const tool = tools.find(t => Math.abs(t.pitch - r.pitch) < 1e-9 && t.kind === 'diamond') || tools[0];
+  const kindOf = r.holeKind === 'round' ? 'round' : 'diamond', tool = tools.find(t => Math.abs(t.pitch - r.pitch) < 1e-9 && t.kind === kindOf) || tools.find(t => t.kind === kindOf) || tools[0];
   let sn = 1, pn = 1, hn = 1;
   for (const p of layout.placed) {
     const w = p.rot ? p.h : p.w, h = p.rot ? p.w : p.h, outline = { id: 's' + sn++, layer: 'pattern', type: 'polyline', closed: true, points: rect(p.x, p.y, w, h) };
@@ -89,10 +107,22 @@ export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = default
       for (const q of points) doc.holes.push({ id: 'h' + hn++, pathId: path.id, s: closed && Math.abs(q.s - len) < 1e-7 ? 0 : q.s, x: q.x, y: q.y, angleDeg: q.angleDeg + tool.angleDeg, toolId: tool.id, mark: 'tool' });
       path.segments = [{ from: 0, to: len, toolId: tool.id, pitch: r.pitch, mode: 'variable' }];
     }
+    for (const row of p.holeRows || []) {   /* 指輪の帯の両端など：端から row.y の所に、幅の両側 sideInset を残して穴を1列（ピッチで等分） */
+      const side = r.sideInset || 0, a = p.rot ? { x: p.x + row.y, y: p.y + side } : { x: p.x + side, y: p.y + row.y }, b = p.rot ? { x: p.x + row.y, y: p.y + p.w - side } : { x: p.x + p.w - side, y: p.y + row.y };
+      const line = { id: 's' + sn++, layer: 'guide', type: 'polyline', closed: false, points: [a, b] }; doc.shapes.push(line);
+      const path = { id: 'p' + pn++, shapeIds: [line.id], reversed: false, closed: false, segments: [], mark: 'tool' }; doc.paths.push(path);
+      const route = resolvePath(doc, path), len = arcLength(route);
+      for (const s of equalDivide(len, r.pitch, 0)) { const q = pointAtLength(route, s); doc.holes.push({ id: 'h' + hn++, pathId: path.id, s, x: q.x, y: q.y, angleDeg: q.angleDeg + tool.angleDeg, toolId: tool.id, mark: 'tool' }); }
+      path.segments = [{ from: 0, to: len, toolId: tool.id, pitch: r.pitch, mode: 'variable' }];
+    }
     for (const f of p.folds || []) {
       const fold = f.x !== null && f.x !== undefined ? (p.rot ? { x1: p.x - 2, y1: p.y + f.x, x2: p.x + w + 2, y2: p.y + f.x } : { x1: p.x + f.x, y1: p.y - 2, x2: p.x + f.x, y2: p.y + h + 2 }) : (p.rot ? { x1: p.x + f.y, y1: p.y - 2, x2: p.x + f.y, y2: p.y + h + 2 } : { x1: p.x - 2, y1: p.y + f.y, x2: p.x + w + 2, y2: p.y + f.y });
       doc.shapes.push({ id: 's' + sn++, layer: 'pattern', type: 'fold', ...fold, angleDeg: f.angleDeg, partId: p.id, inner: f.inner !== false });
     }
+  }
+  if (r.kind === 'ring' && plan.inner?.d > 0) {   /* 内径の円（ガイド）：帯の右に置く。指の太さ・号数を目で確かめる用 */
+    const rad = plan.inner.d / 2, right = Math.max(...layout.placed.map(q => q.x + (q.rot ? q.h : q.w)));
+    doc.shapes.push({ id: 's' + sn++, layer: 'guide', type: 'circle', cx: right + 6 + rad, cy: rad, r: rad });
   }
   doc.recipe = { ...r }; doc.layoutInfo = { pages: layout.pages, overflow: layout.overflow, paper };
   return { doc, plan, layout };
