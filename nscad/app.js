@@ -5705,7 +5705,7 @@ function initImages() {
 
 // ---- レシピ → 自動設計 ----
 function recipeFromForm() {
-  const kind = $('recipeKind').value || 'cardcase', r = defaultRecipe(kind),   /* パスケースは製品の選択肢から外した（事業主 2026-11-14「パスケースはまるでダメ…削除したほうがまし」→ 実物に合わせて作り直すまで出さない） */
+  const kind = $('recipeKind').value || 'ring', r = defaultRecipe(kind),   /* 製品は指輪・カップだけ（事業主 2026-11-14「指輪とカップ以外はすべて外す」「ジョイフルホンダで公開している型紙ベースで充実化していくので今は非表示に」）。パスケース・カードケース・コインケース・手帳の旧レシピは、作り直すまで出さない */
    sp = Number(DATA_STYLE?.pitch?.[0]?.value); if (sp >= 3 && sp <= 5) r.pitch = Math.round(sp * 100) / 100;
   const ring = kind === 'ring' ? { ringSize: Math.round(Number($('recipeRingSize').value)) || 0, innerD: Number($('recipeInnerD').value) || r.innerD, ringWidth: Number($('recipeRingWidth').value) || r.ringWidth, ringLayers: $('recipeRingLayers').value === '1' ? 1 : 2 } : {};   /* 指輪：号数が入っていれば号数から内径を決める（空なら内径の欄） */
   const cup = kind === 'cup' ? { cupTopD: Number($('recipeCupTopD').value) || r.cupTopD, cupBottomD: Number($('recipeCupBottomD').value) || r.cupBottomD, cupHeight: Number($('recipeCupHeight').value) || r.cupHeight } : {};   /* カップ：上・底の外径と高さ */
@@ -5740,14 +5740,16 @@ function gotoCheck() {
 function initRecipe() {
   $('recipeGenerate').onclick = generateRecipe; $('recipeCheck').onclick = runCheck; $('checkList').addEventListener('change', gotoCheck);
   $('recipePrint').onclick = () => { $('outputCard').open = true; revealCard($('outputCard')); printPages(); };
-  $('recipeKind').addEventListener('change', () => {
+  const onRecipeKind = () => {
     const kind = $('recipeKind').value, nb = kind === 'notebook', ring = kind === 'ring'; $('l-recipeRefill').hidden = !nb; $('l-recipeRingD').hidden = !nb; $('l-recipeSpine').hidden = !nb; $('l-recipePen').hidden = !nb; $('l-recipeCards').hidden = nb || ring || kind === 'coincase' || kind === 'cup';
     for (const id of ['l-recipeCupTopD', 'l-recipeCupBottomD', 'l-recipeCupHeight']) $(id).hidden = kind !== 'cup';
-    $('l-recipeStyle').hidden = kind === 'cup';   /* カップは外縫い・返し縫いではない（底＝駒合わせ・側面の両端＝突き合わせてクロスステッチ）ので、縫い方の欄を出さない（事業主 2026-11-14） */
+    $('l-recipeStyle').hidden = kind === 'cup' || ring;   /* 指輪・カップは外縫い・返し縫いではない（カップ＝底は駒合わせ・側面の両端は突き合わせてクロスステッチ／指輪＝帯の両端の丸目）ので、縫い方の欄を出さない（事業主 2026-11-14） */
     for (const id of ['l-recipeRingSize', 'l-recipeInnerD', 'l-recipeRingWidth', 'l-recipeRingLayers']) $(id).hidden = !ring;
     const own = k => k === 'ring' || k === 'cup', prev = $('recipeKind').dataset.prev || 'cardcase'; if (prev !== kind && (own(kind) || own(prev))) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪・カップへ／から切り替えたときだけ、ピッチと革厚を、その種類の初期値にする（指輪＝丸目 3mm・2.3mm／カップ＝4mm・2mm） */
     $('recipeKind').dataset.prev = kind;
-  });
+  };
+  if (!['ring', 'cup'].includes($('recipeKind').value)) $('recipeKind').value = 'ring';
+  $('recipeKind').addEventListener('change', onRecipeKind); onRecipeKind();   /* 開いたときも、最初の製品（指輪）の欄と初期値にしておく */
 }
 
 // ---- AI パネル（提案は「適用」を押すまで図面を変えない）----

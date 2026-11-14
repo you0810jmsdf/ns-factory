@@ -39,7 +39,7 @@ export function localDesignRequest(text) {
   const num = words => { const m = q.match(new RegExp('(?:'+words+')\\s*(?:は|を|が|:)?\\s*(\\d+(?:\\.\\d+)?)\\s*(cm|センチ|mm|ミリ)?','i')); return m ? Number(m[1]) * (/cm|センチ/.test(m[2] || '') ? 10 : 1) : undefined; };
   const request = { text: q, terms, bifold: terms.includes('bifold'), width: num('幅|横|width'), height: num('高さ|縦|height'), radius: num('内半径|半径|radius'), pitch: num('ピッチ|pitch'), thickness: num('革厚|革の厚み|thickness'), ringD: num('リング径|リング直径|ring diameter') };
   request.refill = ['m5','mini6','bible','a5','a6'].find(k => terms.includes(k));
-  request.kind = ['notebook','passcase','cardcase','coincase'].find(k => terms.includes(k));
+  request.kind = undefined;   /* 旧レシピ（手帳・パスケース・カードケース・コインケース）は自動で作らない（事業主 2026-11-14「指輪とカップ以外はすべて外す」）。過去の型紙の候補は今までどおり出す。2つ折り財布は別の機能（折りの設計）なので残す */
   request.invalid = ['width','height','radius','pitch','thickness','ringD'].some(k => request[k] !== undefined && (!Number.isFinite(request[k]) || request[k] <= 0 || request[k] > 2000));
   return request;
 }
