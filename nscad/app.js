@@ -2503,9 +2503,13 @@ function holeShapeTool(src, shape, { w, h, d }, pending) {
   pending.push(tool); return tool;
 }
 /** 菱目の向き（事業主 2026-11-12「順目と逆目をボタンで切り替えたい」「進行方向に対する角度も指定されたもの以外は認めない」）：線の進行方向に対して、順目（／）か逆目（＼）のどちらかだけを認める。すでにどちらかの向きなら残し、それ以外（丸目だった穴・ずれた穴）は、スイッチ（順目⇔逆目）の向きにする。force＝全部を、スイッチの向きにそろえる。 */
+/** 菱目の向きが、順目・逆目から何度までずれていたら「近い方の向きのまま」とみなすか（それより大きくずれた穴は、スイッチの向きにする）。 */
+const SLANT_SNAP_DEG = 20;
 function holeSlantAngle(hl, tool, route, force = false) {
   if (!route) return hl.angleDeg; const tan = pointAtLength(route, hl.s).angleDeg, m180 = a => ((a % 180) + 180) % 180, rel = m180(hl.angleDeg - tan), want = [m180(tool.angleDeg), m180(-tool.angleDeg)];
   if (!force && want.some(w => Math.abs(rel - w) < 1 || Math.abs(rel - w) > 179)) return hl.angleDeg;
+  const off = w => { const d = Math.abs(rel - w); return Math.min(d, 180 - d); }, near = off(want[0]) <= off(want[1]) ? 0 : 1;
+  if (!force && off(want[near]) <= SLANT_SNAP_DEG && holeAppearance(hl, doc)?.kind === 'diamond') return (((tan + (near === 0 ? tool.angleDeg : -tool.angleDeg)) % 360) + 360) % 360;   /* 少しだけずれた菱目（読み込んだ図面の角の丸み：線の向きに対して数度ずれて記録されている）は、近い方の向き（順目か逆目）に合わせる（丸目だった穴は向きが無いので、従来どおりスイッチの向き）。スイッチの向きにすると、角の所だけ向きが逆になる（事業主 2026-11-14「菱目をサイズが小さいものにおきかえたら向きがところどころ変わる」） */
   return (((tan + slantOf(tool)) % 360) + 360) % 360;
 }
 /** 窓の「向きをそろえる」：範囲の菱目ぜんぶの向きを、スイッチの向き（順目か逆目）にそろえる。位置・大きさは変えない。元に戻すは1回。 */
