@@ -10,7 +10,8 @@ export const PAPERS = { a4: { w: 190, h: 277 }, a3: { w: 277, h: 400 } };
 /** レシピの既定値。 */
 export function defaultRecipe(kind = 'passcase') {
   const r = { kind, cards: 2, refill: 'mini6', ringD: 15, baseThick: 2, thickness: 1.5, stitchStyle: 'edge', stitchLine: 3, allowance: 6, pitch: 4, play: 3, k: 0.5, penHolder: true, penD: 12, paper: 'a4', binding: kind === 'notebook' ? 'ring' : 'sew' };
-  if (kind === 'cup') Object.assign(r, { cupTopD: 80, cupBottomD: 70, cupHeight: 100, thickness: 2, stitchLine: 3, endMargin: 2, pitch: 4, binding: 'butt' });   /* 事業主 2026-11-14 推奨どおり：ペン立て（上の外径 80・底の外径 70・高さ 100・革厚 2）・側面の両端は突き合わせ・底は側面の内側に入れて駒合わせ縫い */
+  if (kind === 'cup') Object.assign(r, { cupTopD: 80, cupBottomD: 70, cupHeight: 100, thickness: 2, stitchLine: 3, endMargin: 2, pitch: 4, laminateGap: 2.5, binding: 'butt' });   /* laminateGap：底面の2重円の間（駒合わせの外の円から、2枚を縫い合わせる内の円まで・事業主 2026-11-14「外の円から2.5mm内側」） */
+    /* 事業主 2026-11-14 推奨どおり：ペン立て（上の外径 80・底の外径 70・高さ 100・革厚 2）・側面の両端は突き合わせ・底は側面の内側に入れて駒合わせ縫い */
   if (kind === 'ring') Object.assign(r, { innerD: 16, ringSize: 0, ringWidth: 20, ringLayers: 2, thickness: 2.3, endMargin: 2, sideInset: 1, pitch: 3, holeKind: 'round', binding: 'butt' });   /* 2026-11-12 のメルカリの指輪（内径16mm・幅2cm・2枚重ね・丸目 3mm）と同じ形になる値 */
   return r;
 }
@@ -28,22 +29,22 @@ function roundToolFor(doc, pitch) {
 }
 /** カップの側面の展開（部品の中の座標・左上が 0,0）。上・底の外径から革厚の中心の直径（外径−厚み）を出し、
  *  円錐台なら扇形（扇の要から底までの半径 Rb＝斜辺×底の直径÷直径の差・開き角＝180×底の直径÷Rb 度）、上と底が同じなら長方形。
- *  rows：bottom＝底の縫い線（底の端から stitchLine・駒合わせ）／seamA・seamB＝両端の縫い線（端から endMargin・突き合わせ・底の列と1ピッチあける）。 */
+ *  rows：bottom＝底の縫い線（底の端から革厚ちょうど・駒合わせ。外側の底革の上面の高さ／事業主 2026-11-14）／seamA・seamB＝両端の縫い線（端から endMargin・突き合わせ・底の列と1ピッチあける）。 */
 export function cupSideShape(r) {
-  const t = r.thickness, sl = r.stitchLine, e = r.endMargin, pitch = r.pitch, Dt = r.cupTopD - t, Db = r.cupBottomD - t, diff = Dt - Db, slant = Math.hypot(r.cupHeight, diff / 2);
+  const t = r.thickness, sl = r.stitchLine, bl = t, e = r.endMargin, pitch = r.pitch, Dt = r.cupTopD - t, Db = r.cupBottomD - t, diff = Dt - Db, slant = Math.hypot(r.cupHeight, diff / 2);
   let outline, rows, theta = 0, Rb = Infinity, Rt = Infinity;
   if (Math.abs(diff) < 0.01) {   /* 筒：横＝底の円周・縦＝高さ（上が y=0・底が y=h） */
     const W = Math.PI * Db, h = slant;
     outline = [{ type: 'polyline', closed: true, points: rect(0, 0, W, h) }];
-    rows = { bottom: { type: 'polyline', closed: false, points: [{ x: 0, y: h - sl }, { x: W, y: h - sl }] }, seamA: { type: 'polyline', closed: false, points: [{ x: e, y: h - sl - pitch }, { x: e, y: sl }] }, seamB: { type: 'polyline', closed: false, points: [{ x: W - e, y: h - sl - pitch }, { x: W - e, y: sl }] } };
+    rows = { bottom: { type: 'polyline', closed: false, points: [{ x: 0, y: h - bl }, { x: W, y: h - bl }] }, seamA: { type: 'polyline', closed: false, points: [{ x: e, y: h - bl - pitch }, { x: e, y: sl }] }, seamB: { type: 'polyline', closed: false, points: [{ x: W - e, y: h - bl - pitch }, { x: W - e, y: sl }] } };
   } else {   /* 扇形：要を (0,0) に、下向きに開く */
     Rb = slant * Db / Math.abs(diff); Rt = slant * Dt / Math.abs(diff); theta = 180 * Db / Rb;
     const a0 = 90 - theta / 2, a1 = 90 + theta / 2, rIn = Math.min(Rb, Rt), rOut = Math.max(Rb, Rt), dir = Rt > Rb ? 1 : -1, rad = a => a * Math.PI / 180;
     const P = (rho, a, n = 0, side = 1) => ({ x: rho * Math.cos(rad(a)) - side * n * Math.sin(rad(a)), y: rho * Math.sin(rad(a)) + side * n * Math.cos(rad(a)) });
     const arc = rr => ({ type: 'arc', cx: 0, cy: 0, r: rr, startDeg: (a0 + 360) % 360, endDeg: (a0 + 360) % 360 + theta });
     outline = [arc(rIn), { type: 'line', x1: P(rIn, a1).x, y1: P(rIn, a1).y, x2: P(rOut, a1).x, y2: P(rOut, a1).y }, arc(rOut), { type: 'line', x1: P(rOut, a0).x, y1: P(rOut, a0).y, x2: P(rIn, a0).x, y2: P(rIn, a0).y }];
-    const r1 = Rb + dir * (sl + pitch), r2 = Rt - dir * sl;
-    rows = { bottom: arc(Rb + dir * sl), seamA: { type: 'polyline', closed: false, points: [P(r1, a0, e, 1), P(r2, a0, e, 1)] }, seamB: { type: 'polyline', closed: false, points: [P(r1, a1, e, -1), P(r2, a1, e, -1)] } };
+    const r1 = Rb + dir * (bl + pitch), r2 = Rt - dir * sl;
+    rows = { bottom: arc(Rb + dir * bl), seamA: { type: 'polyline', closed: false, points: [P(r1, a0, e, 1), P(r2, a0, e, 1)] }, seamB: { type: 'polyline', closed: false, points: [P(r1, a1, e, -1), P(r2, a1, e, -1)] } };
   }
   const boxes = outline.map(bboxOf), minX = Math.min(...boxes.map(b => b.minX)), minY = Math.min(...boxes.map(b => b.minY)), maxX = Math.max(...boxes.map(b => b.maxX)), maxY = Math.max(...boxes.map(b => b.maxY));
   const move = s => translate(s, -minX, -minY);
@@ -85,16 +86,19 @@ export function planParts(recipe) {
   if (r.kind === 'cup') {
     /* カップ（事業主 2026-11-14「カップ作図機能」・縫って作る筒・すり鉢）：側面（扇形）の両端を突き合わせて縫い、底の円を側面の内側に入れて駒合わせで縫う。
        底の直径＝底の外径−2×革厚。駒合わせの穴の数は、側面の底の列と底の円の列で同じにする（底の円の方が周が短いので、底の穴の間隔は狭くなる）。 */
-    const D = r.cupBottomD, rd = D / 2 - r.thickness;
-    if (!(r.cupTopD > r.thickness && D > r.thickness && r.cupHeight > 0 && rd - r.stitchLine > 1)) return null;
-    const side = cupSideShape(r), n = Math.max(3, Math.round(side.bottomLen / r.pitch)), r2 = v => Math.round(v * 100) / 100;
+    /* 底は2枚重ね（事業主 2026-11-14「底は２枚重ねとして２枚を縫い合わせ、外側の一枚のみが側面と駒合わせ縫い」）：2枚とも直径＝底の外径−2×革厚。
+       底面の縫い目は2重円（「底面は縫い目が２重円になる」）：外の円＝駒合わせ（底の端から革厚ちょうど・側面の下の列と同じ穴数）、内の円＝2枚の縫い合わせ（外の円から laminateGap 内側・2枚で同じ穴数）。 */
+    const t = r.thickness, D = r.cupBottomD, rd = D / 2 - t, rk = rd - t, rl = rk - (r.laminateGap ?? 2.5);
+    if (!(r.cupTopD > t && D > t && r.cupHeight > 0 && rl > 1)) return null;
+    const side = cupSideShape(r), n = Math.max(3, Math.round(side.bottomLen / r.pitch)), m = Math.max(3, Math.round(2 * Math.PI * rl / r.pitch)), r2 = v => Math.round(v * 100) / 100;
     if (side.theta >= 350 || !(side.w > 0 && side.h > 0)) return null;
     side.rows.bottom.holes = { mode: 'centered', n };   /* 突き合わせの継ぎ目が、穴と穴のちょうど間に来る */
     side.rows.seamA.holes = side.rows.seamB.holes = { tool: 'round' };   /* 側面の両端は突き合わせてクロスステッチ＝丸キリの丸穴（事業主 2026-11-14）。左右の列は同じ長さなので穴の数・高さがそろう */
-    const disc = { outline: [{ type: 'circle', cx: rd, cy: rd, r: rd }], rows: { disc: { type: 'circle', cx: rd, cy: rd, r: rd - r.stitchLine, holes: { mode: 'closed', n } } }, w: 2 * rd, h: 2 * rd };
-    parts.push({ id: 'cupSide', name: '側面', nameKey: 'part.cupSide', w: r2(side.w), h: r2(side.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: side });
-    parts.push({ id: 'cupBottom', name: '底', nameKey: 'part.cupBottom', w: r2(disc.w), h: r2(disc.h), thickness: r.thickness, role: 'body', stitchEdges: [], folds: [], local: disc });
-    return { recipe: r, parts, seams: [{ a: 'cupSide:bottom', b: 'cupBottom:disc', style: 'butt' }, { a: 'cupSide:seamA', b: 'cupSide:seamB', style: 'butt' }], inner: { bottomD: r2(2 * rd), holes: n, slant: r2(side.slant), angleDeg: r2(side.theta), Rb: r2(side.Rb), Rt: r2(side.Rt) } };
+    const circ = (rr, k) => ({ type: 'circle', cx: rd, cy: rd, r: rr, holes: { mode: 'closed', n: k } }), disc = rows => ({ outline: [{ type: 'circle', cx: rd, cy: rd, r: rd }], rows, w: 2 * rd, h: 2 * rd });
+    parts.push({ id: 'cupSide', name: '側面', nameKey: 'part.cupSide', w: r2(side.w), h: r2(side.h), thickness: t, role: 'body', stitchEdges: [], folds: [], local: side });
+    parts.push({ id: 'cupBottomOuter', name: '底（外側）', nameKey: 'part.cupBottomOuter', w: r2(2 * rd), h: r2(2 * rd), thickness: t, role: 'body', stitchEdges: [], folds: [], local: disc({ koma: circ(rk, n), lam: circ(rl, m) }) });
+    parts.push({ id: 'cupBottomInner', name: '底（内側）', nameKey: 'part.cupBottomInner', w: r2(2 * rd), h: r2(2 * rd), thickness: t, role: 'body', stitchEdges: [], folds: [], local: disc({ lam: circ(rl, m) }) });
+    return { recipe: r, parts, seams: [{ a: 'cupSide:bottom', b: 'cupBottomOuter:koma', style: 'butt' }, { a: 'cupSide:seamA', b: 'cupSide:seamB', style: 'butt' }, { a: 'cupBottomOuter:lam', b: 'cupBottomInner:lam', style: 'overlap' }], inner: { bottomD: r2(2 * rd), holes: n, laminateHoles: m, komaR: r2(rk), laminateR: r2(rl), slant: r2(side.slant), angleDeg: r2(side.theta), Rb: r2(side.Rb), Rt: r2(side.Rt) } };
   }
   if (r.kind === 'coincase') {
     const w = 80 + 2 * m, h = 70 + 2 * m;
@@ -105,16 +109,20 @@ export function planParts(recipe) {
 }
 /** 棚詰めで用紙に並べる。rotate90=true なら横長の部品は 90° 回す（繊維方向はオプション）。戻り値 {placed:[{...part,x,y,rot}], pages, overflow}。 */
 export function layoutParts(parts, { paper = 'a4', gap = 6, rotate90 = true } = {}) {
-  const P = PAPERS[paper] || PAPERS.a4, placed = []; let x = 0, y = 0, rowH = 0, page = 0, overflow = false;
+  const P = PAPERS[paper] || PAPERS.a4, placed = []; let x = 0, y = 0, rowH = 0, page = 0, overflow = false, cols = [];
   const items = [...parts].sort((a, b) => Math.max(b.w, b.h) - Math.max(a.w, a.h));
   for (const part of items) {
     let w = part.w, h = part.h, rot = 0;
     if (rotate90 && w > P.w && h <= P.w) { [w, h] = [h, w]; rot = 90; }
     if (w > P.w || h > P.h) { overflow = true; }
-    if (x + w > P.w + 1e-9) { x = 0; y += rowH + gap; rowH = 0; }
-    if (y + h > P.h + 1e-9) { page++; x = 0; y = 0; rowH = 0; }
+    if (x + w > P.w + 1e-9) {   /* 横に入らないとき：同じ段の列の下が空いていれば、そこに縦に積む（カップの底2枚を、扇形の横に並べて A4 1枚に収める・2026-11-14） */
+      const c = cols.find(q => w <= q.w + 1e-9 && q.bottom + gap + h <= y + rowH + 1e-9);
+      if (c) { placed.push({ ...part, x: c.x, y: c.bottom + gap + page * (P.h + gap), rot, page }); c.bottom += gap + h; continue; }
+      x = 0; y += rowH + gap; rowH = 0; cols = [];
+    }
+    if (y + h > P.h + 1e-9) { page++; x = 0; y = 0; rowH = 0; cols = []; }
     placed.push({ ...part, x, y: y + page * (P.h + gap), rot, page });
-    x += w + gap; rowH = Math.max(rowH, h);
+    cols.push({ x, w, bottom: y + h }); x += w + gap; rowH = Math.max(rowH, h);
   }
   return { placed, pages: page + 1, overflow, paper: P };
 }
@@ -123,7 +131,7 @@ const rect = (x, y, w, h) => [{ x, y }, { x: x + w, y }, { x: x + w, y: y + h },
 export function buildDoc(recipe, { paper = recipe.paper || 'a4', tools = defaultTools(), nameOf = null } = {}) {
   const plan = planParts(recipe); if (!plan) return null;
   const r = plan.recipe, m = edgeMargin(r), layout = layoutParts(plan.parts, { paper }), doc = newDoc(); doc.tools = tools;
-  const kindOf = r.holeKind === 'round' ? 'round' : 'diamond', tool = tools.find(t => Math.abs(t.pitch - r.pitch) < 1e-9 && t.kind === kindOf) || tools.find(t => t.kind === kindOf) || tools[0];
+  const kindOf = r.holeKind === 'round' ? 'round' : 'diamond', tool = (r.toolId && tools.find(t => t.id === r.toolId && t.kind === kindOf)) || tools.find(t => Math.abs(t.pitch - r.pitch) < 1e-9 && t.kind === kindOf) || tools.find(t => t.kind === kindOf) || tools[0];   /* toolId：レシピの「目打ち」欄で選んだ菱目（事業主 2026-11-14「菱目がデカい。変えられないの？」） */
   let sn = 1, pn = 1, hn = 1;
   const rowPaths = new Map();
   for (const p of layout.placed) {

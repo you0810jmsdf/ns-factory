@@ -5708,11 +5708,17 @@ function recipeFromForm() {
   const kind = $('recipeKind').value || 'ring', r = defaultRecipe(kind),   /* 製品は指輪・カップだけ（事業主 2026-11-14「指輪とカップ以外はすべて外す」「ジョイフルホンダで公開している型紙ベースで充実化していくので今は非表示に」）。パスケース・カードケース・コインケース・手帳の旧レシピは、作り直すまで出さない */
    sp = Number(DATA_STYLE?.pitch?.[0]?.value); if (sp >= 3 && sp <= 5) r.pitch = Math.round(sp * 100) / 100;
   const ring = kind === 'ring' ? { ringSize: Math.round(Number($('recipeRingSize').value)) || 0, innerD: Number($('recipeInnerD').value) || r.innerD, ringWidth: Number($('recipeRingWidth').value) || r.ringWidth, ringLayers: $('recipeRingLayers').value === '1' ? 1 : 2 } : {};   /* 指輪：号数が入っていれば号数から内径を決める（空なら内径の欄） */
-  const cup = kind === 'cup' ? { cupTopD: Number($('recipeCupTopD').value) || r.cupTopD, cupBottomD: Number($('recipeCupBottomD').value) || r.cupBottomD, cupHeight: Number($('recipeCupHeight').value) || r.cupHeight } : {};   /* カップ：上・底の外径と高さ */
+  const cup = kind === 'cup' ? { cupTopD: Number($('recipeCupTopD').value) || r.cupTopD, cupBottomD: Number($('recipeCupBottomD').value) || r.cupBottomD, cupHeight: Number($('recipeCupHeight').value) || r.cupHeight, ...($('recipeTool').value ? { toolId: $('recipeTool').value } : {}) } : {};   /* カップ：上・底の外径と高さ */
   return { ...r, ...ring, ...cup, kind, cards: Number($('recipeCards').value) || r.cards, refill: $('recipeRefill').value || r.refill, ringD: Number($('recipeRingD').value) || r.ringD, spineOverride: Number($('recipeSpine').value) || 0, thickness: Number($('recipeThickness').value) || r.thickness, stitchStyle: $('recipeStyle').value === 'turned' ? 'turned' : 'edge', pitch: Number($('recipePitch').value) || r.pitch, paper: $('recipePaper').value === 'a3' ? 'a3' : 'a4', penHolder: !!$('recipePen').checked, binding: kind === 'notebook' ? 'ring' : kind === 'ring' || kind === 'cup' ? 'butt' : 'sew' };
 }
 /** 寸法・諸元から型紙をすべて作る「自動作図シリーズ」の種類（事業主 2026-11-14：作家本人以外は有料・まずは🔒だけで、課金は後で）。 */
 const RECIPE_PRO_KINDS = new Set(['ring', 'cup']);
+/** レシピの「目打ち」欄：登録済みの菱目を並べる（名前・ピッチ・幅）。選んでいた物があれば残し、無ければピッチが同じ菱目を選ぶ。 */
+function fillRecipeTools() {
+  const sel = $('recipeTool'), keep = sel.value, list = loadTools().filter(x => x.kind === 'diamond'), pitch = Number($('recipePitch').value);
+  sel.textContent = ''; for (const x of list) { const o = document.createElement('option'); o.value = x.id; o.textContent = t('recipeToolOpt', { name: x.name, pitch: x.pitch, w: x.holeW }); sel.appendChild(o); }
+  sel.value = list.some(x => x.id === keep) ? keep : (list.find(x => Math.abs(x.pitch - pitch) < 1e-9)?.id || list[0]?.id || '');
+}
 function generateRecipe() {
   if (RECIPE_PRO_KINDS.has($('recipeKind').value) && !lockGate('recipePro')) return;
   const recipe = recipeFromForm(), built = buildDoc(recipe, { tools: loadTools(), nameOf: p => p.nameKey ? t(p.nameKey) : p.name });
@@ -5746,8 +5752,11 @@ function initRecipe() {
     $('l-recipeStyle').hidden = kind === 'cup' || ring;   /* 指輪・カップは外縫い・返し縫いではない（カップ＝底は駒合わせ・側面の両端は突き合わせてクロスステッチ／指輪＝帯の両端の丸目）ので、縫い方の欄を出さない（事業主 2026-11-14） */
     for (const id of ['l-recipeRingSize', 'l-recipeInnerD', 'l-recipeRingWidth', 'l-recipeRingLayers']) $(id).hidden = !ring;
     const own = k => k === 'ring' || k === 'cup', prev = $('recipeKind').dataset.prev || 'cardcase'; if (prev !== kind && (own(kind) || own(prev))) { const d = defaultRecipe(kind); $('recipePitch').value = d.pitch; $('recipeThickness').value = d.thickness; }   /* 指輪・カップへ／から切り替えたときだけ、ピッチと革厚を、その種類の初期値にする（指輪＝丸目 3mm・2.3mm／カップ＝4mm・2mm） */
+    $('l-recipeTool').hidden = kind !== 'cup'; if (kind === 'cup') fillRecipeTools();
     $('recipeKind').dataset.prev = kind;
   };
+  $('recipeTool').addEventListener('focus', fillRecipeTools);
+  $('recipeTool').addEventListener('change', () => { const x = loadTools().find(q => q.id === $('recipeTool').value); if (x) $('recipePitch').value = x.pitch; });   /* 目打ちを選ぶと、ピッチもその目打ちに合わせる */
   if (!['ring', 'cup'].includes($('recipeKind').value)) $('recipeKind').value = 'ring';
   $('recipeKind').addEventListener('change', onRecipeKind); onRecipeKind();   /* 開いたときも、最初の製品（指輪）の欄と初期値にしておく */
 }
