@@ -1513,7 +1513,8 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     function formatPrice(value) {
       const amount = priceAmount(value);
-      return amount > 0 ? `${amount.toLocaleString('ja-JP')}円` : '';
+      // 999999 は「価格不明」の目印（商品マスター）。そのまま金額として出さない
+      return amount > 0 && amount < 999999 ? `${amount.toLocaleString('ja-JP')}円` : '';
     }
 
     function isMissingPrice(work) {

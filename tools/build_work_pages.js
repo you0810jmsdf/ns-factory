@@ -37,7 +37,7 @@ function esc(v) {
 /** OGPのdescriptionは長すぎると各SNSで切られるので詰める */
 function buildDescription(w) {
   const specs = [w.category, w.material, w.color, w.size].filter(Boolean).join(' / ');
-  const price = Number(w.price) > 0 ? `${Number(w.price).toLocaleString('ja-JP')}円` : '';
+  const price = Number(w.price) > 0 && Number(w.price) < 999999 ? `${Number(w.price).toLocaleString('ja-JP')}円` : '';
   const head = [specs, price].filter(Boolean).join(' ');
   const body = String(w.shortDesc || w.longDesc || '').replace(/\s+/g, ' ').trim();
   const text = [head, body].filter(Boolean).join(' — ');
