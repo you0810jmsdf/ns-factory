@@ -3,9 +3,7 @@
  "names": {
   "ja": "A5 6穴",
   "en": "A5 6-ring",
-  "aliases": [
-   "Filofax A5"
-  ]
+  "aliases": null
  },
  "holes": {
   "count": 6,

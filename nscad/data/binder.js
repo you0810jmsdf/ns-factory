@@ -326,9 +326,7 @@ export const BINDER_SPECS = [
   "names": {
    "ja": "A5 6穴",
    "en": "A5 6-ring",
-   "aliases": [
-    "Filofax A5"
-   ]
+   "aliases": null
   },
   "holes": {
    "count": 6,
@@ -527,9 +525,7 @@ export const BINDER_SPECS = [
    "ja": "A5 Slim",
    "en": "A5 Slim",
    "aliases": [
-    "A5スリム",
-    "odoru",
-    "monta"
+    "A5スリム"
    ]
   },
   "holes": {

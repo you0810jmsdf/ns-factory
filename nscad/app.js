@@ -6081,7 +6081,7 @@ function renderHardware() {
   const it = hwCurrent(), box = $('hwParams'); box.textContent = '';
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
   $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it);
-  const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs);
+  const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs, false, true);   /* 金具の一覧はリング規格だけ（事業主 2026-11-17「A5 の規格がたくさんあってわかりにくい」「Slim はリフィルの規格」） */
   renderBinder();
 }
 function fillRingOptions(rd, spec, placeholder = false) {
@@ -6093,7 +6093,7 @@ function fillRingOptions(rd, spec, placeholder = false) {
 function syncFoldRingSelects() {
   const sp = $('fdRingSpec'), dia = $('fdRingDia'); if (!sp || !dia) return;
   const spec = binderSpec($('binderSpecSel').value) || BINDER_SPECS[0]; if (!spec) return;
-  sp.textContent = ''; fillBinderSpecOptions(sp); sp.value = $('binderSpecSel').value; fillRingOptions(dia, spec); dia.value = $('ringD').value;
+  sp.textContent = ''; fillBinderSpecOptions(sp, false, true); sp.value = $('binderSpecSel').value; fillRingOptions(dia, spec); dia.value = $('ringD').value;
 }
 /** 規格・リング径が変わったとき（金具カードでも三つ折りの設計カードでも）。リングを描いているときは断面も作り直す。 */
 function onBinderChange() { renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection(); if ($('fdRingOn')?.checked === true) liveFoldDesign(); }
@@ -6901,7 +6901,7 @@ function openBinderEdit(specId, ringDia) {   /* ringDia＝選んでいるリン�
   { const lv = (spec.mechanism?.parts || []).find(q => q.kind === 'lever'); bdeSet('bdeLeverW', lv?.widthMm); bdeSet('bdeLeverL', lv && Math.abs(Number(lv.lengthMm) - Number(base.sectionWidthMm)) < 1e-9 ? '' : lv?.lengthMm); bdeSet('bdeLeverH', lv?.heightMm); bdeSet('bdeLeverRo', lv?.cornerOuterRMm || ''); bdeSet('bdeLeverRi', lv?.cornerInnerRMm || ''); bdeLeverInit = JSON.stringify(bdeLeverValues()); bdeLenAnchor = 'plate'; bdeSyncLength(); }   /* レバー：今のレバー（最初の1つ）の値。幅が台座の幅と同じなら空欄（台座の幅に追従） */
   { const ro = isRefillOnlySpec(spec.id), rs = ro ? binderSpec(RING_STANDARD_OF[spec.id]) : null;   /* リフィルの名前でしかない規格（A5 Slim）：金具（台座・取付穴・レバー・アーム・リング）は出さず、使うリング規格を案内する */
     $('bdeHwSection').hidden = ro; $('bdeSample').hidden = ro; $('bdeRefillOnlyNote').hidden = !ro; if (ro) $('bdeRefillOnlyNote').textContent = t('bdeRefillOnlyNote', { name: nameOf(spec), ring: rs ? nameOf(rs) : RING_STANDARD_OF[spec.id] }); }
-  $('bdEditDialog').showModal(); bdeHl = ''; bdeRingIdx = bdeRingPick(spec, typeof ringDia === 'string' || typeof ringDia === 'number' ? String(ringDia) : undefined); bdeSampleUpdate();
+  $('bdEditDialog').showModal(); { const bp = readWinPos(BDE_POS_KEY); if (bp) placeBdEdit(bp.left, bp.top); } bdeHl = ''; bdeRingIdx = bdeRingPick(spec, typeof ringDia === 'string' || typeof ringDia === 'number' ? String(ringDia) : undefined); bdeSampleUpdate();
 }
 /** アームの群（本数・間隔・リング径）を、規格 spec の値で埋める。 */
 function bdeFillArms(spec) {
@@ -6999,8 +6999,8 @@ function readBinderEditForm() {
   return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec), refill: bdeRefillForSave(asNew) };
 }
 function refreshBinderSelects(id) {
-  for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel); }
-  $('binderSpecSel').value = id; renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection();
+  for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel, false, sid === 'binderSpecSel'); }   /* 金具の一覧はリング規格だけ。寸法を直す窓の一覧は、リフィルの規格（A5 Slim）も出す（リフィルの大きさを直せるように） */
+  $('binderSpecSel').value = isRefillOnlySpec(id) && binderSpec(RING_STANDARD_OF[id]) ? RING_STANDARD_OF[id] : id; renderBinder(); resetSpineWire(); renderSpineSim(); renderTopSection();
 }
 /** 図面に置いてある金具（hw 付きの外形のグループ）のうち、規格 specId の金具を集める。寸法を直す前（古い規格）の状態で、手で直していないか（作り直した形と同じか）も調べておく。
  *  事業主 2026-11-08「寸法は100.5mmにしているのに、図は70mmのまま」：置いた金具は置いた時点の形で固まり、「この設定で作り直す」を押さないと、直した寸法に変わらなかった。 */
@@ -11651,6 +11651,10 @@ function floatSide(pos = null) { if (pos) placeSide(pos.left, pos.top); document
 function unfloatSide() { const st = $('side').style; document.body?.classList?.remove('side-float'); st.left = st.top = st.right = ''; saveWinPos(SIDE_POS_KEY, null); resize(); }
 function placeFlowWin(left, top) { const p = clampWinPos(left, top, 320), st = $('foldFlowDialog').style; st.left = p.left + 'px'; st.top = p.top + 'px'; st.right = 'auto'; st.maxHeight = Math.max(160, (typeof innerHeight === 'number' ? innerHeight : 800) - p.top - 8) + 'px'; return p; }
 function unplaceFlowWin() { const st = $('foldFlowDialog').style; st.left = st.top = st.right = st.maxHeight = ''; saveWinPos(FLOW_POS_KEY, null); }
+/** 金具の「寸法を直す」窓：見出しをつかんで動かせる（事業主 2026-11-17「作図を見ながら数値修正できるようにしたい。窓が動かず邪魔です」）。幅の広い窓なので、画面の外へ半分はみ出す所まで寄せられる（160px は画面に残す）。位置はブラウザに覚える。 */
+const BDE_POS_KEY = 'leather-cad.bdEditPos';
+function placeBdEdit(left, top) { const p = clampWinPos(left, top, 160), st = $('bdEditDialog').style; st.left = p.left + 'px'; st.top = p.top + 'px'; st.right = 'auto'; st.bottom = 'auto'; st.margin = '0'; return p; }
+function unplaceBdEdit() { const st = $('bdEditDialog').style; st.left = st.top = st.right = st.bottom = st.margin = ''; saveWinPos(BDE_POS_KEY, null); }
 /** 見出し head をつかんで box を動かす共通の処理。4ピクセル動かしてから動き出す（クリック・ボタンは邪魔しない）。 */
 function makeDraggable(head, { box, start, move, done, reset }) {
   let d = null;
@@ -11666,6 +11670,7 @@ function initFlowNotes() { let v = null; try { v = localStorage.getItem(FLOW_NOT
 function initWinDrag() {
   makeDraggable($('sideHead'), { box: () => $('side'), start: d => { if (!document.body?.classList?.contains('side-float')) floatSide({ left: d.left, top: d.top }); }, move: placeSide, done: p => saveWinPos(SIDE_POS_KEY, p), reset: unfloatSide });
   makeDraggable($('foldFlowHead'), { box: () => $('foldFlowDialog'), move: placeFlowWin, done: p => saveWinPos(FLOW_POS_KEY, p), reset: unplaceFlowWin });
+  if ($('bdEditTitle')?.addEventListener) makeDraggable($('bdEditTitle'), { box: () => $('bdEditDialog'), move: placeBdEdit, done: p => saveWinPos(BDE_POS_KEY, p), reset: unplaceBdEdit });
 }
 function initSideTabs() {
   orderSideCards(); let v = null; try { v = localStorage.getItem(SIDE_TAB_KEY); } catch { /* 読めなくても続ける */ }
