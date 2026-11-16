@@ -393,7 +393,24 @@ const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy
    ⛔ 連絡先・入力した文章は送らない。送るのは滞在秒・端末の種類・来た場所・押したボタン名だけ。
    ⛔ 事業主の端末（管理者として覚えさせたPC）と自動操作（Playwright等）からは送らない。
       動作確認は URL に ?nsf_visit_test=1 を付けると送られ、メール件名に【テスト】が付き、集計からは外れる。 */
-const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false, test: false };
+const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false, test: false,
+  fresh: false, resumed: false, leather: '', src: '', ask: false };
+/* 流入元（2026-11-17 事業主決定C）: 案内するリンク・QR に ?from=ig などの印を付ける。印が無く、まだ聞いていない
+   端末にだけ、最初に1タップの質問を出す（askVisitSource）。答えは端末に覚え、訪問記録の「流入元」に載せる。
+   ⛔ 印は決まった短い英数字だけ受け取る（名前・連絡先など個人の情報を URL に載せない）。 */
+const VISIT_SRC_KEY='nsf_hearing_src', VISIT_SRC_ASKED_KEY='nsf_hearing_src_asked';
+const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:'YouTube',note:'note',
+  qr:'QRコード（チラシ・名刺）',event:'イベント・教室',mail:'メール',base:'BASE',creema:'Creema',minne:'minne'};
+(function initVisitSource(){
+  let code='';
+  try{ code=(new URLSearchParams(location.search).get('from')||'').toLowerCase(); }catch(e){}
+  if(/^[a-z0-9_-]{1,20}$/.test(code)){
+    VISIT.src='リンクの印: '+(VISIT_SRC_CODES[code]||code);
+    try{ localStorage.setItem(VISIT_SRC_KEY, VISIT.src); }catch(e){}
+    return;
+  }
+  try{ VISIT.src=(localStorage.getItem(VISIT_SRC_KEY)||'').slice(0,40); }catch(e){}
+})();
 (function setupVisitBeacon(){
   let test = false, skip = false;
   try { test = new URLSearchParams(location.search).get('nsf_visit_test') === '1'; } catch(e){}
@@ -403,6 +420,7 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
   if (navigator.webdriver) skip = true;
   if (test) skip = false;
   if (skip) return;
+  VISIT.ask = true;   // 訪問記録を送る端末にだけ、流入元の質問を出す
 
   // 押したボタンの名前だけを控える（連続する同じ操作はまとめる・最大12件）
   document.addEventListener('click', ev => {
@@ -435,6 +453,9 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
       device: (/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'スマホ' : 'PC') + ' ' + window.innerWidth + 'px',
       from: fromLabel(),
       acts: VISIT.acts,
+      resumed: VISIT.resumed && !VISIT.fresh,   // 前回の続きを開いただけ（この回の新しい往復は無い）
+      leather: VISIT.leather,                   // 最後に見た・選んだ革（色見本）
+      src: VISIT.src,                           // 流入元（リンクの印 または 最初の質問の答え）
       lang: (typeof isEN === 'function' && isEN()) ? 'en' : 'ja',
       test: test || VISIT.test   // 工房へ送った内容がテスト受付なら印を付ける（2026-10-01 事業主決定C）
     });
@@ -561,6 +582,7 @@ function openZoom(i){
   zoomIdx=i;
   const it=zoomList[i];
   zoomImg.src=it.image; zoomImg.alt=it.label||'';
+  if((lastTopic==='leather' || state._awaitKey==='leather') && it.label && !it.hidePick) VISIT.leather=String(it.label).slice(0,40);   // 訪問記録: 見た革（2026-11-17）
   // 構造・刻印など革以外の写真（2026-09-19）: 説明（detail）と差額を出し、ボタンは「これにする」
   const priceEl=quickEl.querySelector('button[data-idx="'+it._idx+'"] .price');
   const colorish=!it.pickLabel || /色/.test(it.pickLabel);
@@ -967,8 +989,43 @@ function buildPrintSheet(prod, rows, priceText, a){
 function productQuickItems(){
   return Object.keys(PRODUCTS).map(k=>({label:`${PRODUCTS[k].emoji} ${PRODUCTS[k].name}`, sub:PRODUCTS[k].sub||'', val:k}));
 }
+/* 流入元の質問（2026-11-17 事業主決定C）。リンクの印が無く、まだ聞いていない端末に1回だけ出す。
+   ⛔ 必須にしない（スキップ・文章で話しかけても先へ進める）。入口の質問で帰る人が増えていないかは、
+      訪問記録の「画面での操作」が空のまま帰った件数で見る。日本語のみ（英語は最初からAI会話のため出さない）。 */
+const VISIT_SRC_CHOICES=['Instagram','Threads','Facebook','知人の紹介','イベント・教室','検索','その他'];
+function shouldAskVisitSource(){
+  if(!VISIT.ask || VISIT.src) return false;
+  try{ if(localStorage.getItem(VISIT_SRC_ASKED_KEY)) return false; }catch(e){ return false; }
+  return true;
+}
+function askVisitSource(){
+  try{ localStorage.setItem(VISIT_SRC_ASKED_KEY,'1'); }catch(e){}
+  showTyping();
+  setTimeout(()=>{
+    hideTyping();
+    addMsg('bot','はじめに1つだけ🧵 この窓口を、どちらでお知りになりましたか？（スキップもできます）');
+    const done=(label)=>{
+      // 質問への答え・スキップは「画面での操作」に数えない（流入元の欄に入るため。答えただけで帰った方を「操作あり」にしない）
+      const last=VISIT.acts[VISIT.acts.length-1]||''; if(last.indexOf(label||'スキップ')===0) VISIT.acts.pop();
+      if(label){
+        VISIT.src='回答: '+label;
+        try{ localStorage.setItem(VISIT_SRC_KEY, VISIT.src); }catch(e){}
+        addMsg('user',label);
+      }
+      quickEl.innerHTML='';
+      startPicker();
+    };
+    renderQuick(VISIT_SRC_CHOICES.map(c=>({label:c,sub:'',val:'',onClick:()=>done(c)}))
+      .concat([{label:'スキップ',sub:'',val:'',onClick:()=>done('')}]));
+    // 初回は説明の吹き出しと作例で縦が埋まり、スキップが入力欄の下に隠れる（375×667 で実測）。選択肢の最後まで見える位置へ送る
+    // 作例の写真が読み込まれると高さが伸びるので、少し後にもう一度送る（質問がまだ出ているときだけ）
+    const toEnd=()=>{ try{ if(quickEl.textContent.indexOf('スキップ')>=0) window.scrollTo(0, document.documentElement.scrollHeight); }catch(e){} };
+    setTimeout(toEnd, 60); setTimeout(toEnd, 900);
+  }, 400);
+}
 function startPicker(){
   if(isEN()){ startEnglishLive(); return; }
+  if(shouldAskVisitSource()){ askVisitSource(); return; }
   showTyping();
   setTimeout(()=>{
     hideTyping();
@@ -1532,6 +1589,7 @@ function showLeatherGallery(fam){
     const t=stockKnown?leatherTier(l.id):null;
     return { label:l.name, sub:t?TIER_BADGE[t.key]:(l.sub||''), val:'', image:leatherImg(l.image),
       onClick:()=>{
+        VISIT.leather=String(l.name).slice(0,40);   // 訪問記録: 選んだ革（2026-11-17）
         if(state._awaitKey==='leather'){ handleAnswer(l.name, l.name); return; }
         addMsg('bot','『'+l.name+'』ですね！'+(t?('こちらは「'+TIER_BADGE[t.key]+'」です。'):'')+'ヒアリングで革の色を伺う際に、この名前をお選びください🧵');
       } };
@@ -2030,6 +2088,8 @@ function resumeSaved(d){
   showContactBar(); hideIntro(); updateProgress();
   chat.innerHTML=''; quickEl.innerHTML='';
   history=d.history.slice();
+  // 前回の会話を開き直した訪問は「AIと相談した訪問」に数える（色見本だけ見て帰っても「話さずに帰った」にしない・2026-11-17 事業主決定）
+  if(history.some(h=>h.role==='user')){ VISIT.chatted=true; VISIT.resumed=true; }
   history.forEach(m=>addMsg(m.role==='user'?'user':'bot', m.content));
   addMsg('bot','ここまでの内容は覚えていますので、続きからどうぞ🧵');
   document.getElementById('modeBtn').textContent='↩ ガイドに戻る';
@@ -2140,7 +2200,7 @@ async function liveTurn(userText, skipEcho){
     }
     const reply=data.reply||'(応答が空でした)';
     history.push({role:'assistant', content:reply});
-    VISIT.chatted=true;   // 相談窓口の訪問記録: AIと話した（2026-09-18）
+    VISIT.chatted=true; VISIT.fresh=true;   // 相談窓口の訪問記録: AIと話した（2026-09-18）
     saveHistory();   // 端末に控える（戻ってきたとき続きから話せるように）
     addMsg('bot', reply);
     liveConsultSent=false;   // やり取りが増えたら再送信を許可（最新の相談内容を送り直せるように）
