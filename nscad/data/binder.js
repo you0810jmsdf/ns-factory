@@ -168,7 +168,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "a5-ring16",
@@ -319,6 +323,10 @@ export const BINDER_SPECS = [
    "confidence": "measured"
   },
   "sourceNote": "N's factory 実測（事業主 2026-11-09）：全長229（台座215＋レバー7×2）・台座の幅20・取付穴は中心から±100.5で径5.0（保存した図から読み取り）・リング内径16・外径19。板厚・角R・穴の並びは A5 6穴の値のまま。20mmリングは全長が違う（224）ので、別の実測が入るまでこの規格には入れない",
+  "maker": {
+   "name": null,
+   "model": null
+  },
   "parent": "a5"
  },
  {
@@ -517,7 +525,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "a5slim",
@@ -675,7 +687,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "a6-krause20",
@@ -831,6 +847,10 @@ export const BINDER_SPECS = [
    "confidence": null
   },
   "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-10-12。角R は図の角の曲線から 1.0 と読み直し）。リング・取り付け穴・機構は規格の値のまま",
+  "maker": {
+   "name": "クラウゼ",
+   "model": null
+  },
   "parent": "a6"
  },
  {
@@ -991,7 +1011,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "bible",
@@ -1192,7 +1216,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "fclassic",
@@ -1365,7 +1393,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "fcompact",
@@ -1537,7 +1569,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "fmonarch",
@@ -1696,7 +1732,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "fpocket",
@@ -1854,7 +1894,11 @@ export const BINDER_SPECS = [
    ],
    "confidence": null
   },
-  "sourceNote": null
+  "sourceNote": null,
+  "maker": {
+   "name": null,
+   "model": null
+  }
  },
  {
   "id": "m5",
@@ -2258,6 +2302,10 @@ export const BINDER_SPECS = [
      "y": 3.583
     }
    ]
+  },
+  "maker": {
+   "name": null,
+   "model": null
   }
  },
  {
@@ -2660,6 +2708,10 @@ export const BINDER_SPECS = [
      "y": 3.583
     }
    ]
+  },
+  "maker": {
+   "name": "クラウゼ",
+   "model": null
   },
   "parent": "mini6"
  },
@@ -3086,6 +3138,10 @@ export const BINDER_SPECS = [
      "y": 3.583
     }
    ]
+  },
+  "maker": {
+   "name": null,
+   "model": null
   },
   "parent": "mini6"
  },
@@ -3520,6 +3576,10 @@ export const BINDER_SPECS = [
      "y": 3.583
     }
    ]
+  },
+  "maker": {
+   "name": null,
+   "model": null
   }
  },
  {
@@ -3767,6 +3827,10 @@ export const BINDER_SPECS = [
    "confidence": null
   },
   "sourceNote": "ロルバーン L の紙の大きさ（幅132×高さ178）はデルフォニックス公式「ロルバーン フレキシブル リフィル 方眼 L」の仕様（https://shop.delfonics.com/c/notebooks/500707・2026-10-29 確認）。リングの穴は18個（note 記事の1件のみ）・間隔9.5mm・左端から6mm で、ロルバーン M の設計を引き継いだ推定（公式に穴の数値は公開されていない・実物で確かめて直す）。金具・リングは Mini6 のものを引き継ぐ。部品ライブラリの「リフィル型紙 ロルバーン L」と同じ寸法（tools/gen_rollbahn_part.mjs が、この規格から作る）。",
+  "maker": {
+   "name": null,
+   "model": null
+  },
   "parent": "mini6"
  },
  {
@@ -4009,6 +4073,10 @@ export const BINDER_SPECS = [
    "confidence": null
   },
   "sourceNote": "ロルバーン M の紙の大きさ（幅107×高さ138）は事業主の指定（2026-10-24）。リングの穴は13個・間隔9.5mm・左端から6mm（公式写真からの推定・事業主の指示）。金具・リングは Mini6 のものを引き継ぐ。部品ライブラリの「リフィル型紙 ロルバーン M」と同じ寸法（tools/gen_rollbahn_part.mjs が、この規格から作る）。",
+  "maker": {
+   "name": null,
+   "model": null
+  },
   "parent": "mini6"
  }
 ];

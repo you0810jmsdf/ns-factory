@@ -152,5 +152,9 @@
   "confidence": null
  },
  "sourceNote": "N's factory 実測（台座の長さ・幅・角R・2026-10-12。角R は図の角の曲線から 1.0 と読み直し）。リング・取り付け穴・機構は規格の値のまま",
+ "maker": {
+  "name": "クラウゼ",
+  "model": null
+ },
  "parent": "a6"
 }

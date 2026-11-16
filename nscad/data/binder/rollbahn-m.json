@@ -238,5 +238,9 @@
   "confidence": null
  },
  "sourceNote": "ロルバーン M の紙の大きさ（幅107×高さ138）は事業主の指定（2026-10-24）。リングの穴は13個・間隔9.5mm・左端から6mm（公式写真からの推定・事業主の指示）。金具・リングは Mini6 のものを引き継ぐ。部品ライブラリの「リフィル型紙 ロルバーン M」と同じ寸法（tools/gen_rollbahn_part.mjs が、この規格から作る）。",
+ "maker": {
+  "name": null,
+  "model": null
+ },
  "parent": "mini6"
 }

@@ -60,9 +60,10 @@ export function applyBinderEdits(specs, edits) {
     let s = out.find(x => x.id === id);
     if (!s) {
       const parent = out.find(x => x.id === e.parent && !x.parent); if (!parent) continue;   // 親が無い製品は無視（データが消えたとき）
-      s = clone(parent); s.id = id; s.parent = parent.id; s.names = { ja: id, en: id, aliases: [] }; s.sourceNote = null; s.sources = []; delete s.drawings; out.push(s);
+      s = clone(parent); s.id = id; s.parent = parent.id; s.names = { ja: id, en: id, aliases: [] }; s.sourceNote = null; s.sources = []; s.maker = null; delete s.drawings; out.push(s);
     }
     if (e.names) s.names = { ...s.names, ...e.names };
+    if (e.maker) s.maker = { name: e.maker.name ?? null, model: e.maker.model ?? null };   /* 製造会社・型番（2026-11-17） */
     if (e.armsFrom) { const src = specs.find(x => x.id === e.armsFrom && !x.parent); if (src) { s.holes = clone(src.holes); s.rings = clone(src.rings); s.armsFrom = e.armsFrom; } }   /* アームの規格を借りる（知らない規格なら親のまま・2026-11-04） */
     if (e.plate) {
       /* 台座の幅を直したら、開閉部品（レバー）の台座をまたぐ向きの長さ（lengthMm）も同じ割合で伸縮する（事業主 2026-11-04「リング幅変えたら、レバーも幅を合わせてほしい」） */
@@ -107,6 +108,7 @@ export function editFromForm(form) {
   const out = { plate };
   if (form.parent) { out.parent = form.parent; const ja = String(form.names?.ja || '').trim(); if (!ja) throw new Error('name'); out.names = { ja, en: String(form.names?.en || '').trim() || ja }; }
   else if (form.names?.ja) out.names = { ja: String(form.names.ja).trim(), en: String(form.names.en || form.names.ja).trim() };
+  if (form.maker !== undefined) { const mk = String(form.maker?.name ?? '').trim().slice(0, 60), md = String(form.maker?.model ?? '').trim().slice(0, 60); out.maker = { name: mk || null, model: md || null }; }   /* 製造会社・型番：form.maker が無ければ触らない。空欄は「なし」 */
   if (form.lever !== undefined) {   /* レバー：form.lever が無ければ触らない・全部空欄ならレバーなし（null）・長さと高さが正の数なら両端に付ける（lengthMm 空欄＝台座の幅・角R 空欄＝0） */
     const lv = form.lever || {}, w = num(lv.widthMm), l = num(lv.lengthMm), h = num(lv.heightMm), ro = num(lv.cornerOuterRMm), ri = num(lv.cornerInnerRMm);
     if (w == null && l == null && h == null && ro == null && ri == null) out.lever = null;
@@ -154,17 +156,17 @@ export function editFromForm(form) {
 export function editsToCsv(applied, edits) {
   const ids = Object.keys(edits?.specs || {}).filter(id => applied.some(s => s.id === id)); if (!ids.length) return null;
   const enc = v => { const s = v == null ? '' : String(v); return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }, row = a => a.map(enc).join(',');
-  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base,ring_count,ring_pitch_mm,ring_span_mm,ring_center_pitch_mm,refill_w_mm,refill_h_mm'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring,ring_shop,ring_url'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind,width_mm,length_mm,height_mm,corner_outer_r_mm,corner_inner_r_mm'];
+  const specs = ['id,parent,name_ja,name_en,base_length_mm,base_section_width_mm,base_thickness_mm,base_corner_r_mm,conf_base,ring_count,ring_pitch_mm,ring_span_mm,ring_center_pitch_mm,refill_w_mm,refill_h_mm,maker,model_no'], rings = ['spec_id,ring_inner_mm,ring_outer_mm,ring_wire_mm,wire_source,ring_embed_mm,conf_ring,ring_shop,ring_url'], parts = ['spec_id,part_kind,x_mm,y_mm,diameter_mm,mount_kind,width_mm,length_mm,height_mm,corner_outer_r_mm,corner_inner_r_mm'];
   const parents = new Set();
   for (const id of ids) {
     const s = applied.find(x => x.id === id), p = s.plate || {};
     if (s.parent && !ids.includes(s.parent)) parents.add(s.parent);
-    const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes || ed?.armsFrom ? s.holes.count : '', ed?.holes || ed?.armsFrom ? s.holes.pitchMm.join(';') : '', ed?.holes || ed?.armsFrom ? s.holes.span1toLastMm ?? '' : '', ed?.holes || ed?.armsFrom ? s.holes.centerPitchMm ?? '' : '', ed?.refill ? s.refill?.wMm ?? '' : '', ed?.refill ? s.refill?.hMm ?? '' : '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したか借りたときだけ出す */
+    const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes || ed?.armsFrom ? s.holes.count : '', ed?.holes || ed?.armsFrom ? s.holes.pitchMm.join(';') : '', ed?.holes || ed?.armsFrom ? s.holes.span1toLastMm ?? '' : '', ed?.holes || ed?.armsFrom ? s.holes.centerPitchMm ?? '' : '', ed?.refill ? s.refill?.wMm ?? '' : '', ed?.refill ? s.refill?.hMm ?? '' : '', s.maker?.name ?? '', s.maker?.model ?? '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したか借りたときだけ出す */
     for (const o of s.rings.options || []) { const size = ringSizeOf(s, o); rings.push(row([s.id, size.inner, size.outer, size.wire, size.wireSource, o.embedDepthMm ?? '', o.confidence || '', o.shopName || '', o.shopUrl || ''])); }
     for (const r of s.rivets || []) parts.push(row([s.id, 'mount', r.xMm, r.yMm, r.dMm, 'rivet', '', '', '', '', '']));
     for (const q of s.mechanism?.parts || []) parts.push(row([s.id, q.kind === 'button' ? 'button' : 'lever', q.xMm, q.yMm, q.diameterMm ?? '', '', q.widthMm ?? '', q.lengthMm ?? '', q.heightMm ?? '', q.cornerOuterRMm ?? '', q.cornerInnerRMm ?? '']));   /* 開閉部品（レバー等）：台座の幅に合わせて伸縮した長さを、取り込みにも渡す（2026-11-04） */
   }
-  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
+  for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）
   return { 'binder_specs.csv': specs.join('\n') + '\n', 'binder_rings.csv': rings.join('\n') + '\n', 'binder_parts.csv': parts.join('\n') + '\n' };
 }
 

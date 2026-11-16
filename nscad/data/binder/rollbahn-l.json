@@ -243,5 +243,9 @@
   "confidence": null
  },
  "sourceNote": "ロルバーン L の紙の大きさ（幅132×高さ178）はデルフォニックス公式「ロルバーン フレキシブル リフィル 方眼 L」の仕様（https://shop.delfonics.com/c/notebooks/500707・2026-10-29 確認）。リングの穴は18個（note 記事の1件のみ）・間隔9.5mm・左端から6mm で、ロルバーン M の設計を引き継いだ推定（公式に穴の数値は公開されていない・実物で確かめて直す）。金具・リングは Mini6 のものを引き継ぐ。部品ライブラリの「リフィル型紙 ロルバーン L」と同じ寸法（tools/gen_rollbahn_part.mjs が、この規格から作る）。",
+ "maker": {
+  "name": null,
+  "model": null
+ },
  "parent": "mini6"
 }

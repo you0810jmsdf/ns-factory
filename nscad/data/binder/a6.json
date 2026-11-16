@@ -156,5 +156,9 @@
   ],
   "confidence": null
  },
- "sourceNote": null
+ "sourceNote": null,
+ "maker": {
+  "name": null,
+  "model": null
+ }
 }

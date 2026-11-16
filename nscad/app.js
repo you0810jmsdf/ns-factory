@@ -3093,7 +3093,8 @@ function ringStdNoteInfo(s) {
   const en = document.documentElement.lang === 'en', ext = binderOverallExtent(sp), lv = (sp.mechanism?.parts || []).filter(q => q.kind === 'lever').length, rv = (sp.rivets || []).map(r => r.xMm);
   const mount = !rv.length ? t('foldFlowRingNoMount') : rv.length === 2 && Math.abs(rv[0] + rv[1]) < 0.05 ? '±' + Math.abs(rv[1]) + ' mm' : rv.join('・') + ' mm';
   const same = BINDER_SPECS.filter(x => x.id !== sp.id && x.names?.ja === sp.names.ja).length, pw = +Number(binderBase(sp).sectionWidthMm ?? 0).toFixed(2);   /* same＝同じ名前の別の規格の数（直す窓で別の規格を開いてしまう元） */
-  return { warn: lv === 0 || same > 0, text: t(lv === 0 ? 'foldFlowRingNoLever' : 'foldFlowRingNote', { name: en ? sp.names.en : sp.names.ja, conf: confWord(sp.plate?.confidence), total: ext ? +ext.total.toFixed(2) : '-', n: lv, mount, pw }) + (same > 0 ? ' ' + t('foldFlowRingDup', { n: same }) : '') };
+  const unreg = !binderSpec(id)?.parent;   /* 規格そのもの＝登録した金具ではない（推定の寸法）。使えるが、赤く知らせる（事業主 2026-11-17 決定B） */
+  return { warn: lv === 0 || same > 0 || unreg, text: (unreg ? t('foldFlowRingUnreg') + ' ' : '') + t(lv === 0 ? 'foldFlowRingNoLever' : 'foldFlowRingNote', { name: en ? sp.names.en : sp.names.ja, conf: confWord(sp.plate?.confidence), total: ext ? +ext.total.toFixed(2) : '-', n: lv, mount, pw }) + (same > 0 ? ' ' + t('foldFlowRingDup', { n: same }) : '') };
 }
 /** ⓪のリング規格の欄・金具の元の案内・「リング規格を直す」ボタンを、今の状態に合わせる。 */
 function syncRingStd(s) {
@@ -6075,10 +6076,33 @@ function fillBinderSpecOptions(sel, placeholder = false, ringOnly = false, place
   if (placeholder) { const o = document.createElement('option'); o.value = ''; o.textContent = placeholderText || t('foldFlowBookPick'); sel.appendChild(o); }   /* 小窓の⓪：何も選んでいない状態を作る（勝手に決まらないように） */
   const en = document.documentElement.lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, aliasOf = s => (s.names.aliases || []).filter(a => typeof a === 'string' && a), labelOf = s => aliasOf(s).length ? (en ? `${nameOf(s)} (${aliasOf(s).join(', ')})` : `${nameOf(s)}（${aliasOf(s).join('・')}）`) : nameOf(s);   /* 別名（ロルバーン M・Filofax Pocket など）を名前のあとに添える：一覧で探せるように */
   const dupN = new Map(); for (const x of BINDER_SPECS) dupN.set(labelOf(x), (dupN.get(labelOf(x)) || 0) + 1);   /* 同じ名前が並ぶときだけ、全長・台座の幅を添えて見分けられるようにする（事業主 2026-11-09「既に15mmで修正しているのに反映されない」＝同じ名前「A5」の別の製品を直していた） */
-  const opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; const base = labelOf(s); o.textContent = dupN.get(base) > 1 ? base + ' ' + t('specDupHint', { total: +(binderOverallExtent(s)?.total ?? binderBase(s).lengthMm ?? 0).toFixed(2), w: +Number(binderBase(s).sectionWidthMm ?? 0).toFixed(2) }) : base; into.appendChild(o); };
+  const opt = (s, into) => { const o = document.createElement('option'); o.value = s.id; const base = labelOf(s); o.textContent = (dupN.get(base) > 1 ? base + ' ' + t('specDupHint', { total: +(binderOverallExtent(s)?.total ?? binderBase(s).lengthMm ?? 0).toFixed(2), w: +Number(binderBase(s).sectionWidthMm ?? 0).toFixed(2) }) : base) + (ringOnly && !s.parent ? t('specUnregSuffix') : ''); into.appendChild(o); };   /* リング規格の一覧：規格そのもの（登録した金具ではない）には「登録なし・推定の寸法」と添える（事業主 2026-11-17 決定：規格は穴の並びだけ・使うのは登録した金具） */
   const rootOf = id => binderSpec(id)?.parent || id, groupOf = k => ringOnly && isRefillOnlySpec(k.parent) ? rootOf(RING_STANDARD_OF[k.parent]) : k.parent;   /* リフィルの名前でしかない規格から作った製品は、借りるリング規格の群（A5 6穴）に入れる */
-  for (const s of BINDER_SPECS.filter(s => !s.parent && !(ringOnly && isRefillOnlySpec(s.id)))) { const kids = BINDER_SPECS.filter(k => k.parent && groupOf(k) === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); opt(s, g); for (const k of kids) opt(k, g); sel.appendChild(g); }
+  for (const s of BINDER_SPECS.filter(s => !s.parent && !(ringOnly && isRefillOnlySpec(s.id)))) { const kids = BINDER_SPECS.filter(k => k.parent && groupOf(k) === s.id); if (!kids.length) { opt(s, sel); continue; } const g = document.createElement('optgroup'); g.label = nameOf(s); if (!ringOnly) opt(s, g); for (const k of kids) opt(k, g); if (ringOnly) opt(s, g); sel.appendChild(g); }   /* リング規格の一覧では、登録した金具を先に、規格そのものは後ろに */
 }
+/* ───────── 金具カードは2段（事業主 2026-11-17 決定）：①規格＝穴の並びだけ（binderStdSel）②金具＝その規格で登録した金具（binderHwSel）。
+   値の正本は、これまでどおり binderSpecSel（規格か製品の id・画面には出さない）。2つの欄は、その写しと入口。
+   登録した金具が無い規格は、推定の寸法のまま使える（赤い注意と「寸法を入れて登録」）。登録＝「寸法を直す」の窓で、新しい製品として保存すること。 ───────── */
+const ringRootOf = id => { const sp = binderSpec(id); if (!sp) return id; const p = sp.parent || sp.id; return isRefillOnlySpec(p) ? (binderSpec(RING_STANDARD_OF[p])?.parent || RING_STANDARD_OF[p]) : p; };
+const registeredHwOf = root => BINDER_SPECS.filter(k => k.parent && ringRootOf(k.id) === root);
+function syncBinderTwoStep() {
+  const std = $('binderStdSel'), hw = $('binderHwSel'), sp = binderSpec($('binderSpecSel').value); if (!std || !hw || !sp) return;
+  const lang = document.documentElement.lang || 'ja', en = lang === 'en', nameOf = s => en ? s.names.en : s.names.ja, root = ringRootOf(sp.id), kids = registeredHwOf(root), key = lang + '|' + specsSig();
+  const add = (sel, value, text) => { const o = document.createElement('option'); o.value = value; o.textContent = text; sel.appendChild(o); };
+  if (std.dataset.key !== key) { std.textContent = ''; for (const s of BINDER_SPECS.filter(s => !s.parent && !isRefillOnlySpec(s.id))) add(std, s.id, nameOf(s)); std.dataset.key = key; }
+  if (std.value !== root) std.value = root;
+  const hkey = key + '|' + root;
+  if (hw.dataset.key !== hkey) { hw.textContent = ''; const dup = new Map(); for (const k of kids) dup.set(nameOf(k), (dup.get(nameOf(k)) || 0) + 1);
+    for (const k of kids) add(hw, k.id, dup.get(nameOf(k)) > 1 ? nameOf(k) + ' ' + t('specDupHint', { total: +(binderOverallExtent(k)?.total ?? binderBase(k).lengthMm ?? 0).toFixed(2), w: +Number(binderBase(k).sectionWidthMm ?? 0).toFixed(2) }) : nameOf(k));
+    add(hw, root, t(kids.length ? 'binderHwEstimated' : 'binderHwNone')); hw.dataset.key = hkey; }
+  if (hw.value !== sp.id) hw.value = sp.id;
+  const note = $('binderUnregNote'), reg = $('binderRegister'); if (note) note.hidden = !!sp.parent; if (reg) reg.hidden = !!sp.parent;
+}
+/** 規格を選んだ：その規格で登録した金具の1つ目に替える（無ければ、規格そのもの＝推定の寸法）。 */
+function onBinderStdPick() { const root = $('binderStdSel').value, kids = registeredHwOf(root); $('binderSpecSel').value = kids[0]?.id || root; onBinderChange(); }
+function onBinderHwPick() { $('binderSpecSel').value = $('binderHwSel').value; onBinderChange(); }
+/** 「寸法を入れて登録」：規格の推定の寸法を叩き台に、新しい製品として保存する窓を開く。 */
+function openBinderRegister() { const root = ringRootOf($('binderSpecSel').value); openBinderEdit(root, $('ringD')?.value); if ($('bdeAsNew')) $('bdeAsNew').checked = true; $('bdeNameJa')?.focus?.(); $('bdeNameJa')?.select?.(); }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
@@ -6109,7 +6133,8 @@ function renderBinder() {
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
   const leather = Number($('partThickness').value) || 1.5;
   $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
-  syncFoldRingSelects(); renderRingBuy(spec, ringD);
+  { const mk = $('binderMaker'); if (mk) { const has = !!(spec.maker?.name || spec.maker?.model); mk.hidden = !has; mk.textContent = has ? t('binderMakerLine', { name: spec.maker?.name || '-', model: spec.maker?.model || '-' }) : ''; } }   /* 製造会社・型番（金具ごと。寸法は製造会社で違う・事業主 2026-11-17） */
+  syncFoldRingSelects(); renderRingBuy(spec, ringD); syncBinderTwoStep();
 }
 /** 金具カードのリング径の下：選んだリングの購入先（店名・商品ページ）の「買う」リンク。購入先が無ければ出さない。楽天はアフィリエイトのリンク（案内つき）。 */
 function renderRingBuy(spec, ringD) {
@@ -6899,7 +6924,7 @@ function openBinderEdit(specId, ringDia) {   /* ringDia＝選んでいるリン�
   $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '') + (doc.foldDesign && foldBookState().kind === 'book' && ringStandardId() === spec.id ? ' ' + t('bdeUsedHere') : '');   /* ⓪の図面が使っている金具のときだけ「※この図面で使っている金具」 */
   $('bdeAsNewLabel').textContent = t('bdeNewProduct', { parent: nameOf(spec.parent ? binderSpec(spec.parent) || spec : spec) });
   $('bdePlateConf').innerHTML = bdeConfOptions(); $('bdeMountRows').innerHTML = rivets.map((r, i) => bdeMountRow(i)).join('');   /* リングの行は bdeFillArms が作る */
-  $('bdeAsNew').checked = false; bdeSet('bdeNameJa', spec.names.ja); bdeSet('bdeNameEn', spec.names.en); bdeRefillFill(spec.refill); bdeRefillInit = JSON.stringify(bdeRefillValues());
+  $('bdeAsNew').checked = false; bdeSet('bdeNameJa', spec.names.ja); bdeSet('bdeNameEn', spec.names.en); if ($('bdeMaker')) { bdeSet('bdeMaker', spec.maker?.name); bdeSet('bdeModel', spec.maker?.model); } bdeRefillFill(spec.refill); bdeRefillInit = JSON.stringify(bdeRefillValues());
   bdeSet('bdePlateL', base.lengthMm); bdeSet('bdePlateW', base.sectionWidthMm); bdeSet('bdePlateT', base.thicknessMm); bdeSet('bdePlateR', base.cornerRMm ?? 0); bdeSet('bdePlateConf', base.confidence ?? spec.plate?.confidence ?? '');
   bdeFillArms(spec);
   { const sel = $('bdeArmsFrom'); sel.textContent = ''; const o0 = document.createElement('option'); o0.value = ''; o0.textContent = t('bdeArmsFromNone'); sel.appendChild(o0); for (const x of BINDER_SPECS.filter(x => !x.parent)) { const o = document.createElement('option'); o.value = x.id; o.textContent = nameOf(x); sel.appendChild(o); } const from = spec.armsFrom && BINDER_SPECS.some(x => x.id === spec.armsFrom && !x.parent) ? spec.armsFrom : ''; sel.value = from; sel.onchange = () => bdeApplyArmsFrom(); bdeSetArmsLocked(!!from); }   /* アームの規格を借りる（2026-11-04 改善案1）。借りて保存した製品を開き直したときは、借り元を出して欄は触れないまま */
@@ -7002,7 +7027,7 @@ function readBinderEditForm() {
      触っていなくて借りてもいないときは、今のアームの形を、そのまま残す（借りるのをやめた・直した跡がある・製品から新しい製品を作るとき）。 */
   const armsSame = $('bdeArmCount').value === bdeArmsInit.count && $('bdeArmPitch').value === bdeArmsInit.pitch;
   const keepHoles = armsSame && !armsFrom && (spec.armsFrom || binderEdits.specs[bdeSpecId]?.holes || (asNew && spec.parent)) ? JSON.parse(JSON.stringify(spec.holes)) : undefined;
-  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec), refill: bdeRefillForSave(asNew) };
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, maker: $('bdeMaker') ? { name: $('bdeMaker').value, model: $('bdeModel').value } : undefined, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec), refill: bdeRefillForSave(asNew) };
 }
 function refreshBinderSelects(id) {
   for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel, false, sid === 'binderSpecSel'); }   /* 金具の一覧はリング規格だけ。寸法を直す窓の一覧は、リフィルの規格（A5 Slim）も出す（リフィルの大きさを直せるように） */
@@ -8439,7 +8464,7 @@ function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle')
 function initHardware() {
   renderHardware();
   $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware);
-  for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', onBinderChange); $('partThickness').addEventListener('change', renderBinder);
+  for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', onBinderChange); $('binderStdSel')?.addEventListener?.('change', onBinderStdPick); $('binderHwSel')?.addEventListener?.('change', onBinderHwPick); if ($('binderRegister')) $('binderRegister').onclick = openBinderRegister; $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
   $('binderPlan').onclick = () => { const spec = binderSpec($('binderSpecSel').value); if (spec) { const d = Number($('ringD').value), cap = (k, which) => `<div class="view-cap" style="margin:10px 0 4px;font-weight:bold">${t(k)} <button type="button" data-place-view="${which}">${t('binderViewPlace')}</button></div>`; binderViewTarget = { spec, ringD: d }; showSvgDialog(cap('binderViewPlan', 'plan') + binderPlanSvg(spec, d) + cap('binderViewSide', 'side') + binderSideSvg(spec, d) + cap('binderViewFront', 'front') + binderFrontSvg(spec, d), spec.names.ja); for (const b of $('svgBody').querySelectorAll?.('[data-place-view]') || []) b.onclick = () => { placeBinderView(b.dataset.placeView); $('svgDialog').close(); }; } };

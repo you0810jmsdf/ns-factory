@@ -422,5 +422,9 @@
    }
   ]
  },
+ "maker": {
+  "name": null,
+  "model": null
+ },
  "parent": "mini6"
 }
