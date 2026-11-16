@@ -400,7 +400,8 @@ const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent
    ⛔ 印は決まった短い英数字だけ受け取る（名前・連絡先など個人の情報を URL に載せない）。 */
 const VISIT_SRC_KEY='nsf_hearing_src', VISIT_SRC_ASKED_KEY='nsf_hearing_src_asked';
 const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:'YouTube',note:'note',
-  qr:'QRコード（チラシ・名刺）',event:'イベント・教室',mail:'メール',base:'BASE',creema:'Creema',minne:'minne'};
+  qr:'QRコード（チラシ・名刺）',event:'イベント・教室',mail:'メール',base:'BASE',creema:'Creema',minne:'minne',
+  meishi:'名刺のQR',flyer:'チラシ',furusato:'ふるさと納税の同梱カード',dm:'DM・個別のご案内',oldsite:'旧サイト'};
 (function initVisitSource(){
   let code='';
   try{ code=(new URLSearchParams(location.search).get('from')||'').toLowerCase(); }catch(e){}
@@ -409,6 +410,12 @@ const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:
     try{ localStorage.setItem(VISIT_SRC_KEY, VISIT.src); }catch(e){}
     return;
   }
+  // リンク集・トップが受けた印（links.html?from=ig など。各ページ head の1行が nsf_src_code に「印|時刻」で覚える・30日）。
+  //   名刺のQRやSNSのプロフィールはリンク集へ飛ぶので、そこで受けた印をここで読む（2026-11-17）
+  try{
+    const m=/^([a-z0-9_-]{1,20})\|(\d{10,16})$/.exec(localStorage.getItem('nsf_src_code')||'');
+    if(m && Date.now()-Number(m[2]) < 30*86400000){ VISIT.src='リンクの印: '+(VISIT_SRC_CODES[m[1]]||m[1]); return; }
+  }catch(e){}
   try{ VISIT.src=(localStorage.getItem(VISIT_SRC_KEY)||'').slice(0,40); }catch(e){}
 })();
 (function setupVisitBeacon(){
