@@ -2768,9 +2768,10 @@ function moveShapeKeepingHoles(next) {
     }
   });
 }
-function transformSelectedTo(next) {
+function transformSelectedTo(next, also) {
   cancel();
   commit(() => {
+    if (also) also();
     doc.shapes = doc.shapes.map(x => x.id === next.id ? next : x);
     for (const saved of doc.paths.filter(p => p.shapeIds.includes(next.id))) {
       const route = resolvePath(doc, saved);
@@ -10166,7 +10167,7 @@ function movePosition(p, shift, free = false) {
 function livePreviewOf(sh) {
   if (!gesture) return sh;
   if ((gesture.kind === 'node' || gesture.kind === 'bzctrl') && gesture.id === sh.id) return gesture.preview || sh;
-  if (gesture.kind === 'lineEnd' && gesture.id === sh.id) return handleMoved(sh, gesture.h, cursor);
+  if (gesture.kind === 'lineEnd' && gesture.id === sh.id) return lineEndMoved(sh, gesture, cursor);
   if (gesture.kind === 'move') return previewMoved(sh);
   if (gesture.kind === 'rectR' && gesture.id === sh.id && gesture.box && !gesture.cush) { const b = gesture.box; return { ...sh, points: rectShape({ x: b.x0, y: b.y0 }, { x: b.x1, y: b.y1 }).points }; }
   if (gesture.kind === 'circleR' && gesture.id === sh.id) return { ...sh, r: gesture.r };
@@ -10804,6 +10805,27 @@ function handleMoved(s, h, p) {
   if (s.type === 'arc') { const deg = Math.atan2(p.y - s.cy, p.x - s.cx) * 180 / Math.PI; return h.end === 1 ? { ...s, startDeg: deg } : { ...s, endDeg: deg }; }
   return s;
 }
+/** 円弧を、同じ形の曲線（節点とハンドルつきのペンの線）にしたもの。90°以下ごとに1区間。id・層・線の種類などはそのまま。 */
+function arcAsCurve(s) {
+  const sweep = arcSweep(s), n = Math.max(1, Math.ceil(sweep / 90 - 1e-9)), step = sweep / n * Math.PI / 180, k = 4 / 3 * Math.tan(step / 4) * s.r, a0 = s.startDeg * Math.PI / 180, nodes = [];
+  for (let i = 0; i <= n; i++) { const a = a0 + step * i, x = s.cx + s.r * Math.cos(a), y = s.cy + s.r * Math.sin(a), tx = -Math.sin(a) * k, ty = Math.cos(a) * k; nodes.push({ x, y, inX: i ? x - tx : x, inY: i ? y - ty : y, outX: i < n ? x + tx : x, outY: i < n ? y + ty : y, smooth: i > 0 && i < n }); }
+  const { cx, cy, r, startDeg, endDeg, ...rest } = s; return { ...rest, type: 'path', nodes, closed: false };
+}
+/** 円弧の端を、円周から離れた点 p へ動かす：円弧を曲線に変えて、その端（とハンドル）だけを p へ移す。反対の端の位置と向きは変わらない（事業主決定 2026-11-16「片方の端点だけ動かして結合したいけど曲線の形が固定されて融通が利かない」「円弧をベジエ曲線にするイメージ」）。 */
+function arcEndFreed(s, h, p) { const c = arcAsCurve(s); return editedNodePath(c, { index: h.end === 1 ? 0 : c.nodes.length - 1, part: 'anchor' }, p); }
+/** 端をドラッグ中の図形。円弧の端が円周から離れたとき（g.free）だけ、曲線に変える。 */
+function lineEndMoved(s, g, p) { return s.type === 'arc' && g.free ? arcEndFreed(s, g.h, p) : handleMoved(s, g.h, p); }
+/** 円弧の端のドラッグが「円周の上を動かす（角度だけ）」か「自由に動かす（曲線に変える）」かを決める。吸着する前のポインタが円周から画面で 12px より離れたとき、または、円周に乗っていない点（ほかの線の端・交点など）に吸い付いたとき＝自由。Shift を押している間は、いつでも円弧のまま。 */
+function markArcEndFree(g, w, shift) {
+  const s = doc.shapes.find(x => x.id === g.id); if (!s || s.type !== 'arc') return;
+  const off = q => Math.abs(Math.hypot(q.x - s.cx, q.y - s.cy) - s.r);
+  g.free = !shift && arcSweep(s) < 360 && (off(w) > 12 / scale || (!!snap && off(cursor) > 0.01));
+}
+/** 円弧を曲線に変えたとき、その円弧の点を覚えていた寸法の付け替え。始点・終点・まん中は曲線の同じ場所へ、中心は外す（曲線に中心は無い）。 */
+function reanchorArcDims(id, nodeCount) {
+  const n = nodeCount, map = [0, n - 1, (n - 1) % 2 === 0 ? (n - 1) / 2 : n + (n - 2) / 2, null];
+  for (const d of doc.shapes) if (d.type === 'dimension' && d.anchors) d.anchors = d.anchors.map(a => a && a.id === id ? (map[a.k] == null ? null : { ...a, k: map[a.k] }) : a);
+}
 /** 端のハンドルを持つ図形（直線・折れ線・矩形・円弧）。 */
 const hasHandles = s => ['line', 'polyline', 'arc'].includes(s.type);
 /** 延長線スナップ：カーソルが、動かさない側の端から元の向きに伸ばした線（延長線）の近く（画面で12px以内）なら、吸着した点を延長線の上にそろえる。離れれば自由に動かせる（Shift 不要でまっすぐ延長できる）。 */
@@ -11035,7 +11057,7 @@ function drawSheetBody(lo, hi) {
   for (const s of doc.shapes.filter(s => visible(s) && s.type === 'image')) strokeShape(s, selected.has(s.id) ? '#c9a96e' : '#555');
   // 革色・革の質感：部品の閉図形を塗る（カラーシミュレーション）。質感は図形自身の指定が優先、無ければ部品の指定。質感の無い部品は革色を半透明で
   const fillItems = viewShow.colors ? leatherItems(doc, visible, previewMoved, metalDrawItems()) : []; paintLeatherItems(fillItems); /* 革色・革の質感・型紙の輪郭の革色と、金属の色が付いた金具のべた塗り（線の下）を、層の並びの順に重ねる（画面・ほかの紙・PNG 書き出しで同じ見え方） */
-  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? handleMoved(s, gesture.h, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) && !(s.type === 'text' && isHex6(s.textColor)) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
+  const rankDraw = layerRankMap(doc), metalEdge = metalEdgeColors(doc), strokeList = doc.shapes.filter(s => visible(s) && s.type !== 'image').sort((p, q) => (rankDraw.get(p.layer) || 0) - (rankDraw.get(q.layer) || 0)), strokeOne = s => strokeShape(gesture?.kind === 'dimOff' && gesture.preview?.has(s.id) ? { ...s, offset: gesture.preview.get(s.id) } : s.type === 'dimension' && s.anchors && gesture && !(gesture.kind === 'move' && gesture.ids.has(s.id)) ? liveDimension(s) : gesture?.kind === 'node' && gesture.id === s.id ? gesture.preview || s : gesture?.kind === 'lineEnd' && gesture.id === s.id ? lineEndMoved(s, gesture, cursor) : previewMoved(s), hl && hl.has(s.id) ? '#ff4040' : selected.has(s.id) && !(s.type === 'text' && isHex6(s.textColor)) ? '#c9a96e' : s.type === 'text' && isHex6(s.textColor) ? s.textColor : s.type === 'dimension' || s.type === 'text' ? TEXT_COLOR_DEFAULT : shapeLineColor(s) || metalEdge.get(s.id) || '#d8d8d8', s.lineStyle === 'dashed'); /* リングアーム（occlude）は、ほかの線のあとで、背景（金属の色が付いていればその塗り）で塗ってから描く：本体の縁の線がリングアームの下に隠れる（事業主の忠実な再現図 2026-10-13） */
   /* 重なりは、層ごとに「その層の塗り → その層の線」の順（事業主 2026-10-25「レイヤーの表示が崩れている」：塗りは層の順に重なるのに、線はいつも全部の塗りの上に出て、手前の層の白い塗りがリングの塗りを隠しても、リングの輪郭だけが白の上に残った）。
      塗りは先に全部まとめて描いた（半透明の色が、層をまたいでも1色に見えるため）あと、手前の層の不透明に近い塗り（白・質感・金属）を、奥の層の線の上にもう一度重ねる */
   const rankOfStroke = s => shapeDrawRank(s, rankDraw), opaqueItems = fillItems.filter(it => it.direct || it.alpha >= 0.9);
@@ -11057,7 +11079,7 @@ function drawSheetBody(lo, hi) {
   ctx.setLineDash([]);
   if (mode === 'select' && selected.size === 1) { const s = doc.shapes.find(s => selected.has(s.id) && s.type === 'path' && editable(s)); if (s) drawNodes(gesture?.kind === 'node' && gesture.preview ? gesture.preview : s); }
   if (mode === 'select' && selected.size === 1) { const bz = doc.shapes.find(s => selected.has(s.id) && s.type === 'bezier' && editable(s)); if (bz) drawBezierCtrl(gesture?.kind === 'bzctrl' && gesture.preview ? gesture.preview : bz); }
-  if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? handleMoved(ln, gesture.h, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
+  if (mode === 'select' && selected.size === 1) { const ln = doc.shapes.find(s => selected.has(s.id) && hasHandles(s) && editable(s)); if (ln) { const v = gesture?.kind === 'lineEnd' && gesture.id === ln.id ? lineEndMoved(ln, gesture, cursor) : ln, r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const q of shapeHandles(v)) { ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } } /* 直線・折れ線・矩形・円弧を1つ選ぶと、端・角にハンドル（ドラッグでその端・角だけ動く） */
   if (mode === 'select' && selected.size > 1) { const ce = chainEndHandles(); if (ce) { const r = 4 / scale; ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; ctx.strokeStyle = '#c9a96e'; ctx.fillStyle = '#111'; for (const c of ce) { const v = gesture?.kind === 'lineEnd' && gesture.id === c.shape.id ? handleMoved(c.shape, gesture.h, cursor) : c.shape, q = shapeHandles(v).find(h => h.end === c.handle.end); ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } ctx.restore(); } }   /* 一直線につながった複数の線を選ぶと、全体の両端にハンドル（外側の端の線だけが伸びる） */
   for (const originalHole of doc.holes) { const rk = holeRanks.get(originalHole); if (rk === null || rk === undefined || !stackRanks.includes(rk)) drawHoleOne(originalHole); }   /* 線の無い穴・隠れた線の穴は、今までどおり最後に上へ */
   function drawHoleOne(originalHole) {
@@ -11494,7 +11516,7 @@ canvas.addEventListener('pointermove', e => {
   else cursor = gesture?.kind === 'move' ? (gesture.moved ||= distance(p, gesture.screen) >= 4) ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : { ...gesture.start } :   /* つかんで 4px 動くまでは、動かさない（クリック・ダブルクリックのぶれで、吸着の分だけ一瞬ずれていた）。4px は、離したときに動かすか決める値と同じ */ mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   updateRadiusHover(world(p));
-  if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed);
+  if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed); if (gesture?.kind === 'lineEnd') markArcEndFree(gesture, world(p), e.shiftKey);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   if (gesture?.kind === 'bzctrl') { const s = doc.shapes.find(s => s.id === gesture.id); if (s) gesture.preview = editedBezierCtrl(s, gesture, cursor); }
   if (gesture?.kind === 'dimOff') gesture.preview = dimOffPreview(gesture, cursor);
@@ -11811,7 +11833,7 @@ canvas.addEventListener('pointerup', drawOnce(e => {
   if (!gesture) return;
   const g = gesture, p = local(e);
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey, e.altKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
-  if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey || !!g.holed);
+  if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey || !!g.holed); if (g.kind === 'lineEnd') markArcEndFree(g, world(p), e.shiftKey);
   gesture = null; if (g.kind === 'pan' && distance(p, g.screen) >= 4) lastPanDragAt = Date.now();
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
@@ -11827,7 +11849,7 @@ canvas.addEventListener('pointerup', drawOnce(e => {
     penRelease(g.start, cursor, distance(p, g.screen) >= 4); lastPoint = g.start;
   } else if (g.kind === 'lineEnd') {
     const s = doc.shapes.find(s => s.id === g.id);
-    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = handleMoved(s, g.h, cursor); if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) { if (lineEndRetracted(s, g)) { removeSelected(new Set([s.id])); $('hint').textContent = t('lineEndRetracted'); } else $('hint').textContent = t('lineEndZero'); } else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next); $('hint').textContent = s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
+    if (s && editable(s) && distance(p, g.screen) >= 2) { const next = lineEndMoved(s, g, cursor), freed = s.type === 'arc' && next.type === 'path'; if (s.type === 'line' && Math.hypot(next.x2 - next.x1, next.y2 - next.y1) < 1e-6) { if (lineEndRetracted(s, g)) { removeSelected(new Set([s.id])); $('hint').textContent = t('lineEndRetracted'); } else $('hint').textContent = t('lineEndZero'); } else { const holed = doc.paths.some(pt => pt.shapeIds.includes(s.id) && doc.holes.some(h => h.pathId === pt.id)); if (holed && !lineEndKeepsHoles(s, next)) { $('hint').textContent = t('lineEndHoles'); draw(); return; } if (holed) moveShapeKeepingHoles(next); else transformSelectedTo(next, freed ? () => reanchorArcDims(s.id, next.nodes.length) : null); $('hint').textContent = freed ? t('arcEndCurve') : s.type === 'line' ? t('lineEndDone', { len: Math.hypot(next.x2 - next.x1, next.y2 - next.y1).toFixed(2) }) : t(s.type === 'arc' ? 'arcEndDone' : 'vertexDone'); } }
   } else if (g.kind === 'node') {
     const s = doc.shapes.find(s => s.id === g.id);
     if (s && editable(s) && distance(p, g.screen) >= 2) transformSelectedTo(editedNodePath(s, g, cursor));
