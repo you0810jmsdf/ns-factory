@@ -2773,14 +2773,20 @@ function transformSelectedTo(next, also) {
   commit(() => {
     if (also) also();
     doc.shapes = doc.shapes.map(x => x.id === next.id ? next : x);
-    for (const saved of doc.paths.filter(p => p.shapeIds.includes(next.id))) {
+    refitHolesOn(next.id);
+  });
+}
+/** 図形の形を変えたあと、その図形を通る経路の縫い穴を、新しい形の上へ乗せ直す（commit の中で呼ぶ）。 */
+function refitHolesOn(id) {
+  {
+    for (const saved of doc.paths.filter(p => p.shapeIds.includes(id))) {
       const route = resolvePath(doc, saved);
       if (!route) { doc.holes = doc.holes.filter(h => h.pathId !== saved.id); doc.paths = doc.paths.filter(p => p.id !== saved.id); continue; }
       const len = arcLength(route);
       for (const h of doc.holes.filter(h => h.pathId === saved.id)) { const q = pointAtLength(route, Math.min(h.s, len)); h.x = q.x; h.y = q.y; h.s = q.s; }
       saved.segments = saved.segments.map(seg => ({ ...seg, from: Math.min(seg.from, len), to: Math.min(seg.to, len) }));
     }
-  });
+  }
 }
 // ---- 部品（厚み）・折り線・折り代・重ね補正 ----
 function renderPartInfo(s) {
@@ -4266,7 +4272,7 @@ function initInfo() {
   $('vmShapeMenu').onclick = () => { const at = vertexMenuAt, s = vertexMenuShape(); hideVertexMenu(); if (!s) return; selected = new Set([s.id]); nodeSel = null; showCtxMenu({ clientX: at.clientX, clientY: at.clientY }); };   /* 図形のメニュー（線種など）を同じ場所に */
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
-  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections; $('offsetSel').onclick = offsetSelectedShapes;
+  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('offsetSel').onclick = offsetSelectedShapes;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -9087,7 +9093,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !(affectedHoles().length || (selected.size && doc.holes.length));   /* 線の上の穴は、押したときに数える（描くたびに全穴×選択を測らない） */ $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('smoothJoints').disabled = $('smoothJointsEven').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
@@ -10236,6 +10242,10 @@ function alignToCenters(p) {
   }
   return bx || by ? { ...(bx ? { x: bx.c.x, fromX: bx.c } : {}), ...(by ? { y: by.c.y, fromY: by.c } : {}) } : null;
 }
+/** いまのドラッグが、円弧の端・曲線（ペンの線）の節点やハンドルか。目盛り（グリッド）に丸めない対象。曲がりのない2節点の線（実質は直線）は、直線と同じに丸める。 */
+function curveEndDrag() { const g = gesture; if (!g) return false; if (g.kind === 'node') return !g.dir; if (g.kind !== 'lineEnd') return false; const s = doc.shapes.find(x => x.id === g.id); return s?.type === 'arc'; }
+/** 円弧の端・曲線の節点（ハンドルは除く）をつかんでいて Alt を押している＝吸着なし（図形を動かすときの Alt と同じ）。ハンドルの Alt は「折れた節点にする」なので対象外。 */
+function curveEndFreeAlt(e) { const g = gesture; return !!(e.altKey && g && curveEndDrag() && (g.kind === 'lineEnd' || g.part === 'anchor')); }
 function snapped(p, shift, anchor) {
   snap = null; snapAlign = null;
   let result = { ...p };
@@ -10264,7 +10274,7 @@ function snapped(p, shift, anchor) {
   if (!snap && (mode === 'ruler' || mode === 'dimension') && stage?.kind !== 'dimPlace' && stage?.kind !== 'radius') { const ln = lineSnapAt(p, anchor); if (ln) { result = ln; snap = ln; } }   /* 定規・寸法：線の上にも吸い付く（始点があれば、始点から線への垂線の足）。目盛りに丸める前 */
   if (!snap && onLines) { const ln = lineSnapAligned(p); if (ln) { result = ln.point; snap = ln.point; snapAlign = ln.align; } }   /* 直線：カーソルに近い線の上の点（垂線の足には引かない＝思った所に置ける）。Shift の水平・垂直固定は、このあとに効く */
   const al = !snap && (MAGNET_DRAW_MODES.includes(mode) || gesture?.kind === 'lineEnd') ? alignToCenters(p) : null;   /* 中心の点にそろえた向きは、グリッドに丸めない */
-  if (!snap && (al || $('snap').checked)) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked; result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
+  if (!snap && (al || ($('snap').checked && !curveEndDrag()))) { const grid = Number($('spacing').value) || 1, gridOn = $('snap').checked && !curveEndDrag();   /* 円弧・曲線の端と節点は、目盛りに丸めない（事業主決定 2026-11-17「移動距離が大きく、微調整ができない」） */ result = { x: al?.x ?? (gridOn ? Math.round(p.x / grid) * grid : p.x), y: al?.y ?? (gridOn ? Math.round(p.y / grid) * grid : p.y) }; snap = result; snapAlign = al; }
   if (shift && anchor && (mode === 'rect' || mode === 'cushion')) { const dx = p.x - anchor.x, dy = p.y - anchor.y, m = Math.max(Math.abs(dx), Math.abs(dy)); result = { x: anchor.x + (dx < 0 ? -m : m), y: anchor.y + (dy < 0 ? -m : m) }; snap = result; }
   else if (shift && anchor) { if (Math.abs(p.x - anchor.x) >= Math.abs(p.y - anchor.y)) result.y = anchor.y; else result.x = anchor.x; snap = result; }
   return result;
@@ -10812,14 +10822,57 @@ function arcAsCurve(s) {
   const { cx, cy, r, startDeg, endDeg, ...rest } = s; return { ...rest, type: 'path', nodes, closed: false };
 }
 /** 円弧の端を、円周から離れた点 p へ動かす：円弧を曲線に変えて、その端（とハンドル）だけを p へ移す。反対の端の位置と向きは変わらない（事業主決定 2026-11-16「片方の端点だけ動かして結合したいけど曲線の形が固定されて融通が利かない」「円弧をベジエ曲線にするイメージ」）。 */
-function arcEndFreed(s, h, p) { const c = arcAsCurve(s); return editedNodePath(c, { index: h.end === 1 ? 0 : c.nodes.length - 1, part: 'anchor' }, p); }
+function arcEndFreed(s, h, p) {
+  const c = arcAsCurve(s), i = h.end === 1 ? 0 : c.nodes.length - 1, next = editedNodePath(c, { index: i, part: 'anchor' }, p), other = jointEndsAt(p, s.id);
+  if (other.length === 1) { const e = curveEnds(next).find(q => q.index === i); e.set({ x: -other[0].dir.x, y: -other[0].dir.y }, e.len); }   /* ほかの線・曲線の端に重ねた：相手の向きに合わせて、つなぎ目を滑らかに（事業主 2026-11-17「曲線同士の結合点が滑らかではない」） */
+  return next;
+}
+/** 図形の端の一覧：{ x, y, dir＝端から図形の中へ向かう向き（長さ1）, len＝ハンドルの長さ（曲線だけ）, index, set(向き, 長さ)＝ハンドルを書き換える（ペンの線だけ） }。閉じた図形・円は端なし。 */
+function curveEnds(s) {
+  const unit = (ax, ay, bx, by) => { const d = Math.hypot(bx - ax, by - ay); return d > 1e-9 ? { x: (bx - ax) / d, y: (by - ay) / d } : null; };
+  if (s.type === 'line') return [{ x: s.x1, y: s.y1, dir: unit(s.x1, s.y1, s.x2, s.y2) }, { x: s.x2, y: s.y2, dir: unit(s.x2, s.y2, s.x1, s.y1) }].filter(e => e.dir);
+  if (s.type === 'polyline' && !s.closed && s.points.length >= 2) { const p = s.points, n = p.length; return [{ x: p[0].x, y: p[0].y, dir: unit(p[0].x, p[0].y, p[1].x, p[1].y) }, { x: p[n - 1].x, y: p[n - 1].y, dir: unit(p[n - 1].x, p[n - 1].y, p[n - 2].x, p[n - 2].y) }].filter(e => e.dir); }
+  if (s.type === 'arc' && arcSweep(s) < 360) { const a = s.startDeg * Math.PI / 180, b = (s.startDeg + arcSweep(s)) * Math.PI / 180; return [{ ...circlePoint(s, s.startDeg), dir: { x: -Math.sin(a), y: Math.cos(a) } }, { ...circlePoint(s, s.endDeg), dir: { x: Math.sin(b), y: -Math.cos(b) } }]; }
+  if (s.type === 'bezier') return [{ x: s.x1, y: s.y1, dir: unit(s.x1, s.y1, s.c1x, s.c1y) || unit(s.x1, s.y1, s.c2x, s.c2y) || unit(s.x1, s.y1, s.x2, s.y2), len: Math.hypot(s.c1x - s.x1, s.c1y - s.y1) }, { x: s.x2, y: s.y2, dir: unit(s.x2, s.y2, s.c2x, s.c2y) || unit(s.x2, s.y2, s.c1x, s.c1y) || unit(s.x2, s.y2, s.x1, s.y1), len: Math.hypot(s.c2x - s.x2, s.c2y - s.y2) }].filter(e => e.dir);
+  if (s.type === 'path' && !s.closed && s.nodes.length >= 2) {
+    const ns = s.nodes, n = ns.length, end = (i, j, mine, their) => { const a = ns[i], b = ns[j], hl = Math.hypot(a[mine + 'X'] - a.x, a[mine + 'Y'] - a.y);
+      return { x: a.x, y: a.y, index: i, len: hl, dir: unit(a.x, a.y, a[mine + 'X'], a[mine + 'Y']) || unit(a.x, a.y, b[their + 'X'], b[their + 'Y']) || unit(a.x, a.y, b.x, b.y),
+        set(d, len) { const l = len > 1e-9 ? len : Math.hypot(b.x - a.x, b.y - a.y) / 3; a[mine + 'X'] = a.x + d.x * l; a[mine + 'Y'] = a.y + d.y * l; } }; };
+    return [end(0, 1, 'out', 'in'), end(n - 1, n - 2, 'in', 'out')].filter(e => e.dir);
+  }
+  return [];
+}
+/** 点 p（0.05mm 以内）に端がある、ほかの図形の端（見えている図形だけ・自分は除く）。 */
+function jointEndsAt(p, selfId) { const out = []; for (const s of doc.shapes) { if (s.id === selfId || !visible(s) || s.markOf) continue; for (const e of curveEnds(s)) if (Math.hypot(e.x - p.x, e.y - p.y) <= 0.05) out.push({ ...e, shape: s }); } return out; }
+/** 「つなぎ目を滑らかにする」（事業主 2026-11-17「とがった交点をまっすぐにする機能はないか？」「ハンドルが一直線になるイメージ」「ハンドルの長さを同じにするかそのままの長さを維持するか選択したい」）：
+ *  選んだ曲線（ペンの線）の端が、ほかの線・曲線の端と重なっている所で、両側のハンドルを一直線にそろえる。相手も選んだ曲線なら、2本の向きのまん中にそろえる（両方が少しずつ動く）。相手が直線・円弧・選んでいない曲線なら、相手の向きに合わせる（相手は動かさない）。
+ *  even＝ハンドルの長さもそろえる（両方が曲線＝2本の平均／相手が動かせない曲線＝相手の長さ）。3本以上が集まる点・端の位置は変えない。縫い穴は新しい形の上へ乗せ直す。 */
+function smoothSelectedJoints(even) {
+  const mine = s => selected.has(s.id) && s.type === 'path' && !s.closed && editable(s) && visible(s), copies = new Map(), copyOf = s => { if (!copies.has(s.id)) copies.set(s.id, { ...s, nodes: s.nodes.map(n => ({ ...n })) }); return copies.get(s.id); };
+  const done = new Set(); let count = 0;
+  for (const s of doc.shapes.filter(mine)) for (const e0 of curveEnds(s)) {
+    const key = s.id + ':' + e0.index; if (done.has(key)) continue; const others = jointEndsAt(e0, s.id); if (others.length !== 1) continue;
+    const o = others[0], both = mine(o.shape), e = curveEnds(copyOf(s)).find(q => q.index === e0.index);
+    if (both) {
+      const f = curveEnds(copyOf(o.shape)).find(q => q.index === o.index); done.add(o.shape.id + ':' + o.index);
+      let ux = e.dir.x - f.dir.x, uy = e.dir.y - f.dir.y; const ul = Math.hypot(ux, uy); if (ul < 1e-9) { ux = -e.dir.y; uy = e.dir.x; } else { ux /= ul; uy /= ul; }   /* 2本がぴったり折り返している（向きが同じ）ときは、直角の向きに開く */
+      const le = e.len > 1e-9 ? e.len : 0, lf = f.len > 1e-9 ? f.len : 0, avg = le && lf ? (le + lf) / 2 : le || lf;
+      e.set({ x: ux, y: uy }, even ? avg : le); f.set({ x: -ux, y: -uy }, even ? avg : lf);
+    } else e.set({ x: -o.dir.x, y: -o.dir.y }, even && o.len > 1e-9 ? o.len : e.len);
+    done.add(key); count++;
+  }
+  if (!count) { $('hint').textContent = t('smoothJointsNone'); return; }
+  const changed = new Set([...copies.values()].filter(c => JSON.stringify(c.nodes) !== JSON.stringify(doc.shapes.find(x => x.id === c.id).nodes)).map(c => c.id));
+  if (changed.size) commit(() => { doc.shapes = doc.shapes.map(x => changed.has(x.id) ? copies.get(x.id) : x); for (const id of changed) refitHolesOn(id); });
+  $('hint').textContent = t('smoothJointsDone', { n: count }); rebuildSnaps(); draw();
+}
 /** 端をドラッグ中の図形。円弧の端が円周から離れたとき（g.free）だけ、曲線に変える。 */
 function lineEndMoved(s, g, p) { return s.type === 'arc' && g.free ? arcEndFreed(s, g.h, p) : handleMoved(s, g.h, p); }
-/** 円弧の端のドラッグが「円周の上を動かす（角度だけ）」か「自由に動かす（曲線に変える）」かを決める。吸着する前のポインタが円周から画面で 12px より離れたとき、または、円周に乗っていない点（ほかの線の端・交点など）に吸い付いたとき＝自由。Shift を押している間は、いつでも円弧のまま。 */
+/** 円弧の端のドラッグが「円周の上を動かす（角度だけ）」か「自由に動かす（曲線に変える）」かを決める。吸着する前のポインタが円周から画面で 4px より離れたとき（12px だと、離れた瞬間に端が飛んで微調整できなかった・事業主 2026-11-17）、または、円周に乗っていない点（ほかの線の端・交点など）に吸い付いたとき＝自由。Shift を押している間は、いつでも円弧のまま。 */
 function markArcEndFree(g, w, shift) {
   const s = doc.shapes.find(x => x.id === g.id); if (!s || s.type !== 'arc') return;
   const off = q => Math.abs(Math.hypot(q.x - s.cx, q.y - s.cy) - s.r);
-  g.free = !shift && arcSweep(s) < 360 && (off(w) > 12 / scale || (!!snap && off(cursor) > 0.01));
+  g.free = !shift && arcSweep(s) < 360 && (off(w) > 4 / scale || (!!snap && off(cursor) > 0.01));
 }
 /** 円弧を曲線に変えたとき、その円弧の点を覚えていた寸法の付け替え。始点・終点・まん中は曲線の同じ場所へ、中心は外す（曲線に中心は無い）。 */
 function reanchorArcDims(id, nodeCount) {
@@ -11516,7 +11569,7 @@ canvas.addEventListener('pointermove', e => {
   else cursor = gesture?.kind === 'move' ? (gesture.moved ||= distance(p, gesture.screen) >= 4) ? movePosition(gesture.lastWorld = world(p), e.shiftKey, e.altKey) : { ...gesture.start } :   /* つかんで 4px 動くまでは、動かさない（クリック・ダブルクリックのぶれで、吸着の分だけ一瞬ずれていた）。4px は、離したときに動かすか決める値と同じ */ mode === 'select' && gesture?.kind !== 'node' && gesture?.kind !== 'lineEnd' ? world(p) : snapped(world(p), e.shiftKey, anchor());
   if (mode === 'offset') offsetCursor = world(p); /* 向き「カーソルの側」：カーソル位置を覚えて、ずらした結果をプレビュー */
   updateRadiusHover(world(p));
-  if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed); if (gesture?.kind === 'lineEnd') markArcEndFree(gesture, world(p), e.shiftKey);
+  if (gesture?.kind === 'lineEnd' || (gesture?.kind === 'node' && gesture.dir)) cursor = lineEndCursor(gesture, world(p), e.shiftKey || !!gesture.holed); if (curveEndFreeAlt(e)) { cursor = world(p); snap = null; snapAlign = null; } if (gesture?.kind === 'lineEnd') markArcEndFree(gesture, world(p), e.shiftKey);
   if (gesture?.kind === 'node') { const s = doc.shapes.find(s => s.id === gesture.id); gesture.alt = gesture.alt || e.altKey; if (s) gesture.preview = editedNodePath(s, gesture, cursor); }
   if (gesture?.kind === 'bzctrl') { const s = doc.shapes.find(s => s.id === gesture.id); if (s) gesture.preview = editedBezierCtrl(s, gesture, cursor); }
   if (gesture?.kind === 'dimOff') gesture.preview = dimOffPreview(gesture, cursor);
@@ -11737,7 +11790,7 @@ const ctxLiveCount = el => { let n = 0; for (const x of el?.children ? [...el.ch
 function updateCtxTree() { closeCtxCats(); for (const [cat] of CTX_CATS) { const box = $('ctxCat-' + cat), fly = $('ctxFly-' + cat); if (box && fly) box.hidden = !ctxLiveCount(fly); } }
 /** 左メニュー「選択中」の操作を、右クリックメニューの先頭にカテゴリ別に並べる（事業主 2026-10-26「左の選択中のメニューは右クリックにカテゴリにわけて登録して。ごちゃごちゃして見にくい」）。
  *  実行は左の同じボタンの処理（クリックを渡す）なので、キー操作・無効の条件は変わらない。出すのは、いま押せるものだけ。左の並びは class inCtx で隠す（ボタンは残す）。 */
-const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'pitchFitSel', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
+const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines', 'smoothJoints', 'smoothJointsEven']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'pitchFitSel', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
 function initCtxSel() { for (const id of CTX_SEL_GROUPS.flatMap(g => g[1])) $(id)?.classList?.add('inCtx'); document.querySelector?.('[data-i18n="selection"]')?.classList?.add('inCtx'); }
 function fillCtxSel() {
   const box = $('ctxSel'), sbox = $('ctxSelStitch'); box.textContent = ''; if (sbox) sbox.textContent = ''; if (!selected.size) return;   /* 何も選んでいなければ、選択中の項目は出さない（右メニューの項目だけで開いたとき） */
@@ -11838,7 +11891,7 @@ canvas.addEventListener('pointerup', drawOnce(e => {
   if (!gesture) return;
   const g = gesture, p = local(e);
   cursor = g.kind === 'move' ? movePosition(world(p), e.shiftKey, e.altKey) : (mode === 'select' && g.kind !== 'lineEnd') || g.kind === 'pan' ? world(p) : snapped(world(p), e.shiftKey, anchor());
-  if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey || !!g.holed); if (g.kind === 'lineEnd') markArcEndFree(g, world(p), e.shiftKey);
+  if (g.kind === 'lineEnd' || (g.kind === 'node' && g.dir)) cursor = lineEndCursor(g, world(p), e.shiftKey || !!g.holed); if (curveEndFreeAlt(e)) { cursor = world(p); snap = null; snapAlign = null; } if (g.kind === 'lineEnd') markArcEndFree(g, world(p), e.shiftKey);
   gesture = null; if (g.kind === 'pan' && distance(p, g.screen) >= 4) lastPanDragAt = Date.now();
   if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
   if (g.kind === 'spin') { draw(); return; }
