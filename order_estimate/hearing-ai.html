@@ -394,7 +394,8 @@ const ORDER_PROGRESS_GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy
    ⛔ 事業主の端末（管理者として覚えさせたPC）と自動操作（Playwright等）からは送らない。
       動作確認は URL に ?nsf_visit_test=1 を付けると送られ、メール件名に【テスト】が付き、集計からは外れる。 */
 const VISIT = { t0: Date.now(), chatted: false, submitted: false, acts: [], sent: false, test: false,
-  fresh: false, resumed: false, leather: '', src: '', ask: false };
+  fresh: false, resumed: false, leather: '', src: '', ask: false,
+  vid: Date.now().toString(36)+Math.random().toString(36).slice(2,10), sig: '', seq: 0 };   // vid＝この訪問だけの使い捨て番号（同じ訪問の送り直しを工房側で同じ行にまとめる）
 /* 流入元（2026-11-17 事業主決定C）: 案内するリンク・QR に ?from=ig などの印を付ける。印が無く、まだ聞いていない
    端末にだけ、最初に1タップの質問を出す（askVisitSource）。答えは端末に覚え、訪問記録の「流入元」に載せる。
    ⛔ 印は決まった短い英数字だけ受け取る（名前・連絡先など個人の情報を URL に載せない）。 */
@@ -454,12 +455,16 @@ const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:
     } catch(e){ return ''; }
   }
   function send(){
-    if (VISIT.sent) return;
     const sec = Math.round((Date.now() - VISIT.t0) / 1000);
     if (sec < 3) return;              // 開いてすぐ閉じた・先読みは数えない
-    VISIT.sent = true;
+    // 2026-11-17: 1回きりだと、画面を裏へ回した後に戻って話した分が記録に入らなかった。
+    //   前回送った時から中身が変わっていれば、同じ vid で送り直す（工房側は同じ行を上書きする）。変化が無ければ送らない。
+    const sig = [VISIT.chatted, VISIT.submitted, VISIT.fresh, VISIT.acts.length, VISIT.leather, VISIT.src, VISIT.test].join('|');
+    if (VISIT.sent && (sig === VISIT.sig || VISIT.seq >= 8)) return;   // 送り直しは1訪問8回まで
+    VISIT.sent = true; VISIT.sig = sig; VISIT.seq++;
     const body = JSON.stringify({
       action: 'hearingVisit',
+      vid: VISIT.vid,
       sec: sec,
       chatted: VISIT.chatted,
       submitted: VISIT.submitted,
