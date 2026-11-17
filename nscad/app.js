@@ -5,7 +5,7 @@ import { autoDimensionPlan, autoDimCounts, adIsDiamond, adRoundingNear, adRadius
 import { nestPieces } from './nest.js';
 import { packSets } from './pack.js';
 import { dotLen, filletCurves, roundLinesAt, cornerLimit, collinearChain, roundChainAt, allIntersections, splitShapeAt, contourFrom, contourStops, outlinePolygon, attachToLine, attachToLines, nearestSegmentOf, enclosedAreaAt, enclosedAreasAround, TEXT_FONTS, TEXT_FONT_FILES, textFontStack } from './geometry.js';
-import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
+import { stitchSegments, isLccLayerId, faceAngler, dedupeStrokes, resizeDiamondLoop, diamondLoopSizes, smallLoopCenters, loopCenters, straightRuns, collinearLineClusters, warpX, scaleGeometry, smoothPathNodes, smoothPolylineToPath, distance, distToShape, healDoc, dropDetachedFills, fillDetached, snapPoints, intersections, bboxOf, bboxOfDoc, newDoc, validateDoc, migrateDoc, arcSweep, circlePoint, chamferCorner, filletCorner, offsetShape, offsetPath, translate, rotate, mirrorX, mirrorY, arcLength, pointAtLength, chainShapes, resolvePath, pointsAlongShape, cornerHoles, toothPositions, projectOnPath, holeAppearance, defaultTools, dimension, areaOf, parseInput, pathSegments, pathNode, toPath, pathInsertNode, pathRemoveNode, reflectAcross, trimAt, flattenShape, ownHolePathIds, holeIsOwn } from './geometry.js';
 import { scaleInput, calcExpr, fmtCalc } from './scale_input.js';
 import { editVertex } from './vertex.js';
 import { RULER_NOTE, printPagesPlan, patchPieceSvg, zipStore, docToSvg, docToDxfR12, dxfToShapes, holesOnShapes, docToPdf, pagesFor, printLayout, pageSvg, calibrationFactor, calibrationScale, textOutlineD, fontFamilyNames } from './formats.js';
@@ -4298,7 +4298,7 @@ function initInfo() {
   $('vmShapeMenu').onclick = () => { const at = vertexMenuAt, s = vertexMenuShape(); hideVertexMenu(); if (!s) return; selected = new Set([s.id]); nodeSel = null; showCtxMenu({ clientX: at.clientX, clientY: at.clientY }); };   /* 図形のメニュー（線種など）を同じ場所に */
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
-  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedAny; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('offsetSel').onclick = offsetSelectedShapes;
+  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedAny; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('smoothPoly').onclick = smoothSelectedPolylines; $('offsetSel').onclick = offsetSelectedShapes;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -9341,7 +9341,7 @@ function updateUI() {
   { const mt = document.querySelector?.('button[data-tool="mirror"]'); if (mt) mt.disabled = mode !== 'mirror' && !doc.shapes.some(s => selected.has(s.id) && editable(s)); }   /* 線対称は選んだ図形に作用する操作（選択中の並び）。何も選んでいないと押せない（作図中の線対称モードは続けられる） */
   $('delHoles').disabled = !(affectedHoles().length || (selected.size && doc.holes.length));   /* 線の上の穴は、押したときに数える（描くたびに全穴×選択を測らない） */ $('checkHoles').disabled = !affectedHoles().length; $('flipHoleSlant').disabled = !selected.size; $('slantFlipNow').disabled = !selected.size; refreshGapCount();
   $('unroll').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && stitchable(s));
-  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('smoothJoints').disabled = $('smoothJointsEven').disabled = !selectedShapeIds().size; $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
+  $('mergeLines').disabled = !selectedShapeIds().size; $('selOutline').disabled = !selectedShapeIds().size; $('selDedupe').disabled = !selectedShapeIds().size; $('splitLines').disabled = !selectedShapeIds().size; $('smoothJoints').disabled = $('smoothJointsEven').disabled = !selectedShapeIds().size; $('smoothPoly').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && s.type === 'polyline' && s.points.length >= 3); $('offsetSel').disabled = !selectedShapeIds().size; $('closeGaps').disabled = !selectedShapeIds().size; $('group').disabled = selectedShapeIds().size < 2; $('ungroup').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && (groupIdOf(s) || s.type === 'polyline')); /* グループの解除、または矩形・折れ線の分解 */
   $('toPath').disabled = !doc.shapes.some(s => selected.has(s.id) && editable(s) && ['line','bezier','polyline'].includes(s.type));
   syncGridSettingsToSelection();   /* 格子のパッチの線・枠を選んだら、その格子の設定を欄に出す */
   $('count').textContent = t('count', { shapes: doc.shapes.filter(s => !s.holeLink).length, selected: doc.shapes.filter(s => !s.holeLink && selected.has(s.id)).length + doc.holes.filter(h => selected.has(h.id)).length }) + (b => b && (b.maxX - b.minX > 1e-9 || b.maxY - b.minY > 1e-9) ? t('countSize', { w: (b.maxX - b.minX).toFixed(2), h: (b.maxY - b.minY).toFixed(2) }) : '')(selectedSizeBox()) + (st => st ? t('countLine', { len: st.len.toFixed(2), holes: st.holes }) : '')(selectedLineHoleStats()) + selectedLayerText(); /* 見えない補助の線（holeLink）は数えない。選択数はこれまで通り（図形＋穴） */
@@ -11143,6 +11143,14 @@ function smoothSelectedJoints(even) {
   if (changed.size) commit(() => { doc.shapes = doc.shapes.map(x => changed.has(x.id) ? copies.get(x.id) : x); for (const id of changed) refitHolesOn(id); });
   $('hint').textContent = t('smoothJointsDone', { n: count }) + (closed ? ' ' + t('smoothJointsClosed', { n: closed }) : ''); rebuildSnaps(); draw();
 }
+/** 選んだ折れ線を、頂点を通るなめらかな曲線（節点の少ない曲線）にする（事業主 2026-11-18「曲線なのにカクカクしている」「滑らかにして、パーツが選択時にぶつぶつ小さくなりすぎないように」「連続性を保ってください」）。端点・図形の番号・線種は同じ（つながりと縫い目を保つ）。元に戻すは1回。 */
+function smoothSelectedPolylines() {
+  const ids = selectedShapeIds(), made = new Map(); let before = 0, after = 0;
+  for (const s of doc.shapes) if (ids.has(s.id) && editable(s) && s.type === 'polyline') { const r = smoothPolylineToPath(s); if (r) { made.set(s.id, r); before += s.points.length; after += r.nodes.length; } }
+  if (!made.size) { $('hint').textContent = t('smoothPolyNone'); return; }
+  cancel(); commit(() => { doc.shapes = doc.shapes.map(x => made.get(x.id) ?? x); for (const id of made.keys()) refitHolesOn(id); });
+  $('hint').textContent = t('smoothPolyDone', { n: made.size, a: before, b: after }); rebuildSnaps(); draw();
+}
 /** 端をドラッグ中の図形。円弧の端が円周から離れたとき（g.free）だけ、曲線に変える。 */
 function lineEndMoved(s, g, p) { return s.type === 'arc' && g.free ? arcEndFreed(s, g.h, p) : handleMoved(s, g.h, p); }
 /** 円弧の端のドラッグが「円周の上を動かす（角度だけ）」か「自由に動かす（曲線に変える）」かを決める。吸着する前のポインタが円周から画面で 4px より離れたとき（12px だと、離れた瞬間に端が飛んで微調整できなかった・事業主 2026-11-17）、または、円周に乗っていない点（ほかの線の端・交点など）に吸い付いたとき＝自由。Shift を押している間は、いつでも円弧のまま。 */
@@ -12068,7 +12076,7 @@ const ctxLiveCount = el => { let n = 0; for (const x of el?.children ? [...el.ch
 function updateCtxTree() { closeCtxCats(); for (const [cat] of CTX_CATS) { const box = $('ctxCat-' + cat), fly = $('ctxFly-' + cat); if (box && fly) box.hidden = !ctxLiveCount(fly); } }
 /** 左メニュー「選択中」の操作を、右クリックメニューの先頭にカテゴリ別に並べる（事業主 2026-10-26「左の選択中のメニューは右クリックにカテゴリにわけて登録して。ごちゃごちゃして見にくい」）。
  *  実行は左の同じボタンの処理（クリックを渡す）なので、キー操作・無効の条件は変わらない。出すのは、いま押せるものだけ。左の並びは class inCtx で隠す（ボタンは残す）。 */
-const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines', 'smoothJoints', 'smoothJointsEven']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'pitchFitSel', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
+const CTX_SEL_GROUPS = [['ctxSelEdit', ['copy', 'delete', 'deleteKeepHoles', 'toPath', 'unroll']], ['ctxSelTransform', ['mirrorX', 'mirrorY', 'rotate', 'scaleOpen', 'attachLeft', 'symCheck']], ['ctxSelLines', ['closeGaps', 'mergeLines', 'splitLines', 'smoothJoints', 'smoothJointsEven', 'smoothPoly']], ['ctxSelHoles', ['delHoles', 'checkHoles', 'pitchFitSel', 'flipHoleSlant']], ['ctxSelGroup', ['group', 'ungroup']]];
 function initCtxSel() { for (const id of CTX_SEL_GROUPS.flatMap(g => g[1])) $(id)?.classList?.add('inCtx'); document.querySelector?.('[data-i18n="selection"]')?.classList?.add('inCtx'); }
 function fillCtxSel() {
   const box = $('ctxSel'), sbox = $('ctxSelStitch'); box.textContent = ''; if (sbox) sbox.textContent = ''; if (!selected.size) return;   /* 何も選んでいなければ、選択中の項目は出さない（右メニューの項目だけで開いたとき） */

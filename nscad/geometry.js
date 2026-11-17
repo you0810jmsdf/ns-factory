@@ -533,6 +533,50 @@ export function toPath(s) {
   if (s.type === 'polyline') { const pts = s.closed && distance(s.points[0], s.points.at(-1)) < EPS ? s.points.slice(0, -1) : s.points; return { ...base, closed: !!s.closed, nodes: pts.map(p => pathNode(p.x, p.y)) }; }
   return null;
 }
+/** 折れ線を、頂点を通るなめらかな曲線（節点の少ない path）にした図形を返す（事業主 2026-11-18「曲線なのにカクカクしている」「滑らかにして、パーツが選択時にぶつぶつ小さくなりすぎないように」「連続性を保ってください」）。
+ *  ・端点・id・層・線種などはそのまま（つながりを保つ）。頂点は全部、曲線から tol(mm) 以内に残る。
+ *  ・曲がりが cornerDeg を超える頂点は、角として残す（なめらかにしない）。それ以外の頂点は、前後の接線がそろった滑らかな節点（接線の連続）。
+ *  ・節点は、1本のベジェで tol 以内に収まる間の頂点をまとめて減らす（選んだときの点が増えすぎない）。
+ *  折れ線でない・頂点が3つ未満は null。 */
+export function smoothPolylineToPath(s, { tol = 0.01, cornerDeg = 25 } = {}) {
+  if (s?.type !== 'polyline' || !Array.isArray(s.points)) return null;
+  let pts = s.points.filter((p, i) => !i || distance(p, s.points[i - 1]) > 1e-9).map(p => ({ x: p.x, y: p.y }));
+  const closed = !!s.closed; if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < 1e-9) pts.pop();
+  const n = pts.length; if (n < (closed ? 3 : 3)) return null;
+  const at = i => pts[((i % n) + n) % n], unit = (a, b) => { const l = distance(a, b); return l > 1e-12 ? { x: (b.x - a.x) / l, y: (b.y - a.y) / l } : { x: 1, y: 0 }; };
+  const turnDeg = i => { const u = unit(at(i - 1), at(i)), v = unit(at(i), at(i + 1)); return Math.acos(Math.max(-1, Math.min(1, u.x * v.x + u.y * v.y))) * 180 / Math.PI; };
+  const corner = pts.map((_, i) => (closed || (i > 0 && i < n - 1)) && turnDeg(i) > cornerDeg);
+  const tan = i => (!closed && i === 0) ? unit(at(0), at(1)) : (!closed && i === n - 1) ? unit(at(n - 2), at(n - 1)) : unit(at(i - 1), at(i + 1));   /* なめらかな頂点の接線：両隣を結ぶ向き */
+  const isCorner = i => !!corner[((i % n) + n) % n];
+  const tanOut = i => isCorner(i) || (!closed && i === 0) ? unit(at(i), at(i + 1)) : tan(i), tanIn = i => isCorner(i) || (!closed && i === n - 1) ? unit(at(i - 1), at(i)) : tan(i);
+  /* 区間（角から角まで・端から端まで）に分ける。閉じていて角が無ければ、頂点0から一周する1区間 */
+  const starts = []; for (let i = 0; i < n; i++) if (corner[i]) starts.push(i);
+  const runs = [];   /* {a, b}：頂点番号 a から b（b は a より後・閉じた図形では n を超えてもよい） */
+  if (!closed) { const cuts = [0, ...starts, n - 1]; for (let k = 0; k + 1 < cuts.length; k++) runs.push({ a: cuts[k], b: cuts[k + 1] }); }
+  else if (!starts.length) runs.push({ a: 0, b: n });
+  else for (let k = 0; k < starts.length; k++) runs.push({ a: starts[k], b: k + 1 < starts.length ? starts[k + 1] : starts[0] + n });
+  const bez = (A, TA, B, TB, c) => { const k = c / 3; return { p0: A, p1: { x: A.x + TA.x * k, y: A.y + TA.y * k }, p2: { x: B.x - TB.x * k, y: B.y - TB.y * k }, p3: B }; };
+  const sample = (b, m) => Array.from({ length: m + 1 }, (_, i) => { const t = i / m, u = 1 - t; return { x: u ** 3 * b.p0.x + 3 * u * u * t * b.p1.x + 3 * u * t * t * b.p2.x + t ** 3 * b.p3.x, y: u ** 3 * b.p0.y + 3 * u * u * t * b.p1.y + 3 * u * t * t * b.p2.y + t ** 3 * b.p3.y }; });
+  const fits = (i, j, TA, TB) => {   /* 頂点 i〜j を1本のベジェで、tol 以内に通せるか */
+    const A = at(i), B = at(j), b = bez(A, TA, B, TB, distance(A, B)), m = Math.max(24, (j - i) * 12), sm = sample(b, m);
+    for (let k = i + 1; k < j; k++) { const q = at(k); let best = Infinity; for (let z = 0; z < sm.length - 1; z++) best = Math.min(best, segmentDistance(sm[z], sm[z + 1], q)); if (best > tol) return false; }
+    return true;
+  };
+  const segs = [];     /* 選んだ区間 {i, j, TA, TB} */
+  for (const { a, b } of runs) {
+    let i = a; while (i < b) {
+      let best = i + 1; const TA = tanOut(i);
+      for (let j = i + 2; j <= Math.min(b, i + 60); j++) { const TB = j === b ? tanIn(j) : tan(j); if (fits(i, j, TA, TB)) best = j; }
+      segs.push({ i, j: best, TA, TB: best === b ? tanIn(best) : tan(best) }); i = best;
+    }
+  }
+  /* 節点：区間の始まりに1つずつ（手前の区間の終わりの接線が in・先の区間の始まりの接線が out）。開いた線は最後の区間の終わりにも1つ */
+  const nodes = [], hl = sg => distance(at(sg.i), at(sg.j)) / 3;
+  const mk = (idx, sgIn, sgOut) => { const P = at(idx), inH = sgIn ? { x: P.x - sgIn.TB.x * hl(sgIn), y: P.y - sgIn.TB.y * hl(sgIn) } : null, outH = sgOut ? { x: P.x + sgOut.TA.x * hl(sgOut), y: P.y + sgOut.TA.y * hl(sgOut) } : null; return pathNode(P.x, P.y, inH, outH, !isCorner(idx) && !!(inH && outH)); };
+  segs.forEach((sg, k) => nodes.push(mk(sg.i, k ? segs[k - 1] : (closed ? segs.at(-1) : null), sg)));
+  if (!closed) nodes.push(mk(segs.at(-1).j, segs.at(-1), null));
+  const { points, ...rest } = s; return { ...rest, type: 'path', closed, nodes };
+}
 /** path と弧長位置から、その点に節点を挿入した新 path を返す（形は変わらない）。 */
 export function pathInsertNode(s, position) {
   const segs = pathSegments(s), len = arcLength(s), target = Math.max(0, Math.min(len, position));
