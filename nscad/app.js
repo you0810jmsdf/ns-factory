@@ -4273,7 +4273,7 @@ function initInfo() {
   $('vmShapeMenu').onclick = () => { const at = vertexMenuAt, s = vertexMenuShape(); hideVertexMenu(); if (!s) return; selected = new Set([s.id]); nodeSel = null; showCtxMenu({ clientX: at.clientX, clientY: at.clientY }); };   /* 図形のメニュー（線種など）を同じ場所に */
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
   $('unroll').onclick = unrollSelection;
-  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedLines; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('offsetSel').onclick = offsetSelectedShapes;
+  $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedAny; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('offsetSel').onclick = offsetSelectedShapes;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
 
@@ -7465,6 +7465,60 @@ function makeFoldBaselines() {
 }
 /** 隙間を閉じる：選んだ線が関わる切れ目（2mm 以内）を、動かせる側の端を相手の端へ合わせて閉じる。ロックした層の図形は動かさない。元に戻すは1回。 */
 /** 「1本に結合」：選んだ線のうち、端がつながって同じ直線の上に並び、層・線の種類・色・グループが同じものを、1本の直線にまとめる。菱目（縫い穴）は位置のまま1本の経路にまとめ直す。縫い合わせ設定がある線や、選んでいない線もいっしょの経路は、まとめない（事業主指示 2026-10-17）。 */
+/** 「1本に結合」の曲線版（事業主 2026-11-17「改善提案実施」：つながった曲線を1本の曲線にまとめる）。選んだ曲線（ハンドルつきのペンの線・制御点型のベジエ）のうち、端と端が重なって（0.05mm 以内）つながり、層・線の種類・グループが同じものを、1本のペンの線にまとめる。形は変えない（つなぎ目は節点になり、両側のハンドルが一直線なら滑らかな節点、折れていれば角の節点）。
+ *  輪になっていれば閉じた線にする。3本以上が集まる点ではつながない。直線・円弧は対象外（直線は今までどおり同じ直線の上のものだけ・円弧は端をドラッグして曲線に変えてから）。縫い穴は位置のまま1本の経路にまとめ直す。縫い合わせ設定がある線・選んでいない線といっしょの経路は、まとめない。
+ *  返り値：{ made＝できた線の数, total＝まとめた線の数, blocked＝まとめられなかったまとまりがある }。 */
+function mergeSelectedCurves() {
+  const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
+  const cand = doc.shapes.filter(s => ids.has(s.id) && editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && (s.type === 'bezier' || (s.type === 'path' && !s.closed && s.nodes.length >= 2)));
+  const keyOf = s => [s.layer, s.lineStyle || '', groupIdOf(s) || '', s.foldFlat || ''].join('|'), nodesOf = s => s.type === 'bezier' ? bezierNodes(s) : s.nodes.map(n => ({ ...n }));
+  const ends = cand.flatMap(s => { const ns = nodesOf(s); return [{ s, head: true, x: ns[0].x, y: ns[0].y }, { s, head: false, x: ns.at(-1).x, y: ns.at(-1).y }]; });
+  const mate = new Map();   /* 端 → つながる相手の端（その点に、同じ種類の端がちょうど2つ・別の線） */
+  for (const e of ends) { const at = ends.filter(q => Math.hypot(q.x - e.x, q.y - e.y) <= 0.05); if (at.length === 2) { const o = at.find(q => q !== e); if (o.s !== e.s && keyOf(o.s) === keyOf(e.s)) mate.set(e, o); } }
+  const endOf = (s, head) => ends.find(q => q.s === s && q.head === head), used = new Set(), chains = [];
+  for (const s0 of cand) {
+    if (used.has(s0.id)) continue;
+    let s = s0, head = true; const seen = new Set([s0.id]);   /* 先頭の側へさかのぼって、鎖の始まりを見つける（輪ならひと回りして止まる） */
+    for (;;) { const m = mate.get(endOf(s, head)); if (!m) break; if (seen.has(m.s.id)) { s = s0; head = true; break; } /* 輪：最初に見た線から始める */ seen.add(m.s.id); s = m.s; head = !m.head; }
+    const chain = [], start = s; let enter = head, loop = false;   /* enter＝この線に、頭の側から入るか */
+    for (;;) { chain.push({ s, rev: !enter }); used.add(s.id); const m = mate.get(endOf(s, !enter)); if (!m) break; if (m.s === start) { loop = chain.length >= 2 && m.head === head; break; } if (used.has(m.s.id)) break; s = m.s; enter = m.head; }
+    if (chain.length >= 2) chains.push({ chain, loop });
+  }
+  if (!chains.length) return { made: 0, total: 0, blocked: false };
+  const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
+  const ok = chains.filter(c => { const set = new Set(c.chain.map(x => x.s.id)); return doc.paths.filter(p => p.shapeIds.some(id => set.has(id))).every(p => p.shapeIds.every(id => set.has(id)) && !seamPaths.has(p.id)); });
+  if (!ok.length) return { made: 0, total: 0, blocked: true };
+  const inLine = n => { const ax = n.inX - n.x, ay = n.inY - n.y, bx = n.outX - n.x, by = n.outY - n.y, la = Math.hypot(ax, ay), lb = Math.hypot(bx, by); return la > 1e-9 && lb > 1e-9 && Math.abs(ax * by - ay * bx) / (la * lb) < 0.02 && ax * bx + ay * by < 0; };
+  cancel(); let made = 0, total = 0; const newIds = [];
+  commit(() => {
+    for (const c of ok) {
+      const members = c.chain.map(x => x.s), set = new Set(members.map(s => s.id)), first = members[0], longest = members.reduce((m, q) => arcLength(q) > arcLength(m) ? q : m, first), look = {}; for (const [k, v] of Object.entries(longest)) if (!GEOM.has(k)) look[k] = v;
+      const nodes = [];
+      for (const { s, rev } of c.chain) { const ns = rev ? reversePathNodes(nodesOf(s)) : nodesOf(s); if (!nodes.length) { nodes.push(...ns); continue; } const j = nodes.at(-1), h = ns[0]; j.outX = j.x + (h.outX - h.x); j.outY = j.y + (h.outY - h.y); j.smooth = inLine(j); nodes.push(...ns.slice(1)); }
+      if (c.loop) { const last = nodes.pop(), h = nodes[0]; h.inX = h.x + (last.inX - last.x); h.inY = h.y + (last.inY - last.y); h.smooth = inLine(h); }
+      const affected = doc.paths.filter(p => p.shapeIds.some(id => set.has(id))), olds = new Map(affected.map(p => [p.id, resolvePath(doc, p)]));
+      const nid = freshId(doc.shapes, 's'), merged = { ...look, id: nid, type: 'path', nodes, closed: c.loop }, at = doc.shapes.findIndex(s => s.id === first.id);
+      doc.shapes = doc.shapes.filter(s => !set.has(s.id)); doc.shapes.splice(Math.min(at, doc.shapes.length), 0, merged);
+      for (const part of doc.parts) if (part.shapeIds.some(id => set.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => set.has(id) ? nid : id))];
+      if (affected.length) {
+        const np = { id: freshId(doc.paths, 'p'), shapeIds: [nid], reversed: false, closed: c.loop, segments: [], mark: affected[0].mark || 'tool' }, route = resolvePath(doc, np), oldIds = new Set(affected.map(p => p.id));
+        const tonew = (oldRoute, v) => projectOnPath(route, pointAtLength(oldRoute, Math.min(Math.max(v, 0), arcLength(oldRoute)))).s;
+        for (const p of affected) { const oldRoute = olds.get(p.id); if (!oldRoute) continue; for (const sg of p.segments) { const a = tonew(oldRoute, sg.from), b = tonew(oldRoute, sg.to); np.segments.push({ ...sg, from: Math.min(a, b), to: Math.max(a, b) }); } }
+        np.segments.sort((x, y) => x.from - y.from); doc.paths = doc.paths.filter(p => !oldIds.has(p.id)); doc.paths.push(np);
+        for (const h of doc.holes) if (oldIds.has(h.pathId)) { h.pathId = np.id; h.s = projectOnPath(route, h).s; }
+      }
+      made++; total += members.length; newIds.push(nid);
+    }
+    selected = new Set(newIds);
+  });
+  return { made, total, blocked: ok.length < chains.length };
+}
+/** 「1本に結合」のボタン：先に、つながった曲線どうしを1本の曲線にまとめる。曲線が無ければ、今までどおり、同じ直線の上の線を1本の直線にまとめる。 */
+function mergeSelectedAny() {
+  const c = mergeSelectedCurves();
+  if (c.made) { $('hint').textContent = t('mergeCurvesDone', { k: c.total, n: c.made }) + (c.blocked ? ' ' + t('mergeLinesBlocked') : ''); rebuildSnaps(); draw(); return; }
+  mergeSelectedLines(); if (c.blocked && !/\d/.test($('hint').textContent)) $('hint').textContent = t('mergeLinesBlocked');
+}
 function mergeSelectedLines() {
   const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
   const okShape = s => editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec, cand = doc.shapes.filter(okShape), groups = new Map(); /* 選んだ線に、端がつながって同じ直線の上に並ぶ同じ種類の線は、選んでいなくても含める（1本だけ選んでも結合できる・事業主指摘 2026-10-17） */
@@ -10868,16 +10922,23 @@ function curveEnds(s) {
   return [];
 }
 /** 点 p（0.05mm 以内）に端がある、ほかの図形の端（見えている図形だけ・自分は除く）。 */
-function jointEndsAt(p, selfId) { const out = []; for (const s of doc.shapes) { if (s.id === selfId || !visible(s) || s.markOf) continue; for (const e of curveEnds(s)) if (Math.hypot(e.x - p.x, e.y - p.y) <= 0.05) out.push({ ...e, shape: s }); } return out; }
+function jointEndsAt(p, selfId, tol = 0.05) { const out = []; for (const s of doc.shapes) { if (s.id === selfId || !visible(s) || s.markOf) continue; for (const e of curveEnds(s)) if (Math.hypot(e.x - p.x, e.y - p.y) <= tol) out.push({ ...e, shape: s }); } return out; }
+/** つなぎ目とみなす、端と端の隙間の上限（mm）。「隙間を閉じる」の橙の輪と同じ 2mm。 */
+const JOINT_GAP_MM = 2;
 /** 「つなぎ目を滑らかにする」（事業主 2026-11-17「とがった交点をまっすぐにする機能はないか？」「ハンドルが一直線になるイメージ」「ハンドルの長さを同じにするかそのままの長さを維持するか選択したい」）：
  *  選んだ曲線（ペンの線）の端が、ほかの線・曲線の端と重なっている所で、両側のハンドルを一直線にそろえる。相手も選んだ曲線なら、2本の向きのまん中にそろえる（両方が少しずつ動く）。相手が直線・円弧・選んでいない曲線なら、相手の向きに合わせる（相手は動かさない）。
- *  even＝ハンドルの長さもそろえる（両方が曲線＝2本の平均／相手が動かせない曲線＝相手の長さ）。3本以上が集まる点・端の位置は変えない。縫い穴は新しい形の上へ乗せ直す。 */
+ *  even＝ハンドルの長さもそろえる（両方が曲線＝2本の平均／相手が動かせない曲線＝相手の長さ）。3本以上が集まる点は変えない。端の位置は、ぴったり重なっていれば変えない（2mm 以内で離れている端は、寄せて重ねる）。縫い穴は新しい形の上へ乗せ直す。 */
 function smoothSelectedJoints(even) {
   const mine = s => selected.has(s.id) && s.type === 'path' && !s.closed && editable(s) && visible(s), copies = new Map(), copyOf = s => { if (!copies.has(s.id)) copies.set(s.id, { ...s, nodes: s.nodes.map(n => ({ ...n })) }); return copies.get(s.id); };
-  const done = new Set(); let count = 0;
+  const done = new Set(); let count = 0, closed = 0;
   for (const s of doc.shapes.filter(mine)) for (const e0 of curveEnds(s)) {
-    const key = s.id + ':' + e0.index; if (done.has(key)) continue; const others = jointEndsAt(e0, s.id); if (others.length !== 1) continue;
-    const o = others[0], both = mine(o.shape), e = curveEnds(copyOf(s)).find(q => q.index === e0.index);
+    const key = s.id + ':' + e0.index; if (done.has(key)) continue; let others = jointEndsAt(e0, s.id), apart = false; if (!others.length) { others = jointEndsAt(e0, s.id, JOINT_GAP_MM); apart = true; } if (others.length !== 1) continue;
+    const o = others[0], both = mine(o.shape);
+    if (apart) {   /* 端が少し離れている（2mm 以内）：先に端を寄せて重ねる。2本とも選んだ曲線＝まん中へ、相手が動かせない＝相手の端へ（事業主 2026-11-17「改善提案実施」） */
+      const to = both ? { x: (e0.x + o.x) / 2, y: (e0.y + o.y) / 2 } : { x: o.x, y: o.y }, pull = (sh, i) => { const n = copyOf(sh).nodes[i], dx = to.x - n.x, dy = to.y - n.y; n.x = to.x; n.y = to.y; n.inX += dx; n.inY += dy; n.outX += dx; n.outY += dy; };
+      pull(s, e0.index); if (both) pull(o.shape, o.index); closed++;
+    }
+    const e = curveEnds(copyOf(s)).find(q => q.index === e0.index);
     if (both) {
       const f = curveEnds(copyOf(o.shape)).find(q => q.index === o.index); done.add(o.shape.id + ':' + o.index);
       let ux = e.dir.x - f.dir.x, uy = e.dir.y - f.dir.y; const ul = Math.hypot(ux, uy); if (ul < 1e-9) { ux = -e.dir.y; uy = e.dir.x; } else { ux /= ul; uy /= ul; }   /* 2本がぴったり折り返している（向きが同じ）ときは、直角の向きに開く */
@@ -10889,7 +10950,7 @@ function smoothSelectedJoints(even) {
   if (!count) { $('hint').textContent = t('smoothJointsNone'); return; }
   const changed = new Set([...copies.values()].filter(c => JSON.stringify(c.nodes) !== JSON.stringify(doc.shapes.find(x => x.id === c.id).nodes)).map(c => c.id));
   if (changed.size) commit(() => { doc.shapes = doc.shapes.map(x => changed.has(x.id) ? copies.get(x.id) : x); for (const id of changed) refitHolesOn(id); });
-  $('hint').textContent = t('smoothJointsDone', { n: count }); rebuildSnaps(); draw();
+  $('hint').textContent = t('smoothJointsDone', { n: count }) + (closed ? ' ' + t('smoothJointsClosed', { n: closed }) : ''); rebuildSnaps(); draw();
 }
 /** 端をドラッグ中の図形。円弧の端が円周から離れたとき（g.free）だけ、曲線に変える。 */
 function lineEndMoved(s, g, p) { return s.type === 'arc' && g.free ? arcEndFreed(s, g.h, p) : handleMoved(s, g.h, p); }
