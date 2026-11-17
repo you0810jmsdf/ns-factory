@@ -240,6 +240,74 @@
    ]
   },
   {
+   "id": "snap-long-5",
+   "category": "fastener",
+   "name_ja": "バネホック No.5 足長（厚物用）13mm",
+   "name_en": "Spring snap No.5 long post (thick leather) 13 mm",
+   "params": {
+    "capD": 13,
+    "postD": 3
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 5.8
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
+   "id": "snap-long-8050",
+   "category": "fastener",
+   "name_ja": "バネホック No.8050 足長（厚物用）15mm",
+   "name_en": "Spring snap No.8050 long post (thick leather) 15 mm",
+   "params": {
+    "capD": 15,
+    "postD": 5
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 6
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
    "id": "jumper-10",
    "category": "fastener",
    "name_ja": "ジャンパーホック 10mm",
@@ -315,6 +383,142 @@
    "params": {
     "capD": 15,
     "postD": 3.5
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 4
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
+   "id": "jumper-7060",
+   "category": "fastener",
+   "name_ja": "ジャンパーホック 小（7060）13mm",
+   "name_en": "Jumper snap small (7060) 13 mm",
+   "params": {
+    "capD": 13,
+    "postD": 3.5
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 4
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
+   "id": "jumper-7060-long",
+   "category": "fastener",
+   "name_ja": "ジャンパーホック 小 足長（7060）13mm",
+   "name_en": "Jumper snap small long post (7060) 13 mm",
+   "params": {
+    "capD": 13,
+    "postD": 3.5
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 4
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
+   "id": "jumper-7050",
+   "category": "fastener",
+   "name_ja": "ジャンパーホック 大（7050）15mm",
+   "name_en": "Jumper snap large (7050) 15 mm",
+   "params": {
+    "capD": 15,
+    "postD": 4
+   },
+   "footprint2d": {
+    "kind": "circle",
+    "d": "capD"
+   },
+   "holes": [
+    {
+     "x": 0,
+     "y": 0,
+     "d": "postD"
+    }
+   ],
+   "solid3d": {
+    "kind": "cylinder",
+    "d": "capD",
+    "h": 4
+   },
+   "confidence": "estimated",
+   "colors": [
+    "gold",
+    "silver",
+    "antique",
+    "blacknickel",
+    "brass"
+   ]
+  },
+  {
+   "id": "jumper-7050-long",
+   "category": "fastener",
+   "name_ja": "ジャンパーホック 大 足長（7050）15mm",
+   "name_en": "Jumper snap large long post (7050) 15 mm",
+   "params": {
+    "capD": 15,
+    "postD": 4
    },
    "footprint2d": {
     "kind": "circle",
