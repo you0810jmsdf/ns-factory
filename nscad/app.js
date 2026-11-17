@@ -5923,15 +5923,35 @@ function renderLibrary() {
     if (inW && inH) { const sel = document.createElement('select'), span = document.createElement('span'); span.textContent = t('libOrient'); for (const [val, key] of [['portrait', 'libOrientPortrait'], ['landscape', 'libOrientLandscape']]) { const o = document.createElement('option'); o.value = val; o.textContent = t(key); sel.appendChild(o); }
       const sync = () => { sel.value = Number(inW.value) > Number(inH.value) ? 'landscape' : 'portrait'; }; sync(); sel.id = 'libOrient'; sel.onchange = () => { if ((Number(inW.value) > Number(inH.value)) !== (sel.value === 'landscape')) { const w = inW.value; inW.value = inH.value; inH.value = w; } };
       inW.oninput = sync; inH.oninput = sync; orientLabel.appendChild(span); orientLabel.appendChild(sel); } }
+  libSizeRow(it);
+}
+/* 自分で保存した部品（寸法の変数が無いもの）を置くとき、任意で「幅・高さ（mm）」を入れて、その大きさで置ける（事業主 2026-11-17「任意で寸法入れたいときに入れたい。通常は不要」）。
+   空欄なら保存した大きさ（今までどおり）。縦横の比率は変えない（円や穴がゆがまないように）。幅を入れたら幅が基準・高さだけなら高さが基準。入れたときは、貼り付けの倍率より優先する。 */
+function libNaturalSize(it) { try { const p = instantiateItem(it, libVars(), { x: 0, y: 0 }), b = bboxOfDoc({ shapes: p.shapes || [], holes: [] }), w = b ? b.maxX - b.minX : 0, h = b ? b.maxY - b.minY : 0; return w > 0 || h > 0 ? { w, h } : null; } catch { return null; } }
+function libSizeScale(it) {
+  const iw = $('libSizeW'), ih = $('libSizeH'); if (!iw || !ih || !it || $('libSizeBox')?.hidden) return null; const nat = libNaturalSize(it); if (!nat) return null;
+  const w = Number(iw.value), h = Number(ih.value);
+  if (iw.value !== '' && w > 0 && nat.w > 0) return { k: w / nat.w, nat };
+  if (ih.value !== '' && h > 0 && nat.h > 0) return { k: h / nat.h, nat };
+  return null;
+}
+function libSizeUpdate() { const note = $('libSizeNote'); if (!note) return; const it = libCurrent(), s = it ? libSizeScale(it) : null; note.textContent = s ? t('libSizeNote', { w: +(s.nat.w * s.k).toFixed(2), h: +(s.nat.h * s.k).toFixed(2) }) : ''; }
+let libSizeFor = '';
+function libSizeRow(it) {
+  const box = $('libSizeBox'); if (!box) return; const nat = it && !Object.keys(it.vars || {}).length ? libNaturalSize(it) : null; box.hidden = !nat;
+  if (!nat) { libSizeFor = ''; $('libSizeNote').textContent = ''; return; }
+  if (libSizeFor !== it.id) { $('libSizeW').value = ''; $('libSizeH').value = ''; libSizeFor = it.id; }   /* 部品を替えたら、入れた大きさは空に戻す */
+  $('libSizeW').placeholder = String(+nat.w.toFixed(2)); $('libSizeH').placeholder = String(+nat.h.toFixed(2)); libSizeUpdate();
 }
 function libVars() { const out = {}; for (const el of ($('libVars').children || [])) { const input = el.querySelector ? el.querySelector('input') : null; if (input && input.dataset?.var) out[input.dataset.var] = Number(input.value); } return out; }
 function placeLibrary(at) {
   const it = libCurrent(); if (!it) return;
   const bad = varOutOfRange(it, libVars()); if (bad.length) { $('hint').textContent = bad.map(b => t('varOutOfRange', { k: b.key, min: b.min, max: b.max })).join(' '); return; }
-  let payload; try { payload = instantiateItem(it, libVars(), at, { scale: Number($('pasteScale').value) || 1 }); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
+  const ss = libSizeScale(it);   /* 大きさを入れたときは、その大きさで置く（貼り付けの倍率より優先） */
+  let payload; try { payload = instantiateItem(it, libVars(), at, { scale: ss ? ss.k : (Number($('pasteScale').value) || 1) }); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel(); let ids = [];
   commit(() => { ids = mergePayload(doc, { ...payload, layers: [] }, { freshId, source: 'library:' + it.id }); if ((it.tags || []).includes('reference')) { const parts = ensureLayer(doc, 'parts'); for (const s of doc.shapes) if (ids.includes(s.id)) s.layer = parts; } selected = new Set(ids); });   /* 参考用（名刺・カード・札）は「部品」の層 */
-  renderLayers(); if (!keepTool) setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length });   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
+  renderLayers(); if (!keepTool) setMode('select'); selected = new Set(ids); draw(); $('hint').textContent = t('libPlaced', { name: it.name, n: ids.length }) + (ss ? ' ' + t('libSizePlaced', { w: +(ss.nat.w * ss.k).toFixed(2), h: +(ss.nat.h * ss.k).toFixed(2) }) : '');   /* 1回置いたら選択ツールに戻る（事業主 2026-11-05「そのあと連続で貼り付けするのをやめて」） */
 }
 /** 登録した部品の id。同じ瞬間に2つ登録しても、既にある id と重ならないようにする。 */
 function uniqueLibraryId() { let id = 'user-' + Date.now().toString(36); while (userLibrary.some(x => x.id === id)) id += 'x'; return id; }
@@ -6085,7 +6105,7 @@ function sendToTab(move) {
 function initLibrary() {
   loadLibrary(); loadLibLayout(); renderLibrary(); renderLibBackups(); wireLibOrganizer(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
-  $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libRemoveSel').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
+  $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libRemoveSel').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary; $('libSizeW').oninput = libSizeUpdate; $('libSizeH').oninput = libSizeUpdate;
   $('libImport').onclick = () => $('libFile').click(); if ($('libPkgMake')) { $('libPkgMake').onclick = openPkgDialog; $('pkgSave').onclick = savePkg; $('pkgClose').onclick = () => $('pkgDialog').close(); $('libPkgInstall').onclick = () => $('libPkgFile').click(); $('libPkgFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await installPkgFile(f); }); } $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
   $('tabNew').onclick = () => newTab(); $('tabClose').onclick = closeTab; $('tabName').addEventListener('change', () => { if (tabs[activeTab]) { tabs[activeTab].name = $('tabName').value.trim() || tabs[activeTab].name; renderTabs(); } });
   $('sendCopy').onclick = () => sendToTab(false); $('sendMove').onclick = () => sendToTab(true);
