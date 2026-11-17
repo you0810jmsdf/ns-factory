@@ -129,24 +129,32 @@ export function offsetPolyline(points, d, closed = false, {join='miter', toleran
     if (hit && distance(hit, p) <= Math.abs(d) * 10) return hit;
     return [{ x: p.x - a.v.y * side, y: p.y + a.v.x * side }, b.p];
   }).flat();
-  for (let pass = 0; pass < points.length * 2; pass++) {
-    let changed = false;
-    outer: for (let i = 0; i < out.length - (closed ? 0 : 1); i++) for (let j = i + 2; j < out.length - (closed ? 0 : 1); j++) {
-      if (closed && i === 0 && j === out.length - 1) continue;
-      const a = out[i], b = out[(i + 1) % out.length], c = out[j], e = out[(j + 1) % out.length];
-      const hits = intersections({ type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }, { type: 'line', x1: c.x, y1: c.y, x2: e.x, y2: e.y });
-      if (!hits.length) continue;
-      const h = hits[0], outside = [...out.slice(0, i + 1), h, ...out.slice(j + 1)], loop = [h, ...out.slice(i + 1, j + 1)];
-      out = closed && Math.abs(signedArea(loop)) > Math.abs(signedArea(outside)) ? loop : outside;
-      changed = true; break outer;
+  const removeLoops = () => {
+    for (let pass = 0; pass < points.length * 2; pass++) {
+      let changed = false;
+      outer: for (let i = 0; i < out.length - (closed ? 0 : 1); i++) for (let j = i + 2; j < out.length - (closed ? 0 : 1); j++) {
+        if (closed && i === 0 && j === out.length - 1) continue;
+        const a = out[i], b = out[(i + 1) % out.length], c = out[j], e = out[(j + 1) % out.length];
+        const hits = intersections({ type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }, { type: 'line', x1: c.x, y1: c.y, x2: e.x, y2: e.y });
+        if (!hits.length) continue;
+        const h = hits[0], outside = [...out.slice(0, i + 1), h, ...out.slice(j + 1)], loop = [h, ...out.slice(i + 1, j + 1)];
+        out = closed && Math.abs(signedArea(loop)) > Math.abs(signedArea(outside)) ? loop : outside;
+        changed = true; break outer;
+      }
+      if (!changed) break;
     }
-    if (!changed) break;
-  }
-  out = out.filter((p, i) => !i || distance(p, out[i - 1]) > EPS);
+    out = out.filter((p, i) => !i || distance(p, out[i - 1]) > EPS);
+  };
+  removeLoops();
   if (closed) {
     if (out.length < 3 || signedArea(out) * area <= EPS) return [];
     // 内側で消滅した輪郭（辺を越えて折り返したもの）を拒否する。
-    if (d < 0 && out.some(p => Math.min(...pts.map((q, i) => segmentDistance(q, pts[(i + 1) % pts.length], p))) < -d - 1e-7)) return [];
+    if (d < 0) {
+      const near = p => Math.min(...pts.map((q, i) => segmentDistance(q, pts[(i + 1) % pts.length], p))), tooClose = p => near(p) < -d - 1e-7;
+      /* 細い出っ張り・切れ込みは、内側へ寄せると、距離が足りない点ができる。その点だけ外して、折り返しを取り除きなおす（事業主 2026-11-18「オフセットが効かない」：外形の右下の細い出っ張りで、全体が作れなかった）。外したあとも、点・辺の中ほどが近すぎれば作らない */
+      for (let pass = 0; pass < 4 && out.some(tooClose); pass++) { out = out.filter(p => !tooClose(p)); if (out.length < 3) return []; removeLoops(); if (out.length < 3 || signedArea(out) * area <= EPS) return []; }
+      if (out.some(tooClose) || out.some((p, i) => near({ x: (p.x + out[(i + 1) % out.length].x) / 2, y: (p.y + out[(i + 1) % out.length].y) / 2 }) < -d - 2 * tolerance - 1e-6)) return [];   /* 辺の中ほどは、丸めた角（円弧の折れ線）の弦の分だけゆるく見る */
+    }
   }
   return out;
 }

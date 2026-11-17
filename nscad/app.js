@@ -7630,9 +7630,10 @@ function makeFoldBaselines() {
  *  輪になっていれば閉じた線にする。3本以上が集まる点では、いちばんまっすぐ続く2本ずつをつなぐ（選んでいない線・直線・円弧は数えない）。直線・円弧は対象外（直線は今までどおり同じ直線の上のものだけ・円弧は端をドラッグして曲線に変えてから）。縫い穴は位置のまま1本の経路にまとめ直す。縫い合わせ設定がある線・選んでいない線といっしょの経路は、まとめない。
  *  返り値：{ made＝できた線の数, total＝まとめた線の数, blocked＝まとめられなかったまとまりがある }。 */
 function mergeSelectedCurves() {
-  const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf']);
-  const cand = doc.shapes.filter(s => ids.has(s.id) && editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && (s.type === 'bezier' || (s.type === 'path' && !s.closed && s.nodes.length >= 2)));
-  const keyOf = s => [s.layer, s.lineStyle || '', groupIdOf(s) || '', s.foldFlat || ''].join('|'), nodesOf = s => s.type === 'bezier' ? bezierNodes(s) : s.nodes.map(n => ({ ...n }));
+  const ids = selectedShapeIds(), GEOM = new Set(['id', 'type', 'x1', 'y1', 'x2', 'y2', 'c1x', 'c1y', 'c2x', 'c2y', 'points', 'closed', 'nodes', 'markOf', 'cx', 'cy', 'r', 'startDeg', 'endDeg', 'joined', 'cush']);
+  /* 直線・折れ線・円弧も対象（事業主 2026-11-18「複数の曲線を結合できない」）：端がつながっていれば、曲がっていても1本にまとめる。直線と折れ線だけの鎖は折れ線に、曲線・円弧が混ざれば曲線（ペンの線）にする */
+  const cand = doc.shapes.filter(s => ids.has(s.id) && editable(s) && visible(s) && !s.markOf && !s.holeLink && !s.foldSec && (s.type === 'bezier' || ((s.type === 'line' || s.type === 'arc') && selected.has(s.id)) || (s.type === 'path' && !s.closed && s.nodes.length >= 2) || (s.type === 'polyline' && !s.closed && s.points.length >= 2)));
+  const keyOf = s => [s.layer, s.lineStyle || '', groupIdOf(s) || '', s.foldFlat || ''].join('|'), nodesOf = s => s.type === 'bezier' ? bezierNodes(s) : s.type === 'path' ? s.nodes.map(n => ({ ...n })) : s.type === 'arc' ? arcAsCurve(s).nodes : toPath(s).nodes;
   const dirOf = (a, hx, hy, b) => { for (const [x, y] of [[hx, hy], [b.x, b.y]]) { const d = Math.hypot(x - a.x, y - a.y); if (d > 1e-9) return { x: (x - a.x) / d, y: (y - a.y) / d }; } return { x: 0, y: 0 }; };
   const ends = cand.flatMap(s => { const ns = nodesOf(s), a = ns[0], z = ns.at(-1); return [{ s, head: true, x: a.x, y: a.y, dir: dirOf(a, a.outX, a.outY, ns[1]) }, { s, head: false, x: z.x, y: z.y, dir: dirOf(z, z.inX, z.inY, ns.at(-2)) }]; });
   const mate = new Map(), grouped = new Set();   /* 端 → つながる相手の端（別の線・同じ種類）。その点に端が3つ以上あれば、いちばんまっすぐ続く2つずつを組にする */
@@ -7644,7 +7645,7 @@ function mergeSelectedCurves() {
     for (;;) { const m = mate.get(endOf(s, head)); if (!m) break; if (seen.has(m.s.id)) { s = s0; head = true; break; } /* 輪：最初に見た線から始める */ seen.add(m.s.id); s = m.s; head = !m.head; }
     const chain = [], start = s; let enter = head, loop = false;   /* enter＝この線に、頭の側から入るか */
     for (;;) { chain.push({ s, rev: !enter }); used.add(s.id); const m = mate.get(endOf(s, !enter)); if (!m) break; if (m.s === start) { loop = chain.length >= 2 && m.head === head; break; } if (used.has(m.s.id)) break; s = m.s; enter = m.head; }
-    if (chain.length >= 2) chains.push({ chain, loop });
+    if (chain.length >= 2 && !(chain.every(x => x.s.type === 'line') && !loop && chain.every(x => [[x.s.x1, x.s.y1], [x.s.x2, x.s.y2]].every(([px, py]) => { const f = chain[0].s, dx = f.x2 - f.x1, dy = f.y2 - f.y1, L = Math.hypot(dx, dy); return L > 1e-9 && Math.abs((px - f.x1) * dy - (py - f.y1) * dx) / L < 1e-4; })))) chains.push({ chain, loop });   /* 一直線に並ぶ直線だけの鎖は、直線の結合に任せる */
   }
   if (!chains.length) return { made: 0, total: 0, blocked: false };
   const seamPaths = new Set(doc.seams.flatMap(m => [m.a.pathId, m.b.pathId]));
@@ -7655,11 +7656,11 @@ function mergeSelectedCurves() {
   commit(() => {
     for (const c of ok) {
       const members = c.chain.map(x => x.s), set = new Set(members.map(s => s.id)), first = members[0], longest = members.reduce((m, q) => arcLength(q) > arcLength(m) ? q : m, first), look = {}; for (const [k, v] of Object.entries(longest)) if (!GEOM.has(k)) look[k] = v;
-      const nodes = [];
+      const nodes = [], allPoly = members.every(s => s.type === 'line' || s.type === 'polyline');
       for (const { s, rev } of c.chain) { const ns = rev ? reversePathNodes(nodesOf(s)) : nodesOf(s); if (!nodes.length) { nodes.push(...ns); continue; } const j = nodes.at(-1), h = ns[0]; j.outX = j.x + (h.outX - h.x); j.outY = j.y + (h.outY - h.y); j.smooth = inLine(j); nodes.push(...ns.slice(1)); }
       if (c.loop) { const last = nodes.pop(), h = nodes[0]; h.inX = h.x + (last.inX - last.x); h.inY = h.y + (last.inY - last.y); h.smooth = inLine(h); }
       const affected = doc.paths.filter(p => p.shapeIds.some(id => set.has(id))), olds = new Map(affected.map(p => [p.id, resolvePath(doc, p)]));
-      const nid = freshId(doc.shapes, 's'), merged = { ...look, id: nid, type: 'path', nodes, closed: c.loop }, at = doc.shapes.findIndex(s => s.id === first.id);
+      const nid = freshId(doc.shapes, 's'), merged = allPoly ? { ...look, id: nid, type: 'polyline', points: nodes.map(n => ({ x: n.x, y: n.y })), closed: c.loop } : { ...look, id: nid, type: 'path', nodes, closed: c.loop }, at = doc.shapes.findIndex(s => s.id === first.id);
       doc.shapes = doc.shapes.filter(s => !set.has(s.id)); doc.shapes.splice(Math.min(at, doc.shapes.length), 0, merged);
       for (const part of doc.parts) if (part.shapeIds.some(id => set.has(id))) part.shapeIds = [...new Set(part.shapeIds.map(id => set.has(id) ? nid : id))];
       if (affected.length) {
@@ -11764,13 +11765,21 @@ canvas.addEventListener('pointerdown', drawOnce(e => {
   if (mode === 'ruler') { rulerClick(cursor); return; }   /* 定規＝2点間の距離をちょっと測るだけ（寸法は作らない・事業主指示 2026-10-15） */
   if (mode === 'dimension') { dimToolClick(cursor, world(p)); return; }   /* 寸法＝2点で測り、3点目をクリックした位置に初めて寸法を作る（1回目が丸めた角の上なら、その角の R の寸法） */
   if (mode === 'mirror') {
-    const axis = doc.shapes.filter(s => visible(s) && s.type === 'line' && !selected.has(s.id)).reverse().find(s => distTo(s, world(p)) <= 7 / scale);
+    /* 軸にできる線：直線、および折れ線（オフセットなどでできた2点の線・曲がった線）の、クリックした場所の直線部分（事業主 2026-11-18「下の点線を対象線にしたかったのに」：2点の折れ線は軸と認められず、1回目のクリックが2点指定の1点目になって、斜めの軸になっていた） */
+    const wp = world(p), axisSegOf = s => {
+      if (s.type === 'line') return distTo(s, wp) <= 7 / scale ? { id: s.id, x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2 } : null;
+      if (s.type !== 'polyline' || !Array.isArray(s.points) || s.points.length < 2) return null;
+      const q = s.points, n = s.closed ? q.length : q.length - 1; let best = null;
+      for (let i = 0; i < n; i++) { const a = q[i], c = q[(i + 1) % q.length], dx = c.x - a.x, dy = c.y - a.y, l2 = dx * dx + dy * dy; if (l2 < 1e-12) continue; const t = Math.max(0, Math.min(1, ((wp.x - a.x) * dx + (wp.y - a.y) * dy) / l2)), d = Math.hypot(wp.x - a.x - dx * t, wp.y - a.y - dy * t); if (d <= 7 / scale && (!best || d < best.d)) best = { d, id: s.id, x1: a.x, y1: a.y, x2: c.x, y2: c.y }; }
+      return best;
+    };
+    let axis = null; for (const s of [...doc.shapes].reverse()) { if (!visible(s) || selected.has(s.id)) continue; const sg = axisSegOf(s); if (sg) { axis = sg; break; } }
     if (stage?.kind === 'mirrorMid') { /* 2本目の線：1本目との真ん中を軸にする */
       if (!axis || axis.id === stage.id) { $('hint').textContent = t('mirrorMid1'); return; }
-      const first = doc.shapes.find(s => s.id === stage.id), ax = first ? midAxisOf(first, axis) : null; if (!ax) { $('hint').textContent = t('mirrorNotParallel'); return; }
+      const first = stage.seg, ax = first ? midAxisOf(first, axis) : null; if (!ax) { $('hint').textContent = t('mirrorNotParallel'); return; }
       stage = null; mirrorCopy(ax.a, ax.b); return;
     }
-    if (axis && e.shiftKey) { stage = { kind: 'mirrorMid', id: axis.id }; $('hint').textContent = t('mirrorMid1'); draw(); return; } /* Shift+クリック：2本の線の真ん中を軸にする（1本目） */
+    if (axis && e.shiftKey) { stage = { kind: 'mirrorMid', id: axis.id, seg: { x1: axis.x1, y1: axis.y1, x2: axis.x2, y2: axis.y2 } }; $('hint').textContent = t('mirrorMid1'); draw(); return; } /* Shift+クリック：2本の線の真ん中を軸にする（1本目） */
     if (axis) { mirrorCopy({ x: axis.x1, y: axis.y1 }, { x: axis.x2, y: axis.y2 }); return; }
     if (stage?.kind !== 'mirror') stage = { kind: 'mirror', a: cursor }; else { const a = stage.a; stage = null; if (distance(a, cursor) > 1e-8) mirrorCopy(a, cursor); }
     draw(); return;
@@ -12468,6 +12477,9 @@ function modalDialogOpen() {
 window.addEventListener('keydown', e => {
   refreshMoveFree(e);
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
+  /* 目打ちで打てる経路が複数あるとき、Tab で切り替える。チェック欄・ボタンにフォーカスが残っていても効かせる（文字・数値を入れる欄の中では、ふつうの Tab のまま。事業主 2026-11-18「反対の経路に菱目を打てない」：「開始端を逆にする」のチェックを押したあと、Tab が欄の移動になって経路が切り替わらなかった） */
+  const typing = ((e.target instanceof HTMLInputElement || e.target.tagName === 'INPUT') && !['checkbox', 'radio', 'button', 'submit', 'range'].includes(e.target.type)) || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
+  if (e.key === 'Tab' && !typing && !modalDialogOpen() && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save(e.shiftKey) : openDialog(); return; }
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !modalDialogOpen()) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
