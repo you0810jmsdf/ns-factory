@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ボタン・ホックの種類と工具ガイド | 後方幕僚室 | N's factory</title>
+<meta name="description" content="バネホック・ジャンパーホックと足長タイプの規格、必要な穴あけ・打ち具・打ち台、間違いやすい失敗と対処を1ページに整理しました。N's CAD の金具ライブラリ・目利きノートの選び方記事とも連携しています。">
+<script>
+try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-ND1T7H067Y'] = true; } } catch (e) {}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ND1T7H067Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ND1T7H067Y');
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --tan: #A0785A; --tan-light: #C4956A; --charcoal: #1D1D1F;
+  --gray: #6E6E73; --bg: #F5F5F7; --white: #FFFFFF;
+  --line: #E8E8ED; --soft: #F5F5F7;
+  --accent: #A0785A; --accent-soft: #F2E8DD; --accent-dark: #6E4F3A;
+  --warn: #B5452F; --warn-soft: #FBEDE9;
+  --radius: 14px;
+  font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif;
+}
+html { overflow-x: clip; }
+body { background: var(--bg); color: var(--charcoal); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.nav { position: sticky; top: 0; z-index: 40; height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 16px; background: rgba(255,255,255,.88); backdrop-filter: blur(20px); border-bottom: 1px solid var(--line); }
+.nav-title { font-size: 14px; font-weight: 800; letter-spacing: .04em; }
+.nav-spacer { flex: 1; }
+.nav-link { font-size: 13px; color: var(--gray); padding: 6px 10px; border-radius: 8px; text-decoration: none; white-space: nowrap; }
+.nav-link:hover { background: var(--soft); color: var(--charcoal); }
+.hero { background: #14110E; color: #fff; }
+.hero-inner { max-width: 1080px; margin: 0 auto; padding: 56px 16px 48px; }
+.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .18em; color: var(--tan-light); margin-bottom: 12px; }
+.hero h1 { font-size: clamp(26px, 5vw, 42px); line-height: 1.25; letter-spacing: -.02em; margin-bottom: 14px; }
+.hero p { max-width: 680px; font-size: 14.5px; line-height: 1.85; color: rgba(255,255,255,.78); }
+.hero .updated { margin-top: 16px; font-size: 11.5px; color: rgba(255,255,255,.5); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 56px; }
+.section { padding-top: 44px; }
+.sec-eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: .16em; color: var(--accent-dark); margin-bottom: 6px; }
+.section h2 { font-size: clamp(20px, 3vw, 26px); letter-spacing: -.02em; margin-bottom: 8px; }
+.section .lead { color: var(--gray); font-size: 13.5px; line-height: 1.85; max-width: 760px; margin-bottom: 18px; }
+.callout { background: #FFF8EE; border: 1px solid #F0DFC5; border-left: 4px solid var(--tan); border-radius: 12px; padding: 16px 18px; }
+.callout > b { display: block; font-size: 14px; margin-bottom: 6px; }
+.callout ol, .callout ul { padding-left: 1.3em; font-size: 13.5px; color: #5E4E3C; line-height: 1.85; }
+.table-wrap { overflow-x: auto; background: var(--white); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13px; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.6; }
+th { background: var(--accent-soft); font-size: 12px; color: var(--accent-dark); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td b { font-weight: 800; }
+.note { font-size: 12px; color: var(--gray); margin-top: 10px; line-height: 1.8; }
+.conf { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 9999px; background: var(--accent-soft); color: var(--accent-dark); margin-left: 6px; vertical-align: 1px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.card { background: var(--white); border-radius: var(--radius); padding: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.card h3 { font-size: 15px; margin-bottom: 8px; }
+.card .tag { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 6px; margin-bottom: 8px; background: var(--accent-soft); color: var(--accent-dark); }
+.card dl { font-size: 13px; line-height: 1.75; }
+.card dt { font-weight: 800; font-size: 12px; color: var(--accent-dark); margin-top: 8px; }
+.card dd { color: #3A3A3C; }
+.card.miss .tag { background: var(--warn-soft); color: var(--warn); }
+.links { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.linkcard { display: block; background: var(--white); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; text-decoration: none; font-size: 13.5px; font-weight: 700; }
+.linkcard small { display: block; margin-top: 4px; font-size: 11.5px; font-weight: 500; color: var(--gray); }
+.linkcard:hover { border-color: rgba(160,120,90,.5); }
+.src { font-size: 12px; color: var(--gray); line-height: 1.9; padding-left: 1.2em; }
+.src a { color: var(--accent-dark); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="nav-title">後方幕僚室</span>
+  <span class="nav-spacer"></span>
+  <a class="nav-link" href="./">後方幕僚室へ戻る</a>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">BUTTONS &amp; SETTING TOOLS</div>
+    <h1>ボタン・ホックの種類と、<br>使う工具のつながり</h1>
+    <p>バネホック・ジャンパーホック・足長タイプの規格と、必要な穴あけ・打ち具・打ち台、そして失敗しやすいところを1ページにまとめました。呼び名が店ごとに違うので、<b>頭の直径（mm）で選ぶ</b>のがこのページの基本です。</p>
+    <div class="updated">2026年11月17日 作成　／　数値は販売店・解説サイトの公開情報を照合した目安です（出典は末尾）</div>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <div class="section">
+    <div class="callout">
+      <b>先に結論：失敗の大半は、この3つのどれか</b>
+      <ol>
+        <li><b>呼び名で買って、サイズが合わない。</b>「小・中・大」「No.1・No.2・No.5」「7050・7060」は店によって指す大きさが違う。頭の直径（mm）で確かめる。</li>
+        <li><b>金具と打ち具が対になっていない。</b>バネホック用の打ち具ではジャンパーホックは付かない（逆も）。サイズも別。</li>
+        <li><b>革の厚みが足の長さに合っていない。</b>薄すぎると固定できず、厚すぎると足が届かない。足長タイプで逃がすか、革を挟んで調整する。</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="section" id="kinds">
+    <div class="sec-eyebrow">KINDS</div>
+    <h2>種類と特徴</h2>
+    <p class="lead">財布・小銭入れなど薄い革にはバネホック、バッグやベルトなど力がかかる厚い革にはジャンパーホックが目安です。どちらも、革に打ち込むと戻せません（外すときは金具を切ります）。</p>
+    <div class="grid">
+      <div class="card">
+        <span class="tag">バネホック</span>
+        <h3>薄い革に。弱い力で付け外し</h3>
+        <dl>
+          <dt>構造</dt><dd>フラップ側（メス）はバネと頭、本体側（オス）は穴に差し込む部品と上にのせる部品。足を打ち広げて固定する。</dd>
+          <dt>向く場面</dt><dd>財布・小銭入れ・カードケース・手帳の留め。1〜5mm程度の革。</dd>
+          <dt>弱点</dt><dd>強い力が毎日かかる場所（大きなバッグの開閉など）には保持力が足りないことがある。</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <span class="tag">ジャンパーホック</span>
+        <h3>厚い革・力のかかる所に</h3>
+        <dl>
+          <dt>構造</dt><dd>本体側（オス）は足とゲンコ、フラップ側（メス）はバネと頭。固定部がリング状で足が太く長く、バネホックより保持力と耐久性が高いとされる。</dd>
+          <dt>向く場面</dt><dd>バッグ・ベルト・厚手のフラップ。革は最低2mm以上が目安。</dd>
+          <dt>弱点</dt><dd>薄い革には不向き。取り付けはバネホックよりやや難しく、垂直に打たないと曲がる。</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <span class="tag">足長（長足）</span>
+        <h3>厚みが足りない足を、長くして逃がす</h3>
+        <dl>
+          <dt>中身</dt><dd>同じ頭径で、足だけが長いタイプ。バネホック No.5 と 8050、ジャンパーホック（小・大）にある。</dd>
+          <dt>取り付け</dt><dd>No.5 足長は、通常の No.5 と同じ工具で付けられると案内されている（ほかの足長は商品ページで確認）。</dd>
+          <dt>注意</dt><dd>No.1・No.2 の足長は、調べた販売店の一覧には無かった。</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <span class="tag">そのほか</span>
+        <h3>両面頭・隠し頭・アメリカンホック</h3>
+        <dl>
+          <dt>両面頭</dt><dd>裏側も頭にして、表裏どちらから見ても同じ見た目にする仕様（バネホック・ジャンパーホックにある）。</dd>
+          <dt>隠し頭</dt><dd>頭径が小さめの仕様（No.1 は9.5mm、No.5 は11mmと表記する店がある）。</dd>
+          <dt>アメリカンホック</dt><dd>頭径10mmの別の金具。打ち具の対応は商品ページで確認する。</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="sizes">
+    <div class="sec-eyebrow">SIZES</div>
+    <h2>規格の一覧（頭径・厚み・取り付け穴）</h2>
+    <p class="lead">厚みは「革を重ねた合計」の目安です。販売店ごとに表記が違うため、幅のある数字は食い違う出典を並べています。<b>穴の大きさは、買った金具の説明が最優先</b>です。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>金具</th><th>呼び名の例</th><th>頭径</th><th>革の厚み目安</th><th>取り付け穴</th></tr></thead>
+        <tbody>
+          <tr><td><b>バネホック</b></td><td>小・No.1</td><td>約9〜10mm</td><td>1〜2mm</td><td>2〜3mm（7号・15号の2本使い）</td></tr>
+          <tr><td><b>バネホック</b></td><td>中・No.2</td><td>約11〜11.5mm</td><td>約2.5mm</td><td>3mm（7号・15号の2本使い）</td></tr>
+          <tr><td><b>バネホック</b></td><td>大・No.5</td><td>約12〜13mm</td><td>約3mm（足長は合計5mmまで）</td><td>3mm（8号・18号の2本使い）</td></tr>
+          <tr><td><b>バネホック</b></td><td>特大・8050</td><td>15mm（店により13mm表記）</td><td>3〜5mm（足長は合計7mmまで）</td><td>5mm</td></tr>
+          <tr><td><b>ジャンパーホック</b></td><td>小・7060</td><td>約13mm</td><td>3〜4mm（足長で5mm前後まで）</td><td>3〜4mm（解説）／8号（打ち具の一覧）</td></tr>
+          <tr><td><b>ジャンパーホック</b></td><td>大・7050</td><td>約15mm</td><td>4mm前後（足長で5〜7mmまで）</td><td>4mm前後（12号＝3.6mm）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      ・ハトメ抜きの号数は「号数 × 0.3mm」が穴の直径の目安（8号＝2.4mm、12号＝3.6mm、15号＝4.5mm）。<br>
+      ・バネホック小・中の「7号・15号」は、<b>オス側（足を通す穴）に7号</b>、<b>メス側（バネ・頭の穴）に15号</b>という使い分け（取り付けの説明に従う）。<br>
+      ・ジャンパーホック小は、8号（＝2.4mm）と解説の「3〜4mm」で食い違う。試し抜きで足が通るか確かめる。<br>
+      ・食い違いの例：ジャンパーホックの足の長さは、小（7060）が約4.6〜6mm、大（7050）が約5.5〜7mm、足長の大が約9〜10mmと、出典で幅がある。<br>
+      ・「小」の呼び方も食い違う。ジャンパーホックで「小＝13mm」とする店と、「小＝9.5mm（7070）」とする解説がある。
+    </p>
+  </div>
+
+  <div class="section" id="tools">
+    <div class="sec-eyebrow">TOOLS</div>
+    <h2>金具と工具の対応</h2>
+    <p class="lead">金具1つに、穴あけ・打ち具・打ち台・叩く道具の4点がつながります。穴あけと叩く道具は共通で、<b>打ち具だけが金具ごとに別</b>です。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>金具</th><th>穴あけ（ハトメ抜き）</th><th>打ち具</th><th>打ち台</th></tr></thead>
+        <tbody>
+          <tr><td><b>バネホック 小・中</b></td><td>7号 と 15号</td><td>ホック打ち（小・中は兼用）</td><td>万能打ち台</td></tr>
+          <tr><td><b>バネホック 大</b></td><td>8号 と 18号</td><td>ホック打ち（大）</td><td>万能打ち台</td></tr>
+          <tr><td><b>ジャンパーホック 小</b></td><td>8号</td><td>ジャンパーホック打ち（小）</td><td>万能打ち台</td></tr>
+          <tr><td><b>ジャンパーホック 大</b></td><td>12号</td><td>ジャンパーホック打ち（大）</td><td>万能打ち台</td></tr>
+          <tr><td><b>両面カシメ 小・大・特大</b></td><td>7号・8号・10号</td><td>カシメ打ち（小・大・特大）</td><td>万能打ち台（平らな面）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid" style="margin-top:14px;">
+      <div class="card">
+        <span class="tag">共通で要る道具</span>
+        <h3>ゴム板・木槌・万能打ち台</h3>
+        <dl>
+          <dt>ゴム板</dt><dd>ハトメ抜きの下に敷く。穴あけがきれいに抜け、刃も傷まない。</dd>
+          <dt>木槌（樹脂ハンマー）</dt><dd>金槌だと打ち具の頭を傷める。真上から垂直に。</dd>
+          <dt>万能打ち台</dt><dd>金具の頭の丸みに合う凹みで受ける。凹みが合っていないと頭に傷が付く。</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <span class="tag">打ち台の使い分け</span>
+        <h3>オス側は平らな面、メス側は凹み</h3>
+        <dl>
+          <dt>オス（足側）</dt><dd>打ち台の平らな面（穴のない面）を上にして打つ。</dd>
+          <dt>メス（頭・バネ側）</dt><dd>頭が入る凹みにセットして打つ。</dd>
+          <dt>打ち具</dt><dd>オス用とメス用で頭の形が違う。取り違えない。</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <span class="tag">打ち具の共用</span>
+        <h3>「兼用できる」かは出典で食い違う</h3>
+        <dl>
+          <dt>確実な組み合わせ</dt><dd>金具を買った店の「対応打ち具」。他メーカーの打ち具は、同じ名前でも寸法の考え方が違い、付かないことがある。</dd>
+          <dt>量が増えたら</dt><dd>ハンドプレス機（金具ごとに専用の駒が要る）で速く均一に打てる。</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="mistakes">
+    <div class="sec-eyebrow">MISTAKES</div>
+    <h2>間違いやすいミスと対処</h2>
+    <p class="lead">公開されている解説・販売店のQ&amp;Aから、よく出る失敗を症状別に整理しました。<b>打つ前に直せる順</b>に並べています。</p>
+
+    <h3 style="font-size:15px;margin:20px 0 10px;">① 選ぶとき</h3>
+    <div class="grid">
+      <div class="card miss">
+        <span class="tag">打ち具が合わない</span>
+        <dl><dt>症状</dt><dd>金具が付かない・頭がつぶれる</dd>
+        <dt>原因</dt><dd>別サイズの打ち具、バネホック用でジャンパーホックを打つ、他メーカー品</dd>
+        <dt>対処</dt><dd>金具を買った店の対応表で、打ち具も同時に選ぶ</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">呼び名の食い違い</span>
+        <dl><dt>症状</dt><dd>思っていたサイズと違う金具が届く</dd>
+        <dt>原因</dt><dd>「中」を No.2 と書く店、「小」と書く店がある。ジャンパーホックの「小」も定義が揺れる</dd>
+        <dt>対処</dt><dd>頭の直径（mm）と足の長さで確認する</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">革の厚みと足の長さ</span>
+        <dl><dt>症状</dt><dd>足が曲がる・固定されない／足が届かない</dd>
+        <dt>原因</dt><dd>薄い革に長い足、または厚い革に短い足</dd>
+        <dt>対処</dt><dd>ジャンパーホックは、足の半分ほどが革に隠れるのが目安。薄いときは同じ革の切れ端を挟み、厚いときは足長タイプにする</dd></dl>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;margin:24px 0 10px;">② 穴をあけるとき</h3>
+    <div class="grid">
+      <div class="card miss">
+        <span class="tag">穴が大きすぎる</span>
+        <dl><dt>症状</dt><dd>打つときに位置がずれる・金具がぐらつく</dd>
+        <dt>原因</dt><dd>足より大きいハトメ抜きを使った</dd>
+        <dt>対処</dt><dd>足にぴったり、またはほんの少し小さい号数を選ぶ。捨て革で試し抜きする</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">仕上げの順番</span>
+        <dl><dt>症状</dt><dd>金具を付けたあとでコバ・床面が仕上げにくい</dd>
+        <dt>原因</dt><dd>仕上げ前に金具を打った</dd>
+        <dt>対処</dt><dd>床面・コバの処理は、ホックを付ける前に済ませる</dd></dl>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;margin:24px 0 10px;">③ 打つとき</h3>
+    <div class="grid">
+      <div class="card miss">
+        <span class="tag">打ち込み不足</span>
+        <dl><dt>症状</dt><dd>金具が回る・動く・緩い</dd>
+        <dt>原因</dt><dd>打つ回数や力が足りず、足が開ききっていない</dd>
+        <dt>対処</dt><dd>少しずつ打ち足して、止まったところで終える。付け外しを数回試す</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">打ちすぎ</span>
+        <dl><dt>症状</dt><dd>メス側の部品が壊れる・つぶれる</dd>
+        <dt>原因</dt><dd>一度に強く打った</dd>
+        <dt>対処</dt><dd>メス側は控えめに、オス側はしっかり（外れやすいため）。強さは側ごとに変える</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">打ち棒が傾いた</span>
+        <dl><dt>症状</dt><dd>金具が斜めに付く・きれいに付かない</dd>
+        <dt>原因</dt><dd>打ち具が垂直でない</dd>
+        <dt>対処</dt><dd>打ち具を垂直に立て、真上から叩く</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">打ち台の凹み</span>
+        <dl><dt>症状</dt><dd>頭に傷・凹みが付く／上下の部品がずれて付く</dd>
+        <dt>原因</dt><dd>凹みが金具の大きさに合っていない</dd>
+        <dt>対処</dt><dd>頭の形に合う凹みを選んで、金具を正しくセットしてから打つ</dd></dl>
+      </div>
+    </div>
+
+    <h3 style="font-size:15px;margin:24px 0 10px;">④ 付けたあと</h3>
+    <div class="grid">
+      <div class="card miss">
+        <span class="tag">外せない</span>
+        <dl><dt>症状</dt><dd>失敗した金具が取れない</dd>
+        <dt>原因</dt><dd>金具は戻す前提で作られていない</dd>
+        <dt>対処</dt><dd>ニッパーで切るか、金具外しの道具を使う（販売店の案内）。打つ前に位置と向きをよく確かめる</dd></dl>
+      </div>
+      <div class="card miss">
+        <span class="tag">真鍮の亀裂・加工跡</span>
+        <dl><dt>症状</dt><dd>頭や足に細かいひび・加工跡が見える</dd>
+        <dt>原因</dt><dd>打つと薄い部分に出ることがあるが、耐久性は問題ないとする販売店が多い</dd>
+        <dt>対処</dt><dd>気になる場合は購入時に「跡のない個体」を頼めるか確認する</dd></dl>
+      </div>
+    </div>
+    <p class="note">※ ここに挙げた原因・対処は、販売店・解説サイトの記述の整理で、工房の実例ではありません。工房で起きた失敗は、分かり次第ここへ追記します。</p>
+  </div>
+
+  <div class="section" id="ncad">
+    <div class="sec-eyebrow">N'S CAD</div>
+    <h2>N's CAD の金具ライブラリで、設計の段階から確かめる</h2>
+    <p class="lead">N's CAD の金具ライブラリに、上の規格をそのまま登録しています。図面に置くと、頭の大きさと<b>取り付け穴の印</b>が入るので、革の寸法・余白・穴の位置を作りながら確かめられます。登録値は代表値（「要実測」の印つき）で、実物の寸法で直せます。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>分類</th><th>登録済みの規格</th></tr></thead>
+        <tbody>
+          <tr><td><b>バネホック</b></td><td>No.1（10mm）／No.2（11.5mm）／No.5（13mm）／No.8050（15mm）／No.5 足長（13mm）／No.8050 足長（15mm）</td></tr>
+          <tr><td><b>ジャンパーホック</b></td><td>小 7060（13mm）／大 7050（15mm）／各 足長／ほかに 10・13・15mm の汎用3件</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note"><a href="../nscad/" style="color:var(--accent-dark);font-weight:700;">N's CAD を開く →</a>　金具の置き方：金具の窓で「その他の金具」を選び、分類・金具を選んで「図面に置く」。</p>
+  </div>
+
+  <div class="section" id="mekiki">
+    <div class="sec-eyebrow">MEKIKI NOTE</div>
+    <h2>選び方の記事（目利きノート）</h2>
+    <p class="lead">打ち具・ハトメ抜き・木槌・ゴム板の選び方を、初心者向けに詳しく書いた記事です。</p>
+    <div class="links">
+      <a class="linkcard" href="https://mekiki-note.com/articles/hock-kashime-uchigu-erabikata" target="_blank" rel="noopener">バネホック・カシメの打ち具の選び方<small>金具に合う打ち具を選ぶ</small></a>
+      <a class="linkcard" href="https://mekiki-note.com/articles/hatome-nuki-erabikata" target="_blank" rel="noopener">ハトメ抜き（丸ポンチ）の選び方<small>号数と穴の大きさ</small></a>
+      <a class="linkcard" href="https://mekiki-note.com/articles/mokutsuchi-erabikata" target="_blank" rel="noopener">レザークラフトの木槌の選び方<small>打つ道具の重さと打面</small></a>
+      <a class="linkcard" href="https://mekiki-note.com/articles/gomuita-boon-mat-erabikata" target="_blank" rel="noopener">ゴム板と防音マットの選び方<small>穴あけの下に敷く板</small></a>
+    </div>
+  </div>
+
+  <div class="section" id="sources">
+    <div class="sec-eyebrow">SOURCES</div>
+    <h2>参照した公開情報</h2>
+    <ul class="src">
+      <li><a href="https://www.partslabo.com/goods/fock/" target="_blank" rel="noopener">パーツラボ ホック・ドットボタン一覧</a>（足長・ジャンパーホック・規格の品名と頭径）</li>
+      <li><a href="https://leather-craft.net/leather2376" target="_blank" rel="noopener">レザークラフト入門（ジャンパーホックの選び方と取り付け方）</a>（足の長さ・厚み・失敗例）</li>
+      <li><a href="https://leather-craft-guide.com/button" target="_blank" rel="noopener">ほこるる（ボタンの種類とつけ方）</a>（バネホック・ジャンパーホックの種類と穴のサイズ）</li>
+      <li><a href="https://tools-leathercraft.com/2020/06/19/post-5208/" target="_blank" rel="noopener">金具に合ったハトメ抜きと打ち具のサイズ一覧</a>（号数と適合打ち具）</li>
+      <li><a href="https://www.leathercraft.jp/contents/school.jsp?id=18" target="_blank" rel="noopener">バネホックの取り付け方</a>（取り付け手順・工具）</li>
+      <li><a href="https://phoenix-shop.jp/products/detail/54840396" target="_blank" rel="noopener">ジャンパーホック 7050</a>（打ち具の対応・取り外し）</li>
+    </ul>
+    <p class="note">数値は上のサイト間でも食い違いがあります。実際に使うときは、買った金具の説明と、対応する打ち具の説明を優先してください。</p>
+  </div>
+
+</main>
+</body>
+</html>
