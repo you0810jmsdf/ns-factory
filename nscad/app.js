@@ -720,12 +720,17 @@ function stitchPointCandidates(w) {
     if (seen.has(key) || !saved.shapeIds.every(id => editable(doc.shapes.find(x => x.id === id)))) continue; seen.add(key);
     const ids = saved.shapeIds, len = arcLength(route), mine = doc.shapes.filter(x => ids.includes(x.id)), others = doc.shapes.filter(x => !ids.includes(x.id) && visible(x) && stitchable(x)), cands = [0, len];
     for (const q of allIntersections([...mine, ...others])) { if (!(q.ids.some(id => ids.includes(id)) && q.ids.some(id => !ids.includes(id)))) continue; const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) cands.push(pr.s); }
+    const axisCands = [];
+    { const cb = bboxOfDoc({ shapes: mine, holes: [] }); if (cb) {   /* この経路の図形の中心線（外接の四角の中心の縦線・横線）が、線と交わる所にも吸い付く：左右・上下対称に打ち始められる（対称チェックの軸と同じ線・事業主 2026-11-17「菱目の中心が図形の中心に重ならない」：頂点のある辺の中央では、クリックの位置のまま 0.2mm ずれた所から始まっていた） */
+      const cx = (cb.minX + cb.maxX) / 2, cy = (cb.minY + cb.maxY) / 2, axes = [{ id: '__axisV', layer: 'pattern', type: 'line', x1: cx, y1: cb.minY - 1, x2: cx, y2: cb.maxY + 1 }, { id: '__axisH', layer: 'pattern', type: 'line', x1: cb.minX - 1, y1: cy, x2: cb.maxX + 1, y2: cy }];
+      for (const ax of axes) for (const sh of mine) for (const q of allIntersections([sh, ax])) { const pr = projectOnPath(route, q); if (distance(pr, q) < 0.05) { cands.push(pr.s); axisCands.push(pr.s); } } } }
     for (const sh of mine) { const mp = pointAtLength(sh, arcLength(sh) / 2), pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); }
     for (const sh of mine) for (const mp of straightRunMidpoints(sh)) { const pr = projectOnPath(route, mp); if (distance(pr, mp) < 0.05) cands.push(pr.s); }   /* まっすぐな辺の真ん中にも吸い付く（角丸の四角の左辺の中央など・事業主 2026-11-06） */ /* 図形（線）の中心（中点）にも吸い付く（事業主指摘 2026-10-17：終点を図形の中心に合わせたいがスナップが出ない） */
     for (const o of others) for (const q of stitchSpecialPoints(o)) { if (distance(q, w) > STITCH_FOOT_MAX_MM + 14 / scale) continue; const pr = projectOnPath(route, q); if (distance(pr, q) <= STITCH_FOOT_MAX_MM) cands.push(pr.s); } /* 近くの別の図形（外形など）の端・中心から、この経路へ垂直に降ろした点にも吸い付く（事業主指摘 2026-10-21：外形の中心に合わせたいのに、内側の点線は中心へ吸い付かない） */
     if (!state.fresh) for (const sg of saved.segments) cands.push(sg.from, sg.to); /* 前に打った区間の始まり・終わり（つなぎ目）も吸着の点：隣のピッチの位置より、ちょうどそこをクリックしたときは、そこが優先される */
     if (!state.fresh) { const cur = doc.tools.find(x => x.id === $('stitchTool').value); for (const h of doc.holes) if (h.pathId === saved.id) { cands.push(h.s); /* 隣のピッチの位置（穴の位置 ± ピッチ）にも吸い付く：前の続きを、同じ固定幅でぴったり続けられる（事業主指摘 2026-10-17：均等化した場所だけで、隣のピッチからだとずれる） */ for (const pt of new Set([cur?.pitch, doc.tools.find(x => x.id === h.toolId)?.pitch].filter(v => Number.isFinite(v) && v > 0))) for (const q of [h.s - pt, h.s + pt]) if (q > 1e-6 && q < len - 1e-6) cands.push(q); } }
     let best = null, bd = Infinity; for (const c of cands) { const d = distance(pointAtLength(route, c), w); if (d < bd) { bd = d; best = c; } }
+    if (best !== null && bd <= 14 / scale) { const near = axisCands.find(c => c !== best && Math.abs(c - best) <= 0.5); if (near !== undefined) best = near; }   /* 中心線との交点の 0.5mm 以内に別の候補（外形の中心から垂直に降ろした点など）があるときは、中心線との交点を選ぶ：頂点の辺の中央で、0.2mm ずれた所に着かない */
     const s = best !== null && bd <= 14 / scale ? best : projectOnPath(route, w).s;
     /* 別の経路の既存の穴にも吸着する（画面14px以内・その線から 1.5mm 以内）。吸着先より穴のほうがクリックに近いとき、その穴を「0番目の穴」とする：線の端より外にある穴なら、anchorS＝線の外の位置（始点側 −距離／終点側 長さ＋距離）。打ち始めは、この穴からピッチを続けて数える（つなぎ目を越えても間隔が変わらない・事業主指摘 2026-10-16） */
     let anchorS, ah = null, adist = Infinity;
