@@ -670,6 +670,45 @@ a.url-open-btn:hover {
   font-size: 0.85rem;
 }
 
+/* ── Merge modal（同じパスワードのカードを統合） ── */
+#merge-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.6);
+}
+.merge-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.7rem;
+  margin-bottom: 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.merge-group-head { font-size: 0.8rem; color: var(--text-muted); }
+.merge-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.merge-row input { margin-top: 0.25rem; flex: none; }
+.merge-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.merge-title { font-weight: 600; overflow-wrap: anywhere; }
+.merge-sub { font-size: 0.75rem; color: var(--text-muted); overflow-wrap: anywhere; }
+.merge-do-btn { align-self: flex-start; min-height: 40px; }
+
 /* ── Toast ── */
 #toast-container {
   position: fixed;

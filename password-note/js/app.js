@@ -316,6 +316,7 @@ function closeAllModals() {
   document.getElementById('entry-modal').style.display = 'none';
   document.getElementById('gist-modal').style.display = 'none';
   document.getElementById('snapshot-modal').style.display = 'none';
+  document.getElementById('merge-modal').style.display = 'none';
   document.getElementById('settings-modal').style.display = 'none';
   editingId = null;
 }
@@ -915,6 +916,99 @@ async function deleteSelectedEntries() {
   if (GistManager.isConfigured()) syncToGist();
 }
 
+// ── 同じパスワードのカードを統合 ──
+// 最新のパスワードが同じカードを組にして、残す1枚を選んで合体する。計算は js/merge.js（EntryMerge）。
+// ⛔ 画面にパスワードは出さない（サービス名・ID・URL・履歴の行数だけ）。
+let mergeGroupsCache = [];
+
+function openMergeModal() {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
+  renderMergeModal();
+  document.getElementById('merge-modal').style.display = 'flex';
+}
+
+function closeMergeModal() {
+  document.getElementById('merge-modal').style.display = 'none';
+}
+
+// 残す候補の初期値: 履歴の行数が多いもの。同数なら更新が新しいもの
+function defaultMergeKeepIndex(group) {
+  let best = 0;
+  group.forEach((e, i) => {
+    const b = group[best];
+    const n = (e.history || []).length, bn = (b.history || []).length;
+    if (n > bn || (n === bn && new Date(e.updatedAt) > new Date(b.updatedAt))) best = i;
+  });
+  return best;
+}
+
+function renderMergeModal() {
+  mergeGroupsCache = EntryMerge.groups(vault.entries, getLatestCreds);
+  const list = document.getElementById('merge-list');
+  if (mergeGroupsCache.length === 0) {
+    list.innerHTML = '<div class="empty-state">最新のパスワードが同じカードはありません。</div>';
+    return;
+  }
+  list.innerHTML = mergeGroupsCache.map((group, gi) => {
+    const keepIdx = defaultMergeKeepIndex(group);
+    const rows = group.map((e, i) => {
+      const c = getLatestCreds(e);
+      return `
+      <label class="merge-row">
+        <input type="radio" name="merge-keep-${gi}" value="${escHtml(e.id)}" ${i === keepIdx ? 'checked' : ''}>
+        <span class="merge-info">
+          <span class="merge-title">${escHtml(e.title)}</span>
+          <span class="merge-sub">ID: ${escHtml((c && c.username) || '(なし)')} ／ 履歴 ${(e.history || []).length}行 ／ 更新: ${escHtml(fmtDate(e.updatedAt))}${e.url ? ' ／ ' + escHtml(e.url) : ''}${e.owner ? ' ／ 担当: ' + escHtml(e.owner) : ''}</span>
+        </span>
+      </label>`;
+    }).join('');
+    return `
+    <div class="merge-group">
+      <div class="merge-group-head">最新のパスワードが同じカード ${group.length}枚 ― 残すカードを選んでください</div>
+      ${rows}
+      <button type="button" class="btn-primary merge-do-btn" onclick="mergeGroup(${gi})">この${group.length}枚を1枚に統合</button>
+    </div>`;
+  }).join('');
+}
+
+async function mergeGroup(gi) {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
+  const group = mergeGroupsCache[gi];
+  if (!group) return;
+  const sel = document.querySelector(`input[name="merge-keep-${gi}"]:checked`);
+  if (!sel) { toast('残すカードを選んでください', 'error'); return; }
+  const keepId = sel.value;
+  // 画面を開いたあとに同期などで変わっていないか、いまの保管庫から取り直す
+  const current = group.map(g => vault.entries.find(e => e.id === g.id));
+  if (current.some(e => !e)) {
+    toast('カードが変わったため、一覧を更新しました。もう一度確認してください', 'error');
+    renderMergeModal();
+    return;
+  }
+  const keep = current.find(e => e.id === keepId);
+  const names = current.filter(e => e.id !== keepId).map(e => `「${e.title}」`).join('、');
+  const ok = confirm(`「${keep.title}」を残し、${names} の履歴をすべてこのカードへ合体します。\n\n・履歴は1行も捨てません（日付順に並べます）\n・統合前の状態は「自動復元」に残り、消えるカードの内容は残すカードの中にも控えます\n\n続けますか？`);
+  if (!ok) return;
+  try {
+    // 統合前の状態を自動バックアップに確実に残す（直近5回分）
+    const before = await DB.get('vault');
+    if (before) await DB.pushSnapshot(before);
+    const { merged, removedIds } = EntryMerge.merge(current, keepId, { now, uuid });
+    if (typeof Sync !== 'undefined') Sync.noteDeleted(removedIds);
+    vault.entries = vault.entries
+      .filter(e => !removedIds.includes(e.id))
+      .map(e => (e.id === merged.id ? merged : e));
+    removedIds.forEach(id => selectedIds.delete(id));
+    await saveVaultLocal();
+    renderList();
+    renderMergeModal();
+    toast(`${current.length}枚を「${merged.title}」の1枚に統合しました`, 'success');
+    if (GistManager.isConfigured()) syncToGist();
+  } catch (e) {
+    toast('統合できませんでした: ' + e.message, 'error');
+  }
+}
+
 function printSelected() {
   if (selectedIds.size === 0) {
     toast('印刷する登録を選択してください', 'error');
@@ -974,6 +1068,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('import-file').addEventListener('change', e => importBackupFile(e.target.files[0]));
   document.getElementById('snapshot-btn').addEventListener('click', openSnapshotModal);
   document.getElementById('close-snapshot-modal-btn').addEventListener('click', closeSnapshotModal);
+  document.getElementById('merge-btn').addEventListener('click', openMergeModal);
+  document.getElementById('close-merge-modal-btn').addEventListener('click', closeMergeModal);
 
   document.getElementById('search-input').addEventListener('input', e => {
     currentQuery = e.target.value;
