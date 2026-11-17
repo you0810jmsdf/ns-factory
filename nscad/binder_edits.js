@@ -80,6 +80,7 @@ export function applyBinderEdits(specs, edits) {
       s.rings = { ...s.rings, options, diameterOptionsMm: options.map(o => round1(ringSizeOf(null, o).inner)) };
     }
     if (e.rivets) s.rivets = clone(e.rivets);
+    if (e.mountKind === 'slidelock' || e.mountKind === 'rivet') s.mounts = { ...(s.mounts || {}), kind: e.mountKind, ...(e.mountKind === 'slidelock' ? { overrides: [] } : {}) };   /* 取り付け方：スライドロック式は穴なし（事業主 2026-11-17「クラウゼ社製は取り付け穴はなくスライドロック式なので、穴を非表示にしたい」） */
     /* レバー（事業主 2026-11-08「レバーはバインダ金具の両端にあるべきもの」）：台座の両端に1つずつ、端にぴったり付ける（Mini6・M5 の実測と同じ：中心 ＝ 長さの半分 ＋ レバーの長さの半分）。台座の長さを直しても追従する。ボタンなど、ほかの開閉部品は残す。null ならレバーを外す */
     if (e.lever !== undefined) {
       const keep = (s.mechanism?.parts || []).filter(q => q.kind !== 'lever');
@@ -108,6 +109,7 @@ export function editFromForm(form) {
   const out = { plate };
   if (form.parent) { out.parent = form.parent; const ja = String(form.names?.ja || '').trim(); if (!ja) throw new Error('name'); out.names = { ja, en: String(form.names?.en || '').trim() || ja }; }
   else if (form.names?.ja) out.names = { ja: String(form.names.ja).trim(), en: String(form.names.en || form.names.ja).trim() };
+  if (form.mountKind === 'slidelock' || form.mountKind === 'rivet') out.mountKind = form.mountKind;   /* 取り付け方：無ければ触らない。slidelock のときは、呼ぶ側が rivets を空で渡す */
   if (form.maker !== undefined) { const mk = String(form.maker?.name ?? '').trim().slice(0, 60), md = String(form.maker?.model ?? '').trim().slice(0, 60); out.maker = { name: mk || null, model: md || null }; }   /* 製造会社・型番：form.maker が無ければ触らない。空欄は「なし」 */
   if (form.lever !== undefined) {   /* レバー：form.lever が無ければ触らない・全部空欄ならレバーなし（null）・長さと高さが正の数なら両端に付ける（lengthMm 空欄＝台座の幅・角R 空欄＝0） */
     const lv = form.lever || {}, w = num(lv.widthMm), l = num(lv.lengthMm), h = num(lv.heightMm), ro = num(lv.cornerOuterRMm), ri = num(lv.cornerInnerRMm);
@@ -164,6 +166,7 @@ export function editsToCsv(applied, edits) {
     const ed = edits.specs[id]; specs.push(row([s.id, s.parent || '', s.names.ja, s.names.en, p.lengthMm, p.widthMm, p.thicknessMm, p.cornerRMm, p.confidence || '', ed?.holes || ed?.armsFrom ? s.holes.count : '', ed?.holes || ed?.armsFrom ? s.holes.pitchMm.join(';') : '', ed?.holes || ed?.armsFrom ? s.holes.span1toLastMm ?? '' : '', ed?.holes || ed?.armsFrom ? s.holes.centerPitchMm ?? '' : '', ed?.refill ? s.refill?.wMm ?? '' : '', ed?.refill ? s.refill?.hMm ?? '' : '', s.maker?.name ?? '', s.maker?.model ?? '']));   /* アームの本数・間隔（と、最初から最後までの距離・中央の間隔）は、直したか借りたときだけ出す */
     for (const o of s.rings.options || []) { const size = ringSizeOf(s, o); rings.push(row([s.id, size.inner, size.outer, size.wire, size.wireSource, o.embedDepthMm ?? '', o.confidence || '', o.shopName || '', o.shopUrl || ''])); }
     for (const r of s.rivets || []) parts.push(row([s.id, 'mount', r.xMm, r.yMm, r.dMm, 'rivet', '', '', '', '', '']));
+    if (s.mounts?.kind === 'slidelock' && !(s.rivets || []).length) parts.push(row([s.id, 'mount', '', '', '', 'slidelock', '', '', '', '', '']));   /* 穴なし（スライドロック式）は、座標なしの1行で書く（取り込みの書き方と同じ） */
     for (const q of s.mechanism?.parts || []) parts.push(row([s.id, q.kind === 'button' ? 'button' : 'lever', q.xMm, q.yMm, q.diameterMm ?? '', '', q.widthMm ?? '', q.lengthMm ?? '', q.heightMm ?? '', q.cornerOuterRMm ?? '', q.cornerInnerRMm ?? '']));   /* 開閉部品（レバー等）：台座の幅に合わせて伸縮した長さを、取り込みにも渡す（2026-11-04） */
   }
   for (const pid of parents) specs.splice(1, 0, row([pid, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']));   // 親の規格は id だけ（既存の値のまま）

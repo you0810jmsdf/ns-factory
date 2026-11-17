@@ -6169,7 +6169,7 @@ function renderBinder() {
   const ringD = spec.rings.diameterOptionsMm.includes(keep) ? keep : spec.rings.diameterOptionsMm[0]; rd.value = String(ringD);
   const leather = Number($('partThickness').value) || 1.5;
   $('binderInfo').textContent = t('binderInfo', { n: spec.holes.count, pitch: spec.holes.pitchMm.join(' / '), span: spec.holes.span1toLastMm, w: spec.refill.wMm, h: spec.refill.hMm, spine: spineWidth(ringD, binderBase(spec).thicknessMm, leather).toFixed(1) });
-  { const mk = $('binderMaker'); if (mk) { const has = !!(spec.maker?.name || spec.maker?.model); mk.hidden = !has; mk.textContent = has ? t('binderMakerLine', { name: spec.maker?.name || '-', model: spec.maker?.model || '-' }) : ''; } }   /* 製造会社・型番（金具ごと。寸法は製造会社で違う・事業主 2026-11-17） */
+  { const mk = $('binderMaker'); if (mk) { const has = !!(spec.maker?.name || spec.maker?.model), slide = isSlideLock(spec), lines = [has ? t('binderMakerLine', { name: spec.maker?.name || '-', model: spec.maker?.model || '-' }) : '', slide ? t('binderSlideLock') : ''].filter(Boolean); mk.hidden = !lines.length; mk.textContent = lines.join('／'); } }   /* 製造会社・型番（金具ごと。寸法は製造会社で違う・事業主 2026-11-17） */
   syncFoldRingSelects(); renderRingBuy(spec, ringD); syncBinderTwoStep();
 }
 /** 金具カードのリング径の下：選んだリングの購入先（店名・商品ページ）の「買う」リンク。購入先が無ければ出さない。楽天はアフィリエイトのリンク（案内つき）。 */
@@ -6953,10 +6953,13 @@ function bdeSpanApply() {
   const [i, k] = rows, xi = Number($('bdeMount' + i + 'X').value), xk = Number($('bdeMount' + k + 'X').value), [lo, hi] = Number.isFinite(xi) && Number.isFinite(xk) && xk < xi ? [k, i] : [i, k], half = +(d / 2).toFixed(4);   /* 小さい方の穴（同じなら上の行）が −、もう一方が ＋ */
   bdeSet('bdeMount' + lo + 'X', -half); bdeSet('bdeMount' + hi + 'X', half);
 }
+/** 「取り付け穴なし（スライドロック式）」のチェックに合わせて、穴の欄を隠す・出す。 */
+const isSlideLock = sp => !(sp?.rivets || []).length && (sp?.mounts?.kind === 'slidelock' || (sp?.mounts?.overrides || []).some(m => m?.kind === 'slidelock'));   /* 穴なし（スライドロック式）：組み込みのデータは、取り付けの行（overrides）に種類を書いている */
+function bdeNoMountSync() { const box = $('bdeMountBox'); if (box) box.hidden = !!$('bdeNoMount')?.checked; }
 function openBinderEdit(specId, ringDia) {   /* ringDia＝選んでいるリングの内径。あれば、そのリングの行だけを出し、サンプル図もそのリングにする（事業主 2026-11-10「内径25を選んだのに、外径15mmと出る」） */
   const spec = binderSpec(typeof specId === 'string' && specId ? specId : $('binderSpecSel').value); if (!spec) return; bdeSpecId = spec.id; bdeClearError();   /* specId＝平面図の「全長を直す」から、使っている金具の規格を直接開く（クリックのイベントが来たときは、一覧の選択） */
   const base = binderBase(spec), opts = spec.rings.options?.length ? spec.rings.options : spec.rings.diameterOptionsMm.map(d => ({ innerDiameterMm: d })), rivets = spec.rivets || [], nameOf = x => document.documentElement.lang === 'en' ? x.names.en : x.names.ja;
-  bdeRingCount = opts.length; bdeMountCount = rivets.length;
+  bdeRingCount = opts.length; bdeMountCount = rivets.length; if ($('bdeNoMount')) { $('bdeNoMount').checked = isSlideLock(spec); bdeNoMountSync(); } bdeLenTouched = new Set(); bdeLeverAuto = false;
   $('bdEditTitle').textContent = t('bdeTitle', { name: nameOf(spec) }) + (spec.edited ? ' ' + t('bdeEdited') : '') + (doc.foldDesign && foldBookState().kind === 'book' && ringStandardId() === spec.id ? ' ' + t('bdeUsedHere') : '');   /* ⓪の図面が使っている金具のときだけ「※この図面で使っている金具」 */
   $('bdeAsNewLabel').textContent = t('bdeNewProduct', { parent: nameOf(spec.parent ? binderSpec(spec.parent) || spec : spec) });
   $('bdePlateConf').innerHTML = bdeConfOptions(); $('bdeMountRows').innerHTML = rivets.map((r, i) => bdeMountRow(i)).join('');   /* リングの行は bdeFillArms が作る */
@@ -7015,9 +7018,14 @@ function bdeRefillForSave(asNew) {
 }
 const bdeLeverLenNow = () => { const raw = $('bdeLeverW').value, v = Number(raw); return raw !== '' && Number.isFinite(v) && v > 0 ? v : 0; };   /* 片側のレバーの、台座の長さ方向の長さ。空・不正は 0＝レバーなし */
 const bdeLenRound = v => Math.round(v * 10000) / 10000;
+/* 台座の長さと全長の両方を入れたら、レバーの長さ（片側）を、差の半分で自動で入れる（事業主 2026-11-17「台座の長さと全長が同じ数字にしかならず、レバーが描けない」）。
+   レバーの長さが空欄のときだけ始める。始めたあとは、台座・全長は書き換えず、レバーの長さだけを追従させる（打っている途中の数字で、もう一方を壊さない）。レバーの長さを手で入れたら、やめる。 */
+let bdeLenTouched = new Set(), bdeLeverAuto = false;
 function bdeSyncLength(changed = null) {
-  if (changed) bdeLenAnchor = changed;
-  const ext = 2 * bdeLeverLenNow(), plate = $('bdePlateL'), total = $('bdeTotalL');
+  if (changed) { bdeLenAnchor = changed; bdeLenTouched.add(changed); } else bdeLeverAuto = false;
+  const plate = $('bdePlateL'), total = $('bdeTotalL'), lw = $('bdeLeverW');
+  if (changed && bdeLenTouched.size === 2 && (bdeLeverAuto || lw.value === '')) { bdeLeverAuto = true; const p = Number(plate.value), tt = Number(total.value); lw.value = plate.value !== '' && total.value !== '' && Number.isFinite(p) && Number.isFinite(tt) && tt > p ? String(bdeLenRound((tt - p) / 2)) : ''; return; }
+  const ext = 2 * bdeLeverLenNow();
   if (bdeLenAnchor === 'total') { const v = Number(total.value); if (total.value !== '' && Number.isFinite(v)) plate.value = String(bdeLenRound(v - ext)); }
   else { const v = Number(plate.value); total.value = plate.value !== '' && Number.isFinite(v) ? String(bdeLenRound(v + ext)) : ''; }
 }
@@ -7057,13 +7065,14 @@ function bdeSampleUpdate() {
 function readBinderEditForm() {
   const spec = binderSpec(bdeSpecId), rings = [], rivets = [];
   for (let i = 0; i < bdeRingCount; i++) { if ($('bdeRing' + i + 'Row').hidden) continue; rings.push({ innerDiameterMm: $('bdeRing' + i + 'Inner').value, outerDiameterMm: $('bdeRing' + i + 'Outer').value, wireDiameterMm: $('bdeRing' + i + 'Wire').value, embedDepthMm: $('bdeRing' + i + 'Embed').value, confidence: $('bdeRing' + i + 'Conf').value, shopName: $('bdeRing' + i + 'Shop').value, shopUrl: $('bdeRing' + i + 'Url').value }); }
-  for (let i = 0; i < bdeMountCount; i++) { if ($('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
+  const noMount = !!$('bdeNoMount')?.checked;   /* 穴なし（スライドロック式）：穴の欄に値が残っていても、穴は0個にする */
+  for (let i = 0; i < bdeMountCount; i++) { if (noMount || $('bdeMount' + i + 'Row').hidden) continue; rivets.push({ xMm: $('bdeMount' + i + 'X').value, yMm: $('bdeMount' + i + 'Y').value, dMm: $('bdeMount' + i + 'D').value }); }
   const asNew = !!$('bdeAsNew').checked, armsFrom = $('bdeArmsFrom')?.value || undefined;
   /* アームの欄（本数・間隔）：触っていなければ送らない（事業主 2026-11-08：台座の長さだけ直しても、A5 6穴の間隔 19/19/70/19/19 が「70 ずつ」の等間隔に書き換わっていた。欄の「70」は中央の間隔だけ）。
      触っていなくて借りてもいないときは、今のアームの形を、そのまま残す（借りるのをやめた・直した跡がある・製品から新しい製品を作るとき）。 */
   const armsSame = $('bdeArmCount').value === bdeArmsInit.count && $('bdeArmPitch').value === bdeArmsInit.pitch;
   const keepHoles = armsSame && !armsFrom && (spec.armsFrom || binderEdits.specs[bdeSpecId]?.holes || (asNew && spec.parent)) ? JSON.parse(JSON.stringify(spec.holes)) : undefined;
-  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, maker: $('bdeMaker') ? { name: $('bdeMaker').value, model: $('bdeModel').value } : undefined, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec), refill: bdeRefillForSave(asNew) };
+  return { parent: asNew ? (spec.parent || spec.id) : undefined, names: { ja: $('bdeNameJa').value, en: $('bdeNameEn').value }, maker: $('bdeMaker') ? { name: $('bdeMaker').value, model: $('bdeModel').value } : undefined, plate: { lengthMm: $('bdePlateL').value, widthMm: $('bdePlateW').value, thicknessMm: $('bdePlateT').value, cornerRMm: $('bdePlateR').value, confidence: $('bdePlateConf').value }, rings, rivets, mountKind: $('bdeNoMount') ? (noMount ? 'slidelock' : 'rivet') : undefined, arms: armsSame ? undefined : { count: $('bdeArmCount').value, pitchMm: $('bdeArmPitch').value }, keepHoles, armsFrom, lever: bdeLeverForSave(asNew, spec), refill: bdeRefillForSave(asNew) };
 }
 function refreshBinderSelects(id) {
   for (const sid of ['binderSpecSel', 'hwEditSpec']) { const sel = $(sid); sel.textContent = ''; fillBinderSpecOptions(sel, false, sid === 'binderSpecSel'); }   /* 金具の一覧はリング規格だけ。寸法を直す窓の一覧は、リフィルの規格（A5 Slim）も出す（リフィルの大きさを直せるように） */
@@ -8572,7 +8581,7 @@ function initHardware() {
   $('bdeLeverFill').onclick = () => { bdeSet('bdeLeverW', 7); bdeSet('bdeLeverL', ''); bdeSet('bdeLeverH', 6); bdeSet('bdeLeverRo', 5); bdeSet('bdeLeverRi', 1); bdeSyncLength(); bdeSampleUpdate(); $('hint').textContent = t('bdeLeverFilled'); };
   for (const ev of ['input', 'change', 'click']) $('bdEditDialog').addEventListener(ev, e => { if (ev === 'input' || ev === 'change') { bdeClearError(); const id = e?.target?.id; if (id === 'bdeMountSpan') bdeSpanApply(); if (id === 'bdePlateL') bdeSyncLength('plate'); else if (id === 'bdeTotalL') bdeSyncLength('total'); else if (id === 'bdeLeverW') bdeSyncLength(); else if (id === 'bdeRefillSel') bdeRefillFromSel(); else if (id === 'bdeRefillW' || id === 'bdeRefillH') bdeRefillSelSync(); } if (bdeSpecId) bdeSpanSync(e?.target?.id === 'bdeMountSpan'); if ($('bdEditDialog').open !== false && bdeSpecId) bdeSampleUpdate(); });   /* 入力・選択・ボタンのたびに、サンプル図を描き直す */
   $('bdEditDialog').addEventListener('focusin', e => { bdeHl = bdeHlOf(e.target?.id || ''); if (bdeSpecId) bdeSampleUpdate(); });   /* 触った欄の寸法を、色つきにする */
-  $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
+  if ($('bdeNoMount')) $('bdeNoMount').addEventListener?.('change', () => { bdeNoMountSync(); if (bdeSpecId) bdeSampleUpdate(); }); $('bdeAddMount').onclick = () => { const i = bdeMountCount++; $('bdeMountRows').insertAdjacentHTML?.('beforeend', bdeMountRow(i)); bdeWireMount(i); };
 }
 
 /** ペンの線の節点 i を、滑らか（両隣の向きに沿うハンドル・長さは近いほうの辺の 1/3）と角（ハンドルは点に重なる）で切り替えた新しい図形を返す。 */
