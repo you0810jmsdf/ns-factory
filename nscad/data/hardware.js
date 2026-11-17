@@ -105,6 +105,40 @@ export const DATA_HARDWARE = {
       ]
     },
     {
+      "id": "snap-no1",
+      "category": "fastener",
+      "name_ja": "バネホック No.1（小）10mm",
+      "name_en": "Spring snap No.1 (small) 10 mm",
+      "params": {
+        "capD": 10,
+        "postD": 3
+      },
+      "footprint2d": {
+        "kind": "circle",
+        "d": "capD"
+      },
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "d": "postD"
+        }
+      ],
+      "solid3d": {
+        "kind": "cylinder",
+        "d": "capD",
+        "h": 4.8
+      },
+      "confidence": "estimated",
+      "colors": [
+        "gold",
+        "silver",
+        "antique",
+        "blacknickel",
+        "brass"
+      ]
+    },
+    {
       "id": "snap-no2",
       "category": "fastener",
       "name_ja": "バネホック No.2（中）11.5mm",
@@ -128,6 +162,74 @@ export const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 4.5
+      },
+      "confidence": "estimated",
+      "colors": [
+        "gold",
+        "silver",
+        "antique",
+        "blacknickel",
+        "brass"
+      ]
+    },
+    {
+      "id": "snap-no5",
+      "category": "fastener",
+      "name_ja": "バネホック No.5（大）13mm",
+      "name_en": "Spring snap No.5 (large) 13 mm",
+      "params": {
+        "capD": 13,
+        "postD": 3
+      },
+      "footprint2d": {
+        "kind": "circle",
+        "d": "capD"
+      },
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "d": "postD"
+        }
+      ],
+      "solid3d": {
+        "kind": "cylinder",
+        "d": "capD",
+        "h": 5.8
+      },
+      "confidence": "estimated",
+      "colors": [
+        "gold",
+        "silver",
+        "antique",
+        "blacknickel",
+        "brass"
+      ]
+    },
+    {
+      "id": "snap-no8050",
+      "category": "fastener",
+      "name_ja": "バネホック No.8050（特大）15mm",
+      "name_en": "Spring snap No.8050 (extra large) 15 mm",
+      "params": {
+        "capD": 15,
+        "postD": 5
+      },
+      "footprint2d": {
+        "kind": "circle",
+        "d": "capD"
+      },
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "d": "postD"
+        }
+      ],
+      "solid3d": {
+        "kind": "cylinder",
+        "d": "capD",
+        "h": 6
       },
       "confidence": "estimated",
       "colors": [
