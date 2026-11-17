@@ -569,7 +569,13 @@ function loadTools() {
   try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)&&list.length){const d=newDoc();d.tools=list;if(validateDoc(d)){const have=new Set(list.map(x=>x.id)),added=defaultTools().filter(x=>!have.has(x.id));return added.length?[...list,...added]:list;}} } catch { /* 保存制限・旧設定は既定値で継続。 */ } /* 保存済みの工具一覧に、あとから増えた既定の工具（3.95mm など）が無いときは、足して返す */
   return defaultTools();
 }
-function persistTools() { try { localStorage.setItem('leather-cad.tools',JSON.stringify(doc.tools)); } catch { $('hint').textContent=t('storageUnavailable'); } }
+/** 登録した工具の一覧（ブラウザに保存したもの）。読めない・検査に通らないときは空。 */
+function savedTools() { try { const list=JSON.parse(localStorage.getItem('leather-cad.tools')); if(Array.isArray(list)){const d=newDoc();d.tools=list;if(validateDoc(d))return list;} } catch { /* 読めなければ空 */ } return []; }
+/** 工具を登録した一覧に保存する。開いている図面の工具を先に・図面に無い登録済みの工具は残す（一覧を縮めない）。
+ *  事業主 2026-11-17「使用する工具が一つしかない。サイズを調査した工具が行方不明」「新しい工具登録もできない」：工具が1本だけの図面を開いて登録するたびに、保存した一覧がその図面の工具だけに置き換わっていた。 */
+function persistTools() { try { const have=new Set(doc.tools.map(x=>x.id)); localStorage.setItem('leather-cad.tools',JSON.stringify([...doc.tools,...savedTools().filter(x=>!have.has(x.id))])); } catch { $('hint').textContent=t('storageUnavailable'); } }
+/** 開いた図面に、登録した工具のうち図面に無いものを足す（図面の工具は変えない）。ファイルは使った工具しか持たないことがあり、開くと工具が1本になっていた。 */
+function withSavedTools(d) { if (Array.isArray(d.tools)) { const have=new Set(d.tools.map(x=>x.id)), add=loadTools().filter(x=>!have.has(x.id)); if (add.length) d.tools=[...d.tools,...add]; } return d; }   /* 新規の図面と同じ顔ぶれ（登録した工具＋既定の工具） */
 /** 既定の工具の id：「既定にする」で決めたもの。無ければ 3.95mm の2本刃（2026-10-16 事業主指示）。いまの図面に無ければ空。 */
 function defaultToolId() { let id = 'diamond-3.95-2'; try { id = localStorage.getItem('leather-cad.defaultTool') || id; } catch { /* 保存できなくても既定は 3.95mm */ } return doc.tools.some(t => t.id === id) ? id : (doc.tools.some(t => t.id === 'diamond-3.95-2') ? 'diamond-3.95-2' : ''); }
 /** 3.95mm（2本刃）の工具が無い古い図面には足す（元の工具は変えない）。開いた図面でも、新しく打つ穴の既定が 3.95mm になるように。 */
@@ -4535,7 +4541,7 @@ async function openFile(file) {
     if (/\.(png|jpe?g|webp)$/.test(name)) { await importImageFile(file); return { added: 1, dropped: 0 }; }
     if (name.endsWith('.lcc')) { const r = lccToDoc(text, { name: file.name, tools: loadTools() }); if (!validateDoc(r.doc)) throw new Error(t('invalidDoc')); const base = tabForOpenedFile(file); cancel(); commit(() => { doc = r.doc; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); { const rp = lccImportReport(r); showImportReport(rp.info, rp.lines); } $('hint').textContent = t('lccLoaded', { n: r.doc.shapes.length, h: r.stats.holesAttached, w: r.warnings.length }); return { added: r.doc.shapes.length, dropped: r.warnings.length }; }
     const raw = JSON.parse(text), hist = raw && raw.undoHistory; if (raw) delete raw.undoHistory; /* 保存ファイルに入っていた元に戻す履歴は、図面とは別に扱う */
-    const next = withDefaultTool(migrateDoc(raw)); healDoc(next); dropDetachedFills(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
+    const next = withSavedTools(withDefaultTool(migrateDoc(raw))); healDoc(next); dropDetachedFills(next);   /* 部品が消えた図形を指したままのファイルも、開くと直る */
     if (!validateDoc(next)) throw new Error(t('invalidDoc'));
     const extraSheets = next.threeViewSheets; delete next.threeViewSheets; if (next.threeViewSheet && !next.threeViewSheet.id) delete next.threeViewSheet;
     const base = tabForOpenedFile(file); cancel(); commit(() => { doc = next; selected.clear(); manualNext = null; nodeSel = null; refreshTools(); }); pairLines = []; renderLayers(); renderSeams(); fit(); nameOpenedTab(base); $('hint').textContent = t('loaded') + t('hint.' + mode); noticeGaps();
