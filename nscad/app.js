@@ -99,7 +99,7 @@ import { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } from './bugdir.
 import { postChat } from './ai_client.js';
 import { BINDER_SPECS } from './data/binder.js';
 import { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } from './phrases.js';
-import { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts } from './hardware.js';
+import { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts, punchLines } from './hardware.js';
 import { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM, zipperTapeCheck, zipperSeamAuto, ZIPPER_SEW_MARGIN, ZIPPER_GAP_MAX, ZIPPER_ATT_MAX, ZIPPER_LT_MAX, ZIPPER_TAPE_PRESETS, ZIPPER_TW_MAX } from './zipper.js';
 import { buyLinkOf } from './buy.js';
 import { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } from './binder_edits.js';
@@ -6186,6 +6186,12 @@ function onBinderStdPick() { const root = $('binderStdSel').value, kids = regist
 function onBinderHwPick() { $('binderSpecSel').value = $('binderHwSel').value; onBinderChange(); }
 /** 「寸法を入れて登録」：規格の推定の寸法を叩き台に、新しい製品として保存する窓を開く。 */
 function openBinderRegister() { const root = ringRootOf($('binderSpecSel').value); openBinderEdit(root, $('ringD')?.value); if ($('bdeAsNew')) $('bdeAsNew').checked = true; { const d = Number($('ringD')?.value); for (let i = 0; i < bdeRingCount; i++) if ($('bdeRing' + i + 'Use') && Number($('bdeRing' + i + 'Inner').value) === d) { bdeRingUseSync(i); break; } }   /* カードで選んでいる径を、「この金具のリング」に選んでおく */ $('bdeNameJa')?.focus?.(); $('bdeNameJa')?.select?.(); }
+/** 金具カードの「穴あけ」の行（どのハトメ抜きで穴をあけるか）。出典で号数が分かる金具はその号数、ほかは取り付け穴の直径からの目安。寸法の欄を直したら、目安の行も追従する（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。 */
+function hwPunchText(it) {
+  const info = it ? punchLines(it, hwParams(), document.documentElement.lang === 'en' ? 'en' : 'ja') : { lines: [], note: '' };
+  return { lines: info.lines, note: info.note, text: info.lines.length ? [t('hwPunchTitle') + '：', ...info.lines.map(x => '・' + x), info.note].filter(Boolean).join('\n') : '' };
+}
+function renderHwPunch() { const el = $('hwPunch'); if (el) el.textContent = hwPunchText(hwCurrent()).text; }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
@@ -6193,7 +6199,7 @@ function renderHardware() {
   sel.value = items.some(i => i.id === keep) ? keep : (items[0]?.id || '');
   const it = hwCurrent(), box = $('hwParams'); box.textContent = '';
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
-  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it);
+  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it); renderHwPunch();
   const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs, false, true);   /* 金具の一覧はリング規格だけ（事業主 2026-11-17「A5 の規格がたくさんあってわかりにくい」「Slim はリフィルの規格」） */
   renderBinder();
 }
@@ -6919,7 +6925,7 @@ function placeHardware(at) {
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
-  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) });   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
+  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pl = hwPunchText(it).lines; if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
 }
 /** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
 function binderDataHtml(spec, ringD) {
@@ -8658,7 +8664,7 @@ function placeBinderView(which) {
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
-  $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware);
+  $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware); $('hwParams').addEventListener('input', renderHwPunch);   /* 寸法（穴の直径）を直したら、穴あけの目安の行も追従 */
   for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', onBinderChange); $('binderStdSel')?.addEventListener?.('change', onBinderStdPick); $('binderHwSel')?.addEventListener?.('change', onBinderHwPick); if ($('binderRegister')) $('binderRegister').onclick = openBinderRegister; $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
@@ -12548,4 +12554,6 @@ tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { 
 autosaveReady = true; startTabWatch();
 window.addEventListener?.('beforeunload', e => { flushPendingAutosave(); if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
 showTour();
+/* 起動の見張り（index.html の boot-watch）を終え、起動にかかった時間の区分だけを匿名で数える（5秒未満・5〜20秒・20〜60秒・60秒以上・見張りの知らせが出たか） */
+try { const bd = globalThis.__ncadBootDone?.(); if (bd) { countUse(bd.ms < 5000 ? 'boot_lt5s' : bd.ms < 20000 ? 'boot_5to20s' : bd.ms < 60000 ? 'boot_20to60s' : 'boot_gt60s'); if (bd.warned) countUse('boot_warned'); } } catch { /* 数えられなくても起動は続ける */ }
 }

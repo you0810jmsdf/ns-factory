@@ -1,5 +1,47 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="assets/icon.svg"><meta name="viewport" content="width=device-width, initial-scale=1"><title data-i18n="title"></title><style>
+<html lang="ja"><head><meta charset="utf-8"><meta name="robots" content="noindex"><link rel="icon" type="image/svg+xml" href="assets/icon.svg"><meta name="viewport" content="width=device-width, initial-scale=1"><script id="boot-watch">
+/* 起動の見張り（事業主 2026-11-17「更新してから使えるまで1〜2分かかる・再起動しないと付かなくなる」→ A）。アプリ本体（app.js とその部品 約120個）がそろうまで画面は始まらない。20秒たっても始まらない・ファイルの読み込みに失敗したときに、画面に理由の手がかりと「読み込み直す」を出す。
+   app.js の起動の最後が globalThis.__ncadBootDone() を呼ぶと、見張りは終わる（かかった秒を返す）。何も送らない（画面に出すだけ）。 */
+(function () {
+  var WAIT = 20000, box = null, done = false, warned = false, timer = null, ja = !/^en/i.test((navigator.language || 'ja'));
+  var T = ja
+    ? { slow: '起動に時間がかかっています。通信やパソコンが混んでいる可能性があります。もう少し待つか、「読み込み直す」を押してください（作業中の図面は自動保存されています）。', fail: 'ファイルの読み込みに失敗しました。公開の直後は、数分待って読み込み直すと直ることがあります。', again: '読み込み直す', other: '別の方法で読み込み直す', got: '届いたファイル', lastOne: '最後に届いたもの', slowest: 'いちばん遅かったもの', cnt: '件', sec: '秒' }
+    : { slow: 'Starting is taking a while. The network or this computer may be busy. Wait a little, or press Reload (your drawing is autosaved).', fail: 'A file failed to load. Right after a release this can clear up after a few minutes; reload then.', again: 'Reload', other: 'Reload another way', got: 'Files received', lastOne: 'Last received', slowest: 'Slowest', cnt: '', sec: 's' };
+  function nm(u) { return String(u || '').split('?')[0].split('/').slice(-2).join('/'); }
+  function detail() {
+    try {
+      var r = performance.getEntriesByType('resource'); if (!r.length) return '';
+      var last = r[r.length - 1], slow = r.slice().sort(function (a, b) { return b.duration - a.duration; })[0];
+      return T.got + ' ' + r.length + T.cnt + ' / ' + T.lastOne + ': ' + nm(last.name) + ' / ' + T.slowest + ': ' + nm(slow.name) + '（' + (slow.duration / 1000).toFixed(1) + T.sec + '）';
+    } catch (e) { return ''; }
+  }
+  function btn(label, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.style.cssText = 'margin:8px 8px 0 0;padding:6px 12px;border:1px solid #c9a96e;border-radius:6px;background:#2a2a2c;color:#ddd;font-size:13px;cursor:pointer'; b.onclick = fn; return b; }
+  function show(msg) {
+    if (done) return; warned = true;
+    if (!box) {
+      box = document.createElement('div'); box.id = 'bootWatch'; box.setAttribute('role', 'alert');
+      box.style.cssText = 'position:fixed;top:12px;left:12px;right:12px;max-width:640px;margin:0 auto;z-index:2147483000;padding:14px 16px;background:#1c1c1e;color:#ddd;border:1px solid #c9a96e;border-radius:10px;font:13px/1.7 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+      box.m = document.createElement('div'); box.d = document.createElement('div'); box.d.style.cssText = 'margin-top:6px;font-size:11.5px;color:#9a9a9a;word-break:break-all';
+      box.appendChild(box.m); box.appendChild(box.d);
+      box.appendChild(btn(T.again, function () { location.reload(); }));
+      box.appendChild(btn(T.other, function () { var u = new URL(location.href); u.searchParams.set('r', String(Date.now())); location.replace(u.toString()); }));
+      document.documentElement.appendChild(box);
+    }
+    box.m.textContent = msg; box.d.textContent = detail();
+  }
+  timer = setTimeout(function () { show(T.slow); }, WAIT);
+  window.addEventListener('error', function (e) {
+    var t = e && e.target; if (!t || !t.tagName || (t.tagName !== 'SCRIPT' && t.tagName !== 'LINK')) return;
+    show(T.fail + '（' + nm(t.src || t.href) + '）');
+  }, true);
+  /** app.js の起動の最後が呼ぶ。見張りを終え、画面の知らせを消し、かかった時間（ms・ページを開いてから）と、知らせを出したかを返す。 */
+  window.__ncadBootDone = function () {
+    done = true; clearTimeout(timer); if (box && box.parentNode) box.parentNode.removeChild(box);
+    var ms = Math.round(performance.now()); try { localStorage.setItem('leather-cad.bootMs', String(ms)); } catch (e) { /* 記録できなくても続ける */ }
+    return { ms: ms, warned: warned };
+  };
+})();
+</script><title data-i18n="title"></title><style>
     :root { color-scheme: dark; font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #ddd; background: #141414; --accent: #c9a96e; --card: #1c1c1e; --line: #2e2e2e; }
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
@@ -283,7 +325,7 @@
 <body class="side-closed">
 <button id="hdrShow" data-i18n="hdrShow" data-i18n-title="hdrShowTip" hidden></button>
 <div id="updateBar" class="floatbox" role="status" hidden><span id="updateInfo"></span><button id="updateNow" data-i18n="updateNow"></button><button id="updateLater" data-i18n="updateLater"></button><button id="updateHistory" type="button" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><div id="updateNotes" class="rel-list" hidden></div></div>
-<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-11-17 17:25 · eece789</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
+<header data-i18n-aria="header"><img src="assets/icon.svg" class="logo" alt="" width="26" height="26"><h1 data-i18n="title"></h1><span class="proto" data-i18n="prototype"></span><span id="buildVer" class="build-ver" data-i18n-title="buildVerTip">版 2026-11-17 17:59 · d322022</span><button id="releaseBtn" type="button" class="rel-btn" data-i18n="releaseBtn" data-i18n-title="releaseBtnTip"></button><button id="hdrHide" data-i18n="hdrHide" data-i18n-title="hdrHideTip"></button>
 <button id="new" title="" data-i18n="new"></button><button id="open"><span data-i18n="open"></span><kbd class="key" data-mod="O"></kbd></button><span class="hmenu"><button id="save" aria-haspopup="true"><span data-i18n="saveBtn"></span><kbd class="key" data-mod="S"></kbd></button><div id="saveMenu" class="hmenu-panel" hidden><div id="saveSelWarn" class="outSelWarn" hidden></div><button id="saveNative"><span data-i18n="saveNativeFor"></span><kbd class="key" data-mod="S"></kbd></button><button id="saveAs"><span data-i18n="saveAsFor"></span><kbd class="key" data-mod="Shift+S"></kbd></button><button id="saveSelected" data-i18n="saveSelectedFor"></button><button data-export="exportSvg" data-i18n="exportSvgFor"></button><button data-export="exportPdf" data-i18n="exportPdfFor"></button><button data-export="exportDxf" data-i18n="exportDxfFor"></button><button data-export="exportPng" data-i18n="exportPngFor"></button><button id="saveGallery" data-i18n="saveGalleryFor"></button><label class="note"><span data-i18n="saveHistory"></span> <select id="saveHistory"><option value="100" data-i18n="saveHistory100"></option><option value="30" data-i18n="saveHistory30"></option><option value="0" data-i18n="saveHistory0"></option></select></label><p class="note" data-i18n="saveMenuNote"></p></div></span><button id="undo"><span data-i18n="undo"></span><kbd class="key" data-mod="Z"></kbd></button><button id="redo"><span data-i18n="redo"></span><kbd class="key" data-mod="Redo"></kbd></button>
 <button id="ctxOpenBtn" type="button" aria-haspopup="true" data-i18n="ctxOpenBtn" data-i18n-title="ctxOpenBtnTip"></button><button id="viewHiddenBadge" type="button" class="view-hidden" hidden data-i18n-title="viewHiddenTip"></button><span class="hmenu"><button id="viewBtn" type="button" aria-haspopup="true" aria-expanded="false" data-i18n="viewMenuBtn" data-i18n-title="viewMenuTip"></button><div id="viewMenu" class="hmenu-panel hdr-panel" hidden><label><input id="grid" type="checkbox" checked><span data-i18n="grid"></span></label><input id="spacing" type="number" min="0.1" step="0.1" value="1" data-i18n-title="spacing"><label><input id="snap" type="checkbox" checked><span data-i18n="snap"></span></label><label data-i18n-title="showSolidTip"><input id="showSolid" type="checkbox" checked><span data-i18n="showSolid"></span></label><label data-i18n-title="showDashedTip"><input id="showDashed" type="checkbox" checked><span data-i18n="showDashed"></span></label><label data-i18n-title="showColorsTip"><input id="showColors" type="checkbox" checked><span data-i18n="showColors"></span></label><label data-i18n-title="showSecDimsTip"><input id="showSecDims" type="checkbox" checked><span data-i18n="showSecDims"></span></label><label data-i18n-title="showZipperTip"><input id="showZipper" type="checkbox" checked><span data-i18n="showZipper"></span></label><span class="view-layers-title" data-i18n="viewLayersTitle"></span><span id="viewLayers" class="view-layers"></span><label data-i18n-title="showStitchTip"><input id="showStitch" type="checkbox"><span data-i18n="showStitch"></span></label><label data-i18n-title="showPitchOffTip"><input id="showPitchOff" type="checkbox" checked><span data-i18n="showPitchOff"></span></label><label data-i18n-title="stitchThickTip"><span data-i18n="stitchThick"></span><select id="stitchThick"><option value="0.45">0.45 mm</option><option value="0.6" selected>0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option></select></label><label data-i18n-title="stitchThickRoundTip"><span data-i18n="stitchThickRound"></span><select id="stitchThickRound"><option value="same" selected data-i18n="stitchThickSame"></option><option value="0.45">0.45 mm</option><option value="0.6">0.6 mm</option><option value="0.8">0.8 mm</option><option value="1">1.0 mm</option><option value="1.2">1.2 mm</option></select></label><label data-i18n-title="stitchFaceTip"><span data-i18n="stitchFace"></span><select id="stitchFace"><option value="front" selected data-i18n="stitchFaceFront"></option><option value="back" data-i18n="stitchFaceBack"></option></select></label><label data-i18n-title="diamondStyleTip"><span data-i18n="diamondStyle"></span><select id="diamondStyle"><option value="auto" data-i18n="diamondStyleAuto"></option><option value="fill" data-i18n="diamondStyleFill"></option><option value="line" data-i18n="diamondStyleLine"></option></select></label><label><input id="showKeys" type="checkbox" checked><span data-i18n="showKeys"></span></label><label data-i18n-title="showModHelpTip"><input id="showModHelp" type="checkbox" checked><span data-i18n="showModHelp"></span></label><label><input id="printOverlay" type="checkbox"><span data-i18n="printOverlay"></span></label><label data-lock="threeview"><input id="threeView" type="checkbox"><span data-i18n="threeView"></span></label><span id="threeViewTools" hidden><span data-i18n="threeViewDepthIn"></span><input id="threeViewDepthIn" type="number" min="0.5" step="0.5" value="30" data-i18n-title="threeViewDepthIn"><button id="threeViewMake" data-i18n="threeViewMake"></button><button id="threeViewFrame" data-i18n="threeViewFrame"></button><button id="threeViewFrameReset" data-i18n="threeViewFrameReset"></button></span><label data-lock="threeview"><input id="quadView" type="checkbox"><span data-i18n="quadView"></span></label><button id="zoomOut" data-i18n="zoomOut"></button><button id="zoomIn" data-i18n="zoomIn"></button><button id="zoomActual" data-i18n="zoomActual" data-i18n-title="zoomActualTip"></button><button id="zoomActualCalib" data-i18n="zoomActualCalib" data-i18n-title="zoomActualTip"></button><button id="autoSolid" data-lock="threeview" data-i18n="autoSolid" data-i18n-title="autoSolidTip"></button></div></span>
 <button id="fit" data-i18n="fit"></button><button id="view3d" aria-pressed="false">3D</button>
@@ -726,7 +768,7 @@
 <label><span data-i18n="hwCategory"></span><select id="hwCategory"></select></label>
 <label id="l-hwItem"><span data-i18n="hwItem"></span><select id="hwItem"></select></label>
 <div id="hwParams" class="body" style="padding:0"></div>
-<output id="hwConfidence" class="note"></output>
+<output id="hwConfidence" class="note"></output><output id="hwPunch" class="note" style="white-space:pre-line"></output>
 <output id="hwAccess" class="note acc" hidden></output>
 <label><span data-i18n="hwAngle"></span><input id="hwAngle" type="number" step="1" value="0"></label>
 <button id="hwPlace" data-i18n="hwPlace"></button>
@@ -955,8 +997,8 @@
 <dialog id="helpDialog"><div class="row"><input id="helpSearch" type="text" data-i18n-placeholder="helpSearch" autocomplete="off"><select id="helpPage"></select><button id="helpPlay" data-i18n="helpPlay"></button></div><pre id="helpBody"></pre><button id="closeHelp" data-i18n="closeHelp"></button></dialog>
 <dialog id="tourDialog"><h3 data-i18n="tourTitle"></h3><p id="tourBody" class="tour"></p><div id="tourGuides" class="row" hidden></div><div class="row"><output id="tourStep"></output><label><input id="tourSkipAlways" type="checkbox" checked><span data-i18n="tourSkipAlways"></span></label></div><div class="row"><button id="tourSkip" data-i18n="tourSkip"></button><button id="tourNext" data-i18n="tourNext"></button></div></dialog>
 <footer><span id="hint" role="status"></span><input id="cmd" type="text" data-i18n-placeholder="cmdPlaceholder" autocomplete="off"><span id="count"></span><span id="presence" data-i18n-title="presenceTip" hidden><span class="pr-dot">●</span> <span id="presenceN"></span><span class="pr-t" data-i18n="presenceSuffix"></span></span></footer>
-<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=5e4e6255","./ai_schema.js":"./ai_schema.js?v=d35edd45","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=d2454fea","./array.js":"./array.js?v=0d529d14","./assets/fontkit.js":"./assets/fontkit.js?v=19ce9d03","./autodesign.js":"./autodesign.js?v=17ace445","./autodim.js":"./autodim.js?v=d2917067","./autosave.js":"./autosave.js?v=65e6aec4","./binder_edits.js":"./binder_edits.js?v=9a2f37eb","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=5ef161bb","./buy.js":"./buy.js?v=27b6fd15","./data/binder.js":"./data/binder.js?v=c599a385","./data/book-specs.js":"./data/book-specs.js?v=8e172c09","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=b0ce857e","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=afd57160","./data/release-history.js":"./data/release-history.js?v=8351152b","./data/release-notes.js":"./data/release-notes.js?v=77c8353b","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=9306c5b7","./design.js":"./design.js?v=41d45894","./designs.js":"./designs.js?v=7efdbfa0","./feedback.js":"./feedback.js?v=a786ce03","./formats.js":"./formats.js?v=5b7797e3","./gallery.js":"./gallery.js?v=0018608d","./geometry.js":"./geometry.js?v=72d89a04","./grouping.js":"./grouping.js?v=82682bf5","./hardware.js":"./hardware.js?v=91388d59","./help/en.js":"./help/en.js?v=6af35ef2","./help/ja.js":"./help/ja.js?v=59bd290b","./i18n.js":"./i18n.js?v=7486514a","./imgstore.js":"./imgstore.js?v=972d5023","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=8bb98705","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=9e9db38b","./library.js":"./library.js?v=2319ce01","./nest.js":"./nest.js?v=d3b495f9","./pack.js":"./pack.js?v=63aa9844","./phrases.js":"./phrases.js?v=a81eeb34","./presence.js":"./presence.js?v=ced764ee","./registration.js":"./registration.js?v=00a7aaaa","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=57c9442c","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=cbfe75ad","./trace.js":"./trace.js?v=6e5c10a6","./tutorial.js":"./tutorial.js?v=dd389eed","./tutorials/ai.js":"./tutorials/ai.js?v=ea881919","./tutorials/attach.js":"./tutorials/attach.js?v=af04535b","./tutorials/autodim.js":"./tutorials/autodim.js?v=58525476","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/binder.js":"./tutorials/binder.js?v=e37461ef","./tutorials/center.js":"./tutorials/center.js?v=9aa2003f","./tutorials/ctxmenu.js":"./tutorials/ctxmenu.js?v=f8a72b30","./tutorials/dimedit.js":"./tutorials/dimedit.js?v=f4f83890","./tutorials/divide.js":"./tutorials/divide.js?v=6d1123b2","./tutorials/export.js":"./tutorials/export.js?v=2d407876","./tutorials/gaps.js":"./tutorials/gaps.js?v=d0d8f88f","./tutorials/hardware.js":"./tutorials/hardware.js?v=1779f976","./tutorials/holes.js":"./tutorials/holes.js?v=07cd05f9","./tutorials/holeshape.js":"./tutorials/holeshape.js?v=44625622","./tutorials/keys.js":"./tutorials/keys.js?v=14a6fabc","./tutorials/koma.js":"./tutorials/koma.js?v=60b0d875","./tutorials/laser.js":"./tutorials/laser.js?v=2bc81eb2","./tutorials/layers.js":"./tutorials/layers.js?v=9aadac82","./tutorials/layout.js":"./tutorials/layout.js?v=97b8af83","./tutorials/library.js":"./tutorials/library.js?v=2afa8bb8","./tutorials/linelen.js":"./tutorials/linelen.js?v=e8857556","./tutorials/lines.js":"./tutorials/lines.js?v=4371f786","./tutorials/linestyle.js":"./tutorials/linestyle.js?v=e007afe5","./tutorials/mark.js":"./tutorials/mark.js?v=76f3809e","./tutorials/markshape.js":"./tutorials/markshape.js?v=6e11d6ff","./tutorials/measure.js":"./tutorials/measure.js?v=ca392f48","./tutorials/mirror.js":"./tutorials/mirror.js?v=8ebec1c5","./tutorials/nest.js":"./tutorials/nest.js?v=8aef3a0e","./tutorials/numeric.js":"./tutorials/numeric.js?v=9a3e7c63","./tutorials/output.js":"./tutorials/output.js?v=9be29e93","./tutorials/paint.js":"./tutorials/paint.js?v=e2edbab0","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/phrase.js":"./tutorials/phrase.js?v=396fb372","./tutorials/recipe.js":"./tutorials/recipe.js?v=ab4c2f16","./tutorials/round.js":"./tutorials/round.js?v=4680380f","./tutorials/rpatch.js":"./tutorials/rpatch.js?v=b1afd520","./tutorials/rsplit.js":"./tutorials/rsplit.js?v=30b54c10","./tutorials/save.js":"./tutorials/save.js?v=7e2f1c76","./tutorials/select.js":"./tutorials/select.js?v=d256d105","./tutorials/shapes.js":"./tutorials/shapes.js?v=d9a33018","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./tutorials/stitchcount.js":"./tutorials/stitchcount.js?v=90082c1f","./tutorials/stitchloop.js":"./tutorials/stitchloop.js?v=c8c35606","./tutorials/stitchview.js":"./tutorials/stitchview.js?v=104a3363","./tutorials/support.js":"./tutorials/support.js?v=99da1550","./tutorials/textdim.js":"./tutorials/textdim.js?v=39e6b024","./tutorials/textfont.js":"./tutorials/textfont.js?v=1ff9e88e","./tutorials/texture.js":"./tutorials/texture.js?v=1b7ed59d","./tutorials/tidy.js":"./tutorials/tidy.js?v=bfc59a37","./tutorials/transform.js":"./tutorials/transform.js?v=78676712","./tutorials/trim.js":"./tutorials/trim.js?v=006986a5","./tutorials/underlay.js":"./tutorials/underlay.js?v=15a70d21","./tutorials/undo.js":"./tutorials/undo.js?v=94633797","./tutorials/vertex.js":"./tutorials/vertex.js?v=d465a537","./tutorials/view.js":"./tutorials/view.js?v=185003a0","./tutorials/view3d.js":"./tutorials/view3d.js?v=af3522fb","./tutorials/voice.js":"./tutorials/voice.js?v=69471736","./tutorials/zipper.js":"./tutorials/zipper.js?v=7a19320e","./undostore.js":"./undostore.js?v=2f77bfe9","./update_check.js":"./update_check.js?v=50c4f3ce","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27","./zipper.js":"./zipper.js?v=8fe441a9"}}</script>
-<script type="module" src="app.js?v=d2454fea"></script>
+<script type="importmap">{"imports":{"./ai_client.js":"./ai_client.js?v=5e4e6255","./ai_schema.js":"./ai_schema.js?v=d35edd45","./align.js":"./align.js?v=97572e49","./analytics.js":"./analytics.js?v=baec805c","./app.js":"./app.js?v=c030e6a7","./array.js":"./array.js?v=0d529d14","./assets/fontkit.js":"./assets/fontkit.js?v=19ce9d03","./autodesign.js":"./autodesign.js?v=17ace445","./autodim.js":"./autodim.js?v=d2917067","./autosave.js":"./autosave.js?v=65e6aec4","./binder_edits.js":"./binder_edits.js?v=9a2f37eb","./binder_section_edit.js":"./binder_section_edit.js?v=7cebc48b","./bugdir.js":"./bugdir.js?v=5ef161bb","./buy.js":"./buy.js?v=27b6fd15","./data/binder.js":"./data/binder.js?v=c599a385","./data/book-specs.js":"./data/book-specs.js?v=8e172c09","./data/designs.js":"./data/designs.js?v=6820e015","./data/hardware.js":"./data/hardware.js?v=ee667db9","./data/leather-colors.js":"./data/leather-colors.js?v=4cc06b2d","./data/library.js":"./data/library.js?v=afd57160","./data/release-history.js":"./data/release-history.js?v=748ad038","./data/release-notes.js":"./data/release-notes.js?v=495585c8","./data/stitch-colors.js":"./data/stitch-colors.js?v=d1af49d0","./data/style.js":"./data/style.js?v=6c300dcf","./data/textures.js":"./data/textures.js?v=9306c5b7","./design.js":"./design.js?v=41d45894","./designs.js":"./designs.js?v=7efdbfa0","./feedback.js":"./feedback.js?v=a786ce03","./formats.js":"./formats.js?v=5b7797e3","./gallery.js":"./gallery.js?v=0018608d","./geometry.js":"./geometry.js?v=72d89a04","./grouping.js":"./grouping.js?v=82682bf5","./hardware.js":"./hardware.js?v=25a7cc64","./help/en.js":"./help/en.js?v=6af35ef2","./help/ja.js":"./help/ja.js?v=59bd290b","./i18n.js":"./i18n.js?v=9baf3bc1","./imgstore.js":"./imgstore.js?v=972d5023","./importers.js":"./importers.js?v=966a77e9","./interop.js":"./interop.js?v=8bb98705","./laminate.js":"./laminate.js?v=ca259b1f","./lcc.js":"./lcc.js?v=9e9db38b","./library.js":"./library.js?v=2319ce01","./nest.js":"./nest.js?v=d3b495f9","./pack.js":"./pack.js?v=63aa9844","./phrases.js":"./phrases.js?v=a81eeb34","./presence.js":"./presence.js?v=ced764ee","./registration.js":"./registration.js?v=00a7aaaa","./scale_input.js":"./scale_input.js?v=7f1bbb67","./shortcuts.js":"./shortcuts.js?v=57c9442c","./sim3d.js":"./sim3d.js?v=8b3ca645","./tablock.js":"./tablock.js?v=cf342f0b","./threeview.js":"./threeview.js?v=cbfe75ad","./trace.js":"./trace.js?v=6e5c10a6","./tutorial.js":"./tutorial.js?v=dd389eed","./tutorials/ai.js":"./tutorials/ai.js?v=ea881919","./tutorials/attach.js":"./tutorials/attach.js?v=af04535b","./tutorials/autodim.js":"./tutorials/autodim.js?v=58525476","./tutorials/basics.js":"./tutorials/basics.js?v=bf00b42d","./tutorials/binder.js":"./tutorials/binder.js?v=e37461ef","./tutorials/center.js":"./tutorials/center.js?v=9aa2003f","./tutorials/ctxmenu.js":"./tutorials/ctxmenu.js?v=f8a72b30","./tutorials/dimedit.js":"./tutorials/dimedit.js?v=f4f83890","./tutorials/divide.js":"./tutorials/divide.js?v=6d1123b2","./tutorials/export.js":"./tutorials/export.js?v=2d407876","./tutorials/gaps.js":"./tutorials/gaps.js?v=d0d8f88f","./tutorials/hardware.js":"./tutorials/hardware.js?v=1779f976","./tutorials/holes.js":"./tutorials/holes.js?v=07cd05f9","./tutorials/holeshape.js":"./tutorials/holeshape.js?v=44625622","./tutorials/keys.js":"./tutorials/keys.js?v=14a6fabc","./tutorials/koma.js":"./tutorials/koma.js?v=60b0d875","./tutorials/laser.js":"./tutorials/laser.js?v=2bc81eb2","./tutorials/layers.js":"./tutorials/layers.js?v=9aadac82","./tutorials/layout.js":"./tutorials/layout.js?v=97b8af83","./tutorials/library.js":"./tutorials/library.js?v=2afa8bb8","./tutorials/linelen.js":"./tutorials/linelen.js?v=e8857556","./tutorials/lines.js":"./tutorials/lines.js?v=4371f786","./tutorials/linestyle.js":"./tutorials/linestyle.js?v=e007afe5","./tutorials/mark.js":"./tutorials/mark.js?v=76f3809e","./tutorials/markshape.js":"./tutorials/markshape.js?v=6e11d6ff","./tutorials/measure.js":"./tutorials/measure.js?v=ca392f48","./tutorials/mirror.js":"./tutorials/mirror.js?v=8ebec1c5","./tutorials/nest.js":"./tutorials/nest.js?v=8aef3a0e","./tutorials/numeric.js":"./tutorials/numeric.js?v=9a3e7c63","./tutorials/output.js":"./tutorials/output.js?v=9be29e93","./tutorials/paint.js":"./tutorials/paint.js?v=e2edbab0","./tutorials/pen.js":"./tutorials/pen.js?v=c4b2b077","./tutorials/phrase.js":"./tutorials/phrase.js?v=396fb372","./tutorials/recipe.js":"./tutorials/recipe.js?v=ab4c2f16","./tutorials/round.js":"./tutorials/round.js?v=4680380f","./tutorials/rpatch.js":"./tutorials/rpatch.js?v=b1afd520","./tutorials/rsplit.js":"./tutorials/rsplit.js?v=30b54c10","./tutorials/save.js":"./tutorials/save.js?v=7e2f1c76","./tutorials/select.js":"./tutorials/select.js?v=d256d105","./tutorials/shapes.js":"./tutorials/shapes.js?v=d9a33018","./tutorials/stitch.js":"./tutorials/stitch.js?v=580d6abf","./tutorials/stitchcount.js":"./tutorials/stitchcount.js?v=90082c1f","./tutorials/stitchloop.js":"./tutorials/stitchloop.js?v=c8c35606","./tutorials/stitchview.js":"./tutorials/stitchview.js?v=104a3363","./tutorials/support.js":"./tutorials/support.js?v=99da1550","./tutorials/textdim.js":"./tutorials/textdim.js?v=39e6b024","./tutorials/textfont.js":"./tutorials/textfont.js?v=1ff9e88e","./tutorials/texture.js":"./tutorials/texture.js?v=1b7ed59d","./tutorials/tidy.js":"./tutorials/tidy.js?v=bfc59a37","./tutorials/transform.js":"./tutorials/transform.js?v=78676712","./tutorials/trim.js":"./tutorials/trim.js?v=006986a5","./tutorials/underlay.js":"./tutorials/underlay.js?v=15a70d21","./tutorials/undo.js":"./tutorials/undo.js?v=94633797","./tutorials/vertex.js":"./tutorials/vertex.js?v=d465a537","./tutorials/view.js":"./tutorials/view.js?v=185003a0","./tutorials/view3d.js":"./tutorials/view3d.js?v=af3522fb","./tutorials/voice.js":"./tutorials/voice.js?v=69471736","./tutorials/zipper.js":"./tutorials/zipper.js?v=7a19320e","./undostore.js":"./undostore.js?v=2f77bfe9","./update_check.js":"./update_check.js?v=50c4f3ce","./vertex.js":"./vertex.js?v=48e2f88a","./voice.js":"./voice.js?v=0f01fb27","./zipper.js":"./zipper.js?v=8fe441a9"}}</script>
+<script type="module" src="app.js?v=c030e6a7"></script>
 <script id="file-fallback">
 if (location.protocol === 'file:') {
 const __mods = Object.create(null);
@@ -3776,6 +3818,25 @@ function evalExpr(expr, params = {}) {
   const expr3 = () => { let v = term(); while (peek() === '+' || peek() === '-') { const op = s[i++], r = term(); v = op === '+' ? v + r : v - r; } return v; };
   const v = expr3(); if (i !== s.length) throw new Error('expr'); return v;
 }
+/** ハトメ抜き（丸ポンチ）の号数と穴の直径：1号＝0.3mm（8号＝2.4mm・12号＝3.6mm・15号＝4.5mm と出典で一致）。 */
+const PUNCH_MM_PER_NO = 0.3;
+/** 金具の「穴あけ」の案内（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。
+ *  金具に punch（出典で号数が分かるもの：部分ごとの号数か mm と、注意書き）があれば、それを使う。無ければ、取り付け穴（holes の最初の丸穴）の直径から「約◯号」を出す（目安）。
+ *  返すのは { lines: ['オス側（足を通す穴）：7号（2.1mm）', …], note: '注意書き' }。穴の無い金具は lines が空。lang は 'ja' か 'en'。 */
+function punchLines(item, overrides = {}, lang = 'ja') {
+  const en = lang === 'en', r1 = x => (Math.round(x * 10) / 10).toFixed(1), out = { lines: [], note: '' };
+  const withNo = (label, no) => en ? `${label}: punch No.${no} (${r1(no * PUNCH_MM_PER_NO)} mm)` : `${label}：${no}号（${r1(no * PUNCH_MM_PER_NO)}mm）`;
+  const withMm = (label, mm) => en ? `${label}: ${r1(mm)} mm (about No.${Math.round(mm / PUNCH_MM_PER_NO)})` : `${label}：${r1(mm)}mm（約${Math.round(mm / PUNCH_MM_PER_NO)}号）`;
+  if (item?.punch?.parts?.length) {
+    for (const p of item.punch.parts) { const label = en ? p.label_en : p.label_ja; out.lines.push(p.no ? withNo(label, p.no) : withMm(label, p.mm)); }
+    out.note = (en ? item.punch.note_en : item.punch.note_ja) || ''; return out;
+  }
+  const h = (item?.holes || []).find(x => x.d !== undefined); if (!h) return out;
+  let mm; try { mm = evalExpr(h.d, { ...item.params, ...overrides }); } catch { return out; }
+  if (!(mm > 0)) return out;
+  out.lines.push(withMm(en ? 'Mounting hole' : '取り付け穴', mm)); out.note = en ? 'A guide only: punch number × 0.3 mm = hole diameter. Follow the instructions that came with your hardware.' : '目安です（号数 × 0.3mm ＝ 穴の直径）。買った金具の説明を優先してください。';
+  return out;
+}
 /** リングの線径（mm）。平面・正面の棒の幅・側面の輪の太さ・3D のワイヤの太さがこれ。 */
 const BINDER_WIRE_MM = 2;
 /** 内径・外径のどちらからでも寸法をそろえる。両方あれば、その差を優先する。 */
@@ -4432,7 +4493,7 @@ function binderSampleSvgs(spec, { hl = '', lab = {}, ringIdx = 0 } = {}) {
   return { plan: wrap(planVb, els.join(''), T8('planTitle', '平面図')), side: wrap(sideVb, e2.join(''), T8('sideTitle', '側面図')) };
 }
 
-return {evalExpr, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, leverArcDrop, leverOutlineWidth, METAL_COLORS, metalHex, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSectionPolys, SUPPORTER_T_MM, ringWrapPoly, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, FOLD_RING_EXTRA_MM, RING_WIRE_MM, foldRingParts, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderOverallExtent, binderViews, binderPlanSvg, binderSideSection, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection, coverLayout, binderViewDrawing, binderSampleSvgs};
+return {evalExpr, PUNCH_MM_PER_NO, punchLines, ringSizeOf, wireOf, binderBase, binderRingBaseSpan, leverArcDrop, leverOutlineWidth, METAL_COLORS, metalHex, hardwareFootprint, placeFootprint, binderSolid, spineWidth, spineSectionPolys, SUPPORTER_T_MM, ringWrapPoly, spineSim, spinePlayFromMeasured, spineSectionSvg, closedBinderTop, FOLD_RING_EXTRA_MM, RING_WIRE_MM, foldRingParts, closedBinderViews, closedBinderViewsSvg, binderRingCompare, binderMechParts, binderOverallExtent, binderViews, binderPlanSvg, binderSideSection, binderSideSvg, binderFrontSvg, checkBinderSpec, hwPoseOfOutline, sameShapes, binderZRange, binderViewShapes, binderSection, coverLayout, binderViewDrawing, binderSampleSvgs};
 })();
 __mods['scale_input'] = (function(){
 const { evalExpr } = __mods['hardware'];
@@ -7169,6 +7230,8 @@ const MESSAGES = {
     "bdNote": "「未入力」「—」は、まだ測っていない項目です。測った値は CSV（data/binder_specs.csv）に入れると反映されます。",
     "bdCopy": "この表をコピー",
     "bdCopied": "コピーしました",
+    "hwPunchTitle": "穴あけ（ハトメ抜きの号数）",
+    "hwPunchPlaced": "穴あけ：{s}",
     "hwPlaced": "{name} を置きました。",
     "phraseCard": "定型句（よく使う文）",
     "phraseSavedList": "保存した句",
@@ -10754,6 +10817,8 @@ const MESSAGES = {
     "bdNote": "\"not entered\" / \"—\" means not measured yet. Enter measured values in data/binder_specs.csv.",
     "bdCopy": "Copy this table",
     "bdCopied": "Copied",
+    "hwPunchTitle": "Hole punching (round punch number)",
+    "hwPunchPlaced": "Punch: {s}",
     "hwPlaced": "Placed {name}.",
     "phraseCard": "Phrases (reusable text)",
     "phraseSavedList": "Saved phrases",
@@ -25633,6 +25698,22 @@ const DATA_HARDWARE = {
         "d": "capD",
         "h": 4.8
       },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "オス側（足を通す穴）",
+            "label_en": "Stud side (post hole)",
+            "no": 7
+          },
+          {
+            "label_ja": "メス側（バネ・頭の穴）",
+            "label_en": "Socket side (spring/cap hole)",
+            "no": 15
+          }
+        ],
+        "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+        "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+      },
       "confidence": "estimated",
       "colors": [
         "gold",
@@ -25666,6 +25747,22 @@ const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 4.5
+      },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "オス側（足を通す穴）",
+            "label_en": "Stud side (post hole)",
+            "no": 7
+          },
+          {
+            "label_ja": "メス側（バネ・頭の穴）",
+            "label_en": "Socket side (spring/cap hole)",
+            "no": 15
+          }
+        ],
+        "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+        "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
       },
       "confidence": "estimated",
       "colors": [
@@ -25701,6 +25798,22 @@ const DATA_HARDWARE = {
         "d": "capD",
         "h": 5.8
       },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "オス側（足を通す穴）",
+            "label_en": "Stud side (post hole)",
+            "no": 8
+          },
+          {
+            "label_ja": "メス側（バネ・頭の穴）",
+            "label_en": "Socket side (spring/cap hole)",
+            "no": 18
+          }
+        ],
+        "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+        "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+      },
       "confidence": "estimated",
       "colors": [
         "gold",
@@ -25734,6 +25847,17 @@ const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 6
+      },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "取り付け穴",
+            "label_en": "Mounting hole",
+            "mm": 5
+          }
+        ],
+        "note_ja": "穴の大きさ5mmは販売店の表記で、号数の指定は見つかりませんでした。捨て革で試し抜きして、足が通る大きさにしてください。",
+        "note_en": "5 mm is a seller’s figure; no punch number was found. Test on scrap leather until the post fits."
       },
       "confidence": "estimated",
       "colors": [
@@ -25769,6 +25893,22 @@ const DATA_HARDWARE = {
         "d": "capD",
         "h": 5.8
       },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "オス側（足を通す穴）",
+            "label_en": "Stud side (post hole)",
+            "no": 8
+          },
+          {
+            "label_ja": "メス側（バネ・頭の穴）",
+            "label_en": "Socket side (spring/cap hole)",
+            "no": 18
+          }
+        ],
+        "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+        "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+      },
       "confidence": "estimated",
       "colors": [
         "gold",
@@ -25802,6 +25942,17 @@ const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 6
+      },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "取り付け穴",
+            "label_en": "Mounting hole",
+            "mm": 5
+          }
+        ],
+        "note_ja": "穴の大きさ5mmは販売店の表記で、号数の指定は見つかりませんでした。捨て革で試し抜きして、足が通る大きさにしてください。",
+        "note_en": "5 mm is a seller’s figure; no punch number was found. Test on scrap leather until the post fits."
       },
       "confidence": "estimated",
       "colors": [
@@ -25939,6 +26090,17 @@ const DATA_HARDWARE = {
         "d": "capD",
         "h": 4
       },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "ハトメ抜き（打ち具一覧の号数）",
+            "label_en": "Punch (from a seller’s list)",
+            "no": 8
+          }
+        ],
+        "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+        "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
+      },
       "confidence": "estimated",
       "colors": [
         "gold",
@@ -25972,6 +26134,17 @@ const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 4
+      },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "ハトメ抜き（打ち具一覧の号数）",
+            "label_en": "Punch (from a seller’s list)",
+            "no": 8
+          }
+        ],
+        "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+        "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
       },
       "confidence": "estimated",
       "colors": [
@@ -26007,6 +26180,17 @@ const DATA_HARDWARE = {
         "d": "capD",
         "h": 4
       },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "取り付け穴",
+            "label_en": "Mounting hole",
+            "no": 12
+          }
+        ],
+        "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+        "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
+      },
       "confidence": "estimated",
       "colors": [
         "gold",
@@ -26040,6 +26224,17 @@ const DATA_HARDWARE = {
         "kind": "cylinder",
         "d": "capD",
         "h": 4
+      },
+      "punch": {
+        "parts": [
+          {
+            "label_ja": "取り付け穴",
+            "label_en": "Mounting hole",
+            "no": 12
+          }
+        ],
+        "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+        "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
       },
       "confidence": "estimated",
       "colors": [
@@ -106717,6 +106912,13 @@ __mods['data/release-notes'] = (function(){
 const DATA_RELEASE_NOTES = {
   "releases": [
     {
+      "date": "2026-11-17 17:59",
+      "items": [
+        "金具カードに「穴あけ（ハトメ抜きの号数）」を出すようにしました。バネホック（No.1・2・5・8050・足長）とジャンパーホック（小7060・大7050）は、販売店の一覧にある号数（例：No.2 は オス側7号・メス側15号）。ほかの金具は、取り付け穴の直径からの目安（約◯号）です。置いたときの案内にも添えます。",
+        "起動の見張りを足しました。20秒たってもアプリが始まらない時や、ファイルの読み込みに失敗した時に、画面に知らせと「読み込み直す」ボタンを出します（手がかりとして、届いたファイル数や最も遅かったファイルも表示）。起動にかかった時間の区分だけ、匿名で数えます。"
+      ]
+    },
+    {
       "date": "2026-11-17 17:25",
       "items": [
         "操作ガイドの案内を、起動時の「はじめに」の6枚目に足しました。目玉の機能（はじめての作図・縫い穴・部品ライブラリ・金具・レシピ・ランダムパッチワーク・3D）のガイドを、見たい人だけボタンで見られます。見ない人は「始める」でそのまま使えます。どの枚まで見たか・どのガイドを見たかは、人が分からない形で回数だけ数えます。"
@@ -109096,6 +109298,9 @@ const DATA_RELEASE_HISTORY = {
     {
       "date": "2026-11-17",
       "items": [
+        "HTML構造・文言の検査から、起動の見張り（日英の文を持つ script）だけを外す",
+        "起動の見張り（20秒で始まらない・読み込み失敗を画面に出す）／金具カードに穴あけ（ハトメ抜きの号数）を表示",
+        "公開後の生成ファイル更新（更新履歴の日付・2026-11-17 17:25 版）",
         "ガイドの計測を、再生の元の行に触れない形に直す（ソースの形を検査するテストに合わせる）",
         "起動時の「はじめに」を6枚に：6枚目に目玉機能の操作ガイドの案内（見たい人だけ）と、見た枚数・選んだガイド・ガイドを最後まで見たかの匿名の計測",
         "公開後の生成ファイル更新（更新履歴の日付・2026-11-17 17:04 版）",
@@ -111872,7 +112077,7 @@ const { saveToSharedDir, canPickDir, getSavedDir, BUGDIR_NAME } = __mods['bugdir
 const { postChat } = __mods['ai_client'];
 const { BINDER_SPECS } = __mods['data/binder'];
 const { PHRASES_KEY, parsePhrases, serializePhrases, upsertPhrase, removePhrase, phraseLines, phraseShapes, mergePhrases, PHRASE_LINE_GAP, PHRASE_HISTORY_KEY, parsePhraseHistory, pushPhraseHistory, serializePhraseHistory } = __mods['phrases'];
-const { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts } = __mods['hardware'];
+const { coverLayout, binderOverallExtent, leverArcDrop, binderMechParts, punchLines } = __mods['hardware'];
 const { zipperArt, zipperRuns, zipperLength, zipperNetLength, zipperEnds, normalizeZipper, zipperHalfWidth, ZIPPER_TAPE_DEFAULT, ZIPPER_METAL_COLORS, ZIPPER_STD_CM, zipperTapeCheck, zipperSeamAuto, ZIPPER_SEW_MARGIN, ZIPPER_GAP_MAX, ZIPPER_ATT_MAX, ZIPPER_LT_MAX, ZIPPER_TAPE_PRESETS, ZIPPER_TW_MAX } = __mods['zipper'];
 const { buyLinkOf } = __mods['buy'];
 const { BINDER_EDITS_KEY, emptyEdits, parseEdits, serializeEdits, applyBinderEdits, editFromForm, editsToCsv, newProductId, tidyDuplicateProducts } = __mods['binder_edits'];
@@ -117958,6 +118163,12 @@ function onBinderStdPick() { const root = $('binderStdSel').value, kids = regist
 function onBinderHwPick() { $('binderSpecSel').value = $('binderHwSel').value; onBinderChange(); }
 /** 「寸法を入れて登録」：規格の推定の寸法を叩き台に、新しい製品として保存する窓を開く。 */
 function openBinderRegister() { const root = ringRootOf($('binderSpecSel').value); openBinderEdit(root, $('ringD')?.value); if ($('bdeAsNew')) $('bdeAsNew').checked = true; { const d = Number($('ringD')?.value); for (let i = 0; i < bdeRingCount; i++) if ($('bdeRing' + i + 'Use') && Number($('bdeRing' + i + 'Inner').value) === d) { bdeRingUseSync(i); break; } }   /* カードで選んでいる径を、「この金具のリング」に選んでおく */ $('bdeNameJa')?.focus?.(); $('bdeNameJa')?.select?.(); }
+/** 金具カードの「穴あけ」の行（どのハトメ抜きで穴をあけるか）。出典で号数が分かる金具はその号数、ほかは取り付け穴の直径からの目安。寸法の欄を直したら、目安の行も追従する（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。 */
+function hwPunchText(it) {
+  const info = it ? punchLines(it, hwParams(), document.documentElement.lang === 'en' ? 'en' : 'ja') : { lines: [], note: '' };
+  return { lines: info.lines, note: info.note, text: info.lines.length ? [t('hwPunchTitle') + '：', ...info.lines.map(x => '・' + x), info.note].filter(Boolean).join('\n') : '' };
+}
+function renderHwPunch() { const el = $('hwPunch'); if (el) el.textContent = hwPunchText(hwCurrent()).text; }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
@@ -117965,7 +118176,7 @@ function renderHardware() {
   sel.value = items.some(i => i.id === keep) ? keep : (items[0]?.id || '');
   const it = hwCurrent(), box = $('hwParams'); box.textContent = '';
   if (it) for (const [k, v] of Object.entries(it.params)) { if (typeof v !== 'number') continue; const label = document.createElement('label'); const span = document.createElement('span'); span.textContent = k; const input = document.createElement('input'); input.type = 'number'; input.step = '0.1'; input.value = String(v); input.dataset.param = k; label.appendChild(span); label.appendChild(input); box.appendChild(label); }
-  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it);
+  $('hwConfidence').textContent = it ? (it.confidence === 'spec' ? t('hwSpec') : t('hwEstimated')) : ''; showAccess('hwAccess', it); renderHwPunch();
   const bs = $('binderSpecSel'); if (!bs.textContent) fillBinderSpecOptions(bs, false, true);   /* 金具の一覧はリング規格だけ（事業主 2026-11-17「A5 の規格がたくさんあってわかりにくい」「Slim はリフィルの規格」） */
   renderBinder();
 }
@@ -118691,7 +118902,7 @@ function placeHardware(at) {
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
-  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) });   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
+  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pl = hwPunchText(it).lines; if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
 }
 /** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
 function binderDataHtml(spec, ringD) {
@@ -120430,7 +120641,7 @@ function placeBinderView(which) {
 function showSvgDialog(svg, title) { $('svgBody').innerHTML = svg; $('svgTitle').textContent = title; $('svgDialog').showModal(); }
 function initHardware() {
   renderHardware();
-  $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware);
+  $('hwCategory').addEventListener('change', renderHardware); $('hwItem').addEventListener('change', renderHardware); $('hwParams').addEventListener('input', renderHwPunch);   /* 寸法（穴の直径）を直したら、穴あけの目安の行も追従 */
   for (const id of ['binderSpecSel', 'ringD']) $(id).addEventListener('change', onBinderChange); $('binderStdSel')?.addEventListener?.('change', onBinderStdPick); $('binderHwSel')?.addEventListener?.('change', onBinderHwPick); if ($('binderRegister')) $('binderRegister').onclick = openBinderRegister; $('partThickness').addEventListener('change', renderBinder);
   $('hwPlace').onclick = () => { hwPlaceKind = 'other'; setMode('hardware'); };
   $('binderPlace').onclick = () => { hwPlaceKind = 'binder'; setMode('hardware'); };
@@ -124320,6 +124531,8 @@ tabLock?.check(); syncMultiTabBar(); if (tabIsPrimary()) offerRestore(); else { 
 autosaveReady = true; startTabWatch();
 window.addEventListener?.('beforeunload', e => { flushPendingAutosave(); if (unsavedNotAutosaved()) { e.preventDefault(); e.returnValue = ''; } });   /* 自動保存に乗っていない未保存の変更（大きすぎ・保存できない）があるときだけ、閉じる・更新・再読み込みの前にブラウザの確認を出す。自動保存が効いていれば出さない */
 showTour();
+/* 起動の見張り（index.html の boot-watch）を終え、起動にかかった時間の区分だけを匿名で数える（5秒未満・5〜20秒・20〜60秒・60秒以上・見張りの知らせが出たか） */
+try { const bd = globalThis.__ncadBootDone?.(); if (bd) { countUse(bd.ms < 5000 ? 'boot_lt5s' : bd.ms < 20000 ? 'boot_5to20s' : bd.ms < 60000 ? 'boot_20to60s' : 'boot_gt60s'); if (bd.warned) countUse('boot_warned'); } } catch { /* 数えられなくても起動は続ける */ }
 }
 
 return {};

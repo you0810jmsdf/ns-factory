@@ -13,6 +13,25 @@ export function evalExpr(expr, params = {}) {
   const expr3 = () => { let v = term(); while (peek() === '+' || peek() === '-') { const op = s[i++], r = term(); v = op === '+' ? v + r : v - r; } return v; };
   const v = expr3(); if (i !== s.length) throw new Error('expr'); return v;
 }
+/** ハトメ抜き（丸ポンチ）の号数と穴の直径：1号＝0.3mm（8号＝2.4mm・12号＝3.6mm・15号＝4.5mm と出典で一致）。 */
+export const PUNCH_MM_PER_NO = 0.3;
+/** 金具の「穴あけ」の案内（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。
+ *  金具に punch（出典で号数が分かるもの：部分ごとの号数か mm と、注意書き）があれば、それを使う。無ければ、取り付け穴（holes の最初の丸穴）の直径から「約◯号」を出す（目安）。
+ *  返すのは { lines: ['オス側（足を通す穴）：7号（2.1mm）', …], note: '注意書き' }。穴の無い金具は lines が空。lang は 'ja' か 'en'。 */
+export function punchLines(item, overrides = {}, lang = 'ja') {
+  const en = lang === 'en', r1 = x => (Math.round(x * 10) / 10).toFixed(1), out = { lines: [], note: '' };
+  const withNo = (label, no) => en ? `${label}: punch No.${no} (${r1(no * PUNCH_MM_PER_NO)} mm)` : `${label}：${no}号（${r1(no * PUNCH_MM_PER_NO)}mm）`;
+  const withMm = (label, mm) => en ? `${label}: ${r1(mm)} mm (about No.${Math.round(mm / PUNCH_MM_PER_NO)})` : `${label}：${r1(mm)}mm（約${Math.round(mm / PUNCH_MM_PER_NO)}号）`;
+  if (item?.punch?.parts?.length) {
+    for (const p of item.punch.parts) { const label = en ? p.label_en : p.label_ja; out.lines.push(p.no ? withNo(label, p.no) : withMm(label, p.mm)); }
+    out.note = (en ? item.punch.note_en : item.punch.note_ja) || ''; return out;
+  }
+  const h = (item?.holes || []).find(x => x.d !== undefined); if (!h) return out;
+  let mm; try { mm = evalExpr(h.d, { ...item.params, ...overrides }); } catch { return out; }
+  if (!(mm > 0)) return out;
+  out.lines.push(withMm(en ? 'Mounting hole' : '取り付け穴', mm)); out.note = en ? 'A guide only: punch number × 0.3 mm = hole diameter. Follow the instructions that came with your hardware.' : '目安です（号数 × 0.3mm ＝ 穴の直径）。買った金具の説明を優先してください。';
+  return out;
+}
 /** リングの線径（mm）。平面・正面の棒の幅・側面の輪の太さ・3D のワイヤの太さがこれ。 */
 const BINDER_WIRE_MM = 2;
 /** 内径・外径のどちらからでも寸法をそろえる。両方あれば、その差を優先する。 */

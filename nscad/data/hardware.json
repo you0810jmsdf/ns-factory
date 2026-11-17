@@ -128,6 +128,22 @@
     "d": "capD",
     "h": 4.8
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "オス側（足を通す穴）",
+       "label_en": "Stud side (post hole)",
+       "no": 7
+      },
+      {
+       "label_ja": "メス側（バネ・頭の穴）",
+       "label_en": "Socket side (spring/cap hole)",
+       "no": 15
+      }
+     ],
+     "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+     "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -162,6 +178,22 @@
     "d": "capD",
     "h": 4.5
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "オス側（足を通す穴）",
+       "label_en": "Stud side (post hole)",
+       "no": 7
+      },
+      {
+       "label_ja": "メス側（バネ・頭の穴）",
+       "label_en": "Socket side (spring/cap hole)",
+       "no": 15
+      }
+     ],
+     "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+     "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -196,6 +228,22 @@
     "d": "capD",
     "h": 5.8
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "オス側（足を通す穴）",
+       "label_en": "Stud side (post hole)",
+       "no": 8
+      },
+      {
+       "label_ja": "メス側（バネ・頭の穴）",
+       "label_en": "Socket side (spring/cap hole)",
+       "no": 18
+      }
+     ],
+     "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+     "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -230,6 +278,17 @@
     "d": "capD",
     "h": 6.0
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "取り付け穴",
+       "label_en": "Mounting hole",
+       "mm": 5
+      }
+     ],
+     "note_ja": "穴の大きさ5mmは販売店の表記で、号数の指定は見つかりませんでした。捨て革で試し抜きして、足が通る大きさにしてください。",
+     "note_en": "5 mm is a seller’s figure; no punch number was found. Test on scrap leather until the post fits."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -264,6 +323,22 @@
     "d": "capD",
     "h": 5.8
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "オス側（足を通す穴）",
+       "label_en": "Stud side (post hole)",
+       "no": 8
+      },
+      {
+       "label_ja": "メス側（バネ・頭の穴）",
+       "label_en": "Socket side (spring/cap hole)",
+       "no": 18
+      }
+     ],
+     "note_ja": "販売店の打ち具一覧による。穴の大きさは、買った金具の説明を優先してください。",
+     "note_en": "From a seller’s punch list. Follow the instructions that came with your hardware if they differ."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -298,6 +373,17 @@
     "d": "capD",
     "h": 6
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "取り付け穴",
+       "label_en": "Mounting hole",
+       "mm": 5
+      }
+     ],
+     "note_ja": "穴の大きさ5mmは販売店の表記で、号数の指定は見つかりませんでした。捨て革で試し抜きして、足が通る大きさにしてください。",
+     "note_en": "5 mm is a seller’s figure; no punch number was found. Test on scrap leather until the post fits."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -434,6 +520,17 @@
     "d": "capD",
     "h": 4
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "ハトメ抜き（打ち具一覧の号数）",
+       "label_en": "Punch (from a seller’s list)",
+       "no": 8
+      }
+     ],
+     "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+     "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -468,6 +565,17 @@
     "d": "capD",
     "h": 4
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "ハトメ抜き（打ち具一覧の号数）",
+       "label_en": "Punch (from a seller’s list)",
+       "no": 8
+      }
+     ],
+     "note_ja": "足の穴を3〜4mmとする解説もあり、食い違います。捨て革で試し抜きして、足が通る号数にしてください（10号＝3.0mm、12号＝3.6mm）。",
+     "note_en": "Other guides say 3–4 mm, which disagrees. Test on scrap leather and pick the punch the post fits (No.10 = 3.0 mm, No.12 = 3.6 mm)."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -502,6 +610,17 @@
     "d": "capD",
     "h": 4
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "取り付け穴",
+       "label_en": "Mounting hole",
+       "no": 12
+      }
+     ],
+     "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+     "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
@@ -536,6 +655,17 @@
     "d": "capD",
     "h": 4
    },
+   "punch": {
+     "parts": [
+      {
+       "label_ja": "取り付け穴",
+       "label_en": "Mounting hole",
+       "no": 12
+      }
+     ],
+     "note_ja": "穴を4mmとする案内もあります。足が通るか、捨て革で試し抜きして決めてください。",
+     "note_en": "Some sellers say 4 mm. Test on scrap leather to confirm the post fits."
+    },
    "confidence": "estimated",
    "colors": [
     "gold",
