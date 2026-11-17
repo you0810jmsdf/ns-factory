@@ -2375,15 +2375,18 @@ function infoShape() { if (selected.size !== 1) return null; const id = [...sele
 /** 図形の全体の長さ(mm)＝線・円弧・曲線・折れ線・円（外周）の長さの合計。文字・寸法・折り線・画像は含めない。 */
 function totalLengthOf(shapes) { return shapes.filter(stitchable).reduce((sum, s) => sum + arcLength(s), 0); }
 /** 選んだ線（曲線・円弧を含む）の全体の長さと同じ長さの、水平な直線を 1 本、選んだ図形の右横（10mm 離す）に足して選ぶ。元の線は残す。元に戻すは 1 回。 */
+const UNROLL_JOIN_MAX_MM = 10;   /* 直線に展開するとき、線と線のつなぎ目の隙間が、これ以下なら「同じ曲がりの続き」として、隙間の距離も長さに入れる */
 function unrollSelection() {
   const list = doc.shapes.filter(s => selected.has(s.id) && editable(s) && stitchable(s)); if (!list.length) { $('hint').textContent = t('selectFirst'); return; }
   const len = totalLengthOf(list); if (!(len > 1e-6)) { $('hint').textContent = t('unrollNone'); return; }
   const b = bboxOfDoc({ shapes: list, holes: [] }), y = +((b.minY + b.maxY) / 2).toFixed(4), x1 = +(b.maxX + 10).toFixed(4);
   /* 目打ち（縫い穴）：選んだ線だけでできている経路の穴を、線に沿った位置と向き（線に対する傾き）のまま、新しい直線にも写す。つながった線は長さ順に、離れた線は続けて並べる */
-  const placed = []; let offset = 0;
+  const placed = []; let offset = 0, prevEnd = null, joinN = 0, joinSum = 0;
   for (const chain of chainShapes(list)) {
     const ids = new Set(chain.shapeIds), paths = doc.paths.filter(p => p.shapeIds.every(id => ids.has(id)));
     const clen = arcLength(chain), turn = (a, c) => Math.abs(((a - c + 540) % 360) - 180);
+    /* 縫い線が、角などで短い線に分かれていて、つなぎ目に小さな隙間がある（縫い線を作ったときの角など）：前の線の終わりから次の線の始まりまでの直線距離を、長さに入れる（事業主 2026-11-17「曲がりに沿って直線に伸ばしてほしかった・縫い合わせたらズレてきます」：隙間の分（あなたの図面で 2.5mm と 2.4mm）が落ちて、直線が短く、穴の並びが詰まっていた）。離れた別の線（10mm を超える）は、これまでどおり続けて並べる */
+    { const a0 = pointAtLength(chain, 0), gap = prevEnd ? Math.hypot(a0.x - prevEnd.x, a0.y - prevEnd.y) : 0; if (gap > 1e-6 && gap <= UNROLL_JOIN_MAX_MM) { offset += gap; joinN++; joinSum += gap; } prevEnd = pointAtLength(chain, clen); }
     for (const h of doc.holes.filter(h => paths.some(p => p.id === h.pathId))) {
       const q = projectOnPath(chain, h), before = pointAtLength(chain, Math.max(0, q.s - 1e-4)).angleDeg, after = pointAtLength(chain, Math.min(clen, q.s + 1e-4)).angleDeg;
       placed.push({ h, s: offset + q.s, angleDeg: ((h.angleDeg - q.angleDeg) % 360 + 360) % 360, corner: turn(after, before) > 1, path: paths.find(p => p.id === h.pathId) }); /* corner＝線の曲がり角にある穴 */
@@ -2399,7 +2402,7 @@ function unrollSelection() {
   /* 始点・終点の指定（事業主 2026-11-13「始点としたい位置がまるで違う」「終点も選べない？」→ 始点の穴を選んでから X・時計回り）：
    *  線といっしょに、その線の穴を Shift＋クリックで選んでおく。1つ＝その穴から（一周する線は一周）、2つ＝1つ目（始点）から2つ目（終点）まで。一周する線は、画面で見て時計回りに進む（描いた向きによらない）。
    *  穴を選んでいなければ、今までどおり線の始まりから。つながっていない線を複数選んだときは使わない。 */
-  let outLen = len, rangeNote = '';
+  let outLen = len + joinSum, rangeNote = '';
   { const chains = chainShapes(list); if (chains.length === 1 && placed.length) {
     const ch = chains[0], clen = arcLength(ch), order = [...selected], picks = placed.filter(p => selected.has(p.h.id)).sort((a, c) => order.indexOf(a.h.id) - order.indexOf(c.h.id));
     if (ch.closed) { const pts = Array.from({ length: 64 }, (_, i) => pointAtLength(ch, clen * i / 64)); let area = 0; for (let i = 0; i < pts.length; i++) { const a = pts[i], c = pts[(i + 1) % pts.length]; area += a.x * c.y - c.x * a.y; }
@@ -2427,7 +2430,7 @@ function unrollSelection() {
     for (const [p, color] of ends) for (const [cx, cy, role] of [[+(x1 + p.s).toFixed(4), y, color === 'green' ? 'start' : 'end'], [p.h.x, p.h.y, color === 'green' ? 'srcStart' : 'srcEnd']]) marks.push({ id: freshId([...doc.shapes, ...marks], 's'), layer: 'guide', type: 'circle', cx, cy, r: 1.6, color, solid: true, unrollEnd: role });
     doc.shapes.splice(at, 0, ...marks);   /* 直線の手前に入れる（直線が最後の図形のまま） */
   });
-  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: outLen.toFixed(2), m: placed.length }) + rangeNote + (placed.length ? ' ' + t('unrollEnds') : '');
+  $('hint').textContent = t(placed.length ? 'unrolledHoles' : 'unrolled', { n: list.length, len: outLen.toFixed(2), m: placed.length }) + rangeNote + (joinN ? ' ' + t('unrollJoin', { n: joinN, d: joinSum.toFixed(2) }) : '') + (placed.length ? ' ' + t('unrollEnds') : '');
 }
 /** 2 個以上の図形を選んでいるとき、その図形の一覧（編集できるものだけ）。1 個以下なら空。 */
 function infoShapes() { const list = doc.shapes.filter(s => selected.has(s.id) && editable(s)); return list.length >= 2 ? list : []; }
