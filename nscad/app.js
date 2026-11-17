@@ -2425,6 +2425,7 @@ function unrollSelection() {
     doc.paths.push({ ...keep, id: pid, shapeIds: [id], reversed: false, closed: false, segments });
     for (const p of placed) doc.holes.push({ ...p.h, id: freshId(doc.holes, 'h'), pathId: pid, x: +(x1 + p.s).toFixed(4), y, s: p.s, angleDeg: p.angleDeg });
     /* 端の菱目に色の印（事業主 2026-11-13「投影した菱目を１直線に並べる機能も欲しい。その際に端の菱目は色を付けてわかりやすくして」→ 始点は緑・終点は赤）：ガイド層の小さな丸。型紙として使うので、図面の上に描く */
+    for (let i = doc.shapes.length - 1; i >= 0; i--) if (doc.shapes[i].unrollEnd) doc.shapes.splice(i, 1);   /* 前の展開の印は消す（事業主 2026-11-18「始点と終点がたくさんある」→ 展開のたびに最新の1組だけにする） */
     ensureLayer(doc, 'guide'); const ends = placed.length > 1 ? [[placed[0], 'green'], [placed.at(-1), 'red']] : [[placed[0], 'green']];
     const at = doc.shapes.findIndex(s => s.id === id), marks = [];   /* 塗りつぶした丸。直線の側と、元の線の同じ穴の両方（どこからどこまでを並べたか分かるように・事業主 2026-11-13「どこからどこまでの菱目なのかまるでわからない」「中塗りでもよい」） */
     for (const [p, color] of ends) for (const [cx, cy, role] of [[+(x1 + p.s).toFixed(4), y, color === 'green' ? 'start' : 'end'], [p.h.x, p.h.y, color === 'green' ? 'srcStart' : 'srcEnd']]) marks.push({ id: freshId([...doc.shapes, ...marks], 's'), layer: 'guide', type: 'circle', cx, cy, r: 1.6, color, solid: true, unrollEnd: role });
