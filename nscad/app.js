@@ -6187,11 +6187,29 @@ function onBinderHwPick() { $('binderSpecSel').value = $('binderHwSel').value; o
 /** 「寸法を入れて登録」：規格の推定の寸法を叩き台に、新しい製品として保存する窓を開く。 */
 function openBinderRegister() { const root = ringRootOf($('binderSpecSel').value); openBinderEdit(root, $('ringD')?.value); if ($('bdeAsNew')) $('bdeAsNew').checked = true; { const d = Number($('ringD')?.value); for (let i = 0; i < bdeRingCount; i++) if ($('bdeRing' + i + 'Use') && Number($('bdeRing' + i + 'Inner').value) === d) { bdeRingUseSync(i); break; } }   /* カードで選んでいる径を、「この金具のリング」に選んでおく */ $('bdeNameJa')?.focus?.(); $('bdeNameJa')?.select?.(); }
 /** 金具カードの「穴あけ」の行（どのハトメ抜きで穴をあけるか）。出典で号数が分かる金具はその号数、ほかは取り付け穴の直径からの目安。寸法の欄を直したら、目安の行も追従する（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。 */
+/** 穴あけの号数は、事業主が確定するまで全部「仮」（事業主 2026-11-17）。確定は金具ごと・この端末のブラウザにだけ保存（leather-cad.punchConfirmed ＝ {金具ID: {nos:[号数…], at}}）。 */
+const PUNCH_CONFIRM_KEY = 'leather-cad.punchConfirmed';
+function readPunchSaved() { try { const v = JSON.parse(localStorage.getItem(PUNCH_CONFIRM_KEY) || '{}'); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; } catch { return {}; } }
+function writePunchSaved(all) { try { localStorage.setItem(PUNCH_CONFIRM_KEY, JSON.stringify(all)); return true; } catch { return false; } }
 function hwPunchText(it) {
-  const info = it ? punchLines(it, hwParams(), document.documentElement.lang === 'en' ? 'en' : 'ja') : { lines: [], note: '' };
-  return { lines: info.lines, note: info.note, text: info.lines.length ? [t('hwPunchTitle') + '：', ...info.lines.map(x => '・' + x), info.note].filter(Boolean).join('\n') : '' };
+  const info = it ? punchLines(it, hwParams(), document.documentElement.lang === 'en' ? 'en' : 'ja', readPunchSaved()[it.id]) : { lines: [], note: '', slots: [], confirmed: false };
+  const tag = info.confirmed ? t('hwPunchConf') : t('hwPunchProv'), note = info.confirmed ? t('hwPunchConfNote') : [t('hwPunchProvNote'), info.note].filter(Boolean).join('\n');
+  return { lines: info.lines, note, slots: info.slots, confirmed: info.confirmed, tag, text: info.lines.length ? [t('hwPunchTitle') + tag + '：', ...info.lines.map(x => '・' + x), note].filter(Boolean).join('\n') : '' };
 }
-function renderHwPunch() { const el = $('hwPunch'); if (el) el.textContent = hwPunchText(hwCurrent()).text; }
+/** 「穴あけ」の行と、号数を直して確定にする欄（号数の入力・「この号数で確定にする」・確定済みなら「仮に戻す」）。 */
+function renderHwPunch() {
+  const it = hwCurrent(), p = hwPunchText(it), el = $('hwPunch'), box = $('hwPunchEdit'); if (el) el.textContent = p.text;
+  if (!box) return; box.textContent = ''; box.hidden = !p.slots.length; if (!p.slots.length) return;
+  const inputs = [];
+  p.slots.forEach((s, i) => { const label = document.createElement('label'), span = document.createElement('span'), inp = document.createElement('input'); span.textContent = s.label + ' ' + t('hwPunchNoUnit'); inp.type = 'number'; inp.step = '1'; inp.min = '1'; inp.max = '60'; inp.value = String(s.no); inp.dataset.punchSlot = String(i); label.appendChild(span); label.appendChild(inp); box.appendChild(label); inputs.push(inp); });
+  const ok = document.createElement('button'); ok.type = 'button'; ok.id = 'hwPunchConfirm'; ok.textContent = t('hwPunchConfirm'); ok.onclick = () => confirmHwPunch(it, inputs); box.appendChild(ok);
+  if (p.confirmed) { const rv = document.createElement('button'); rv.type = 'button'; rv.id = 'hwPunchRevert'; rv.textContent = t('hwPunchRevert'); rv.onclick = () => revertHwPunch(it); box.appendChild(rv); }
+}
+function confirmHwPunch(it, inputs) {
+  const nos = inputs.map(i => Number(i.value)); if (!it || !nos.length || !nos.every(n => Number.isInteger(n) && n >= 1 && n <= 60)) { $('hint').textContent = t('hwPunchBad'); return; }
+  const all = readPunchSaved(); all[it.id] = { nos, at: new Date().toISOString() }; if (!writePunchSaved(all)) { $('hint').textContent = t('hwPunchSaveFail'); return; } renderHwPunch();
+}
+function revertHwPunch(it) { if (!it) return; const all = readPunchSaved(); delete all[it.id]; if (!writePunchSaved(all)) { $('hint').textContent = t('hwPunchSaveFail'); return; } renderHwPunch(); }
 function renderHardware() {
   const cat = $('hwCategory'); if (!cat.textContent) { for (const c of HW_CATEGORIES) { const o = document.createElement('option'); o.value = c; o.textContent = t('hwcat.' + c); cat.appendChild(o); } }
   const items = hwItems(), sel = $('hwItem'), keep = sel.value; sel.textContent = '';
@@ -6925,7 +6943,7 @@ function placeHardware(at) {
   let drafts; try { drafts = hardwareDrafts(it, overrides, spec, at, hwAngleValue()); } catch (err) { $('hint').textContent = t('invalidNumber') + ' ' + err.message; return; }
   cancel();
   commit(() => { selected = new Set(addHardwareDrafts(drafts, nextGroupId(doc.shapes))); }); /* 置いた金具は自動で1つのグループ（クリックで全体・ダブルクリックで中の1つ） */
-  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pl = hwPunchText(it).lines; if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
+  renderLayers(); const en = document.documentElement.lang === 'en'; $('hint').textContent = t('hwPlaced', { name: spec && spec.id !== it.params.spec ? (en ? spec.names.en : spec.names.ja) : (en ? it.name_en : it.name_ja) }); { const pp = hwPunchText(it), pl = pp.lines; if (pl.length && !isBinder) $('hint').textContent += ' ' + t('hwPunchPlaced', { tag: pp.tag, s: pl.join(en ? '; ' : '／') }); }   /* 製品を置いたら製品名で案内（事業主決定A・2026-10-12） */
 }
 /** 「寸法データ」：規格・製品の寸法を読める表にする（JSON は出さない）。確かさは 実測／規格表／推定／未入力 の言葉で。製品なら親の規格を示す。 */
 function binderDataHtml(spec, ringD) {

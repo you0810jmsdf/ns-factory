@@ -17,19 +17,24 @@ export function evalExpr(expr, params = {}) {
 export const PUNCH_MM_PER_NO = 0.3;
 /** 金具の「穴あけ」の案内（事業主 2026-11-17「どのポンチサイズで穴開けをするかが一番悩むところ」）。
  *  金具に punch（出典で号数が分かるもの：部分ごとの号数か mm と、注意書き）があれば、それを使う。無ければ、取り付け穴（holes の最初の丸穴）の直径から「約◯号」を出す（目安）。
- *  返すのは { lines: ['オス側（足を通す穴）：7号（2.1mm）', …], note: '注意書き' }。穴の無い金具は lines が空。lang は 'ja' か 'en'。 */
-export function punchLines(item, overrides = {}, lang = 'ja') {
-  const en = lang === 'en', r1 = x => (Math.round(x * 10) / 10).toFixed(1), out = { lines: [], note: '' };
+ *  返すのは { lines: ['オス側（足を通す穴）：7号（2.1mm）', …], note: '注意書き', slots: [{label, no}…], confirmed } 。穴の無い金具は lines が空。lang は 'ja' か 'en'。
+ *  slots は号数を直せる箇所（部分ごと・または取り付け穴の1つ）。saved（{nos:[号数…]}・事業主が「確定」した号数）が slots と同じ数なら、その号数を出して confirmed=true（注意書きは出さない）。
+ *  出典から入れた号数は、事業主が確定するまでは「仮」（事業主 2026-11-17「穴あけ表示の「仮」は全部に付ける」）。 */
+export function punchLines(item, overrides = {}, lang = 'ja', saved = null) {
+  const en = lang === 'en', r1 = x => (Math.round(x * 10) / 10).toFixed(1), out = { lines: [], note: '', slots: [], confirmed: false };
   const withNo = (label, no) => en ? `${label}: punch No.${no} (${r1(no * PUNCH_MM_PER_NO)} mm)` : `${label}：${no}号（${r1(no * PUNCH_MM_PER_NO)}mm）`;
   const withMm = (label, mm) => en ? `${label}: ${r1(mm)} mm (about No.${Math.round(mm / PUNCH_MM_PER_NO)})` : `${label}：${r1(mm)}mm（約${Math.round(mm / PUNCH_MM_PER_NO)}号）`;
   if (item?.punch?.parts?.length) {
-    for (const p of item.punch.parts) { const label = en ? p.label_en : p.label_ja; out.lines.push(p.no ? withNo(label, p.no) : withMm(label, p.mm)); }
-    out.note = (en ? item.punch.note_en : item.punch.note_ja) || ''; return out;
+    for (const p of item.punch.parts) { const label = en ? p.label_en : p.label_ja; out.lines.push(p.no ? withNo(label, p.no) : withMm(label, p.mm)); out.slots.push({ label, no: p.no || Math.round(p.mm / PUNCH_MM_PER_NO) }); }
+    out.note = (en ? item.punch.note_en : item.punch.note_ja) || '';
+  } else {
+    const h = (item?.holes || []).find(x => x.d !== undefined); if (!h) return out;
+    let mm; try { mm = evalExpr(h.d, { ...item.params, ...overrides }); } catch { return out; }
+    if (!(mm > 0)) return out;
+    const label = en ? 'Mounting hole' : '取り付け穴'; out.lines.push(withMm(label, mm)); out.slots.push({ label, no: Math.max(1, Math.round(mm / PUNCH_MM_PER_NO)) }); out.note = en ? 'A guide only: punch number × 0.3 mm = hole diameter. Follow the instructions that came with your hardware.' : '目安です（号数 × 0.3mm ＝ 穴の直径）。買った金具の説明を優先してください。';
   }
-  const h = (item?.holes || []).find(x => x.d !== undefined); if (!h) return out;
-  let mm; try { mm = evalExpr(h.d, { ...item.params, ...overrides }); } catch { return out; }
-  if (!(mm > 0)) return out;
-  out.lines.push(withMm(en ? 'Mounting hole' : '取り付け穴', mm)); out.note = en ? 'A guide only: punch number × 0.3 mm = hole diameter. Follow the instructions that came with your hardware.' : '目安です（号数 × 0.3mm ＝ 穴の直径）。買った金具の説明を優先してください。';
+  const nos = saved?.nos;
+  if (Array.isArray(nos) && nos.length === out.slots.length && nos.every(n => Number.isInteger(n) && n >= 1 && n <= 60)) { out.lines = out.slots.map((s, i) => withNo(s.label, nos[i])); out.slots = out.slots.map((s, i) => ({ ...s, no: nos[i] })); out.note = ''; out.confirmed = true; }
   return out;
 }
 /** リングの線径（mm）。平面・正面の棒の幅・側面の輪の太さ・3D のワイヤの太さがこれ。 */
