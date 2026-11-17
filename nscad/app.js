@@ -2054,12 +2054,22 @@ function startTabWatch() {
 }
 if ($('rejectBarClose')) $('rejectBarClose').onclick = () => { $('rejectBar').hidden = true; };
 $('restoreApply').onclick = restoreAutosave; $('restoreDiscard').onclick = discardAutosave; $('restoreGen')?.addEventListener('change', () => { const c = restoreChoices[Number($('restoreGen').value)]; if (c) showRestoreOffer(c, restoreChoices); });   /* 世代を選ぶと、その保存を開く対象にする */
+/** 起動時の「はじめに」（6枚）。6枚目は操作ガイドの案内：目玉の機能のガイドを「見る」か、見ずに「始める」か（事業主 2026-11-17「見たい人は見る・そうでない人はスキップの形で」「だれがどのくらい見たか統計を撮りたい」）。
+ *  数えるのは、見た枚数・スキップした枚数・選んだガイドだけ（匿名・ncad_use の kind。公開版以外・作家の端末では何もしない）：tour_s1〜s6＝その枚まで進んだ／tour_skip1〜6＝その枚で「スキップ」／tour_done＝最後の「始める」／tg_<ガイド>＝ツアーから選んだ。ガイド自体の再生は playTutorial が tut_・tutend_・tutleft_ で数える。 */
+const TOUR_GUIDES = ['basics', 'stitch', 'library', 'hardware', 'recipe', 'rpatch', 'view3d'];   /* 目玉の機能のガイド（TUTORIALS の id）。足す・替えるときはここだけ */
 function showTour() {
   let done = false; try { done = localStorage.getItem('leather-cad.tourDone') === '1'; } catch { done = true; }
-  if (done) return; let i = 0;
-  const render = () => { $('tourBody').textContent = t('tour.' + (i + 1)); $('tourStep').textContent = `${i + 1} / 5`; $('tourNext').textContent = i >= 4 ? t('tourFinish') : t('tourNext'); };
-  $('tourNext').onclick = () => { if (i >= 4) { $('tourDialog').close(); if ($('tourSkipAlways').checked) { try { localStorage.setItem('leather-cad.tourDone', '1'); } catch { /* 省略 */ } } } else { i++; render(); } };
-  $('tourSkip').onclick = () => { $('tourDialog').close(); if ($('tourSkipAlways').checked) { try { localStorage.setItem('leather-cad.tourDone', '1'); } catch { /* 省略 */ } } };
+  if (done) return; let i = 0; const N = 6;
+  const close = () => { $('tourDialog').close(); if ($('tourSkipAlways').checked) { try { localStorage.setItem('leather-cad.tourDone', '1'); } catch { /* 省略 */ } } };
+  const host = $('tourGuides'); host.textContent = ''; host.style.flexWrap = 'wrap'; let built = 0;
+  for (const id of TOUR_GUIDES) {
+    const s = TUTORIALS.find(x => x.id === id); if (!s) continue;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '▶ ' + t(s.title);
+    btn.onclick = () => { countUse('tg_' + id); close(); playTutorial(id); }; host.appendChild(btn); built++;
+  }
+  const render = () => { $('tourBody').textContent = t('tour.' + (i + 1)); $('tourStep').textContent = `${i + 1} / ${N}`; $('tourNext').textContent = i >= N - 1 ? t('tourFinish') : t('tourNext'); host.hidden = i < N - 1 || !built; countUse('tour_s' + (i + 1)); };
+  $('tourNext').onclick = () => { if (i >= N - 1) { countUse('tour_done'); close(); } else { i++; render(); } };
+  $('tourSkip').onclick = () => { countUse('tour_skip' + (i + 1)); close(); };
   render(); $('tourDialog').showModal();
 }
 function saveSnapDist() { try { localStorage.setItem('leather-cad.snapDist', String(Math.max(0, Number($('snapDist').value) || 0))); } catch { /* 保存できなくても続ける */ } }
@@ -4808,11 +4818,17 @@ function tutHost({ instant = false } = {}) {
 }
 globalThis.__tutState = () => ({ mode, sel: selected.size, holes: doc.holes.length, shapes: doc.shapes.map(s => ({ type: s.type, layer: s.layer, line: s.lineType || s.style || undefined })) }); // 台本の試し再生の結果を見る（図形の種類と数だけ）
 globalThis.__playTutorial = (id, o = {}) => playTutorial(id, { instant: !!o.instant }); // 録画台本（record_tutorials.mjs）用。id の代わりに台本そのもの（tutorials/*.json の中身）も渡せる（台本を作るときの試し再生）
+/** ガイドの再生を匿名で数える：始めた＝tut_<id>、最後まで見た＝tutend_<id>、途中で止めた＝tutleft_<id>（終わりまで行くと index は 0 に戻るので、止めたかは stop の呼び出しで見る）。player の play・stop を包むだけで、再生の流れには触らない。 */
+function tutCount(player, script) {
+  if (!script.id) return; const play0 = player.play, stop0 = player.stop; let stopped = false;
+  player.stop = () => { stopped = true; stop0(); };
+  player.play = async () => { countUse('tut_' + script.id); await play0(); countUse((stopped ? 'tutleft_' : 'tutend_') + script.id); };
+}
 async function playTutorial(id, { instant = false } = {}) {
   const script = (id && typeof id === 'object' && Array.isArray(id.steps)) ? id : TUTORIALS.find(s => s.id === id); if (!script) return;
   if (tutPlayer?.running) tutPlayer.stop();
   $('helpDialog').close?.(); if (!tutDropDemoTabs()) tutReturn = activeTab; tutTabBase = tabs.length; newTab(t('tutorialTab'));   /* 続けて別のチュートリアルを流すときは、前のチュートリアルのタブ（と、その中で作ったタブ）を片付けてから、新しく作る */ if (!$('tutSelf').checked) canvas.style.pointerEvents = 'none'; // 専用タブで再生（作業中の図面は触らない）
-  tutPlayer = createPlayer(script, tutHost({ instant })); tutPlayer.setSpeed(Number($('tutSpeed').value) || 1); tutPlayer.setSelfMode(!!$('tutSelf').checked);
+  tutPlayer = createPlayer(script, tutHost({ instant })); tutCount(tutPlayer, script); tutPlayer.setSpeed(Number($('tutSpeed').value) || 1); tutPlayer.setSelfMode(!!$('tutSelf').checked);
   $('tutBar').hidden = false; $('tutTitle').textContent = t(script.title); tutRunning = true; refreshModHelp(); const askKeep = tutKeepAsk(), fieldKeep = tutKeepFields(script), sideWasOpen = sidePanelOpen(); try { await tutPlayer.play(); } finally { tutRunning = false; refreshModHelp(); askKeep(); fieldKeep(); if (!sideWasOpen && sidePanelOpen()) closeSidePanel(); for (let i = Math.max(0, tutTabBase); i < tabs.length; i++) if (tabs[i]) tabs[i].tutDemo = true; }   /* 再生中にできたタブ（チュートリアルのタブ・自動設計などで作ったタブ）に印。終了のとき、印のあるタブだけ片付ける（終わったあとに自分で作ったタブは残す） */ canvas.style.pointerEvents = '';
 }
 /** 台本が値を入れる欄（value の欄）の、再生前の値を覚えて、再生のあとで戻す（目印の距離・配置方法・定型句の下書きなど、利用者のいつもの値をチュートリアルで書き換えない）。値が変わった欄だけ、change を出して元の値を行き渡らせる */
