@@ -391,6 +391,12 @@ export function healDoc(d) {
       for (const s of moving) { s.layer = 'parts'; fixed++; } for (const f of movingPaper) { f.layer = 'parts'; fixed++; }
     }
   }
+  { /* 穴の位置（や区間の終わり）が、線の長さをわずかに超えている図面（線を短くしたり、つなぎ直したあとに、端の穴が 0.002mm はみ出した・事業主 2026-11-17：駒合わせの縫い線で、検査に通らず「前回の続きを読めませんでした」になり、127 図形の作業が読めなくなった）。0.5mm 以内のはみ出しは、端の穴として線の長さに合わせる（それ以上は、本当に食い違っているので触らない） */
+    const lens = new Map(); for (const p of d.paths) { try { const route = resolvePath(d, p); if (route && typeof route.closed === 'boolean') lens.set(p.id, arcLength(route)); } catch { /* 経路が作れない図面は、ここでは触らない */ } }
+    const near = (v, L) => Number.isFinite(v) && Number.isFinite(L) && v > L + 1e-6 && v - L <= 0.5;
+    for (const h of Array.isArray(d.holes) ? d.holes : []) { const L = lens.get(h.pathId); if (near(h.s, L)) { h.s = L; fixed++; } }
+    for (const p of d.paths) { const L = lens.get(p.id); for (const sg of Array.isArray(p.segments) ? p.segments : []) if (near(sg?.to, L)) { sg.to = L; fixed++; } }
+  }
   { /* 部品が、消えた図形を指したままの図面（どこかの消し方で、部品の掃除が漏れた・2026-10-18）：検査に通らず、色の変更・保存・「前回の続き」が止まる。消えた図形を、部品の中身から外す */
     const ids = new Set(d.shapes.map(s => s.id)); for (const p of Array.isArray(d.parts) ? d.parts : []) if (Array.isArray(p.shapeIds) && p.shapeIds.some(id => !ids.has(id))) { p.shapeIds = p.shapeIds.filter(id => ids.has(id)); fixed++; }
   }
