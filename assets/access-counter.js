@@ -1,4 +1,10 @@
 (function () {
+  // 流入元の印（?from=ig など）を端末に覚える（2026-11-17）。相談ページ（order_estimate/hearing-ai.html）が訪問記録の「流入元」に使う。
+  // 書式は「印|時刻」。⛔ 決まった短い英数字だけ受け取る。書式を変えるときは相談ページの initVisitSource も直す。
+  try {
+    const c = (new URLSearchParams(location.search).get('from') || '').toLowerCase();
+    if (/^[a-z0-9_-]{1,20}$/.test(c)) localStorage.setItem('nsf_src_code', c + '|' + Date.now());
+  } catch (_) {}
   // data-badge="off" を付けて読み込むと、数えるだけで画面にバッジを出さない（画面いっぱいのアプリ用・2026-10-16）
   const SHOW_BADGE = !(document.currentScript && document.currentScript.getAttribute('data-badge') === 'off');
   const GAS_URL = 'https://script.google.com/macros/s/AKfycby-lfLJy_hyy9FlIUT3XokVZs-R4MtUDWk6BB8TZaFKOHTzF-RTbFvZwOzHL3JHWEVRIQ/exec';

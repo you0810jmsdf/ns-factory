@@ -407,14 +407,20 @@ const VISIT_SRC_CODES={ig:'Instagram',th:'Threads',fb:'Facebook',line:'LINE',yt:
   try{ code=(new URLSearchParams(location.search).get('from')||'').toLowerCase(); }catch(e){}
   if(/^[a-z0-9_-]{1,20}$/.test(code)){
     VISIT.src='リンクの印: '+(VISIT_SRC_CODES[code]||code);
-    try{ localStorage.setItem(VISIT_SRC_KEY, VISIT.src); }catch(e){}
+    try{ localStorage.setItem('nsf_src_code', code+'|'+Date.now()); }catch(e){}   // 他のページと同じ場所に、日付つきで覚える
     return;
   }
   // リンク集・トップが受けた印（links.html?from=ig など。各ページ head の1行が nsf_src_code に「印|時刻」で覚える・30日）。
   //   名刺のQRやSNSのプロフィールはリンク集へ飛ぶので、そこで受けた印をここで読む（2026-11-17）
   try{
     const m=/^([a-z0-9_-]{1,20})\|(\d{10,16})$/.exec(localStorage.getItem('nsf_src_code')||'');
-    if(m && Date.now()-Number(m[2]) < 30*86400000){ VISIT.src='リンクの印: '+(VISIT_SRC_CODES[m[1]]||m[1]); return; }
+    // 印は30日残るので、古い印は「何日前の印か」を添える（その後に別の経路で来た可能性を、記録を読む側が判断できるように）
+    const age=m ? Date.now()-Number(m[2]) : -1;
+    if(m && age>=0 && age < 30*86400000){
+      const days=Math.floor(age/86400000);
+      VISIT.src='リンクの印: '+(VISIT_SRC_CODES[m[1]]||m[1])+(days>=1 ? '（'+days+'日前の印）' : '');
+      return;
+    }
   }catch(e){}
   try{ VISIT.src=(localStorage.getItem(VISIT_SRC_KEY)||'').slice(0,40); }catch(e){}
 })();
