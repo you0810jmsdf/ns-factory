@@ -105,6 +105,40 @@ export const DATA_HARDWARE = {
       ]
     },
     {
+      "id": "snap-no2",
+      "category": "fastener",
+      "name_ja": "バネホック No.2（中）11.5mm",
+      "name_en": "Spring snap No.2 (medium) 11.5 mm",
+      "params": {
+        "capD": 11.5,
+        "postD": 3
+      },
+      "footprint2d": {
+        "kind": "circle",
+        "d": "capD"
+      },
+      "holes": [
+        {
+          "x": 0,
+          "y": 0,
+          "d": "postD"
+        }
+      ],
+      "solid3d": {
+        "kind": "cylinder",
+        "d": "capD",
+        "h": 4.5
+      },
+      "confidence": "estimated",
+      "colors": [
+        "gold",
+        "silver",
+        "antique",
+        "blacknickel",
+        "brass"
+      ]
+    },
+    {
       "id": "jumper-10",
       "category": "fastener",
       "name_ja": "ジャンパーホック 10mm",
