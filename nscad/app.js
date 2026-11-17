@@ -6597,7 +6597,7 @@ function symSamples(s, step) {
   out.push(pts.at(-1)); return out;
 }
 /** 図形 list を、軸（'x'＝縦線 x=c で左右・'y'＝横線 y=c で上下）で折り返して比べる。{ axis, c, maxDev, bad:[{x,y,d}]（ずれの大きい所・3mm 以上はなして最大6つ）, samples }。図形が無ければ null。 */
-function symmetryCheck(list, axis) {
+function symmetryCheck(list, axis, holes = []) {
   const shapes = list.filter(s => !SYM_SKIP.includes(s.type) && !s.holeLink); if (!shapes.length) return null;
   const b = bboxOfDoc({ shapes, holes: [] }); if (!b) return null; const c = axis === 'x' ? (b.minX + b.maxX) / 2 : (b.minY + b.maxY) / 2, mir = shapes.map(s => axis === 'x' ? mirrorX(s, c) : mirrorY(s, c));
   const total = shapes.reduce((m, s) => { try { return m + arcLength(s); } catch { return m; } }, 0), step = Math.max(0.5, total / 2000), pairs = [[mir, shapes, 1], [shapes, mir, 0]], found = [];
@@ -6606,17 +6606,26 @@ function symmetryCheck(list, axis) {
     let d = Infinity; for (const o of to) { if (lower(boxes.get(o), p) >= d) continue; const q = distToShape(o, p); if (q < d) d = q; if (d < 1e-6) break; }
     if (d > SYM_OK) found.push({ x: mirrored ? (axis === 'x' ? 2 * c - p.x : p.x) : p.x, y: mirrored ? (axis === 'y' ? 2 * c - p.y : p.y) : p.y, d });   /* 印は、もとの図形の側に出す */
   }
-  found.sort((u, v) => v.d - u.d); const bad = []; for (const f of found) if (bad.length < 6 && bad.every(q => Math.hypot(q.x - f.x, q.y - f.y) > 3)) bad.push(f);
-  return { axis, c, maxDev: found.length ? found[0].d : 0, bad, box: b };
+  /* 穴（菱目・丸目・点の目印）：中心を同じ軸で折り返した位置に、別の穴があるか。いちばん近い穴までの距離がずれ（穴の向きは見ない）。事業主 2026-11-17「対称チェックは線のみ、菱目は無視？」：線は対称でも、菱目が 0.2〜0.5mm ずれていた。 */
+  const holeFound = [];
+  for (const h of holes) { const mx = axis === 'x' ? 2 * c - h.x : h.x, my = axis === 'y' ? 2 * c - h.y : h.y; let d = Infinity; for (const o of holes) { const q = Math.hypot(o.x - mx, o.y - my); if (q < d) d = q; if (d < 1e-6) break; } if (d > SYM_OK) holeFound.push({ x: h.x, y: h.y, d, hole: true }); }
+  const thin = list => { list.sort((u, v) => v.d - u.d); const out = []; for (const f of list) if (out.length < 6 && out.every(q => Math.hypot(q.x - f.x, q.y - f.y) > 3)) out.push(f); return out; };
+  const bad = [...thin(found), ...thin(holeFound)];   /* 印は、線のずれと穴のずれを別々に最大6つずつ（線のずれが大きくても、穴の印が隠れない） */
+  return { axis, c, maxDev: Math.max(found.length ? found[0].d : 0, holeFound.length ? holeFound[0].d : 0), holeDev: holeFound.length ? holeFound[0].d : 0, holeCount: holes.length, bad, box: b };
 }
 let symView = null;   /* 画面に出す対称チェックの結果：{ key（選んだ図形の組）, results:[左右, 上下] } */
 const symKey = () => [...selectedShapeIds()].sort().join(',');
 function symText(r) { const d = (+r.maxDev).toFixed(2); return r.maxDev <= SYM_OK ? t('symOk', { d }) : r.maxDev <= SYM_NEAR ? t('symNear', { d }) : t('symNg', { d }); }
+/** 対称チェックで見る穴：選んだ図形を通る経路の穴（見えているもの）と、選んでいる穴。 */
+function symHolesOf(ids) {
+  const pathIds = new Set(doc.paths.filter(p => p.shapeIds.some(id => ids.has(id))).map(p => p.id));
+  return doc.holes.filter(h => (pathIds.has(h.pathId) || selected.has(h.id)) && holeVisible(h));
+}
 function runSymmetryCheck() {
   const ids = selectedShapeIds(), list = doc.shapes.filter(s => ids.has(s.id) && !SYM_SKIP.includes(s.type) && !s.holeLink && visible(s));
   if (!list.length) { symView = null; $('hint').textContent = t('symNeedSelect'); draw(); return null; }
-  const lr = symmetryCheck(list, 'x'), ud = symmetryCheck(list, 'y'); symView = { key: symKey(), results: [lr, ud] };
-  $('hint').textContent = t('symResult', { n: list.length, lr: symText(lr), ud: symText(ud) }); draw(); return { lr, ud };
+  const holes = symHolesOf(ids), lr = symmetryCheck(list, 'x', holes), ud = symmetryCheck(list, 'y', holes); symView = { key: symKey(), results: [lr, ud] };
+  $('hint').textContent = t(holes.length ? 'symResultHoles' : 'symResult', { n: list.length, h: holes.length, lr: symText(lr), ud: symText(ud) }); draw(); return { lr, ud };
 }
 function drawSymView() {
   if (!symView || exporting || symView.key !== symKey()) return; const k = 1 / scale; ctx.save(); ctx.setLineDash([6 * k, 4 * k]); ctx.lineWidth = 1.2 * k; ctx.strokeStyle = '#4fd0ff';
