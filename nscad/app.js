@@ -10162,10 +10162,18 @@ function placeDetourFloat() {
 function placeOffsetFloat() {
   const box = $('offsetFloat'), sel = offsetSelection;
   if (!sel || mode !== 'offset') { box.hidden = true; return; }
-  const xs = sel.points.map(q => q.x), ys = sel.points.map(q => q.y), w = box.offsetWidth || 230, h = box.offsetHeight || 40;
-  const po = paneOff(); let x = po.x + origin.x + Math.max(...xs) * scale + 12, y = po.y + origin.y + Math.min(...ys) * scale - 4;
-  if (x + w > width - 8) x = origin.x + Math.min(...xs) * scale - w - 12; /* 右に入らなければ図形の左に */
-  x = Math.max(8, Math.min(width - w - 8, x)); y = Math.max(36, Math.min(height - h - 8, y));
+  const w = box.offsetWidth || 230, h = box.offsetHeight || 40, po = paneOff();
+  /* 避ける範囲＝選んだ辺と、その辺がある図形の全体（事業主 2026-11-17「丁度重なって図形が見えない」：選んだ辺の横だけを見ていたので、図形の外形線の上に小窓が重なっていた） */
+  const pts = [...sel.points], owners = [sel.hit, ...(sel.shapeIds || []).map(id => doc.shapes.find(s => s.id === id))].filter(Boolean);
+  for (const o of owners) { try { const b = bboxOf(o); pts.push({ x: b.minX, y: b.minY }, { x: b.maxX, y: b.maxY }); } catch { /* 図形の範囲が出せなければ、その図形は避けない */ } }
+  const xs = pts.map(q => q.x), ys = pts.map(q => q.y), L = po.x + origin.x + Math.min(...xs) * scale, R = po.x + origin.x + Math.max(...xs) * scale, T = po.y + origin.y + Math.min(...ys) * scale, B = po.y + origin.y + Math.max(...ys) * scale;
+  const fitX = v => v >= 8 && v + w <= width - 8, fitY = v => v >= 36 && v + h <= height - 8, clampX = v => Math.max(8, Math.min(width - w - 8, v)), clampY = v => Math.max(36, Math.min(height - h - 8, v));
+  let x, y;
+  if (fitX(R + 12)) { x = R + 12; y = clampY(T - 4); }   /* 図形の右 → 左 → 上 → 下の順に、図形に重ならない所へ */
+  else if (fitX(L - w - 12)) { x = L - w - 12; y = clampY(T - 4); }
+  else if (fitY(T - h - 8)) { x = clampX(L); y = T - h - 8; }
+  else if (fitY(B + 8)) { x = clampX(L); y = B + 8; }
+  else { x = clampX(R + 12); y = clampY(T - 4); }   /* どこにも入らない大きな図形は、これまでどおり（画面の中に収める） */
   box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; box.hidden = false;
 }
 /** 選んだ範囲を、距離と向き（内側／外側）でオフセットする。結果は黄色の点線。 */
@@ -12013,8 +12021,9 @@ function fillCtxCards() {
   let lastGroup = null;   /* 分類ごとの見出し（分類の無いカードは見出しなし） */
   let foldSim = false;   /* 三つ折りの分類は、カードを並べず「三つ折りシミュレーション」の1項目にする（事業主指示 2026-10-21「三つ折り機能は、統括して「三つ折りシミュレーション」として〇iの内容を表示させるだけでよい」・右メニュー＝右クリックメニュー）。押すと、これまでⓘで開いていた手順の小窓（①〜⑤とボタン）を開く */
   for (const c of cards) { const g = sideGroupOf(c); if (g && g !== lastGroup) { const h = document.createElement('div'); h.className = 'ctx-group'; h.textContent = t('sideTabTip_' + g).split('（')[0].split(' (')[0];   /* 見出しは、説明の前の部分だけ（「図形・寸法」など） */ box.appendChild(h); lastGroup = g; }
+    if (c === $('binderCard')) { const h = document.createElement('div'); h.className = 'ctx-title ctx-catalog'; if (h.dataset) h.dataset.cat = 'parts'; h.textContent = t('ctxCatalog'); box.appendChild(h); }   /* 「市販金具カタログ」の見出し。リングバインダーと「ボタン等」は、その下にぶら下げる（事業主 2026-11-17「リングバインダーは市販金具カタログにぶら下がる形で」「下にリングバインダーとボタン等」） */
     if (g === 'fold') { if (!foldSim) { foldSim = true; for (const [mode, key] of [['bifold', 'ctxSimBifold'], ['trifold', 'ctxSimTrifold']]) { const s = document.createElement('button'); if (s.dataset) s.dataset.cat = 'sim'; s.textContent = t(key); s.title = t('foldFlowInfoTip'); s.onclick = () => { countUse('ctx_foldsim_' + mode); hideCtxMenu(); openFoldSim(mode); }; box.appendChild(s); } } continue; }   /* 折りの分類は、カードを並べず「2つ折り」「3つ折り」の2項目（どちらも折りシミュレーションの小窓を、その折り方で開く） */
-    const b = document.createElement('button'); if (b.dataset) b.dataset.cat = ctxCatOfCard(c); b.textContent = c === $('colorCard') ? t('ctxSimColor') : c === $('libCard') ? t('ctxLibOpen') : c.querySelector('summary').textContent;   /* 「部品ライブラリに登録…」（選んだ図形を登録する操作）と、並んで区別できるように「…を開く」 */ if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('layerCard')) { hideCtxMenu(); openLayerWin(); return; }   /* レイヤーは右列でなく窓（事業主 2026-10-25「レイヤーのインターフェースが見にくい。窓にしたらどう？」） */ if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
+    const b = document.createElement('button'); if (b.dataset) b.dataset.cat = ctxCatOfCard(c); b.textContent = c === $('colorCard') ? t('ctxSimColor') : c === $('libCard') ? t('ctxLibOpen') : c === $('hwCard') ? t('ctxHwChild') : c.querySelector('summary').textContent; if (c === $('binderCard') || c === $('hwCard')) b.className = 'ctx-child';   /* 「部品ライブラリに登録…」（選んだ図形を登録する操作）と、並んで区別できるように「…を開く」 */ if (c === $('layerCard')) b.title = t('layerCtxTip'); b.onclick = () => { countUse('ctx_' + (c.id || 'card')); if (c === $('layerCard')) { hideCtxMenu(); openLayerWin(); return; }   /* レイヤーは右列でなく窓（事業主 2026-10-25「レイヤーのインターフェースが見にくい。窓にしたらどう？」） */ if (c === $('patchCard')) { hideCtxMenu(); setMode('patchfill'); return; }   /* 柄は右列でなく窓（2026-10-21）：柄のツールにして窓を出す（有料版のロックは setMode の中） */ for (const o of ctxCardList()) if (o.dataset?.win !== '1') o.open = o === c;   /* 窓になっている柄のカードは閉じない */ revealCard(c); hideCtxMenu(); c.scrollIntoView?.({ block: 'start' }); if (c === $('layerCard')) $('hint').textContent = t('layerCtxOpened'); }; box.appendChild(b); }   /* 押した項目だけを開く（ほかは閉じる）→ 長い列でも目的の項目が先頭に来る */
   $('ctxCardsTitle').hidden = true; return cards.length;   /* 旧い見出しは使わない（カードは、カテゴリごとの入れ物へ配る＝distributeCtxCards） */
 }
 /** 右クリックメニューの階層化（事業主 2026-10-26「右クリックメニューはこれから膨れ上がるので、…単語ベースのカテゴリとし」「カテゴリをクリックするとどんどん詳細なメニューが出るイメージ」「いっそのこと全部右クリックでもいい」）。
