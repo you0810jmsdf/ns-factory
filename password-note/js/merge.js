@@ -51,32 +51,36 @@ const EntryMerge = (() => {
     const seenIds = new Set();
     const rows = [];
     const addRow = h => {
-      if (!h) return;
+      if (!h) return null;
       const k = rowKey(h);
-      if (seenKeys.has(k)) return;
+      if (seenKeys.has(k)) return null;
       seenKeys.add(k);
       const row = clone(h);
       if (!row.id || seenIds.has(row.id)) row.id = ctx.uuid();
       seenIds.add(row.id);
       rows.push(row);
+      return row;
     };
     (keep.history || []).forEach(addRow);
 
     const noteRows = [];
     for (const o of originals) {
-      (o.history || []).forEach(addRow);
+      // 元に戻すために、このカードから足した行のID・埋めた項目・メモ行のIDを控える
+      o._undo = { addedRowIds: [], filled: [], noteRowId: '' };
+      (o.history || []).forEach(h => { const r = addRow(h); if (r) o._undo.addedRowIds.push(r.id); });
       const diffs = [];
       for (const [field, label] of [['url', 'URL'], ['owner', '担当'], ['description', '説明']]) {
         const mine = String(merged[field] || '').trim();
         const theirs = String(o[field] || '').trim();
         if (!theirs) continue;
-        if (!mine) merged[field] = theirs;           // 空なら埋める（情報は増えるだけ）
+        if (!mine) { merged[field] = theirs; o._undo.filled.push(field); }   // 空なら埋める（情報は増えるだけ）
         else if (mine !== theirs) diffs.push(`${label}: ${clip(theirs, NOTE_FIELD_MAX)}`);
       }
       const title = String(o.title || '').trim();
       const titleDiff = title && title !== String(merged.title || '').trim();
+      o._undo.noteRowId = ctx.uuid();
       noteRows.push({
-        id: ctx.uuid(), date: today, type: 'other', username: '', password: '',
+        id: o._undo.noteRowId, date: today, type: 'other', username: '', password: '',
         note: `統合：同じパスワードの「${clip(title || '(名称なし)', 80)}」をこのカードに統合しました` +
           (titleDiff || diffs.length ? '。統合前の違い → ' + [titleDiff ? `サービス名: ${clip(title, 80)}` : '', ...diffs].filter(Boolean).join(' ／ ') : '')
       });
@@ -91,10 +95,39 @@ const EntryMerge = (() => {
     if (created) merged.createdAt = created;
     merged.updatedAt = nowIso;
     merged.mergedFrom = (Array.isArray(keep.mergedFrom) ? clone(keep.mergedFrom) : [])
-      .concat(originals.map(o => Object.assign(o, { mergedAt: nowIso })));
+      .concat(originals.map(o => { const u = o._undo; delete o._undo; return Object.assign(o, { mergedAt: nowIso, addedRowIds: u.addedRowIds, filled: u.filled, noteRowId: u.noteRowId }); }));
 
     return { merged, removedIds: others.map(e => e.id) };
   }
 
-  return { groups, merge };
+  const META_KEYS = ['mergedAt', 'addedRowIds', 'filled', 'noteRowId'];
+
+  // 統合済みのカード keepId の控え mergedFrom から removedId を別のカードに戻す。
+  // 戻り値 { keep, restored }。keep は統合で足した履歴行・メモ行・埋めた項目を外したカード。
+  // 控えに行IDが無い古い統合（このボタンより前）は、履歴はそのまま残し（捨てない）、カードだけ戻す。
+  function unmerge(entries, keepId, removedId, ctx) {
+    const orig = entries.find(e => e.id === keepId);
+    if (!orig) throw new Error('統合したカードが見つかりません');
+    const item = (orig.mergedFrom || []).find(o => o.id === removedId);
+    if (!item) throw new Error('戻す控えが見つかりません');
+    const nowIso = ctx.now();
+
+    const restored = clone(item);
+    META_KEYS.forEach(k => delete restored[k]);
+    if (entries.some(e => e.id === restored.id)) restored.id = ctx.uuid();
+    restored.updatedAt = nowIso;
+
+    const keep = clone(orig);
+    const drop = new Set([...(item.addedRowIds || []), item.noteRowId].filter(Boolean));
+    keep.history = (keep.history || []).filter(h => !drop.has(h.id));
+    for (const f of item.filled || []) {
+      if (String(keep[f] || '').trim() === String(item[f] || '').trim()) keep[f] = '';
+    }
+    keep.mergedFrom = (keep.mergedFrom || []).filter(o => o.id !== removedId);
+    if (keep.mergedFrom.length === 0) delete keep.mergedFrom;
+    keep.updatedAt = nowIso;
+    return { keep, restored };
+  }
+
+  return { groups, merge, unmerge };
 })();

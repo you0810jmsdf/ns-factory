@@ -708,6 +708,9 @@ a.url-open-btn:hover {
 .merge-title { font-weight: 600; overflow-wrap: anywhere; }
 .merge-sub { font-size: 0.75rem; color: var(--text-muted); overflow-wrap: anywhere; }
 .merge-do-btn { align-self: flex-start; min-height: 40px; }
+.merge-done-group { margin-top: 1rem; }
+.merge-undo-row { align-items: center; justify-content: space-between; cursor: default; }
+.merge-undo-btn { flex: none; min-height: 40px; }
 
 /* ── Toast ── */
 #toast-container {

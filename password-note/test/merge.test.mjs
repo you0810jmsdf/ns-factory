@@ -12,6 +12,7 @@ const plain = v => JSON.parse(JSON.stringify(v));
 const EntryMerge = {
   groups: (...a) => plain(RawMerge.groups(...a)),
   merge: (...a) => plain(RawMerge.merge(...a)),
+  unmerge: (...a) => plain(RawMerge.unmerge(...a)),
 };
 
 // app.js の getLatestCreds と同じ（初期設定・変更・作成・更新のうち日付が最新の行）
@@ -122,4 +123,58 @@ test('すでに統合したカードへさらに統合しても過去の控え�
 test('残すカードが無い・相手が無いときは例外', () => {
   assert.throws(() => EntryMerge.merge([A, B], 'nope', ctx));
   assert.throws(() => EntryMerge.merge([A], 'a', ctx));
+});
+
+test('元に戻す: 統合で足した行・メモ行・埋めた項目が外れ、相手が別カードに戻る', () => {
+  const { merged } = EntryMerge.merge([A, B], 'a', ctx);
+  const { keep, restored } = EntryMerge.unmerge([merged], 'a', 'b', ctx);
+  assert.deepEqual(keep.history, A.history);           // 統合前のAの履歴と同じ
+  assert.equal(keep.owner, '');                        // 統合で埋めた担当は空に戻る
+  assert.equal(keep.description, '');
+  assert.equal(keep.mergedFrom, undefined);
+  assert.equal(restored.id, 'b');
+  assert.deepEqual(restored.history, B.history);       // Bの履歴は丸ごと戻る（パスワード行も）
+  assert.equal(restored.owner, '父');
+  assert.equal(restored.mergedAt, undefined);          // 控えの印は残らない
+  assert.equal(restored.addedRowIds, undefined);
+  assert.equal(restored.updatedAt, ctx.now());
+});
+
+test('元に戻す: 同じ内容でまとめられた行は残すカードの元の行なので外さない', () => {
+  const { merged } = EntryMerge.merge([A, B], 'a', ctx);
+  // B の h1 は A の h1 と中身が違うので追加、A にある行は重複しない。ここでは同内容の行を持つ C を使う
+  const C2 = { id: 'c2', title: 'A2', history: [row('q', '2026-01-01', 'initial', 'me@example.test', 'PW-SAME')] };
+  const m2 = EntryMerge.merge([A, C2], 'a', ctx).merged;
+  const { keep, restored } = EntryMerge.unmerge([m2], 'a', 'c2', ctx);
+  assert.deepEqual(keep.history, A.history);
+  assert.equal(restored.history.length, 1);
+});
+
+test('元に戻す: 3枚統合から1枚だけ戻しても、残りの控えは残る', () => {
+  const Z = { id: 'z', title: 'Z', history: [row('z1', '2026-08-01', 'initial', 'u', 'PW-SAME')] };
+  const { merged } = EntryMerge.merge([A, B, Z], 'a', ctx);
+  const { keep, restored } = EntryMerge.unmerge([merged], 'a', 'z', ctx);
+  assert.deepEqual(keep.mergedFrom.map(o => o.id), ['b']);
+  assert.equal(restored.id, 'z');
+  assert.equal(keep.history.some(h => h.id === 'z1'), false);
+  assert.equal(keep.history.some(h => h.id === 'h9'), true);   // B から足した行は残る
+});
+
+test('元に戻す: 同じIDのカードが既にあれば新しいIDで戻す', () => {
+  const { merged } = EntryMerge.merge([A, B], 'a', ctx);
+  const { restored } = EntryMerge.unmerge([merged, { id: 'b', title: 'new b', history: [] }], 'a', 'b', ctx);
+  assert.notEqual(restored.id, 'b');
+});
+
+test('元に戻す: 行IDの控えが無い古い統合でも履歴は捨てずにカードだけ戻す', () => {
+  const { merged } = EntryMerge.merge([A, B], 'a', ctx);
+  merged.mergedFrom.forEach(o => { delete o.addedRowIds; delete o.noteRowId; delete o.filled; });
+  const { keep, restored } = EntryMerge.unmerge([merged], 'a', 'b', ctx);
+  assert.equal(keep.history.length, merged.history.length);
+  assert.equal(restored.id, 'b');
+});
+
+test('元に戻す: 控えが無ければ例外', () => {
+  assert.throws(() => EntryMerge.unmerge([A], 'a', 'b', ctx));
+  assert.throws(() => EntryMerge.unmerge([A], 'nope', 'b', ctx));
 });

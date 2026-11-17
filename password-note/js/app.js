@@ -945,11 +945,9 @@ function defaultMergeKeepIndex(group) {
 function renderMergeModal() {
   mergeGroupsCache = EntryMerge.groups(vault.entries, getLatestCreds);
   const list = document.getElementById('merge-list');
-  if (mergeGroupsCache.length === 0) {
-    list.innerHTML = '<div class="empty-state">最新のパスワードが同じカードはありません。</div>';
-    return;
-  }
-  list.innerHTML = mergeGroupsCache.map((group, gi) => {
+  const groupsHtml = mergeGroupsCache.length === 0
+    ? '<div class="empty-state">最新のパスワードが同じカードはありません。</div>'
+    : mergeGroupsCache.map((group, gi) => {
     const keepIdx = defaultMergeKeepIndex(group);
     const rows = group.map((e, i) => {
       const c = getLatestCreds(e);
@@ -969,6 +967,62 @@ function renderMergeModal() {
       <button type="button" class="btn-primary merge-do-btn" onclick="mergeGroup(${gi})">この${group.length}枚を1枚に統合</button>
     </div>`;
   }).join('');
+  list.innerHTML = groupsHtml + renderMergedSection();
+}
+
+// 統合済みのカード（mergedFrom を持つカード）と、1枚ずつ「元に戻す」ボタン。パスワードは出さない
+function renderMergedSection() {
+  const items = [];
+  vault.entries.forEach(e => (e.mergedFrom || []).forEach(o => items.push({ keep: e, o })));
+  if (items.length === 0) return '';
+  const rows = items.map(({ keep, o }) => `
+    <div class="merge-row merge-undo-row">
+      <span class="merge-info">
+        <span class="merge-title">「${escHtml(o.title)}」 → 「${escHtml(keep.title)}」に統合済み</span>
+        <span class="merge-sub">統合した日: ${escHtml(fmtDate(o.mergedAt))} ／ 元の履歴 ${(o.history || []).length}行</span>
+      </span>
+      <button type="button" class="btn-cancel merge-undo-btn" onclick="unmergeEntry('${escHtml(keep.id)}','${escHtml(o.id)}')">元に戻す</button>
+    </div>`).join('');
+  return `
+    <div class="merge-group merge-done-group">
+      <div class="merge-group-head">統合済みのカード ― 「元に戻す」で、統合前のカードを別のカードに戻します</div>
+      ${rows}
+    </div>`;
+}
+
+async function unmergeEntry(keepId, removedId) {
+  if (typeof Sync !== 'undefined' && Sync.guardEdit()) return;
+  const keep = vault.entries.find(e => e.id === keepId);
+  const item = keep && (keep.mergedFrom || []).find(o => o.id === removedId);
+  if (!item) {
+    toast('戻す控えが見つかりません。一覧を更新しました', 'error');
+    renderMergeModal();
+    return;
+  }
+  const exact = Array.isArray(item.addedRowIds);
+  const ok = confirm([
+    `「${item.title}」を、統合前のカードとして元に戻します。`,
+    '',
+    `・「${keep.title}」から、統合で足した履歴とメモ行を外します` + (exact ? '（統合後に手で直した行も、足した行なら一緒に外れます）' : '（古い統合のため、履歴は外さずそのまま残します）'),
+    '・戻す前の状態は「自動復元」に残ります',
+    '',
+    '続けますか？'
+  ].join('\n'));
+  if (!ok) return;
+  try {
+    const before = await DB.get('vault');
+    if (before) await DB.pushSnapshot(before);
+    const { keep: newKeep, restored } = EntryMerge.unmerge(vault.entries, keepId, removedId, { now, uuid });
+    if (vault.deleted) delete vault.deleted[restored.id];   // 統合のときに立てた削除の印を外す（外さないと同期で消される）
+    vault.entries = vault.entries.map(e => (e.id === newKeep.id ? newKeep : e)).concat(restored);
+    await saveVaultLocal();
+    renderList();
+    renderMergeModal();
+    toast(`「${restored.title}」を元に戻しました`, 'success');
+    if (GistManager.isConfigured()) syncToGist();
+  } catch (e) {
+    toast('元に戻せませんでした: ' + e.message, 'error');
+  }
 }
 
 async function mergeGroup(gi) {
