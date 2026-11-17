@@ -1,7 +1,7 @@
 // 金具の寸法を事業主がブラウザで直して保存する（この PC だけ・公開データは CSV 経由）。純粋関数。画面は app.js。
 // 保存の形：{ v: 1, specs: { [id]: { parent?, names?, plate?, refill?: { wMm, hMm }, rings?: { options: [...] }, rivets? } }, aliases?: { [消えた製品の id]: 残した製品の id } }
 //   既にある規格・製品の id なら上書き、無い id は「新しい製品」（parent の写しから始める）。
-import { ringSizeOf, binderBase } from './hardware.js';
+import { ringSizeOf, binderBase, leverArcDrop } from './hardware.js';
 import { cleanShopUrl } from './buy.js';
 
 export const BINDER_EDITS_KEY = 'leather-cad.binderEdits';
@@ -112,7 +112,10 @@ export function editFromForm(form) {
   if (form.mountKind === 'slidelock' || form.mountKind === 'rivet') out.mountKind = form.mountKind;   /* 取り付け方：無ければ触らない。slidelock のときは、呼ぶ側が rivets を空で渡す */
   if (form.maker !== undefined) { const mk = String(form.maker?.name ?? '').trim().slice(0, 60), md = String(form.maker?.model ?? '').trim().slice(0, 60); out.maker = { name: mk || null, model: md || null }; }   /* 製造会社・型番：form.maker が無ければ触らない。空欄は「なし」 */
   if (form.lever !== undefined) {   /* レバー：form.lever が無ければ触らない・全部空欄ならレバーなし（null）・長さと高さが正の数なら両端に付ける（lengthMm 空欄＝台座の幅・角R 空欄＝0） */
-    const lv = form.lever || {}, w = num(lv.widthMm), l = num(lv.lengthMm), h = num(lv.heightMm), ro = num(lv.cornerOuterRMm), ri = num(lv.cornerInnerRMm);
+    const lv = form.lever || {}, w = num(lv.widthMm), h = num(lv.heightMm), ro = num(lv.cornerOuterRMm), ri = num(lv.cornerInnerRMm);
+    let l = num(lv.lengthMm);
+    /* 外側R・内側R が長さの途中で交わるとき、横幅は「交点の高さで測った実際の幅」。入れ直した値（lengthIsNominal）は、丸みを引く前の幅として受け取り、実際の幅（入れた幅 − 2×交点の落ち）に書き換えて残す（事業主 2026-11-17「そのときの正確な幅を諸元の数値として上書き」）。空欄は台座の幅。 */
+    if (lv.lengthIsNominal) { const dr = leverArcDrop(w, ro ?? 0, ri ?? 0), nominal = l ?? num(form.plate?.widthMm); if (dr && nominal > 0) l = Math.round((nominal - 2 * dr.t) * 100) / 100; }
     if (w == null && l == null && h == null && ro == null && ri == null) out.lever = null;
     else {
       if (!pos(w) || !pos(h) || (l != null && !pos(l)) || (ro != null && !(fin(ro) && ro >= 0)) || (ri != null && !(fin(ri) && ri >= 0))) throw new Error('lever');

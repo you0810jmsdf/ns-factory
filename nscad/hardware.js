@@ -38,10 +38,30 @@ const cornerArc = (kx, ky, dxs, dys, R, reverse) => {
   const pts = []; for (let k = 0; k <= 6; k++) { const a = a1 + da * k / 6; pts.push({ x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }); } return reverse ? pts.reverse() : pts;
 };
 /** 開閉機構の四角い部品（レバー）の平面の輪郭。外側（中心から遠い側＝dir の向き）の角は rOut・内側（本体側）の角は rIn で丸める（事業主の実測図 2026-10-13）。丸めが無ければ今までどおりの四角（点の並びも同じ）。 */
+/** レバーの外側の丸み（rOut）と内側の丸み（rIn）が、長さ w（台座の長さ方向）の途中で交わるときの交点（事業主 2026-11-17「R が大きく、幅より内側で交差する場合は、交差点より外側をトリムし、そのまま描画してほしい」）。
+ *  交わるのは rOut + rIn が w より大きいとき。2つの丸みは同じ高さにそろうので、交点は、幅によらず「上の辺から t だけ下」・「近い端から u」の位置に決まる。
+ *  戻り値 { u, t }。交わらない（または丸みが長さの外にはみ出す）ときは null。 */
+export function leverArcDrop(w, rOut, rIn) {
+  if (!(rOut > 0 && rIn > 0 && w > 0) || rOut + rIn <= w + 1e-9) return null;
+  const ox = w - rOut, oy = -rOut, ix = rIn, iy = -rIn, dx = ix - ox, dy = iy - oy, d = Math.hypot(dx, dy);
+  if (!(d > 1e-9) || d > rOut + rIn || d < Math.abs(rOut - rIn)) return null;
+  const a = (rOut * rOut - rIn * rIn + d * d) / (2 * d), h2 = rOut * rOut - a * a; if (h2 < 0) return null;
+  const h = Math.sqrt(h2), mx = ox + a * dx / d, my = oy + a * dy / d, p1 = { u: mx - h * dy / d, y: my + h * dx / d }, p2 = { u: mx + h * dy / d, y: my - h * dx / d }, p = p1.y >= p2.y ? p1 : p2, e = 1e-9;
+  if (!(p.u > e && p.u < w - e && p.y <= e && p.y >= -Math.min(rOut, rIn) - e && p.u >= ox - e && p.u <= ix + e)) return null;
+  return { u: p.u, t: -p.y };
+}
+/** 丸みが交わるレバーの、入れた幅 l（交点の高さで測った実際の幅）から、丸みを作るときの幅（上の辺の位置）を求める。 */
+export const leverOutlineWidth = (l, w, rOut, rIn) => { const x = leverArcDrop(w, rOut, rIn); return x ? l + 2 * x.t : l; };
 function partPolygon(b, dir, rOut, rIn) {
   if (!(rOut > 0) && !(rIn > 0)) return [{ x: b.minX, y: b.minY }, { x: b.maxX, y: b.minY }, { x: b.maxX, y: b.maxY }, { x: b.minX, y: b.maxY }];
   const far = dir > 0 ? b.maxX : b.minX, near = dir > 0 ? b.minX : b.maxX;
-  return [...cornerArc(far, b.maxY, -dir, -1, rOut, true), ...cornerArc(near, b.maxY, dir, -1, rIn, false), ...cornerArc(near, b.minY, dir, 1, rIn, true), ...cornerArc(far, b.minY, -dir, 1, rOut, false)];
+  const A = cornerArc(far, b.maxY, -dir, -1, rOut, true), B = cornerArc(near, b.maxY, dir, -1, rIn, false), C = cornerArc(near, b.minY, dir, 1, rIn, true), D = cornerArc(far, b.minY, -dir, 1, rOut, false);
+  const x = leverArcDrop(b.maxX - b.minX, rOut, rIn);
+  if (x) {   /* 2つの丸みが交わる：交点より外（はみ出して交差する分）は描かず、交点でつなぐ */
+    const cy = (b.minY + b.maxY) / 2, v = (b.maxY - b.minY) / 2 - x.t, px = near + dir * x.u, off = p => dir * (p.x - near);
+    return [...A.filter(p => off(p) > x.u + 1e-9), { x: px, y: cy + v }, ...B.filter(p => off(p) < x.u - 1e-9), ...C.filter(p => off(p) < x.u - 1e-9), { x: px, y: cy - v }, ...D.filter(p => off(p) > x.u + 1e-9)];
+  }
+  return [...A, ...B, ...C, ...D];
 }
 /** 金具の色（金属）。革色・革の質感とは別の一覧（事業主指示 2026-10-13：ゴールド・シルバー・ピンクゴールド・ブラックゴールドの4色）。light・dark は、見本の金属らしい光沢の明るい側・暗い側。名前は i18n の metal.<id>。 */
 export const METAL_COLORS = [
@@ -356,7 +376,7 @@ export function binderMechParts(spec) {
   for (const q of spec?.mechanism?.parts || []) {
     const x = num(q.xMm), y = num(q.yMm), h = num(q.heightMm), d = num(q.diameterMm), w = num(q.widthMm), l = num(q.lengthMm), kind = q.kind === 'button' ? 'button' : 'lever';
     if (!(Number.isFinite(x) && Number.isFinite(y) && h > 0)) continue;
-    if (d > 0) out.push({ kind, shape: 'circle', x, y, w: d, l: d, h, r: d / 2 }); else if (w > 0 && l > 0) { const rOut = num(q.cornerOuterRMm) > 0 ? num(q.cornerOuterRMm) : 0, rIn = num(q.cornerInnerRMm) > 0 ? num(q.cornerInnerRMm) : 0; out.push({ kind, shape: 'rect', x, y, w, l, h, ...(rOut || rIn ? { rOut, rIn, dir: x < 0 ? -1 : 1 } : {}) }); }
+    if (d > 0) out.push({ kind, shape: 'circle', x, y, w: d, l: d, h, r: d / 2 }); else if (w > 0 && l > 0) { const rOut = num(q.cornerOuterRMm) > 0 ? num(q.cornerOuterRMm) : 0, rIn = num(q.cornerInnerRMm) > 0 ? num(q.cornerInnerRMm) : 0; const lOutline = leverOutlineWidth(l, w, rOut, rIn); out.push({ kind, shape: 'rect', x, y, w, l, h, ...(rOut || rIn ? { rOut, rIn, dir: x < 0 ? -1 : 1 } : {}), ...(lOutline !== l ? { lOutline } : {}) }); }   /* 丸みが交わるレバー：l は交点の高さで測った実際の幅。lOutline は、丸みを作るときの幅（上の辺の位置） */
   }
   return out;
 }
@@ -373,7 +393,7 @@ export function binderViews(spec, ringD = null) {
   const box = (minX, maxX, minY, maxY) => ({ minX, maxX, minY, maxY }), mech = binderMechParts(spec), part = (p, b) => ({ kind: p.kind, shape: p.shape, ...(p.r ? { r: p.r } : {}), ...(p.rOut || p.rIn ? { rOut: p.rOut, rIn: p.rIn, dir: p.dir } : {}), box: b });
   return {
     L, W, T, D, I, wire, ringXs,
-    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), armsOver: base.trimRingArms === 'yes', rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2))), partOutlines: mech.map(p => p.shape === 'rect' ? partPolygon(box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2), p.dir, p.rOut, p.rIn) : null) },
+    plan: { plate: box(-L / 2, L / 2, -W / 2, W / 2), armsOver: base.trimRingArms === 'yes', rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -D / 2, D / 2)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, p.y - p.l / 2, p.y + p.l / 2))), partOutlines: mech.map(p => p.shape === 'rect' ? partPolygon(box(p.x - p.w / 2, p.x + p.w / 2, p.y - (p.lOutline ?? p.l) / 2, p.y + (p.lOutline ?? p.l) / 2), p.dir, p.rOut, p.rIn) : null) },
     front: { plate: box(-L / 2, L / 2, 0, T), rings: ringXs.map(hx => box(hx - wire / 2, hx + wire / 2, -(D - embed), 0)), parts: mech.map(p => part(p, box(p.x - p.w / 2, p.x + p.w / 2, -p.h, 0))) },
     side: { plate: box(-W / 2, W / 2, 0, T), ring: { cx: 0, cy: -D / 2 + embed, rOuter: D / 2, rInner: I / 2 }, ...(spec.base ? { section: binderSection(base) } : {}), parts: mech.map(p => part(p, box(p.y - p.l / 2, p.y + p.l / 2, -p.h, 0))) },
   };
