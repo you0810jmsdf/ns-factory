@@ -82,6 +82,28 @@ export function matchRoutes(routeA, routeB, pitch, opts = {}) {
   return { holesA, holesB, pairs: holesA.map((_, i) => ({ a: i, b: i })), segments, warn: segments.some(s => s.warn) };
 }
 
+/** 経路 route（resolvePath 済み）の、弧長 s0 から s1 までの区間だけを取り出した、同じ形の経路を返す（駒合わせの区間指定・事業主 2026-11-18「区間指定に進んで」）。
+ *  s0 が s1 より後ろの開いた経路は、s0 から s1 へ向かう向き（逆向き）の経路にする（クリックした順が、打つ向き）。閉じた経路は、s0 から s1 へ、経路の向きに進む（一周をまたいでもよい）。
+ *  区切り（角・直線↔曲線の継ぎ目）は、元の経路の位置で区間の中に残し、直線は直線のまま（駒合わせの区間ごとの合わせが効く）。
+ *  戻り値 { route（区間の経路）, lo, hi（元の経路での範囲・閉じていれば hi が全長を超えてもよい）, reversed, mapS（区間の弧長 → 元の経路の弧長） }。短すぎれば null。 */
+export function sliceRouteSpan(route, s0, s1, step = 0.2) {
+  const len = arcLength(route); if (!(len > DEPS)) return null;
+  const closed = !!route.closed; let lo, hi, reversed = false;
+  if (closed) { lo = ((s0 % len) + len) % len; hi = ((s1 % len) + len) % len; if (hi <= lo + DEPS) hi += len; }
+  else { lo = Math.max(0, Math.min(len, s0)); hi = Math.max(0, Math.min(len, s1)); if (lo > hi) { [lo, hi] = [hi, lo]; reversed = true; } }
+  if (hi - lo < 1e-3) return null;
+  const at = s => pointAtLength(route, closed ? ((s % len) + len) % len : s);
+  const cuts = routeBreaks(route).flatMap(c => closed ? [c, c + len] : [c]).filter(c => c > lo + DEPS && c < hi - DEPS).sort((x, y) => x - y), bounds = [lo, ...cuts, hi], items = [];
+  const chordDist = (a, c, q) => { const dx = c.x - a.x, dy = c.y - a.y, l = Math.hypot(dx, dy); return l < 1e-12 ? distance(a, q) : Math.abs((q.x - a.x) * dy - (q.y - a.y) * dx) / l; };
+  for (let i = 0; i + 1 < bounds.length; i++) {
+    const a = bounds[i], c = bounds[i + 1], n = Math.max(1, Math.ceil((c - a) / step)), pts = Array.from({ length: n + 1 }, (_, k) => { const p = at(a + (c - a) * k / n); return { x: p.x, y: p.y }; });
+    const straight = pts.every(q => chordDist(pts[0], pts.at(-1), q) < 1e-6);
+    items.push({ shape: straight ? { type: 'line', x1: pts[0].x, y1: pts[0].y, x2: pts.at(-1).x, y2: pts.at(-1).y } : { type: 'polyline', points: pts, closed: false }, reversed: false });
+  }
+  const out = reversed ? items.reverse().map(it => it.shape.type === 'line' ? { shape: { type: 'line', x1: it.shape.x2, y1: it.shape.y2, x2: it.shape.x1, y2: it.shape.y1 }, reversed: false } : { shape: { type: 'polyline', points: [...it.shape.points].reverse(), closed: false }, reversed: false }) : items;
+  return { route: { items: out, reversed: false, closed: false }, lo, hi, reversed, mapS: u => (reversed ? hi - u : lo + u) };
+}
+
 /* ── 駒合わせ（曲面）：輪郭に沿った写し ─────────────────────────────────────────────
  *  円柱の上面（曲線の輪郭）と側面の帯のように、帯はピッチどおり等間隔でよいが、上面の穴は帯の各穴を輪郭に沿って内側の縫い線へ写す必要がある
  *  （直線部は同じ間隔・曲線部は内側の分だけ狭くなる。円は角度で対応）。長さの割合で均すと、直線と曲線が混じる形で合わない（事業主 2026-10-28）。

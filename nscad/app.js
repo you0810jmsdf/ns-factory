@@ -114,7 +114,7 @@ import { newRid, feedbackContext, sendFeedback } from './feedback.js';
 import { AUTOSAVE_KEY, packAutosave, unpackAutosave, rotateAutosaveGenerations, genKeys } from './autosave.js';
 import { createTabLock, TAB_LOCK_KEY } from './tablock.js';
 import { expandToGroups, groupShapes, ungroupShapes, nextGroupId, groupIdOf, expandToGroupsWithHoles, groupHoles, ungroupHoles } from './grouping.js';
-import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, mapHoleDistances, outlineMap, withSeam, projectToPolygon, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark, cushionShapes } from './design.js';
+import { randomCutLines, seamStitchPlan, adjacentPieces, assignColors, splitOutlineByLines, numberPieces, digitStrokes, foldAllowance, stackOffset, matchRoutes, sliceRouteSpan, mapHoleDistances, outlineMap, withSeam, projectToPolygon, insetDistance, routeBreaks, optimizePatchHoles, suggestPatchSize, extendAcrossFold, regionAt, closedRegions, outerRegions, outlineOf, shapesOnRings, dropCovered, insidePolygon, diamondGridFill, rimLine, rimHolePositions, rimHolePositionsByRuns, loopSampler, patchInsetStitch, seamHoleOffsets, shiftHolesClear, ringCounterpart, PATCH_EDGE_MIN_MM, offsetSpan, offsetSpanResult, classifyJunctions, bendInnerSign, detourPath, foldSectionSpec, foldStackPlan, foldRingCheck, foldPathVMax, foldSectionSvg, foldCircleMarks, foldEndLabels, foldDesignPlan, foldUnfoldPlan, foldBendPitch, foldHoleSpacing, foldHoleMarks, findGaps, closeGaps, foldCutLine, foldCutPick, foldPanelBox, foldPlyLengths, foldBendRadii, foldBendWarp, foldBaselines, foldSectionPath, pointOnFoldPath, foldDimensions, foldSectionDims, foldHandles, projectOnFoldPath, foldSectionShapes, foldSectionMark, cushionShapes } from './design.js';
 import { t, setLang } from './i18n.js';
 import { isShortcut, isUndo, isRedo, isCopy, isDelete, isSelectAll, arrowNudge, TOOL_KEYS, ACTION_KEYS, TOGGLE_KEYS, FIXED_KEYS, keyTarget, shortcutLines } from './shortcuts.js';
 import { HELP_JA } from './help/ja.js';
@@ -918,7 +918,7 @@ function rangeStitchClick(w, flip = false) {
     }
     countStage = { list: near }; stitchTab = 0; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
   }
-  countStage = null; stitchPreview = null; stitchTab = 0; stitchRouteChoices = { n: 1, i: 0 };
+  countStage = null; stitchPreview = null; stitchTab = 0; stitchRouteChoices = { n: 1, i: 0 }; updateRouteChip();
   const res = stitchPlansForPair(pair, kind, n, tool, flip); if (res.error) { $('hint').textContent = res.error; return; }
   const { plans } = res, last = plans.at(-1).info, { leftover } = last, anchoredHole = last.anchoredHole && !res.wrap /* 始まりをまたぐときの2区間目は、ピッチを続けるための数え方で、既存の穴への吸着ではない */, nPts = plans.reduce((sum, p) => sum + p.info.points.length, 0), span = plans.reduce((sum, p) => sum + p.info.hi - p.info.lo, 0), pitch = res.pitch ?? last.pitch;
   commit(() => { selected = new Set(plans.flatMap(p => p.apply())); });
@@ -987,9 +987,15 @@ function syncStitchPreview(w, flip) {
     const hit = doc.shapes.filter(s => editable(s) && stitchable(s)).reverse().find(s => distTo(s, w) <= 8 / scale);
     if (hit) { const rk = [hit.id, ver, $('chain').checked].join('|'); if (rk !== stitchRouteKey) { stitchRouteKey = rk; stitchRouteCache = routeForHit(hit)?.saved.shapeIds ?? null; } ids = stitchRouteCache; }
   }
-  stitchRouteIds = ids ? [...ids] : null;
+  stitchRouteIds = ids ? [...ids] : null; updateRouteChip();
 }
-function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; stitchRouteChoices = { n: 1, i: 0 }; }
+/** 打てる経路が複数あるとき、図面の上に「いま◯番目」の札と、切り替えのボタンを出す（事業主 2026-11-18「Tab を押す機能は見やすい位置にガイダンスお願いします」：画面下の案内だけでは気づかれず、反対の経路に打てなかった） */
+function updateRouteChip() {
+  const box = $('routeChip'); if (!box) return; const on = mode === 'stitch' && !!countStage && stitchRouteChoices.n > 1; box.hidden = !on;
+  if (on) $('routeChipText').textContent = t('routeChipText', { n: stitchRouteChoices.n, i: stitchRouteChoices.i + 1 });
+}
+function switchStitchRoute(flip = false) { if (!(mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW)) return; stitchTab++; syncStitchPreview(stitchLastW, flip); draw(); }
+function clearStitchPreview() { stitchPreview = null; stitchRouteIds = null; stitchPreviewKey = ''; stitchRouteChoices = { n: 1, i: 0 }; updateRouteChip(); }
 /** 縫い目を見る（ステッチシミュレーション・事業主 2026-10-27「菱目をつかったステッチシミュレーション（色も含める）機能をつけたい」）：菱目と菱目のあいだに、糸の縫い目を描く。
  *  糸の色は、経路ごとの「糸の色」（決めていなければ、既定の糸色）。色の表示を切ると、既定の糸色になる。太さは「表示」メニューの欄（mm）。表示だけで、保存・書き出し・印刷には入らない。 */
 const STITCH_THICK_KEY = 'leather-cad.stitchThick', STITCH_THICK_ROUND_KEY = 'leather-cad.stitchThickRound', STITCH_DEFAULT_HEX = '#efe6d2';
@@ -3447,14 +3453,56 @@ function placeHoles(saved, route, points, tool, depth = null) {   /* depth 'half
 }
 let komaSeam = null, komaSeamPicking = false, komaSeamAt = null, lastKoma = null;   /* 継ぎ目（帯の始点）の指定：{ key（曲線側の縫い線の図形 id）, s（その縫い線の上の弧長）, x, y }／指定中か／画面の印／直前の曲面の駒合わせ（作り直し用）*/
 function komaClick(p) {
+  if (stage?.kind === 'komaRng' && komaRangeOn() && !komaChecking && !komaSeamPicking) { komaRangeClick(p); return; }   /* 区間指定の途中：始点・終点・相手の線のクリック */
   /* 押した所にいちばん近い線（目印に付いた短い点線・穴の線は除く）。以前は最後に描いた線を先に取ったので、近くの目印の点線などに取られることがあった（事業主 2026-11-13 の目印の不具合と同じ取り違え） */
   const hit = doc.shapes.filter(s => editable(s) && stitchable(s) && !s.markOf && !s.holeLink).map(s => ({ s, d: distTo(s, p) })).filter(x => x.d <= 7 / scale).sort((x, y) => x.d - y.d)[0]?.s; if (!hit) return;
   if (komaChecking) { komaCheckClick(hit); return; }
   const state = routeForHit(hit); if (!state?.route) return;
   if (komaSeamPicking) { komaSeamPickAt(state, p); return; }
+  if (stage?.kind !== 'koma' && komaRangeOn()) { stage = { kind: 'komaRng', phase: 'a0', a: state }; selected = new Set([hit.id]); $('hint').textContent = t('komaRangeStart', { side: 'A' }); draw(); return; }
   if (stage?.kind !== 'koma') { const n = doc.holes.filter(h => h.pathId === state.saved.id).length; stage = { kind: 'koma', a: state }; selected = new Set([hit.id]); $('hint').textContent = n ? t('komaSecondFrom', { n }) : t('komaSecond'); draw(); return; }
   if (state.saved.shapeIds.join() === stage.a.saved.shapeIds.join()) return;
   komaFinish(stage.a, state, hit);
+}
+/** 駒合わせの区間指定（事業主 2026-11-18「駒合わせの区間指定に進んで」）：「区間を指定」をオンにすると、A の線 → 始点 → 終点 → B の線 → 始点 → 終点の順にクリックして、その区間だけを駒合わせする。 */
+const komaRangeOn = () => !!$('komaRange')?.checked;
+function komaRangeClick(p) {
+  const st = stage, side = st.phase[0] === 'a' ? 'A' : 'B';
+  if (st.phase === 'bLine') {
+    const hit = doc.shapes.filter(s => editable(s) && stitchable(s) && !s.markOf && !s.holeLink).map(s => ({ s, d: distTo(s, p) })).filter(x => x.d <= 7 / scale).sort((x, y) => x.d - y.d)[0]?.s; if (!hit) { $('hint').textContent = t('komaRangeSecond'); return; }
+    const state = routeForHit(hit); if (!state?.route) return;
+    if (state.saved.shapeIds.join() === st.a.saved.shapeIds.join()) { $('hint').textContent = t('komaRangeSame'); return; }
+    st.b = state; st.phase = 'b0'; selected = new Set([...selected, hit.id]); $('hint').textContent = t('komaRangeStart', { side: 'B' }); draw(); return;
+  }
+  const state = side === 'A' ? st.a : st.b, s = projectOnPath(state.route, p).s, k = st.phase[0];
+  if (st.phase.endsWith('0')) { st[k + '0'] = s; st.phase = k + '1'; $('hint').textContent = t('komaRangeEnd', { side }); draw(); return; }
+  if (Math.abs(s - st[k + '0']) < 0.5) { $('hint').textContent = t('komaRangeShort'); return; }
+  st[k + '1'] = s;
+  if (side === 'A') { st.phase = 'bLine'; $('hint').textContent = t('komaRangeSecond'); draw(); return; }
+  komaRangeFinish(st);
+}
+function komaRangeFinish(st) {
+  const tool = stitchToolCurrent(); if (!tool) return;
+  const a = st.a, b = st.b, sa = sliceRouteSpan(a.route, st.a0, st.a1), sb = sliceRouteSpan(b.route, st.b0, st.b1);
+  if (!sa || !sb) { $('hint').textContent = t('komaRangeShort'); return; }
+  const opts = { prefer: $('komaPrefer').value, marginStart: Number($('offsetStart').value) || 0, marginEnd: Number($('offsetEnd').value) || 0, tolerancePct: Number($('patchTol').value) || 15 };
+  const result = matchRoutes(sa.route, sb.route, tool.pitch, opts); stage = null;
+  if (!result.holesA.length) { $('hint').textContent = t('impossible'); draw(); return; }
+  const place = (side, sl, pts) => pts.map(q => { const lenF = arcLength(side.route), s = side.route.closed ? (((sl.mapS(q.s)) % lenF) + lenF) % lenF : Math.max(0, Math.min(lenF, sl.mapS(q.s))); return pointAtLength(side.route, s); });
+  const pa = place(a, sa, result.holesA), pb = place(b, sb, result.holesB);
+  commit(() => {
+    for (const [side, sl, pts, depth] of [[a, sa, pa, null], [b, sb, pb, 'half']]) {
+      if (side.fresh) { side.saved.id = freshId(doc.paths, 'p'); doc.paths.push(side.saved); side.fresh = false; }
+      const lenF = arcLength(side.route), inRange = s => (s >= sl.lo - 1e-6 && s <= sl.hi + 1e-6) || (side.route.closed && s + lenF >= sl.lo - 1e-6 && s + lenF <= sl.hi + 1e-6), prev = side.saved.segments || [];
+      doc.holes = doc.holes.filter(h => h.pathId !== side.saved.id || !inRange(h.s));   /* 区間の中の穴だけ入れ替える（外はそのまま） */
+      placeHoles(side.saved, side.route, pts, tool, depth);
+      side.saved.segments = [...prev.filter(sg => sg.to < sl.lo - 1e-6 || sg.from > Math.min(sl.hi, lenF) + 1e-6), { from: sl.lo, to: Math.min(sl.hi, lenF), toolId: tool.id, pitch: tool.pitch, mode: 'variable' }].sort((x, y) => x.from - y.from);
+    }
+    selected = new Set([...a.saved.shapeIds, ...b.saved.shapeIds]);
+  });
+  pairLines = result.pairs.map(pr => [pa[pr.a], pb[pr.b]]); komaRowsSrc = null;
+  $('hint').textContent = t('komaRangeDone', { n: pa.length, pa: result.segments[0].pitchA.toFixed(2), pb: result.segments[0].pitchB.toFixed(2) }) + ' ' + t('komaHalfNote');
+  komaCountNote(); draw();
 }
 /** 対になっているかの点検（事業主 2026-11-13「基準となる線上の菱目をもう一つの線上に投影して、数が合っている（対となっている）ことを確認したい」→ 穴を動かさない点検）：
  *  小窓の「対になっているか点検」→ 基準の線 → 相手の線の順にクリック。基準の線の穴を1つずつ相手の線へ写し（投影）、写した所の近く（相手の穴の間隔の 45%・0.5〜3mm）に相手の穴があるかを調べる。図面は変えない。
@@ -4299,7 +4347,7 @@ function initInfo() {
   $('vmAdd').onclick = () => { const s = vertexMenuShape(), i = vertexMenuAt?.index; hideVertexMenu(); if (s) vertexAddAfter(s, i); };
   $('vmShapeMenu').onclick = () => { const at = vertexMenuAt, s = vertexMenuShape(); hideVertexMenu(); if (!s) return; selected = new Set([s.id]); nodeSel = null; showCtxMenu({ clientX: at.clientX, clientY: at.clientY }); };   /* 図形のメニュー（線種など）を同じ場所に */
   $('removeNode').onclick = () => { const s = infoShape(); if (!s || s.type !== 'path' || !nodeSel || nodeSel.id !== s.id || !editable(s)) return; const next = pathRemoveNode(s, nodeSel.index); if (!next) { $('hint').textContent = t('impossible'); return; } nodeSel = null; transformSelectedTo(next); };
-  $('unroll').onclick = unrollSelection;
+  $('unroll').onclick = unrollSelection; $('komaRange').onchange = () => { if (stage?.kind === 'komaRng' || stage?.kind === 'koma') stage = null; $('hint').textContent = t(komaRangeOn() ? 'komaRangeTip' : 'hint.koma'); draw(); }; $('routeChipBtn').onclick = () => switchStitchRoute(false);
   $('closeGaps').onclick = closeSelectedGaps; $('mergeLines').onclick = mergeSelectedAny; $('splitLines').onclick = splitSelectedAtIntersections; $('smoothJoints').onclick = () => smoothSelectedJoints(false); $('smoothJointsEven').onclick = () => smoothSelectedJoints(true); $('smoothPoly').onclick = smoothSelectedPolylines; $('offsetSel').onclick = offsetSelectedShapes;
   $('toPath').onclick = () => { const ids = selectedShapeIds(); cancel(); commit(() => { doc.shapes = doc.shapes.map(s => ids.has(s.id) && ['line','bezier','polyline'].includes(s.type) ? toPath(s) : s); }); };
 }
@@ -9573,7 +9621,7 @@ function commit(fn) {
   scheduleAutosave();
   draw();
 }
-function cancel() { stretchArmed = false; if (zipperPicking) setZipperPicking(false); if (zipperRefPicking) setZipperRefPicking(null); komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
+function cancel() { stretchArmed = false; if (zipperPicking) setZipperPicking(false); if (zipperRefPicking) setZipperRefPicking(null); komaSeamPicking = false; pasteGhost = null; stitchTab = 0; hideRoundHoleBar(); snapAlign = null; countStage = null; updateRouteChip(); attachState = null; clearStitchPreview(); closeRotateBar(); closeOffsetSelBar(); ruler = null; gesture = null; stage = null; snap = null; offsetSelection = null; detourState = null; gridPreview = null; $('offsetFloat').hidden = true; }
 /** 柄（パッチワーク）のカードを「窓」にする／戻す（事業主指示 2026-10-21「パッチワークを選択したらスクリーン右メニューではなくて窓を出してほしい」・右メニュー＝右列）。DOM は動かさない（欄の ID・処理はそのまま）で、CSS（#patchCard[data-win="1"]）で画面の上に浮かせる。状態は dataset.win。窓を閉じても位置は覚えておく。 */
 function setPatchWin(on) { setCardWin('patchCard', on); }
 /** レイヤーの窓を開く（見出しをつかんで動かせる・×で閉じる）。図面は触れたまま。 */
@@ -11505,6 +11553,7 @@ function drawSheetBody(lo, hi) {
   if ($('threeView').checked) drawThreeViewGuides();
   { const seamPt = pairLines.length && komaSeamAt?.pl === pairLines ? komaSeamAt : (mode === 'koma' && komaSeam ? komaSeam : null); if (seamPt) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = ctx.fillStyle = '#4fd0ff'; ctx.lineWidth = 1.6 / scale; ctx.beginPath(); ctx.arc(seamPt.x, seamPt.y, 6 / scale, 0, Math.PI * 2); ctx.stroke(); ctx.font = `${12 / scale}px sans-serif`; ctx.fillText(t('komaSeamMark'), seamPt.x + 9 / scale, seamPt.y - 9 / scale); ctx.restore(); } }   /* 継ぎ目（帯の始点が当たる位置）の印 */
   if (pairLines.length) { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 0.6 / scale; ctx.strokeStyle = '#ff9f4388'; ctx.beginPath(); for (const [a, b] of pairLines) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); } ctx.stroke(); ctx.restore(); }
+  if (stage?.kind === 'komaRng') { ctx.save(); ctx.setLineDash([]); ctx.lineWidth = 1.5 / scale; for (const [state, s0, s1] of [[stage.a, stage.a0, stage.a1], [stage.b, stage.b0, stage.b1]]) { if (!state) continue; for (const [s, col] of [[s0, '#3fb950'], [s1, '#f85149']]) { if (s == null) continue; const q = pointAtLength(state.route, s); ctx.beginPath(); ctx.arc(q.x, q.y, 3.2 / scale, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.stroke(); } } ctx.restore(); }   /* 区間指定：始点（緑）・終点（赤） */
   if (komaCheckAt?.pl === pairLines && komaCheckAt.miss.length) { ctx.save(); ctx.setLineDash([]); ctx.strokeStyle = '#f85149'; ctx.lineWidth = 2 / scale; for (const q of komaCheckAt.miss) { ctx.beginPath(); ctx.arc(q.x, q.y, 7 / scale, 0, Math.PI * 2); ctx.stroke(); } ctx.restore(); }   /* 点検：対にならない穴に赤い丸 */
   /* 縫い合わせ（隣り合う辺の組）の橙の点線（向かい合う穴の列を結ぶ印）は描かない（事業主 2026-10-21「菱目ラインをつなぐ点線の意味がわからない。不要です」）。縫い合わせのデータ（doc.seams）は、最適化などのためにそのまま持つ */
   if (stage?.kind === 'bezier') {
@@ -12479,12 +12528,12 @@ window.addEventListener('keydown', e => {
   const input = e.target instanceof HTMLInputElement || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
   /* 目打ちで打てる経路が複数あるとき、Tab で切り替える。チェック欄・ボタンにフォーカスが残っていても効かせる（文字・数値を入れる欄の中では、ふつうの Tab のまま。事業主 2026-11-18「反対の経路に菱目を打てない」：「開始端を逆にする」のチェックを押したあと、Tab が欄の移動になって経路が切り替わらなかった） */
   const typing = ((e.target instanceof HTMLInputElement || e.target.tagName === 'INPUT') && !['checkbox', 'radio', 'button', 'submit', 'range'].includes(e.target.type)) || ['SELECT', 'TEXTAREA'].includes(e.target.tagName) || e.target.isContentEditable;
-  if (e.key === 'Tab' && !typing && !modalDialogOpen() && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }
+  if (e.key === 'Tab' && !typing && !modalDialogOpen() && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); switchStitchRoute(e.shiftKey); return; }
   if (isShortcut(e, 's') || isShortcut(e, 'o')) { e.preventDefault(); isShortcut(e, 's') ? save(e.shiftKey) : openDialog(); return; }
   if (input && e.key === 'Escape' && e.target !== $('cmd') && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable && !modalDialogOpen()) { e.target.blur?.(); canvas.focus?.(); } /* 数値欄・選択欄にフォーカスがあっても、Esc で作図を取り消せる（欄からは抜ける） */
   else if (input) return;
   if (modalDialogOpen()) return; // ダイアログ内の Esc/Space はダイアログのもの（折りの小窓は除く）
-  if (e.key === 'Tab' && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); stitchTab++; syncStitchPreview(stitchLastW, e.shiftKey); draw(); return; }   /* 目打ち：打てる経路が複数あるとき、Tab で切り替える */
+  if (e.key === 'Tab' && mode === 'stitch' && countStage && stitchRouteChoices.n > 1 && stitchLastW) { e.preventDefault(); switchStitchRoute(e.shiftKey); return; }   /* 目打ち：打てる経路が複数あるとき、Tab で切り替える */
   const kt = gesture ? null : keyTarget(e); /* 左メニューのキー（英語の頭文字・Shift つきは重なるもの）。ドラッグ中は使わない */
   if (kt) { e.preventDefault(); if (kt.tool) { countUse('tool_' + kt.tool); setMode(kt.tool); } else if (kt.toggle) { const c = $(kt.toggle); c.checked = !c.checked; c.dispatchEvent?.(new Event('change', { bubbles: true })); draw(); } else { const b = $(kt.action); if (b && !b.disabled) b.click(); } return; }
   const nudge = arrowNudge(e); if (nudge && selectedShapeIds().size) { e.preventDefault(); transformSelected(s => translate(s, nudge.dx, nudge.dy)); return; } /* 矢印キー：選んだ図形を動かす */
