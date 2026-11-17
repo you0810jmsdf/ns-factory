@@ -21,6 +21,41 @@ export function mergeLibraryItems(current, incoming) {
   for (const it of incoming) { if (idx.has(it.id)) { items[idx.get(it.id)] = it; updated++; } else { idx.set(it.id, items.length); items.push(it); added++; } }
   return { items, added, updated };
 }
+/* ───────── パッケージ（事業主 2026-11-17 決定）：ライブラリの部品を選んで束ね、1つのファイルにして配る（有料の配布は、型紙 PDF と同じカード決済で、ファイルを渡す）。
+   束ね方に決まりは無い（規格別・製造会社別などの区分は作らない）。製造会社・型番・購入先は、金具1つずつが持っているので、束ねれば一緒に入る。
+   中身：parts＝部品（ライブラリの部品そのもの）／binders＝登録したリング金具（この PC に保存した金具の中身：親の規格・名前・製造会社・寸法）。
+   金具の id は、パッケージの中だけの番号に付け直す（入れる側の PC にある別の金具と、id が重なって上書きしないように。同じパッケージを入れ直せば、同じ id に入る）。 ───────── */
+export const PACKAGE_FILE_APP = "N's CAD package";
+const PKG_ID = /^[a-zA-Z0-9_-]+$/;
+/** パッケージを作る。名前が空、または中身が1つも無ければ null。 */
+export function buildPackage({ name, desc = '', parts = [], binders = {}, id = 'pkg' + Date.now().toString(36), savedAt = new Date().toISOString() }) {
+  const nm = String(name ?? '').trim().slice(0, 60), pid = PKG_ID.test(String(id)) ? String(id) : 'pkg';
+  const ps = (parts || []).filter(it => it && typeof it === 'object' && checkLibraryItem(it).length === 0).map(it => JSON.parse(JSON.stringify(it)));
+  const bs = {}; let n = 0;
+  for (const e of Object.values(binders || {})) { if (!e || typeof e !== 'object' || typeof e.parent !== 'string' || !PKG_ID.test(e.parent) || !String(e.names?.ja ?? '').trim()) continue; n++; const c = JSON.parse(JSON.stringify(e)); delete c.pkg; bs[e.parent + '-' + pid + '-' + n] = c; }
+  if (!nm || (!ps.length && !n)) return null;
+  return { app: PACKAGE_FILE_APP, version: 1, id: pid, name: nm, desc: String(desc ?? '').trim().slice(0, 400), savedAt, parts: ps, binders: bs };
+}
+export function packageFileText(pkg) { return JSON.stringify(pkg, null, 2); }
+/** ファイルの文字列からパッケージを取り出す。読めない部品・金具は skipped に数える。形式が違えば null。 */
+export function parsePackageFile(text) {
+  let d; try { d = JSON.parse(text); } catch { return null; }
+  if (!d || d.app !== PACKAGE_FILE_APP || d.version !== 1 || !PKG_ID.test(String(d.id ?? '')) || !String(d.name ?? '').trim() || !Array.isArray(d.parts) || !d.binders || typeof d.binders !== 'object' || Array.isArray(d.binders)) return null;
+  const parts = d.parts.filter(it => it && typeof it === 'object' && checkLibraryItem(it).length === 0);
+  const ok = ([k, e]) => PKG_ID.test(k) && e && typeof e === 'object' && typeof e.parent === 'string' && PKG_ID.test(e.parent) && !!String(e.names?.ja ?? '').trim() && e.plate && typeof e.plate === 'object';
+  const all = Object.entries(d.binders), good = all.filter(ok);
+  return { id: String(d.id), name: String(d.name).trim().slice(0, 60), desc: String(d.desc ?? '').slice(0, 400), savedAt: typeof d.savedAt === 'string' ? d.savedAt : '', parts, binders: Object.fromEntries(good), skipped: (d.parts.length - parts.length) + (all.length - good.length) };
+}
+/** パッケージを入れる：部品は同じ id なら更新・無ければ追加。金具は id ごとに入れる（同じパッケージの入れ直しは上書き）。親の規格がこのアプリに無い金具（knownRoots に無い）は入れない。
+ *  入れた部品・金具には、どのパッケージから来たかの印 pkg { id, name } を付ける。元の配列・保存は変えない。
+ *  戻り値 { items, edits, parts: { added, updated }, binders: { added, updated, skipped } }。 */
+export function installPackage(pkg, currentItems, currentEdits, knownRoots = null) {
+  const mark = { id: pkg.id, name: pkg.name }, m = mergeLibraryItems(currentItems, pkg.parts.map(it => ({ ...it, pkg: mark })));
+  const edits = JSON.parse(JSON.stringify(currentEdits || { v: 1, specs: {} })); edits.specs = edits.specs || {};
+  const b = { added: 0, updated: 0, skipped: 0 };
+  for (const [k, e] of Object.entries(pkg.binders)) { if (knownRoots && !knownRoots.includes(e.parent)) { b.skipped++; continue; } if (edits.specs[k]) b.updated++; else b.added++; edits.specs[k] = { ...JSON.parse(JSON.stringify(e)), pkg: mark }; }
+  return { items: m.items, edits, parts: { added: m.added, updated: m.updated }, binders: b };
+}
 /** バックアップの一覧（新しい順）に、いまの部品の写しを足す。直前と同じ内容なら足さない。最大 max 件。 */
 export function pushLibraryBackup(backups, items, at = new Date().toISOString(), max = 10) {
   const list = Array.isArray(backups) ? backups : [], json = JSON.stringify(items);

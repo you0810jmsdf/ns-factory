@@ -17,7 +17,7 @@ import { THREE_VIEW_LAYOUT, threeViewAreaAt, THREE_VIEW_MARGIN, threeViewFitLayo
 import { SUPPORTER_T_MM, RING_WIRE_MM, METAL_COLORS, metalHex, binderRingCompare, closedBinderViews, closedBinderViewsSvg, foldRingParts, spineSim, spinePlayFromMeasured, spineSectionSvg, hardwareFootprint, placeFootprint, hwPoseOfOutline, sameShapes, binderViewShapes, binderSection, binderBase, ringSizeOf, wireOf, spineWidth, binderPlanSvg, binderSideSvg, binderFrontSvg, binderViewDrawing, binderSampleSvgs } from './hardware.js';
 import { DATA_HARDWARE } from './data/hardware.js';
 import { DATA_LIBRARY } from './data/library.js';
-import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, pushLibraryBackup, libraryBackupLabel, LIBRARY_LAYOUT_KEY, emptyLibraryLayout, normalizeLibraryLayout, arrangeLibrary, addLibraryGroup, renameLibraryGroup, deleteLibraryGroup, moveLibraryGroup, moveLibraryItem, stepLibraryItem } from './library.js';
+import { varStep, varOutOfRange, instantiateItem, extractSelection, transformPayload, encodeClipboard, decodeClipboard, mergePayload, checkLibraryItem, libraryFileText, parseLibraryFile, mergeLibraryItems, buildPackage, packageFileText, parsePackageFile, installPackage, pushLibraryBackup, libraryBackupLabel, LIBRARY_LAYOUT_KEY, emptyLibraryLayout, normalizeLibraryLayout, arrangeLibrary, addLibraryGroup, renameLibraryGroup, deleteLibraryGroup, moveLibraryGroup, moveLibraryItem, stepLibraryItem } from './library.js';
 import { docToAiJson, validateActions, estimateYen, roughTokens } from './ai_schema.js';
 import { buildDoc, check, threadEstimate, defaultRecipe } from './autodesign.js';
 import { traceImage, scaleFromTwoPoints, scaleFromDpi } from './trace.js';
@@ -5955,6 +5955,42 @@ function exportLibrary() { if (!userLibrary.length) { $('hint').textContent = t(
 async function importLibrary(file) { /* 同じ名前（id）の部品は更新、無いものは追加。読み込む前の状態もバックアップに残す */
   try { const r = parseLibraryFile(await file.text()); if (!r) throw new Error(t('libFileInvalid')); if (userLibrary.length) saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary)); const m = mergeLibraryItems(userLibrary, r.items); userLibrary = m.items; persistLibrary(); renderLibrary(); renderLibBackups(); $('hint').textContent = t('libImported', { n: r.items.length, a: m.added, u: m.updated, s: r.skipped }); }
   catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
+/* ───────── パッケージ（事業主 2026-11-17 決定）：ライブラリの部品を選んで束ね、1つのファイルにして配る。作るのは作家（事業主）だけ、利用者は入れるだけ。
+   中身は、自分で保存した部品と、この PC で登録したリング金具（製造会社・型番・購入先つき）。入れると、部品ライブラリにパッケージ名の見出しができ、金具は「金具」の欄に並ぶ。
+   有料の配布は、型紙 PDF と同じカード決済でファイルを渡す（アプリには中身を組み込まない）。 ───────── */
+let pkgRows = [];
+const pkgOwnBinders = () => Object.entries(binderEdits.specs || {}).filter(([id, e]) => e?.parent && binderSpec(id));
+function openPkgDialog() {
+  if (featureLocked()) { $('hint').textContent = t('pkgOwnerOnly'); return; }
+  const box = $('pkgList'), en = document.documentElement.lang === 'en'; box.textContent = ''; pkgRows = [];
+  const head = text => { const p = document.createElement('p'); p.className = 'bd-note'; p.textContent = text; box.appendChild(p); };
+  const row = (kind, id, label) => { const l = document.createElement('label'), c = document.createElement('input'), s = document.createElement('span'); l.className = 'pkg-row'; c.type = 'checkbox'; s.textContent = label; l.appendChild(c); l.appendChild(s); box.appendChild(l); pkgRows.push({ kind, id, input: c }); };
+  head(t('pkgParts', { n: userLibrary.length })); for (const it of userLibrary) row('part', it.id, libItemName(it));
+  const bs = pkgOwnBinders(); head(t('pkgBinders', { n: bs.length }));
+  for (const [id] of bs) { const sp = binderSpec(id), root = binderSpec(sp.parent), nm = s => (en ? s.names.en : s.names.ja); row('binder', id, (root ? nm(root) + ' ／ ' : '') + nm(sp) + (sp.maker?.name ? '（' + sp.maker.name + '）' : '')); }
+  $('pkgName').value = ''; $('pkgDesc').value = ''; $('pkgError').textContent = ''; $('pkgDialog').showModal();
+}
+function savePkg() {
+  const picked = pkgRows.filter(r => r.input.checked), ids = k => new Set(picked.filter(r => r.kind === k).map(r => r.id));
+  const parts = userLibrary.filter(it => ids('part').has(it.id)), binders = Object.fromEntries([...ids('binder')].map(id => [id, binderEdits.specs[id]]).filter(([, e]) => e));
+  const pkg = buildPackage({ name: $('pkgName').value, desc: $('pkgDesc').value, parts, binders });
+  if (!pkg) { $('pkgError').textContent = t('pkgNeed'); return; }
+  const d = new Date(), z = n => String(n).padStart(2, '0'), safe = pkg.name.replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 30);
+  if (download(`nscad-package-${safe}-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}.json`, packageFileText(pkg), 'application/json') === false) return;
+  $('pkgDialog').close(); $('hint').textContent = t('pkgSaved', { name: pkg.name, p: pkg.parts.length, b: Object.keys(pkg.binders).length });
+}
+/** パッケージのファイルを入れる（文字列から）。部品は見出し（パッケージ名）の下へ、金具は「金具」の欄へ。入れる前の部品は、バックアップに残す。 */
+function installPkgText(text) {
+  const pkg = parsePackageFile(text); if (!pkg) { $('hint').textContent = t('pkgInvalid'); return null; }
+  if (userLibrary.length) saveLibBackups(pushLibraryBackup(loadLibBackups(), userLibrary));
+  const r = installPackage(pkg, userLibrary, binderEdits, BINDER_ORIGINALS.filter(s => !s.parent).map(s => s.id));
+  userLibrary = r.items; persistLibrary(); binderEdits = r.edits; persistBinderEdits(); rebuildBinderSpecs();
+  if (pkg.parts.length) { const gid = ('g-' + pkg.id).slice(0, 26); let L = libLayout; if (!L.groups.includes(gid)) L = addLibraryGroup(L, pkg.name, gid).layout; L = JSON.parse(JSON.stringify(L)); L.assign = L.assign || {}; for (const it of pkg.parts) L.assign[it.id] = gid; libLayout = normalizeLibraryLayout(L); persistLibLayout(); }
+  refreshBinderSelects(binderSpec($('binderSpecSel').value) ? $('binderSpecSel').value : BINDER_SPECS[0].id); renderLibrary(); if (typeof renderLibBackups === 'function') renderLibBackups();
+  $('hint').textContent = t('pkgInstalled', { name: pkg.name, p: r.parts.added + r.parts.updated, b: r.binders.added + r.binders.updated }) + (pkg.skipped + r.binders.skipped ? ' ' + t('pkgSkipped', { n: pkg.skipped + r.binders.skipped }) : '');
+  return r;
+}
+async function installPkgFile(file) { try { installPkgText(await file.text()); } catch (err) { $('hint').textContent = t('loadFailed', { message: err.message }); } }
 /** 選択をクリップボード文字列にする（copy イベントで使う）。 */
 /** 文字を入力する欄（テキスト入力・複数行・選択リスト・編集可能な要素）か。ここではブラウザ標準のコピー・貼り付けに任せる。 */
 function isTextEntry(el) {
@@ -6050,7 +6086,7 @@ function initLibrary() {
   loadLibrary(); loadLibLayout(); renderLibrary(); renderLibBackups(); wireLibOrganizer(); $('libBackupNow').onclick = backupLibraryNow; $('libBackupRestore').onclick = restoreLibBackup;
   $('libItem').addEventListener('change', renderLibrary); $('libSearch').addEventListener('input', renderLibrary);
   $('libPlace').onclick = () => setMode('library'); $('libSave').onclick = saveToLibrary; $('libRemove').onclick = removeFromLibrary; $('libRemoveSel').onclick = removeFromLibrary; $('libExport').onclick = exportLibrary;
-  $('libImport').onclick = () => $('libFile').click(); $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
+  $('libImport').onclick = () => $('libFile').click(); if ($('libPkgMake')) { $('libPkgMake').onclick = openPkgDialog; $('pkgSave').onclick = savePkg; $('pkgClose').onclick = () => $('pkgDialog').close(); $('libPkgInstall').onclick = () => $('libPkgFile').click(); $('libPkgFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await installPkgFile(f); }); } $('libFile').addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (f) await importLibrary(f); });
   $('tabNew').onclick = () => newTab(); $('tabClose').onclick = closeTab; $('tabName').addEventListener('change', () => { if (tabs[activeTab]) { tabs[activeTab].name = $('tabName').value.trim() || tabs[activeTab].name; renderTabs(); } });
   $('sendCopy').onclick = () => sendToTab(false); $('sendMove').onclick = () => sendToTab(true);
   $('pasteBtn').onclick = () => { const text = $('pasteBox').value; if (!pasteText(text)) $('hint').textContent = t('pasteInvalid'); };
