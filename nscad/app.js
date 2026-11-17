@@ -638,14 +638,16 @@ function stitchOptions() {
   if(![start,end,from].every(n=>Number.isFinite(n)&&n>=0)||!(to>=from))throw new Error(t('invalidNumber'));
   return {offsetStart:start,offsetEnd:$('placement').value==='equal'?start:end,from,to,variable:$('placement').value!=='fixed',corner:$('cornerMode').value};
 }
+/** 穴も区間もない、空の縫い経路（穴を消したあとに残った経路）。部品・格子・縁などの印がついたものは含めない（事業主 2026-11-18「目打ちができなくなった」：空の経路が、線を1本ずつの経路にしたままで、つながった8本を1経路にできなかった）。 */
+const pathIsEmpty = (p, d = doc) => p.mark === 'tool' && !p.segments?.length && Object.keys(p).every(k => ['id', 'shapeIds', 'reversed', 'closed', 'segments', 'mark'].includes(k)) && !d.holes.some(h => h.pathId === p.id);
 function routeForHit(hit) {
-  let saved=doc.paths.find(p=>p.shapeIds.includes(hit.id));
+  let saved=doc.paths.find(p=>p.shapeIds.includes(hit.id)&&!pathIsEmpty(p));
   if(saved)return {saved,route:resolvePath(doc,saved),fresh:false};
   /* 十字・T字に線が交わる所でも、まっすぐ続く線は通り抜けて1本の経路にする（through：事業主指摘 2026-10-21「真ん中の中心線ではなく左を迂回するガイドライン上に菱目を打ちたい」：左まわりの点線が、左端の十字の目印線で3つに切れ、中心線と右側の2つしか選べなかった） */
   const candidates=$('chain').checked?doc.shapes.filter(s=>editable(s)&&stitchable(s)):[hit], through={through:true}, chain=chainShapes(candidates,0.01,through).find(p=>p.shapeIds.includes(hit.id));
   if(!chain)return null;
   // 既に別の縫い経路に属する図形へは経路をまたがせない：打ち済みの図形を除いて、つながる分だけを経路にする。
-  const owned=new Set(doc.paths.flatMap(p=>p.shapeIds));
+  const owned=new Set(doc.paths.filter(p=>!pathIsEmpty(p)).flatMap(p=>p.shapeIds));
   const route=chain.shapeIds.some(id=>owned.has(id))?(chainShapes(candidates,0.01,{through:true,exclude:owned}).find(p=>p.shapeIds.includes(hit.id))||chainShapes([hit])[0]):chain;
   saved={id:freshId(doc.paths,'p'),shapeIds:route.shapeIds,reversed:$('reversePath').checked,closed:route.closed,segments:[],mark:'tool'};
   return {saved,route:{...route,reversed:saved.reversed},fresh:true};
@@ -9561,8 +9563,9 @@ let commitBatch = false;   /* true の間、内側の commit は、その場で�
 function commit(fn) {
   if (commitBatch) { fn(); return; }
   ownPathsCache = null; openGapMarks = [];   /* 編集したら、開いた直後の歯抜けの印は消す */
-  const before = JSON.stringify(doc), holesBefore = doc.holes.length, dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
-  fn(); pruneFoldSections(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
+  const pathIdsBefore = new Set(doc.paths.map(p => p.id)), before = JSON.stringify(doc), holesBefore = doc.holes.length, dimBefore = new Map(doc.shapes.filter(s => s.type === 'dimension').map(s => [s.id, [s.x1, s.y1, s.x2, s.y2]])), fillSnap = fillSnapshot();
+  fn(); doc.paths = doc.paths.filter(p => !(pathIdsBefore.has(p.id) && pathIsEmpty(p)));   /* 前からあって、穴をなくした空の経路は消す（目打ちの経路が分断されないように） */
+  pruneFoldSections(); { const live = new Set(doc.shapes.map(s => s.id)); for (const p of doc.parts) if (p.shapeIds.some(id => !live.has(id))) p.shapeIds = p.shapeIds.filter(id => live.has(id)); }   /* 部品が、消えた図形を指したままにしない（図面が検査に通らなくなる） */
   const staleFills = followFillsAfter(fillSnap); if (staleFills) setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + t('fillNotFollowed', { n: staleFills }); }, 0);   /* 囲んでいる図形の形が変わったら、領域の塗りも取り直す */
   const dupHoles = dedupeHoles(); syncMarkLines(); dropStaleCush(); syncDimensions(dimBefore); if (dupHoles) { const gained = doc.holes.length - holesBefore; setTimeout(() => { $('hint').textContent = ($('hint').textContent ? $('hint').textContent + ' ' : '') + (gained >= 0 ? t('holeDedupeAdded', { n: dupHoles, m: gained }) : t('holeDedupe', { n: dupHoles })); }, 0); }   /* 重なった穴は1つにまとめる。まとめた数と、この操作で増えた穴の数を伝える（事業主 2026-11-07「同じ経路を重複して打っている？」：重複は残らない・増えた数が分かるように） */
   if (before !== JSON.stringify(doc)) { commitSeq++; undo.push(before); if (undo.length > 100) undo.shift(); redo = []; rebuildSnaps(); if (view3d) render3d(); if (tabs[activeTab] && !tabs[activeTab].dirty) { tabs[activeTab].dirty = true; renderTabs(); } }
