@@ -265,7 +265,9 @@ def shoki_vols(refs):
     return [WS(f'日本書紀/{SHOKI_VOL[v]}', f'日本書紀 巻第{KANJI[v]}') for v in vs]
 
 # ---------- 古事記 ----------
-def klabel(m): return f'{m["kan"]}・第{m["no"]}話'
+def kno(m): return f'第{m["no"]}話' if m['no'] else '序'
+def kcnt(kan): return sum(1 for x in KOJ if x['kan'] == kan and x['no'])
+def klabel(m): return f'{m["kan"]}・{kno(m)}'
 
 def fig_html(f, eager=False):
     w, h = f.get('size') or ART_SIZE[f.get('shape', 'tall')]
@@ -276,9 +278,9 @@ def fig_html(f, eager=False):
 def kojiki_book_page(i, lay):
     """読みものの型：扉絵と導入 → 場面ごとの物語 → 要点 → 神と神社 → 日本書紀との違い → 資料編。文章は myths.json のまま。"""
     m = KOJ[i]
-    kan = m['kan']; cnt = sum(1 for x in KOJ if x['kan'] == kan)
+    kan = m['kan']; cnt = kcnt(kan)
     if len(lay['heads']) != len(m['story']): raise SystemExit(f'{m["id"]}: layout.json の heads が {len(lay["heads"])}個、story は {len(m["story"])}段です')
-    title = f"{m['title']}｜古事記 {kan} 第{m['no']}話｜古事記アーカイブ"
+    title = f"{m['title']}｜古事記 {kan} {kno(m)}｜古事記アーカイブ"
     out = [head('kojiki', title, m['lead'], SITE + 'kojiki/' + m['id'] + '.html', BK_CSS)]
     xl = ''.join(f'<a href="../shoki/{s["id"]}.html">日本書紀で読む：{e(s["title"])} ›</a>' for s in K2S.get(m['id'], []))
     mins = max(1, -(-sum(len(s['text']) for s in m['story']) // 500))
@@ -287,7 +289,7 @@ def kojiki_book_page(i, lay):
     out.append(f'''  <main class="pg-main bk">
     <header class="bk-open{'' if hero else ' nohero'}">
       <div class="bk-head">
-        <p class="eyebrow">古事記 {kan}・第{m['no']}話（全{cnt}話）</p>
+        <p class="eyebrow">古事記 {kan}・{kno(m)}{f'（全{cnt}話）' if m['no'] else ''}</p>
         <h1>{e(m['title'])}</h1>
       </div>
       {hero_html}
@@ -335,12 +337,12 @@ def kojiki_book_page(i, lay):
 def kojiki_page(i):
     m = KOJ[i]
     if m['id'] in LAYOUT: return kojiki_book_page(i, LAYOUT[m['id']])
-    kan = m['kan']; cnt = sum(1 for x in KOJ if x['kan'] == kan)
-    title = f"{m['title']}｜古事記 {kan} 第{m['no']}話｜古事記アーカイブ"
+    kan = m['kan']; cnt = kcnt(kan)
+    title = f"{m['title']}｜古事記 {kan} {kno(m)}｜古事記アーカイブ"
     out = [head('kojiki', title, m['lead'], SITE + 'kojiki/' + m['id'] + '.html')]
     xl = ''.join(f'<a href="../shoki/{s["id"]}.html">日本書紀で読む：{e(s["title"])} ›</a>' for s in K2S.get(m['id'], []))
     out.append(f'''  <main class="pg-main">
-    <p class="eyebrow">古事記 {kan}・第{m['no']}話（全{cnt}話）</p>
+    <p class="eyebrow">古事記 {kan}・{kno(m)}{f'（全{cnt}話）' if m['no'] else ''}</p>
     <h1>{e(m['title'])}</h1>
     <p class="pg-lead">{e(m['lead'])}</p>
     {f'<div class="xlink">{xl}</div>' if xl else ''}
@@ -370,7 +372,7 @@ def kojiki_page(i):
 
 def kojiki_index():
     kans = [k for k in ['上巻', '中巻', '下巻'] if any(m['kan'] == k for m in KOJ)]
-    n = len(KOJ)
+    n = sum(1 for m in KOJ if m["no"])
     title = "古事記アーカイブ｜上巻・中巻・下巻を一話ずつ｜教育幕僚室｜N's factory"
     desc = f'古事記の上巻（神々の時代）・中巻（神武天皇〜応神天皇）・下巻（仁徳天皇〜推古天皇）を{n}話に分け、話ごとに、場面ごとの物語・要点・登場する神と祀る神社・日本書紀との違い・原文をまとめた読みもの。'
     out = [head('kojiki', title, desc, SITE + 'kojiki/')]
@@ -390,16 +392,16 @@ def kojiki_index():
     for k in kans:
         ms = [m for m in KOJ if m['kan'] == k]
         sub = KAN_SUB[k]
-        out.append(f'    <section class="pg-card" id="kan-{k}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{k}（{sub}・全{len(ms)}話）</h2>\n      <ol class="toc">')
+        out.append(f'    <section class="pg-card" id="kan-{k}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{k}（{sub}・全{kcnt(k)}話）</h2>\n      <ol class="toc">')
         for m in ms:
             hero = (LAYOUT.get(m['id']) or {}).get('hero')
             th = f'<img class="th" src="{ART}{e(hero["img"].replace("-hero", "-thumb"))}" width="160" height="284" alt="" loading="lazy" decoding="async">' if hero else ''
             cls = ' class="has-th"' if hero else ''
-            out.append(f'        <li><a href="{m["id"]}.html"{cls}><span class="no">{m["no"]}</span><b>{e(m["title"])}</b><span class="lead">{e(m["points"][0]["text"])}</span>{th}</a></li>')
+            out.append(f'        <li><a href="{m["id"]}.html"{cls}><span class="no">{m["no"] or "序"}</span><b>{e(m["title"])}</b><span class="lead">{e(m["points"][0]["text"])}</span>{th}</a></li>')
         out.append('      </ol>\n    </section>\n')
     out.append('    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">全話の要点（復習用）</h2>\n      <p class="pg-note">復習用に、各話の要点を上から2つずつ並べました。</p>')
     for m in KOJ:
-        out.append(f'      <h3><a href="{m["id"]}.html">{m["kan"]} 第{m["no"]}話　{e(m["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
+        out.append(f'      <h3><a href="{m["id"]}.html">{m["kan"]} {kno(m)}　{e(m["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
                    + ''.join(f'<li>{e(p["text"])}</li>' for p in m['points'][:2]) + '</ul>')
     out.append('''    </section>
 

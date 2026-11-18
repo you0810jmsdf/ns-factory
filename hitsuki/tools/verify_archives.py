@@ -39,8 +39,21 @@ def paras(raw, pre, start=None, end=None):
 _K = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
       '二十一', '二十二', '二十三', '二十四', '二十五', '二十六', '二十七', '二十八', '二十九', '三十']
 VOL = ['卷第' + (k.replace('二十', '廿') if 21 <= i <= 29 else k) for i, k in enumerate(_K, 1)]
+def paras_jo(raw):
+    """古事記の序（「== 序 ==」から「== 上卷 ==」の前まで）。序は人名・宮の名が {{ul|…}}、末尾の日付が {{right|…}} で書かれているので、中身を残してから数える（J1〜J9）"""
+    t = raw[raw.find('== 序 =='):raw.find('== 上卷 ==')]
+    t = re.sub(r'<ref[^>]*>.*?</ref>', '', t, flags=re.S)
+    for _ in range(4):
+        t = re.sub(r'\{\{另\|([^|{}]*)\|[^{}]*\}\}', r'\1', t)
+        t = re.sub(r'\{\{(?:ul|right)\|([^{}]*)\}\}', r'\1', t)
+    ps = [s.strip() for s in clean(t).split('\n')]
+    ps = [s for s in ps if s and not s.startswith(('==', '|', '{{', '}}'))]
+    return {f'J{i}': p for i, p in enumerate(ps, 1)}
+
 T = {}
-T.update(paras(fetch('古事記/上卷'), 'K', '== 上卷 ==', '== 註釋 =='))
+_JOKAN = fetch('古事記/上卷')
+T.update(paras_jo(_JOKAN))
+T.update(paras(_JOKAN, 'K', '== 上卷 ==', '== 註釋 =='))
 T.update(paras(fetch('古事記/中卷'), 'C', None, '== 註釋 =='))
 T.update(paras(fetch('古事記/下卷'), 'G', None, '== 註釋 =='))
 for n, v in enumerate(VOL, 1):
@@ -53,7 +66,7 @@ strip = lambda s: re.sub(r'〔[^〕]*〕', '', s)
 has = lambda par, q: q in par or strip(q) in strip(par) or q in strip(par)
 
 def key(r):  # 段落番号を (書, 番号) に
-    m = re.match(r'^(K|C|G|N\d+-)(\d+)$', r or '')
+    m = re.match(r'^(J|K|C|G|N\d+-)(\d+)$', r or '')
     return (m.group(1), int(m.group(2))) if m else (None, None)
 
 def inspan(r, span):
@@ -83,7 +96,7 @@ def check(label, m, own_quotes_key, other_key):
     bad += len(probs)
     print(f'{label}: ' + ('OK' if not probs else ' / '.join(probs)))
 
-for m in KOJ: check(f'古事記 {m.get("kan", "上巻")} 第{m["no"]}話 {m["title"]}', m, 'quotes', 'nihonshoki')
+for m in KOJ: check(f'古事記 {m.get("kan", "上巻")} {m["no"] and "第" + str(m["no"]) + "話" or "序"} {m["title"]}', m, 'quotes', 'nihonshoki')
 for s in SHO: check(f'日本書紀 {s["kan"]} {s["title"]}', s, 'quotes', 'kojiki')
 # 英語版（*.en.json）：各ページの英訳があり、配列の数が日本語と同じか
 for path, items, cmpk in [(os.path.join(HIT, 'kojiki', 'data', 'myths.en.json'), KOJ, 'nihonshoki'), (os.path.join(HIT, 'shoki', 'data', 'episodes.en.json'), SHO, 'kojiki')]:

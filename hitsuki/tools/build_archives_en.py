@@ -136,7 +136,8 @@ def shoki_vols(refs):
     vs = sorted({int(r[1:].split('-')[0]) for r in refs if r.startswith('N') and '-' in r})
     return [WS(f'日本書紀/{B.SHOKI_VOL[v]}', f'Nihon Shoki, Book {v}') for v in vs]
 
-def kl(m): return f'{KAN_EN[m["kan"]]}, story {m["no"]}'
+def kn(m): return f'story {m["no"]}' if m['no'] else 'preface'
+def kl(m): return f'{KAN_EN[m["kan"]]}, {kn(m)}'
 
 # ---------- 読みものの型（layout.json に heads_en がある話） ----------
 ART = '../../assets/kiki/book/'
@@ -206,11 +207,11 @@ def mins_en(o): return max(1, -(-sum(len((s.get('text') or '').split()) for s in
 
 def kojiki_book_page(i, lay):
     m = KOJ[i]; o = KEN.get(m['id'], {})
-    cnt = sum(1 for x in KOJ if x['kan'] == m['kan'])
-    title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, story {m['no']} | Kojiki Archive"
+    cnt = B.kcnt(m['kan'])
+    title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, {kn(m)} | Kojiki Archive"
     out = [head('kojiki', title, o.get('lead', ''), SITE + 'kojiki/en/' + m['id'] + '.html', SITE + 'kojiki/' + m['id'] + '.html', '../' + m['id'] + '.html')]
     xl = ''.join(f'<a href="../../shoki/en/{s["id"]}.html">Read in the Nihon Shoki: {e((SEN.get(s["id"]) or {}).get("title") or s["title"])} ›</a>' for s in B.K2S.get(m['id'], []))
-    out.append(book_open(lay, f"Kojiki, {KAN_EN[m['kan']]} · story {m['no']} of {cnt}", o.get('title') or m['title'], m['title'], o.get('lead', ''), xl, mins_en(o), 'the story'))
+    out.append(book_open(lay, f"Kojiki, {KAN_EN[m['kan']]} · {(kn(m) + ' of ' + str(cnt)) if m['no'] else 'preface'}", o.get('title') or m['title'], m['title'], o.get('lead', ''), xl, mins_en(o), 'the story'))
     out.append(book_story(m, o, lay, 'The story', 'A plain retelling of what the original text of the Kojiki says (no published translation has been used).'))
     out.append(points_html(m, o, 'kojiki').replace('Key points to remember', 'Key points of this story'))
     out.append(''); out.append(who_html(m, o))
@@ -249,12 +250,12 @@ def shoki_book_page(i, lay):
 def kojiki_page(i):
     m = KOJ[i]; o = KEN.get(m['id'], {})
     if (B.LAYOUT.get(m['id']) or {}).get('heads_en'): return kojiki_book_page(i, B.LAYOUT[m['id']])
-    cnt = sum(1 for x in KOJ if x['kan'] == m['kan'])
-    title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, story {m['no']} | Kojiki Archive"
+    cnt = B.kcnt(m['kan'])
+    title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, {kn(m)} | Kojiki Archive"
     out = [head('kojiki', title, o.get('lead', ''), SITE + 'kojiki/en/' + m['id'] + '.html', SITE + 'kojiki/' + m['id'] + '.html', '../' + m['id'] + '.html')]
     xl = ''.join(f'<a href="../../shoki/en/{s["id"]}.html">Read in the Nihon Shoki: {e((SEN.get(s["id"]) or {}).get("title") or s["title"])} ›</a>' for s in B.K2S.get(m['id'], []))
     out.append(f'''  <main class="pg-main">
-    <p class="eyebrow">Kojiki, {KAN_EN[m['kan']]} · story {m['no']} of {cnt}</p>
+    <p class="eyebrow">Kojiki, {KAN_EN[m['kan']]} · {(kn(m) + ' of ' + str(cnt)) if m['no'] else 'preface'}</p>
     <h1>{e(o.get('title') or m['title'])}</h1>
     <p class="orig" lang="ja">{e(m['title'])}</p>
     <p class="pg-lead">{e(o.get('lead', ''))}</p>
@@ -285,7 +286,7 @@ def kojiki_page(i):
 
 def kojiki_index():
     kans = [k for k in ['上巻', '中巻', '下巻'] if any(m['kan'] == k for m in KOJ)]
-    n = len(KOJ)
+    n = sum(1 for m in KOJ if m["no"])
     title = 'Kojiki Archive — all three parts, story by story | N\'s factory'
     desc = f'The Kojiki (Records of Ancient Matters, 712) in {n} stories: for each, the story scene by scene, the key points, the deities and their shrines, how the Nihon Shoki differs, and the original text.'
     out = [head('kojiki', title, desc, SITE + 'kojiki/en/', SITE + 'kojiki/', '../')]
@@ -304,16 +305,16 @@ def kojiki_index():
 ''')
     for k in kans:
         ms = [m for m in KOJ if m['kan'] == k]
-        out.append(f'    <section class="pg-card" id="kan-{KAN_EN[k].replace(" ", "")}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{KAN_EN[k]}: {KAN_SUB[k]} ({len(ms)} stories)</h2>\n      <ol class="toc">')
+        out.append(f'    <section class="pg-card" id="kan-{KAN_EN[k].replace(" ", "")}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{KAN_EN[k]}: {KAN_SUB[k]} ({B.kcnt(k)} stories)</h2>\n      <ol class="toc">')
         for m in ms:
             o = KEN.get(m['id'], {})
             first = (o.get('points') or [{}])[0].get('text', '')
-            out.append(f'        <li><a href="{m["id"]}.html"><span class="no">{m["no"]}</span><b>{e(o.get("title") or m["title"])}</b><span class="lead">{e(first)}</span></a></li>')
+            out.append(f'        <li><a href="{m["id"]}.html"><span class="no">{m["no"] or "–"}</span><b>{e(o.get("title") or m["title"])}</b><span class="lead">{e(first)}</span></a></li>')
         out.append('      </ol>\n    </section>\n')
     out.append('    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">Key points of every story</h2>\n      <p class="pg-note">For review: the first two key points of each story.</p>')
     for m in KOJ:
         o = KEN.get(m['id'], {})
-        out.append(f'      <h3><a href="{m["id"]}.html">{KAN_EN[m["kan"]]}, story {m["no"]}: {e(o.get("title") or m["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
+        out.append(f'      <h3><a href="{m["id"]}.html">{KAN_EN[m["kan"]]}, {kn(m)}: {e(o.get("title") or m["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
                    + ''.join(f'<li>{e(p.get("text", ""))}</li>' for p in (o.get('points') or [])[:2]) + '</ul>')
     out.append('''    </section>
 

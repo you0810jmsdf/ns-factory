@@ -475,6 +475,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/jo.html</loc>
+    <lastmod>2026-11-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/tenchi.html</loc>
     <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>
@@ -1070,6 +1076,12 @@
     <lastmod>2026-11-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/en/jo.html</loc>
+    <lastmod>2026-11-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/en/tenchi.html</loc>
