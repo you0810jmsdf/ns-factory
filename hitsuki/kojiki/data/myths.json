@@ -141,16 +141,20 @@
    "deities": [],
    "figures": [
     {
-     "name": "安萬侣（安万侶）",
-     "reading": "",
-     "role": "序を書いた人。原文は冒頭と文中で「臣安萬侣」、末尾で「正五位上勲五等太朝臣安萬侣」と記す。和銅四年九月十八日の詔を受けて三巻を録した。",
-     "src": []
+     "name": "太安万侶（原文は「安萬侣」）",
+     "reading": "おおのやすまろ",
+     "role": "序を書いた人。原文は冒頭と文中で「臣安萬侣」、末尾で「正五位上勲五等太朝臣安萬侣」と記す。和銅四年九月十八日の詔を受けて三巻を録した。読みは国立公文書館の解説による。",
+     "src": [
+      "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html"
+     ]
     },
     {
      "name": "稗田阿礼",
-     "reading": "",
-     "role": "舎人。原文は「姓稗田名阿礼、年是廿八」と記す。勅語によって帝皇日継と先代旧辞を誦み習った。",
-     "src": []
+     "reading": "ひえだのあれ",
+     "role": "舎人。原文は「姓稗田名阿礼、年是廿八」と記す。勅語によって帝皇日継と先代旧辞を誦み習った。読みは国立公文書館の解説による。",
+     "src": [
+      "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html"
+     ]
     },
     {
      "name": "飛鳥清原大宮の天皇",
