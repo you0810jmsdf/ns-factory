@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第5話（全17話）</p>
-    <h1>綏靖天皇から開化天皇まで</h1>
-    <p class="pg-lead">綏靖天皇から開化天皇までの八代について、古事記は宮の名、妻と御子、どの氏族の祖か、年齢と御陵を中心に記す。その中に、吉備の平定、建内宿禰の誕生、日子坐王の子孫から息長帶比賣命に至る系譜など、後の話につながる記事が含まれる。</p>
-    <div class="xlink"><a href="../shoki/kesshi.html">日本書紀で読む：綏靖天皇から開化天皇まで（手研耳命の反逆を含む） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第5話（全17話）</p>
+        <h1>綏靖天皇から開化天皇まで</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">綏靖天皇から開化天皇までの八代について、古事記は宮の名、妻と御子、どの氏族の祖か、年齢と御陵を中心に記す。その中に、吉備の平定、建内宿禰の誕生、日子坐王の子孫から息長帶比賣命に至る系譜など、後の話につながる記事が含まれる。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/kesshi.html">日本書紀で読む：綏靖天皇から開化天皇まで（手研耳命の反逆を含む） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>綏靖天皇と安寧天皇の御子</h3>
+      <p class="t">神沼河耳命（綏靖天皇）は葛城の高岡宮で天下を治め、師木県主の祖の河俣毘賣を妻として師木津日子玉手見命が生まれた。年は四十五歳、御陵は衝田岡にある。師木津日子玉手見命（安寧天皇）は片鹽の浮穴宮で治め、阿久斗比賣との間に三人の御子があり、大倭日子鉏友命が後を継いだ。年は四十九歳、御陵は畝火山の美富登にある。</p>
+      <h3>懿徳・孝昭・孝安天皇の宮と御陵</h3>
+      <p class="t">大倭日子鉏友命（懿徳天皇）は輕の境岡宮で治め、年は四十五歳、御陵は畝火山の眞名子谷の上にある。御眞津日子訶惠志泥命（孝昭天皇）は葛城の掖上宮で治め、兄の天押帶日子命は春日臣・小野臣・柿本臣など多くの氏族の祖とされる。年は九十三歳、御陵は掖上の博多山の上にある。大倭帶日子國押人命（孝安天皇）は葛城の室の秋津嶋宮で治め、姪の忍鹿比賣命を妻とし、年は百二十三歳、御陵は玉手岡の上にある。</p>
+      <h3>孝霊天皇の御子と吉備の平定</h3>
+      <p class="t">大倭根子日子賦斗邇命（孝霊天皇）は黒田の廬戸宮で治め、御子は八人あった。その中に夜麻登登母母曾毘賣命や、大吉備津日子命（またの名は比古伊佐勢理毘古命）、若日子建吉備津日子命がいる。大吉備津日子命と若建吉備津日子命の二人は、針間の氷河の前に忌瓮を据え、針間を入り口として吉備国を言葉で従わせ平定した。年は百六歳、御陵は片岡の馬坂の上にある。</p>
+      <h3>孝元天皇の御子と建内宿禰</h3>
+      <p class="t">大倭根子日子國玖琉命（孝元天皇）は輕の堺原宮で治め、御子に大毘古命、若倭根子日子大毘毘命、比古布都押之信命、建波邇夜須毘古命などがいる。大毘古命の子の建沼河別命は阿倍臣らの祖とされる。比古布都押之信命が木国造の祖宇豆比古の妹の山下影日賣を妻として生んだのが建内宿禰で、建内宿禰の九人の子は、波多臣・許勢臣・蘇我臣・平群臣・木臣や葛城の玉手臣などの祖とされる。年は五十七歳、御陵は劔池の中岡の上にある。</p>
+      <h3>開化天皇と日子坐王の系譜</h3>
+      <p class="t">若倭根子日子大毘毘命（開化天皇）は春日の伊邪河宮で治め、庶母の伊迦賀色許賣命を妻として御眞木入日子印惠命が生まれ、この御子が後を継いだ。別の妻の意祁都比賣命との子の日子坐王には十一人の子があり、その中に沙本毘古王や、伊久米天皇（垂仁天皇）の后となる沙本毘賣命がいる。日子坐王は、近淡海の御上の祝が祭る天之御影神の娘の息長水依比賣も妻とした。また日子坐王が母の妹の袁祁都比賣命を妻として生んだ山代之大筒木眞若王から、迦邇米雷王・息長宿禰王と系譜が続き、息長宿禰王の子として息長帶比賣命が生まれる。年は六十三歳、御陵は伊邪河の坂の上にある。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>この八代の記事は、宮・妻と御子・氏族の祖・年齢・御陵を記す系譜が中心で、物語らしい記事はほとんどない。その中で孝霊天皇の段には、大吉備津日子命と若建吉備津日子命が針間を入り口として吉備国を平定したことが記される。</li>
         <li><span class="kind ">本文</span>孝元天皇の段に、比古布都押之信命の子として建内宿禰が生まれ、その九人の子が波多臣・許勢臣・蘇我臣・平群臣・木臣など多くの氏族の祖になったと記される。</li>
@@ -112,24 +169,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、彦太忍信命（比古布都押之信命）は武内宿禰の「祖父」とされ、古事記の「父」とは世代が異なる。また綏靖天皇の年齢は八十四歳とされ、古事記の四十五歳と異なる。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、日子坐王が近江の三上山の神である天之御影神の娘と結婚したことを、近江の地との結びつきを示すものとみる説を紹介している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenomikagenokami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>神沼河耳命（綏靖天皇）は葛城の高岡宮で天下を治め、師木県主の祖の河俣毘賣を妻として師木津日子玉手見命が生まれた。年は四十五歳、御陵は衝田岡にある。師木津日子玉手見命（安寧天皇）は片鹽の浮穴宮で治め、阿久斗比賣との間に三人の御子があり、大倭日子鉏友命が後を継いだ。年は四十九歳、御陵は畝火山の美富登にある。</p>
-      <p>大倭日子鉏友命（懿徳天皇）は輕の境岡宮で治め、年は四十五歳、御陵は畝火山の眞名子谷の上にある。御眞津日子訶惠志泥命（孝昭天皇）は葛城の掖上宮で治め、兄の天押帶日子命は春日臣・小野臣・柿本臣など多くの氏族の祖とされる。年は九十三歳、御陵は掖上の博多山の上にある。大倭帶日子國押人命（孝安天皇）は葛城の室の秋津嶋宮で治め、姪の忍鹿比賣命を妻とし、年は百二十三歳、御陵は玉手岡の上にある。</p>
-      <p>大倭根子日子賦斗邇命（孝霊天皇）は黒田の廬戸宮で治め、御子は八人あった。その中に夜麻登登母母曾毘賣命や、大吉備津日子命（またの名は比古伊佐勢理毘古命）、若日子建吉備津日子命がいる。大吉備津日子命と若建吉備津日子命の二人は、針間の氷河の前に忌瓮を据え、針間を入り口として吉備国を言葉で従わせ平定した。年は百六歳、御陵は片岡の馬坂の上にある。</p>
-      <p>大倭根子日子國玖琉命（孝元天皇）は輕の堺原宮で治め、御子に大毘古命、若倭根子日子大毘毘命、比古布都押之信命、建波邇夜須毘古命などがいる。大毘古命の子の建沼河別命は阿倍臣らの祖とされる。比古布都押之信命が木国造の祖宇豆比古の妹の山下影日賣を妻として生んだのが建内宿禰で、建内宿禰の九人の子は、波多臣・許勢臣・蘇我臣・平群臣・木臣や葛城の玉手臣などの祖とされる。年は五十七歳、御陵は劔池の中岡の上にある。</p>
-      <p>若倭根子日子大毘毘命（開化天皇）は春日の伊邪河宮で治め、庶母の伊迦賀色許賣命を妻として御眞木入日子印惠命が生まれ、この御子が後を継いだ。別の妻の意祁都比賣命との子の日子坐王には十一人の子があり、その中に沙本毘古王や、伊久米天皇（垂仁天皇）の后となる沙本毘賣命がいる。日子坐王は、近淡海の御上の祝が祭る天之御影神の娘の息長水依比賣も妻とした。また日子坐王が母の妹の袁祁都比賣命を妻として生んだ山代之大筒木眞若王から、迦邇米雷王・息長宿禰王と系譜が続き、息長宿禰王の子として息長帶比賣命が生まれる。年は六十三歳、御陵は伊邪河の坂の上にある。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">神沼河耳命。坐葛城高岡宮。治天下也。</blockquote><p>神沼河耳命（綏靖天皇）は葛城の高岡宮にいて天下を治めた。以下の各代も同じ書き出しで始まる。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">針間爲道口以言向和吉備國也。</blockquote><p>針間を入り口として、吉備国を言葉で従わせ平定した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">又娶木國造之祖。宇豆比古之妹。山下影日賣。生子建内宿禰。</blockquote><p>比古布都押之信命が山下影日賣を妻として、建内宿禰が生まれた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">生子。息長帶比賣命。次虚空津比賣命。</blockquote><p>息長宿禰王の子として、息長帶比賣命などが生まれた。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -160,7 +199,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第四 孝元天皇七年春二月丙寅朔丁卯</span><p>日本書紀では、彦太忍信命は武内宿禰の祖父とされる。古事記では比古布都押之信命の子が建内宿禰である。</p><blockquote lang="zh-Hant">彦太忍信命。是武内宿禰之祖父也。</blockquote></div>
       <div class="ns"><span class="where">巻第四 綏靖天皇三十三年夏五月</span><p>日本書紀では、綏靖天皇は三十三年夏五月に病となり、八十四歳で亡くなる。古事記では年四十五歳とされる。</p><blockquote lang="zh-Hant">時年八十四</blockquote></div>
       <div class="ns"><span class="where">巻第五 崇神天皇十年九月丙戌朔甲午</span><p>日本書紀では、孝霊天皇の記事に吉備平定の話はなく、吉備津彦が西道に遣わされるのは崇神天皇十年九月である。古事記では孝霊天皇の段で、大吉備津日子命と若建吉備津日子命が吉備国を平定する。</p><blockquote lang="zh-Hant">吉備津彦遣西道</blockquote></div>
@@ -168,12 +207,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tagishimimi.html"><small>← 前の話（中巻・第4話）</small>当芸志美美命の反逆</a><a class="next" href="sujin-miwa.html"><small>次の話（中巻・第6話）→</small>崇神天皇と三輪の大物主大神</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第四" target="_blank" rel="noopener">日本書紀 巻第四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenomikagenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenomikagenokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">神沼河耳命。坐葛城高岡宮。治天下也。</blockquote><p>神沼河耳命（綏靖天皇）は葛城の高岡宮にいて天下を治めた。以下の各代も同じ書き出しで始まる。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">針間爲道口以言向和吉備國也。</blockquote><p>針間を入り口として、吉備国を言葉で従わせ平定した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">又娶木國造之祖。宇豆比古之妹。山下影日賣。生子建内宿禰。</blockquote><p>比古布都押之信命が山下影日賣を妻として、建内宿禰が生まれた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">生子。息長帶比賣命。次虚空津比賣命。</blockquote><p>息長宿禰王の子として、息長帶比賣命などが生まれた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第四" target="_blank" rel="noopener">日本書紀 巻第四</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenomikagenokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/amenomikagenokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

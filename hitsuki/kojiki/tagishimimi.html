@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,35 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第4話（全17話）</p>
-    <h1>当芸志美美命の反逆</h1>
-    <p class="pg-lead">神武天皇が亡くなったあと、異母兄の當藝志美美命が皇后の伊須氣余理比賣を妻とし、三人の弟を殺そうと企てる。母の歌でそれを知った弟たちのうち、末の神沼河耳命が當藝志美美命を討ち、兄の神八井耳命に譲られて天下を治める。</p>
-    <div class="xlink"><a href="../shoki/kesshi.html">日本書紀で読む：綏靖天皇から開化天皇まで（手研耳命の反逆を含む） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第4話（全17話）</p>
+        <h1>当芸志美美命の反逆</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">神武天皇が亡くなったあと、異母兄の當藝志美美命が皇后の伊須氣余理比賣を妻とし、三人の弟を殺そうと企てる。母の歌でそれを知った弟たちのうち、末の神沼河耳命が當藝志美美命を討ち、兄の神八井耳命に譲られて天下を治める。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/kesshi.html">日本書紀で読む：綏靖天皇から開化天皇まで（手研耳命の反逆を含む） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>當藝志美美命の企てと歌</h3>
+      <p class="t">伊須氣余理比賣から生まれた御子は、日子八井命、神八井耳命、神沼河耳命の三人である。天皇が亡くなった後、異母兄の當藝志美美命が、天皇の正妻であった伊須氣余理比賣を妻とし、三人の弟を殺そうと企てた。母の伊須氣余理比賣はこれを苦にして、歌で御子たちに知らせた（C27・C29）。歌には「佐韋賀波」（狭井河）や「宇泥備夜麻」（畝傍山）の語が見える。</p>
+      <h3>神沼河耳命が當藝志美美命を殺す</h3>
+      <p class="t">御子たちはそれを聞いて驚き、當藝志美美命を殺そうとした。神沼河耳命は兄の神八井耳命に、武器を持って入り當藝志美美命を殺すよう求めた。神八井耳命は武器を持って入ったが、手足が震えて（原文は音で「和那那岐弖」）殺すことができなかった。そこで弟の神沼河耳命が兄の持っていた武器をもらい受けて入り、當藝志美美命を殺した。このため神沼河耳命は建沼河耳命とも呼ばれる。</p>
+      <h3>神八井耳命が位を譲る</h3>
+      <p class="t">神八井耳命は弟に位を譲って言った。「私は仇を殺すことができなかったが、あなたは殺すことができた。だから私は兄だが上に立つべきではない。あなたが上に立って天下を治めなさい。私はあなたを助け、忌人となってお仕えしよう」。原文の注は、日子八井命を茨田連・手嶋連の祖とし、神八井耳命を意富臣・小子部連・阿蘇君・科野国造など多くの氏族の祖とする。神沼河耳命が天下を治めた。</p>
+      <h3>神倭伊波禮毘古天皇の御陵</h3>
+      <p class="t">この神倭伊波禮毘古天皇の年齢は百三十七歳で、御陵は畝火山の北の白檮尾の上にあると記される。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>神武天皇が亡くなると、日向で生まれた異母兄の當藝志美美命が皇后の伊須氣余理比賣を妻とし、その子である三人の弟を殺そうと企てた。伊須氣余理比賣は歌で御子たちに危険を知らせた。</li>
         <li><span class="kind ">本文</span>兄の神八井耳命は手足が震えて當藝志美美命を殺せず、弟の神沼河耳命が兄から武器を受け取って討ち取った。この功から神沼河耳命は建沼河耳命とも呼ばれた。</li>
@@ -112,23 +167,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>神武天皇の年齢は百三十七歳、御陵は畝火山の北の白檮尾の上と記される。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、手研耳命（當藝志美美命）を討つのに弓矢が使われ、狙われたのは「二弟」とされる。神武天皇の年齢も百二十七歳で、古事記と異なる。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>伊須氣余理比賣から生まれた御子は、日子八井命、神八井耳命、神沼河耳命の三人である。天皇が亡くなった後、異母兄の當藝志美美命が、天皇の正妻であった伊須氣余理比賣を妻とし、三人の弟を殺そうと企てた。母の伊須氣余理比賣はこれを苦にして、歌で御子たちに知らせた（C27・C29）。歌には「佐韋賀波」（狭井河）や「宇泥備夜麻」（畝傍山）の語が見える。</p>
-      <p>御子たちはそれを聞いて驚き、當藝志美美命を殺そうとした。神沼河耳命は兄の神八井耳命に、武器を持って入り當藝志美美命を殺すよう求めた。神八井耳命は武器を持って入ったが、手足が震えて（原文は音で「和那那岐弖」）殺すことができなかった。そこで弟の神沼河耳命が兄の持っていた武器をもらい受けて入り、當藝志美美命を殺した。このため神沼河耳命は建沼河耳命とも呼ばれる。</p>
-      <p>神八井耳命は弟に位を譲って言った。「私は仇を殺すことができなかったが、あなたは殺すことができた。だから私は兄だが上に立つべきではない。あなたが上に立って天下を治めなさい。私はあなたを助け、忌人となってお仕えしよう」。原文の注は、日子八井命を茨田連・手嶋連の祖とし、神八井耳命を意富臣・小子部連・阿蘇君・科野国造など多くの氏族の祖とする。神沼河耳命が天下を治めた。</p>
-      <p>この神倭伊波禮毘古天皇の年齢は百三十七歳で、御陵は畝火山の北の白檮尾の上にあると記される。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">將殺其三弟而。謀之間。</blockquote><p>當藝志美美命が、三人の弟を殺そうと企てていたとき。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">手足和那那岐弖不得殺。</blockquote><p>神八井耳命は手足が震えて、殺すことができなかった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾者不能殺仇。汝命既得殺仇。</blockquote><p>神八井耳命のことば。私は仇を殺せなかったが、あなたはもう仇を殺した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">御年。壹佰參拾漆歳。</blockquote><p>神武天皇の年齢は百三十七歳。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -145,7 +183,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第四 綏靖天皇即位前紀 己卯年冬十一月</span><p>日本書紀では、神渟名川耳尊（神沼河耳命）は弓矢を作らせて手研耳命をねらい、片丘で一人大きな床に寝ていた手研耳命を、震えて矢を放てない兄から弓矢を取って射殺す。古事記は「兵」（武器）とだけ書き、場所も記さない。</p><blockquote lang="zh-Hant">掣取其兄所持弓矢。而射手研耳命。</blockquote></div>
       <div class="ns"><span class="where">巻第四 綏靖天皇即位前紀</span><p>日本書紀では、手研耳命がねらったのは「二弟」で、神武紀でも皇后が生んだ皇子は神八井命と神渟名川耳尊の二人とされる。古事記では三人の弟（日子八井命・神八井耳命・神沼河耳命）である。</p><blockquote lang="zh-Hant">圖害二弟</blockquote></div>
       <div class="ns"><span class="where">巻第三 神武天皇七十六年春三月甲午朔甲辰</span><p>日本書紀では、神武天皇は七十六年春三月甲午朔甲辰に橿原宮で亡くなり、年は百二十七歳、翌年に畝傍山の東北の陵に葬られる。古事記では百三十七歳で、御陵は畝火山の北の白檮尾の上とされる。</p><blockquote lang="zh-Hant">時年一百廿七歳</blockquote></div>
@@ -153,12 +191,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="jinmu-sokui.html"><small>← 前の話（中巻・第3話）</small>邇藝速日命の参上と皇后選び</a><a class="next" href="kesshi.html"><small>次の話（中巻・第5話）→</small>綏靖天皇から開化天皇まで</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三" target="_blank" rel="noopener">日本書紀 巻第三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第四" target="_blank" rel="noopener">日本書紀 巻第四</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">將殺其三弟而。謀之間。</blockquote><p>當藝志美美命が、三人の弟を殺そうと企てていたとき。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">手足和那那岐弖不得殺。</blockquote><p>神八井耳命は手足が震えて、殺すことができなかった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾者不能殺仇。汝命既得殺仇。</blockquote><p>神八井耳命のことば。私は仇を殺せなかったが、あなたはもう仇を殺した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">御年。壹佰參拾漆歳。</blockquote><p>神武天皇の年齢は百三十七歳。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第三" target="_blank" rel="noopener">日本書紀 巻第三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第四" target="_blank" rel="noopener">日本書紀 巻第四</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

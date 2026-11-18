@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第13話（全13話）</p>
-    <h1>武烈天皇から推古天皇まで</h1>
-    <p class="pg-lead">武烈天皇から推古天皇までの十代は、宮・后・御子・治世の年数・御陵を並べる系譜の記事が中心である。物語にあたる記事は、跡継ぎのない武烈天皇の崩後に品太天皇五世の孫の袁本杼命が近淡海国から迎えられたことと、継体天皇の御世の竺紫君石井の討伐に限られる。</p>
-    <div class="xlink"><a href="../shoki/buretsu.html">日本書紀で読む：武烈天皇と平群氏の滅亡 ›</a><a href="../shoki/keitai.html">日本書紀で読む：継体天皇の擁立と筑紫国造磐井の反乱 ›</a><a href="../shoki/ankan-senka.html">日本書紀で読む：安閑天皇・宣化天皇と屯倉の設置 ›</a><a href="../shoki/kinmei-1.html">日本書紀で読む：欽明天皇の即位・任那復興の協議と仏像の献上 ›</a><a href="../shoki/kinmei-2.html">日本書紀で読む：聖明王の戦死と任那の滅亡 ›</a><a href="../shoki/bidatsu.html">日本書紀で読む：敏達天皇と高麗の国書・仏法の始まり ›</a><a href="../shoki/yomei-sushun.html">日本書紀で読む：用明天皇・崇峻天皇と物部守屋の滅亡 ›</a><a href="../shoki/suiko-1.html">日本書紀で読む：推古天皇の即位と冠位十二階・憲法十七条 ›</a><a href="../shoki/suiko-2.html">日本書紀で読む：推古天皇と大唐への使い・上宮太子の死 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第13話（全13話）</p>
+        <h1>武烈天皇から推古天皇まで</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">武烈天皇から推古天皇までの十代は、宮・后・御子・治世の年数・御陵を並べる系譜の記事が中心である。物語にあたる記事は、跡継ぎのない武烈天皇の崩後に品太天皇五世の孫の袁本杼命が近淡海国から迎えられたことと、継体天皇の御世の竺紫君石井の討伐に限られる。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/buretsu.html">日本書紀で読む：武烈天皇と平群氏の滅亡 ›</a><a href="../shoki/keitai.html">日本書紀で読む：継体天皇の擁立と筑紫国造磐井の反乱 ›</a><a href="../shoki/ankan-senka.html">日本書紀で読む：安閑天皇・宣化天皇と屯倉の設置 ›</a><a href="../shoki/kinmei-1.html">日本書紀で読む：欽明天皇の即位・任那復興の協議と仏像の献上 ›</a><a href="../shoki/kinmei-2.html">日本書紀で読む：聖明王の戦死と任那の滅亡 ›</a><a href="../shoki/bidatsu.html">日本書紀で読む：敏達天皇と高麗の国書・仏法の始まり ›</a><a href="../shoki/yomei-sushun.html">日本書紀で読む：用明天皇・崇峻天皇と物部守屋の滅亡 ›</a><a href="../shoki/suiko-1.html">日本書紀で読む：推古天皇の即位と冠位十二階・憲法十七条 ›</a><a href="../shoki/suiko-2.html">日本書紀で読む：推古天皇と大唐への使い・上宮太子の死 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>小長谷若雀命と袁本杼命</h3>
+      <p class="t">小長谷若雀命（武烈天皇）は長谷の列木宮で八年間天下を治めた。太子がなかったので、御子代として小長谷部を定めた。御陵は片岡の石坏岡にある。天皇が崩じると日継を知らす王がいなかったので、品太天皇の五世の孫の袁本杼命を近淡海国から上らせ、手白髪命と結婚させて天下を授けた。</p>
+      <h3>袁本杼命の后と御子</h3>
+      <p class="t">袁本杼命（継体天皇）は伊波礼の玉穂宮で天下を治めた。三尾君らの祖の若比売、尾張連らの祖の凡連の妹の目子郎女、意富祁天皇の御子で大后の手白髪命などを娶り、御子は合わせて十九王（男七・女十二）であった。そのうち天国押波流岐広庭命・広国押建金日命・建小広国押楯命が天下を治め、佐佐宜王は伊勢神宮を拝した。この御世に竺紫君石井が天皇の命に従わず無礼が多かったので、物部荒甲之大連と大伴之金村連の二人を遣わして石井を殺した。天皇の御年は四十三歳、御陵は三嶋の藍の御陵である。</p>
+      <h3>安閑天皇と宣化天皇</h3>
+      <p class="t">広国押建金日命（安閑天皇）は勾の金箸宮で天下を治め、御子はなく、御陵は河内の古市の高屋村にある。建小広国押楯命（宣化天皇）は檜埛の廬入野宮で天下を治め、意祁天皇の御子の橘之中比売命を娶って石比売命・小石比売命・倉之若江王が生まれ、川内之若子比売からは火穂王・恵波王が生まれた。</p>
+      <h3>天国押波流岐広庭天皇の后と御子</h3>
+      <p class="t">天国押波流岐広庭天皇（欽明天皇）は師木嶋大宮で天下を治めた。宣化天皇の御子の石比売命（原文では「檜脾天皇之御子」）とその妹の小石比売命、春日の日爪臣の娘の糠子郎女、宗賀の稲目宿禰大臣の娘の岐多斯比売、その姨の小兄比売を娶り、御子は合わせて二十五王であった。そのうち沼名倉太玉敷命・橘之豊日命・豊御気炊屋比売命・長谷部之若雀命の四王が天下を治めた。</p>
+      <h3>沼名倉太玉敷命の后と御子</h3>
+      <p class="t">沼名倉太玉敷命（敏達天皇）は他田宮で十四年天下を治めた。庶妹の豊御食炊屋比売命、伊勢大鹿首の娘の小熊子郎女、息長真手王の娘の比呂比売命、春日中若子の娘の老女子郎女を娶り、御子は合わせて十七王であった。そのうち日子人太子が庶妹の田村王（亦の名、糠代比売命）を娶って生んだ子が、岡本宮で天下を治めた天皇であると記される。御陵は川内の科長にある。</p>
+      <h3>橘豊日命から豊御食炊屋比売命まで</h3>
+      <p class="t">橘豊日命（用明天皇）は池辺宮で三年天下を治め、稲目宿禰大臣の娘の意富芸多志比売、庶妹の間人穴太部王などを娶り、間人穴太部王から上宮之厩戸豊聡耳命らが生まれた。御陵は石寸の掖上にあり、のちに科長の中陵に遷された。長谷部若雀天皇（崇峻天皇）は倉椅柴垣宮で四年天下を治め、御陵は倉椅岡の上にある。豊御食炊屋比売命（推古天皇）は小治田宮で三十七年天下を治め、御陵は大野岡の上にあり、のちに科長の大陵に遷された。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>武烈天皇（小長谷若雀命）には太子がなく、崩後、品太天皇五世の孫の袁本杼命（継体天皇）が近淡海国から迎えられ、手白髪命と結婚して天下を授けられた。</li>
         <li><span class="kind ">本文</span>継体天皇の御世、竺紫君石井が天皇の命に従わず無礼が多かったため、物部荒甲之大連と大伴之金村連が遣わされて石井を殺した。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>古事記の最後の記事は推古天皇（豊御食炊屋比売命）で、小治田宮で三十七年天下を治め、御陵は大野岡の上からのちに科長の大陵に遷されたと記す。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>継体天皇の没年齢は、古事記では四十三歳、日本書紀では八十二歳と大きく異なる。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>小長谷若雀命（武烈天皇）は長谷の列木宮で八年間天下を治めた。太子がなかったので、御子代として小長谷部を定めた。御陵は片岡の石坏岡にある。天皇が崩じると日継を知らす王がいなかったので、品太天皇の五世の孫の袁本杼命を近淡海国から上らせ、手白髪命と結婚させて天下を授けた。</p>
-      <p>袁本杼命（継体天皇）は伊波礼の玉穂宮で天下を治めた。三尾君らの祖の若比売、尾張連らの祖の凡連の妹の目子郎女、意富祁天皇の御子で大后の手白髪命などを娶り、御子は合わせて十九王（男七・女十二）であった。そのうち天国押波流岐広庭命・広国押建金日命・建小広国押楯命が天下を治め、佐佐宜王は伊勢神宮を拝した。この御世に竺紫君石井が天皇の命に従わず無礼が多かったので、物部荒甲之大連と大伴之金村連の二人を遣わして石井を殺した。天皇の御年は四十三歳、御陵は三嶋の藍の御陵である。</p>
-      <p>広国押建金日命（安閑天皇）は勾の金箸宮で天下を治め、御子はなく、御陵は河内の古市の高屋村にある。建小広国押楯命（宣化天皇）は檜埛の廬入野宮で天下を治め、意祁天皇の御子の橘之中比売命を娶って石比売命・小石比売命・倉之若江王が生まれ、川内之若子比売からは火穂王・恵波王が生まれた。</p>
-      <p>天国押波流岐広庭天皇（欽明天皇）は師木嶋大宮で天下を治めた。宣化天皇の御子の石比売命（原文では「檜脾天皇之御子」）とその妹の小石比売命、春日の日爪臣の娘の糠子郎女、宗賀の稲目宿禰大臣の娘の岐多斯比売、その姨の小兄比売を娶り、御子は合わせて二十五王であった。そのうち沼名倉太玉敷命・橘之豊日命・豊御気炊屋比売命・長谷部之若雀命の四王が天下を治めた。</p>
-      <p>沼名倉太玉敷命（敏達天皇）は他田宮で十四年天下を治めた。庶妹の豊御食炊屋比売命、伊勢大鹿首の娘の小熊子郎女、息長真手王の娘の比呂比売命、春日中若子の娘の老女子郎女を娶り、御子は合わせて十七王であった。そのうち日子人太子が庶妹の田村王（亦の名、糠代比売命）を娶って生んだ子が、岡本宮で天下を治めた天皇であると記される。御陵は川内の科長にある。</p>
-      <p>橘豊日命（用明天皇）は池辺宮で三年天下を治め、稲目宿禰大臣の娘の意富芸多志比売、庶妹の間人穴太部王などを娶り、間人穴太部王から上宮之厩戸豊聡耳命らが生まれた。御陵は石寸の掖上にあり、のちに科長の中陵に遷された。長谷部若雀天皇（崇峻天皇）は倉椅柴垣宮で四年天下を治め、御陵は倉椅岡の上にある。豊御食炊屋比売命（推古天皇）は小治田宮で三十七年天下を治め、御陵は大野岡の上にあり、のちに科長の大陵に遷された。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">品太天皇五世之孫。袁本杼命。自近淡海國。令上坐而。</blockquote><p>品太天皇の五世の孫である袁本杼命を、近淡海国から上らせた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">竺紫君石井。不從天皇之命而。多无禮。</blockquote><p>竺紫君石井が天皇の命令に従わず、無礼なふるまいが多かった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">生御子。上宮之厩戶豐聰耳命。</blockquote><p>用明天皇と間人穴太部王の間に、上宮之厩戸豊聡耳命が生まれた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">坐小治田宮。治天下參拾漆歲。</blockquote><p>推古天皇は小治田宮で三十七年天下を治めた。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -160,7 +200,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十七 継体天皇二十五年春二月丁未</span><p>古事記は継体天皇の御年を四十三歳とするが、日本書紀は二十五年（歳次辛亥）に磐余玉穂宮で崩じ、時に八十二歳であったとし、藍野陵に葬ったとする。書紀は「或本」に二十八年（甲寅）に崩じたとする説があることも注記している。</p><blockquote lang="zh-Hant">天皇崩于磐余玉穗宮。時年八十二。</blockquote></div>
       <div class="ns"><span class="where">巻第十七 継体天皇二十二年冬十一月甲寅朔甲子</span><p>古事記は物部荒甲之大連と大伴之金村連の二人が石井を殺したとするが、日本書紀では大将軍の物部大連麁鹿火が筑紫の御井郡で磐井と戦って斬ったとし、その子の筑紫君葛子が糟屋屯倉を献じて死罪をまぬかれようとしたことも記す。</p><blockquote lang="zh-Hant">大將軍物部大連麁鹿火、親與賊帥磐井、交戰於筑紫御井郡。</blockquote></div>
       <div class="ns"><span class="where">巻第二十二 推古天皇三十六年秋九月己巳朔戊子</span><p>古事記は推古天皇の御陵を大野岡の上（のちに科長大陵へ遷す）とするが、日本書紀では、天皇は厚く葬らず竹田皇子の陵に葬るよう遺詔し、三十六年九月にそのとおり竹田皇子の陵に葬られたとする。</p><blockquote lang="zh-Hant">便宜葬于竹田皇子之陵。</blockquote></div>
@@ -168,12 +208,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kenzo.html"><small>← 前の話（下巻・第12話）</small>顕宗天皇・仁賢天皇（置目老媼と父の御陵）</a><span></span></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">日本書紀 巻第十七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">日本書紀 巻第二十二</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">品太天皇五世之孫。袁本杼命。自近淡海國。令上坐而。</blockquote><p>品太天皇の五世の孫である袁本杼命を、近淡海国から上らせた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">竺紫君石井。不從天皇之命而。多无禮。</blockquote><p>竺紫君石井が天皇の命令に従わず、無礼なふるまいが多かった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">生御子。上宮之厩戶豐聰耳命。</blockquote><p>用明天皇と間人穴太部王の間に、上宮之厩戸豊聡耳命が生まれた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">坐小治田宮。治天下參拾漆歲。</blockquote><p>推古天皇は小治田宮で三十七年天下を治めた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">日本書紀 巻第十七</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">日本書紀 巻第二十二</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

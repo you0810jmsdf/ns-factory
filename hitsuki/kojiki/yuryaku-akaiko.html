@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第9話（全13話）</p>
-    <h1>雄略天皇と若日下部王・赤猪子・吉野の童女</h1>
-    <p class="pg-lead">雄略天皇（大長谷若建命）の段の前半には、若日下部王への求婚と白い犬、八十年も天皇の言葉を待ち続けた引田部赤猪子、吉野の童女の舞、阿岐豆野の名の起こりが語られる。どの話にも天皇や相手の女性の歌が添えられている。</p>
-    <div class="xlink"><a href="../shoki/yuryaku-1.html">日本書紀で読む：雄略天皇の即位と葛城山の一事主神 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第9話（全13話）</p>
+        <h1>雄略天皇と若日下部王・赤猪子・吉野の童女</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">雄略天皇（大長谷若建命）の段の前半には、若日下部王への求婚と白い犬、八十年も天皇の言葉を待ち続けた引田部赤猪子、吉野の童女の舞、阿岐豆野の名の起こりが語られる。どの話にも天皇や相手の女性の歌が添えられている。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/yuryaku-1.html">日本書紀で読む：雄略天皇の即位と葛城山の一事主神 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>大長谷若建命の后と御子</h3>
+      <p class="t">大長谷若建命は長谷の朝倉宮で天下を治めた。大日下王の妹の若日下部王を娶ったが子はなく、また都夫良意富美の娘の韓比売を娶って白髪命と若帯比売命が生まれた。白髪太子の御名代として白髪部を定め、長谷部舎人・河瀬舎人も定めた。このとき呉人が渡って来たので呉原に住まわせ、その地を呉原と呼ぶようになったと記される。</p>
+      <h3>志幾の大県主の家を焼かせようとする</h3>
+      <p class="t">若日下部王がまだ日下にいたころ、天皇は日下の直越の道を通って河内へ出かけた。山の上から国を見ると、屋根に堅魚木を上げた家があり、志幾の大県主の家だと聞いた天皇は、自分の御殿に似せて造ったと怒って焼かせようとした。大県主は恐れて謝り、布でつなぎ鈴をつけた白い犬を献上したので、天皇は火をつけるのをやめさせた。</p>
+      <h3>犬を若日下部王へ届ける</h3>
+      <p class="t">天皇はその犬を若日下部王のもとへ届け、道で得た珍しい物だとして妻問いの品にした。若日下部王は、日を背にしてお出ましになったことはたいへん恐れ多いので、自分から参上してお仕えすると申し上げた。天皇は宮に帰るとき、山の坂の上に立って歌を詠み、その歌を使いに持たせて返した。</p>
+      <h3>八十年待ち続けた引田部赤猪子</h3>
+      <p class="t">あるとき天皇が美和河のほとりに出かけると、衣を洗う美しい童女がいた。名を問うと引田部赤猪子と答えたので、天皇は「夫に嫁がずにいなさい。いずれ召そう」と告げて宮に帰った。赤猪子はその言葉を待ち続けて八十年が過ぎ、容姿も衰えたが、待っていた心を示さずにはいられず、たくさんの品を持たせて参上した。天皇は先の言葉をすっかり忘れていて、どこの老女か、何のために来たのかと尋ねた。</p>
+      <h3>赤猪子に歌を二首贈る</h3>
+      <p class="t">赤猪子がいきさつを申し上げると、天皇はたいへん驚き、志を守って盛りの年を空しく過ごさせたことを深く哀れんだ。心では結婚したいと思ったが、あまりに年老いていることをはばかって果たさず、歌を二首贈った。赤猪子は泣いて丹摺の袖をすっかり濡らし、歌二首で答えた。天皇は多くの品を与えて帰らせ、この四首は志都歌であると記される。</p>
+      <h3>吉野の童女が舞う</h3>
+      <p class="t">天皇が吉野の宮に出かけたとき、吉野川の浜に姿の美しい童女がいたので、結婚して宮に帰った。のちに再び吉野へ出かけたとき、その童女に出会った場所にとどまって大御呉床に座り、琴を弾いて童女に舞わせた。その舞がみごとだったので、天皇は歌を作った。</p>
+      <h3>阿岐豆野の名の由来</h3>
+      <p class="t">続いて阿岐豆野で狩りをしたとき、呉床に座っていた天皇の腕に虻が食いつくと、蜻蛉（あきづ）が飛んで来てその虻を食って飛び去った。天皇はこのことを歌に詠み、それ以来その野を阿岐豆野と呼ぶようになったという。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>引田部赤猪子は、天皇の「いずれ召そう」という言葉を八十年待ち続けたが、天皇はすっかり忘れていた。天皇は驚いて哀れんだが、老齢をはばかって結婚はせず、歌と多くの品を与えて帰した。</li>
         <li><span class="kind ">本文</span>志幾の大県主は天皇の御殿に似せて屋根に堅魚木を上げたため家を焼かれかけ、白い犬を献上して許された。天皇はその犬を若日下部王への妻問いの品にした。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀にも蜻蛉が虻を食う話がある（四年秋八月）が、吉野宮に行幸したのちの河上小野での出来事とし、天皇が群臣に蜻蛉をほめる歌を作らせようとしたが誰も作れず、天皇自ら歌ったとする。</li>
         <li><span class="kind ">本文</span>系譜：天皇は若日下部王（子は無い）と、都夫良意富美の娘の韓比売を娶り、韓比売から白髪命と若帯比売命が生まれた。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>大長谷若建命は長谷の朝倉宮で天下を治めた。大日下王の妹の若日下部王を娶ったが子はなく、また都夫良意富美の娘の韓比売を娶って白髪命と若帯比売命が生まれた。白髪太子の御名代として白髪部を定め、長谷部舎人・河瀬舎人も定めた。このとき呉人が渡って来たので呉原に住まわせ、その地を呉原と呼ぶようになったと記される。</p>
-      <p>若日下部王がまだ日下にいたころ、天皇は日下の直越の道を通って河内へ出かけた。山の上から国を見ると、屋根に堅魚木を上げた家があり、志幾の大県主の家だと聞いた天皇は、自分の御殿に似せて造ったと怒って焼かせようとした。大県主は恐れて謝り、布でつなぎ鈴をつけた白い犬を献上したので、天皇は火をつけるのをやめさせた。</p>
-      <p>天皇はその犬を若日下部王のもとへ届け、道で得た珍しい物だとして妻問いの品にした。若日下部王は、日を背にしてお出ましになったことはたいへん恐れ多いので、自分から参上してお仕えすると申し上げた。天皇は宮に帰るとき、山の坂の上に立って歌を詠み、その歌を使いに持たせて返した。</p>
-      <p>あるとき天皇が美和河のほとりに出かけると、衣を洗う美しい童女がいた。名を問うと引田部赤猪子と答えたので、天皇は「夫に嫁がずにいなさい。いずれ召そう」と告げて宮に帰った。赤猪子はその言葉を待ち続けて八十年が過ぎ、容姿も衰えたが、待っていた心を示さずにはいられず、たくさんの品を持たせて参上した。天皇は先の言葉をすっかり忘れていて、どこの老女か、何のために来たのかと尋ねた。</p>
-      <p>赤猪子がいきさつを申し上げると、天皇はたいへん驚き、志を守って盛りの年を空しく過ごさせたことを深く哀れんだ。心では結婚したいと思ったが、あまりに年老いていることをはばかって果たさず、歌を二首贈った。赤猪子は泣いて丹摺の袖をすっかり濡らし、歌二首で答えた。天皇は多くの品を与えて帰らせ、この四首は志都歌であると記される。</p>
-      <p>天皇が吉野の宮に出かけたとき、吉野川の浜に姿の美しい童女がいたので、結婚して宮に帰った。のちに再び吉野へ出かけたとき、その童女に出会った場所にとどまって大御呉床に座り、琴を弾いて童女に舞わせた。その舞がみごとだったので、天皇は歌を作った。</p>
-      <p>続いて阿岐豆野で狩りをしたとき、呉床に座っていた天皇の腕に虻が食いつくと、蜻蛉（あきづ）が飛んで来てその虻を食って飛び去った。天皇はこのことを歌に詠み、それ以来その野を阿岐豆野と呼ぶようになったという。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">汝不嫁夫。今將喚而。</blockquote><p>天皇が赤猪子に告げた言葉。夫に嫁がずにいなさい、いずれ召そう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">仰待天皇之命。既經八十歲。</blockquote><p>赤猪子は天皇の言葉を待ち続け、すでに八十年がたっていた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">爾赤猪子之泣涙。悉濕。其所服之丹摺袖。</blockquote><p>天皇の歌を聞いた赤猪子の涙が、着ていた丹摺の袖をすっかり濡らした。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故自其時。號其野。謂阿岐豆野也。</blockquote><p>このときから、その野を阿岐豆野と呼ぶようになった。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -154,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十四 雄略天皇元年三月 是月</span><p>日本書紀でも葛城円大臣の娘の韓媛が白髪皇子（清寧天皇）と稚足姫皇女を生んだとし、古事記と合うが、書紀は父を「葛城円大臣」と記し、ほかに吉備稚媛・童女君も妃として挙げる。</p><blockquote lang="zh-Hant">元妃葛城圓大臣女曰韓媛。</blockquote></div>
       <div class="ns"><span class="where">巻第十四 雄略天皇四年秋八月庚戌</span><p>日本書紀では、吉野宮に行幸した後に河上小野で狩りをしたとき、虻が天皇の臂を咬み、蜻蛉がその虻をくわえて去った。天皇は群臣に蜻蛉をたたえる歌を作らせようとしたが誰も作れず、自ら歌って、その地を蜻蛉野と名づけたとする。</p><blockquote lang="zh-Hant">群臣莫能敢賦者。天皇乃口號曰。</blockquote></div>
       <div class="ns"><span class="where">巻第十四 雄略天皇十四年三月</span><p>日本書紀では、呉の使いを迎えて呉人を桧隈野に住まわせ、そこを呉原と名づけたのは雄略天皇十四年三月のこととする。赤猪子と吉野の童女の話に対応する記事は、書紀の雄略紀では確認できなかった。</p><blockquote lang="zh-Hant">即安置呉人於桧隈野。因名呉原。</blockquote></div>
@@ -162,12 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="anko.html"><small>← 前の話（下巻・第8話）</small>安康天皇と目弱王の変</a><a class="next" href="yuryaku-hitokoto.html"><small>次の話（下巻・第10話）→</small>葛城の一言主大神と雄略天皇の歌</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">汝不嫁夫。今將喚而。</blockquote><p>天皇が赤猪子に告げた言葉。夫に嫁がずにいなさい、いずれ召そう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">仰待天皇之命。既經八十歲。</blockquote><p>赤猪子は天皇の言葉を待ち続け、すでに八十年がたっていた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">爾赤猪子之泣涙。悉濕。其所服之丹摺袖。</blockquote><p>天皇の歌を聞いた赤猪子の涙が、着ていた丹摺の袖をすっかり濡らした。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故自其時。號其野。謂阿岐豆野也。</blockquote><p>このときから、その野を阿岐豆野と呼ぶようになった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

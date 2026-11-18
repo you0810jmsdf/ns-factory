@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第6話（全13話）</p>
-    <h1>履中天皇・反正天皇と墨江中王の反乱</h1>
-    <p class="pg-lead">伊邪本和気命（履中天皇）は、酔って眠っている間に弟の墨江中王に大殿を焼かれ、阿知直に助けられて石上神宮へ逃れた。疑いを晴らすよう命じられた弟の水歯別命は、隼人の曾婆訶理に墨江中王を殺させたうえでその隼人も斬り、のちに水歯別命が反正天皇として天下を治めた。</p>
-    <div class="xlink"><a href="../shoki/richu-hanzei.html">日本書紀で読む：履中天皇・反正天皇と住吉仲皇子の反乱 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第6話（全13話）</p>
+        <h1>履中天皇・反正天皇と墨江中王の反乱</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">伊邪本和気命（履中天皇）は、酔って眠っている間に弟の墨江中王に大殿を焼かれ、阿知直に助けられて石上神宮へ逃れた。疑いを晴らすよう命じられた弟の水歯別命は、隼人の曾婆訶理に墨江中王を殺させたうえでその隼人も斬り、のちに水歯別命が反正天皇として天下を治めた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/richu-hanzei.html">日本書紀で読む：履中天皇・反正天皇と住吉仲皇子の反乱 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>伊邪本和気命の后と御子</h3>
+      <p class="t">伊邪本和気命（履中天皇）は、伊波礼の若桜宮で天下を治めた。葛城之曾都毘古の子 葦田宿禰の娘、黒比売命をめとり、市辺之忍歯王・御馬王・青海郎女（亦の名は飯豊郎女）が生まれた。</p>
+      <h3>墨江中王が大殿に火をつける</h3>
+      <p class="t">天皇がまだ難波宮にいたころ、大嘗のあとの豊明の宴で、大御酒に酔って寝てしまった。そのとき弟の墨江中王が天皇を討とうとして、大殿に火をつけた。倭漢直の祖 阿知直が天皇を連れ出して馬に乗せ、倭へ向かわせた。多遅比野で目をさました天皇が「ここはどこか」と尋ねると、阿知直は、墨江中王が大殿に火をつけたので連れて倭へ逃げているのだと答えた。天皇は歌をうたい、波邇賦坂に着いて難波宮を望むと、火はまだ燃えていたので、また歌った。</p>
+      <h3>大坂山で女に出会う</h3>
+      <p class="t">大坂山の入口で一人の女に出会った。女は「武器を持った者たちが大勢この山をふさいでいます。当岐麻道からまわって越えてください」と告げ、天皇は歌をうたった。こうして天皇は上っていき、石上神宮に入った。</p>
+      <h3>水歯別命が墨江中王を殺させる</h3>
+      <p class="t">同母弟の水歯別命が参上したが、天皇は「おまえも墨江中王と同じ心ではないかと疑うので、会って話さない」と伝えさせた。水歯別命が「わたしにけがれた心はなく、墨江中王とも同じではありません」と答えると、天皇は「それなら難波へ戻って墨江中王を殺して来い。そのとき必ず会って話そう」と命じた。水歯別命は難波に戻り、墨江中王の近くに仕える隼人の曾婆訶理に「わたしの言うとおりにすれば、わたしが天皇となり、おまえを大臣にして天下を治めよう」ともちかけ、多くの品を与えた。曾婆訶理は主人が厠に入るのをうかがって、矛で刺し殺した。</p>
+      <h3>曾婆訶理を斬る水歯別命</h3>
+      <p class="t">水歯別命は曾婆訶理を連れて倭へ上る途中、大坂山の入口で考えた。「曾婆訶理はわたしのために大きな手柄を立てたが、自分の主君を殺したのは不義である。しかし手柄に報いなければ信がないことになる。約束を果たしつつ、その心はおそろしい。だから手柄には報いても、その身は滅ぼそう」。そこで仮宮を造って豊楽を開き、隼人に大臣の位を与えて百官に拝ませた。喜ぶ隼人と同じ盃で酒を飲むことになったが、顔が隠れるほどの大きな椀に酒を盛り、王子が先に、隼人が後に飲んだ。隼人が飲むとき大椀が顔をおおったので、席の下に置いていた剣を取り出して、その首を斬った。</p>
+      <h3>近飛鳥と遠飛鳥</h3>
+      <p class="t">翌日に上っていったので、その地を近飛鳥という。倭に着くと「今日はここに留まって祓禊をし、明日参上して神宮を拝もう」と言ったので、その地を遠飛鳥という。こうして石上神宮に参り、「事はすでに平らげました」と申し上げさせると、天皇は呼び入れて話をした。天皇は阿知直をはじめて蔵官に任じ、粮地を与えた。またこの御世に若桜部・比売陀君の名や姓を与え、伊波礼部を定めた。天皇の御年は六十四歳、御陵は毛受にある。</p>
+      <h3>水歯別命の御子と御陵</h3>
+      <p class="t">水歯別命（反正天皇）は、多治比の柴垣宮で天下を治めた。天皇の身の丈は九尺二寸半、歯は長さ一寸・幅二分で、上下ともそろって、貫いた珠のようであった。丸邇の許碁登臣の娘 都怒郎女をめとって甲斐郎女・都夫良郎女が生まれ、同じ臣の娘 弟比売をめとって財王・多訶弁郎女が生まれた。御子は合わせて四人。御年は六十歳で、御陵は毛受野にある。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>難波宮での大嘗の豊明の宴で、伊邪本和気命（履中天皇）が酒に酔って寝ている間に、弟の墨江中王が天皇を討とうとして大殿に火をつけた。倭漢直の祖 阿知直が天皇を馬に乗せて倭へ逃がした。</li>
         <li><span class="kind ">本文</span>天皇は大坂山の入口で女に教えられて当岐麻道をまわり、石上神宮に入った。そこへ来た弟の水歯別命を疑い、墨江中王を殺してから来るよう命じた。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、事件の始まりは、住吉仲皇子が太子の名をかたって黒媛のもとへ行ったことにあり、太子を救うのは平群木菟宿禰・物部大前宿禰・阿知使主の三人である。仲皇子を刺したのは近習の隼人 刺領巾で、木菟宿禰が主君を殺した者を生かしておけないと進言して刺領巾を殺す。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、石上神宮が王権の神宝を納める神府・武器庫としての役割を担い、伊勢・出雲とともに記紀で「神宮」と呼ばれる数少ない神社の一つであったと説明している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>伊邪本和気命（履中天皇）は、伊波礼の若桜宮で天下を治めた。葛城之曾都毘古の子 葦田宿禰の娘、黒比売命をめとり、市辺之忍歯王・御馬王・青海郎女（亦の名は飯豊郎女）が生まれた。</p>
-      <p>天皇がまだ難波宮にいたころ、大嘗のあとの豊明の宴で、大御酒に酔って寝てしまった。そのとき弟の墨江中王が天皇を討とうとして、大殿に火をつけた。倭漢直の祖 阿知直が天皇を連れ出して馬に乗せ、倭へ向かわせた。多遅比野で目をさました天皇が「ここはどこか」と尋ねると、阿知直は、墨江中王が大殿に火をつけたので連れて倭へ逃げているのだと答えた。天皇は歌をうたい、波邇賦坂に着いて難波宮を望むと、火はまだ燃えていたので、また歌った。</p>
-      <p>大坂山の入口で一人の女に出会った。女は「武器を持った者たちが大勢この山をふさいでいます。当岐麻道からまわって越えてください」と告げ、天皇は歌をうたった。こうして天皇は上っていき、石上神宮に入った。</p>
-      <p>同母弟の水歯別命が参上したが、天皇は「おまえも墨江中王と同じ心ではないかと疑うので、会って話さない」と伝えさせた。水歯別命が「わたしにけがれた心はなく、墨江中王とも同じではありません」と答えると、天皇は「それなら難波へ戻って墨江中王を殺して来い。そのとき必ず会って話そう」と命じた。水歯別命は難波に戻り、墨江中王の近くに仕える隼人の曾婆訶理に「わたしの言うとおりにすれば、わたしが天皇となり、おまえを大臣にして天下を治めよう」ともちかけ、多くの品を与えた。曾婆訶理は主人が厠に入るのをうかがって、矛で刺し殺した。</p>
-      <p>水歯別命は曾婆訶理を連れて倭へ上る途中、大坂山の入口で考えた。「曾婆訶理はわたしのために大きな手柄を立てたが、自分の主君を殺したのは不義である。しかし手柄に報いなければ信がないことになる。約束を果たしつつ、その心はおそろしい。だから手柄には報いても、その身は滅ぼそう」。そこで仮宮を造って豊楽を開き、隼人に大臣の位を与えて百官に拝ませた。喜ぶ隼人と同じ盃で酒を飲むことになったが、顔が隠れるほどの大きな椀に酒を盛り、王子が先に、隼人が後に飲んだ。隼人が飲むとき大椀が顔をおおったので、席の下に置いていた剣を取り出して、その首を斬った。</p>
-      <p>翌日に上っていったので、その地を近飛鳥という。倭に着くと「今日はここに留まって祓禊をし、明日参上して神宮を拝もう」と言ったので、その地を遠飛鳥という。こうして石上神宮に参り、「事はすでに平らげました」と申し上げさせると、天皇は呼び入れて話をした。天皇は阿知直をはじめて蔵官に任じ、粮地を与えた。またこの御世に若桜部・比売陀君の名や姓を与え、伊波礼部を定めた。天皇の御年は六十四歳、御陵は毛受にある。</p>
-      <p>水歯別命（反正天皇）は、多治比の柴垣宮で天下を治めた。天皇の身の丈は九尺二寸半、歯は長さ一寸・幅二分で、上下ともそろって、貫いた珠のようであった。丸邇の許碁登臣の娘 都怒郎女をめとって甲斐郎女・都夫良郎女が生まれ、同じ臣の娘 弟比売をめとって財王・多訶弁郎女が生まれた。御子は合わせて四人。御年は六十歳で、御陵は毛受野にある。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">於大御酒宇良宜而。大御寢也</blockquote><p>大御酒に酔って楽しくなり、眠ってしまった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">火著大殿</blockquote><p>（墨江中王が）大殿に火をつけた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">爲吾雖有大功。既殺己君。是不義</blockquote><p>わたしのために大きな手柄はあるが、自分の主君を殺した。これは不義である（水歯別命の考え）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">御齒長一寸廣二分。上下等齊。既如貫珠</blockquote><p>（反正天皇の）歯は長さ一寸・幅二分で、上下ともそろい、貫いた珠のようであった。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -152,7 +193,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十二 履中天皇即位前紀（仁徳天皇八十七年）</span><p>日本書紀では、太子（履中）が妃にしようとした黒媛のもとへ、使いの住吉仲皇子が太子の名をかたって通い、それが知られるのを恐れた仲皇子が兵を起こして太子の宮を焼いたとする。古事記は墨江中王が火をつけたことだけを記し、理由は書かない。</p><blockquote lang="zh-Hant">時仲皇子冒太子名</blockquote></div>
       <div class="ns"><span class="where">巻第十二 履中天皇即位前紀（仁徳天皇八十七年）</span><p>日本書紀では、仲皇子を厠で刺し殺した隼人の名は刺領巾で、木菟宿禰の進言によって殺される。古事記の曾婆訶理のように大臣の位を与える宴を開いて斬る話はない。</p><blockquote lang="zh-Hant">乃殺刺領巾</blockquote></div>
       <div class="ns"><span class="where">巻第十二 履中天皇六年三月壬午朔丙申</span><p>日本書紀では、履中天皇は六年三月に稚桜宮で崩じ、時に七十歳とする。古事記は御年六十四歳とする。</p><blockquote lang="zh-Hant">時年七十</blockquote></div>
@@ -160,12 +201,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="nintoku-kari.html"><small>← 前の話（下巻・第5話）</small>雁の卵の歌と枯野の船</a><a class="next" href="karu.html"><small>次の話（下巻・第7話）→</small>允恭天皇と軽太子・軽大郎女</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">日本書紀 巻第十二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">於大御酒宇良宜而。大御寢也</blockquote><p>大御酒に酔って楽しくなり、眠ってしまった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">火著大殿</blockquote><p>（墨江中王が）大殿に火をつけた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">爲吾雖有大功。既殺己君。是不義</blockquote><p>わたしのために大きな手柄はあるが、自分の主君を殺した。これは不義である（水歯別命の考え）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">御齒長一寸廣二分。上下等齊。既如貫珠</blockquote><p>（反正天皇の）歯は長さ一寸・幅二分で、上下ともそろい、貫いた珠のようであった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">日本書紀 巻第十二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

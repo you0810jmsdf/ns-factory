@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第1話（全13話）</p>
-    <h1>仁徳天皇の即位と民のかまど</h1>
-    <p class="pg-lead">大雀命（仁徳天皇）は難波の高津宮で天下を治め、堤や池、堀江や港をつぎつぎに造った。高い山から国中に炊事の煙が立たないのを見て三年間 課役を免除し、民が豊かになったので、その御世は「聖帝の世」とたたえられた。</p>
-    <div class="xlink"><a href="../shoki/nintoku.html">日本書紀で読む：仁徳天皇と民のかまど・磐之媛皇后 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第1話（全13話）</p>
+        <h1>仁徳天皇の即位と民のかまど</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">大雀命（仁徳天皇）は難波の高津宮で天下を治め、堤や池、堀江や港をつぎつぎに造った。高い山から国中に炊事の煙が立たないのを見て三年間 課役を免除し、民が豊かになったので、その御世は「聖帝の世」とたたえられた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/nintoku.html">日本書紀で読む：仁徳天皇と民のかまど・磐之媛皇后 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>大雀命の后と御子</h3>
+      <p class="t">大雀命（仁徳天皇）は、難波の高津宮で天下を治めた。葛城之曾都毘古の娘である石之日売命を大后とし、大江之伊邪本和気命・墨江之中津王・蝮之水歯別命・男浅津間若子宿禰命の四人の御子が生まれた。また日向の諸県君牛諸の娘、髪長比売をめとり、波多毘能大郎子（亦の名は大日下王）と波多毘能若郎女（亦の名は長日比売命・若日下部命）が生まれた。</p>
+      <h3>八田若郎女と、御名代</h3>
+      <p class="t">天皇はさらに異母妹の八田若郎女と宇遅能若郎女をめとったが、この二人に御子はなかった。御子は合わせて六人（男王五人・女王一人）で、そのうち伊邪本和気命・蝮之水歯別命・男浅津間若子宿禰命の三人がのちに天下を治めた、と記す。大后のために葛城部、太子の伊邪本和気命のために壬生部、水歯別命のために蝮部、大日下王のために大日下部、若日下部王のために若日下部が、それぞれ御名代として定められた。</p>
+      <h3>茨田堤と難波の堀江を作る</h3>
+      <p class="t">この御世には、秦人を使って茨田堤と茨田の三宅を作り、丸邇池と依網池を作った。また難波の堀江を掘って海に通じさせ、小椅江を掘り、墨江の津を定めた。</p>
+      <h3>国に煙が立たず課役を免除</h3>
+      <p class="t">あるとき天皇は高い山に登って四方の国を見わたし、「国の中に煙が立っていない。国じゅうが貧しいのだ。だから今から三年のあいだ、人民の課役をすべて免除せよ」と命じた。そのため宮殿は壊れ、あちこちで雨が漏ったが、少しも修理させず、器で漏る雨を受け、漏らない所へ移って過ごした。</p>
+      <h3>煙が満ちて聖帝の世と呼ぶ</h3>
+      <p class="t">のちに国の中を見ると、煙が国に満ちていた。人民が豊かになったと考えて、天皇は再び課役を課した。こうして百姓は栄え、使役に苦しむことがなかった。それでその御世をたたえて「聖帝の世」と呼んだ、と記す。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大雀命（仁徳天皇）は高い山から国を見て、炊事の煙が立たないことから国じゅうが貧しいと知り、三年間 人民の課役をすべて免除した。その間、宮殿が壊れて雨が漏っても修理させず、器で雨を受けてしのいだ。</li>
         <li><span class="kind ">本文</span>煙が国に満ちたのを見て天皇は課役を再び課したが、百姓は栄えて使役に苦しまなかった。そのためこの御世は「聖帝の世」とたたえられた。</li>
@@ -113,24 +170,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀（巻第十一）では、煙が立たないのを見たのは「高台」からで、四年二月に群臣に語り、三月に三年の課役免除を命じる。七年四月には煙が満ちたのを見て皇后と問答し、十年十月に課役を課して宮室を造らせ、百姓が昼夜を問わず進んで働いたとする。古事記は年月を記さない。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、墨江（住吉）の地は古くスミノエと呼ばれ、王権の対外的な拠点となる港（大津）の役割を、難波津に移ったとされる六世紀前半までは住吉津が担っていたとする見方を紹介している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>大雀命（仁徳天皇）は、難波の高津宮で天下を治めた。葛城之曾都毘古の娘である石之日売命を大后とし、大江之伊邪本和気命・墨江之中津王・蝮之水歯別命・男浅津間若子宿禰命の四人の御子が生まれた。また日向の諸県君牛諸の娘、髪長比売をめとり、波多毘能大郎子（亦の名は大日下王）と波多毘能若郎女（亦の名は長日比売命・若日下部命）が生まれた。</p>
-      <p>天皇はさらに異母妹の八田若郎女と宇遅能若郎女をめとったが、この二人に御子はなかった。御子は合わせて六人（男王五人・女王一人）で、そのうち伊邪本和気命・蝮之水歯別命・男浅津間若子宿禰命の三人がのちに天下を治めた、と記す。大后のために葛城部、太子の伊邪本和気命のために壬生部、水歯別命のために蝮部、大日下王のために大日下部、若日下部王のために若日下部が、それぞれ御名代として定められた。</p>
-      <p>この御世には、秦人を使って茨田堤と茨田の三宅を作り、丸邇池と依網池を作った。また難波の堀江を掘って海に通じさせ、小椅江を掘り、墨江の津を定めた。</p>
-      <p>あるとき天皇は高い山に登って四方の国を見わたし、「国の中に煙が立っていない。国じゅうが貧しいのだ。だから今から三年のあいだ、人民の課役をすべて免除せよ」と命じた。そのため宮殿は壊れ、あちこちで雨が漏ったが、少しも修理させず、器で漏る雨を受け、漏らない所へ移って過ごした。</p>
-      <p>のちに国の中を見ると、煙が国に満ちていた。人民が豊かになったと考えて、天皇は再び課役を課した。こうして百姓は栄え、使役に苦しむことがなかった。それでその御世をたたえて「聖帝の世」と呼んだ、と記す。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">於國中烟不發。國皆貧窮</blockquote><p>国の中に煙が立っていない。国じゅうが貧しいのだ（天皇の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">悉除人民之課役</blockquote><p>人民の課役をすべて免除する。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以椷受其漏雨</blockquote><p>器で、漏ってくる雨を受けた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">稱其御世。謂聖帝世也</blockquote><p>その御世をたたえて「聖帝の世」と言う。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -151,7 +190,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十一 仁徳天皇四年春二月己未朔甲子</span><p>日本書紀では、天皇は高台から遠く望んで煙が立たないのを見、群臣に詔して百姓の貧しさを嘆く。古事記の「高山に登って」とは場所の書き方が異なり、年月が記される。</p><blockquote lang="zh-Hant">朕登高臺以遠望之。烟氣不起於域中</blockquote></div>
       <div class="ns"><span class="where">巻第十一 仁徳天皇七年夏四月辛未朔</span><p>日本書紀では、煙が満ちたのを見た天皇が皇后に「朕はもう富んだ」と言い、宮垣も壊れているのにと問う皇后に、百姓が富めば天皇も富むのだと答える問答がある。古事記にはこの問答はない。</p><blockquote lang="zh-Hant">百姓富之。則朕富也</blockquote></div>
       <div class="ns"><span class="where">巻第十一 仁徳天皇十年冬十月</span><p>日本書紀では、諸国の願いを受けてもなお待ち、十年十月にはじめて課役を課して宮室を造ると、百姓が老人や子を連れて自ら材木を運び、すぐに完成したとし、それで今も「聖帝」と称するとする。</p><blockquote lang="zh-Hant">甫科課役。以搆造宮室</blockquote></div>
@@ -159,12 +198,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="amenohiboko.html"><small>← 前の話（中巻・第17話）</small>天之日矛と秋山・春山の兄弟</a><a class="next" href="nintoku-kurohime.html"><small>次の話（下巻・第2話）→</small>石之日売命の嫉妬と黒日売</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">於國中烟不發。國皆貧窮</blockquote><p>国の中に煙が立っていない。国じゅうが貧しいのだ（天皇の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">悉除人民之課役</blockquote><p>人民の課役をすべて免除する。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以椷受其漏雨</blockquote><p>器で、漏ってくる雨を受けた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">稱其御世。謂聖帝世也</blockquote><p>その御世をたたえて「聖帝の世」と言う。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

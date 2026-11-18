@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第6話（全17話）</p>
-    <h1>崇神天皇と三輪の大物主大神</h1>
-    <p class="pg-lead">崇神天皇の時代に疫病がはやると、大物主大神が夢に現れ、意富多多泥古に自分を祭らせれば国が安らぐと告げ、そのとおりに祭ると疫病はやむ。意富多多泥古が神の子孫とわかる理由として、活玉依毘賣のもとに通った男を麻糸でたどると美和山の神社に行き着いたという話が語られる。</p>
-    <div class="xlink"><a href="../shoki/sujin-miwa.html">日本書紀で読む：崇神天皇と三輪の神（大田田根子） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第6話（全17話）</p>
+        <h1>崇神天皇と三輪の大物主大神</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">崇神天皇の時代に疫病がはやると、大物主大神が夢に現れ、意富多多泥古に自分を祭らせれば国が安らぐと告げ、そのとおりに祭ると疫病はやむ。意富多多泥古が神の子孫とわかる理由として、活玉依毘賣のもとに通った男を麻糸でたどると美和山の神社に行き着いたという話が語られる。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/sujin-miwa.html">日本書紀で読む：崇神天皇と三輪の神（大田田根子） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>崇神天皇の御子たち</h3>
+      <p class="t">御眞木入日子印惠命（崇神天皇）は師木の水垣宮で天下を治めた。三人の妻との間に十二人の御子（男七人・女五人）があり、伊久米伊理毘古伊佐知命が後を継いだ。豊木入日子命は上毛野君・下毛野君らの祖、豊鉏比賣命は伊勢大神の宮を拝み祭り、大入杵命は能登臣の祖とされる。倭日子命のときに、初めて陵に人垣を立てたと記される。</p>
+      <h3>疫病と大物主大神の夢</h3>
+      <p class="t">この天皇の時代に疫病が多く起こり、人々が死に絶えそうになった。天皇が嘆いて神牀にいた夜、大物主大神が夢に現れ、「これは私の心によるものだ。意富多多泥古に私を祭らせれば、神の気は起こらず、国は安らかになる」と告げた。そこで早馬の使いを四方に出して探させ、河内の美努村でその人を見つけて差し出した。</p>
+      <h3>意富多多泥古を神主とする</h3>
+      <p class="t">天皇が誰の子かと問うと、意富多多泥古は、大物主大神が陶津耳命の娘の活玉依毘賣を妻として生んだ櫛御方命、その子の飯肩巣見命、その子の建甕槌命の子が自分だと答えた。天皇はたいへん喜び、天下は平らぎ人民は栄えるだろうと言った。そして意富多多泥古を神主として、御諸山で意富美和之大神を拝み祭らせた。</p>
+      <h3>天神地祇の社を定める</h3>
+      <p class="t">さらに伊迦賀色許男命に命じて天之八十毘羅訶を作らせ、天神地祇の社を定めた。宇陀の墨坂神には赤い色の楯と矛を、大坂神には黒い色の楯と矛を祭り、坂の御尾の神や河の瀬の神にも残らず幣帛を奉った。これによって疫病はすっかりやみ、国は安らかになった。</p>
+      <h3>活玉依毘賣と赤土と麻糸</h3>
+      <p class="t">意富多多泥古が神の子とわかったわけは次のとおりである。活玉依毘賣は姿が美しく、比べるもののない立派な男が夜中に通って来て、まもなく身ごもった。父母が不思議に思って尋ねると、名も知らない男が毎晩来ると答えたので、父母は床の前に赤土をまき、麻糸を通した針を男の衣の裾に刺すよう教えた。朝に見ると、麻糸は戸の鉤穴から抜け出ていて、手元に残った麻は三勾だけだった。糸をたどって行くと美和山の神の社に行き着いたので、神の子とわかり、麻が三勾残ったことからその地を美和という。原文の注は、意富多多泥古命を神君・鴨君の祖とする。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>崇神天皇の時代、疫病で人々が死に絶えそうになったとき、大物主大神が夢で「これは私の心によるもの」と告げ、意富多多泥古に祭らせるよう求めた。天皇が河内の美努村から意富多多泥古を探し出し、神主として御諸山で祭らせると、疫病はやんだ。</li>
         <li><span class="kind ">本文</span>活玉依毘賣のもとに夜ごと通う男の衣に麻糸を刺し、その糸をたどると美和山の神の社に行き着いた。麻が三勾残ったことから、その地を「美和」と呼ぶと記される。</li>
@@ -113,24 +170,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、古事記で大物主神が戸の鉤穴から出たと描かれることが、その姿が蛇であることを暗示するとする説を紹介し、日本書紀の崇神天皇十年九月条では「小蛇」と明かされると述べている。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">［出典］</a></li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、墨坂（大和の東の要路）と大坂（大和の西の要路）の神を祭ったことを、疫病が入ってくるのを防ぐために境の神を祭ったものと考える見方を紹介している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">［出典］</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>御眞木入日子印惠命（崇神天皇）は師木の水垣宮で天下を治めた。三人の妻との間に十二人の御子（男七人・女五人）があり、伊久米伊理毘古伊佐知命が後を継いだ。豊木入日子命は上毛野君・下毛野君らの祖、豊鉏比賣命は伊勢大神の宮を拝み祭り、大入杵命は能登臣の祖とされる。倭日子命のときに、初めて陵に人垣を立てたと記される。</p>
-      <p>この天皇の時代に疫病が多く起こり、人々が死に絶えそうになった。天皇が嘆いて神牀にいた夜、大物主大神が夢に現れ、「これは私の心によるものだ。意富多多泥古に私を祭らせれば、神の気は起こらず、国は安らかになる」と告げた。そこで早馬の使いを四方に出して探させ、河内の美努村でその人を見つけて差し出した。</p>
-      <p>天皇が誰の子かと問うと、意富多多泥古は、大物主大神が陶津耳命の娘の活玉依毘賣を妻として生んだ櫛御方命、その子の飯肩巣見命、その子の建甕槌命の子が自分だと答えた。天皇はたいへん喜び、天下は平らぎ人民は栄えるだろうと言った。そして意富多多泥古を神主として、御諸山で意富美和之大神を拝み祭らせた。</p>
-      <p>さらに伊迦賀色許男命に命じて天之八十毘羅訶を作らせ、天神地祇の社を定めた。宇陀の墨坂神には赤い色の楯と矛を、大坂神には黒い色の楯と矛を祭り、坂の御尾の神や河の瀬の神にも残らず幣帛を奉った。これによって疫病はすっかりやみ、国は安らかになった。</p>
-      <p>意富多多泥古が神の子とわかったわけは次のとおりである。活玉依毘賣は姿が美しく、比べるもののない立派な男が夜中に通って来て、まもなく身ごもった。父母が不思議に思って尋ねると、名も知らない男が毎晩来ると答えたので、父母は床の前に赤土をまき、麻糸を通した針を男の衣の裾に刺すよう教えた。朝に見ると、麻糸は戸の鉤穴から抜け出ていて、手元に残った麻は三勾だけだった。糸をたどって行くと美和山の神の社に行き着いたので、神の子とわかり、麻が三勾残ったことからその地を美和という。原文の注は、意富多多泥古命を神君・鴨君の祖とする。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">疫病多起。人民死爲盡。</blockquote><p>疫病が多く起こり、人々が死に絶えそうになった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以意富多多泥古而。令祭我御前者。神氣不起。國安平。</blockquote><p>大物主大神のお告げ。意富多多泥古に私を祭らせれば、神の気は起こらず、国は安らかになる。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以閇蘇紡麻貫針。刺其衣襴。</blockquote><p>「閇蘇」（音で書かれた語）の麻糸を針に通して、男の衣の裾に刺しなさい、という父母の教え。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">因其麻之三勾遺而。名其地謂美和也。</blockquote><p>麻が三勾残ったことから、その地を美和と名づけた。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -156,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第五 崇神天皇七年春二月丁丑朔辛卯</span><p>日本書紀では、崇神天皇七年二月に神浅茅原で占ったとき、大物主神がまず倭迹迹日百襲姫命に神がかりして自分を祭るよう求め、その後に天皇の夢に現れて大田田根子に祭らせよと告げる。古事記では夢のお告げだけが記される。</p><blockquote lang="zh-Hant">神明憑倭迹迹日百襲姫命曰</blockquote></div>
       <div class="ns"><span class="where">巻第五 崇神天皇七年秋八月癸卯朔己酉</span><p>日本書紀では、大田田根子は茅渟県の陶邑で見つかり、父は大物主大神、母は活玉依媛と答えて、大物主大神の子とされる。古事記では河内の美努村で見つかり、大物主大神から四代目の子孫とされる。</p><blockquote lang="zh-Hant">父曰大物主大神。母曰活玉依媛。</blockquote></div>
       <div class="ns"><span class="where">巻第五 崇神天皇十年九月条（是後）</span><p>日本書紀には麻糸で正体をたどる話はなく、代わりに倭迹迹日百襲姫命が大物主神の妻となり、櫛笥の中に美しい小蛇を見て驚く話（箸墓の由来）がある。</p><blockquote lang="zh-Hant">遂有美麗小蛇。其長大如衣紐。</blockquote></div>
@@ -164,12 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="kesshi.html"><small>← 前の話（中巻・第5話）</small>綏靖天皇から開化天皇まで</a><a class="next" href="sujin-shido.html"><small>次の話（中巻・第7話）→</small>四道への派遣と建波邇安王の反乱</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">疫病多起。人民死爲盡。</blockquote><p>疫病が多く起こり、人々が死に絶えそうになった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以意富多多泥古而。令祭我御前者。神氣不起。國安平。</blockquote><p>大物主大神のお告げ。意富多多泥古に私を祭らせれば、神の気は起こらず、国は安らかになる。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以閇蘇紡麻貫針。刺其衣襴。</blockquote><p>「閇蘇」（音で書かれた語）の麻糸を針に通して、男の衣の裾に刺しなさい、という父母の教え。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">因其麻之三勾遺而。名其地謂美和也。</blockquote><p>麻が三勾残ったことから、その地を美和と名づけた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">日本書紀 巻第五</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

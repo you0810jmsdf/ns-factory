@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第9話（全17話）</p>
-    <h1>本牟智和気御子と多遅摩毛理</h1>
-    <p class="pg-lead">長い鬚が胸まで伸びても言葉を話さなかった本牟智和氣御子は、それが出雲大神の祟りと分かって出雲に参拝し、その帰りに初めて言葉を発した。垂仁天皇の代の終わりには、多遲摩毛理が常世國から「登岐士玖能迦玖能木實」（今の橘）を持ち帰ったが、天皇はすでに亡くなっていた。</p>
-    <div class="xlink"><a href="../shoki/suinin-sahohiko.html">日本書紀で読む：垂仁天皇の即位、狭穂彦王の反乱と誉津別命 ›</a><a href="../shoki/suinin-jidai.html">日本書紀で読む：倭姫命と伊勢の祭祀、埴輪の起こり、天日槍の神宝、田道間守 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第9話（全17話）</p>
+        <h1>本牟智和気御子と多遅摩毛理</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">長い鬚が胸まで伸びても言葉を話さなかった本牟智和氣御子は、それが出雲大神の祟りと分かって出雲に参拝し、その帰りに初めて言葉を発した。垂仁天皇の代の終わりには、多遲摩毛理が常世國から「登岐士玖能迦玖能木實」（今の橘）を持ち帰ったが、天皇はすでに亡くなっていた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/suinin-sahohiko.html">日本書紀で読む：垂仁天皇の即位、狭穂彦王の反乱と誉津別命 ›</a><a href="../shoki/suinin-jidai.html">日本書紀で読む：倭姫命と伊勢の祭祀、埴輪の起こり、天日槍の神宝、田道間守 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>二俣小舟と鵠の声</h3>
+      <p class="t">天皇は、尾張の相津にあった二股の榲の木で二俣小舟を作らせ、大和の市師池や輕池に浮かべて御子を遊ばせた。しかしこの御子は、八拳の鬚が胸の前に届くほどになっても、まだ言葉を話さなかった。ある時、空高く飛ぶ鵠の声を聞いて、御子は初めて「阿藝登比」をした。そこで天皇は山邊之大鶙という人を遣わして、その鳥を捕らえさせた。</p>
+      <h3>大鶙が鵠を追って捕らえる</h3>
+      <p class="t">大鶙は鵠を追って、木國から針間國へ、さらに稻羽國を越えて旦波國・多遲麻國へ行き、東へ回って近淡海國・三野國を越え、尾張國から科野國へと追い続けた。ついに高志國の和那美之水門に網を張って鳥を捕らえ、都へ持ち帰って献上した。しかし御子はその鳥を見ても、天皇が思ったようには言葉を話さなかった。</p>
+      <h3>出雲大神の祟りと曙立王</h3>
+      <p class="t">天皇が悩んで眠ると、夢の中で「わが宮を天皇の御舍のように整えれば、御子は必ず話すようになる」と告げられた。太占で占って、どの神の御心かを求めると、出雲大神の御心による祟りであった。御子に付き添う者として曙立王が占いで選ばれ、曙立王は宇氣比によって、鷺巣池の木にいる鷺を落として死なせてはまた生き返らせ、甜白檮の前の葉の広い熊白檮を枯らしてはまた生き返らせた。天皇は曙立王に「倭者師木登美豐朝倉曙立王」という名を与えた。</p>
+      <h3>出雲で大神を拝む</h3>
+      <p class="t">曙立王と菟上王が御子に付き添って出発した。那良戸からも大坂戸からも跛や盲に出会うと占われ、木戸だけが吉い戸と占われたので、そこから出て行き、行く先々で品遲部を定めた。出雲に着いて大神を拝み終えた帰り、肥河の中に黒巣橋を作り、仮宮を建てて御子を住まわせた。出雲國造の祖の岐比佐都美が、青葉の山のような飾りを川下に立てて食事を献じようとしたとき、御子は「この川下の青葉の山のようなものは、山に見えて山ではない。出雲で葦原色許男大神を祭る祝の大庭ではないか」と言った。</p>
+      <h3>肥長比賣と蛇</h3>
+      <p class="t">付き添いの王たちはこれを聞いて喜び、御子を檳榔之長穂宮に移して、都へ早馬の使いを送った。御子は一夜、肥長比賣と結ばれたが、ひそかにのぞくとその美しい人は蛇であったので、恐れて逃げた。肥長比賣が海原を照らしながら船で追ってきたので、御子はいっそう恐れ、「山多和」から船を引き越えて都へ逃げ上った。王たちは「大神を拝んだので、御子が言葉を話されました」と申し上げ、天皇は喜んで菟上王を出雲へ返して神宮を造らせ、御子のために鳥取部・鳥甘部・品遲部・大湯坐・若湯坐を定めた。</p>
+      <h3>圓野比賣の死</h3>
+      <p class="t">天皇は先の后の言葉どおり、美知能宇斯王の娘の比婆須比賣命・弟比賣命・歌凝比賣命・圓野比賣命の四柱を召し上げた。しかし比婆須比賣命と弟比賣命の二柱だけを留め、残りの二柱はたいそう醜いとして国へ送り返した。圓野比賣は恥じて、山代國の相樂で木の枝に首を懸けて死のうとしたので、その地を懸木（今の相樂）といい、弟國に着いたとき深い淵に落ちて死んだので、その地を墮國（今の弟國）という。</p>
+      <h3>多遲摩毛理が木の実を持ち帰る</h3>
+      <p class="t">また天皇は三宅連らの祖の多遲麻毛理を常世國へ遣わし、「登岐士玖能迦玖能木實」を求めさせた。多遲摩毛理はその国に着いて木の実を採り、縵八縵・矛八矛を持ち帰ったが、その間に天皇はすでに亡くなっていた。多遲摩毛理は縵四縵・矛四矛を大后に献じ、残りの縵四縵・矛四矛を天皇の御陵の戸に供え、木の実を捧げて泣き叫びながら持参したことを申し上げ、そのまま泣き叫んで死んだ。その木の実は今の橘である。天皇は百五十三歳で亡くなり、御陵は菅原の御立野の中にある。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>本牟智和氣御子は八拳の鬚が胸に届くほどになっても言葉を話さず、天皇の夢と太占によって、それが出雲大神の御心による祟りだと分かったので、御子は出雲の大神に参拝させられた。</li>
         <li><span class="kind ">本文</span>出雲での参拝の帰り、肥河のほとりで岐比佐都美が飾った青葉の山を見て、御子は初めて言葉を発した。天皇は喜び、菟上王に出雲の神宮を造らせた。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀（垂仁天皇二十三年）では、譽津別命は鵠を見て「是何物耶」と言い、天湯河板擧が捕らえて献じた鵠をもてあそんで言葉を得たとされ、出雲大神の祟りや出雲参拝は語られない。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、この話の出雲大神を大国主神の別名とし、御子のことばにある葦原色許男大神も同じ神の名として扱う。そのうえで、肥長比賣との一夜の話も含めてこの話全体が出雲の祭祀とかかわるとする見方や、出雲の神の祭祀の問題が解決されたことを語る話とみる説を紹介している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">［出典］</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>天皇は、尾張の相津にあった二股の榲の木で二俣小舟を作らせ、大和の市師池や輕池に浮かべて御子を遊ばせた。しかしこの御子は、八拳の鬚が胸の前に届くほどになっても、まだ言葉を話さなかった。ある時、空高く飛ぶ鵠の声を聞いて、御子は初めて「阿藝登比」をした。そこで天皇は山邊之大鶙という人を遣わして、その鳥を捕らえさせた。</p>
-      <p>大鶙は鵠を追って、木國から針間國へ、さらに稻羽國を越えて旦波國・多遲麻國へ行き、東へ回って近淡海國・三野國を越え、尾張國から科野國へと追い続けた。ついに高志國の和那美之水門に網を張って鳥を捕らえ、都へ持ち帰って献上した。しかし御子はその鳥を見ても、天皇が思ったようには言葉を話さなかった。</p>
-      <p>天皇が悩んで眠ると、夢の中で「わが宮を天皇の御舍のように整えれば、御子は必ず話すようになる」と告げられた。太占で占って、どの神の御心かを求めると、出雲大神の御心による祟りであった。御子に付き添う者として曙立王が占いで選ばれ、曙立王は宇氣比によって、鷺巣池の木にいる鷺を落として死なせてはまた生き返らせ、甜白檮の前の葉の広い熊白檮を枯らしてはまた生き返らせた。天皇は曙立王に「倭者師木登美豐朝倉曙立王」という名を与えた。</p>
-      <p>曙立王と菟上王が御子に付き添って出発した。那良戸からも大坂戸からも跛や盲に出会うと占われ、木戸だけが吉い戸と占われたので、そこから出て行き、行く先々で品遲部を定めた。出雲に着いて大神を拝み終えた帰り、肥河の中に黒巣橋を作り、仮宮を建てて御子を住まわせた。出雲國造の祖の岐比佐都美が、青葉の山のような飾りを川下に立てて食事を献じようとしたとき、御子は「この川下の青葉の山のようなものは、山に見えて山ではない。出雲で葦原色許男大神を祭る祝の大庭ではないか」と言った。</p>
-      <p>付き添いの王たちはこれを聞いて喜び、御子を檳榔之長穂宮に移して、都へ早馬の使いを送った。御子は一夜、肥長比賣と結ばれたが、ひそかにのぞくとその美しい人は蛇であったので、恐れて逃げた。肥長比賣が海原を照らしながら船で追ってきたので、御子はいっそう恐れ、「山多和」から船を引き越えて都へ逃げ上った。王たちは「大神を拝んだので、御子が言葉を話されました」と申し上げ、天皇は喜んで菟上王を出雲へ返して神宮を造らせ、御子のために鳥取部・鳥甘部・品遲部・大湯坐・若湯坐を定めた。</p>
-      <p>天皇は先の后の言葉どおり、美知能宇斯王の娘の比婆須比賣命・弟比賣命・歌凝比賣命・圓野比賣命の四柱を召し上げた。しかし比婆須比賣命と弟比賣命の二柱だけを留め、残りの二柱はたいそう醜いとして国へ送り返した。圓野比賣は恥じて、山代國の相樂で木の枝に首を懸けて死のうとしたので、その地を懸木（今の相樂）といい、弟國に着いたとき深い淵に落ちて死んだので、その地を墮國（今の弟國）という。</p>
-      <p>また天皇は三宅連らの祖の多遲麻毛理を常世國へ遣わし、「登岐士玖能迦玖能木實」を求めさせた。多遲摩毛理はその国に着いて木の実を採り、縵八縵・矛八矛を持ち帰ったが、その間に天皇はすでに亡くなっていた。多遲摩毛理は縵四縵・矛四矛を大后に献じ、残りの縵四縵・矛四矛を天皇の御陵の戸に供え、木の実を捧げて泣き叫びながら持参したことを申し上げ、そのまま泣き叫んで死んだ。その木の実は今の橘である。天皇は百五十三歳で亡くなり、御陵は菅原の御立野の中にある。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">八拳鬚至于心前。眞事登波受。</blockquote><p>長い鬚が胸の前に届くほどになっても、まだ言葉を話さなかった。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">修理我宮如天皇之御舍者。御子必眞事登波牟。</blockquote><p>天皇の夢のお告げ。「わが宮を天皇の御舍のように整えれば、御子は必ず話すようになる」。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">因拜大神。大御子物詔故。參上來。</blockquote><p>付き添いの王たちの報告。「大神を拝んだので御子が言葉を話されました。それで戻ってまいりました」。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">其登岐士玖能迦玖能木實者。是今橘者也。</blockquote><p>多遲摩毛理が常世國から持ち帰った木の実は、今の橘である。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,7 +194,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第六 垂仁天皇二十三年秋九月丙寅朔丁卯</span><p>書紀では、譽津別王は三十歳になり鬚が八掬にのびても子どものように泣き、言葉を話さなかったので、天皇が群卿に議させたとある。</p><blockquote lang="zh-Hant">是生年既卅。髯鬚八掬。猶泣如兒。常不言何由矣。</blockquote></div>
       <div class="ns"><span class="where">巻第六 垂仁天皇二十三年十一月甲午朔乙未</span><p>書紀では、天湯河板擧が鵠を追って出雲で（或曰では但馬で）捕らえて献上し、譽津別命はその鵠をもてあそんで言葉を得た。その功で鳥取造の姓を賜り、鳥取部・鳥養部・譽津部が定められた。出雲大神の祟りや出雲参拝は書かれない。</p><blockquote lang="zh-Hant">譽津別命弄是鵠。遂得言語。</blockquote></div>
       <div class="ns"><span class="where">巻第六 垂仁天皇九十年春二月庚子朔／崩御の翌年春三月辛未朔壬午</span><p>書紀では、垂仁天皇九十年二月に田道間守が常世國へ遣わされて非時香菓を求め、天皇が亡くなった翌年の三月に八竿八縵を持ち帰った。田道間守は天皇の陵に向かって泣き叫んで死んだ。古事記にある、半分を大后に献じたという記述はこの記事に見えない。</p><blockquote lang="zh-Hant">非時香菓八竿八縵焉。</blockquote></div>
@@ -161,12 +202,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="sahobiko.html"><small>← 前の話（中巻・第8話）</small>沙本毘古王の反乱</a><a class="next" href="yamatotakeru-saisei.html"><small>次の話（中巻・第10話）→</small>小碓命の西征（熊曾建と出雲建）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">八拳鬚至于心前。眞事登波受。</blockquote><p>長い鬚が胸の前に届くほどになっても、まだ言葉を話さなかった。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">修理我宮如天皇之御舍者。御子必眞事登波牟。</blockquote><p>天皇の夢のお告げ。「わが宮を天皇の御舍のように整えれば、御子は必ず話すようになる」。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">因拜大神。大御子物詔故。參上來。</blockquote><p>付き添いの王たちの報告。「大神を拝んだので御子が言葉を話されました。それで戻ってまいりました」。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">其登岐士玖能迦玖能木實者。是今橘者也。</blockquote><p>多遲摩毛理が常世國から持ち帰った木の実は、今の橘である。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第8話（全17話）</p>
-    <h1>沙本毘古王の反乱</h1>
-    <p class="pg-lead">垂仁天皇（伊久米伊理毘古伊佐知命）の后の沙本毘賣命は、兄の沙本毘古王から天皇を刺し殺すよう小刀を渡されたが、果たせずにすべてを打ち明けた。兄が稻城にこもると后もそこへ入り、火の中で生まれた本牟智和氣御子だけを天皇に渡して、兄とともに死んだ。</p>
-    <div class="xlink"><a href="../shoki/suinin-sahohiko.html">日本書紀で読む：垂仁天皇の即位、狭穂彦王の反乱と誉津別命 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第8話（全17話）</p>
+        <h1>沙本毘古王の反乱</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">垂仁天皇（伊久米伊理毘古伊佐知命）の后の沙本毘賣命は、兄の沙本毘古王から天皇を刺し殺すよう小刀を渡されたが、果たせずにすべてを打ち明けた。兄が稻城にこもると后もそこへ入り、火の中で生まれた本牟智和氣御子だけを天皇に渡して、兄とともに死んだ。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/suinin-sahohiko.html">日本書紀で読む：垂仁天皇の即位、狭穂彦王の反乱と誉津別命 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>垂仁天皇の后と御子</h3>
+      <p class="t">垂仁天皇は師木の玉垣宮で天下を治めた。沙本毘古命の妹の佐波遲比賣命を娶って品牟都和氣命が生まれ、ほかの妃たちの御子も合わせて十六王があった。そのうち大帶日子淤斯呂和氣命が天下を治め、印色入日子命は血沼池・狹山池・日下の高津池を作り、鳥取の河上宮で横刀千口を作らせて石上神宮に納めた。小注には、倭比賣命が伊勢大神宮を拝み祭ったこと、布多遲能伊理毘賣命が倭建命の后となったことも記される。</p>
+      <h3>沙本毘古王が紐小刀を授ける</h3>
+      <p class="t">天皇が沙本毘賣を后としていたとき、后の兄の沙本毘古王は妹に「夫と兄と、どちらを愛しているか」と尋ね、后は「兄を愛している」と答えた。沙本毘古王は「本当に私を愛しているなら、私とお前で天下を治めよう」と謀り、八鹽折の紐小刀を作って妹に授け、これで天皇が寝ているところを刺し殺せと命じた。天皇はその謀りごとを知らず、后の膝を枕にして眠った。后は紐小刀で天皇の首を刺そうと三度振り上げたが、悲しい思いに耐えられず刺すことができず、涙が天皇の顔にこぼれ落ちた。</p>
+      <h3>后が夢と謀りごとを申し上げる</h3>
+      <p class="t">天皇は驚いて起き、「沙本の方からにわか雨が降ってきて私の顔をぬらし、錦色の小蛇が首に巻きつく夢を見た。これは何のしるしか」と后に尋ねた。后は言い逃れはできないと考え、兄に問われて「兄を愛している」と答えたこと、天皇を殺せと紐小刀を渡されたこと、三度振り上げても刺せずに涙が落ちたことを、すべて申し上げた。</p>
+      <h3>稻城に入る后</h3>
+      <p class="t">天皇は「危うく欺かれるところだった」と言って軍を起こし、沙本毘古王は稻城を作って迎え撃った。后は兄を見捨てられず、裏門から逃げ出してその稻城に入った。このとき后は身ごもっており、天皇は后が身ごもっていることと、三年にわたって愛し重んじてきたことから、軍をめぐらせるだけで攻めを急がなかった。そのうちに御子が生まれ、后は御子を稻城の外に置かせて、天皇の御子と思われるなら引き取って育ててほしいと伝えさせた。</p>
+      <h3>髪と玉の緒で御子を渡す</h3>
+      <p class="t">天皇は兄を恨みながらも后への愛をおさえられず、力が強く素早い兵士を選んで、御子を受け取るときに母君も髪でも手でもつかんで引き出せと命じた。后はそれを見越して、髪をすべて剃ってその髪で頭を覆い、玉の緒を腐らせて手に三重に巻き、衣を酒で腐らせて普通の衣のように見せかけた。兵たちは御子は受け取れたが、髪をつかめば髪が抜け、手をつかめば玉の緒が切れ、衣をつかめば衣が破れて、母君を取り戻せなかった。天皇は悔しがって玉を作った人々を憎み、その土地をすべて取り上げたので、「不得地玉作」という諺ができたという。</p>
+      <h3>本牟智和氣御子の名と沙本比古王の死</h3>
+      <p class="t">天皇が御子の名を問うと、后は、稻城を焼くこの時に火の中で生まれたので本牟智和氣御子と名づけるのがよいと答えた。育て方を問われると大湯坐・若湯坐を定めて養うように答え、后が結んだ美豆能小佩を誰が解くのかと問われると、旦波比古多多須美智宇斯王の娘の兄比賣・弟比賣がよいと答えた。そして天皇はついに沙本比古王を殺し、その妹の后も兄に従って死んだ。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>兄の沙本毘古王に「夫と兄のどちらを愛するか」と問われて「兄」と答えた后の沙本毘賣命は、天皇を殺すための紐小刀を渡されたが、三度振り上げても刺せず、こぼれた涙で天皇が目を覚ました。</li>
         <li><span class="kind ">本文</span>天皇の夢（沙本からのにわか雨と首に巻きつく錦色の小蛇）の意味を問われた后は、兄の謀りごとをすべて打ち明け、天皇は軍を起こして稻城を囲んだ。</li>
@@ -112,24 +171,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>御子は燃える稻城の火の中で生まれたので本牟智和氣御子と名づけられた。最後に沙本比古王は殺され、后もともに死んだ。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、狹穗彦王の謀りごとは垂仁天皇四年九月、天皇が來目の高宮で皇后の膝を枕に昼寝をしたのは五年十月とされる。皇后は皇子を抱いて城を越えて出し、丹波道主王の五人の娘を後宮に推したうえで、兄とともに城の中で死ぬ。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>垂仁天皇は師木の玉垣宮で天下を治めた。沙本毘古命の妹の佐波遲比賣命を娶って品牟都和氣命が生まれ、ほかの妃たちの御子も合わせて十六王があった。そのうち大帶日子淤斯呂和氣命が天下を治め、印色入日子命は血沼池・狹山池・日下の高津池を作り、鳥取の河上宮で横刀千口を作らせて石上神宮に納めた。小注には、倭比賣命が伊勢大神宮を拝み祭ったこと、布多遲能伊理毘賣命が倭建命の后となったことも記される。</p>
-      <p>天皇が沙本毘賣を后としていたとき、后の兄の沙本毘古王は妹に「夫と兄と、どちらを愛しているか」と尋ね、后は「兄を愛している」と答えた。沙本毘古王は「本当に私を愛しているなら、私とお前で天下を治めよう」と謀り、八鹽折の紐小刀を作って妹に授け、これで天皇が寝ているところを刺し殺せと命じた。天皇はその謀りごとを知らず、后の膝を枕にして眠った。后は紐小刀で天皇の首を刺そうと三度振り上げたが、悲しい思いに耐えられず刺すことができず、涙が天皇の顔にこぼれ落ちた。</p>
-      <p>天皇は驚いて起き、「沙本の方からにわか雨が降ってきて私の顔をぬらし、錦色の小蛇が首に巻きつく夢を見た。これは何のしるしか」と后に尋ねた。后は言い逃れはできないと考え、兄に問われて「兄を愛している」と答えたこと、天皇を殺せと紐小刀を渡されたこと、三度振り上げても刺せずに涙が落ちたことを、すべて申し上げた。</p>
-      <p>天皇は「危うく欺かれるところだった」と言って軍を起こし、沙本毘古王は稻城を作って迎え撃った。后は兄を見捨てられず、裏門から逃げ出してその稻城に入った。このとき后は身ごもっており、天皇は后が身ごもっていることと、三年にわたって愛し重んじてきたことから、軍をめぐらせるだけで攻めを急がなかった。そのうちに御子が生まれ、后は御子を稻城の外に置かせて、天皇の御子と思われるなら引き取って育ててほしいと伝えさせた。</p>
-      <p>天皇は兄を恨みながらも后への愛をおさえられず、力が強く素早い兵士を選んで、御子を受け取るときに母君も髪でも手でもつかんで引き出せと命じた。后はそれを見越して、髪をすべて剃ってその髪で頭を覆い、玉の緒を腐らせて手に三重に巻き、衣を酒で腐らせて普通の衣のように見せかけた。兵たちは御子は受け取れたが、髪をつかめば髪が抜け、手をつかめば玉の緒が切れ、衣をつかめば衣が破れて、母君を取り戻せなかった。天皇は悔しがって玉を作った人々を憎み、その土地をすべて取り上げたので、「不得地玉作」という諺ができたという。</p>
-      <p>天皇が御子の名を問うと、后は、稻城を焼くこの時に火の中で生まれたので本牟智和氣御子と名づけるのがよいと答えた。育て方を問われると大湯坐・若湯坐を定めて養うように答え、后が結んだ美豆能小佩を誰が解くのかと問われると、旦波比古多多須美智宇斯王の娘の兄比賣・弟比賣がよいと答えた。そして天皇はついに沙本比古王を殺し、その妹の后も兄に従って死んだ。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">孰愛夫與兄歟。答曰愛兄。</blockquote><p>兄が「夫と兄のどちらを愛しているか」と問い、后は「兄を愛している」と答えた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">從沙本方暴雨零來。急洽吾面。又錦色小蛇。纒繞我頸。</blockquote><p>天皇が見た夢。沙本の方からにわか雨が降って顔をぬらし、錦色の小蛇が首に巻きついた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">火中所生。故其御名宜稱本牟智和氣御子。</blockquote><p>火の中で生まれたので、御子の名は本牟智和氣御子とするのがよい、という后の答え。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -148,19 +189,28 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第六 垂仁天皇四年秋九月丙戌朔戊申</span><p>書紀では狹穗彦王の問いは「兄と夫のどちらを愛するか」で、さらに、容色で人に仕えれば容色の衰えとともに寵愛も衰えると説き、匕首を授けて天皇を刺させようとした。皇后はそれを衣の中に隠し持った。</p><blockquote lang="zh-Hant">汝孰愛兄與夫焉。</blockquote></div>
       <div class="ns"><span class="where">巻第六 垂仁天皇五年冬十月己卯朔</span><p>書紀では、天皇が上毛野君の遠祖八綱田に狹穗彦を撃たせ、狹穗彦は稲を積んで稻城を作った。最後は八綱田が城に火を放ち、皇后は皇子を抱いて城を越えて出したのち、兄とともに城の中で死ぬ。古事記にある、髪・玉の緒・衣に仕掛けをして兵の手を逃れる話や、御子の名づけの問答はこの記事に見えない。</p><blockquote lang="zh-Hant">狹穗彦與妹共死于城中。</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="sujin-shido.html"><small>← 前の話（中巻・第7話）</small>四道への派遣と建波邇安王の反乱</a><a class="next" href="homuchiwake.html"><small>次の話（中巻・第9話）→</small>本牟智和気御子と多遅摩毛理</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（3か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">孰愛夫與兄歟。答曰愛兄。</blockquote><p>兄が「夫と兄のどちらを愛しているか」と問い、后は「兄を愛している」と答えた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">從沙本方暴雨零來。急洽吾面。又錦色小蛇。纒繞我頸。</blockquote><p>天皇が見た夢。沙本の方からにわか雨が降って顔をぬらし、錦色の小蛇が首に巻きついた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">火中所生。故其御名宜稱本牟智和氣御子。</blockquote><p>火の中で生まれたので、御子の名は本牟智和氣御子とするのがよい、という后の答え。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">日本書紀 巻第六</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第3話（全13話）</p>
-    <h1>大后の山代行きと六つの歌</h1>
-    <p class="pg-lead">大后石之日売命が御綱柏を採りに木国へ出かけた留守に、天皇は八田若郎女と結婚した。それを知った大后は御綱柏を海に捨てて宮に戻らず山代へ向かい、天皇は使いと歌を送り、最後には自ら筒木の奴理能美の家まで出向いて歌った。</p>
-    <div class="xlink"><a href="../shoki/nintoku.html">日本書紀で読む：仁徳天皇と民のかまど・磐之媛皇后 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第3話（全13話）</p>
+        <h1>大后の山代行きと六つの歌</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">大后石之日売命が御綱柏を採りに木国へ出かけた留守に、天皇は八田若郎女と結婚した。それを知った大后は御綱柏を海に捨てて宮に戻らず山代へ向かい、天皇は使いと歌を送り、最後には自ら筒木の奴理能美の家まで出向いて歌った。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/nintoku.html">日本書紀で読む：仁徳天皇と民のかまど・磐之媛皇后 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>御綱柏を採りに木国へ行く</h3>
+      <p class="t">その後、大后は豊楽（宴）のための御綱柏を採りに木国へ出かけた。その間に天皇は八田若郎女と結婚した。大后が御綱柏を船いっぱいに積んで帰る途中、水取司で使われていた吉備国児嶋の仕丁が国へ帰る途中、難波の大渡で遅れてきた倉人女の船に出会い、「天皇は近ごろ八田若郎女と結婚して昼も夜も遊んでいる。大后はこのことを聞いていないから、のんびり旅をしておられるのだろう」と話した。倉人女はすぐに大后の船に追いついて、そのとおりに申し上げた。</p>
+      <h3>御津前から山代へ上る大后</h3>
+      <p class="t">大后はひどく恨み怒り、船に積んだ御綱柏をすべて海に投げ捨てた。それでその地を御津前という。大后は宮に入らず、船を引いて堀江をさかのぼり、川に沿って山代へ上り、歌をうたった。さらに山代からまわって那良山の入口に着き、また歌をうたった。</p>
+      <h3>筒木の奴理能美の家に入る</h3>
+      <p class="t">大后は引き返して、しばらく筒木の韓人 奴理能美の家に入った。天皇は大后が山代から上っていったと聞き、舎人の鳥山を遣わして歌を送った。続いて丸邇臣口子を遣わし、二首の歌を送った。</p>
+      <h3>雨の中の口子臣</h3>
+      <p class="t">口子臣がこの歌を伝えに来たとき、大雨が降っていた。口子臣は雨を避けずに御殿の前の戸に伏したが、大后は後ろの戸から出て行き、後ろの戸に伏すと前の戸から出て行った。口子臣は腹ばいで進んで庭の中にひざまずき、たまり水は腰まで達した。青摺の衣に紅の紐をつけていたので、水が紅の紐に触れて、青い衣がすっかり赤くなった。大后に仕えていた口子臣の妹 口日売が、これを見て歌った。</p>
+      <h3>三色に変わる虫を見に行く</h3>
+      <p class="t">大后がわけを尋ねると、口日売は「わたしの兄の口子臣です」と答えた。そこで口子臣・口比売・奴理能美の三人は相談し、「大后がおいでになったのは、奴理能美の飼う虫が、這う虫になり、殻になり、飛ぶ鳥になって、三色に変わる不思議な虫なので、それを見に来られただけで、ほかの心はありません」と天皇に申し上げさせた。天皇は「それならわたしも見たい」と言い、大宮から上って奴理能美の家に入った。奴理能美は三種に変わる虫を大后に献じ、天皇は大后のいる御殿の戸口に立って歌をうたった。</p>
+      <h3>志都歌の歌返</h3>
+      <p class="t">この天皇と大后がうたった六首の歌は「志都歌の歌返」である、と記す。続いて天皇は八田若郎女を恋しく思い、歌を贈った（次の話につづく）。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>大后石之日売命が御綱柏を採りに木国へ行った留守に、天皇は八田若郎女と結婚した。帰りの船で仕丁の話からそれを知った大后は、御綱柏をすべて海に投げ捨て（その地が御津前と呼ばれる由来）、宮に入らずに堀江をさかのぼって山代へ向かった。</li>
         <li><span class="kind ">本文</span>天皇の使い丸邇臣口子は大雨の中、庭で腰まで水につかって伏し、青摺の衣が紅の紐の色で赤く染まった。大后に仕える妹の口日売がそれを見て歌った。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、天皇が鳥山に託した歌の「伊斯祁」（い及け）を、「及ぶ・追いつく」の意味のシクと解している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">［出典］</a></li>
         <li><span class="kind k-int">解説</span>同じデータベースは、天皇が戸口でうたった歌の「夜賀波延那須」（やがはえなす）を、大勢の臣下を引き連れたさまのたとえと解している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/yagawaehime/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>その後、大后は豊楽（宴）のための御綱柏を採りに木国へ出かけた。その間に天皇は八田若郎女と結婚した。大后が御綱柏を船いっぱいに積んで帰る途中、水取司で使われていた吉備国児嶋の仕丁が国へ帰る途中、難波の大渡で遅れてきた倉人女の船に出会い、「天皇は近ごろ八田若郎女と結婚して昼も夜も遊んでいる。大后はこのことを聞いていないから、のんびり旅をしておられるのだろう」と話した。倉人女はすぐに大后の船に追いついて、そのとおりに申し上げた。</p>
-      <p>大后はひどく恨み怒り、船に積んだ御綱柏をすべて海に投げ捨てた。それでその地を御津前という。大后は宮に入らず、船を引いて堀江をさかのぼり、川に沿って山代へ上り、歌をうたった。さらに山代からまわって那良山の入口に着き、また歌をうたった。</p>
-      <p>大后は引き返して、しばらく筒木の韓人 奴理能美の家に入った。天皇は大后が山代から上っていったと聞き、舎人の鳥山を遣わして歌を送った。続いて丸邇臣口子を遣わし、二首の歌を送った。</p>
-      <p>口子臣がこの歌を伝えに来たとき、大雨が降っていた。口子臣は雨を避けずに御殿の前の戸に伏したが、大后は後ろの戸から出て行き、後ろの戸に伏すと前の戸から出て行った。口子臣は腹ばいで進んで庭の中にひざまずき、たまり水は腰まで達した。青摺の衣に紅の紐をつけていたので、水が紅の紐に触れて、青い衣がすっかり赤くなった。大后に仕えていた口子臣の妹 口日売が、これを見て歌った。</p>
-      <p>大后がわけを尋ねると、口日売は「わたしの兄の口子臣です」と答えた。そこで口子臣・口比売・奴理能美の三人は相談し、「大后がおいでになったのは、奴理能美の飼う虫が、這う虫になり、殻になり、飛ぶ鳥になって、三色に変わる不思議な虫なので、それを見に来られただけで、ほかの心はありません」と天皇に申し上げさせた。天皇は「それならわたしも見たい」と言い、大宮から上って奴理能美の家に入った。奴理能美は三種に変わる虫を大后に献じ、天皇は大后のいる御殿の戸口に立って歌をうたった。</p>
-      <p>この天皇と大后がうたった六首の歌は「志都歌の歌返」である、と記す。続いて天皇は八田若郎女を恋しく思い、歌を贈った（次の話につづく）。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">載其御船之御綱柏者。悉投棄於海</blockquote><p>御船に積んでいた御綱柏を、すべて海に投げ捨てた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">跪于庭中時。水潦至腰</blockquote><p>（口子臣が）庭の中にひざまずいたとき、たまり水が腰まで達した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">有變三色之奇虫</blockquote><p>三色に変わる不思議な虫がいる（大后が来たわけとして申し上げた言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此天皇與大后所歌之六歌者。志都歌之歌返也</blockquote><p>この天皇と大后がうたった六首の歌は、志都歌の歌返である。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,7 +193,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十一 仁徳天皇三十年秋九月乙卯朔乙丑</span><p>日本書紀では、皇后は紀国の熊野岬まで行って御綱葉を採り、難波の渡しで天皇が八田皇女を娶ったと聞いて葉を海に捨て、その海を「葉済」と呼んだとする（古事記は「御津前」）。そのあと皇后は山背を経て筒城岡の南に宮室を建てて住む。</p><blockquote lang="zh-Hant">皇后遊行紀國到熊野岬</blockquote></div>
       <div class="ns"><span class="where">巻第十一 仁徳天皇三十年冬十月甲申朔</span><p>日本書紀で皇后を呼びに行く使いは的臣の祖 口持臣で（一説に和珥臣の祖 口子臣）、その妹の名は国依媛とされる。皇后は「わたしは決して帰らない」と答える。</p><blockquote lang="zh-Hant">遣的臣祖口持臣喚皇后</blockquote></div>
       <div class="ns"><span class="where">巻第十一 仁徳天皇三十年十一月甲寅朔庚申</span><p>日本書紀では、天皇が自ら筒城宮へ行っても皇后は会うことを承知せず、天皇はそのまま宮へ帰る。三色に変わる虫の話は見えない。</p><blockquote lang="zh-Hant">皇后不肯參見</blockquote></div>
@@ -161,12 +201,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="nintoku-kurohime.html"><small>← 前の話（下巻・第2話）</small>石之日売命の嫉妬と黒日売</a><a class="next" href="medori.html"><small>次の話（下巻・第4話）→</small>八田若郎女と女鳥王・速総別王</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yagawaehime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yagawaehime/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">載其御船之御綱柏者。悉投棄於海</blockquote><p>御船に積んでいた御綱柏を、すべて海に投げ捨てた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">跪于庭中時。水潦至腰</blockquote><p>（口子臣が）庭の中にひざまずいたとき、たまり水が腰まで達した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">有變三色之奇虫</blockquote><p>三色に変わる不思議な虫がいる（大后が来たわけとして申し上げた言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此天皇與大后所歌之六歌者。志都歌之歌返也</blockquote><p>この天皇と大后がうたった六首の歌は、志都歌の歌返である。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">日本書紀 巻第十一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/chishikinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yagawaehime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yagawaehime/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

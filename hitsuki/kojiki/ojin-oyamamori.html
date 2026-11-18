@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第16話（全17話）</p>
-    <h1>応神天皇の時代と大山守命の反乱</h1>
-    <p class="pg-lead">応神天皇の御世には海部・山部などの部が定められ、百済からは馬や横刀・大鏡、論語・千字文を持った和邇吉師、鍛冶・機織り・酒造りの人々が渡ってきた。天皇の死後、大山守命は弟の宇遅能和紀郎子を殺して天下を取ろうとしたが、計略にかかって川に沈み、のちに宇遅能和紀郎子も早く亡くなって大雀命が天下を治めた。</p>
-    <div class="xlink"><a href="../shoki/ojin-uji.html">日本書紀で読む：渡来の人々と菟道稚郎子の立太子 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第16話（全17話）</p>
+        <h1>応神天皇の時代と大山守命の反乱</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">応神天皇の御世には海部・山部などの部が定められ、百済からは馬や横刀・大鏡、論語・千字文を持った和邇吉師、鍛冶・機織り・酒造りの人々が渡ってきた。天皇の死後、大山守命は弟の宇遅能和紀郎子を殺して天下を取ろうとしたが、計略にかかって川に沈み、のちに宇遅能和紀郎子も早く亡くなって大雀命が天下を治めた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/ojin-uji.html">日本書紀で読む：渡来の人々と菟道稚郎子の立太子 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>百済から献上された馬と論語</h3>
+      <p class="t">この御世に、海部・山部・山守部・伊勢部が定められ、剣池が作られた。新羅の人々が渡ってきたので、建内宿禰命は彼らを率いて堤と池を造る役にあて、百済池を作った。百済の国主の照古王は、牡馬一頭と牝馬一頭を阿知吉師に付けて献上し、横刀と大鏡も献上した。天皇が百済に「賢い人がいれば献上せよ」と命じると、和邇吉師という人が論語十巻と千字文一巻、合わせて十一巻を持って来た（和邇吉師は文首らの祖と注にある）。</p>
+      <h3>須須許理の酒と大石</h3>
+      <p class="t">さらに、手人の韓鍛で卓素という人、呉服の西素の二人、秦造の祖、漢直の祖、そして酒のかもし方を知る仁番（またの名は須須許理）らが渡ってきた。須須許理がかもした大御酒を天皇は楽しみ、歌をうたった。そのまま出かけたとき、天皇が大坂の道の大石を杖で打つと、石が走って逃げたので、「堅い石も酔った人をよける」ということわざができた。</p>
+      <h3>大山守命が兵を備える</h3>
+      <p class="t">天皇が亡くなったあと、大雀命は天皇の命に従って天下を宇遅能和紀郎子にゆずった。ところが大山守命は天皇の命にそむき、天下を手に入れようとして弟を殺すつもりで、ひそかに兵を備えた。大雀命はこれを聞くと使者を送って宇遅能和紀郎子に知らせた。宇遅能和紀郎子は川辺に兵を伏せ、山の上に垣と幕をめぐらし、舎人を王に見せかけて呉床に座らせ、役人たちがうやうやしく行き来して、王のいる所のようにととのえた。</p>
+      <h3>舟で大山守命を落とす</h3>
+      <p class="t">宇遅能和紀郎子は、兄が川を渡るための船を飾り、佐那葛の根をついて取った汁を船の中の簀椅に塗って、踏めば倒れるようにした。自分は布の衣と褌を着て身分の低い者の姿になり、楫を取って船に立った。衣の下に鎧を着て川辺に来た大山守命は、飾られた所に座っているのが弟だと思いこみ、楫を取る者が弟だとは気づかずに「この山には怒った大猪がいると聞く。わたしはその猪を取りたいが、取れるだろうか」と尋ねた。楫を取る者は「取れないでしょう。何度も取ろうとしても取れなかったからです」と答え、川の中ほどで船を傾けたので、大山守命は水に落ち、浮かんで流されながら歌をうたった。</p>
+      <h3>訶和羅前の名と大山守命の骨</h3>
+      <p class="t">川辺に伏せていた兵が両岸から一斉に立ち上がり、矢をつがえて向けたので、大山守命は流されて訶和羅の前で沈んだ。鉤で沈んだ所を探ると、衣の中の鎧に掛かって訶和羅と鳴ったので、その地を訶和羅前という。骨を引き上げたとき、弟の王は歌をうたった。大山守命の骨は那良山に葬られ、大山守命は土形君・弊岐君・榛原君らの祖とされる。</p>
+      <h3>大雀命と宇遅能和紀郎子の譲り合い</h3>
+      <p class="t">その後、大雀命と宇遅能和紀郎子は、たがいに天下をゆずりあった。そのあいだに海人が大贄を献上しに来ると、兄は辞退して弟に献じさせ、弟は辞退して兄に献じさせたので、何日もたつうちに海人は行き来に疲れて泣いた。それで「海人は自分の物のために泣く」ということわざができた。しかし宇遅能和紀郎子は早く亡くなったので、大雀命が天下を治めた。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>応神天皇が亡くなると、大山守命は父の命にそむいて天下をねらい、弟の宇遅能和紀郎子を殺そうとした。大雀命の知らせで備えた宇遅能和紀郎子は、船の楫取りに化けて船を傾け、大山守命を川に落として沈めた。</li>
         <li><span class="kind ">本文</span>大雀命と宇遅能和紀郎子はたがいに天下をゆずりあい、そのあいだ大贄を運ぶ海人が行き来に疲れて泣いた。宇遅能和紀郎子が早く亡くなったため、大雀命が天下を治めることになった。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、十五年八月に百済王が阿直岐に良馬二匹を貢がせ、阿直岐の推薦で十六年二月に王仁が来て、太子菟道稚郎子の師となった。古事記にある論語・千字文という書名は、日本書紀のこの記事には見えない。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>大山守命の反乱と、大雀命・宇遅能和紀郎子が天下をゆずりあう話は、応神天皇の巻（巻第十）には対応する記事を確認できなかった。巻第十は四十一年二月の天皇の崩御と、その月の記事で終わる。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>この御世に、海部・山部・山守部・伊勢部が定められ、剣池が作られた。新羅の人々が渡ってきたので、建内宿禰命は彼らを率いて堤と池を造る役にあて、百済池を作った。百済の国主の照古王は、牡馬一頭と牝馬一頭を阿知吉師に付けて献上し、横刀と大鏡も献上した。天皇が百済に「賢い人がいれば献上せよ」と命じると、和邇吉師という人が論語十巻と千字文一巻、合わせて十一巻を持って来た（和邇吉師は文首らの祖と注にある）。</p>
-      <p>さらに、手人の韓鍛で卓素という人、呉服の西素の二人、秦造の祖、漢直の祖、そして酒のかもし方を知る仁番（またの名は須須許理）らが渡ってきた。須須許理がかもした大御酒を天皇は楽しみ、歌をうたった。そのまま出かけたとき、天皇が大坂の道の大石を杖で打つと、石が走って逃げたので、「堅い石も酔った人をよける」ということわざができた。</p>
-      <p>天皇が亡くなったあと、大雀命は天皇の命に従って天下を宇遅能和紀郎子にゆずった。ところが大山守命は天皇の命にそむき、天下を手に入れようとして弟を殺すつもりで、ひそかに兵を備えた。大雀命はこれを聞くと使者を送って宇遅能和紀郎子に知らせた。宇遅能和紀郎子は川辺に兵を伏せ、山の上に垣と幕をめぐらし、舎人を王に見せかけて呉床に座らせ、役人たちがうやうやしく行き来して、王のいる所のようにととのえた。</p>
-      <p>宇遅能和紀郎子は、兄が川を渡るための船を飾り、佐那葛の根をついて取った汁を船の中の簀椅に塗って、踏めば倒れるようにした。自分は布の衣と褌を着て身分の低い者の姿になり、楫を取って船に立った。衣の下に鎧を着て川辺に来た大山守命は、飾られた所に座っているのが弟だと思いこみ、楫を取る者が弟だとは気づかずに「この山には怒った大猪がいると聞く。わたしはその猪を取りたいが、取れるだろうか」と尋ねた。楫を取る者は「取れないでしょう。何度も取ろうとしても取れなかったからです」と答え、川の中ほどで船を傾けたので、大山守命は水に落ち、浮かんで流されながら歌をうたった。</p>
-      <p>川辺に伏せていた兵が両岸から一斉に立ち上がり、矢をつがえて向けたので、大山守命は流されて訶和羅の前で沈んだ。鉤で沈んだ所を探ると、衣の中の鎧に掛かって訶和羅と鳴ったので、その地を訶和羅前という。骨を引き上げたとき、弟の王は歌をうたった。大山守命の骨は那良山に葬られ、大山守命は土形君・弊岐君・榛原君らの祖とされる。</p>
-      <p>その後、大雀命と宇遅能和紀郎子は、たがいに天下をゆずりあった。そのあいだに海人が大贄を献上しに来ると、兄は辞退して弟に献じさせ、弟は辞退して兄に献じさせたので、何日もたつうちに海人は行き来に疲れて泣いた。それで「海人は自分の物のために泣く」ということわざができた。しかし宇遅能和紀郎子は早く亡くなったので、大雀命が天下を治めた。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">論語十卷。千字文一卷。并十一卷</blockquote><p>論語十巻と千字文一巻、合わせて十一巻（和邇吉師が持って来た書物）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故諺曰堅石避醉人也</blockquote><p>それで「堅い石も酔った人をよける」ということわざがある。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">其王子者。服布衣褌。既爲賎人之形。執楫立船</blockquote><p>その王子（宇遅能和紀郎子）は布の衣と褌を着て身分の低い者の姿になり、楫を取って船に立った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故諺曰。海人乎。因己物而泣也</blockquote><p>それで「海人は自分の物のために泣く」ということわざがある。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -152,7 +192,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十 応神天皇五年秋八月庚寅朔壬寅</span><p>日本書紀では、諸国に海人と山守部を定めたとする。古事記は海部・山部・山守部・伊勢部の四つをあげる。</p><blockquote lang="zh-Hant">令諸國定海人及山守部</blockquote></div>
       <div class="ns"><span class="where">巻第十 応神天皇七年秋九月</span><p>日本書紀では、武内宿禰が来朝した韓人たちを率いて池を作り、韓人池と名づけたとする。古事記では、建内宿禰命が新羅人を使って作ったのは百済池である。</p><blockquote lang="zh-Hant">時命武内宿禰，領諸韓人等作池，因以名池號韓人池</blockquote></div>
       <div class="ns"><span class="where">巻第十 応神天皇十五年秋八月壬戌朔丁卯</span><p>日本書紀では、百済王が阿直岐に良馬二匹を貢がせ、軽坂上の廐で飼わせた。阿直岐は経典を読めたので太子菟道稚郎子の師となり、さらにすぐれた博士として王仁をすすめた。古事記では馬を連れて来たのは阿知吉師で、良い人を求めたのは天皇の命による。</p><blockquote lang="zh-Hant">百濟王遣阿直岐，貢良馬二匹</blockquote></div>
@@ -160,12 +200,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="ojin-tsumadoi.html"><small>← 前の話（中巻・第15話）</small>応神天皇の妻問いと髪長比売</a><a class="next" href="amenohiboko.html"><small>次の話（中巻・第17話）→</small>天之日矛と秋山・春山の兄弟</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">論語十卷。千字文一卷。并十一卷</blockquote><p>論語十巻と千字文一巻、合わせて十一巻（和邇吉師が持って来た書物）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故諺曰堅石避醉人也</blockquote><p>それで「堅い石も酔った人をよける」ということわざがある。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">其王子者。服布衣褌。既爲賎人之形。執楫立船</blockquote><p>その王子（宇遅能和紀郎子）は布の衣と褌を着て身分の低い者の姿になり、楫を取って船に立った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故諺曰。海人乎。因己物而泣也</blockquote><p>それで「海人は自分の物のために泣く」ということわざがある。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

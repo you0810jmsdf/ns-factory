@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第13話（全17話）</p>
-    <h1>仲哀天皇の死と息長帯日売命の新羅遠征</h1>
-    <p class="pg-lead">成務天皇（若帯日子天皇）が国造・県主を定めたあと、仲哀天皇（帯中日子天皇）は神のお告げを信じずに急に亡くなる。お告げに従った大后の息長帯日売命は海を渡って新羅を従え、筑紫に戻ってから御子（のちの応神天皇）を産んだ。</p>
-    <div class="xlink"><a href="../shoki/chuai.html">日本書紀で読む：仲哀天皇（白鳥・熊襲征討と神託・崩御） ›</a><a href="../shoki/jingu-shiragi.html">日本書紀で読む：神功皇后の神託と新羅遠征 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第13話（全17話）</p>
+        <h1>仲哀天皇の死と息長帯日売命の新羅遠征</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">成務天皇（若帯日子天皇）が国造・県主を定めたあと、仲哀天皇（帯中日子天皇）は神のお告げを信じずに急に亡くなる。お告げに従った大后の息長帯日売命は海を渡って新羅を従え、筑紫に戻ってから御子（のちの応神天皇）を産んだ。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/chuai.html">日本書紀で読む：仲哀天皇（白鳥・熊襲征討と神託・崩御） ›</a><a href="../shoki/jingu-shiragi.html">日本書紀で読む：神功皇后の神託と新羅遠征 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>成務天皇が国造・県主を定める</h3>
+      <p class="t">若帯日子天皇（成務天皇）は、近淡海の志賀の高穴穂宮で天下を治めた。穂積臣らの祖である建忍山垂根の娘、弟財郎女を妻とし、和訶奴気王が生まれた。天皇は建内宿禰を大臣とし、大小の国の国造、国々の境、大県・小県の県主を定めた。天皇は九十五歳で亡くなり、御陵は沙紀の多他那美にある。</p>
+      <h3>仲哀天皇と、大鞆和気命の名</h3>
+      <p class="t">帯中日子天皇（仲哀天皇）は、穴門の豊浦宮と筑紫の訶志比宮で天下を治めた。大江王の娘の大中津比売命との間に香坂王と忍熊王が、大后の息長帯比売命との間に品夜和気命と大鞆和気命（またの名は品陀和気命）が生まれた。大鞆和気命という名は、生まれたとき腕に鞆のような肉がついていたことによる。古事記はこのことから、母の腹の中にいたときから国を治めることが定まっていたと分かる、と記す。この御世に淡道の屯家が定められた。</p>
+      <h3>神がかりと西の国の宝</h3>
+      <p class="t">大后の息長帯日売命は、神がかりをする人であった。天皇が訶志比宮で熊曾国を討とうとしたとき、天皇が琴を弾き、建内宿禰大臣が沙庭にいて神の言葉を求めた。大后に神がかりした神は「西の方に、金銀をはじめ目のくらむような宝がたくさんある国がある。その国を与えよう」と告げた。天皇は「高い所に登って西を見ても国土は見えず、ただ大海があるだけだ」と答え、偽りを言う神だとして琴を押しやり、弾かずに黙ってしまった。神は大いに怒り、「この天下はおまえが治める国ではない。おまえは一道に向かえ」と言った。</p>
+      <h3>天皇の死と国の大祓</h3>
+      <p class="t">建内宿禰にうながされて、天皇は琴を少し引き寄せて弾き始めたが、まもなく琴の音が聞こえなくなった。火をともして見ると、天皇はすでに亡くなっていた。人々は恐れて天皇を殯宮に置き、国中から大奴佐を集め、さまざまな罪を求め出して国の大祓をした。ふたたび建内宿禰が神の言葉を求めると、神は前と同じく、この国は大后の腹にいる御子が治める国だと告げ、その御子は男子だと答えた。名を尋ねると、神は、これは天照大神の御心であり、また底筒男・中筒男・上筒男の三柱の大神である、と名を明かした。</p>
+      <h3>神の教えで新羅へ渡る</h3>
+      <p class="t">神は、天つ神・国つ神、山の神や河と海の神々すべてに幣帛をささげ、自分の御魂を船の上にまつり、真木の灰をひょうたんに入れ、箸と比羅伝をたくさん作って海に散らし浮かべて渡れ、と教えた。教えのとおりに軍を整え船を並べて渡ると、海の魚が大小を問わず船を背負って運び、追い風が強く吹いて、波が船を新羅の国の半ばまで押し上げた。新羅の国王はおそれて、これからは天皇の御馬甘として、毎年船を連ねて休まず仕えると申し出た。こうして新羅国は御馬甘、百済国は渡の屯家と定められ、大后は御杖を新羅の国主の門に突き立て、墨江大神の荒御魂を国を守る神としてまつって帰った。</p>
+      <h3>宇美で御子を産む、年魚を釣る</h3>
+      <p class="t">その仕事が終わらないうちに大后は産み月をむかえたので、お腹をしずめるために石を取って裳の腰に巻きつけ、筑紫に渡ってから御子を産んだ。そのため御子の生まれた地を宇美といい、裳に巻いた石は筑紫の伊斗村にある。また大后が末羅県の玉嶋里の川辺で食事をしたのは四月の上旬で、川の中の磯にすわり、裳の糸を抜き取って飯粒をえさにし、その川の年魚を釣った。そのため今も四月上旬には、女の人が裳の糸を抜き、飯粒をえさにして年魚を釣ることが絶えない、と記す。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>仲哀天皇は、西の宝の国を与えるという神のお告げを「偽りの神」と退け、琴を弾くうちにその場で亡くなった。神はあらためて、その国は大后の腹の中の御子（男子）が治める国だと告げた。</li>
         <li><span class="kind ">本文</span>お告げの神は、天照大神の御心であり、底筒男・中筒男・上筒男の三柱の大神であると名を明かした。新羅を従えた大后は、墨江大神の荒御魂を国を守る神として新羅にまつった。</li>
@@ -115,25 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>若帯日子天皇（成務天皇）は、近淡海の志賀の高穴穂宮で天下を治めた。穂積臣らの祖である建忍山垂根の娘、弟財郎女を妻とし、和訶奴気王が生まれた。天皇は建内宿禰を大臣とし、大小の国の国造、国々の境、大県・小県の県主を定めた。天皇は九十五歳で亡くなり、御陵は沙紀の多他那美にある。</p>
-      <p>帯中日子天皇（仲哀天皇）は、穴門の豊浦宮と筑紫の訶志比宮で天下を治めた。大江王の娘の大中津比売命との間に香坂王と忍熊王が、大后の息長帯比売命との間に品夜和気命と大鞆和気命（またの名は品陀和気命）が生まれた。大鞆和気命という名は、生まれたとき腕に鞆のような肉がついていたことによる。古事記はこのことから、母の腹の中にいたときから国を治めることが定まっていたと分かる、と記す。この御世に淡道の屯家が定められた。</p>
-      <p>大后の息長帯日売命は、神がかりをする人であった。天皇が訶志比宮で熊曾国を討とうとしたとき、天皇が琴を弾き、建内宿禰大臣が沙庭にいて神の言葉を求めた。大后に神がかりした神は「西の方に、金銀をはじめ目のくらむような宝がたくさんある国がある。その国を与えよう」と告げた。天皇は「高い所に登って西を見ても国土は見えず、ただ大海があるだけだ」と答え、偽りを言う神だとして琴を押しやり、弾かずに黙ってしまった。神は大いに怒り、「この天下はおまえが治める国ではない。おまえは一道に向かえ」と言った。</p>
-      <p>建内宿禰にうながされて、天皇は琴を少し引き寄せて弾き始めたが、まもなく琴の音が聞こえなくなった。火をともして見ると、天皇はすでに亡くなっていた。人々は恐れて天皇を殯宮に置き、国中から大奴佐を集め、さまざまな罪を求め出して国の大祓をした。ふたたび建内宿禰が神の言葉を求めると、神は前と同じく、この国は大后の腹にいる御子が治める国だと告げ、その御子は男子だと答えた。名を尋ねると、神は、これは天照大神の御心であり、また底筒男・中筒男・上筒男の三柱の大神である、と名を明かした。</p>
-      <p>神は、天つ神・国つ神、山の神や河と海の神々すべてに幣帛をささげ、自分の御魂を船の上にまつり、真木の灰をひょうたんに入れ、箸と比羅伝をたくさん作って海に散らし浮かべて渡れ、と教えた。教えのとおりに軍を整え船を並べて渡ると、海の魚が大小を問わず船を背負って運び、追い風が強く吹いて、波が船を新羅の国の半ばまで押し上げた。新羅の国王はおそれて、これからは天皇の御馬甘として、毎年船を連ねて休まず仕えると申し出た。こうして新羅国は御馬甘、百済国は渡の屯家と定められ、大后は御杖を新羅の国主の門に突き立て、墨江大神の荒御魂を国を守る神としてまつって帰った。</p>
-      <p>その仕事が終わらないうちに大后は産み月をむかえたので、お腹をしずめるために石を取って裳の腰に巻きつけ、筑紫に渡ってから御子を産んだ。そのため御子の生まれた地を宇美といい、裳に巻いた石は筑紫の伊斗村にある。また大后が末羅県の玉嶋里の川辺で食事をしたのは四月の上旬で、川の中の磯にすわり、裳の糸を抜き取って飯粒をえさにし、その川の年魚を釣った。そのため今も四月上旬には、女の人が裳の糸を抜き、飯粒をえさにして年魚を釣ることが絶えない、と記す。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">西方有國。金銀爲本。目之炎耀。種種珍寶。多在其國</blockquote><p>西の方に国がある。金銀をはじめ、目がくらむほどのさまざまな宝がその国にたくさんある（神が大后の口を通して告げた言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">凡此國者。坐汝命御腹之御子。所知國者也</blockquote><p>この国は、あなた（大后）のお腹にいる御子が治める国である（天皇の死後、神がふたたび告げた言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">如鞆宍生御腕。故著其御名</blockquote><p>腕に鞆のような肉がついていたので、その名（大鞆和気命）をつけた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">海原之魚。不問大小。悉負御船而渡</blockquote><p>海の魚が大きいものも小さいものも、みな船を背負って渡した。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
@@ -142,7 +182,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b><a href="../../shrine-note/map/?d=takeuchi">武内宿禰命</a></b><small>たけうちのすくねのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kehi">氣比神宮</a>、<a href="../../shrine-note/map/?s=ube">宇倍神社</a>、<a href="../../shrine-note/map/?s=sumiyoshishimonoseki">住吉神社（下関）</a>、<a href="../../shrine-note/map/?s=chiriku">千栗八幡宮</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ojin">応神天皇</a></b><small>おうじんてんのう</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=usa">宇佐神宮</a>、<a href="../../shrine-note/map/?s=tsurugaoka">鶴岡八幡宮</a>、<a href="../../shrine-note/map/?s=kehi">氣比神宮</a>、<a href="../../shrine-note/map/?s=iminomiya">忌宮神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=oosaki">大崎八幡宮</a>、<a href="../../shrine-note/map/?s=hakozaki">筥崎宮</a>、<a href="../../shrine-note/map/?s=kagoshimajingu">鹿児島神宮</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=sumiyoshishimonoseki">住吉神社（下関）</a>、<a href="../../shrine-note/map/?s=yusuhara">柞原八幡宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=chiriku">千栗八幡宮</a>、<a href="../../shrine-note/map/?s=kashiigu">香椎宮</a>、<a href="../../shrine-note/map/?s=kototomo">事任八幡宮</a>、<a href="../../shrine-note/map/?s=iwashimizu">石清水八幡宮</a>、<a href="../../shrine-note/map/?s=shikaumi">志賀海神社</a>、<a href="../../shrine-note/map/?s=kora">高良大社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=oshikuma">忍熊王</a></b><small>おしくまのみこ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=amaterasu">天照大御神</a></b><small>あまてらすおおみかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ise">伊勢神宮（内宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=izawa">伊雑宮</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=konojinja">籠神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=mononobe">物部神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=tamaki">玉置神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=sumiyoshi3">住吉三神</a></b><small>すみのえのみはしらのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=ikisu">息栖神社</a>、<a href="../../shrine-note/map/?s=sumiyoshi">住吉大社</a>、<a href="../../shrine-note/map/?s=sumiyoshihakata">住吉神社（博多）</a>、<a href="../../shrine-note/map/?s=suwanagasaki">諏訪神社（長崎）</a>、<a href="../../shrine-note/map/?s=hirota">廣田神社</a>、<a href="../../shrine-note/map/?s=sumiyoshishimonoseki">住吉神社（下関）</a>、<a href="../../shrine-note/map/?s=kashiigu">香椎宮</a>、<a href="../../shrine-note/map/?s=kora">高良大社</a></span></li>
         <li><b>若帶日子天皇</b><span class="sh">成務天皇。建内宿禰を大臣とし、国造・国境・県主を定めた。</span></li>
         <li><b>大中津比賣命</b><span class="sh">大江王の娘で、仲哀天皇との間に香坂王・忍熊王を産んだ。</span></li>
@@ -155,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第八 仲哀天皇九年春二月癸卯朔丁未</span><p>日本書紀では、仲哀天皇は神の言葉を信じず熊襲を攻めて勝てずに帰り、急に体を痛めて翌日亡くなったとし、神の言葉を用いなかったために早く亡くなったと記す。小注の一云には、熊襲を討って敵の矢に当たって亡くなったという別伝もある。</p><blockquote lang="zh-Hant">天皇忽有痛身。而明日崩。時年五十二</blockquote></div>
       <div class="ns"><span class="where">巻第九 神功皇后（仲哀天皇九年三月壬申朔）</span><p>日本書紀では、天皇の死後に皇后が吉日を選んで斎宮に入り、みずから神主となって、武内宿禰に琴を弾かせ、中臣烏賊津使主を審神者として神の名を問う。古事記では琴を弾くのは天皇で、建内宿禰は沙庭にいる。</p><blockquote lang="zh-Hant">皇后選吉日、入齋宮、親爲神主</blockquote></div>
       <div class="ns"><span class="where">巻第九 神功皇后（仲哀天皇九年夏四月壬寅朔甲辰）</span><p>日本書紀では、玉嶋里の小河で裳の糸を釣り糸にして魚を釣るのは新羅へ渡る前で、西の財の国を求める願いがかなうかを占うためであり、その地を梅豆羅国（今の松浦）と呼ぶ由来とする。古事記では、御子が生まれたあとの話として置かれている。</p><blockquote lang="zh-Hant">抽取裳縷爲緡、登河中石上</blockquote></div>
@@ -163,12 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yamatotakeru-saigo.html"><small>← 前の話（中巻・第12話）</small>倭建命の最期と白鳥</a><a class="next" href="oshikuma.html"><small>次の話（中巻・第14話）→</small>忍熊王の反乱と気比大神</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">日本書紀 巻第八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">日本書紀 巻第九</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sokotsutsunoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sokotsutsunoonomikoto/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">西方有國。金銀爲本。目之炎耀。種種珍寶。多在其國</blockquote><p>西の方に国がある。金銀をはじめ、目がくらむほどのさまざまな宝がその国にたくさんある（神が大后の口を通して告げた言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">凡此國者。坐汝命御腹之御子。所知國者也</blockquote><p>この国は、あなた（大后）のお腹にいる御子が治める国である（天皇の死後、神がふたたび告げた言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">如鞆宍生御腕。故著其御名</blockquote><p>腕に鞆のような肉がついていたので、その名（大鞆和気命）をつけた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">海原之魚。不問大小。悉負御船而渡</blockquote><p>海の魚が大きいものも小さいものも、みな船を背負って渡した。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第八" target="_blank" rel="noopener">日本書紀 巻第八</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">日本書紀 巻第九</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suminoenomimaenookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sokotsutsunoonomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sokotsutsunoonomikoto/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

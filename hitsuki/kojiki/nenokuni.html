@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第10話（全17話）</p>
-    <h1>八十神の迫害と根の堅州国</h1>
-    <p class="pg-lead">八上比賣に選ばれた大穴牟遲神は兄弟の八十神に二度殺されて生き返り、須佐之男命のいる根堅州國へ逃れる。そこで須勢理毗賣の助けを得て須佐之男命の試練を切り抜け、「大國主神となれ」と言われて地上に戻り、国作りを始める。</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第10話（全17話）</p>
+        <h1>八十神の迫害と根の堅州国</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">八上比賣に選ばれた大穴牟遲神は兄弟の八十神に二度殺されて生き返り、須佐之男命のいる根堅州國へ逃れる。そこで須勢理毗賣の助けを得て須佐之男命の試練を切り抜け、「大國主神となれ」と言われて地上に戻り、国作りを始める。</p>
+        <p class="bk-meta">物語を読む時間の目安：約4分　／　<a href="#pts-title">要点だけ読む</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>焼けた大石で死ぬ大穴牟遲神</h3>
+      <p class="t">八十神は怒り、大穴牟遲神を殺そうと相談した。伯岐國の手間の山のふもとで「赤い猪を山から追い下ろすから、下で待って捕まえよ。捕まえなければおまえを殺す」と言い、猪に似た大石を火で焼いて転がし落とした。大穴牟遲神はそれを受け止めて石に焼け付き、死んでしまった。親である御祖命は泣き悲しんで天に上り、神産巢日之命に願った。すると𧏛貝比賣と蛤貝比賣が遣わされ、蛤貝比賣が母の乳汁を塗ると、大穴牟遲神はりっぱな若者（麗壯夫）となって生き返り、また出歩くようになった。</p>
+      <h3>大木に挟まれ根堅州國へ向かう</h3>
+      <p class="t">八十神はこれを見て、また大穴牟遲神をだまして山に連れ込んだ。大木を切り倒してくさびを打ち込み、その割れ目に入らせてから、くさびを打ち外して挟み殺した。御祖命は泣きながら探し、見つけると木を裂いて取り出して生き返らせ、「ここにいては、ついに八十神に滅ぼされる」と言って、木國の大屋毗古神のもとへ急いで逃がした。八十神が追ってきて矢をつがえ、引き渡しを求めると、大穴牟遲神は木の股からくぐり抜けて逃がされ、「須佐能男命のいる根堅州國へ行け。きっとその大神が良いようにはかってくれる」と告げられた。</p>
+      <h3>須勢理毗賣と蛇の室</h3>
+      <p class="t">言われたとおり須佐之男命の所へ行くと、その娘の須勢理毗賣が出てきて、目を見交わして夫婦となった。須勢理毗賣は父に「とても立派な神が来ました」と告げ、大神は出て見て「これは葦原色許男というものだ」と言った。大神は彼を呼び入れて蛇の室に寝かせたが、須勢理毗賣が蛇の比礼（布）を渡し、「蛇がかみつこうとしたら、これを三度振って打ち払いなさい」と教えたので、蛇は静まり、無事に眠って出てこられた。次の夜はむかでと蜂の室に入れられたが、同じように比礼を渡されて無事に出てきた。</p>
+      <h3>野を焼かれる大穴牟遲神</h3>
+      <p class="t">次に大神は鳴鏑（音の鳴る矢）を広い野に射込み、その矢を取ってこさせた。大穴牟遲神が野に入ると、大神は周りから火をつけて野を焼いた。逃げ道が分からずにいると鼠が来て「内は富良富良、外は須夫須夫」と言ったので、そこを踏むと穴に落ちて隠れることができ、その間に火は焼け過ぎていった。鼠は鳴鏑をくわえて持ってきたが、矢の羽は鼠の子どもたちが食べてしまっていた。須勢理毗賣は葬式の道具を持って泣きながら来て、大神も死んだと思って野に出て立ったが、大穴牟遲神はその矢を差し出した。</p>
+      <h3>大神の髪を結んで逃げ出す</h3>
+      <p class="t">大神は大穴牟遲神を家に連れ帰り、広い大室に呼び入れて頭のしらみを取らせた。見ると頭にはむかでがたくさんいた。妻が渡した牟久の木の実と赤土を、木の実をかみ砕き赤土を口に含んで吐き出すと、大神はむかでをかみ砕いて吐き出していると思い、心にいとしく思って眠った。そこで大穴牟遲神は大神の髪を室の垂木ごとに結びつけ、五百人で引くほどの大石で戸をふさぎ、須勢理毗賣を背負い、大神の生大刀・生弓矢・天詔琴を持って逃げ出した。そのとき琴が木に触れて大地が鳴りどよめき、大神は驚いて室を引き倒したが、垂木に結ばれた髪をほどくあいだに、二人は遠くまで逃げた。</p>
+      <h3>大國主神となれと告げる大神</h3>
+      <p class="t">大神は黄泉比良坂まで追ってきて、はるかに見やって大穴牟遲神に呼びかけた。「おまえが持っている生大刀・生弓矢で、おまえの腹違いの兄弟たちを坂のすそに追い伏せ、川の瀬に追い払え。そしておまえが大國主神となり、宇都志國主神となって、わが娘の須世理毗賣を正妻とし、宇迦能山のふもとに太い宮柱を立て、高天原に届くほど高く千木をそびえさせて住め。こやつめ」。大穴牟遲神はその大刀と弓で八十神を追い払い、坂ごと・川の瀬ごとに追い伏せて、初めて国を作った。</p>
+      <h3>八上比賣と木俣神</h3>
+      <p class="t">八上比賣は前に約束したとおり大穴牟遲神と結ばれ、連れて来られたが、正妻の須世理毗賣を畏れて、生んだ子を木の股に差し挟んで帰ってしまった。そのためその子を木俣神と名づけ、またの名を御井神という。このあと八千矛神（大穴牟遲神の別の名）が高志國の沼河比賣に求婚しようと出かけ、その家で歌をうたう場面へと続いていく。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>根堅州國から逃げる大穴牟遲神に、須佐之男命は黄泉比良坂から「生大刀・生弓矢で兄弟を追い払い、大國主神・宇都志國主神となって須世理毗賣を正妻とし、宇迦能山のふもとに宮を建てて住め」と呼びかけた。大穴牟遲神はその大刀と弓で八十神を追い払い、初めて国を作った。</li>
         <li><span class="kind ">本文</span>須佐之男命は大穴牟遲神に、蛇の室・むかでと蜂の室・火を放った野・頭のむかで取りという試練を次々に与えた。須勢理毗賣の比礼や木の実と赤土、鼠の助けによって、大穴牟遲神はすべてを切り抜けた。</li>
@@ -115,31 +176,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>八十神は怒り、大穴牟遲神を殺そうと相談した。伯岐國の手間の山のふもとで「赤い猪を山から追い下ろすから、下で待って捕まえよ。捕まえなければおまえを殺す」と言い、猪に似た大石を火で焼いて転がし落とした。大穴牟遲神はそれを受け止めて石に焼け付き、死んでしまった。親である御祖命は泣き悲しんで天に上り、神産巢日之命に願った。すると𧏛貝比賣と蛤貝比賣が遣わされ、蛤貝比賣が母の乳汁を塗ると、大穴牟遲神はりっぱな若者（麗壯夫）となって生き返り、また出歩くようになった。</p>
-      <p>八十神はこれを見て、また大穴牟遲神をだまして山に連れ込んだ。大木を切り倒してくさびを打ち込み、その割れ目に入らせてから、くさびを打ち外して挟み殺した。御祖命は泣きながら探し、見つけると木を裂いて取り出して生き返らせ、「ここにいては、ついに八十神に滅ぼされる」と言って、木國の大屋毗古神のもとへ急いで逃がした。八十神が追ってきて矢をつがえ、引き渡しを求めると、大穴牟遲神は木の股からくぐり抜けて逃がされ、「須佐能男命のいる根堅州國へ行け。きっとその大神が良いようにはかってくれる」と告げられた。</p>
-      <p>言われたとおり須佐之男命の所へ行くと、その娘の須勢理毗賣が出てきて、目を見交わして夫婦となった。須勢理毗賣は父に「とても立派な神が来ました」と告げ、大神は出て見て「これは葦原色許男というものだ」と言った。大神は彼を呼び入れて蛇の室に寝かせたが、須勢理毗賣が蛇の比礼（布）を渡し、「蛇がかみつこうとしたら、これを三度振って打ち払いなさい」と教えたので、蛇は静まり、無事に眠って出てこられた。次の夜はむかでと蜂の室に入れられたが、同じように比礼を渡されて無事に出てきた。</p>
-      <p>次に大神は鳴鏑（音の鳴る矢）を広い野に射込み、その矢を取ってこさせた。大穴牟遲神が野に入ると、大神は周りから火をつけて野を焼いた。逃げ道が分からずにいると鼠が来て「内は富良富良、外は須夫須夫」と言ったので、そこを踏むと穴に落ちて隠れることができ、その間に火は焼け過ぎていった。鼠は鳴鏑をくわえて持ってきたが、矢の羽は鼠の子どもたちが食べてしまっていた。須勢理毗賣は葬式の道具を持って泣きながら来て、大神も死んだと思って野に出て立ったが、大穴牟遲神はその矢を差し出した。</p>
-      <p>大神は大穴牟遲神を家に連れ帰り、広い大室に呼び入れて頭のしらみを取らせた。見ると頭にはむかでがたくさんいた。妻が渡した牟久の木の実と赤土を、木の実をかみ砕き赤土を口に含んで吐き出すと、大神はむかでをかみ砕いて吐き出していると思い、心にいとしく思って眠った。そこで大穴牟遲神は大神の髪を室の垂木ごとに結びつけ、五百人で引くほどの大石で戸をふさぎ、須勢理毗賣を背負い、大神の生大刀・生弓矢・天詔琴を持って逃げ出した。そのとき琴が木に触れて大地が鳴りどよめき、大神は驚いて室を引き倒したが、垂木に結ばれた髪をほどくあいだに、二人は遠くまで逃げた。</p>
-      <p>大神は黄泉比良坂まで追ってきて、はるかに見やって大穴牟遲神に呼びかけた。「おまえが持っている生大刀・生弓矢で、おまえの腹違いの兄弟たちを坂のすそに追い伏せ、川の瀬に追い払え。そしておまえが大國主神となり、宇都志國主神となって、わが娘の須世理毗賣を正妻とし、宇迦能山のふもとに太い宮柱を立て、高天原に届くほど高く千木をそびえさせて住め。こやつめ」。大穴牟遲神はその大刀と弓で八十神を追い払い、坂ごと・川の瀬ごとに追い伏せて、初めて国を作った。</p>
-      <p>八上比賣は前に約束したとおり大穴牟遲神と結ばれ、連れて来られたが、正妻の須世理毗賣を畏れて、生んだ子を木の股に差し挟んで帰ってしまった。そのためその子を木俣神と名づけ、またの名を御井神という。このあと八千矛神（大穴牟遲神の別の名）が高志國の沼河比賣に求婚しようと出かけ、その家で歌をうたう場面へと続いていく。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">可參向須佐能男命所坐之根堅州國，必其大神議也</blockquote><p>須佐能男命のいる根堅州國へ行きなさい。きっとその大神が良いようにはかってくださる、という言葉。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">内者富良富良，外（者）須夫須夫。</blockquote><p>燃える野で鼠が大穴牟遲神に教えた言葉。「富良富良」「須夫須夫」は字の音で読むと原文の注にある。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">意礼為大國主神，亦為宇都志國主神</blockquote><p>須佐之男命の呼びかけ。「おまえが大國主神となり、また宇都志國主神となれ」。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">每坂御尾追伏，每河瀨追撥而始作國也</blockquote><p>坂のすそごとに追い伏せ、川の瀬ごとに追い払って、初めて国を作った。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
         <li><b><a href="../../shrine-note/map/?d=ookuninushi">大国主大神</a></b><small>おおくにぬしのおおかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=izumo">出雲大社</a>、<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=hokkaido">北海道神宮</a>、<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=keta">氣多大社</a>、<a href="../../shrine-note/map/?s=futarasan">日光二荒山神社</a>、<a href="../../shrine-note/map/?s=hiyoshi">日吉大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=toga">砥鹿神社</a>、<a href="../../shrine-note/map/?s=takebe">建部大社</a>、<a href="../../shrine-note/map/?s=kanda">神田神社（神田明神）</a>、<a href="../../shrine-note/map/?s=minashijinja">水無神社</a>、<a href="../../shrine-note/map/?s=ooyamato">大和神社</a>、<a href="../../shrine-note/map/?s=taiheizanmiyoshi">太平山三吉神社</a>、<a href="../../shrine-note/map/?s=tsuno">都農神社</a>、<a href="../../shrine-note/map/?s=takase">高瀬神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=okunitamajinja">大國魂神社</a>、<a href="../../shrine-note/map/?s=kamikawa">上川神社</a>、<a href="../../shrine-note/map/?s=oarai">大洗磯前神社</a>、<a href="../../shrine-note/map/?s=okuni">小國神社</a>、<a href="../../shrine-note/map/?s=izumodaijingu">出雲大神宮</a>、<a href="../../shrine-note/map/?s=sakatsura">酒列磯前神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=mihojinja">御穂神社</a></span></li>
-        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=susanoo">須佐之男命</a></b><small>すさのおのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=hikawa">氷川神社（大宮）</a>、<a href="../../shrine-note/map/?s=atsuta">熱田神宮</a>、<a href="../../shrine-note/map/?s=kumano">熊野本宮大社</a>、<a href="../../shrine-note/map/?s=tsushima">津島神社</a>、<a href="../../shrine-note/map/?s=tsurugijinja">劔神社</a>、<a href="../../shrine-note/map/?s=hinomisaki">日御碕神社</a>、<a href="../../shrine-note/map/?s=ohirumemuchi">大日霊貴神社</a>、<a href="../../shrine-note/map/?s=kumanonachi">熊野那智大社</a>、<a href="../../shrine-note/map/?s=kumanohayatama">熊野速玉大社</a>、<a href="../../shrine-note/map/?s=yaegaki">八重垣神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a>、<a href="../../shrine-note/map/?s=yasaka">八坂神社</a>、<a href="../../shrine-note/map/?s=susa">須佐神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=sashikuniwakahime">刺国若比売</a></b><small>さしくにわかひめ</small><span class="sh">神社巡りノートには、まだ祀る神社がありません</span></li>
         <li><b>八十神</b><span class="sh">大穴牟遲神の兄弟たち。八上比賣に選ばれなかったことを怒り、大穴牟遲神を二度殺し、さらに木國まで追いかける。</span></li>
         <li><b>神産巢日之命</b><small>かむむすひのかみ</small><span class="sh">御祖命の願いを受けて𧏛貝比賣と蛤貝比賣を遣わし、大穴牟遲神を生き返らせる。</span></li>
@@ -157,7 +198,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第一 第八段 本文</span><p>本文では、素戔嗚尊と奇稻田姫が交わって大己貴神が生まれ、その後に素戔嗚尊は根國へ行ったとする。古事記のように大國主神が須佐之男命の子孫で、根の国で娘婿になるという筋ではない。</p><blockquote lang="zh-Hant">乃相與遘合而生兒大己貴神</blockquote></div>
       <div class="ns"><span class="where">巻第一 第八段 一書第二</span><p>一書第二では、奇稻田媛から生まれた子の六世の孫を大己貴命とする。須佐之男命から数えて何代も後の子孫とする点は、古事記の系譜（K115）に近い。</p><blockquote lang="zh-Hant">所生兒之六世孫。是曰大己貴命</blockquote></div>
       <div class="ns"><span class="where">巻第一 第八段 一書第六</span><p>一書第六は大國主神の別名として葦原醜男・八千戈神・顯國玉神などを挙げるが、八十神の迫害や根の国での試練に当たる記事は、巻第一・巻第二の本文・一書には確認できなかった。</p><blockquote lang="zh-Hant">亦曰葦原醜男。亦曰八千戈神</blockquote></div>
@@ -165,12 +206,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="inaba.html"><small>← 前の話（上巻・第9話）</small>稲羽の素兎</a><a class="next" href="kunitsukuri.html"><small>次の話（上巻・第11話）→</small>八千矛神の歌と大国主神の国作り</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">可參向須佐能男命所坐之根堅州國，必其大神議也</blockquote><p>須佐能男命のいる根堅州國へ行きなさい。きっとその大神が良いようにはかってくださる、という言葉。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">内者富良富良，外（者）須夫須夫。</blockquote><p>燃える野で鼠が大穴牟遲神に教えた言葉。「富良富良」「須夫須夫」は字の音で読むと原文の注にある。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">意礼為大國主神，亦為宇都志國主神</blockquote><p>須佐之男命の呼びかけ。「おまえが大國主神となり、また宇都志國主神となれ」。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">每坂御尾追伏，每河瀨追撥而始作國也</blockquote><p>坂のすそごとに追い伏せ、川の瀬ごとに追い払って、初めて国を作った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">日本書紀 巻第一</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/okuninushinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamumusuhinokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kisakaihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/umukaihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/oyabikonokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kimatanokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/miinokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

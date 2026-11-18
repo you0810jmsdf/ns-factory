@@ -96,6 +96,8 @@ CSS = '''
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
@@ -104,6 +106,7 @@ CSS = '''
 
 BK_CSS = '''    /* 「読みもの」の型（layout.json にある話） */
     .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
     .bk-head { grid-area: head; align-self: end; }
     .bk-intro { grid-area: intro; }
     .bk-hero { grid-area: hero; margin: 0; }
@@ -129,6 +132,7 @@ BK_CSS = '''    /* 「読みもの」の型（layout.json にある話） */
     .bk-app details[open] summary { margin-bottom: 14px; }
     @media (max-width: 720px) {
       .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
       .bk-hero { max-width: 280px; margin: 8px auto 24px; }
       .bk-figs.two { grid-template-columns: 1fr; }
     }
@@ -276,14 +280,15 @@ def kojiki_book_page(i, lay):
     out = [head('kojiki', title, m['lead'], SITE + 'kojiki/' + m['id'] + '.html', BK_CSS)]
     xl = ''.join(f'<a href="../shoki/{s["id"]}.html">日本書紀で読む：{e(s["title"])} ›</a>' for s in K2S.get(m['id'], []))
     mins = max(1, -(-sum(len(s['text']) for s in m['story']) // 500))
-    hero = dict(lay['hero'], shape='tall')
+    hero = dict(lay['hero'], shape='tall') if lay.get('hero') else None
+    hero_html = f'<div class="bk-hero">{fig_html(hero, eager=True)}</div>' if hero else ''
     out.append(f'''  <main class="pg-main bk">
-    <header class="bk-open">
+    <header class="bk-open{'' if hero else ' nohero'}">
       <div class="bk-head">
         <p class="eyebrow">古事記 {kan}・第{m['no']}話（全{cnt}話）</p>
         <h1>{e(m['title'])}</h1>
       </div>
-      <div class="bk-hero">{fig_html(hero, eager=True)}</div>
+      {hero_html}
       <div class="bk-intro">
         <p class="bk-lead">{e(m['lead'])}</p>
         <p class="bk-meta">物語を読む時間の目安：約{mins}分　／　<a href="#pts-title">要点だけ読む</a></p>
@@ -365,13 +370,13 @@ def kojiki_index():
     kans = [k for k in ['上巻', '中巻', '下巻'] if any(m['kan'] == k for m in KOJ)]
     n = len(KOJ)
     title = "古事記アーカイブ｜上巻・中巻・下巻を一話ずつ｜教育幕僚室｜N's factory"
-    desc = f'古事記の上巻（神々の時代）・中巻（神武天皇〜応神天皇）・下巻（仁徳天皇〜推古天皇）を{n}話に分け、話ごとに「覚えておくポイント」「どんな話か」「原文」「登場する神と祀る神社」「日本書紀との違い」をまとめた研究ノート。'
+    desc = f'古事記の上巻（神々の時代）・中巻（神武天皇〜応神天皇）・下巻（仁徳天皇〜推古天皇）を{n}話に分け、話ごとに、場面ごとの物語・要点・登場する神と祀る神社・日本書紀との違い・原文をまとめた読みもの。'
     out = [head('kojiki', title, desc, SITE + 'kojiki/')]
-    jump = ''.join(f'<a href="#kan-{k}">{k}</a>' for k in kans) + '<a href="#review">ポイントの復習</a><a href="../shoki/">日本書紀アーカイブ ›</a>'
+    jump = ''.join(f'<a href="#kan-{k}">{k}</a>' for k in kans) + '<a href="#review">要点の復習</a><a href="../shoki/">日本書紀アーカイブ ›</a>'
     out.append(f'''  <main class="pg-main">
     <p class="eyebrow">Kojiki Archive</p>
     <h1>古事記アーカイブ</h1>
-    <p class="pg-lead">古事記の上・中・下の三巻（神々の時代から推古天皇まで）を、{n}の話に分けて一話ずつまとめました。どの話にも、まず「覚えておくポイント」があります。そのあとで、話の流れ・原文・登場する神・日本書紀との違いを読めます。</p>
+    <p class="pg-lead">古事記の上・中・下の三巻（神々の時代から推古天皇まで）を、{n}の話に分けて、一話ずつ読めるようにしました。どの話も、物語を場面ごとに読み、読み終えたあとに要点・登場する神・日本書紀との違いを確かめられます。原文と出典は、各話の末尾の「資料編」にあります。</p>
     <div class="jump">{jump}</div>
 
     <section class="pg-card" aria-labelledby="how-title">
@@ -384,9 +389,13 @@ def kojiki_index():
         ms = [m for m in KOJ if m['kan'] == k]
         sub = KAN_SUB[k]
         out.append(f'    <section class="pg-card" id="kan-{k}" aria-labelledby="toc-{k}">\n      <h2 id="toc-{k}">{k}（{sub}・全{len(ms)}話）</h2>\n      <ol class="toc">')
-        out += [f'        <li><a href="{m["id"]}.html"><span class="no">{m["no"]}</span><b>{e(m["title"])}</b><span class="lead">{e(m["points"][0]["text"])}</span></a></li>' for m in ms]
+        for m in ms:
+            hero = (LAYOUT.get(m['id']) or {}).get('hero')
+            th = f'<img class="th" src="{ART}{e(hero["img"].replace("-hero", "-thumb"))}" width="160" height="284" alt="" loading="lazy" decoding="async">' if hero else ''
+            cls = ' class="has-th"' if hero else ''
+            out.append(f'        <li><a href="{m["id"]}.html"{cls}><span class="no">{m["no"]}</span><b>{e(m["title"])}</b><span class="lead">{e(m["points"][0]["text"])}</span>{th}</a></li>')
         out.append('      </ol>\n    </section>\n')
-    out.append('    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">全話の「覚えておくポイント」</h2>\n      <p class="pg-note">復習用に、各話のポイントを上から2つずつ並べました。</p>')
+    out.append('    <section class="pg-card" id="review" aria-labelledby="all-title">\n      <h2 id="all-title">全話の要点（復習用）</h2>\n      <p class="pg-note">復習用に、各話の要点を上から2つずつ並べました。</p>')
     for m in KOJ:
         out.append(f'      <h3><a href="{m["id"]}.html">{m["kan"]} 第{m["no"]}話　{e(m["title"])}</a></h3><ul style="margin:0;padding-left:1.2em;line-height:1.85;">'
                    + ''.join(f'<li>{e(p["text"])}</li>' for p in m['points'][:2]) + '</ul>')

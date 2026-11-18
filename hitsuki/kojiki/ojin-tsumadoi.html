@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第15話（全17話）</p>
-    <h1>応神天皇の妻問いと髪長比売</h1>
-    <p class="pg-lead">品陀和気命（応神天皇）は、大山守命と大雀命に兄と弟の子のどちらがかわいいかを問い、宇遅能和紀郎子を跡継ぎと定めた。天皇は木幡村で宮主矢河枝比売と結ばれ、日向から呼んだ髪長比売は大雀命の願いで大雀命に与えられ、吉野の国主たちは酒と歌を献じた。</p>
-    <div class="xlink"><a href="../shoki/ojin-jidai.html">日本書紀で読む：応神天皇の誕生・即位と前半の治世 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第15話（全17話）</p>
+        <h1>応神天皇の妻問いと髪長比売</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">品陀和気命（応神天皇）は、大山守命と大雀命に兄と弟の子のどちらがかわいいかを問い、宇遅能和紀郎子を跡継ぎと定めた。天皇は木幡村で宮主矢河枝比売と結ばれ、日向から呼んだ髪長比売は大雀命の願いで大雀命に与えられ、吉野の国主たちは酒と歌を献じた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/ojin-jidai.html">日本書紀で読む：応神天皇の誕生・即位と前半の治世 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>品陀和気命の妻と御子</h3>
+      <p class="t">品陀和気命（応神天皇）は、軽嶋の明宮で天下を治めた。品陀真若王の娘である高木之入日売命・中日売命・弟日売命の三人の女王をはじめ、多くの妻をめとった。御子は合わせて二十六人（男王十一人、女王十五人）で、その中の大雀命が天下を治めた、と記す。</p>
+      <h3>宇遅能和紀郎子に天津日継を定める</h3>
+      <p class="t">天皇は宇遅能和紀郎子に天下を治めさせたいと思い、大山守命と大雀命に「兄の子と弟の子とでは、どちらがかわいいか」と尋ねた。大山守命は兄の子と答えた。大雀命は天皇の心を察して、「兄の子はもう大人なので心配はないが、弟の子はまだ大人でないのでかわいい」と答えた。天皇は「佐邪岐阿芸の言葉は、わたしの思うとおりだ」と言い、大山守命には山と海の政を、大雀命には食国の政を執って天皇に申し上げることを命じ、宇遅能和紀郎子が天津日継を受け継ぐと定めた。大雀命は天皇の命にそむかなかった。</p>
+      <h3>木幡村で宮主矢河枝比売に会う</h3>
+      <p class="t">あるとき天皇が近淡海国へ出かけたとき、宇遅野の上に立って葛野を望み、歌をうたった。木幡村に着くと、道の分かれ道で美しい娘に出会った。名を問うと、丸邇の比布礼能意富美の娘で、宮主矢河枝比売と答えたので、天皇は「明日帰るとき、あなたの家に寄ろう」と告げた。父は天皇だと知って恐れつつ、家を飾って待った。翌日のもてなしの席で矢河枝比売が大御酒の盃を差し上げると、天皇はその盃を取らせたまま長い歌をうたった。</p>
+      <h3>髪長比売を大雀命に賜る</h3>
+      <p class="t">こうして結ばれて生まれたのが宇遅能和紀郎子である。天皇は、日向国の諸県君の娘で顔かたちの美しい髪長比売のことを聞き、使いを出して呼び寄せた。太子の大雀命は、難波津に着いた髪長比売を見てその姿に心を動かされ、建内宿禰大臣にたのんで、天皇から自分に賜るよう願い出てもらった。天皇は豊明の日に、髪長比売に大御酒の柏を持たせて太子に与え、歌をうたった。</p>
+      <h3>天皇と太子の歌</h3>
+      <p class="t">天皇はさらにもう一首の歌をうたって髪長比売を与えた。髪長比売を賜ったあと、太子も二首の歌をうたった。</p>
+      <h3>吉野の国主たちの歌</h3>
+      <p class="t">また吉野の国主たちは、大雀命が身につけている御刀を見て歌をうたった。吉野の白檮の上に横臼を作り、その横臼で大御酒をかもして献じるときには、口鼓を打ってわざをしながら歌をうたった。この歌は、国主たちが大贄を献じるたびに、今に至るまでいつもうたう歌である、と記す。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>応神天皇は大山守命と大雀命に、兄の子と弟の子のどちらがかわいいかを問い、天皇の心をくんで「弟の子」と答えた大雀命の言葉をよしとした。その結果、宇遅能和紀郎子が天津日継を受け継ぐ者、大山守命が山と海の政、大雀命が食国の政を担う者と定められた。</li>
         <li><span class="kind ">本文</span>宇遅能和紀郎子の母は、天皇が木幡村の分かれ道で出会った宮主矢河枝比売（丸邇の比布礼能意富美の娘）である。天皇は翌日その家でもてなしを受け、盃を受けて長い歌をうたった。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀（巻第十）では、兄の子・弟の子の問答は応神天皇四十年正月のことで、同じ月の甲子の日に菟道稚郎子を跡継ぎとし、大山守命に山川林野を、大鷦鷯尊に太子の補佐をまかせる。古事記は年を記さず、天皇の系譜のすぐあとに置く。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、天皇みずから大鷦鷯尊の恋心に気づいて髪長媛を与え、建内宿禰の仲立ちは書かれない。木幡村で宮主矢河枝比売と出会う話は巻第十には確認できず、宮主宅媛が妃として菟道稚郎子らを生んだことだけが見える。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>品陀和気命（応神天皇）は、軽嶋の明宮で天下を治めた。品陀真若王の娘である高木之入日売命・中日売命・弟日売命の三人の女王をはじめ、多くの妻をめとった。御子は合わせて二十六人（男王十一人、女王十五人）で、その中の大雀命が天下を治めた、と記す。</p>
-      <p>天皇は宇遅能和紀郎子に天下を治めさせたいと思い、大山守命と大雀命に「兄の子と弟の子とでは、どちらがかわいいか」と尋ねた。大山守命は兄の子と答えた。大雀命は天皇の心を察して、「兄の子はもう大人なので心配はないが、弟の子はまだ大人でないのでかわいい」と答えた。天皇は「佐邪岐阿芸の言葉は、わたしの思うとおりだ」と言い、大山守命には山と海の政を、大雀命には食国の政を執って天皇に申し上げることを命じ、宇遅能和紀郎子が天津日継を受け継ぐと定めた。大雀命は天皇の命にそむかなかった。</p>
-      <p>あるとき天皇が近淡海国へ出かけたとき、宇遅野の上に立って葛野を望み、歌をうたった。木幡村に着くと、道の分かれ道で美しい娘に出会った。名を問うと、丸邇の比布礼能意富美の娘で、宮主矢河枝比売と答えたので、天皇は「明日帰るとき、あなたの家に寄ろう」と告げた。父は天皇だと知って恐れつつ、家を飾って待った。翌日のもてなしの席で矢河枝比売が大御酒の盃を差し上げると、天皇はその盃を取らせたまま長い歌をうたった。</p>
-      <p>こうして結ばれて生まれたのが宇遅能和紀郎子である。天皇は、日向国の諸県君の娘で顔かたちの美しい髪長比売のことを聞き、使いを出して呼び寄せた。太子の大雀命は、難波津に着いた髪長比売を見てその姿に心を動かされ、建内宿禰大臣にたのんで、天皇から自分に賜るよう願い出てもらった。天皇は豊明の日に、髪長比売に大御酒の柏を持たせて太子に与え、歌をうたった。</p>
-      <p>天皇はさらにもう一首の歌をうたって髪長比売を与えた。髪長比売を賜ったあと、太子も二首の歌をうたった。</p>
-      <p>また吉野の国主たちは、大雀命が身につけている御刀を見て歌をうたった。吉野の白檮の上に横臼を作り、その横臼で大御酒をかもして献じるときには、口鼓を打ってわざをしながら歌をうたった。この歌は、国主たちが大贄を献じるたびに、今に至るまでいつもうたう歌である、と記す。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">兄子者。既成人。是無悒。弟子者。未成人。是愛</blockquote><p>兄の子はもう大人なので心配はない。弟の子はまだ大人ではないので、かわいい（大雀命の答え）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">宇遲能和紀郎子。所知天津日繼也</blockquote><p>宇遅能和紀郎子が天津日継を受け継ぐ（天皇が定めた役目の分け方の一つ）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">於髮長比賣令握大御酒柏。賜其太子</blockquote><p>髪長比売に大御酒の柏を持たせて、太子（大雀命）に与えた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">國主等。獻大贄之時時。恒至于今。詠之歌者也</blockquote><p>国主たちが大贄を献じるたびに、今に至るまでいつもうたう歌である。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,7 +193,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十 応神天皇四十年春正月辛丑朔戊申</span><p>日本書紀では、天皇が大山守命と大鷦鷯尊に「おまえたちは子をかわいく思うか」と問い、さらに年長と年少のどちらかを問う。大山守命の答えに天皇は不機嫌になり、大鷦鷯尊の答えを喜ぶ。年月が記される点が古事記と異なる。</p><blockquote lang="zh-Hant">汝等者愛子耶</blockquote></div>
       <div class="ns"><span class="where">巻第十 応神天皇十三年秋九月</span><p>日本書紀では、髪長媛は十一年に評判を聞いた天皇が十三年三月に使いを出して召し、九月に着いて桑津邑に置かれた。大鷦鷯尊の恋心を天皇が知り、後宮の宴で髪長媛を指して歌って与える。</p><blockquote lang="zh-Hant">於是天皇知大鷦鷯尊感髪長媛而欲配</blockquote></div>
       <div class="ns"><span class="where">巻第十 応神天皇十九年冬十月戊戌朔</span><p>日本書紀では、天皇が吉野宮に行ったとき国樔人が醴酒を献じて歌い、歌い終わると口を打って仰いで笑ったとし、今も国樔が土毛を献じる日に同じようにすると記す。古事記の「吉野之国主等」にあたる。</p><blockquote lang="zh-Hant">時國樔人來朝之，因以醴酒獻于天皇</blockquote></div>
@@ -161,12 +201,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="oshikuma.html"><small>← 前の話（中巻・第14話）</small>忍熊王の反乱と気比大神</a><a class="next" href="ojin-oyamamori.html"><small>次の話（中巻・第16話）→</small>応神天皇の時代と大山守命の反乱</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">兄子者。既成人。是無悒。弟子者。未成人。是愛</blockquote><p>兄の子はもう大人なので心配はない。弟の子はまだ大人ではないので、かわいい（大雀命の答え）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">宇遲能和紀郎子。所知天津日繼也</blockquote><p>宇遅能和紀郎子が天津日継を受け継ぐ（天皇が定めた役目の分け方の一つ）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">於髮長比賣令握大御酒柏。賜其太子</blockquote><p>髪長比売に大御酒の柏を持たせて、太子（大雀命）に与えた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">國主等。獻大贄之時時。恒至于今。詠之歌者也</blockquote><p>国主たちが大贄を献じるたびに、今に至るまでいつもうたう歌である。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十" target="_blank" rel="noopener">日本書紀 巻第十</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第8話（全13話）</p>
-    <h1>安康天皇と目弱王の変</h1>
-    <p class="pg-lead">安康天皇（穴穂御子）は、使いの根臣の讒言を信じて大日下王を殺し、その妻を皇后にしたが、皇后の連れ子の目弱王に昼寝中に斬り殺された。弟の大長谷王子は兄たちと都夫良意美を攻め、さらに市辺之忍歯王を射殺したので、忍歯王の子の意富祁王・袁祁王は針間国へ逃れた。</p>
-    <div class="xlink"><a href="../shoki/ingyo-anko.html">日本書紀で読む：允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期 ›</a><a href="../shoki/yuryaku-1.html">日本書紀で読む：雄略天皇の即位と葛城山の一事主神 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第8話（全13話）</p>
+        <h1>安康天皇と目弱王の変</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">安康天皇（穴穂御子）は、使いの根臣の讒言を信じて大日下王を殺し、その妻を皇后にしたが、皇后の連れ子の目弱王に昼寝中に斬り殺された。弟の大長谷王子は兄たちと都夫良意美を攻め、さらに市辺之忍歯王を射殺したので、忍歯王の子の意富祁王・袁祁王は針間国へ逃れた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/ingyo-anko.html">日本書紀で読む：允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期 ›</a><a href="../shoki/yuryaku-1.html">日本書紀で読む：雄略天皇の即位と葛城山の一事主神 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>根臣が押木の玉縵を盗む</h3>
+      <p class="t">穴穂御子は石上の穴穂宮で天下を治めた。天皇は弟の大長谷王子の妻として大日下王の妹の若日下王を迎えようと、坂本臣らの祖の根臣を使いに出した。大日下王は四度拝んで承知し、礼の品として押木の玉縵を託した。ところが根臣はその玉縵を盗み取り、大日下王が命令を受けずに怒っていると偽って天皇に告げた。</p>
+      <h3>目弱王が天皇を斬る</h3>
+      <p class="t">天皇は大いに怒って大日下王を殺し、その正妻の長田大郎女を皇后にした。あるとき天皇は神牀で昼寝をしながら皇后に、皇后の子の目弱王が成人して、父を殺したのが自分だと知ったら悪い心を持つのではないかと、いつも気がかりだと語った。七歳の目弱王は御殿の下で遊んでいてこれを聞き、眠っている天皇のそばの大刀を取って首を斬り、都夫良意富美の家に逃げこんだ。天皇の御年は五十六歳、御陵は菅原の伏見岡にあると記される。</p>
+      <h3>黒日子王と白日子王を殺す</h3>
+      <p class="t">まだ少年だった大長谷王子はこれを聞いて激しく怒り、兄の黒日子王のもとへ行ったが、黒日子王は驚かず気のゆるんだ様子だった。大長谷王子は兄をののしり、襟をつかんで引き出して斬り殺した。次の兄の白日子王も同じ態度だったので、小治田に連れて行き、穴を掘って立ったまま埋めると、腰まで埋めたところで両目が飛び出して死んだと記される。</p>
+      <h3>都夫良意美の家を囲む</h3>
+      <p class="t">大長谷王子は軍を起こして都夫良意美の家を囲み、激しく矢を射かけ合った。意美は武器を外して八度拝み、先に求められていた娘の訶良比売と五か所の屯宅を差し出すと申し上げた。しかし、臣が王宮に隠れた例は聞くが王子が臣の家に隠れた例は聞かない、頼って来た王子は死んでも見捨てない、と述べて再び戦った。力も矢も尽きると、王子の言葉に従って王子を刺し殺し、自分も首を切って死んだ。</p>
+      <h3>市辺之忍歯王を射る</h3>
+      <p class="t">その後、近江の佐佐紀山君の祖の韓帒が、久多綿の蚊屋野には猪や鹿が多いと申し上げ、大長谷王は市辺之忍歯王を連れて近江へ出かけ、それぞれ仮宮に泊まった。翌朝、忍歯王は何の構えもなく馬で大長谷王の仮宮のそばに来て狩り場へ誘った。お供の者たちが用心するよう申し上げたので、大長谷王は衣の下に甲を着て出かけ、馬を並べるとすぐに矢で忍歯王を射落とし、その体を切って馬の飼い葉桶に入れ、土と平らに埋めた。</p>
+      <h3>意富祁王・袁祁王が逃げる</h3>
+      <p class="t">市辺王の子の意富祁王・袁祁王はこの乱を聞いて逃げた。山代の苅羽井で食事をしていると、顔に入れ墨をした老人が来て食糧を奪い、自分は山代の猪甘だと名乗った。二人は玖須婆の河を渡って針間国に至り、志自牟という人の家に身を隠して、馬飼い・牛飼いとして働いた。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>七歳の目弱王は、父の大日下王を殺したのが安康天皇だと語る言葉を聞き、昼寝中の天皇の首をそばの大刀で斬って都夫良意富美の家に逃げた。天皇は五十六歳で亡くなったと記される。</li>
         <li><span class="kind ">本文</span>発端は使いの根臣の盗みと讒言である。根臣が礼の品の玉縵を盗み、大日下王が命令に従わないと偽ったため、天皇は大日下王を殺し、その妻の長田大郎女を皇后にした。</li>
@@ -113,25 +172,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、安康天皇は高殿での酒宴のあと皇后の膝を枕に酔って寝ていたところを眉輪王（目弱王にあたる）に刺されたとし、眉輪王は坂合黒彦皇子・円大臣とともに大臣の家で焼け死んだとする。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、大泊瀬（雄略）が市辺押磐皇子を殺したのは、安康天皇が押磐皇子に国を伝えようとしていたことを恨んだためとし、「猪がいる」と偽って射殺したと記す。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>穴穂御子は石上の穴穂宮で天下を治めた。天皇は弟の大長谷王子の妻として大日下王の妹の若日下王を迎えようと、坂本臣らの祖の根臣を使いに出した。大日下王は四度拝んで承知し、礼の品として押木の玉縵を託した。ところが根臣はその玉縵を盗み取り、大日下王が命令を受けずに怒っていると偽って天皇に告げた。</p>
-      <p>天皇は大いに怒って大日下王を殺し、その正妻の長田大郎女を皇后にした。あるとき天皇は神牀で昼寝をしながら皇后に、皇后の子の目弱王が成人して、父を殺したのが自分だと知ったら悪い心を持つのではないかと、いつも気がかりだと語った。七歳の目弱王は御殿の下で遊んでいてこれを聞き、眠っている天皇のそばの大刀を取って首を斬り、都夫良意富美の家に逃げこんだ。天皇の御年は五十六歳、御陵は菅原の伏見岡にあると記される。</p>
-      <p>まだ少年だった大長谷王子はこれを聞いて激しく怒り、兄の黒日子王のもとへ行ったが、黒日子王は驚かず気のゆるんだ様子だった。大長谷王子は兄をののしり、襟をつかんで引き出して斬り殺した。次の兄の白日子王も同じ態度だったので、小治田に連れて行き、穴を掘って立ったまま埋めると、腰まで埋めたところで両目が飛び出して死んだと記される。</p>
-      <p>大長谷王子は軍を起こして都夫良意美の家を囲み、激しく矢を射かけ合った。意美は武器を外して八度拝み、先に求められていた娘の訶良比売と五か所の屯宅を差し出すと申し上げた。しかし、臣が王宮に隠れた例は聞くが王子が臣の家に隠れた例は聞かない、頼って来た王子は死んでも見捨てない、と述べて再び戦った。力も矢も尽きると、王子の言葉に従って王子を刺し殺し、自分も首を切って死んだ。</p>
-      <p>その後、近江の佐佐紀山君の祖の韓帒が、久多綿の蚊屋野には猪や鹿が多いと申し上げ、大長谷王は市辺之忍歯王を連れて近江へ出かけ、それぞれ仮宮に泊まった。翌朝、忍歯王は何の構えもなく馬で大長谷王の仮宮のそばに来て狩り場へ誘った。お供の者たちが用心するよう申し上げたので、大長谷王は衣の下に甲を着て出かけ、馬を並べるとすぐに矢で忍歯王を射落とし、その体を切って馬の飼い葉桶に入れ、土と平らに埋めた。</p>
-      <p>市辺王の子の意富祁王・袁祁王はこの乱を聞いて逃げた。山代の苅羽井で食事をしていると、顔に入れ墨をした老人が来て食糧を奪い、自分は山代の猪甘だと名乗った。二人は玖須婆の河を渡って針間国に至り、志自牟という人の家に身を隠して、馬飼い・牛飼いとして働いた。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">根臣。即盜取其禮物之玉縵。</blockquote><p>根臣が、大日下王から預かった礼の品の玉縵を盗み取った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">取其傍大刀。乃打斬。其天皇之頸。</blockquote><p>目弱王が、眠る天皇のそばの大刀を取って天皇の首を斬った。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">聞臣連。隱於王宮。未聞王子。隱於臣家。</blockquote><p>都夫良意美の言葉。臣下が王宮に逃げこんだ話は聞くが、王子が臣下の家に隠れた話は聞いたことがない。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">意富祁王。袁祁王〔二柱〕聞此亂而逃去。</blockquote><p>市辺王の二人の子、意富祁王と袁祁王がこの乱を聞いて逃げた。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -158,7 +198,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十三 安康天皇元年春二月戊辰朔</span><p>日本書紀でも根使主（根臣にあたる）が押木珠縵の美しさに心を奪われて自分のものにし、讒言して大草香皇子（大日下王にあたる）を殺させる。書紀ではさらに、大草香皇子に仕えた難波吉師日香蛟の父子が主の亡骸のそばで自害したことを記す。</p><blockquote lang="zh-Hant">根使主見押木珠縵。感其麗美。</blockquote></div>
       <div class="ns"><span class="where">巻第十四 雄略天皇即位前紀（安康天皇三年八月）</span><p>日本書紀では、安康天皇は山宮の高殿で酒宴をしたあと、皇后の膝を枕に酔って昼寝しているところを眉輪王に刺されたとする（古事記は神牀での昼寝で、大刀で首を斬る）。</p><blockquote lang="zh-Hant">穴穗天皇枕皇后膝。晝醉眠臥。</blockquote></div>
       <div class="ns"><span class="where">巻第十四 雄略天皇即位前紀（安康天皇三年八月）</span><p>日本書紀では八釣白彦皇子が斬られ、坂合黒彦皇子は眉輪王と円大臣の家に逃げ、大臣は娘の韓媛と葛城の宅七区を差し出して許しを請うたが許されず、三人とも家ごと焼かれて死んだとする。古事記の、白日子王の生き埋めや、意美が王子を刺して自害する話とは異なる。</p><blockquote lang="zh-Hant">於是。大臣與黒彦皇子。眉輪王。倶被燔死。</blockquote></div>
@@ -166,12 +206,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="karu.html"><small>← 前の話（下巻・第7話）</small>允恭天皇と軽太子・軽大郎女</a><a class="next" href="yuryaku-akaiko.html"><small>次の話（下巻・第9話）→</small>雄略天皇と若日下部王・赤猪子・吉野の童女</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">根臣。即盜取其禮物之玉縵。</blockquote><p>根臣が、大日下王から預かった礼の品の玉縵を盗み取った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">取其傍大刀。乃打斬。其天皇之頸。</blockquote><p>目弱王が、眠る天皇のそばの大刀を取って天皇の首を斬った。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">聞臣連。隱於王宮。未聞王子。隱於臣家。</blockquote><p>都夫良意美の言葉。臣下が王宮に逃げこんだ話は聞くが、王子が臣下の家に隠れた話は聞いたことがない。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">意富祁王。袁祁王〔二柱〕聞此亂而逃去。</blockquote><p>市辺王の二人の子、意富祁王と袁祁王がこの乱を聞いて逃げた。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">日本書紀 巻第十四</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

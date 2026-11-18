@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第12話（全13話）</p>
-    <h1>顕宗天皇・仁賢天皇（置目老媼と父の御陵）</h1>
-    <p class="pg-lead">顕宗天皇（袁祁之石巣別命）は、近江の老女の案内で父・市辺王の遺骨を見つけて葬り、老女に置目老媼の名を与えて手厚く遇した。父の仇である大長谷天皇の御陵を壊そうとしたが、兄の意祁命が傍らを少し掘るだけにとどめて諫め、天皇の崩後はその兄（仁賢天皇）が天下を治めた。</p>
-    <div class="xlink"><a href="../shoki/seinei-kenzo.html">日本書紀で読む：清寧・顕宗・仁賢天皇と億計・弘計の兄弟 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第12話（全13話）</p>
+        <h1>顕宗天皇・仁賢天皇（置目老媼と父の御陵）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">顕宗天皇（袁祁之石巣別命）は、近江の老女の案内で父・市辺王の遺骨を見つけて葬り、老女に置目老媼の名を与えて手厚く遇した。父の仇である大長谷天皇の御陵を壊そうとしたが、兄の意祁命が傍らを少し掘るだけにとどめて諫め、天皇の崩後はその兄（仁賢天皇）が天下を治めた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/seinei-kenzo.html">日本書紀で読む：清寧・顕宗・仁賢天皇と億計・弘計の兄弟 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>袁祁之石巣別命の御世</h3>
+      <p class="t">袁祁之石巣別命は近飛鳥宮で八年間天下を治めた。石木王の娘の難波王を娶ったが、子はなかった。</p>
+      <h3>老女が市辺王の遺骨を知らせる</h3>
+      <p class="t">天皇が父の市辺王の遺骨を探していたとき、近江国の身分の低い老女が参上して、王子の遺骨を埋めた所は自分だけがよく知っており、御歯でも見分けられると申し上げた（小注に、御歯は三つに分かれた押歯であったとある）。そこで民を集めて土を掘り、遺骨を見つけて、蚊屋野の東の山に御陵を作って葬り、韓帒の子らに陵を守らせた。</p>
+      <h3>置目老媼を召す</h3>
+      <p class="t">天皇は都に帰ると老女を呼び、その場所を忘れずに見置いていたことをほめて置目老媼という名を与え、宮の中に召して手厚くいたわった。老媼の住まいを宮のそばに作って毎日必ず呼び、呼ぶときのために大殿の戸に鐸を掛けて鳴らした。天皇はこれを歌に詠んだ。のちに老媼がひどく年老いたので故郷に退きたいと申し出ると、天皇は見送って歌を詠んだ。</p>
+      <h3>猪甘の老人を斬る</h3>
+      <p class="t">かつて逃げる途中で二人の食糧を奪った猪甘の老人を探し出し、都に呼び上げて飛鳥河の河原で斬り、その一族の膝の筋を断った。そのため今に至るまで、その子孫が倭に上る日には必ず足を引きずると記される。老人の居所をよく見つけた（「志米岐」）ことから、その地を志米須と呼ぶ。</p>
+      <h3>大長谷天皇の御陵を少し掘る</h3>
+      <p class="t">天皇は父を殺した大長谷天皇を深く恨み、その霊に報いようと御陵を壊すため人を遣わそうとした。兄の意祁命が自分が行くと申し出て、御陵の傍らを少し掘っただけで戻った。天皇がなぜすべて壊さないのかと問うと、意祁命は、大長谷天皇は父の仇ではあるが自分たちの従父であり天下を治めた天皇でもある、陵をすべて壊せば後の人に必ず非難される、少し掘っただけで恥を後世に示すには十分だと答え、天皇もこれを道理と認めた。</p>
+      <h3>意祁命の御子と御陵</h3>
+      <p class="t">天皇の御年は三十八歳、天下を治めたのは八年で、御陵は片岡の石坏岡の上にある。天皇の崩後は意祁命が天下を治め、石上の広高宮にいた。大長谷若建天皇の御子の春日大郎女を娶って高木郎女・財郎女・久須毘郎女・手白髪郎女・小長谷若雀命・真若王が生まれ、また丸邇日爪臣の娘の糠若子郎女から春日山田郎女が生まれた。御子は合わせて七柱で、そのうち小長谷若雀命が天下を治めた。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>顕宗天皇（袁祁之石巣別命）は、近江の老女の申し出で父・市辺王の遺骨を見つけ、蚊屋野の東の山に御陵を作って葬った。老女は置目老媼の名を与えられ、宮のそばに住んで、大殿の戸に掛けた鐸で呼ばれた。</li>
         <li><span class="kind ">本文</span>天皇は父の仇の大長谷天皇の御陵を壊そうとしたが、兄の意祁命は傍らを少し掘るだけにとどめ、従父であり天下を治めた天皇でもあると諫めた。天皇もこれを道理と認めた。</li>
@@ -112,25 +171,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>顕宗天皇は三十八歳で崩じ（治世八年、御陵は片岡の石坏岡の上）、続いて兄の意祁命（仁賢天皇）が石上の広高宮で天下を治め、その御子の小長谷若雀命が次に天下を治めた。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、陵を壊そうとする天皇を皇太子億計が諫め、天皇は工事をやめさせたとし、陵の傍らを少し掘ったという話はない。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>袁祁之石巣別命は近飛鳥宮で八年間天下を治めた。石木王の娘の難波王を娶ったが、子はなかった。</p>
-      <p>天皇が父の市辺王の遺骨を探していたとき、近江国の身分の低い老女が参上して、王子の遺骨を埋めた所は自分だけがよく知っており、御歯でも見分けられると申し上げた（小注に、御歯は三つに分かれた押歯であったとある）。そこで民を集めて土を掘り、遺骨を見つけて、蚊屋野の東の山に御陵を作って葬り、韓帒の子らに陵を守らせた。</p>
-      <p>天皇は都に帰ると老女を呼び、その場所を忘れずに見置いていたことをほめて置目老媼という名を与え、宮の中に召して手厚くいたわった。老媼の住まいを宮のそばに作って毎日必ず呼び、呼ぶときのために大殿の戸に鐸を掛けて鳴らした。天皇はこれを歌に詠んだ。のちに老媼がひどく年老いたので故郷に退きたいと申し出ると、天皇は見送って歌を詠んだ。</p>
-      <p>かつて逃げる途中で二人の食糧を奪った猪甘の老人を探し出し、都に呼び上げて飛鳥河の河原で斬り、その一族の膝の筋を断った。そのため今に至るまで、その子孫が倭に上る日には必ず足を引きずると記される。老人の居所をよく見つけた（「志米岐」）ことから、その地を志米須と呼ぶ。</p>
-      <p>天皇は父を殺した大長谷天皇を深く恨み、その霊に報いようと御陵を壊すため人を遣わそうとした。兄の意祁命が自分が行くと申し出て、御陵の傍らを少し掘っただけで戻った。天皇がなぜすべて壊さないのかと問うと、意祁命は、大長谷天皇は父の仇ではあるが自分たちの従父であり天下を治めた天皇でもある、陵をすべて壊せば後の人に必ず非難される、少し掘っただけで恥を後世に示すには十分だと答え、天皇もこれを道理と認めた。</p>
-      <p>天皇の御年は三十八歳、天下を治めたのは八年で、御陵は片岡の石坏岡の上にある。天皇の崩後は意祁命が天下を治め、石上の広高宮にいた。大長谷若建天皇の御子の春日大郎女を娶って高木郎女・財郎女・久須毘郎女・手白髪郎女・小長谷若雀命・真若王が生まれ、また丸邇日爪臣の娘の糠若子郎女から春日山田郎女が生まれた。御子は合わせて七柱で、そのうち小長谷若雀命が天下を治めた。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">譽其不失見置知其地以。賜名號置目老媼。</blockquote><p>遺骨の場所を忘れず見置いていたことをほめ、置目老媼という名を与えた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故鐸懸大殿戶。</blockquote><p>老媼を呼ぶために、大殿の戸に鐸を掛けた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">還爲我之從父。亦治天下之天皇。</blockquote><p>意祁命の言葉。大長谷天皇は、わたしたちの従父であり、天下を治めた天皇でもある。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天皇。御年。參拾捌歲。治天下八歲。</blockquote><p>顕宗天皇の御年は三十八歳、天下を治めたのは八年であった。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -152,7 +192,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十五 顕宗天皇元年二月 是月</span><p>日本書紀では、天皇と皇太子億計が置目の案内で近江の来田綿蚊屋野で遺骨を掘り出したが、帳内の佐伯部仲子の骨と混じって手足の骨までは見分けられず、蚊屋野によく似た陵を二つ造ったとする。古事記は御歯で見分けられると記し、御陵は一つである。</p><blockquote lang="zh-Hant">仍於蚊屋野中造起雙陵。相似如一。</blockquote></div>
       <div class="ns"><span class="where">巻第十五 顕宗天皇二年秋八月己未朔</span><p>日本書紀では、大泊瀬天皇の陵を壊して骨を投げ散らしたいと言う天皇を、皇太子億計が二つの理由を挙げて諫め、天皇は「善哉」と言って工事をやめさせたとする。古事記のように兄が陵の傍らを少し掘ったという話はない。</p><blockquote lang="zh-Hant">天皇曰。善哉。令罷役。</blockquote></div>
       <div class="ns"><span class="where">巻第十五 顕宗天皇三年夏四月庚辰</span><p>日本書紀では、顕宗天皇は即位三年目の夏四月庚辰に八釣宮で崩じたとし、古事記の「治天下八歳」とは年数が違う。</p><blockquote lang="zh-Hant">庚辰。天皇崩干八釣宮。</blockquote></div>
@@ -160,12 +200,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="oke-woke.html"><small>← 前の話（下巻・第11話）</small>清寧天皇と意祁命・袁祁命（志毘臣との歌垣）</a><a class="next" href="keifu-suiko.html"><small>次の話（下巻・第13話）→</small>武烈天皇から推古天皇まで</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">譽其不失見置知其地以。賜名號置目老媼。</blockquote><p>遺骨の場所を忘れず見置いていたことをほめ、置目老媼という名を与えた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故鐸懸大殿戶。</blockquote><p>老媼を呼ぶために、大殿の戸に鐸を掛けた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">還爲我之從父。亦治天下之天皇。</blockquote><p>意祁命の言葉。大長谷天皇は、わたしたちの従父であり、天下を治めた天皇でもある。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天皇。御年。參拾捌歲。治天下八歲。</blockquote><p>顕宗天皇の御年は三十八歳、天下を治めたのは八年であった。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

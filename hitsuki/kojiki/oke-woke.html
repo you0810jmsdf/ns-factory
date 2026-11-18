@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,39 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第11話（全13話）</p>
-    <h1>清寧天皇と意祁命・袁祁命（志毘臣との歌垣）</h1>
-    <p class="pg-lead">清寧天皇（白髪大倭根子命）が御子のないまま崩じたのち、針間国に隠れていた市辺之押歯王の子、意祁命・袁祁命の兄弟が、新室の宴で名乗り出て見いだされた。弟の袁祁命は歌垣で志毘臣と歌を詠み合って志毘臣を討ち、兄の譲りを受けて先に天下を治めた。</p>
-    <div class="xlink"><a href="../shoki/seinei-kenzo.html">日本書紀で読む：清寧・顕宗・仁賢天皇と億計・弘計の兄弟 ›</a><a href="../shoki/buretsu.html">日本書紀で読む：武烈天皇と平群氏の滅亡 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第11話（全13話）</p>
+        <h1>清寧天皇と意祁命・袁祁命（志毘臣との歌垣）</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">清寧天皇（白髪大倭根子命）が御子のないまま崩じたのち、針間国に隠れていた市辺之押歯王の子、意祁命・袁祁命の兄弟が、新室の宴で名乗り出て見いだされた。弟の袁祁命は歌垣で志毘臣と歌を詠み合って志毘臣を討ち、兄の譲りを受けて先に天下を治めた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/seinei-kenzo.html">日本書紀で読む：清寧・顕宗・仁賢天皇と億計・弘計の兄弟 ›</a><a href="../shoki/buretsu.html">日本書紀で読む：武烈天皇と平群氏の滅亡 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>白髪大倭根子命の御世</h3>
+      <p class="t">白髪大倭根子命は伊波礼の甕栗宮で天下を治めた。皇后も御子もなかったので、御名代として白髪部を定めた。天皇が崩じると天下を治めるべき王がいなかったので、日継を知らす王を尋ねたところ、市辺忍歯別王の妹の忍海郎女、亦の名を飯豊王が、葛城の忍海の高木角刺宮にいたと記される。</p>
+      <h3>志自牟の新室の宴で舞う少年</h3>
+      <p class="t">山部連小楯が針間国の長官に任じられたとき、その国の志自牟という人の新室の祝いの宴に行った。宴が盛り上がって皆が順に舞い、かまどのそばで火をたいていた少年二人にも舞わせることになった。二人は「兄さんが先に」「弟が先に」と譲り合って人々に笑われたが、兄が舞い終えると、弟は舞いながら詠みあげ、自分たちは伊邪本和気天皇の御子である市辺の押歯王の子孫だと名乗った。</p>
+      <h3>小楯が二人の王子を膝に座らせる</h3>
+      <p class="t">小楯はこれを聞いて驚き、床から転げ落ちて、その家の人々を外に追い出し、二人の王子を左右の膝に座らせて泣いた。人々を集めて仮宮を作り、そこに二人を住まわせて、早馬の使いを都に送った。おばの飯豊王はこれを喜び、二人を宮に上らせた。</p>
+      <h3>志毘臣と袁祁命の歌垣</h3>
+      <p class="t">二人がまだ天下を治める前、平群臣の祖の志毘臣が歌垣に立ち、袁祁命が結婚しようとしていた菟田首らの娘、大魚の手を取った。袁祁命も歌垣に立ち、志毘臣と袁祁命は交互に歌を詠みかわした。志毘臣は歌ううちにますます怒ったと記される。</p>
+      <h3>志毘臣の家を囲んで殺す</h3>
+      <p class="t">二人は歌い合って夜を明かし、それぞれ引き上げた。翌朝、意富祁命と袁祁命は、朝廷の人々は朝は朝廷に参るが昼は志毘の門に集まる、今なら志毘は寝ていて門にも人がいない、今でなければ謀りがたいと相談した。そして軍を起こして志毘臣の家を囲み、殺した。</p>
+      <h3>二人の王子が天下を譲り合う</h3>
+      <p class="t">その後、二人の王子は互いに天下を譲り合った。兄の意祁命は、針間の志自牟の家にいたとき弟が名を明かさなければ天下の君になることはなかった、これは弟の功績だから、自分は兄だが弟が先に天下を治めるべきだと固く譲った。そのため袁祁命は断りきれず、先に天下を治めた。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>針間国の志自牟の新室の宴で、火たきの少年として働いていた弟の袁祁命が舞いながら名乗り、市辺の押歯王の子と分かった。山部連小楯は驚いて二人をかくまい、都へ知らせた。</li>
         <li><span class="kind ">本文</span>清寧天皇（白髪大倭根子命）には皇后も御子もなく、御名代として白髪部が定められた。崩じたあと跡を継ぐ王がなく、市辺忍歯別王の妹の飯豊王が葛城の忍海の高木角刺宮にいたと記される。</li>
@@ -112,24 +171,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">本文</span>兄の意祁命は、名を明かして身分を示したのは弟の功だとして天下を譲り、弟の袁祁命が先に天下を治めた。</li>
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、歌垣で女性（影媛）をめぐって平群真鳥の子の鮪と歌を詠みかわすのは太子時代の武烈天皇とされ、古事記で袁祁命が詠む歌とよく似た歌が太子の歌として載る。</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>白髪大倭根子命は伊波礼の甕栗宮で天下を治めた。皇后も御子もなかったので、御名代として白髪部を定めた。天皇が崩じると天下を治めるべき王がいなかったので、日継を知らす王を尋ねたところ、市辺忍歯別王の妹の忍海郎女、亦の名を飯豊王が、葛城の忍海の高木角刺宮にいたと記される。</p>
-      <p>山部連小楯が針間国の長官に任じられたとき、その国の志自牟という人の新室の祝いの宴に行った。宴が盛り上がって皆が順に舞い、かまどのそばで火をたいていた少年二人にも舞わせることになった。二人は「兄さんが先に」「弟が先に」と譲り合って人々に笑われたが、兄が舞い終えると、弟は舞いながら詠みあげ、自分たちは伊邪本和気天皇の御子である市辺の押歯王の子孫だと名乗った。</p>
-      <p>小楯はこれを聞いて驚き、床から転げ落ちて、その家の人々を外に追い出し、二人の王子を左右の膝に座らせて泣いた。人々を集めて仮宮を作り、そこに二人を住まわせて、早馬の使いを都に送った。おばの飯豊王はこれを喜び、二人を宮に上らせた。</p>
-      <p>二人がまだ天下を治める前、平群臣の祖の志毘臣が歌垣に立ち、袁祁命が結婚しようとしていた菟田首らの娘、大魚の手を取った。袁祁命も歌垣に立ち、志毘臣と袁祁命は交互に歌を詠みかわした。志毘臣は歌ううちにますます怒ったと記される。</p>
-      <p>二人は歌い合って夜を明かし、それぞれ引き上げた。翌朝、意富祁命と袁祁命は、朝廷の人々は朝は朝廷に参るが昼は志毘の門に集まる、今なら志毘は寝ていて門にも人がいない、今でなければ謀りがたいと相談した。そして軍を起こして志毘臣の家を囲み、殺した。</p>
-      <p>その後、二人の王子は互いに天下を譲り合った。兄の意祁命は、針間の志自牟の家にいたとき弟が名を明かさなければ天下の君になることはなかった、これは弟の功績だから、自分は兄だが弟が先に天下を治めるべきだと固く譲った。そのため袁祁命は断りきれず、先に天下を治めた。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">伊邪本和氣。天皇之御子。市邊之。押齒王之。奴末。</blockquote><p>弟の王子の名乗り。伊邪本和気天皇の御子、市辺の押歯王の末（子孫）である。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">小楯連聞驚而。自床墮轉而。</blockquote><p>名乗りを聞いた小楯は驚いて、床から転げ落ちた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故吾雖兄。猶汝命。先治天下而。堅讓。</blockquote><p>兄の意祁命の言葉。わたしは兄だが、やはりあなたが先に天下を治めるべきだと、固く譲った。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -150,7 +191,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十五 清寧天皇二年冬十一月</span><p>日本書紀では、清寧天皇二年冬十一月、播磨国司の伊予来目部小楯が、赤石郡の縮見屯倉首・忍海部造細目の新室で億計・弘計（意祁・袁祁にあたる）を見いだしたとする。古事記では家の主は「志自牟」と書かれる。</p><blockquote lang="zh-Hant">於赤石郡縮見屯倉首忍海部造細目新室</blockquote></div>
       <div class="ns"><span class="where">巻第十五 顕宗天皇即位前紀（清寧天皇五年）</span><p>古事記では飯豊王は市辺忍歯別王の「妹」とされるが、日本書紀のこの記事では弘計天皇の「姉」の飯豊青皇女とされ、清寧天皇の崩後、兄弟が位を譲り合ううちに忍海角刺宮で政を執り、同年冬十一月に崩じたとする。</p><blockquote lang="zh-Hant">由是天皇姉飯豐青皇女於忍海角刺宮臨朝秉政。</blockquote></div>
       <div class="ns"><span class="where">巻第十六 武烈天皇即位前紀</span><p>日本書紀では、海柘榴市の歌場（歌垣）で影媛をめぐって鮪と歌を詠みかわすのは太子（のちの武烈天皇）で、古事記で王子が詠む「志毘賀波多傳爾。都麻多弖理美由」とよく似た歌が太子の歌として載る。</p><blockquote lang="zh-Hant">思寐我簸多泥儞、都摩陀氐理彌喩。</blockquote></div>
@@ -158,12 +199,21 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="yuryaku-hitokoto.html"><small>← 前の話（下巻・第10話）</small>葛城の一言主大神と雄略天皇の歌</a><a class="next" href="kenzo.html"><small>次の話（下巻・第12話）→</small>顕宗天皇・仁賢天皇（置目老媼と父の御陵）</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">日本書紀 巻第十六</a>　中文維基文庫</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（3か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">伊邪本和氣。天皇之御子。市邊之。押齒王之。奴末。</blockquote><p>弟の王子の名乗り。伊邪本和気天皇の御子、市辺の押歯王の末（子孫）である。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">小楯連聞驚而。自床墮轉而。</blockquote><p>名乗りを聞いた小楯は驚いて、床から転げ落ちた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故吾雖兄。猶汝命。先治天下而。堅讓。</blockquote><p>兄の意祁命の言葉。わたしは兄だが、やはりあなたが先に天下を治めるべきだと、固く譲った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">日本書紀 巻第十五</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">日本書紀 巻第十六</a>　中文維基文庫</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

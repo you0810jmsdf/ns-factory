@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,37 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 上巻・第15話（全17話）</p>
-    <h1>木花之佐久夜毘売と石長比売</h1>
-    <p class="pg-lead">天から降りた邇邇藝命は、笠紗の御前で大山津見神の娘・木花之佐久夜毘売を妻に迎えたが、いっしょに差し出された姉の石長比売は醜いとして送り返し、そのために天皇たちの命は長くないのだと古事記は語る。一夜で身ごもったことを疑われた佐久夜毘売は、火をつけた産殿の中で火照命・火須勢理命・火遠理命の三柱を生んだ。</p>
-    <div class="xlink"><a href="../shoki/dan09.html">日本書紀で読む：葦原中国の平定と天孫降臨（第九段） ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 上巻・第15話（全17話）</p>
+        <h1>木花之佐久夜毘売と石長比売</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">天から降りた邇邇藝命は、笠紗の御前で大山津見神の娘・木花之佐久夜毘売を妻に迎えたが、いっしょに差し出された姉の石長比売は醜いとして送り返し、そのために天皇たちの命は長くないのだと古事記は語る。一夜で身ごもったことを疑われた佐久夜毘売は、火をつけた産殿の中で火照命・火須勢理命・火遠理命の三柱を生んだ。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/dan09.html">日本書紀で読む：葦原中国の平定と天孫降臨（第九段） ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>笠紗の御前で出会う</h3>
+      <p class="t">天津日高日子番能邇邇藝能命は、笠紗の御前で美しい女性に出会った。誰の娘かとたずねると、大山津見神の娘で、名は神阿多都比売（かむあたつひめ）、またの名を木花之佐久夜毘売だと答えた。姉妹はいるかと問うと、姉の石長比売がいると答えた。邇邇藝命が妻にしたいと言うと、佐久夜毘売は「自分からはお答えできません。父の大山津見神がお答えします」と言った。</p>
+      <h3>石長比売を送り返す</h3>
+      <p class="t">そこで父の大山津見神に使いを送ると、大山津見神はたいへん喜び、姉の石長比売もいっしょに、たくさんの品を台にのせて持たせて差し出した。ところが姉はとても醜かったので、邇邇藝命は見て恐れ、送り返してしまった。そして妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。</p>
+      <h3>大山津見神の申し送り</h3>
+      <p class="t">大山津見神は、石長比売を返されたことを深く恥じて、次のように申し送った。娘を二人並べて差し上げたのは、石長比売をおそばに置けば、天神の御子の命は雪が降っても風が吹いても石のようにいつまでも動かず、木花之佐久夜毘売をおそばに置けば、木の花が咲くように栄える、と誓いを立てて差し上げたからだ。石長比売を返して佐久夜毘売だけを留めたので、天神の御子の命は木の花のようにはかなくなるだろう、と。古事記は、このため今に至るまで天皇たちの命は長くないのだと記している。</p>
+      <h3>疑われる佐久夜毘売</h3>
+      <p class="t">のちに佐久夜毘売がやって来て、「身ごもって、もうすぐお産です。天神の御子なので、私ひとりで勝手に生むわけにはいきません」と申し出た。すると邇邇藝命は「一夜で身ごもったというのか。それは私の子ではない。きっと国つ神の子だろう」と言った。佐久夜毘売は「私の身ごもった子が国つ神の子なら、無事には生まれないでしょう。天神の御子なら、無事に生まれるでしょう」と答えた。</p>
+      <h3>無戸八尋殿で子を生む</h3>
+      <p class="t">佐久夜毘売は戸口のない大きな殿（無戸八尋殿）を造ってその中に入り、土で塗りふさいだ。そしてお産の時に殿に火をつけて子を生んだ。火が盛んに燃えている時に生まれた子は火照命（小注に、隼人の阿多君の祖とある）、次に火須勢理命、次に火遠理命で、火遠理命のまたの名は天津日高日子穂穂手見命という。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>邇邇藝命が姉の石長比売を醜いとして送り返し、妹の木花之佐久夜毘売だけを妻にしたため、大山津見神の言葉どおり天神の御子の命は木の花のようにはかないものになった。古事記は、今も天皇たちの命が長くないのはこのためだと語る。</li>
         <li><span class="kind ">本文</span>一夜で身ごもったことを邇邇藝命に疑われた木花之佐久夜毘売は、「天神の御子なら無事に生まれる」と言って、戸のない殿に入り火をつけて出産し、火照命・火須勢理命・火遠理命の三柱を生んだ。</li>
@@ -115,28 +172,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>天津日高日子番能邇邇藝能命は、笠紗の御前で美しい女性に出会った。誰の娘かとたずねると、大山津見神の娘で、名は神阿多都比売（かむあたつひめ）、またの名を木花之佐久夜毘売だと答えた。姉妹はいるかと問うと、姉の石長比売がいると答えた。邇邇藝命が妻にしたいと言うと、佐久夜毘売は「自分からはお答えできません。父の大山津見神がお答えします」と言った。</p>
-      <p>そこで父の大山津見神に使いを送ると、大山津見神はたいへん喜び、姉の石長比売もいっしょに、たくさんの品を台にのせて持たせて差し出した。ところが姉はとても醜かったので、邇邇藝命は見て恐れ、送り返してしまった。そして妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。</p>
-      <p>大山津見神は、石長比売を返されたことを深く恥じて、次のように申し送った。娘を二人並べて差し上げたのは、石長比売をおそばに置けば、天神の御子の命は雪が降っても風が吹いても石のようにいつまでも動かず、木花之佐久夜毘売をおそばに置けば、木の花が咲くように栄える、と誓いを立てて差し上げたからだ。石長比売を返して佐久夜毘売だけを留めたので、天神の御子の命は木の花のようにはかなくなるだろう、と。古事記は、このため今に至るまで天皇たちの命は長くないのだと記している。</p>
-      <p>のちに佐久夜毘売がやって来て、「身ごもって、もうすぐお産です。天神の御子なので、私ひとりで勝手に生むわけにはいきません」と申し出た。すると邇邇藝命は「一夜で身ごもったというのか。それは私の子ではない。きっと国つ神の子だろう」と言った。佐久夜毘売は「私の身ごもった子が国つ神の子なら、無事には生まれないでしょう。天神の御子なら、無事に生まれるでしょう」と答えた。</p>
-      <p>佐久夜毘売は戸口のない大きな殿（無戸八尋殿）を造ってその中に入り、土で塗りふさいだ。そしてお産の時に殿に火をつけて子を生んだ。火が盛んに燃えている時に生まれた子は火照命（小注に、隼人の阿多君の祖とある）、次に火須勢理命、次に火遠理命で、火遠理命のまたの名は天津日高日子穂穂手見命という。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">唯留其弟木花之佐久夜毗賣以一宿為婚</blockquote><p>（姉を送り返し）妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">雖雪零風吹，恒如石而常堅不動坐</blockquote><p>（石長比売をおそばに置けば、天神の御子の命は）雪が降り風が吹いても、いつも石のように固く動かずにいらっしゃるだろう。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故是以至于今，天皇命等之御命不長也。</blockquote><p>そのため今に至るまで、天皇たちの御命は長くないのである。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">若天神之御子者，幸。</blockquote><p>（身ごもった子が）天神の御子であるなら、無事に生まれるでしょう。</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">登場する神・人物と、祀る神社</h2>
       <ul class="who">
-        <li><b><a href="../../shrine-note/map/?d=ninigi">邇邇藝命</a></b><small>ににぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=kirishima">霧島神宮</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=tsubaki">椿大神社</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hakone">箱根神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a></span></li>
+        <li><b><a href="../../shrine-note/map/?d=ninigi">邇邇藝命</a></b><small>ににぎのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=kirishima">霧島神宮</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=tsubaki">椿大神社</a>、<a href="../../shrine-note/map/?s=komagata">駒形神社</a>、<a href="../../shrine-note/map/?s=hakone">箱根神社</a>、<a href="../../shrine-note/map/?s=nitta">新田神社</a>、<a href="../../shrine-note/map/?s=sada">佐太神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=konohanasakuya">木花之佐久夜毘売命</a></b><small>このはなのさくやひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=sengen">富士山本宮浅間大社</a>、<a href="../../shrine-note/map/?s=takachiho">高千穂神社</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=tsubaki">椿大神社</a>、<a href="../../shrine-note/map/?s=ichinomiyaasama">一宮浅間神社</a>、<a href="../../shrine-note/map/?s=hakone">箱根神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=iwanagahime">磐長姫命</a></b><small>いわながひめのみこと</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=kifune">貴船神社</a></span></li>
         <li><b><a href="../../shrine-note/map/?d=ooyamatsumi">大山津見神</a></b><small>おおやまつみのかみ</small><span class="sh">祀る神社：<a href="../../shrine-note/map/?s=dewa">出羽三山神社</a>、<a href="../../shrine-note/map/?s=oomishima">大山祇神社</a>、<a href="../../shrine-note/map/?s=iwakiyama">岩木山神社</a>、<a href="../../shrine-note/map/?s=mishima">三嶋大社</a>、<a href="../../shrine-note/map/?s=kitaguchi">北口本宮冨士浅間神社</a>、<a href="../../shrine-note/map/?s=oyamaafuri">大山阿夫利神社</a>、<a href="../../shrine-note/map/?s=ogamiyama">大神山神社</a></span></li>
@@ -149,7 +188,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第二 第九段 一書第二</span><p>第九段の一書第二でも、姉の磐長姫が醜いとして退けられる話があるが、命が短くなるのは磐長姫が恥じて呪ったためとされ、その「一云」では世の人一般（「顯見蒼生」）の命のはかなさの由来とされている。古事記では父の大山津見神の誓いによるもので、天皇たちの命の話になっている。</p><blockquote lang="zh-Hant">故磐長姫大慙而詛之曰</blockquote></div>
       <div class="ns"><span class="where">巻第二 第九段 本文</span><p>第九段の本文には磐長姫は登場せず、妻の名は鹿葦津姫で、小注に亦の名として神吾田津姫・木花之開耶姫が挙げられる。一夜で身ごもったことを疑われ、無戸室に火を放って出産する点は古事記と共通する。</p><blockquote lang="zh-Hant">名曰鹿葦津姫</blockquote></div>
       <div class="ns"><span class="where">巻第二 第九段 本文</span><p>第九段の本文では、生まれた子は火闌降命・彦火火出見尊・火明命の三子で、最初に生まれた火闌降命が小注で隼人等の始祖とされる。古事記では隼人の阿多君の祖は火照命で、三柱目は火遠理命である。</p><blockquote lang="zh-Hant">始起烟末生出之兒。號火闌降命</blockquote></div>
@@ -157,12 +196,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="tenson.html"><small>← 前の話（上巻・第14話）</small>天孫降臨</a><a class="next" href="umisachi.html"><small>次の話（上巻・第16話）→</small>海幸山幸</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamuatatsuhime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamuatatsuhime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">唯留其弟木花之佐久夜毗賣以一宿為婚</blockquote><p>（姉を送り返し）妹の木花之佐久夜毘売だけを留めて、一夜の契りを結んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">雖雪零風吹，恒如石而常堅不動坐</blockquote><p>（石長比売をおそばに置けば、天神の御子の命は）雪が降り風が吹いても、いつも石のように固く動かずにいらっしゃるだろう。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故是以至于今，天皇命等之御命不長也。</blockquote><p>そのため今に至るまで、天皇たちの御命は長くないのである。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">若天神之御子者，幸。</blockquote><p>（身ごもった子が）天神の御子であるなら、無事に生まれるでしょう。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">古事記 上巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">日本書紀 巻第二</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/iwanagahime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/konohananosakuyabime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kamuatatsuhime/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kamuatatsuhime/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/hosuserinomikoto/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 中巻・第14話（全17話）</p>
-    <h1>忍熊王の反乱と気比大神</h1>
-    <p class="pg-lead">新羅から帰る息長帯日売命は、御子が死んだと見せかけて喪船で大和へ上り、待ちかまえた香坂王・忍熊王の兄弟を破った。そのあと建内宿禰が御子を連れて角鹿へ行くと、伊奢沙和気大神之命が名の交換を求めて御食津大神（気比大神）の名が生まれ、都に戻った御子を母が酒と歌で迎えた。</p>
-    <div class="xlink"><a href="../shoki/jingu-oshikuma.html">日本書紀で読む：忍熊王の反乱と摂政の時代 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 中巻・第14話（全17話）</p>
+        <h1>忍熊王の反乱と気比大神</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">新羅から帰る息長帯日売命は、御子が死んだと見せかけて喪船で大和へ上り、待ちかまえた香坂王・忍熊王の兄弟を破った。そのあと建内宿禰が御子を連れて角鹿へ行くと、伊奢沙和気大神之命が名の交換を求めて御食津大神（気比大神）の名が生まれ、都に戻った御子を母が酒と歌で迎えた。</p>
+        <p class="bk-meta">物語を読む時間の目安：約2分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/jingu-oshikuma.html">日本書紀で読む：忍熊王の反乱と摂政の時代 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>喪船と香坂王の死</h3>
+      <p class="t">息長帯日売命は大和へ帰るとき、人々の心を疑って喪船を一つ用意し、御子をその喪船に乗せて、御子はもう亡くなったと言いふらさせた。これを聞いた香坂王と忍熊王は、待ちかまえて討とうと考え、斗賀野に出て宇気比獦をした。香坂王が歴木に登っていると、大きな怒り猪が出てきてその木を掘り倒し、香坂王を食い殺した。</p>
+      <h3>忍熊王と建振熊命の戦い</h3>
+      <p class="t">弟の忍熊王はこれを恐れず、軍を起こして待ちうけ、喪船に向かって空の船を攻めようとした。すると喪船から兵が下りてきて戦いになった。忍熊王の側は難波吉師部の祖の伊佐比宿禰を、太子の側は丸邇臣の祖の難波根子建振熊命を将軍とした。忍熊王の軍は追われて山代まで退いたが、そこで向き直り、両軍とも退かずに戦った。</p>
+      <h3>弓の弦を切る計略</h3>
+      <p class="t">建振熊命は計略をめぐらし、「息長帯日売命はもう亡くなったので、これ以上戦う理由はない」と言わせ、弓の弦を切って降参したように見せかけた。相手の将軍はそれを信じ、弓の弦を外して武器をしまった。すると建振熊命の側は、髪の中に隠しておいた予備の弦（宇佐由豆留ともいう）を取り出して張り直し、追い討ちをかけた。忍熊王の軍は逢坂に逃げてまた戦ったが、沙沙那美で残らず斬られた。</p>
+      <h3>忍熊王と伊佐比宿禰が海に入る</h3>
+      <p class="t">追いつめられた忍熊王と伊佐比宿禰は、船に乗って海に浮かび、歌をうたった。そしてともに海に入って死んだ。</p>
+      <h3>伊奢沙和気大神之命の夢</h3>
+      <p class="t">建内宿禰命は太子を連れて禊をするため、淡海と若狭の国をめぐり、高志前の角鹿に仮宮をつくってとどまった。その夜、その地にいる伊奢沙和気大神之命が夢にあらわれ、「わたしの名を御子の名とかえたい」と言った。つつしんで承知すると、神は「明日の朝、浜に出なさい。名をかえたしるしの贈り物をしよう」と告げた。翌朝浜に出ると、鼻に傷を負った入鹿魚が一つの浦いっぱいに寄っていた。</p>
+      <h3>御食津大神と血浦</h3>
+      <p class="t">御子は神に「わたしに御食の魚をくださった」と申し上げさせた。そこで神の名をたたえて御食津大神と呼び、今は気比大神という。また入鹿魚の鼻の血が臭かったので、その浦を血浦と名づけ、今は都奴賀という、と記す。</p>
+      <h3>待酒の歌と仲哀天皇の御陵</h3>
+      <p class="t">御子が都へ帰ってくると、母の息長帯日売命は待酒をかもして献じ、歌をうたって大御酒を差し上げた。建内宿禰命は御子にかわって答えの歌をうたい、これらは酒楽の歌であると記す。最後に、帯中津日子天皇（仲哀天皇）は五十二歳で亡くなり、御陵は河内の恵賀の長江にある、と結ぶ。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>息長帯日売命は御子を喪船に乗せて死んだと見せかけ、待ちかまえる香坂王・忍熊王をあざむいた。香坂王は宇気比獦の最中に怒り猪に食い殺され、忍熊王は敗れて伊佐比宿禰とともに海に入って死んだ。</li>
         <li><span class="kind ">本文</span>勝敗を決めたのは太子側の将軍・建振熊命の計略である。「息長帯日売命は亡くなった」と言わせて弓の弦を切ってみせ、相手に武器をしまわせてから、髪の中に隠していた予備の弦を張って攻めた。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、太子が角鹿の笥飯大神を拝むのは摂政十三年二月のことで、名の交換の話は応神天皇の巻（巻第十）冒頭の小注に「一云」として見え、大神を去来紗別神、太子を誉田別尊と呼ぶとしながら、もとの名については記録が無く「未詳」とする。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースによると、母の歌に出てくる「須久那美迦微」は少名毘古那神の別名とされ、ここでは酒の神としてたたえられている。また、名をかえた結果どうなったかが古事記に書かれていないため、名の交換の意味については説が分かれている。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">［出典］</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>息長帯日売命は大和へ帰るとき、人々の心を疑って喪船を一つ用意し、御子をその喪船に乗せて、御子はもう亡くなったと言いふらさせた。これを聞いた香坂王と忍熊王は、待ちかまえて討とうと考え、斗賀野に出て宇気比獦をした。香坂王が歴木に登っていると、大きな怒り猪が出てきてその木を掘り倒し、香坂王を食い殺した。</p>
-      <p>弟の忍熊王はこれを恐れず、軍を起こして待ちうけ、喪船に向かって空の船を攻めようとした。すると喪船から兵が下りてきて戦いになった。忍熊王の側は難波吉師部の祖の伊佐比宿禰を、太子の側は丸邇臣の祖の難波根子建振熊命を将軍とした。忍熊王の軍は追われて山代まで退いたが、そこで向き直り、両軍とも退かずに戦った。</p>
-      <p>建振熊命は計略をめぐらし、「息長帯日売命はもう亡くなったので、これ以上戦う理由はない」と言わせ、弓の弦を切って降参したように見せかけた。相手の将軍はそれを信じ、弓の弦を外して武器をしまった。すると建振熊命の側は、髪の中に隠しておいた予備の弦（宇佐由豆留ともいう）を取り出して張り直し、追い討ちをかけた。忍熊王の軍は逢坂に逃げてまた戦ったが、沙沙那美で残らず斬られた。</p>
-      <p>追いつめられた忍熊王と伊佐比宿禰は、船に乗って海に浮かび、歌をうたった。そしてともに海に入って死んだ。</p>
-      <p>建内宿禰命は太子を連れて禊をするため、淡海と若狭の国をめぐり、高志前の角鹿に仮宮をつくってとどまった。その夜、その地にいる伊奢沙和気大神之命が夢にあらわれ、「わたしの名を御子の名とかえたい」と言った。つつしんで承知すると、神は「明日の朝、浜に出なさい。名をかえたしるしの贈り物をしよう」と告げた。翌朝浜に出ると、鼻に傷を負った入鹿魚が一つの浦いっぱいに寄っていた。</p>
-      <p>御子は神に「わたしに御食の魚をくださった」と申し上げさせた。そこで神の名をたたえて御食津大神と呼び、今は気比大神という。また入鹿魚の鼻の血が臭かったので、その浦を血浦と名づけ、今は都奴賀という、と記す。</p>
-      <p>御子が都へ帰ってくると、母の息長帯日売命は待酒をかもして献じ、歌をうたって大御酒を差し上げた。建内宿禰命は御子にかわって答えの歌をうたい、これらは酒楽の歌であると記す。最後に、帯中津日子天皇（仲哀天皇）は五十二歳で亡くなり、御陵は河内の恵賀の長江にある、と結ぶ。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">大怒猪出。堀其歴木。即咋食其香坂王</blockquote><p>大きな怒り猪が出てきて、その歴木を掘り倒し、香坂王を食い殺した。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">息長帶日賣命者。既崩故無可更戰。即絶弓絃</blockquote><p>「息長帯日売命はもう亡くなったので、これ以上戦うことはない」と言わせ、弓の弦を切ってみせた（建振熊命の計略）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">於我給御食之魚。故亦稱其御名。號御食津大神</blockquote><p>「わたしに御食の魚をくださった」。それで神の名をたたえて御食津大神と呼んだ。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此者。酒樂之歌也</blockquote><p>これらは酒楽の歌である（息長帯日売命の歌と建内宿禰命の答えの歌をまとめた呼び名）。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -157,7 +198,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第九 神功皇后（新羅を討った翌年の春二月）</span><p>日本書紀では、麛坂王・忍熊王は天皇の陵を造ると見せかけて兵を集め、菟餓野で祈狩をすると、赤い猪が仮の桟敷に登って麛坂王を食い殺した。皇后は喪船を使わず、武内宿禰に皇子を抱かせて南海から紀伊水門へ回らせている。</p><blockquote lang="zh-Hant">赤猪忽出之登假庪。咋麛坂王而殺焉</blockquote></div>
       <div class="ns"><span class="where">巻第九 神功皇后（三月丙申朔庚子からの記事）</span><p>日本書紀では、全軍に予備の弦を髪の中に隠させ、偽って和睦をもちかけて忍熊王の軍に弦を切らせ武器を川に捨てさせたのは武内宿禰である（古事記では建振熊命）。</p><blockquote lang="zh-Hant">各以儲弦藏于髮中、且佩木刀</blockquote></div>
       <div class="ns"><span class="where">巻第九 神功皇后摂政十三年春二月丁巳朔甲子</span><p>日本書紀では、武内宿禰が太子を連れて角鹿の笥飯大神を拝ませ、帰った太子を皇太后が宴でもてなして歌い、武内宿禰が太子にかわって返歌する。名の交換や入鹿魚の話はこの記事には無い。</p><blockquote lang="zh-Hant">命武內宿禰、從太子令拜角鹿笥飯大神</blockquote></div>
@@ -165,12 +206,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="chuai-jingu.html"><small>← 前の話（中巻・第13話）</small>仲哀天皇の死と息長帯日売命の新羅遠征</a><a class="next" href="ojin-tsumadoi.html"><small>次の話（中巻・第15話）→</small>応神天皇の妻問いと髪長比売</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">日本書紀 巻第九</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">大怒猪出。堀其歴木。即咋食其香坂王</blockquote><p>大きな怒り猪が出てきて、その歴木を掘り倒し、香坂王を食い殺した。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">息長帶日賣命者。既崩故無可更戰。即絶弓絃</blockquote><p>「息長帯日売命はもう亡くなったので、これ以上戦うことはない」と言わせ、弓の弦を切ってみせた（建振熊命の計略）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">於我給御食之魚。故亦稱其御名。號御食津大神</blockquote><p>「わたしに御食の魚をくださった」。それで神の名をたたえて御食津大神と呼んだ。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此者。酒樂之歌也</blockquote><p>これらは酒楽の歌である（息長帯日売命の歌と建内宿禰命の答えの歌をまとめた呼び名）。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">古事記 中巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">日本書紀 巻第九</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>

@@ -76,10 +76,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -97,14 +131,41 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">古事記 下巻・第7話（全13話）</p>
-    <h1>允恭天皇と軽太子・軽大郎女</h1>
-    <p class="pg-lead">男浅津間若子宿禰命（允恭天皇）は病を理由に一度は即位を辞退したが、新良の使者に病を治され、氏姓の乱れを正した。天皇の死後、日継の木梨之軽太子は同母妹の軽大郎女と通じて人々に背かれ、伊余湯に流され、後を追った軽大郎女とともに自ら命を絶った。</p>
-    <div class="xlink"><a href="../shoki/ingyo-anko.html">日本書紀で読む：允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期 ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">古事記 下巻・第7話（全13話）</p>
+        <h1>允恭天皇と軽太子・軽大郎女</h1>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">男浅津間若子宿禰命（允恭天皇）は病を理由に一度は即位を辞退したが、新良の使者に病を治され、氏姓の乱れを正した。天皇の死後、日継の木梨之軽太子は同母妹の軽大郎女と通じて人々に背かれ、伊余湯に流され、後を追った軽大郎女とともに自ら命を絶った。</p>
+        <p class="bk-meta">物語を読む時間の目安：約3分　／　<a href="#pts-title">要点だけ読む</a></p>
+        <div class="xlink"><a href="../shoki/ingyo-anko.html">日本書紀で読む：允恭天皇の盟神探湯と衣通郎姫・安康天皇の最期 ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title">物語</h2>
+      <h3>男浅津間若子宿禰命の后と御子</h3>
+      <p class="t">男浅津間若子宿禰命（允恭天皇）は、遠飛鳥宮で天下を治めた。意富本杼王の妹、忍坂之大中津比売命をめとり、木梨之軽王・長田大郎女・境之黒日子王・穴穂命・軽大郎女・八瓜之白日子王・大長谷命・橘大郎女・酒見郎女の九人の御子が生まれた。軽大郎女の亦の名は衣通郎女で、その身の光が衣を通して出ていたので衣通王という名を負った、と小注にある。九人のうち穴穂命と大長谷命が天下を治めた。</p>
+      <h3>日継を辞退した天皇</h3>
+      <p class="t">天皇は日継を受けようとしたとき、「わたしには長い病があるので、日継を受けることはできない」と辞退した。しかし大后をはじめ諸卿が強く申し上げたので、天下を治めた。このとき新良の国主が御調の船八十一艘を貢ぎ、その大使 金波鎮漢紀武は薬の方法をよく知っていたので、天皇の病を治した。</p>
+      <h3>氏姓を定める</h3>
+      <p class="t">天皇は、天下の氏々・名々の人々の氏姓が乱れていることを憂え、味白檮の言八十禍津日前に玖訶瓮を据えて、天下の八十友緒の氏姓を定めた。また木梨之軽太子の御名代として軽部、大后の御名代として刑部、大后の妹 田井中比売の御名代として河部を定めた。天皇の御年は七十八歳、御陵は河内の恵賀の長枝にある。</p>
+      <h3>軽太子と軽大郎女</h3>
+      <p class="t">天皇が崩じたあと、木梨之軽太子が日継を受けることに定まった。ところが即位する前に、同母妹の軽大郎女と通じて歌をうたった（志良宜歌・夷振之上歌）。そのため百官と天下の人々は軽太子に背いて、穴穂御子についた。軽太子はおそれて大前小前宿禰大臣の家に逃げこみ、武器を用意した。このとき作った矢は矢の内側を銅にしたもので「軽箭」と呼び、穴穂御子も武器を作り、その矢は今の矢で「穴穂箭」という、と小注にある。</p>
+      <h3>大前小前宿禰が軽太子を差し出す</h3>
+      <p class="t">穴穂御子は軍を起こして大前小前宿禰の家を囲んだ。門に着いたとき激しい氷雨が降り、穴穂御子は歌をうたった。大前小前宿禰は手を挙げ膝を打ち、舞い歌いながら出てきて（宮人振）、「同母の兄王に兵を向けてはなりません。兵を向ければ必ず人に笑われます。わたしが捕えて差し出しましょう」と申し上げた。穴穂御子が兵を解いて退くと、大前小前宿禰は軽太子を捕えて差し出した。捕えられた太子は二首の歌をうたった。</p>
+      <h3>軽太子が伊余湯に流される</h3>
+      <p class="t">軽太子は伊余湯に流された。流されようとするときにも太子は歌をうたった（天田振・夷振之片下）。衣通王（軽大郎女）も歌を献じた。</p>
+      <h3>衣通王が太子を追う</h3>
+      <p class="t">のちに衣通王は恋しさに耐えられず、太子のあとを追って行き、歌をうたった。追いついたとき、太子は待ち受けていて二首の歌をうたった（読歌）。こうして歌い終えると、二人はともに自ら命を絶った。</p>
+      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。小見出しは、読みやすくするために本文の言葉から付けました。</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">覚えておくポイント</h2>
+      <h2 id="pts-title">この話の要点</h2>
       <ol>
         <li><span class="kind ">本文</span>男浅津間若子宿禰命（允恭天皇）は長い病を理由に即位を一度辞退したが、大后や諸卿に強く求められて天下を治めた。新良の国主が送った大使 金波鎮漢紀武が薬の知識で天皇の病を治した。</li>
         <li><span class="kind ">本文</span>天皇は氏姓の乱れを憂え、味白檮の言八十禍津日前に玖訶瓮を据えて、天下の八十友緒の氏姓を定めた。</li>
@@ -113,26 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">日本書紀と比較</span>日本書紀では、太子と軽大娘皇女の事は父の允恭天皇の在世中（二十三年・二十四年）のこととされ、伊予に流されたのは皇女で、太子は儲君なので罪されなかった。太子はのちに大前宿禰の家で自死したとし、一説に伊予国に流されたとも記す。また書紀の「衣通郎姫」は、皇后の妹の弟姫の呼び名である。</li>
         <li><span class="kind k-int">解説</span>國學院大學の神名データベースは、言八十禍津日前（書紀では辞禍戸岬）が八十禍津日神の神名に似た地名であることから、間接的ではあるが、禍津日神が言葉の真偽を判定するクカタチ（盟神探湯）と関係するという推測もあると紹介している。 <a href="https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/" target="_blank" rel="noopener">［出典］</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">どんな話か</h2>
-      <p>男浅津間若子宿禰命（允恭天皇）は、遠飛鳥宮で天下を治めた。意富本杼王の妹、忍坂之大中津比売命をめとり、木梨之軽王・長田大郎女・境之黒日子王・穴穂命・軽大郎女・八瓜之白日子王・大長谷命・橘大郎女・酒見郎女の九人の御子が生まれた。軽大郎女の亦の名は衣通郎女で、その身の光が衣を通して出ていたので衣通王という名を負った、と小注にある。九人のうち穴穂命と大長谷命が天下を治めた。</p>
-      <p>天皇は日継を受けようとしたとき、「わたしには長い病があるので、日継を受けることはできない」と辞退した。しかし大后をはじめ諸卿が強く申し上げたので、天下を治めた。このとき新良の国主が御調の船八十一艘を貢ぎ、その大使 金波鎮漢紀武は薬の方法をよく知っていたので、天皇の病を治した。</p>
-      <p>天皇は、天下の氏々・名々の人々の氏姓が乱れていることを憂え、味白檮の言八十禍津日前に玖訶瓮を据えて、天下の八十友緒の氏姓を定めた。また木梨之軽太子の御名代として軽部、大后の御名代として刑部、大后の妹 田井中比売の御名代として河部を定めた。天皇の御年は七十八歳、御陵は河内の恵賀の長枝にある。</p>
-      <p>天皇が崩じたあと、木梨之軽太子が日継を受けることに定まった。ところが即位する前に、同母妹の軽大郎女と通じて歌をうたった（志良宜歌・夷振之上歌）。そのため百官と天下の人々は軽太子に背いて、穴穂御子についた。軽太子はおそれて大前小前宿禰大臣の家に逃げこみ、武器を用意した。このとき作った矢は矢の内側を銅にしたもので「軽箭」と呼び、穴穂御子も武器を作り、その矢は今の矢で「穴穂箭」という、と小注にある。</p>
-      <p>穴穂御子は軍を起こして大前小前宿禰の家を囲んだ。門に着いたとき激しい氷雨が降り、穴穂御子は歌をうたった。大前小前宿禰は手を挙げ膝を打ち、舞い歌いながら出てきて（宮人振）、「同母の兄王に兵を向けてはなりません。兵を向ければ必ず人に笑われます。わたしが捕えて差し出しましょう」と申し上げた。穴穂御子が兵を解いて退くと、大前小前宿禰は軽太子を捕えて差し出した。捕えられた太子は二首の歌をうたった。</p>
-      <p>軽太子は伊余湯に流された。流されようとするときにも太子は歌をうたった（天田振・夷振之片下）。衣通王（軽大郎女）も歌を献じた。</p>
-      <p>のちに衣通王は恋しさに耐えられず、太子のあとを追って行き、歌をうたった。追いついたとき、太子は待ち受けていて二首の歌をうたった（読歌）。こうして歌い終えると、二人はともに自ら命を絶った。</p>
-      <p class="pg-note">古事記の原文に書かれていることを、やさしい言葉でまとめたものです（訳書の文章は使っていません）。</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">原文で読む</h2>
-      <div class="q"><blockquote lang="zh-Hant">我者。有一長病。不得所知日繼</blockquote><p>わたしには長い病があるので、日継を受けることはできない（天皇の言葉）。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">背輕太子而。歸穴穂御子</blockquote><p>（百官と天下の人々は）軽太子に背いて、穴穂御子についた。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故其輕太子者。流於伊余湯也</blockquote><p>こうして軽太子は伊余湯に流された。</p></div>
-      <div class="q"><blockquote lang="zh-Hant">如此歌。即共自死</blockquote><p>このように歌って、二人はともに自ら命を絶った。</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -154,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">日本書紀では</h2>
+      <h2 id="ns-title">日本書紀との違い</h2>
       <div class="ns"><span class="where">巻第十三 允恭天皇七年冬十二月壬戌朔</span><p>日本書紀では「衣通郎姫」は皇后の妹 弟姫の呼び名で、その美しさが衣を通して輝いたためとされる。古事記では衣通郎女（衣通王）は軽大郎女の亦の名であり、指す人物が異なる。</p><blockquote lang="zh-Hant">是以。時人號曰衣通郎姫也</blockquote></div>
       <div class="ns"><span class="where">巻第十三 允恭天皇二十四年夏六月</span><p>日本書紀では、二十四年六月、御膳の羹が凍ったことから占いで内乱が指摘され、太子と同母妹の事が明らかになる。太子は儲君なので罪されず、軽大娘皇女が伊予に流された。古事記では父の死後のことで、流されたのは太子である。</p><blockquote lang="zh-Hant">則流輕大娘皇女於伊豫</blockquote></div>
       <div class="ns"><span class="where">巻第十三 安康天皇即位前紀（允恭天皇四十二年）</span><p>日本書紀では、允恭天皇の死後、太子は物部大前宿禰の家に逃れ、宿禰が穴穂皇子に太子を害さないよう願ったが、太子はその家で自死したとし、一説に伊予国に流されたとする。</p><blockquote lang="zh-Hant">由是太子自死于大前宿禰之家</blockquote></div>
@@ -162,12 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="前後のページ"><a class="prev" href="richu.html"><small>← 前の話（下巻・第6話）</small>履中天皇・反正天皇と墨江中王の反乱</a><a class="next" href="anko.html"><small>次の話（下巻・第8話）→</small>安康天皇と目弱王の変</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">出典</h2>
-      <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">資料編</h2>
+      <details>
+        <summary>原文で読む（4か所）</summary>
+          <div class="q"><blockquote lang="zh-Hant">我者。有一長病。不得所知日繼</blockquote><p>わたしには長い病があるので、日継を受けることはできない（天皇の言葉）。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">背輕太子而。歸穴穂御子</blockquote><p>（百官と天下の人々は）軽太子に背いて、穴穂御子についた。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故其輕太子者。流於伊余湯也</blockquote><p>こうして軽太子は伊余湯に流された。</p></div>
+          <div class="q"><blockquote lang="zh-Hant">如此歌。即共自死</blockquote><p>このように歌って、二人はともに自ら命を絶った。</p></div>
+      </details>
+      <details>
+        <summary>出典と、印の意味</summary>
+        <p class="pg-note">「本文」は古事記に書かれていること、「日本書紀と比較」は日本書紀の原文で確かめた違い、「解説」は公的な機関の解説で確かめたことです。原文の引用は、中文維基文庫の校訂本文から一字一句そのまま写しています（〔 〕は原文の小注）。絵はすべて AI で作った想像図で、実在のご神体・社殿・人物を写したものではありません。</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">古事記 下巻 校訂本文</a>　中文維基文庫</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十三" target="_blank" rel="noopener">日本書紀 巻第十三</a>　中文維基文庫</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/" target="_blank" rel="noopener">國學院大學「神名データベース」</a>　https://kojiki.kokugakuin.ac.jp/shinmei/yasomagatsuhinokami/</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← 話の一覧へ</a>
     </section>
   </main>
