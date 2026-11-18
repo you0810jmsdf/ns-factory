@@ -680,6 +680,7 @@ function stampAt(p,single=false,markKind='tool',span=false) {
       let start=single?projected:manualNext?.pathId===saved.id&&manualNext.reversed===reverse?manualNext.s:projected;
       start=Math.max(from,start);
       if(start>to+1e-7){$('hint').textContent=t('pathEnd');return;}
+      if(single&&!isMark){const near=nearestHoleTo(pointAtLength(route,start),tool);if(near){$('hint').textContent=near.d<0.05?t('singleExists'):t('singleNear',{d:near.d.toFixed(2),r:near.r.toFixed(1)});return;}}
       const result=toothPositions({...tool,teeth:single?1:tool.teeth},start,route);points=result.points.filter(p=>p.s<=to+1e-7);next=result.nextS;
     }else{
       points=pointsAlongShape(route,tool.pitch,{offsetStart:from,offsetEnd:len-to,variable:opts.variable});
@@ -883,9 +884,15 @@ function stitchPlansForPair(pair, kind, n, tool, flip = false) {
   return r.error ? r : { plans: r.plans, wrap: true, closed: true, count, pitch: r.P };
 }
 /** 始点と同じ場所をもう一度クリックしたとき：その点（経路 c の位置 c.s）に菱目を1つだけ打つ。そこにすでに菱目があれば、増やさずに案内する。 */
+/** 1穴だけを打つとき（始点の再クリック・Alt+クリック）：近く（ピッチの40%・0.5mm 以上）に、すでに穴があれば、その穴 { d: 距離, r: しきい値 } を返す。重ねて打つと、規則正しい並びの途中に、中途半端な位置の穴ができるため（事業主 2026-11-18「中途半端な位置に菱目ができる」：0.07mm 離れた重なった穴が、0.05mm の判定をすり抜けた）。無ければ null。 */
+function nearestHoleTo(q, tool) {
+  const r = Math.max(0.5, (tool?.pitch > 0 ? tool.pitch : 4) * 0.4); let best = null;
+  for (const h of doc.holes) { if (!holeVisible(h)) continue; const d = Math.hypot(h.x - q.x, h.y - q.y); if (d < r && (!best || d < best.d)) best = { d, r }; }
+  return best;
+}
 function stitchSingleAt(c, tool) {
   const { saved, fresh, route } = c.state, q = pointAtLength(route, c.s); countStage = null;
-  if (doc.holes.some(h => holeVisible(h) && Math.hypot(h.x - q.x, h.y - q.y) < 0.05)) { $('hint').textContent = t('singleExists'); draw(); return; }
+  const near = nearestHoleTo(q, tool); if (near) { $('hint').textContent = near.d < 0.05 ? t('singleExists') : t('singleNear', { d: near.d.toFixed(2), r: near.r.toFixed(1) }); draw(); return; }
   commit(() => {
     if (fresh) { if (doc.paths.some(p => p.id === saved.id)) saved.id = freshId(doc.paths, 'p'); doc.paths.push(saved); }
     const id = freshId(doc.holes, 'h'); doc.holes.push({ ...q, s: c.s, id, pathId: saved.id, toolId: tool.id, angleDeg: ($('followTangent').checked ? q.angleDeg : 0) + slantOf(tool), mark: 'tool' });
