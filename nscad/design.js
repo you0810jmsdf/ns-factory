@@ -771,7 +771,7 @@ export function offsetSpan(shapes, hit, p, whole = false, tol = 0.01) {
   else { const bounds = [0, ...sorted.filter(s => s > 1e-4 && s < total - 1e-4), total]; let k = 0; while (k + 2 < bounds.length && sc > bounds[k + 1]) k++; a = bounds[k]; c = bounds[k + 1]; }
   const at = s => { const u = ((s % total) + total) % total; const x = closed ? u : Math.max(0, Math.min(total, s)); let i = 1; while (i < ring.length - 1 && cum[i] < x - 1e-9) i++; const len = cum[i] - cum[i - 1], t = len ? (x - cum[i - 1]) / len : 0; return { x: ring[i - 1].x + (ring[i].x - ring[i - 1].x) * t, y: ring[i - 1].y + (ring[i].y - ring[i - 1].y) * t }; };
   const sub = [at(a)]; for (let k = -1; k <= 1; k++) for (let i = 0; i < ring.length - (closed ? 1 : 0); i++) { const s = cum[i] + k * total; if (s > a + 1e-6 && s < c - 1e-6) sub.push({ ...ring[i] }); } sub.push(at(c));
-  const clean = sub.filter((q, i) => !i || distance(q, sub[i - 1]) > 1e-9);
+  const clean = sub.filter((q, i) => !i || distance(q, sub[i - 1]) > 1e-4);
   return clean.length >= 2 ? { points: clean, closed: false, shapeIds: chain.shapeIds, whole: false, single: null } : null;
 }
 /** オフセットの結果図形を返す（不成立は null）。d>0 は閉じた図形の外側／開いた線の進行方向の左、d<0 は内側／右。

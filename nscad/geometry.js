@@ -99,8 +99,9 @@ function signedArea(points) { return points.reduce((sum, p, i) => sum + cross(p,
 /** 点列・距離(mm)・閉フラグからオフセット点列を返す。閉図形は正が外、開図形は正が左。退化は []。交差ループは大きい方を残す簡易処理。 */
 export function offsetPolyline(points, d, closed = false, {join='miter', tolerance=0.01} = {}) {
   if (!Number.isFinite(d)) return [];
-  let pts = points.filter((p, i) => !i || distance(p, points[i - 1]) > EPS).map(p => ({ ...p }));
-  if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < EPS) pts.pop();
+  /* ほぼ重なった点（0.0001mm 以内）は1つにする：向きの決まらない極小の辺があると、端が逆戻りして（0.07mm ほど）、つなぎ目が「角」に見える（事業主 2026-11-18「何度やっても同じ」：区間の端の点が 0.0000026mm 違いで2つ入っていた） */
+  let pts = []; for (const p of points) if (!pts.length || distance(p, pts.at(-1)) > 1e-4) pts.push({ ...p });
+  if (closed && pts.length > 1 && distance(pts[0], pts.at(-1)) < 1e-4) pts.pop();
   if (pts.length < (closed ? 3 : 2)) return [];
   const area = closed ? signedArea(pts) : 0;
   if (closed && Math.abs(area) < EPS) return [];
@@ -1027,7 +1028,11 @@ export function cornerHoles(shape,mode='place') {
   visit(shape); const len=arcLength(shape), closed=shape.closed||shape.type==='circle';
   return [...new Set(positions.map(s=>shape.reversed?len-s:s))].map(s=>{
     const e=Math.min(1e-5,len/100000), before=pointAtLength(shape,s===0&&closed?len-e:s-e),after=pointAtLength(shape,s===len&&closed?e:s+e), delta=((after.angleDeg-before.angleDeg+540)%360)-180;
-    return Math.abs(delta)>30+1e-5 ? {...pointAtLength(shape,s),angleDeg:mode==='bisect'?norm(before.angleDeg+delta/2):after.angleDeg} : null;
+    if(Math.abs(delta)<=30+1e-5)return null;
+    /* 極小の逆戻り（0.07mm ほどの折り返し）や重なった点で、つなぎ目の向きが一瞬だけ反転して見えることがある。0.3mm 離れた所の向きの差も 30° を超えるときだけ、本当の角とする（事業主 2026-11-18「何度やっても同じ」：つなぎ目に余分な穴が2つできた） */
+    const far=Math.min(0.3,len/2-1e-6), b2=pointAtLength(shape,s===0&&closed?len-far:Math.max(0,s-far)), a2=pointAtLength(shape,s===len&&closed?far:Math.min(len,s+far)), delta2=((a2.angleDeg-b2.angleDeg+540)%360)-180;
+    if(far>1e-4&&Math.abs(delta2)<=30+1e-5)return null;
+    return {...pointAtLength(shape,s),angleDeg:mode==='bisect'?norm(before.angleDeg+delta/2):after.angleDeg};
   }).filter(Boolean);
 }
 /** 工具・開始弧長（数値または {s}）・経路から刃数分の点と nextS を返す。経路外の刃は省く。 */
