@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Nihon Shoki, Book 25 — Emperor Kōtoku · page 42 of 50</p>
-    <h1>Emperor Kōtoku’s Accession and the Taika Reform Edict</h1>
-    <p class="orig" lang="ja">孝徳天皇の即位と大化の改新の詔</p>
-    <p class="pg-lead">Upon Empress Kōgyoku’s abdication, Prince Karu took the throne; he made Prince Naka-no-Ōe crown prince and Nakatomi no Kamako Inner Minister (内臣), and changed the era name to Taika. In the 1st year of Taika came the dispatch of governors to the eastern provinces, the installation of a bell and a box (鍾 and 匱), Furuhito no Ōe’s plot and its suppression, and the move of the capital to Naniwa; in the first month of the 2nd year the Reform Edict (改新之詔) was proclaimed, followed by edicts on the treatment of the governors, on simple burials and other matters.</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Nihon Shoki, Book 25 — Emperor Kōtoku · page 42 of 50</p>
+        <h1>Emperor Kōtoku’s Accession and the Taika Reform Edict</h1>
+        <p class="orig" lang="ja">孝徳天皇の即位と大化の改新の詔</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Upon Empress Kōgyoku’s abdication, Prince Karu took the throne; he made Prince Naka-no-Ōe crown prince and Nakatomi no Kamako Inner Minister (内臣), and changed the era name to Taika. In the 1st year of Taika came the dispatch of governors to the eastern provinces, the installation of a bell and a box (鍾 and 匱), Furuhito no Ōe’s plot and its suppression, and the move of the capital to Naniwa; in the first month of the 2nd year the Reform Edict (改新之詔) was proclaimed, followed by edicts on the treatment of the governors, on simple burials and other matters.</p>
+        <p class="bk-meta">Reading time for the main text: about 4 min　/　<a href="#pts-title">Key points only</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">What the main text says</h2>
+      <h3>Prince Karu declines and takes the throne</h3>
+      <p class="t">Emperor Kōtoku (天万豊日天皇) was the younger brother of Empress Kōgyoku by the same mother; he is described as a man who revered the Buddhist law, made light of the way of the gods (神道), and was fond of Confucianism. In the sixth month of the 4th year of Empress Kōgyoku, the empress wished to pass the throne to Prince Naka-no-Ōe, but Nakatomi no Kamako advised that, since his elder brother Furuhito no Ōe was still living, taking the throne would go against the modesty proper to a younger brother, and recommended putting forward his uncle, Prince Karu. Prince Karu declined again and again and tried to yield to Furuhito no Ōe, but Furuhito no Ōe said he would become a monk and practice the Buddhist way at Yoshino, shaved his head at Hōkō-ji and put on a monk’s robe (袈裟), so Prince Karu took the throne.</p>
+      <h3>Ministers of the Left and Right and the era name Taika</h3>
+      <p class="t">On the day of accession the title 皇祖母尊 was presented to Empress Kōgyoku; Prince Naka-no-Ōe was made crown prince, Abe no Uchimaro Minister of the Left and Soga no Kurayamada no Ishikawa no Maro Minister of the Right; Nakatomi no Kamako was given the 大錦 cap and made Inner Minister; and 僧旻 and 高向史玄理 (readings unconfirmed) were made National Scholars. Some days later the emperor, the 皇祖母尊 and the crown prince gathered the ministers beneath a great zelkova tree and swore to the gods of heaven and earth that the sovereign would not govern with a double policy and that the subjects would not be of two minds toward the court, and the 4th year of Empress Kōgyoku was renamed the 1st year of Taika.</p>
+      <h3>Princess Hashihito made empress</h3>
+      <p class="t">In the seventh month, Princess Hashihito (間人皇女), daughter of Emperor Jomei, was made empress, and 小足媛 <sup class="ru" title="reading unconfirmed">*</sup> (mother of Prince Arima), daughter of the Great Minister 阿倍倉梯麻呂<sup class="ru" title="reading unconfirmed">*</sup>, and 乳娘<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the Great Minister Soga no Yamada no Ishikawa no Maro (蘇我山田石川麻呂), were made consorts. Koguryŏ, Paekche and Silla presented tribute, and the Paekche envoy also presented the tribute of Mimana (任那). The Great Minister Ishikawa no Maro petitioned that the gods of heaven and earth should first be worshipped and pacified before matters of government were discussed, and envoys were sent to Owari and Mino to levy offerings for the gods.</p>
+      <h3>Governors appointed to the eastern provinces</h3>
+      <p class="t">In the eighth month, governors were appointed to the eastern provinces and elsewhere and ordered, among other things, to compile household registers and survey the rice fields, not to judge offenses in their provinces or take bribes, and to collect weapons in armories. On the same day a bell and a box were installed at court to set up a system for receiving complaints, and rules were also fixed for the status of children born between free people and slaves. Monks and nuns were also gathered at the Great Temple (大寺); after an account of how things had gone since the Buddhist law was transmitted, ten masters (十師) were appointed and the actual state of the temples was investigated.</p>
+      <h3>The capital moved to Nagara-Toyosaki in Naniwa</h3>
+      <p class="t">In the ninth month, Prince Furuhito (古人皇子) plotted rebellion with 蘇我田口臣川堀<sup class="ru" title="reading unconfirmed">*</sup> and others, but one of the conspirators, 吉備笠臣垂<sup class="ru" title="reading unconfirmed">*</sup>, turned himself in to Prince Naka-no-Ōe, and Prince Naka-no-Ōe sent troops to strike down Prince 古人大市 (古人大市皇子)<sup class="ru" title="reading unconfirmed">*</sup> and the others. In the same month envoys were sent to the provinces to record the numbers of people, and powerful men were forbidden to take land as private property and sell it to the people. In the twelfth month the emperor moved the capital to Nagara-Toyosaki in Naniwa (難波長柄豊碕).</p>
+      <h3>Articles one to four of the Reform Edict</h3>
+      <p class="t">In the first month of the 2nd year, when the New Year ceremonies were over, the Reform Edict was proclaimed. The first article abolished the 子代 people, the 屯倉 granaries, the 部曲 people and the 田荘 estates and granted sustenance fiefs (食封); the second organized the capital and established the Home Provinces (畿内), provincial governors, district officials, barriers and forts (関塞), border guards (防人), post horses and transmission horses (駅馬, 伝馬) and so on; the third began household registers, tax registers and the law for allotting and reclaiming rice land, and made fifty households one village (里); and the fourth abolished the old labor levies and fixed a levy on rice land (田之調) and other levies.</p>
+      <h3>Tomb regulations and the abolition of the 品部 groups</h3>
+      <p class="t">In the second month, in response to remonstrances from the people placed in the box, labor levies at various places were stopped. In the third month the merits and faults of each of the eastern governors were made clear one by one through the reports of the court-assembly envoys (朝集使) and the penalties were announced, and the crown prince presented 524 persons of the 入部 and 181 屯倉 granaries. An edict was also issued that fixed tomb regulations by rank and banned customs such as following the dead in death and forcing people to perform purifications (祓除). In the eighth month it was proclaimed that the 品部 groups would be abolished and their people made people of the state, and in the ninth month the scholar 高向黒麻呂 (that is, 玄理)<sup class="ru" title="reading unconfirmed">*</sup> was sent to Silla to make it send hostages, and the tribute of Mimana was discontinued.</p>
+      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this page</h2>
       <ol>
         <li><span class="kind ">Main text</span>In the first month of the 2nd year of Taika the Reform Edict was proclaimed, setting out four articles: abolishing the 子代 people, the 屯倉 granaries, the 部曲 people and the 田荘 estates, and granting sustenance fiefs (食封) instead; establishing the capital, the Home Provinces (畿内), provincial governors, district officials, post horses and so on; beginning household registers, tax registers and the law for allotting and reclaiming rice land (班田収授); and abolishing the old labor levies and introducing a levy on rice land (田之調).</li>
         <li><span class="kind ">Main text</span>In the sixth month of the 4th year of Empress Kōgyoku, the empress wished to pass the throne to Prince Naka-no-Ōe, but on Nakatomi no Kamako’s advice Prince Naka-no-Ōe put forward his uncle, Prince Karu. Prince Karu tried to yield to Furuhito no Ōe, but Furuhito no Ōe said he would become a monk and enter Yoshino, and shaved his head at Hōkō-ji, so Prince Karu took the throne.</li>
@@ -119,34 +180,14 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">What the main text says</h2>
-      <p>Emperor Kōtoku (天万豊日天皇) was the younger brother of Empress Kōgyoku by the same mother; he is described as a man who revered the Buddhist law, made light of the way of the gods (神道), and was fond of Confucianism. In the sixth month of the 4th year of Empress Kōgyoku, the empress wished to pass the throne to Prince Naka-no-Ōe, but Nakatomi no Kamako advised that, since his elder brother Furuhito no Ōe was still living, taking the throne would go against the modesty proper to a younger brother, and recommended putting forward his uncle, Prince Karu. Prince Karu declined again and again and tried to yield to Furuhito no Ōe, but Furuhito no Ōe said he would become a monk and practice the Buddhist way at Yoshino, shaved his head at Hōkō-ji and put on a monk’s robe (袈裟), so Prince Karu took the throne.</p>
-      <p>On the day of accession the title 皇祖母尊 was presented to Empress Kōgyoku; Prince Naka-no-Ōe was made crown prince, Abe no Uchimaro Minister of the Left and Soga no Kurayamada no Ishikawa no Maro Minister of the Right; Nakatomi no Kamako was given the 大錦 cap and made Inner Minister; and 僧旻 and 高向史玄理 (readings unconfirmed) were made National Scholars. Some days later the emperor, the 皇祖母尊 and the crown prince gathered the ministers beneath a great zelkova tree and swore to the gods of heaven and earth that the sovereign would not govern with a double policy and that the subjects would not be of two minds toward the court, and the 4th year of Empress Kōgyoku was renamed the 1st year of Taika.</p>
-      <p>In the seventh month, Princess Hashihito (間人皇女), daughter of Emperor Jomei, was made empress, and 小足媛 <sup class="ru" title="reading unconfirmed">*</sup> (mother of Prince Arima), daughter of the Great Minister 阿倍倉梯麻呂<sup class="ru" title="reading unconfirmed">*</sup>, and 乳娘<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the Great Minister Soga no Yamada no Ishikawa no Maro (蘇我山田石川麻呂), were made consorts. Koguryŏ, Paekche and Silla presented tribute, and the Paekche envoy also presented the tribute of Mimana (任那). The Great Minister Ishikawa no Maro petitioned that the gods of heaven and earth should first be worshipped and pacified before matters of government were discussed, and envoys were sent to Owari and Mino to levy offerings for the gods.</p>
-      <p>In the eighth month, governors were appointed to the eastern provinces and elsewhere and ordered, among other things, to compile household registers and survey the rice fields, not to judge offenses in their provinces or take bribes, and to collect weapons in armories. On the same day a bell and a box were installed at court to set up a system for receiving complaints, and rules were also fixed for the status of children born between free people and slaves. Monks and nuns were also gathered at the Great Temple (大寺); after an account of how things had gone since the Buddhist law was transmitted, ten masters (十師) were appointed and the actual state of the temples was investigated.</p>
-      <p>In the ninth month, Prince Furuhito (古人皇子) plotted rebellion with 蘇我田口臣川堀<sup class="ru" title="reading unconfirmed">*</sup> and others, but one of the conspirators, 吉備笠臣垂<sup class="ru" title="reading unconfirmed">*</sup>, turned himself in to Prince Naka-no-Ōe, and Prince Naka-no-Ōe sent troops to strike down Prince 古人大市 (古人大市皇子)<sup class="ru" title="reading unconfirmed">*</sup> and the others. In the same month envoys were sent to the provinces to record the numbers of people, and powerful men were forbidden to take land as private property and sell it to the people. In the twelfth month the emperor moved the capital to Nagara-Toyosaki in Naniwa (難波長柄豊碕).</p>
-      <p>In the first month of the 2nd year, when the New Year ceremonies were over, the Reform Edict was proclaimed. The first article abolished the 子代 people, the 屯倉 granaries, the 部曲 people and the 田荘 estates and granted sustenance fiefs (食封); the second organized the capital and established the Home Provinces (畿内), provincial governors, district officials, barriers and forts (関塞), border guards (防人), post horses and transmission horses (駅馬, 伝馬) and so on; the third began household registers, tax registers and the law for allotting and reclaiming rice land, and made fifty households one village (里); and the fourth abolished the old labor levies and fixed a levy on rice land (田之調) and other levies.</p>
-      <p>In the second month, in response to remonstrances from the people placed in the box, labor levies at various places were stopped. In the third month the merits and faults of each of the eastern governors were made clear one by one through the reports of the court-assembly envoys (朝集使) and the penalties were announced, and the crown prince presented 524 persons of the 入部 and 181 屯倉 granaries. An edict was also issued that fixed tomb regulations by rank and banned customs such as following the dead in death and forcing people to perform purifications (祓除). In the eighth month it was proclaimed that the 品部 groups would be abolished and their people made people of the state, and in the ninth month the scholar 高向黒麻呂 (that is, 玄理)<sup class="ru" title="reading unconfirmed">*</sup> was sent to Silla to make it send hostages, and the tribute of Mimana was discontinued.</p>
-      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">Variant accounts</h2>
-      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰).</p>
-      <div class="var"><b>A certain text says (或本云)</b><p>The main text says that 吉備笠臣垂<sup class="ru" title="reading unconfirmed">*</sup> turned himself in to Prince Naka-no-Ōe, but a certain text says that he turned himself in to Great Minister Abe and Great Minister Soga, confessing that he had been a companion in the rebellion of the prince of Yoshino.</p></div>
-      <div class="var"><b>A certain text says (或本云)</b><p>A certain text gives a specific account: on the thirtieth day of the eleventh month, Prince Naka-no-Ōe had 阿倍渠曾倍臣 and 佐伯部子麻呂 (readings unconfirmed) lead thirty soldiers to attack Furuhito no Ōe; they cut down Furuhito no Ōe and his son, and his consorts and concubines took their own lives.</p></div>
-      <div class="var"><b>A certain text says (或本云)</b><p>Another such text simply records that in the eleventh month 吉野大兄王<sup class="ru" title="reading unconfirmed">*</sup> rebelled and was put to death when the matter came to light; the month differs from the ninth month given in the main text.</p></div>
-      <div class="var"><b>A certain text says (或本云)</b><p>The main text says that in the ninth month envoys were sent to the provinces to take charge of weapons, but a certain text says that from the sixth to the ninth month envoys were sent to the provinces in all four directions and gathered weapons of various kinds.</p></div>
-      <div class="var"><b>A certain text says (或本云)</b><p>Concerning the record of the emperor going to the 子代 Detached Palace (子代離宮) in the first month of the 2nd year, a certain text says that the 子代屯倉<sup class="ru" title="reading unconfirmed">*</sup> at the village of 狭屋部<sup class="ru" title="reading unconfirmed">*</sup> in Naniwa was pulled down and a temporary palace built.</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">天覆地載，帝道唯一。</blockquote><p>The opening words of the covenant beneath the great zelkova tree. It means: as heaven covers and earth supports, so the way of the sovereign is one alone.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">罷昔在天皇等所立子代之民、處處屯倉</blockquote><p>The opening of the first article of the Reform Edict. It means: abolish the 子代 people and the 屯倉 granaries in various places that the sovereigns of former times established.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">初造戶籍、計帳、班田收授之法。</blockquote><p>The opening of the third article of the Reform Edict. It means: for the first time make household registers, tax registers, and the law for allotting and reclaiming rice land.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">天無雙日，國無二王。</blockquote><p>Words the crown prince gave as his reason for presenting the 入部 and the 屯倉. It means: just as there are not two suns in the sky, there are not two kings in a country.</p></div>
+      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰). Select a name to open it (5 in all).</p>
+      <details><summary>A certain text says (或本云)</summary><p>The main text says that 吉備笠臣垂<sup class="ru" title="reading unconfirmed">*</sup> turned himself in to Prince Naka-no-Ōe, but a certain text says that he turned himself in to Great Minister Abe and Great Minister Soga, confessing that he had been a companion in the rebellion of the prince of Yoshino.</p></details>
+      <details><summary>A certain text says (或本云)</summary><p>A certain text gives a specific account: on the thirtieth day of the eleventh month, Prince Naka-no-Ōe had 阿倍渠曾倍臣 and 佐伯部子麻呂 (readings unconfirmed) lead thirty soldiers to attack Furuhito no Ōe; they cut down Furuhito no Ōe and his son, and his consorts and concubines took their own lives.</p></details>
+      <details><summary>A certain text says (或本云)</summary><p>Another such text simply records that in the eleventh month 吉野大兄王<sup class="ru" title="reading unconfirmed">*</sup> rebelled and was put to death when the matter came to light; the month differs from the ninth month given in the main text.</p></details>
+      <details><summary>A certain text says (或本云)</summary><p>The main text says that in the ninth month envoys were sent to the provinces to take charge of weapons, but a certain text says that from the sixth to the ninth month envoys were sent to the provinces in all four directions and gathered weapons of various kinds.</p></details>
+      <details><summary>A certain text says (或本云)</summary><p>Concerning the record of the emperor going to the 子代 Detached Palace (子代離宮) in the first month of the 2nd year, a certain text says that the 子代屯倉<sup class="ru" title="reading unconfirmed">*</sup> at the village of 狭屋部<sup class="ru" title="reading unconfirmed">*</sup> in Naniwa was pulled down and a temporary palace built.</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -172,13 +213,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="kogyoku.html"><small>← Previous page (Nihon Shoki, Book 24 — Empress Kōgyoku)</small>Empress Kōgyoku — The Fall of the Royal House of the Upper Palace and the Killing of Soga no Iruka</a><a class="next" href="kotoku-2.html"><small>Next page (Nihon Shoki, Book 25 — Emperor Kōtoku) →</small>Emperor Kōtoku — The Cap-Rank System, the Death of Ishikawa no Maro, the Hakuchi Era and the Naniwa Palace</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">Nihon Shoki, Book 25</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">天覆地載，帝道唯一。</blockquote><p>The opening words of the covenant beneath the great zelkova tree. It means: as heaven covers and earth supports, so the way of the sovereign is one alone.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">罷昔在天皇等所立子代之民、處處屯倉</blockquote><p>The opening of the first article of the Reform Edict. It means: abolish the 子代 people and the 屯倉 granaries in various places that the sovereigns of former times established.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">初造戶籍、計帳、班田收授之法。</blockquote><p>The opening of the third article of the Reform Edict. It means: for the first time make household registers, tax registers, and the law for allotting and reclaiming rice land.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">天無雙日，國無二王。</blockquote><p>Words the crown prince gave as his reason for presenting the 入部 and the 屯倉. It means: just as there are not two suns in the sky, there are not two kings in a country.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿五" target="_blank" rel="noopener">Nihon Shoki, Book 25</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/%E6%97%A5%E6%9C%AC%E6%9B%B8%E7%B4%80/%E5%8D%B7%E7%AC%AC%E5%BB%BF%E4%BA%94</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All pages</a>
     </section>
   </main>

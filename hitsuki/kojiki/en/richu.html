@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 3 · story 6 of 13</p>
-    <h1>Emperor Richū, Emperor Hanzei and the Revolt of 墨江中王<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">履中天皇・反正天皇と墨江中王の反乱</p>
-    <p class="pg-lead">While 伊邪本和気命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Richū) lay asleep drunk, his younger brother 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set fire to his great hall; rescued by 阿知直<sup class="ru" title="reading unconfirmed">*</sup>, he escaped to Isonokami Shrine (石上神宮). His younger brother 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>, ordered to clear himself of suspicion, had the Hayato 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup> kill 墨江中王 and then cut down that Hayato as well; later 水歯別命 ruled the realm as Emperor Hanzei.</p>
-    <div class="xlink"><a href="../../shoki/en/richu-hanzei.html">Read in the Nihon Shoki: Emperor Richū, Emperor Hanzei and the revolt of 住吉仲皇子<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 3 · story 6 of 13</p>
+        <h1>Emperor Richū, Emperor Hanzei and the Revolt of 墨江中王<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">履中天皇・反正天皇と墨江中王の反乱</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">While 伊邪本和気命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Richū) lay asleep drunk, his younger brother 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set fire to his great hall; rescued by 阿知直<sup class="ru" title="reading unconfirmed">*</sup>, he escaped to Isonokami Shrine (石上神宮). His younger brother 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>, ordered to clear himself of suspicion, had the Hayato 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup> kill 墨江中王 and then cut down that Hayato as well; later 水歯別命 ruled the realm as Emperor Hanzei.</p>
+        <p class="bk-meta">Reading time for the story: about 4 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/richu-hanzei.html">Read in the Nihon Shoki: Emperor Richū, Emperor Hanzei and the revolt of 住吉仲皇子<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The consorts and children of 伊邪本和気命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">伊邪本和気命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Richū) ruled the realm from the 若桜宮 palace at 伊波礼 (readings unconfirmed). He married 黒比売命<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 葦田宿禰<sup class="ru" title="reading unconfirmed">*</sup>, son of 葛城之曾都毘古<sup class="ru" title="reading unconfirmed">*</sup>, and 市辺之忍歯王, 御馬王 and 青海郎女 (also called 飯豊郎女) (readings unconfirmed) were born.</p>
+      <h3>墨江中王<sup class="ru" title="reading unconfirmed">*</sup> sets fire to the great hall</h3>
+      <p class="t">When the emperor was still at the Naniwa palace (難波宮), at the banquet (豊明) after the Great Thanksgiving (大嘗), he became drunk on sake and fell asleep. At that time his younger brother 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set fire to the great hall, intending to kill the emperor. 阿知直<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 倭漢直<sup class="ru" title="reading unconfirmed">*</sup>, carried the emperor out, put him on a horse and sent him toward Yamato (倭). When the emperor awoke at 多遅比野<sup class="ru" title="reading unconfirmed">*</sup> and asked, “Where is this?”, 阿知直 answered that 墨江中王 had set fire to the great hall, so he was taking him and fleeing to Yamato. The emperor sang a song, and when he reached the 波邇賦坂 slope<sup class="ru" title="reading unconfirmed">*</sup> and looked back toward the Naniwa palace, the fire was still burning, so he sang again.</p>
+      <h3>Meeting a woman at Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">At the entrance to Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup> he met a woman. She told him, “Many armed men are blocking this mountain. Go round by the 当岐麻道 road<sup class="ru" title="reading unconfirmed">*</sup> and cross that way,” and the emperor sang a song. In this way the emperor went up and entered Isonokami Shrine (石上神宮).</p>
+      <h3>水歯別命<sup class="ru" title="reading unconfirmed">*</sup> has 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> killed</h3>
+      <p class="t">His younger brother by the same mother, 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>, came to him, but the emperor sent word: “I suspect that you are of the same mind as 墨江中王<sup class="ru" title="reading unconfirmed">*</sup>, so I will not meet and speak with you.” When 水歯別命 replied, “I have no impure heart, and I am not of one mind with 墨江中王,” the emperor ordered, “Then go back to Naniwa and kill 墨江中王 and come. Then I will certainly meet and speak with you.” 水歯別命 returned to Naniwa and approached 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup>, a Hayato who served close to 墨江中王, saying, “If you do as I say, I will become emperor, make you a minister, and rule the realm,” and he gave him many goods. 曾婆訶理 watched for his master to enter the privy and stabbed him to death with a spear.</p>
+      <h3>The banquet and the beheading of 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">On the way up to Yamato with 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup>, 水歯別命<sup class="ru" title="reading unconfirmed">*</sup> reflected at the entrance to Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup>: “曾婆訶理 has done me a great service, but killing his own lord is unrighteous. Yet if I do not reward his service, I will be faithless. Even as I keep my promise, his heart is fearsome. So I will reward his service, but destroy him.” He therefore built a temporary palace, held a banquet (豊楽), conferred the rank of minister on the Hayato, and had the officials bow to him. It came about that he would drink sake from the same cup as the delighted Hayato; sake was poured into a bowl so large it hid the face, and the prince drank first and the Hayato after. As the Hayato drank, the great bowl covered his face, and the prince took out the sword he had placed beneath his seat and cut off his head.</p>
+      <h3>Near Asuka and Far Asuka</h3>
+      <p class="t">Because he went up the next day, that place is called Near Asuka (近飛鳥). On reaching Yamato he said, “Today I will stay here and perform purification (祓禊), and tomorrow I will go up and worship at the shrine,” so that place is called Far Asuka (遠飛鳥). He then went to Isonokami Shrine (石上神宮) and sent word that “the matter has already been settled,” and the emperor called him in and spoke with him. The emperor appointed 阿知直<sup class="ru" title="reading unconfirmed">*</sup> for the first time as an official of the storehouses (蔵官) and granted him land for provisions (粮地). In this reign he also granted the names or titles 若桜部 and 比売陀君 (readings unconfirmed) and established the 伊波礼部<sup class="ru" title="reading unconfirmed">*</sup>. The emperor lived to the age of sixty-four, and his tomb is at Mozu (毛受).</p>
+      <h3>The children and tomb of 水歯別命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">水歯別命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Hanzei) ruled the realm from the 柴垣宮 palace at 多治比 (readings unconfirmed). The emperor was nine shaku two and a half sun tall, and his teeth were one sun long and two bu wide, even above and below, like strung beads. He married 都怒郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 許碁登臣 of 丸邇 (readings unconfirmed), and 甲斐郎女 and 都夫良郎女 (readings unconfirmed) were born; he married 弟比売<sup class="ru" title="reading unconfirmed">*</sup>, another daughter of the same 臣, and 財王 and 多訶弁郎女 (readings unconfirmed) were born. His children numbered four in all. He lived to the age of sixty, and his tomb is in the plain of Mozu (毛受野).</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>At the banquet (豊明) of the Great Thanksgiving (大嘗) at the Naniwa palace (難波宮), while 伊邪本和気命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Richū) lay asleep drunk on sake, his younger brother 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set fire to the great hall, intending to kill the emperor. 阿知直<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 倭漢直<sup class="ru" title="reading unconfirmed">*</sup>, put the emperor on a horse and sent him away to Yamato (倭).</li>
         <li><span class="kind ">Main text</span>At the entrance to Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup>, told by a woman, the emperor went round by the 当岐麻道 road<sup class="ru" title="reading unconfirmed">*</sup> and entered Isonokami Shrine (石上神宮). He suspected his younger brother 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>, who came there, and ordered him to kill 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> before coming to him.</li>
@@ -117,26 +178,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the Nihon Shoki, the incident begins when 住吉仲皇子<sup class="ru" title="reading unconfirmed">*</sup> goes to 黒媛<sup class="ru" title="reading unconfirmed">*</sup> using the crown prince’s name, and the crown prince is rescued by three men: 平群木菟宿禰, 物部大前宿禰 and 阿知使主 (readings unconfirmed). The one who stabs 仲皇子 is his attendant, the Hayato 刺領巾<sup class="ru" title="reading unconfirmed">*</sup>, and 木菟宿禰 advises that a man who has killed his own lord cannot be allowed to live, whereupon 刺領巾 is killed.</li>
         <li><span class="kind k-int">Commentary</span>Kokugakuin University’s database of deity names explains that Isonokami Shrine (石上神宮) served as a divine storehouse and armoury holding the sacred treasures of the royal power, and that, together with Ise and Izumo, it was one of the few shrines called a “jingū” (神宮) in the Kojiki and Nihon Shoki. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>伊邪本和気命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Richū) ruled the realm from the 若桜宮 palace at 伊波礼 (readings unconfirmed). He married 黒比売命<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 葦田宿禰<sup class="ru" title="reading unconfirmed">*</sup>, son of 葛城之曾都毘古<sup class="ru" title="reading unconfirmed">*</sup>, and 市辺之忍歯王, 御馬王 and 青海郎女 (also called 飯豊郎女) (readings unconfirmed) were born.</p>
-      <p>When the emperor was still at the Naniwa palace (難波宮), at the banquet (豊明) after the Great Thanksgiving (大嘗), he became drunk on sake and fell asleep. At that time his younger brother 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set fire to the great hall, intending to kill the emperor. 阿知直<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 倭漢直<sup class="ru" title="reading unconfirmed">*</sup>, carried the emperor out, put him on a horse and sent him toward Yamato (倭). When the emperor awoke at 多遅比野<sup class="ru" title="reading unconfirmed">*</sup> and asked, “Where is this?”, 阿知直 answered that 墨江中王 had set fire to the great hall, so he was taking him and fleeing to Yamato. The emperor sang a song, and when he reached the 波邇賦坂 slope<sup class="ru" title="reading unconfirmed">*</sup> and looked back toward the Naniwa palace, the fire was still burning, so he sang again.</p>
-      <p>At the entrance to Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup> he met a woman. She told him, “Many armed men are blocking this mountain. Go round by the 当岐麻道 road<sup class="ru" title="reading unconfirmed">*</sup> and cross that way,” and the emperor sang a song. In this way the emperor went up and entered Isonokami Shrine (石上神宮).</p>
-      <p>His younger brother by the same mother, 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>, came to him, but the emperor sent word: “I suspect that you are of the same mind as 墨江中王<sup class="ru" title="reading unconfirmed">*</sup>, so I will not meet and speak with you.” When 水歯別命 replied, “I have no impure heart, and I am not of one mind with 墨江中王,” the emperor ordered, “Then go back to Naniwa and kill 墨江中王 and come. Then I will certainly meet and speak with you.” 水歯別命 returned to Naniwa and approached 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup>, a Hayato who served close to 墨江中王, saying, “If you do as I say, I will become emperor, make you a minister, and rule the realm,” and he gave him many goods. 曾婆訶理 watched for his master to enter the privy and stabbed him to death with a spear.</p>
-      <p>On the way up to Yamato with 曾婆訶理<sup class="ru" title="reading unconfirmed">*</sup>, 水歯別命<sup class="ru" title="reading unconfirmed">*</sup> reflected at the entrance to Mount 大坂山<sup class="ru" title="reading unconfirmed">*</sup>: “曾婆訶理 has done me a great service, but killing his own lord is unrighteous. Yet if I do not reward his service, I will be faithless. Even as I keep my promise, his heart is fearsome. So I will reward his service, but destroy him.” He therefore built a temporary palace, held a banquet (豊楽), conferred the rank of minister on the Hayato, and had the officials bow to him. It came about that he would drink sake from the same cup as the delighted Hayato; sake was poured into a bowl so large it hid the face, and the prince drank first and the Hayato after. As the Hayato drank, the great bowl covered his face, and the prince took out the sword he had placed beneath his seat and cut off his head.</p>
-      <p>Because he went up the next day, that place is called Near Asuka (近飛鳥). On reaching Yamato he said, “Today I will stay here and perform purification (祓禊), and tomorrow I will go up and worship at the shrine,” so that place is called Far Asuka (遠飛鳥). He then went to Isonokami Shrine (石上神宮) and sent word that “the matter has already been settled,” and the emperor called him in and spoke with him. The emperor appointed 阿知直<sup class="ru" title="reading unconfirmed">*</sup> for the first time as an official of the storehouses (蔵官) and granted him land for provisions (粮地). In this reign he also granted the names or titles 若桜部 and 比売陀君 (readings unconfirmed) and established the 伊波礼部<sup class="ru" title="reading unconfirmed">*</sup>. The emperor lived to the age of sixty-four, and his tomb is at Mozu (毛受).</p>
-      <p>水歯別命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Hanzei) ruled the realm from the 柴垣宮 palace at 多治比 (readings unconfirmed). The emperor was nine shaku two and a half sun tall, and his teeth were one sun long and two bu wide, even above and below, like strung beads. He married 都怒郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 許碁登臣 of 丸邇 (readings unconfirmed), and 甲斐郎女 and 都夫良郎女 (readings unconfirmed) were born; he married 弟比売<sup class="ru" title="reading unconfirmed">*</sup>, another daughter of the same 臣, and 財王 and 多訶弁郎女 (readings unconfirmed) were born. His children numbered four in all. He lived to the age of sixty, and his tomb is in the plain of Mozu (毛受野).</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">於大御酒宇良宜而。大御寢也</blockquote><p>Merry with sake, he fell asleep.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">火著大殿</blockquote><p>(墨江中王<sup class="ru" title="reading unconfirmed">*</sup>) set fire to the great hall.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">爲吾雖有大功。既殺己君。是不義</blockquote><p>He has done me a great service, but he killed his own lord. This is unrighteous (the thoughts of 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">御齒長一寸廣二分。上下等齊。既如貫珠</blockquote><p>(Emperor Hanzei’s) teeth were one sun long and two bu wide, even above and below, like strung beads.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -156,7 +197,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 12, Emperor Richū, record before accession (the 87th year of Emperor Nintoku)</span><p>In the Nihon Shoki, the messenger 住吉仲皇子<sup class="ru" title="reading unconfirmed">*</sup>, using the crown prince’s (Richū’s) name, visits 黒媛<sup class="ru" title="reading unconfirmed">*</sup>, whom the crown prince intended to make his consort, and fearing that this would become known, 仲皇子 raises troops and burns the crown prince’s palace. The Kojiki records only that 墨江中王<sup class="ru" title="reading unconfirmed">*</sup> set the fire and gives no reason.</p><blockquote lang="zh-Hant">時仲皇子冒太子名</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 12, Emperor Richū, record before accession (the 87th year of Emperor Nintoku)</span><p>In the Nihon Shoki, the Hayato who stabbed 仲皇子<sup class="ru" title="reading unconfirmed">*</sup> to death in the privy is named 刺領巾<sup class="ru" title="reading unconfirmed">*</sup>, and he is killed on the advice of 木菟宿禰<sup class="ru" title="reading unconfirmed">*</sup>. There is no story, as with the Kojiki’s 曾婆訶理, of a banquet held to confer the rank of minister at which he is cut down.</p><blockquote lang="zh-Hant">乃殺刺領巾</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 12, the 6th year of Emperor Richū, 3rd month (壬午朔丙申)</span><p>In the Nihon Shoki, Emperor Richū dies at the 稚桜宮 palace<sup class="ru" title="reading unconfirmed">*</sup> in the 3rd month of the 6th year, at the age of seventy. The Kojiki gives his age as sixty-four.</p><blockquote lang="zh-Hant">時年七十</blockquote></div>
@@ -164,13 +205,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="nintoku-kari.html"><small>← Previous story (Part 3, story 5)</small>The Song of the Wild Goose’s Eggs and the Ship 枯野<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="karu.html"><small>Next story (Part 3, story 7) →</small>Emperor Ingyō, Crown Prince 軽 and 軽大郎女 (readings unconfirmed)</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">Nihon Shoki, Book 12</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">於大御酒宇良宜而。大御寢也</blockquote><p>Merry with sake, he fell asleep.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">火著大殿</blockquote><p>(墨江中王<sup class="ru" title="reading unconfirmed">*</sup>) set fire to the great hall.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">爲吾雖有大功。既殺己君。是不義</blockquote><p>He has done me a great service, but he killed his own lord. This is unrighteous (the thoughts of 水歯別命<sup class="ru" title="reading unconfirmed">*</sup>).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">御齒長一寸廣二分。上下等齊。既如貫珠</blockquote><p>(Emperor Hanzei’s) teeth were one sun long and two bu wide, even above and below, like strung beads.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十二" target="_blank" rel="noopener">Nihon Shoki, Book 12</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/futsunomitama/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

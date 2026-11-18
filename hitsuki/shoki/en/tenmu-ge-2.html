@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Nihon Shoki, Book 29 — Emperor Tenmu (part 2) · page 48 of 50</p>
-    <h1>Emperor Tenmu — Compiling the Codes and the Imperial Chronicles, and His Death</h1>
-    <p class="orig" lang="ja">天武天皇の律令・帝紀の編纂と崩御</p>
-    <p class="pg-lead">Gathers the records from the 10th year of Emperor Tenmu to his death in the 1st year of Shuchō (朱鳥). The making of codes (律令) and the recording and fixing of the Imperial Chronicles (帝紀) go forward, together with institutional measures such as the eight kabane (八色之姓) and new court ranks; the book ends with the emperor’s illness and death and the eulogies delivered at his temporary enshrinement.</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Nihon Shoki, Book 29 — Emperor Tenmu (part 2) · page 48 of 50</p>
+        <h1>Emperor Tenmu — Compiling the Codes and the Imperial Chronicles, and His Death</h1>
+        <p class="orig" lang="ja">天武天皇の律令・帝紀の編纂と崩御</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Gathers the records from the 10th year of Emperor Tenmu to his death in the 1st year of Shuchō (朱鳥). The making of codes (律令) and the recording and fixing of the Imperial Chronicles (帝紀) go forward, together with institutional measures such as the eight kabane (八色之姓) and new court ranks; the book ends with the emperor’s illness and death and the eulogies delivered at his temporary enshrinement.</p>
+        <p class="bk-meta">Reading time for the main text: about 5 min　/　<a href="#pts-title">Key points only</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">What the main text says</h2>
+      <h3>Codes established and Prince Kusakabe made crown prince</h3>
+      <p class="t">In the first month of the 10th year, the Home Provinces and the other provinces were made to repair the shrines of the heavenly and earthly deities (天社, 地社). In the second month the emperor and empress declared in the Great Audience Hall that codes would be established, and Prince Kusakabe was made crown prince. In the third month the Imperial Chronicles and the various matters of high antiquity were recorded and fixed, and in the fourth month ninety-two articles of prohibitions (禁式) were laid down, fixing rules for what people could wear. In the fifth month the spirits of the imperial ancestors were worshipped, and in the seventh month a great purification was held throughout the realm. In the eighth month the envoys sent to 多禰 Island (多禰嶋)<sup class="ru" title="reading unconfirmed">*</sup> presented a map of the land of 多禰 and reported on how its people lived.</p>
+      <h3>Plan to place the capital at 新城<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">In the third month of the 11th year, 三野王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to 新城<sup class="ru" title="reading unconfirmed">*</sup> to view the lay of the land, with the intention of placing the capital there. 境部連石積<sup class="ru" title="reading unconfirmed">*</sup> and others were made to create a new script (新字), one work in forty-four scrolls. The sustenance households of imperial princes and below were abolished and returned to the state, and in the fourth month men and women alike were ordered to tie up their hair. In the seventh month many Hayato (隼人) came and presented local products, and the Ōsumi Hayato and the 阿多 Hayato<sup class="ru" title="reading unconfirmed">*</sup> wrestled (相撲) at court, the Ōsumi Hayato winning. In the ninth month it was ordered that the practices of bowing on the knees and crawling be abolished and the standing bow of the Naniwa court (難波朝庭) be used.</p>
+      <h3>A three-legged sparrow shown to the ministers</h3>
+      <p class="t">In the first month of the 12th year a three-legged sparrow presented from Tsukushi was shown to the ministers; an edict declared that in the emperor’s reign auspicious signs from heaven appeared again and again every year, and an amnesty and a remission of taxes and labor followed. In the second month Prince Ōtsu took part in hearing state affairs for the first time. In the third month the monastic offices of 僧正, 僧都 and 律師 were filled; in the fourth month an edict ordered that copper coins be used and silver coins not be used, but a few days later another edict said the use of silver should not be stopped. In the twelfth month envoys were sent around to divide the boundaries of the provinces, but this was not settled that year; and an edict declared that capitals and palaces would be built in two places, and that first a capital would be placed at Naniwa.</p>
+      <h3>Creation of the eight kabane</h3>
+      <p class="t">In the second month of the 13th year, 広瀬王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to the Home Provinces to divine a site suited to a capital, and 三野王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to Shinano to view the lay of the land. In the third month the emperor toured the capital and fixed the site of the palace. In the intercalary fourth month, declaring that the essential thing in government is military affairs, he ordered civil and military officials to keep weapons and horses and to practice riding and the use of troops. In the tenth month the eight kabane were created, and on a night that month a great earthquake struck: mountains collapsed, the hot spring of Iyo was buried, and more than 500,000 頃 of fields in Tosa province sank into the sea. In the twelfth month 土師宿禰甥<sup class="ru" title="reading unconfirmed">*</sup> and others who had stayed in Tang returned by way of Silla.</p>
+      <h3>A Buddhist shrine in every household in the provinces</h3>
+      <p class="t">In the first month of the 14th year the names and grades of the court ranks were changed. In the third month an edict ordered every household in the provinces to make a Buddhist shrine (仏舎) and to place a Buddhist image and sutras in it for worship. In the seventh month the colors of court dress for each rank were fixed. In the ninth month, because the emperor was unwell, sutras were read for three days at Daikan Daiji (大官大寺), Kawara-dera and Asuka-dera. In the eleventh month a rite of summoning the soul (招魂) was performed for the emperor.</p>
+      <h3>Curse of the Kusanagi sword and the era name Shuchō</h3>
+      <p class="t">In the first month of the 1st year of Shuchō, a fire that started in the Treasury (大蔵省) at Naniwa burned down all the palace buildings. In the fifth month the emperor first became unwell, and the Medicine Buddha Sutra (薬師経) was expounded at Kawara-dera. In the sixth month divination about his illness pointed to a curse of the Kusanagi sword, and the sword was sent to the Atsuta shrine. In the seventh month affairs of the realm were made to be reported to the empress and the crown prince, the era name was changed to Shuchō, and the palace was named the Asuka Kiyomihara Palace. The princes and ministers made images of Kannon (観世音) for the emperor and had many monks ordained to pray for his recovery.</p>
+      <h3>The emperor dies and eulogies at the temporary enshrinement</h3>
+      <p class="t">In the ninth month the imperial princes and those below gathered at Kawara-dera and made vows for the emperor’s illness, but the emperor died in the main palace without recovering. A temporary enshrinement palace was built in the south court, and the text records that during the mourning Prince Ōtsu plotted rebellion against the crown prince. Afterwards monks and nuns wailed in the courtyard of the temporary enshrinement, and ministers in turn delivered eulogies on the affairs of the 壬生, the princes, the palace household (宮内), the 大政官, the 法官 and others. Finally 百済王良虞<sup class="ru" title="reading unconfirmed">*</sup> and the provincial chieftains (国造) also delivered eulogies, and various songs and dances were performed.</p>
+      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this page</h2>
       <ol>
         <li><span class="kind ">Main text</span>In the second month of the 10th year, the emperor and empress, in the Great Audience Hall (大極殿), issued an edict to the imperial princes, princes and ministers declaring that codes (律令) would be established and the laws and regulations revised. On the same day Prince Kusakabe (草壁皇子尊) was made crown prince and put in charge of government affairs.</li>
         <li><span class="kind ">Main text</span>In the third month of the 10th year, the emperor had twelve people, including Prince Kawashima (川嶋皇子) and Prince Osakabe (忍壁皇子), record and fix the Imperial Chronicles (帝紀) and the various matters of high antiquity. 中臣連大嶋 and 平群臣子首 (readings unconfirmed) took up the brush themselves and wrote the record.</li>
@@ -119,32 +180,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">What the main text says</h2>
-      <p>In the first month of the 10th year, the Home Provinces and the other provinces were made to repair the shrines of the heavenly and earthly deities (天社, 地社). In the second month the emperor and empress declared in the Great Audience Hall that codes would be established, and Prince Kusakabe was made crown prince. In the third month the Imperial Chronicles and the various matters of high antiquity were recorded and fixed, and in the fourth month ninety-two articles of prohibitions (禁式) were laid down, fixing rules for what people could wear. In the fifth month the spirits of the imperial ancestors were worshipped, and in the seventh month a great purification was held throughout the realm. In the eighth month the envoys sent to 多禰 Island (多禰嶋)<sup class="ru" title="reading unconfirmed">*</sup> presented a map of the land of 多禰 and reported on how its people lived.</p>
-      <p>In the third month of the 11th year, 三野王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to 新城<sup class="ru" title="reading unconfirmed">*</sup> to view the lay of the land, with the intention of placing the capital there. 境部連石積<sup class="ru" title="reading unconfirmed">*</sup> and others were made to create a new script (新字), one work in forty-four scrolls. The sustenance households of imperial princes and below were abolished and returned to the state, and in the fourth month men and women alike were ordered to tie up their hair. In the seventh month many Hayato (隼人) came and presented local products, and the Ōsumi Hayato and the 阿多 Hayato<sup class="ru" title="reading unconfirmed">*</sup> wrestled (相撲) at court, the Ōsumi Hayato winning. In the ninth month it was ordered that the practices of bowing on the knees and crawling be abolished and the standing bow of the Naniwa court (難波朝庭) be used.</p>
-      <p>In the first month of the 12th year a three-legged sparrow presented from Tsukushi was shown to the ministers; an edict declared that in the emperor’s reign auspicious signs from heaven appeared again and again every year, and an amnesty and a remission of taxes and labor followed. In the second month Prince Ōtsu took part in hearing state affairs for the first time. In the third month the monastic offices of 僧正, 僧都 and 律師 were filled; in the fourth month an edict ordered that copper coins be used and silver coins not be used, but a few days later another edict said the use of silver should not be stopped. In the twelfth month envoys were sent around to divide the boundaries of the provinces, but this was not settled that year; and an edict declared that capitals and palaces would be built in two places, and that first a capital would be placed at Naniwa.</p>
-      <p>In the second month of the 13th year, 広瀬王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to the Home Provinces to divine a site suited to a capital, and 三野王<sup class="ru" title="reading unconfirmed">*</sup> and others were sent to Shinano to view the lay of the land. In the third month the emperor toured the capital and fixed the site of the palace. In the intercalary fourth month, declaring that the essential thing in government is military affairs, he ordered civil and military officials to keep weapons and horses and to practice riding and the use of troops. In the tenth month the eight kabane were created, and on a night that month a great earthquake struck: mountains collapsed, the hot spring of Iyo was buried, and more than 500,000 頃 of fields in Tosa province sank into the sea. In the twelfth month 土師宿禰甥<sup class="ru" title="reading unconfirmed">*</sup> and others who had stayed in Tang returned by way of Silla.</p>
-      <p>In the first month of the 14th year the names and grades of the court ranks were changed. In the third month an edict ordered every household in the provinces to make a Buddhist shrine (仏舎) and to place a Buddhist image and sutras in it for worship. In the seventh month the colors of court dress for each rank were fixed. In the ninth month, because the emperor was unwell, sutras were read for three days at Daikan Daiji (大官大寺), Kawara-dera and Asuka-dera. In the eleventh month a rite of summoning the soul (招魂) was performed for the emperor.</p>
-      <p>In the first month of the 1st year of Shuchō, a fire that started in the Treasury (大蔵省) at Naniwa burned down all the palace buildings. In the fifth month the emperor first became unwell, and the Medicine Buddha Sutra (薬師経) was expounded at Kawara-dera. In the sixth month divination about his illness pointed to a curse of the Kusanagi sword, and the sword was sent to the Atsuta shrine. In the seventh month affairs of the realm were made to be reported to the empress and the crown prince, the era name was changed to Shuchō, and the palace was named the Asuka Kiyomihara Palace. The princes and ministers made images of Kannon (観世音) for the emperor and had many monks ordained to pray for his recovery.</p>
-      <p>In the ninth month the imperial princes and those below gathered at Kawara-dera and made vows for the emperor’s illness, but the emperor died in the main palace without recovering. A temporary enshrinement palace was built in the south court, and the text records that during the mourning Prince Ōtsu plotted rebellion against the crown prince. Afterwards monks and nuns wailed in the courtyard of the temporary enshrinement, and ministers in turn delivered eulogies on the affairs of the 壬生, the princes, the palace household (宮内), the 大政官, the 法官 and others. Finally 百済王良虞<sup class="ru" title="reading unconfirmed">*</sup> and the provincial chieftains (国造) also delivered eulogies, and various songs and dances were performed.</p>
-      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">Variant accounts</h2>
-      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰).</p>
-      <div class="var"><b>Some say (或曰)</b><p>The main text records that in the eighth month of the 11th year something fire-colored, like a consecration banner (灌頂幡), drifted north across the sky and was seen in every province. According to “some say,” it entered the sea of Koshi.</p></div>
-      <div class="var"><b>Some say (或曰)</b><p>The main text says that fire broke out from the Treasury at Naniwa and burned down all the palace buildings. According to “some say,” it was a fire from the house of 阿斗連薬<sup class="ru" title="reading unconfirmed">*</sup> that spread to the palace, and only the Office of the Armory (兵庫職) did not burn.</p></div>
-      <div class="var"><b>Some say (或曰)</b><p>The main text says that lightning flashed and thunder sounded in the south, and the storehouse of the Ministry of Popular Affairs (民部省) holding the 庸 tax burned. According to “some say,” the fire started at the palace of Prince Osakabe and spread to the Ministry of Popular Affairs.</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">朕今更欲定律令，改法式</blockquote><p>The emperor’s words saying that he now wished to establish codes and revise the rules of law.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">令記定帝紀及上古諸事</blockquote><p>The record that he had the Imperial Chronicles and the various matters of high antiquity recorded and fixed.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">作八色之姓，以混天下萬姓</blockquote><p>The record that the eight kabane were created and the many clan titles of the realm were reorganized.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">卜天皇病，祟草薙劍</blockquote><p>When divination was performed about the emperor’s illness, it was found to be a curse of the Kusanagi sword.</p></div>
+      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰). Select a name to open it (3 in all).</p>
+      <details><summary>Some say (或曰)</summary><p>The main text records that in the eighth month of the 11th year something fire-colored, like a consecration banner (灌頂幡), drifted north across the sky and was seen in every province. According to “some say,” it entered the sea of Koshi.</p></details>
+      <details><summary>Some say (或曰)</summary><p>The main text says that fire broke out from the Treasury at Naniwa and burned down all the palace buildings. According to “some say,” it was a fire from the house of 阿斗連薬<sup class="ru" title="reading unconfirmed">*</sup> that spread to the palace, and only the Office of the Armory (兵庫職) did not burn.</p></details>
+      <details><summary>Some say (或曰)</summary><p>The main text says that lightning flashed and thunder sounded in the south, and the storehouse of the Ministry of Popular Affairs (民部省) holding the 庸 tax burned. According to “some say,” the fire started at the palace of Prince Osakabe and spread to the Ministry of Popular Affairs.</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -167,13 +208,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="tenmu-ge-1.html"><small>← Previous page (Nihon Shoki, Book 29 — Emperor Tenmu (part 2))</small>Emperor Tenmu’s Accession and the Yoshino Covenant</a><a class="next" href="jito-1.html"><small>Next page (Nihon Shoki, Book 30 — Empress Jitō) →</small>Empress Jitō — Rule before Enthronement, and Accession</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">Nihon Shoki, Book 29</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">朕今更欲定律令，改法式</blockquote><p>The emperor’s words saying that he now wished to establish codes and revise the rules of law.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">令記定帝紀及上古諸事</blockquote><p>The record that he had the Imperial Chronicles and the various matters of high antiquity recorded and fixed.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">作八色之姓，以混天下萬姓</blockquote><p>The record that the eight kabane were created and the many clan titles of the realm were reorganized.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">卜天皇病，祟草薙劍</blockquote><p>When divination was performed about the emperor’s illness, it was found to be a curse of the Kusanagi sword.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">Nihon Shoki, Book 29</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿九" target="_blank" rel="noopener">https://zh.wikisource.org/wiki/日本書紀/卷第廿九</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All pages</a>
     </section>
   </main>

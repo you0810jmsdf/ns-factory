@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,36 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Nihon Shoki, Book 1 — Age of the Gods (part 1) · page 1 of 50</p>
-    <h1>The Opening of Heaven and Earth and the Seven Generations of the Age of the Gods (sections 1–3)</h1>
-    <p class="orig" lang="ja">天地開闢と神世七代（第一段〜第三段）</p>
-    <p class="pg-lead">Out of a chaos in which heaven and earth were not yet divided, heaven and earth separate, and from something like a reed shoot the deities are born, beginning with Kuni-no-Tokotachi-no-Mikoto (国常立尊). Next, paired male and female deities appear, and the generations up to Izanagi-no-Mikoto (伊弉諾尊) and Izanami-no-Mikoto (伊弉冉尊) are called the “Seven Generations of the Age of the Gods” (神世七代).</p>
-    <div class="xlink"><a href="../../kojiki/en/tenchi.html">Read in the Kojiki: The Beginning of Heaven and Earth ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Nihon Shoki, Book 1 — Age of the Gods (part 1) · page 1 of 50</p>
+        <h1>The Opening of Heaven and Earth and the Seven Generations of the Age of the Gods (sections 1–3)</h1>
+        <p class="orig" lang="ja">天地開闢と神世七代（第一段〜第三段）</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Out of a chaos in which heaven and earth were not yet divided, heaven and earth separate, and from something like a reed shoot the deities are born, beginning with Kuni-no-Tokotachi-no-Mikoto (国常立尊). Next, paired male and female deities appear, and the generations up to Izanagi-no-Mikoto (伊弉諾尊) and Izanami-no-Mikoto (伊弉冉尊) are called the “Seven Generations of the Age of the Gods” (神世七代).</p>
+        <p class="bk-meta">Reading time for the main text: about 2 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../kojiki/en/tenchi.html">Read in the Kojiki: The Beginning of Heaven and Earth ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">What the main text says</h2>
+      <h3>Heaven and earth divide</h3>
+      <p class="t">Long ago, heaven and earth were not yet divided, nor were yin and yang separated. Their state was mixed together like a hen’s egg, vague and yet holding a germ. In time, what was clear and bright thinly trailed out and became heaven, and what was heavy and turbid settled and became earth. Because what is pure gathers easily and what is heavy and turbid hardens with difficulty, heaven was formed first and earth was fixed afterwards. After that, it is said, deities were born within it.</p>
+      <h3>Kuni-no-Tokotachi-no-Mikoto, Kuni-no-Sazuchi-no-Mikoto and 豊斟渟尊<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">At the beginning, when heaven and earth opened, the land drifted like a fish floating on water. At that time something shaped like a reed shoot arose between heaven and earth, and it became a deity just as it was. This was Kuni-no-Tokotachi-no-Mikoto (国常立尊); next were born Kuni-no-Sazuchi-no-Mikoto (国狭槌尊) and 豊斟渟尊<sup class="ru" title="reading unconfirmed">*</sup>. The original text explains that these three deities came into being by the way of 乾 (Heaven) alone, and were therefore purely male deities.</p>
+      <h3>Deities appear in male and female pairs</h3>
+      <p class="t">Next, deities appeared in male and female pairs: 埿土煑尊 and 沙土煑尊, 大戸之道尊 and 大苫辺尊, 面足尊 and 惶根尊 (readings unconfirmed), and Izanagi-no-Mikoto (伊弉諾尊) and Izanami-no-Mikoto (伊弉冉尊). Small notes add many other names for each of these deities (such as 埿土根尊 and 沙土根尊, 大戸摩彦尊 and 大戸摩姫尊, and 青橿城根尊; readings unconfirmed).</p>
+      <h3>Eight deities and the Seven Generations of the Age of the Gods</h3>
+      <p class="t">The main text of section 3 counts these together as eight deities, and says that because they came into being through the interaction of the ways of 乾 (Heaven) and 坤 (Earth), they became male and female deities. It concludes by saying that the generations from Kuni-no-Tokotachi-no-Mikoto to Izanagi-no-Mikoto and Izanami-no-Mikoto are called the Seven Generations of the Age of the Gods (神世七代).</p>
+      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this page</h2>
       <ol>
         <li><span class="kind ">Main text</span>The main text of section 1 says that out of an egg-like chaos, what was clear and light became heaven and what was heavy and turbid became earth, and that something like a reed shoot that arose between heaven and earth became a deity, and Kuni-no-Tokotachi-no-Mikoto (国常立尊) was born. Then Kuni-no-Sazuchi-no-Mikoto (国狭槌尊) and 豊斟渟尊<sup class="ru" title="reading unconfirmed">*</sup> were born, and these three deities are described as purely male deities (純男).</li>
         <li><span class="kind ">Main text</span>In the main text of section 2, four pairs of male and female deities appear (埿土煑尊 and 沙土煑尊, 大戸之道尊 and 大苫辺尊, 面足尊 and 惶根尊 (readings unconfirmed), and Izanagi-no-Mikoto (伊弉諾尊) and Izanami-no-Mikoto (伊弉冉尊)), and the main text of section 3 sums them up as “eight deities”. The generations from Kuni-no-Tokotachi-no-Mikoto to Izanagi-no-Mikoto and Izanami-no-Mikoto are called the Seven Generations of the Age of the Gods (神世七代).</li>
@@ -119,35 +174,18 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">What the main text says</h2>
-      <p>Long ago, heaven and earth were not yet divided, nor were yin and yang separated. Their state was mixed together like a hen’s egg, vague and yet holding a germ. In time, what was clear and bright thinly trailed out and became heaven, and what was heavy and turbid settled and became earth. Because what is pure gathers easily and what is heavy and turbid hardens with difficulty, heaven was formed first and earth was fixed afterwards. After that, it is said, deities were born within it.</p>
-      <p>At the beginning, when heaven and earth opened, the land drifted like a fish floating on water. At that time something shaped like a reed shoot arose between heaven and earth, and it became a deity just as it was. This was Kuni-no-Tokotachi-no-Mikoto (国常立尊); next were born Kuni-no-Sazuchi-no-Mikoto (国狭槌尊) and 豊斟渟尊<sup class="ru" title="reading unconfirmed">*</sup>. The original text explains that these three deities came into being by the way of 乾 (Heaven) alone, and were therefore purely male deities.</p>
-      <p>Next, deities appeared in male and female pairs: 埿土煑尊 and 沙土煑尊, 大戸之道尊 and 大苫辺尊, 面足尊 and 惶根尊 (readings unconfirmed), and Izanagi-no-Mikoto (伊弉諾尊) and Izanami-no-Mikoto (伊弉冉尊). Small notes add many other names for each of these deities (such as 埿土根尊 and 沙土根尊, 大戸摩彦尊 and 大戸摩姫尊, and 青橿城根尊; readings unconfirmed).</p>
-      <p>The main text of section 3 counts these together as eight deities, and says that because they came into being through the interaction of the ways of 乾 (Heaven) and 坤 (Earth), they became male and female deities. It concludes by saying that the generations from Kuni-no-Tokotachi-no-Mikoto to Izanagi-no-Mikoto and Izanami-no-Mikoto are called the Seven Generations of the Age of the Gods (神世七代).</p>
-      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">Variant accounts</h2>
-      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰).</p>
-      <div class="var"><b>Section 1, variant account 1</b><p>When heaven and earth divided, there was within the void a thing whose form was hard to describe, and from it were born Kuni-no-Tokotachi-no-Mikoto (国常立尊; also called 国底立尊), Kuni-no-Sazuchi-no-Mikoto (国狭槌尊; also called 国狭立尊) and 豊国主尊 (readings unconfirmed). It makes the third deity 豊国主尊 rather than 豊斟渟尊, and lists many other names such as 豊組野尊, 葉木国野尊 and 見野尊 (readings unconfirmed).</p></div>
-      <div class="var"><b>Section 1, variant account 2</b><p>When the land and the earth were young and drifting like floating oil, 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup> was born from a thing that arose like a reed shoot sprouting forth, and next were born Kuni-no-Tokotachi-no-Mikoto and Kuni-no-Sazuchi-no-Mikoto. It makes the first deity 可美葦牙彦舅尊 rather than Kuni-no-Tokotachi-no-Mikoto.</p></div>
-      <div class="var"><b>Section 1, variant account 3</b><p>When heaven and earth were mixed together, there was first a “神人” (divine person), named 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup> and next 国底立尊<sup class="ru" title="reading unconfirmed">*</sup>. It lists only two deities.</p></div>
-      <div class="var"><b>Section 1, variant account 4</b><p>It lists Kuni-no-Tokotachi-no-Mikoto and Kuni-no-Sazuchi-no-Mikoto as the deities born together when heaven and earth divided. It further records, under “又曰” (“it is also said”), that the deities born in Takamagahara (高天原) were named Ame-no-Minakanushi-no-Kami (天御中主尊), Takamimusubi-no-Kami (高皇産霊尊) and 神皇産霊尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="var"><b>Section 1, variant account 5</b><p>Before heaven and earth came into being, there was a state like rootless snow floating on the sea, and within it arose a thing like a reed shoot first sprouting from the mud. It became a “人” (person) and was named Kuni-no-Tokotachi-no-Mikoto; this account lists only one deity.</p></div>
-      <div class="var"><b>Section 1, variant account 6</b><p>When heaven and earth divided, a thing like a reed shoot arose in the sky and became Ame-no-Tokotachi-no-Mikoto (天常立尊), and next 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup>. A thing like floating oil also arose in the sky and became Kuni-no-Tokotachi-no-Mikoto; this account puts Ame-no-Tokotachi-no-Mikoto first.</p></div>
-      <div class="var"><b>Section 2, variant account 1</b><p>It says that the two deities Izanagi-no-Mikoto and Izanami-no-Mikoto are the children of 青橿城根尊<sup class="ru" title="reading unconfirmed">*</sup>. In the main text, 青橿城根尊 appears in a small note as one of the other names of 惶根尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="var"><b>Section 2, variant account 2</b><p>It gives the tradition as a parent-to-child line of descent: Kuni-no-Tokotachi-no-Mikoto begat 天鏡尊, 天鏡尊 begat 天萬尊, 天萬尊 begat 沫蕩尊 (readings unconfirmed), and 沫蕩尊 begat Izanagi-no-Mikoto. This is a different form from the sequence of male-and-female pairs in the main text.</p></div>
-      <div class="var"><b>Section 3, variant account 1</b><p>It lists four pairs as the deities born in male-and-female pairs: 埿土煑尊 and 沙土煑尊, 角樴尊 and 活樴尊, 面足尊 and 惶根尊 (readings unconfirmed), and Izanagi-no-Mikoto and Izanami-no-Mikoto. 角樴尊 and 活樴尊 take the place of the main text’s 大戸之道尊 and 大苫辺尊 (readings unconfirmed).</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">渾沌如雞子，溟涬而含牙</blockquote><p>The chaotic state was like a hen’s egg, vague and yet holding a germ.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">至貴曰尊，自餘曰命，並訓美舉等也</blockquote><p>The most exalted deities are written “尊” and the others “命”, and both are read “mikoto” (a small note in the original text).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">自國常立尊，迄伊弉諾尊、伊弉𠕋尊，是謂神世七代者矣</blockquote><p>The generations from Kuni-no-Tokotachi-no-Mikoto to Izanagi-no-Mikoto and Izanami-no-Mikoto are called the Seven Generations of the Age of the Gods.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">高天原所生神名，曰天御中主尊</blockquote><p>The deity born in Takamagahara (高天原) is named Ame-no-Minakanushi-no-Kami (天御中主尊) (the “又曰” part of variant account 4).</p></div>
+      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰). Select a name to open it (9 in all).</p>
+      <details><summary>Section 1, variant account 1</summary><p>When heaven and earth divided, there was within the void a thing whose form was hard to describe, and from it were born Kuni-no-Tokotachi-no-Mikoto (国常立尊; also called 国底立尊), Kuni-no-Sazuchi-no-Mikoto (国狭槌尊; also called 国狭立尊) and 豊国主尊 (readings unconfirmed). It makes the third deity 豊国主尊 rather than 豊斟渟尊, and lists many other names such as 豊組野尊, 葉木国野尊 and 見野尊 (readings unconfirmed).</p></details>
+      <details><summary>Section 1, variant account 2</summary><p>When the land and the earth were young and drifting like floating oil, 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup> was born from a thing that arose like a reed shoot sprouting forth, and next were born Kuni-no-Tokotachi-no-Mikoto and Kuni-no-Sazuchi-no-Mikoto. It makes the first deity 可美葦牙彦舅尊 rather than Kuni-no-Tokotachi-no-Mikoto.</p></details>
+      <details><summary>Section 1, variant account 3</summary><p>When heaven and earth were mixed together, there was first a “神人” (divine person), named 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup> and next 国底立尊<sup class="ru" title="reading unconfirmed">*</sup>. It lists only two deities.</p></details>
+      <details><summary>Section 1, variant account 4</summary><p>It lists Kuni-no-Tokotachi-no-Mikoto and Kuni-no-Sazuchi-no-Mikoto as the deities born together when heaven and earth divided. It further records, under “又曰” (“it is also said”), that the deities born in Takamagahara (高天原) were named Ame-no-Minakanushi-no-Kami (天御中主尊), Takamimusubi-no-Kami (高皇産霊尊) and 神皇産霊尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></details>
+      <details><summary>Section 1, variant account 5</summary><p>Before heaven and earth came into being, there was a state like rootless snow floating on the sea, and within it arose a thing like a reed shoot first sprouting from the mud. It became a “人” (person) and was named Kuni-no-Tokotachi-no-Mikoto; this account lists only one deity.</p></details>
+      <details><summary>Section 1, variant account 6</summary><p>When heaven and earth divided, a thing like a reed shoot arose in the sky and became Ame-no-Tokotachi-no-Mikoto (天常立尊), and next 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup>. A thing like floating oil also arose in the sky and became Kuni-no-Tokotachi-no-Mikoto; this account puts Ame-no-Tokotachi-no-Mikoto first.</p></details>
+      <details><summary>Section 2, variant account 1</summary><p>It says that the two deities Izanagi-no-Mikoto and Izanami-no-Mikoto are the children of 青橿城根尊<sup class="ru" title="reading unconfirmed">*</sup>. In the main text, 青橿城根尊 appears in a small note as one of the other names of 惶根尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></details>
+      <details><summary>Section 2, variant account 2</summary><p>It gives the tradition as a parent-to-child line of descent: Kuni-no-Tokotachi-no-Mikoto begat 天鏡尊, 天鏡尊 begat 天萬尊, 天萬尊 begat 沫蕩尊 (readings unconfirmed), and 沫蕩尊 begat Izanagi-no-Mikoto. This is a different form from the sequence of male-and-female pairs in the main text.</p></details>
+      <details><summary>Section 3, variant account 1</summary><p>It lists four pairs as the deities born in male-and-female pairs: 埿土煑尊 and 沙土煑尊, 角樴尊 and 活樴尊, 面足尊 and 惶根尊 (readings unconfirmed), and Izanagi-no-Mikoto and Izanami-no-Mikoto. 角樴尊 and 活樴尊 take the place of the main text’s 大戸之道尊 and 大苫辺尊 (readings unconfirmed).</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -159,7 +197,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amenominakanushi">Ame-no-Minakanushi-no-Kami</a></b><small lang="ja">天之御中主神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=chichibu">Chichibu Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mononobe">Mononobe Jinja</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=takamimusubi">Takamimusubi-no-Kami</a></b><small lang="ja">高御産巣日神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanagi">Izanagi-no-Mikoto</a></b><small lang="ja">伊邪那岐命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=oyama">Oyama Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a></span></li>
-        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanami">Izanami-no-Mikoto</a></b><small lang="ja">伊邪那美命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=naminoue">Naminoue-gū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a></span></li>
+        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanami">Izanami-no-Mikoto</a></b><small lang="ja">伊邪那美命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=naminoue">Naminoue-gū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sada">佐太神社</a></span></li>
         <li><b>豐斟渟尊<sup class="ru" title="reading unconfirmed">*</sup></b><span class="sh">The third deity, born after Kuni-no-Tokotachi-no-Mikoto and Kuni-no-Sazuchi-no-Mikoto in the main text of section 1.</span></li>
         <li><b>可美葦牙彥舅尊<sup class="ru" title="reading unconfirmed">*</sup></b><span class="sh">A deity found in variant accounts 2, 3 and 6 of section 1; in variant accounts 2 and 3 he is the first deity to be born (a reading note says that “可美” is read 于麻時 and “彦舅” is read 比古尼).</span></li>
         <li><b>神皇產靈尊<sup class="ru" title="reading unconfirmed">*</sup></b><span class="sh">In the “又曰” part of variant account 4 of section 1, the third deity born in Takamagahara (a reading note says that “皇産霊” is read 美武須毗).</span></li>
@@ -173,7 +211,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Kojiki</h2>
+      <h2 id="ns-title">How the Kojiki differs</h2>
       <div class="ns"><span class="where">Kojiki, Part 1, opening (the beginning of heaven and earth; the Separate Heavenly Deities)</span><p>The Kojiki begins with Ame-no-Minakanushi-no-Kami (天之御中主神), Takamimusubi-no-Kami (高御産巣日神) and 神産巣日神<sup class="ru" title="reading unconfirmed">*</sup>, who came into being in Takamagahara (高天原) when heaven and earth first opened. The main text of the Nihon Shoki does not mention these three deities and begins with Kuni-no-Tokotachi-no-Mikoto (国常立尊).</p><blockquote lang="zh-Hant">於高天原成神名，天之御中主神。</blockquote></div>
       <div class="ns"><span class="where">Kojiki, Part 1, opening (the Seven Generations of the Age of the Gods)</span><p>The Kojiki’s Seven Generations of the Age of the Gods consist of two solitary deities (独神), Kuni-no-Tokotachi-no-Mikoto (国之常立神) and 豊雲野神<sup class="ru" title="reading unconfirmed">*</sup>, and five male-and-female pairs, including the pair 角杙神 and 妹活杙神 (readings unconfirmed). The main text of the Nihon Shoki makes up the seven generations from three purely male deities and four male-and-female pairs, and 角樴尊 and 活樴尊 (readings unconfirmed) appear only in variant account 1 of section 3.</p><blockquote lang="zh-Hant">上件自國之常立神以下、伊耶那美神以前，并稱神世七代</blockquote></div>
       <div class="ns"><span class="where">Kojiki, Part 1, opening (the Separate Heavenly Deities)</span><p>The Kojiki says that when the land was young and drifting like floating oil, 宇摩志阿斯訶備比古遅神<sup class="ru" title="reading unconfirmed">*</sup> came into being from something that sprouted up like a reed shoot, and counts him, together with Ame-no-Tokotachi-no-Mikoto (天之常立神), among the Separate Heavenly Deities (別天神). In the Nihon Shoki a similar description is found in variant account 2, where 可美葦牙彦舅尊<sup class="ru" title="reading unconfirmed">*</sup> is the first deity.</p><blockquote lang="zh-Hant">國稚如浮脂而久羅下那州多陀用弊流之時</blockquote></div>
@@ -181,13 +219,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><span></span><a class="next" href="dan04.html"><small>Next page (Nihon Shoki, Book 1 — Age of the Gods (part 1)) →</small>The Birth of the Land (section 4)</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenotokotachinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">渾沌如雞子，溟涬而含牙</blockquote><p>The chaotic state was like a hen’s egg, vague and yet holding a germ.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">至貴曰尊，自餘曰命，並訓美舉等也</blockquote><p>The most exalted deities are written “尊” and the others “命”, and both are read “mikoto” (a small note in the original text).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">自國常立尊，迄伊弉諾尊、伊弉𠕋尊，是謂神世七代者矣</blockquote><p>The generations from Kuni-no-Tokotachi-no-Mikoto to Izanagi-no-Mikoto and Izanami-no-Mikoto are called the Seven Generations of the Age of the Gods.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">高天原所生神名，曰天御中主尊</blockquote><p>The deity born in Takamagahara (高天原) is named Ame-no-Minakanushi-no-Kami (天御中主尊) (the “又曰” part of variant account 4).</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuninotokotachinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenominakanushinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umashiashikabihikojinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenotokotachinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/toyokumononokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/uhijininokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/otonojinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All pages</a>
     </section>
   </main>

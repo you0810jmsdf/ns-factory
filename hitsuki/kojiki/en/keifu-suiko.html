@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,40 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 3 · story 13 of 13</p>
-    <h1>From Emperor Buretsu to Empress Suiko</h1>
-    <p class="orig" lang="ja">武烈天皇から推古天皇まで</p>
-    <p class="pg-lead">The ten reigns from Emperor Buretsu to Empress Suiko consist mainly of genealogical entries listing palaces, consorts, children, years of reign and tombs. The narrative entries are limited to two: after the death of Emperor Buretsu, who had no heir, 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太 (品太天皇)<sup class="ru" title="reading unconfirmed">*</sup>, was brought from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>; and in the reign of Emperor Keitai, 竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> was subdued.</p>
-    <div class="xlink"><a href="../../shoki/en/buretsu.html">Read in the Nihon Shoki: Emperor Buretsu and the Fall of the Heguri Clan ›</a><a href="../../shoki/en/keitai.html">Read in the Nihon Shoki: The Enthronement of Emperor Keitai and the Rebellion of Iwai, Kuni-no-Miyatsuko of Tsukushi ›</a><a href="../../shoki/en/ankan-senka.html">Read in the Nihon Shoki: Emperor Ankan, Emperor Senka and the Establishment of Miyake Estates ›</a><a href="../../shoki/en/kinmei-1.html">Read in the Nihon Shoki: The Accession of Emperor Kinmei, the Talks on Restoring Mimana, and the Presentation of a Buddha Image ›</a><a href="../../shoki/en/kinmei-2.html">Read in the Nihon Shoki: The Death of King Sŏngmyŏng in Battle and the Fall of Mimana ›</a><a href="../../shoki/en/bidatsu.html">Read in the Nihon Shoki: Emperor Bidatsu, the Koguryŏ Letter, and the Beginnings of the Buddhist Dharma ›</a><a href="../../shoki/en/yomei-sushun.html">Read in the Nihon Shoki: Emperor Yōmei, Emperor Sushun and the Fall of Mononobe no Moriya ›</a><a href="../../shoki/en/suiko-1.html">Read in the Nihon Shoki: The Accession of Empress Suiko, the Twelve Cap Ranks and the Seventeen-Article Constitution ›</a><a href="../../shoki/en/suiko-2.html">Read in the Nihon Shoki: Empress Suiko, the Envoys to the Great Tang, and the Death of the Crown Prince of the Upper Palace ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 3 · story 13 of 13</p>
+        <h1>From Emperor Buretsu to Empress Suiko</h1>
+        <p class="orig" lang="ja">武烈天皇から推古天皇まで</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">The ten reigns from Emperor Buretsu to Empress Suiko consist mainly of genealogical entries listing palaces, consorts, children, years of reign and tombs. The narrative entries are limited to two: after the death of Emperor Buretsu, who had no heir, 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太 (品太天皇)<sup class="ru" title="reading unconfirmed">*</sup>, was brought from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>; and in the reign of Emperor Keitai, 竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> was subdued.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/buretsu.html">Read in the Nihon Shoki: Emperor Buretsu and the Fall of the Heguri Clan ›</a><a href="../../shoki/en/keitai.html">Read in the Nihon Shoki: The Enthronement of Emperor Keitai and the Rebellion of Iwai, Kuni-no-Miyatsuko of Tsukushi ›</a><a href="../../shoki/en/ankan-senka.html">Read in the Nihon Shoki: Emperor Ankan, Emperor Senka and the Establishment of Miyake Estates ›</a><a href="../../shoki/en/kinmei-1.html">Read in the Nihon Shoki: The Accession of Emperor Kinmei, the Talks on Restoring Mimana, and the Presentation of a Buddha Image ›</a><a href="../../shoki/en/kinmei-2.html">Read in the Nihon Shoki: The Death of King Sŏngmyŏng in Battle and the Fall of Mimana ›</a><a href="../../shoki/en/bidatsu.html">Read in the Nihon Shoki: Emperor Bidatsu, the Koguryŏ Letter, and the Beginnings of the Buddhist Dharma ›</a><a href="../../shoki/en/yomei-sushun.html">Read in the Nihon Shoki: Emperor Yōmei, Emperor Sushun and the Fall of Mononobe no Moriya ›</a><a href="../../shoki/en/suiko-1.html">Read in the Nihon Shoki: The Accession of Empress Suiko, the Twelve Cap Ranks and the Seventeen-Article Constitution ›</a><a href="../../shoki/en/suiko-2.html">Read in the Nihon Shoki: Empress Suiko, the Envoys to the Great Tang, and the Death of the Crown Prince of the Upper Palace ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>小長谷若雀命<sup class="ru" title="reading unconfirmed">*</sup> and 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">小長谷若雀命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Buretsu) ruled the realm for eight years from the 列木宮 palace at 長谷 (readings unconfirmed). Because he had no crown prince, he established the 小長谷部<sup class="ru" title="reading unconfirmed">*</sup> as a group in place of a child (御子代). His tomb is at 石坏岡 hill at 片岡 (readings unconfirmed). When the emperor died there was no prince to take up the succession (日継), so 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太 (品太天皇)<sup class="ru" title="reading unconfirmed">*</sup>, was brought up from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>, married to 手白髪命<sup class="ru" title="reading unconfirmed">*</sup>, and given the realm.</p>
+      <h3>The consorts and children of 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">袁本杼命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Keitai) ruled the realm from the 玉穂宮 palace at 伊波礼 (readings unconfirmed). He married 若比売<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 三尾君<sup class="ru" title="reading unconfirmed">*</sup> and others; 目子郎女<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 凡連<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 尾張連<sup class="ru" title="reading unconfirmed">*</sup> and others; and 手白髪命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor 意富祁 (意富祁天皇)<sup class="ru" title="reading unconfirmed">*</sup>, as chief consort, among others; his children numbered nineteen in all (seven sons and twelve daughters). Of these, 天国押波流岐広庭命, 広国押建金日命 and 建小広国押楯命 (readings unconfirmed) ruled the realm, and 佐佐宜王<sup class="ru" title="reading unconfirmed">*</sup> worshipped at the Ise Shrine. In this reign, because 竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> did not obey the emperor’s commands and was often disrespectful, the two men 物部荒甲之大連 and 大伴之金村連 (readings unconfirmed) were sent and killed 石井. The emperor lived to the age of forty-three, and his tomb is the 藍 tomb at 三嶋 (readings unconfirmed).</p>
+      <h3>Emperor Ankan and Emperor Senka</h3>
+      <p class="t">広国押建金日命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Ankan) ruled the realm from the 金箸宮 palace at 勾 (readings unconfirmed); he had no children, and his tomb is at 高屋村 in 古市, Kawachi (readings unconfirmed). 建小広国押楯命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Senka) ruled the realm from the 廬入野宮 palace at 檜埛 (readings unconfirmed); he married 橘之中比売命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor 意祁 (意祁天皇)<sup class="ru" title="reading unconfirmed">*</sup>, and 石比売命, 小石比売命 and 倉之若江王 (readings unconfirmed) were born; and from 川内之若子比売<sup class="ru" title="reading unconfirmed">*</sup>, 火穂王 and 恵波王 (readings unconfirmed) were born.</p>
+      <h3>The consorts and children of 天国押波流岐広庭<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">Emperor 天国押波流岐広庭 (天国押波流岐広庭天皇; reading unconfirmed; Emperor Kinmei) ruled the realm from the 師木嶋大宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. He married 石比売命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor Senka (in the original text, “檜脾天皇之御子”); her younger sister 小石比売命<sup class="ru" title="reading unconfirmed">*</sup>; 糠子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 日爪臣 of Kasuga (春日)<sup class="ru" title="reading unconfirmed">*</sup>; 岐多斯比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the great minister 宗賀之稲目宿禰 (宗賀之稲目宿禰大臣)<sup class="ru" title="reading unconfirmed">*</sup>; and her aunt 小兄比売<sup class="ru" title="reading unconfirmed">*</sup>; his children numbered twenty-five in all. Of these, four ruled the realm: 沼名倉太玉敷命, 橘之豊日命, 豊御気炊屋比売命 and 長谷部之若雀命 (readings unconfirmed).</p>
+      <h3>The consorts and children of 沼名倉太玉敷命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">沼名倉太玉敷命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Bidatsu) ruled the realm for fourteen years from the 他田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. He married his half-sister 豊御食炊屋比売命<sup class="ru" title="reading unconfirmed">*</sup>; 小熊子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 伊勢大鹿首<sup class="ru" title="reading unconfirmed">*</sup>; 比呂比売命<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 息長真手王<sup class="ru" title="reading unconfirmed">*</sup>; and 老女子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 春日中若子<sup class="ru" title="reading unconfirmed">*</sup>; his children numbered seventeen in all. It is recorded that, of these, the child born to Crown Prince 日子人 (日子人太子)<sup class="ru" title="reading unconfirmed">*</sup> by his half-sister 田村王 <sup class="ru" title="reading unconfirmed">*</sup> (also called 糠代比売命) was the emperor who ruled the realm from the 岡本宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. His tomb is at 科長 in 川内 (readings unconfirmed).</p>
+      <h3>From 橘豊日命<sup class="ru" title="reading unconfirmed">*</sup> to 豊御食炊屋比売命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">橘豊日命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Yōmei) ruled the realm for three years from the 池辺宮 palace<sup class="ru" title="reading unconfirmed">*</sup>; he married 意富芸多志比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the great minister 稲目宿禰<sup class="ru" title="reading unconfirmed">*</sup>, and his half-sister 間人穴太部王<sup class="ru" title="reading unconfirmed">*</sup>, among others, and from 間人穴太部王 were born 上宮之厩戸豊聡耳命<sup class="ru" title="reading unconfirmed">*</sup> and others. His tomb was at 掖上 in 石寸 (readings unconfirmed) and was later moved to the middle tomb at 科長<sup class="ru" title="reading unconfirmed">*</sup>. Emperor 長谷部若雀 (長谷部若雀天皇; reading unconfirmed; Emperor Sushun) ruled the realm for four years from the 倉椅柴垣宮 palace<sup class="ru" title="reading unconfirmed">*</sup>, and his tomb is on top of 倉椅岡 hill<sup class="ru" title="reading unconfirmed">*</sup>. 豊御食炊屋比売命 <sup class="ru" title="reading unconfirmed">*</sup> (Empress Suiko) ruled the realm for thirty-seven years from the 小治田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>; her tomb was on top of 大野岡 hill<sup class="ru" title="reading unconfirmed">*</sup> and was later moved to the great tomb at 科長<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>Emperor Buretsu (小長谷若雀命)<sup class="ru" title="reading unconfirmed">*</sup> had no crown prince, and after his death 袁本杼命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Keitai), a fifth-generation descendant of Emperor 品太<sup class="ru" title="reading unconfirmed">*</sup>, was brought from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>, married to 手白髪命<sup class="ru" title="reading unconfirmed">*</sup>, and given the realm.</li>
         <li><span class="kind ">Main text</span>In the reign of Emperor Keitai, because 竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> did not obey the emperor’s commands and was often disrespectful, 物部荒甲之大連 and 大伴之金村連 (readings unconfirmed) were sent and killed 石井.</li>
@@ -117,25 +176,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">Main text</span>The last entry of the Kojiki is Empress Suiko (豊御食炊屋比売命)<sup class="ru" title="reading unconfirmed">*</sup>; it records that she ruled the realm for thirty-seven years from the 小治田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>, and that her tomb, at first on top of 大野岡 hill<sup class="ru" title="reading unconfirmed">*</sup>, was later moved to the great tomb at 科長<sup class="ru" title="reading unconfirmed">*</sup>.</li>
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>Emperor Keitai’s age at death differs greatly: forty-three in the Kojiki and eighty-two in the Nihon Shoki.</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>小長谷若雀命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Buretsu) ruled the realm for eight years from the 列木宮 palace at 長谷 (readings unconfirmed). Because he had no crown prince, he established the 小長谷部<sup class="ru" title="reading unconfirmed">*</sup> as a group in place of a child (御子代). His tomb is at 石坏岡 hill at 片岡 (readings unconfirmed). When the emperor died there was no prince to take up the succession (日継), so 袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太 (品太天皇)<sup class="ru" title="reading unconfirmed">*</sup>, was brought up from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>, married to 手白髪命<sup class="ru" title="reading unconfirmed">*</sup>, and given the realm.</p>
-      <p>袁本杼命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Keitai) ruled the realm from the 玉穂宮 palace at 伊波礼 (readings unconfirmed). He married 若比売<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 三尾君<sup class="ru" title="reading unconfirmed">*</sup> and others; 目子郎女<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 凡連<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 尾張連<sup class="ru" title="reading unconfirmed">*</sup> and others; and 手白髪命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor 意富祁 (意富祁天皇)<sup class="ru" title="reading unconfirmed">*</sup>, as chief consort, among others; his children numbered nineteen in all (seven sons and twelve daughters). Of these, 天国押波流岐広庭命, 広国押建金日命 and 建小広国押楯命 (readings unconfirmed) ruled the realm, and 佐佐宜王<sup class="ru" title="reading unconfirmed">*</sup> worshipped at the Ise Shrine. In this reign, because 竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> did not obey the emperor’s commands and was often disrespectful, the two men 物部荒甲之大連 and 大伴之金村連 (readings unconfirmed) were sent and killed 石井. The emperor lived to the age of forty-three, and his tomb is the 藍 tomb at 三嶋 (readings unconfirmed).</p>
-      <p>広国押建金日命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Ankan) ruled the realm from the 金箸宮 palace at 勾 (readings unconfirmed); he had no children, and his tomb is at 高屋村 in 古市, Kawachi (readings unconfirmed). 建小広国押楯命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Senka) ruled the realm from the 廬入野宮 palace at 檜埛 (readings unconfirmed); he married 橘之中比売命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor 意祁 (意祁天皇)<sup class="ru" title="reading unconfirmed">*</sup>, and 石比売命, 小石比売命 and 倉之若江王 (readings unconfirmed) were born; and from 川内之若子比売<sup class="ru" title="reading unconfirmed">*</sup>, 火穂王 and 恵波王 (readings unconfirmed) were born.</p>
-      <p>Emperor 天国押波流岐広庭 (天国押波流岐広庭天皇; reading unconfirmed; Emperor Kinmei) ruled the realm from the 師木嶋大宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. He married 石比売命<sup class="ru" title="reading unconfirmed">*</sup>, child of Emperor Senka (in the original text, “檜脾天皇之御子”); her younger sister 小石比売命<sup class="ru" title="reading unconfirmed">*</sup>; 糠子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 日爪臣 of Kasuga (春日)<sup class="ru" title="reading unconfirmed">*</sup>; 岐多斯比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the great minister 宗賀之稲目宿禰 (宗賀之稲目宿禰大臣)<sup class="ru" title="reading unconfirmed">*</sup>; and her aunt 小兄比売<sup class="ru" title="reading unconfirmed">*</sup>; his children numbered twenty-five in all. Of these, four ruled the realm: 沼名倉太玉敷命, 橘之豊日命, 豊御気炊屋比売命 and 長谷部之若雀命 (readings unconfirmed).</p>
-      <p>沼名倉太玉敷命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Bidatsu) ruled the realm for fourteen years from the 他田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. He married his half-sister 豊御食炊屋比売命<sup class="ru" title="reading unconfirmed">*</sup>; 小熊子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 伊勢大鹿首<sup class="ru" title="reading unconfirmed">*</sup>; 比呂比売命<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 息長真手王<sup class="ru" title="reading unconfirmed">*</sup>; and 老女子郎女<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 春日中若子<sup class="ru" title="reading unconfirmed">*</sup>; his children numbered seventeen in all. It is recorded that, of these, the child born to Crown Prince 日子人 (日子人太子)<sup class="ru" title="reading unconfirmed">*</sup> by his half-sister 田村王 <sup class="ru" title="reading unconfirmed">*</sup> (also called 糠代比売命) was the emperor who ruled the realm from the 岡本宮 palace<sup class="ru" title="reading unconfirmed">*</sup>. His tomb is at 科長 in 川内 (readings unconfirmed).</p>
-      <p>橘豊日命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Yōmei) ruled the realm for three years from the 池辺宮 palace<sup class="ru" title="reading unconfirmed">*</sup>; he married 意富芸多志比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the great minister 稲目宿禰<sup class="ru" title="reading unconfirmed">*</sup>, and his half-sister 間人穴太部王<sup class="ru" title="reading unconfirmed">*</sup>, among others, and from 間人穴太部王 were born 上宮之厩戸豊聡耳命<sup class="ru" title="reading unconfirmed">*</sup> and others. His tomb was at 掖上 in 石寸 (readings unconfirmed) and was later moved to the middle tomb at 科長<sup class="ru" title="reading unconfirmed">*</sup>. Emperor 長谷部若雀 (長谷部若雀天皇; reading unconfirmed; Emperor Sushun) ruled the realm for four years from the 倉椅柴垣宮 palace<sup class="ru" title="reading unconfirmed">*</sup>, and his tomb is on top of 倉椅岡 hill<sup class="ru" title="reading unconfirmed">*</sup>. 豊御食炊屋比売命 <sup class="ru" title="reading unconfirmed">*</sup> (Empress Suiko) ruled the realm for thirty-seven years from the 小治田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>; her tomb was on top of 大野岡 hill<sup class="ru" title="reading unconfirmed">*</sup> and was later moved to the great tomb at 科長<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">品太天皇五世之孫。袁本杼命。自近淡海國。令上坐而。</blockquote><p>袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太<sup class="ru" title="reading unconfirmed">*</sup>, was brought up from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">竺紫君石井。不從天皇之命而。多无禮。</blockquote><p>竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> did not obey the emperor’s commands and behaved disrespectfully in many ways.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">生御子。上宮之厩戶豐聰耳命。</blockquote><p>上宮之厩戸豊聡耳命<sup class="ru" title="reading unconfirmed">*</sup> was born to Emperor Yōmei and 間人穴太部王<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">坐小治田宮。治天下參拾漆歲。</blockquote><p>Empress Suiko ruled the realm for thirty-seven years from the 小治田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -164,7 +204,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 17, the 25th year of Emperor Keitai, spring, 2nd month (丁未)</span><p>The Kojiki gives Emperor Keitai’s age as forty-three, but the Nihon Shoki says that he died at the 磐余玉穂宮 palace<sup class="ru" title="reading unconfirmed">*</sup> in the 25th year (the year 辛亥), at the age of eighty-two, and was buried in the 藍野 tomb<sup class="ru" title="reading unconfirmed">*</sup>. The Nihon Shoki also notes that “a certain book” (或本) gives a view that he died in the 28th year (甲寅).</p><blockquote lang="zh-Hant">天皇崩于磐余玉穗宮。時年八十二。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 17, the 22nd year of Emperor Keitai, winter, 11th month (甲寅朔甲子)</span><p>The Kojiki says that the two men 物部荒甲之大連 and 大伴之金村連 (readings unconfirmed) killed 石井<sup class="ru" title="reading unconfirmed">*</sup>, but in the Nihon Shoki the great general 物部大連麁鹿火<sup class="ru" title="reading unconfirmed">*</sup> fights 磐井<sup class="ru" title="reading unconfirmed">*</sup> in 御井郡 district in Tsukushi (筑紫)<sup class="ru" title="reading unconfirmed">*</sup> and beheads him, and it also records that his son 筑紫君葛子<sup class="ru" title="reading unconfirmed">*</sup> offered the 糟屋屯倉 granary<sup class="ru" title="reading unconfirmed">*</sup> to escape the death penalty.</p><blockquote lang="zh-Hant">大將軍物部大連麁鹿火、親與賊帥磐井、交戰於筑紫御井郡。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 22, the 36th year of Empress Suiko, autumn, 9th month (己巳朔戊子)</span><p>The Kojiki places Empress Suiko’s tomb on top of 大野岡 hill<sup class="ru" title="reading unconfirmed">*</sup> (later moved to the great tomb at 科長), but in the Nihon Shoki the empress left instructions that she was not to be buried lavishly but in the tomb of Prince 竹田 (竹田皇子)<sup class="ru" title="reading unconfirmed">*</sup>, and in the 9th month of the 36th year she was buried in Prince 竹田’s tomb accordingly.</p><blockquote lang="zh-Hant">便宜葬于竹田皇子之陵。</blockquote></div>
@@ -172,13 +212,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="kenzo.html"><small>← Previous story (Part 3, story 12)</small>Emperor Kenzō and Emperor Ninken: 置目老媼<sup class="ru" title="reading unconfirmed">*</sup> and Their Father’s Tomb</a><span></span></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">Nihon Shoki, Book 17</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">Nihon Shoki, Book 22</a> — Chinese Wikisource</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">品太天皇五世之孫。袁本杼命。自近淡海國。令上坐而。</blockquote><p>袁本杼命<sup class="ru" title="reading unconfirmed">*</sup>, a fifth-generation descendant of Emperor 品太<sup class="ru" title="reading unconfirmed">*</sup>, was brought up from 近淡海国<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">竺紫君石井。不從天皇之命而。多无禮。</blockquote><p>竺紫君石井<sup class="ru" title="reading unconfirmed">*</sup> did not obey the emperor’s commands and behaved disrespectfully in many ways.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">生御子。上宮之厩戶豐聰耳命。</blockquote><p>上宮之厩戸豊聡耳命<sup class="ru" title="reading unconfirmed">*</sup> was born to Emperor Yōmei and 間人穴太部王<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">坐小治田宮。治天下參拾漆歲。</blockquote><p>Empress Suiko ruled the realm for thirty-seven years from the 小治田宮 palace<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十七" target="_blank" rel="noopener">Nihon Shoki, Book 17</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第廿二" target="_blank" rel="noopener">Nihon Shoki, Book 22</a> — Chinese Wikisource</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

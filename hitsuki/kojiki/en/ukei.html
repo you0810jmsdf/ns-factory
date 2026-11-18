@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 1 · story 6 of 17</p>
-    <h1>The Pledge at the Heavenly River 天の安の河<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">天の安の河の誓約</p>
-    <p class="pg-lead">When the banished Susanoo-no-Mikoto came up to the High Plain of Heaven (高天原) to bid farewell, Amaterasu-Ōmikami suspected that he had come to seize her land and met him armed. The two deities made a pledge (誓約, ukei) across the heavenly river 天の安の河<sup class="ru" title="reading unconfirmed">*</sup> and each gave birth to children; Susanoo-no-Mikoto claimed victory, saying that the purity of his heart had been shown, and committed acts of violence in the High Plain of Heaven.</p>
-    <div class="xlink"><a href="../../shoki/en/dan06.html">Read in the Nihon Shoki: Susanoo-no-Mikoto&#x27;s Ascent to Heaven and the Pledge (Section 6) ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 1 · story 6 of 17</p>
+        <h1>The Pledge at the Heavenly River 天の安の河<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">天の安の河の誓約</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">When the banished Susanoo-no-Mikoto came up to the High Plain of Heaven (高天原) to bid farewell, Amaterasu-Ōmikami suspected that he had come to seize her land and met him armed. The two deities made a pledge (誓約, ukei) across the heavenly river 天の安の河<sup class="ru" title="reading unconfirmed">*</sup> and each gave birth to children; Susanoo-no-Mikoto claimed victory, saying that the purity of his heart had been shown, and committed acts of violence in the High Plain of Heaven.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/dan06.html">Read in the Nihon Shoki: Susanoo-no-Mikoto&#x27;s Ascent to Heaven and the Pledge (Section 6) ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Susanoo-no-Mikoto goes up to heaven</h3>
+      <p class="t">Susanoo-no-Mikoto said, &quot;Then I will take my leave after informing Amaterasu-Ōmikami,&quot; and went up to heaven. At that time the mountains and rivers all shook, and the whole land trembled. Amaterasu-Ōmikami heard this and was alarmed, and said, &quot;Susanoo-no-Mikoto&#x27;s coming up is not from a good heart. He means to seize my land.&quot;</p>
+      <h3>Amaterasu-Ōmikami brandishes her bow</h3>
+      <p class="t">Amaterasu-Ōmikami undid her hair and retied it in loops (mizura), and on the left and right loops, on her hair ornament, and on her left and right hands she wound strings of many long curved jewels (勾玉). On her back she bore a quiver holding a thousand arrows, at her side she fastened a quiver holding five hundred, on her arm she put a bamboo arm guard, and she brandished her bow. Then she stamped into the hard ground up to her thighs, kicking it about like powdery snow, gave a valiant war cry, and demanded, &quot;Why have you come up?&quot;</p>
+      <h3>Susanoo-no-Mikoto proposes a pledge</h3>
+      <p class="t">Susanoo-no-Mikoto answered, &quot;I have no evil heart. When I was asked why I was weeping and said that I wanted to go to my mother&#x27;s land, I was driven out, so I have only come to bid you farewell.&quot; Amaterasu-Ōmikami asked, &quot;Then how can I know that your heart is pure and bright?&quot; Susanoo-no-Mikoto answered, &quot;Let us each make a pledge and give birth to children.&quot;</p>
+      <h3>The pledge across 天安河<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">The two deities made the pledge across the river 天安河<sup class="ru" title="reading unconfirmed">*</sup>. First Amaterasu-Ōmikami took Susanoo-no-Mikoto&#x27;s ten-fist sword, broke it into three, rinsed it in the well 天の真名井<sup class="ru" title="reading unconfirmed">*</sup> and chewed it up, and from the mist of her breath as she blew it out three deities were born: 多紀理毘売命 (also called 奥津島比売命), 市寸島比売命 (also called 狭依毘売命) and 多岐都比売命 (readings unconfirmed). Susanoo-no-Mikoto took the jewels wound on Amaterasu-Ōmikami&#x27;s left hair loop and did the same, and 正勝吾勝勝速日<sup class="ru" title="reading unconfirmed">*</sup> Ame-no-Oshihomimi-no-Mikoto was born. Further, from the jewels of the right hair loop, the hair ornament, the left hand and the right hand were born Ame-no-Hohi-no-Mikoto, Amatsuhikone-no-Mikoto, Ikutsuhikone-no-Mikoto and Kumanokusubi-no-Mikoto.</p>
+      <h3>Dividing the children who were born</h3>
+      <p class="t">Amaterasu-Ōmikami divided them and decided, &quot;The five boys born afterwards came into being from my belongings, so they are my children. The three girls born first came into being from your belongings, so they are your children.&quot; The three female deities are said to dwell in the 奥津宮, 中津宮 and 辺津宮 shrines of 胸形, and to be the three great deities worshipped by the 胸形君 (readings unconfirmed) and others. It is also recorded that Takehiratori-no-Mikoto, the child of Ame-no-Hohi-no-Mikoto (written 天菩比命), is the ancestor of the Izumo provincial chieftains (出雲国造) and others, and that Amatsuhikone-no-Mikoto is the ancestor of the 凡川内国造<sup class="ru" title="reading unconfirmed">*</sup> and others.</p>
+      <h3>Susanoo-no-Mikoto claims victory</h3>
+      <p class="t">Susanoo-no-Mikoto said, &quot;Because my heart is pure and bright, the children I gave birth to were graceful girls. So I have won.&quot; Then, emboldened by his victory, he broke down the ridges between Amaterasu-Ōmikami&#x27;s rice fields and filled in the ditches, and scattered excrement in the palace where she partook of the great harvest offering (大嘗). Even so, Amaterasu-Ōmikami did not rebuke him but put a better face on it, saying, &quot;What looks like excrement must be what he vomited when drunk. Breaking the ridges and filling the ditches must be because he begrudged the land being wasted.&quot;</p>
+      <h3>The heavenly piebald horse in the sacred weaving hall</h3>
+      <p class="t">But Susanoo-no-Mikoto&#x27;s violence did not stop and grew even worse. When Amaterasu-Ōmikami was having garments for the deities woven in the sacred weaving hall (忌服屋), Susanoo-no-Mikoto made a hole in its roof and dropped in a heavenly piebald horse that he had flayed backwards. The heavenly weaving maiden (天衣織女) who was weaving at the loom was startled, struck her private parts with the shuttle, and died.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>Amaterasu-Ōmikami suspected that Susanoo-no-Mikoto had come to seize her land and met him armed; so that Susanoo-no-Mikoto could show the purity of his heart, the two deities made a pledge (誓約) across the river 天安河<sup class="ru" title="reading unconfirmed">*</sup> and each gave birth to children from the other&#x27;s belongings.</li>
         <li><span class="kind ">Main text</span>Amaterasu-Ōmikami gave birth to three female deities from Susanoo-no-Mikoto&#x27;s ten-fist sword (十拳剣), and Susanoo-no-Mikoto gave birth to five male deities, including Ame-no-Oshihomimi-no-Mikoto, from Amaterasu-Ōmikami&#x27;s jewels; Amaterasu-Ōmikami decided, according to whose belongings they came from, that the male deities were her children and the female deities were Susanoo-no-Mikoto&#x27;s children.</li>
@@ -119,31 +180,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Susanoo-no-Mikoto said, &quot;Then I will take my leave after informing Amaterasu-Ōmikami,&quot; and went up to heaven. At that time the mountains and rivers all shook, and the whole land trembled. Amaterasu-Ōmikami heard this and was alarmed, and said, &quot;Susanoo-no-Mikoto&#x27;s coming up is not from a good heart. He means to seize my land.&quot;</p>
-      <p>Amaterasu-Ōmikami undid her hair and retied it in loops (mizura), and on the left and right loops, on her hair ornament, and on her left and right hands she wound strings of many long curved jewels (勾玉). On her back she bore a quiver holding a thousand arrows, at her side she fastened a quiver holding five hundred, on her arm she put a bamboo arm guard, and she brandished her bow. Then she stamped into the hard ground up to her thighs, kicking it about like powdery snow, gave a valiant war cry, and demanded, &quot;Why have you come up?&quot;</p>
-      <p>Susanoo-no-Mikoto answered, &quot;I have no evil heart. When I was asked why I was weeping and said that I wanted to go to my mother&#x27;s land, I was driven out, so I have only come to bid you farewell.&quot; Amaterasu-Ōmikami asked, &quot;Then how can I know that your heart is pure and bright?&quot; Susanoo-no-Mikoto answered, &quot;Let us each make a pledge and give birth to children.&quot;</p>
-      <p>The two deities made the pledge across the river 天安河<sup class="ru" title="reading unconfirmed">*</sup>. First Amaterasu-Ōmikami took Susanoo-no-Mikoto&#x27;s ten-fist sword, broke it into three, rinsed it in the well 天の真名井<sup class="ru" title="reading unconfirmed">*</sup> and chewed it up, and from the mist of her breath as she blew it out three deities were born: 多紀理毘売命 (also called 奥津島比売命), 市寸島比売命 (also called 狭依毘売命) and 多岐都比売命 (readings unconfirmed). Susanoo-no-Mikoto took the jewels wound on Amaterasu-Ōmikami&#x27;s left hair loop and did the same, and 正勝吾勝勝速日<sup class="ru" title="reading unconfirmed">*</sup> Ame-no-Oshihomimi-no-Mikoto was born. Further, from the jewels of the right hair loop, the hair ornament, the left hand and the right hand were born Ame-no-Hohi-no-Mikoto, Amatsuhikone-no-Mikoto, Ikutsuhikone-no-Mikoto and Kumanokusubi-no-Mikoto.</p>
-      <p>Amaterasu-Ōmikami divided them and decided, &quot;The five boys born afterwards came into being from my belongings, so they are my children. The three girls born first came into being from your belongings, so they are your children.&quot; The three female deities are said to dwell in the 奥津宮, 中津宮 and 辺津宮 shrines of 胸形, and to be the three great deities worshipped by the 胸形君 (readings unconfirmed) and others. It is also recorded that Takehiratori-no-Mikoto, the child of Ame-no-Hohi-no-Mikoto (written 天菩比命), is the ancestor of the Izumo provincial chieftains (出雲国造) and others, and that Amatsuhikone-no-Mikoto is the ancestor of the 凡川内国造<sup class="ru" title="reading unconfirmed">*</sup> and others.</p>
-      <p>Susanoo-no-Mikoto said, &quot;Because my heart is pure and bright, the children I gave birth to were graceful girls. So I have won.&quot; Then, emboldened by his victory, he broke down the ridges between Amaterasu-Ōmikami&#x27;s rice fields and filled in the ditches, and scattered excrement in the palace where she partook of the great harvest offering (大嘗). Even so, Amaterasu-Ōmikami did not rebuke him but put a better face on it, saying, &quot;What looks like excrement must be what he vomited when drunk. Breaking the ridges and filling the ditches must be because he begrudged the land being wasted.&quot;</p>
-      <p>But Susanoo-no-Mikoto&#x27;s violence did not stop and grew even worse. When Amaterasu-Ōmikami was having garments for the deities woven in the sacred weaving hall (忌服屋), Susanoo-no-Mikoto made a hole in its roof and dropped in a heavenly piebald horse that he had flayed backwards. The heavenly weaving maiden (天衣織女) who was weaving at the loom was startled, struck her private parts with the shuttle, and died.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">我那勢命之上來由者，必不善心，欲奪我國耳。</blockquote><p>Susanoo-no-Mikoto&#x27;s coming up is surely not from a good heart. He means only to seize my land.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">然者汝心之清明，何以知？</blockquote><p>Then how am I to know that your heart is pure and bright?</p></div>
-      <div class="q"><blockquote lang="zh-Hant">是後所生五柱男子者，物實因我物所成，故自吾子也。</blockquote><p>The five boys born afterwards came into being from my belongings, so they are my children.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">我心清明，故我所生子，得手弱女。因此言者，自我勝。</blockquote><p>Because my heart is pure and bright, the children I gave birth to were graceful girls. So naturally I have won.</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">Deities and people, and the shrines that enshrine them</h2>
       <ul class="who">
-        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amaterasu">Amaterasu-Ōmikami</a></b><small lang="ja">天照大御神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=ise">Ise Jingū (Naikū, Inner Shrine)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sumiyoshihakata">Sumiyoshi Jinja (Hakata)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=komagata">Komagata Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=minashijinja">Minashi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izawa">Izawa-no-Miya</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kamikawa">Kamikawa Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mononobe">Mononobe Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nitta">Nitta Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a></span></li>
-        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=susanoo">Susanoo-no-Mikoto</a></b><small lang="ja">須佐之男命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hikawa">Hikawa Jinja (Ōmiya)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tsushima">Tsushima Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tsurugijinja">Tsurugi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=yaegaki">Yaegaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ogamiyama">Ōgamiyama Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=yasaka">Yasaka Jinja</a></span></li>
+        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amaterasu">Amaterasu-Ōmikami</a></b><small lang="ja">天照大御神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=ise">Ise Jingū (Naikū, Inner Shrine)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sumiyoshihakata">Sumiyoshi Jinja (Hakata)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=komagata">Komagata Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=minashijinja">Minashi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izawa">Izawa-no-Miya</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kamikawa">Kamikawa Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mononobe">Mononobe Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nitta">Nitta Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sada">佐太神社</a></span></li>
+        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=susanoo">Susanoo-no-Mikoto</a></b><small lang="ja">須佐之男命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hikawa">Hikawa Jinja (Ōmiya)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tsushima">Tsushima Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tsurugijinja">Tsurugi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=yaegaki">Yaegaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ogamiyama">Ōgamiyama Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=yasaka">Yasaka Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=susa">須佐神社</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sada">佐太神社</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=munakata3">The Three Munakata Goddesses</a></b><small lang="ja">宗像三女神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=munakata">Munakata Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=usa">Usa Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=itsukushima">Itsukushima Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=futarasan">Nikkō Futarasan Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hiyoshi">Hiyoshi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=niutsuhime">Niutsuhime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=matsuo">Matsuo Taisha</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=oshihomimi">Ame-no-Oshihomimi-no-Mikoto</a></b><small lang="ja">天之忍穂耳命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=komagata">Komagata Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nitta">Nitta Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a></span></li>
         <li><b>Ame-no-Hohi-no-Mikoto (天之菩卑能命)</b><span class="sh">The second male deity, born from the jewels on Amaterasu-Ōmikami&#x27;s right hair loop. His child Takehiratori-no-Mikoto is regarded as the ancestor of the Izumo provincial chieftains (出雲国造) and others.</span></li>
@@ -159,7 +200,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 6, main text</span><p>In the main text of section 6, before the pledge Susanoo-no-Mikoto (素戔鳴尊) sets out the condition, &quot;If those born are girls, you may regard my heart as impure; if boys, as pure.&quot; In the Kojiki there is no prior agreement, and Susanoo-no-Mikoto claims victory on the grounds that girls were born.</p><blockquote lang="zh-Hant">如吾所生是女者，則可以爲有濁心</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 6, variant account 1</span><p>In variant account 1 there is no exchange of belongings: the sun deity chews the ten-span, nine-span and eight-span swords (十握剣, 九握剣, 八握剣) that she herself wears and gives birth to the three goddesses, and Susanoo-no-Mikoto (素戔鳴尊) gives birth to the five male deities from the jewels hung around his own neck.</p><blockquote lang="zh-Hant">先食所帶十握劒生兒，號瀛津嶋姬</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 7, main text</span><p>In the Kojiki the one who dies while weaving at the loom is the heavenly weaving maiden (天衣織女), but in the main text of section 7 it is Amaterasu-Ōmikami (天照大神) herself, weaving garments for the deities, who is startled and injures herself with the shuttle, and because of this she shuts herself in the heavenly rock cave (天石窟).</p><blockquote lang="zh-Hant">是時天照大神驚動。以梭傷身。</blockquote></div>
@@ -167,13 +208,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="misogi.html"><small>← Previous story (Part 1, story 5)</small>Purification and the Three Noble Children</a><a class="next" href="iwayado.html"><small>Next story (Part 1, story 7) →</small>The Heavenly Rock-Cave Door</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takiribimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ichikishimahimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takitsuhimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/masakatsuakatsukachihayahiamenooshihomiminomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhikonenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ikutsuhikonenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kumanokusubinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehiratorinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenohatorime-amenohataorime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">我那勢命之上來由者，必不善心，欲奪我國耳。</blockquote><p>Susanoo-no-Mikoto&#x27;s coming up is surely not from a good heart. He means only to seize my land.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">然者汝心之清明，何以知？</blockquote><p>Then how am I to know that your heart is pure and bright?</p></div>
+          <div class="q"><blockquote lang="zh-Hant">是後所生五柱男子者，物實因我物所成，故自吾子也。</blockquote><p>The five boys born afterwards came into being from my belongings, so they are my children.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">我心清明，故我所生子，得手弱女。因此言者，自我勝。</blockquote><p>Because my heart is pure and bright, the children I gave birth to were graceful girls. So naturally I have won.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amaterasuomikami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehayasusanoonomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takiribimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ichikishimahimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takitsuhimenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/masakatsuakatsukachihayahiamenooshihomiminomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenohohinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhikonenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ikutsuhikonenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kumanokusubinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehiratorinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenohatorime-amenohataorime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

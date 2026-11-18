@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,34 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Nihon Shoki, Book 2 — Age of the Gods (part 2) · page 9 of 50</p>
-    <h1>The Birth of 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup> (Section 11)</h1>
-    <p class="orig" lang="ja">神日本磐余彦尊の誕生（第十一段）</p>
-    <p class="pg-lead">This is the last section of the Age of the Gods. It records that Ugayafukiaezu-no-Mikoto (波瀲武鸕鷀草葺不合尊) took his aunt Tamayori-hime (玉依姫) as consort, fathered four sons, Itsuse-no-Mikoto (五瀨命), 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, Mikeirino-no-Mikoto (三毛入野命), and 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>, and died at the 西洲之宮<sup class="ru" title="reading unconfirmed">*</sup> palace. The main text is very short, and the four variant accounts transmit differences in the order and names of the four brothers.</p>
-    <div class="xlink"><a href="../../kojiki/en/ugaya.html">Read in the Kojiki: The Birth of Ugayafukiaezu-no-Mikoto ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Nihon Shoki, Book 2 — Age of the Gods (part 2) · page 9 of 50</p>
+        <h1>The Birth of 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup> (Section 11)</h1>
+        <p class="orig" lang="ja">神日本磐余彦尊の誕生（第十一段）</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">This is the last section of the Age of the Gods. It records that Ugayafukiaezu-no-Mikoto (波瀲武鸕鷀草葺不合尊) took his aunt Tamayori-hime (玉依姫) as consort, fathered four sons, Itsuse-no-Mikoto (五瀨命), 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, Mikeirino-no-Mikoto (三毛入野命), and 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>, and died at the 西洲之宮<sup class="ru" title="reading unconfirmed">*</sup> palace. The main text is very short, and the four variant accounts transmit differences in the order and names of the four brothers.</p>
+        <p class="bk-meta">Reading time for the main text: about 1 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../kojiki/en/ugaya.html">Read in the Kojiki: The Birth of Ugayafukiaezu-no-Mikoto ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">What the main text says</h2>
+      <h3>Ugayafukiaezu-no-Mikoto takes Tamayori-hime as consort</h3>
+      <p class="t">Ugayafukiaezu-no-Mikoto took as consort Tamayori-hime, who was his aunt (his mother&#x27;s younger sister). The main text lists in order the children born of this marriage.</p>
+      <h3>Four sons are born</h3>
+      <p class="t">First Itsuse-no-Mikoto was born, next 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, next Mikeirino-no-Mikoto, and next 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>; the children were four sons in all.</p>
+      <h3>Burial in the 吾平山上陵<sup class="ru" title="reading unconfirmed">*</sup> mausoleum</h3>
+      <p class="t">After a long time, Ugayafukiaezu-no-Mikoto died at the 西洲之宮<sup class="ru" title="reading unconfirmed">*</sup> palace. He was then buried in the 吾平山上陵<sup class="ru" title="reading unconfirmed">*</sup> mausoleum in Hyūga.</p>
+      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this page</h2>
       <ol>
         <li><span class="kind ">Main text</span>Ugayafukiaezu-no-Mikoto took as consort his aunt (his mother&#x27;s younger sister) Tamayori-hime, and four sons were born: Itsuse-no-Mikoto, 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, Mikeirino-no-Mikoto, and 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>. In the main text, 神日本磐余尊 is the youngest child.</li>
         <li><span class="kind ">Main text</span>The main text records that Ugayafukiaezu-no-Mikoto died at the 西洲之宮<sup class="ru" title="reading unconfirmed">*</sup> palace and was buried in the 吾平山上陵<sup class="ru" title="reading unconfirmed">*</sup> mausoleum in Hyūga.</li>
@@ -119,28 +172,13 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">What the main text says</h2>
-      <p>Ugayafukiaezu-no-Mikoto took as consort Tamayori-hime, who was his aunt (his mother&#x27;s younger sister). The main text lists in order the children born of this marriage.</p>
-      <p>First Itsuse-no-Mikoto was born, next 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, next Mikeirino-no-Mikoto, and next 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>; the children were four sons in all.</p>
-      <p>After a long time, Ugayafukiaezu-no-Mikoto died at the 西洲之宮<sup class="ru" title="reading unconfirmed">*</sup> palace. He was then buried in the 吾平山上陵<sup class="ru" title="reading unconfirmed">*</sup> mausoleum in Hyūga.</p>
-      <p class="pg-note">A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="var-title">
+    <section class="pg-card bk-app" aria-labelledby="var-title">
       <h2 id="var-title">Variant accounts</h2>
-      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰).</p>
-      <div class="var"><b>Variant account 1</b><p>The order is the same as in the main text, but the fourth child is called 狹野尊<sup class="ru" title="reading unconfirmed">*</sup>, with the other name 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>. It explains that 狹野 was his name when young, and that because he later pacified the realm and governed the Eight Islands, the title 神日本磐余尊 was added.</p></div>
-      <div class="var"><b>Variant account 2</b><p>The order is Itsuse-no-Mikoto, 三毛野命<sup class="ru" title="reading unconfirmed">*</sup>, 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, and 磐余尊<sup class="ru" title="reading unconfirmed">*</sup>, so that the second and third are switched compared with the main text. Another name of 磐余尊 is given as 神日本磐余火火出見尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="var"><b>Variant account 3</b><p>The order is Itsuse-no-Mikoto, 稻飯命, 神日本磐余火火出見尊, and 稚三毛野命 (readings unconfirmed), placing 磐余尊 third and making 稚三毛野命 the youngest child.</p></div>
-      <div class="var"><b>Variant account 4</b><p>The order is Itsuse-no-Mikoto, 磐余火火出見尊<sup class="ru" title="reading unconfirmed">*</sup>, 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, and Mikeirino-no-Mikoto, placing 磐余尊 second.</p></div>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">以其姨玉依姫爲妃</blockquote><p>He took as consort his aunt (his mother&#x27;s younger sister) Tamayori-hime.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">所稱狹野者。是年少時之號也</blockquote><p>Variant account 1: he is called “狹野” because that was his name when young.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">亦號神日本磐余火火出見尊</blockquote><p>Variant account 2: he is also called 神日本磐余火火出見尊.</p></div>
+      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰). Select a name to open it (4 in all).</p>
+      <details><summary>Variant account 1</summary><p>The order is the same as in the main text, but the fourth child is called 狹野尊<sup class="ru" title="reading unconfirmed">*</sup>, with the other name 神日本磐余尊<sup class="ru" title="reading unconfirmed">*</sup>. It explains that 狹野 was his name when young, and that because he later pacified the realm and governed the Eight Islands, the title 神日本磐余尊 was added.</p></details>
+      <details><summary>Variant account 2</summary><p>The order is Itsuse-no-Mikoto, 三毛野命<sup class="ru" title="reading unconfirmed">*</sup>, 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, and 磐余尊<sup class="ru" title="reading unconfirmed">*</sup>, so that the second and third are switched compared with the main text. Another name of 磐余尊 is given as 神日本磐余火火出見尊<sup class="ru" title="reading unconfirmed">*</sup>.</p></details>
+      <details><summary>Variant account 3</summary><p>The order is Itsuse-no-Mikoto, 稻飯命, 神日本磐余火火出見尊, and 稚三毛野命 (readings unconfirmed), placing 磐余尊 third and making 稚三毛野命 the youngest child.</p></details>
+      <details><summary>Variant account 4</summary><p>The order is Itsuse-no-Mikoto, 磐余火火出見尊<sup class="ru" title="reading unconfirmed">*</sup>, 稻飯命<sup class="ru" title="reading unconfirmed">*</sup>, and Mikeirino-no-Mikoto, placing 磐余尊 second.</p></details>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -159,20 +197,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Kojiki</h2>
+      <h2 id="ns-title">How the Kojiki differs</h2>
       <div class="ns"><span class="where">Kojiki, end of Part 1 — the genealogy of Ugayafukiaezu-no-Mikoto</span><p>The Kojiki also says that Ugayafukiaezu-no-Mikoto (鵜葺草葺不合命) married his aunt Tamayori-hime (玉依毘売命) and fathered four children, in the order Itsuse-no-Mikoto (五瀬命), 稻冰命, 御毛沼命, and 若御毛沼命 (readings unconfirmed), and, like the main text of the Nihon Shoki, makes 若御毛沼命, who corresponds to Emperor Jinmu, the youngest.</p><blockquote lang="zh-Hant">生御子，名五濑命，次，稻冰命。次，御毛沼命。次，若御毛沼命</blockquote></div>
       <div class="ns"><span class="where">Kojiki, end of Part 1 — the genealogy of Ugayafukiaezu-no-Mikoto</span><p>The Kojiki records that 御毛沼命<sup class="ru" title="reading unconfirmed">*</sup> crossed over to the Eternal Land (常世国), treading on the crests of the waves, and that 稻冰命<sup class="ru" title="reading unconfirmed">*</sup> entered the sea plain as the land of his late mother, but this passage is absent from the main text and the variant accounts of section 11 of the Nihon Shoki. On the other hand, the passage in the main text of the Nihon Shoki on the death of Ugayafukiaezu-no-Mikoto (鸕鷀草葺不合尊) and the 吾平山上陵<sup class="ru" title="reading unconfirmed">*</sup> mausoleum could not be confirmed in the corresponding part of Part 1 of the Kojiki.</p><blockquote lang="zh-Hant">御毛沼命者，跳浪穗渡坐于常世国</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="dan10.html"><small>← Previous page (Nihon Shoki, Book 2 — Age of the Gods (part 2))</small>Sea-Luck and Mountain-Luck (Section 10)</a><a class="next" href="jinmu-tosei.html"><small>Next page (Nihon Shoki, Book 3 — Emperor Jinmu) →</small>Emperor Jinmu&#x27;s Eastern Expedition</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">Nihon Shoki, Book 2</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inahinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mikenunomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (3 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">以其姨玉依姫爲妃</blockquote><p>He took as consort his aunt (his mother&#x27;s younger sister) Tamayori-hime.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">所稱狹野者。是年少時之號也</blockquote><p>Variant account 1: he is called “狹野” because that was his name when young.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">亦號神日本磐余火火出見尊</blockquote><p>Variant account 2: he is also called 神日本磐余火火出見尊.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution's explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">Nihon Shoki, Book 2</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsuhitakahikonagisatakeukayafukiaezunomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/tamayoribime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/itsusenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/inahinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mikenunomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All pages</a>
     </section>
   </main>

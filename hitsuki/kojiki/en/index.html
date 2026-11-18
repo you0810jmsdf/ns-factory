@@ -16,12 +16,12 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   gtag('js', new Date());
   gtag('config', 'G-ND1T7H067Y');
 </script>
-  <meta name="description" content="The Kojiki (Records of Ancient Matters, 712) in 47 stories: for each, the key points to remember, the story, the original text, the deities and their shrines, and how the Nihon Shoki differs.">
+  <meta name="description" content="The Kojiki (Records of Ancient Matters, 712) in 47 stories: for each, the story scene by scene, the key points, the deities and their shrines, how the Nihon Shoki differs, and the original text.">
   <link rel="canonical" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/en/">
   <link rel="alternate" hreflang="en" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/en/">
   <link rel="alternate" hreflang="ja" href="https://you0810jmsdf.github.io/ns-factory/hitsuki/kojiki/">
   <meta property="og:title" content="Kojiki Archive — all three parts, story by story | N&#x27;s factory">
-  <meta property="og:description" content="The Kojiki (Records of Ancient Matters, 712) in 47 stories: for each, the key points to remember, the story, the original text, the deities and their shrines, and how the Nihon Shoki differs.">
+  <meta property="og:description" content="The Kojiki (Records of Ancient Matters, 712) in 47 stories: for each, the story scene by scene, the key points, the deities and their shrines, how the Nihon Shoki differs, and the original text.">
   <meta property="og:type" content="article">
   <meta property="og:locale" content="en_US">
   <link rel="stylesheet" href="../../styles.css">
@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -103,7 +137,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
   <main class="pg-main">
     <p class="eyebrow">Kojiki Archive</p>
     <h1>Kojiki Archive</h1>
-    <p class="pg-lead">The Kojiki, completed in 712, tells of Japan from the age of the gods to Empress Suiko in three parts. Here it is divided into 47 stories. Each page begins with the key points to remember, followed by the story, short passages of the original text, the deities who appear, and how the Nihon Shoki tells the same events.</p>
+    <p class="pg-lead">The Kojiki, completed in 712, tells of Japan from the age of the gods to Empress Suiko in three parts. Here it is divided into 47 stories. Each page tells the story scene by scene, then gives the key points, the deities who appear, and how the Nihon Shoki tells the same events. Short passages of the original text and the sources are in the "Reference" section at the end of each page.</p>
     <div class="jump"><a href="#kan-Part1">Part 1</a><a href="#kan-Part2">Part 2</a><a href="#kan-Part3">Part 3</a><a href="#review">Review the key points</a><a href="../../shoki/en/">Nihon Shoki Archive ›</a></div>
 
     <section class="pg-card" aria-labelledby="how-title">

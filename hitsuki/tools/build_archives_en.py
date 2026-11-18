@@ -51,7 +51,7 @@ def head(book, title, desc, canon, ja_url, ja_rel):
   <meta property="og:type" content="article">
   <meta property="og:locale" content="en_US">
   <link rel="stylesheet" href="../../styles.css">
-  <style>{B.CSS}{EXTRA_CSS}  </style>
+  <style>{B.CSS}{B.BK_CSS}{EXTRA_CSS}  </style>
 </head>
 <body>
   <header class="site-header">
@@ -138,8 +138,117 @@ def shoki_vols(refs):
 
 def kl(m): return f'{KAN_EN[m["kan"]]}, story {m["no"]}'
 
+# ---------- 読みものの型（layout.json に heads_en がある話） ----------
+ART = '../../assets/kiki/book/'
+AI_NOTE = ' The pictures are all AI-generated illustrations, not depictions of actual sacred objects, shrine buildings or people.'
+
+def fig_html(f, eager=False):
+    w, h = f.get('size') or B.ART_SIZE[f.get('shape', 'tall')]
+    load = 'fetchpriority="high"' if eager else 'loading="lazy"'
+    cap = f.get('cap_en') or ''
+    return (f'<figure class="f-{e(f.get("shape", "tall"))}"><img src="{ART}{e(f["img"])}" width="{w}" height="{h}" alt="{e(RU.sub("", cap))}" {load} decoding="async">'
+            f'<figcaption>{e(cap)} (AI-generated illustration)</figcaption></figure>')
+
+def book_open(lay, eyebrow, title_en, title_ja, lead, xl, mins, what):
+    hero = dict(lay['hero'], shape='tall') if lay.get('hero') else None
+    hero_html = f'<div class="bk-hero">{fig_html(hero, eager=True)}</div>' if hero else ''
+    return f'''  <main class="pg-main bk">
+    <header class="bk-open{'' if hero else ' nohero'}">
+      <div class="bk-head">
+        <p class="eyebrow">{eyebrow}</p>
+        <h1>{e(title_en)}</h1>
+        <p class="orig" lang="ja">{e(title_ja)}</p>
+      </div>
+      {hero_html}
+      <div class="bk-intro">
+        <p class="bk-lead">{e(lead)}</p>
+        <p class="bk-meta">Reading time for {what}: about {mins} min　/　<a href="#pts-title">Key points only</a></p>
+        {f'<div class="xlink">{xl}</div>' if xl else ''}
+      </div>
+    </header>
+'''
+
+def book_story(m, o, lay, h2, note):
+    st = zipped(m['story'], o.get('story')); heads = lay['heads_en']
+    if len(heads) != len(st): raise SystemExit(f'{m["id"]}: heads_en {len(heads)} / story {len(st)}')
+    out = [f'    <section class="bk-story" aria-labelledby="story-title">\n      <h2 id="story-title" style="letter-spacing:.08em">{h2}</h2>']
+    for n, (_, g) in enumerate(st):
+        out.append(f'      <h3>{e(heads[n])}</h3>\n      <p class="t">{e(g.get("text", ""))}</p>')
+        fs = [f for f in lay.get('figs', []) if f['after'] == n]
+        if fs: out.append(f'      <div class="bk-figs{" two" if len(fs) == 2 else ""}">' + ''.join(fig_html(f) for f in fs) + '</div>')
+    out.append(f'      <p class="pg-note">{note} The subheadings were added for readability, using the words of the text.</p>\n    </section>\n')
+    return '\n'.join(out)
+
+def book_app(m, o, pager_html, legend, srcs, back_label, has_art):
+    qs = ''.join(f'\n          <div class="q"><blockquote lang="zh-Hant">{e(q["text"])}</blockquote><p>{e(n.get("note", ""))}</p></div>' for q, n in zipped(m['quotes'], o.get('quotes')))
+    return f'''
+    {pager_html}
+
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text ({len(m['quotes'])} passages)</summary>{qs}
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        {RU_NOTE}
+        <p class="pg-note">{legend}{AI_NOTE if has_art else ''}</p>
+        <ul class="pg-src">
+          {srcs}
+        </ul>
+      </details>
+      <a class="pg-back" href="./">← {back_label}</a>
+    </section>
+  </main>
+'''
+
+def mins_en(o): return max(1, -(-sum(len((s.get('text') or '').split()) for s in o.get('story', [])) // 220))
+
+def kojiki_book_page(i, lay):
+    m = KOJ[i]; o = KEN.get(m['id'], {})
+    cnt = sum(1 for x in KOJ if x['kan'] == m['kan'])
+    title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, story {m['no']} | Kojiki Archive"
+    out = [head('kojiki', title, o.get('lead', ''), SITE + 'kojiki/en/' + m['id'] + '.html', SITE + 'kojiki/' + m['id'] + '.html', '../' + m['id'] + '.html')]
+    xl = ''.join(f'<a href="../../shoki/en/{s["id"]}.html">Read in the Nihon Shoki: {e((SEN.get(s["id"]) or {}).get("title") or s["title"])} ›</a>' for s in B.K2S.get(m['id'], []))
+    out.append(book_open(lay, f"Kojiki, {KAN_EN[m['kan']]} · story {m['no']} of {cnt}", o.get('title') or m['title'], m['title'], o.get('lead', ''), xl, mins_en(o), 'the story'))
+    out.append(book_story(m, o, lay, 'The story', 'A plain retelling of what the original text of the Kojiki says (no published translation has been used).'))
+    out.append(points_html(m, o, 'kojiki').replace('Key points to remember', 'Key points of this story'))
+    out.append(''); out.append(who_html(m, o))
+    out.append(cmp_html(m.get('nihonshoki'), o.get('compare'), 'How the Nihon Shoki differs'))
+    base = [WS(B.KOJ_WS[m['kan']], f'Kojiki, {KAN_EN[m["kan"]]} (critical text)')] + shoki_vols([n.get('ref', '') for n in m.get('nihonshoki', [])])
+    out.append(book_app(m, o, pager(KOJ, KEN, i, 'story', kl),
+        '"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution\'s explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.',
+        src_list(m.get('sources', []), base), 'All stories', bool(lay.get('hero') or lay.get('figs'))))
+    out.append(FOOT)
+    return '\n'.join(out)
+
+def shoki_book_page(i, lay):
+    s = SHO[i]; o = SEN.get(s['id'], {})
+    title = f"{o.get('title') or s['title']} | {sl(s)} | Nihon Shoki Archive"
+    out = [head('shoki', title, o.get('lead', ''), SITE + 'shoki/en/' + s['id'] + '.html', SITE + 'shoki/' + s['id'] + '.html', '../' + s['id'] + '.html')]
+    xl = ''.join(f'<a href="../../kojiki/en/{k}.html">Read in the Kojiki: {e((KEN.get(k) or {}).get("title") or B.KBY[k]["title"])} ›</a>' for k in s.get('kojiki_pages', []) if k in B.KBY)
+    out.append(book_open(lay, f"{e(sl(s))} · page {i + 1} of {len(SHO)}", o.get('title') or s['title'], s['title'], o.get('lead', ''), xl, mins_en(o), 'the main text'))
+    out.append(book_story(s, o, lay, 'What the main text says', 'A plain retelling of what the main text of the Nihon Shoki says (no published translation has been used).'))
+    out.append(points_html(s, o, 'shoki').replace('Key points to remember', 'Key points of this page'))
+    if s.get('variants'):
+        out.append(f'\n    <section class="pg-card bk-app" aria-labelledby="var-title">\n      <h2 id="var-title">Variant accounts</h2>\n      <p class="pg-note">After its main text, the Nihon Shoki often sets out other versions, introduced with words such as "a certain book says" (一書曰). Select a name to open it ({len(s["variants"])} in all).</p>')
+        out += [f'      <details><summary>{e(g.get("name") or v["name"])}</summary><p>{e(g.get("text", ""))}</p></details>' for v, g in zipped(s['variants'], o.get('variants'))]
+        out.append('    </section>')
+    out.append(''); out.append(who_html(s, o))
+    out.append(cmp_html(s.get('kojiki'), o.get('compare'), 'How the Kojiki differs'))
+    if not s.get('kojiki') and B.vol_of(s) >= 23:
+        out.append('\n    <section class="pg-card"><h2>In the Kojiki</h2><p>The Kojiki ends with the reign of Empress Suiko. The period of this book is recorded only in the Nihon Shoki.</p></section>')
+    kv = sorted({{'K': '上巻', 'C': '中巻', 'G': '下巻'}[k['ref'][0]] for k in s.get('kojiki', []) if k.get('ref')})
+    base = shoki_vols(s['span']) + [WS(B.KOJ_WS[v], f'Kojiki, {KAN_EN[v]} (critical text)') for v in kv]
+    out.append(book_app(s, o, pager(SHO, SEN, i, 'page', sl),
+        '"Main text" is the main text of the Nihon Shoki; "Variant account" is one of the other versions that follow it; "Compared with the Kojiki" is a difference checked in the original text of the Kojiki; "Commentary" is an interpretation checked against a public institution\'s explanation. Years are given as in the original (reign years), not converted to the Western calendar. Quotations are copied character for character from Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.',
+        src_list(s.get('sources', []), base), 'All pages', bool(lay.get('hero') or lay.get('figs'))))
+    out.append(FOOT)
+    return '\n'.join(out)
+
 def kojiki_page(i):
     m = KOJ[i]; o = KEN.get(m['id'], {})
+    if (B.LAYOUT.get(m['id']) or {}).get('heads_en'): return kojiki_book_page(i, B.LAYOUT[m['id']])
     cnt = sum(1 for x in KOJ if x['kan'] == m['kan'])
     title = f"{o.get('title') or m['title']} | Kojiki {KAN_EN[m['kan']]}, story {m['no']} | Kojiki Archive"
     out = [head('kojiki', title, o.get('lead', ''), SITE + 'kojiki/en/' + m['id'] + '.html', SITE + 'kojiki/' + m['id'] + '.html', '../' + m['id'] + '.html')]
@@ -178,13 +287,13 @@ def kojiki_index():
     kans = [k for k in ['上巻', '中巻', '下巻'] if any(m['kan'] == k for m in KOJ)]
     n = len(KOJ)
     title = 'Kojiki Archive — all three parts, story by story | N\'s factory'
-    desc = f'The Kojiki (Records of Ancient Matters, 712) in {n} stories: for each, the key points to remember, the story, the original text, the deities and their shrines, and how the Nihon Shoki differs.'
+    desc = f'The Kojiki (Records of Ancient Matters, 712) in {n} stories: for each, the story scene by scene, the key points, the deities and their shrines, how the Nihon Shoki differs, and the original text.'
     out = [head('kojiki', title, desc, SITE + 'kojiki/en/', SITE + 'kojiki/', '../')]
     jump = ''.join(f'<a href="#kan-{KAN_EN[k].replace(" ", "")}">{KAN_EN[k]}</a>' for k in kans) + '<a href="#review">Review the key points</a><a href="../../shoki/en/">Nihon Shoki Archive ›</a>'
     out.append(f'''  <main class="pg-main">
     <p class="eyebrow">Kojiki Archive</p>
     <h1>Kojiki Archive</h1>
-    <p class="pg-lead">The Kojiki, completed in 712, tells of Japan from the age of the gods to Empress Suiko in three parts. Here it is divided into {n} stories. Each page begins with the key points to remember, followed by the story, short passages of the original text, the deities who appear, and how the Nihon Shoki tells the same events.</p>
+    <p class="pg-lead">The Kojiki, completed in 712, tells of Japan from the age of the gods to Empress Suiko in three parts. Here it is divided into {n} stories. Each page tells the story scene by scene, then gives the key points, the deities who appear, and how the Nihon Shoki tells the same events. Short passages of the original text and the sources are in the "Reference" section at the end of each page.</p>
     <div class="jump">{jump}</div>
 
     <section class="pg-card" aria-labelledby="how-title">
@@ -222,7 +331,8 @@ def sl(s): return (SEN.get(s['id']) or {}).get('kan_en') or s['kan']
 
 def shoki_page(i):
     s = SHO[i]; o = SEN.get(s['id'], {})
-    title = f"{o.get('title') or s['title']} | {sl(s)} | Nihon Shoki Archive"
+    if (B.SLAYOUT.get(s['id']) or {}).get('heads_en'): return shoki_book_page(i, B.SLAYOUT[s['id']])
+    title =f"{o.get('title') or s['title']} | {sl(s)} | Nihon Shoki Archive"
     out = [head('shoki', title, o.get('lead', ''), SITE + 'shoki/en/' + s['id'] + '.html', SITE + 'shoki/' + s['id'] + '.html', '../' + s['id'] + '.html')]
     xl = ''.join(f'<a href="../../kojiki/en/{k}.html">Read in the Kojiki: {e((KEN.get(k) or {}).get("title") or B.KBY[k]["title"])} ›</a>' for k in s.get('kojiki_pages', []) if k in B.KBY)
     out.append(f'''  <main class="pg-main">
@@ -264,7 +374,7 @@ def shoki_page(i):
 
 def shoki_index():
     title = 'Nihon Shoki Archive — all thirty books, from the Age of the Gods to Empress Jitō | N\'s factory'
-    desc = f'The Nihon Shoki (Chronicles of Japan, 720) in {len(SHO)} pages: the key points to remember, the main text, the variant accounts, the original text, and how the Kojiki differs.'
+    desc = f'The Nihon Shoki (Chronicles of Japan, 720) in {len(SHO)} pages: the main text scene by scene, the key points, the variant accounts, how the Kojiki differs, and the original text.'
     out = [head('shoki', title, desc, SITE + 'shoki/en/', SITE + 'shoki/', '../')]
     ERA = [(1, 2, 'The Age of the Gods (Books 1–2)'), (3, 10, 'Emperor Jinmu to Emperor Ōjin (Books 3–10)'), (11, 22, 'Emperor Nintoku to Empress Suiko (Books 11–22)'), (23, 30, 'Emperor Jomei to Empress Jitō (Books 23–30)')]
     out.append(f'''  <main class="pg-main">

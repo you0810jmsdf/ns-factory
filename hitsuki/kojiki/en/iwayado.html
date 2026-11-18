@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,40 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 1 · story 7 of 17</p>
-    <h1>The Heavenly Rock-Cave Door</h1>
-    <p class="orig" lang="ja">天の岩屋戸</p>
-    <p class="pg-lead">When Amaterasu-Ōmikami shut herself inside the Heavenly Rock-Cave Door (天石屋戸), both the High Plain of Heaven (高天原) and the Central Land of Reed Plains (葦原中国) grew dark, and all kinds of calamities arose. The myriad deities (八百万の神々) consulted together, gathered the implements for a ritual, lured Amaterasu-Ōmikami out with the dance of Ame-no-Uzume-no-Mikoto and the laughter of the deities, and restored light to the world.</p>
-    <div class="xlink"><a href="../../shoki/en/dan07.html">Read in the Nihon Shoki: The Heavenly Rock Cave (Section 7) ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 1 · story 7 of 17</p>
+        <h1>The Heavenly Rock-Cave Door</h1>
+        <p class="orig" lang="ja">天の岩屋戸</p>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../../assets/kiki/book/iwayado-hero.jpg" width="810" height="1440" alt="Ame-no-Uzume-no-Mikoto and the deities before the Heavenly Rock-Cave Door" fetchpriority="high" decoding="async"><figcaption>Ame-no-Uzume-no-Mikoto and the deities before the Heavenly Rock-Cave Door (AI-generated illustration)</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">When Amaterasu-Ōmikami shut herself inside the Heavenly Rock-Cave Door (天石屋戸), both the High Plain of Heaven (高天原) and the Central Land of Reed Plains (葦原中国) grew dark, and all kinds of calamities arose. The myriad deities (八百万の神々) consulted together, gathered the implements for a ritual, lured Amaterasu-Ōmikami out with the dance of Ame-no-Uzume-no-Mikoto and the laughter of the deities, and restored light to the world.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/dan07.html">Read in the Nihon Shoki: The Heavenly Rock Cave (Section 7) ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Amaterasu-Ōmikami closes the Heavenly Rock-Cave Door</h3>
+      <p class="t">Seeing the violence of Susanoo-no-Mikoto told in the previous story, Amaterasu-Ōmikami was afraid, closed the Heavenly Rock-Cave Door (天石屋戸), and shut herself inside. Then the High Plain of Heaven (高天原) became completely dark, the Central Land of Reed Plains (葦原中国) too was wrapped in darkness, and there was nothing but night. The voices of many deities filled the surroundings like swarms of flies, and every kind of calamity arose.</p>
+      <h3>The deities&#x27; plan, the mirror and the jewels</h3>
+      <p class="t">So the myriad deities (八百万の神々) gathered at the riverbed of the heavenly river 天の安の河<sup class="ru" title="reading unconfirmed">*</sup> and had Omoikane-no-Kami (思金神), a child of Takamimusubi-no-Kami, devise a plan. The deities gathered the long-crying birds of 常世<sup class="ru" title="reading unconfirmed">*</sup> and made them cry, took hard stones from the upper reaches of the heavenly river 天の安の河 and iron from the heavenly metal mountain (天の金山), and sought out the smith Amatsumara. They had 伊斯許理度売命<sup class="ru" title="reading unconfirmed">*</sup> make a mirror, and Tamanooya-no-Mikoto make strings of long curved jewels (八尺の勾玉).</p>
+      <h3>Divination and the sakaki tree offering</h3>
+      <p class="t">Further, they summoned Ame-no-Koyane-no-Mikoto and Futodama-no-Mikoto (布刀玉命) and had them divine, pulling out the shoulder bone of a stag from 天香山<sup class="ru" title="reading unconfirmed">*</sup> and using wood of the 波波迦<sup class="ru" title="reading unconfirmed">*</sup> tree from 天香山. They dug up a sakaki tree (榊) of 天香山 by the roots, and hung the strings of jewels on its upper branches, the mirror 八尺鏡<sup class="ru" title="reading unconfirmed">*</sup> on its middle branches, and white and blue cloth on its lower branches. Futodama-no-Mikoto held this up as an offering (御幣), Ame-no-Koyane-no-Mikoto recited a ritual prayer (祝詞), and Ame-no-Tajikarao-no-Kami stood hidden beside the door.</p>
+      <h3>The dance of Ame-no-Uzume-no-Mikoto</h3>
+      <p class="t">Ame-no-Uzume-no-Mikoto hung the 日影 vine<sup class="ru" title="reading unconfirmed">*</sup> of 天香山 across her shoulders as a sash, made a hair ornament of the 真拆 vine<sup class="ru" title="reading unconfirmed">*</sup>, and held bundled bamboo-grass leaves in her hand. Then she turned a tub (汙氣) upside down in front of the Heavenly Rock-Cave Door and stamped on it until it resounded, became possessed by the deity, bared her breasts, and pushed the cord of her skirt down to her private parts. At this the myriad deities all laughed at once, so that the High Plain of Heaven rang with it.</p>
+      <h3>Opening the door a crack</h3>
+      <p class="t">Amaterasu-Ōmikami wondered at this, opened the door a crack, and asked, &quot;Since I have shut myself away, the world should be dark, so why is Ame-no-Uzume dancing so merrily and why are the deities laughing?&quot; Ame-no-Uzume-no-Mikoto answered, &quot;We are rejoicing and laughing because there is a deity here more noble than you.&quot; Meanwhile Ame-no-Koyane-no-Mikoto and Futodama-no-Mikoto held out the mirror and showed it to her, and Amaterasu-Ōmikami, wondering more and more, came out from the door little by little.</p>
+      <h3>Amaterasu-Ōmikami is drawn out and the land becomes bright</h3>
+      <p class="t">At that moment Ame-no-Tajikarao-no-Kami, who had been standing hidden, took Amaterasu-Ōmikami by the hand and drew her out, and Futodama-no-Mikoto at once stretched a rope (尻久米縄)<sup class="ru" title="reading unconfirmed">*</sup> across behind her and said, &quot;You cannot go back inside beyond this.&quot; When Amaterasu-Ōmikami thus came out, both the High Plain of Heaven and the Central Land of Reed Plains became bright and illuminated of themselves.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>When Amaterasu-Ōmikami closed the Heavenly Rock-Cave Door (天石屋戸) and shut herself in, both the High Plain of Heaven (高天原) and the Central Land of Reed Plains (葦原中国) became pitch dark, night went on and on, and every kind of calamity arose.</li>
         <li><span class="kind ">Main text</span>The myriad deities gathered at the riverbed of the heavenly river 天の安の河<sup class="ru" title="reading unconfirmed">*</sup>, had Omoikane-no-Kami (思金神) draw up a plan, had 伊斯許理度売命<sup class="ru" title="reading unconfirmed">*</sup> make a mirror and Tamanooya-no-Mikoto make strings of curved jewels (勾玉), hung them on the branches of a sakaki tree (榊), and prayed.</li>
@@ -119,29 +178,10 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Seeing the violence of Susanoo-no-Mikoto told in the previous story, Amaterasu-Ōmikami was afraid, closed the Heavenly Rock-Cave Door (天石屋戸), and shut herself inside. Then the High Plain of Heaven (高天原) became completely dark, the Central Land of Reed Plains (葦原中国) too was wrapped in darkness, and there was nothing but night. The voices of many deities filled the surroundings like swarms of flies, and every kind of calamity arose.</p>
-      <p>So the myriad deities (八百万の神々) gathered at the riverbed of the heavenly river 天の安の河<sup class="ru" title="reading unconfirmed">*</sup> and had Omoikane-no-Kami (思金神), a child of Takamimusubi-no-Kami, devise a plan. The deities gathered the long-crying birds of 常世<sup class="ru" title="reading unconfirmed">*</sup> and made them cry, took hard stones from the upper reaches of the heavenly river 天の安の河 and iron from the heavenly metal mountain (天の金山), and sought out the smith Amatsumara. They had 伊斯許理度売命<sup class="ru" title="reading unconfirmed">*</sup> make a mirror, and Tamanooya-no-Mikoto make strings of long curved jewels (八尺の勾玉).</p>
-      <p>Further, they summoned Ame-no-Koyane-no-Mikoto and Futodama-no-Mikoto (布刀玉命) and had them divine, pulling out the shoulder bone of a stag from 天香山<sup class="ru" title="reading unconfirmed">*</sup> and using wood of the 波波迦<sup class="ru" title="reading unconfirmed">*</sup> tree from 天香山. They dug up a sakaki tree (榊) of 天香山 by the roots, and hung the strings of jewels on its upper branches, the mirror 八尺鏡<sup class="ru" title="reading unconfirmed">*</sup> on its middle branches, and white and blue cloth on its lower branches. Futodama-no-Mikoto held this up as an offering (御幣), Ame-no-Koyane-no-Mikoto recited a ritual prayer (祝詞), and Ame-no-Tajikarao-no-Kami stood hidden beside the door.</p>
-      <p>Ame-no-Uzume-no-Mikoto hung the 日影 vine<sup class="ru" title="reading unconfirmed">*</sup> of 天香山 across her shoulders as a sash, made a hair ornament of the 真拆 vine<sup class="ru" title="reading unconfirmed">*</sup>, and held bundled bamboo-grass leaves in her hand. Then she turned a tub (汙氣) upside down in front of the Heavenly Rock-Cave Door and stamped on it until it resounded, became possessed by the deity, bared her breasts, and pushed the cord of her skirt down to her private parts. At this the myriad deities all laughed at once, so that the High Plain of Heaven rang with it.</p>
-      <p>Amaterasu-Ōmikami wondered at this, opened the door a crack, and asked, &quot;Since I have shut myself away, the world should be dark, so why is Ame-no-Uzume dancing so merrily and why are the deities laughing?&quot; Ame-no-Uzume-no-Mikoto answered, &quot;We are rejoicing and laughing because there is a deity here more noble than you.&quot; Meanwhile Ame-no-Koyane-no-Mikoto and Futodama-no-Mikoto held out the mirror and showed it to her, and Amaterasu-Ōmikami, wondering more and more, came out from the door little by little.</p>
-      <p>At that moment Ame-no-Tajikarao-no-Kami, who had been standing hidden, took Amaterasu-Ōmikami by the hand and drew her out, and Futodama-no-Mikoto at once stretched a rope (尻久米縄)<sup class="ru" title="reading unconfirmed">*</sup> across behind her and said, &quot;You cannot go back inside beyond this.&quot; When Amaterasu-Ōmikami thus came out, both the High Plain of Heaven and the Central Land of Reed Plains became bright and illuminated of themselves.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">閇天石屋戶而，刺許母理〔此三字以音〕坐也</blockquote><p>She closed the Heavenly Rock-Cave Door and shut herself away inside.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">高天原動而八百萬神共咲</blockquote><p>The myriad deities all laughed at once, so that the High Plain of Heaven rang with it.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">益汝命而貴神坐，故歡喜咲樂</blockquote><p>(Ame-no-Uzume-no-Mikoto&#x27;s answer) We are rejoicing, laughing and making merry because there is a deity here more noble than you.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">高天原及葦原中國，自得照明</blockquote><p>Both the High Plain of Heaven and the Central Land of Reed Plains became bright and illuminated of themselves.</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">Deities and people, and the shrines that enshrine them</h2>
       <ul class="who">
-        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amaterasu">Amaterasu-Ōmikami</a></b><small lang="ja">天照大御神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=ise">Ise Jingū (Naikū, Inner Shrine)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sumiyoshihakata">Sumiyoshi Jinja (Hakata)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=komagata">Komagata Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=minashijinja">Minashi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izawa">Izawa-no-Miya</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kamikawa">Kamikawa Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mononobe">Mononobe Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nitta">Nitta Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a></span></li>
+        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amaterasu">Amaterasu-Ōmikami</a></b><small lang="ja">天照大御神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=ise">Ise Jingū (Naikū, Inner Shrine)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=atsuta">Atsuta Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sumiyoshihakata">Sumiyoshi Jinja (Hakata)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=komagata">Komagata Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=minashijinja">Minashi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hinomisaki">Hinomisaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izawa">Izawa-no-Miya</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kamikawa">Kamikawa Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mononobe">Mononobe Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nitta">Nitta Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sada">佐太神社</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=takamimusubi">Takamimusubi-no-Kami</a></b><small lang="ja">高御産巣日神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hirota">Hirota Jinja</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=omoikane">Yagokoro-omoikane-no-Mikoto</a></b><small lang="ja">八意思兼命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=chichibu">Chichibu Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nichizen">Hinokuma Jingū and Kunikakasu Jingū</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=ishikoridome">Ishikoridome-no-Mikoto</a></b><small lang="ja">石凝姥命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=nichizen">Hinokuma Jingū and Kunikakasu Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=nakayama_mimasaka">Nakayama Jinja</a></span></li>
@@ -161,7 +201,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 7, main text</span><p>The main text of the Nihon Shoki says that Ame-no-Uzume-no-Mikoto (天鈿女命) held in her hand a spear wound with reeds (茅) and performed skillfully as an entertainer (俳優, wazaogi) in front of the door of the heavenly rock cave (天石窟); this is depicted differently from the Kojiki&#x27;s figure who becomes possessed with bamboo-grass leaves in her hand.</p><blockquote lang="zh-Hant">手持茅纒之矟</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 7, main text</span><p>In the main text of the Nihon Shoki, Amaterasu-Ōmikami (天照大神), hearing of Ame-no-Uzume-no-Mikoto&#x27;s (天鈿女命) behavior, opens the door a crack with her own hand and peeps out, and at that point 手力雄神<sup class="ru" title="reading unconfirmed">*</sup> draws her out; there is no scene, as in the Kojiki, in which a mirror is held out and shown to her.</p><blockquote lang="zh-Hant">乃以御手細開磐戶窺之</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 7, variant account 2</span><p>Variant account 2 records that when the mirror was put into the rock cave it touched the door and received a small scratch, which still remains today, and states that this mirror is the great deity enshrined at Ise. This statement is not in the Kojiki.</p><blockquote lang="zh-Hant">觸戶小瑕</blockquote></div>
@@ -169,13 +209,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="ukei.html"><small>← Previous story (Part 1, story 6)</small>The Pledge at the Heavenly River 天の安の河<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="orochi.html"><small>Next story (Part 1, story 8) →</small>The Banishment of Susanoo-no-Mikoto and Yamata-no-Orochi</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsumara/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">閇天石屋戶而，刺許母理〔此三字以音〕坐也</blockquote><p>She closed the Heavenly Rock-Cave Door and shut herself away inside.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">高天原動而八百萬神共咲</blockquote><p>The myriad deities all laughed at once, so that the High Plain of Heaven rang with it.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">益汝命而貴神坐，故歡喜咲樂</blockquote><p>(Ame-no-Uzume-no-Mikoto&#x27;s answer) We are rejoicing, laughing and making merry because there is a deity here more noble than you.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">高天原及葦原中國，自得照明</blockquote><p>Both the High Plain of Heaven and the Central Land of Reed Plains became bright and illuminated of themselves.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji. The pictures are all AI-generated illustrations, not depictions of actual sacred objects, shrine buildings or people.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amatsumara/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenouzumenomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omoikanenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

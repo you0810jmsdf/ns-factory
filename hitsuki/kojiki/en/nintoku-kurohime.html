@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,38 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 3 · story 2 of 13</p>
-    <h1>The Jealousy of 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> and 黒日売<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">石之日売命の嫉妬と黒日売</p>
-    <p class="pg-lead">Fearing the jealousy of the chief consort 石之日売命<sup class="ru" title="reading unconfirmed">*</sup>, 黒日売<sup class="ru" title="reading unconfirmed">*</sup>, who had been summoned from Kibi, fled back to her home, and the chief consort had her put off the boat and made her walk home. The emperor, falsely saying he was going to view 淡道嶋<sup class="ru" title="reading unconfirmed">*</sup>, went all the way to Kibi to visit 黒日売, and the two exchanged songs.</p>
-    <div class="xlink"><a href="../../shoki/en/nintoku.html">Read in the Nihon Shoki: Emperor Nintoku, the people&#x27;s cooking fires, and Empress 磐之媛<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 3 · story 2 of 13</p>
+        <h1>The Jealousy of 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> and 黒日売<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">石之日売命の嫉妬と黒日売</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Fearing the jealousy of the chief consort 石之日売命<sup class="ru" title="reading unconfirmed">*</sup>, 黒日売<sup class="ru" title="reading unconfirmed">*</sup>, who had been summoned from Kibi, fled back to her home, and the chief consort had her put off the boat and made her walk home. The emperor, falsely saying he was going to view 淡道嶋<sup class="ru" title="reading unconfirmed">*</sup>, went all the way to Kibi to visit 黒日売, and the two exchanged songs.</p>
+        <p class="bk-meta">Reading time for the story: about 2 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/nintoku.html">Read in the Nihon Shoki: Emperor Nintoku, the people&#x27;s cooking fires, and Empress 磐之媛<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The jealousy of 石之日売命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">The chief consort 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> was extremely jealous, and the concubines the emperor kept in his service could not even peep into the palace. The text records that whenever there was anything to be said, the chief consort was so jealous that she stamped her feet.</p>
+      <h3>黒日売<sup class="ru" title="reading unconfirmed">*</sup> flees down to Kibi</h3>
+      <p class="t">The emperor heard of 黒日売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the 海部直<sup class="ru" title="reading unconfirmed">*</sup> of Kibi, who was beautiful in appearance, summoned her, and kept her in his service. But 黒日売, fearing the chief consort&#x27;s jealousy, fled down to her home province. The emperor, from a high terrace, watched 黒日売&#x27;s boat floating out onto the sea, and sang a song.</p>
+      <h3>黒日売<sup class="ru" title="reading unconfirmed">*</sup> is driven off the boat</h3>
+      <p class="t">Hearing this song, the chief consort was furious; she sent people to 大浦<sup class="ru" title="reading unconfirmed">*</sup> to drive 黒日売<sup class="ru" title="reading unconfirmed">*</sup> off the boat and made her walk home. The emperor, longing for 黒日売, deceived the chief consort, saying, &quot;I wish to view 淡道嶋&quot;<sup class="ru" title="reading unconfirmed">*</sup>, and set out. On reaching 淡道嶋, he gazed far out and sang a song. That song includes the names of islands such as Awashima (阿波志摩, 淡島) and Onogoroshima (淤能碁呂志摩).</p>
+      <h3>Picking 菘菜<sup class="ru" title="reading unconfirmed">*</sup> greens in Kibi</h3>
+      <p class="t">From that island the emperor went from island to island to the province of Kibi. 黒日売<sup class="ru" title="reading unconfirmed">*</sup> welcomed the emperor at a place in the 山方<sup class="ru" title="reading unconfirmed">*</sup> of that province and offered him the imperial meal. When 黒日売 was picking the 菘菜<sup class="ru" title="reading unconfirmed">*</sup> greens of that land to cook the imperial soup (大御羹), the emperor came to the place where she was picking and sang a song.</p>
+      <h3>黒日売<sup class="ru" title="reading unconfirmed">*</sup> presents songs</h3>
+      <p class="t">When the emperor returned to the capital, 黒日売<sup class="ru" title="reading unconfirmed">*</sup> presented a song, and then sang one more. Both songs begin with the words &quot;夜麻登幣邇&quot;<sup class="ru" title="reading unconfirmed">*</sup> (&quot;toward Yamato&quot;).</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>The chief consort 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> was extremely jealous, and 黒日売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the 海部直<sup class="ru" title="reading unconfirmed">*</sup> of Kibi, who had been summoned by the emperor, fled back to her home in fear of the chief consort. Still angry, the chief consort had 黒日売 driven off the boat at 大浦<sup class="ru" title="reading unconfirmed">*</sup> and made her walk home.</li>
         <li><span class="kind ">Main text</span>The emperor deceived the chief consort, saying, &quot;I wish to view 淡道嶋&quot;<sup class="ru" title="reading unconfirmed">*</sup>, and set out; after gazing far out from 淡道嶋 and singing, he went from island to island to the province of Kibi and met 黒日売<sup class="ru" title="reading unconfirmed">*</sup>.</li>
@@ -117,24 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-int">Commentary</span>The entry for 須勢理毘売<sup class="ru" title="reading unconfirmed">*</sup> in the same database cites the story of 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> as a tradition of a principal wife who is jealous of other wives, and introduces a theory that sees it not as a mere love story but as telling of a struggle for leadership of rituals among women who, like shrine maidens (巫女), were in charge of worship. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/" target="_blank" rel="noopener">[source, Japanese]</a></li>
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>The story of 黒日売<sup class="ru" title="reading unconfirmed">*</sup> could not be confirmed in Book 11 (Emperor Nintoku) of the Nihon Shoki. However, in an entry for the 7th month of the 16th year, the emperor says that because of the empress&#x27;s jealousy he has been unable to be united with the palace lady 桑田玖賀媛<sup class="ru" title="reading unconfirmed">*</sup>, and gives her to 速待<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the governors of Harima (播磨国造).</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>The chief consort 石之日売命<sup class="ru" title="reading unconfirmed">*</sup> was extremely jealous, and the concubines the emperor kept in his service could not even peep into the palace. The text records that whenever there was anything to be said, the chief consort was so jealous that she stamped her feet.</p>
-      <p>The emperor heard of 黒日売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the 海部直<sup class="ru" title="reading unconfirmed">*</sup> of Kibi, who was beautiful in appearance, summoned her, and kept her in his service. But 黒日売, fearing the chief consort&#x27;s jealousy, fled down to her home province. The emperor, from a high terrace, watched 黒日売&#x27;s boat floating out onto the sea, and sang a song.</p>
-      <p>Hearing this song, the chief consort was furious; she sent people to 大浦<sup class="ru" title="reading unconfirmed">*</sup> to drive 黒日売<sup class="ru" title="reading unconfirmed">*</sup> off the boat and made her walk home. The emperor, longing for 黒日売, deceived the chief consort, saying, &quot;I wish to view 淡道嶋&quot;<sup class="ru" title="reading unconfirmed">*</sup>, and set out. On reaching 淡道嶋, he gazed far out and sang a song. That song includes the names of islands such as Awashima (阿波志摩, 淡島) and Onogoroshima (淤能碁呂志摩).</p>
-      <p>From that island the emperor went from island to island to the province of Kibi. 黒日売<sup class="ru" title="reading unconfirmed">*</sup> welcomed the emperor at a place in the 山方<sup class="ru" title="reading unconfirmed">*</sup> of that province and offered him the imperial meal. When 黒日売 was picking the 菘菜<sup class="ru" title="reading unconfirmed">*</sup> greens of that land to cook the imperial soup (大御羹), the emperor came to the place where she was picking and sang a song.</p>
-      <p>When the emperor returned to the capital, 黒日売<sup class="ru" title="reading unconfirmed">*</sup> presented a song, and then sang one more. Both songs begin with the words &quot;夜麻登幣邇&quot;<sup class="ru" title="reading unconfirmed">*</sup> (&quot;toward Yamato&quot;).</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">其大后石之日賣命。甚多嫉妬</blockquote><p>That chief consort, 石之日売命<sup class="ru" title="reading unconfirmed">*</sup>, was extremely jealous.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">畏其大后之嫉。逃下本國</blockquote><p>(黒日売<sup class="ru" title="reading unconfirmed">*</sup>) fled down to her home province in fear of the chief consort&#x27;s jealousy.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">欺大后。曰欲見淡道嶋而</blockquote><p>(He set out) deceiving the chief consort, saying he wished to view 淡道嶋<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">採其地之菘菜時</blockquote><p>When (黒日売<sup class="ru" title="reading unconfirmed">*</sup>) was picking the 菘菜 greens of that land.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -153,20 +192,30 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 11 — the 16th year of Emperor Nintoku, autumn, 7th month (戊寅朔)</span><p>The story of 黒日売<sup class="ru" title="reading unconfirmed">*</sup> could not be confirmed in Book 11 of the Nihon Shoki. Instead there is a story in which, because of the empress&#x27;s jealousy, the emperor has been unable to be united with the palace lady 桑田玖賀媛<sup class="ru" title="reading unconfirmed">*</sup>; 玖賀媛 was given to 速待<sup class="ru" title="reading unconfirmed">*</sup>, but died of illness on the way while being sent to 桑田.</p><blockquote lang="zh-Hant">苦皇后之妬不能合</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 11 — the 2nd year of Emperor Nintoku, spring, 3rd month (辛未朔戊寅)</span><p>The Nihon Shoki writes the chief consort&#x27;s name as &quot;磐之媛命&quot;<sup class="ru" title="reading unconfirmed">*</sup> and records the year and month, stating that she was made empress in the 3rd month of the 2nd year after his accession.</p><blockquote lang="zh-Hant">立磐之媛命爲皇后</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="nintoku-kamado.html"><small>← Previous story (Part 3, story 1)</small>The Accession of Emperor Nintoku and the People&#x27;s Hearths</a><a class="next" href="nintoku-yamashiro.html"><small>Next story (Part 3, story 3) →</small>The Chief Consort&#x27;s Journey to 山代<sup class="ru" title="reading unconfirmed">*</sup> and the Six Songs</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">Nihon Shoki, Book 11</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehikatawake/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">其大后石之日賣命。甚多嫉妬</blockquote><p>That chief consort, 石之日売命<sup class="ru" title="reading unconfirmed">*</sup>, was extremely jealous.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">畏其大后之嫉。逃下本國</blockquote><p>(黒日売<sup class="ru" title="reading unconfirmed">*</sup>) fled down to her home province in fear of the chief consort&#x27;s jealousy.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">欺大后。曰欲見淡道嶋而</blockquote><p>(He set out) deceiving the chief consort, saying he wished to view 淡道嶋<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">採其地之菘菜時</blockquote><p>When (黒日売<sup class="ru" title="reading unconfirmed">*</sup>) was picking the 菘菜 greens of that land.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十一" target="_blank" rel="noopener">Nihon Shoki, Book 11</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/onogoroshima/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/awashima/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takehikatawake/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/suseribime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

@@ -1,5 +1,5 @@
 {
- "note": "日本書紀アーカイブの「読みもの」の型（場面の小見出し・扉絵・挿絵）。episodes.json の研究データには手を入れず、見せ方だけをここに書く。heads は story の段落と同じ数・同じ順で、言葉はその段落の本文から取る（本文に無い解釈を足さない）。hero・figs の書き方は kojiki/data/layout.json と同じ。",
+ "note": "日本書紀アーカイブの「読みもの」の型（場面の小見出し・扉絵・挿絵）。episodes.json の研究データには手を入れず、見せ方だけをここに書く。heads は story の段落と同じ数・同じ順で、言葉はその段落の本文から取る（本文に無い解釈を足さない）。hero・figs の書き方は kojiki/data/layout.json と同じ。 heads_en は英語版用（英語の本文の言葉から。読み未確認の名前は漢字＋(reading unconfirmed)）。",
  "pages": {
   "dan01": {
    "heads": [
@@ -8,7 +8,13 @@
     "男女が対になった神々が現れる",
     "八神と神世七代"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Heaven and earth divide",
+    "Kuni-no-Tokotachi-no-Mikoto, Kuni-no-Sazuchi-no-Mikoto and 豊斟渟尊 (reading unconfirmed)",
+    "Deities appear in male and female pairs",
+    "Eight deities and the Seven Generations of the Age of the Gods"
+   ]
   },
   "dan04": {
    "heads": [
@@ -18,7 +24,14 @@
     "隠岐洲と佐度洲を双子で生む",
     "大八洲国の呼び名"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The Jewelled Spear of Heaven and Onogoro Island",
+    "The female deity speaks first and they go round again",
+    "United as husband and wife",
+    "Oki Island and Sado Island born as twins",
+    "The name Land of the Great Eight Islands"
+   ]
   },
   "dan05": {
    "heads": [
@@ -27,7 +40,13 @@
     "月神と蛭児を生む",
     "素戔嗚尊を根国へ追いやる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The births of 句句迺馳 (reading unconfirmed) and 草野姫 (reading unconfirmed)",
+    "The Sun Deity Ōhirume-no-Muchi sent to heaven",
+    "The Moon Deity and Hiruko",
+    "Susanoo-no-Mikoto driven away to the Root Land"
+   ]
   },
   "dan06": {
    "heads": [
@@ -37,7 +56,14 @@
     "三柱の女神と五柱の男神",
     "男神を引き取り三女神を授ける"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Susanoo-no-Mikoto ascends to heaven",
+    "Amaterasu-Ōmikami brandishes her bow and questions him",
+    "Susanoo-no-Mikoto proposes a pledge",
+    "Three goddesses and five male deities",
+    "Taking the five male deities and giving the three goddesses"
+   ]
   },
   "dan07": {
    "heads": [
@@ -48,7 +74,15 @@
     "手力雄神が天照大神を引き出す",
     "千座置戸を科される"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The violent conduct of Susanoo-no-Mikoto",
+    "Amaterasu-Ōmikami enters the Heavenly Rock Cave",
+    "The eight hundred thousand deities gather at 天安河 (reading unconfirmed)",
+    "Ame-no-Uzume-no-Mikoto performs",
+    "Tajikarao-no-Kami draws out Amaterasu-Ōmikami",
+    "A thousand tables of restitution imposed"
+   ]
   },
   "dan08": {
    "heads": [
@@ -58,7 +92,14 @@
     "草薙剣を天神に献上する",
     "出雲の清地に宮を建てる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Meeting Ashinazuchi and Tenazuchi",
+    "Inada-hime changed into a many-toothed comb",
+    "Hacking the serpent to pieces with the ten-span sword",
+    "The Kusanagi Sword presented to the heavenly deities",
+    "Building a palace at Suga in Izumo"
+   ]
   },
   "dan09": {
    "heads": [
@@ -70,7 +111,16 @@
     "皇孫が日向の高千穗峯に降る",
     "鹿葦津姫が火を放ち三人を生む"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Ame-no-Hohi-no-Mikoto does not report back",
+    "Ame-no-Wakahiko shoots the pheasant and dies",
+    "Ajisukitakahikone-no-Kami cuts down the mourning house",
+    "The answer of Kotoshironushi-no-Kami",
+    "Ōanamuchi-no-Kami gives the broad spear and hides",
+    "The imperial grandson descends to the peak of Takachiho",
+    "鹿葦津姫 (reading unconfirmed) sets the fire and bears three children"
+   ]
   },
   "dan10": {
    "heads": [
@@ -81,7 +131,15 @@
     "兄の火闌降命を赦す",
     "豐玉姫が龍になり海の道を閉じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Exchanging luck and losing the fishhook",
+    "Shiotsuchi-no-Oji and the palace of the sea deity",
+    "The hook found in the mouth of 赤女 (reading unconfirmed)",
+    "Marrying Toyotama-hime and three years in the palace of the sea",
+    "Honosusori-no-Mikoto is pardoned",
+    "Toyotama-hime becomes a dragon and closes the way of the sea"
+   ]
   },
   "dan11": {
    "heads": [
@@ -89,7 +147,12 @@
     "四人の男子が生まれる",
     "西洲之宮で崩じ吾平山上陵に葬る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Ugayafukiaezu-no-Mikoto takes Tamayori-hime as consort",
+    "Four sons are born",
+    "Burial in the 吾平山上陵 (reading unconfirmed) mausoleum"
+   ]
   },
   "jinmu-tosei": {
    "heads": [
@@ -101,7 +164,16 @@
     "国見丘の八十梟帥と兄磯城を斬る",
     "金色の靈鵄と饒速日命の帰順"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Proposing to go east and establish a capital",
+    "珍彦 (reading unconfirmed) is named 椎根津彦 (reading unconfirmed) and they reach Naniwa",
+    "Battle with Nagasunebiko and the death of Itsuse-no-Mikoto",
+    "The sword of 高倉下 (reading unconfirmed) and the guide 頭八咫烏 (reading unconfirmed)",
+    "兄猾 (reading unconfirmed) is crushed; worship on the 丹生川 (reading unconfirmed)",
+    "Cutting down the Eighty Bandits and 兄磯城 (reading unconfirmed)",
+    "The golden kite and the submission of Nigihayahi-no-Mikoto"
+   ]
   },
   "jinmu-sokui": {
    "heads": [
@@ -111,7 +183,14 @@
     "功績を定め鳥見山で皇祖天神を祭る",
     "秋津洲の名と橿原宮で崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Executing the earth spiders and renaming 葛城 (reading unconfirmed)",
+    "Building a palace at Kashihara",
+    "Ascending the throne at the Kashihara palace",
+    "Rewarding merits and worship on Mount 鳥見山 (reading unconfirmed)",
+    "The name 秋津洲 (reading unconfirmed) and death at the Kashihara palace"
+   ]
   },
   "kesshi": {
    "heads": [
@@ -123,7 +202,16 @@
     "孝元天皇の即位と境原宮",
     "開化天皇の即位と率川宮"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "神渟名川耳 (reading unconfirmed) shoots 手研耳命 (reading unconfirmed)",
+    "The accession of 神渟名川耳尊 (reading unconfirmed) and the 高丘宮 (reading unconfirmed) palace",
+    "Emperor Annei and Emperor Itoku take the throne",
+    "Emperor Kōshō and Emperor Kōan take the throne",
+    "Emperor Kōrei takes the throne at 廬戸宮 (reading unconfirmed)",
+    "Emperor Kōgen takes the throne at 境原宮 (reading unconfirmed)",
+    "Emperor Kaika takes the throne at 率川宮 (reading unconfirmed)"
+   ]
   },
   "sujin-miwa": {
    "heads": [
@@ -134,7 +222,15 @@
     "大田田根子が大物主大神を祭り疫病がやむ",
     "活日が神酒を献じ墨坂神を祭る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Emperor Sujin takes the throne",
+    "Amaterasu-Ōmikami is worshipped at 笠縫邑 (reading unconfirmed)",
+    "Ōmononushi-no-Kami speaks in a dream",
+    "大田田根子 (reading unconfirmed) is found at 陶邑 (reading unconfirmed) in 茅渟縣 (reading unconfirmed)",
+    "The epidemic ceases as 大田田根子 (reading unconfirmed) worships Ōmononushi-no-Ōkami",
+    "活日 (reading unconfirmed) offers sacred sake and Sumisaka-no-Kami is worshipped"
+   ]
   },
   "sujin-shido": {
    "heads": [
@@ -146,7 +242,16 @@
     "豐城命と活目尊を夢で占う",
     "神宝をめぐり出雲振根が弟を殺す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Ministers are sent in four directions as generals",
+    "The girl's song at 和珥坂 (reading unconfirmed) and the sign of rebellion",
+    "吾田媛 (reading unconfirmed) is defeated and 武埴安彦 (reading unconfirmed) is shot",
+    "The wife of Ōmononushi-no-Kami is buried at Hashihaka",
+    "The generals of the four roads set out and the people are surveyed",
+    "Dream divination between Toyokiirihiko-no-Mikoto and 活目尊 (reading unconfirmed)",
+    "出雲振根 (reading unconfirmed) kills his younger brother over the treasures"
+   ]
   },
   "suinin-sahohiko": {
    "heads": [
@@ -158,7 +263,16 @@
     "日葉酢媛命が皇后となる",
     "誉津別王が鵠を見て話す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Emperor Suinin takes the throne and 誉津別命 (reading unconfirmed) is born",
+    "Red silk and the Silla prince Ame-no-Hiboko",
+    "狭穂彦王 (reading unconfirmed) gives the empress a dagger",
+    "The attack on the rice-stack fortress of 狭穂彦 (reading unconfirmed)",
+    "野見宿禰 (reading unconfirmed) and 当麻蹶速 (reading unconfirmed) compete in strength",
+    "日葉酢媛命 (reading unconfirmed) becomes empress",
+    "Prince 誉津別王 (reading unconfirmed) sees a swan and speaks"
+   ]
   },
   "suinin-jidai": {
    "heads": [
@@ -170,7 +284,16 @@
     "清彦が天日槍の宝を献上する",
     "田道間守が非時香菓を求める"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Amaterasu-Ōmikami is entrusted to 倭姫命 (reading unconfirmed)",
+    "Attendants buried alive at the tomb of 倭彦命 (reading unconfirmed)",
+    "野見宿禰 (reading unconfirmed) and the haniwa",
+    "綺戸辺 (reading unconfirmed) of Yamashiro and the ponds and channels dug",
+    "五十瓊敷命 (reading unconfirmed) and the sacred treasures of Isonokami Shrine",
+    "清彦 (reading unconfirmed) presents the treasures of Ame-no-Hiboko",
+    "田道間守 (reading unconfirmed) is sent to the Land of Tokoyo"
+   ]
   },
   "keiko-junko": {
    "heads": [
@@ -182,7 +305,16 @@
     "筑紫を巡り火国・阿蘇の名がつく",
     "武内宿禰が日高見国を奏上する"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Emperor Keikō takes the throne and the twin princes are born",
+    "八坂入媛 (reading unconfirmed) enters the women's quarters in place of 弟媛 (reading unconfirmed)",
+    "The Kumaso rebel and 神夏磯媛 (reading unconfirmed) submits",
+    "The tsuchigumo are struck down in the land of 碩田国 (reading unconfirmed)",
+    "厚鹿文 (reading unconfirmed) is struck down and the land of 襲国 (reading unconfirmed) is pacified",
+    "The tour of Tsukushi and the names of Hi and Aso",
+    "Takeuchi-no-Sukune reports on the land of 日高見国 (reading unconfirmed)"
+   ]
   },
   "yamatotakeru-seito": {
    "heads": [
@@ -193,7 +325,15 @@
     "東夷が背き日本武尊が名のり出る",
     "伊勢神宮で草薙剣を授かる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Yamato Takeru-no-Mikoto is sent against the Kumaso",
+    "Entering the Kumaso banquet in the guise of a young girl",
+    "梟帥 (reading unconfirmed) offers the name Prince Yamato Takeru",
+    "Yamato Takeru-no-Mikoto reports the pacification of the Kumaso",
+    "The eastern barbarians rebel and Yamato Takeru-no-Mikoto steps forward",
+    "Receiving the sword Kusanagi at the Ise Shrine"
+   ]
   },
   "yamatotakeru-saigo": {
    "heads": [
@@ -205,7 +345,16 @@
     "稚足彦尊を皇太子とし天皇が崩じる",
     "成務天皇の即位と国郡の造長"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Fire set on the plain and 弟橘媛 (reading unconfirmed) enters the sea",
+    "The Emishi surrender and the prince enters the 酒折宮 (reading unconfirmed) palace",
+    "Longing for 弟橘媛 (reading unconfirmed) at the 碓日坂 (reading unconfirmed) slope",
+    "The wild deity of Mount Ibuki and the 居醒泉 (reading unconfirmed) spring",
+    "Death at 能褒野 (reading unconfirmed) and the white bird",
+    "稚足彦尊 (reading unconfirmed) is made crown prince and the emperor dies",
+    "Emperor Seimu and the heads placed over provinces and districts"
+   ]
   },
   "chuai": {
    "heads": [
@@ -217,7 +366,16 @@
     "神が皇后に乗り移り新羅国を教える",
     "天皇が崩じ喪を隠す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "足仲彦天皇 (reading unconfirmed) takes the throne",
+    "White birds are presented and 蒲見別王 (reading unconfirmed) is put to death",
+    "気長足姫尊 (reading unconfirmed) becomes empress and the Kehi Palace is built",
+    "The empress obtains a wish-granting jewel in the sea",
+    "熊鰐 (reading unconfirmed) and 五十迹手 (reading unconfirmed) meet the emperor",
+    "A deity possesses the empress and speaks of Silla",
+    "The emperor dies and his death is concealed"
+   ]
   },
   "jingu-shiragi": {
    "heads": [
@@ -229,7 +387,16 @@
     "新羅王が降伏し三韓が従う",
     "誉田天皇を生み荒魂を祭る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "気長足姫尊 (reading unconfirmed) builds an abstinence palace",
+    "The empress becomes the medium and asks the names of the deities",
+    "羽白熊鷲 (reading unconfirmed) is destroyed and 田油津媛 (reading unconfirmed) is put to death",
+    "The empress catches a 細鱗魚 (reading unconfirmed)",
+    "The empress sets out military rules",
+    "The king of Silla surrenders and the Three Han",
+    "誉田天皇 (reading unconfirmed) is born and the rough spirit is worshipped"
+   ]
   },
   "jingu-oshikuma": {
    "heads": [
@@ -241,7 +408,16 @@
     "百済の肖古王と七枝刀",
     "肖古王が薨じ皇太后が崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "麛坂王 (reading unconfirmed) and Oshikuma-no-Miko wait for the Empress",
+    "Divination at the harbor of 務古 (reading unconfirmed) and the enshrining of the deities",
+    "Days as dark as night and 阿豆那比之罪 (reading unconfirmed)",
+    "Takeuchi-no-Sukune leads soldiers against Oshikuma-no-Miko",
+    "The first year of the regency and 葛城襲津彦 (reading unconfirmed)",
+    "The king of Paekche and the Seven-Branched Sword",
+    "The death of King 肖古 (reading unconfirmed) and of the Empress Dowager"
+   ]
   },
   "ojin-jidai": {
    "heads": [
@@ -252,7 +428,15 @@
     "武内宿禰と甘美内宿禰の探湯",
     "髪長媛と大鷦鷯尊"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Born as Emperor Homuta and named for the wrist guard",
+    "The Crown Prince ascends the throne and Nakatsuhime-no-Mikoto becomes Empress",
+    "Emishi tribute and the ship named 枯野 (reading unconfirmed)",
+    "Building the 韓人池 pond (reading unconfirmed) and the Paekche Record",
+    "Takeuchi-no-Sukune and the ordeal by boiling water",
+    "髪長媛 (reading unconfirmed) is given to 大鷦鷯尊 (reading unconfirmed)"
+   ]
   },
   "ojin-uji": {
    "heads": [
@@ -264,7 +448,16 @@
     "阿知使主を呉に遣わし縫工女を求める",
     "菟道稚郎子を太子とし天皇が崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Paekche presents 真毛津 (reading unconfirmed) and 弓月君 (reading unconfirmed) arrives",
+    "Summoning 阿直岐 (reading unconfirmed) and 王仁 (reading unconfirmed)",
+    "The 国樔 (reading unconfirmed) present sweet sake",
+    "Sending 兄媛 (reading unconfirmed) to Kibi and dividing the land of Kibi",
+    "木満致 (reading unconfirmed) and the memorial from Koguryŏ",
+    "Sending 阿知使主 (reading unconfirmed) to Wu to seek seamstresses",
+    "The Crown Prince 菟道稚郎子 (reading unconfirmed) is chosen and the Emperor dies"
+   ]
   },
   "nintoku": {
    "heads": [
@@ -276,7 +469,16 @@
     "菟餓野の鹿と隼別皇子",
     "田道が蝦夷と戦い百舌鳥野陵に葬られる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The Crown Prince and 大鷦鷯尊 (reading unconfirmed) yield the throne to each other",
+    "Accession of 大鷦鷯尊 (reading unconfirmed) and the 高津宮 palace (reading unconfirmed)",
+    "No cooking smoke and exemption from taxes and labor",
+    "Digging the 堀江 (reading unconfirmed) and building the 茨田 embankment (reading unconfirmed)",
+    "Taking 八田皇女 (reading unconfirmed) as consort and the Empress moving to the 筒城宮 palace (reading unconfirmed)",
+    "The deer of 菟餓野 (reading unconfirmed) and 隼別皇子 (reading unconfirmed)",
+    "田道 (reading unconfirmed) fights the Emishi; the Emperor is buried in the 百舌鳥野陵 tomb (reading unconfirmed)"
+   ]
   },
   "richu-hanzei": {
    "heads": [
@@ -287,7 +489,15 @@
     "筑紫の三神を祀らず崩じる",
     "瑞齒別天皇の即位"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "住吉仲皇子 (reading unconfirmed) surrounds the Crown Prince's palace",
+    "Going round by the 當摩 road (reading unconfirmed) from the 埴生坂 slope (reading unconfirmed)",
+    "瑞齒別皇子 (reading unconfirmed) has 仲皇子 (reading unconfirmed) killed",
+    "Accession at the 磐余稚櫻宮 palace (reading unconfirmed)",
+    "Rites not performed for the three deities of Tsukushi, and the death of the Emperor",
+    "Accession of Emperor 瑞齒別 (reading unconfirmed)"
+   ]
   },
   "ingyo-anko": {
    "heads": [
@@ -299,7 +509,16 @@
     "天皇が崩じ新羅の弔使が来る",
     "穴穗天皇の即位と眉輪王に殺される"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Emperor 雄朝津間稚子宿禰 (reading unconfirmed) accepts the imperial seals",
+    "忍坂大中姫 (reading unconfirmed) becomes Empress and the 刑部 (reading unconfirmed) are established",
+    "Correcting clan names and titles by the oath ordeal by boiling water",
+    "衣通郎姫 (reading unconfirmed) is given a home at Fujiwara",
+    "The pearl of 男狹磯 (reading unconfirmed) and 木梨輕皇子 (reading unconfirmed) made Crown Prince",
+    "The Emperor dies and Silla sends mourning envoys",
+    "Emperor 穴穗 (reading unconfirmed) takes the throne and is killed by 眉輪王 (reading unconfirmed)"
+   ]
   },
   "yuryaku-1": {
    "heads": [
@@ -311,7 +530,16 @@
     "葛城山で一事主神と狩りをする",
     "少子部連の姓と三諸岳の大蛇"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "眉輪王 (reading unconfirmed) stabs Emperor 穴穗 (reading unconfirmed) to death",
+    "Prince 市邊押磐 (reading unconfirmed) is shot and the accession at 泊瀬朝倉 (reading unconfirmed)",
+    "The Empress and three consorts are installed",
+    "池津媛 (reading unconfirmed) is burned and 大津馬飼 (reading unconfirmed) cut down",
+    "Princess 栲幡 (reading unconfirmed) buries the sacred mirror and takes her own life",
+    "Hunting with Hitokotonushi-no-Kami on 葛城山 (reading unconfirmed)",
+    "The title 少子部連 (reading unconfirmed) and the great serpent of 三諸岳 (reading unconfirmed)"
+   ]
   },
   "yuryaku-2": {
    "heads": [
@@ -323,7 +551,16 @@
     "久麻那利を与え百濟を再興させる",
     "末多王を王とし遺詔を残して崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Defeating the Koguryŏ army caught in the middle",
+    "Sending 紀小弓宿禰 (reading unconfirmed) and others to Silla",
+    "The dog of 水間君 (reading unconfirmed) and the bird keepers' group",
+    "People of Wu settled at 桧隈野 (reading unconfirmed) and 根使主 (reading unconfirmed) killed",
+    "The people of 秦 (reading unconfirmed) are given to 秦酒公 (reading unconfirmed)",
+    "Giving 久麻那利 (reading unconfirmed) to restore Paekche",
+    "Setting up 末多王 (reading unconfirmed) as king and the testamentary edict"
+   ]
   },
   "seinei-kenzo": {
    "heads": [
@@ -335,7 +572,16 @@
     "陵を壊したいと語り億計が諫める",
     "億計天皇が即位し春日大娘皇女を皇后とする"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Prince 星川 (reading unconfirmed) holds the Great Treasury and is burned to death",
+    "Accession at 磐余甕栗 (reading unconfirmed) and welcoming the brothers",
+    "Prince 弘計 (reading unconfirmed) declares himself in Harima",
+    "Emperor 弘計 (reading unconfirmed) ascends the throne at the 近飛鳥八釣宮 palace (reading unconfirmed)",
+    "Digging up his father's remains guided by 置目 (reading unconfirmed)",
+    "The wish to destroy the tomb and the admonition of the Crown Prince 億計 (reading unconfirmed)",
+    "Emperor 億計 (reading unconfirmed) ascends the throne and makes 春日大娘 (reading unconfirmed) Empress"
+   ]
   },
   "buretsu": {
    "heads": [
@@ -346,7 +592,15 @@
     "妊婦の腹を割き人の爪をはぐ",
     "人を池の樋に入らせ矛で刺す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The Crown Prince fond of the principles of punishment",
+    "平群眞鳥臣 (reading unconfirmed) monopolizes the government",
+    "Songs exchanged with Shibi over 影媛 (reading unconfirmed)",
+    "Striking down 眞鳥 (reading unconfirmed) and ascending the throne at 泊瀬列城 (reading unconfirmed)",
+    "Cutting open a pregnant woman's belly and tearing out nails",
+    "People made to enter a pond sluice and stabbed with a spear"
+   ]
   },
   "keitai": {
    "heads": [
@@ -358,7 +612,16 @@
     "毛野臣が誓湯で裁き対馬で病死",
     "磐余玉穂宮で亡くなり藍野陵に葬る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "男大迹天皇 (reading unconfirmed) raised by 振媛 (reading unconfirmed), and 倭彦王 (reading unconfirmed)",
+    "男大迹王 (reading unconfirmed) is put forward and ascends at the 樟葉宮 (reading unconfirmed) palace",
+    "手白香皇女 (reading unconfirmed) made empress and the edict on farming and weaving",
+    "Four districts of Mimana given to Paekche",
+    "Iwai, Kuni-no-Miyatsuko of Tsukushi, rebels and is beheaded by 物部麁鹿火 (reading unconfirmed)",
+    "毛野臣 (reading unconfirmed) judges by ordeal by hot water and dies on Tsushima",
+    "The emperor's death at the 磐余玉穂宮 palace (reading unconfirmed) and burial in the 藍野陵 tomb (reading unconfirmed)"
+   ]
   },
   "ankan-senka": {
    "heads": [
@@ -369,7 +632,15 @@
     "武小廣國押盾天皇の即位",
     "那津之口に官家を造る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "勾大兄廣國押武金日天皇 (reading unconfirmed) becomes emperor",
+    "The 伊甚屯倉 (reading unconfirmed) estate and 飯粒 (reading unconfirmed) of 三嶋 (reading unconfirmed)",
+    "Miyake estates built for the empress and consorts",
+    "Miyake estates from Tsukushi to Suruga and Kamitsukeno",
+    "The accession of 武小廣國押盾天皇 (reading unconfirmed)",
+    "A government office at 那津之口 (reading unconfirmed)"
+   ]
   },
   "kinmei-1": {
    "heads": [
@@ -381,7 +652,16 @@
     "佐渡島の肅愼人と丈六の仏像",
     "釈迦仏の金銅像が献じられる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "秦大津父 (reading unconfirmed) and the accession of 天國排開廣庭天皇 (reading unconfirmed)",
+    "石姫 (reading unconfirmed) made empress and the move to 磯城嶋 (reading unconfirmed)",
+    "堅鹽媛 (reading unconfirmed), 小姉君 (reading unconfirmed) and the consorts' children",
+    "Talks on restoring Mimana with King Sŏngmyŏng",
+    "King Sŏngmyŏng presents three plans",
+    "People of 肅愼 (reading unconfirmed) on Sado Island and the jōroku Buddha image",
+    "A gilt-bronze image of the Buddha Śākyamuni"
+   ]
   },
   "kinmei-2": {
    "heads": [
@@ -393,7 +673,16 @@
     "高麗の使者と白猪史の姓",
     "天皇が病で新羅を討てと言い残す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The shining camphor log and two Buddha images",
+    "餘昌 (reading unconfirmed) advances toward Koguryŏ",
+    "King Sŏngmyŏng captured and beheaded by 苦都 (reading unconfirmed)",
+    "蘇我臣 (reading unconfirmed) tells 惠 (reading unconfirmed) of the deity who founded the country",
+    "Silla destroys the government post of Mimana",
+    "Koguryŏ envoys and the title 白猪史 (reading unconfirmed)",
+    "The emperor's illness and last words about Silla"
+   ]
   },
   "bidatsu": {
    "heads": [
@@ -405,7 +694,16 @@
     "守屋が塔を焼き仏像を捨てる",
     "殯宮で誄を述べる馬子と守屋"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The accession of Emperor Bidatsu and the Koguryŏ memorial",
+    "The Koguryŏ envoys and 吉備海部直難波 (reading unconfirmed)",
+    "広姫 (reading unconfirmed) made empress and the 幸玉宮 (reading unconfirmed) palace built",
+    "日羅 (reading unconfirmed) summoned from Paekche",
+    "The stone image of Maitreya and the nun Zenshin",
+    "Moriya burns the pagoda and throws away the Buddha images",
+    "The eulogies of Umako and Moriya"
+   ]
   },
   "yomei-sushun": {
    "heads": [
@@ -417,7 +715,16 @@
     "泊瀬部皇子が即位し任那の再建を諮る",
     "馬子が東漢直駒に天皇を殺させる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "The accession of Emperor Yōmei and the empress",
+    "Moriya executes 三輪君逆 (reading unconfirmed)",
+    "Taking refuge in the Three Treasures and the emperor's death",
+    "The attack on Moriya and the building of Shitennō-ji",
+    "捕鳥部萬 (reading unconfirmed) and the white dog",
+    "Prince 泊瀬部 (reading unconfirmed) takes the throne and the plan to rebuild Mimana",
+    "Umako has 東漢直駒 (reading unconfirmed) kill the emperor"
+   ]
   },
   "suiko-1": {
    "heads": [
@@ -429,7 +736,16 @@
     "冠位を行い十二階とする",
     "憲法十七条を作る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Empress Suiko ascends the throne at the Toyura Palace",
+    "Prince Umayado no Toyotomimi made Crown Prince and regent",
+    "Promoting the Three Treasures and the completion of Hōkō-ji",
+    "The capture of five Silla fortresses",
+    "Prince Kume made General for Attacking Silla",
+    "Cap ranks established in twelve grades",
+    "The Seventeen-Article Constitution"
+   ]
   },
   "suiko-2": {
    "heads": [
@@ -441,7 +757,16 @@
     "厩戸豊聡耳皇子が薨じる",
     "田村皇子を戒め天皇が崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Making two jōroku Buddha images",
+    "Lectures on the Śrīmālā Sutra and worship of the gods",
+    "Imoko returns and Pei Shiqing reaches Tsukushi",
+    "道欣 (reading unconfirmed) and others arrive at 葦北津 (reading unconfirmed)",
+    "The Crown Prince covers a starving man with his garment",
+    "The death of Prince Umayado no Toyotomimi",
+    "The empress admonishes Prince Tamura and dies"
+   ]
   },
   "jomei": {
    "heads": [
@@ -453,7 +778,16 @@
     "上毛野君形名が蝦夷を破る",
     "百済川のほとりに大宮と大寺を造る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Emperor Jomei and the unsettled succession",
+    "Prince Tamura and Prince Yamashiro no Ōe backed by the ministers",
+    "Prince Yamashiro no Ōe asks about the testament",
+    "境部摩理勢 (reading unconfirmed) is strangled",
+    "The imperial seal is presented to Prince Tamura",
+    "上毛野君形名 (reading unconfirmed) defeats the Emishi",
+    "A great palace and temple beside the Kudara River"
+   ]
   },
   "kogyoku": {
    "heads": [
@@ -465,7 +799,16 @@
     "中臣鎌子連と中大兄が相談する",
     "入鹿を斬り蝦夷が天皇記を焼く"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Empress Kōgyoku takes the throne and Iruka takes charge of the government",
+    "Prayer for rain and the Emperor of Perfect Virtue",
+    "Building a great temple and Emishi's twin tombs",
+    "Iruka plots to make Furuhito no Ōe emperor",
+    "The death of Prince Yamashiro no Ōe and others at Ikaruga",
+    "Nakatomi no Kamako and Prince Naka-no-Ōe consult",
+    "Iruka cut down and the Tennōki burned"
+   ]
   },
   "kotoku-1": {
    "heads": [
@@ -477,7 +820,16 @@
     "改新之詔の第一条から第四条",
     "墓の制を定め品部をやめる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Prince Karu declines and takes the throne",
+    "Ministers of the Left and Right and the era name Taika",
+    "Princess Hashihito made empress",
+    "Governors appointed to the eastern provinces",
+    "The capital moved to Nagara-Toyosaki in Naniwa",
+    "Articles one to four of the Reform Edict",
+    "Tomb regulations and the abolition of the 品部 groups"
+   ]
   },
   "kotoku-2": {
    "heads": [
@@ -489,7 +841,16 @@
     "繍像が完成し難波長柄豊碕宮と名づける",
     "皇太子が倭京への遷都を請う"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Caps in seven colors and thirteen grades",
+    "Student monks sent and the old caps abolished",
+    "The death of Soga no Kurayamada no Ishikawa no Maro",
+    "The death of 造媛 (reading unconfirmed)",
+    "A white pheasant and the Hakuchi era name",
+    "The embroidered images and the Nagara-Toyosaki Palace in Naniwa",
+    "The crown prince asks to move the capital to Yamato"
+   ]
   },
   "saimei": {
    "heads": [
@@ -501,7 +862,16 @@
     "鬼室福信が救援を求める",
     "朝倉橘廣庭宮で崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Second enthronement at the Itabuki Palace in Asuka",
+    "The Later Okamoto Palace in Asuka and the Canal of the Mad Mind",
+    "Prince Arima is strangled at 藤白坂 (reading unconfirmed)",
+    "Abe no Omi leads a fleet against the Emishi",
+    "Envoys sent to Tang with Emishi men and women",
+    "鬼室福信 (reading unconfirmed) asks Japan for aid",
+    "The empress dies at the Asakura no Tachibana no Hironiwa Palace"
+   ]
   },
   "tenji": {
    "heads": [
@@ -513,7 +883,16 @@
     "蒲生野で狩をし藤原内大臣に大織冠を授ける",
     "大友皇子を太政大臣とし天皇が崩じる"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Governing without enthronement and aid to Paekche",
+    "Discussing a move to 避城 (reading unconfirmed)",
+    "Defeat at Hakusukinoe",
+    "The Water Fortress built, with guards and beacons",
+    "The capital moves to Ōmi and the crown prince takes the throne",
+    "Hunting on 蒲生野 (reading unconfirmed) and the Great Woven Cap for the Inner Minister",
+    "Prince Ōtomo becomes Grand Chancellor and the emperor dies"
+   ]
   },
   "tenmu-jo": {
    "heads": [
@@ -525,7 +904,16 @@
     "吹負が箸陵で近江軍を破る",
     "神懸りの告げと近江の群臣の罪"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Prince Ōama enters the Yoshino Palace",
+    "Men sent hurrying to Mino to block the Fuwa road",
+    "Seeking the post-station bells and leaving for the eastern provinces",
+    "Bowing to Amaterasu-Ōmikami and entering Fuwa",
+    "The Ōmi army collapses at Seta",
+    "Defeating the Ōmi army at the 箸陵 tomb (reading unconfirmed)",
+    "Possession by deities and the crimes of the Ōmi ministers"
+   ]
   },
   "tenmu-ge-1": {
    "heads": [
@@ -537,7 +925,16 @@
     "吉野宮で皇后と六皇子が盟う",
     "薬師寺を興す"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Enthronement at the Asuka Kiyomihara Palace",
+    "Envoys from Silla and 耽羅 (reading unconfirmed)",
+    "Silver produced in Tsushima",
+    "Building the star-observation platform",
+    "Pardoning the 東漢直 (reading unconfirmed)",
+    "Covenant at the Yoshino Palace with the empress and six princes",
+    "Founding Yakushi-ji"
+   ]
   },
   "tenmu-ge-2": {
    "heads": [
@@ -549,7 +946,16 @@
     "草薙剣の祟りと朱鳥と改元",
     "天皇が崩じ殯宮で誄する"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Codes established and Prince Kusakabe made crown prince",
+    "Plan to place the capital at 新城 (reading unconfirmed)",
+    "A three-legged sparrow shown to the ministers",
+    "Creation of the eight kabane",
+    "A Buddhist shrine in every household in the provinces",
+    "Curse of the Kusanagi sword and the era name Shuchō",
+    "The emperor dies and eulogies at the temporary enshrinement"
+   ]
   },
   "jito-1": {
    "heads": [
@@ -560,7 +966,15 @@
     "草壁皇子尊が薨じる",
     "皇后が即位する"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Princess Uno no Sarara bears Prince Kusakabe",
+    "Discovery of the rebellion of Prince Ōtsu",
+    "Wailing at the temporary enshrinement palace and starting the 大内陵 (reading unconfirmed)",
+    "Rain ritual and burial at the 大内陵 (reading unconfirmed)",
+    "Death of Prince Kusakabe",
+    "The empress takes the throne"
+   ]
   },
   "jito-2": {
    "heads": [
@@ -572,7 +986,16 @@
     "新羅の王子金良琳が来る",
     "皇太子に位を譲る"
    ],
-   "figs": []
+   "figs": [],
+   "heads_en": [
+    "Increased sustenance households for Prince Takechi",
+    "Ritual pacification of the 新益京 capital (reading unconfirmed)",
+    "三輪朝臣高市麻呂 (reading unconfirmed) remonstrates about the Ise excursion",
+    "Common people made to wear yellow clothing",
+    "Moving into the Fujiwara Palace",
+    "The Silla prince 金良琳 (reading unconfirmed) arrives",
+    "Yielding the throne to the crown prince"
+   ]
   }
  }
 }

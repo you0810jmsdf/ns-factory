@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 2 · story 14 of 17</p>
-    <h1>The Rebellion of Oshikuma-no-Miko (忍熊王) and Kehi-no-Ōkami (気比大神)</h1>
-    <p class="orig" lang="ja">忍熊王の反乱と気比大神</p>
-    <p class="pg-lead">Returning from Silla, 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> went up to Yamato in a mourning ship, pretending that her son had died, and defeated the brothers 香坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko (忍熊王), who lay in wait for her. Afterwards, when Takeuchi-no-Sukune (建内宿禰) took the prince to 角鹿<sup class="ru" title="reading unconfirmed">*</sup>, Izasawake-no-Ōkami-no-Mikoto (伊奢沙和気大神之命) asked to exchange names, and from this arose the name Miketsu-Ōkami (御食津大神; Kehi-no-Ōkami, 気比大神); when the prince returned to the capital, his mother welcomed him with sake and song.</p>
-    <div class="xlink"><a href="../../shoki/en/jingu-oshikuma.html">Read in the Nihon Shoki: The revolt of Oshikuma-no-Miko and the years of the regency ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 2 · story 14 of 17</p>
+        <h1>The Rebellion of Oshikuma-no-Miko (忍熊王) and Kehi-no-Ōkami (気比大神)</h1>
+        <p class="orig" lang="ja">忍熊王の反乱と気比大神</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Returning from Silla, 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> went up to Yamato in a mourning ship, pretending that her son had died, and defeated the brothers 香坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko (忍熊王), who lay in wait for her. Afterwards, when Takeuchi-no-Sukune (建内宿禰) took the prince to 角鹿<sup class="ru" title="reading unconfirmed">*</sup>, Izasawake-no-Ōkami-no-Mikoto (伊奢沙和気大神之命) asked to exchange names, and from this arose the name Miketsu-Ōkami (御食津大神; Kehi-no-Ōkami, 気比大神); when the prince returned to the capital, his mother welcomed him with sake and song.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/jingu-oshikuma.html">Read in the Nihon Shoki: The revolt of Oshikuma-no-Miko and the years of the regency ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The mourning ship and the death of 香坂王<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> was returning to Yamato, she distrusted the people&#x27;s loyalty, so she prepared a mourning ship (喪船), put her son on it, and had it spread about that the prince had already died. Hearing this, 香坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko (忍熊王) planned to lie in wait and strike, and went out to 斗賀野<sup class="ru" title="reading unconfirmed">*</sup> and held an oath-hunt (宇気比獦). While 香坂王 was up in an 歴木<sup class="ru" title="reading unconfirmed">*</sup> tree, a great enraged boar came out, dug the tree down, and devoured 香坂王.</p>
+      <h3>Oshikuma-no-Miko and 難波根子建振熊命<sup class="ru" title="reading unconfirmed">*</sup> in battle</h3>
+      <p class="t">His younger brother Oshikuma-no-Miko, unafraid of this, raised an army and lay in wait, intending to attack the mourning ship as if it were empty. Then soldiers came down from the mourning ship and battle began. On Oshikuma-no-Miko&#x27;s side, 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 難波吉師部<sup class="ru" title="reading unconfirmed">*</sup>, was general; on the crown prince&#x27;s side, 難波根子建振熊命<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 丸邇臣<sup class="ru" title="reading unconfirmed">*</sup>, was general. Oshikuma-no-Miko&#x27;s army was driven back as far as 山代<sup class="ru" title="reading unconfirmed">*</sup>, but there it turned to face them, and neither army retreated as they fought.</p>
+      <h3>The stratagem of cutting the bowstrings</h3>
+      <p class="t">建振熊命<sup class="ru" title="reading unconfirmed">*</sup> devised a stratagem: he had it announced, &quot;息長帯日売命 has already died, so there is no further reason to fight,&quot; and cut his bowstrings to make it look as if he had surrendered. The opposing general believed this, unstrung his bows and put away his weapons. Then 建振熊命&#x27;s side took out the spare strings (also called 宇佐由豆留<sup class="ru" title="reading unconfirmed">*</sup>) they had hidden in their hair, restrung their bows, and pursued and attacked. Oshikuma-no-Miko&#x27;s army fled to 逢坂<sup class="ru" title="reading unconfirmed">*</sup> and fought again, but was cut down to the last man at 沙沙那美<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>Oshikuma-no-Miko and 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup> enter the sea</h3>
+      <p class="t">Driven to the end, Oshikuma-no-Miko and 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup> boarded a boat, floated out on the sea, and sang a song. Then they entered the sea together and died.</p>
+      <h3>Izasawake-no-Ōkami-no-Mikoto appears in a dream</h3>
+      <p class="t">Takeuchi-no-Sukune-no-Mikoto (建内宿禰命) took the crown prince to perform purification (禊), went round the lands of Ōmi (淡海) and Wakasa (若狭), built a temporary palace at 角鹿 in 高志前<sup class="ru" title="reading unconfirmed">*</sup>, and stayed there. That night, Izasawake-no-Ōkami-no-Mikoto (伊奢沙和気大神之命), who dwells in that place, appeared in a dream and said, &quot;I wish to exchange my name for the prince&#x27;s name.&quot; When they reverently agreed, the deity announced, &quot;Tomorrow morning go out to the shore. I will make a gift as a sign of the exchange of names.&quot; The next morning, when they went out to the shore, 入鹿魚<sup class="ru" title="reading unconfirmed">*</sup> fish with wounded noses filled an entire bay.</p>
+      <h3>Miketsu-Ōkami and the bay 血浦</h3>
+      <p class="t">The prince had it said to the deity, &quot;You have given me fish for my meal (御食).&quot; Therefore the deity&#x27;s name was praised and he was called Miketsu-Ōkami (御食津大神), and he is now called Kehi-no-Ōkami (気比大神). Also, because the blood from the noses of the 入鹿魚 smelled, that bay was named 血浦, and it is now called 都奴賀<sup class="ru" title="reading unconfirmed">*</sup>, the text records.</p>
+      <h3>The waiting-sake songs and Emperor Chūai&#x27;s tomb</h3>
+      <p class="t">When the prince returned to the capital, his mother 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> brewed waiting-sake (待酒) and presented it, singing a song as she offered the great sake. Takeuchi-no-Sukune-no-Mikoto sang an answering song on the prince&#x27;s behalf, and the text records that these are songs of sake-revelry (酒楽歌). Finally it concludes that Emperor Chūai (帯中津日子天皇<sup class="ru" title="reading unconfirmed">*</sup>) died at the age of 52, and that his tomb is at 長江 in 恵賀 in Kawachi<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> put her son on a mourning ship (喪船) and made it appear that he had died, deceiving 香坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko (忍熊王), who lay in wait. 香坂王 was devoured by an enraged boar in the middle of an oath-hunt (宇気比獦), and Oshikuma-no-Miko, defeated, entered the sea with 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup> and died.</li>
         <li><span class="kind ">Main text</span>What decided the outcome was the stratagem of 建振熊命<sup class="ru" title="reading unconfirmed">*</sup>, the general on the crown prince&#x27;s side. He had it announced that &quot;息長帯日売命 has died&quot; and made a show of cutting his bowstrings, and after the enemy had put away their weapons, he strung the spare strings he had hidden in his hair and attacked.</li>
@@ -117,26 +178,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the Nihon Shoki, the crown prince worships the Great Deity 笥飯大神<sup class="ru" title="reading unconfirmed">*</sup> of 角鹿 in the 2nd month of the 13th year of the regency (摂政), and the story of the exchange of names appears as an alternative account (一云) in a small-script note at the beginning of the book of Emperor Ōjin (Book 10); while it says the Great Deity is called 去来紗別神 and the crown prince 誉田別尊<sup class="ru" title="reading unconfirmed">*</sup>, it states that there is no record of the original names and that they are &quot;unknown&quot; (未詳).</li>
         <li><span class="kind k-int">Commentary</span>According to the Kokugakuin University deity-name database, the &quot;須久那美迦微&quot;<sup class="ru" title="reading unconfirmed">*</sup> appearing in the mother&#x27;s song is regarded as another name of Sukunahikona-no-Kami (少名毘古那神), and here it is praised as a deity of sake. Also, because the Kojiki does not say what happened as a result of the exchange of names, theories are divided on the meaning of the exchange. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">[source, Japanese]</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>When 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> was returning to Yamato, she distrusted the people&#x27;s loyalty, so she prepared a mourning ship (喪船), put her son on it, and had it spread about that the prince had already died. Hearing this, 香坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko (忍熊王) planned to lie in wait and strike, and went out to 斗賀野<sup class="ru" title="reading unconfirmed">*</sup> and held an oath-hunt (宇気比獦). While 香坂王 was up in an 歴木<sup class="ru" title="reading unconfirmed">*</sup> tree, a great enraged boar came out, dug the tree down, and devoured 香坂王.</p>
-      <p>His younger brother Oshikuma-no-Miko, unafraid of this, raised an army and lay in wait, intending to attack the mourning ship as if it were empty. Then soldiers came down from the mourning ship and battle began. On Oshikuma-no-Miko&#x27;s side, 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 難波吉師部<sup class="ru" title="reading unconfirmed">*</sup>, was general; on the crown prince&#x27;s side, 難波根子建振熊命<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 丸邇臣<sup class="ru" title="reading unconfirmed">*</sup>, was general. Oshikuma-no-Miko&#x27;s army was driven back as far as 山代<sup class="ru" title="reading unconfirmed">*</sup>, but there it turned to face them, and neither army retreated as they fought.</p>
-      <p>建振熊命<sup class="ru" title="reading unconfirmed">*</sup> devised a stratagem: he had it announced, &quot;息長帯日売命 has already died, so there is no further reason to fight,&quot; and cut his bowstrings to make it look as if he had surrendered. The opposing general believed this, unstrung his bows and put away his weapons. Then 建振熊命&#x27;s side took out the spare strings (also called 宇佐由豆留<sup class="ru" title="reading unconfirmed">*</sup>) they had hidden in their hair, restrung their bows, and pursued and attacked. Oshikuma-no-Miko&#x27;s army fled to 逢坂<sup class="ru" title="reading unconfirmed">*</sup> and fought again, but was cut down to the last man at 沙沙那美<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>Driven to the end, Oshikuma-no-Miko and 伊佐比宿禰<sup class="ru" title="reading unconfirmed">*</sup> boarded a boat, floated out on the sea, and sang a song. Then they entered the sea together and died.</p>
-      <p>Takeuchi-no-Sukune-no-Mikoto (建内宿禰命) took the crown prince to perform purification (禊), went round the lands of Ōmi (淡海) and Wakasa (若狭), built a temporary palace at 角鹿 in 高志前<sup class="ru" title="reading unconfirmed">*</sup>, and stayed there. That night, Izasawake-no-Ōkami-no-Mikoto (伊奢沙和気大神之命), who dwells in that place, appeared in a dream and said, &quot;I wish to exchange my name for the prince&#x27;s name.&quot; When they reverently agreed, the deity announced, &quot;Tomorrow morning go out to the shore. I will make a gift as a sign of the exchange of names.&quot; The next morning, when they went out to the shore, 入鹿魚<sup class="ru" title="reading unconfirmed">*</sup> fish with wounded noses filled an entire bay.</p>
-      <p>The prince had it said to the deity, &quot;You have given me fish for my meal (御食).&quot; Therefore the deity&#x27;s name was praised and he was called Miketsu-Ōkami (御食津大神), and he is now called Kehi-no-Ōkami (気比大神). Also, because the blood from the noses of the 入鹿魚 smelled, that bay was named 血浦, and it is now called 都奴賀<sup class="ru" title="reading unconfirmed">*</sup>, the text records.</p>
-      <p>When the prince returned to the capital, his mother 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> brewed waiting-sake (待酒) and presented it, singing a song as she offered the great sake. Takeuchi-no-Sukune-no-Mikoto sang an answering song on the prince&#x27;s behalf, and the text records that these are songs of sake-revelry (酒楽歌). Finally it concludes that Emperor Chūai (帯中津日子天皇<sup class="ru" title="reading unconfirmed">*</sup>) died at the age of 52, and that his tomb is at 長江 in 恵賀 in Kawachi<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">大怒猪出。堀其歴木。即咋食其香坂王</blockquote><p>A great enraged boar came out, dug down that 歴木<sup class="ru" title="reading unconfirmed">*</sup> tree, and devoured 香坂王.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">息長帶日賣命者。既崩故無可更戰。即絶弓絃</blockquote><p>He had it announced, &quot;息長帯日売命 has already died, so there is no further need to fight,&quot; and made a show of cutting his bowstrings (the stratagem of 建振熊命<sup class="ru" title="reading unconfirmed">*</sup>).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">於我給御食之魚。故亦稱其御名。號御食津大神</blockquote><p>&quot;You have given me fish for my meal (御食).&quot; Therefore the deity&#x27;s name was praised and he was called Miketsu-Ōkami (御食津大神).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此者。酒樂之歌也</blockquote><p>These are songs of sake-revelry (酒楽歌) (the name collectively given to the song of 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> and the answering song of Takeuchi-no-Sukune-no-Mikoto).</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -161,7 +202,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 9 — Empress Jingū (spring, 2nd month of the year after the attack on Silla)</span><p>In the Nihon Shoki, 麛坂王<sup class="ru" title="reading unconfirmed">*</sup> and Oshikuma-no-Miko gathered soldiers under the pretense of building the emperor&#x27;s tomb, and when they held a divination hunt (祈狩) at 菟餓野<sup class="ru" title="reading unconfirmed">*</sup>, a red boar climbed onto the temporary viewing stand and devoured 麛坂王. The empress does not use a mourning ship; she has Takeuchi-no-Sukune (武内宿禰) hold the prince in his arms and go round by the southern sea to the 水門 of Kii (紀伊水門).</p><blockquote lang="zh-Hant">赤猪忽出之登假庪。咋麛坂王而殺焉</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 9 — Empress Jingū (entries from the 3rd month, 丙申朔庚子)</span><p>In the Nihon Shoki, it is Takeuchi-no-Sukune (武内宿禰) who has the whole army hide spare bowstrings in their hair, falsely proposes peace, and gets Oshikuma-no-Miko&#x27;s army to cut their bowstrings and throw their weapons into the river (in the Kojiki it is 建振熊命<sup class="ru" title="reading unconfirmed">*</sup>).</p><blockquote lang="zh-Hant">各以儲弦藏于髮中、且佩木刀</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 9 — the 13th year of the regency of Empress Jingū, spring, 2nd month (丁巳朔甲子)</span><p>In the Nihon Shoki, Takeuchi-no-Sukune (武内宿禰) takes the crown prince to worship the Great Deity 笥飯大神<sup class="ru" title="reading unconfirmed">*</sup> of 角鹿, and when the crown prince returns, the empress dowager (皇太后) entertains him at a banquet and sings, and Takeuchi-no-Sukune sings a reply on the crown prince&#x27;s behalf. The stories of the exchange of names and of the 入鹿魚 are not in this entry.</p><blockquote lang="zh-Hant">命武內宿禰、從太子令拜角鹿笥飯大神</blockquote></div>
@@ -169,13 +210,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="chuai-jingu.html"><small>← Previous story (Part 2, story 13)</small>The Death of Emperor Chūai and the Silla Expedition of 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="ojin-tsumadoi.html"><small>Next story (Part 2, story 15) →</small>Emperor Ōjin&#x27;s Courtships and 髪長比売<sup class="ru" title="reading unconfirmed">*</sup></a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">Nihon Shoki, Book 9</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">大怒猪出。堀其歴木。即咋食其香坂王</blockquote><p>A great enraged boar came out, dug down that 歴木<sup class="ru" title="reading unconfirmed">*</sup> tree, and devoured 香坂王.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">息長帶日賣命者。既崩故無可更戰。即絶弓絃</blockquote><p>He had it announced, &quot;息長帯日売命 has already died, so there is no further need to fight,&quot; and made a show of cutting his bowstrings (the stratagem of 建振熊命<sup class="ru" title="reading unconfirmed">*</sup>).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">於我給御食之魚。故亦稱其御名。號御食津大神</blockquote><p>&quot;You have given me fish for my meal (御食).&quot; Therefore the deity&#x27;s name was praised and he was called Miketsu-Ōkami (御食津大神).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此者。酒樂之歌也</blockquote><p>These are songs of sake-revelry (酒楽歌) (the name collectively given to the song of 息長帯日売命<sup class="ru" title="reading unconfirmed">*</sup> and the answering song of Takeuchi-no-Sukune-no-Mikoto).</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第九" target="_blank" rel="noopener">Nihon Shoki, Book 9</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izasawakenookaminomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kehinookami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/miketsuokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sukunabikonanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

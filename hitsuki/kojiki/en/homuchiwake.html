@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 2 · story 9 of 17</p>
-    <h1>Prince 本牟智和気御子<sup class="ru" title="reading unconfirmed">*</sup> and 多遅摩毛理<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">本牟智和気御子と多遅摩毛理</p>
-    <p class="pg-lead">Prince 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>, who did not speak even when his long beard had grown down to his chest, was found to be under a curse of the Great Deity of Izumo (出雲大神); he went to worship at Izumo and, on the way back, spoke for the first time. At the end of the reign of Emperor Suinin, 多遲摩毛理<sup class="ru" title="reading unconfirmed">*</sup> brought back the &quot;登岐士玖能迦玖能木實&quot;<sup class="ru" title="reading unconfirmed">*</sup> (the present-day tachibana, 橘) from the Eternal Land (常世國), but the emperor had already died.</p>
-    <div class="xlink"><a href="../../shoki/en/suinin-sahohiko.html">Read in the Nihon Shoki: The Accession of Emperor Suinin, the Rebellion of 狭穂彦王, and 誉津別命 (readings unconfirmed) ›</a><a href="../../shoki/en/suinin-jidai.html">Read in the Nihon Shoki: 倭姫命<sup class="ru" title="reading unconfirmed">*</sup> and the Worship at Ise, the Origin of Haniwa, the Sacred Treasures of Ame-no-Hiboko, and 田道間守<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 2 · story 9 of 17</p>
+        <h1>Prince 本牟智和気御子<sup class="ru" title="reading unconfirmed">*</sup> and 多遅摩毛理<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">本牟智和気御子と多遅摩毛理</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Prince 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>, who did not speak even when his long beard had grown down to his chest, was found to be under a curse of the Great Deity of Izumo (出雲大神); he went to worship at Izumo and, on the way back, spoke for the first time. At the end of the reign of Emperor Suinin, 多遲摩毛理<sup class="ru" title="reading unconfirmed">*</sup> brought back the &quot;登岐士玖能迦玖能木實&quot;<sup class="ru" title="reading unconfirmed">*</sup> (the present-day tachibana, 橘) from the Eternal Land (常世國), but the emperor had already died.</p>
+        <p class="bk-meta">Reading time for the story: about 4 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/suinin-sahohiko.html">Read in the Nihon Shoki: The Accession of Emperor Suinin, the Rebellion of 狭穂彦王, and 誉津別命 (readings unconfirmed) ›</a><a href="../../shoki/en/suinin-jidai.html">Read in the Nihon Shoki: 倭姫命<sup class="ru" title="reading unconfirmed">*</sup> and the Worship at Ise, the Origin of Haniwa, the Sacred Treasures of Ame-no-Hiboko, and 田道間守<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The two-hulled boat and the swan&#x27;s cry</h3>
+      <p class="t">The emperor had a two-hulled small boat (二俣小舟) made from a forked 榲 tree that stood at 相津 in Owari<sup class="ru" title="reading unconfirmed">*</sup>, floated it on the 市師 Pond and the 輕 Pond in Yamato<sup class="ru" title="reading unconfirmed">*</sup>, and let the prince play in it. But this prince still did not speak, even when his eight-fist-long beard reached down in front of his chest. One day, hearing the cry of a swan (鵠) flying high in the sky, the prince for the first time made &quot;阿藝登比&quot;<sup class="ru" title="reading unconfirmed">*</sup>. The emperor therefore sent a man named 山邊之大鶙<sup class="ru" title="reading unconfirmed">*</sup> to catch that bird.</p>
+      <h3>大鶙<sup class="ru" title="reading unconfirmed">*</sup> pursues and catches the swan</h3>
+      <p class="t">大鶙<sup class="ru" title="reading unconfirmed">*</sup> pursued the swan from 木國 to 針間國<sup class="ru" title="reading unconfirmed">*</sup>, then over 稻羽國 to 旦波國 and 多遲麻國<sup class="ru" title="reading unconfirmed">*</sup>, and, circling east, over Ōmi (近淡海國) and 三野國<sup class="ru" title="reading unconfirmed">*</sup>, and from Owari (尾張國) to 科野國<sup class="ru" title="reading unconfirmed">*</sup>. At last he spread a net at 和那美之水門 in 高志國<sup class="ru" title="reading unconfirmed">*</sup>, caught the bird, and brought it back to the capital to present it. But even on seeing the bird, the prince did not speak as the emperor had hoped.</p>
+      <h3>The curse of the Great Deity of Izumo</h3>
+      <p class="t">When the emperor fell asleep troubled, he was told in a dream, &quot;If you put my shrine in order like the emperor&#x27;s palace (御舍), the prince will surely come to speak.&quot; When he sought through the great divination (太占) which deity&#x27;s will this was, it was a curse arising from the will of the Great Deity of Izumo. 曙立王<sup class="ru" title="reading unconfirmed">*</sup> was chosen by divination to accompany the prince; through ukehi-style oath divination (宇氣比), 曙立王 made a heron in a tree by the 鷺巣 Pond fall dead and then come back to life, and made a broad-leaved 熊白檮 oak in front of the 甜白檮<sup class="ru" title="reading unconfirmed">*</sup> wither and then come back to life. The emperor gave 曙立王 the name &quot;倭者師木登美豐朝倉曙立王&quot;<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>Worship of the Great Deity in Izumo</h3>
+      <p class="t">曙立王 and 菟上王<sup class="ru" title="reading unconfirmed">*</sup> set out accompanying the prince. Divination showed that from both the 那良戸 and the 大坂戸<sup class="ru" title="reading unconfirmed">*</sup> gates they would meet the lame or the blind, and that only the 木戸<sup class="ru" title="reading unconfirmed">*</sup> gate was auspicious, so they left by it, establishing 品遲部<sup class="ru" title="reading unconfirmed">*</sup> groups wherever they went. After arriving in Izumo and finishing their worship of the Great Deity, on the way back they built the 黒巣 Bridge<sup class="ru" title="reading unconfirmed">*</sup> in the 肥河 river and a temporary palace, and lodged the prince there. When 岐比佐都美<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the governors of Izumo (出雲國造), set up downstream a decoration like a mountain of green leaves and was about to offer a meal, the prince said, &quot;That thing downstream like a mountain of green leaves looks like a mountain but is not a mountain. Is it not the great ritual ground of the priests (祝) who worship 葦原色許男大神<sup class="ru" title="reading unconfirmed">*</sup> in Izumo?&quot;</p>
+      <h3>肥長比賣<sup class="ru" title="reading unconfirmed">*</sup> and the snake</h3>
+      <p class="t">The princes accompanying him rejoiced on hearing this, moved the prince to the 檳榔之長穂宮<sup class="ru" title="reading unconfirmed">*</sup>, and sent a fast-horse messenger to the capital. The prince spent one night with 肥長比賣<sup class="ru" title="reading unconfirmed">*</sup>, but when he secretly peeped, that beautiful person was a snake, and he fled in fear. As 肥長比賣 pursued him by boat, lighting up the sea, the prince grew even more afraid, hauled his boat over &quot;山多和&quot;<sup class="ru" title="reading unconfirmed">*</sup> and fled up to the capital. The princes reported, &quot;Because he worshipped the Great Deity, the prince has spoken,&quot; and the emperor rejoiced, sent 菟上王 back to Izumo to build the shrine, and for the prince established the 鳥取部, 鳥甘部, 品遲部, 大湯坐 and 若湯坐<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>The death of 圓野比賣<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">In accordance with the words of his former consort, the emperor summoned four daughters of 美知能宇斯王<sup class="ru" title="reading unconfirmed">*</sup>: 比婆須比賣命, 弟比賣命, 歌凝比賣命 and 圓野比賣命<sup class="ru" title="reading unconfirmed">*</sup>. But he kept only two of them, 比婆須比賣命 and 弟比賣命, and sent the other two back to their home province as very ugly. 圓野比賣<sup class="ru" title="reading unconfirmed">*</sup>, ashamed, tried to die by hanging herself from a tree branch at 相樂 in 山代國<sup class="ru" title="reading unconfirmed">*</sup>, so that place is called 懸木 (the present 相樂); and when she reached 弟國 she fell into a deep pool and died, so that place is called 墮國 (the present 弟國)<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>多遲麻毛理<sup class="ru" title="reading unconfirmed">*</sup> brings back the fruit</h3>
+      <p class="t">The emperor also sent 多遲麻毛理<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 三宅連<sup class="ru" title="reading unconfirmed">*</sup> and others, to the Eternal Land (常世國) to seek the &quot;登岐士玖能迦玖能木實&quot;<sup class="ru" title="reading unconfirmed">*</sup>. 多遲摩毛理 reached that land, picked the fruit, and brought back eight 縵 and eight 矛 (縵八縵, 矛八矛)<sup class="ru" title="reading unconfirmed">*</sup>, but in the meantime the emperor had already died. 多遲摩毛理 presented four 縵 and four 矛 to the empress, offered the remaining four 縵 and four 矛 at the door of the emperor&#x27;s tomb, and, holding up the fruit and weeping and wailing, reported that he had brought it; then, still weeping and wailing, he died. That fruit is the present-day tachibana (橘). The emperor died at the age of 153, and his tomb is in the 御立野 of 菅原<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>Prince 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup> did not speak even when his eight-fist-long beard reached his chest. Through the emperor&#x27;s dream and the great divination (太占) it was found that this was a curse arising from the will of the Great Deity of Izumo, so the prince was sent to worship the Great Deity at Izumo.</li>
         <li><span class="kind ">Main text</span>On the way back from worshipping at Izumo, on the bank of the 肥河<sup class="ru" title="reading unconfirmed">*</sup>, the prince saw the leafy green &quot;mountain&quot; decoration set up by 岐比佐都美<sup class="ru" title="reading unconfirmed">*</sup> and spoke for the first time. The emperor rejoiced and had 菟上王<sup class="ru" title="reading unconfirmed">*</sup> build the shrine of the deity at Izumo.</li>
@@ -117,26 +178,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the Nihon Shoki (the 23rd year of Emperor Suinin), 譽津別命<sup class="ru" title="reading unconfirmed">*</sup> sees a swan and says &quot;是何物耶&quot;; he is said to have gained speech by playing with the swan that 天湯河板擧<sup class="ru" title="reading unconfirmed">*</sup> caught and presented. The curse of the Great Deity of Izumo and the pilgrimage to Izumo are not told.</li>
         <li><span class="kind k-int">Commentary</span>The Kokugakuin University deity-name database treats the Great Deity of Izumo in this story as another name of Ōkuninushi-no-Kami (大国主神), and treats 葦原色許男大神<sup class="ru" title="reading unconfirmed">*</sup>, which appears in the prince&#x27;s words, as a name of the same deity. It then introduces the view that the whole story, including the night with 肥長比賣<sup class="ru" title="reading unconfirmed">*</sup>, is connected with the rituals of Izumo, and a theory that sees it as a story telling how the problem of the worship of the Izumo deity was resolved. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">[source, Japanese]</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>The emperor had a two-hulled small boat (二俣小舟) made from a forked 榲 tree that stood at 相津 in Owari<sup class="ru" title="reading unconfirmed">*</sup>, floated it on the 市師 Pond and the 輕 Pond in Yamato<sup class="ru" title="reading unconfirmed">*</sup>, and let the prince play in it. But this prince still did not speak, even when his eight-fist-long beard reached down in front of his chest. One day, hearing the cry of a swan (鵠) flying high in the sky, the prince for the first time made &quot;阿藝登比&quot;<sup class="ru" title="reading unconfirmed">*</sup>. The emperor therefore sent a man named 山邊之大鶙<sup class="ru" title="reading unconfirmed">*</sup> to catch that bird.</p>
-      <p>大鶙<sup class="ru" title="reading unconfirmed">*</sup> pursued the swan from 木國 to 針間國<sup class="ru" title="reading unconfirmed">*</sup>, then over 稻羽國 to 旦波國 and 多遲麻國<sup class="ru" title="reading unconfirmed">*</sup>, and, circling east, over Ōmi (近淡海國) and 三野國<sup class="ru" title="reading unconfirmed">*</sup>, and from Owari (尾張國) to 科野國<sup class="ru" title="reading unconfirmed">*</sup>. At last he spread a net at 和那美之水門 in 高志國<sup class="ru" title="reading unconfirmed">*</sup>, caught the bird, and brought it back to the capital to present it. But even on seeing the bird, the prince did not speak as the emperor had hoped.</p>
-      <p>When the emperor fell asleep troubled, he was told in a dream, &quot;If you put my shrine in order like the emperor&#x27;s palace (御舍), the prince will surely come to speak.&quot; When he sought through the great divination (太占) which deity&#x27;s will this was, it was a curse arising from the will of the Great Deity of Izumo. 曙立王<sup class="ru" title="reading unconfirmed">*</sup> was chosen by divination to accompany the prince; through ukehi-style oath divination (宇氣比), 曙立王 made a heron in a tree by the 鷺巣 Pond fall dead and then come back to life, and made a broad-leaved 熊白檮 oak in front of the 甜白檮<sup class="ru" title="reading unconfirmed">*</sup> wither and then come back to life. The emperor gave 曙立王 the name &quot;倭者師木登美豐朝倉曙立王&quot;<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>曙立王 and 菟上王<sup class="ru" title="reading unconfirmed">*</sup> set out accompanying the prince. Divination showed that from both the 那良戸 and the 大坂戸<sup class="ru" title="reading unconfirmed">*</sup> gates they would meet the lame or the blind, and that only the 木戸<sup class="ru" title="reading unconfirmed">*</sup> gate was auspicious, so they left by it, establishing 品遲部<sup class="ru" title="reading unconfirmed">*</sup> groups wherever they went. After arriving in Izumo and finishing their worship of the Great Deity, on the way back they built the 黒巣 Bridge<sup class="ru" title="reading unconfirmed">*</sup> in the 肥河 river and a temporary palace, and lodged the prince there. When 岐比佐都美<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the governors of Izumo (出雲國造), set up downstream a decoration like a mountain of green leaves and was about to offer a meal, the prince said, &quot;That thing downstream like a mountain of green leaves looks like a mountain but is not a mountain. Is it not the great ritual ground of the priests (祝) who worship 葦原色許男大神<sup class="ru" title="reading unconfirmed">*</sup> in Izumo?&quot;</p>
-      <p>The princes accompanying him rejoiced on hearing this, moved the prince to the 檳榔之長穂宮<sup class="ru" title="reading unconfirmed">*</sup>, and sent a fast-horse messenger to the capital. The prince spent one night with 肥長比賣<sup class="ru" title="reading unconfirmed">*</sup>, but when he secretly peeped, that beautiful person was a snake, and he fled in fear. As 肥長比賣 pursued him by boat, lighting up the sea, the prince grew even more afraid, hauled his boat over &quot;山多和&quot;<sup class="ru" title="reading unconfirmed">*</sup> and fled up to the capital. The princes reported, &quot;Because he worshipped the Great Deity, the prince has spoken,&quot; and the emperor rejoiced, sent 菟上王 back to Izumo to build the shrine, and for the prince established the 鳥取部, 鳥甘部, 品遲部, 大湯坐 and 若湯坐<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>In accordance with the words of his former consort, the emperor summoned four daughters of 美知能宇斯王<sup class="ru" title="reading unconfirmed">*</sup>: 比婆須比賣命, 弟比賣命, 歌凝比賣命 and 圓野比賣命<sup class="ru" title="reading unconfirmed">*</sup>. But he kept only two of them, 比婆須比賣命 and 弟比賣命, and sent the other two back to their home province as very ugly. 圓野比賣<sup class="ru" title="reading unconfirmed">*</sup>, ashamed, tried to die by hanging herself from a tree branch at 相樂 in 山代國<sup class="ru" title="reading unconfirmed">*</sup>, so that place is called 懸木 (the present 相樂); and when she reached 弟國 she fell into a deep pool and died, so that place is called 墮國 (the present 弟國)<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>The emperor also sent 多遲麻毛理<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 三宅連<sup class="ru" title="reading unconfirmed">*</sup> and others, to the Eternal Land (常世國) to seek the &quot;登岐士玖能迦玖能木實&quot;<sup class="ru" title="reading unconfirmed">*</sup>. 多遲摩毛理 reached that land, picked the fruit, and brought back eight 縵 and eight 矛 (縵八縵, 矛八矛)<sup class="ru" title="reading unconfirmed">*</sup>, but in the meantime the emperor had already died. 多遲摩毛理 presented four 縵 and four 矛 to the empress, offered the remaining four 縵 and four 矛 at the door of the emperor&#x27;s tomb, and, holding up the fruit and weeping and wailing, reported that he had brought it; then, still weeping and wailing, he died. That fruit is the present-day tachibana (橘). The emperor died at the age of 153, and his tomb is in the 御立野 of 菅原<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">八拳鬚至于心前。眞事登波受。</blockquote><p>Even when his long beard reached down in front of his chest, he still did not speak.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">修理我宮如天皇之御舍者。御子必眞事登波牟。</blockquote><p>The revelation in the emperor&#x27;s dream: &quot;If you put my shrine in order like the emperor&#x27;s palace (御舍), the prince will surely come to speak.&quot;</p></div>
-      <div class="q"><blockquote lang="zh-Hant">因拜大神。大御子物詔故。參上來。</blockquote><p>The report of the accompanying princes: &quot;Because he worshipped the Great Deity, the prince has spoken. Therefore we have returned.&quot;</p></div>
-      <div class="q"><blockquote lang="zh-Hant">其登岐士玖能迦玖能木實者。是今橘者也。</blockquote><p>The fruit that 多遲摩毛理<sup class="ru" title="reading unconfirmed">*</sup> brought back from the Eternal Land (常世國) is the present-day tachibana (橘).</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -157,7 +198,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 6 — the 23rd year of Emperor Suinin, autumn, 9th month (丙寅朔丁卯)</span><p>In the Nihon Shoki, 譽津別王<sup class="ru" title="reading unconfirmed">*</sup> reached thirty years of age, and even with a beard eight hand-spans long he wept like a child and did not speak, so the emperor had his ministers deliberate on it.</p><blockquote lang="zh-Hant">是生年既卅。髯鬚八掬。猶泣如兒。常不言何由矣。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 6 — the 23rd year of Emperor Suinin, 11th month (甲午朔乙未)</span><p>In the Nihon Shoki, 天湯河板擧<sup class="ru" title="reading unconfirmed">*</sup> pursues the swan, catches it in Izumo (or, according to an alternative statement (或曰), in Tajima) and presents it, and 譽津別命<sup class="ru" title="reading unconfirmed">*</sup> gains speech by playing with the swan. For this service he is granted the title 鳥取造, and the 鳥取部, 鳥養部 and 譽津部<sup class="ru" title="reading unconfirmed">*</sup> are established. The curse of the Great Deity of Izumo and the pilgrimage to Izumo are not written.</p><blockquote lang="zh-Hant">譽津別命弄是鵠。遂得言語。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 6 — the 90th year of Emperor Suinin, spring, 2nd month (庚子朔) / the year after his death, spring, 3rd month (辛未朔壬午)</span><p>In the Nihon Shoki, 田道間守<sup class="ru" title="reading unconfirmed">*</sup> is sent to the Eternal Land (常世國) in the 2nd month of the 90th year of Emperor Suinin to seek the 非時香菓<sup class="ru" title="reading unconfirmed">*</sup>, and he returns with eight rods and eight strings (八竿八縵) in the 3rd month of the year after the emperor&#x27;s death. 田道間守 wept and wailed facing the emperor&#x27;s tomb and died. The Kojiki&#x27;s statement that half was presented to the empress does not appear in this entry.</p><blockquote lang="zh-Hant">非時香菓八竿八縵焉。</blockquote></div>
@@ -165,13 +206,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="sahobiko.html"><small>← Previous story (Part 2, story 8)</small>The Rebellion of 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="yamatotakeru-saisei.html"><small>Next story (Part 2, story 10) →</small>The Western Campaign of 小碓命<sup class="ru" title="reading unconfirmed">*</sup> (熊曾建<sup class="ru" title="reading unconfirmed">*</sup> and Izumo Takeru)</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">Nihon Shoki, Book 6</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">八拳鬚至于心前。眞事登波受。</blockquote><p>Even when his long beard reached down in front of his chest, he still did not speak.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">修理我宮如天皇之御舍者。御子必眞事登波牟。</blockquote><p>The revelation in the emperor&#x27;s dream: &quot;If you put my shrine in order like the emperor&#x27;s palace (御舍), the prince will surely come to speak.&quot;</p></div>
+          <div class="q"><blockquote lang="zh-Hant">因拜大神。大御子物詔故。參上來。</blockquote><p>The report of the accompanying princes: &quot;Because he worshipped the Great Deity, the prince has spoken. Therefore we have returned.&quot;</p></div>
+          <div class="q"><blockquote lang="zh-Hant">其登岐士玖能迦玖能木實者。是今橘者也。</blockquote><p>The fruit that 多遲摩毛理<sup class="ru" title="reading unconfirmed">*</sup> brought back from the Eternal Land (常世國) is the present-day tachibana (橘).</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">Nihon Shoki, Book 6</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izumonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ashiharanoshikoonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

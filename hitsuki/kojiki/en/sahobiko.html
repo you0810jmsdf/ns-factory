@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,40 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 2 · story 8 of 17</p>
-    <h1>The Rebellion of 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">沙本毘古王の反乱</p>
-    <p class="pg-lead">沙本毘賣命<sup class="ru" title="reading unconfirmed">*</sup>, consort of Emperor Suinin (伊久米伊理毘古伊佐知命<sup class="ru" title="reading unconfirmed">*</sup>), was handed a small dagger by her elder brother 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> so that she would stab the emperor to death, but she could not carry it out and confessed everything. When her brother shut himself up in a rice fortress (稻城), the consort went in as well; she handed over to the emperor only the child 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>, who was born amid the flames, and died together with her brother.</p>
-    <div class="xlink"><a href="../../shoki/en/suinin-sahohiko.html">Read in the Nihon Shoki: The Accession of Emperor Suinin, the Rebellion of 狭穂彦王, and 誉津別命 (readings unconfirmed) ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 2 · story 8 of 17</p>
+        <h1>The Rebellion of 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">沙本毘古王の反乱</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">沙本毘賣命<sup class="ru" title="reading unconfirmed">*</sup>, consort of Emperor Suinin (伊久米伊理毘古伊佐知命<sup class="ru" title="reading unconfirmed">*</sup>), was handed a small dagger by her elder brother 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> so that she would stab the emperor to death, but she could not carry it out and confessed everything. When her brother shut himself up in a rice fortress (稻城), the consort went in as well; she handed over to the emperor only the child 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>, who was born amid the flames, and died together with her brother.</p>
+        <p class="bk-meta">Reading time for the story: about 4 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/suinin-sahohiko.html">Read in the Nihon Shoki: The Accession of Emperor Suinin, the Rebellion of 狭穂彦王, and 誉津別命 (readings unconfirmed) ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Emperor Suinin&#x27;s consorts and children</h3>
+      <p class="t">Emperor Suinin ruled the realm from the 玉垣宮 of 師木<sup class="ru" title="reading unconfirmed">*</sup>. He married 佐波遲比賣命<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 沙本毘古命<sup class="ru" title="reading unconfirmed">*</sup>, and 品牟都和氣命<sup class="ru" title="reading unconfirmed">*</sup> was born; counting the children of his other consorts as well, he had sixteen princes and princesses. Of these, 大帶日子淤斯呂和氣命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm, and 印色入日子命<sup class="ru" title="reading unconfirmed">*</sup> made the 血沼 Pond, the 狹山 Pond and the 高津 Pond of 日下<sup class="ru" title="reading unconfirmed">*</sup>, and had a thousand swords made at the 河上宮 of 鳥取<sup class="ru" title="reading unconfirmed">*</sup> and dedicated them to Isonokami Shrine (石上神宮). Small-script notes also record that 倭比賣命<sup class="ru" title="reading unconfirmed">*</sup> worshipped and served the Great Shrine of Ise (伊勢大神宮), and that 布多遲能伊理毘賣命<sup class="ru" title="reading unconfirmed">*</sup> became the consort of Yamato Takeru (倭建命).</p>
+      <h3>沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> gives the cord dagger</h3>
+      <p class="t">While the emperor had 沙本毘賣<sup class="ru" title="reading unconfirmed">*</sup> as his consort, her elder brother 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> asked his sister, &quot;Whom do you love more, your husband or your brother?&quot;, and the consort answered, &quot;I love my brother.&quot; 沙本毘古王 then plotted, saying, &quot;If you truly love me, let you and me rule the realm together.&quot; He had a cord dagger, the 八鹽折之紐小刀<sup class="ru" title="reading unconfirmed">*</sup>, made and gave it to his sister, ordering her to stab the emperor to death with it while he slept. The emperor, knowing nothing of the plot, fell asleep with his head on the consort&#x27;s lap. Three times the consort raised the cord dagger to stab the emperor in the neck, but she could not bear her grief and could not stab him, and her tears fell onto the emperor&#x27;s face.</p>
+      <h3>The consort tells of the emperor&#x27;s dream</h3>
+      <p class="t">The emperor woke with a start and asked the consort, &quot;I dreamed that a sudden shower came from the direction of 沙本<sup class="ru" title="reading unconfirmed">*</sup> and wet my face, and that a small brocade-colored snake coiled around my neck. What does this signify?&quot; The consort, thinking she could not evade the question, told him everything: that when her brother asked her she had answered &quot;I love my brother,&quot; that she had been handed a cord dagger to kill the emperor, and that though she raised it three times she could not stab him, and her tears fell.</p>
+      <h3>The consort enters the rice fortress</h3>
+      <p class="t">The emperor said, &quot;I was nearly deceived,&quot; and raised an army, and 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> built a rice fortress (稻城) and met him in battle. The consort could not abandon her brother; she slipped out by the back gate and entered the rice fortress. At this time the consort was with child, and because she was pregnant and because he had loved and cherished her for three years, the emperor merely surrounded the fortress with his army and did not press the attack. Meanwhile the child was born, and the consort had the child placed outside the rice fortress and sent word that, if the emperor regarded it as his own child, he should take it and raise it.</p>
+      <h3>The consort&#x27;s hair and jewel cords</h3>
+      <p class="t">Though the emperor resented her brother, he could not suppress his love for the consort. He chose strong and nimble soldiers and ordered them, when they received the child, to seize the mother too, by her hair or by her hands, and drag her out. Foreseeing this, the consort shaved off all her hair and covered her head with it, let her jewel cords rot and wound them three times around her hands, and rotted her clothes with sake so that they looked like ordinary clothes. The soldiers were able to receive the child, but when they grasped her hair it came away, when they grasped her hands the jewel cords broke, and when they grasped her clothes the clothes tore, so they could not bring the mother back. The emperor, full of regret, hated the people who had made the jewels and took away all their land, and it is said that from this arose the proverb &quot;不得地玉作&quot;<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>The naming of 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When the emperor asked the child&#x27;s name, the consort answered that, since he was born in the fire at the very time the rice fortress was burning, it would be fitting to name him 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>. Asked how he should be raised, she answered that he should be brought up by appointing a 大湯坐 and a 若湯坐<sup class="ru" title="reading unconfirmed">*</sup>; and asked who would untie the 美豆能小佩<sup class="ru" title="reading unconfirmed">*</sup> that she had tied, she answered that 兄比賣 and 弟比賣<sup class="ru" title="reading unconfirmed">*</sup>, daughters of 旦波比古多多須美智宇斯王<sup class="ru" title="reading unconfirmed">*</sup>, would be suitable. Then the emperor at last killed 沙本比古王<sup class="ru" title="reading unconfirmed">*</sup>, and the consort, his younger sister, followed her brother in death.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>Asked by her elder brother 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> &quot;Whom do you love more, your husband or your brother?&quot;, the consort 沙本毘賣命<sup class="ru" title="reading unconfirmed">*</sup> answered &quot;My brother.&quot; She was given a cord dagger to kill the emperor, but though she raised it three times she could not stab him, and her falling tears woke the emperor.</li>
         <li><span class="kind ">Main text</span>Asked by the emperor what his dream meant (a sudden shower coming from 沙本<sup class="ru" title="reading unconfirmed">*</sup> and a small brocade-colored snake coiling around his neck), the consort revealed her brother&#x27;s entire plot, and the emperor raised an army and surrounded the rice fortress (稻城).</li>
@@ -116,24 +175,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">Main text</span>Because the child was born amid the fire of the burning rice fortress, he was named 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>. In the end 沙本比古王<sup class="ru" title="reading unconfirmed">*</sup> was killed, and the consort died with him.</li>
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the Nihon Shoki, the plot of 狹穗彦王<sup class="ru" title="reading unconfirmed">*</sup> is placed in the 9th month of the 4th year of Emperor Suinin, and the emperor&#x27;s midday nap with his head on the empress&#x27;s lap, at the 高宮 of 來目<sup class="ru" title="reading unconfirmed">*</sup>, in the 10th month of the 5th year. The empress carries the prince over the fortress wall and sends him out, recommends the five daughters of 丹波道主王<sup class="ru" title="reading unconfirmed">*</sup> for the inner palace, and then dies inside the fortress together with her brother.</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Emperor Suinin ruled the realm from the 玉垣宮 of 師木<sup class="ru" title="reading unconfirmed">*</sup>. He married 佐波遲比賣命<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 沙本毘古命<sup class="ru" title="reading unconfirmed">*</sup>, and 品牟都和氣命<sup class="ru" title="reading unconfirmed">*</sup> was born; counting the children of his other consorts as well, he had sixteen princes and princesses. Of these, 大帶日子淤斯呂和氣命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm, and 印色入日子命<sup class="ru" title="reading unconfirmed">*</sup> made the 血沼 Pond, the 狹山 Pond and the 高津 Pond of 日下<sup class="ru" title="reading unconfirmed">*</sup>, and had a thousand swords made at the 河上宮 of 鳥取<sup class="ru" title="reading unconfirmed">*</sup> and dedicated them to Isonokami Shrine (石上神宮). Small-script notes also record that 倭比賣命<sup class="ru" title="reading unconfirmed">*</sup> worshipped and served the Great Shrine of Ise (伊勢大神宮), and that 布多遲能伊理毘賣命<sup class="ru" title="reading unconfirmed">*</sup> became the consort of Yamato Takeru (倭建命).</p>
-      <p>While the emperor had 沙本毘賣<sup class="ru" title="reading unconfirmed">*</sup> as his consort, her elder brother 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> asked his sister, &quot;Whom do you love more, your husband or your brother?&quot;, and the consort answered, &quot;I love my brother.&quot; 沙本毘古王 then plotted, saying, &quot;If you truly love me, let you and me rule the realm together.&quot; He had a cord dagger, the 八鹽折之紐小刀<sup class="ru" title="reading unconfirmed">*</sup>, made and gave it to his sister, ordering her to stab the emperor to death with it while he slept. The emperor, knowing nothing of the plot, fell asleep with his head on the consort&#x27;s lap. Three times the consort raised the cord dagger to stab the emperor in the neck, but she could not bear her grief and could not stab him, and her tears fell onto the emperor&#x27;s face.</p>
-      <p>The emperor woke with a start and asked the consort, &quot;I dreamed that a sudden shower came from the direction of 沙本<sup class="ru" title="reading unconfirmed">*</sup> and wet my face, and that a small brocade-colored snake coiled around my neck. What does this signify?&quot; The consort, thinking she could not evade the question, told him everything: that when her brother asked her she had answered &quot;I love my brother,&quot; that she had been handed a cord dagger to kill the emperor, and that though she raised it three times she could not stab him, and her tears fell.</p>
-      <p>The emperor said, &quot;I was nearly deceived,&quot; and raised an army, and 沙本毘古王<sup class="ru" title="reading unconfirmed">*</sup> built a rice fortress (稻城) and met him in battle. The consort could not abandon her brother; she slipped out by the back gate and entered the rice fortress. At this time the consort was with child, and because she was pregnant and because he had loved and cherished her for three years, the emperor merely surrounded the fortress with his army and did not press the attack. Meanwhile the child was born, and the consort had the child placed outside the rice fortress and sent word that, if the emperor regarded it as his own child, he should take it and raise it.</p>
-      <p>Though the emperor resented her brother, he could not suppress his love for the consort. He chose strong and nimble soldiers and ordered them, when they received the child, to seize the mother too, by her hair or by her hands, and drag her out. Foreseeing this, the consort shaved off all her hair and covered her head with it, let her jewel cords rot and wound them three times around her hands, and rotted her clothes with sake so that they looked like ordinary clothes. The soldiers were able to receive the child, but when they grasped her hair it came away, when they grasped her hands the jewel cords broke, and when they grasped her clothes the clothes tore, so they could not bring the mother back. The emperor, full of regret, hated the people who had made the jewels and took away all their land, and it is said that from this arose the proverb &quot;不得地玉作&quot;<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>When the emperor asked the child&#x27;s name, the consort answered that, since he was born in the fire at the very time the rice fortress was burning, it would be fitting to name him 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>. Asked how he should be raised, she answered that he should be brought up by appointing a 大湯坐 and a 若湯坐<sup class="ru" title="reading unconfirmed">*</sup>; and asked who would untie the 美豆能小佩<sup class="ru" title="reading unconfirmed">*</sup> that she had tied, she answered that 兄比賣 and 弟比賣<sup class="ru" title="reading unconfirmed">*</sup>, daughters of 旦波比古多多須美智宇斯王<sup class="ru" title="reading unconfirmed">*</sup>, would be suitable. Then the emperor at last killed 沙本比古王<sup class="ru" title="reading unconfirmed">*</sup>, and the consort, his younger sister, followed her brother in death.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">孰愛夫與兄歟。答曰愛兄。</blockquote><p>Her brother asked, &quot;Whom do you love more, your husband or your brother?&quot;, and the consort answered, &quot;I love my brother.&quot;</p></div>
-      <div class="q"><blockquote lang="zh-Hant">從沙本方暴雨零來。急洽吾面。又錦色小蛇。纒繞我頸。</blockquote><p>The dream the emperor had: a sudden shower came from the direction of 沙本<sup class="ru" title="reading unconfirmed">*</sup> and wet his face, and a small brocade-colored snake coiled around his neck.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">火中所生。故其御名宜稱本牟智和氣御子。</blockquote><p>The consort&#x27;s answer that, since he was born in the fire, it would be fitting to name the child 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -152,20 +193,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 6 — the 4th year of Emperor Suinin, autumn, 9th month (丙戌朔戊申)</span><p>In the Nihon Shoki, the question of 狹穗彦王<sup class="ru" title="reading unconfirmed">*</sup> is &quot;Whom do you love more, your brother or your husband?&quot; He further argues that one who serves others with beauty loses favor as that beauty fades, and gives her a dagger (匕首) to stab the emperor. The empress hides it in her clothing.</p><blockquote lang="zh-Hant">汝孰愛兄與夫焉。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 6 — the 5th year of Emperor Suinin, winter, 10th month (己卯朔)</span><p>In the Nihon Shoki, the emperor has 八綱田<sup class="ru" title="reading unconfirmed">*</sup>, distant ancestor of the 上毛野君<sup class="ru" title="reading unconfirmed">*</sup>, attack 狹穗彦<sup class="ru" title="reading unconfirmed">*</sup>, and 狹穗彦 builds a rice fortress by piling up rice. In the end 八綱田 sets fire to the fortress; the empress, holding the prince, carries him over the fortress wall and sends him out, and then dies inside the fortress together with her brother. The Kojiki&#x27;s episode of escaping the soldiers&#x27; hands by means of tricks with her hair, jewel cords and clothes, and the exchange about naming the child, do not appear in this entry.</p><blockquote lang="zh-Hant">狹穗彦與妹共死于城中。</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="sujin-shido.html"><small>← Previous story (Part 2, story 7)</small>The Dispatch along the Four Circuits and the Rebellion of 建波邇安王<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="homuchiwake.html"><small>Next story (Part 2, story 9) →</small>Prince 本牟智和気御子<sup class="ru" title="reading unconfirmed">*</sup> and 多遅摩毛理<sup class="ru" title="reading unconfirmed">*</sup></a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">Nihon Shoki, Book 6</a> — Chinese Wikisource</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (3 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">孰愛夫與兄歟。答曰愛兄。</blockquote><p>Her brother asked, &quot;Whom do you love more, your husband or your brother?&quot;, and the consort answered, &quot;I love my brother.&quot;</p></div>
+          <div class="q"><blockquote lang="zh-Hant">從沙本方暴雨零來。急洽吾面。又錦色小蛇。纒繞我頸。</blockquote><p>The dream the emperor had: a sudden shower came from the direction of 沙本<sup class="ru" title="reading unconfirmed">*</sup> and wet his face, and a small brocade-colored snake coiled around his neck.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">火中所生。故其御名宜稱本牟智和氣御子。</blockquote><p>The consort&#x27;s answer that, since he was born in the fire, it would be fitting to name the child 本牟智和氣御子<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第六" target="_blank" rel="noopener">Nihon Shoki, Book 6</a> — Chinese Wikisource</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

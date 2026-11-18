@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 3 · story 9 of 13</p>
-    <h1>Emperor Yūryaku with 若日下部王, 赤猪子 and the Maiden of Yoshino (readings unconfirmed)</h1>
-    <p class="orig" lang="ja">雄略天皇と若日下部王・赤猪子・吉野の童女</p>
-    <p class="pg-lead">The first half of the section on Emperor Yūryaku (大長谷若建命)<sup class="ru" title="reading unconfirmed">*</sup> tells of his courtship of 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> and the white dog; of 引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup>, who waited eighty years for the emperor’s word; of the dance of the maiden of Yoshino; and of the origin of the name 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>. Each story is accompanied by songs of the emperor or of the woman concerned.</p>
-    <div class="xlink"><a href="../../shoki/en/yuryaku-1.html">Read in the Nihon Shoki: The accession of Emperor Yūryaku and Hitokotonushi-no-Kami (一事主神) of 葛城山<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 3 · story 9 of 13</p>
+        <h1>Emperor Yūryaku with 若日下部王, 赤猪子 and the Maiden of Yoshino (readings unconfirmed)</h1>
+        <p class="orig" lang="ja">雄略天皇と若日下部王・赤猪子・吉野の童女</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">The first half of the section on Emperor Yūryaku (大長谷若建命)<sup class="ru" title="reading unconfirmed">*</sup> tells of his courtship of 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> and the white dog; of 引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup>, who waited eighty years for the emperor’s word; of the dance of the maiden of Yoshino; and of the origin of the name 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>. Each story is accompanied by songs of the emperor or of the woman concerned.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/yuryaku-1.html">Read in the Nihon Shoki: The accession of Emperor Yūryaku and Hitokotonushi-no-Kami (一事主神) of 葛城山<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The consorts and children of 大長谷若建命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">大長谷若建命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm from the 朝倉宮 palace at 長谷 (readings unconfirmed). He married 若日下部王<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 大日下王<sup class="ru" title="reading unconfirmed">*</sup>, but they had no children; he also married 韓比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 都夫良意富美<sup class="ru" title="reading unconfirmed">*</sup>, and 白髪命 and 若帯比売命 (readings unconfirmed) were born. As the namesake group (御名代) of Crown Prince 白髪 he established the 白髪部, and he also established the 長谷部舎人 and the 河瀬舎人 (readings unconfirmed). It is recorded that at this time people from 呉 (呉人)<sup class="ru" title="reading unconfirmed">*</sup> came across the sea, and they were settled at 呉原<sup class="ru" title="reading unconfirmed">*</sup>, and that the place came to be called 呉原.</p>
+      <h3>The house of the great district chief of 志幾<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> was still living at 日下<sup class="ru" title="reading unconfirmed">*</sup>, the emperor went to Kawachi by the 直越 road of 日下 (readings unconfirmed). Looking out over the land from the top of the mountain, he saw a house with katsuogi ridge-logs (堅魚木) raised on its roof. Told that it was the house of the great district chief (大県主) of 志幾<sup class="ru" title="reading unconfirmed">*</sup>, the emperor grew angry that it had been built in imitation of his own palace and was about to have it burned. The chief, in fear, apologised and presented a white dog led on a cloth and hung with a bell, so the emperor had them stop setting the fire.</p>
+      <h3>The dog sent to 若日下部王<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">The emperor had the dog delivered to 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> as a courtship gift, calling it a rare thing he had obtained on the road. 若日下部王 replied that, since his coming with the sun at his back was a matter for great awe, she would come to him herself and serve him. As the emperor returned to his palace, he stood at the top of the mountain slope and composed a song, which he sent back with the messenger.</p>
+      <h3>引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup> waits eighty years</h3>
+      <p class="t">Once, when the emperor went out to the banks of the 美和河 river<sup class="ru" title="reading unconfirmed">*</sup>, there was a beautiful maiden washing clothes. When he asked her name, she answered 引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup>, and the emperor told her, “Do not marry a husband. I will send for you in time,” and returned to his palace. 赤猪子 kept waiting for those words until eighty years had passed and her looks had faded; but unable to keep from showing that she had waited, she came to the palace bringing many gifts. The emperor had completely forgotten his earlier words and asked what old woman she was and why she had come.</p>
+      <h3>Two songs for 赤猪子<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When 赤猪子<sup class="ru" title="reading unconfirmed">*</sup> explained what had happened, the emperor was greatly astonished and deeply pitied her for having kept her resolve and let the years of her prime pass in vain. In his heart he wished to marry her, but held back by her very great age, he did not do so, and sent her two songs. 赤猪子 wept until the sleeves of her red-dyed (丹摺) garment were soaked through, and answered with two songs. The emperor gave her many gifts and sent her home; it is recorded that these four songs are 志都歌<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>The maiden dances at Yoshino</h3>
+      <p class="t">When the emperor went to the Yoshino palace, there was a maiden of beautiful appearance on the bank of the Yoshino River, so he married her and returned to his palace. Later, when he went to Yoshino again, he stopped at the place where he had met the maiden, sat on his great seat (大御呉床), played the koto and had the maiden dance. Because her dance was so fine, the emperor composed a song.</p>
+      <h3>The origin of the name 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">Next, while he was hunting at 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>, a horsefly bit the arm of the emperor as he sat on his seat (呉床), and a dragonfly (蜻蛉, akizu) flew up, ate the horsefly and flew away. The emperor composed a song about this, and it is said that from that time the field has been called 阿岐豆野.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup> waited eighty years for the emperor’s words, “I will send for you in time,” but the emperor had forgotten them completely. The emperor was astonished and pitied her, but, held back by her great age, he did not marry her; he gave her songs and many gifts and sent her home.</li>
         <li><span class="kind ">Main text</span>The great district chief (大県主) of 志幾<sup class="ru" title="reading unconfirmed">*</sup> raised katsuogi ridge-logs (堅魚木) on his roof in imitation of the emperor’s palace, so his house was nearly burned; he was pardoned after presenting a white dog. The emperor made that dog his courtship gift to 若日下部王<sup class="ru" title="reading unconfirmed">*</sup>.</li>
@@ -117,26 +178,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>The Nihon Shoki also has a story of a dragonfly eating a horsefly (the 4th year, autumn, 8th month), but it places the event in the 河上小野 field<sup class="ru" title="reading unconfirmed">*</sup> after a visit to the Yoshino palace, and says that the emperor tried to have his ministers compose a song praising the dragonfly, but no one could, so the emperor sang one himself.</li>
         <li><span class="kind ">Main text</span>Genealogy: the emperor married 若日下部王 <sup class="ru" title="reading unconfirmed">*</sup> (there were no children) and 韓比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 都夫良意富美<sup class="ru" title="reading unconfirmed">*</sup>, and from 韓比売 were born 白髪命 and 若帯比売命 (readings unconfirmed).</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>大長谷若建命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm from the 朝倉宮 palace at 長谷 (readings unconfirmed). He married 若日下部王<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 大日下王<sup class="ru" title="reading unconfirmed">*</sup>, but they had no children; he also married 韓比売<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 都夫良意富美<sup class="ru" title="reading unconfirmed">*</sup>, and 白髪命 and 若帯比売命 (readings unconfirmed) were born. As the namesake group (御名代) of Crown Prince 白髪 he established the 白髪部, and he also established the 長谷部舎人 and the 河瀬舎人 (readings unconfirmed). It is recorded that at this time people from 呉 (呉人)<sup class="ru" title="reading unconfirmed">*</sup> came across the sea, and they were settled at 呉原<sup class="ru" title="reading unconfirmed">*</sup>, and that the place came to be called 呉原.</p>
-      <p>When 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> was still living at 日下<sup class="ru" title="reading unconfirmed">*</sup>, the emperor went to Kawachi by the 直越 road of 日下 (readings unconfirmed). Looking out over the land from the top of the mountain, he saw a house with katsuogi ridge-logs (堅魚木) raised on its roof. Told that it was the house of the great district chief (大県主) of 志幾<sup class="ru" title="reading unconfirmed">*</sup>, the emperor grew angry that it had been built in imitation of his own palace and was about to have it burned. The chief, in fear, apologised and presented a white dog led on a cloth and hung with a bell, so the emperor had them stop setting the fire.</p>
-      <p>The emperor had the dog delivered to 若日下部王<sup class="ru" title="reading unconfirmed">*</sup> as a courtship gift, calling it a rare thing he had obtained on the road. 若日下部王 replied that, since his coming with the sun at his back was a matter for great awe, she would come to him herself and serve him. As the emperor returned to his palace, he stood at the top of the mountain slope and composed a song, which he sent back with the messenger.</p>
-      <p>Once, when the emperor went out to the banks of the 美和河 river<sup class="ru" title="reading unconfirmed">*</sup>, there was a beautiful maiden washing clothes. When he asked her name, she answered 引田部赤猪子<sup class="ru" title="reading unconfirmed">*</sup>, and the emperor told her, “Do not marry a husband. I will send for you in time,” and returned to his palace. 赤猪子 kept waiting for those words until eighty years had passed and her looks had faded; but unable to keep from showing that she had waited, she came to the palace bringing many gifts. The emperor had completely forgotten his earlier words and asked what old woman she was and why she had come.</p>
-      <p>When 赤猪子<sup class="ru" title="reading unconfirmed">*</sup> explained what had happened, the emperor was greatly astonished and deeply pitied her for having kept her resolve and let the years of her prime pass in vain. In his heart he wished to marry her, but held back by her very great age, he did not do so, and sent her two songs. 赤猪子 wept until the sleeves of her red-dyed (丹摺) garment were soaked through, and answered with two songs. The emperor gave her many gifts and sent her home; it is recorded that these four songs are 志都歌<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>When the emperor went to the Yoshino palace, there was a maiden of beautiful appearance on the bank of the Yoshino River, so he married her and returned to his palace. Later, when he went to Yoshino again, he stopped at the place where he had met the maiden, sat on his great seat (大御呉床), played the koto and had the maiden dance. Because her dance was so fine, the emperor composed a song.</p>
-      <p>Next, while he was hunting at 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>, a horsefly bit the arm of the emperor as he sat on his seat (呉床), and a dragonfly (蜻蛉, akizu) flew up, ate the horsefly and flew away. The emperor composed a song about this, and it is said that from that time the field has been called 阿岐豆野.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">汝不嫁夫。今將喚而。</blockquote><p>The emperor’s words to 赤猪子<sup class="ru" title="reading unconfirmed">*</sup>: Do not marry a husband; I will send for you in time.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">仰待天皇之命。既經八十歲。</blockquote><p>赤猪子<sup class="ru" title="reading unconfirmed">*</sup> kept waiting for the emperor’s words, and eighty years had already passed.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">爾赤猪子之泣涙。悉濕。其所服之丹摺袖。</blockquote><p>On hearing the emperor’s songs, 赤猪子<sup class="ru" title="reading unconfirmed">*</sup> wept until the sleeves of the red-dyed (丹摺) garment she wore were soaked through.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故自其時。號其野。謂阿岐豆野也。</blockquote><p>From this time that field came to be called 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -158,7 +199,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 14, the 1st year of Emperor Yūryaku, 3rd month, this month</span><p>The Nihon Shoki also says that 韓媛<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the minister 葛城円 (葛城円大臣)<sup class="ru" title="reading unconfirmed">*</sup>, bore Prince 白髪 (白髪皇子; reading unconfirmed; Emperor Seinei) and Princess 稚足姫 (稚足姫皇女)<sup class="ru" title="reading unconfirmed">*</sup>, which agrees with the Kojiki; but the Nihon Shoki writes her father as “葛城円大臣”, and also lists 吉備稚媛 and 童女君 (readings unconfirmed) as consorts.</p><blockquote lang="zh-Hant">元妃葛城圓大臣女曰韓媛。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 14, the 4th year of Emperor Yūryaku, autumn, 8th month (庚戌)</span><p>In the Nihon Shoki, when the emperor was hunting in the 河上小野 field<sup class="ru" title="reading unconfirmed">*</sup> after a visit to the Yoshino palace, a horsefly bit the emperor’s arm, and a dragonfly carried the horsefly off in its mouth. The emperor tried to have his ministers compose a song praising the dragonfly, but no one could, so he sang one himself and named the place 蜻蛉野<sup class="ru" title="reading unconfirmed">*</sup>.</p><blockquote lang="zh-Hant">群臣莫能敢賦者。天皇乃口號曰。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 14, the 14th year of Emperor Yūryaku, 3rd month</span><p>In the Nihon Shoki, the reception of envoys from 呉<sup class="ru" title="reading unconfirmed">*</sup>, the settling of the 呉 people at 桧隈野<sup class="ru" title="reading unconfirmed">*</sup>, and the naming of that place 呉原<sup class="ru" title="reading unconfirmed">*</sup> are placed in the 3rd month of the 14th year of Emperor Yūryaku. Entries corresponding to the stories of 赤猪子<sup class="ru" title="reading unconfirmed">*</sup> and the maiden of Yoshino could not be confirmed in the Yūryaku chapter of the Nihon Shoki.</p><blockquote lang="zh-Hant">即安置呉人於桧隈野。因名呉原。</blockquote></div>
@@ -166,13 +207,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="anko.html"><small>← Previous story (Part 3, story 8)</small>Emperor Ankō and the Incident of 目弱王<sup class="ru" title="reading unconfirmed">*</sup></a><a class="next" href="yuryaku-hitokoto.html"><small>Next story (Part 3, story 10) →</small>Hitokotonushi-no-Kami of Katsuragi and the Songs of Emperor Yūryaku</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">Nihon Shoki, Book 14</a> — Chinese Wikisource</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">汝不嫁夫。今將喚而。</blockquote><p>The emperor’s words to 赤猪子<sup class="ru" title="reading unconfirmed">*</sup>: Do not marry a husband; I will send for you in time.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">仰待天皇之命。既經八十歲。</blockquote><p>赤猪子<sup class="ru" title="reading unconfirmed">*</sup> kept waiting for the emperor’s words, and eighty years had already passed.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">爾赤猪子之泣涙。悉濕。其所服之丹摺袖。</blockquote><p>On hearing the emperor’s songs, 赤猪子<sup class="ru" title="reading unconfirmed">*</sup> wept until the sleeves of the red-dyed (丹摺) garment she wore were soaked through.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故自其時。號其野。謂阿岐豆野也。</blockquote><p>From this time that field came to be called 阿岐豆野<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十四" target="_blank" rel="noopener">Nihon Shoki, Book 14</a> — Chinese Wikisource</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

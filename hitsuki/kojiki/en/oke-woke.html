@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,40 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 3 · story 11 of 13</p>
-    <h1>Emperor Seinei and 意祁命 and 袁祁命 (readings unconfirmed): the Song Gathering with 志毘臣<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">清寧天皇と意祁命・袁祁命（志毘臣との歌垣）</p>
-    <p class="pg-lead">After Emperor Seinei (白髪大倭根子命)<sup class="ru" title="reading unconfirmed">*</sup> died without children, the brothers 意祁命 and 袁祁命 (readings unconfirmed), sons of 市辺之押歯王<sup class="ru" title="reading unconfirmed">*</sup> who had been hiding in Harima Province (針間国), revealed themselves at a house-warming banquet and were found. The younger brother, 袁祁命, exchanged songs with 志毘臣<sup class="ru" title="reading unconfirmed">*</sup> at a song gathering (歌垣) and brought him down, and, at his elder brother’s yielding, he ruled the realm first.</p>
-    <div class="xlink"><a href="../../shoki/en/seinei-kenzo.html">Read in the Nihon Shoki: Emperors Seinei, Kenzō and Ninken, and the brothers 億計 and 弘計 (readings unconfirmed) ›</a><a href="../../shoki/en/buretsu.html">Read in the Nihon Shoki: Emperor Buretsu and the Fall of the Heguri Clan ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 3 · story 11 of 13</p>
+        <h1>Emperor Seinei and 意祁命 and 袁祁命 (readings unconfirmed): the Song Gathering with 志毘臣<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">清寧天皇と意祁命・袁祁命（志毘臣との歌垣）</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">After Emperor Seinei (白髪大倭根子命)<sup class="ru" title="reading unconfirmed">*</sup> died without children, the brothers 意祁命 and 袁祁命 (readings unconfirmed), sons of 市辺之押歯王<sup class="ru" title="reading unconfirmed">*</sup> who had been hiding in Harima Province (針間国), revealed themselves at a house-warming banquet and were found. The younger brother, 袁祁命, exchanged songs with 志毘臣<sup class="ru" title="reading unconfirmed">*</sup> at a song gathering (歌垣) and brought him down, and, at his elder brother’s yielding, he ruled the realm first.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/seinei-kenzo.html">Read in the Nihon Shoki: Emperors Seinei, Kenzō and Ninken, and the brothers 億計 and 弘計 (readings unconfirmed) ›</a><a href="../../shoki/en/buretsu.html">Read in the Nihon Shoki: Emperor Buretsu and the Fall of the Heguri Clan ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The reign of 白髪大倭根子命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">白髪大倭根子命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm from the 甕栗宮 palace at 伊波礼 (readings unconfirmed). Because he had neither empress nor children, he established the 白髪部<sup class="ru" title="reading unconfirmed">*</sup> as his namesake group (御名代). When the emperor died there was no prince to rule the realm, so they searched for a prince to take up the succession (日継); it is recorded that 忍海郎女<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 市辺忍歯別王<sup class="ru" title="reading unconfirmed">*</sup>, also called 飯豊王<sup class="ru" title="reading unconfirmed">*</sup>, was at the 高木角刺宮 palace at 忍海 in Katsuragi (readings unconfirmed).</p>
+      <h3>Two boys dance at the banquet for the new house</h3>
+      <p class="t">When 山部連小楯<sup class="ru" title="reading unconfirmed">*</sup> was appointed governor of Harima Province (針間国), he went to the banquet celebrating the new house of a man of that province named 志自牟<sup class="ru" title="reading unconfirmed">*</sup>. As the banquet grew lively, everyone danced in turn, and the two boys who were tending the fire beside the hearth were also made to dance. The two deferred to each other, “You first, elder brother,” “You first, younger brother,” and the people laughed at them; but when the elder had finished dancing, the younger recited while dancing, declaring that they were descendants of 押歯王 of 市辺 (readings unconfirmed), child of Emperor 伊邪本和気 (伊邪本和気天皇)<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>小楯<sup class="ru" title="reading unconfirmed">*</sup> seats the two princes on his knees</h3>
+      <p class="t">On hearing this, 小楯<sup class="ru" title="reading unconfirmed">*</sup> was astonished and tumbled from his seat; he drove the people of the house outside, set the two princes on his left and right knees and wept. He gathered people, built a temporary palace, had the two live there, and sent a messenger by fast horse to the capital. Their aunt, 飯豊王<sup class="ru" title="reading unconfirmed">*</sup>, rejoiced at this and had the two come up to the palace.</p>
+      <h3>The song gathering of 志毘臣<sup class="ru" title="reading unconfirmed">*</sup> and 袁祁命<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">Before the two had begun to rule the realm, 志毘臣<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 平群臣<sup class="ru" title="reading unconfirmed">*</sup>, stood at a song gathering (歌垣) and took the hand of 大魚<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the 菟田首<sup class="ru" title="reading unconfirmed">*</sup> and others, whom 袁祁命<sup class="ru" title="reading unconfirmed">*</sup> intended to marry. 袁祁命 also stood at the song gathering, and 志毘臣 and 袁祁命 exchanged songs in turn. It is recorded that as he sang, 志毘臣 grew more and more angry.</p>
+      <h3>Surrounding and killing 志毘臣<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">The two sang to each other until dawn and then each withdrew. The next morning 意富祁命 and 袁祁命 (readings unconfirmed) conferred: the people of the court come to the court in the morning but gather at 志毘’s gate at midday; now 志毘 will be asleep and there will be no one at his gate; if not now, it will be hard to carry out a plan. They then raised an army, surrounded the house of 志毘臣<sup class="ru" title="reading unconfirmed">*</sup> and killed him.</p>
+      <h3>The two princes yield the realm to each other</h3>
+      <p class="t">After that, the two princes each tried to yield the realm to the other. The elder brother, 意祁命<sup class="ru" title="reading unconfirmed">*</sup>, firmly yielded it, saying that if his younger brother had not revealed their names when they were in the house of 志自牟<sup class="ru" title="reading unconfirmed">*</sup> in Harima, they would never have become lords of the realm; this was his younger brother’s achievement, so although he himself was the elder, his younger brother should rule the realm first. For this reason 袁祁命<sup class="ru" title="reading unconfirmed">*</sup> could not refuse, and he ruled the realm first.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>At the house-warming banquet of 志自牟<sup class="ru" title="reading unconfirmed">*</sup> in Harima Province (針間国), the younger brother 袁祁命<sup class="ru" title="reading unconfirmed">*</sup>, who had been working as a boy tending the fire, declared his identity while dancing, and it became known that they were sons of 押歯王 of 市辺 (readings unconfirmed). 山部連小楯<sup class="ru" title="reading unconfirmed">*</sup>, astonished, sheltered the two and sent word to the capital.</li>
         <li><span class="kind ">Main text</span>Emperor Seinei (白髪大倭根子命)<sup class="ru" title="reading unconfirmed">*</sup> had neither empress nor children, and the 白髪部<sup class="ru" title="reading unconfirmed">*</sup> was established as his namesake group (御名代). It is recorded that after his death there was no prince to succeed him, and that 飯豊王<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 市辺忍歯別王<sup class="ru" title="reading unconfirmed">*</sup>, was at the 高木角刺宮 palace at 忍海 in Katsuragi (readings unconfirmed).</li>
@@ -116,24 +175,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind ">Main text</span>The elder brother, 意祁命<sup class="ru" title="reading unconfirmed">*</sup>, yielded the realm, saying it was his younger brother’s merit that he had revealed their names and shown their rank, and the younger brother, 袁祁命<sup class="ru" title="reading unconfirmed">*</sup>, ruled the realm first.</li>
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the Nihon Shoki, it is Emperor Buretsu in his time as crown prince who exchanges songs at a song gathering with 鮪<sup class="ru" title="reading unconfirmed">*</sup>, son of 平群真鳥<sup class="ru" title="reading unconfirmed">*</sup>, over a woman (影媛)<sup class="ru" title="reading unconfirmed">*</sup>, and a song closely resembling the one 袁祁命<sup class="ru" title="reading unconfirmed">*</sup> composes in the Kojiki appears as the crown prince’s song.</li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>白髪大倭根子命<sup class="ru" title="reading unconfirmed">*</sup> ruled the realm from the 甕栗宮 palace at 伊波礼 (readings unconfirmed). Because he had neither empress nor children, he established the 白髪部<sup class="ru" title="reading unconfirmed">*</sup> as his namesake group (御名代). When the emperor died there was no prince to rule the realm, so they searched for a prince to take up the succession (日継); it is recorded that 忍海郎女<sup class="ru" title="reading unconfirmed">*</sup>, younger sister of 市辺忍歯別王<sup class="ru" title="reading unconfirmed">*</sup>, also called 飯豊王<sup class="ru" title="reading unconfirmed">*</sup>, was at the 高木角刺宮 palace at 忍海 in Katsuragi (readings unconfirmed).</p>
-      <p>When 山部連小楯<sup class="ru" title="reading unconfirmed">*</sup> was appointed governor of Harima Province (針間国), he went to the banquet celebrating the new house of a man of that province named 志自牟<sup class="ru" title="reading unconfirmed">*</sup>. As the banquet grew lively, everyone danced in turn, and the two boys who were tending the fire beside the hearth were also made to dance. The two deferred to each other, “You first, elder brother,” “You first, younger brother,” and the people laughed at them; but when the elder had finished dancing, the younger recited while dancing, declaring that they were descendants of 押歯王 of 市辺 (readings unconfirmed), child of Emperor 伊邪本和気 (伊邪本和気天皇)<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>On hearing this, 小楯<sup class="ru" title="reading unconfirmed">*</sup> was astonished and tumbled from his seat; he drove the people of the house outside, set the two princes on his left and right knees and wept. He gathered people, built a temporary palace, had the two live there, and sent a messenger by fast horse to the capital. Their aunt, 飯豊王<sup class="ru" title="reading unconfirmed">*</sup>, rejoiced at this and had the two come up to the palace.</p>
-      <p>Before the two had begun to rule the realm, 志毘臣<sup class="ru" title="reading unconfirmed">*</sup>, ancestor of the 平群臣<sup class="ru" title="reading unconfirmed">*</sup>, stood at a song gathering (歌垣) and took the hand of 大魚<sup class="ru" title="reading unconfirmed">*</sup>, daughter of the 菟田首<sup class="ru" title="reading unconfirmed">*</sup> and others, whom 袁祁命<sup class="ru" title="reading unconfirmed">*</sup> intended to marry. 袁祁命 also stood at the song gathering, and 志毘臣 and 袁祁命 exchanged songs in turn. It is recorded that as he sang, 志毘臣 grew more and more angry.</p>
-      <p>The two sang to each other until dawn and then each withdrew. The next morning 意富祁命 and 袁祁命 (readings unconfirmed) conferred: the people of the court come to the court in the morning but gather at 志毘’s gate at midday; now 志毘 will be asleep and there will be no one at his gate; if not now, it will be hard to carry out a plan. They then raised an army, surrounded the house of 志毘臣<sup class="ru" title="reading unconfirmed">*</sup> and killed him.</p>
-      <p>After that, the two princes each tried to yield the realm to the other. The elder brother, 意祁命<sup class="ru" title="reading unconfirmed">*</sup>, firmly yielded it, saying that if his younger brother had not revealed their names when they were in the house of 志自牟<sup class="ru" title="reading unconfirmed">*</sup> in Harima, they would never have become lords of the realm; this was his younger brother’s achievement, so although he himself was the elder, his younger brother should rule the realm first. For this reason 袁祁命<sup class="ru" title="reading unconfirmed">*</sup> could not refuse, and he ruled the realm first.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">伊邪本和氣。天皇之御子。市邊之。押齒王之。奴末。</blockquote><p>The younger prince’s declaration: we are descendants (末) of 押歯王 of 市辺 (readings unconfirmed), child of Emperor 伊邪本和気<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">小楯連聞驚而。自床墮轉而。</blockquote><p>On hearing the declaration, 小楯<sup class="ru" title="reading unconfirmed">*</sup> was astonished and tumbled from his seat.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故吾雖兄。猶汝命。先治天下而。堅讓。</blockquote><p>The words of the elder brother, 意祁命<sup class="ru" title="reading unconfirmed">*</sup>: although I am the elder, you should still rule the realm first; he yielded it firmly.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -154,7 +195,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 15, the 2nd year of Emperor Seinei, winter, 11th month</span><p>In the Nihon Shoki, in the 11th month, winter, of the 2nd year of Emperor Seinei, the provincial governor of Harima (播磨国司), 伊予来目部小楯<sup class="ru" title="reading unconfirmed">*</sup>, finds 億計 and 弘計 (readings unconfirmed; corresponding to 意祁 and 袁祁) at the new house of the head of the 縮見 granary (縮見屯倉首), 忍海部造細目 (readings unconfirmed), in Akashi District (赤石郡). In the Kojiki, the master of the house is written “志自牟”<sup class="ru" title="reading unconfirmed">*</sup>.</p><blockquote lang="zh-Hant">於赤石郡縮見屯倉首忍海部造細目新室</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 15, Emperor Kenzō, record before accession (the 5th year of Emperor Seinei)</span><p>In the Kojiki, 飯豊王<sup class="ru" title="reading unconfirmed">*</sup> is the “younger sister” of 市辺忍歯別王<sup class="ru" title="reading unconfirmed">*</sup>, but in this entry of the Nihon Shoki she is 飯豊青皇女<sup class="ru" title="reading unconfirmed">*</sup>, the “elder sister” of Emperor 弘計 (弘計天皇)<sup class="ru" title="reading unconfirmed">*</sup>; after Emperor Seinei’s death, while the brothers were yielding the throne to each other, she conducted government at the 忍海角刺宮 palace<sup class="ru" title="reading unconfirmed">*</sup>, and she died in the 11th month, winter, of the same year.</p><blockquote lang="zh-Hant">由是天皇姉飯豐青皇女於忍海角刺宮臨朝秉政。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 16, Emperor Buretsu, record before accession</span><p>In the Nihon Shoki, it is the crown prince (later Emperor Buretsu) who exchanges songs with 鮪<sup class="ru" title="reading unconfirmed">*</sup> over 影媛<sup class="ru" title="reading unconfirmed">*</sup> at the song place (歌場, a song gathering) of 海柘榴市<sup class="ru" title="reading unconfirmed">*</sup>, and a song closely resembling “志毘賀波多傳爾。都麻多弖理美由”, which the prince composes in the Kojiki, appears as the crown prince’s song.</p><blockquote lang="zh-Hant">思寐我簸多泥儞、都摩陀氐理彌喩。</blockquote></div>
@@ -162,13 +203,22 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="yuryaku-hitokoto.html"><small>← Previous story (Part 3, story 10)</small>Hitokotonushi-no-Kami of Katsuragi and the Songs of Emperor Yūryaku</a><a class="next" href="kenzo.html"><small>Next story (Part 3, story 12) →</small>Emperor Kenzō and Emperor Ninken: 置目老媼<sup class="ru" title="reading unconfirmed">*</sup> and Their Father’s Tomb</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">Nihon Shoki, Book 15</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">Nihon Shoki, Book 16</a> — Chinese Wikisource</li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (3 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">伊邪本和氣。天皇之御子。市邊之。押齒王之。奴末。</blockquote><p>The younger prince’s declaration: we are descendants (末) of 押歯王 of 市辺 (readings unconfirmed), child of Emperor 伊邪本和気<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">小楯連聞驚而。自床墮轉而。</blockquote><p>On hearing the declaration, 小楯<sup class="ru" title="reading unconfirmed">*</sup> was astonished and tumbled from his seat.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故吾雖兄。猶汝命。先治天下而。堅讓。</blockquote><p>The words of the elder brother, 意祁命<sup class="ru" title="reading unconfirmed">*</sup>: although I am the elder, you should still rule the realm first; he yielded it firmly.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/下卷" target="_blank" rel="noopener">Kojiki, Part 3 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十五" target="_blank" rel="noopener">Nihon Shoki, Book 15</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第十六" target="_blank" rel="noopener">Nihon Shoki, Book 16</a> — Chinese Wikisource</li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

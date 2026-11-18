@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,38 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 2 · story 6 of 17</p>
-    <h1>Emperor Sujin and Ōmononushi-no-Ōkami of Miwa</h1>
-    <p class="orig" lang="ja">崇神天皇と三輪の大物主大神</p>
-    <p class="pg-lead">When a pestilence spread in the time of Emperor Sujin, Ōmononushi-no-Ōkami (大物主大神) appeared in a dream and declared that if he were worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the land would be at peace; when he was worshipped accordingly, the pestilence ceased. As the reason 意富多多泥古 was known to be a descendant of the deity, the story is told that when the man who visited 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup> was traced by a hemp thread, it led to the shrine on Mount Miwa (美和山).</p>
-    <div class="xlink"><a href="../../shoki/en/sujin-miwa.html">Read in the Nihon Shoki: Emperor Sujin and the Deity of Miwa: 大田田根子<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 2 · story 6 of 17</p>
+        <h1>Emperor Sujin and Ōmononushi-no-Ōkami of Miwa</h1>
+        <p class="orig" lang="ja">崇神天皇と三輪の大物主大神</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">When a pestilence spread in the time of Emperor Sujin, Ōmononushi-no-Ōkami (大物主大神) appeared in a dream and declared that if he were worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the land would be at peace; when he was worshipped accordingly, the pestilence ceased. As the reason 意富多多泥古 was known to be a descendant of the deity, the story is told that when the man who visited 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup> was traced by a hemp thread, it led to the shrine on Mount Miwa (美和山).</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/sujin-miwa.html">Read in the Nihon Shoki: Emperor Sujin and the Deity of Miwa: 大田田根子<sup class="ru" title="reading unconfirmed">*</sup> ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Emperor Sujin&#x27;s children</h3>
+      <p class="t">御眞木入日子印惠命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Sujin) ruled the realm from the 水垣宮<sup class="ru" title="reading unconfirmed">*</sup> at 師木<sup class="ru" title="reading unconfirmed">*</sup>. With three wives he had twelve children (seven sons and five daughters), and 伊久米伊理毘古伊佐知命<sup class="ru" title="reading unconfirmed">*</sup> succeeded him. Toyokiirihiko-no-Mikoto (豊木入日子命) is regarded as the ancestor of the 上毛野君, the 下毛野君 (readings unconfirmed) and others; 豊鉏比賣命<sup class="ru" title="reading unconfirmed">*</sup> worshipped at the shrine of the Great Deity of Ise (伊勢大神); and 大入杵命<sup class="ru" title="reading unconfirmed">*</sup> is regarded as the ancestor of the 能登臣<sup class="ru" title="reading unconfirmed">*</sup>. It is recorded that in the time of 倭日子命<sup class="ru" title="reading unconfirmed">*</sup> a human fence (人垣) was first set up at a tomb.</p>
+      <h3>Pestilence and the dream of Ōmononushi-no-Ōkami</h3>
+      <p class="t">In the time of this emperor much pestilence arose, and the people were on the verge of dying out. On a night when the emperor, grieving, was in the sacred bed (神牀), Ōmononushi-no-Ōkami appeared in a dream and declared, “This comes from my will. If you have me worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the deity&#x27;s influence will not arise and the land will be at peace.” So swift messengers on horseback were sent out in all directions to search, and that person was found in the village of 美努<sup class="ru" title="reading unconfirmed">*</sup> in Kawachi and brought forward.</p>
+      <h3>The emperor questions 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When the emperor asked whose child he was, 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup> answered that he was the child of 建甕槌命<sup class="ru" title="reading unconfirmed">*</sup>, son of 飯肩巣見命<sup class="ru" title="reading unconfirmed">*</sup>, son of 櫛御方命<sup class="ru" title="reading unconfirmed">*</sup>, who had been born when Ōmononushi-no-Ōkami took as his wife 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 陶津耳命<sup class="ru" title="reading unconfirmed">*</sup>. The emperor was greatly pleased and said that the realm would be at peace and the people would prosper. He then made 意富多多泥古 the officiating priest and had him worship 意富美和之大神<sup class="ru" title="reading unconfirmed">*</sup> at Mount 御諸<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>Shrines for the heavenly and earthly deities</h3>
+      <p class="t">Further, he commanded 伊迦賀色許男命<sup class="ru" title="reading unconfirmed">*</sup> to make the 天之八十毘羅訶<sup class="ru" title="reading unconfirmed">*</sup> and established shrines for the heavenly and earthly deities (天神地祇). He offered red shields and spears to Sumisaka-no-Kami (墨坂神) of Uda and black shields and spears to Ōsaka-no-Kami (大坂神), and made offerings (幣帛), leaving none out, to the deities of the ridges of the slopes and to the deities of the river shallows. By this the pestilence ceased entirely and the land was at peace.</p>
+      <h3>Red earth and the hemp thread</h3>
+      <p class="t">The reason 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup> was known to be the child of a deity is as follows. 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup> was beautiful, and a splendid man beyond compare came visiting her in the night, and soon she conceived. When her parents, finding this strange, asked her about it, she answered that a man whose name she did not know came every night, so her parents told her to scatter red earth in front of the bed and to stick a needle threaded with hemp thread into the hem of the man&#x27;s garment. When they looked in the morning, the hemp thread had gone out through the keyhole of the door, and only three loops (三勾) of hemp were left in her hands. When they followed the thread, it led to the shrine of the deity of Mount Miwa (美和山), so they knew he was the child of a deity, and because three loops of hemp were left over, that place is called Miwa (美和). A note in the original text makes 意富多多泥古命 the ancestor of the 神君 and the 鴨君 (readings unconfirmed).</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>In the time of Emperor Sujin, when people were on the verge of dying out from pestilence, Ōmononushi-no-Ōkami declared in a dream, “This comes from my will,” and asked to be worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>. When the emperor sought out 意富多多泥古 from the village of 美努<sup class="ru" title="reading unconfirmed">*</sup> in Kawachi and had him worship as the officiating priest at Mount 御諸<sup class="ru" title="reading unconfirmed">*</sup>, the pestilence ceased.</li>
         <li><span class="kind ">Main text</span>A hemp thread was stuck into the garment of the man who visited 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup> night after night, and when the thread was followed, it led to the shrine of the deity of Mount Miwa (美和山). It is recorded that because three loops (三勾) of hemp were left over, that place is called “Miwa” (美和).</li>
@@ -117,24 +174,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-int">Commentary</span>The Kokugakuin University database of deity names introduces a view that the Kojiki&#x27;s depiction of Ōmononushi-no-Kami going out through the keyhole of the door hints that his form is that of a snake, and states that in the record of the 9th month of the 10th year of Emperor Sujin in the Nihon Shoki it is revealed as a “small snake” (小蛇). <a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">[source, Japanese]</a></li>
         <li><span class="kind k-int">Commentary</span>The Kokugakuin University database of deity names introduces a view that the worship of the deities of 墨坂 (Sumisaka; an important route on the east of Yamato) and 大坂 (Ōsaka; an important route on the west of Yamato) was the worship of boundary deities to prevent the pestilence from entering. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">[source, Japanese]</a> <a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>御眞木入日子印惠命 <sup class="ru" title="reading unconfirmed">*</sup> (Emperor Sujin) ruled the realm from the 水垣宮<sup class="ru" title="reading unconfirmed">*</sup> at 師木<sup class="ru" title="reading unconfirmed">*</sup>. With three wives he had twelve children (seven sons and five daughters), and 伊久米伊理毘古伊佐知命<sup class="ru" title="reading unconfirmed">*</sup> succeeded him. Toyokiirihiko-no-Mikoto (豊木入日子命) is regarded as the ancestor of the 上毛野君, the 下毛野君 (readings unconfirmed) and others; 豊鉏比賣命<sup class="ru" title="reading unconfirmed">*</sup> worshipped at the shrine of the Great Deity of Ise (伊勢大神); and 大入杵命<sup class="ru" title="reading unconfirmed">*</sup> is regarded as the ancestor of the 能登臣<sup class="ru" title="reading unconfirmed">*</sup>. It is recorded that in the time of 倭日子命<sup class="ru" title="reading unconfirmed">*</sup> a human fence (人垣) was first set up at a tomb.</p>
-      <p>In the time of this emperor much pestilence arose, and the people were on the verge of dying out. On a night when the emperor, grieving, was in the sacred bed (神牀), Ōmononushi-no-Ōkami appeared in a dream and declared, “This comes from my will. If you have me worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the deity&#x27;s influence will not arise and the land will be at peace.” So swift messengers on horseback were sent out in all directions to search, and that person was found in the village of 美努<sup class="ru" title="reading unconfirmed">*</sup> in Kawachi and brought forward.</p>
-      <p>When the emperor asked whose child he was, 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup> answered that he was the child of 建甕槌命<sup class="ru" title="reading unconfirmed">*</sup>, son of 飯肩巣見命<sup class="ru" title="reading unconfirmed">*</sup>, son of 櫛御方命<sup class="ru" title="reading unconfirmed">*</sup>, who had been born when Ōmononushi-no-Ōkami took as his wife 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup>, daughter of 陶津耳命<sup class="ru" title="reading unconfirmed">*</sup>. The emperor was greatly pleased and said that the realm would be at peace and the people would prosper. He then made 意富多多泥古 the officiating priest and had him worship 意富美和之大神<sup class="ru" title="reading unconfirmed">*</sup> at Mount 御諸<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>Further, he commanded 伊迦賀色許男命<sup class="ru" title="reading unconfirmed">*</sup> to make the 天之八十毘羅訶<sup class="ru" title="reading unconfirmed">*</sup> and established shrines for the heavenly and earthly deities (天神地祇). He offered red shields and spears to Sumisaka-no-Kami (墨坂神) of Uda and black shields and spears to Ōsaka-no-Kami (大坂神), and made offerings (幣帛), leaving none out, to the deities of the ridges of the slopes and to the deities of the river shallows. By this the pestilence ceased entirely and the land was at peace.</p>
-      <p>The reason 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup> was known to be the child of a deity is as follows. 活玉依毘賣<sup class="ru" title="reading unconfirmed">*</sup> was beautiful, and a splendid man beyond compare came visiting her in the night, and soon she conceived. When her parents, finding this strange, asked her about it, she answered that a man whose name she did not know came every night, so her parents told her to scatter red earth in front of the bed and to stick a needle threaded with hemp thread into the hem of the man&#x27;s garment. When they looked in the morning, the hemp thread had gone out through the keyhole of the door, and only three loops (三勾) of hemp were left in her hands. When they followed the thread, it led to the shrine of the deity of Mount Miwa (美和山), so they knew he was the child of a deity, and because three loops of hemp were left over, that place is called Miwa (美和). A note in the original text makes 意富多多泥古命 the ancestor of the 神君 and the 鴨君 (readings unconfirmed).</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">疫病多起。人民死爲盡。</blockquote><p>Much pestilence arose, and the people were on the verge of dying out.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以意富多多泥古而。令祭我御前者。神氣不起。國安平。</blockquote><p>The oracle of Ōmononushi-no-Ōkami: if you have me worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the deity&#x27;s influence will not arise and the land will be at peace.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">以閇蘇紡麻貫針。刺其衣襴。</blockquote><p>The parents&#x27; instruction: thread a needle with hemp thread of “閇蘇” (a word written phonetically) and stick it into the hem of the man&#x27;s garment.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">因其麻之三勾遺而。名其地謂美和也。</blockquote><p>Because three loops of hemp were left over, that place was named Miwa (美和).</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -160,7 +199,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 5, Emperor Sujin, 7th year, spring, 2nd month (丁丑朔辛卯)</span><p>In the Nihon Shoki, when divination is performed at 神浅茅原<sup class="ru" title="reading unconfirmed">*</sup> in the 2nd month of the 7th year of Emperor Sujin, Ōmononushi-no-Kami (大物主神) first possesses Yamato-totohi-momoso-hime-no-Mikoto (倭迹迹日百襲姫命) and demands to be worshipped, and afterwards appears in the emperor&#x27;s dream and tells him to have 大田田根子<sup class="ru" title="reading unconfirmed">*</sup> worship him. In the Kojiki, only the oracle of the dream is recorded.</p><blockquote lang="zh-Hant">神明憑倭迹迹日百襲姫命曰</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 5, Emperor Sujin, 7th year, autumn, 8th month (癸卯朔己酉)</span><p>In the Nihon Shoki, 大田田根子<sup class="ru" title="reading unconfirmed">*</sup> is found at 陶邑<sup class="ru" title="reading unconfirmed">*</sup> in 茅渟県<sup class="ru" title="reading unconfirmed">*</sup> and answers that his father is Ōmononushi-no-Ōkami and his mother 活玉依媛<sup class="ru" title="reading unconfirmed">*</sup>, so he is a child of Ōmononushi-no-Ōkami. In the Kojiki, he is found in the village of 美努<sup class="ru" title="reading unconfirmed">*</sup> in Kawachi and is a descendant in the fourth generation from Ōmononushi-no-Ōkami.</p><blockquote lang="zh-Hant">父曰大物主大神。母曰活玉依媛。</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 5, Emperor Sujin, record of the 10th year, 9th month (是後, “after this”)</span><p>The Nihon Shoki has no story of tracing his identity with a hemp thread; instead it has the story of Yamato-totohi-momoso-hime-no-Mikoto becoming the wife of Ōmononushi-no-Kami and being startled to see a beautiful small snake in her comb box (the origin of 箸墓<sup class="ru" title="reading unconfirmed">*</sup>).</p><blockquote lang="zh-Hant">遂有美麗小蛇。其長大如衣紐。</blockquote></div>
@@ -168,13 +207,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="kesshi.html"><small>← Previous story (Part 2, story 5)</small>From Emperor Suizei to Emperor Kaika</a><a class="next" href="sujin-shido.html"><small>Next story (Part 2, story 7) →</small>The Dispatch along the Four Circuits and the Rebellion of 建波邇安王<sup class="ru" title="reading unconfirmed">*</sup></a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">Nihon Shoki, Book 5</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">疫病多起。人民死爲盡。</blockquote><p>Much pestilence arose, and the people were on the verge of dying out.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以意富多多泥古而。令祭我御前者。神氣不起。國安平。</blockquote><p>The oracle of Ōmononushi-no-Ōkami: if you have me worshipped by 意富多多泥古<sup class="ru" title="reading unconfirmed">*</sup>, the deity&#x27;s influence will not arise and the land will be at peace.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">以閇蘇紡麻貫針。刺其衣襴。</blockquote><p>The parents&#x27; instruction: thread a needle with hemp thread of “閇蘇” (a word written phonetically) and stick it into the hem of the man&#x27;s garment.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">因其麻之三勾遺而。名其地謂美和也。</blockquote><p>Because three loops of hemp were left over, that place was named Miwa (美和).</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/中卷" target="_blank" rel="noopener">Kojiki, Part 2 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第五" target="_blank" rel="noopener">Nihon Shoki, Book 5</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/omononushinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sumisakanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/osakanokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

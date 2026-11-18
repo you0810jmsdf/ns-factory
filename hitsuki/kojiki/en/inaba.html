@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 1 · story 9 of 17</p>
-    <h1>The Hare (素兎) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup></h1>
-    <p class="orig" lang="ja">稲羽の素兎</p>
-    <p class="pg-lead">大穴牟遅神 <sup class="ru" title="reading unconfirmed">*</sup> (Ōkuninushi-no-Kami), taken along as an attendant by the Eighty Deities (八十神) as they set out for 稲羽<sup class="ru" title="reading unconfirmed">*</sup> to seek the hand of Yakami-hime, healed by the correct method a hare that was suffering after being skinned. The hare declared that it would be 大穴牟遅神 who would win Yakami-hime, and, just so, Yakami-hime rejected the Eighty Deities and answered that she would marry 大穴牟遅神.</p>
-    
+  <main class="pg-main bk">
+    <header class="bk-open">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 1 · story 9 of 17</p>
+        <h1>The Hare (素兎) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup></h1>
+        <p class="orig" lang="ja">稲羽の素兎</p>
+      </div>
+      <div class="bk-hero"><figure class="f-tall"><img src="../../assets/kiki/book/inaba-hero.jpg" width="810" height="1440" alt="The hare at the cape of 気多" fetchpriority="high" decoding="async"><figcaption>The hare at the cape of 気多<sup class="ru" title="reading unconfirmed">*</sup> (AI-generated illustration)</figcaption></figure></div>
+      <div class="bk-intro">
+        <p class="bk-lead">大穴牟遅神 <sup class="ru" title="reading unconfirmed">*</sup> (Ōkuninushi-no-Kami), taken along as an attendant by the Eighty Deities (八十神) as they set out for 稲羽<sup class="ru" title="reading unconfirmed">*</sup> to seek the hand of Yakami-hime, healed by the correct method a hare that was suffering after being skinned. The hare declared that it would be 大穴牟遅神 who would win Yakami-hime, and, just so, Yakami-hime rejected the Eighty Deities and answered that she would marry 大穴牟遅神.</p>
+        <p class="bk-meta">Reading time for the story: about 2 min　/　<a href="#pts-title">Key points only</a></p>
+        
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>The Eighty Deities set out for 稲羽<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">Ōkuninushi-no-Kami had many brothers, called the Eighty Deities (八十神), but they all came to yield the land to Ōkuninushi-no-Kami. The reason is as follows. The Eighty Deities each wished to marry Yakami-hime of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and set out together for 稲羽; at that time they made 大穴牟遅神 <sup class="ru" title="reading unconfirmed">*</sup> (Ōkuninushi-no-Kami) carry a bag on his back and took him along as an attendant.</p>
+      <h3>The naked hare at the cape of 気多<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">When the party arrived at the cape (前, a headland) of 気多<sup class="ru" title="reading unconfirmed">*</sup>, a naked hare was lying collapsed there. The Eighty Deities told the hare, &quot;You should bathe in the salt water of the sea, expose yourself to the wind, and lie on the ridge of a high mountain.&quot; When the hare did as it was told, as the salt dried the skin of its body was split by the blowing wind, and it lay weeping, suffering from the pain.</p>
+      <div class="bk-figs"><figure class="f-tall"><img src="../../assets/kiki/book/inaba-1.jpg" width="810" height="1440" alt="The Eighty Deities and the hare lying collapsed" loading="lazy" decoding="async"><figcaption>The Eighty Deities and the hare lying collapsed (AI-generated illustration)</figcaption></figure></div>
+      <h3>The hare tells what happened</h3>
+      <p class="t">When 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>, who came last, asked the reason, the hare told the following story. The hare, which was on 淤岐嶋<sup class="ru" title="reading unconfirmed">*</sup>, had wanted to cross over here but had no means of doing so, so it tricked the wani (和迩) of the sea, proposing: &quot;Let us compare which of our kin are more numerous. Bring all your companions and lie in a row from the island to the cape of 気多. I will step on you and count as I cross.&quot; When the wani lined up, it crossed by stepping on them and counting, but just as it was about to step down onto land it said, &quot;You have been tricked,&quot; and was caught by the wani at the very end, which stripped off all its clothing (its fur). On top of that, because it followed the teaching of the Eighty Deities, its whole body was injured.</p>
+      <div class="bk-figs"><figure class="f-tall"><img src="../../assets/kiki/book/inaba-2.jpg" width="810" height="1440" alt="The hare crosses by stepping on the wani (和迩)" loading="lazy" decoding="async"><figcaption>The hare crosses by stepping on the wani (和迩) (AI-generated illustration)</figcaption></figure></div>
+      <h3>The teaching of 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">So 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup> taught it: &quot;Go at once to this river mouth, wash your body in its water, take the kama-no-hana (蒲黄) of the river mouth, spread it out and roll about on it, and you will surely be healed so that your skin is as it was.&quot; When the hare did as it was told, its body became as it had been before. This is the hare (素菟) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and it is now called Usagi-gami (菟神).</p>
+      <div class="bk-figs two"><figure class="f-port"><img src="../../assets/kiki/book/inaba-3.jpg" width="900" height="1125" alt="大穴牟遅神 teaches the hare at the river mouth" loading="lazy" decoding="async"><figcaption>大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup> teaches the hare at the river mouth (AI-generated illustration)</figcaption></figure><figure class="f-port"><img src="../../assets/kiki/book/inaba-4.jpg" width="900" height="1125" alt="On the kama-no-hana (蒲黄), the hare&#x27;s body becomes as it had been before" loading="lazy" decoding="async"><figcaption>On the kama-no-hana (蒲黄), the hare&#x27;s body becomes as it had been before (AI-generated illustration)</figcaption></figure></div>
+      <h3>What the hare told 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">The hare told 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>, &quot;The Eighty Deities will never win Yakami-hime. Even though you carry the bag, it is you who will win her.&quot; And indeed Yakami-hime answered the Eighty Deities, &quot;I will not listen to what you say. I will marry 大穴牟遅神.&quot;</p>
+      <div class="bk-figs"><figure class="f-port"><img src="../../assets/kiki/book/inaba-5.jpg" width="900" height="1125" alt="Yakami-hime answers that she will marry 大穴牟遅神" loading="lazy" decoding="async"><figcaption>Yakami-hime answers that she will marry 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup> (AI-generated illustration)</figcaption></figure></div>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>大穴牟遅神 <sup class="ru" title="reading unconfirmed">*</sup> (Ōkuninushi-no-Kami) taught the hare, which was suffering after being skinned, to wash its body in the water of the river mouth and roll about on kama-no-hana (蒲黄) spread out beneath it, and the hare&#x27;s body was healed as it had been before.</li>
         <li><span class="kind ">Main text</span>The hare tricked the wani (和迩) by proposing a contest to compare the numbers of their kin, and crossed from 淤岐嶋<sup class="ru" title="reading unconfirmed">*</sup> to the cape of 気多<sup class="ru" title="reading unconfirmed">*</sup> by stepping on their backs; but just before it finished crossing it spoke of having tricked them, so it was caught by the wani and had its fur stripped off.</li>
@@ -117,24 +178,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the books on the Age of the Gods of the Nihon Shoki (Books 1 and 2), no passage corresponding to the story of the hare of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, the Eighty Deities and Yakami-hime could be confirmed. The Nihon Shoki records the same deity mainly under the name &quot;Ōanamuchi&quot; (大己貴).</li>
         <li><span class="kind k-int">Commentary</span>According to the Kokugakuin University database of deity names, there is a view that the 素 in &quot;素菟&quot; means white and a view that it means naked. Also, because stories in which a land animal tricks water animals in order to cross the water are found widely abroad too, there is a view that it was originally an independent animal story unrelated to Ōkuninushi-no-Kami. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Ōkuninushi-no-Kami had many brothers, called the Eighty Deities (八十神), but they all came to yield the land to Ōkuninushi-no-Kami. The reason is as follows. The Eighty Deities each wished to marry Yakami-hime of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and set out together for 稲羽; at that time they made 大穴牟遅神 <sup class="ru" title="reading unconfirmed">*</sup> (Ōkuninushi-no-Kami) carry a bag on his back and took him along as an attendant.</p>
-      <p>When the party arrived at the cape (前, a headland) of 気多<sup class="ru" title="reading unconfirmed">*</sup>, a naked hare was lying collapsed there. The Eighty Deities told the hare, &quot;You should bathe in the salt water of the sea, expose yourself to the wind, and lie on the ridge of a high mountain.&quot; When the hare did as it was told, as the salt dried the skin of its body was split by the blowing wind, and it lay weeping, suffering from the pain.</p>
-      <p>When 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>, who came last, asked the reason, the hare told the following story. The hare, which was on 淤岐嶋<sup class="ru" title="reading unconfirmed">*</sup>, had wanted to cross over here but had no means of doing so, so it tricked the wani (和迩) of the sea, proposing: &quot;Let us compare which of our kin are more numerous. Bring all your companions and lie in a row from the island to the cape of 気多. I will step on you and count as I cross.&quot; When the wani lined up, it crossed by stepping on them and counting, but just as it was about to step down onto land it said, &quot;You have been tricked,&quot; and was caught by the wani at the very end, which stripped off all its clothing (its fur). On top of that, because it followed the teaching of the Eighty Deities, its whole body was injured.</p>
-      <p>So 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup> taught it: &quot;Go at once to this river mouth, wash your body in its water, take the kama-no-hana (蒲黄) of the river mouth, spread it out and roll about on it, and you will surely be healed so that your skin is as it was.&quot; When the hare did as it was told, its body became as it had been before. This is the hare (素菟) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and it is now called Usagi-gami (菟神).</p>
-      <p>The hare told 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>, &quot;The Eighty Deities will never win Yakami-hime. Even though you carry the bag, it is you who will win her.&quot; And indeed Yakami-hime answered the Eighty Deities, &quot;I will not listen to what you say. I will marry 大穴牟遅神.&quot;</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">以水洗汝身，即取其水門之蒲黃</blockquote><p>(The teaching of 大穴牟遅神)<sup class="ru" title="reading unconfirmed">*</sup> Wash your body with the water, and at once take the kama-no-hana of that river mouth (and spread it out).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">此稻羽之素菟者也，於今者謂菟神也</blockquote><p>This is the hare (素菟) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and it is now called Usagi-gami.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">雖負帒，汝命獲之</blockquote><p>(The hare&#x27;s words) Even though you carry the bag, it is you who will win (Yakami-hime).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">吾者不聞汝等之言，將嫁大穴牟遲神</blockquote><p>(Yakami-hime&#x27;s answer) I will not listen to what you say. I will marry 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -151,19 +194,29 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 8, variant account 6</span><p>In Books 1 and 2 of the Nihon Shoki, no passage corresponding to the story of the hare of 稲羽, the Eighty Deities and Yakami-hime could be confirmed. The same deity is listed in variant account 6 of section 8 under names such as 国作大己貴命<sup class="ru" title="reading unconfirmed">*</sup> as other names of Ōkuninushi-no-Kami (大国主神), and a story is told of his joining forces with Sukunahikona-no-Mikoto (少彦名命) to make the land.</p><blockquote lang="zh-Hant">亦號國作大己貴命</blockquote></div>
     </section>
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="orochi.html"><small>← Previous story (Part 1, story 8)</small>The Banishment of Susanoo-no-Mikoto and Yamata-no-Orochi</a><a class="next" href="nenokuni.html"><small>Next story (Part 1, story 10) →</small>The Persecution by the Eighty Deities and the Land 根の堅州国<sup class="ru" title="reading unconfirmed">*</sup></a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">以水洗汝身，即取其水門之蒲黃</blockquote><p>(The teaching of 大穴牟遅神)<sup class="ru" title="reading unconfirmed">*</sup> Wash your body with the water, and at once take the kama-no-hana of that river mouth (and spread it out).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">此稻羽之素菟者也，於今者謂菟神也</blockquote><p>This is the hare (素菟) of 稲羽<sup class="ru" title="reading unconfirmed">*</sup>, and it is now called Usagi-gami.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">雖負帒，汝命獲之</blockquote><p>(The hare&#x27;s words) Even though you carry the bag, it is you who will win (Yakami-hime).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">吾者不聞汝等之言，將嫁大穴牟遲神</blockquote><p>(Yakami-hime&#x27;s answer) I will not listen to what you say. I will marry 大穴牟遅神<sup class="ru" title="reading unconfirmed">*</sup>.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji. The pictures are all AI-generated illustrations, not depictions of actual sacred objects, shrine buildings or people.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/usagigami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/yakamihime/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/oanamujinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,42 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 1 · story 3 of 17</p>
-    <h1>The Birth of the Deities and the Fire Deity</h1>
-    <p class="orig" lang="ja">神生みと火の神</p>
-    <p class="pg-lead">Having finished giving birth to the land, Izanagi-no-Mikoto and Izanami-no-Mikoto gave birth one after another to deities of the sea, wind, trees, mountains, fields and so on, but Izanami-no-Mikoto was burned and died because she gave birth to the fire deity. When the grieving Izanagi-no-Mikoto cut down the fire deity Kagutsuchi-no-Kami (迦具土神), still more deities came into being from its blood and body.</p>
-    <div class="xlink"><a href="../../shoki/en/dan05.html">Read in the Nihon Shoki: The Birth of the Three Noble Children, the Birth of the Deities, and Yomi (Section 5) ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 1 · story 3 of 17</p>
+        <h1>The Birth of the Deities and the Fire Deity</h1>
+        <p class="orig" lang="ja">神生みと火の神</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">Having finished giving birth to the land, Izanagi-no-Mikoto and Izanami-no-Mikoto gave birth one after another to deities of the sea, wind, trees, mountains, fields and so on, but Izanami-no-Mikoto was burned and died because she gave birth to the fire deity. When the grieving Izanagi-no-Mikoto cut down the fire deity Kagutsuchi-no-Kami (迦具土神), still more deities came into being from its blood and body.</p>
+        <p class="bk-meta">Reading time for the story: about 3 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/dan05.html">Read in the Nihon Shoki: The Birth of the Three Noble Children, the Birth of the Deities, and Yomi (Section 5) ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Ōkotooshio-no-Kami and the first deities born</h3>
+      <p class="t">Having finished giving birth to the land, the two deities went on to give birth to deities. First Ōkotooshio-no-Kami was born, and next Iwatsuchibiko-no-Kami, 石巣比売神, 大戸日別神, 天之吹男神 (readings unconfirmed), Ōyabiko-no-Kami and 風木津別之忍男神<sup class="ru" title="reading unconfirmed">*</sup> were born. Further, 大綿津見神<sup class="ru" title="reading unconfirmed">*</sup> was born as the deity of the sea, and Hayaakitsuhiko-no-Kami and his younger sister Hayaakitsu-hime-no-Kami as the deities of the river mouths.</p>
+      <h3>Eight deities of the rivers and the sea</h3>
+      <p class="t">Hayaakitsuhiko-no-Kami and Hayaakitsu-hime-no-Kami divided the rivers and the sea between them and gave birth to further deities. These are eight deities: 沫那芸神, 沫那美神, 頬那芸神, 頬那美神, 天之水分神, 国之水分神, 天之久比奢母智神 and 国之久比奢母智神 (readings unconfirmed). A small note sums these up as &quot;eight deities in all&quot; (并八神).</p>
+      <h3>Deities of wind, trees, mountains and fields</h3>
+      <p class="t">Next the two deities gave birth to the deity of the wind, 志那都比古神<sup class="ru" title="reading unconfirmed">*</sup>, the deity of trees, Kukunochi-no-Kami, the deity of mountains, Ōyamatsumi-no-Kami, and the deity of fields, Kayano-hime-no-Kami (also called 野椎神)<sup class="ru" title="reading unconfirmed">*</sup>. Ōyamatsumi-no-Kami and 野椎神 divided the mountains and the fields between them and gave birth to eight deities: 天之狭土神, 国之狭土神, 天之狭霧神, 国之狭霧神, 天之闇戸神, 国之闇戸神, 大戸惑子神 and 大戸惑女神 (readings unconfirmed). Then the two deities gave birth to 鳥之石楠船神 <sup class="ru" title="reading unconfirmed">*</sup> (also called Ame-no-Torifune-no-Kami) and Ōgetsu-hime-no-Kami.</p>
+      <h3>The fire deity is born and Izanami-no-Mikoto falls ill</h3>
+      <p class="t">The next child they gave birth to was 火之夜芸速男神<sup class="ru" title="reading unconfirmed">*</sup>, also called 火之炫毗古神 and 火之迦具土神 (readings unconfirmed). Because she gave birth to this child, Izanami-no-Mikoto had her private parts burned and fell ill. At that time 金山毗古神 and 金山毗売神 came into being from her vomit, 波迩夜須毗古神 and 波迩夜須毗売神 from her feces (readings unconfirmed), and Mitsuhanome-no-Kami and Wakumusubi-no-Kami from her urine; the child of Wakumusubi-no-Kami is called 豊宇気毗売神<sup class="ru" title="reading unconfirmed">*</sup>. Thus, because she gave birth to the fire deity, Izanami-no-Kami at last departed this world (神避, that is, died).</p>
+      <h3>Izanagi-no-Mikoto weeps and Nakisawame-no-Kami</h3>
+      <p class="t">Izanagi-no-Mikoto lamented, &quot;I have exchanged my beloved wife for a single child,&quot; and wept, crawling about by Izanami-no-Mikoto&#x27;s pillow and by her feet. The deity who came into being from his tears is Nakisawame-no-Kami, who dwells at the foot of the trees at 畝尾 on 香山 (readings unconfirmed). The dead Izanami-no-Kami was buried on 比婆之山<sup class="ru" title="reading unconfirmed">*</sup>, on the border of Izumo Province and 伯伎国<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <h3>Izanagi-no-Mikoto cuts off the head of Kagutsuchi-no-Kami</h3>
+      <p class="t">Izanagi-no-Mikoto drew the ten-fist sword (十拳剣) he wore at his waist and cut off the head of his child Kagutsuchi-no-Kami. The blood on the tip of the sword spattered onto the rocks 湯津石村<sup class="ru" title="reading unconfirmed">*</sup>, and Iwasaku-no-Kami, 根拆神 and 石筒之男神 (readings unconfirmed) came into being; from the blood at the base of the sword came Mikahayahi-no-Kami, 樋速日神<sup class="ru" title="reading unconfirmed">*</sup> and 建御雷之男神 <sup class="ru" title="reading unconfirmed">*</sup> (also called 建布都神 and 豊布都神). From the blood that gathered on the hilt of the sword and leaked out between his fingers came Kuraokami-no-Kami and 闇御津羽神<sup class="ru" title="reading unconfirmed">*</sup>. A small note sums these up as eight deities born through the sword.</p>
+      <h3>Eight deities from the body of Kagutsuchi-no-Kami</h3>
+      <p class="t">Deities also came into being from the body of the slain Kagutsuchi-no-Kami. These are eight deities: Masakayamatsumi-no-Kami at the head, 淤縢山津見神 at the chest, 奥山津見神 at the belly, 闇山津見神 at the private parts, 志芸山津見神 at the left hand, 羽山津見神 at the right hand, 原山津見神 at the left foot and 戸山津見神 at the right foot (readings unconfirmed). The name of the sword that cut down Kagutsuchi-no-Kami is Ame-no-Ohabari, also called 伊都之尾羽張<sup class="ru" title="reading unconfirmed">*</sup>.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>Because Izanami-no-Mikoto gave birth to the fire deity 火之夜芸速男神 <sup class="ru" title="reading unconfirmed">*</sup> (also called 火之迦具土神), her private parts were burned, she fell ill, and at last she departed this world (神避). Even during her illness, deities such as 金山毗古神<sup class="ru" title="reading unconfirmed">*</sup>, 波迩夜須毗売神<sup class="ru" title="reading unconfirmed">*</sup>, Mitsuhanome-no-Kami and Wakumusubi-no-Kami came into being from her vomit, feces and urine.</li>
         <li><span class="kind ">Main text</span>The grieving Izanagi-no-Mikoto cut off the head of his child Kagutsuchi-no-Kami with a ten-fist sword (十拳剣). From the blood on the sword came eight deities, including 建御雷之男神<sup class="ru" title="reading unconfirmed">*</sup>, and from the body of Kagutsuchi-no-Kami came eight mountain deities (山津見神), such as Masakayamatsumi-no-Kami. The name of that sword is Ame-no-Ohabari (also 伊都之尾羽張)<sup class="ru" title="reading unconfirmed">*</sup>.</li>
@@ -119,31 +180,11 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
       </ol>
     </section>
 
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Having finished giving birth to the land, the two deities went on to give birth to deities. First Ōkotooshio-no-Kami was born, and next Iwatsuchibiko-no-Kami, 石巣比売神, 大戸日別神, 天之吹男神 (readings unconfirmed), Ōyabiko-no-Kami and 風木津別之忍男神<sup class="ru" title="reading unconfirmed">*</sup> were born. Further, 大綿津見神<sup class="ru" title="reading unconfirmed">*</sup> was born as the deity of the sea, and Hayaakitsuhiko-no-Kami and his younger sister Hayaakitsu-hime-no-Kami as the deities of the river mouths.</p>
-      <p>Hayaakitsuhiko-no-Kami and Hayaakitsu-hime-no-Kami divided the rivers and the sea between them and gave birth to further deities. These are eight deities: 沫那芸神, 沫那美神, 頬那芸神, 頬那美神, 天之水分神, 国之水分神, 天之久比奢母智神 and 国之久比奢母智神 (readings unconfirmed). A small note sums these up as &quot;eight deities in all&quot; (并八神).</p>
-      <p>Next the two deities gave birth to the deity of the wind, 志那都比古神<sup class="ru" title="reading unconfirmed">*</sup>, the deity of trees, Kukunochi-no-Kami, the deity of mountains, Ōyamatsumi-no-Kami, and the deity of fields, Kayano-hime-no-Kami (also called 野椎神)<sup class="ru" title="reading unconfirmed">*</sup>. Ōyamatsumi-no-Kami and 野椎神 divided the mountains and the fields between them and gave birth to eight deities: 天之狭土神, 国之狭土神, 天之狭霧神, 国之狭霧神, 天之闇戸神, 国之闇戸神, 大戸惑子神 and 大戸惑女神 (readings unconfirmed). Then the two deities gave birth to 鳥之石楠船神 <sup class="ru" title="reading unconfirmed">*</sup> (also called Ame-no-Torifune-no-Kami) and Ōgetsu-hime-no-Kami.</p>
-      <p>The next child they gave birth to was 火之夜芸速男神<sup class="ru" title="reading unconfirmed">*</sup>, also called 火之炫毗古神 and 火之迦具土神 (readings unconfirmed). Because she gave birth to this child, Izanami-no-Mikoto had her private parts burned and fell ill. At that time 金山毗古神 and 金山毗売神 came into being from her vomit, 波迩夜須毗古神 and 波迩夜須毗売神 from her feces (readings unconfirmed), and Mitsuhanome-no-Kami and Wakumusubi-no-Kami from her urine; the child of Wakumusubi-no-Kami is called 豊宇気毗売神<sup class="ru" title="reading unconfirmed">*</sup>. Thus, because she gave birth to the fire deity, Izanami-no-Kami at last departed this world (神避, that is, died).</p>
-      <p>Izanagi-no-Mikoto lamented, &quot;I have exchanged my beloved wife for a single child,&quot; and wept, crawling about by Izanami-no-Mikoto&#x27;s pillow and by her feet. The deity who came into being from his tears is Nakisawame-no-Kami, who dwells at the foot of the trees at 畝尾 on 香山 (readings unconfirmed). The dead Izanami-no-Kami was buried on 比婆之山<sup class="ru" title="reading unconfirmed">*</sup>, on the border of Izumo Province and 伯伎国<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p>Izanagi-no-Mikoto drew the ten-fist sword (十拳剣) he wore at his waist and cut off the head of his child Kagutsuchi-no-Kami. The blood on the tip of the sword spattered onto the rocks 湯津石村<sup class="ru" title="reading unconfirmed">*</sup>, and Iwasaku-no-Kami, 根拆神 and 石筒之男神 (readings unconfirmed) came into being; from the blood at the base of the sword came Mikahayahi-no-Kami, 樋速日神<sup class="ru" title="reading unconfirmed">*</sup> and 建御雷之男神 <sup class="ru" title="reading unconfirmed">*</sup> (also called 建布都神 and 豊布都神). From the blood that gathered on the hilt of the sword and leaked out between his fingers came Kuraokami-no-Kami and 闇御津羽神<sup class="ru" title="reading unconfirmed">*</sup>. A small note sums these up as eight deities born through the sword.</p>
-      <p>Deities also came into being from the body of the slain Kagutsuchi-no-Kami. These are eight deities: Masakayamatsumi-no-Kami at the head, 淤縢山津見神 at the chest, 奥山津見神 at the belly, 闇山津見神 at the private parts, 志芸山津見神 at the left hand, 羽山津見神 at the right hand, 原山津見神 at the left foot and 戸山津見神 at the right foot (readings unconfirmed). The name of the sword that cut down Kagutsuchi-no-Kami is Ame-no-Ohabari, also called 伊都之尾羽張<sup class="ru" title="reading unconfirmed">*</sup>.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">伊耶那美神者，因生火神，遂神避坐也</blockquote><p>Because she gave birth to the fire deity, Izanami-no-Kami at last died.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">愛我那迩妹命乎！謂易子之一木乎！</blockquote><p>My beloved wife! Have I exchanged you for a single child? (the lament of Izanagi-no-Mikoto)</p></div>
-      <div class="q"><blockquote lang="zh-Hant">拔所御佩之十拳釼，斬其子迦具土神之頸</blockquote><p>He drew the ten-fist sword he wore at his waist and cut off the head of his child Kagutsuchi-no-Kami.</p></div>
-      <div class="q"><blockquote lang="zh-Hant">故所斬之刀名謂天之尾羽張</blockquote><p>The name of the sword that cut down Kagutsuchi-no-Kami is Ame-no-Ohabari.</p></div>
-    </section>
-
     <section class="pg-card" aria-labelledby="who-title">
       <h2 id="who-title">Deities and people, and the shrines that enshrine them</h2>
       <ul class="who">
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanagi">Izanagi-no-Mikoto</a></b><small lang="ja">伊邪那岐命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=oyama">Oyama Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a></span></li>
-        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanami">Izanami-no-Mikoto</a></b><small lang="ja">伊邪那美命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=naminoue">Naminoue-gū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a></span></li>
+        <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=izanami">Izanami-no-Mikoto</a></b><small lang="ja">伊邪那美命</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=kumano">Kumano Hongū Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hakusan">Shirayamahime Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=izanagijingu">Izanagi Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tagataisha">Taga Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=naminoue">Naminoue-gū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=isasumi">Isasumi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=suwanagasaki">Suwa Jinja (Nagasaki)</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=ohirumemuchi">Ōhirumemuchi Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=mitsumine">Mitsumine Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanonachi">Kumano Nachi Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=kumanohayatama">Kumano Hayatama Taisha</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=tamaki">Tamaki Jinja</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=hikosan">Hikosan Jingū</a>, <a href="../../../shrine-note/map/?lang=en&amp;s=sada">佐太神社</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=iwatsuchibiko">Iwatsuchibiko-no-Kami</a></b><small lang="ja">石土毗古神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=ishizuchi">Ishizuchi Jinja</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=watatsumi">Watatsumi-no-Kami</a></b><small lang="ja">海神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a></span></li>
         <li><b><a href="../../../shrine-note/map/?lang=en&amp;d=amenomikumari">Ame-no-Mikumari-no-Kami</a></b><small lang="ja">天水分神</small><span class="sh">Enshrined at: <a href="../../../shrine-note/map/?lang=en&amp;s=konojinja">Kono Jinja</a></span></li>
@@ -177,7 +218,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 5, main text</span><p>In the main text of the Shoki, after giving birth to the sea, the rivers, the mountains, the ancestor of trees and the ancestor of grasses, the two deities consult about giving birth to a &quot;ruler of all under heaven&quot; and give birth to the sun deity (Ōhirume-no-Muchi, 大日孁貴), the moon deity, 蛭児<sup class="ru" title="reading unconfirmed">*</sup> and Susanoo-no-Mikoto (素戔嗚尊). The birth of the fire deity and the death of Izanami-no-Mikoto (伊弉冉尊) are not written in the main text.</p><blockquote lang="zh-Hant">何不生天下之主者歟</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 5, variant account 6</span><p>Variant account 6 is close to the Kojiki: Izanami-no-Mikoto (伊弉冉尊) dies with the birth of Kagutsuchi (軻遇突智), Izanagi-no-Mikoto (伊弉諾尊) laments that he has exchanged his wife for a single child, and 啼沢女命<sup class="ru" title="reading unconfirmed">*</sup> comes into being from his tears. However, the details differ: for example, Kagutsuchi is cut into three pieces, and deities such as Mikahayahi-no-Kami (甕速日神), 熯速日神<sup class="ru" title="reading unconfirmed">*</sup> and Takemikazuchi-no-Kami (武甕槌神) come into being from the blood dripping from the sword.</p><blockquote lang="zh-Hant">唯以一兒替我愛之妹者乎</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 1, section 5, variant account 5</span><p>On the place where Izanami-no-Mikoto (伊弉冉尊) was buried, variant account 5 gives the village 有馬村<sup class="ru" title="reading unconfirmed">*</sup> in Kumano, Kii Province, which differs from the Kojiki&#x27;s &quot;比婆之山 on the border of Izumo Province and 伯伎国&quot;.</p><blockquote lang="zh-Hant">故葬於紀伊國熊野之有馬村焉</blockquote></div>
@@ -185,13 +226,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="kuniumi.html"><small>← Previous story (Part 1, story 2)</small>The Birth of the Land</a><a class="next" href="yomi.html"><small>Next story (Part 1, story 4) →</small>The Land of Yomi</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hinokagutsuchinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okotooshionokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhikonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kukunochinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kayanohimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mitsuhanomenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/nakisawamenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iwasakunokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mikahayahinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuraokaminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/masakayamatsuminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">伊耶那美神者，因生火神，遂神避坐也</blockquote><p>Because she gave birth to the fire deity, Izanami-no-Kami at last died.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">愛我那迩妹命乎！謂易子之一木乎！</blockquote><p>My beloved wife! Have I exchanged you for a single child? (the lament of Izanagi-no-Mikoto)</p></div>
+          <div class="q"><blockquote lang="zh-Hant">拔所御佩之十拳釼，斬其子迦具土神之頸</blockquote><p>He drew the ten-fist sword he wore at his waist and cut off the head of his child Kagutsuchi-no-Kami.</p></div>
+          <div class="q"><blockquote lang="zh-Hant">故所斬之刀名謂天之尾羽張</blockquote><p>The name of the sword that cut down Kagutsuchi-no-Kami is Ame-no-Ohabari.</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第一" target="_blank" rel="noopener">Nihon Shoki, Book 1</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/takemikazuchinoonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/amenoohabari/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hinokagutsuchinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/izanaminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/okotooshionokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhikonokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hayaakitsuhimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kukunochinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kayanohimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mitsuhanomenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/nakisawamenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/iwasakunokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/mikahayahinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/kuraokaminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/masakayamatsuminokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/ogetsuhimenokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>

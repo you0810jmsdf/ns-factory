@@ -77,10 +77,44 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     .toc .no { color: var(--gold); font-variant-numeric: tabular-nums; grid-row: span 2; font-size: 1.1rem; }
     .toc b { font-size: 1.05rem; }
     .toc span.lead { color: var(--ink-soft); font-size: .9rem; line-height: 1.7; }
+    .toc a.has-th { grid-template-columns: 2.6em 1fr 56px; }
+    .toc img.th { grid-column: 3; grid-row: 1 / span 2; width: 56px; height: auto; border-radius: 6px; border: 1px solid var(--line); align-self: center; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--ink-soft); margin: 0 0 12px; }
     .jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
     .jump a { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .9rem; color: var(--ink); text-decoration: none; }
     @media (max-width: 640px) { .pager { flex-direction: column; } .pager a.next { text-align: left; } }
+    /* 「読みもの」の型（layout.json にある話） */
+    .bk-open { display: grid; grid-template-columns: 1fr 300px; grid-template-areas: "head hero" "intro hero"; gap: 0 32px; align-items: start; margin-bottom: 36px; }
+    .bk-open.nohero { grid-template-columns: 1fr; grid-template-areas: "head" "intro"; max-width: 700px; margin-left: auto; margin-right: auto; }
+    .bk-head { grid-area: head; align-self: end; }
+    .bk-intro { grid-area: intro; }
+    .bk-hero { grid-area: hero; margin: 0; }
+    .bk-lead { font-size: 1.05rem; line-height: 2; color: var(--ink-soft); margin: 0 0 14px; }
+    .bk-meta { color: var(--muted); font-size: .88rem; margin: 0 0 16px; }
+    .bk-meta a { color: var(--gold); }
+    .bk figure { margin: 0; }
+    .bk figure img { display: block; width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+    .bk figcaption { color: var(--muted); font-size: .82rem; line-height: 1.7; margin-top: 8px; text-align: center; }
+    .bk-story { max-width: 700px; margin: 0 auto 40px; }
+    .bk-story h2 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.35rem; text-align: center; letter-spacing: .3em; margin: 0 0 8px; color: var(--gold); }
+    .bk-story h3 { font-family: "Yu Mincho", "Hiragino Mincho ProN", serif; font-size: 1.2rem; line-height: 1.6; margin: 40px 0 12px; padding-left: 14px; border-left: 3px solid var(--gold); }
+    .bk-story p.t { font-size: 1.05rem; line-height: 2.1; margin: 0 0 8px; }
+    .bk-figs { display: grid; gap: 20px; margin: 28px auto 8px; justify-items: center; }
+    .bk-figs figure { width: 100%; }
+    .bk-figs .f-tall { max-width: 340px; }
+    .bk-figs .f-port { max-width: 440px; }
+    .bk-figs.two { grid-template-columns: 1fr 1fr; }
+    .bk-story .pg-note { margin-top: 28px; text-align: center; }
+    .bk-app details { border-top: 1px solid rgba(245, 239, 225, 0.1); padding: 12px 0; }
+    .bk-app details:first-of-type { border-top: 0; }
+    .bk-app summary { cursor: pointer; color: var(--gold); font-size: 1rem; line-height: 1.8; }
+    .bk-app details[open] summary { margin-bottom: 14px; }
+    @media (max-width: 720px) {
+      .bk-open { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "intro"; gap: 0; }
+      .bk-open.nohero { grid-template-areas: "head" "intro"; }
+      .bk-hero { max-width: 280px; margin: 8px auto 24px; }
+      .bk-figs.two { grid-template-columns: 1fr; }
+    }
 
     sup.ru { color: var(--muted); font-size: .7em; margin-left: 1px; cursor: help; }
     .orig { color: var(--muted); font-size: .85rem; }
@@ -100,15 +134,40 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </nav>
   </header>
 
-  <main class="pg-main">
-    <p class="eyebrow">Kojiki, Part 1 · story 16 of 17</p>
-    <h1>Umisachi and Yamasachi (海幸山幸)</h1>
-    <p class="orig" lang="ja">海幸山幸</p>
-    <p class="pg-lead">The younger brother 火遠理命 <sup class="ru" title="reading unconfirmed">*</sup> (Yamasachibiko, 山佐知毘古) lost in the sea the fishhook he had borrowed from his elder brother Hoderi-no-Mikoto (Umisachibiko, 海佐知毘古). With the help of Shiotsuchi-no-Kami (塩椎神) he went to the palace of Watatsumi-no-Kami (綿津見神), married Toyotama-hime, and spent three years there. Having recovered the fishhook with the sea deity&#x27;s help, 火遠理命 subdued his elder brother with the tide-raising jewel and the tide-ebbing jewel he had been given, and the elder brother swore to serve him as a guard by day and by night.</p>
-    <div class="xlink"><a href="../../shoki/en/dan10.html">Read in the Nihon Shoki: Sea-Luck and Mountain-Luck (Section 10) ›</a></div>
+  <main class="pg-main bk">
+    <header class="bk-open nohero">
+      <div class="bk-head">
+        <p class="eyebrow">Kojiki, Part 1 · story 16 of 17</p>
+        <h1>Umisachi and Yamasachi (海幸山幸)</h1>
+        <p class="orig" lang="ja">海幸山幸</p>
+      </div>
+      
+      <div class="bk-intro">
+        <p class="bk-lead">The younger brother 火遠理命 <sup class="ru" title="reading unconfirmed">*</sup> (Yamasachibiko, 山佐知毘古) lost in the sea the fishhook he had borrowed from his elder brother Hoderi-no-Mikoto (Umisachibiko, 海佐知毘古). With the help of Shiotsuchi-no-Kami (塩椎神) he went to the palace of Watatsumi-no-Kami (綿津見神), married Toyotama-hime, and spent three years there. Having recovered the fishhook with the sea deity&#x27;s help, 火遠理命 subdued his elder brother with the tide-raising jewel and the tide-ebbing jewel he had been given, and the elder brother swore to serve him as a guard by day and by night.</p>
+        <p class="bk-meta">Reading time for the story: about 4 min　/　<a href="#pts-title">Key points only</a></p>
+        <div class="xlink"><a href="../../shoki/en/dan10.html">Read in the Nihon Shoki: Sea-Luck and Mountain-Luck (Section 10) ›</a></div>
+      </div>
+    </header>
+
+    <section class="bk-story" aria-labelledby="story-title">
+      <h2 id="story-title" style="letter-spacing:.08em">The story</h2>
+      <h3>Exchanging sachi and losing the fishhook</h3>
+      <p class="t">Hoderi-no-Mikoto, as Umisachibiko, caught the fish of the sea, and 火遠理命<sup class="ru" title="reading unconfirmed">*</sup>, as Yamasachibiko, caught the beasts of the mountains. 火遠理命 asked his elder brother three times, “Let us exchange our sachi (佐知; tools for catching game) and use them,” and at last the exchange was made. But though he fished in the sea, he did not catch a single fish, and moreover he lost the fishhook in the sea. When his elder brother demanded the fishhook back, the younger brother broke up the ten-fist sword (十拳剣) at his waist and made five hundred fishhooks, and then made a thousand fishhooks, to make amends, but the elder brother would not accept them and said, “I still want the original fishhook.”</p>
+      <h3>The teaching of Shiotsuchi-no-Kami</h3>
+      <p class="t">As 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> was weeping by the seashore, Shiotsuchi-no-Kami (塩椎神) came and asked him why. Hearing the circumstances, Shiotsuchi-no-Kami built a small, tightly woven boat with no gaps (无間勝間之小船), put 火遠理命 in it, and instructed him: “I will push this boat off. Go on for a while and there will be a good path. If you follow that path, you will reach a palace built like the scales of a fish, the palace of Watatsumi-no-Kami. Above the well beside the gate there is a sacred katsura tree (湯津香木). If you sit up in that tree, the daughter of the sea deity will see to things for you.”</p>
+      <h3>Toyotama-hime&#x27;s maidservant and the jewelled vessel</h3>
+      <p class="t">When he sat up in the tree as instructed, a maidservant of Toyotama-hime, coming to draw water with a jewelled vessel, noticed a light in the well, looked up, and saw a handsome man. 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> asked for water, but instead of drinking it he took a jewel from his necklace into his mouth and spat it into the vessel. The jewel stuck to the vessel and would not come off, so the maidservant presented it as it was to Toyotama-hime. Toyotama-hime came out to look, was drawn to him, and told her father. The sea deity said, “This is the child of 天津日高<sup class="ru" title="reading unconfirmed">*</sup>, 虚空津日高<sup class="ru" title="reading unconfirmed">*</sup>,” welcomed him into the palace, entertained him generously, and gave him his daughter in marriage. 火遠理命 lived in that land for three years.</p>
+      <h3>The fishhook in the throat of the 赤海鯽魚<sup class="ru" title="reading unconfirmed">*</sup></h3>
+      <p class="t">One night 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> remembered how it had all begun and heaved a great sigh. Hearing of it from Toyotama-hime, the sea deity asked him the reason, and 火遠理命 told how he had lost his elder brother&#x27;s fishhook and been reproached. When the sea deity called together all the fish of the sea, large and small, and questioned them, the fish said, “The 赤海鯽魚<sup class="ru" title="reading unconfirmed">*</sup> is complaining that something is stuck in its throat and it cannot eat.” When they searched the throat of the 赤海鯽魚, there was the fishhook.</p>
+      <h3>The tide-raising and tide-ebbing jewels</h3>
+      <p class="t">The sea deity washed the fishhook and handed it to 火遠理命<sup class="ru" title="reading unconfirmed">*</sup>, instructing him that when he returned it to his elder brother he should say “淤煩鉤”, “須須鉤”, “貧鉤”, “宇流鉤” and hand it over behind his back. He also said: if your elder brother makes his rice fields on high ground, make yours on low ground; if he makes them on low ground, make yours on high ground. Since I govern the waters, within three years your elder brother will become poor. Then he instructed him that if the elder brother, resentful, attacked him, he should bring out the tide-raising jewel (塩盈珠) and drown him, and if he begged forgiveness, he should bring out the tide-ebbing jewel (塩乾珠) and save him, and he gave him the two jewels.</p>
+      <h3>Hitohiro-wani carries him back and the elder brother swears to serve</h3>
+      <p class="t">When the sea deity gathered the wani (和迩) and asked who could carry him back and in how many days, the one-fathom wani, Hitohiro-wani (一尋和迩), offered, “I will carry him in one day and come back.” 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> rode on its neck and was carried back within a single day, and when the wani was returning, he fastened a small sword on a cord to its neck; therefore this one-fathom wani is called Sahimochi-no-Kami (佐比持神) to this day. When he did as instructed, his elder brother gradually became poor and attacked him with a violent heart, but 火遠理命 drowned him with the tide-raising jewel, and when he begged forgiveness, saved him with the tide-ebbing jewel. The elder brother, suffering, bowed his head and swore that from then on he would serve as a guard by day and by night, and it is recorded that, down to the present, they serve by constantly performing the various gestures he made when he was drowning.</p>
+      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used). The subheadings were added for readability, using the words of the text.</p>
+    </section>
 
     <section class="pg-card pts" aria-labelledby="pts-title">
-      <h2 id="pts-title">Key points to remember</h2>
+      <h2 id="pts-title">Key points of this story</h2>
       <ol>
         <li><span class="kind ">Main text</span>火遠理命 <sup class="ru" title="reading unconfirmed">*</sup> (Yamasachibiko) exchanged tools with his elder brother Hoderi-no-Mikoto (Umisachibiko), but lost the fishhook in the sea. The elder brother would not accept even a thousand fishhooks made from a sword and demanded the original fishhook, so 火遠理命 set out for the palace of Watatsumi-no-Kami in the small boat of Shiotsuchi-no-Kami.</li>
         <li><span class="kind ">Main text</span>At the sea deity&#x27;s palace, 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> married Toyotama-hime and lived there for three years. The sea deity, hearing the reason for his coming, gathered the fish of the sea and found the fishhook in the 赤海鯽魚<sup class="ru" title="reading unconfirmed">*</sup>, a fish whose throat was sore.</li>
@@ -117,25 +176,6 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
         <li><span class="kind k-cmp">Compared with the Nihon Shoki</span>In the main text of the Nihon Shoki, section 10, the elder brother is named Honosusori-no-Mikoto (火闌降命); Shiotsuchi-no-Oji (鹽土老翁) puts Hohodemi-no-Mikoto (火火出見尊) not in a boat but in a basket without gaps (無目篭) and sinks it in the sea; and the surrendering elder brother swears to become one of the “people who perform as entertainers” (俳優之民).</li>
         <li><span class="kind k-int">Commentary</span>According to the Kokugakuin University database of deity names, the ending in which the elder brother submits to the younger is regarded as a story explaining the origin of the fact that, at the time of compilation, the Hayato guarded the court and served with the Hayato dance (隼人舞) and the like. It is also pointed out that the plot of going to another world to search for a lost fishhook resembles tales of the “Lost Fishhook type” found in Indonesia and elsewhere. <a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">[source, Japanese]</a></li>
       </ol>
-    </section>
-
-    <section class="pg-card" aria-labelledby="story-title">
-      <h2 id="story-title">The story</h2>
-      <p>Hoderi-no-Mikoto, as Umisachibiko, caught the fish of the sea, and 火遠理命<sup class="ru" title="reading unconfirmed">*</sup>, as Yamasachibiko, caught the beasts of the mountains. 火遠理命 asked his elder brother three times, “Let us exchange our sachi (佐知; tools for catching game) and use them,” and at last the exchange was made. But though he fished in the sea, he did not catch a single fish, and moreover he lost the fishhook in the sea. When his elder brother demanded the fishhook back, the younger brother broke up the ten-fist sword (十拳剣) at his waist and made five hundred fishhooks, and then made a thousand fishhooks, to make amends, but the elder brother would not accept them and said, “I still want the original fishhook.”</p>
-      <p>As 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> was weeping by the seashore, Shiotsuchi-no-Kami (塩椎神) came and asked him why. Hearing the circumstances, Shiotsuchi-no-Kami built a small, tightly woven boat with no gaps (无間勝間之小船), put 火遠理命 in it, and instructed him: “I will push this boat off. Go on for a while and there will be a good path. If you follow that path, you will reach a palace built like the scales of a fish, the palace of Watatsumi-no-Kami. Above the well beside the gate there is a sacred katsura tree (湯津香木). If you sit up in that tree, the daughter of the sea deity will see to things for you.”</p>
-      <p>When he sat up in the tree as instructed, a maidservant of Toyotama-hime, coming to draw water with a jewelled vessel, noticed a light in the well, looked up, and saw a handsome man. 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> asked for water, but instead of drinking it he took a jewel from his necklace into his mouth and spat it into the vessel. The jewel stuck to the vessel and would not come off, so the maidservant presented it as it was to Toyotama-hime. Toyotama-hime came out to look, was drawn to him, and told her father. The sea deity said, “This is the child of 天津日高<sup class="ru" title="reading unconfirmed">*</sup>, 虚空津日高<sup class="ru" title="reading unconfirmed">*</sup>,” welcomed him into the palace, entertained him generously, and gave him his daughter in marriage. 火遠理命 lived in that land for three years.</p>
-      <p>One night 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> remembered how it had all begun and heaved a great sigh. Hearing of it from Toyotama-hime, the sea deity asked him the reason, and 火遠理命 told how he had lost his elder brother&#x27;s fishhook and been reproached. When the sea deity called together all the fish of the sea, large and small, and questioned them, the fish said, “The 赤海鯽魚<sup class="ru" title="reading unconfirmed">*</sup> is complaining that something is stuck in its throat and it cannot eat.” When they searched the throat of the 赤海鯽魚, there was the fishhook.</p>
-      <p>The sea deity washed the fishhook and handed it to 火遠理命<sup class="ru" title="reading unconfirmed">*</sup>, instructing him that when he returned it to his elder brother he should say “淤煩鉤”, “須須鉤”, “貧鉤”, “宇流鉤” and hand it over behind his back. He also said: if your elder brother makes his rice fields on high ground, make yours on low ground; if he makes them on low ground, make yours on high ground. Since I govern the waters, within three years your elder brother will become poor. Then he instructed him that if the elder brother, resentful, attacked him, he should bring out the tide-raising jewel (塩盈珠) and drown him, and if he begged forgiveness, he should bring out the tide-ebbing jewel (塩乾珠) and save him, and he gave him the two jewels.</p>
-      <p>When the sea deity gathered the wani (和迩) and asked who could carry him back and in how many days, the one-fathom wani, Hitohiro-wani (一尋和迩), offered, “I will carry him in one day and come back.” 火遠理命<sup class="ru" title="reading unconfirmed">*</sup> rode on its neck and was carried back within a single day, and when the wani was returning, he fastened a small sword on a cord to its neck; therefore this one-fathom wani is called Sahimochi-no-Kami (佐比持神) to this day. When he did as instructed, his elder brother gradually became poor and attacked him with a violent heart, but 火遠理命 drowned him with the tide-raising jewel, and when he begged forgiveness, saved him with the tide-ebbing jewel. The elder brother, suffering, bowed his head and swore that from then on he would serve as a guard by day and by night, and it is recorded that, down to the present, they serve by constantly performing the various gestures he made when he was drowning.</p>
-      <p class="pg-note">A plain retelling of what the original text of the Kojiki says (no published translation has been used).</p>
-    </section>
-
-    <section class="pg-card" aria-labelledby="q-title">
-      <h2 id="q-title">In the original text</h2>
-      <div class="q"><blockquote lang="zh-Hant">猶欲得其正本鉤。</blockquote><p>(However many fishhooks were made in amends,) the elder brother said, “I still want the original fishhook.”</p></div>
-      <div class="q"><blockquote lang="zh-Hant">如魚鱗所造之宫室，其綿津見神之宫者也。</blockquote><p>A palace built like the scales of a fish: that is the palace of Watatsumi-no-Kami (the instruction of Shiotsuchi-no-Kami).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">出塩盈珠而溺；若其愁請者，出塩乾珠而活。</blockquote><p>(If your elder brother attacks,) bring out the tide-raising jewel and drown him; if he begs forgiveness, bring out the tide-ebbing jewel and let him live (the instruction of the sea deity).</p></div>
-      <div class="q"><blockquote lang="zh-Hant">為汝命之晝夜守護人而仕奉</blockquote><p>I will serve you as a guard by day and by night (the oath of the surrendering elder brother).</p></div>
     </section>
 
     <section class="pg-card" aria-labelledby="who-title">
@@ -156,7 +196,7 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
     </section>
 
     <section class="pg-card" aria-labelledby="ns-title">
-      <h2 id="ns-title">In the Nihon Shoki</h2>
+      <h2 id="ns-title">How the Nihon Shoki differs</h2>
       <div class="ns"><span class="where">Nihon Shoki, Book 2, section 10, main text</span><p>In the main text of the Shoki, Shiotsuchi-no-Oji (鹽土老翁) makes not a boat but a basket without gaps (無目篭), puts Hohodemi-no-Mikoto (火火出見尊) inside it, and sinks it in the sea. In the Kojiki, Shiotsuchi-no-Kami (塩椎神) builds the small boat 无間勝間之小船, puts him in it and pushes it off.</p><blockquote lang="zh-Hant">乃作無目篭</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 2, section 10, main text</span><p>In the main text of the Shoki, the one holding the fishhook is 赤女 <sup class="ru" title="reading unconfirmed">*</sup> (a small note says it is a name for the sea bream), who did not come to the gathering because of a mouth ailment. In the Kojiki, the 赤海鯽魚<sup class="ru" title="reading unconfirmed">*</sup> complains that something is stuck in its throat and it cannot eat.</p><blockquote lang="zh-Hant">比有口疾而不來</blockquote></div>
       <div class="ns"><span class="where">Nihon Shoki, Book 2, section 10, main text</span><p>In the main text of the Shoki, the surrendering elder brother, Honosusori-no-Mikoto (火闌降命), swears, “I will become your people who perform as entertainers (俳優之民),” and he is regarded as the ancestor of 吾田君小橋<sup class="ru" title="reading unconfirmed">*</sup> and others. In the Kojiki, the elder brother is Hoderi-no-Mikoto, and he swears to serve as a guard by day and by night.</p><blockquote lang="zh-Hant">吾將爲汝俳優之民</blockquote></div>
@@ -164,13 +204,23 @@ try { if (localStorage.getItem('nsf_ga_optout') === '1') { window['ga-disable-G-
 
     <nav class="pager" aria-label="Previous and next"><a class="prev" href="konohana.html"><small>← Previous story (Part 1, story 15)</small>Konohanasakuya-hime and Iwanagahime</a><a class="next" href="ugaya.html"><small>Next story (Part 1, story 17) →</small>The Birth of Ugayafukiaezu-no-Mikoto</a></nav>
 
-    <section class="pg-card" aria-labelledby="src-title">
-      <h2 id="src-title">Sources</h2>
-      <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
-      <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
-      <ul class="pg-src">
-        <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">Nihon Shoki, Book 2</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umisachibiko/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sahimochinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
-      </ul>
+    <section class="pg-card bk-app" aria-labelledby="src-title">
+      <h2 id="src-title">Reference</h2>
+      <details>
+        <summary>In the original text (4 passages)</summary>
+          <div class="q"><blockquote lang="zh-Hant">猶欲得其正本鉤。</blockquote><p>(However many fishhooks were made in amends,) the elder brother said, “I still want the original fishhook.”</p></div>
+          <div class="q"><blockquote lang="zh-Hant">如魚鱗所造之宫室，其綿津見神之宫者也。</blockquote><p>A palace built like the scales of a fish: that is the palace of Watatsumi-no-Kami (the instruction of Shiotsuchi-no-Kami).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">出塩盈珠而溺；若其愁請者，出塩乾珠而活。</blockquote><p>(If your elder brother attacks,) bring out the tide-raising jewel and drown him; if he begs forgiveness, bring out the tide-ebbing jewel and let him live (the instruction of the sea deity).</p></div>
+          <div class="q"><blockquote lang="zh-Hant">為汝命之晝夜守護人而仕奉</blockquote><p>I will serve you as a guard by day and by night (the oath of the surrendering elder brother).</p></div>
+      </details>
+      <details>
+        <summary>Sources and what the labels mean</summary>
+        <p class="pg-note">A small <sup class="ru">*</sup> after a name in kanji means that its reading could not be confirmed from the sources used here, so the name is left in its original characters.</p>
+        <p class="pg-note">"Main text" is what the Kojiki itself says; "Compared with the Nihon Shoki" is a difference checked in the original text of the Nihon Shoki; "Commentary" is an interpretation checked against a public institution's explanation. Quotations are copied character for character from the critical text on Chinese Wikisource (〔 〕 marks the original small notes). Names whose reading could not be confirmed are left in kanji.</p>
+        <ul class="pg-src">
+          <li><a href="https://zh.wikisource.org/wiki/古事記/上卷" target="_blank" rel="noopener">Kojiki, Part 1 (critical text)</a> — Chinese Wikisource</li><li><a href="https://zh.wikisource.org/wiki/日本書紀/卷第二" target="_blank" rel="noopener">Nihon Shoki, Book 2</a> — Chinese Wikisource</li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoderinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/umisachibiko/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/hoorinomikoto/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/shiotsuchinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li><li><a href="https://kojiki.kokugakuin.ac.jp/shinmei/sahimochinokami/" target="_blank" rel="noopener">Kokugakuin University, Database of Deity Names (Japanese)</a></li>
+        </ul>
+      </details>
       <a class="pg-back" href="./">← All stories</a>
     </section>
   </main>
