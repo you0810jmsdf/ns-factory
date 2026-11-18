@@ -128,7 +128,7 @@ WS = lambda t, label: f'<li><a href="https://zh.wikisource.org/wiki/{t}" target=
 def src_list(urls, base):
     li = list(base)
     for u in urls:
-        label = 'Kokugakuin University, Database of Deity Names (Japanese)' if 'kokugakuin' in u else u
+        label = 'National Archives of Japan, "History and Tales: 1. Kojiki" (Japanese)' if 'archives.go.jp' in u else 'Kokugakuin University, "About the Kojiki" (Japanese)' if 'about-kojiki' in u else 'Kokugakuin University, Database of Deity Names (Japanese)' if 'kokugakuin' in u else u
         li.append(f'<li><a href="{e(u)}" target="_blank" rel="noopener">{e(label)}</a></li>')
     return ''.join(li)
 

@@ -23,18 +23,10 @@
      "src": []
     },
     {
-     "text": "飛鳥清原大宮の天皇は、諸家の持つ帝紀と本辞に偽りが多く加えられているとして、帝紀を撰び録し、旧辞を調べ究め、偽りを削り真実を定めて後の世に伝えたい、と詔した。",
+     "text": "飛鳥清原大宮の天皇は、諸家の持つ帝紀と本辞に偽りが多く加えられているとして、帝紀を撰び録し、旧辞を調べ究め、偽りを削り真実を定めて後の世に伝えたい、と詔した。そして舎人の稗田阿礼（年二十八）に、帝皇日継と先代旧辞を誦み習わせた。しかし時が移り世が変わって、その事は行われないままになった。",
      "kind": "本文",
      "refs": [
       "J3",
-      "J5"
-     ],
-     "src": []
-    },
-    {
-     "text": "舎人の稗田阿礼（年二十八）は、勅語によって帝皇日継と先代旧辞を誦み習った。しかし時が移り世が変わって、その事は行われないままになった。",
-     "kind": "本文",
-     "refs": [
       "J5"
      ],
      "src": []
@@ -62,6 +54,18 @@
       "J8"
      ],
      "src": []
+    },
+    {
+     "text": "序の原文は、天皇の名を書かず、「飛鳥清原大宮御大八洲天皇」「皇帝陛下」と記している。国立公文書館の解説は、帝紀と旧辞の誤りを憂えて稗田阿礼に誦習させたのを天武天皇（在位673―686）、稗田阿礼が誦習した内容を太安万侶に筆録させたのを元明天皇（在位707―715）とし、和銅5年（712）に進呈されたとする。國學院大學の解説も、序によれば天武天皇が正しい伝えを後世に残そうとしたとしている。",
+     "kind": "解説",
+     "refs": [
+      "J3",
+      "J7"
+     ],
+     "src": [
+      "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html",
+      "https://kojiki.kokugakuin.ac.jp/about-kojiki/"
+     ]
     }
    ],
    "story": [
@@ -151,18 +155,26 @@
     {
      "name": "飛鳥清原大宮の天皇",
      "reading": "",
-     "role": "原文は「飛鳥清原大宮御大八洲天皇」と記す。帝紀と旧辞を正して後の世に伝えようと詔した。",
-     "src": []
+     "role": "原文は「飛鳥清原大宮御大八洲天皇」と記す。帝紀と旧辞を正して後の世に伝えようと詔した。国立公文書館・國學院大學の解説では、天武天皇にあたる。",
+     "src": [
+      "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html",
+      "https://kojiki.kokugakuin.ac.jp/about-kojiki/"
+     ]
     },
     {
      "name": "皇帝陛下",
      "reading": "",
-     "role": "和銅四年九月十八日に、安万侶へ撰録を命じた。原文は名を書かない。",
-     "src": []
+     "role": "和銅四年九月十八日に、安万侶へ撰録を命じた。原文は名を書かない。国立公文書館の解説では、元明天皇にあたる。",
+     "src": [
+      "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html"
+     ]
     }
    ],
    "nihonshoki": [],
-   "sources": []
+   "sources": [
+    "https://www.archives.go.jp/exhibition/digital/rekishitomonogatari/contents/01.html",
+    "https://kojiki.kokugakuin.ac.jp/about-kojiki/"
+   ]
   },
   {
    "no": 1,

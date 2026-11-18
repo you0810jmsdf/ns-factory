@@ -246,7 +246,7 @@ def pager_html(seq, i, label, unit):
 def src_list(urls, base):
     li = list(base)
     for u in urls:
-        label = '國學院大學「神名データベース」' if 'kokugakuin' in u else u
+        label = '国立公文書館「歴史と物語　1.古事記」' if 'archives.go.jp' in u else '國學院大學「古事記について」' if 'about-kojiki' in u else '國學院大學「神名データベース」' if 'kokugakuin' in u else u
         li.append(f'<li><a href="{e(u)}" target="_blank" rel="noopener">{e(label)}</a>　{e(u)}</li>')
     return ''.join(li)
 

@@ -10,10 +10,7 @@
      "text": "The preface begins with the words 臣安萬侣言 and ends with the date and signature: the twenty-eighth day of the first month of the fifth year of 和銅 (reading unconfirmed), 太朝臣安萬侣 (reading unconfirmed), Senior Fifth Rank Upper, Fifth Order of Merit."
     },
     {
-     "text": "The emperor of the palace 飛鳥清原大宮 (reading unconfirmed) issued an edict: because many falsehoods had been added to the imperial chronicles (帝紀) and the original tales (本辞) held by the various houses, he wished to select and record the chronicles, examine the old tales, remove what was false, settle what was true, and hand them down to later ages."
-    },
-    {
-     "text": "The attendant 稗田阿礼 (reading unconfirmed), aged twenty-eight, was commanded to learn by recitation the imperial succession (帝皇日継) and the old tales of former ages (先代舊辞). But the times changed and the matter was not carried out."
+     "text": "The emperor of the palace 飛鳥清原大宮 (reading unconfirmed) issued an edict: because many falsehoods had been added to the imperial chronicles (帝紀) and the original tales (本辞) held by the various houses, he wished to select and record the chronicles, examine the old tales, remove what was false, settle what was true, and hand them down to later ages. He commanded the attendant 稗田阿礼 (reading unconfirmed), aged twenty-eight, to learn by recitation the imperial succession (帝皇日継) and the old tales of former ages (先代舊辞). But the times changed and the matter was not carried out."
     },
     {
      "text": "On the eighteenth day of the ninth month of the fourth year of 和銅 (reading unconfirmed), an edict was given to 安萬侣 (reading unconfirmed): \"Select and record the old tales of the imperial command that 稗田阿礼 recites, and present them.\""
@@ -23,6 +20,9 @@
     },
     {
      "text": "The record runs from the opening of heaven and earth to the reign of 小治田 (reading unconfirmed), in three parts: Part 1 from 天御中主神 to 日子波限建鵜草葺不合命, Part 2 from 神倭伊波礼毗古天皇 to the reign of 品陀, and Part 3 from 大雀 to the palace 小治田大宮 (readings of these names as written in the preface unconfirmed)."
+    },
+    {
+     "text": "The preface itself gives no emperor's name; it writes only 飛鳥清原大宮御大八洲天皇 and 皇帝陛下. According to the explanation by the National Archives of Japan, the emperor who, concerned about errors in the chronicles and old tales, had 稗田阿礼 (reading unconfirmed) learn them by recitation was Emperor Tenmu (reigned 673–686); the sovereign who had 太安万侶 (reading unconfirmed) write down what 稗田阿礼 had learned was 元明天皇 (reading unconfirmed; reigned 707–715); and the work was presented in the fifth year of 和銅 (712). The explanation by Kokugakuin University likewise says that, according to the preface, Emperor Tenmu wished to leave a correct account for later ages."
     }
    ],
    "story": [
@@ -73,11 +73,11 @@
     },
     {
      "name": "The emperor of the palace 飛鳥清原大宮 (reading unconfirmed)",
-     "role": "Written in the original as 飛鳥清原大宫御大八洲天皇. He issued the edict to correct the imperial chronicles and the old tales and hand them down."
+     "role": "Written in the original as 飛鳥清原大宫御大八洲天皇. He issued the edict to correct the imperial chronicles and the old tales and hand them down. The explanations by the National Archives of Japan and Kokugakuin University identify him as Emperor Tenmu."
     },
     {
      "name": "皇帝陛下 (His or Her Majesty the Emperor)",
-     "role": "Gave 安萬侣 the command to select and record on the eighteenth day of the ninth month of the fourth year of 和銅. The original gives no name."
+     "role": "Gave 安萬侣 the command to select and record on the eighteenth day of the ninth month of the fourth year of 和銅. The original gives no name. The explanation by the National Archives of Japan identifies this sovereign as 元明天皇 (reading unconfirmed)."
     }
    ],
    "compare": []
