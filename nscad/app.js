@@ -904,6 +904,17 @@ function pickStitchPair(near) {
   const tier = x => Math.round(x.c.dist * scale * 2), top = Math.min(...all.map(tier)), tied = all.filter(x => tier(x) === top).sort((p, q) => cont(q) - cont(p)), i = ((stitchTab % tied.length) + tied.length) % tied.length;
   stitchRouteChoices = { n: tied.length, i }; return tied[i];
 }
+/** 目打ちの始点と終点が、別々の打ち済みの縫い経路（線ごとに打った）にあっても、図形としてはつながっているとき：つながった線を1本に結合する（穴は位置のまま新しい線に付け替わる）。結合したら、もう一度クリックしてもらう。
+ *  結合できなかった（縫い合わせの設定がある・種類が違う）ときは false を返して、これまでの案内に任せる（事業主 2026-11-18「菱目を打とうとしてもつながっていないと警告が出る」：線ごとに別の経路になっていたため、つながった外形をまたいで打てなかった）。 */
+function stitchMergeOwnedChain(startList, endList) {
+  const idsOf = list => new Set(list.flatMap(c => c.state.saved.shapeIds)), A = idsOf(startList), B = idsOf(endList);
+  const cands = doc.shapes.filter(s => editable(s) && visible(s) && stitchable(s) && !s.markOf && !s.holeLink), chain = chainShapes(cands, 0.01, { through: true }).find(c => c.shapeIds.some(id => A.has(id)) && c.shapeIds.some(id => B.has(id)));
+  if (!chain || chain.shapeIds.length < 2) return false;
+  const owners = new Set(doc.paths.filter(p => p.shapeIds.some(id => chain.shapeIds.includes(id))).map(p => p.id)); if (owners.size < 2) return false;
+  const before = doc.shapes.length, picked = selected; selected = new Set(chain.shapeIds); mergeSelectedAny();
+  if (doc.shapes.length >= before) { selected = picked; return false; }
+  countStage = null; stitchTab = 0; clearStitchPreview(); $('hint').textContent = t('stitchChainMerged', { n: chain.shapeIds.length }); draw(); return true;
+}
 function rangeStitchClick(w, flip = false) {
   const tool = doc.tools.find(x => x.id === $('stitchTool').value), kind = placementKind(), n = stitchCountN(), near = stitchPointCandidates(w);
   if (!tool || !near.length) { $('hint').textContent = t('countNoLine'); return; }
@@ -914,6 +925,7 @@ function rangeStitchClick(w, flip = false) {
     if (countStage) { /* 始点とは別の線をクリックした：端が接している線どうしなら、つなぎ目を越えて打つ（固定ピッチだけ）。接していなければ、ここを新しい始点にして、そのことを案内する */
       const jo = pickStitchJoint(near);   /* 短いつなぎ目が先・2つ以上あるときは Tab で切り替え済みのもの */
       if (jo) { const { c1, c2, joint } = jo; stitchTab = 0; stitchRouteChoices = { n: 1, i: 0 }; if (kind === 'count') { stitchJointCount(c1, c2, joint, n, tool); return; } if (kind !== 'fixed') { $('hint').textContent = t('rangeJointFixedOnly'); return; } stitchJointPunch(c1, c2, joint, kind, n, tool); return; }
+      if (stitchMergeOwnedChain(countStage.list, near)) return;   /* 始点と終点が、別々の打ち済みの経路にあっても、図形としてつながっていれば、1本に結合してから打てるようにする */
       const gap = stitchNearestGap(countStage.list, near); countStage = { list: near }; stitchTab = 0; $('hint').textContent = t('rangeStartMoved') + (gap > STITCH_JOINT_GAP_MM && gap <= 10 ? ' ' + t('rangeGapNote', { gap: gap.toFixed(2) }) : ''); draw(); return;
     }
     countStage = { list: near }; stitchTab = 0; $('hint').textContent = t(kind === 'count' ? 'countStart' : 'rangeStart', { n }); draw(); return;
@@ -10252,6 +10264,14 @@ function offsetSelectedShapes(opts = {}) {
   cancel(); offsetSelection = null; commit(() => { selected = new Set(); for (const { r, g } of results) { const id = freshId(doc.shapes, 's'); if (solid) { const o = { ...r, id, layer: g.layer }; delete o.lineStyle; if (g.src.color) o.color = g.src.color; else delete o.color; doc.shapes.push(o); } else doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } });
   $('hint').textContent = t(solid ? 'offsetSelDoneSolid' : 'offsetSelDone', { n: groups.length - failed, d: dist, side: v === 'both' ? t('offsetSelBothName') : t(v === 'in' ? 'offsetIn' : 'offsetOut') }) + (failed ? ' ' + t('offsetSelFailed', { k: failed }) : ''); draw();
 }
+/** オフセットの結果が、ゆるやかに曲がっている折れ線（曲線を細かい折れ線にしたもの）なら、なめらかな曲線（節点の少ないペンの線）にして返す（事業主 2026-11-18「オフセットは曲線でできないとこのアプリの効果は半減する」）。角（25°超）は角のまま。まっすぐな折れ線・矩形のような角だけの折れ線は、そのまま。 */
+function offsetAsCurve(r) {
+  if (!r || r.type !== 'polyline' || !Array.isArray(r.points) || r.points.length < 4) return r;
+  const p = r.points, n = p.length, wrap = !!r.closed; let gentle = 0;
+  for (let i = wrap ? 0 : 1; i < (wrap ? n : n - 1); i++) { const a = p[(i - 1 + n) % n], b = p[i], c = p[(i + 1) % n], u = { x: b.x - a.x, y: b.y - a.y }, v = { x: c.x - b.x, y: c.y - b.y }, lu = Math.hypot(u.x, u.y), lv = Math.hypot(v.x, v.y); if (lu < 1e-9 || lv < 1e-9) continue; const deg = Math.acos(Math.max(-1, Math.min(1, (u.x * v.x + u.y * v.y) / (lu * lv)))) * 180 / Math.PI; if (deg > 0.3 && deg <= 25) gentle++; }
+  if (!gentle) return r;
+  return smoothPolylineToPath({ ...r, id: 'tmp' }) || r;
+}
 function runOffset(override = null) {
   let sel = offsetSelection; if (!sel) { $('hint').textContent = t('offsetNone'); return; }
   let sides; /* 向きごとの { d: 符号つき距離, key: 説明文のキー }。「両側」なら内側と外側の2本 */
@@ -10275,7 +10295,7 @@ function runOffset(override = null) {
   const results = sides.map(sd => offsetSpanResult(sel, sd.d, { join: $('offsetJoin').value })); if (results.some(r => !r)) { $('hint').textContent = t('impossible'); return; }
   /* 結果は点線なのでガイドの層へ（ガイドが非表示・ロック中なら、見えなくならないよう作図先、なければ元の図形の層） */
   const dest = doc.layers.find(l => l.id === 'guide' && l.visible && !l.locked)?.id || doc.layers.find(l => l.id === activeLayer && l.visible && !l.locked)?.id || sel.layer; /* 点線はガイド。ガイドが使えないときだけ作図先・元の層 */
-  offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...r, id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } }); /* 両側でも元に戻すのは1回で済む */
+  offsetSelection = null; commit(() => { selected = new Set(); for (const r of results) { const id = freshId(doc.shapes, 's'); doc.shapes.push({ ...offsetAsCurve(r), id, layer: dest, color: 'yellow', lineStyle: 'dashed' }); selected.add(id); } }); /* 両側でも元に戻すのは1回で済む */
   const turnedOn = showDashedView();   /* 結果は点線：「点線を表示」がオフなら、見えるようにオンにする（事業主 2026-11-05「オフセットした線が見えない」） */
   $('hint').textContent = (sides.length > 1 ? t('offsetDoneBoth', { d: Math.abs(sides[0].d) }) : t('offsetDone', { d: Math.abs(sides[0].d), side: t(sides[0].key) })) + (turnedOn ? ' ' + t('dashedViewAutoOn') : ''); draw();
 }
